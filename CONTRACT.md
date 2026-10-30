@@ -3122,6 +3122,8 @@ The replay of `acbc1ef` adds native Cron assertions in `tests/e2e/publishing-con
 
 The replay of `f61d588` adds assertions in `tests/e2e/publishing-contract.test.mjs` for peak impact after recovery, absent impact after detaching a never-published incident’s sole component, and refusal to publish its reviewed draft without changing the incident, persisted publications or checked public surfaces. These assertions are INCIDENT-002’s done evidence from the 2 November 2026 recheck.
 
+The replay of candidate `11498c1262b1ae480593220c66e8728db3ba79da` adds assertions in `tests/e2e/publishing-contract.test.mjs` for the Identified publication boundary, refusal of a multiple-lifecycle draft with the incident, saved draft and persisted publications unchanged, explicit Monitoring publication and Resolved publication readback. INCIDENT-001’s Status, Evidence and Gap stay as current main judged them; the added assertions are for the next judgment and do not promote the clause here.
+
 INTAKE-019 proof is from the code and tests at commit `3e8eddbd01b6569201bb2c14cd4cf187fc959ac6` (29 October 2026); the candidate retains those source and journey bytes. Other clause judgments remain inherited.
 
 The replay of `cc385f264c61cec1aacb67c2aa57b3e42bc32e97` adds assertions in `tests/e2e/publishing-contract.test.mjs` for the saved public commitment instant and configured-zone text, original historical publication instants on permanent and monthly-history pages, original component-history transitions and silent historical corrections. The original monthly-history title assertion remains. These assertions are INCIDENT-006’s and INCIDENT-009’s done evidence from the 2 November 2026 recheck.
