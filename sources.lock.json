@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "dbb5ee820b241babb6d4776dd76740f402930167336b1eba5dfc8570ab7ca0d1",
       "executable": false
     },
     "DEMO.md": {
@@ -6716,7 +6716,7 @@
       "executable": false
     },
     "tests/auth-adoption/upgrade.test.mjs": {
-      "sha256": "6fc52830e09f3d6001739700e9d2d12323a8774e1f9693f628c146653487dcf0",
+      "sha256": "bb4394f6468b0e5d87e0513ee4ea3c7dcb299bb476021cbd095fe9ae35cbe20a",
       "executable": false
     },
     "tests/baseline/e2e-baseline/case.mjs": {
@@ -6780,7 +6780,7 @@
       "executable": false
     },
     "tests/e2e/auth-adoption-journey.test.mjs": {
-      "sha256": "8d8cf01e54c7d26850cefe85ee51c558edf5386d043f896680e4a6ca08acc725",
+      "sha256": "74c3f7672eee51e2653e775a68283ae25bda105c972aa146a445b8904237a2ae",
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
@@ -6993,6 +6993,10 @@
     },
     "tests/e2e/helpers/operator-hydrated.mjs": {
       "sha256": "9342fd62737d3be5ce1b68dabaa42c2f7b30ce08d07d26f5f124864613474cf5",
+      "executable": false
+    },
+    "tests/e2e/helpers/operator-management-flow.mjs": {
+      "sha256": "6ef3add195f8a6d2cac6107c6953e6fb9154f9119cb1e59337425a8fe22adcb8",
       "executable": false
     },
     "tests/e2e/helpers/operator-role-actors.mjs": {
