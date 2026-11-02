@@ -3122,7 +3122,7 @@ MAINT-002 retains current-main’s partial judgment and recorded gaps. The repla
 
 INCIDENT-002 retains current-main’s partial judgment and recorded gaps. The replay of `f61d588` adds assertions in `tests/e2e/publishing-contract.test.mjs` for peak impact after recovery, absent impact after detaching a never-published incident’s sole component, and refusal to publish its reviewed draft without changing the incident, persisted publications or checked public surfaces. These assertions supplement the evidence without changing the inherited judgment.
 
-HIST-009 is rechecked through the active traffic sanity journey on this landing candidate; its exact commit and Verify receipt accompany the judge request. All other clause judgments remain inherited.
+HIST-009 proof is from the code and the registered journey at commit 8ffa6e67fc85d0c32d092718863bdade12d9d64c (29 October 2026), replayed onto main 71bbf96d9499f3c305b6d459e96b127fb9eb8a8a; the replay changes only the Settings section link calls through the phone Settings menu button in tests/e2e/helpers/traffic-alerts-flow.mjs. Other clause judgments remain inherited.
 
 INTAKE-019 proof is from the code and tests at commit `3e8eddbd01b6569201bb2c14cd4cf187fc959ac6` (29 October 2026); the candidate retains those source and journey bytes. Other clause judgments remain inherited.
 
