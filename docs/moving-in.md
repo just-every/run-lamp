@@ -48,7 +48,9 @@ shows the door's plan; a key or public page is first read into saved responses
 applies exactly the fingerprint you reviewed, in bounded steps. A later import
 of the same source is that import's catch-up (see below), and selecting the same
 files again reads as already imported. A new dry run replaces one you did not
-import. Importing again a source whose import you undid uploads it afresh.
+import. Importing again a source whose import you undid uploads it afresh,
+apart from records that undo kept because you changed them in Lamp (see
+[Repeat, undo and full-install restore](#repeat-undo-and-full-install-restore)).
 A dry run plans the page as it is at that moment and imports for 30 minutes;
 after that **Import** answers "This dry run has expired. Run the dry run again."
 and changes nothing. **Your imports** lists your imports ("approved by") and Business imports
@@ -70,6 +72,11 @@ states come only where the feeds state them (Statuspage updates, and the reports
 Better Stack page still shows); any other incident is history that names the
 components it lists, without changing their history. An incident about components
 you left out stays out. **Your imports** lists the import, and Undo removes it.
+A full Move in of the same page later, with its key or saved responses, is that
+import's catch-up (see below): the history it brought is replaced in place unless
+you changed it in Lamp, nothing it holds is imported again, and what setup did not
+bring (maintenance, subscribers, the components you left out) is added without
+notifying anyone.
 
 Deleting a subscriber, and the expiry of an unconfirmed or held one, also erases
 that address from import custody: its imported record becomes an erased entry,
@@ -156,7 +163,10 @@ stops working when that host is removed.
 ## Repeat, undo and full-install restore
 
 Repeating an identical import while its prior job is present is an idempotent
-no-op. After a successful undo, the source can be imported again. **Undo** under
+no-op. After a successful undo, the source can be imported again. A record the
+undo kept because you changed it stays as you left it: a dry run that names it is
+refused and names it, so leave it out of the saved responses to import the rest.
+**Undo** under
 **Your imports** is conditional: it removes rows created by that import only
 when their expected values are still present. Rows changed since import and
 confirmed subscribers stay, with their reason shown. Aliases stay for surviving

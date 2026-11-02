@@ -15,7 +15,8 @@ import { canonicalJson, readD1ImportJob, readD1ImportUndoReport, resumeD1Import,
 import { stored } from "../../../../modules/import-kit/src/d1/jobs.ts";
 import { nowIso } from "../../shared/ids";
 import { planMoveIn, reportFromPlan, type MoveInReport } from "./planning";
-import type { Snapshot } from "./rows";
+import type { Accounting, Snapshot } from "./rows";
+import { ownedWithoutBaseline, type OwnedRecord } from "./ownership.repository";
 import { importSources, isImportSource, sourceAdapter, type SourceInput } from "./adapters";
 import type { SavedFile } from "./source";
 import type { StatusFeedVendor } from "../../platform/status-feeds/index.ts";
@@ -61,6 +62,17 @@ function doorPreparationContext(db: D1Database, principalId: string, namespace: 
     storage: { database: db as never, targets: attributedStatuspageTargets(principalId) },
     authorization: { principalId, predicate: () => authority },
   };
+}
+
+/** Up to three records as the dry run names them, so the owner can find them. */
+function recordNames(plan: ImportPlan, records: OwnedRecord[]) {
+  const named = new Map(plan.entries.map(entry => [`${entry.source.kind}:${entry.source.sourceId}`,
+    (entry.source.payload as { accounting?: Accounting[] }).accounting?.find(item => item.kind === entry.source.kind)?.name]));
+  const names = [...new Set(records.map(({ kind, sourceId }) => {
+    const points = Array.from(named.get(`${kind}:${sourceId}`) || sourceId);
+    return points.length > 48 ? `${points.slice(0, 47).join('')}…` : points.join('');
+  }))];
+  return names.length > 3 ? `${names.slice(0, 3).join(', ')} and ${names.length - 3} more` : names.join(', ');
 }
 
 /** A source's saved responses, by file name and content. */
@@ -123,7 +135,22 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
   }
 
   /** Equal operators share native data, but each source record lands once. */
-  async function sourceClear(plan: ImportPlan) {
+  async function sourceClear(plan: ImportPlan, business = false) {
+    // Door jobs use a bundle-specific kit namespace, so owner uploads are
+    // compared with the source's explicit identities. A later upload of an
+    // imported source is that import's catch-up (docs/moving-in.md): the door
+    // matches its records with the applied snapshot and never imports one
+    // twice. A record held outside that baseline would be imported again, so
+    // it is refused. Business preparation keeps its own reviewed lineage,
+    // archive and restore-check paths and their revision guards.
+    if (!business) {
+      const owned = await ownedWithoutBaseline(db, DESTINATION, plan.namespace, plan.entries.filter(entry => entry.source.kind !== 'metadata')
+        .map((entry): [string, string] => [entry.source.kind, entry.source.sourceId]));
+      // An undo keeps records changed in Lamp, and that import stays undone:
+      // the owner leaves those records out, and Lamp keeps its own versions.
+      if (owned.length && owned.every(row => ['undone', 'rolled_back'].includes(row.state))) throw new Error(`Some of these records stayed in Lamp when their import was undone, because they were changed here: ${recordNames(plan, owned)}. Leave them out of the saved responses to import the rest.`);
+      if (owned.length) throw new Error("Some of these records were imported already. Undo that import first, or import only new saved responses.");
+    }
     // Exclude this operation so the import kit's post-write authority check
     // accepts its own new job, while serializing competing alias reservations.
     const otherJobs = `SELECT count(*) AS n FROM ik_jobs WHERE destination='lamp' AND namespace IN ${SOURCES} AND NOT (principal_id=? AND fingerprint=?)`;
@@ -237,7 +264,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
       const context = doorPreparationContext(db, principalId, input.source, authority);
       // Imported records name the operator who imported them as their author.
       const plan = await planMoveIn(read,await snapshot(context),context,operatorId,asOf);
-      await sourceClear(plan);
+      await sourceClear(plan, business);
       await assertAuthority(context);
       return doorMapping(plan, business);
     },
