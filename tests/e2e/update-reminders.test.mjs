@@ -1,3 +1,4 @@
+import { legacyUpdateRemindersFlow } from './helpers/legacy-update-reminders-flow.mjs';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { test } from 'node:test';
@@ -11,54 +12,90 @@ const hour = 3600000;
 test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident', async t => {
   const channelPosts = [];
   const slack = 'https://hooks.slack.com/services/synthetic-lamp-promises/synthetic-lamp-owner/synthetic-lamp-key';
-  const j = await openStatusJourney({ providerEdge: async request => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts', providerEdge: async request => {
     if (request.url === slack) { channelPosts.push(await request.json()); return new Response('ok'); }
   } });
   try {
+    const advance = async at => {
+      const response = await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: at }) });
+      assert.equal(response.status, 204, await response.text());
+    };
+    const started = Date.UTC(2030, 0, 15, 12);
+    await advance(started);
+    await j.signIn(undefined, { fresh: true });
     const component = await j.component('Sign-in service');
     await j.json('/api/app/channels', 'POST', { kind: 'slack', url: slack, name: 'Communication operators', componentIds: [component.id], operatorAlerts: true }, 201);
     const owner = (await j.json('/api/app/session')).operator;
-    const replacementEmail = 'synthetic-lamp-replacement@example.test';
+    const replacementEmail = ['synthetic-lamp-replacement', 'example.test'].join('@');
     await j.json('/api/app/operators/invite', 'POST', { email: replacementEmail, displayName: 'Replacement communicator' }, 202);
     await j.signIn(replacementEmail);
     const replacement = (await j.json('/api/app/session')).operator;
     await j.signIn();
     const incident = await j.incident('Customer sign-in delays', [component]);
     const endpoint = `/api/app/incidents/${incident.id}`;
-    const committed = Date.now() + hour;
+    const committed = started + hour;
     await j.save(incident.id, { nextUpdateAt: new Date(committed).toISOString() }); await j.publish(incident.id);
     assert.equal((await j.read(incident.id)).owner.id, owner.id);
-    await j.tick(committed - 5 * 60000); await j.tick(committed - 5 * 60000);
+    const assertDue = async (due, overdue = false) => {
+      const detail = await j.read(incident.id);
+      const list = (await j.json('/api/app/incidents')).incidents.find(row => row.id === incident.id);
+      const overview = (await j.json('/api/app/overview')).overview.activeIncidents.find(row => row.id === incident.id);
+      for (const [door, row] of [['detail', detail], ['list', list], ['Overview', overview]]) {
+        assert.ok(row, `${door} contains the published incident`);
+        assert.equal(row.updateDueAt, due || overdue ? new Date(committed).toISOString() : null, `${door} retains the exact published commitment`);
+        assert.equal(row.updateDue, due, `${door} due boundary`);
+        assert.equal(row.overdue, overdue, `${door} overdue boundary`);
+      }
+    };
+    await advance(committed - 10 * 60000 - 1);
+    await j.tick(committed - 10 * 60000 - 1);
+    await assertDue(false);
+    await settleOperatorEmails(j);
+    assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /update due at|overdue/i.test(row.subject)).length, 0, 'no reminder immediately before the ten-minute lead');
+    await advance(committed - 10 * 60000);
+    await j.tick(committed - 10 * 60000); await j.tick(committed - 10 * 60000);
+    await assertDue(true);
+    await settleOperatorEmails(j);
+    t.diagnostic('PROBE INCIDENT-010 acceptance-1: native detail, incident list, Overview and Cron at commitment minus ten minutes minus one millisecond -> no due state or mail; at the exact lead -> due with the original commitment on every read');
     const dueMail = j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject));
     assert.equal(dueMail.length, 1); assert.ok(dueMail[0].to.includes(owner.email));
     t.diagnostic('PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner');
     const prepared = (await j.read(incident.id)).draft;
     assert.ok(prepared.agentPreparation);
     assert.equal(prepared.nextUpdateAt, new Date(committed).toISOString());
-    await j.tick(committed - 5 * 60000);
+    await j.tick(committed - 10 * 60000);
     assert.deepEqual((await j.read(incident.id)).draft, prepared, 'a repeated clock tick cannot overwrite the saved preparation');
     for (const path of ['/', `/incidents/${incident.reference}`, '/feed.atom', '/api/public/status']) assert.ok(!(await j.publicText(path)).includes(prepared.details), path);
-    let revised = committed + hour;
+    await advance(committed - 10 * 60000 + 1);
+    const revised = committed + hour;
     await j.save(incident.id, { lifecycle: 'Monitoring', nextUpdateAt: new Date(revised).toISOString() }); await j.publish(incident.id);
+    await advance(committed + 60000);
     await j.tick(committed + 60000);
     assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /overdue/i.test(row.subject)).length, 0, 'publishing replaces the earlier commitment');
     await j.signIn(replacementEmail);
     await j.json(`${endpoint}/owner/take-over`, 'POST', {});
     assert.equal((await j.read(incident.id)).owner.id, replacement.id);
-    // A saved commitment which has already passed exercises the live operator
-    // view as well as Cron's supplied event clock.
-    revised = Date.now() - 60000;
-    await j.save(incident.id, { lifecycle: 'Monitoring', nextUpdateAt: new Date(revised).toISOString() }); await j.publish(incident.id);
     // A real operator draft wins over deterministic preparation at the deadline.
     await j.save(incident.id, { lifecycle: 'Monitoring', customerImpact: 'Operator-reviewed recovery wording.', details: 'Keep this exact operator draft.', nextUpdateAt: new Date(revised).toISOString() });
     const operatorDraft = (await j.read(incident.id)).draft;
-    await j.tick(revised - 5 * 60000); await j.tick(revised + 60000); await j.tick(revised + 2 * 60000);
+    await advance(revised - 10 * 60000);
+    await j.tick(revised - 10 * 60000);
+    await j.tick(revised - 10 * 60000);
+    await settleOperatorEmails(j);
+    assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject) && row.to.includes(replacementEmail)).length, 1, 'the replacement commitment sends one due email to its current owner');
+    await advance(revised);
+    await j.tick(revised);
+    assert.equal((await j.read(incident.id)).overdue, false, 'at the commitment instant it is due, not overdue');
+    await advance(revised + 1);
+    await j.tick(revised + 1); await j.tick(revised + 1);
+    await settleOperatorEmails(j);
     assert.deepEqual((await j.read(incident.id)).draft, operatorDraft);
     assert.equal((await j.read(incident.id)).overdue, true);
     const overdueMail = j.messages.filter(row => row.subject.includes(incident.reference) && /overdue/i.test(row.subject));
     assert.equal(overdueMail.length, 1); assert.ok(overdueMail[0].to.includes(replacementEmail));
     t.diagnostic('PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner');
     assert.ok(channelPosts.some(row => JSON.stringify(row).includes(incident.reference)));
+    await advance(revised + 21 * 60000);
     await j.tick(revised + 20 * 60000); await j.tick(revised + 21 * 60000);
     const escalated = j.messages.filter(row => row.subject.includes(incident.reference) && /communication escalation/i.test(row.subject));
     assert.equal(escalated.length, 2);
@@ -67,15 +104,52 @@ test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communicat
     assert.ok(publicPage.includes(new Date(revised).toISOString()));
     for (const identity of [owner.displayName, replacement.displayName]) assert.ok(!publicPage.includes(identity));
     assert.ok(!publicPage.includes(operatorDraft.details));
+    for (const path of ['/', `/incidents/${incident.reference}`]) {
+      const html = await j.visible(path, 'Next update');
+      assert.ok(html.includes(new Date(revised).toISOString()), 'the public commitment stays after its deadline');
+      assert.doesNotMatch(html, /update (?:due|overdue)|overdue since/i, 'private reminder labels never reach the public page');
+    }
+    t.diagnostic('PROBE INCIDENT-010 acceptances-3,4,7: repeated native Cron without a browser -> one due and one overdue email per live commitment; public root and permalink retain the exact commitment without private labels');
     const audit = await j.json('/api/app/audit-log?action=communication-owner-changed&limit=100');
     assert.ok(audit.entries.some(row => row.entityId === incident.id && row.actorId === replacement.id));
     await j.save(incident.id, { lifecycle: 'Resolved', nextUpdateAt: null }); await j.publish(incident.id);
     const count = j.messages.length;
+    await advance(revised + 2 * hour);
     await j.tick(revised + 2 * hour);
     assert.equal(j.messages.length, count, 'resolution stops deadline mail');
     await j.json(`${endpoint}/owner/take-over`, 'POST', {}, 409);
     await j.visible(`/incidents/${incident.reference}`, 'Resolved');
+    const historicalNow = revised + 2 * hour;
+    const historical = await j.incident('Synthetic Lamp historical interruption', [component], { openedAt: new Date(historicalNow - 5 * 60000).toISOString() });
+    const historicalCommitment = historicalNow + hour;
+    await j.save(historical.id, { nextUpdateAt: new Date(historicalCommitment).toISOString() });
+    await j.publish(historical.id, { publishedAt: new Date(historicalNow - 2 * 60000).toISOString() });
+    assert.equal((await j.read(historical.id)).updates[0].isRetroactive, true);
+    for (const at of [historicalCommitment - 10 * 60000, historicalCommitment + 1, historicalCommitment + 60000]) {
+      await advance(at); await j.tick(at);
+    }
+    await settleOperatorEmails(j);
+    assert.equal(j.messages.filter(row => row.subject.includes(historical.reference) && /update due at|overdue/i.test(row.subject)).length, 0, 'retroactive updates send neither due nor overdue mail');
+    const suppressionStart = historicalCommitment + 60000;
+    const suppressedCommitment = suppressionStart + 30 * 60000;
+    const suppressed = [];
+    for (const reason of ['newer publication', 'resolution']) {
+      const record = await j.incident(`Synthetic Lamp ${reason} suppression`, [component]);
+      await j.save(record.id, { nextUpdateAt: new Date(suppressedCommitment).toISOString() });
+      await j.publish(record.id);
+      await advance(suppressionStart + suppressed.length + 1);
+      await j.save(record.id, reason === 'resolution' ? { lifecycle: 'Resolved', nextUpdateAt: null } : { lifecycle: 'Monitoring', nextUpdateAt: new Date(suppressionStart + 2 * hour).toISOString() });
+      await j.publish(record.id);
+      suppressed.push(record);
+    }
+    for (const at of [suppressedCommitment - 10 * 60000, suppressedCommitment + 1]) {
+      await advance(at); await j.tick(at); await j.tick(at);
+    }
+    await settleOperatorEmails(j);
+    for (const record of suppressed) assert.equal(j.messages.filter(row => row.subject.includes(record.reference) && /update due at|overdue/i.test(row.subject)).length, 0, 'superseded and resolved commitments send neither reminder kind');
+    t.diagnostic('PROBE INCIDENT-010 acceptance-5: native newer publication replaces the old commitment; resolution stops later mail; retroactive publication crosses both scheduled boundaries -> neither due nor overdue reminder');
   } finally { await j.close(); }
+  await legacyUpdateRemindersFlow(t);
 });
 
 test('AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery', followUpsFlow);
