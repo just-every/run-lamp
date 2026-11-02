@@ -3280,7 +3280,7 @@
       "executable": false
     },
     "scripts/archive-validation.mjs": {
-      "sha256": "575a44a14aa93b43a7a0b8e78bacdfea780f4d5ca60f03f44f5fe4cac0fcebd5",
+      "sha256": "138a3f836fae52fc44cf4229f49430ee282997d29c0dd4ab63ec44188579c52d",
       "executable": false
     },
     "scripts/baseline/catalog.mjs": {
@@ -8212,7 +8212,7 @@
       "executable": false
     },
     "tests/e2e/export-import.test.mjs": {
-      "sha256": "410acbf63c3ce0ff790c25ad28bc96c17bfae4681999c086849212e36247e03e",
+      "sha256": "6ca472b6a043fefb167a435a1348bc39599723114363bb80564779f736ad6dce",
       "executable": false
     },
     "tests/e2e/fixtures/grafana-webhook-v1.json": {
