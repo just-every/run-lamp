@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "aea0901ed124591c1c7439bfbfde23924a8f34799acac52bcf5f59b9a9a71b7c",
+      "sha256": "7ff3d11af1d870f08951eef0cbdbda57fce02d4c3abf6b9d67267c2daead9c12",
       "executable": false
     },
     "DEMO.md": {
@@ -6692,7 +6692,7 @@
       "executable": false
     },
     "tests/auth-adoption/dependencies.test.mjs": {
-      "sha256": "bb3745baf37db536d2d535e489510fa21ab6f7c50e96ddf540299b63c2a2b95a",
+      "sha256": "9c216951b7b23626870222f3430a6742aee14d35b7e96278324d9f5e2608279a",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
@@ -6712,7 +6712,7 @@
       "executable": false
     },
     "tests/auth-adoption/sign-in-providers.test.mjs": {
-      "sha256": "be5608df64506a7c100453bbcba397940fe02277ee2cbd4fe8328596c5a6e804",
+      "sha256": "832f2c97f9ff0e2ba44d436d473d68e50bae90574ae53badf19259f53b7802ad",
       "executable": false
     },
     "tests/auth-adoption/upgrade.test.mjs": {

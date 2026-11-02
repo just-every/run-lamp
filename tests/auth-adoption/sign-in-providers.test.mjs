@@ -168,7 +168,7 @@ test('ACCESS-002 the owner sets up Google in Settings, tests the real flow, repl
   }
 });
 
-test('ACCESS-002 TEAM-003 Okta signs in only the people paired in Settings, and a deploy entry, an unusable row and Managed hosting keep their boundaries', async () => {
+test('ACCESS-002 TEAM-003 Okta pairs people and deploy providers complete native sign-in while unusable rows and Managed hosting keep their boundaries', async () => {
   const dir = await mkdtemp(join(process.cwd(), '.lamp-sign-in-'));
   const storage = await database(dir), cache = await openSnapshotCacheRuntime(dir);
   const originalFetch = globalThis.fetch, transcript = [], mail = [];
@@ -176,11 +176,12 @@ test('ACCESS-002 TEAM-003 Okta signs in only the people paired in Settings, and 
     const { createApp } = await load('src/core/app/server.ts');
     const idp = await provider({ issuer: okta, clientId: 'synthetic-lamp-5', clientSecret: 'synthetic-lamp-6', method: 'client_secret_basic', redirectUri: origin + '/auth/oidc/okta/callback', claims: { sub: 'synthetic-lamp-subject-1' } });
     const deployed = await provider({ issuer: google, clientId: 'synthetic-lamp-8', clientSecret: 'synthetic-lamp-9', method: 'client_secret_basic', redirectUri: origin + '/auth/oidc/google/callback', claims: { email: 'owner@example.com', email_verified: true, hd: 'example.com' } });
-    const edge = network([idp, deployed]);
+    const microsoft = await provider({ issuer: 'https://login.microsoftonline.com/synthetic-lamp-tenant/v2.0', clientId: 'synthetic-lamp-12', clientSecret: 'synthetic-lamp-13', method: 'client_secret_post', redirectUri: origin + '/auth/oidc/microsoft/callback', claims: { sub: 'synthetic-lamp-microsoft-person' } });
+    const edge = network([idp, deployed, microsoft]);
     globalThis.fetch = async (uri, init) => {
       const target = uri instanceof Request ? uri.url : String(uri);
       if (!target.startsWith('https://api.resend.com/')) return edge(target, init);
-      mail.push(target);
+      mail.push(uri instanceof Request ? await uri.clone().json() : JSON.parse(init.body));
       return Response.json({ id: 'synthetic-lamp-mail' });
     };
     const env = baseEnv(storage, cache, { MAIL_PROVIDER_API_KEY: 'synthetic-lamp-7' });
@@ -189,7 +190,7 @@ test('ACCESS-002 TEAM-003 Okta signs in only the people paired in Settings, and 
     const native = authFixture(storage.db, { origin, owner: 'owner@example.com' });
     await native.handle(native.request('/auth/bootstrap', { method: 'POST', body: { token: setupToken, displayName: 'Owner' } }));
     const owner = await native.signIn();
-    const team = await people(native, owner, storage.db, [['first', 'member', true], ['second', 'member', false]]);
+    const team = await people(native, owner, storage.db, [['first', 'member', true], ['second', 'member', false], ['microsoft', 'member', true]]);
     const status = async () => (await (await call('/api/app/sign-in', { cookie: owner })).json()).providers.find(row => row.id === 'okta');
     const count = async table => (await storage.db.prepare(`SELECT COUNT(*) n FROM ${table}`).first()).n;
     const putOkta = json => call('/api/app/sign-in/okta', { method: 'PUT', json, cookie: owner });
@@ -229,7 +230,11 @@ test('ACCESS-002 TEAM-003 Okta signs in only the people paired in Settings, and 
     assert.deepEqual((await status()).people.map(person => person.subject), ['synthetic-lamp-subject-3']);
 
     // R8: a deploy-file entry wins, its row says so, Save is refused, and its own sign-in still works.
-    const deployEnv = { ...env, AUTH_PROVIDERS: JSON.stringify([{ id: 'google', preset: 'google', clientId: 'synthetic-lamp-8', tokenAuthMethod: 'client_secret_basic', clientSecret: 'synthetic-lamp-9' }]) };
+    const microsoftEmail = ['microsoft', 'example.com'].join('@');
+    const deployEnv = { ...env, AUTH_PROVIDERS: JSON.stringify([
+      { id: 'google', preset: 'google', clientId: 'synthetic-lamp-8', tokenAuthMethod: 'client_secret_basic', clientSecret: 'synthetic-lamp-9' },
+      { id: 'microsoft', preset: 'microsoft', tenant: 'synthetic-lamp-tenant', clientId: 'synthetic-lamp-12', tokenAuthMethod: 'client_secret_post', clientSecret: 'synthetic-lamp-13', subjectEmails: { 'synthetic-lamp-microsoft-person': microsoftEmail } },
+    ]) };
     const withDeploy = createApp(deployEnv);
     const deployCall = client(withDeploy.app, deployEnv, transcript);
     const view = await (await deployCall('/api/app/sign-in', { cookie: owner })).json();
@@ -242,6 +247,41 @@ test('ACCESS-002 TEAM-003 Okta signs in only the people paired in Settings, and 
     flow = await testSignIn(deployCall, 'google', deployed, {}, owner);
     assert.equal(result(flow.callback).result, null);
     assert.equal((await (await deployCall('/api/app/sign-in', { cookie: owner })).json()).providers[0].status, 'working');
+
+    // Microsoft's existing single-tenant preset admits only the exact paired subject.
+    assert.equal((await deployCall('/auth/providers/relink', { method: 'POST', json: { provider: 'microsoft' }, cookie: owner })).status, 200);
+    assert.equal((await deployCall('/auth/settings/identity', { method: 'POST', json: { idpSignIn: false }, cookie: owner })).status, 200);
+    const disabled = await deployCall('/auth/oidc/microsoft/start', { method: 'POST', form: {} });
+    assert.deepEqual([disabled.status, (await disabled.json()).error], [403, 'oidc_sign_in_disabled']);
+    assert.equal((await deployCall('/auth/settings/identity', { method: 'POST', json: { idpSignIn: true }, cookie: owner })).status, 200);
+    flow = await testSignIn(deployCall, 'microsoft', microsoft, {}, '');
+    assert.equal(flow.callback.status, 303);
+    assert.deepEqual(result(flow.callback), { test: 'microsoft', result: null, path: '/app/settings', hash: '#sign-in' });
+    const microsoftCookie = sessionCookie(flow.callback);
+    assert.ok(microsoftCookie, 'the anonymous callback issues its own native session');
+    const microsoftResponse = await deployCall('/api/app/session', { cookie: microsoftCookie });
+    assert.equal(microsoftResponse.status, 200);
+    const microsoftSession = await microsoftResponse.json();
+    assert.deepEqual([microsoftSession.operator.id, microsoftSession.operator.email], [team.microsoft.id, microsoftEmail]);
+    assert.ok(microsoft.requests.some(request => request.uri === microsoft.issuer + '/token' && request.method === 'POST'), 'the provider accepted client_secret_post and PKCE');
+    flow = await testSignIn(deployCall, 'microsoft', microsoft, { sub: 'synthetic-lamp-microsoft-unpaired', email: microsoftEmail, email_verified: true }, '');
+    assert.equal(after(flow.callback).searchParams.get('notice'), 'oidc_admission_denied', 'a matching reported email cannot replace the exact subject pairing');
+    assert.equal(sessionCookie(flow.callback), undefined);
+    const nativeLink = await deployCall('/auth/magic-link', { method: 'POST', json: { email: microsoftEmail } });
+    assert.equal(nativeLink.status, 202, await nativeLink.clone().text());
+    const emailToken = new URL(mail.at(-1).text.match(/https?:\/\/[^\s]+/)[0]).searchParams.get('token');
+    const emailConfirmed = await deployCall('/auth/confirm', { method: 'POST', json: { token: emailToken } });
+    assert.equal(emailConfirmed.status, 303);
+    const emailCookie = sessionCookie(emailConfirmed);
+    const emailSession = await (await deployCall('/api/app/session', { cookie: emailCookie })).json();
+    assert.deepEqual([emailSession.operator.id, emailSession.operator.email], [team.microsoft.id, microsoftEmail]);
+    assert.notEqual(emailCookie, microsoftCookie, 'native email sign-in remains independently usable after Microsoft');
+    assert.equal((await deployCall('/auth/providers/unlink', { method: 'POST', json: { provider: 'microsoft' }, cookie: owner })).status, 200);
+    const unlinked = await deployCall('/auth/oidc/microsoft/start', { method: 'POST', form: {} });
+    assert.deepEqual([unlinked.status, (await unlinked.json()).error], [403, 'oidc_provider_unlinked']);
+    assert.equal((await deployCall('/api/app/session', { cookie: microsoftCookie })).status, 401, 'unlink revokes the Microsoft session');
+    assert.equal((await deployCall('/api/app/session', { cookie: emailCookie })).status, 200, 'unlink preserves native email access');
+    mail.length = 0;
 
     // R3, R8: a ciphertext the current key cannot open is skipped, so /signin and email links never fail.
     const rotatedEnv = { ...env, WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-10' };
@@ -272,7 +312,7 @@ test('ACCESS-002 TEAM-003 Okta signs in only the people paired in Settings, and 
       assert.deepEqual([blocked.status, (await blocked.json()).error], [409, 'outbound_unavailable']);
       assert.equal((await managedStorage.db.prepare('SELECT COUNT(*) n FROM sign_in_providers').first()).n, 0);
     } finally { await managedStorage.runtime.dispose(); }
-    for (const value of ['synthetic-lamp-6', 'synthetic-lamp-9']) assert.equal(transcript.some(line => line.includes(value)), false, 'no response carries a client secret');
+    for (const value of ['synthetic-lamp-6', 'synthetic-lamp-9', 'synthetic-lamp-13']) assert.equal(transcript.some(line => line.includes(value)), false, 'no response carries a client secret');
   } finally {
     globalThis.fetch = originalFetch;
     await cache.dispose?.(); await storage.runtime.dispose(); await rm(dir, { recursive: true, force: true });
