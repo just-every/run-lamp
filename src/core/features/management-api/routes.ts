@@ -8,11 +8,15 @@ import type { MetricsService } from "../metrics/service";
 import type { PublicWriteRateLimiter } from "../../platform/security/rate-limiter";
 import { registerIncidentSubscriptionApiRoutes, statuspageCompatibilityPageId } from "./incident-subscription-routes";
 import type { IncidentSubscriptionApiService } from "./incident-subscription-routes";
+import { registerSubscriberApiRoutes, type SubscriberCreateApiService } from "./subscriber-routes";
 import { TokenAuthorityError } from "./repository";
 import type { ManagementApiService } from "./service";
 const createSchema=z.object({name:z.string().trim().min(1).max(80),scopes:z.array(z.enum(["read","metrics:write","subscribers:write","subscribers:read"])).max(4).refine(scopes=>new Set(scopes).size===scopes.length).default([]),expiresInSeconds:z.number().int().min(1).max(365*86400).default(86400)}).strict();
-export function registerManagementApiRoutes(app:Hono<AppEnv>,service:ManagementApiService,metrics:MetricsService,limiter:PublicWriteRateLimiter,components:ComponentsService,subscribers?:IncidentSubscriptionApiService) {
-  if(subscribers)registerIncidentSubscriptionApiRoutes(app,service,subscribers,limiter);
+export function registerManagementApiRoutes(app:Hono<AppEnv>,service:ManagementApiService,metrics:MetricsService,limiter:PublicWriteRateLimiter,components:ComponentsService,subscribers?:IncidentSubscriptionApiService&SubscriberCreateApiService) {
+  if(subscribers) {
+    registerIncidentSubscriptionApiRoutes(app,service,subscribers,limiter);
+    registerSubscriberApiRoutes(app,service,subscribers,limiter);
+  }
   app.use("/api/app/management-tokens",async(c,next)=>{
     c.header("Cache-Control","no-store");
     if(!await service.isManager(c.get("operator").id))return c.json({error:"Only an Owner or Admin can manage tokens."},403);

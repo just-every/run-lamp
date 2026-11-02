@@ -83,7 +83,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
     request:async(input,origin,operatorId,authority)=>{const result=await services.subscribers.requestIncidentSubscription(input,publicPageOrigin(origin,bindings.LAMP_PAGE_HOST),authority,operatorId);return {subscriberId:result.subscriberId,created:result.created};},
     list:(id,limit=100,offset=0)=>services.subscribers.listIncident(id,limit,offset),
     remove:(incidentId,subscriberId,operatorId,authority)=>{if(!authority)throw new Error("Management authority is required.");return services.subscribers.removeIncidentSubscription(incidentId,subscriberId,operatorId,authority);},
-  }});
+  },create:(input,operatorId,origin,token)=>services.subscribers.intake.add(input,operatorId,origin,token)});
   registerPublicSnapshotRoutes(app, services.publicSnapshots);
   // Register the reserved mail-events endpoint before /api/intake/:sourceId.
   registerDeliveryRoutes(app, services.deliveries, { resendWebhookSecret: bindings.RESEND_WEBHOOK_SECRET, relaySecret: bindings.RER_MAIL_RELAY_SECRET, sendGridWebhookPublicKey: bindings.SENDGRID_WEBHOOK_PUBLIC_KEY, mailgunSigningKey: bindings.MAILGUN_WEBHOOK_SIGNING_KEY, sesEventTopicArn: bindings.SES_EVENT_TOPIC_ARN, postmarkWebhookSecret: bindings.POSTMARK_WEBHOOK_SECRET, secondaryMailProvider: bindings.MAIL_SECONDARY_PROVIDER, mailProvider: bindings.MAIL_PROVIDER, localMail, smsConfigured: services.sms.configured });

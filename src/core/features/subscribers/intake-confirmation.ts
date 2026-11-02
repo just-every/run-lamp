@@ -12,7 +12,7 @@ export function createIntakeConfirmationSender(repository:SubscriberRepository,o
   issue:(subscriberId:string,scope:SubscriberTokenScope,expiresAt:string|null)=>Promise<{token:string}>;
   send:(mail:MailSender,subscriberId:string,message:MailMessage)=>Promise<void>;
 }) {
-  return async (subscriberId:string,origin:string,actor:string|null,ownerOnly:boolean):Promise<boolean>=>{
+  return async (subscriberId:string,origin:string,actor:string|null,ownerOnly:boolean,tokenId:string|null=null):Promise<boolean>=>{
     const subscriber=await repository.findSubscriber(subscriberId);
     if(!subscriber||subscriber.state!=="pending"||!await repository.intake.has(subscriberId))return false;
     const deadline=new Date(Date.parse(subscriber.createdAt)+72*60*60_000).toISOString();
@@ -25,7 +25,7 @@ export function createIntakeConfirmationSender(repository:SubscriberRepository,o
     const manage=await options.issue(subscriberId,"manage",null);
     const emailHash=await hashOpaqueToken(`confirmation-address:${recipient.trim().toLowerCase()}`);
     const now=new Date().toISOString();
-    if(!await repository.intake.claimInvitation(subscriberId,emailHash,now,actor,ownerOnly))return false;
+    if(!await repository.intake.claimInvitation(subscriberId,emailHash,now,actor,ownerOnly,tokenId))return false;
     try {
       await options.send(mail,subscriberId,{
         from,to:recipient,subject:`Confirm your ${pageName} subscription`,
