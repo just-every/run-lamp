@@ -219,7 +219,7 @@ export function createDeliveriesService(
         html: branded.html,
         headers: {
           "List-Unsubscribe": `<mailto:${fromAddress}?subject=unsubscribe>, <${unsubscribeUrl}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-          "List-Id": `<${host}>`, "List-Archive": `${origin}/history`, "List-Help": manageUrl, "Auto-Submitted": "auto-generated",
+          "List-Id": `<${host}>`, "List-Archive": `<${origin}/history>`, "List-Help": `<${manageUrl}>`, "Auto-Submitted": "auto-generated",
           "Message-ID": delivery.incidentId && delivery.isFirstIncidentUpdate ? `<lamp-${delivery.incidentId}@${host}>` : `<lamp-notification-${delivery.id}@${host}>`,
           ...(delivery.incidentId && !delivery.isFirstIncidentUpdate ? { "In-Reply-To": `<lamp-${delivery.incidentId}@${host}>`, References: `<lamp-${delivery.incidentId}@${host}>` } : {}),
         },
@@ -229,7 +229,11 @@ export function createDeliveriesService(
     }
     if (Date.now() - new Date(envelope.frozenAt).getTime() >= RESEND_IDEMPOTENCY_WINDOW_MS) throw permanentDeliveryError("The mail provider idempotency window expired before delivery could be confirmed.");
     const { frozenAt: _frozenAt, ...messageInput } = envelope;
-    const message = await options.mail.send(messageInput);
+    // Older frozen envelopes keep their stored bytes; normalize their list URL
+    // fields at the send boundary for direct providers as well as Managed mail.
+    const headers = Object.fromEntries(Object.entries(messageInput.headers).map(([name, value]) =>
+      [name, /^list-(archive|help)$/i.test(name) && !value.startsWith('<') ? `<${value}>` : value]));
+    const message = await options.mail.send({ ...messageInput, headers });
     if (message.disposition === 'suppressed') {
       const timestamp = nowIso();
       await repository.markOutcome(delivery.id, 'suppressed', timestamp, timestamp);

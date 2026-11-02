@@ -8,9 +8,12 @@ import {createRequire} from 'node:module';
 import {mkdtemp,readFile,rm,mkdir,writeFile,copyFile,cp} from 'node:fs/promises';
 import {createHmac} from 'node:crypto';
 import {dirname,join,resolve} from 'node:path';
+import {mailDnsCliFlow} from './helpers/mail-dns-cli-flow.mjs';
 const require=createRequire(import.meta.url);
 const wranglerRequire=createRequire(require.resolve('wrangler'));
 const {Miniflare,convertV4MiniflareOptions}=wranglerRequire('miniflare');
+
+test('NOTIFY-010 — setup and deploy refuse missing mail DNS before effects and accept aligned DKIM without From-domain SPF', {timeout:120000}, mailDnsCliFlow);
 
 // Provider responses exist only in this native-runtime test. No real mail is sent.
 test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview', {timeout:240000}, async()=>{
