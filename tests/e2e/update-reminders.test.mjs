@@ -6,9 +6,11 @@ import { followUpsFlow } from './helpers/follow-ups-flow.mjs';
 import { trafficAlertsFlow } from './helpers/traffic-alerts-flow.mjs';
 import { reportRemindersFlow } from './helpers/report-reminders-flow.mjs';
 import { assertOneOperatorEmail, settleOperatorEmails } from './helpers/operator-email-proof.mjs';
+import { promiseDraftFlow } from './helpers/promise-draft-flow.mjs';
 
 const hour = 3600000;
 test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident', async t => {
+  await promiseDraftFlow(t);
   const channelPosts = [];
   const slack = 'https://hooks.slack.com/services/synthetic-lamp-promises/synthetic-lamp-owner/synthetic-lamp-key';
   const j = await openStatusJourney({ providerEdge: async request => {
@@ -34,6 +36,10 @@ test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communicat
     t.diagnostic('PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner');
     const prepared = (await j.read(incident.id)).draft;
     assert.ok(prepared.agentPreparation);
+    assert.equal(prepared.agentPreparation.noEvidenceChange, true);
+    assert.deepEqual(prepared.agentPreparation.evidence, []);
+    assert.deepEqual(prepared.agentPreparation.citations, ['U1']);
+    assert.match(prepared.details, /nothing has changed/i);
     assert.equal(prepared.nextUpdateAt, new Date(committed).toISOString());
     await j.tick(committed - 5 * 60000);
     assert.deepEqual((await j.read(incident.id)).draft, prepared, 'a repeated clock tick cannot overwrite the saved preparation');
