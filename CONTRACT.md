@@ -3131,6 +3131,8 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 INTAKE-007 retains current-main's partial judgment and recorded gap. The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These additional assertions do not change the newer clause judgment.
 
+UPDATE-007 retains current main’s partial Status and recorded Gap. Candidate `b1f92072a8e488e6579df0c3b8c14e5c26295918` adds private review attribution to published incident updates and assertions in `tests/e2e/publishing-contract.test.mjs` for refusal without review, independently recorded reviewer and bounded review time, review-disabled publication and public privacy; `tests/e2e/page-data.test.mjs` adds attribution portability, legacy null evidence and erasure assertions. Retaining these changes does not promote the newer clause judgment.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 96 | 0 | 107 |
