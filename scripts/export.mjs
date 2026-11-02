@@ -27,7 +27,7 @@ async function listAll(bucket) {
 }
 
 async function tableNames(database) {
-  const result = await database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations', 'lamp_ext_migrations', ?) ORDER BY name").bind(platformLedger).all();
+  const result = await database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations', 'lamp_ext_migrations', 'agent_door_replay_aliases', 'agent_door_relay', ?) ORDER BY name").bind(platformLedger).all();
   return result.results.map((row) => String(row.name));
 }
 

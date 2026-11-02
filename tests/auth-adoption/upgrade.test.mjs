@@ -17,6 +17,9 @@ async function migrateAfterDependencyApproval(db){
   await executeSql(db,await readFile(join(directory,migration),'utf8'));
 
  }
+ const {checkAgentArtifacts}=await load('modules/agent-door/erasure.ts');
+ const {lampAgentArtifacts}=await load('src/core/features/agent-door/artifacts.ts');
+ await checkAgentArtifacts(db,lampAgentArtifacts);
 
 }
 

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -43,12 +44,16 @@ test('HIST-004 PORT-001 — owner SQL rolls back a failed upgrade, recovers once
     await script('migrate:local');
     await script('migrate:local'); // An applied migration does not run again.
     await query(source, "DELETE FROM owner_labels WHERE id='deleted'; DELETE FROM owner_empty;");
+    await query(source, "INSERT INTO agent_door_replay_aliases VALUES('private-agent','opaque-test-alias','private-call','{}'); INSERT INTO agent_door_relay(decision_id,business) VALUES('private-call','private-installation');");
 
     await script('export:cloudflare', '--out', archive, '--persist-to', source);
     await script('import:cloudflare', '--from', archive, '--persist-to', target);
     await assert.rejects(script('import:cloudflare', '--from', archive, '--persist-to', target), /failed/, 'restore never overwrites a populated installation');
     await script('export:cloudflare', '--out', reexport, '--persist-to', target);
     const original = JSON.parse(await readFile(join(archive, 'entities.json'), 'utf8'));
+    assert.ok(!original.tables.some(table => ['agent_door_replay_aliases', 'agent_door_relay'].includes(table.name)), 'technical exports omit installation-private replay and relay custody');
+    assert.equal((await query(target, 'SELECT count(*) AS n FROM agent_door_replay_aliases'))[0][0].n, 0, 'restore cannot inherit old replay aliases');
+    assert.equal((await query(target, 'SELECT count(*) AS n FROM agent_door_relay'))[0][0].n, 0, 'restore starts with no old Business relay membership');
     assert.deepEqual(JSON.parse(await readFile(join(reexport, 'entities.json'), 'utf8')), original, 'all owner tables, relationships, generated values and empty/deleted state survive unchanged');
     assert.deepEqual((await query(target, 'SELECT id,label FROM owner_labels ORDER BY id'))[0], [
       { id: 'owner-1', label: 'Preserve this owner intent' },
@@ -56,5 +61,12 @@ test('HIST-004 PORT-001 — owner SQL rolls back a failed upgrade, recovers once
     ]);
     const triggered = await query(target, "INSERT INTO owner_labels(id,label) VALUES('after-restore','Owner customization still works'); SELECT label FROM owner_changes WHERE label='Owner customization still works';");
     assert.deepEqual(triggered[1], [{ label: 'Owner customization still works' }], 'the restored customization retains its behavior');
+    const manifest = JSON.parse(await readFile(join(archive, 'manifest.json'), 'utf8'));
+    for (const name of ['AGENT_DOOR_REPLAY_ALIASES', 'agent_door_relay']) {
+      const bytes = Buffer.from(JSON.stringify({ ...original, tables: [...original.tables, { name, dependsOn: [], rows: [] }] }));
+      await writeFile(join(archive, 'entities.json'), bytes);
+      await writeFile(join(archive, 'manifest.json'), JSON.stringify({ ...manifest, database: { ...manifest.database, tables: original.tables.length + 1, sha256: createHash('sha256').update(bytes).digest('hex') } }));
+      await assert.rejects(script('import:cloudflare', '--from', archive, '--persist-to', join(temporary, 'refused-' + name)), /installation-private/i, 'even checksum-valid private custody is refused before opening a destination');
+    }
   } finally { await rm(temporary, { recursive: true, force: true }); }
 });

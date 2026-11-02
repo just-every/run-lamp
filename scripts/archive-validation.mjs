@@ -24,6 +24,7 @@ export async function readArchive(input) {
   const names = new Set();
   for (const table of entities.tables) {
     if (typeof table?.name !== "string" || !table.name || names.has(table.name) || !Array.isArray(table.dependsOn) || table.dependsOn.some((name) => typeof name !== "string") || !Array.isArray(table.rows)) throw new Error("The export has an invalid or duplicate D1 table record.");
+    if (['agent_door_replay_aliases', 'agent_door_relay'].includes(table.name.toLowerCase())) throw new Error("Installation-private agent replay aliases and relay membership cannot be imported.");
     names.add(table.name);
     let columns;
     for (const row of table.rows) {
