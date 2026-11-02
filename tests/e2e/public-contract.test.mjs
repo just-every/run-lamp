@@ -216,6 +216,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const loadWidget = async target => target.evaluate(url => new Promise((resolve, reject) => {
       const script = document.createElement('script'); script.src = url; script.onload = resolve; script.onerror = reject; document.body.append(script);
     }), j.publicOrigin + '/widget.js');
+    await page.reload();
     await loadWidget(page); await page.locator('section[role=status]').waitFor();
     const banner = page.locator('section[role=status]');
     assert.equal(await banner.count(), 1, 'one script tag installs one banner');
