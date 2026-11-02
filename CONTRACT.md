@@ -3131,6 +3131,8 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 INTAKE-007 retains current-main's partial judgment and recorded gap. The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These additional assertions do not change the newer clause judgment.
 
+INTAKE-008 retains current main’s partial judgment, Evidence and Gap. The replay adds native intake assertions in the registered channels-and-presets journey for complete refusal inventories, saved mappings, confirmed-time labels and recovery readbacks; these assertions remain a proposal pending clause judgment. AUTO-001 and COMP-008 retain their own mapping, transition, adoption and release prerequisites; this intake proof does not qualify monitor claims.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 96 | 0 | 107 |
