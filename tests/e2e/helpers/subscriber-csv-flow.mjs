@@ -167,6 +167,7 @@ export async function subscriberHundredRowCsvFlow() {
     const invite = `/api/app/subscribers/import/${applied.body.batchId}/send-invitations`;
     const remaining = async () => (await api('/api/app/subscribers/import/batches')).body.batches.find(row => row.batchId === applied.body.batchId).remaining;
     assert.equal(await remaining(), 97);
+    await nonOwnerInvitationRefusalFlow(fixture, invite, remaining);
     for (const [sent, left] of [[50, 47], [47, 0], [0, 0]]) {
       const start = fixture.messages.length;
       const invited = await post(invite);
@@ -194,6 +195,44 @@ export async function subscriberHundredRowCsvFlow() {
     assert.equal(audit.status, 200, audit.text);
     assert.ok(pending.every(row => audit.body.entries.some(entry => entry.entityId === row.id && entry.actorId === owner.id)));
   } finally { await fixture.close(); }
+}
+
+/** The route role policy admits an Admin and a Communicator to the invitation
+ * POST; only the owner's explicit action sends. Each signed-in refusal leaves
+ * the mail edge, the remaining invitations and every row as they were, apart
+ * from its own attributed access-denied entry. */
+async function nonOwnerInvitationRefusalFlow(fixture, invite, remaining) {
+  const { api, post, messages } = fixture;
+  const before = await remaining();
+  assert.ok(before > 0, 'the batch still has invitations to send');
+  for (const role of ['admin', 'communicator']) {
+    const email = [`synthetic-lamp-invitations-${role}`, 'example.test'].join('@');
+    assert.equal((await post('/api/app/operators/invite', { email, displayName: `Synthetic Lamp invitations ${role}` })).status, 202);
+    await fixture.signIn(email);
+    const person = (await api('/api/app/session')).body.operator;
+    await fixture.signIn();
+    assert.equal((await post(`/api/app/operators/${person.id}/role`, { role })).status, 200);
+    await fixture.signIn(email, { fresh: true });
+    assert.equal((await api('/api/app/session')).body.operator.role, role);
+    const state = await fixture.databaseState(), mail = messages.length;
+    const refused = await post(invite);
+    assert.equal(refused.status, 403, refused.text);
+    assert.equal(messages.length, mail, `the ${role}'s refused invitation action sends no mail`);
+    const after = await fixture.databaseState();
+    const prior = JSON.parse(state.get('audit_entries')), current = JSON.parse(after.get('audit_entries'));
+    const added = current.filter(row => !prior.includes(row));
+    assert.equal(added.length, 1, `the ${role}'s refusal adds exactly its access-denied entry`);
+    const denial = JSON.parse(added[0]);
+    assert.equal(denial.action, 'access-denied');
+    assert.equal(denial.operator_id, person.id);
+    assert.equal(denial.entity_id, invite);
+    after.set('audit_entries', JSON.stringify(current.filter(row => row !== added[0])));
+    assert.deepEqual(after, state, `the ${role}'s refusal changes no other row`);
+    await fixture.signIn();
+    assert.equal(await remaining(), before, `the ${role}'s refusal leaves every invitation remaining`);
+    const denials = await api(`/api/app/audit-log?action=access-denied&actorId=${person.id}`);
+    assert.ok(denials.body.entries.some(row => row.id === denial.id && row.entityId === invite), `the owner sees the ${role}'s attributed denial`);
+  }
 }
 
 /** A native Base member is a read-only Lamp Viewer. Batch invitation custody
