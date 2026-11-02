@@ -39,6 +39,8 @@ let browserContext;
 let page;
 let serverOutput = "";
 let failingAiServer;
+const aiRequests = [];
+let aiResponse;
 let originalVisualSource;
 
 function configWithLocalMail(config) {
@@ -53,7 +55,15 @@ function configWithAiProvider(config) {
 }
 
 async function startFailingAiProvider() {
-  const provider = createHttpServer((_request, response) => {
+  const provider = createHttpServer(async (request, response) => {
+    let body = '';
+    for await (const chunk of request) body += chunk;
+    aiRequests.push(JSON.parse(body));
+    if (aiResponse) {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(aiResponse) } }] }));
+      return;
+    }
     response.writeHead(503, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ error: "Browser AI provider intentionally unavailable" }));
   });
@@ -245,6 +255,53 @@ async function previewScreens(screen, name) {
       await screen.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-${name}.png`), fullPage: true });
     }
   } finally { await screen.setViewportSize({ width: 1440, height: 1000 }); }
+}
+
+async function assertAssistantDisclosure(id, t) {
+  const panel = page.getByRole('region', { name: 'Brief', exact: true });
+  const toggle = panel.getByRole('button', { name: 'Brief', exact: true });
+  await toggle.waitFor();
+  assert.equal(await toggle.getAttribute('aria-expanded'), 'false', 'an incident without alerts starts with its brief collapsed');
+  const count = aiRequests.length;
+  await toggle.click();
+  assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+  const disclosure = panel.locator('details.brief-disclosure');
+  assert.equal(await disclosure.evaluate(element => element.open), false, 'the assistant input starts collapsed');
+  assert.equal(await page.getByLabel('Assistant input', { exact: true }).isVisible(), false);
+  await disclosure.locator('summary').click();
+  const displayed = JSON.parse(await page.getByLabel('Assistant input', { exact: true }).textContent());
+  assert.deepEqual(displayed, (await api(`/api/app/incidents/${id}/brief`)).brief);
+  assert.equal(aiRequests.length, count, 'opening and reading the disclosure makes no model request');
+  const before = await readIncident(id);
+  aiResponse = {
+    affectedAudience: { text: before.draft.affectedAudience, sources: ['C1'] },
+    customerImpact: { text: before.draft.customerImpact, sources: ['C1'] },
+    whatStillWorks: { text: '', sources: [] }, details: { text: '', sources: [] },
+  };
+  try {
+    const response = page.waitForResponse(response => response.url().endsWith(`/incidents/${id}/ai-suggestion`) && response.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Suggest update', exact: true }).click();
+    const result = await response;
+    assert.equal(result.status(), 200);
+    await page.locator('.ai-suggestion [role=status]').filter({ hasText: 'Suggestion filled the editable text.' }).waitFor();
+    assert.equal(aiRequests.length, count + 1);
+    const sent = JSON.parse(aiRequests.at(-1).messages.find(message => message.role === 'user').content);
+    assert.deepEqual(displayed, sent, 'the operator disclosure equals the actual provider user message');
+    assert.deepEqual((await result.json()).brief, sent);
+    assert.equal(await incidentComposer(page).impact.inputValue(), before.draft.customerImpact);
+    await saved();
+    assert.deepEqual((await readIncident(id)).updates, before.updates, 'a successful suggestion does not publish');
+    if (process.env.LAMP_SCREENSHOTS) {
+      await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await panel.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-incident-brief.png`), fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+    t.diagnostic('PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request');
+  } finally { aiResponse = undefined; }
 }
 
 test('TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities', { timeout: 300_000 }, async t => {
@@ -498,7 +555,7 @@ async function assertQueuedAutosaveDeadline({ page, api, openIncident, assertPri
 }
 // One operator day: configure, draft, recover a failed save, resolve a
 // concurrent edit, schedule a publication, communicate recovery, and report.
-test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
+test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
   await verifyCompiledEdits();
   await page.goto(`${appUrl}/app`); await operatorHydrated(page);
   await page.getByRole('region', { name: 'Your public page' }).waitFor();
@@ -574,6 +631,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   const composer = incidentComposer(page);
   await page.reload(); await operatorHydrated(page); await saved();
   assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
+  await assertAssistantDisclosure(id, t);
   await assertAutosaveIntegrity(component, t);
   await page.goto(`${appUrl}/app/incidents/${id}`); await operatorHydrated(page); await saved();
 
