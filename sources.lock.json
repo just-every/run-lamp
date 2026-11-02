@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "65dfe55712b2c2a272952f90dcca33b9627bffe38b62bc1e1b501a91f0376299",
       "executable": false
     },
     "DEMO.md": {
@@ -7020,7 +7020,7 @@
       "executable": false
     },
     "tests/e2e/helpers/preset-recovery-flow.mjs": {
-      "sha256": "e4d7b54d78b55734758ef722c154fec1b091c276d59e6629165c48fd7e2ff7c8",
+      "sha256": "8cbdb8235831983f534280c24734e2704d6ddc492c4f8f385886f7e9297c65df",
       "executable": false
     },
     "tests/e2e/helpers/public-capacity-journey.mjs": {
@@ -7029,6 +7029,10 @@
     },
     "tests/e2e/helpers/report-reminders-flow.mjs": {
       "sha256": "4127816af28d6fd37c2d09a90658a3c55ec57e46d331caaea582c65e808785b7",
+      "executable": false
+    },
+    "tests/e2e/helpers/retained-public-snapshot.mjs": {
+      "sha256": "9f670d29bd627ce01d4638903fc651ecede6c4359c27993927f8fc26eb641f6a",
       "executable": false
     },
     "tests/e2e/helpers/self-serve-chat-flow.mjs": {
@@ -7172,7 +7176,7 @@
       "executable": false
     },
     "tests/e2e/incident-brief.test.mjs": {
-      "sha256": "8c6f49bbefc27257d4ad7e1b8ae1d4669b5c1d2bd493b3682ee7bd38aeb76a52",
+      "sha256": "602b12a76380f5efd74e37dc50169862f33dadd7bd40957723e2cab0264c470f",
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
