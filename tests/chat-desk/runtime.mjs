@@ -29,7 +29,7 @@ async function browserWorker() {
   return { ...options, workerOptions: { ...workerOptions, modules, modulesRoot: dirname(options.main) } };
 }
 
-export async function runtime(t, keys, { configured = true, browser = false } = {}) {
+export async function runtime(t, keys, { configured = true, browser = false, requireReview = false } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-chat-'));
   const signingSecret = randomBytes(32).toString('hex'), appId = `synthetic-lamp-${randomBytes(8).toString('hex')}`;
   const production = browser ? await browserWorker() : null;
@@ -50,6 +50,7 @@ export async function runtime(t, keys, { configured = true, browser = false } = 
       ...(browser ? { AUTH_LOCAL: 'true', LAMP_LOCAL_ORIGIN: runtimeOrigin } : {}),
       SESSION_SECRET: sessionSecret, SETUP_OPERATOR_EMAIL: 'operator@example.test', MAIL_FROM_ADDRESS: 'lamp@example.test',
       SUBSCRIBER_TOKEN_SECRET: randomBytes(32).toString('hex'), WEBHOOK_SIGNING_SECRET: randomBytes(32).toString('hex'),
+      LAMP_TEST_REQUIRE_REVIEW: String(requireReview),
       ...(configured ? { SLACK_SIGNING_SECRET: signingSecret, BOT_FRAMEWORK_APP_ID: appId } : { SLACK_SIGNING_SECRET: '', BOT_FRAMEWORK_APP_ID: '' }) },
     ...(production ? {} : { d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, queueProducers: { JOBS: 'lamp-chat-jobs' } }),
     outboundService: async request => {
