@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "aea0901ed124591c1c7439bfbfde23924a8f34799acac52bcf5f59b9a9a71b7c",
+      "sha256": "d92c9d2915cccd4f8d474f4ec487dc3007a796c3f201d98ee8672d01b17745d2",
       "executable": false
     },
     "DEMO.md": {
@@ -6792,7 +6792,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "f308041013f2d8cddd0df8943584b7bbfd38d775f96b15662c0cf70c7fbb2cc2",
+      "sha256": "a855f33ddf1ddd15e9d6b438160193f505f634c0ddbf30b83f952987e1360c93",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -6865,6 +6865,10 @@
     },
     "tests/e2e/helpers/component-notification-flow.mjs": {
       "sha256": "2ecc7c71c692e3653b7731656112a9d70657856d9a60d3dd0bf510fcfb091e63",
+      "executable": false
+    },
+    "tests/e2e/helpers/email-capacity-flow.mjs": {
+      "sha256": "eab7f1474b57c8ef07c4ace9ab671f5368905a9d4a1a4579ecbfaf3b03d3b67e",
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-flow.mjs": {
