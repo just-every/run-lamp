@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a11309a32c0aa698565ffd951bb21051c6cf39729da697946b1badeb1dc22f87",
+      "sha256": "821aafe39a6c21b1c46611303c32276a8f5dabd0e4127b12ccdf8d6358a0a84e",
       "executable": false
     },
     "DEMO.md": {
@@ -7296,7 +7296,7 @@
       "executable": false
     },
     "tests/e2e/teams-subscriptions-helper.mjs": {
-      "sha256": "113b22bb5000476c2a1e5e7ec7168f63761ab43e08182c0a54dea337e8b416b0",
+      "sha256": "c9e37a024ec311798aca78dab17b2c0fc579188d1ea991efd0222310f97266cd",
       "executable": false
     },
     "tests/e2e/unsaved-work-browser.test.mjs": {
