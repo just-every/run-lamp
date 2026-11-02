@@ -99,6 +99,13 @@ sign with an aligned domain. Setup checks DKIM and DMARC before provisioning.
 It does not prove message alignment, DKIM's header coverage or recipient
 delivery: verify those against a received message.
 
+Notification mail uses `List-Archive: <https://<page>/history>` and
+`List-Help: <https://<page>/manage/...>` on every transport, with one pair of
+angle brackets. Retries also normalize older stored bare list URLs without
+rewriting their frozen envelope. Managed mail threads later incident updates
+under the first accepted relay message; when no first email was accepted, a
+later update is sent as its own thread root.
+
 For SendGrid set `SENDGRID_WEBHOOK_PUBLIC_KEY` to its base64 P-256 public key and
 configure the signed Event Webhook URL as
 `https://<LAMP_PAGE_HOST>/api/intake/mail-events`, with delivered, bounce, dropped
