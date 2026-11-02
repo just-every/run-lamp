@@ -3131,6 +3131,8 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These assertions are INTAKE-007’s done evidence from the 2 November 2026 recheck.
 
+Supplementary PAGE-014 evidence from `cloud/sd-lamp-c-f46` is retained on `cloud/sd-lamp-c-f46-land-9da9242b77` (30 October 2026). `tests/e2e/public-contract.test.mjs` asserts the exact populated refresh field set, thirty-second polling, in-place live-region identity and configured time zone, and an unchanged script-disabled document and generation instant across a different publication and more than two refresh intervals. Its `tests/e2e/helpers/public-capacity-journey.mjs` helper compares actual refresh-response byte lengths at one and 200 components while retaining the same public story. Browser proof captures scripted and script-disabled screens at 1440 and 390. The newer main Status, Evidence and Gap judgment for PAGE-014 below remains partial; these additional assertions do not replace that judgment.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 31 | 76 | 0 | 107 |
