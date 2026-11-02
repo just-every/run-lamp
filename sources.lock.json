@@ -6796,7 +6796,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "ad2a875051c8cbb7d0de6b151631cebe3bd93818fb1c4bec8c2f45636b80279e",
+      "sha256": "34ef0aee89051e443f99c668786807eb562274867a7b2c64a1405bbec1f60db4",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -7125,6 +7125,10 @@
     },
     "tests/e2e/helpers/subscriber-expiry-flow.mjs": {
       "sha256": "ded4ded5d68c759908a02d699bb2e4108704b43e61e1545aff69ab2af63a2db3",
+      "executable": false
+    },
+    "tests/e2e/helpers/subscriber-failures-flow.mjs": {
+      "sha256": "7ebb845c3661c49a2bceed7cc0c2a7fc47a53befcdbe8504230387525cdb3d38",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
