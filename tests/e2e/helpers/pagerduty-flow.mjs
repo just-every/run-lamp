@@ -214,8 +214,14 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     assert.deepEqual(initial.components.map(row => row.componentId).sort(), targets.map(target => target.body.component.id).sort(), 'every matching service row attaches its component');
     assert.equal(initial.updates.length, 0);
     assert.ok(initial.components.every(row => row.publishedAt === null));
-    assert.equal((await send(trigger)).body.incidentId, id, 'delivery replay retains the linked draft');
+    const intakeInventory = () => Promise.all(['incidents', 'incident_drafts', 'incident_updates', 'alert_receipts'].map(table => rows(`SELECT * FROM ${table} ORDER BY id`)));
+    const beforeReplay = await intakeInventory(), publicBeforeReplay = await snapshot();
+    const replay = await send(trigger);
+    assert.deepEqual([replay.status, replay.body.incidentId, replay.body.receiptId, replay.body.replayed], [202, id, fired.body.receiptId, true], 'delivery replay retains the linked draft and original receipt');
+    assert.deepEqual(await intakeInventory(), beforeReplay, 'captured replay creates or changes no incident, draft, publication or receipt');
+    assert.deepEqual(await snapshot(), publicBeforeReplay, 'captured replay changes no public artifact or generation');
     assert.equal((await receipts(source.id)).length, 1);
+    t.diagnostic('PROBE INTAKE-009 4: exact captured signed delivery replay -> original incident and receipt identities; complete intake inventories and public bytes unchanged');
     for (const [key, fields, expected] of [
       ['PDIDONLY', { serviceName: 'Production API extra' }, [targets[1].body.component.id]],
       ['PDNAMEONLY', { serviceId: 'PAPI123-extra' }, [targets[2].body.component.id]],
@@ -400,6 +406,8 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     assert.equal(notes.length, 5, 'a source without a REST key publishes normally and sends no note');
     const beforeErase = await receipts(source.id);
     assert.ok(beforeErase.length > 0);
+    const publicationsBeforeErase = await updates();
+    const reportBeforeErase = (await api(`/api/app/incidents/${id}/report`)).body.report;
     const erased = await api(`/api/app/intake/sources/${source.id}`, { method: 'DELETE' });
     assert.equal(erased.status, 200, erased.text);
     assert.ok(!(await api('/api/app/intake/sources')).body.sources.some(row => row.id === source.id));
@@ -407,8 +415,13 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     assert.equal((await receipts(unrelated.body.source.id)).length, 1, 'erasure keeps other sources and their evidence');
     assert.equal((await send(event('triggered', 'PDAFTERERASE'))).status, 404);
     assert.equal((await incident(id)).updates.length, 6, 'source erasure preserves operator publications');
+    assert.deepEqual(await updates(), publicationsBeforeErase, 'source erasure preserves every field of every operator publication');
     assert.equal((await incident(id)).lifecycle, 'Resolved');
     assert.equal((await api(`/api/app/incidents/${id}/report`)).body.report.timeline, reportDraft.body.report.timeline, 'source erasure preserves the drafted report');
+    assert.deepEqual((await api(`/api/app/incidents/${id}/report`)).body.report, reportBeforeErase, 'source erasure preserves every drafted report field');
+    const erasedInventory = await intakeInventory();
+    assert.equal((await send(trigger)).status, 404, 'a captured signed delivery cannot resurrect an erased source');
+    assert.deepEqual(await intakeInventory(), erasedInventory, 'replay after erasure changes no incident, draft, publication or receipt');
     const restoredDb = await worker.getD1Database('DB');
     assert.equal((await restoredDb.prepare('SELECT count(*) AS n FROM alert_sources WHERE id=?').bind(source.id).first()).n, 0);
     assert.equal((await restoredDb.prepare('SELECT count(*) AS n FROM alert_responder_posts WHERE source_id=?').bind(source.id).first()).n, 0, 'erasure removes outbound source records too');
