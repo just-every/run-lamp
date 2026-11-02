@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { openStatusJourney } from './helpers/status-journey.mjs';
-import { notificationActivity, assertNoNewNotifications, moveInDoor } from '../helpers/import-notifications.mjs';
+import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
@@ -54,6 +54,23 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       assert.equal(result.body.job.state, 'completed');
       return { review: review.body, result: result.body };
     };
+    const repeatImport = async (input, result) => {
+      const aliases = await publicAliasInventory(runtime);
+      const records = await importedRecordInventory(runtime), notifications = await notificationInventory(runtime);
+      const reviewed = await moveIn.preview(input);
+      assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+      assert.equal(reviewed.body.report.state, 'already imported');
+      const again = await moveIn.apply(reviewed.body);
+      assert.equal(again.status, 200, JSON.stringify(again.body));
+      assert.equal(again.body.job.id, result.job.id);
+      assert.deepEqual(await importedRecordInventory(runtime), records, 'repeat preserves every complete native record and its children');
+      assert.deepEqual(await publicAliasInventory(runtime), aliases, 'repeat preserves the complete public alias inventory and redirects');
+      assert.deepEqual(await notificationInventory(runtime), notifications, 'repeat creates or changes no delivery, attempt, post, invitation claim or captured transport');
+      await runtime.tick(Date.now());
+      assert.deepEqual(await notificationInventory(runtime), notifications, 'native scheduled processing after repeat creates no notification work');
+      assert.deepEqual(await importedRecordInventory(runtime), records, 'scheduled processing preserves imported records and selections');
+      t.diagnostic(`PROBE MOVE-003 1 ${input.source ?? 'statuspage'}: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged`);
+    };
     assert.equal((await runtime.raw('/api/operator/import/uploads', { method: 'POST', body: '{}', headers: { 'Content-Type': 'application/json', Origin: origin, 'X-Import-Source': 'statuspage' } })).status, 401);
     const fetched = await moveIn.preview({ pageId: 'synthpage01', apiKey });
     assert.equal(fetched.status, 200, JSON.stringify(fetched.body));
@@ -76,6 +93,9 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     // Each row is the same owner migration, using one saved export per provider.
     // Assertions compare source records with native documents, rather than pinning fixture sizes.
     for (const source of ['statuspage', 'betterstack', 'instatus']) {
+      // Finish the preceding source's explicit invitation expiry and native
+      // publication work before measuring this independent silent import.
+      await runtime.tick(Date.now());
       const files = fixtures(source), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
       const before = await counts(), quiet = await notificationActivity(runtime);
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
@@ -116,8 +136,48 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       assert.equal((await fetch(publicOrigin + '/history.rss')).status, 200);
       assert.equal((await fetch(publicOrigin + '/api/v2/summary.json')).status, 200);
       await assertNoNewNotifications(runtime, quiet, 'review, apply and Cutover reads never mail historical incidents');
-      const again = await apply(input); assert.equal(again.result.job.id, result.job.id);
+      await repeatImport(input, result);
       assert.deepEqual(await counts(), after, 'repeating the same source duplicates nothing');
+      if (source === 'statuspage') {
+        // Two distinct saved bundles explicitly name the same upstream component.
+        // A new control in the refused bundle detects any partial application.
+        const owned = parsed(files, 'components.json')[0];
+        const control = { ...owned, id: 'synthetic-lamp-new-component', name: 'Synthetic Lamp new import control', position: 3 };
+        const componentBundle = rows => files.map(file => ({ ...file,
+          text: file.name === 'page.json' ? file.text : JSON.stringify(file.name === 'components.json' ? rows : []),
+        }));
+        const records = await importedRecordInventory(runtime), notifications = await notificationInventory(runtime), aliases = await publicAliasInventory(runtime);
+        const overlap = await moveIn.preview({ source, files: componentBundle([{ ...owned, name: 'Synthetic Lamp overlapping upstream record', created_at: '2026-01-03T00:00:00.000Z' }, control]) });
+        assert.equal(overlap.status, 400, JSON.stringify(overlap.body));
+        assert.match(overlap.body.error, /(?:records were imported already|already exists|already owned)/iu, 'overlap refusal explains the existing ownership');
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'overlap refusal preserves all targets and creates no new control');
+        assert.deepEqual(await notificationInventory(runtime), notifications, 'overlap refusal creates no notification work');
+        assert.deepEqual(await publicAliasInventory(runtime), aliases, 'overlap refusal preserves public redirects');
+        const newOnly = await apply({ source, files: componentBundle([control]) });
+        const components = (await api('/api/app/components')).body.components;
+        assert.equal(components.filter(row => row.name === owned.name).length, 1, 'the original upstream identity still has one unchanged native record');
+        assert.equal(components.filter(row => row.name === control.name).length, 1, 'a separately reviewed new-only bundle can apply');
+        assert.equal(components.some(row => row.name === 'Synthetic Lamp overlapping upstream record'), false);
+        await repeatImport({ source, files: componentBundle([control]) }, newOnly.result);
+        const undoneControl = await moveIn.undo(newOnly.result.door);
+        assert.equal(undoneControl.status, 200, JSON.stringify(undoneControl.body));
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'undo of the new-only import preserves the existing imported inventory');
+        // A provider-local id and equal title in another namespace are distinct.
+        const alternateFiles = fixtures('instatus').filter(file => /^instatus-(pages|components|incidents|maintenances|subscribers|audience-groups)\.json$/u.test(file.name)).map(file => ({
+          ...file, text: file.name === 'instatus-pages.json' ? file.text : JSON.stringify(file.name === 'instatus-components.json'
+            ? [{ id: owned.id, name: owned.name, status: 'OPERATIONAL', order: 0, createdAt: owned.created_at }] : []),
+        }));
+        const alternateInput = { source: 'instatus', pageId: 'synthpage01', publicAccessAcknowledged: true, files: alternateFiles };
+        const alternate = await apply(alternateInput);
+        const priorIds = new Set(records.components.map(row => row.id));
+        const added = (await api('/api/app/components')).body.components.filter(row => !priorIds.has(row.id));
+        assert.equal(added.length, 1, 'another provider namespace imports its own explicit identity');
+        assert.equal(added[0].name, owned.name, 'equal titles do not merge independent upstream records');
+        await repeatImport(alternateInput, alternate.result);
+        assert.equal((await moveIn.undo(alternate.result.door)).status, 200);
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'removing the other namespace preserves the original identity');
+        t.diagnostic('PROBE MOVE-003 2: distinct overlapping Statuspage bundle -> reasoned refusal and no native changes; reviewed new-only bundle -> one new component, repeat stable, undo preserves prior targets');
+      }
       const edited = incidents.find(row => row.title === sourceHistory(source, files)[0].title);
       const draft = await api(`/api/app/incidents/${edited.id}/draft`, { lifecycle: 'Resolved', affectedAudience: 'API customers', customerImpact: 'Owner correction after import', whatStillWorks: 'All services', details: 'Owner-reviewed history', nextUpdateAt: null }, { 'If-Match': `-:${edited.updates.length}` }, 'PUT');
       assert.equal(draft.status, 200, JSON.stringify(draft.body));
@@ -154,7 +214,11 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     }
     // Published reports, private reports and reusable templates travel with a source,
     // remain private until publication, and retain operator edits through undo.
-    const importAll = async files => { const { review, result } = await apply({ files }); return { preview: review, result }; };
+    const importAll = async files => {
+      const { review, result } = await apply({ files });
+      await repeatImport({ files }, result);
+      return { preview: review, result };
+    };
     await postmortemTemplateImportFlow({ api, request: (path, init) => nativeRequest(path, init), importAll, moveIn, original: sourceFiles, publicOrigin, preserveEdits: true, fetcher: fetch });
     const beforeIncidentFollowers = await counts();
     incidentSubscriberProbe = true;
