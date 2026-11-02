@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
 import { test } from 'node:test';
 import { parse } from 'parse5';
 import { chatDeskNativeFlow } from '../chat-desk/flow.mjs';
@@ -463,3 +464,167 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
 });
 
 test('INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams', chatDeskNativeFlow);
+
+test('AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text', async t => {
+  const j = await openStatusJourney();
+  try {
+    const component = await j.component('Synthetic Lamp report service');
+    const secret = 'synthetic-lamp-report-1';
+    const source = (await j.json('/api/app/intake/sources', 'POST', {
+      name: 'Synthetic Lamp responders', preset: 'pagerduty', credentialKind: 'hmac-sha256', signingSecret: secret,
+      labelMatchers: [{ componentId: component.id, labels: { service_id: 'synthetic-lamp-service-1' } }],
+    }, 201)).source;
+    const events = ['triggered', 'acknowledged', 'escalated', 'resolved'].map((action, index) => ({ event: {
+      id: `synthetic-lamp-event-${index}`, event_type: `incident.${action}`,
+      occurred_at: `2026-10-20T01:0${index}:00.000Z`, agent: { summary: `Synthetic Lamp responder ${index}` },
+      data: { id: 'synthetic-lamp-incident-1', title: `Report evidence ${action}\ncontinued source detail`, service: { id: 'synthetic-lamp-service-1' } },
+    } }));
+    const send = async payload => {
+      const body = JSON.stringify(payload);
+      const response = await j.raw(source.endpointUrl, { method: 'POST', headers: {
+        'Content-Type': 'application/json', 'X-PagerDuty-Signature': `v1=${createHmac('sha256', secret).update(body).digest('hex')}`,
+      }, body });
+      assert.equal(response.status, 202, await response.clone().text());
+      return response.json();
+    };
+    const firstReceipt = await send(events[0]);
+    const id = firstReceipt.incidentId;
+    const initial = await j.read(id);
+    const openedAt = initial.openedAt;
+    const endpoint = `/api/app/incidents/${id}`;
+    const reportPath = `${endpoint}/report`;
+    await j.json(`${reportPath}/draft`, 'POST', {}, 409);
+    const internalNote = 'PRIVATE report investigation must never become a source';
+    await j.json(`${endpoint}/internal-notes`, 'POST', { body: internalNote }, 201);
+    const publications = [];
+    const publish = async (lifecycle, customerImpact) => {
+      const fields = { lifecycle, affectedAudience: 'Customers of the report service.', customerImpact,
+        whatStillWorks: 'Saved receipts remain readable.', details: `Reviewed ${lifecycle} customer facts.`,
+        nextUpdateAt: lifecycle === 'Resolved' ? null : new Date(Date.now() + 3600_000).toISOString() };
+      await j.save(id, fields);
+      const update = (await j.publish(id, lifecycle === 'Resolved' ? { overrideReason: 'Operator verified service recovery independently.' } : {})).update;
+      for (const [key, value] of Object.entries(fields)) assert.equal(update[key], value);
+      publications.push(update);
+      return update;
+    };
+    await publish('Identified', 'Report service requests fail.');
+    const receiptIds = [firstReceipt.receiptId];
+    for (const event of events.slice(1)) {
+      const accepted = await send(event);
+      assert.equal(accepted.incidentId, id);
+      receiptIds.push(accepted.receiptId);
+    }
+    await publish('Monitoring', 'Report service requests are recovering.');
+    const resolution = await publish('Resolved', 'Report service requests work again.');
+    const brief = (await j.json(`${endpoint}/brief`)).brief;
+    assert.equal(brief.incident.openedAt, openedAt, 'opening is retained independently of the report generator');
+    const receipts = (await j.json('/api/app/intake/receipts?limit=250')).receipts.filter(row => row.incidentId === id);
+    assert.deepEqual(receipts.map(row => row.id).sort(), receiptIds.toSorted());
+    assert.equal(brief.whatWeKnow.alerts.length, events.length);
+    assert.equal(brief.whatWeKnow.updates.length, publications.length);
+    const publicBeforeDraft = await j.visible(`/incidents/${initial.reference}`, resolution.customerImpact);
+    const generated = await j.json(`${reportPath}/draft`, 'POST', {});
+    const report = generated.report;
+    const persisted = async () => j.db.prepare('SELECT * FROM incident_reports WHERE incident_id = ?').bind(id).first();
+    assert.deepEqual((await j.json(reportPath)).report, report);
+    assert.equal(report.publishedAt, null);
+    assert.ok(report.summary.includes(`Recorded incident window: ${openedAt} to published resolution ${resolution.publishedAt}`));
+    assert.match(report.summary, /not a measurement of customer downtime/);
+    const lines = report.timeline.split('\n');
+    const refs = lines.map(line => {
+      const citations = [...line.matchAll(/\[([^\]\r\n]+)\]/g)].map(match => match[1]);
+      assert.equal(citations.length, 1, 'each timeline line has exactly one real citation');
+      return citations[0];
+    });
+    const facts = [...brief.whatWeKnow.alerts, ...brief.whatWeKnow.updates];
+    assert.equal(lines.length, events.length + publications.length);
+    assert.deepEqual(refs.toSorted(), facts.map(row => row.ref).toSorted(), 'every available alert and published update is cited exactly once');
+    assert.deepEqual(generated.review.evidenceRefs.toSorted(), refs.toSorted());
+    const eventTimes = [];
+    for (const payload of events) {
+      const fact = brief.whatWeKnow.alerts.find(row => row.payload.event.id === payload.event.id);
+      assert.ok(fact, 'the native brief retains each submitted responder event');
+      const receipt = receipts.find(row => row.id === receiptIds[events.indexOf(payload)]);
+      assert.equal(fact.receivedAt, receipt.receivedAt);
+      const line = lines[refs.indexOf(fact.ref)];
+      assert.ok(line.startsWith(`${receipt.receivedAt} — `));
+      for (const text of [source.name, payload.event.data.title.replace(/\s+/g, ' '), payload.event.agent.summary,
+        payload.event.occurred_at, payload.event.event_type.slice('incident.'.length), payload.event.event_type === 'incident.resolved' ? 'recovered' : 'firing']) assert.ok(line.includes(text), `responder line retains ${text}`);
+      eventTimes.push(receipt.receivedAt);
+    }
+    for (const update of publications) {
+      const fact = brief.whatWeKnow.updates.find(row => row.publishedAt === update.publishedAt && row.customerImpact === update.customerImpact);
+      assert.ok(fact, 'the brief retains each independently captured publication');
+      const line = lines[refs.indexOf(fact.ref)];
+      assert.ok(line.startsWith(`${update.publishedAt} — `));
+      for (const field of ['lifecycle', 'affectedAudience', 'customerImpact', 'whatStillWorks', 'details']) assert.ok(line.includes(update[field]));
+      eventTimes.push(update.publishedAt);
+    }
+    assert.deepEqual(lines.map(line => line.split(' — ')[0]), eventTimes.toSorted(), 'all source lines follow their recorded times');
+    assert.ok(!JSON.stringify(generated).includes(internalNote));
+    for (const field of ['cause', 'remediation']) {
+      assert.equal(report[field], '');
+      assert.equal(generated.review[field].required, true);
+      assert.ok(generated.review[field].prompt.trim());
+    }
+    t.diagnostic('PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent');
+    const complete = { summary: report.summary, timeline: report.timeline, cause: 'The operator confirmed an exhausted worker pool.', remediation: 'The operator restored capacity and added saturation alerts.' };
+    const unchangedDraft = await persisted();
+    await j.json(`${reportPath}/draft`, 'POST', {}, 409);
+    assert.deepEqual(await persisted(), unchangedDraft, 'drafting never replaces an existing report');
+    const invalid = [
+      { cause: '', remediation: complete.remediation },
+      { cause: generated.review.cause.prompt, remediation: complete.remediation },
+      { cause: complete.cause, remediation: '' },
+      { cause: complete.cause, remediation: generated.review.remediation.prompt },
+    ];
+    for (const fields of invalid) {
+      await j.json(reportPath, 'PUT', { ...complete, ...fields });
+      const before = await persisted();
+      const resource = (await j.json(reportPath)).report;
+      const refusal = await j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 400);
+      assert.ok(refusal.error);
+      assert.deepEqual(await persisted(), before, 'refused publication changes no persisted report field');
+      assert.deepEqual((await j.json(reportPath)).report, resource);
+      assert.equal(await j.publicText(`/incidents/${initial.reference}`), publicBeforeDraft, 'saved and refused reports leave the complete public record unchanged');
+    }
+    t.diagnostic('PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records');
+    await j.json(reportPath, 'PUT', complete);
+    const saved = (await j.json(reportPath)).report;
+    await j.json(`${reportPath}/draft`, 'POST', {}, 409);
+    assert.deepEqual((await j.json(reportPath)).report, saved);
+    assert.equal(await j.publicText(`/incidents/${initial.reference}`), publicBeforeDraft);
+    // A manually authored report is also protected, without any generated draft.
+    const manualIncident = await j.incident('Synthetic Lamp operator report', [component]);
+    await j.save(manualIncident.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await j.publish(manualIncident.id);
+    const manualPath = `/api/app/incidents/${manualIncident.id}/report`;
+    await j.json(manualPath, 'PUT', { ...complete, summary: 'An existing operator-authored report.' });
+    const manualBefore = (await j.json(manualPath)).report;
+    await j.json(`${manualPath}/draft`, 'POST', {}, 409);
+    assert.deepEqual((await j.json(manualPath)).report, manualBefore);
+    t.diagnostic('PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report');
+    const published = (await j.json(`${reportPath}/publish`, 'POST', { channels: [] })).report;
+    for (const [field, value] of Object.entries(complete)) assert.equal(published[field], value);
+    const publicHtml = await j.visible(`/incidents/${initial.reference}`, complete.cause);
+    const sections = descendants(parse(publicHtml)).filter(node => node.tagName === 'section' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'report'));
+    assert.equal(sections.length, 1);
+    const rendered = node => node.nodeName === '#text' ? node.value : node.tagName === 'br' ? '\n' : (node.childNodes ?? []).map(rendered).join('');
+    const fields = descendants(sections[0]).filter(node => node.tagName === 'div' && node.childNodes.some(child => child.tagName === 'dt'));
+    assert.deepEqual(fields.map(node => ({ label: nodeText(node.childNodes.find(child => child.tagName === 'dt')), value: rendered(node.childNodes.find(child => child.tagName === 'dd')) })),
+      Object.entries(complete).map(([field, value]) => ({ label: field[0].toUpperCase() + field.slice(1), value })));
+    const publishedRow = await persisted();
+    for (const action of [
+      () => j.json(reportPath, 'PUT', { summary: 'Changed summary', timeline: 'Changed timeline', cause: 'Changed cause', remediation: 'Changed remediation' }, 409),
+      () => j.json(`${reportPath}/draft`, 'POST', {}, 409),
+      () => j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 409),
+    ]) {
+      await action();
+      assert.deepEqual(await persisted(), publishedRow, 'all published report fields and provenance remain immutable');
+      assert.deepEqual((await j.json(reportPath)).report, published);
+      assert.equal(await j.publicText(`/incidents/${initial.reference}`), publicHtml, 'refused edits preserve the exact public report');
+    }
+    assert.ok(!publicHtml.includes(internalNote));
+    t.diagnostic('PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes');
+  } finally { await j.close(); }
+});
