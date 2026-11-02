@@ -7,6 +7,7 @@ import type { IncidentView } from "../service";
 import { useAppData } from "../../../app/client/ui/api";
 import { FormError } from "../../../app/client/ui/states";
 import type { NewClaim } from "./use-new-incident";
+import { TooltipButton } from "./tooltip-button";
 
 type ComponentsResponse = { components: Awaited<ReturnType<ComponentsService["list"]>> };
 type Relationship = "Primary" | "Dependent";
@@ -26,7 +27,7 @@ function ComponentChip({ name, state, states, now, disabled, onState, onRemove }
     <span className="component-chip-name">{name}</span>
     {changed ? <span className="component-chip-now">{now} →</span> : null}
     <select aria-label={`${name} state with this update`} disabled={disabled} value={state} onChange={(event) => onState(event.target.value as IncidentClaimState)}>{states.map(value => <option key={value}>{value}</option>)}</select>
-    {onRemove ? <button type="button" className="chip-remove" aria-label={`Remove ${name}`} onClick={onRemove}>×</button> : null}
+    {onRemove ? <TooltipButton tooltip="Remove component" type="button" className="chip-remove" aria-label={`Remove ${name}`} onClick={onRemove}>×</TooltipButton> : null}
   </span>;
 }
 

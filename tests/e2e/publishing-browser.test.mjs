@@ -241,12 +241,13 @@ const wordingFields = locator => locator.locator('dl > div').evaluateAll(rows =>
   value: row.querySelector('dd').textContent,
 })));
 
-async function previewScreens(screen, name) {
+async function previewScreens(screen, name, beforeCapture = async () => {}) {
   if (!process.env.LAMP_SCREENSHOTS) return;
   await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
   try {
     for (const width of [1440, 390]) {
       await screen.setViewportSize({ width, height: 1000 });
+      await beforeCapture();
       await screen.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-${name}.png`), fullPage: true });
     }
   } finally { await screen.setViewportSize({ width: 1440, height: 1000 }); }

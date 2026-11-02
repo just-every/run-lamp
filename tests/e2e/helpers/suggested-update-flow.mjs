@@ -109,8 +109,30 @@ export async function suggestedUpdateFlow({ page, appUrl, api, configureSuggesti
     const briefToggle = page.getByRole('button', { name: 'Brief', exact: true });
     if (await briefToggle.getAttribute('aria-expanded') === 'true') await briefToggle.click();
     await page.locator('.composer-panel').scrollIntoViewIfNeeded();
-    await screens(page, 'draft-suggestions');
+    const options = page.getByRole('button', { name: 'Update options', exact: true });
+    await options.hover();
+    await options.getByRole('tooltip', { name: 'Update options', exact: true }).waitFor();
+    await page.mouse.move(0, 0);
+    await options.getByRole('tooltip').waitFor({ state: 'hidden' });
+    const focusHint = async () => {
+      await options.evaluate(button => button.blur());
+      await options.focus();
+    };
+    await focusHint();
+    assert.equal(await options.getByRole('tooltip', { name: 'Update options', exact: true }).isVisible(), true);
+    await screens(page, 'draft-suggestions', focusHint);
+    await options.evaluate(button => button.blur());
     diagnostic('PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship');
+
+    await suggest(Object.fromEntries(Object.keys(fields).map(key => [key, { text: '', sources: ['C2'] }])));
+    await values(first);
+    assert.equal(await sources('customerImpact').count(), 0, 'empty results leave operator authorship unchanged');
+    assert.equal(await sources('whatStillWorks').isVisible(), true, 'empty results retain assistant authorship');
+    assert.match(await sources('whatStillWorks').textContent(), /No source: written by the assistant/);
+    assert.equal(await sources('whatStillWorks').locator('a').count(), 0);
+    await openSources('affectedAudience', ['C1']);
+    await openSources('details', ['U1']);
+    diagnostic('PROBE DRAFT-001 2 and 3: a later all-empty suggestion -> retained assistant-written disclosure and original exact source links beside unchanged fields');
 
     await suggest({
       affectedAudience: { text: '', sources: ['C2'] },
@@ -119,6 +141,8 @@ export async function suggestedUpdateFlow({ page, appUrl, api, configureSuggesti
       details: { text: '', sources: ['C2'] },
     });
     await values({ ...first, customerImpact: 'Suggested catalogue searches are slower.', whatStillWorks: 'The earlier update confirms that browsing works.' });
+    await openSources('affectedAudience', ['C1']);
+    await openSources('details', ['U1']);
     await openSources('customerImpact', ['C2']);
     await openSources('whatStillWorks', ['U1', 'C1']);
     diagnostic('PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row');
