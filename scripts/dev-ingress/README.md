@@ -41,7 +41,9 @@ a Vite define, environment variable, Worker binding, file, R2 object or config
 value. The virtual module rejects client-environment loads and has no source
 map content. Responses and assets never receive proof headers. A server restart
 rotates the key; proofs are single-use and expire after five minutes. The Worker
-holds at most 10,000 consumed nonces and fails closed if that bound is reached.
+holds at most 10,000 consumed nonces. At that bound it forgets the oldest and from
+then on refuses every proof issued at or before it, so a forgotten proof still
+cannot be replayed and later requests are still served.
 Local development disables the emulator inspector, storage explorer and
 observability trace recorder. Browser requests to private emulator control paths
 and module-runner headers are rejected at ingress. WebSocket upgrades pass only

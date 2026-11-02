@@ -476,3 +476,72 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
   await automationFlapFlow({ t });
   await metricsFlow({ t });
 });
+
+// Development ingress proofs: single-use, five-minute life, and a bounded nonce set that forgets its oldest entry
+// behind an issue-time floor instead of refusing every later request. The authenticator is exercised exactly as the
+// SSR virtual module builds it; only the clock is controlled.
+const INGRESS_ISSUED = 1_800_000_000_000;
+const INGRESS_HOST = "127.0.0.1:5173";
+async function developmentIngress(t) {
+  const { createDevelopmentAuthenticator } = await import("../../scripts/dev-ingress/worker.ts");
+  const { proofHeader, proofPayload } = await import("../../scripts/dev-ingress/protocol.mjs");
+  const { createHmac } = await import("node:crypto");
+  const secret = randomBytes(32).toString("hex");
+  let clock = INGRESS_ISSUED;
+  t.mock.method(Date, "now", () => clock);
+  const authenticate = createDevelopmentAuthenticator(secret);
+  const nonceOf = (index) => index.toString(16).padStart(32, "0");
+  const proofFor = (issued, nonce, url = `http://${INGRESS_HOST}/src/client.tsx`) => {
+    const mac = createHmac("sha256", Buffer.from(secret, "hex")).update(proofPayload("GET", url, INGRESS_HOST, null, null, `${issued}.${nonce}`)).digest("hex");
+    return new Request(url, { headers: { host: INGRESS_HOST, "x-forwarded-host": INGRESS_HOST, [proofHeader]: `${issued}.${nonce}.${mac}` } });
+  };
+  return { authenticate, proofFor, nonceOf, setClock: (value) => { clock = value; } };
+}
+// Accept 10,000 proofs issued one millisecond apart, so the nonce set is exactly full.
+async function fillIngress(ingress) {
+  ingress.setClock(INGRESS_ISSUED + 20_000);
+  for (let index = 0; index < 10_000; index++) {
+    assert.ok(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + index, ingress.nonceOf(index))), `proof ${index} is accepted while the set has room`);
+  }
+}
+
+test("Development ingress proofs are single-use and expire after five minutes", async (t) => {
+  const ingress = await developmentIngress(t);
+  const proof = () => ingress.proofFor(INGRESS_ISSUED, ingress.nonceOf(1));
+  const stamped = await ingress.authenticate(proof());
+  assert.ok(stamped, "a fresh proof is accepted");
+  assert.equal(stamped.headers.get("x-lamp-dev-ingress"), null, "the accepted request no longer carries the proof");
+  assert.equal(await ingress.authenticate(proof()), null, "(a) the same proof cannot be used twice");
+  ingress.setClock(INGRESS_ISSUED + 5 * 60_000 + 1);
+  assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED, ingress.nonceOf(2))), null, "(b) a proof older than five minutes is refused");
+});
+
+test("Development ingress refuses a forgotten proof once a full nonce set evicts it", async (t) => {
+  const ingress = await developmentIngress(t);
+  await fillIngress(ingress);
+  const evicting = await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + 10_000, ingress.nonceOf(10_000)));
+  assert.ok(evicting, "the proof arriving at the bound is accepted and the oldest nonce is forgotten");
+  assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED, ingress.nonceOf(0))), null, "(c) the evicted proof itself cannot be replayed");
+  assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED, ingress.nonceOf(99_999))), null, "(c) a proof issued at the evicted issue time is refused even with an unseen nonce");
+});
+
+test("Development ingress keeps serving new proofs while its nonce set is full", async (t) => {
+  const ingress = await developmentIngress(t);
+  await fillIngress(ingress);
+  for (let index = 10_000; index < 10_050; index++) {
+    assert.ok(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + index, ingress.nonceOf(index))), `(d) new proof ${index} is accepted beyond the 10,000 bound`);
+  }
+  assert.equal(await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + 10_100, ingress.nonceOf(10_100))) === null, false, "(d) a later new proof is still accepted");
+});
+
+test("Development ingress holds exactly 10,000 nonces however many proofs it has accepted", async (t) => {
+  const ingress = await developmentIngress(t);
+  await fillIngress(ingress);
+  for (let index = 10_000; index < 10_050; index++) await ingress.authenticate(ingress.proofFor(INGRESS_ISSUED + index, ingress.nonceOf(index)));
+  // A fresh-time proof reusing a nonce is refused only while that nonce is held, so refusals count the held set.
+  const fresh = INGRESS_ISSUED + 15_000;
+  let held = 0;
+  for (let index = 50; index < 10_050; index++) if (await ingress.authenticate(ingress.proofFor(fresh, ingress.nonceOf(index))) === null) held++;
+  assert.equal(held, 10_000, "(e) the 10,000 newest nonces are held");
+  assert.ok(await ingress.authenticate(ingress.proofFor(fresh, ingress.nonceOf(0))), "(e) the oldest nonce was forgotten, not retained beyond the bound");
+});
