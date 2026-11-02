@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "aea0901ed124591c1c7439bfbfde23924a8f34799acac52bcf5f59b9a9a71b7c",
+      "sha256": "a2a6545a025acc66d4300cc71b1f04ca7e4f2ec70844eadb6c506f6ecde2e22f",
       "executable": false
     },
     "DEMO.md": {
@@ -5216,7 +5216,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/service.ts": {
-      "sha256": "d6b372c77ebb60f4bcdc34402b402f1a6a0ae316c3a7bb18cab5f93ea78e85a1",
+      "sha256": "ca01b7f00bebe7b0820dfbe83c9c73cca4d33725aad4b699dfb60de00dab8385",
       "executable": false
     },
     "src/core/features/statuspage-import/sorry-release.repository.ts": {
@@ -6788,7 +6788,7 @@
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
-      "sha256": "ac1115fb5dcc7866febc7d33941fcf3d7cc8c314d856bf350467ce42e120a2eb",
+      "sha256": "40b35f7370e2d012b77b69f37c3e5baaf589af63c30536b062781a7284baa459",
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
@@ -7248,7 +7248,7 @@
       "executable": false
     },
     "tests/e2e/sorry-import.test.mjs": {
-      "sha256": "7775bbe48720610e20bf956ada3c0d574e60905f34f58698025aa98b06e752a8",
+      "sha256": "24aa3f00ae64e3b1e2c83e5c73ef9a619621c634e8ea1e22f52d479e9aaf1525",
       "executable": false
     },
     "tests/e2e/start-runtime.test.mjs": {
@@ -7256,7 +7256,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "5f1fb651ebd3fba6058df36bbf7408fd776fd21bd4af5c354ba30b7a09428dc7",
+      "sha256": "4688aa1723f423efe845e8b9270d574660549b2fbf94c69efee46b75f57e5304",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
@@ -7900,7 +7900,7 @@
       "executable": false
     },
     "tests/helpers/import-notifications.mjs": {
-      "sha256": "8a7a9887802e72dd550f25f7445b5ab4429d4e18abf5cb8a448e9d27803f6b29",
+      "sha256": "875b8a035ba364f07e60da2d1c8676d9e4e8dc940bc9aaf0e78bfa4cfee4db50",
       "executable": false
     },
     "tests/helpers/native-transfer.mjs": {
