@@ -17,7 +17,7 @@ const owner = 'owner@example.test', reader = 'reader@example.test', pending = 'p
 
 // Each row is the same business journey through a supported transport. Only
 // provider responses are synthetic; app routes, migrations and Cron are real.
-test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async () => {
+test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async t => {
   const built = await build({ entryPoints: ['tests/e2e/rer-mail.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false,
     external: ['cloudflare:workers', 'node:*'], define: { 'import.meta.env.DEV': 'false' },
     plugins: [{ name: 'renderer-assets', setup(builder) {
@@ -112,10 +112,10 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal((await call('/api/app/page-settings', { ...settingsInput, emailBranding: branding }, 'PUT')).status, 200);
       const incidentResponse = await call('/api/app/incidents', { title: 'Payment delays', components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
       assert.equal(incidentResponse.status, 201); const incident = (await incidentResponse.json()).incident;
-      const publish = async impact => {
-        const saved = await call(`/api/app/incidents/${incident.id}/draft`, { lifecycle: 'Monitoring', affectedAudience: 'Payment customers', customerImpact: impact, whatStillWorks: 'Balances remain readable.', details: 'Operators are restoring capacity.', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() }, 'PUT');
+      const publish = async (impact, incidentId = incident.id, channels = ['email']) => {
+        const saved = await call(`/api/app/incidents/${incidentId}/draft`, { lifecycle: 'Monitoring', affectedAudience: 'Payment customers', customerImpact: impact, whatStillWorks: 'Balances remain readable.', details: 'Operators are restoring capacity.', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() }, 'PUT');
         assert.equal(saved.status, 200, await saved.clone().text());
-        const response = await call(`/api/app/incidents/${incident.id}/publish`, { channels: ['email'] });
+        const response = await call(`/api/app/incidents/${incidentId}/publish`, { channels });
         assert.equal(response.status, 200, await response.clone().text());
         return (await response.json()).update;
       };
@@ -126,6 +126,18 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       const queued = (await deliveries()).find(row => row.incidentUpdateId === update.id);
       assert.equal(queued.outcome, 'queued'); assert.equal(queued.providerAcceptedAt, null);
       const firstAttempt = sentTo(reader).at(-1).body;
+      const stored = await db.prepare('SELECT mail_payload_json FROM notification_delivery_records WHERE id=?').bind(queued.id).first();
+      const legacy = JSON.parse(stored.mail_payload_json);
+      await t.test(`${provider}: R1 newly frozen list URLs use exactly one bracket pair`, () => {
+        assert.equal(legacy.headers['List-Archive'], '<https://status.example.test/history>');
+        assert.equal(legacy.headers['List-Help'], `<${managementUrl}>`);
+      });
+      // Model an envelope frozen by an older installation. Its storage bytes
+      // remain immutable during retry, while every transport receives RFC 2369.
+      legacy.headers['List-Archive'] = 'https://status.example.test/history';
+      legacy.headers['List-Help'] = managementUrl;
+      const legacyJson = JSON.stringify(legacy);
+      await db.prepare('UPDATE notification_deliveries SET mail_payload_json=? WHERE id=?').bind(legacyJson, queued.id).run();
       const settings = (await (await call('/api/app/page-settings')).json()).settings;
       const edited = await call('/api/app/page-settings', { ...Object.fromEntries(['pageName','tagline','accentColor','timezone','hostname','footerCreditEnabled','mailFromAddress'].map(key => [key, settings[key]])), emailBranding: { subjectPrefix: '[Changed after submission]', footer: 'Changed after submission' } }, 'PUT');
       assert.equal(edited.status, 200, await edited.clone().text());
@@ -145,19 +157,27 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       } else if (provider === 'resend') {
         assert.ok(firstAttempt.from.includes(branding.displayName)); assert.equal(firstAttempt.reply_to, branding.replyTo);
       }
-      if (provider === 'rer') {
-        assert.ok(notification.listUnsubscribePost);
-        assert.equal(notification.listId, '<status.example.test>');
-        assert.equal(notification.listArchive, '<https://status.example.test/history>');
-        assert.equal(notification.listHelp, `<${managementUrl}>`);
-      } else {
-        assert.equal(notification.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
-        assert.equal(notification.headers['List-Id'], '<status.example.test>');
-        assert.equal(notification.headers['List-Archive'], 'https://status.example.test/history');
-        assert.equal(notification.headers['List-Help'], managementUrl);
-        assert.equal(notification.headers['Auto-Submitted'], 'auto-generated');
-        if (provider === 'sendgrid') for (const settings of Object.values(firstAttempt.tracking_settings)) assert.equal(settings.enable, false, 'transport disables recipient tracking');
-      }
+      await t.test(`${provider}: R1 submitted list URLs use exactly one bracket pair`, () => {
+        if (provider === 'rer') {
+          assert.ok(notification.listUnsubscribePost);
+          assert.equal(notification.listId, '<status.example.test>');
+          assert.equal(notification.listArchive, '<https://status.example.test/history>');
+          assert.equal(notification.listHelp, `<${managementUrl}>`);
+        } else {
+          assert.equal(notification.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
+          assert.equal(notification.headers['List-Id'], '<status.example.test>');
+          assert.equal(notification.headers['List-Archive'], '<https://status.example.test/history>');
+          assert.equal(notification.headers['List-Help'], `<${managementUrl}>`);
+          assert.equal(notification.headers['Auto-Submitted'], 'auto-generated');
+          if (provider === 'sendgrid') for (const settings of Object.values(firstAttempt.tracking_settings)) assert.equal(settings.enable, false, 'transport disables recipient tracking');
+        }
+      });
+      await t.test(`${provider}: R1 legacy frozen URLs send bracketed without rewriting storage`, async () => {
+        const retried = wire(sentTo(reader).at(-1).body);
+        assert.equal(provider === 'rer' ? retried.listArchive : retried.headers['List-Archive'], '<https://status.example.test/history>');
+        assert.equal(provider === 'rer' ? retried.listHelp : retried.headers['List-Help'], `<${managementUrl}>`);
+        assert.equal((await db.prepare('SELECT mail_payload_json FROM notification_delivery_records WHERE id=?').bind(queued.id).first()).mail_payload_json, legacyJson);
+      });
       // Managed mail's relay declares automatic messages itself. Inspect the
       // seed's actual persisted envelope as well as direct-provider submissions.
       const frozen = await db.prepare('SELECT mail_payload_json FROM notification_delivery_records WHERE id=?').bind(queued.id).first();
@@ -185,6 +205,43 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.ok(threaded.text.includes(impact));
         assert.equal(provider === 'rer' ? threaded.inReplyTo : threaded.headers['In-Reply-To'], firstMessageId);
         assert.equal(provider === 'rer' ? threaded.references : threaded.headers.References, firstMessageId);
+      }
+      for (const firstOutcome of ['no-channel', 'rejected']) {
+        await t.test(`${provider}: NEW-1 later update sends after ${firstOutcome} first email`, async () => {
+          const created = await call('/api/app/incidents', { title: `No accepted first email: ${firstOutcome}`, components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
+          assert.equal(created.status, 201);
+          const withoutRoot = (await created.json()).incident;
+          const beforeFirst = sentTo(reader).length;
+          responseStatus = firstOutcome === 'rejected' ? 400 : 202;
+          let first;
+          try {
+            first = await publish('The incident started without accepted mail.', withoutRoot.id, firstOutcome === 'no-channel' ? [] : ['email']);
+            await tick();
+          } finally { responseStatus = 202; }
+          const firstRows = (await deliveries()).filter(row => row.incidentUpdateId === first.id);
+          assert.ok(firstRows.every(row => row.providerAcceptedAt === null), 'no first email was accepted');
+          assert.equal(firstRows.length, firstOutcome === 'no-channel' ? 0 : 1);
+          assert.equal(sentTo(reader).length, beforeFirst + (firstOutcome === 'no-channel' ? 0 : 1));
+          const beforeLater = sentTo(reader).length;
+          const later = await publish('A later update must reach subscribed readers.', withoutRoot.id);
+          await tick();
+          assert.equal(sentTo(reader).length, beforeLater + 1, 'NEW-1 submits the later email once without an accepted first email');
+          const row = (await deliveries()).find(row => row.incidentUpdateId === later.id);
+          assert.ok(row.providerAcceptedAt, 'NEW-1 records provider acceptance for the later email');
+          const sent = wire(sentTo(reader).at(-1).body);
+          assert.ok(sent.text.includes('A later update must reach subscribed readers.'));
+          if (provider === 'rer') {
+            assert.equal(sent.inReplyTo, undefined, 'Managed mail sends its own root when there is no accepted relay root');
+            assert.equal(sent.references, undefined);
+          } else {
+            const root = `<lamp-${withoutRoot.id}@status.example.test>`;
+            assert.equal(sent.headers['In-Reply-To'], root);
+            assert.equal(sent.headers.References, root);
+          }
+          const afterLater = sentTo(reader).length;
+          await tick();
+          assert.equal(sentTo(reader).length, afterLater, 'accepted later mail is not replayed');
+        });
       }
       const maintenanceResponse = await call('/api/app/maintenance', { title: 'Payment service upgrade', affectedAudience: 'Payment customers', customerImpact: 'Authorizations may pause.', startsAt: new Date(Date.now() + 7200000).toISOString(), endsAt: new Date(Date.now() + 10800000).toISOString(), componentIds: [component.id], autoStart: false, autoComplete: false });
       assert.equal(maintenanceResponse.status, 201, await maintenanceResponse.clone().text());

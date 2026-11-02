@@ -26,13 +26,16 @@ export class RerMailSender implements MailSender {
     for (const name of Object.keys(headers)) {
       if (!['in-reply-to', 'references'].includes(name.toLowerCase())) continue;
       const root = await this.repository.receiptForMessageKey(`lamp:${await hash(headers[name]!)}`);
-      if (!root) throw failure('The first incident message has not been accepted by Managed mail. Lamp has queued another attempt.', true);
-      headers[name] = root;
+      // An incident can start without accepted mail (no recipients, an empty
+      // channel selection, or provider rejection). Let its later update start
+      // its own relay thread instead of exhausting retries waiting for a root.
+      if (root) headers[name] = root;
+      else delete headers[name];
     }
     let id: string, envelopeHash: string, claimed: boolean, sender;
     const wire = { deliveryId: message.idempotencyKey, messageKey, from: this.configuration.fromAddress!, to: [message.to], subject: message.subject,
       text: message.text, ...(message.html ? { html: message.html } : {}), headers: Object.fromEntries(Object.entries(headers).map(([name, value]) =>
-        [name, /^list-(archive|help)$/i.test(name) ? `<${value}>` : /^list-unsubscribe$/i.test(name) ? value.replace(/(<mailto:[^>?]+)\?subject=unsubscribe>/g, '$1>') : value])) };
+        [name, /^list-(archive|help)$/i.test(name) && !value.startsWith('<') ? `<${value}>` : /^list-unsubscribe$/i.test(name) ? value.replace(/(<mailto:[^>?]+)\?subject=unsubscribe>/g, '$1>') : value])) };
     try {
       sender = createMailSender({ provider: 'rer', mode: 'production', apiKey: this.configuration.apiKey!, relayUrl: this.configuration.relayUrl! });
       id = `rer-${await hash(message.idempotencyKey)}`;
