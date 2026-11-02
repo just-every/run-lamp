@@ -6,6 +6,7 @@ import { subscriberLimitsFlow } from './subscriber-limits-flow.mjs';
  * observes consent and real selected delivery. The source bytes are the input;
  * no file layout, wording or implementation fingerprint is pinned. */
 export async function subscriberCsvFlow() {
+  await subscriberHundredRowCsvFlow();
   const fixture = await openSubscriberManagementFixture();
   try {
     const { api, post, list, messagesFor } = fixture;
@@ -105,6 +106,94 @@ export async function subscriberCsvFlow() {
     await fixture.signIn();
   } finally { await fixture.close(); }
   await subscriberLimitsFlow();
+}
+
+/** The contractual file is independent of the smaller duplicate, reporting and
+ * erasure journey below. Compare every retained row, not only the totals. */
+export async function subscriberHundredRowCsvFlow() {
+  const fixture = await openSubscriberManagementFixture();
+  try {
+    const { api, post, list, messagesFor } = fixture;
+    const first = await fixture.createComponent('Synthetic Lamp CSV first');
+    const second = await fixture.createComponent('Synthetic Lamp CSV second');
+    await fixture.createComponent('Synthetic Lamp CSV excluded');
+    const address = name => [name, 'example.test'].join('@');
+    const expected = Array.from({ length: 97 }, (_, index) => {
+      const webhook = index % 2 === 1;
+      return {
+        channel: webhook ? 'webhook' : 'email',
+        destination: webhook ? `https://receiver.example.test/synthetic-lamp-csv-${index}` : address(`synthetic-lamp-csv-${index}`),
+        contact_email: webhook ? address(`synthetic-lamp-csv-contact-${index}`) : '',
+        state: 'pending', components: (index % 3 === 0 ? [first.id, second.id] : index % 3 === 1 ? [second.id] : []).sort().join(';'),
+        consent_at: '',
+      };
+    });
+    const rows = expected.map(row => [row.channel === 'email' ? row.destination : '', row.channel === 'webhook' ? row.destination : '', row.contact_email, row.components]);
+    rows.push(['invalid-address', '', '', first.id], ['', 'http://127.0.0.1/synthetic-lamp-1', address('synthetic-lamp-csv-unsafe'), first.id], ['', 'https://receiver.example.test/synthetic-lamp-invalid', 'invalid-contact', first.id]);
+    const csv = subscriberCsv(['email', 'webhook_url', 'contact_email', 'components'], rows);
+    const before = await fixture.databaseState(), mailBefore = fixture.messages.length;
+    const preview = await post('/api/app/subscribers/import/preview', { csv });
+    assert.equal(preview.status, 200, preview.text);
+    assert.deepEqual(preview.body.counts, { created: 97, skipped: 0, refused: 3 });
+    assert.deepEqual(preview.body.rows.map(row => ({ row: row.row, outcome: row.outcome })), Array.from({ length: 100 }, (_, index) => ({ row: index + 2, outcome: index < 97 ? 'created' : 'refused' })));
+    assert.ok(preview.body.rows.slice(97).every(row => typeof row.reason === 'string' && row.reason.length > 0), 'each malformed row has a reviewable refusal reason');
+    await fixture.assertUnchanged(before);
+    assert.equal(fixture.messages.length, mailBefore, 'the complete 100-row review sends nothing');
+    const changed = await post('/api/app/subscribers/import/apply', { csv: csv.replace(expected[0].destination, address('synthetic-lamp-csv-changed')), reviewedFingerprint: preview.body.fingerprint });
+    assert.equal(changed.status, 409, changed.text);
+    await fixture.assertUnchanged(before);
+    const applied = await post('/api/app/subscribers/import/apply', { csv, reviewedFingerprint: preview.body.fingerprint });
+    assert.equal(applied.status, 200, applied.text);
+    assert.deepEqual(applied.body.counts, { created: 97, skipped: 0, refused: 3 });
+    const pending = await list(17);
+    assert.equal(pending.length, 97);
+    assert.equal(new Set(pending.map(row => row.id)).size, 97);
+    assert.deepEqual(pending.map(row => row.id).sort(), [...applied.body.subscriberIds].sort());
+    const sort = rows => [...rows].sort((a, b) => a.destination.localeCompare(b.destination));
+    const inventory = rows => sort(rows.map(row => ({ channel: row.channel, destination: row.destination, contact_email: row.contactEmail ?? '', state: row.state, components: row.componentSelections.map(item => item.componentId).sort().join(';'), consent_at: '' })));
+    assert.deepEqual(inventory(pending), sort(expected), 'all 97 native records retain their independently expected channel, destination, contact and exact selection');
+    const owner = (await api('/api/app/session')).body.operator;
+    for (const row of pending) {
+      assert.equal(row.selectionMode, row.componentSelections.length ? 'selected' : 'all');
+      assert.deepEqual(row.addedBy, { id: owner.id, displayName: owner.displayName });
+    }
+    assert.equal(fixture.messages.length, mailBefore, 'applying all 97 pending records remains silent');
+    const exportRows = async () => {
+      const response = await fixture.request('/api/app/subscribers.csv');
+      assert.equal(response.status, 200);
+      return sort(subscriberCsvRows(await response.text()));
+    };
+    assert.deepEqual(await exportRows(), sort(expected), 'the pending export contains all 97 complete rows and no invented consent');
+    const invite = `/api/app/subscribers/import/${applied.body.batchId}/send-invitations`;
+    const remaining = async () => (await api('/api/app/subscribers/import/batches')).body.batches.find(row => row.batchId === applied.body.batchId).remaining;
+    assert.equal(await remaining(), 97);
+    for (const [sent, left] of [[50, 47], [47, 0], [0, 0]]) {
+      const start = fixture.messages.length;
+      const invited = await post(invite);
+      assert.equal(invited.status, 200, invited.text);
+      assert.deepEqual(invited.body, { sent, remaining: left });
+      assert.equal(fixture.messages.length - start, sent);
+      assert.equal(await remaining(), left);
+    }
+    for (const row of expected) {
+      const messages = messagesFor(row.contact_email || row.destination);
+      assert.equal(messages.length, 1, 'every imported recipient receives precisely one explicit confirmation');
+      assert.match(messages[0].text, /\/confirm-subscription\//);
+    }
+    assert.deepEqual(inventory(await list(17)), sort(expected), 'invitations alone grant no consent or component changes');
+    for (const row of expected.slice(0, 2)) {
+      const started = Date.now();
+      await fixture.confirm(row.contact_email || row.destination);
+      const ended = Date.now();
+      const stored = await fixture.db.prepare('SELECT a.confirmed_at AS consentAt FROM subscriber_intake a JOIN subscriber_directory s ON s.id=a.subscriber_id WHERE s.destination=?').bind(row.destination).first();
+      assert.ok(Date.parse(stored.consentAt) >= started && Date.parse(stored.consentAt) <= ended, 'consent is the actual public confirmation instant');
+      row.state = 'active'; row.consent_at = stored.consentAt;
+    }
+    assert.deepEqual(await exportRows(), sort(expected), 'all 97 exported channels, states, selections and consent instants reconcile after real confirmation');
+    const audit = await api('/api/app/audit-log?action=subscriber.imported&limit=100');
+    assert.equal(audit.status, 200, audit.text);
+    assert.ok(pending.every(row => audit.body.entries.some(entry => entry.entityId === row.id && entry.actorId === owner.id)));
+  } finally { await fixture.close(); }
 }
 
 /** A native Base member is a read-only Lamp Viewer. Batch invitation custody
