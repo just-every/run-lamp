@@ -65,7 +65,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const read = (path, init) => runtime.dispatchFetch(`https://page.example${path}`, init);
     const publishedAt = new Date().toISOString();
     const source = {
-      settings: { pageName: 'Known service status', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'UTC', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
+      settings: { pageName: 'Known service status', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
       components: [{ id: 'customer-api', name: 'Customer API', groupName: null, groupOrder: null, displayOrder: 0, note: '' }],
       claims: [{ componentId: 'customer-api', state: 'Major outage' }], history: [], corrections: [],
       incidents: [{ id: 'incident', reference: 'INC-1', title: 'Known API outage', lifecycle: 'Identified', openedAt: publishedAt, resolvedAt: null }],
@@ -73,6 +73,27 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       updates: [{ id: 'outage-update', incidentId: 'incident', lifecycle: 'Identified', affectedAudience: 'API customers', customerImpact: 'Major outage affects customer requests.', whatStillWorks: 'Status information remains available.', details: 'The operator is restoring service.', nextUpdateAt: new Date(Date.parse(publishedAt) + 3600000).toISOString(), publishedAt }],
       maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [],
     };
+    // Seed populated, nonconsecutive archive months before the real rebuild.
+    // Public reads below use a repository that throws on any access.
+    const archived = [
+      ['oldest', '2020-01-01T00:30:00.000Z', '2019-12', 'incident'],
+      ['spring', '2020-04-01T07:01:00.000Z', '2020-04', 'incident'],
+      ['latest', '2025-04-20T12:00:00.000Z', '2025-04', 'incident'],
+      ['winter-work', '2020-03-01T07:59:00.000Z', '2020-02', 'maintenance'],
+      ['spring-work', '2020-04-01T07:02:00.000Z', '2020-04', 'maintenance'],
+    ].map(([id, at, month, kind]) => ({ id, at, month, kind, title: `Synthetic Lamp retained ${id}`, reference: `synthetic-lamp-${id}` }));
+    for (const row of archived) {
+      const startedAt = new Date(Date.parse(row.at) - 3_600_000).toISOString();
+      if (row.kind === 'incident') {
+        source.incidents.push({ id: row.id, reference: row.reference, title: row.title, lifecycle: 'Resolved', openedAt: startedAt, resolvedAt: row.at });
+        source.incidentComponents.push({ incidentId: row.id, componentId: 'customer-api', componentName: 'Customer API', state: 'Major outage', relationship: 'Primary', publishedAt: row.at });
+        source.updates.push({ ...source.updates[0], id: `synthetic-lamp-update-${row.id}`, incidentId: row.id, lifecycle: 'Resolved', publishedAt: row.at, nextUpdateAt: null });
+      } else {
+        source.maintenance.push({ id: row.id, reference: row.reference, title: row.title, state: 'Completed', startsAt: startedAt, endsAt: row.at, completedAt: row.at });
+        source.maintenanceComponents.push({ maintenanceId: row.id, componentId: 'customer-api', componentName: 'Customer API' });
+        source.maintenanceNotices.push({ id: `synthetic-lamp-notice-${row.id}`, maintenanceId: row.id, kind: 'Completed', body: 'Synthetic Lamp retained work complete', publishedAt: row.at });
+      }
+    }
     const image = themeHeaderImage();
     const font = await readFile('src/core/features/public-snapshot/fonts/inter-latin.woff2');
     const themeAssets = { header: { key: 'branding/theme-image', contentType: 'image/png' }, font: { key: 'branding/theme-font', contentType: 'font/woff2' } };
@@ -84,6 +105,25 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const rebuild = async input => (await read('/test/rebuild', { method: 'POST', body: JSON.stringify({ source, ...input }) })).json();
     assert.equal((await read('/?storage=down')).status, 503, 'a fresh installation never invents an all-clear');
     const generation = await rebuild({ generation: 1 }); assert.equal(generation.failure, null);
+    const monthObjects = await bucket.list({ prefix: `snapshots/${generation.pointer.version}/history/` });
+    const monthPaths = monthObjects.objects.map(object => '/' + object.key.slice(`snapshots/${generation.pointer.version}/`.length).replace(/\.html$/, '')).sort();
+    assert.deepEqual(monthPaths, ['/history/2019-12', '/history/2020-02', '/history/2020-04', '/history/2025-04'], 'every independently expected populated month is generated');
+    const checkMonth = async (path, suffix = '') => {
+      const response = await read(path + suffix);
+      assert.equal(response.status, 200, `database-unavailable month ${path}`);
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), generation.pointer.version);
+      const html = await response.text();
+      for (const row of archived) {
+        const href = `/${row.kind === 'incident' ? 'incidents' : 'maintenance'}/${row.reference}`;
+        assert.equal(html.includes(`<a href="${href}">${row.title}</a>`), path.endsWith(row.month), `${path} retains exact membership for ${row.title}`);
+      }
+      if (suffix) assert.equal(response.headers.get('x-lamp-snapshot-state'), 'stale');
+      else assert.equal(response.headers.get('x-lamp-snapshot-state'), null);
+      return html;
+    };
+    for (const path of monthPaths) await checkMonth(path);
+    assert.equal((await (await read('/test/database-touches')).json()).accesses, 0);
+    console.log('PROBE HIST-008 4: every generated month route with throwing D1 -> 200, exact archived membership, zero database accesses');
     const paths = ['/', '/feed.atom', '/widget.js', '/api/public/status', '/badge.svg', '/badge.json'];
     const artifactKeys = ['page.html', 'feed.atom', 'widget.js', 'status.json', 'badge.svg', 'badge.json'];
     const blobReads = async () => (await read('/test/blob-reads')).json();
@@ -144,8 +184,11 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       // representations also expose staleness in their body.
       if (!path.startsWith('/badge.')) assert.ok(text.includes('Last known state') || text.includes('"snapshotState":"stale"'), path);
     }
+    for (const path of monthPaths) await checkMonth(path, '?storage=down');
     await runtime.dispose(); runtime = new Miniflare(convertV4MiniflareOptions(options));
     for (const path of paths) assert.equal((await read(path + '?storage=down&cold=1')).status, 200, `cold retained read ${path}`);
+    for (const path of monthPaths) await checkMonth(path, '?storage=down&cold=1');
+    assert.equal((await (await read('/test/database-touches')).json()).accesses, 0, 'cold retained month reads never access the database');
     for (const [kind, bytes, type] of [['header', image, 'image/png'], ['font', font, 'font/woff2']]) {
       const response = await read(`/assets/theme-${kind}?storage=down&cold=1`);
       assert.equal(response.status, 200);

@@ -8,6 +8,9 @@ import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { assertVisibleTime } from '../helpers/public-meaning.mjs';
 import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
 import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
+import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
+
+test('HIST-008 — reviewed imported history stays completely browsable without scripts', { timeout: 120_000 }, browsableHistoryFlow);
 
 test('UPTIME-003 — newly observed services report only their recorded coverage', shortHistoryFlow);
 

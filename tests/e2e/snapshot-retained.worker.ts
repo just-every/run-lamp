@@ -9,12 +9,14 @@ import { createRetainedSnapshotCache } from "../../src/core/platform/blobs/retai
 import { createR2BlobStore } from "../../src/core/platform/blobs/r2";
 export { SnapshotCache } from "../../src/core/platform/blobs/snapshot-cache";
 
+let databaseTouches = 0;
 const blobReads = { getText: new Map<string, number>(), getBytes: new Map<string, number>() };
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const cache = createRetainedSnapshotCache(env);
+    if (url.pathname === "/test/database-touches") return Response.json({ accesses: databaseTouches });
     if (url.pathname === "/test/blob-reads") return Response.json({
       getText: Object.fromEntries(blobReads.getText), getBytes: Object.fromEntries(blobReads.getBytes),
     });
@@ -44,7 +46,7 @@ export default {
       };
       return Reflect.get(target, key);
     } });
-    const repository = new Proxy({}, { get() { throw new Error("PUBLIC READ TOUCHED D1"); } });
+    const repository = new Proxy({}, { get() { databaseTouches++; throw new Error("PUBLIC READ TOUCHED D1"); } });
     const replica = url.searchParams.get("replica") === "down"
       ? { ...cache, read: async () => { throw new Error("Replica unavailable"); } }
       : cache;
