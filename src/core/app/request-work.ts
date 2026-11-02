@@ -32,12 +32,24 @@ export async function runDueWorkWhileCronQuiet(services: ReturnType<typeof creat
 }
 
 export function queueDueWork(runtime: ReturnType<typeof createApp>, bindings: AppBindings, context: ExecutionContext, request: Request, response: Response) {
-  if (bindings.EFFECTS_PAUSED === "1" || response.status >= 500) return;
+  if (bindings.EFFECTS_PAUSED === "1" || response.status >= 400) return;
+  const pathname = new URL(request.url).pathname;
+  // The agent door owns its policy and native effects. A read, refusal or
+  // policy-envelope request must not run unrelated maintenance or dispatches
+  // behind its response; Cron and ordinary operator work retain that recovery.
+  if (pathname === '/mcp' || pathname === '/agents' || pathname.startsWith('/agents/')
+    || ['/api/rer/agent-policy', '/api/rer/agent-decisions', '/api/rer/business-settings',
+      '/.well-known/oauth-protected-resource', '/.well-known/oauth-protected-resource/mcp'].includes(pathname)) return;
+  // Reviewing or applying a subscriber import promises silence. It must not
+  // drain older delivery work while creating recipients who have not consented.
+  // Cron and other operator requests still recover that work; invitations stay
+  // an explicit owner action.
+  if (request.method === 'POST' && ['/api/app/subscribers/import/preview', '/api/app/subscribers/import/apply'].includes(pathname)) return;
   // Public read requests must never query D1, including after the response.
   // Cron and operator requests retain the existing due-work recovery path.
   if ((request.method === 'GET' || request.method === 'HEAD') && createHostDispatch(bindings).surfaceFor(request) === 'page') return;
   const after = (work: Promise<void>) => context.waitUntil(work.catch((cause) => console.error("Lamp could not run due work after a request; Cron retries it.", cause)));
-  if (request.method !== "GET" && request.method !== "HEAD" && response.ok && new URL(request.url).pathname.startsWith("/api/app/")) {
+  if (request.method !== "GET" && request.method !== "HEAD" && response.ok && pathname.startsWith("/api/app/")) {
     after(dispatchMail(runtime.services, bindings));
     return;
   }

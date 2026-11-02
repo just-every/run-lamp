@@ -1,3 +1,4 @@
+import { expireReplayCalls } from '../../../modules/agent-door/erasure.ts';
 import { pingExternalHeartbeat } from './external-heartbeat';
 import { createApp } from "./server";
 import { notificationOrigin, prepareAppMailBindings } from "./mail";
@@ -33,6 +34,7 @@ export async function runScheduled(bindings: AppBindings, executionContext: Exec
     // State changes and operator reminders first, at the trigger's own time,
     // so the mail they queue goes out in this same run.
     const changes = await Promise.allSettled([
+      expireReplayCalls({ options: { db: bindings.DB }, now: () => scheduledAt }),
       runtime.services.alertRules.processPending(scheduledAt),
       runtime.services.metrics.runDue(scheduledAt),
       runtime.services.trafficAlerts.run(scheduledAt),
