@@ -407,7 +407,8 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   const vpat = await request("/docs/accessibility/vpat", appHost, { headers: { "Sec-Fetch-Mode": "navigate" } });
   assert.equal(vpat.status, 200, "PAGE-020: nested VPAT document is public on the app host");
   const vpatHtml = await vpat.text();
-  assert.match(vpatHtml, /1\.11\.1/, "the nested VPAT describes the current release");
+  const currentVersion = JSON.parse(await readFile("package.json", "utf8")).version;
+  assert.ok(vpatHtml.includes(`Product version: ${currentVersion}`), "the nested VPAT describes the current release");
   assert.equal((await request("/docs/not-a-page", appHost, { headers: { "Sec-Fetch-Mode": "navigate" } })).status, 404, "an unlisted docs address is a real 404");
   const mailEventsOnAppHost = await request("/api/intake/mail-events", appHost, { method: "POST", body: "[]" });
   assert.equal(mailEventsOnAppHost.status, 404, "mail events belong only on the page host");
