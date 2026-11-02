@@ -72,7 +72,12 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       }
       assert.deepEqual((await new AxeBuilder({ page }).analyze()).violations.filter(row => ['serious', 'critical'].includes(row.impact)), []);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
-      if (evidence) await page.screenshot({ path: join(evidence, `${source}-cutover-1440.png`), fullPage: true });
+      if (evidence) {
+        await page.screenshot({ path: join(evidence, `${source}-cutover-1440.png`), fullPage: true });
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.screenshot({ path: join(evidence, `${source}-cutover-390.png`), fullPage: true });
+        await page.setViewportSize({ width: 1440, height: 1000 });
+      }
       await assertNoNewNotifications(runtime, quiet, 'navigation, checks and history reads remain silent');
       await page.getByLabel('Public address', { exact: true }).fill(`http://127.0.0.1:${await reservePort()}`);
       await page.getByRole('button', { name: 'Use this address for checks' }).click();

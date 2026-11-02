@@ -162,6 +162,20 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         const undoneControl = await moveIn.undo(newOnly.result.door);
         assert.equal(undoneControl.status, 200, JSON.stringify(undoneControl.body));
         assert.deepEqual(await importedRecordInventory(runtime), records, 'undo of the new-only import preserves the existing imported inventory');
+        // A provider-local id and equal title in another namespace are distinct.
+        const alternateFiles = fixtures('instatus').filter(file => /^instatus-(pages|components|incidents|maintenances|subscribers|audience-groups)\.json$/u.test(file.name)).map(file => ({
+          ...file, text: file.name === 'instatus-pages.json' ? file.text : JSON.stringify(file.name === 'instatus-components.json'
+            ? [{ id: owned.id, name: owned.name, status: 'OPERATIONAL', order: 0, createdAt: owned.created_at }] : []),
+        }));
+        const alternateInput = { source: 'instatus', pageId: 'synthpage01', publicAccessAcknowledged: true, files: alternateFiles };
+        const alternate = await apply(alternateInput);
+        const priorIds = new Set(records.components.map(row => row.id));
+        const added = (await api('/api/app/components')).body.components.filter(row => !priorIds.has(row.id));
+        assert.equal(added.length, 1, 'another provider namespace imports its own explicit identity');
+        assert.equal(added[0].name, owned.name, 'equal titles do not merge independent upstream records');
+        await repeatImport(alternateInput, alternate.result);
+        assert.equal((await moveIn.undo(alternate.result.door)).status, 200);
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'removing the other namespace preserves the original identity');
         t.diagnostic('PROBE MOVE-003 2: distinct overlapping Statuspage bundle -> reasoned refusal and no native changes; reviewed new-only bundle -> one new component, repeat stable, undo preserves prior targets');
       }
       const edited = incidents.find(row => row.title === sourceHistory(source, files)[0].title);
