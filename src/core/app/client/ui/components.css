@@ -23,12 +23,6 @@
 /* Drawer contents. */
 .component-drawer { overflow-y: auto; }
 .drawer-copy { margin: 20px 0; color: var(--ink-2); font-size: 14px; line-height: 1.55; }
-/* T-1: the close button shows its name on hover and keyboard focus, never through a title attribute. */
-.drawer-close { position: relative; }
-.drawer-close::before, .drawer-close::after { position: absolute; z-index: 1; opacity: 0; pointer-events: none; }
-.drawer-close::before { content: ""; top: calc(100% + 5px); left: 50%; width: 8px; height: 8px; translate: -50% 0; rotate: 45deg; background: var(--ink); }
-.drawer-close::after { content: attr(aria-label); top: calc(100% + 8px); right: 0; border-radius: 6px; background: var(--ink); color: var(--on-ink); padding: 6px 10px; font-size: 13px; font-weight: 500; line-height: 1.3; white-space: nowrap; }
-.drawer-close:is(:hover, :focus-visible)::before, .drawer-close:is(:hover, :focus-visible)::after { opacity: 1; }
 
 /* The Details | Status | History switch, in the preview switch's style. */
 .component-part-switch { margin-top: 20px; }

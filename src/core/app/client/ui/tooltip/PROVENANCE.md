@@ -11,6 +11,7 @@
 | README.md | 2055 | 54a3a2142220d55000d9e6c3462b590cd9b7528df7a546a924800887e68739f4 |
 
 The module has no product imports. Lamp's integration lives outside these files: `../tooltip-layer.tsx` mounts the layer
-once for the operator document, `src/editor/editor-widget.ts` mounts it in the editor launcher's shadow root, and Lamp's
+once for the operator document, in its own host after `<body>` (outside the tree React hydrates, through the module's
+`container` argument), `src/editor/editor-widget.ts` mounts it in the editor launcher's shadow root, and Lamp's
 colours and type are set through the documented `--tooltip-*` custom properties in `../tokens.css`.
 Base's own copy of this module is a follow-up; this carries the same accepted source, not a parallel implementation.

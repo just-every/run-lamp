@@ -3516,7 +3516,7 @@
       "executable": false
     },
     "src/core/app/client/ui/components.css": {
-      "sha256": "4d9436b2f915dc3c2df5e4f97b36ddd4b6e671afd03ed6fdf69cb4df2a7f6b23",
+      "sha256": "9a866562f667cafc1ccdd00b82e7ae92e11b521f420c79c571fa8f5e7d65d03c",
       "executable": false
     },
     "src/core/app/client/ui/composer.css": {
@@ -3612,15 +3612,15 @@
       "executable": false
     },
     "src/core/app/client/ui/tokens.css": {
-      "sha256": "5a2b946288a4eff3f1032af279d5a11b57331b75d64969365364747dfeeac036",
+      "sha256": "43e705c410af1f5b42e329bcecf722d63447e16e321de856ebc0135f6f920b10",
       "executable": false
     },
     "src/core/app/client/ui/tooltip-layer.tsx": {
-      "sha256": "61f1d18f05bca4a83fcc98e66d9bff242defb6eef511dc5891919421eacd7ebb",
+      "sha256": "027270b012cbf904682ca07b9b0d68e183bc0d29bf5bf84968bf82ed5ed4089b",
       "executable": false
     },
     "src/core/app/client/ui/tooltip/PROVENANCE.md": {
-      "sha256": "e6c7f50f97cec434987c71c473c5e8453ffe601ecd59701d89794f16affe88b1",
+      "sha256": "35dd3d7edfc5f81ecc0835a92c603cb66a29e527e6f799a431b6548c2cc38a98",
       "executable": false
     },
     "src/core/app/client/ui/tooltip/README.md": {
