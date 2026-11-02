@@ -5,7 +5,26 @@ import { openStatusJourney } from './helpers/status-journey.mjs';
 
 const aiEndpoint = 'https://ai.example.test/v1/chat/completions';
 
-test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails', async () => {
+async function settledPublicStory(j, { reference, published }) {
+  await j.publicText('/');
+  for (let attempt = 0; ; attempt++) {
+    const work = await j.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first();
+    const building = await j.db.prepare("SELECT id FROM snapshot_builds WHERE status = 'building'").first();
+    if (work && work.requested_revision === work.completed_revision && !building) break;
+    assert.ok(attempt < 100, 'public publication settles before suggestion proof');
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  const story = [];
+  for (const path of ['/', '/history', '/feed.atom', '/feed.rss', '/widget.js', '/embed/script.js', '/api/public/status', `/incidents/${reference}`]) {
+    const response = await j.publicResponse(path);
+    assert.equal(response.status, path === `/incidents/${reference}` && !published ? 404 : 200, path);
+    story.push({ path, status: response.status, version: response.headers.get('x-lamp-snapshot-version'), generatedAt: response.headers.get('x-lamp-snapshot-generated-at'), body: await response.text() });
+  }
+  assert.ok(story[0].version, 'comparison uses a retained public generation');
+  return story;
+}
+
+test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails', async t => {
   const requests = [];
   let answer = () => Response.json({ error: 'Provider unavailable' }, { status: 503 });
   const j = await openStatusJourney({ extraBindings: { AI_PROVIDER_URL: aiEndpoint, AI_PROVIDER_API_KEY: 'synthetic-lamp-ai-key', AI_PROVIDER_MODEL: 'synthetic-lamp-model' }, providerEdge: async request => {
@@ -72,8 +91,10 @@ test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002
     for (const path of ['/', '/history', '/feed.atom', '/widget.js']) assert.ok(!(await j.publicText(path)).includes(payload.alert.title));
     await j.save(id, { affectedAudience: 'Checkout customers', customerImpact: 'Some checkout requests fail.' });
     const before = await j.read(id);
+    const privateStory = () => settledPublicStory(j, { reference: before.reference, published: false });
+    const publicBefore = await privateStory();
     answer = () => Response.json({ choices: [{ message: { content: JSON.stringify({
-      affectedAudience: { text: 'Checkout customers', sources: ['C1'] },
+      affectedAudience: { text: 'Checkout customers', sources: ['C1', 'Q-unpublished-alert', 'A999', 'C1'] },
       customerImpact: { text: 'Some checkout requests fail.', sources: ['A999'] },
       whatStillWorks: { text: 'Browsing remains available.', sources: ['C1'] }, details: { text: '', sources: [] },
       lifecycle: 'Resolved', nextUpdateAt: '2099-01-01T00:00:00.000Z',
@@ -83,12 +104,22 @@ test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002
     assert.ok(!JSON.stringify(requests.at(-1)).includes('PRIVATE responder investigation'));
     assert.ok(!JSON.stringify(requests.at(-1)).includes(hidden.name));
     assert.equal(suggested.suggestion.affectedAudience.text, 'Checkout customers');
+    assert.deepEqual(suggested.suggestion.affectedAudience.sources, ['C1'], 'only known facts survive; questions, unknown references and duplicate citations do not');
     assert.deepEqual(suggested.suggestion.customerImpact.sources, []);
     assert.ok(!('lifecycle' in suggested.suggestion) && !('nextUpdateAt' in suggested.suggestion));
     assert.deepEqual((await j.read(id)).draft, before.draft);
     assert.deepEqual((await j.read(id)).updates, before.updates);
+    assert.deepEqual(await j.read(id), before, 'generation preserves the complete saved incident');
+    assert.deepEqual(await privateStory(), publicBefore, 'generation preserves settled public pages, both feeds, both widget doors and the private permalink refusal');
     await j.publish(id);
     await j.visible(`/incidents/${before.reference}`, 'Some checkout requests fail.');
+    const publishedBefore = await j.read(id);
+    const publicStory = () => settledPublicStory(j, { reference: before.reference, published: true });
+    const publishedStory = await publicStory();
+    await j.json(`/api/app/incidents/${id}/ai-suggestion`, 'POST', {});
+    assert.deepEqual(await j.read(id), publishedBefore, 'a suggestion also preserves an already published incident and its saved records');
+    assert.deepEqual(await publicStory(), publishedStory, 'suggestions cannot alter the populated public story or its generation');
+    t.diagnostic('PROBE DRAFT-001 2, 4 and 5: native suggestion with known, question and unknown citations plus provider lifecycle and time -> only known citations and text fields; complete saved incidents and eight settled public responses unchanged before and after explicit publication');
     assert.equal((await alert({ alert: { ...payload.alert, state: 'recovered' } })).status, 202);
     const recovery = (await j.json(`/api/app/incidents/${id}/recovery-check`)).recovery;
     assert.equal(recovery.passed, false);
