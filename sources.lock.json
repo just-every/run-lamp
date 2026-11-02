@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ef653300aaa969287c8102e06d2561385df5d06c1dab1f7822ae065c6ba5be9e",
+      "sha256": "34c3c48556948a01cf48f9b1d86e9e390e9308dfac08199edd3cc27248039581",
       "executable": false
     },
     "DEMO.md": {
@@ -7084,7 +7084,7 @@
       "executable": false
     },
     "tests/e2e/helpers/snapshot-mutations-flow.mjs": {
-      "sha256": "9deeec4aabdcd2d715db601b7675d4100e22841a2ea0e37f093a5a1f2bba7d8c",
+      "sha256": "4793a1cb693864fdd391155de9a89ff00acf54734daa7d061a008a4933a7dc12",
       "executable": false
     },
     "tests/e2e/helpers/snapshot-recovery-flow.mjs": {
