@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a11309a32c0aa698565ffd951bb21051c6cf39729da697946b1badeb1dc22f87",
+      "sha256": "6047a92a28424535cac9b3bfc46036d4b17b3efcd4a9bc79db5a782ca42a895a",
       "executable": false
     },
     "DEMO.md": {
@@ -7059,6 +7059,10 @@
       "sha256": "749f7b2eba73dbf7279208077afe7ebcb4e78f98432e045bdea290465cb22e6d",
       "executable": false
     },
+    "tests/e2e/helpers/public-isolation-flow.mjs": {
+      "sha256": "7f1722e4b396f73ae1c312b6d64141cbd6d6eea685e155118cef1baf88a241f8",
+      "executable": false
+    },
     "tests/e2e/helpers/report-reminders-flow.mjs": {
       "sha256": "4127816af28d6fd37c2d09a90658a3c55ec57e46d331caaea582c65e808785b7",
       "executable": false
@@ -7232,7 +7236,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "992fd80a2fa6347164afdbcd99e97c16c24c2a5a26363392f574615d3da59e2a",
+      "sha256": "33cc7fc18288c8670b5b3672bd6724e91d864590b866e5db90add3c495cad246",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {

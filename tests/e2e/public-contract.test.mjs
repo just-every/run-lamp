@@ -10,6 +10,7 @@ import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
 import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
 import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
 import { publicHistoryFlow } from './helpers/public-history-flow.mjs';
+import { publicIsolationFlow } from './helpers/public-isolation-flow.mjs';
 
 test('HIST-008 — reviewed imported history stays completely browsable without scripts', { timeout: 120_000 }, browsableHistoryFlow);
 
@@ -83,6 +84,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       assert.equal(response.status, 200, path);
       const csp = response.headers.get('content-security-policy');
       for (const directive of ['default-src', 'script-src', 'style-src', 'img-src', 'connect-src', 'form-action', 'base-uri']) assert.ok(csp.includes(`${directive} ${j.publicOrigin}`), path);
+      assert.equal(csp, `default-src ${j.publicOrigin}; script-src ${j.publicOrigin}; style-src ${j.publicOrigin}; font-src 'self' data:; img-src ${j.publicOrigin}; connect-src ${j.publicOrigin}; form-action ${j.publicOrigin}; base-uri ${j.publicOrigin}; frame-ancestors 'none'; object-src 'none'`, `${path}: the complete policy permits only the documented sources`);
       assert.ok(csp.includes("frame-ancestors 'none'"));
       assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
       assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
@@ -274,6 +276,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await plain.locator('input[name=email]').fill('public-reader@example.test');
     await Promise.all([plain.waitForNavigation(), plain.locator('form[action="/subscribe"] button[type=submit]').click()]);
     await eventually(() => j.messages.find(message => message.to.includes('public-reader@example.test')), Boolean, 'plain form sends subscriber confirmation');
+    await publicIsolationFlow(j, browser);
     const beforeDelete = await j.publicText('/history'); assert.ok(beforeDelete.includes(main.name));
     await j.json(`/api/app/components/${main.id}`, 'DELETE', undefined, 204);
     const afterDelete = await j.visible('/history', incident.title);
