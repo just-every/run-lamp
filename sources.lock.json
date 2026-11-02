@@ -7031,6 +7031,10 @@
       "sha256": "4127816af28d6fd37c2d09a90658a3c55ec57e46d331caaea582c65e808785b7",
       "executable": false
     },
+    "tests/e2e/helpers/scheduled-update-flow.mjs": {
+      "sha256": "a53dcedcbb2e59855f1bafdcc3144f5846cbb15725f5a6c99b0ad5ffa362311e",
+      "executable": false
+    },
     "tests/e2e/helpers/self-serve-chat-flow.mjs": {
       "sha256": "2672a34832178ed85bae9c1093f6e8fd514801328212411456206975f95311d5",
       "executable": false
@@ -7204,7 +7208,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "fbe67bd8df43e6748d14af0f830561ae8958aa89e5ab07bd5ab5e7e7e740224b",
+      "sha256": "7ac88211beba242825c24333728be6139ade992b136197b592450301ed8583f0",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
