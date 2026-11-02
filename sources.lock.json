@@ -5216,7 +5216,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/service.ts": {
-      "sha256": "a31f9a882beb2cf59cd309d1a5989d94e937c473be6d688826b459b7f60f45ac",
+      "sha256": "ca01b7f00bebe7b0820dfbe83c9c73cca4d33725aad4b699dfb60de00dab8385",
       "executable": false
     },
     "src/core/features/statuspage-import/sorry-release.repository.ts": {
@@ -7252,7 +7252,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "c2b172b8952022e914c158cca1ec5b644f38b80e6a7dd8fdc8baf8df7e9f0297",
+      "sha256": "4688aa1723f423efe845e8b9270d574660549b2fbf94c69efee46b75f57e5304",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
@@ -7896,7 +7896,7 @@
       "executable": false
     },
     "tests/helpers/import-notifications.mjs": {
-      "sha256": "9ec7bc941dce410d925d3bb0e2c441e93e2db5a95d6746ac36bd8fe91b5bac64",
+      "sha256": "875b8a035ba364f07e60da2d1c8676d9e4e8dc940bc9aaf0e78bfa4cfee4db50",
       "executable": false
     },
     "tests/helpers/native-transfer.mjs": {

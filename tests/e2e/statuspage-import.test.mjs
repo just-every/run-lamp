@@ -149,7 +149,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         const records = await importedRecordInventory(runtime), notifications = await notificationInventory(runtime), aliases = await publicAliasInventory(runtime);
         const overlap = await moveIn.preview({ source, files: componentBundle([{ ...owned, name: 'Synthetic Lamp overlapping upstream record', created_at: '2026-01-03T00:00:00.000Z' }, control]) });
         assert.equal(overlap.status, 400, JSON.stringify(overlap.body));
-        assert.match(overlap.body.error, /records were imported already|already exists|already owned/iu, 'overlap refusal explains the existing ownership');
+        assert.match(overlap.body.error, /(?:records were imported already|already exists|already owned)/iu, 'overlap refusal explains the existing ownership');
         assert.deepEqual(await importedRecordInventory(runtime), records, 'overlap refusal preserves all targets and creates no new control');
         assert.deepEqual(await notificationInventory(runtime), notifications, 'overlap refusal creates no notification work');
         assert.deepEqual(await publicAliasInventory(runtime), aliases, 'overlap refusal preserves public redirects');
