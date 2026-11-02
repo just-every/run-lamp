@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "517206532526698911fbfe3330c265b8dbd19ea2a827f6e52d64d4e5c6bf7a81",
+      "sha256": "32b3a7b243059c619043a74f38f9fc7442c464faca456a39029462f56b70f0fb",
       "executable": false
     },
     "DEMO.md": {
@@ -6964,7 +6964,7 @@
       "executable": false
     },
     "tests/e2e/helpers/maintenance-identity-flow.mjs": {
-      "sha256": "f2cfb8f0180f17abe7a76f33ae5dbe8525018ab5d38368211806cbba26610d20",
+      "sha256": "366b4834571388577c1bf8c2a3b43933902dc20e081123b39aec98f8341d63c5",
       "executable": false
     },
     "tests/e2e/helpers/metric-setup-journey.mjs": {
@@ -7212,7 +7212,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "4bc33e5e152923898ab53dba00ae5ac6fd118d0273aeddc2929422f28417af32",
+      "sha256": "5793ee18098750d9be8cb3ff1964ef53ce87145640b30e45f3e5fa8385a49cc1",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
