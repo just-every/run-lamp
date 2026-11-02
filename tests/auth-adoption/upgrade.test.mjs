@@ -83,10 +83,28 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, hist
   const targetBefore=await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(owner.id).first();
   assert.equal((await call(`/api/app/operators/${owner.id}`,{method:'DELETE',cookie:cookies['second@example.test']})).status,401);
   assert.deepEqual(await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(owner.id).first(),targetBefore);
+  const third=eligible.find(o=>o.email==='third@example.test');
+  const protectedIdentity=async()=>({
+   identity:await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(owner.id).first(),
+   product:await db.prepare('SELECT * FROM operators WHERE id=?').bind(owner.id).first(),
+   setup:await db.prepare('SELECT * FROM oa_bootstrap WHERE claim_id=?').bind(owner.id).first(),
+   sessions:(await db.prepare('SELECT * FROM oa_sessions WHERE operator_id=? ORDER BY id').bind(owner.id).all()).results,
+   tokens:(await db.prepare('SELECT * FROM oa_tokens WHERE operator_id=? ORDER BY id').bind(owner.id).all()).results,
+   externalIdentities:(await db.prepare('SELECT * FROM oa_external_identities WHERE operator_id=? ORDER BY issuer,subject').bind(owner.id).all()).results,
+  });
+  const protectedBefore=await protectedIdentity();
+  const activeOwner=await call('/api/app/session',{cookie:cookies[third.email]});
+  assert.equal(activeOwner.status,200,'the refusing actor is still active');
+  assert.equal((await activeOwner.json()).operator.role,'owner','the refusing actor is another Owner');
+  const protectedRemoval=await call(`/api/app/operators/${owner.id}`,{method:'DELETE',cookie:cookies[third.email]});
+  assert.equal(protectedRemoval.status,403,'another active Owner cannot erase the protected setup identity');
+  assert.equal((await protectedRemoval.json()).error,'forbidden');
+  assert.deepEqual(await protectedIdentity(),protectedBefore,'refused removal preserves the complete setup identity, authority and credentials');
+  assert.equal((await call('/api/app/session',{cookie:cookies[owner.email]})).status,200,'the protected target retains access');
+  assert.equal((await call('/api/app/session',{cookie:cookies[third.email]})).status,200,'the refusing actor remains active');
   assert.equal((await call(`/api/app/operators/${owner.id}`,{method:'DELETE',cookie:cookies['owner@example.test']})).status,204,'setup owner may erase themselves while another owner remains');
   assert.equal((await call('/api/app/session',{cookie:cookies['owner@example.test']})).status,401);
   assert.deepEqual((await db.prepare('SELECT * FROM subscriber_tokens').all()).results,retainedSubscriberTokens,'operator erasure preserves subscriber authority');
-  const third=eligible.find(o=>o.email==='third@example.test');
   assert.equal((await call(`/api/app/operators/${third.id}`,{method:'DELETE',cookie:cookies['third@example.test']})).status,409,'last active owner remains recoverable');
   const finalOwnerBefore=await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(third.id).first();
   assert.equal((await call(`/api/app/operators/${third.id}/role`,{method:'POST',cookie:cookies['third@example.test'],body:{role:'viewer'}})).status,409,'the final active Owner cannot demote themselves');

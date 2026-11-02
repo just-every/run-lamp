@@ -11,6 +11,7 @@ import {reservePort} from './worker-startup.mjs';
 import {operatorHydrated} from './helpers/operator-hydrated.mjs';
 import {readDevKey,signInAs} from '@runeditrun/rer/internal/modules/operator-auth/dev/sign-in-as.mjs';
 import {createRedaction} from '@runeditrun/rer/redaction';
+import {operatorManagementFlow} from './helpers/operator-management-flow.mjs';
 
 const owner='owner@example.test';
 const evidence=process.env.LAMP_AUTH_JOURNEY_EVIDENCE;
@@ -178,6 +179,7 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
     await context.close();
    }
    await stop();
+   await operatorManagementFlow({browser,capture,diagnostic:message=>t.diagnostic(message)});
    await rm(join(root,'exports/probe.rer'));await rm(join(root,'probe.rer'));
  }finally{await browser?.close();await stop();await rm(root,{recursive:true,force:true});await rm(servers,{recursive:true,force:true});await rm(cache,{recursive:true,force:true});}
 });
