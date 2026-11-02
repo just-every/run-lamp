@@ -10,7 +10,7 @@ import { operationsAlertsFlow } from "./helpers/operations-alerts-flow.mjs";
 import { selfServeChatFlow } from "./helpers/self-serve-chat-flow.mjs";
 import { channelDeletionFlow } from "./helpers/channel-deletion-flow.mjs";
 import { channelsBrowserFlow } from "./helpers/channels-browser-flow.mjs";
-import { presetRecoveryFlow, publicSnapshot } from "./helpers/preset-recovery-flow.mjs";
+import { presetRecoveryFlow, publicSnapshot, closePublicSnapshot } from "./helpers/preset-recovery-flow.mjs";
 import { uptimePresetFlow } from "./helpers/uptime-preset-flow.mjs";
 import { uptimePairingFlow } from "./helpers/uptime-pairing-flow.mjs";
 import { openFollowUpsRuntime, eventuallyFollowUp } from "./helpers/follow-ups-runtime.mjs";
@@ -230,7 +230,7 @@ before(async () => {
 
 after(async () => {
   database?.close();
-  await runtime?.close();
+  try { await closePublicSnapshot(runtime); } finally { await runtime?.close(); }
   await new Promise((resolve) => receiver?.close(resolve));
 });
 

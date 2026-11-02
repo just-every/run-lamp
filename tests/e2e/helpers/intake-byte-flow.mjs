@@ -7,8 +7,8 @@ export function intakeInventories(sql) {
   return Object.fromEntries(['incidents', 'incident_drafts', 'incident_updates', 'alert_receipts'].map(table => [table, sql(`SELECT * FROM ${table} ORDER BY id`)]));
 }
 
-export async function assertAuthenticationRefusal({ request, label, sql, snapshot, t }) {
-  const beforePublic = await snapshot();
+export async function assertAuthenticationRefusal({ request, label, sql, snapshot, t, beforePublic = undefined }) {
+  beforePublic ??= await snapshot();
   const before = intakeInventories(sql);
   const response = await request();
   assert.equal(response.status, 401, label);
@@ -37,6 +37,7 @@ export async function intakeByteFlow({ api, post, publicOrigin, source, payload,
       incidents: (await api('/api/app/incidents')).body,
       page: await (await fetch(`${publicOrigin}/api/public/status`)).text(),
     };
+    const beforePublic = await snapshot();
     const bom = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), raw]);
     const replacement = Buffer.from(JSON.stringify({ ...payload, title: 'byte-�-evidence' }));
     const invalid = Buffer.concat([replacement.subarray(0, replacement.indexOf(Buffer.from('�'))), Buffer.from([0x80]), replacement.subarray(replacement.indexOf(Buffer.from('�')) + 3)]);
@@ -52,7 +53,7 @@ export async function intakeByteFlow({ api, post, publicOrigin, source, payload,
       ['changed timestamp', raw, sign(raw), new Date(Date.parse(timestamp) + 1000).toISOString()],
       ['stale timestamp', raw, sign(raw, new Date(Date.now() - 360000).toISOString()), new Date(Date.now() - 360000).toISOString()],
     ]) {
-      await assertAuthenticationRefusal({ request: () => send(body, signature, at), label: `${source.preset ?? source.timestampHeader}: ${label}`, sql, snapshot, t });
+      await assertAuthenticationRefusal({ request: () => send(body, signature, at), label: `${source.preset ?? source.timestampHeader}: ${label}`, sql, snapshot, t, beforePublic });
     }
     assert.deepEqual((await api('/api/app/intake/receipts?limit=250')).body, before.receipts, 'authentication failures create no receipt');
     assert.deepEqual((await api('/api/app/incidents')).body, before.incidents, 'authentication failures create no draft');

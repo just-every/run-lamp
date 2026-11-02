@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { intakeByteFlow, assertAuthenticationRefusal } from './intake-byte-flow.mjs';
+import { intakeByteFlow, assertAuthenticationRefusal, intakeInventories } from './intake-byte-flow.mjs';
 import { createHmac } from 'node:crypto';
 
 // run-uptime main: notification-content.ts, notification-context.ts and
@@ -26,19 +26,27 @@ export async function uptimePresetFlow({ api, post, component, publicOrigin, sql
   const source = created.body.source;
   assert.equal(source.credentialKind, 'hmac-sha256');
   assert.deepEqual(source.monitorMappings, mappings);
-  assert.ok(!(await api('/api/app/intake/sources')).text.includes(secret));
+  const savedSources = await api('/api/app/intake/sources');
+  assert.ok(!savedSources.text.includes(secret));
+  assert.deepEqual(savedSources.body.sources.find(row => row.id === source.id).monitorMappings, mappings, 'fresh read retains every exact monitor mapping');
   await intakeByteFlow({ api, post, publicOrigin, source, payload: envelope('checkout', 'incident:exact-bytes'), secret, sql, snapshot, t });
   const down = envelope('checkout', 'incident:checkout-first');
+  const beforeAuthentication = await snapshot();
   for (const [label, options] of [
     ['signed replay outside five minutes', { timestamp: new Date(Date.now() - 6 * 60000).toISOString() }],
     ['signed wrong key', { signingSecret: 'synthetic-lamp-wrong' }],
     ['signature without timestamp prefix', { signature: createHmac('sha256', secret).update(JSON.stringify(down)).digest('base64url') }],
-  ]) await assertAuthenticationRefusal({ request: () => send(source, down, options), label, sql, snapshot, t });
+  ]) await assertAuthenticationRefusal({ request: () => send(source, down, options), label, sql, snapshot, t, beforePublic: beforeAuthentication });
   assert.equal((await send(source, { ...down, kind: 'recovery' })).status, 400, 'unconfirmed or inconsistent transitions refused');
   assert.equal((await send(source, envelope('unmapped', 'incident:unmapped'))).status, 400);
   const firing = await send(source, down);
   assert.equal(firing.status, 202, JSON.stringify(firing));
-  assert.equal((await send(source, down)).body.incidentId, firing.body.incidentId, 'duplicate webhook stays in one draft');
+  const beforeReplay = intakeInventories(sql);
+  const replay = await send(source, down);
+  assert.equal(replay.body.incidentId, firing.body.incidentId, 'duplicate webhook stays in one draft');
+  assert.deepEqual([replay.status, replay.body.receiptId, replay.body.replayed], [202, firing.body.receiptId, true]);
+  assert.deepEqual(intakeInventories(sql), beforeReplay, 'signed replay retains every incident, draft, update and receipt');
+  t.diagnostic('PROBE INTAKE-008 4: signed default firing and exact replay -> same private draft and receipt; complete inventories unchanged');
   const incident = (await api(`/api/app/incidents/${firing.body.incidentId}`)).body.incident;
   assert.deepEqual(incident.components.map(row => row.componentId), [targets[0].id]);
   assert.equal(incident.updates.length, 0);
@@ -53,6 +61,7 @@ export async function uptimePresetFlow({ api, post, component, publicOrigin, sql
   const second = await send(source, envelope('payments', 'incident:checkout-first'));
   assert.notEqual(second.body.incidentId, incident.id, 'monitor identity isolates equal incident keys');
   assert.deepEqual((await api(`/api/app/incidents/${second.body.incidentId}`)).body.incident.components.map(row => row.componentId), [targets[1].id]);
+  t.diagnostic('PROBE INTAKE-008 3 mappings: equal incident keys on checkout and payments -> isolated incidents with their exact saved components');
   const recovery = await send(source, { ...down, id: 'recovered-event', kind: 'recovery', state: 'recovered', eventType: 'uptime.incident.recovered' });
   assert.equal(recovery.status, 202);
   assert.equal(recovery.body.incidentId, incident.id);
@@ -69,11 +78,18 @@ export async function uptimePresetFlow({ api, post, component, publicOrigin, sql
   assert.ok(oldBrief.whatWeKnow.alerts[0].evidenceSummary.includes('Confirmed failure time: not supplied'));
   assert.equal(oldBrief.whatWeKnow.alerts[0].evidenceSummary, 'Vantages: us-east: target_failure — Expected HTTP 200; received 503; eu-west: target_failure — Expected HTTP 200; received 503. Error category: target_failure, target_failure. Confirmed failure time: not supplied.');
   assert.ok(!oldBrief.whatWeKnow.alerts[0].evidenceSummary.includes(new Date(historical.observedAt).toISOString()), 'missing confirmation does not borrow observedAt');
+  const absent = { ...historical, id: 'synthetic-lamp-no-context', incidentKey: 'incident:no-context', probes: [] };
+  const absentResult = await send(source, absent);
+  assert.equal(absentResult.status, 202);
+  assert.equal((await api(`/api/app/incidents/${absentResult.body.incidentId}/brief`)).body.brief.whatWeKnow.alerts[0].evidenceSummary, 'Vantages: not supplied. Error category: not supplied. Confirmed failure time: not supplied.');
   const publishedId = second.body.incidentId;
   const draft = { lifecycle: 'Investigating', affectedAudience: 'Customers checking out.', customerImpact: 'Some payments are failing.', whatStillWorks: 'Browsing works.', details: '', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() };
   assert.equal((await api(`/api/app/incidents/${publishedId}/draft`, { method: 'PUT', body: JSON.stringify(draft) })).status, 200);
   assert.equal((await post(`/api/app/incidents/${publishedId}/publish`, { channels: [] })).status, 200);
+  const beforeRecovery = sql('SELECT * FROM incident_updates ORDER BY id');
   assert.equal((await send(source, envelope('payments', 'incident:checkout-first', true))).status, 202);
+  assert.deepEqual(sql('SELECT * FROM incident_updates ORDER BY id'), beforeRecovery, 'published recovery changes no committed update');
+  t.diagnostic('PROBE INTAKE-008 6: signed published recovery -> evidence accepted; Investigating lifecycle and complete publication inventory unchanged');
   assert.equal((await api(`/api/app/incidents/${publishedId}`)).body.incident.lifecycle, 'Investigating', 'INTAKE-008 recovery records evidence but cannot close a published incident');
   const changed = await api(`/api/app/intake/sources/${source.id}`, { method: 'PUT', body: JSON.stringify({ ...input, signingSecret: undefined }) });
   assert.equal(changed.status, 200, changed.text);

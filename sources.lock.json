@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "517206532526698911fbfe3330c265b8dbd19ea2a827f6e52d64d4e5c6bf7a81",
       "executable": false
     },
     "DEMO.md": {
@@ -6784,7 +6784,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "a1a3a1e0c62ad1c3f46e100bbe85f95be6dae26ce437f5819f7be8b37d489f2c",
+      "sha256": "d9312c7e3c0300b05bdfce2d67ebff395f3f6039bfbacedc9b2509d2132ee4df",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
@@ -6944,7 +6944,7 @@
       "executable": false
     },
     "tests/e2e/helpers/intake-byte-flow.mjs": {
-      "sha256": "d3f28b3aaf0d4690a11121cd8ebb64be2c2413b8bd30b97a7a10e1df18a82bd9",
+      "sha256": "c79ea89bb590a367ceb0509aad2ceb515b7e7510d9142dde13a59983dc96426b",
       "executable": false
     },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
@@ -7020,7 +7020,7 @@
       "executable": false
     },
     "tests/e2e/helpers/preset-recovery-flow.mjs": {
-      "sha256": "18ba3a1f2dbc12ffe1485b39a7ed140f23abe16abfb5ed9c4108006d5f9fc379",
+      "sha256": "b8fd14abefbe083332b5db5a44510f7c6af3b8091af5079804b001447750add2",
       "executable": false
     },
     "tests/e2e/helpers/public-capacity-journey.mjs": {
@@ -7152,11 +7152,11 @@
       "executable": false
     },
     "tests/e2e/helpers/uptime-pairing-flow.mjs": {
-      "sha256": "5321a6f545642b8e50f926a6f464d4c7a26ea0ff2dcb8a4d69355f2f15c50bd5",
+      "sha256": "54bf98bcd4446aa6f798e7e641652a0e23475c98db225028bd7dd83008b0dbe7",
       "executable": false
     },
     "tests/e2e/helpers/uptime-preset-flow.mjs": {
-      "sha256": "84d0cef50b464e65547a2763ece39a70d4cdbc7cd939d5b164cbf2414df8d2a1",
+      "sha256": "5b24a186f44e90d561c8dfc3e7767fd4db4812ef23378cd10baba1cb70c33db0",
       "executable": false
     },
     "tests/e2e/helpers/webhook-at-most-once-flow.mjs": {

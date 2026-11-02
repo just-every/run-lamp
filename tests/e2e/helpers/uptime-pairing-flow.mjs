@@ -79,18 +79,20 @@ export async function uptimePairingFlow({ api, component, origin, cookie, post, 
       // Only Lamp's key with a fresh Uptime stamp gets in; refused requests are not arrivals.
       const key = `incident:paired-${width}`;
       const monitorId = `storefront-${width}`;
+      const beforeAuthentication = await snapshot();
       for (const [label, endpoint, options] of [
+        ['paired missing key', address.slice(0, address.lastIndexOf('/')), {}],
         ['paired wrong key', address.replace(/[^/]+$/, 'not-the-key'), {}],
         ['paired missing timestamp', address, { stamp: false }],
         ['paired stale timestamp', address, { timestamp: new Date(Date.now() - 6 * 60000).toISOString() }],
-      ]) await assertAuthenticationRefusal({ request: () => send(endpoint, uptimeEvent(monitorId, 'Storefront', key), options), label, sql, snapshot, t });
+      ]) await assertAuthenticationRefusal({ request: () => send(endpoint, uptimeEvent(monitorId, 'Storefront', key), options), label, sql, snapshot, t, beforePublic: beforeAuthentication });
       await open();
       assert.equal(await page.locator('.receipt-card').count(), 0, 'receipts wait for an arrival');
 
       // Uptime's Send test proves the address; its first alert names the monitor to pick.
       for (const [label, payload, reason] of [
         ['test', uptimeEvent(null, null, key, 'test'), "An Uptime test. Only Uptime's alerts open drafts."],
-        ['drill', { ...uptimeEvent(null, null, key, 'test'), id: `drill:${key}`, title: 'Alert drill: Uptime', explanation: 'Synthetic Lamp alert drill. No monitor state or incident was changed.' }, "An Uptime test. Only Uptime's alerts open drafts."],
+        ['drill', { ...uptimeEvent(null, null, key, 'test'), id: `drill:${key}`, eventType: 'uptime.notification.drill', title: 'Alert drill: Uptime', monitorName: 'Alert drill', explanation: 'This is an alert drill, not an incident. No monitor state or incident was changed.' }, "An Uptime test. Only Uptime's alerts open drafts."],
         ['unpicked monitor', uptimeEvent(monitorId, 'Storefront', key), 'Monitor not picked yet. Pick its component under Uptime.'],
       ]) {
         const beforePublic = await snapshot();
@@ -116,6 +118,7 @@ export async function uptimePairingFlow({ api, component, origin, cookie, post, 
       await row.getByText('1 monitor to pick', { exact: true }).waitFor();
       const receipts = page.locator('.receipt-card');
       await receipts.getByText('Monitor not picked yet. Pick its component under Uptime.', { exact: true }).waitFor();
+      assert.equal(await receipts.getByText("An Uptime test. Only Uptime's alerts open drafts.", { exact: true }).count(), 2, 'test and drill each retain their visible refusal reason');
       await receipts.getByText("An Uptime test. Only Uptime's alerts open drafts.", { exact: true }).first().waitFor();
       await inspect('first-arrival');
 
