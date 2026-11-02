@@ -7052,7 +7052,7 @@
       "executable": false
     },
     "tests/e2e/helpers/public-capacity-journey.mjs": {
-      "sha256": "cc9b1956d7d653fdece11dd88d67b866967ace36730dc7b24e474765513cbe00",
+      "sha256": "9ebf78657deed39c2de2110bae7a5e5608f564c18f26dcf1069ee2ce98a755f5",
       "executable": false
     },
     "tests/e2e/helpers/public-history-flow.mjs": {
@@ -7232,7 +7232,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "992fd80a2fa6347164afdbcd99e97c16c24c2a5a26363392f574615d3da59e2a",
+      "sha256": "f2a9cfc7d0aba61e07f66af48d07d51208d8a4e8b477ccaa8d3dc1e5d244c2e6",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
