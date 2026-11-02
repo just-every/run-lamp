@@ -25,7 +25,7 @@ export async function eventuallyFollowUp(read, predicate, description) {
 
 /** Disposable migrated Worker. Only the email/webhook network edges are fake;
  * Queue outage injection is the existing queue-outage.worker.ts boundary. */
-export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceiver, pageHost = "status.example.test", extraBindings = {}, providerEdge, workerEntry = "tests/e2e/helpers/follow-ups-worker.ts" } = {}) {
+export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceiver, pageHost = "status.example.test", extraBindings = {}, providerEdge, beforeMigration, workerEntry = "tests/e2e/helpers/follow-ups-worker.ts" } = {}) {
   const state = await mkdtemp(join(tmpdir(), "lamp-follow-ups-"));
   const messages = [], webhookRequests = [], channelRequests = [], mailReceipts = [];
   let runtime, webhookOutage = true, cookie;
@@ -95,7 +95,10 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     }));
     const db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
-    for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) await execute(await readFile(join("migrations/core", migration), "utf8"));
+    for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) {
+      await beforeMigration?.({ name: migration, db, execute });
+      await execute(await readFile(join("migrations/core", migration), "utf8"));
+    }
     // Installation identity/settings are fixture prerequisites. Every obligation
     // below is created through an ordinary operator or public HTTP request.
     await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES ('01J00000000000000000000091','synthetic-lamp-owner@example.test','Synthetic Lamp owner','owner','active',${Date.now()});
