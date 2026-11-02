@@ -26,6 +26,7 @@ export function createCommunicationPerformanceRepository(db: D1Database): Commun
       const statements = [
         db.prepare(`${cohort} SELECT i.id AS incidentId,i.reference,i.title,i.lifecycle,i.opened_at AS openedAt,i.resolved_at AS resolvedAt,i.peak_impact AS peakImpact,
           ${imported} AS retainedImport,
+          EXISTS(SELECT 1 FROM report_waivers w WHERE w.incident_id = i.id) AS reportWaived,
           (SELECT MIN(received_at) FROM alert_receipts a WHERE a.incident_id = i.id AND a.state <> 'invalid' AND a.error IS NULL AND julianday(a.received_at) <= julianday(?)) AS firstAcceptedAlertAt,
           (SELECT published_at FROM incident_reports r WHERE r.incident_id = i.id) AS reportPublishedAt FROM cohort i ORDER BY i.opened_at,i.id`).bind(...parameters, scope.measuredAt),
         db.prepare(`${cohort} SELECT u.id AS updateId,u.incident_id AS incidentId,u.lifecycle,u.published_at AS publishedAt,u.created_at AS createdAt,u.next_update_at AS nextUpdateAt,u.is_retroactive AS isRetroactive,

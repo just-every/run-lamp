@@ -83,7 +83,7 @@ export function incidentPerformance(incident: IncidentFact, facts: PerformanceFa
     firstUpdateLatencyMs: latency !== null && latency >= 0 ? latency : null,
     resolutionDurationMs: duration !== null && duration >= 0 ? duration : null,
     commitments: commitments(updates, measuredAt),
-    reportOwed: incident.lifecycle === "Resolved" && policy.isDue({ resolvedAt: incident.resolvedAt, impact: incident.peakImpact, hasPublishedReport: Boolean(incident.reportPublishedAt), now: measuredAt }),
+    reportOwed: incident.lifecycle === "Resolved" && !incident.reportWaived && policy.isDue({ resolvedAt: incident.resolvedAt, impact: incident.peakImpact, hasPublishedReport: Boolean(incident.reportPublishedAt), now: measuredAt }),
     retainedImport: Boolean(incident.retainedImport),
   };
 }
