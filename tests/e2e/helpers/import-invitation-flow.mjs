@@ -21,6 +21,53 @@ export function invitationFiles(source, files) {
   return files;
 }
 
+/** Only the owner's explicit action sends. Each signed-in refusal leaves
+ * the mail edge, the remaining invitations and every row as they were, apart
+ * from its own attributed access-denied entry. */
+async function nonOwnerInvitationRefusalFlow(fixture, invite, remaining, source) {
+  const { api, post, messages } = fixture;
+  const databaseState = async () => {
+    const tables = (await fixture.db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT GLOB '_cf_*' ORDER BY name").all()).results;
+    const state = new Map();
+    for (const { name } of tables) {
+      const rows = (await fixture.db.prepare(`SELECT * FROM "${name.replaceAll('"', '""')}"`).all()).results;
+      state.set(name, JSON.stringify(rows.map(row => JSON.stringify(Object.fromEntries(Object.entries(row).sort(([a], [b]) => a.localeCompare(b))))).sort()));
+    }
+    return state;
+  };
+  const before = await remaining();
+  assert.ok(before > 0, 'the batch still has invitations to send');
+  for (const role of ['admin', 'communicator']) {
+    const email = [`synthetic-lamp-${source}-invitations-${role}`, 'example.test'].join('@');
+    assert.equal((await post('/api/app/operators/invite', { email, displayName: `Synthetic Lamp invitations ${role}` })).status, 202);
+    await fixture.signIn(email);
+    const person = (await api('/api/app/session')).body.operator;
+    await fixture.signIn();
+    assert.equal((await post(`/api/app/operators/${person.id}/role`, { role })).status, 200);
+    await fixture.signIn(email, { fresh: true });
+    assert.equal((await api('/api/app/session')).body.operator.role, role);
+    const state = await databaseState(), mail = messages.length;
+    const refused = await post(invite);
+    assert.equal(refused.status, 403, `the signed-in ${role} invitation action must be refused before transport`);
+    assert.equal(messages.length, mail, `the ${role}'s refused invitation action sends no mail`);
+    const after = await databaseState();
+    const prior = JSON.parse(state.get('audit_entries')), current = JSON.parse(after.get('audit_entries'));
+    const added = current.filter(row => !prior.includes(row));
+    assert.equal(added.length, 1, `the ${role}'s refusal adds exactly its access-denied entry`);
+    const denial = JSON.parse(added[0]);
+    assert.equal(denial.action, 'access-denied');
+    assert.equal(denial.operator_id, person.id);
+    assert.equal(denial.entity_id, invite);
+    after.set('audit_entries', JSON.stringify(current.filter(row => row !== added[0])));
+    assert.deepEqual(after, state, `the ${role}'s refusal changes no other row`);
+    await fixture.signIn();
+    assert.equal(await remaining(), before, `the ${role}'s refusal leaves every invitation remaining`);
+    const denials = await api(`/api/app/audit-log?action=access-denied&actorId=${person.id}`);
+    assert.ok(denials.body.entries.some(row => row.id === denial.id && row.entityId === invite), `the owner sees the ${role}'s attributed denial`);
+    console.log(`PROBE MOVE-013 ${source}: signed-in ${role} POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry`);
+  }
+}
+
 /** All outcomes travel through the reviewed native import, owner invitation,
  * real mail serializer, anonymous confirmation and native scheduled handler. */
 export async function importInvitationFlow({ runtime, api, source, result, priorIds, control }) {
@@ -64,6 +111,11 @@ export async function importInvitationFlow({ runtime, api, source, result, prior
   assert.equal(runtime.messages.length, mailBeforeSignout, 'refused invitations hand nothing to transport');
   await clock(Date.parse(originalReview) + 48 * HOUR);
   await runtime.signIn(undefined, { fresh: true });
+  await nonOwnerInvitationRefusalFlow(runtime, path, async () => {
+    const read = await api(`/api/app/statuspage-import/jobs/${result.job.id}`);
+    assert.equal(read.status, 200, JSON.stringify(read.body));
+    return read.body.report.cutover.invitations.eligible;
+  }, source);
   const mailBefore = runtime.messages.length, receiptsBefore = runtime.mailReceipts.length;
 
   assert.equal((await runtime.raw('/test/invitation-preparation', { method: 'PUT', body: JSON.stringify({ fail: true }) })).status, 204);

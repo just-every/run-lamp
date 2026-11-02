@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "aea0901ed124591c1c7439bfbfde23924a8f34799acac52bcf5f59b9a9a71b7c",
+      "sha256": "c5a977da74afc460d5e8d5f5fbb650131cc26a5fb80876897f1f331ab4694502",
       "executable": false
     },
     "DEMO.md": {
@@ -5208,7 +5208,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/routes.ts": {
-      "sha256": "bd2f8b64c72feee650661d2166ec36c887ae7c2997005fb94b5841916e03736a",
+      "sha256": "08af04b21646fd70117ad37a8b99dd34a8ff624afad147766cfd140444d75e98",
       "executable": false
     },
     "src/core/features/statuspage-import/rows.ts": {
@@ -6900,7 +6900,7 @@
       "executable": false
     },
     "tests/e2e/helpers/import-invitation-flow.mjs": {
-      "sha256": "3a74ac619be863c3bf5e9a7635c317f7e1f174ec16427999a41213899211330d",
+      "sha256": "9ec549c66cc728a88a55df7d538e712b4335e3fbaa255784b4c094b49c7bea05",
       "executable": false
     },
     "tests/e2e/helpers/import-invitation.worker.ts": {
