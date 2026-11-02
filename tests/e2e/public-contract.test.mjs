@@ -171,10 +171,10 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await j.json(`/api/app/components/${other.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
     const incident = await j.incident('Synthetic Lamp API outage under investigation', [main, hidden]);
     const widgetWording = literalLinkFields({
-      affectedAudience: 'Synthetic Lamp customers submitting API requests.' + wording.affectedAudience,
-      customerImpact: 'New API requests cannot complete during this outage.' + wording.customerImpact,
-      whatStillWorks: 'Previously saved results remain available in the dashboard.' + wording.whatStillWorks,
-      details: 'Responders have isolated the failing API gateway.' + wording.details,
+      affectedAudience: 'Synthetic Lamp customers submitting API requests. ' + wording.affectedAudience,
+      customerImpact: 'New API requests cannot complete during this outage. ' + wording.customerImpact,
+      whatStillWorks: 'Previously saved results remain available in the dashboard. ' + wording.whatStillWorks,
+      details: 'Responders have isolated the failing API gateway. ' + wording.details,
     });
     await j.save(incident.id, widgetWording);
     const linkedUpdate = (await j.publish(incident.id)).update;

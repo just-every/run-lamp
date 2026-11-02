@@ -22,6 +22,7 @@ export async function assertUpdateLinkSurfaces(j, incident, component, update, {
 /** Reuse the public journey's browser and actual published page at both reader widths. */
 export async function assertUpdateLinkScreens(page, j, incident, update, { history = false } = {}) {
   const originalViewport = page.viewportSize();
+  const originalUrl = page.url();
   const paths = history ? ['/history'] : ['/', `/incidents/${incident.reference}`];
   try {
     for (const width of [1440, 390]) {
@@ -38,5 +39,8 @@ export async function assertUpdateLinkScreens(page, j, incident, update, { histo
         }
       }
     }
-  } finally { await page.setViewportSize(originalViewport); }
+  } finally {
+    await page.setViewportSize(originalViewport);
+    if (page.url() !== originalUrl) await page.goto(originalUrl);
+  }
 }
