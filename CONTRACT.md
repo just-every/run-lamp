@@ -3131,6 +3131,8 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 INTAKE-007 retains current-main's partial judgment and recorded gap. The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These additional assertions do not change the newer clause judgment.
 
+NOTIFY-003 retains current-main's partial judgment and recorded gap. The replay of `03f0c3299d23c080e124f0e471a02bbc355c0079` and `72edf10404d3a3c24df755201737ec364aac7088` adds durable retry eligibility and the registered `tests/e2e/helpers/delivery-retry-flow.mjs` journey in `tests/e2e/delivery-contract.test.mjs`: five retries after the first failure, independently specified exponential deadlines across one hour, early-redelivery silence, terminal subscriber/update reconciliation and later replay silence. These additional assertions do not promote the newer clause judgment.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 96 | 0 | 107 |
