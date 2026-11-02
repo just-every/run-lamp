@@ -10,6 +10,9 @@ import { openStatusJourney, eventually, wording, visibleText } from './helpers/s
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
+import { snapshotMutationsFlow } from './helpers/snapshot-mutations-flow.mjs';
+
+test('PAGE-005 — native content mutations reconcile complete page, Atom and widget generations', snapshotMutationsFlow);
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);

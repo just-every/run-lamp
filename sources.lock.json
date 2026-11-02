@@ -4392,7 +4392,7 @@
       "executable": false
     },
     "src/core/features/overview/follow-ups/query.repository.ts": {
-      "sha256": "8ec16e27cb0e4d015b924ac988b6d6c281ce8808215feafa858942afc650d240",
+      "sha256": "c625be7d0fa5d4b5066bb7b1d9c790562c20dcc0320e0b5d670940a1678a9d2e",
       "executable": false
     },
     "src/core/features/overview/follow-ups/report.repository.ts": {
@@ -7135,6 +7135,14 @@
       "sha256": "c4fb13202f552797337f582d96124bc59abd2fd6771b356554e3dd176ef73999",
       "executable": false
     },
+    "tests/e2e/helpers/snapshot-mutations-flow.mjs": {
+      "sha256": "9deeec4aabdcd2d715db601b7675d4100e22841a2ea0e37f093a5a1f2bba7d8c",
+      "executable": false
+    },
+    "tests/e2e/helpers/snapshot-recovery-flow.mjs": {
+      "sha256": "da7f472d36fd9c12b0d5d7538d5485e5003794214c1e83d7f03e8b2024145f3b",
+      "executable": false
+    },
     "tests/e2e/helpers/social-browser-flow.mjs": {
       "sha256": "025bf96c87d9e4f65fb8c921e4d1b83d4e64ce20fb100d5853c8c5fd799b61fc",
       "executable": false
@@ -7156,7 +7164,7 @@
       "executable": false
     },
     "tests/e2e/helpers/status-journey.worker.ts": {
-      "sha256": "9d3e0148207f3f3396a2c0d7a985118666c7f6a1f1d21fb09d1c48619c05d40e",
+      "sha256": "f9cf88b60807681890862beb2f8c21df9456f58d4ef4a16b6a17613ce594f43d",
       "executable": false
     },
     "tests/e2e/helpers/statuspage-webhook-flow.mjs": {
@@ -7328,7 +7336,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "d1e7f8059ace494adf430d06a38043a96b11ff85e5051d8102382eba8357cccb",
+      "sha256": "5cf7ef3b8d90590fdebbf5f5ee2d14647a103dcbbd7bbb6232d76858390e8e2a",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
@@ -7360,7 +7368,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "3dc4f6cc2fca9a021cde024f13fb5dfd20b736de348496e3f2ac016eeae1aab3",
+      "sha256": "70908099d715a8ed4a012e186c77b453a3ebd28ed072b737f3894af416a792b1",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
