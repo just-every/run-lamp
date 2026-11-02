@@ -115,16 +115,16 @@ export async function scheduledUpdateFlow(t) {
     await review(incident);
     const publishAt = new Date(start + 300_000).toISOString();
     const beforeSchedule = await snapshot(incident);
+    const workBefore = await notificationWork();
+    const mailBefore = [f.messagesFor(email), f.messagesFor(contact)].map(rows => [...rows]);
+    const webhooksBefore = [...f.webhookRequests];
+    assert.equal(webhooksBefore.length, 0);
     await json(`/api/app/incidents/${incident.id}/draft/schedule`, 'POST', { publishAt, channels: ['email', 'webhook'] }, 202);
     const saved = (await read(incident.id)).draft;
     assert.equal(saved.scheduledPublishAt, publishAt);
     assert.deepEqual(saved.scheduledChannels, ['email', 'webhook']);
     assert.ok(saved.reviewedAt, 'the successful scheduled case satisfies required review');
     for (const [key, value] of Object.entries(fields)) assert.equal(saved[key], value);
-    const workBefore = await notificationWork();
-    const mailBefore = [f.messagesFor(email), f.messagesFor(contact)].map(rows => [...rows]);
-    const webhooksBefore = [...f.webhookRequests];
-    assert.equal(webhooksBefore.length, 0);
     assert.equal((await db.prepare('SELECT count(*) AS count FROM notification_deliveries WHERE incident_update_id = ?').bind(saved.id).first()).count, 0);
 
     for (const at of [start, Date.parse(publishAt) - 1]) {
