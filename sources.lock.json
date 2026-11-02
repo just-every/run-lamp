@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "517206532526698911fbfe3330c265b8dbd19ea2a827f6e52d64d4e5c6bf7a81",
       "executable": false
     },
     "DEMO.md": {
@@ -6880,7 +6880,7 @@
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-runtime.mjs": {
-      "sha256": "6b2459915e66050851e28228a6a58793309f976b44b0e4e5ef5615ccddc611a8",
+      "sha256": "d79d90da9deeacc286161e4bcf0c548a7f63d2c0203b5ca75017bb36b2525ce5",
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-worker.ts": {
@@ -6957,6 +6957,14 @@
     },
     "tests/e2e/helpers/mail-settings-browser-flow.mjs": {
       "sha256": "db8841c1f602246e578c389c13475458c70ca420acef2b1121eebce9b20e79ea",
+      "executable": false
+    },
+    "tests/e2e/helpers/maintenance-browser-flow.mjs": {
+      "sha256": "111405465ee9139d1899151d2f4c7ea123f3d7a1c507ea8f3d5bb1f990f6dac4",
+      "executable": false
+    },
+    "tests/e2e/helpers/maintenance-identity-flow.mjs": {
+      "sha256": "f2cfb8f0180f17abe7a76f33ae5dbe8525018ab5d38368211806cbba26610d20",
       "executable": false
     },
     "tests/e2e/helpers/metric-setup-journey.mjs": {
@@ -7064,7 +7072,7 @@
       "executable": false
     },
     "tests/e2e/helpers/status-journey.mjs": {
-      "sha256": "96a1b76056c721902e82997ede946f0532df75611c715cbbbdf1e891d9135317",
+      "sha256": "d299dc3024673a6cf55f5995b6ecc299116e55f8c6409a59b2b5eb8ed38beb35",
       "executable": false
     },
     "tests/e2e/helpers/status-journey.worker.ts": {
@@ -7200,11 +7208,11 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "880549335862a60d2c3bfdd8fdd46ab7ead2a6633c7a115d5b861b99c0fc72f6",
+      "sha256": "866409ae9a722dc164a4796f4d4ca2bc89841742e47db770ffd43df695cda2ec",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "fbe67bd8df43e6748d14af0f830561ae8958aa89e5ab07bd5ab5e7e7e740224b",
+      "sha256": "4bc33e5e152923898ab53dba00ae5ac6fd118d0273aeddc2929422f28417af32",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
