@@ -2776,7 +2776,7 @@
       "executable": false
     },
     "scripts/dev-ingress/README.md": {
-      "sha256": "b070c7940a855521e327a2c43cdfaa9179b4722c3251ef40fa05c6fe6223beb8",
+      "sha256": "0903425f06e92defda636954cd8b7e1a60f8ee076c44b86a7980f16f0d939b68",
       "executable": false
     },
     "scripts/dev-ingress/virtual.d.ts": {
@@ -2784,7 +2784,7 @@
       "executable": false
     },
     "scripts/dev-ingress/worker.ts": {
-      "sha256": "00e29f7f5b9270ad9c3382dec4e72afbc9528438d005e073bd8826237f2fcaa3",
+      "sha256": "6015fc6bba4dc202958b2ed850c71408fa9fe5dbc7e648de9909e42618a03b13",
       "executable": false
     },
     "scripts/dev.mjs": {
@@ -6816,7 +6816,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "2a75c782d3ea9682711fd3e7c754c0c0bf3bf9d1f094757844424c7801415ee7",
+      "sha256": "8308767fc97db135767d608d318655e1554c5f264fc0115ad12635d7c41f95be",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
