@@ -42,7 +42,11 @@ export async function snapshotMutationsFlow({ inspect } = {}) {
     let overall = 'Operational';
     let groupName;
     const checkpoint = async (category, extra = () => {}) => {
-      const selected = await eventually(pointer, value => value.generation > previous.generation, `${category} selects a new complete snapshot`);
+      const selected = await eventually(async () => {
+        const value = await pointer();
+        const work = await j.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first();
+        return { ...value, settled: value.sourceRevision === work.requested_revision && work.completed_revision === work.requested_revision };
+      }, value => value.generation > previous.generation && value.settled, `${category} selects a complete snapshot of all committed changes`);
       assert.notEqual(selected.version, previous.version, category);
       const bodies = {};
       for (const [path, key, contentType] of [['/', 'page.html', 'text/html'], ['/feed.atom', 'feed.atom', 'application/atom+xml'], ['/widget.js', 'widget.js', 'javascript']]) {
