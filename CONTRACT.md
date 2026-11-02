@@ -3118,6 +3118,8 @@ Lamp is US-first: USD, TCPA and CTIA SMS consent with 10DLC or toll-free registr
 
 Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); NOTIFY-011 is rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged.
 
+INCIDENT-012 retains current main's partial judgment and recorded gap, including the unasserted Entra Settings link. The replay of `d315edd` adds complete signed Slack and Teams publication, field-by-field preview, component-claim, refusal inventory and distinct-reviewer assertions in `tests/chat-desk/flow.mjs`. These supplement the evidence without promoting the clause or replacing the newer judgment.
+
 MAINT-002 retains current-main’s partial judgment and recorded gaps. The replay of `acbc1ef` adds native Cron assertions in `tests/e2e/publishing-contract.test.mjs` for future-window start and completion deadlines, public permalink transitions, system-authored notices and repeated-tick idempotency. These assertions supplement the evidence without changing the inherited judgment.
 
 INCIDENT-002 retains current-main’s partial judgment and recorded gaps. The replay of `f61d588` adds assertions in `tests/e2e/publishing-contract.test.mjs` for peak impact after recovery, absent impact after detaching a never-published incident’s sole component, and refusal to publish its reviewed draft without changing the incident, persisted publications or checked public surfaces. These assertions supplement the evidence without changing the inherited judgment.
