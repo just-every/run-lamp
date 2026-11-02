@@ -136,6 +136,7 @@ export async function suggestedUpdateFlow({ page, appUrl, api, configureSuggesti
     await saved();
     await suggest(Object.fromEntries(Object.keys(fields).map(key => [key, { text: '', sources: ['C1'] }])));
     await values(edited);
+    assert.equal(await page.locator('.impact-form .field-sources').count(), 0, 'empty results do not relabel operator text as suggested');
     const stored = (await api(endpoint)).incident;
     for (const [key, value] of Object.entries(edited)) assert.equal(stored.draft[key], value, `saved ${key}`);
     assert.equal(stored.draft.lifecycle, 'Monitoring');
