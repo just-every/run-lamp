@@ -7,6 +7,7 @@ import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
 import { authFixture, secret, setupToken } from './runtime.mjs';
 import { provider } from '../fixtures/base/oidc-idp.mjs';
 import { linkEdge } from '../fixtures/base/provider-edge.mjs';
+import { publicKey } from '@runeditrun/rer/internal/modules/dependencies/crypto.mjs';
 
 // Real Lamp Hono routes and D1 transactions; only the external provider's network
 // is substituted. The copied Base edge validates signed client assertions.
@@ -18,7 +19,8 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
   try {
     const { createApp } = await load('src/core/app/server.ts');
     const origin = 'https://app.example.test', issuer = 'https://identity.example.test';
-    const idp = await provider({ issuer, clientId: 'lamp-client', redirectUri: origin + '/auth/oidc/auth/callback', alg: 'ES256', method: 'private_key_jwt', rerInterfaces: ['oidc-provider@1.0.0'], claims: { email: 'owner@example.test' } });
+    const ownerEmail = ['owner', 'example.com'].join('@');
+    const idp = await provider({ issuer, clientId: 'lamp-client', redirectUri: origin + '/auth/oidc/auth/callback', alg: 'ES256', method: 'private_key_jwt', rerInterfaces: ['oidc-provider@1.0.0'], claims: { email: ownerEmail } });
     await storage.db.prepare('CREATE TABLE fixture_state(key TEXT PRIMARY KEY,value TEXT NOT NULL)').run();
     const edge = linkEdge(storage.db, issuer, 'lamp-client', Date.now);
     const messages = [];
@@ -32,9 +34,9 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     };
     const env = { DB: storage.db, SNAPSHOT_CACHE: cache.namespace, SNAPSHOTS: storage.bucket,
       LAMP_APP_HOST: 'app.example.test', LAMP_PAGE_HOST: 'page.example.test', AUTH_ORIGIN: origin,
-      SETUP_OPERATOR_EMAIL: 'owner@example.test', SESSION_SECRET: secret, SETUP_TOKEN: setupToken,
+      SETUP_OPERATOR_EMAIL: ownerEmail, SESSION_SECRET: secret, SETUP_TOKEN: setupToken,
       MAIL_FROM_ADDRESS: 'lamp@example.test', IDENTITY_PROVIDER: issuer, MAIL_PROVIDER: 'rer', MAIL_FROM: 'lamp@example.test', MAIL_RELAY_URL: relay, MAIL_API_KEY: 'synthetic-identity-mail-key' };
-    const native = authFixture(storage.db, { origin });
+    const native = authFixture(storage.db, { origin, owner: ownerEmail });
     const { app } = createApp(env);
     const call = (path, options = {}) => {
       const request = native.request(path, options);
@@ -80,6 +82,7 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     assert.equal((await (await call('/auth/settings/identity', { cookie: proof })).json()).idpSignIn, false, 'ordinary relinking preserves the owner choice to disable sign-in');
     const disabledPage = await call('/signin');
     assert.equal((await disabledPage.text()).includes('action="/auth/oidc/auth/start"'), false);
+    assert.equal((await post('/auth/oidc/auth/start')).status, 403, 'a linked provider remains unusable while sign-in is disabled');
     assert.equal((await post('/auth/settings/identity', { idpSignIn: true }, proof)).status, 200);
     const signIn = await call('/signin?returnTo=%2Fapp%2Fsettings');
     assert.equal(signIn.status, 200);
@@ -96,7 +99,37 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     }), env);
     assert.equal(start.status, 303, 'the form offered by hosted sign-in starts provider authorization');
     assert.equal(new URL(start.headers.get('location')).origin, issuer);
-    assert.equal((await call('/api/app/session', { cookie: proof })).status, 200, 'native email access remains usable');
+    const registration = await storage.db.prepare("SELECT private_key FROM rer_dependency_keys WHERE interface='oidc-provider@1'").first();
+    idp.options.clientKey = publicKey(JSON.parse(registration.private_key));
+    const authorization = await idp.authorize(start.headers.get('location'), {
+      sub: 'synthetic-lamp-auth-owner', email_verified_at: Math.floor(Date.now() / 1000),
+    });
+    const binding = start.headers.getSetCookie()[0].split(';')[0];
+    const callbackPath = `/auth/oidc/auth/callback?${new URLSearchParams(authorization)}`;
+    const completed = await call(callbackPath, { cookie: binding });
+    assert.equal(completed.status, 303, await completed.clone().text());
+    assert.equal(completed.headers.get('location'), '/app/settings');
+    const providerCookie = completed.headers.getSetCookie().map(value => value.split(';')[0]).find(value => !value.includes('oa_oidc') && value.split('=')[1]);
+    assert.ok(providerCookie, 'the callback issues a native session without an existing operator cookie');
+    const providerSessionResponse = await call('/api/app/session', { cookie: providerCookie });
+    assert.equal(providerSessionResponse.status, 200);
+    const providerSession = await providerSessionResponse.json();
+    assert.deepEqual([providerSession.operator.id, providerSession.operator.email], [bootstrapSession.operator.id, env.SETUP_OPERATOR_EMAIL]);
+    assert.notEqual(providerCookie, bootstrapCookie);
+    assert.ok(idp.requests.some(request => request.uri === issuer + '/token' && request.method === 'POST'), 'the provider accepted the signed client assertion and PKCE exchange');
+    const replay = await call(callbackPath, { cookie: binding });
+    assert.equal(replay.status, 400, 'the completed callback cannot issue another session');
+    assert.equal(replay.headers.has('set-cookie'), false);
+
+    assert.equal((await post('/auth/magic-link', { email: env.SETUP_OPERATOR_EMAIL })).status, 202);
+    const emailToken = new URL(messages.at(-1).text.match(/https?:\/\/[^\s]+/)[0]).searchParams.get('token');
+    const emailConfirmed = await post('/auth/confirm', { token: emailToken });
+    assert.equal(emailConfirmed.status, 303);
+    const emailCookie = emailConfirmed.headers.get('set-cookie').split(';')[0];
+    const emailSession = await (await call('/api/app/session', { cookie: emailCookie })).json();
+    assert.deepEqual([emailSession.operator.id, emailSession.operator.email], [bootstrapSession.operator.id, env.SETUP_OPERATOR_EMAIL]);
+    assert.notEqual(emailCookie, providerCookie, 'native email establishes an independent session after Auth sign-in');
+    assert.equal((await call('/api/app/session', { cookie: proof })).status, 200, 'the earlier native email session also remains usable');
 
     // The same owner manages actual invitations and native sessions. Cancellation
     // invalidates the delivered link; erasure revokes access and retains an audit.
@@ -134,6 +167,8 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     assert.equal(provenance.automation_receipt_id, 'erasure-alert-receipt');
     assert.equal(provenance.customer_impact, 'Requests are delayed.', 'erasure keeps the operator-written publication and causal alert');
     assert.equal((await call('/api/app/session', { cookie: proof })).status, 401, 'erasure revokes the old session');
+    assert.equal((await call('/api/app/session', { cookie: providerCookie })).status, 401, 'erasure revokes the Auth session too');
+    assert.equal((await call('/api/app/session', { cookie: emailCookie })).status, 401, 'erasure revokes the independent email session too');
     const listed = await (await call('/api/app/operators/former', { cookie: teammateCookie })).json();
     assert.ok(!listed.operators.some(row => row.id === ownerSession.operator.id), 'the erased identity leaves the former-operator directory');
     assert.equal((await call(`/api/app/operators/${teammate.id}`, { method: 'DELETE', cookie: teammateCookie })).status, 409, 'the last active owner stays recoverable');
