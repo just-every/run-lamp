@@ -8,12 +8,12 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 21 | 168 | 49 | 238 |
+| Core | 26 | 163 | 49 | 238 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 21 | 168 | 54 | 243 |
+| Full target | 26 | 163 | 54 | 243 |
 
-Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); NOTIFY-011 is rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
+Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
 
 ## Core
 
@@ -1027,7 +1027,7 @@ Core · published · **partial** · Cites BASE-OPS-004
 
 #### NOTIFY-007 — Channels are per update
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Operators choose subscriber channels independently for each update while every public surface receives it.
 
@@ -1035,8 +1035,8 @@ Core · published · **partial**
 1. The selected subscriber channels, including an empty selection, determine the committed recipient set and remain in the delivery log.
 2. The public page, Atom feed and widget always receive the update and cannot be deselected.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`
-**Gap.** Old cited evidence asserts one stored channel selection is email; empty selection produces no notifications. Unasserted: the complete recipient channel set equals exactly the selected channels; page mandatory publication; Atom mandatory publication; widget mandatory publication.
+**Evidence.** `tests/e2e/delivery-contract.test.mjs` (Subscriber consent, selected publication, channel delivery, export and erasure), loading `tests/e2e/helpers/per-update-channels-flow.mjs` (perUpdateChannelsFlow): four confirmed ordinary subscriptions and successive email-only, webhook-only, both and empty selections reconcile every paginated recipient identity, persisted choices and native reach-log readback, actual mail and webhook requests, and omitted-channel silence. Every exact publication is identified on the public root, in Atom by update identity and publication instant, in an installed widget by distinctive wording and in the public status JSON by publication instant. SUB-019 retains independent incident-follow choices.
+**Gap.** None.
 
 #### NOTIFY-008 — Who the deployment emails
 
@@ -1179,7 +1179,7 @@ Core · published · **partial** · Cites BASE-INPUT-001
 
 #### INTAKE-006 — Monitor presets
 
-Core · published · **partial** · Cites BASE-INPUT-001
+Core · published · **done** · Cites BASE-INPUT-001
 
 **Requirement.** Datadog, UptimeRobot, Better Stack and Pingdom presets accept their documented alert payloads and map each source to one component. Providers can use the bearer header or token-address form when unable to send a header.
 
@@ -1190,8 +1190,8 @@ Core · published · **partial** · Cites BASE-INPUT-001
 4. Another provider’s payload returns 400 and is recorded as invalid against the source.
 5. Firing alerts have no published update and change no public surface.
 
-**Evidence.** `tests/e2e/channels-and-presets.test.mjs`
-**Gap.** All four mapped private drafts, token redaction, credential status refusals, invalid receipts and public-status exclusion are asserted. Complete record inventories after authentication refusal and every public representation after intake are not compared.
+**Evidence.** `tests/e2e/channels-and-presets.test.mjs` (Connect monitors, review private alert drafts, publish and recover with durable integration evidence; delivery shard), loading `tests/e2e/helpers/preset-recovery-flow.mjs` (publicSnapshot). Acceptance 1: each fresh Datadog, UptimeRobot, Better Stack and Pingdom firing has an independently readable Investigating draft attached only to its mapped component. Acceptance 2: creation returns the generated token and subsequent listings omit it. Acceptance 3: each missing and wrong credential returns 401 with complete incident, draft, published-update, receipt and audit rows unchanged in identity order. Acceptance 4: another provider payload returns 400 and its returned receipt reads back as invalid against the exact source without an incident. Acceptance 5: every fresh firing retains zero incident updates, unchanged complete persisted publications, the settled retained-artifact inventory, generation identities and every public response byte; all private permalinks return 404. The existing unpublished and published recovery invariance assertions remain active.
+**Gap.** None.
 
 #### INTAKE-007 — Preset recovery
 
@@ -1333,7 +1333,7 @@ Core · published · **done** · Cites BASE-ROLE-001, BASE-AUDIT-001, BASE-OPS-0
 
 #### HIST-001 — Public history
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Public history lists resolved incidents and completed maintenance for the last twelve months, grouped by month.
 
@@ -1341,8 +1341,8 @@ Core · published · **partial**
 1. Both kinds of completed record appear in their month and older records stay outside the twelve-month index.
 2. Each record shows its start, end, duration, affected components and every published update.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
-**Gap.** Old cited evidence asserts Resolved incident listed; Completed maintenance listed; Older record excluded; The public incident displays the expected elapsed duration. Unasserted: Month grouping asserted; The public history displays the incident’s opening instant; Maintenance start/end/duration; Every published update included.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (completed native records retain their month, window, components and complete publication inventory), through native incident and maintenance routes and the script-disabled public history: both completed kinds grouped by configured-zone month, older and unfinished records excluded, exact opening and ending instants, elapsed durations, affected names and complete independently retained publication identities and wording. `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion): original historical update times and complete monthly-history record.
+**Gap.** None.
 
 #### HIST-002 — Post-incident report
 
@@ -1485,7 +1485,7 @@ Core · published · **partial**
 
 #### MOVE-013 — Explicit imported invitations
 
-Core · published · **partial** · From MOVE-002 · Cites BASE-MAIL-001
+Core · published · **done** · From MOVE-002 · Cites BASE-MAIL-001
 
 **Requirement.** The owner explicitly invites eligible imported email subscribers, without replaying past incidents or extending their original confirmation deadline.
 
@@ -1495,12 +1495,12 @@ Core · published · **partial** · From MOVE-002 · Cites BASE-MAIL-001
 3. Statuspage, Better Stack and Instatus invitations expire seventy-two hours from import review even when sending is delayed; expired subscribers cannot be invited and SUB-003 removes unconfirmed addresses.
 4. A proven failure before submission can be retried; an interrupted or uncertain submitted attempt remains claimed and is not automatically resubmitted.
 
-**Evidence.** `tests/e2e/statuspage-import.test.mjs`, `tests/e2e/statuspage-import.test.mjs`, `tests/e2e/sorry-import.test.mjs`
-**Gap.** Old cited evidence asserts Signed-out invitation action is refused; Concurrent and repeated batches produce exactly 57 transport messages; Those 57 transport messages have 57 distinct recipients; All 57 transport messages carry distinct idempotency identities. Unasserted: Invitation contains confirmation but no past incident text; That message is proved to exclude the expired recipient; Instatus-specific original deadline and expiry.
+**Evidence.** `tests/e2e/statuspage-import.test.mjs` (owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes), calling `tests/e2e/helpers/import-invitation-flow.mjs` (importInvitationFlow and unsentExpiredImportFlow): point 1 checks signed-out and revoked-session refusal changing nothing, and signed-in Admin and Communicator refusal before the owner's first send, which sends no mail and leaves every remaining invitation and every other row unchanged apart from the refused operator's own attributed access-denied audit entry, which the owner reads, plus complete confirmation-only envelopes for Statuspage, Better Stack and Instatus; point 2 reconciles every eligible transport recipient and stable identity across concurrent and repeated batches, including 57 Statuspage messages; point 3 checks native review timestamps, delayed original deadlines, expired-recipient exclusion, an entirely unsent reviewed import refused at its deadline, deadline confirmation refusal, bounded native pending expiry, address erasure and replay refusal for all three sources; point 4 retries proven pre-submission failure and retains uncertain submitted claims without another transport call.
+**Gap.** None.
 
 #### MOVE-003 — One import per source
 
-Core · published · **partial** · Cites BASE-OPS-003
+Core · published · **done** · Cites BASE-OPS-003
 
 **Requirement.** Repeating an imported source never imports its already-owned records again, including across source imports.
 
@@ -1508,8 +1508,8 @@ Core · published · **partial** · Cites BASE-OPS-003
 1. Repeating the same source reports already imported, preserves record counts and public aliases, and creates no notification work.
 2. A record already imported is not imported again from another source.
 
-**Evidence.** `tests/e2e/statuspage-import.test.mjs`
-**Gap.** Old cited evidence asserts Repeated source reports already imported; Repeated source preserves component count; Repeated source preserves component-group count; Repeated source preserves incident count. Unasserted: Repeated source leaves every existing record content unchanged; Repeated source creates no other notification work; Cross-source imports preserve global record identity.
+**Evidence.** `tests/e2e/statuspage-import.test.mjs` (SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes), loading `tests/helpers/import-notifications.mjs` (moveInDoor, importedRecordInventory, notificationInventory and publicAliasInventory) and `tests/e2e/helpers/history-catchup-flow.mjs` (historyCatchupFlow); `tests/e2e/sorry-import.test.mjs` (MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow); and `tests/e2e/cutover-browser.test.mjs` (MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews three providers, checks surviving public addresses, deliberately invites and undoes through Cutover), all in the imports shard of Verify. Acceptance 1: through the owner import door, repeating the saved Statuspage, Better Stack, Instatus and Sorry responses, and each later bundle, reports already imported and applies to the same completed job; complete native record rows, every public alias and redirect, and all notification work and captured transports stay unchanged, also through a native scheduled tick. Acceptance 2: a later owner upload of an already-imported source plans and applies as that import's catch-up: unchanged records stay, a record corrected at source is replaced in place with its id and public reference, an owner-edited record or a changed target set is listed as a conflict and keeps Lamp's version, new records are added once, nothing notifies, the repeat is stable and undo restores the prior records. The full Move in after setup's incident history (RL-6) is that history's catch-up and adds the left-out component and pending subscribers once. An equal provider-local id and title from another provider stays a distinct record, and the Business bounded catch-up replaces in place and adds once. After an undo keeps an owner-edited record, an upload naming it is refused with the record named and nothing written; leaving it out imports the rest without importing it again.
+**Gap.** None.
 
 #### MOVE-004 — Undo
 
