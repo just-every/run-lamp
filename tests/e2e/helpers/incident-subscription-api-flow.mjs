@@ -33,7 +33,8 @@ export async function incidentSubscriptionApiFlow() {
     const unsafeDestinations=["https://[::1]/synthetic-lamp-1","https://[::ffff:127.0.0.1]/x","https://[::ffff:7f00:1]/x","https://[fc00::]/x",
       "https://[64:ff9b::7f00:1]/x","https://[64:ff9b:1::7f00:1]/x","https://[2002:7f00:1::]/x","https://[::127.0.0.1]/x","https://[::7f00:1]/x",
       "https://localhost./x","https://foo.localhost./x","https://[fec0::1]/x","https://[ff02::1]/x","https://[2001:db8::1]/x","https://[2001::1]/x",
-      "https://[::ffff:100.64.0.1]/x","https://100.64.0.1/x","https://198.18.0.1/x","https://192.0.0.1/x","https://224.0.0.1/x"];
+      "https://[::ffff:100.64.0.1]/x","https://100.64.0.1/x","https://198.18.0.1/x","https://192.0.0.1/x","https://224.0.0.1/x",
+      "https://[::ffff:0:7f00:1]/x","https://[::ffff:0:a00:1]/x","https://localhost../x"];
     for(const destination of unsafeDestinations) {
       const refused=await call(path,writer.token,"POST",{channel:"webhook",destination,contactEmail:address("unsafe-webhook")});
       assert.equal(refused.status,400,`${destination}: ${await refused.text()}`);
