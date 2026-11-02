@@ -8,12 +8,12 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 20 | 169 | 49 | 238 |
+| Core | 21 | 168 | 49 | 238 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 20 | 169 | 54 | 243 |
+| Full target | 21 | 168 | 54 | 243 |
 
-Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); NOTIFY-011 is rechecked on the landing candidate, with earlier clause judgments retained. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
+Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); NOTIFY-011 is rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
 
 ## Core
 
@@ -142,7 +142,7 @@ Core · published · **partial** · Cites BASE-ACCESS-003
 1. All public reads up to the declared per-address capacity succeed and never return a rate-limit refusal.
 2. Public reads share immutable generation content; healthy reads validate the current generation without querying the database, with artifact caching reducing object-byte reads.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`; `tests/e2e/snapshot-retained.test`; six fresh generation artifacts each require one initial blob-byte read, three repeated warm rounds and conditional reads preserve identical bytes and generation identity without more byte reads, and every warm read still validates the current pointer. A subsequent generation displaces the old validators and reads its own artifacts. The cache assertions are a proposal pending clause judgment; main's partial status and recorded gap are retained.
+**Evidence.** `tests/e2e/public-contract.test.mjs`; `tests/e2e/snapshot-retained.test.mjs`; six fresh generation artifacts each require one initial blob-byte read, three repeated warm rounds and conditional reads preserve identical bytes and generation identity without more byte reads, and every warm read still validates the current pointer. A subsequent generation displaces the old validators and reads its own artifacts. The cache assertions are a proposal pending clause judgment; main's partial status and recorded gap are retained.
 **Gap.** The cited evidence asserts the other audited outcomes; unasserted: Healthy generation validation performs no database query; Artifact caching reduces object-byte reads.
 
 #### PAGE-009 — Time display
@@ -608,7 +608,7 @@ Core · published · **partial**
 1. The composer shows the update as the public page renders it.
 2. The composer shows the update as the notification email renders it.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`; `tests/e2e/publishing-browser.test`; explicit publication retains the Page preview fields and exact commitment on the public incident page. `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion): native preview wording remains asserted and the captured notification subject and complete customer message equal the preview before personal subscription links. Both journeys run in push Verify.
+**Evidence.** `tests/e2e/public-contract.test.mjs`; `tests/e2e/publishing-browser.test.mjs`; explicit publication retains the Page preview fields and exact commitment on the public incident page. `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion): native preview wording remains asserted and the captured notification subject and complete customer message equal the preview before personal subscription links. Both journeys run in push Verify.
 **Gap.** Asserted: public preview customer impact; email preview customer impact. Unasserted in old cited evidence: composer displays the public preview; composer displays the email preview.
 
 #### UPDATE-005 — Drafts
@@ -1007,7 +1007,7 @@ Core · published · **partial** · Cites BASE-OPS-003 · Rules D-1
 **Acceptance.**
 1. Retrying publication or redelivering the queue job never sends that subscriber the update twice on one channel.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/helpers/webhook-at-most-once-flow.mjs`; `tests/e2e/channels-and-presets.test`; `tests/e2e/helpers/automation-rules-flow.mjs`
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/helpers/webhook-at-most-once-flow.mjs`; `tests/e2e/channels-and-presets.test.mjs`; `tests/e2e/helpers/automation-rules-flow.mjs`
 **Gap.** Old cited evidence asserts repeated capture leaves one recipient record; repeated capture leaves one dispatcher job; two intended healthy-delivery scenarios produce two healthy-host requests in aggregate. Unasserted: the concurrently dispatched delivery alone produces exactly one request; email queue redelivery never resends.
 
 #### NOTIFY-006 — Operator alerts
@@ -3128,7 +3128,7 @@ Core · target · **partial**
 
 #### HIST-008 — Complete browsable history
 
-Core · target · **partial** · Cites BASE-PUBLIC-001
+Core · target · **done** · Cites BASE-PUBLIC-001
 
 **Requirement.** Public history stays browsable back to the earliest retained or imported record. The twelve-month index links to earlier populated months; every incident permalink stays reachable, with snapshot availability under PAGE-007/PAGE-008. Native month paths remain distinct from MOVE-005’s Sorry redirects.
 
@@ -3139,8 +3139,8 @@ Core · target · **partial** · Cites BASE-PUBLIC-001
 4. With the database unavailable, every month page remains readable from its snapshot.
 5. The native month path and Sorry month aliases retain their separate meanings.
 
-**Evidence.** `src/core/features/public-snapshot/history.ts`, `tests/e2e/public-contract.test.mjs`, `tests/e2e/snapshot-retained.test.mjs`
-**Gap.** Old cited evidence asserts Earlier month index link; Oldest imported incident reached; No navigation loop; A previous-month link exists during traversal to the oldest imported incident. Unasserted: Script-disabled navigation asserted; Every traversed intermediate month contains an incident or completed maintenance rather than an empty-month hop; Every completed maintenance and incident listed; Database unavailable month read.
+**Evidence.** `tests/e2e/public-contract.test.mjs` — reviewed imported history stays completely browsable without scripts (`tests/e2e/helpers/browsable-history-flow.mjs`): reviewed Statuspage saved responses, script-disabled earlier-month traversal to the oldest incident, exact adjacent populated months in both directions, complete configured-zone incident and completed-maintenance membership, working permalinks, native months distinct from Sorry aliases, no visitor cookies or foreign-origin requests; `tests/e2e/snapshot-retained.test.mjs` — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm: every generated month serves its complete membership with a throwing repository, then through storage failure and cold restart; `tests/e2e/snapshot-retained.worker.ts` counts zero database accesses.
+**Gap.** None.
 
 ### Audiences and private pages — target
 
