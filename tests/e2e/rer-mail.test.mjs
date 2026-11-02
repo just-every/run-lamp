@@ -95,6 +95,12 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal((await subscribe(pending)).status, 202);
       const confirmUrl = textFor(reader).match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0];
       assert.equal((await raw(confirmUrl)).status, 200);
+      assert.equal((await subscribe(reader)).status, 202);
+      const managementUrl = textFor(reader).match(/Manage this subscription: (https:\/\/\S+)/)[1];
+      assert.equal(new URL(managementUrl).origin, 'https://status.example.test');
+      const helpPage = await raw(managementUrl);
+      assert.equal(helpPage.status, 200);
+      assert.ok((await helpPage.text()).includes('<title>Manage subscription · Lamp mail journey</title>'), 'the independent management link belongs to this page');
       const initialSettings = (await (await call('/api/app/page-settings')).json()).settings;
       const settingsInput = Object.fromEntries(['pageName','tagline','accentColor','timezone','hostname','footerCreditEnabled','mailFromAddress'].map(key => [key, initialSettings[key]]));
       const branding = { subjectPrefix: '[Operations]', header: 'Service updates from Operations', footer: 'Contact our support desk for help', ...(provider === 'rer' ? {} : { displayName: 'Operations status', replyTo: 'support@example.test' }) };
@@ -140,12 +146,22 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.ok(firstAttempt.from.includes(branding.displayName)); assert.equal(firstAttempt.reply_to, branding.replyTo);
       }
       if (provider === 'rer') {
-        assert.ok(notification.listUnsubscribePost); assert.ok(notification.listId && notification.listArchive && notification.listHelp);
+        assert.ok(notification.listUnsubscribePost);
+        assert.equal(notification.listId, '<status.example.test>');
+        assert.equal(notification.listArchive, '<https://status.example.test/history>');
+        assert.equal(notification.listHelp, `<${managementUrl}>`);
       } else {
         assert.equal(notification.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
-        assert.ok(notification.headers['List-Id'] && notification.headers['List-Archive'] && notification.headers['List-Help']);
+        assert.equal(notification.headers['List-Id'], '<status.example.test>');
+        assert.equal(notification.headers['List-Archive'], 'https://status.example.test/history');
+        assert.equal(notification.headers['List-Help'], managementUrl);
+        assert.equal(notification.headers['Auto-Submitted'], 'auto-generated');
         if (provider === 'sendgrid') for (const settings of Object.values(firstAttempt.tracking_settings)) assert.equal(settings.enable, false, 'transport disables recipient tracking');
       }
+      // Managed mail's relay declares automatic messages itself. Inspect the
+      // seed's actual persisted envelope as well as direct-provider submissions.
+      const frozen = await db.prepare('SELECT mail_payload_json FROM notification_delivery_records WHERE id=?').bind(queued.id).first();
+      assert.equal(JSON.parse(frozen.mail_payload_json).headers['Auto-Submitted'], 'auto-generated');
       const beforeReplay = submissions.length; await tick(); assert.equal(submissions.length, beforeReplay, 'Cron replay cannot resend an accepted envelope');
       if (provider !== 'rer') {
         const receipt = provider === 'resend' ? { type: 'email.delivered', data: { email_id: sentTo(reader).at(-1).id } }
@@ -160,11 +176,16 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.equal((await deliveries()).find(row => row.id === queued.id).outcome, 'delivered');
       }
       const prior = sentTo(reader).at(-1);
-      await publish('Payment processing has improved.'); await tick();
-      const threaded = wire(sentTo(reader).at(-1).body);
       const firstMessageId = provider === 'rer' ? `<${prior.id}@relay.example.test>` : notification.headers['Message-ID'];
-      assert.equal(provider === 'rer' ? threaded.inReplyTo : threaded.headers['In-Reply-To'], firstMessageId);
-      assert.equal(provider === 'rer' ? threaded.references : threaded.headers.References, firstMessageId);
+      for (const impact of ['Payment processing has improved.', 'Payment processing is stable after another capacity increase.']) {
+        const beforePublication = sentTo(reader).length;
+        await publish(impact); await tick();
+        assert.equal(sentTo(reader).length, beforePublication + 1);
+        const threaded = wire(sentTo(reader).at(-1).body);
+        assert.ok(threaded.text.includes(impact));
+        assert.equal(provider === 'rer' ? threaded.inReplyTo : threaded.headers['In-Reply-To'], firstMessageId);
+        assert.equal(provider === 'rer' ? threaded.references : threaded.headers.References, firstMessageId);
+      }
       const maintenanceResponse = await call('/api/app/maintenance', { title: 'Payment service upgrade', affectedAudience: 'Payment customers', customerImpact: 'Authorizations may pause.', startsAt: new Date(Date.now() + 7200000).toISOString(), endsAt: new Date(Date.now() + 10800000).toISOString(), componentIds: [component.id], autoStart: false, autoComplete: false });
       assert.equal(maintenanceResponse.status, 201, await maintenanceResponse.clone().text());
       const maintenance = (await maintenanceResponse.json()).maintenance;

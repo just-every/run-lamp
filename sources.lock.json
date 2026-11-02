@@ -6947,6 +6947,14 @@
       "sha256": "e95d0515320279d2798e443491869f74af912441771ba68045aa27cf4e382664",
       "executable": false
     },
+    "tests/e2e/helpers/mail-dns-cli-edge.mjs": {
+      "sha256": "3db3b6ba6f63b8295ad2b4500dd058d5233e931e6e04a8abadd2d8d53c0f0b21",
+      "executable": false
+    },
+    "tests/e2e/helpers/mail-dns-cli-flow.mjs": {
+      "sha256": "f411504dd6fd9bf87490dab2a0b075f834550e6588c6737b5518c740faead54e",
+      "executable": false
+    },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
       "sha256": "dd169d597eb57dca640ac7208e8c53e32afa900d24ffc7298c12ec27bc2e2151",
       "executable": false
@@ -7176,7 +7184,7 @@
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
-      "sha256": "8ae6fd35caf702251b2dbce168caec8d2fa879628e8da2513ee38c50d9318859",
+      "sha256": "ff2f4a67d9960fecfc8fc4e7a7ce48b62208a0e25e3a5cd30e70d9a2691ea4bb",
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
@@ -7216,7 +7224,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "6b1bb797826f10b8093c57bced310d6c5bb3b91f1e75b58be25a2769e9af5254",
+      "sha256": "65dcc6f3a62c34cc262e754eb66a7b842698c445303bf8c71f9766e7bafbef9d",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {
