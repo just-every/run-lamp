@@ -54,7 +54,7 @@ export interface PerformanceResponse extends Measurement {
 
 export interface IncidentFact {
   incidentId: string; reference: string; title: string; lifecycle: string; openedAt: string; resolvedAt: string | null;
-  peakImpact: import("../../shared/domain").ComponentState | null; retainedImport: number;
+  peakImpact: import("../../shared/domain").ComponentState | null; retainedImport: number; reportWaived: number;
   firstAcceptedAlertAt: string | null; reportPublishedAt: string | null;
 }
 export interface UpdateFact {

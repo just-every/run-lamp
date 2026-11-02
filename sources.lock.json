@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "ef1dc3cc19de16802a903d0ae70522d9b55bf4c19371add46eb8358d7c805fbd",
       "executable": false
     },
     "DEMO.md": {
@@ -3576,7 +3576,7 @@
       "executable": false
     },
     "src/core/features/communication-performance/measurement.ts": {
-      "sha256": "43e61f70b940830b4e598f0b0ca9e64effecaf805ab58374e3b3e9d50e7774f1",
+      "sha256": "70863024a568efc7f47908d25ed2d02d7d9ef8ee520ede03945feff33ee422cb",
       "executable": false
     },
     "src/core/features/communication-performance/month.ts": {
@@ -3584,7 +3584,7 @@
       "executable": false
     },
     "src/core/features/communication-performance/repository.ts": {
-      "sha256": "d1cf63189f24f1c2a6ef913a81bb8c9b0ba91f39f59da732fd451896c01ebd43",
+      "sha256": "72a2c250bae8a00341cde2332fea185dc6290dbae43e1f3dc39eae7e429868da",
       "executable": false
     },
     "src/core/features/communication-performance/routes.ts": {
@@ -3596,7 +3596,7 @@
       "executable": false
     },
     "src/core/features/communication-performance/types.ts": {
-      "sha256": "26cb0d909e29dd3927d00c3403638cb40e84dce760b85d8b27ad0f7d6dfaef3d",
+      "sha256": "6ceed73a5d945b452e96b1229dbf6751b1c010ae9a27965472dd482b086ccd71",
       "executable": false
     },
     "src/core/features/communication-performance/ui/communication-performance.tsx": {
@@ -6820,7 +6820,7 @@
       "executable": false
     },
     "tests/e2e/helpers/automation-clock-worker.ts": {
-      "sha256": "64c460eea587efde9d63df4e6028ef9d5e1464f44928a41aff1bbc378a4d5439",
+      "sha256": "a723317cb1389ddbc4901947ecb7221225500c41d6d29684b64c302d23711f34",
       "executable": false
     },
     "tests/e2e/helpers/automation-flap-flow.mjs": {
@@ -6857,6 +6857,18 @@
     },
     "tests/e2e/helpers/chat-preferences-flow.mjs": {
       "sha256": "64817e863119d3fdf862bc45f8d3ef1f123a129f2279c96a5cf914729ad54cf1",
+      "executable": false
+    },
+    "tests/e2e/helpers/communication-performance-browser.mjs": {
+      "sha256": "6905b3ed5e030473eb13ca3e712e8dd015a6b7d66c9c66ed643fcd4144b7a747",
+      "executable": false
+    },
+    "tests/e2e/helpers/communication-performance-csv.mjs": {
+      "sha256": "45e2fbbc57fc03132fd7c31aae0ffe7c3c60731863f284e38d0afa6aabe6480c",
+      "executable": false
+    },
+    "tests/e2e/helpers/communication-performance-flow.mjs": {
+      "sha256": "39c41febb11d714dc5f3f052c0951d4420903d34ed5952cf1883822b88b778f4",
       "executable": false
     },
     "tests/e2e/helpers/component-notification-flow.mjs": {
@@ -7204,7 +7216,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "fbe67bd8df43e6748d14af0f830561ae8958aa89e5ab07bd5ab5e7e7e740224b",
+      "sha256": "1ea34198e2ee61acac0c386eadf16e8e129dc05f1e41c184352acdccb4ace00e",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {

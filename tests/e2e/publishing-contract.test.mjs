@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parse } from 'parse5';
+import { communicationPerformanceFlow } from './helpers/communication-performance-flow.mjs';
+import { communicationPerformanceBrowser } from './helpers/communication-performance-browser.mjs';
 import { chatDeskNativeFlow } from '../chat-desk/flow.mjs';
 import { assertLinkedUpdateHtml, assertLinkedFeed } from './helpers/update-link-evidence.mjs';
 import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';
@@ -456,3 +458,6 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
 });
 
 test('INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams', chatDeskNativeFlow);
+
+test('HIST-005 — native publication timelines, distinct delivery outcomes and complete report downloads', { timeout: 180_000 }, communicationPerformanceFlow);
+test('HIST-005 — displayed communication report and CSV retain the same monthly and incident values', { timeout: 180_000 }, communicationPerformanceBrowser);

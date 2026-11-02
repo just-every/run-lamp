@@ -1,14 +1,15 @@
-import worker from "./follow-ups-worker";
+import worker from "./status-journey.worker";
 
 const RealDate = Date;
 let clock: number | null = null;
-// This isolated test Worker controls only time. Product requests still traverse
-// the normal HTTP routes, authentication, D1, snapshot and Queue handlers.
+// This isolated test Worker controls time and reuses the effects pause boundary.
+// Product requests still traverse the normal authenticated routes, D1, snapshot
+// and Queue handlers.
 globalThis.Date = new Proxy(RealDate, {
   construct(target, args) { return Reflect.construct(target, args.length ? args : [clock ?? RealDate.now()]); },
   get(target, key) { return key === "now" ? () => clock ?? RealDate.now() : Reflect.get(target, key); },
 });
-export { SnapshotCache } from "./follow-ups-worker";
+export { SnapshotCache } from "./status-journey.worker";
 export default {
   ...worker,
   async fetch(request: Request, env: Parameters<typeof worker.fetch>[1], context: ExecutionContext) {
