@@ -25,6 +25,7 @@ function isInternalIpv4(a: number, b: number, c: number) {
 function isInternalIpv6(words: number[]) {
   const [w0, w1, w2, w3, w4, w5, w6, w7] = words as [number, number, number, number, number, number, number, number];
   if (words.slice(0, 5).every((word) => word === 0) && w5 === 0xffff) return isInternalIpv4(w6 >> 8, w6 & 255, w7 >> 8); // IPv4-mapped
+  if (words.slice(0, 4).every((word) => word === 0) && w4 === 0xffff && w5 === 0) return true; // SIIT ::ffff:0:0:0/96
   if (words.slice(0, 6).every((word) => word === 0)) return true; // ::, ::1 and IPv4-compatible ::a.b.c.d
   if (w0 === 0x64 && w1 === 0xff9b && (w2 === 1 || words.slice(2, 6).every((word) => word === 0))) return true; // NAT64 64:ff9b::/96 and 64:ff9b:1::/48
   if (w0 === 0x2002) return true; // 6to4 2002::/16
@@ -35,8 +36,8 @@ function isInternalIpv6(words: number[]) {
 export function hasSafeWebhookDestination(value: string) {
   try {
     const url = new URL(value);
-    // A single trailing dot names the same host ("localhost." resolves like "localhost").
-    const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.$/, "");
+    // Trailing dots name the same host ("localhost." resolves like "localhost").
+    const hostname = url.hostname.toLowerCase().replace(/^\[|\]$/g, "").replace(/\.+$/, "");
     if (url.protocol !== "https:" || url.username || url.password || url.port || hostname === "localhost" || hostname.endsWith(".localhost")) return false;
     const words = ipv6Words(hostname);
     if (words) return !isInternalIpv6(words);
