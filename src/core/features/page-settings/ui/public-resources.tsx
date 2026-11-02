@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { WidgetAppearance } from "../../../shared/widget-appearance";
 import { Button } from "../../../app/client/ui/button";
 import { CopyBlock } from "../../../app/client/ui/copy-button";
+import { tooltip } from "../../../app/client/ui/tooltip/tooltip";
 import { EmbedPreview } from "./embed-preview";
 
 const escapeAttribute = (value: string) => value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
@@ -28,8 +29,8 @@ export function PublicResources({ publicOrigin, allowedOrigins, onOriginsChange,
       {variant === "floating" && <label className="form-label">Position<select value={position} onChange={(event) => update("position", event.target.value as WidgetAppearance["position"], true)}>
         <option value="top-left">Top left</option><option value="top-right">Top right</option><option value="bottom-left">Bottom left</option><option value="bottom-right">Bottom right</option>
       </select></label>}
-      <label className="form-label">Background colour<span className="colour-field"><input className="colour-picker" type="color" aria-label="Pick background colour" value={/^#[0-9a-f]{6}$/i.test(background) ? background : "#ffffff"} onChange={(event) => update("background", event.target.value, event.target.type === "color")} /><input aria-label="Background colour" required pattern="#[0-9A-Fa-f]{6}" value={background} onChange={(event) => update("background", event.target.value, event.target.type === "color")} /></span></label>
-      <label className="form-label">Text colour<span className="colour-field"><input className="colour-picker" type="color" aria-label="Pick text colour" value={/^#[0-9a-f]{6}$/i.test(color) ? color : "#182d24"} onChange={(event) => update("color", event.target.value, event.target.type === "color")} /><input aria-label="Text colour" required pattern="#[0-9A-Fa-f]{6}" value={color} onChange={(event) => update("color", event.target.value, event.target.type === "color")} /></span></label>
+      <label className="form-label">Background colour<span className="colour-field"><input className="colour-picker" type="color" {...tooltip("Pick background colour")} value={/^#[0-9a-f]{6}$/i.test(background) ? background : "#ffffff"} onChange={(event) => update("background", event.target.value, event.target.type === "color")} /><input aria-label="Background colour" required pattern="#[0-9A-Fa-f]{6}" value={background} onChange={(event) => update("background", event.target.value, event.target.type === "color")} /></span></label>
+      <label className="form-label">Text colour<span className="colour-field"><input className="colour-picker" type="color" {...tooltip("Pick text colour")} value={/^#[0-9a-f]{6}$/i.test(color) ? color : "#182d24"} onChange={(event) => update("color", event.target.value, event.target.type === "color")} /><input aria-label="Text colour" required pattern="#[0-9A-Fa-f]{6}" value={color} onChange={(event) => update("color", event.target.value, event.target.type === "color")} /></span></label>
       <label className="checkbox-label full-width"><input type="checkbox" checked={hideOperational} onChange={(event) => update("hideOperational", event.target.checked, true)} />Hide when everything is operational</label>
     </div>
     <EmbedPreview variant={variant} background={background} color={color} hideOperational={hideOperational} />

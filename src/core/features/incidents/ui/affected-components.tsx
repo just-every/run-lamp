@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useId } from "react";
 
 import { INCIDENT_CLAIM_STATES, type IncidentClaimState } from "../../../shared/incident-component-changes";
 import type { IncidentDraftInput } from "../../../shared/schemas";
@@ -6,6 +7,7 @@ import type { ComponentsService } from "../../components";
 import type { IncidentView } from "../service";
 import { useAppData } from "../../../app/client/ui/api";
 import { FormError } from "../../../app/client/ui/states";
+import { tooltip } from "../../../app/client/ui/tooltip/tooltip";
 import type { NewClaim } from "./use-new-incident";
 
 type ComponentsResponse = { components: Awaited<ReturnType<ComponentsService["list"]>> };
@@ -21,12 +23,13 @@ function usePublicComponents() {
  * changes an attached claim, the chip also names the claim it has now (UPDATE-012). */
 function ComponentChip({ name, state, states, now, disabled, onState, onRemove }: { name: string; state: IncidentClaimState; states: readonly IncidentClaimState[]; now?: IncidentClaimState; disabled?: boolean; onState: (state: IncidentClaimState) => void; onRemove?: () => void }) {
   const changed = now !== undefined && now !== state;
+  const nameId = useId();
   return <span className={`component-chip${changed ? " is-changed" : ""}`}>
     <span className={`fact-dot state-${slug(state)}`} aria-hidden="true" />
-    <span className="component-chip-name">{name}</span>
+    <span id={nameId} className="component-chip-name">{name}</span>
     {changed ? <span className="component-chip-now">{now} →</span> : null}
     <select aria-label={`${name} state with this update`} disabled={disabled} value={state} onChange={(event) => onState(event.target.value as IncidentClaimState)}>{states.map(value => <option key={value}>{value}</option>)}</select>
-    {onRemove ? <button type="button" className="chip-remove" aria-label={`Remove ${name}`} onClick={onRemove}>×</button> : null}
+    {onRemove ? <button type="button" className="chip-remove" {...tooltip("Remove component", { describedBy: nameId })} onClick={onRemove}>×</button> : null}
   </span>;
 }
 

@@ -2,6 +2,7 @@ import type { PageTheme } from "../../../shared/page-theme";
 import type { PageSettingsView } from "../service";
 import { ThemeLinks } from "./theme-links";
 import { ThemeAsset } from "./theme-assets";
+import { tooltip } from "../../../app/client/ui/tooltip/tooltip";
 
 const initialPalette: NonNullable<PageTheme["palette"]> = {
   background: "#f8f6f0", surface: "#ffffff", text: "#182d24", link: "#165b3e",
@@ -34,7 +35,7 @@ export function ThemeSettings({ value, saved, components, onChange, onSettings, 
           <p className="field-note">Text, links and state colours must pass AA contrast on the background and surface before saving.</p>
           <div className="settings-grid">{colors.map(([key, label]) => <label className="form-label" key={key}>{label}
             <span className="colour-field" style={{ gridTemplateColumns: "48px minmax(0, 1fr)" }}>
-              <input type="color" aria-label={`Pick ${label.toLowerCase()} colour`} value={/^#[0-9a-f]{6}$/i.test(value.palette![key]) ? value.palette![key] : initialPalette[key]} onChange={event => edit("palette", { ...value.palette!, [key]: event.target.value })} />
+              <input type="color" {...tooltip(`Pick ${label.toLowerCase()} colour`)} value={/^#[0-9a-f]{6}$/i.test(value.palette![key]) ? value.palette![key] : initialPalette[key]} onChange={event => edit("palette", { ...value.palette!, [key]: event.target.value })} />
               <input aria-label={`${label} hex colour`} required pattern="#[0-9A-Fa-f]{6}" value={value.palette![key]} onChange={event => edit("palette", { ...value.palette!, [key]: event.target.value })} />
             </span>
           </label>)}</div>

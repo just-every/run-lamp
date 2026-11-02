@@ -37,6 +37,12 @@
   --shadow-raised: 0 1px 2px rgb(24 45 36 / .06), 0 12px 24px -8px rgb(24 45 36 / .14), 0 32px 64px -24px rgb(24 45 36 / .24);
   --shadow-night: 0 30px 70px -24px rgb(0 0 0 / .6);
   --sans: 'Lamp Inter', 'Lamp Inter Fallback', Arial, system-ui;
+  --tooltip-bg: var(--pill);   /* the shared tooltip layer (ui/tooltip) reads these on the control it names */
+  --tooltip-fg: var(--on-ink);
+  --tooltip-font-size: var(--text-small);
+  --tooltip-padding: 6px 10px;
+  --tooltip-radius: 8px;
+  --tooltip-shadow: var(--pill-shadow);
   --text-small: 13px;          /* the smallest text anywhere: captions, pills, table heads, the page drawing's labels */
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   color: var(--ink);
@@ -48,6 +54,8 @@
 
 * { box-sizing: border-box; }
 body { min-width: 320px; min-height: 100vh; margin: 0; background: var(--paper); color: var(--ink); font: 400 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; font-synthesis: none; }
+/* The tooltip layer's host follows <body> (ui/tooltip-layer.tsx): it draws no box, and its tooltip renders text as the body does. */
+.tooltip-host { display: contents; -webkit-font-smoothing: antialiased; }
 button, input, select, textarea { color: inherit; font: inherit; }
 button, select, input[type="checkbox"] { cursor: pointer; }
 

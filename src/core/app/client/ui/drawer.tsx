@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Icon } from "./icon";
+import { tooltip } from "./tooltip/tooltip";
 
 export function Drawer({ title, eyebrow, children, onClose, className = "" }: { title: string; eyebrow: string; children: ReactNode; onClose: () => void; className?: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -24,7 +25,7 @@ export function Drawer({ title, eyebrow, children, onClose, className = "" }: { 
     const bounds = event.currentTarget.getBoundingClientRect();
     if (event.target === event.currentTarget && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) onClose();
   }}>
-    <div className="drawer-heading"><div><p className="eyebrow">{eyebrow}</p><h2 id={titleId}>{title}</h2></div><button className="icon-button drawer-close" type="button" onClick={onClose} aria-label="Close panel"><Icon name="close" width={19} height={19} /></button></div>
+    <div className="drawer-heading"><div><p className="eyebrow">{eyebrow}</p><h2 id={titleId}>{title}</h2></div><button className="icon-button drawer-close" type="button" onClick={onClose} {...tooltip("Close panel")}><Icon name="close" width={19} height={19} /></button></div>
     {children}
   </dialog>;
 }
