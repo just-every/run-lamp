@@ -7111,6 +7111,10 @@
       "sha256": "2a0aaacd16f4bea99eb9d986f1c2db63cb6fa02255042c6b3907fbba2434cf74",
       "executable": false
     },
+    "tests/e2e/helpers/suggested-update-flow.mjs": {
+      "sha256": "6c297e96db8abb111f1d126c9d7aa9cde15a5041bd04b38feb0be18d8520d153",
+      "executable": false
+    },
     "tests/e2e/helpers/theme-browser-flow.mjs": {
       "sha256": "d5aa63dae447dab1fafb3bc291a108cee29ab3625d989907c237e778ed5b1395",
       "executable": false
@@ -7172,7 +7176,7 @@
       "executable": false
     },
     "tests/e2e/incident-brief.test.mjs": {
-      "sha256": "8c6f49bbefc27257d4ad7e1b8ae1d4669b5c1d2bd493b3682ee7bd38aeb76a52",
+      "sha256": "00c5131ff1d7d08d263220ba85829e88047777eced51f50e870ad052e7299930",
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
@@ -7200,7 +7204,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "880549335862a60d2c3bfdd8fdd46ab7ead2a6633c7a115d5b861b99c0fc72f6",
+      "sha256": "993aa17c82405d20692c1f233d204a93f3245c6fc8a0e7cda7147324f0aadcb6",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
