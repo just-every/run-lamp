@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ef1dc3cc19de16802a903d0ae70522d9b55bf4c19371add46eb8358d7c805fbd",
+      "sha256": "d2f805ddc9de3c746edf331e4a470cb2fb25ac4c88b1534e231f1aab5ad64352",
       "executable": false
     },
     "DEMO.md": {
@@ -6860,7 +6860,7 @@
       "executable": false
     },
     "tests/e2e/helpers/communication-performance-browser.mjs": {
-      "sha256": "6905b3ed5e030473eb13ca3e712e8dd015a6b7d66c9c66ed643fcd4144b7a747",
+      "sha256": "9e1acc19d5a62c902acd824ec73a033d53cdabadff6ee5a89be83ce757ec92c3",
       "executable": false
     },
     "tests/e2e/helpers/communication-performance-csv.mjs": {
@@ -6868,7 +6868,7 @@
       "executable": false
     },
     "tests/e2e/helpers/communication-performance-flow.mjs": {
-      "sha256": "39c41febb11d714dc5f3f052c0951d4420903d34ed5952cf1883822b88b778f4",
+      "sha256": "a163bb7ad7d4f6979de994253b2bbd1b88b0a439902d45d411f60caaa0ecd8ea",
       "executable": false
     },
     "tests/e2e/helpers/component-notification-flow.mjs": {
@@ -7216,7 +7216,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "1ea34198e2ee61acac0c386eadf16e8e129dc05f1e41c184352acdccb4ace00e",
+      "sha256": "cee2ee58f25839159373dc2bc7b7669570f0f46f993a63df96fd812b81eed61a",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {

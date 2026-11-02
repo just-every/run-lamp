@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parse } from 'parse5';
-import { communicationPerformanceFlow } from './helpers/communication-performance-flow.mjs';
 import { communicationPerformanceBrowser } from './helpers/communication-performance-browser.mjs';
+import { communicationPerformanceFlow } from './helpers/communication-performance-flow.mjs';
 import { chatDeskNativeFlow } from '../chat-desk/flow.mjs';
 import { assertLinkedUpdateHtml, assertLinkedFeed } from './helpers/update-link-evidence.mjs';
 import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';

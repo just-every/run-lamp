@@ -223,7 +223,7 @@ export async function communicationPerformanceFlow(t) {
     assert.ok(attempts.length > 13, 'multiple real attempts cannot inflate the thirteen planned sends');
     await assertMonthlyCsv(j, measured);
     for (const incident of [first, second, third]) await assertIncidentCsv(j, incident.id, await reach(incident.id));
-    t.diagnostic('PROBE HIST-005 1: signed native intake and publications at controlled times -> first-update latencies 300000, 420000, 120000 milliseconds.');
+    t.diagnostic('PROBE HIST-005 1: authenticated native intake and publications at controlled times -> first-update latencies 300000, 420000, 120000 milliseconds.');
     t.diagnostic('PROBE HIST-005 4: native deliveries with repeated subscribers, retries, signed outcomes and six operator posts -> 3 failures / 13 planned sends; distinct email 5 selected, 3 accepted, 1 delivered; distinct webhook 2 selected, 1 delivered.');
 
     await clock(START + 35 * MINUTE);

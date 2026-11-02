@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { chromium } from 'playwright';
-import { expect } from '@playwright/test';
 import { withDraftVersion } from '../draft-version-helper.mjs';
-import { openTrafficAlertsRuntime } from './traffic-alerts-runtime.mjs';
-import { eventuallyFollowUp } from './follow-ups-runtime.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
-import { assertIncidentCsv, assertMonthlyCsv } from './communication-performance-csv.mjs';
+
+// Initialize the local runtime client before Wrangler's proxy bootstrap.
+const require = createRequire(import.meta.url), wranglerRequire = createRequire(require.resolve('wrangler'));
+wranglerRequire('miniflare');
+const { chromium } = await import('playwright');
+const { expect } = await import('@playwright/test');
 
 const MINUTE = 60_000;
 const count = value => value === 'unknown' ? 'Unknown' : Number(value).toLocaleString('en-US');
@@ -64,6 +66,9 @@ const incidentMetrics = row => ({
 /** The production report and download are reconciled on populated native data.
  * Its clock and synthetic mail acceptance are the only controlled boundaries. */
 export async function communicationPerformanceBrowser(t) {
+  const { openTrafficAlertsRuntime } = await import('./traffic-alerts-runtime.mjs');
+  const { eventuallyFollowUp } = await import('./follow-ups-runtime.mjs');
+  const { assertIncidentCsv, assertMonthlyCsv } = await import('./communication-performance-csv.mjs');
   const fixture = await openTrafficAlertsRuntime({ diagnostic: message => t?.diagnostic(message) });
   t?.diagnostic('HIST-005 production report fixture ready');
   const { runtime, origin, publicOrigin } = fixture;
@@ -149,7 +154,7 @@ export async function communicationPerformanceBrowser(t) {
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
     page.on('console', message => { if (/hydrat|did not match|Minified React error/i.test(message.text())) errors.push(message.text()); });
-    await page.goto(`${origin}/app`); await operatorHydrated(page);
+    await page.goto(`${origin}/app/settings#reports`); await operatorHydrated(page);
     const panel = page.getByRole('region', { name: 'Communication performance', exact: true });
     await panel.scrollIntoViewIfNeeded();
     await expect(panel.getByLabel('Communication performance month')).toHaveValue('2030-01');
