@@ -3143,6 +3143,8 @@ HIST-010 retains current-main's partial judgment, Evidence and recorded Gap. The
 
 SUB-004 is promoted to done by the replay of candidate `29e81076eae7171125ec1cacb8542be8eb588b32` (independent gate PASS on that head), judged as `2dc37452faf56a714522db6ec4481a51f62600e0` and accepted by ct-judge-lamp-sub004-20261103-1630: `tests/e2e/helpers/subscriber-components-flow.mjs`, loaded by the existing delivery journey in `tests/e2e/delivery-contract.test.mjs`, passes with every current-main assertion retained. Other clause judgments remain inherited.
 
+Supplementary PAGE-014 evidence from `cloud/sd-lamp-c-f46` is retained on `cloud/sd-lamp-c-f46-land-9da9242b77` (30 October 2026). `tests/e2e/public-contract.test.mjs` asserts the exact populated refresh field set, thirty-second polling, in-place live-region identity and configured time zone, and an unchanged script-disabled document and generation instant across a different publication and more than two refresh intervals. Its `tests/e2e/helpers/public-capacity-journey.mjs` helper compares actual refresh-response byte lengths at one and 200 components while retaining the same public story. Browser proof captures scripted and script-disabled screens at 1440 and 390. The newer main Status, Evidence and Gap judgment for PAGE-014 below remains partial; these additional assertions do not replace that judgment.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 33 | 74 | 0 | 107 |
