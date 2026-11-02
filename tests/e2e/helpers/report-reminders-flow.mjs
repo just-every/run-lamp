@@ -169,13 +169,12 @@ export async function reportRemindersFlow(t) {
         await assertReminders(historical, 0);
       }
     };
-    await advanceClock(resolvedAt + 7 * DAY - 1);
+    await tick(resolvedAt + 7 * DAY - 1);
     await assertReportState(false);
+    await assertReminders(incident, 0);
     await advanceClock(resolvedAt + 7 * DAY);
     await assertReportState(true);
     t.diagnostic(`HIST-003: both severe incidents are absent at ${new Date(resolvedAt + 7 * DAY - 1).toISOString()} and owing at ${dueAt}; native Overview changes from upcoming to overdue at that same instant.`);
-    await tick(resolvedAt + 7 * DAY - 1);
-    await assertReminders(incident, 0);
     await tick(resolvedAt + 7 * DAY);
     await assertReminders(incident, 1);
     const partialMail = () => reportMail(partial);
