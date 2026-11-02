@@ -19,7 +19,18 @@ const invitation = query(importFollowUpsSql);
 const notification = query(notificationFollowUpsSql);
 const channel = query(channelFollowUpsSql);
 const subscriberLimit=query(subscriberLimitFollowUpsSql);
-export const followUpsQueries = [incident, maintenance, report, invitation, notification, channel, subscriberLimit];
+// Publication failures must reach the operator's existing follow-up list while
+// Cron keeps the durable work pending. Never expose raw storage error strings.
+const snapshot = query(`
+SELECT 'snapshot-publication:' || b.id AS id,'snapshot-publication' AS kind,
+  'Public snapshot publication' AS title,NULL AS owner_id,NULL AS owner_name,
+  b.finished_at AS due_at,'Publish the pending public snapshot. Automatic retries continue.' AS stop_condition,
+  'Public snapshot publication failed. The previous publication remains available while automatic retries continue.' AS failure_message,
+  b.finished_at AS failure_at,'/app' AS link,json_array(b.id,b.status,b.attempts) AS occurrence
+FROM snapshot_builds b JOIN public_snapshot_work w ON w.id='default'
+WHERE b.rowid=(SELECT MAX(rowid) FROM snapshot_builds) AND b.status='failed'
+  AND w.requested_revision>w.completed_revision`);
+export const followUpsQueries = [incident, maintenance, report, invitation, notification, channel, subscriberLimit, snapshot];
 const queriesByKind: Record<string, string> = {
   "next-update": incident, "scheduled-publication": incident,
   "maintenance-start": maintenance, "maintenance-end": maintenance,
@@ -28,6 +39,7 @@ const queriesByKind: Record<string, string> = {
   "notification-dispatch": notification, "notification-delivery": notification,
   "channel-notification": channel,
   "subscriber-limit": subscriberLimit,
+  "snapshot-publication": snapshot,
 };
 
 /** Mutations project only the current carrier, then match its full bound id. */
