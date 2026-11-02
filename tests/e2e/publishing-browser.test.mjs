@@ -722,16 +722,58 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   await page.goto(`${appUrl}/app/incidents/${id}`); await operatorHydrated(page);
   const report = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Post-incident report', exact: true }) });
   await composer.row('Post-incident report');
+  const reportPath = `/api/app/incidents/${id}/report`;
+  const drafting = page.waitForResponse(response => response.url().endsWith(`${reportPath}/draft`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: 'Draft report', exact: true }).click();
-  for (const [name, value] of Object.entries({ Summary: 'Checkout delays have been resolved.', Timeline: 'Requests failed before the database pool was restored.', Cause: 'The checkout connection pool exhausted its capacity.', Remediation: 'We restored capacity and added pool saturation alerts.' })) await report.getByLabel(name, { exact: true }).fill(value);
+  const draftResponse = await drafting;
+  assert.equal(draftResponse.status(), 200);
+  const generatedReport = await draftResponse.json();
+  await report.getByRole('status').filter({ hasText: /saved privately/ }).waitFor();
+  assert.equal(await report.getByLabel('Summary', { exact: true }).inputValue(), generatedReport.report.summary);
+  assert.equal(await report.getByLabel('Timeline', { exact: true }).inputValue(), generatedReport.report.timeline);
+  assert.ok(generatedReport.report.summary.includes(`Recorded incident window: ${incident.openedAt} to published resolution ${incident.updates.find(row => row.lifecycle === 'Resolved').publishedAt}`));
+  assert.ok(!generatedReport.report.timeline.includes(note));
+  for (const [field, label] of [['cause', 'Cause'], ['remediation', 'Remediation']]) {
+    const input = report.getByRole('textbox', { name: label, exact: true });
+    assert.equal(await input.inputValue(), '', `${label} starts empty`);
+    assert.equal(await input.getAttribute('placeholder'), generatedReport.review[field].prompt);
+    const hint = await input.getAttribute('aria-describedby');
+    assert.ok(hint, `${label} is flagged for human input`);
+    assert.ok((await report.locator(`[id="${hint}"]`).textContent()).includes(generatedReport.review[field].prompt));
+    assert.equal(generatedReport.review[field].required, true);
+  }
+  assert.equal(await report.getByRole('button', { name: 'Draft report', exact: true }).isDisabled(), true, 'existing generated work cannot be replaced');
+  assert.deepEqual((await api(reportPath)).report, generatedReport.report);
+  await previewScreens(page, 'report-generated');
+  const completedReport = { summary: 'Checkout delays have been resolved.', timeline: 'Requests failed before the database pool was restored.', cause: 'The checkout connection pool exhausted its capacity.', remediation: 'We restored capacity and added pool saturation alerts.' };
+  for (const [name, value] of Object.entries(completedReport)) await report.getByLabel(name[0].toUpperCase() + name.slice(1), { exact: true }).fill(value);
   const saving = page.waitForResponse(response => response.url().endsWith(`/incidents/${id}/report`) && response.request().method() === 'PUT');
   await report.getByRole('button', { name: 'Save report', exact: true }).click(); assert.equal((await saving).status(), 200);
   await page.reload(); await operatorHydrated(page); await composer.row('Post-incident report');
-  assert.equal(await report.getByRole('textbox', { name: 'Cause', exact: true }).inputValue(), 'The checkout connection pool exhausted its capacity.');
+  for (const [field, value] of Object.entries(completedReport)) assert.equal(await report.getByRole('textbox', { name: field[0].toUpperCase() + field.slice(1), exact: true }).inputValue(), value);
+  assert.equal(await report.getByRole('button', { name: 'Draft report', exact: true }).isDisabled(), true, 'existing operator edits cannot be replaced');
+  const savedReport = (await api(reportPath)).report;
+  for (const [field, value] of Object.entries(completedReport)) assert.equal(savedReport[field], value);
+  assert.equal(savedReport.publishedAt, null);
+  await previewScreens(page, 'report-saved');
   assert.equal((await (await fetch(`${pageUrl}/incidents/${incident.reference}`)).text()).includes('Checkout delays have been resolved.'), false, 'a saved report stays private');
   const publishing = page.waitForResponse(response => response.url().endsWith(`/incidents/${id}/report/publish`) && response.request().method() === 'POST');
   await report.getByRole('button', { name: 'Publish report', exact: true }).click(); assert.equal((await publishing).status(), 200);
   await waitForPublicIncident(incident.reference, 'Checkout delays have been resolved.');
+  const publishedReport = (await api(reportPath)).report;
+  for (const [field, value] of Object.entries(completedReport)) assert.equal(publishedReport[field], value);
+  assert.ok(publishedReport.publishedAt);
+  await report.locator('.report-editor > p').filter({ hasText: /^Published / }).waitFor();
+  assert.equal(await report.getByRole('textbox').count(), 0, 'published text has no editing controls');
+  assert.equal(await report.getByRole('button', { name: 'Save report', exact: true }).count(), 0);
+  await previewScreens(page, 'report-published-operator');
+  const publicReportPage = await browserContext.newPage();
+  try {
+    await publicReportPage.goto(`${pageUrl}/incidents/${incident.reference}`);
+    assert.deepEqual(await wordingFields(publicReportPage.locator('section.report')), Object.entries(completedReport).map(([field, value]) => ({ label: field[0].toUpperCase() + field.slice(1), value })));
+    assert.ok(!(await publicReportPage.locator('body').textContent()).includes(note));
+    await previewScreens(publicReportPage, 'report-published-public');
+  } finally { await publicReportPage.close(); }
 
   const destination = 'https://notify.example.test/journey-erasure';
   const subscriber = (await api('/api/app/subscribers/webhook', 'POST', { destination, contactEmail: 'private-reader@example.test', componentIds: [] })).subscriber;
