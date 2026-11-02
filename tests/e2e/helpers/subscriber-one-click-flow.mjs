@@ -5,13 +5,13 @@ import { chromium } from "playwright";
 import { openSubscriberManagementFixture } from "./subscriber-management-fixture.mjs";
 
 /** Capture real notification mail, then exercise the mailbox provider's public
- * one-click door with two independent subscriptions and one controlled clock. */
+ * one-click door with three independent subscriptions and one controlled clock. */
 export async function subscriberOneClickFlow() {
   const fixture = await openSubscriberManagementFixture({ workerEntry: "tests/e2e/helpers/automation-clock-worker.ts" });
   const { raw, publicOrigin } = fixture;
   const network = { "CF-Connecting-IP": "192.0.2.60", "X-Forwarded-For": "192.0.2.60" };
   const minute = Math.ceil((Date.now() + 60_000) / 60_000) * 60_000;
-  const addresses = [1, 2].map(number => [`synthetic-lamp-one-click-${number}`, "example.test"].join("@"));
+  const addresses = [1, 2, 3].map(number => [`synthetic-lamp-one-click-${number}`, "example.test"].join("@"));
   const clock = async now => {
     const response = await raw("/test/clock", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ now }) });
     assert.equal(response.status, 204, await response.text());
@@ -38,7 +38,7 @@ export async function subscriberOneClickFlow() {
     }
     await fixture.publish(component, "Synthetic Lamp one-click notification");
     const original = await fixture.list();
-    assert.equal(original.length, 2);
+    assert.equal(original.length, 3);
     assert.ok(original.every(row => row.state === "active"));
     browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, headless: true,
       args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"] });
@@ -69,7 +69,7 @@ export async function subscriberOneClickFlow() {
       assert.equal(await visibleLink.getAttribute("href"), web[0], "the actual visible body link and header address the same subscription");
       links.push(web[0]);
     }
-    assert.notEqual(links[0], links[1], "the two readers receive independent token authority");
+    assert.equal(new Set(links).size, 3, "each reader receives independent token authority");
     if (process.env.LAMP_BROWSER_EVIDENCE) {
       await mkdir(process.env.LAMP_BROWSER_EVIDENCE, { recursive: true });
       for (const width of [1440, 390]) {
@@ -77,7 +77,7 @@ export async function subscriberOneClickFlow() {
         await page.screenshot({ path: join(process.env.LAMP_BROWSER_EVIDENCE, `one-click-notification-${width}.png`), fullPage: true });
       }
     }
-    // No unsubscribe request has used either token's allowance. Every request
+    // No unsubscribe request has used any token's allowance. Every request
     // below sees the same Worker minute and mailbox-provider network identity.
     for (let request = 1; request <= 30; request++) {
       const preview = await send(links[0]);
@@ -85,10 +85,10 @@ export async function subscriberOneClickFlow() {
       assert.equal(preview.headers.has("Set-Cookie"), false);
       assert.match(await preview.text(), /<button[^>]*>Unsubscribe<\/button>/);
     }
-    assert.deepEqual(await fixture.list(), original, "GET previews never deactivate either subscription");
+    assert.deepEqual(await fixture.list(), original, "GET previews never deactivate any subscription");
     const exhausted = await send(links[0], encoded());
     assert.equal(exhausted.status, 429, "request 31 exhausts the actual token allowance");
-    assert.deepEqual(await fixture.list(), original, "a rate-limited one-click POST changes neither subscription");
+    assert.deepEqual(await fixture.list(), original, "a rate-limited one-click POST changes no subscription");
 
     // Send the provider's multipart wire bytes explicitly: Miniflare's bundled
     // Request serializer does not recognize Node's separate FormData class.
@@ -103,6 +103,19 @@ export async function subscriberOneClickFlow() {
     assert.equal(second.deactivationReason, "unsubscribed");
     assert.equal(second.deactivatedAt, new Date(minute + 1_000).toISOString());
     assert.deepEqual(afterMultipart.find(row => row.destination === addresses[0]), original.find(row => row.destination === addresses[0]), "another token's exhausted allowance never consumes or changes this subscription's authority");
+    assert.deepEqual(afterMultipart.find(row => row.destination === addresses[2]), original.find(row => row.destination === addresses[2]), "multipart deactivation leaves the URL-encoded target active and unchanged");
+
+    // Prove the other encoding independently in the same exhausted minute,
+    // before any window reset can replenish a shared network allowance.
+    await emptySuccess(await send(links[2], encoded()));
+    const afterSameMinuteEncoded = await fixture.list();
+    const third = afterSameMinuteEncoded.find(row => row.destination === addresses[2]);
+    assert.equal(third.state, "deactivated", "URL-encoded one-click remains usable from the same mailbox-provider network after another token is exhausted");
+    assert.equal(third.deactivationReason, "unsubscribed");
+    assert.equal(third.deactivatedAt, new Date(minute + 1_000).toISOString());
+    assert.deepEqual(afterSameMinuteEncoded.filter(row => row.id !== third.id), afterMultipart.filter(row => row.id !== third.id), "URL-encoded deactivation changes only its intended subscription");
+    assert.equal((await send(links[0], encoded())).status, 429, "other tokens' successful POSTs do not reset the exhausted token's allowance");
+    assert.deepEqual(await fixture.list(), afterSameMinuteEncoded, "the exhausted token still cannot change any subscription");
 
     await clock(minute + 61_000);
     await emptySuccess(await send(links[0], encoded()));
@@ -112,7 +125,8 @@ export async function subscriberOneClickFlow() {
     assert.equal(first.deactivationReason, "unsubscribed");
     assert.equal(first.deactivatedAt, new Date(minute + 61_000).toISOString());
     assert.deepEqual(afterEncoded.find(row => row.id === second.id), second, "URL-encoded deactivation leaves the multipart target unchanged");
+    assert.deepEqual(afterEncoded.find(row => row.id === third.id), third, "the new minute leaves the earlier URL-encoded target unchanged");
     for (const link of links) assert.equal((await send(link, encoded())).status, 404, "revoked one-click authority cannot be replayed");
-    assert.deepEqual(await fixture.list(), afterEncoded, "replayed tokens cannot resurrect or edit either subscription");
+    assert.deepEqual(await fixture.list(), afterEncoded, "replayed tokens cannot resurrect or edit any subscription");
   } finally { try { await browser?.close(); } finally { await fixture.close(); } }
 }
