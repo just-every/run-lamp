@@ -172,7 +172,10 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       whatStillWorks: 'Previously saved results remain available in the dashboard.',
       details: 'Responders have isolated the failing API gateway.',
     };
-    await j.save(incident.id, widgetWording); await j.publish(incident.id);
+    const widgetCommitment = '2031-02-10T19:47:00.000Z';
+    await j.save(incident.id, { ...widgetWording, nextUpdateAt: widgetCommitment });
+    const widgetPublication = (await j.publish(incident.id)).update;
+    assert.equal(widgetPublication.nextUpdateAt, widgetCommitment);
     await j.visible('/', incident.title);
     const firstStatus = await (await j.publicResponse('/api/public/status')).json();
     assert.ok((await j.publicText('/')).includes(other.name), 'a degraded conditional component becomes public');
@@ -216,6 +219,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const loadWidget = async target => target.evaluate(url => new Promise((resolve, reject) => {
       const script = document.createElement('script'); script.src = url; script.onload = resolve; script.onerror = reject; document.body.append(script);
     }), j.publicOrigin + '/widget.js');
+    await page.reload();
     await loadWidget(page); await page.locator('section[role=status]').waitFor();
     const banner = page.locator('section[role=status]');
     assert.equal(await banner.count(), 1, 'one script tag installs one banner');
@@ -224,13 +228,63 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(bannerMessage.includes(incident.reference), 'the banner identifies the unresolved incident');
     assert.ok(bannerMessage.includes('Synthetic Lamp API outage under investigation'), 'the banner retains its submitted title');
     for (const value of Object.values(widgetWording)) assert.ok(bannerMessage.includes(value), `the banner retains submitted wording: ${value}`);
+    assert.equal(firstStatus.incident.reference, incident.reference);
+    assert.equal(firstStatus.incident.publishedAt, widgetPublication.publishedAt, 'the installed wording is associated with the committed publication');
+    const updateLabels = ['Who is affected', 'Customer impact', 'What still works', 'Next update by', 'Additional details'];
+    const bannerFields = text => text.split('\n').filter(line => updateLabels.some(label => line.startsWith(`${label}:`)));
+    assert.ok(bannerMessage.split('\n').includes('Status: Identified'));
+    assert.deepEqual(bannerFields(bannerMessage), [
+      `Who is affected: ${widgetWording.affectedAudience}`, `Customer impact: ${widgetWording.customerImpact}`,
+      `What still works: ${widgetWording.whatStillWorks}`, 'Next update by: Feb 10, 2031, 11:47 UTC-08:00',
+      `Additional details: ${widgetWording.details}`,
+    ], 'the installed widget retains the complete populated wording and independently expected configured-zone commitment');
+    const captureUpdate = async name => {
+      if (!process.env.LAMP_UPDATE002_SCREENSHOTS) return;
+      await mkdir(process.env.LAMP_UPDATE002_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_UPDATE002_SCREENSHOTS}/${name}-${width}.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    };
+    await captureUpdate('populated');
     const denied = await scripted.newPage(); await denied.setContent('<main>Unlisted embedding site</main>'); await loadWidget(denied);
     assert.equal(await denied.locator('section[role=status]').count(), 0); await denied.close();
     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
     assert.deepEqual(audit.violations.filter(item => ['serious', 'critical'].includes(item.impact)), []);
 
-    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'API requests are working again.', nextUpdateAt: null }); await j.publish(incident.id);
+    const blankWording = {
+      affectedAudience: 'Customers retrying queued API operations.',
+      customerImpact: 'API retries remain paused while responders verify recovery.',
+      whatStillWorks: '', details: '', nextUpdateAt: '2031-02-10T20:48:00.000Z',
+    };
+    await j.save(incident.id, blankWording);
+    const blankPublication = (await j.publish(incident.id)).update;
+    await j.visible('/', blankWording.customerImpact);
+    const blankStatus = await (await j.publicResponse('/api/public/status')).json();
+    assert.equal(blankStatus.incident.publishedAt, blankPublication.publishedAt);
+    assert.equal(blankPublication.whatStillWorks, ''); assert.equal(blankPublication.details, '');
+    assert.equal(blankPublication.nextUpdateAt, blankWording.nextUpdateAt);
+    await page.clock.fastForward(30000);
+    await page.waitForFunction(text => document.querySelector('section[role=status] span:last-child').textContent.includes(text), blankWording.customerImpact);
+    assert.deepEqual(bannerFields(await banner.locator('span').last().innerText()), [
+      `Who is affected: ${blankWording.affectedAudience}`, `Customer impact: ${blankWording.customerImpact}`,
+      'Next update by: Feb 10, 2031, 12:48 UTC-08:00',
+    ], 'the same installed widget replaces the prior publication and omits both absent optional fields');
+    await page.reload(); await loadWidget(page);
+    await captureUpdate('blank-optional');
+
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'API requests are working again.', whatStillWorks: '', details: '', nextUpdateAt: null });
+    const resolvedPublication = (await j.publish(incident.id)).update;
+    assert.equal(resolvedPublication.nextUpdateAt, null);
     await j.visible('/history', incident.title);
+    await eventually(async () => (await j.publicResponse('/api/public/status')).json(), status => status.incident === null, 'resolved publication clears the widget incident');
+    await page.clock.fastForward(30000);
+    await page.waitForFunction(() => document.querySelector('section[role=status] span:last-child').textContent === '');
+    assert.equal(await banner.locator('span').last().innerText(), '', 'the installed widget carries no stale wording or commitment after resolution');
+    await page.reload(); await loadWidget(page);
+    assert.equal(await banner.locator('span').last().innerText(), '', 'a fresh widget also omits the resolved commitment');
+    await captureUpdate('resolved');
     const feedAfter = await j.publicText('/feed.atom');
     for (const id of firstIds) assert.ok(feedAfter.includes(id), 'earlier public feed identifiers survive a later update');
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).publicState, 'Operational');
