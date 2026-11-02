@@ -1,0 +1,1384 @@
+{
+ "label": "after",
+ "base": "http://127.0.0.1:4931",
+ "views": {
+  "desktop": [
+   {
+    "name": "shell",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-rail",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "incident-new-chip",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "chip-remove",
+      "glyph": "×",
+      "ariaLabel": "Remove component",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "_r_0_",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       592,
+       372,
+       28,
+       28
+      ],
+      "html": "<button type=\"button\" class=\"chip-remove\" aria-label=\"Remove component\" data-tooltip=\"\" aria-describedby=\"_r_0_\">×</button>"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       318,
+       614,
+       40,
+       40
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"false\"><svg aria-hidden=\"true\" viewBox"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-new-options",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "chip-remove",
+      "glyph": "×",
+      "ariaLabel": "Remove component",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "_r_0_",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       592,
+       372,
+       28,
+       28
+      ],
+      "html": "<button type=\"button\" class=\"chip-remove\" aria-label=\"Remove component\" data-tooltip=\"\" aria-describedby=\"_r_0_\">×</button>"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       318,
+       614,
+       40,
+       40
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"_R_1qnkl6_-menu\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-1",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       318,
+       767,
+       40,
+       40
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"false\"><svg aria-hidden=\"true\" viewBox"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-1-options",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       318,
+       767,
+       40,
+       40
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"_R_1qnkl6_-menu\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-2",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       318,
+       822,
+       40,
+       40
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"false\"><svg aria-hidden=\"true\" viewBox"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-2-options",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       318,
+       342,
+       40,
+       40
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"_R_1qnkl6_-menu\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "components",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "component-add-drawer",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "icon-button drawer-close",
+      "glyph": "",
+      "ariaLabel": "Close panel",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       1376,
+       24,
+       40,
+       40
+      ],
+      "html": "<button class=\"icon-button drawer-close\" type=\"button\" aria-label=\"Close panel\" data-tooltip=\"\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentCol"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "component-drawer",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "icon-button drawer-close",
+      "glyph": "",
+      "ariaLabel": "Close panel",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       1376,
+       24,
+       40,
+       40
+      ],
+      "html": "<button class=\"icon-button drawer-close\" type=\"button\" aria-label=\"Close panel\" data-tooltip=\"\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentCol"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "component-catalogue-drawer",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "icon-button drawer-close",
+      "glyph": "",
+      "ariaLabel": "Close panel",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       1376,
+       24,
+       40,
+       40
+      ],
+      "html": "<button class=\"icon-button drawer-close\" type=\"button\" aria-label=\"Close panel\" data-tooltip=\"\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentCol"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "app-maintenance",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-subscribers",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-subscribers-view-log",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-move-in",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-cutover",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-alerts",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-page",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-page",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-look",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick accent colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       672,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick accent colour\" data-tooltip=\"\" type=\"color\" value=\"#2563eb\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "settings-notifications",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-writing",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-templates",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-tools",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-embeds",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick background colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       855,
+       357,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick background colour\" data-tooltip=\"\" type=\"color\" value=\"#ffffff\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick text colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       455,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick text colour\" data-tooltip=\"\" type=\"color\" value=\"#182d24\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "settings-operators",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-sign-in",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-reports",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-export",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-audit",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-look-palette",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick accent colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       -162,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick accent colour\" data-tooltip=\"\" type=\"color\" value=\"#2563eb\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick background colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       555,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick background colour\" data-tooltip=\"\" type=\"color\" value=\"#f8f6f0\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick surface colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       855,
+       555,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick surface colour\" data-tooltip=\"\" type=\"color\" value=\"#ffffff\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick text colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       647,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick text colour\" data-tooltip=\"\" type=\"color\" value=\"#182d24\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick links colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       855,
+       647,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick links colour\" data-tooltip=\"\" type=\"color\" value=\"#165b3e\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick operational colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       738,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick operational colour\" data-tooltip=\"\" type=\"color\" value=\"#166744\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick degraded performance colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       855,
+       738,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick degraded performance colour\" data-tooltip=\"\" type=\"color\" value=\"#805600\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick partially unavailable colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       830,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick partially unavailable colour\" data-tooltip=\"\" type=\"color\" value=\"#985100\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick major outage colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       855,
+       830,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick major outage colour\" data-tooltip=\"\" type=\"color\" value=\"#a12b20\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick maintenance colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       314,
+       922,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick maintenance colour\" data-tooltip=\"\" type=\"color\" value=\"#37588b\">"
+     }
+    ],
+    "titles": []
+   }
+  ],
+  "phone": [
+   {
+    "name": "shell",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "shell-menu-open",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-rail",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-menu-open",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "incident-new-chip",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "chip-remove",
+      "glyph": "×",
+      "ariaLabel": "Remove component",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "_r_0_",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       312,
+       417,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"chip-remove\" aria-label=\"Remove component\" data-tooltip=\"\" aria-describedby=\"_r_0_\">×</button>"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1199,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"false\"><svg aria-hidden=\"true\" viewBox"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-new-options",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "chip-remove",
+      "glyph": "×",
+      "ariaLabel": "Remove component",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "_r_0_",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       312,
+       -79,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"chip-remove\" aria-label=\"Remove component\" data-tooltip=\"\" aria-describedby=\"_r_0_\">×</button>"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       703,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"_R_1qnkl6_-menu\">"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "sheet-close",
+      "glyph": "",
+      "ariaLabel": "Close options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       328,
+       127,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"sheet-close\" aria-label=\"Close options\" data-tooltip=\"\" data-tooltip-placement=\"left\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\""
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-1",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1670,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"false\"><svg aria-hidden=\"true\" viewBox"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-1-options",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       400,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"_R_1qnkl6_-menu\">"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "sheet-close",
+      "glyph": "",
+      "ariaLabel": "Close options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       328,
+       127,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"sheet-close\" aria-label=\"Close options\" data-tooltip=\"\" data-tooltip-placement=\"left\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\""
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-2",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1496,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"false\"><svg aria-hidden=\"true\" viewBox"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "incident-detail-2-options",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "update-options-toggle",
+      "glyph": "",
+      "ariaLabel": "Update options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       400,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"update-options-toggle\" aria-label=\"Update options\" data-tooltip=\"\" aria-haspopup=\"menu\" aria-expanded=\"true\" aria-controls=\"_R_1qnkl6_-menu\">"
+     },
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "sheet-close",
+      "glyph": "",
+      "ariaLabel": "Close options",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       328,
+       174,
+       44,
+       44
+      ],
+      "html": "<button type=\"button\" class=\"sheet-close\" aria-label=\"Close options\" data-tooltip=\"\" data-tooltip-placement=\"left\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\""
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "components",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "component-add-drawer",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "icon-button drawer-close",
+      "glyph": "",
+      "ariaLabel": "Close panel",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       330,
+       20,
+       44,
+       44
+      ],
+      "html": "<button class=\"icon-button drawer-close\" type=\"button\" aria-label=\"Close panel\" data-tooltip=\"\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentCol"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "component-drawer",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "icon-button drawer-close",
+      "glyph": "",
+      "ariaLabel": "Close panel",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       330,
+       20,
+       44,
+       44
+      ],
+      "html": "<button class=\"icon-button drawer-close\" type=\"button\" aria-label=\"Close panel\" data-tooltip=\"\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentCol"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "component-catalogue-drawer",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "button",
+      "cls": "icon-button drawer-close",
+      "glyph": "",
+      "ariaLabel": "Close panel",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": true,
+      "rect": [
+       330,
+       20,
+       44,
+       44
+      ],
+      "html": "<button class=\"icon-button drawer-close\" type=\"button\" aria-label=\"Close panel\" data-tooltip=\"\"><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentCol"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "app-maintenance",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-subscribers",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-subscribers-view-log",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-move-in",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-cutover",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-alerts",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "app-page",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-page",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-look",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick accent colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       781,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick accent colour\" data-tooltip=\"\" type=\"color\" value=\"#2563eb\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "settings-notifications",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-writing",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-templates",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-tools",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-embeds",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick background colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       557,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick background colour\" data-tooltip=\"\" type=\"color\" value=\"#ffffff\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick text colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       648,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick text colour\" data-tooltip=\"\" type=\"color\" value=\"#182d24\">"
+     }
+    ],
+    "titles": []
+   },
+   {
+    "name": "settings-operators",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-sign-in",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-reports",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-export",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-audit",
+    "controls": [],
+    "titles": []
+   },
+   {
+    "name": "settings-look-palette",
+    "controls": [
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "colour-picker",
+      "glyph": "",
+      "ariaLabel": "Pick accent colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       -348,
+       48,
+       44
+      ],
+      "html": "<input class=\"colour-picker\" aria-label=\"Pick accent colour\" data-tooltip=\"\" type=\"color\" value=\"#2563eb\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick background colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       557,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick background colour\" data-tooltip=\"\" type=\"color\" value=\"#f8f6f0\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick surface colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       649,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick surface colour\" data-tooltip=\"\" type=\"color\" value=\"#ffffff\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick text colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       740,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick text colour\" data-tooltip=\"\" type=\"color\" value=\"#182d24\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick links colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       832,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick links colour\" data-tooltip=\"\" type=\"color\" value=\"#165b3e\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick operational colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       924,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick operational colour\" data-tooltip=\"\" type=\"color\" value=\"#166744\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick degraded performance colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1015,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick degraded performance colour\" data-tooltip=\"\" type=\"color\" value=\"#805600\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick partially unavailable colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1107,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick partially unavailable colour\" data-tooltip=\"\" type=\"color\" value=\"#985100\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick major outage colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1199,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick major outage colour\" data-tooltip=\"\" type=\"color\" value=\"#a12b20\">"
+     },
+     {
+      "where": "document",
+      "tag": "input",
+      "cls": "",
+      "glyph": "",
+      "ariaLabel": "Pick maintenance colour",
+      "labelledby": "",
+      "title": "",
+      "tooltip": true,
+      "describedby": "",
+      "disabled": false,
+      "inDialog": false,
+      "rect": [
+       33,
+       1291,
+       48,
+       44
+      ],
+      "html": "<input aria-label=\"Pick maintenance colour\" data-tooltip=\"\" type=\"color\" value=\"#37588b\">"
+     }
+    ],
+    "titles": []
+   }
+  ]
+ }
+}

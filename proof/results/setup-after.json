@@ -1,0 +1,41 @@
+[
+ {
+  "view": "desktop",
+  "label": "after",
+  "iconOnly": [
+   {
+    "name": "Pick accent colour",
+    "tooltip": true,
+    "title": ""
+   }
+  ],
+  "titles": [],
+  "tooltipShown": {
+   "text": "Pick accent colour",
+   "ok": true
+  },
+  "focusTooltip": {
+   "text": "Pick accent colour",
+   "ok": true
+  },
+  "pickerValue": "#2563eb"
+ },
+ {
+  "view": "phone",
+  "label": "after",
+  "iconOnly": [
+   {
+    "name": "Pick accent colour",
+    "tooltip": true,
+    "title": ""
+   }
+  ],
+  "titles": [],
+  "tooltipShown": {
+   "text": "Pick accent colour",
+   "ok": true
+  },
+  "focusTooltip": null,
+  "pickerValue": "#2563eb"
+ }
+]

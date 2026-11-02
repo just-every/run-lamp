@@ -1,0 +1,90 @@
+[
+ {
+  "view": "desktop",
+  "name": "chip remove",
+  "open": true,
+  "inTopLayer": true,
+  "clippers": []
+ },
+ {
+  "view": "desktop",
+  "name": "update options",
+  "open": true,
+  "inTopLayer": true,
+  "clippers": []
+ },
+ {
+  "view": "desktop",
+  "name": "drawer close",
+  "open": true,
+  "inTopLayer": true,
+  "clippers": [
+   {
+    "el": "dialog.claim-drawer",
+    "overflow": "auto",
+    "transform": false,
+    "escapes": false
+   },
+   {
+    "el": "body.",
+    "overflow": "hidden",
+    "transform": false,
+    "escapes": false
+   }
+  ]
+ },
+ {
+  "view": "phone",
+  "name": "chip remove",
+  "open": true,
+  "inTopLayer": true,
+  "clippers": [
+   {
+    "el": "div.operator-shell",
+    "overflow": "clip visible",
+    "transform": false,
+    "escapes": false
+   }
+  ]
+ },
+ {
+  "view": "phone",
+  "name": "update options",
+  "open": true,
+  "inTopLayer": true,
+  "clippers": [
+   {
+    "el": "div.operator-shell",
+    "overflow": "clip visible",
+    "transform": false,
+    "escapes": false
+   }
+  ]
+ },
+ {
+  "view": "phone",
+  "name": "drawer close",
+  "open": true,
+  "inTopLayer": true,
+  "clippers": [
+   {
+    "el": "dialog.claim-drawer",
+    "overflow": "auto",
+    "transform": false,
+    "escapes": false
+   },
+   {
+    "el": "div.operator-shell",
+    "overflow": "clip visible",
+    "transform": false,
+    "escapes": false
+   },
+   {
+    "el": "body.",
+    "overflow": "hidden",
+    "transform": false,
+    "escapes": false
+   }
+  ]
+ }
+]

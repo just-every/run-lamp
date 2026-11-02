@@ -4,6 +4,7 @@ import { EditableRow } from "./editable-row";
 import { FoundComponents, foundLayout } from "./found-components";
 import { PagePreview } from "../../page-settings/ui/page-preview";
 import { readFileAsDataUrl } from "../../../app/client/ui/mark-image";
+import { tooltip } from "../../../app/client/ui/tooltip/tooltip";
 
 export interface FoundMark { src: string; vector: boolean; from: string | null }
 /** The status page the business already runs, as its public feeds listed it when setup read it. */
@@ -43,7 +44,7 @@ export function FoundCard({ page, address, onChange }: { page: FoundPage; addres
         : <span className="found-muted">A letter mark from your page name</span>}
         editor={<div className="found-mark-editor"><label className="form-label">Logo file<input type="file" accept="image/svg+xml,image/png,image/jpeg,image/webp" onChange={chooseMark} /></label>{page.mark ? <button type="button" className="text-link" onClick={() => onChange({ mark: null })}>Use a letter mark</button> : null}</div>} />
       <EditableRow label="Accent colour" name="accent colour" value={<span className="found-colour"><i style={{ background: page.accentColor }} />{page.accentColor.toUpperCase()}</span>}
-        editor={<label className="form-label">Accent colour<span className="found-colour-editor"><input type="color" aria-label="Pick accent colour" value={/^#[0-9a-f]{6}$/i.test(page.accentColor) ? page.accentColor : "#000000"} onChange={(event) => onChange({ accentColor: event.target.value.toUpperCase() })} /><input required pattern="#[0-9A-Fa-f]{6}" aria-label="Accent colour" value={page.accentColor} onChange={(event) => onChange({ accentColor: event.target.value })} /></span></label>} />
+        editor={<label className="form-label">Accent colour<span className="found-colour-editor"><input type="color" {...tooltip("Pick accent colour")} value={/^#[0-9a-f]{6}$/i.test(page.accentColor) ? page.accentColor : "#000000"} onChange={(event) => onChange({ accentColor: event.target.value.toUpperCase() })} /><input required pattern="#[0-9A-Fa-f]{6}" aria-label="Accent colour" value={page.accentColor} onChange={(event) => onChange({ accentColor: event.target.value })} /></span></label>} />
       <FoundComponents page={page} onChange={onChange} />
       {page.statusPage ? <div className="found-row" data-found="status page"><p className="found-label">Your current status page</p><div className="found-value">{shortUrl(page.statusPage)}
         {pastIncidents ? <label className="found-history"><input type="checkbox" aria-labelledby="first-run-history" aria-describedby="first-run-history-note" checked={page.history} onChange={(event) => onChange({ history: event.target.checked })} /><span><span id="first-run-history">Bring its incident history too</span><small id="first-run-history-note" className="found-muted found-note">{pastIncidents} past incident{pastIncidents === 1 ? "" : "s"}, added as resolved history. No one is notified.</small></span></label>

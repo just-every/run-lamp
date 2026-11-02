@@ -1,0 +1,290 @@
+{
+ "seedCommit": "71bbf96d9499f3c305b6d459e96b127fb9eb8a8a",
+ "renderedStatesWalked": {
+  "desktop": 32,
+  "phone": 34
+ },
+ "instancesBefore": 51,
+ "withTooltipBefore": 0,
+ "instancesAfter": 51,
+ "withTooltipAfter": 51,
+ "nativeTitlesBefore": 0,
+ "nativeTitlesAfter": 0,
+ "setup": {
+  "before": [
+   {
+    "view": "desktop",
+    "controls": [
+     {
+      "name": "Pick accent colour",
+      "tooltip": false,
+      "title": ""
+     }
+    ]
+   },
+   {
+    "view": "phone",
+    "controls": [
+     {
+      "name": "Pick accent colour",
+      "tooltip": false,
+      "title": ""
+     }
+    ]
+   }
+  ],
+  "after": [
+   {
+    "view": "desktop",
+    "controls": [
+     {
+      "name": "Pick accent colour",
+      "tooltip": true,
+      "title": ""
+     }
+    ]
+   },
+   {
+    "view": "phone",
+    "controls": [
+     {
+      "name": "Pick accent colour",
+      "tooltip": true,
+      "title": ""
+     }
+    ]
+   }
+  ]
+ },
+ "distinctControls": [
+  {
+   "source": "src/core/features/incidents/ui/affected-components.tsx",
+   "nameBefore": "Remove <component name>",
+   "nameAfter": "Remove component",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "incident-new-chip",
+    "incident-new-options"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": true
+  },
+  {
+   "source": "src/core/features/incidents/ui/update-options.tsx",
+   "nameBefore": "Update options",
+   "nameAfter": "Update options",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "incident-new-chip",
+    "incident-new-options",
+    "incident-detail-1",
+    "incident-detail-1-options",
+    "incident-detail-2",
+    "incident-detail-2-options"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/app/client/ui/drawer.tsx",
+   "nameBefore": "Close panel",
+   "nameAfter": "Close panel",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "component-add-drawer",
+    "component-drawer",
+    "component-catalogue-drawer"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/brand-card.tsx, src/core/features/setup/ui/found-card.tsx",
+   "nameBefore": "Pick accent colour",
+   "nameAfter": "Pick accent colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look",
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/public-resources.tsx",
+   "nameBefore": "Pick background colour",
+   "nameAfter": "Pick background colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-embeds",
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/public-resources.tsx",
+   "nameBefore": "Pick text colour",
+   "nameAfter": "Pick text colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-embeds",
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick surface colour",
+   "nameAfter": "Pick surface colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick links colour",
+   "nameAfter": "Pick links colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick operational colour",
+   "nameAfter": "Pick operational colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick degraded performance colour",
+   "nameAfter": "Pick degraded performance colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick partially unavailable colour",
+   "nameAfter": "Pick partially unavailable colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick major outage colour",
+   "nameAfter": "Pick major outage colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/page-settings/ui/theme-settings.tsx",
+   "nameBefore": "Pick maintenance colour",
+   "nameAfter": "Pick maintenance colour",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "settings-look-palette"
+   ],
+   "views": [
+    "desktop",
+    "phone"
+   ],
+   "describedByAfter": false
+  },
+  {
+   "source": "src/core/features/incidents/ui/update-options.tsx",
+   "nameBefore": "Close options",
+   "nameAfter": "Close options",
+   "tooltipBefore": false,
+   "tooltipAfter": true,
+   "states": [
+    "incident-new-options",
+    "incident-detail-1-options",
+    "incident-detail-2-options"
+   ],
+   "views": [
+    "phone"
+   ],
+   "describedByAfter": false
+  }
+ ],
+ "notInRenderedWalk": [
+  {
+   "name": "Open Run Edit Run",
+   "source": "src/editor/editor-widget.ts",
+   "note": "Shadow-root launcher mounts only when management is enabled; before: native title + aria-label, no tooltip; after: shared layer in its shadow root (proved through the real module in behaviour-checks.json)"
+  }
+ ]
+}

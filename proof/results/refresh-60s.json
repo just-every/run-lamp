@@ -1,0 +1,28 @@
+[
+ {
+  "view": "desktop",
+  "route": "/app/incidents/01KDM000000000000000000101",
+  "menu": ".update-options-menu",
+  "durationS": 60,
+  "scrollStart": {
+   "y": 220,
+   "h": 1385
+  },
+  "apiRequestsDuringHold": 15,
+  "samples": 13,
+  "steady": true
+ },
+ {
+  "view": "phone",
+  "route": "/app/incidents/01KDM000000000000000000101",
+  "menu": ".operator-navigation-panel.is-open",
+  "durationS": 60,
+  "scrollStart": {
+   "y": 220,
+   "h": 2612
+  },
+  "apiRequestsDuringHold": 11,
+  "samples": 13,
+  "steady": true
+ }
+]

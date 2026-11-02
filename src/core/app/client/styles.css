@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./ui/tokens.css";
+@import "./ui/tooltip/tooltip.css";
 @import "./ui/shell.css";
 @import "./ui/surfaces.css";
 @import "./ui/states.css";

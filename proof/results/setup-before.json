@@ -1,0 +1,32 @@
+[
+ {
+  "view": "desktop",
+  "label": "before",
+  "iconOnly": [
+   {
+    "name": "Pick accent colour",
+    "tooltip": false,
+    "title": ""
+   }
+  ],
+  "titles": [],
+  "tooltipShown": null,
+  "focusTooltip": null,
+  "pickerValue": "#2563eb"
+ },
+ {
+  "view": "phone",
+  "label": "before",
+  "iconOnly": [
+   {
+    "name": "Pick accent colour",
+    "tooltip": false,
+    "title": ""
+   }
+  ],
+  "titles": [],
+  "tooltipShown": null,
+  "focusTooltip": null,
+  "pickerValue": "#2563eb"
+ }
+]

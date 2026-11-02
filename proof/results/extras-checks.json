@@ -1,0 +1,27 @@
+[
+ {
+  "id": "hover delay is about 300 ms",
+  "pass": true,
+  "detail": "370 ms from pointerover to open"
+ },
+ {
+  "id": "keyboard focus shows it at once",
+  "pass": true,
+  "detail": "0 ms from focus to open"
+ },
+ {
+  "id": "Tab through Settings Look: every picker shows its tooltip on focus",
+  "pass": true,
+  "detail": "29 stops, 1 icon-only: Pick accent colour"
+ },
+ {
+  "id": "Tab through Settings Look: other stops show no tooltip",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "id": "Tab through the drawer at 390: close shows its tooltip, clear of edges",
+  "pass": true,
+  "detail": "[{\"r\":[289,72,382,102],\"name\":\"Close panel\",\"marked\":true,\"tip\":\"Close panel\",\"inside\":true},{\"r\":[289,72,382,102],\"name\":\"Close panel\",\"marked\":true,\"tip\":\"Close panel\",\"inside\":true}]"
+ }
+]

@@ -2335,6 +2335,314 @@
       "sha256": "f01b0eea3228bdf64622368a1434be952f8d2fd29b2b2974794677227c9df5f6",
       "executable": false
     },
+    "proof/after/desktop-focus-tooltip.png": {
+      "sha256": "70834a92c9f998246f15ac4e19dda20f8d3e4b640fda34183dd59e626145b443",
+      "executable": false
+    },
+    "proof/after/desktop-hover-accent-picker.png": {
+      "sha256": "6fcf897d6a9c7d8cb5676643d5a1abc571fa7b88e6312f22111254fa7c4d9ad8",
+      "executable": false
+    },
+    "proof/after/desktop-hover-chip-remove.png": {
+      "sha256": "3d8ca2709b7b9f3cb11b70ba073834780e1ed0cd61d2db67d5a68502c0902adb",
+      "executable": false
+    },
+    "proof/after/desktop-hover-drawer-close.png": {
+      "sha256": "37f81b2d5bf50bf83b9263d755667e894ec7ea01ff71571ef4bf3eb8cbe2b755",
+      "executable": false
+    },
+    "proof/after/desktop-hover-editor-launcher.png": {
+      "sha256": "d27015d510cd0166d2b2fd3e0d3a79b0ef3a3cb44b1c811b12ed76eb67d267f6",
+      "executable": false
+    },
+    "proof/after/desktop-hover-update-options.png": {
+      "sha256": "4a6abe1b9dc55d084139a3973b16531268b7ac4c98c53f5ca306316d117af393",
+      "executable": false
+    },
+    "proof/after/desktop-menu-open-after-click.png": {
+      "sha256": "e437e5b911afa8f40dcb3be4797315f7804fcb829a75aea19d8e3461a0067dc9",
+      "executable": false
+    },
+    "proof/after/desktop-refresh-60s-end.png": {
+      "sha256": "b8f7513ce55bc8f01c9eba161e373e4e001352161cb0b4d99b1ac5ab7a67e1da",
+      "executable": false
+    },
+    "proof/after/desktop-setup-accent-picker.png": {
+      "sha256": "0879310198da6250c40baae79bca65c83043072ef369c85d1ee654fbfd90b66c",
+      "executable": false
+    },
+    "proof/after/desktop-setup-found.png": {
+      "sha256": "5cefb84e6251fb7f14139a9c6423c52d8ecc6696b77c4ee21779e78911319ac8",
+      "executable": false
+    },
+    "proof/after/desktop-state-component-add-drawer.png": {
+      "sha256": "4990bfea11060408a271cde6caf57748994674706da1fa06db5a146869b6e730",
+      "executable": false
+    },
+    "proof/after/desktop-state-incident-new-options.png": {
+      "sha256": "de3cfc7360b91c660a2854bc10b00a220fea199c5772696028c65d82dccbf19b",
+      "executable": false
+    },
+    "proof/after/desktop-state-settings-embeds.png": {
+      "sha256": "642fa9d9dcf08e60c236b33b3d4900e30cb45d12cf39fd33eb22b8171d14b720",
+      "executable": false
+    },
+    "proof/after/desktop-state-settings-look-palette.png": {
+      "sha256": "53abd4231e25635af1eb04c06d216a4ff508b457c1bf7e2ebfa3499ebceac6e7",
+      "executable": false
+    },
+    "proof/after/phone-hover-accent-picker.png": {
+      "sha256": "78a0cd655ac488077b136f2cd054197f3760e764af47be8e49e5fd07ab0ce905",
+      "executable": false
+    },
+    "proof/after/phone-hover-chip-remove.png": {
+      "sha256": "8de42e41d331d7c943e5e0aaac820c53f7a12e126e271dc85f527e1153b42a93",
+      "executable": false
+    },
+    "proof/after/phone-hover-drawer-close.png": {
+      "sha256": "2329700dcf927d4620da8b4c6c3adba1f4eb80bc709dbe721124e5df1527af41",
+      "executable": false
+    },
+    "proof/after/phone-hover-update-options.png": {
+      "sha256": "bcadadbc8de370ebabdec5b018cf9150ba23bf3d094cbb41c983a865fd8ab85c",
+      "executable": false
+    },
+    "proof/after/phone-longpress-accent-picker.png": {
+      "sha256": "55deb160f74585905a049e6e65756f7f18d81abe09695129142a6b5e074179af",
+      "executable": false
+    },
+    "proof/after/phone-longpress-chip-remove.png": {
+      "sha256": "fada313fa6deb9cc84451e1bad69ef5af8b4fd44b84ef1514c4345cc109e6a6a",
+      "executable": false
+    },
+    "proof/after/phone-longpress-drawer-close.png": {
+      "sha256": "03cd431495153a32c6f48e07b6b2709e0ce691de2ef969313ddd4a2964a1cc97",
+      "executable": false
+    },
+    "proof/after/phone-longpress-sheet-close.png": {
+      "sha256": "5a44c5e97d80085b28aa7010c7c15eb28654f00158b5e678dfb157869d6a5b3c",
+      "executable": false
+    },
+    "proof/after/phone-refresh-60s-end.png": {
+      "sha256": "b9581f4b195ef59c032507715532a276cbc9be807d8a6edf02098668d73acca6",
+      "executable": false
+    },
+    "proof/after/phone-setup-accent-picker.png": {
+      "sha256": "112114d6acd629da1acada3819e0d236065659e5361706dc0c69e1ff26247335",
+      "executable": false
+    },
+    "proof/after/phone-setup-found.png": {
+      "sha256": "f52a57a3e737063c9b92d00e9be54c26a257c42b855e28360df8542685cebd0e",
+      "executable": false
+    },
+    "proof/after/phone-state-component-add-drawer.png": {
+      "sha256": "92b593083a338fce8bdb21180aa28cca4df858007922fb53710051bf3af12772",
+      "executable": false
+    },
+    "proof/after/phone-state-incident-new-options.png": {
+      "sha256": "6b4fede4c39e959bec5b0c8438e0da1c17dd2a3a9bf4b7eaea276156784e82c7",
+      "executable": false
+    },
+    "proof/after/phone-state-settings-embeds.png": {
+      "sha256": "fe7283088f55d962752669cb3a4c33036dabb23cbbc83a9227c32c93fd206ec1",
+      "executable": false
+    },
+    "proof/after/phone-state-settings-look-palette.png": {
+      "sha256": "14e4f6288208ca4a42951f8ae931d7651518c5bc9a62fef53798f147372ea41b",
+      "executable": false
+    },
+    "proof/after/phone-state-shell-menu-open.png": {
+      "sha256": "4c6d79d63e41082bca05c18b62f4c45871bedcf61960ba2570e550268eded195",
+      "executable": false
+    },
+    "proof/before/desktop-hover-accent-picker.png": {
+      "sha256": "a111983b1f0c315bfd9f654af4f8822eb1a340ea1f203bcdf027f1fbe5ffd10d",
+      "executable": false
+    },
+    "proof/before/desktop-hover-chip-remove.png": {
+      "sha256": "3aa59bfd82838313520e3470314f797046cd5c4456f93a5a680969e16d095e35",
+      "executable": false
+    },
+    "proof/before/desktop-hover-drawer-close.png": {
+      "sha256": "0cc76de76ac7d8ff54649474e73a37503e81216249fc8efe926384c5da9d3224",
+      "executable": false
+    },
+    "proof/before/desktop-hover-update-options.png": {
+      "sha256": "841c79a37601a0fec0e2969c64befb9eab4d47a93cd633b9388fa0f53ae4042e",
+      "executable": false
+    },
+    "proof/before/desktop-setup-accent-picker.png": {
+      "sha256": "8018d46fe42c1c968f406e915f9ea71f6ac8c4e8663a61529a078f393081e969",
+      "executable": false
+    },
+    "proof/before/desktop-setup-found.png": {
+      "sha256": "5cefb84e6251fb7f14139a9c6423c52d8ecc6696b77c4ee21779e78911319ac8",
+      "executable": false
+    },
+    "proof/before/desktop-state-component-add-drawer.png": {
+      "sha256": "4990bfea11060408a271cde6caf57748994674706da1fa06db5a146869b6e730",
+      "executable": false
+    },
+    "proof/before/desktop-state-incident-new-options.png": {
+      "sha256": "de3cfc7360b91c660a2854bc10b00a220fea199c5772696028c65d82dccbf19b",
+      "executable": false
+    },
+    "proof/before/desktop-state-settings-embeds.png": {
+      "sha256": "642fa9d9dcf08e60c236b33b3d4900e30cb45d12cf39fd33eb22b8171d14b720",
+      "executable": false
+    },
+    "proof/before/desktop-state-settings-look-palette.png": {
+      "sha256": "53abd4231e25635af1eb04c06d216a4ff508b457c1bf7e2ebfa3499ebceac6e7",
+      "executable": false
+    },
+    "proof/before/phone-hover-accent-picker.png": {
+      "sha256": "49b3a52e6e20ef46b9d9a4f85d99c48c19f0def5adbee8bf32b7e34417c26067",
+      "executable": false
+    },
+    "proof/before/phone-hover-chip-remove.png": {
+      "sha256": "f1e57ff8c4f93e3dd9a176006e17bce016cf72006e11dafd3dd90d687b607eb5",
+      "executable": false
+    },
+    "proof/before/phone-hover-drawer-close.png": {
+      "sha256": "92b593083a338fce8bdb21180aa28cca4df858007922fb53710051bf3af12772",
+      "executable": false
+    },
+    "proof/before/phone-hover-update-options.png": {
+      "sha256": "9b5ae4a3b9cbb6544f1cae49c0027417cd6a9b93e64afa5d2da460c081862743",
+      "executable": false
+    },
+    "proof/before/phone-setup-accent-picker.png": {
+      "sha256": "7eac93b5a6249f8da318bdfecb788015be698f113443081fd8e3db718a1399c3",
+      "executable": false
+    },
+    "proof/before/phone-setup-found.png": {
+      "sha256": "f52a57a3e737063c9b92d00e9be54c26a257c42b855e28360df8542685cebd0e",
+      "executable": false
+    },
+    "proof/before/phone-state-component-add-drawer.png": {
+      "sha256": "92b593083a338fce8bdb21180aa28cca4df858007922fb53710051bf3af12772",
+      "executable": false
+    },
+    "proof/before/phone-state-incident-new-options.png": {
+      "sha256": "6b4fede4c39e959bec5b0c8438e0da1c17dd2a3a9bf4b7eaea276156784e82c7",
+      "executable": false
+    },
+    "proof/before/phone-state-settings-embeds.png": {
+      "sha256": "fe7283088f55d962752669cb3a4c33036dabb23cbbc83a9227c32c93fd206ec1",
+      "executable": false
+    },
+    "proof/before/phone-state-settings-look-palette.png": {
+      "sha256": "14e4f6288208ca4a42951f8ae931d7651518c5bc9a62fef53798f147372ea41b",
+      "executable": false
+    },
+    "proof/before/phone-state-shell-menu-open.png": {
+      "sha256": "86e8e18de6b9c9caab33623d5fd1cfcd1cb9e278221c29d88d978160d76e7ecb",
+      "executable": false
+    },
+    "proof/control-inventory.json": {
+      "sha256": "f337b32f8d91876ad6235b7b9902be438965c2407711f2c7a71e1c2019f538da",
+      "executable": false
+    },
+    "proof/control-inventory.md": {
+      "sha256": "21140784bdaf5d7cf348f7502b8ddbb0d640f46b3380f36ad14e98e84471fb9a",
+      "executable": false
+    },
+    "proof/results/behaviour-checks.json": {
+      "sha256": "3ee045f761d9dfe4191563ab231809a9ca85f388da6f9943e5d7cd8efa45f7a4",
+      "executable": false
+    },
+    "proof/results/clip-ancestors.json": {
+      "sha256": "b896f241c1867ab56c1b9bce3e9777b8ecbc3f0ce3986568075c21498d17521d",
+      "executable": false
+    },
+    "proof/results/desktop-tab-composer.json": {
+      "sha256": "102eb53c2f55ea02d76aa506d6355243a31e84171025679db443eff15b8b4e2e",
+      "executable": false
+    },
+    "proof/results/desktop-tab-settings-look.json": {
+      "sha256": "3c74fe2a28f4d772f6948fc08a6fcf614382cea478311dfc88b533cc6b231d00",
+      "executable": false
+    },
+    "proof/results/extras-checks.json": {
+      "sha256": "745583b5629332b15aaf626a9ab7ccdd67d9d4f2633cd27ab817015c32fab474",
+      "executable": false
+    },
+    "proof/results/refresh-60s.json": {
+      "sha256": "ae2b1050e0d36e0df1451c8c7a3c6113c477e9752c53f4d9fdba2c3bfdfaffbd",
+      "executable": false
+    },
+    "proof/results/setup-after.json": {
+      "sha256": "5357ee87ca08c3356dac16a7e4fee3bf77410065a0c3e7248200bc63cac7ad54",
+      "executable": false
+    },
+    "proof/results/setup-before.json": {
+      "sha256": "cca8825d6151397c18b568fd6b3918854384f1e9874c582767aa2da96ffc6adb",
+      "executable": false
+    },
+    "proof/results/states-after.json": {
+      "sha256": "531457a54cfc52ca84026437a3f8394cc49d1265260b2c6fe7a314ea7817e34f",
+      "executable": false
+    },
+    "proof/results/states-before.json": {
+      "sha256": "c606661971cdaf17f6eb6336ddea8271819afaff60e191bf46dda7ea23f14fe0",
+      "executable": false
+    },
+    "proof/results/static-scan-after.json": {
+      "sha256": "01e39efc61d4e8e90607afcd8c10819c8ede5ae00d597bfd836840b0a07e1a53",
+      "executable": false
+    },
+    "proof/results/static-scan-before.json": {
+      "sha256": "42c3a28f9c47a79b6486dd13c59a895c5f97700c0ecb38291d09059e527df0c7",
+      "executable": false
+    },
+    "proof/scripts/behaviour.mjs": {
+      "sha256": "2c249be5ff6ebe5cc74a1bb33a3828e85f5a4182ac119fca89f779f009fa1ced",
+      "executable": false
+    },
+    "proof/scripts/build-inventory.mjs": {
+      "sha256": "1ac68da16242eac3abe24f979c32556cdd2542a61a8576ba22506cd7969a8fb2",
+      "executable": false
+    },
+    "proof/scripts/clip.mjs": {
+      "sha256": "d56b8396aaa45cb594b7b0803ab1fdd63b8aeebb31cc3b38ed183a39f8bd7407",
+      "executable": false
+    },
+    "proof/scripts/extras.mjs": {
+      "sha256": "59772b2c71ea182cf0cd2f4e4634fc0ccca98b1c3ff5cb99a6ef07c65d143e35",
+      "executable": false
+    },
+    "proof/scripts/hover-shots.mjs": {
+      "sha256": "4420595aea3e674b6734136bfb96ca273b8cc2444df87a6da11b98c45ddf3cd6",
+      "executable": false
+    },
+    "proof/scripts/inventory.mjs": {
+      "sha256": "bc1cca5b3f40dbc55a3fa2e67fdd126d161c2976732a5209cbf499fdd9966e91",
+      "executable": false
+    },
+    "proof/scripts/lib.mjs": {
+      "sha256": "7678459b566817808d1fa3d3af1257ff7ce01a137a1fd570462548fa362543da",
+      "executable": false
+    },
+    "proof/scripts/refresh60.mjs": {
+      "sha256": "20386a84869f977d2eb3f1bb952ccbaeefb4f6e8b063a8c2b409cf2857065b99",
+      "executable": false
+    },
+    "proof/scripts/run-all.sh": {
+      "sha256": "9225a4f8054d88d7ac03639f977d677fef1ca61ec3df26556bf62cb8c26992d0",
+      "executable": true
+    },
+    "proof/scripts/setup-proof.mjs": {
+      "sha256": "60c03a0dbd196aab19a5e9110e43efd73bbee984cd4227c8cfbc5111cb664f10",
+      "executable": false
+    },
+    "proof/scripts/states.mjs": {
+      "sha256": "7bc10fda0019a91f2ad1904cba1e060dffa1680121be824f795ac461e2b20f70",
+      "executable": false
+    },
+    "proof/scripts/static-inventory.mjs": {
+      "sha256": "0646dc9deddde0ae82383d95434dfc7471e93574d3c4d1e54e9681f152910243",
+      "executable": false
+    },
     "public/app-assets/brand/lamp-mark.svg": {
       "sha256": "ebd49143e6f577de0fd4f1ddab4737b65e6be1f5e08190057e1ae196ba8ae9f8",
       "executable": false
@@ -3160,7 +3468,7 @@
       "executable": false
     },
     "src/core/app/client/styles.css": {
-      "sha256": "f6234a440d309b972886b07b565d0c10b44def3ddd47d11df01458c2e5151b1d",
+      "sha256": "4e0a566ecedab56d5215ac6a185e875bc144e4ba21e726285c35b17b466212e0",
       "executable": false
     },
     "src/core/app/client/ui/alerts.css": {
@@ -3204,7 +3512,7 @@
       "executable": false
     },
     "src/core/app/client/ui/drawer.tsx": {
-      "sha256": "071a0e03e0da9c5681f41991b20fe54518a59ccab2ade6e273877a1bc5b70b77",
+      "sha256": "43826f198185a4d55e714559179f01861455670ed6c1619d2612f9a9aab95e8b",
       "executable": false
     },
     "src/core/app/client/ui/icon.tsx": {
@@ -3288,7 +3596,27 @@
       "executable": false
     },
     "src/core/app/client/ui/tokens.css": {
-      "sha256": "0b9455e25f4458acfb83aa597e6ba9864fb5715c5fcad275edb63cfb86c3eadd",
+      "sha256": "5a2b946288a4eff3f1032af279d5a11b57331b75d64969365364747dfeeac036",
+      "executable": false
+    },
+    "src/core/app/client/ui/tooltip-layer.tsx": {
+      "sha256": "61f1d18f05bca4a83fcc98e66d9bff242defb6eef511dc5891919421eacd7ebb",
+      "executable": false
+    },
+    "src/core/app/client/ui/tooltip/PROVENANCE.md": {
+      "sha256": "e6c7f50f97cec434987c71c473c5e8453ffe601ecd59701d89794f16affe88b1",
+      "executable": false
+    },
+    "src/core/app/client/ui/tooltip/README.md": {
+      "sha256": "54a3a2142220d55000d9e6c3462b590cd9b7528df7a546a924800887e68739f4",
+      "executable": false
+    },
+    "src/core/app/client/ui/tooltip/tooltip.css": {
+      "sha256": "c3d6fb51ef434350d10c37a76af5fee8137769513a231e6c4bdd29f54a4fffd9",
+      "executable": false
+    },
+    "src/core/app/client/ui/tooltip/tooltip.ts": {
+      "sha256": "eae2c372d0d8d73abea4f817927bba83c68f05c54fa4ef858f4bba711a8e3ea9",
       "executable": false
     },
     "src/core/app/client/ui/visit-snapshot.ts": {
@@ -3916,7 +4244,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/affected-components.tsx": {
-      "sha256": "f8e94952e263de8e4eeb7b173a7704f26b7264daf3e845a705211adeeca8e0a6",
+      "sha256": "950a9867e64a4bc27803dc9cbf473e9812d23ab23e1f252177f16bb9875d12db",
       "executable": false
     },
     "src/core/features/incidents/ui/communication-owner.tsx": {
@@ -4020,7 +4348,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/update-options.tsx": {
-      "sha256": "64b7bb4e5187a9bbfaef72fdea60adcc6320b3b9596368b99ee727c2b7d8a627",
+      "sha256": "2ea75cd08f6dc81ba2b59b5ecb64c5995e2e449906540c948a3a9c1cee93362a",
       "executable": false
     },
     "src/core/features/incidents/ui/use-incident-visit.ts": {
@@ -4508,7 +4836,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/brand-card.tsx": {
-      "sha256": "8145be85f0bff9e084ffc998ff328430b4259e44c5bf1f81b01ace8f788211c6",
+      "sha256": "cb453d537697551930b65aa8adfc9a030eda26dddbe7563f9dda907847d19617",
       "executable": false
     },
     "src/core/features/page-settings/ui/connected-tools-tab.tsx": {
@@ -4560,7 +4888,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/public-resources.tsx": {
-      "sha256": "21b4a422b394e3279b9784270d5fcb7377c0bfc84feab87ca802047fdecfbba1",
+      "sha256": "eedef064cac1e1fb42559945d6f265d9bcb55bd838e1c7ab6597532c7cb8a830",
       "executable": false
     },
     "src/core/features/page-settings/ui/reports-settings-tab.tsx": {
@@ -4608,7 +4936,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/theme-settings.tsx": {
-      "sha256": "0d1533d23b0c7c29373d38ad2fc35e12251ea7f0e8550ce6f463ebc905e7d5a3",
+      "sha256": "c2623b0d2b61faf621b31c46e3afeb9f5bee7894503470480781b9a590b3ff4b",
       "executable": false
     },
     "src/core/features/page-settings/ui/traffic-alert-settings.tsx": {
@@ -4936,7 +5264,7 @@
       "executable": false
     },
     "src/core/features/setup/ui/found-card.tsx": {
-      "sha256": "0f84fb09fe5e614b5234f45ca38b5c0cc437fb80ea5a2cf7ddff56952d6bf999",
+      "sha256": "cbbe4e82d78abb969d8af915a01583914475d6f4743240f022199cc0fc13b171",
       "executable": false
     },
     "src/core/features/setup/ui/found-components.tsx": {
@@ -5920,7 +6248,7 @@
       "executable": false
     },
     "src/editor/editor-widget.ts": {
-      "sha256": "0a0f451d6da64e8978c8f4c7b983d19d0d5260af2d14d39199c2703d89d1962e",
+      "sha256": "bbd5814b5887cb0ce9e8790b8d1b5ae1c9e8dfa9d64720aa2281bc6ca8ab9b00",
       "executable": false
     },
     "src/editor/EditorLauncher.tsx": {
@@ -5980,7 +6308,7 @@
       "executable": false
     },
     "src/routes/__root.tsx": {
-      "sha256": "d2bad694a83cbf3c9f8d2bb8a26a73341b3e4e988bb6ad3ff896c1873870001e",
+      "sha256": "7092c73f6c71ab9ffe26f6721da3fb320337d30329c9d35f430a7ee5a79affd8",
       "executable": false
     },
     "src/routes/app.alerts.tsx": {

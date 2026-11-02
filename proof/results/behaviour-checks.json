@@ -1,0 +1,284 @@
+[
+ {
+  "view": "desktop",
+  "id": "layer mounted once per document",
+  "pass": true,
+  "detail": "tooltip layers=1"
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove: hover shows nothing before the delay",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove: hover tooltip text equals accessible name",
+  "pass": true,
+  "detail": "text=\"Remove component\" after~594ms"
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove: tooltip clear of viewport edges",
+  "pass": true,
+  "detail": "{\"l\":534,\"t\":334,\"r\":678,\"b\":364,\"side\":\"top\"}"
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove: exactly one tooltip layer",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove keeps row context as accessible description",
+  "pass": true,
+  "detail": "description=\"API\""
+ },
+ {
+  "view": "desktop",
+  "id": "no native title on tooltip controls",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "Escape dismisses hover tooltip",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove (again): hover shows nothing before the delay",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove (again): hover tooltip text equals accessible name",
+  "pass": true,
+  "detail": "text=\"Remove component\" after~609ms"
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove (again): tooltip clear of viewport edges",
+  "pass": true,
+  "detail": "{\"l\":534,\"t\":334,\"r\":678,\"b\":364,\"side\":\"top\"}"
+ },
+ {
+  "view": "desktop",
+  "id": "chip remove (again): exactly one tooltip layer",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "leaving the control dismisses it",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "scroll dismisses the tooltip",
+  "pass": true,
+  "detail": "pageScrolls=false"
+ },
+ {
+  "view": "desktop",
+  "id": "update options +: hover shows nothing before the delay",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "update options +: hover tooltip text equals accessible name",
+  "pass": true,
+  "detail": "text=\"Update options\" after~584ms"
+ },
+ {
+  "view": "desktop",
+  "id": "update options +: tooltip clear of viewport edges",
+  "pass": true,
+  "detail": "{\"l\":281,\"t\":576,\"r\":396,\"b\":606,\"side\":\"top\"}"
+ },
+ {
+  "view": "desktop",
+  "id": "update options +: exactly one tooltip layer",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "ordinary click still acts (menu opens)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "press hides the tooltip",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "form input and value survive tooltips",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "Tab: every icon-only stop shows its tooltip on focus with its name",
+  "pass": true,
+  "detail": "Remove component | Remove component | Update options"
+ },
+ {
+  "view": "desktop",
+  "id": "drawer close: hover shows nothing before the delay",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "drawer close: hover tooltip text equals accessible name",
+  "pass": true,
+  "detail": "text=\"Close panel\" after~572ms"
+ },
+ {
+  "view": "desktop",
+  "id": "drawer close: tooltip clear of viewport edges",
+  "pass": true,
+  "detail": "{\"l\":1339,\"t\":72,\"r\":1432,\"b\":102,\"side\":\"bottom\"}"
+ },
+ {
+  "view": "desktop",
+  "id": "drawer close: exactly one tooltip layer",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "tooltip shows over a modal dialog (top layer)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "drawer close: focus shows tooltip at once",
+  "pass": true,
+  "detail": "\"Close panel\""
+ },
+ {
+  "view": "desktop",
+  "id": "drawer close: keyboard activation still acts",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "accent picker (Settings): hover shows nothing before the delay",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "accent picker (Settings): hover tooltip text equals accessible name",
+  "pass": true,
+  "detail": "text=\"Pick accent colour\" after~640ms"
+ },
+ {
+  "view": "desktop",
+  "id": "accent picker (Settings): tooltip clear of viewport edges",
+  "pass": true,
+  "detail": "{\"l\":271,\"t\":634,\"r\":406,\"b\":664,\"side\":\"top\"}"
+ },
+ {
+  "view": "desktop",
+  "id": "accent picker (Settings): exactly one tooltip layer",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "scroll dismisses the tooltip (tall page)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "desktop",
+  "id": "editor launcher (shadow root): name, marker, no native title, one layer",
+  "pass": true,
+  "detail": "{\"label\":\"Open Run Edit Run\",\"marked\":true,\"title\":null,\"tips\":1,\"style\":true}"
+ },
+ {
+  "view": "desktop",
+  "id": "editor launcher: hover tooltip in shadow root, clear of edges",
+  "pass": true,
+  "detail": "{\"text\":\"Open Run Edit Run\",\"left\":1228,\"top\":841,\"right\":1363.5625,\"bottom\":870.546875,\"vw\":1440,\"vh\":900}"
+ },
+ {
+  "view": "desktop",
+  "id": "editor launcher teardown removes its layer and host",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "phone",
+  "id": "chip remove: long press shows tooltip",
+  "pass": true,
+  "detail": "{\"text\":\"Remove component\",\"l\":238,\"r\":382,\"t\":379,\"b\":409,\"side\":\"top\"}"
+ },
+ {
+  "view": "phone",
+  "id": "long press tooltip clears itself",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "phone",
+  "id": "long press did not act (chip still there)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "phone",
+  "id": "update options +: long press shows tooltip, does not open the sheet",
+  "pass": true,
+  "detail": "\"Update options\""
+ },
+ {
+  "view": "phone",
+  "id": "update options +: ordinary tap still acts (sheet opens)",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "phone",
+  "id": "sheet close: long press shows tooltip above the modal sheet, clear of edges",
+  "pass": true,
+  "detail": "{\"l\":215,\"r\":320,\"t\":134,\"b\":164,\"side\":\"left\"}"
+ },
+ {
+  "view": "phone",
+  "id": "sheet close: ordinary tap still acts",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "phone",
+  "id": "drawer close: long press shows tooltip, drawer stays",
+  "pass": true,
+  "detail": "{\"l\":289,\"r\":382,\"side\":\"bottom\"}"
+ },
+ {
+  "view": "phone",
+  "id": "drawer close: ordinary tap still acts",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "view": "phone",
+  "id": "accent picker: long press shows tooltip",
+  "pass": true,
+  "detail": "{\"l\":8,\"r\":143,\"side\":\"top\"}"
+ }
+]

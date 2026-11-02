@@ -1,0 +1,178 @@
+[
+ {
+  "tag": "textarea",
+  "name": "Customer impact",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "select",
+  "name": "API state with this update",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "Remove component",
+  "marked": true,
+  "cls": "chip-remove",
+  "tooltip": "Remove component",
+  "inside": true
+ },
+ {
+  "tag": "select",
+  "name": "Background jobs state with this update",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "Remove component",
+  "marked": true,
+  "cls": "chip-remove",
+  "tooltip": "Remove component",
+  "inside": true
+ },
+ {
+  "tag": "select",
+  "name": "Add component",
+  "marked": false,
+  "cls": "add-component",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Who is affected",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "15 min",
+  "marked": false,
+  "cls": "choice-pill",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "30 min",
+  "marked": false,
+  "cls": "choice-pill",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "1 hour",
+  "marked": false,
+  "cls": "choice-pill",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "2 hours",
+  "marked": false,
+  "cls": "choice-pill",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "input",
+  "name": "Next update date and time",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "Page",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "Email",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ },
+ {
+  "tag": "button",
+  "name": "Update options",
+  "marked": true,
+  "cls": "update-options-toggle",
+  "tooltip": "Update options",
+  "inside": true
+ },
+ {
+  "tag": "body",
+  "name": "LampMenuOverviewIncidentsCompo",
+  "marked": false,
+  "cls": "",
+  "tooltip": null,
+  "inside": null
+ }
+]

@@ -37,6 +37,12 @@
   --shadow-raised: 0 1px 2px rgb(24 45 36 / .06), 0 12px 24px -8px rgb(24 45 36 / .14), 0 32px 64px -24px rgb(24 45 36 / .24);
   --shadow-night: 0 30px 70px -24px rgb(0 0 0 / .6);
   --sans: 'Lamp Inter', 'Lamp Inter Fallback', Arial, system-ui;
+  --tooltip-bg: var(--pill);   /* the shared tooltip layer (ui/tooltip) reads these on the control it names */
+  --tooltip-fg: var(--on-ink);
+  --tooltip-font-size: var(--text-small);
+  --tooltip-padding: 6px 10px;
+  --tooltip-radius: 8px;
+  --tooltip-shadow: var(--pill-shadow);
   --text-small: 13px;          /* the smallest text anywhere: captions, pills, table heads, the page drawing's labels */
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   color: var(--ink);

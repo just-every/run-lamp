@@ -1,4 +1,5 @@
 import { CompiledVisualEdits } from '../editor/EditorLauncher';
+import { TooltipLayer } from "../core/app/client/ui/tooltip-layer";
 import type { ReactNode } from "react";
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 
@@ -30,5 +31,5 @@ function NotFound() {
 }
 
 function Document({ children }: Readonly<{ children: ReactNode }>) {
-  return <html lang="en"><head><HeadContent /></head><body><CompiledVisualEdits />{children}<Scripts /></body></html>;
+  return <html lang="en"><head><HeadContent /></head><body><CompiledVisualEdits />{children}<TooltipLayer /><Scripts /></body></html>;
 }

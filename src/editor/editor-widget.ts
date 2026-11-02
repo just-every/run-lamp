@@ -3,6 +3,8 @@ import { validLiveEditSnapshot, normalizeLiveText, validLiveEditPath } from './l
 import { connectLiveEdits } from './live-edit-runtime';
 import { validSurface, surfaceClip } from './editor-surface';
 import { renderedText } from './live-edit-dom';
+import { installTooltips, tooltip } from '../core/app/client/ui/tooltip/tooltip';
+import tooltipCss from '../core/app/client/ui/tooltip/tooltip.css?inline';
 export type EditorConfig = { enabled: boolean; managementOrigin: string; installationId: string };
 export const protocol = 'rer-editor-v1';
 export function validOrigin(value: string) {
@@ -42,9 +44,13 @@ export function mountEditor(config: EditorConfig, authorized: boolean): () => vo
   host.dataset.rerEditor = 'v1';
   Object.assign(host.style, {position:'fixed',bottom:'20px',right:'20px',zIndex:'2147483647'});
   const root = host.attachShadow({mode:'open'});
-  const launcher = document.createElement('button'); launcher.textContent = '✦'; launcher.setAttribute('aria-label','Open Run Edit Run'); launcher.title = 'Open Run Edit Run'; launcher.type = 'button';
+  const launcher = document.createElement('button'); launcher.textContent = '✦'; launcher.type = 'button';
+  // The launcher's name and tooltip come from the shared layer, which answers for this shadow root alone.
+  for (const [name, value] of Object.entries(tooltip('Open Run Edit Run', 'left'))) launcher.setAttribute(name, value);
+  const tooltipStyle = document.createElement('style'); tooltipStyle.textContent = tooltipCss;
   Object.assign(launcher.style,{width:'48px',height:'48px',padding:'0',fontSize:'26px',borderRadius:'50%',background:'#18392e',color:'white',border:'1px solid white',cursor:'pointer'});
-  root.append(launcher); document.body.appendChild(host);
+  root.append(tooltipStyle, launcher); document.body.appendChild(host);
+  const removeTooltips = installTooltips(root);
   let frame: HTMLIFrameElement | null = null;
   let isOpen = false;
   const send = (type: string, payload: Record<string,unknown>) => frame?.contentWindow?.postMessage({protocol,type,installationId:config.installationId,...payload},config.managementOrigin);
@@ -91,5 +97,5 @@ export function mountEditor(config: EditorConfig, authorized: boolean): () => vo
   window.addEventListener('resize',resize);
   window.addEventListener('message',receive);
   open(false);
-  return () => { close(); frame?.remove(); live.disconnect(); observer.disconnect(); window.removeEventListener('popstate',locationChanged); window.removeEventListener('message',receive); window.removeEventListener('resize',resize); host.remove(); };
+  return () => { removeTooltips(); close(); frame?.remove(); live.disconnect(); observer.disconnect(); window.removeEventListener('popstate',locationChanged); window.removeEventListener('message',receive); window.removeEventListener('resize',resize); host.remove(); };
 }

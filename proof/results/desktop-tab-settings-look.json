@@ -1,0 +1,198 @@
+[
+ {
+  "tag": "select",
+  "type": "select-one",
+  "name": "DefaultCalm headlineUptime-his",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "color",
+  "name": "Pick accent colour",
+  "marked": true,
+  "tip": "Pick accent colour"
+ },
+ {
+  "tag": "input",
+  "type": "text",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "text",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "summary",
+  "name": "Upload a different logo",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "file",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "summary",
+  "name": "Colours",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "summary",
+  "name": "Font and header image",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "select",
+  "type": "select-one",
+  "name": "Bundled default fontLocal syst",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "file",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "file",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "summary",
+  "name": "Header and footer links",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "button",
+  "type": "button",
+  "name": "Add header link",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "button",
+  "type": "button",
+  "name": "Add footer link",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "summary",
+  "name": "Layout and history",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "number",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "input",
+  "type": "checkbox",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "summary",
+  "name": "Custom HTML and CSS",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "textarea",
+  "type": "textarea",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "textarea",
+  "type": "textarea",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "textarea",
+  "type": "textarea",
+  "name": "",
+  "marked": false,
+  "tip": null
+ },
+ {
+  "tag": "body",
+  "name": "LampMenuOverviewSettingsYour p",
+  "marked": false,
+  "tip": null
+ }
+]

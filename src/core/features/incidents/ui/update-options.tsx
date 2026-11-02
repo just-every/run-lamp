@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useRef, useSt
 
 import { Button } from "../../../app/client/ui/button";
 import { Icon } from "../../../app/client/ui/icon";
+import { tooltip } from "../../../app/client/ui/tooltip/tooltip";
 import { Glyph, type GlyphName } from "./local-glyphs";
 
 /** One entry of the + menu. With `panel` it opens that option panel under the Publish row; with `target` it moves
@@ -102,7 +103,7 @@ export function UpdateOptions({ groups, footer, message, children }: { groups: O
   return <>
     <div className="composer-footer">
       <div className="update-options">
-        <button ref={toggle} type="button" className="update-options-toggle" aria-label="Update options" aria-haspopup="menu" aria-expanded={popup !== null} aria-controls={popup ? menuId : undefined} onClick={() => popup ? dismiss(true) : show("first")} onKeyDown={onToggleKey}><Icon name="plus" width={20} height={20} /></button>
+        <button ref={toggle} type="button" className="update-options-toggle" {...tooltip("Update options")} aria-haspopup="menu" aria-expanded={popup !== null} aria-controls={popup ? menuId : undefined} onClick={() => popup ? dismiss(true) : show("first")} onKeyDown={onToggleKey}><Icon name="plus" width={20} height={20} /></button>
         {popup === "menu" ? <div className="update-options-menu">{list}</div> : null}
       </div>
       {footer}
@@ -112,7 +113,7 @@ export function UpdateOptions({ groups, footer, message, children }: { groups: O
       if (event.target === event.currentTarget && (event.clientY < bounds.top || event.clientX < bounds.left || event.clientX > bounds.right)) dismiss(true);
     }}>
       <div className="sheet-grabber" aria-hidden="true" />
-      <div className="sheet-heading"><h2 id={titleId}>Update options</h2><button type="button" className="sheet-close" aria-label="Close options" onClick={() => dismiss(true)}><Icon name="close" width={20} height={20} /></button></div>
+      <div className="sheet-heading"><h2 id={titleId}>Update options</h2><button type="button" className="sheet-close" {...tooltip("Close options", "left")} onClick={() => dismiss(true)}><Icon name="close" width={20} height={20} /></button></div>
       {list}
     </dialog> : null}
     {message}
