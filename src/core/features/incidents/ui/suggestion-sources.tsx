@@ -4,8 +4,8 @@ import { useOperatorTime } from "../../../app/client/ui/states";
 import { revealInPanel } from "./incident-panel";
 
 export type SuggestedFieldName = "affectedAudience" | "customerImpact" | "whatStillWorks" | "details";
-/** What the last suggestion wrote, by field, with the brief references each field rests on. */
-export interface AppliedSuggestion { brief: IncidentBrief; fields: Partial<Record<SuggestedFieldName, string[]>> }
+/** Each retained suggestion keeps the brief and references its wording came from. */
+export interface AppliedSuggestion { fields: Partial<Record<SuggestedFieldName, { brief: IncidentBrief; sources: string[] }>> }
 
 function describe(ref: string, brief: IncidentBrief, formatTime: (iso: string | null) => string) {
   const { alerts, updates, components } = brief.whatWeKnow;
@@ -23,8 +23,9 @@ const openSource = (ref: string) => revealInPanel(`brief-${ref}`);
 
 export function SuggestionSources({ field, applied }: { field: SuggestedFieldName; applied: AppliedSuggestion | null }) {
   const formatTime = useOperatorTime();
-  const refs = applied?.fields[field];
-  if (!applied || !refs) return null;
+  const source = applied?.fields[field];
+  if (!source) return null;
+  const { sources: refs, brief } = source;
   if (!refs.length) return <p className="field-sources is-unsourced"><Icon name="warning" width={16} height={16} />No source: written by the assistant, check it.</p>;
-  return <p className="field-sources">From {refs.map((ref, index) => <span key={ref}>{index ? ", " : ""}<a href={`#brief-${ref}`} onClick={(event) => { event.preventDefault(); openSource(ref); }}><b>{ref}</b> {describe(ref, applied.brief, formatTime)}</a></span>)}</p>;
+  return <p className="field-sources">From {refs.map((ref, index) => <span key={ref}>{index ? ", " : ""}<a href={`#brief-${ref}`} onClick={(event) => { event.preventDefault(); openSource(ref); }}><b>{ref}</b> {describe(ref, brief, formatTime)}</a></span>)}</p>;
 }

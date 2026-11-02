@@ -254,7 +254,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     // An empty suggested field means the brief does not establish it; whatever the operator typed there stays.
     const names = (["affectedAudience", "customerImpact", "whatStillWorks", "details"] as SuggestedFieldName[]).filter((name) => suggestion[name].text);
     setDraft((current) => ({ ...current, ...Object.fromEntries(names.map((name) => [name, suggestion[name].text])) }));
-    setAppliedSuggestion({ brief, fields: Object.fromEntries(names.map((name) => [name, suggestion[name].sources])) });
+    // Retaining a field also retains its citations or assistant-written disclosure.
+    setAppliedSuggestion((current) => ({ fields: { ...current?.fields,
+      ...Object.fromEntries(names.map((name) => [name, { brief, sources: suggestion[name].sources }])),
+    } }));
   };
   const applyDraft = (next: IncidentDraftInput, storedId?: string) => {
     if (storedId) { version.current = `${storedId}:${incident.updates.length}`; savedKey.current = JSON.stringify(normalizeResolvedDraft(next)); untouchedDraft.current = false; }
