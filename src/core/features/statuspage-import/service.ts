@@ -123,7 +123,20 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
   }
 
   /** Equal operators share native data, but each source record lands once. */
-  async function sourceClear(plan: ImportPlan) {
+  async function sourceClear(plan: ImportPlan, businessCatchup = false) {
+    // Door jobs use a bundle-specific kit namespace. Owner uploads still name
+    // the provider's explicit identity, so compare that namespace and source id
+    // before the door can treat a distinct bundle as replacement authority.
+    // Business catch-up has its own reviewed lineage and revision guards.
+    if (!businessCatchup) {
+      const identities = plan.entries.filter(entry => entry.source.kind !== 'metadata')
+        .map(entry => [entry.source.kind, entry.source.sourceId]);
+      const owned = await db.prepare(`SELECT 1 FROM ik_provenance p JOIN ik_door_plans d ON d.job_id=p.job_id
+        WHERE p.destination=? AND d.namespace=? AND p.reversed=0
+        AND EXISTS(SELECT 1 FROM json_each(?) wanted WHERE json_extract(wanted.value,'$[0]')=json_extract(p.record_json,'$.sourceKind') AND json_extract(wanted.value,'$[1]')=json_extract(p.record_json,'$.sourceId')) LIMIT 1`)
+        .bind(DESTINATION, plan.namespace, JSON.stringify(identities)).first();
+      if (owned) throw new Error("Some of these records were imported already. Undo that import first, or import only new saved responses.");
+    }
     // Exclude this operation so the import kit's post-write authority check
     // accepts its own new job, while serializing competing alias reservations.
     const otherJobs = `SELECT count(*) AS n FROM ik_jobs WHERE destination='lamp' AND namespace IN ${SOURCES} AND NOT (principal_id=? AND fingerprint=?)`;
@@ -237,7 +250,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
       const context = doorPreparationContext(db, principalId, input.source, authority);
       // Imported records name the operator who imported them as their author.
       const plan = await planMoveIn(read,await snapshot(context),context,operatorId,asOf);
-      await sourceClear(plan);
+      await sourceClear(plan, business);
       await assertAuthority(context);
       return doorMapping(plan, business);
     },
