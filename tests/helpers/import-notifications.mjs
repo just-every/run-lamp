@@ -21,6 +21,73 @@ export async function assertNoNewNotifications(runtime, before, message = 'impor
   assert.deepEqual((await notificationActivity(runtime)).filter(row => !prior.has(row)), [], message);
 }
 
+// Compare complete rows, including child content and attribution, independently
+// of the import mapper. Sorting whole rows also handles composite primary keys.
+async function tableInventory(runtime, tables) {
+  const inventory = {};
+  for (const table of tables) {
+    inventory[table] = (await runtime.db.prepare(`SELECT * FROM ${table}`).all()).results
+      .map(row => Object.fromEntries(Object.entries(row).sort(([a], [b]) => a.localeCompare(b))))
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  }
+  return inventory;
+}
+
+export function importedRecordInventory(runtime) {
+  return tableInventory(runtime, [
+    'component_groups', 'components', 'component_standing_claims', 'component_claim_events', 'component_state_history',
+    'incidents', 'incident_components', 'incident_updates', 'incident_drafts', 'incident_attachments', 'incident_reports',
+    'maintenance', 'maintenance_components', 'maintenance_notices', 'import_maintenance_updates',
+    'subscribers', 'subscriber_components', 'incident_subscriptions', 'incident_templates', 'incident_template_components',
+    'statuspage_import_targets', 'statuspage_import_template_targets', 'reference_allocations', 'reference_counters',
+  ]);
+}
+
+export async function notificationInventory(runtime) {
+  return {
+    tables: await tableInventory(runtime, [
+      'notification_outbox', 'notification_channel_selections', 'notification_deliveries', 'notification_delivery_attempts',
+      'component_notification_events', 'component_notification_deliveries', 'component_delivery_attempts',
+      'report_notification_deliveries', 'report_delivery_attempts', 'sms_deliveries',
+      'channel_posts', 'subscriber_channel_posts', 'integration_deliveries', 'integration_attempts',
+      'statuspage_import_invites', 'subscriber_confirmation_attempts', 'subscriber_tokens', 'mail_send_ledger',
+    ]),
+    transports: structuredClone({ messages: runtime.messages, receipts: runtime.mailReceipts, webhooks: runtime.webhookRequests, channels: runtime.channelRequests }),
+  };
+}
+
+/** Read the retained alias inventory, then exercise each address on the public
+ * host. A new snapshot may have a new generation clock, but keeps these routes. */
+export async function publicAliasInventory(runtime) {
+  const deadline = Date.now() + 30_000;
+  for (;;) {
+    await (await runtime.raw(runtime.publicOrigin + '/')).arrayBuffer();
+    const work = await runtime.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first();
+    const building = await runtime.db.prepare("SELECT count(*) AS n FROM snapshot_builds WHERE status='building'").first();
+    if (work && work.requested_revision === work.completed_revision && building.n === 0) break;
+    assert.ok(Date.now() < deadline, 'import snapshot settles before alias reconciliation');
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  const bucket = await runtime.runtime.getR2Bucket('SNAPSHOTS');
+  const pointer = await (await bucket.get('snapshots/current.json')).json();
+  const bundle = await (await bucket.get(`snapshots/${pointer.version}/retained.json`)).json();
+  const aliases = bundle.artifacts.filter(row => row.key.startsWith('aliases/') || ['feed.atom', 'history.atom'].includes(row.key)).map(row => ({
+    path: row.key.startsWith('aliases/') ? decodeURIComponent(row.key.slice('aliases/'.length, -5)) : '/' + row.key,
+    contentType: row.contentType,
+    target: row.contentType === 'application/vnd.lamp.redirect+json' ? JSON.parse(row.body).target : null,
+  })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.equal(new Set(aliases.map(row => row.path)).size, aliases.length, 'each public alias occurs once');
+  const atom = await (await runtime.raw(runtime.publicOrigin + '/feed.atom')).text();
+  for (const alias of aliases) {
+    const response = await runtime.raw(runtime.publicOrigin + alias.path, { redirect: 'manual' });
+    assert.equal(response.status, alias.target ? 301 : 200, alias.path);
+    assert.equal(response.headers.get('location'), alias.target, alias.path);
+    if (alias.path.endsWith('.atom')) assert.equal(await response.text(), atom, 'old feed addresses retain the actual native feed');
+    if (alias.target) assert.equal((await runtime.raw(runtime.publicOrigin + alias.target)).status, 200, alias.target);
+  }
+  return aliases;
+}
+
 /** Move in's transport, exactly as the screen drives it: saved responses (read
  * from a key or public page first when none are chosen) upload to the import
  * door's owner surface, plan, apply the reviewed fingerprint and undo, each

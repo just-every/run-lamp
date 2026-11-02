@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { openStatusJourney } from './helpers/status-journey.mjs';
 import { sorryReceiptFlow } from './helpers/sorry-receipt-flow.mjs';
-import { notificationActivity, assertNoNewNotifications, moveInDoor } from '../helpers/import-notifications.mjs';
+import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 
 const fixture = (source, family) => readdirSync(`tests/fixtures/${source}/${family}`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/${family}/${name}`, 'utf8') }));
 const json64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -22,7 +22,7 @@ async function custodyHolds(runtime, value) {
   return false;
 }
 
-test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow', { timeout: 600_000 }, async () => {
+test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow', { timeout: 600_000 }, async t => {
   const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
   const kid = 'synthetic-business', installationId = randomUUID(), issuer = 'https://business.example.test';
   const trust = { RER_OWNER_CLAIM_PUBLIC_KEYS: JSON.stringify({ [kid]: publicKey.export({ format: 'jwk' }) }), RER_OWNER_CLAIM_ISSUER: issuer, RER_OWNER_CLAIM_INSTALLATION_ID: installationId };
@@ -60,6 +60,21 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
       assert.equal(result.status, 200, JSON.stringify(result.body)); assert.equal(result.body.job.state, 'completed'); return result.body;
     };
     const undo = async imported => { const result = await moveIn.undo(imported.door); assert.equal(result.status, 200, JSON.stringify(result.body)); assert.equal(result.body.job.state, 'undone'); return result.body; };
+    const repeat = async (files, imported) => {
+      const aliases = await publicAliasInventory(runtime), records = await importedRecordInventory(runtime), notifications = await notificationInventory(runtime);
+      const reviewed = await preview(files);
+      assert.equal(reviewed.report.state, 'already imported');
+      const result = await moveIn.apply(reviewed);
+      assert.equal(result.status, 200, JSON.stringify(result.body));
+      assert.equal(result.body.job.id, imported.job.id);
+      assert.deepEqual(await importedRecordInventory(runtime), records, 'Sorry repeat preserves complete records and children');
+      assert.deepEqual(await publicAliasInventory(runtime), aliases, 'Sorry repeat preserves the complete public alias inventory and redirects');
+      assert.deepEqual(await notificationInventory(runtime), notifications, 'Sorry repeat preserves all notification work and captured transports');
+      await runtime.tick(Date.now());
+      assert.deepEqual(await notificationInventory(runtime), notifications, 'Sorry repeat remains silent through native scheduled processing');
+      assert.deepEqual(await importedRecordInventory(runtime), records);
+      t.diagnostic('PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory');
+    };
     await sorryReceiptFlow(async files => {
       const reviewed = await moveIn.preview({ ...source, files });
       assert.equal(reviewed.status, 200, `every .json file of a fresh capture folder is accepted: ${JSON.stringify(reviewed.body)}`);
@@ -85,6 +100,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     }
     const history = await fetch(publicOrigin + '/history/2025/april', { redirect: 'manual' }); assert.equal(history.status, 301); assert.equal(history.headers.get('location'), '/history/');
     assert.equal((await apply(publicFiles)).job.id, publicImport.job.id);
+    await repeat(publicFiles, publicImport);
     await undo(publicImport); assert.deepEqual(await snapshot(), initial);
     assert.equal((await fetch(publicOrigin + '/notices/100', { redirect: 'manual' })).status, 404);
     const authenticatedFiles = fixture('sorry', 'authenticated');
@@ -96,6 +112,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     assert.deepEqual(status.old_addresses.sample, held.report.cutover.rows.map(({ path, target }) => ({ path, target })).sort((a, b) => a.path.localeCompare(b.path)));
     assert.ok(!JSON.stringify(status).includes(moved.subscribers[0].destination), 'Business cutover status reveals counts, never destinations');
     await assertNoNewNotifications(runtime, quiet);
+    await repeat(authenticatedFiles, held);
     assert.equal((await owner(`/api/app/statuspage-import/jobs/${held.job.id}/send-invitations`, {})).status, 409);
     assert.equal((await door('uploads', 'sorry', {})).status, 404, 'the Business door requires owner opt-in');
     assert.equal((await owner('/api/app/import-door/settings', { enabled: true }, 'PUT')).status, 200);
