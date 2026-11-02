@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "4661373f70b66f3474c0c77bcd96041807c9c0bec9f8aafa50d6488958dde81a",
       "executable": false
     },
     "DEMO.md": {
@@ -6792,7 +6792,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "f308041013f2d8cddd0df8943584b7bbfd38d775f96b15662c0cf70c7fbb2cc2",
+      "sha256": "44d2ac8b969f42c231c7829e6a940de438a171aea22a6661a7c1178f64d7c24d",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -7109,6 +7109,10 @@
     },
     "tests/e2e/helpers/subscriber-queued-unsubscribe.mjs": {
       "sha256": "2a0aaacd16f4bea99eb9d986f1c2db63cb6fa02255042c6b3907fbba2434cf74",
+      "executable": false
+    },
+    "tests/e2e/helpers/subscriber-token-authority-flow.mjs": {
+      "sha256": "eee78d366e7f4a71dc9217100359fdcfc35c7011034a699a89a79f32e69a1681",
       "executable": false
     },
     "tests/e2e/helpers/theme-browser-flow.mjs": {
