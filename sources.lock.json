@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "ffdd1329093c17a02df735d3400ee261ba613e1b92ad0466d7bd48555dd13d2b",
       "executable": false
     },
     "DEMO.md": {
@@ -6792,7 +6792,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "f7314ad171ffbe0918b0d02467df451a13a5e4a3b40499a74d665b117bc0e9f4",
+      "sha256": "b49331730f7f1aa2e33b2cf0c24a64c492a268f5b657237fb6b046ed5b3df093",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -6817,6 +6817,10 @@
     },
     "tests/e2e/helpers/accessibility-subscription-flow.mjs": {
       "sha256": "1067a92c81eecf71fec9b728d64c35fe8fcdab90479e56ffe46b1a74e8038c2d",
+      "executable": false
+    },
+    "tests/e2e/helpers/atomic-publication-flow.mjs": {
+      "sha256": "e818e37120fa966affb2e18d980bd199121094a8a7c0be73a9f2e426414bc841",
       "executable": false
     },
     "tests/e2e/helpers/automation-clock-worker.ts": {

@@ -7,7 +7,7 @@ import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin } fro
 
 /** Real publication, token-authorized preference changes and Worker Queue
  * dispatch, with a transaction failure injected only in this disposable D1. */
-export async function atomicPublicationFlow() {
+export async function atomicPublicationFlow(t) {
   const fixture = await openSubscriberManagementFixture({ workerEntry: 'tests/e2e/helpers/status-journey.worker.ts' });
   let browser;
   const { api, post, raw, db } = fixture;
@@ -100,6 +100,7 @@ export async function atomicPublicationFlow() {
     assert.equal(committed.subscriberId, subscriberId);
     assert.equal(committed.outcome, 'queued');
     assert.equal(fixture.webhookRequests.length, 0, 'publication succeeds before paused transport dispatch');
+    t?.diagnostic('PROBE UPDATE-008 acceptance-1: native publish while effects are paused -> HTTP 200 with the committed update and queued recipient before any receiver request');
     const frozen = await records();
     assert.deepEqual(frozen.incident_updates.map(row => row.id), [first.updateId]);
     assert.deepEqual(frozen.notification_delivery_records.map(row => row.id), [committed.id]);
@@ -151,6 +152,8 @@ export async function atomicPublicationFlow() {
     assert.equal(fixture.webhookRequests.length, 1, 'Queue redelivery cannot accept the original notification twice');
     assert.deepEqual(identities(await records()), identities(frozen), 'dispatch retains the original complete identity sets');
 
+    t?.diagnostic('PROBE UPDATE-008 acceptance-2 narrowing: emailed management form removes the published component while subscription stays active -> complete committed rows unchanged and original Queue delivery accepted exactly once');
+
     await pause(true);
     const failed = await draft(retained, 'Synthetic Lamp rolled back publication', 'Synthetic Lamp failed impact stays private.');
     const beforePublic = await publicSnapshot(failed.incident);
@@ -178,6 +181,8 @@ export async function atomicPublicationFlow() {
     assert.equal(fixture.webhookRequests.length, wireCount);
     assert.equal(fixture.messages.length, mailCount);
 
+    t?.diagnostic('PROBE UPDATE-008 acceptance-3: fixture trigger aborts actual publication at outbox insertion -> HTTP 409, every application record unchanged, no recipients, identical settled public page, feeds, widget and generation');
+
     const recovered = await post(`/api/app/incidents/${failed.incident.id}/publish`, { channels: ['webhook'] });
     assert.equal(recovered.status, 200, recovered.text);
     assert.equal(recovered.body.update.id, failed.updateId, 'ordinary retry publishes the original retained draft');
@@ -196,6 +201,7 @@ export async function atomicPublicationFlow() {
       const response = await raw(`${pageOrigin}/incidents/${failed.incident.reference}`);
       return { status: response.status, body: await response.text() };
     }, response => response.status === 200 && response.body.includes('Synthetic Lamp failed impact stays private.'), 'successful recovery exposes the committed update through its public permalink');
+    t?.diagnostic('PROBE UPDATE-008 recovery: ordinary native retry of the retained draft -> HTTP 200, one committed recipient, successful Queue delivery and HTTP 200 public permalink');
   } finally {
     try { await browser?.close(); } finally { await fixture.close(); }
   }

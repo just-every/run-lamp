@@ -16,7 +16,7 @@ import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
 // Consent, publication, delivery and erasure are exercised through the ordinary
 // operator/public HTTP doors and captured provider transports. No repository or
 // delivery-service method is used as a substitute for a user action.
-test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 — Subscriber consent, selected publication, channel delivery, export and erasure', { timeout: 600_000 }, async () => {
+test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 — Subscriber consent, selected publication, channel delivery, export and erasure', { timeout: 600_000 }, async t => {
   await subscriberExpiryFlow();
   await subscriberAddFlow();
   await subscriberPreferencesFlow();
@@ -24,7 +24,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await statuspageWebhookFlow();
   await smsSubscriberFlow();
   await webhookAtMostOnceFlow();
-  await atomicPublicationFlow();
+  await atomicPublicationFlow(t);
 });
 
 test('NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts', { timeout: 300_000 }, async t => {
