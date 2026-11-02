@@ -81,7 +81,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       ['latest', '2025-04-20T12:00:00.000Z', '2025-04', 'incident'],
       ['winter-work', '2020-03-01T07:59:00.000Z', '2020-02', 'maintenance'],
       ['spring-work', '2020-04-01T07:02:00.000Z', '2020-04', 'maintenance'],
-    ].map(([id, at, month, kind]) => ({ id, at, month, kind, title: `Synthetic Lamp retained ${id}`, reference: `synthetic-lamp-${id}` }));
+    ].map(([id, at, month, kind], index) => ({ id, at, month, kind, title: `Synthetic Lamp retained ${id}`, reference: `${kind === 'incident' ? 'INC' : 'SCH'}-${index + 2}` }));
     for (const row of archived) {
       const startedAt = new Date(Date.parse(row.at) - 3_600_000).toISOString();
       if (row.kind === 'incident') {
@@ -123,7 +123,6 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     };
     for (const path of monthPaths) await checkMonth(path);
     assert.equal((await (await read('/test/database-touches')).json()).accesses, 0);
-    console.log('PROBE HIST-008 4: every generated month route with throwing D1 -> 200, exact archived membership, zero database accesses');
     const paths = ['/', '/feed.atom', '/widget.js', '/api/public/status', '/badge.svg', '/badge.json'];
     const artifactKeys = ['page.html', 'feed.atom', 'widget.js', 'status.json', 'badge.svg', 'badge.json'];
     const blobReads = async () => (await read('/test/blob-reads')).json();
@@ -188,7 +187,14 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     await runtime.dispose(); runtime = new Miniflare(convertV4MiniflareOptions(options));
     for (const path of paths) assert.equal((await read(path + '?storage=down&cold=1')).status, 200, `cold retained read ${path}`);
     for (const path of monthPaths) await checkMonth(path, '?storage=down&cold=1');
+    for (const row of archived.filter(row => row.kind === 'incident')) {
+      const response = await read(`/incidents/${row.reference}?storage=down&cold=1`);
+      assert.equal(response.status, 200, 'every retained month incident link survives database and storage failure');
+      assert.equal(response.headers.get('x-lamp-snapshot-state'), 'stale');
+      assert.ok((await response.text()).includes(row.title));
+    }
     assert.equal((await (await read('/test/database-touches')).json()).accesses, 0, 'cold retained month reads never access the database');
+    console.log('PROBE HIST-008 4: all four generated month routes and incident permalinks -> 200 with exact membership through throwing D1, storage failure and cold restart; zero database accesses');
     for (const [kind, bytes, type] of [['header', image, 'image/png'], ['font', font, 'font/woff2']]) {
       const response = await read(`/assets/theme-${kind}?storage=down&cold=1`);
       assert.equal(response.status, 200);
