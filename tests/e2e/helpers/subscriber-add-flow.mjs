@@ -105,6 +105,11 @@ export async function subscriberAddFlow() {
     assert.equal(webhook.body.created, true);
     assert.equal(webhook.body.confirmationSent, true);
     assert.equal(webhook.body.subscriber.state, "pending");
+    const pendingWebhook = (await list()).find(row => row.id === webhook.body.subscriber.id);
+    assert.equal(pendingWebhook.destination, destination);
+    assert.equal(pendingWebhook.contactEmail, contact);
+    assert.equal(pendingWebhook.selectionMode, "selected");
+    assert.deepEqual(selected(pendingWebhook), [second.id], "native webhook Add retains exactly the chosen component");
     assert.equal(messagesFor(contact).length, 1, "one webhook confirmation goes to its contact email");
     await fixture.publish(second, "Synthetic Lamp pending webhook publication");
     assert.equal(fixture.webhookRequests.length, 0, "the endpoint gets no update before its contact confirms");
@@ -116,6 +121,7 @@ export async function subscriberAddFlow() {
     assert.ok(!JSON.stringify(fixture.webhookRequests[0].body).includes(contact), "the receiver's payload carries no contact address");
     const webhookRow = (await list()).find(row => row.id === webhook.body.subscriber.id);
     assert.equal(webhookRow.state, "active");
+    assert.deepEqual(selected(webhookRow), [second.id], "confirmation preserves the native webhook component selection");
     assert.deepEqual(webhookRow.addedBy, { id: owner.id, displayName: owner.displayName });
 
     const beforeInvalid = await fixture.databaseState(), mailBeforeInvalid = fixture.messages.length;
