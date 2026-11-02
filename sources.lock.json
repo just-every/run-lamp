@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "a55cbb74ffce0ae6f53579ed5c0a62a7fad5a786c7bae242637a59a73f3bce2b",
       "executable": false
     },
     "DEMO.md": {
@@ -7152,7 +7152,7 @@
       "executable": false
     },
     "tests/e2e/helpers/update-due-browser-flow.mjs": {
-      "sha256": "c86dc93e2d33d06359fbc4ae0824f242284d38331f7dcac9ab87ae834ff4ea12",
+      "sha256": "200f8c64245c525b7012ed9d48cefb5213cb9be1158c59bd96383dc56326ffb9",
       "executable": false
     },
     "tests/e2e/helpers/update-link-evidence.mjs": {
@@ -7276,7 +7276,7 @@
       "executable": false
     },
     "tests/e2e/update-reminders.test.mjs": {
-      "sha256": "6f2af2fd868b6c9fd84e8563e1b038404a34bedaed774871d68600ea8d7b2d44",
+      "sha256": "97e52a1eae23270d4666de15fba1b848ae7212a737c2ca4be48d4ad57cd51662",
       "executable": false
     },
     "tests/e2e/website-onboarding.test.mjs": {

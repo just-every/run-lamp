@@ -50,6 +50,7 @@ test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communicat
     await advance(committed - 10 * 60000 - 1);
     await j.tick(committed - 10 * 60000 - 1);
     await assertDue(false);
+    await settleOperatorEmails(j);
     assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /update due at|overdue/i.test(row.subject)).length, 0, 'no reminder immediately before the ten-minute lead');
     await advance(committed - 10 * 60000);
     await j.tick(committed - 10 * 60000); await j.tick(committed - 10 * 60000);

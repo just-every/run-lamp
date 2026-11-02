@@ -69,6 +69,15 @@ export async function updateDueBrowserFlow({ page, appUrl, api, diagnostic }) {
         const savedBrief = (await api(`${endpoint}/brief`)).brief;
         assert.ok(savedBrief.whatWeKnow.updates.some(update => update.customerImpact === wording.customerImpact && update.nextUpdateAt === commitment), 'the opened brief carries this publication commitment');
         if (path === '/app') await screens(overdue ? 'overdue-composer-brief' : 'due-composer-brief');
+        // The ordinary incident row is also an existing route into this work.
+        await page.goto(appUrl + path); await operatorHydrated(page);
+        await listRow.click();
+        await page.waitForURL(url => url.pathname === `/app/incidents/${incident.id}`);
+        await operatorHydrated(page);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(incident.title);
+        await expect(incidentComposer(page).impact).toBeEditable();
+        await incidentComposer(page).row('Brief');
+        await expect(brief).toContainText(component.name);
       }
       diagnostic(`PROBE INCIDENT-010 acceptance-2 ${overdue ? 'overdue' : 'due'}: Overview and incident list show ${expectedLabel}; both Write the update actions open ${incident.reference}, its editable composer and matching published brief; screens at 1440 and 390`);
     }
