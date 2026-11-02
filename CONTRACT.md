@@ -3131,6 +3131,8 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 INTAKE-007 retains current-main's partial judgment and recorded gap. The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These additional assertions do not change the newer clause judgment.
 
+UPDATE-013 retains current main's partial Status, Evidence and Gap judgment. The replay of candidate `ca01647bcdf03577e5a32746e6c8ab1c224297d6` adds registered proof in `tests/e2e/public-contract.test.mjs` and `tests/e2e/publishing-contract.test.mjs`, loading `tests/e2e/helpers/update-link-evidence.mjs` and `tests/e2e/helpers/update-link-surfaces.mjs`, for literal Markdown and labelled destinations, exact published-update identity, direct links and punctuation across public root, history, permalink, Atom, RSS, aliases and component feeds. `tests/e2e/publishing-browser.test.mjs` adds saved internal-host and IP wording advice without blocking publication. These assertions and the shared tokenizer change supplement the inherited evidence without promoting the clause or overriding its recorded gap. Current widget, history and composer assertions remain active.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 96 | 0 | 107 |

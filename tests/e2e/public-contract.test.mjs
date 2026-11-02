@@ -4,7 +4,9 @@ import { gzipSync } from 'node:zlib';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+import { openStatusJourney, eventually, wording } from './helpers/status-journey.mjs';
+import { literalLinkFields } from './helpers/update-link-evidence.mjs';
+import { assertUpdateLinkSurfaces, assertUpdateLinkScreens } from './helpers/update-link-surfaces.mjs';
 import { assertVisibleTime } from '../helpers/public-meaning.mjs';
 import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
 import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
@@ -107,7 +109,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const customerReview = await j.json('/api/app/components/bulk/preview', 'POST', { catalogue: customerCatalogue, revision: populatedCatalogue.revision });
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: customerReview.catalogue, revision: customerReview.revision, reviewToken: customerReview.reviewToken });
 
-    browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
+    browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
     const scripted = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: 'America/New_York' });
     const page = await scripted.newPage();
     await page.clock.install();
@@ -166,13 +168,14 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
     await j.json(`/api/app/components/${other.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
     const incident = await j.incident('Synthetic Lamp API outage under investigation', [main, hidden]);
-    const widgetWording = {
-      affectedAudience: 'Synthetic Lamp customers submitting API requests.',
-      customerImpact: 'New API requests cannot complete during this outage.',
-      whatStillWorks: 'Previously saved results remain available in the dashboard.',
-      details: 'Responders have isolated the failing API gateway.',
-    };
-    await j.save(incident.id, widgetWording); await j.publish(incident.id);
+    const widgetWording = literalLinkFields({
+      affectedAudience: 'Synthetic Lamp customers submitting API requests. ' + wording.affectedAudience,
+      customerImpact: 'New API requests cannot complete during this outage. ' + wording.customerImpact,
+      whatStillWorks: 'Previously saved results remain available in the dashboard. ' + wording.whatStillWorks,
+      details: 'Responders have isolated the failing API gateway. ' + wording.details,
+    });
+    await j.save(incident.id, widgetWording);
+    const linkedUpdate = (await j.publish(incident.id)).update;
     await j.visible('/', incident.title);
     const firstStatus = await (await j.publicResponse('/api/public/status')).json();
     assert.ok((await j.publicText('/')).includes(other.name), 'a degraded conditional component becomes public');
@@ -189,6 +192,8 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok((await page.locator('#status-live').innerText()).includes('Major outage'));
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).publicState, 'Major outage');
     assert.ok(firstStatus.generatedAt);
+    await assertUpdateLinkSurfaces(j, incident, main, linkedUpdate);
+    await assertUpdateLinkScreens(page, j, incident, linkedUpdate);
     const permalink = await j.publicText(`/incidents/${incident.reference}`);
     assert.ok(permalink.includes(incident.title) && permalink.includes(main.name));
     assert.match(permalink, /Get updates on this incident/);
@@ -231,6 +236,8 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
 
     await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'API requests are working again.', nextUpdateAt: null }); await j.publish(incident.id);
     await j.visible('/history', incident.title);
+    await assertUpdateLinkSurfaces(j, incident, main, linkedUpdate, { history: true });
+    await assertUpdateLinkScreens(page, j, incident, linkedUpdate, { history: true });
     const feedAfter = await j.publicText('/feed.atom');
     for (const id of firstIds) assert.ok(feedAfter.includes(id), 'earlier public feed identifiers survive a later update');
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).publicState, 'Operational');
