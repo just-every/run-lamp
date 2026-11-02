@@ -14,6 +14,7 @@ import { smsSubscriberFlow } from './helpers/sms-subscriber-flow.mjs';
 import { statuspageWebhookFlow } from './helpers/statuspage-webhook-flow.mjs';
 import { mailFailoverFlow } from './helpers/mail-failover-flow.mjs';
 import { mailSettingsBrowserFlow } from './helpers/mail-settings-browser-flow.mjs';
+import { emailCapacityFlow } from './helpers/email-capacity-flow.mjs';
 import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
 
 // Consent, publication, delivery and erasure are exercised through the ordinary
@@ -47,3 +48,5 @@ test('Scoped incident subscriptions — native and Statuspage API consent, priva
   await incidentFollowFlow();
   await incidentSubscriptionApiFlow();
 });
+
+test('NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes', { timeout: 360_000 }, emailCapacityFlow);
