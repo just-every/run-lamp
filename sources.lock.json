@@ -6899,6 +6899,14 @@
       "sha256": "84a12f0c3c00dc994f5f6d6573296debb0d2814991aedcefe9e8b6dfcbb020e8",
       "executable": false
     },
+    "tests/e2e/helpers/import-invitation-flow.mjs": {
+      "sha256": "3a74ac619be863c3bf5e9a7635c317f7e1f174ec16427999a41213899211330d",
+      "executable": false
+    },
+    "tests/e2e/helpers/import-invitation.worker.ts": {
+      "sha256": "ae8bf03457f7b564fa723fcce89a823a2e432ba32ab580f3ce21bc91703d88a8",
+      "executable": false
+    },
     "tests/e2e/helpers/imported-incident-live-flow.mjs": {
       "sha256": "bb9adde3e9582068b53e9425bbd449b9c52097dff92253f05feab168c5f6d8d9",
       "executable": false
@@ -7256,7 +7264,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "5f1fb651ebd3fba6058df36bbf7408fd776fd21bd4af5c354ba30b7a09428dc7",
+      "sha256": "e6ac58f9d03195a5e82f0128ecc2ff5e3f9a3c06eb39d007c76ed8b9d3d70afc",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
