@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8b5d4a630c6efb8c42192295f22b225b0971dc928d640ade99b0f7c7c855a534",
+      "sha256": "e9266a1cf910c2f5e2dd0af193311e635443f23730a76351d129980a18eb42b3",
       "executable": false
     },
     "DEMO.md": {
@@ -7140,7 +7140,7 @@
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-flow.mjs": {
-      "sha256": "fe77247643e9b94ab4c705e50999dc76be82eca0178a541685c39fa3f389a42f",
+      "sha256": "cdc8a956ab7bcf091e58d003bc8febcca60467caed933ab64a4be4a389d4e0e0",
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-runtime.mjs": {
