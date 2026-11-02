@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "40a670f0db9ef5f5e49f422f81ced5f035f16805bef4eea3758ffbf718d7221a",
       "executable": false
     },
     "DEMO.md": {
@@ -7045,6 +7045,14 @@
     },
     "tests/e2e/helpers/sms-subscriber-flow.mjs": {
       "sha256": "c4fb13202f552797337f582d96124bc59abd2fd6771b356554e3dd176ef73999",
+      "executable": false
+    },
+    "tests/e2e/helpers/snapshot-mutations-flow.mjs": {
+      "sha256": "4793a1cb693864fdd391155de9a89ff00acf54734daa7d061a008a4933a7dc12",
+      "executable": false
+    },
+    "tests/e2e/helpers/snapshot-recovery-flow.mjs": {
+      "sha256": "da7f472d36fd9c12b0d5d7538d5485e5003794214c1e83d7f03e8b2024145f3b",
       "executable": false
     },
     "tests/e2e/helpers/social-browser-flow.mjs": {
