@@ -395,7 +395,7 @@ const payloads = {
 };
 const sources = {};
 
-test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence", { timeout: 600_000 }, async t => {
+test("INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings", { timeout: 600_000 }, async t => {
   const snapshot = () => publicSnapshot({ runtime, publicOrigin, sql });
   await uptimePairingFlow({ api, post, component, origin, cookie, sql, snapshot, t });
   for (const preset of Object.keys(payloads)) {
@@ -428,6 +428,15 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
   assert.doesNotMatch(page, /Checkout latency|Shop \(/, "no public surface changes");
   await presetRecoveryFlow({ api, post, runtime, publicOrigin, sql, sources, payloads, t });
   await uptimePresetFlow({ api, post, component, publicOrigin, sql, snapshot, t });
+  await closePublicSnapshot(runtime);
+  // Each public-artifact read consumes a native ingress replay proof. Give the
+  // next browser journey a fresh transport window, retaining all product rows
+  // and the same owner session, as the automation browser journey does below.
+  await runtime.stop();
+  await runtime.start();
+});
+
+test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence", { timeout: 600_000 }, async t => {
   await groupedAlertsFlow({ api, post, component, sql, origin, publicOrigin, cookie });
   await monitorSetupJourney({ api, component, origin, publicOrigin, cookie });
   await metricSetupJourney({ api, post, component, origin, cookie });

@@ -6784,7 +6784,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "d9312c7e3c0300b05bdfce2d67ebff395f3f6039bfbacedc9b2509d2132ee4df",
+      "sha256": "097feb93a51a81c99e01ffbd0fbc439409430935b26d6edf685ece80186128c3",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
@@ -7152,7 +7152,7 @@
       "executable": false
     },
     "tests/e2e/helpers/uptime-pairing-flow.mjs": {
-      "sha256": "54bf98bcd4446aa6f798e7e641652a0e23475c98db225028bd7dd83008b0dbe7",
+      "sha256": "1a4d599a174febe2cf2813c8033092605935517fbcc8c5edd461824b72c4cd35",
       "executable": false
     },
     "tests/e2e/helpers/uptime-preset-flow.mjs": {

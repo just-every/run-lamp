@@ -144,7 +144,8 @@ export async function uptimePairingFlow({ api, component, origin, cookie, post, 
       await page.setViewportSize({ width: 1440, height: 1000 });
 
       const second = `${key}:after-pick`;
-      const firing = await send(address, uptimeEvent(monitorId, 'Storefront', second));
+      const capturedFiring = uptimeEvent(monitorId, 'Storefront', second);
+      const firing = await send(address, capturedFiring);
       assert.equal(firing.status, 202, JSON.stringify(firing));
       const incident = (await api(`/api/app/incidents/${firing.body.incidentId}`)).body.incident;
       assert.deepEqual(incident.components.map(row => row.componentId), [storefront.id], 'the draft carries the picked component');
@@ -188,6 +189,7 @@ export async function uptimePairingFlow({ api, component, origin, cookie, post, 
       const erased = intakeInventories(sql);
       assert.ok(!erased.alert_receipts.some(receipt => receipt.source_id === source.id), 'source erasure removes all its receipts');
       assert.equal((await send(address, uptimeEvent(monitorId, 'Storefront', `${key}:removed`))).status, 404);
+      assert.equal((await send(address, capturedFiring)).status, 404, 'an exact captured firing cannot be replayed after source erasure');
       assert.deepEqual(intakeInventories(sql), erased, 'a revoked address cannot resurrect receipts or drafts');
       t.diagnostic('PROBE INTAKE-008 1,4,6: no-secret pairing -> mapped private draft; recovery -> Resolved without publication; erased address -> 404 without resurrection');
     }
