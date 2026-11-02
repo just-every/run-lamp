@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "918d42bb041f20e73446c223ac31f2199ce53e99b590a4681e6ce8e892209353",
+      "sha256": "df399dd526d2640dd930d1c1ad9ee0681c15e0f9729bde18c5f26a0432ade8b0",
       "executable": false
     },
     "DEMO.md": {
@@ -6792,7 +6792,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "f308041013f2d8cddd0df8943584b7bbfd38d775f96b15662c0cf70c7fbb2cc2",
+      "sha256": "901b5369d5977bb3dca2aacb170dfa89620af1fc7aa5b4068f1ea2f5428959ae",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -7009,6 +7009,10 @@
     },
     "tests/e2e/helpers/pagerduty-flow.mjs": {
       "sha256": "1998bcfea7bc9fe5d9ecd77adcc43fb382604fd61ce95fd85ca310df55a94f84",
+      "executable": false
+    },
+    "tests/e2e/helpers/per-update-channels-flow.mjs": {
+      "sha256": "00220a4ca7c83b0d559a73fffe543020f5ac862c349f1893786d8f240ac02508",
       "executable": false
     },
     "tests/e2e/helpers/phone-desk-flow.mjs": {

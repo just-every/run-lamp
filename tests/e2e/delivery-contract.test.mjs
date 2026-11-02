@@ -1,3 +1,4 @@
+import { perUpdateChannelsFlow } from './helpers/per-update-channels-flow.mjs';
 import { incidentSubscriptionApiFlow } from './helpers/incident-subscription-api-flow.mjs';
 import { incidentFollowFlow } from './helpers/incident-follow-flow.mjs';
 import { test } from 'node:test';
@@ -15,7 +16,8 @@ import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
 // Consent, publication, delivery and erasure are exercised through the ordinary
 // operator/public HTTP doors and captured provider transports. No repository or
 // delivery-service method is used as a substitute for a user action.
-test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 — Subscriber consent, selected publication, channel delivery, export and erasure', { timeout: 600_000 }, async () => {
+test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure', { timeout: 600_000 }, async () => {
+  await perUpdateChannelsFlow();
   await subscriberExpiryFlow();
   await subscriberAddFlow();
   await subscriberPreferencesFlow();
