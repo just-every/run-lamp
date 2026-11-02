@@ -26,7 +26,8 @@ export function keptComponents(page: FoundPage, existing: FoundExisting) {
 
 /** "Bring its incident history too": Lamp reads the page's public feeds once more, keyless, and Move in imports its
  * past incidents as resolved history, with the components kept here and their groups. Nothing is sent to anyone;
- * Settings → Move in lists the import and can undo it. */
+ * Settings → Move in lists the import and can undo it. A full Move in of the same page later is this import's
+ * catch-up: the door plans it against this history, so nothing here is imported twice. */
 export async function bringHistory(page: FoundPage, existing: FoundExisting) {
   const { files } = await appApi<{ files: Array<{ name: string; text: string }> }>("/api/app/statuspage-import/fetch", { method: "POST", body: JSON.stringify({ source: existing.source, publicUrl: existing.url }) });
   const door = moveInDoor(existing.source);

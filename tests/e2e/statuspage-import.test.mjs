@@ -6,6 +6,7 @@ import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRec
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
+import { historyCatchupFlow } from './helpers/history-catchup-flow.mjs';
 
 const fixtures = source => readdirSync(`tests/fixtures/${source}/small`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/small/${name}`, 'utf8') }));
 const parsed = (files, name) => JSON.parse(files.find(file => file.name === name).text);
@@ -63,6 +64,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       const again = await moveIn.apply(reviewed.body);
       assert.equal(again.status, 200, JSON.stringify(again.body));
       assert.equal(again.body.job.id, result.job.id);
+      assert.equal(again.body.job.state, 'completed', 'the repeated import stays completed');
       assert.deepEqual(await importedRecordInventory(runtime), records, 'repeat preserves every complete native record and its children');
       assert.deepEqual(await publicAliasInventory(runtime), aliases, 'repeat preserves the complete public alias inventory and redirects');
       assert.deepEqual(await notificationInventory(runtime), notifications, 'repeat creates or changes no delivery, attempt, post, invitation claim or captured transport');
@@ -139,20 +141,58 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       await repeatImport(input, result);
       assert.deepEqual(await counts(), after, 'repeating the same source duplicates nothing');
       if (source === 'statuspage') {
-        // Two distinct saved bundles explicitly name the same upstream component.
-        // A new control in the refused bundle detects any partial application.
-        const owned = parsed(files, 'components.json')[0];
+        // Later saved bundles of this source name its owned records. Each is this
+        // import's catch-up (ct ruling on MOVE-003): compared record by record with
+        // the applied import, so no owned record is imported again. The owned
+        // component also carries a new creation time, which would derive another
+        // native id; a new control detects any partial write.
+        const owned = parsed(files, 'components.json')[0], moved = { ...owned, name: 'Synthetic Lamp overlapping upstream record', created_at: '2026-01-03T00:00:00.000Z' };
         const control = { ...owned, id: 'synthetic-lamp-new-component', name: 'Synthetic Lamp new import control', position: 3 };
         const componentBundle = rows => files.map(file => ({ ...file,
           text: file.name === 'page.json' ? file.text : JSON.stringify(file.name === 'components.json' ? rows : []),
         }));
+        const key = (kind, id) => JSON.stringify([kind, id]), native = (inventory, table, column, value) => inventory[table].filter(row => row[column] === value);
         const records = await importedRecordInventory(runtime), notifications = await notificationInventory(runtime), aliases = await publicAliasInventory(runtime);
-        const overlap = await moveIn.preview({ source, files: componentBundle([{ ...owned, name: 'Synthetic Lamp overlapping upstream record', created_at: '2026-01-03T00:00:00.000Z' }, control]) });
-        assert.equal(overlap.status, 400, JSON.stringify(overlap.body));
-        assert.match(overlap.body.error, /(?:records were imported already|already exists|already owned)/iu, 'overlap refusal explains the existing ownership');
-        assert.deepEqual(await importedRecordInventory(runtime), records, 'overlap refusal preserves all targets and creates no new control');
-        assert.deepEqual(await notificationInventory(runtime), notifications, 'overlap refusal creates no notification work');
-        assert.deepEqual(await publicAliasInventory(runtime), aliases, 'overlap refusal preserves public redirects');
+        const overlap = await moveIn.preview({ source, files: componentBundle([moved, control]) });
+        assert.equal(overlap.status, 200, JSON.stringify(overlap.body));
+        assert.deepEqual([overlap.body.differences.conflicts, overlap.body.differences.additions], [[key('component', owned.id)], [key('component', control.id)]], 'the catch-up lists the owned record as a conflict and adds only the new one');
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'the catch-up review preserves all targets and creates no new control');
+        assert.deepEqual(await notificationInventory(runtime), notifications, 'the catch-up review creates no notification work');
+        assert.deepEqual(await publicAliasInventory(runtime), aliases, 'the catch-up review preserves public redirects');
+        // A newer export of the whole page: unchanged records, one incident
+        // corrected at source, the owned component with its new creation time, a new one.
+        const sourceIncidents = parsed(files, 'incidents.json'), corrected = { ...sourceIncidents[1], name: `${sourceIncidents[1].name} (corrected at source)` };
+        const newer = files.map(file => ({ ...file, text: file.name === 'components.json' ? JSON.stringify([moved, ...parsed(files, 'components.json').slice(1), control])
+          : file.name === 'incidents.json' ? JSON.stringify(sourceIncidents.map(row => row.id === corrected.id ? corrected : row)) : file.text }));
+        const caught = await moveIn.preview({ source, files: newer });
+        assert.equal(caught.status, 200, JSON.stringify(caught.body));
+        const { differences } = caught.body;
+        assert.deepEqual([differences.conflicts, differences.additions], [[key('component', owned.id)], [key('component', control.id)]]);
+        assert.ok(differences.replacements.includes(key('incident', corrected.id)), 'the record corrected at source is replaced');
+        assert.deepEqual(differences.unchanged.toSorted(), [...parsed(files, 'components.json').slice(1).map(row => key('component', row.id)), ...sourceIncidents.filter(row => row.id !== corrected.id).map(row => key('incident', row.id)),
+          ...parsed(files, 'subscribers.json').map(row => key('subscriber', row.id))].toSorted(), 'every other owned record is unchanged');
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'the catch-up review writes nothing');
+        const applied = await moveIn.apply(caught.body);
+        assert.equal(applied.status, 200, JSON.stringify(applied.body));
+        assert.equal(applied.body.job.state, 'completed');
+        const current = await importedRecordInventory(runtime), [prior] = native(records, 'incidents', 'title', sourceIncidents[1].name);
+        for (const { name } of parsed(files, 'components.json')) assert.deepEqual(native(current, 'components', 'name', name), native(records, 'components', 'name', name), `${name}: one native record, unchanged by the catch-up`);
+        for (const table of ['subscribers', 'subscriber_components']) assert.deepEqual(current[table], records[table], `unchanged ${table} stay`);
+        const unchangedIncident = native(records, 'incidents', 'title', sourceIncidents[0].name)[0];
+        assert.deepEqual([native(current, 'incidents', 'id', unchangedIncident.id), native(current, 'incident_updates', 'incident_id', unchangedIncident.id)], [[unchangedIncident], native(records, 'incident_updates', 'incident_id', unchangedIncident.id)], 'the unchanged incident stays');
+        assert.deepEqual(native(current, 'incidents', 'id', prior.id).map(row => [row.title, row.reference]), [[corrected.name, prior.reference]], 'the corrected incident is replaced in place, keeping its id and public reference');
+        assert.equal(current.incidents.length, records.incidents.length, 'no owned incident is imported again');
+        assert.equal(native(current, 'components', 'name', control.name).length, 1, 'the new record is added once');
+        assert.equal(current.components.length, records.components.length + 1);
+        assert.deepEqual(await notificationInventory(runtime), notifications, 'the catch-up creates no notification work');
+        assert.deepEqual(await publicAliasInventory(runtime), aliases, 'the catch-up keeps every public alias and redirect');
+        await runtime.tick(Date.now());
+        assert.deepEqual(await notificationInventory(runtime), notifications, 'native scheduled processing after the catch-up creates no notification work');
+        await repeatImport({ source, files: newer }, applied.body);
+        assert.ok((await (await fetch(`${publicOrigin}/incidents/${prior.reference}`)).text()).includes(corrected.name), 'the public page shows the replaced record at its old address');
+        const undoneCatchup = await moveIn.undo(applied.body.door);
+        assert.equal(undoneCatchup.status, 200, JSON.stringify(undoneCatchup.body));
+        assert.deepEqual(await importedRecordInventory(runtime), records, 'undo of the catch-up restores the prior imported inventory');
         const newOnly = await apply({ source, files: componentBundle([control]) });
         const components = (await api('/api/app/components')).body.components;
         assert.equal(components.filter(row => row.name === owned.name).length, 1, 'the original upstream identity still has one unchanged native record');
@@ -176,7 +216,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         await repeatImport(alternateInput, alternate.result);
         assert.equal((await moveIn.undo(alternate.result.door)).status, 200);
         assert.deepEqual(await importedRecordInventory(runtime), records, 'removing the other namespace preserves the original identity');
-        t.diagnostic('PROBE MOVE-003 2: distinct overlapping Statuspage bundle -> reasoned refusal and no native changes; reviewed new-only bundle -> one new component, repeat stable, undo preserves prior targets');
+        t.diagnostic('PROBE MOVE-003 2: later Statuspage bundles naming owned records -> planned and applied as the catch-up: owned record with a new creation time listed as a conflict, unchanged records kept, corrected record replaced in place, one new component, silent, repeat stable, undo restores; reviewed new-only bundle -> one new component; other namespace stays distinct');
       }
       const edited = incidents.find(row => row.title === sourceHistory(source, files)[0].title);
       const draft = await api(`/api/app/incidents/${edited.id}/draft`, { lifecycle: 'Resolved', affectedAudience: 'API customers', customerImpact: 'Owner correction after import', whatStillWorks: 'All services', details: 'Owner-reviewed history', nextUpdateAt: null }, { 'If-Match': `-:${edited.updates.length}` }, 'PUT');
@@ -238,6 +278,8 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     assert.deepEqual(await counts(), beforeIncidentFollowers, 'incident follower undo leaves the prior installation intact');
     await importedIncidentLiveFlow(sourceFiles);
     assert.deepEqual(await counts(), beforeIncidentFollowers, 'the separate live import proof leaves the undo installation intact');
+    // RL-6: the full Move in after setup's incident history is that import's catch-up.
+    await historyCatchupFlow({ t, runtime, api, moveIn, repeatImport, original: sourceFiles });
 
   } finally { await runtime.close(); }
 });

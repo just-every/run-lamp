@@ -109,14 +109,17 @@ export function moveInDoor(send) {
   return {
     door, read,
     /** The dry run: the door's plan with Move in's report, and the fetched responses. */
-    async preview({ source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false }) {
+    async preview({ source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false, components }) {
       let fetched;
       if (!files?.length) {
         const response = await send('/api/app/statuspage-import/fetch', { source, publicAccessAcknowledged, pageId, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}), apiKey });
         if (response.status !== 200) return response;
         fetched = response.body.files;
       }
-      const upload = { source, files: fetched ?? files, pageId, publicAccessAcknowledged, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}) };
+      // Setup's "Bring its incident history too" uploads a page's public feeds with
+      // the components kept at setup, and nothing else (bring-history.ts).
+      const upload = components ? { source, files: fetched ?? files, publicUrl, components }
+        : { source, files: fetched ?? files, pageId, publicAccessAcknowledged, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}) };
       for (let attempt; ;) {
         const bytes = Buffer.from(JSON.stringify(attempt ? { ...upload, attempt } : upload));
         const totalChunks = Math.ceil(bytes.length / 65536);
