@@ -1,3 +1,4 @@
+import { atomicPublicationFlow } from './helpers/atomic-publication-flow.mjs';
 import { incidentSubscriptionApiFlow } from './helpers/incident-subscription-api-flow.mjs';
 import { incidentFollowFlow } from './helpers/incident-follow-flow.mjs';
 import { test } from 'node:test';
@@ -23,6 +24,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await statuspageWebhookFlow();
   await smsSubscriberFlow();
   await webhookAtMostOnceFlow();
+  await atomicPublicationFlow();
 });
 
 test('NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts', { timeout: 300_000 }, async t => {
