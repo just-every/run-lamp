@@ -22,13 +22,14 @@ Native Lamp roles remain authoritative. An agent sponsored by a Viewer cannot
 publish an update. Communicators can publish, Responders can prepare incident
 work, and Owners and Admins can manage page settings and the component catalogue.
 A broader Business grant does not add native permissions. Suspending a person removes
-that person's agent access too.
+that person's agent access too. Stopping or detaching Business ends its tokens and held-call execution; it does not end the native owner session.
 
 ## Available jobs
 
 | Tool | Scope | Job | Computed classes |
 | --- | --- | --- | --- |
 | `lamp.configuration.save` | `configuration:write` | Save the public page name, description, colour, timezone, hostname and footer choice | external and live |
+| `lamp.events.list` | `events:read` | Read retained changes visible to the current sponsoring person | standard |
 | `lamp.components.list` | `components:read` | Read the component catalogue, groups and current claims | standard |
 | `lamp.components.create` | `components:write` | Create an Operational internal or public component | standard for internal; external and live for public |
 | `lamp.components.claim` | `components:write` | Set or clear a standing component claim | standard for internal; external and live for public |
@@ -80,8 +81,8 @@ operator and public surface has not been established.
 ## Retrying a call
 
 Every mutating call requires an idempotency key. Reuse that key when retrying the
-same arguments after a lost response. Lamp retains the first outcome rather
-than applying the same mutation again. Changing the arguments with that key
+same arguments after a lost response. Lamp retains the first outcome within the fixed 30-day replay window rather
+than applying the same mutation again. Completed calls keep their original expiry through upgrades; pending calls have no completed-call horizon. At expiry, an old key is a new request under current authority. Changing the arguments with that key
 returns `idempotency_conflict`. Current native authority and policy still apply
 on a completed retry.
 
@@ -108,7 +109,7 @@ changing roles or risk labels in the arguments.
 ## Current proof boundary
 
 The declared capabilities are `tools`, `policy`, `pause`, `audit` and
-`idempotency` and `events`. The built-in `lamp.events.list` exposes retained changes visible to the current sponsoring person. Resources, prompts and subscriptions are undeclared; their operations return `capability_not_declared` and they execute no conformance checks.
+`idempotency` and `events`. The built-in `lamp.events.list` exposes retained changes visible to the current sponsoring person. Component event visibility resolves the current native record, role and `components:read` scope; it does not grant a resource-read capability. Resources, prompts and subscriptions are undeclared; their operations return `capability_not_declared` and they execute no conformance checks.
 
 The disposable conformance journey exercises the declared component and incident
 work and native failed-dispatch retry/dismissal under autonomous and held policies using native owner and provider flows. It also checks a dated native scheduled draft through Cron, public-host intake and incident reads, and silent subscriber imports with previously queued mail.
