@@ -11,6 +11,7 @@ import { impactLabel } from "../../shared/incident-impact";
 import { brandEmail, defaultEmailBranding, type EmailBranding } from "../../shared/email-branding";
 import { type MailMessage, type MailSender } from "../../platform/mail";
 import { hmacSha256 } from "../../platform/security/opaque-tokens";
+import { hasSafeWebhookDestination as isSafeWebhookDestination } from "../subscribers/destination";
 import { SubscriberTokenCodec } from "../subscribers/tokens";
 import { defaultDeliveryEvents, type DeliveryEvents } from "./events";
 import type { DeliveryRepository, DeliveryLogChannel, DeliveryRow, DispatchableDelivery, PendingProviderEvent, SubscriptionMailRow } from "./repository";
@@ -45,17 +46,6 @@ function pendingMailFailover(error:unknown) {
   const deadline=Date.parse(error.mailFailoverAt);
   return Number.isFinite(deadline)&&deadline>Date.now()?deadline:null;
 }
-
-function isSafeWebhookDestination(destination: string) {
-  try {
-    const url = new URL(destination);
-    const host = url.hostname.toLowerCase();
-    return url.protocol === "https:" && !url.username && !url.password && !url.port && host !== "localhost" && !host.endsWith(".localhost")
-      && !/^(?:127\.|0\.|10\.|192\.168\.|169\.254\.|172\.(?:1[6-9]|2\d|3[0-1])\.)/.test(host);
-  } catch { return false; }
-}
-
-
 
 function permanentDeliveryError(message: string) {
   const error = new Error(message) as Error & { retryable?: boolean };

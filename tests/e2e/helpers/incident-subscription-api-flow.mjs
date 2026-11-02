@@ -5,7 +5,8 @@ import { openSubscriberManagementFixture } from "./subscriber-management-fixture
  * only the fixture's outbound email provider is replaced. */
 export async function incidentSubscriptionApiFlow() {
   const address=name=>["synthetic-lamp-"+name,"example.test"].join("@");
-  const fixture=await openSubscriberManagementFixture();
+  const outbound=[];
+  const fixture=await openSubscriberManagementFixture({providerEdge:request=>{outbound.push(request.url);}});
   const {post,api,raw,appOrigin,db,messages}=fixture;
   try {
     const component=await post("/api/app/components",{name:"Incident API",groupId:null,description:"",internal:false,displayOrder:0,note:""});
@@ -28,6 +29,25 @@ export async function incidentSubscriptionApiFlow() {
     assert.equal((await call(compat,unscoped.token,"POST",{subscriber:{email:address("denied")}},true)).status,403);
     assert.equal((await call(path,writer.token)).status,403,"write scope does not grant address listing");
     assert.deepEqual(await state(),before,"scope refusals change no subscriber, audit, usage or outbound mail");
+    const beforeUnsafe=await fixture.databaseState(),mailBeforeUnsafe=messages.length,outboundBeforeUnsafe=outbound.length;
+    for(const destination of ["https://[::1]/synthetic-lamp-1","https://[::ffff:127.0.0.1]/x","https://[::ffff:7f00:1]/x","https://[fc00::]/x"]) {
+      const refused=await call(path,writer.token,"POST",{channel:"webhook",destination,contactEmail:address("unsafe-webhook")});
+      assert.equal(refused.status,400,`${destination}: ${await refused.text()}`);
+    }
+    const publicRefused=await raw(fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination:"https://[::1]/synthetic-lamp-1",contactEmail:address("unsafe-public-webhook")}).toString()});
+    assert.equal(publicRefused.status,400,await publicRefused.text());
+    const afterUnsafe=await fixture.databaseState();
+    // Refused public writes still consume their existing abuse-control allowance.
+    beforeUnsafe.delete("request_rate_windows");afterUnsafe.delete("request_rate_windows");
+    assert.deepEqual(afterUnsafe,beforeUnsafe,"unsafe webhook refusals preserve every business table");
+    assert.equal(messages.length,mailBeforeUnsafe,"unsafe webhook requests send no mail");
+    assert.equal(outbound.length,outboundBeforeUnsafe,"unsafe webhook requests contact no endpoint");
+    const safe=await call(path,writer.token,"POST",{channel:"webhook",destination:"https://receiver.example.test/synthetic-lamp-1",contactEmail:address("public-webhook")});
+    assert.equal(safe.status,201,await safe.clone().text());
+    const safeId=(await safe.json()).subscriberId;
+    assert.ok((await fixture.list()).some(row=>row.id===safeId&&row.state==="pending"));
+    assert.equal(fixture.messagesFor(address("public-webhook")).length,1,"a public HTTPS destination still receives confirmation");
+    assert.equal((await call(`${path}/${safeId}`,writer.token,"DELETE")).status,204);
     const created=await call(path,writer.token,"POST",{channel:"email",email:address("native-incident"),includeReport:false});
     assert.equal(created.status,201,await created.clone().text());
     const native=await created.json();
