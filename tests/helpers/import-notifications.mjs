@@ -50,7 +50,7 @@ export async function notificationInventory(runtime) {
       'component_notification_events', 'component_notification_deliveries', 'component_delivery_attempts',
       'report_notification_deliveries', 'report_delivery_attempts', 'sms_deliveries',
       'channel_posts', 'subscriber_channel_posts', 'integration_deliveries', 'integration_attempts',
-      'statuspage_import_invites', 'subscriber_confirmation_attempts',
+      'statuspage_import_invites', 'subscriber_confirmation_attempts', 'subscriber_tokens', 'mail_send_ledger',
     ]),
     transports: structuredClone({ messages: runtime.messages, receipts: runtime.mailReceipts, webhooks: runtime.webhookRequests, channels: runtime.channelRequests }),
   };
@@ -71,16 +71,18 @@ export async function publicAliasInventory(runtime) {
   const bucket = await runtime.runtime.getR2Bucket('SNAPSHOTS');
   const pointer = await (await bucket.get('snapshots/current.json')).json();
   const bundle = await (await bucket.get(`snapshots/${pointer.version}/retained.json`)).json();
-  const aliases = bundle.artifacts.filter(row => row.key.startsWith('aliases/')).map(row => ({
-    path: decodeURIComponent(row.key.slice('aliases/'.length, -5)),
+  const aliases = bundle.artifacts.filter(row => row.key.startsWith('aliases/') || ['feed.atom', 'history.atom'].includes(row.key)).map(row => ({
+    path: row.key.startsWith('aliases/') ? decodeURIComponent(row.key.slice('aliases/'.length, -5)) : '/' + row.key,
     contentType: row.contentType,
     target: row.contentType === 'application/vnd.lamp.redirect+json' ? JSON.parse(row.body).target : null,
   })).sort((a, b) => a.path.localeCompare(b.path));
   assert.equal(new Set(aliases.map(row => row.path)).size, aliases.length, 'each public alias occurs once');
+  const atom = await (await runtime.raw(runtime.publicOrigin + '/feed.atom')).text();
   for (const alias of aliases) {
     const response = await runtime.raw(runtime.publicOrigin + alias.path, { redirect: 'manual' });
     assert.equal(response.status, alias.target ? 301 : 200, alias.path);
     assert.equal(response.headers.get('location'), alias.target, alias.path);
+    if (alias.path.endsWith('.atom')) assert.equal(await response.text(), atom, 'old feed addresses retain the actual native feed');
     if (alias.target) assert.equal((await runtime.raw(runtime.publicOrigin + alias.target)).status, 200, alias.target);
   }
   return aliases;

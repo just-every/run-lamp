@@ -131,9 +131,13 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     if (!businessCatchup) {
       const identities = plan.entries.filter(entry => entry.source.kind !== 'metadata')
         .map(entry => [entry.source.kind, entry.source.sourceId]);
-      const owned = await db.prepare(`SELECT 1 FROM ik_provenance p JOIN ik_door_plans d ON d.job_id=p.job_id
+      // Compare the sets once instead of rescanning the incoming bundle for
+      // every retained record in a large subscriber import.
+      const owned = await db.prepare(`SELECT 1 FROM (
+        SELECT json_extract(p.record_json,'$.sourceKind'),json_extract(p.record_json,'$.sourceId')
+        FROM ik_provenance p JOIN ik_door_plans d ON d.job_id=p.job_id
         WHERE p.destination=? AND d.namespace=? AND p.reversed=0
-        AND EXISTS(SELECT 1 FROM json_each(?) wanted WHERE json_extract(wanted.value,'$[0]')=json_extract(p.record_json,'$.sourceKind') AND json_extract(wanted.value,'$[1]')=json_extract(p.record_json,'$.sourceId')) LIMIT 1`)
+        INTERSECT SELECT json_extract(value,'$[0]'),json_extract(value,'$[1]') FROM json_each(?)) LIMIT 1`)
         .bind(DESTINATION, plan.namespace, JSON.stringify(identities)).first();
       if (owned) throw new Error("Some of these records were imported already. Undo that import first, or import only new saved responses.");
     }
