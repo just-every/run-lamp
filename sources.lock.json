@@ -7200,7 +7200,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "d26eb04873f7fe744405dadbe578fd3a51ca9d9595e08fd758376716b7b19787",
+      "sha256": "34fc5c2fb72daf6ea428257b43f8792ca1d6b9d8f20adb719b9881567acbd708",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
@@ -7208,7 +7208,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "fbe67bd8df43e6748d14af0f830561ae8958aa89e5ab07bd5ab5e7e7e740224b",
+      "sha256": "c967d1da9b712cf76435b4c45cadee7b04f28111fe5f636993df0922bc880448",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
