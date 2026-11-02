@@ -2,7 +2,7 @@ import { planSubscriberCapacity } from "./limits";
 import { createOpaqueToken, hashOpaqueToken } from "../../platform/security/opaque-tokens";
 import { createUlid } from "../../shared/ids";
 import { parseSubscriberCsv, subscriberCsvCell } from "./csv";
-import { SubscriberIntakeError, type IntakeApply, type IntakeCounts, type IntakePreview, type SubscriberAddInput } from "./intake-schema";
+import { SubscriberIntakeError, type IntakeApply, type IntakeCounts, type IntakePreview, type IntakeToken, type SubscriberAddInput } from "./intake-schema";
 import type { SubscriberRepository } from "./repository";
 import type { SubscriberPreferences } from "./preferences";
 import type { SubscriberView } from "./service";
@@ -18,7 +18,7 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
   checkLimits:()=>Promise<void>;
   view:(id:string)=>Promise<SubscriberView>;
   ensureConfigured:()=>Promise<void>;
-  sendConfirmation:(id:string,origin:string,actor:string|null,ownerOnly:boolean)=>Promise<boolean>;
+  sendConfirmation:(id:string,origin:string,actor:string|null,ownerOnly:boolean,tokenId?:string|null)=>Promise<boolean>;
 }) {
   async function plan(csv:string) {
     const parsed=parseSubscriberCsv(csv);
@@ -70,9 +70,11 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
       }
       return {sent,remaining:await repository.intake.remaining(batchId)};
     },
-    async add(input:SubscriberAddInput,operatorId:string,origin:string):Promise<{subscriber:SubscriberView;created:boolean;confirmationSent:boolean}> {
+    /** A management token acts as its issuer; its fence and identity travel with the write. */
+    async add(input:SubscriberAddInput,operatorId:string,origin:string,token?:IntakeToken):Promise<{subscriber:SubscriberView;created:boolean;confirmationSent:boolean}> {
       if(!await repository.intake.operatorAllowed(operatorId))throw new SubscriberIntakeError("The operator no longer has access.",403);
       if(input.channel==="sms") {
+        if(token)throw new SubscriberIntakeError("Management tokens add email and webhook subscribers.");
         if(!hooks.sms)throw new SubscriberIntakeError("SMS is not configured.",503);
         const result=await hooks.sms.subscribe({phone:input.phone,componentIds:input.componentIds,preferences:input.eventKinds===undefined&&input.minimumImpact===undefined?undefined:{eventKinds:input.eventKinds??["incidents","maintenance"],minimumImpact:input.minimumImpact??null}},origin,operatorId);
         return {...result,subscriber:await hooks.view(result.subscriberId)};
@@ -85,10 +87,13 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
       if(existing)return {subscriber:await hooks.view(existing.id),created:false,confirmationSent:false};
       await hooks.ensureConfigured();
       const id=createUlid(),now=new Date().toISOString();
-      const inserted=await repository.intake.insert([{row:1,id,channel:input.channel,destination,contactEmail:input.channel==="webhook"?input.contactEmail:null,componentIds:input.componentIds,eventKinds:input.eventKinds,minimumImpact:input.minimumImpact,...(input.channel==="webhook"?{webhookFormat:input.webhookFormat}:{}),tokenHash:await hashOpaqueToken(createOpaqueToken())}],operatorId,"operator",null,{created:1,skipped:0,refused:0},now);
+      const row={row:1,id,channel:input.channel,destination,contactEmail:input.channel==="webhook"?input.contactEmail:null,componentIds:input.componentIds,eventKinds:input.eventKinds,minimumImpact:input.minimumImpact,...(input.channel==="webhook"?{webhookFormat:input.webhookFormat}:{}),tokenHash:await hashOpaqueToken(createOpaqueToken())};
+      let inserted:string[];
+      try{inserted=await repository.intake.insert([row],operatorId,"operator",null,{created:1,skipped:0,refused:0},now,token);}
+      catch(cause){if(token&&cause instanceof Error&&cause.message.includes("malformed JSON")&&!await repository.incidents.assertAuthority(token.authority))throw new SubscriberIntakeError("A valid management token is required.",401);throw cause;}
       if(!inserted.length){const winner=await repository.findSubscriberByDestination(destination);if(!winner)throw new SubscriberIntakeError("The subscriber changed. Try again.",409);return {subscriber:await hooks.view(winner.id),created:false,confirmationSent:false};}
       await hooks.checkLimits();
-      const confirmationSent=await hooks.sendConfirmation(id,origin,operatorId,false);
+      const confirmationSent=await hooks.sendConfirmation(id,origin,operatorId,false,token?.id??null);
       return {subscriber:await hooks.view(id),created:true,confirmationSent};
     },
     async exportCsv():Promise<string> {

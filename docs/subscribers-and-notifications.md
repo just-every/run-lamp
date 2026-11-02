@@ -74,6 +74,21 @@ confirms. The list identifies the operator who added it. Each notification is si
 contains the incident, its published updates and the affected component state
 changes. The delivery log records outcomes; it does not track opens.
 
+Management credentials with the explicit `subscribers:write` scope add the same
+subscribers through `POST /api/v1/subscribers`, with **Add subscriber**'s body:
+`{"channel":"email","email":"…","componentIds":["…"]}` or
+`{"channel":"webhook","destination":"https://…","contactEmail":"…","componentIds":["…"]}`.
+The credential acts as its issuer: it sends the same single confirmation, the
+subscriber stays pending until the recipient confirms, the list names the
+issuer as the adder, and the audit log attributes the addition and its
+invitation to the issuer with the credential's ID as the reason. The response
+returns the stored record with `201`. A destination that already has a
+subscription is left unchanged and returns `200` with `created: false` and only
+its subscriber ID; its details stay with subscriber readers.
+Internal or unknown components, webhook URLs that are not public HTTPS, missing
+scopes and revoked credentials are refused without a change. Phone numbers use
+**Add subscriber** in the app.
+
 Webhook endpoints choose **Lamp** or **Statuspage** as their body format. Lamp
 is the default. Both formats use the same signature headers and delivery rules.
 Statuspage bodies share the public API's status values and stable IDs, contain
