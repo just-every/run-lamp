@@ -3131,6 +3131,9 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 INTAKE-007 retains current-main's partial judgment and recorded gap. The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These additional assertions do not change the newer clause judgment.
 
+
+INTAKE-009 retains current main's partial Status, Evidence and Gap. The replay of candidate `e69216352d75444b1387c829807a0ee5b88b89ef` retains `tests/e2e/helpers/pagerduty-flow.mjs` (pagerDutyFlow), loaded by the existing monitor journey in `tests/e2e/channels-and-presets.test.mjs` and push Verify's delivery shard. Its additional assertions cover every supplied compound service matcher field, all matching components, exact replay identities and unchanged complete intake inventories, independently loaded private and published recovery receipts with source, incident, state and provider time, complete retained public artifact inventories and served response bytes around private triggers and responder events, private permalink refusal, and source erasure preserving every operator publication and drafted report field. `tests/e2e/helpers/preset-recovery-flow.mjs` exports the shared retainedPublicSnapshot reader while retaining its existing monitor recovery journey. These additional assertions are retained for clause judgment; the candidate's proposed promotion to done does not replace main's newer judgment. R-60 remains not run.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 11 | 96 | 0 | 107 |
