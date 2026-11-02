@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { test } from 'node:test';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+import { snapshotRecoveryFlow } from './helpers/snapshot-recovery-flow.mjs';
 const require = createRequire(import.meta.url);
 const wranglerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = wranglerRequire('miniflare');
@@ -35,7 +36,10 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     await j.close(); j = await openStatusJourney({ providerEdge: edge, extraBindings: { LAMP_HEARTBEAT_URL: 'https://heartbeat.example.test/ping', LAMP_HEARTBEAT_INTERVAL_MINUTES: '1' } });
     const component = await j.component('Customer API during dependency outage');
     const incident = await j.incident('Known API degradation', [component]);
-    await j.save(incident.id); await j.publish(incident.id); await j.visible('/', incident.title);
+    await j.save(incident.id, { details: 'Original API outage publication before storage recovery.' });
+    const original = (await j.publish(incident.id)).update;
+    await j.visible('/', original.details);
+    await snapshotRecoveryFlow(j, incident, component, original);
     await j.tick(Date.now()); assert.ok(pings > 0 && receipt);
     await j.raw('/test/effects', { method: 'PUT', body: JSON.stringify({ paused: true }) });
     const beforePause = pings; await j.tick(Date.now()); assert.equal(pings, beforePause, 'a transferring host stops external effects');
@@ -131,13 +135,20 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const afterConditional = await blobReads();
     assert.deepEqual(afterConditional.getBytes, afterCold.getBytes, 'conditional warm reads also reuse cached artifact bytes');
     assert.equal(afterConditional.getText['snapshots/current.json'] - beforeConditional.getText['snapshots/current.json'], paths.length, 'conditional responses validate the pointer before accepting old bytes');
-    const failed = await rebuild({ generation: 2, replicaFailure: 'always' });
+    const recoverySource = structuredClone(source);
+    recoverySource.incidents[0].title = 'Distinct recovered API publication';
+    recoverySource.updates[0] = { ...source.updates[0], id: 'recovered-update', details: 'New connection repair is being monitored.' };
+    const failed = await rebuild({ source: recoverySource, generation: 2, replicaFailure: 'always' });
     assert.ok(failed.failure); assert.equal(failed.completed, false);
+    assert.equal(failed.pointer.version, generation.pointer.version);
+    assert.equal(failed.replica.version, generation.pointer.version);
     for (const path of paths) {
       const response = await read(path + '?storage=down'); assert.equal(response.status, 200, path);
       assert.equal(response.headers.get('x-lamp-snapshot-state'), 'stale');
       assert.ok(response.headers.get('x-lamp-snapshot-generated-at'));
       const text = await response.text();
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), generation.pointer.version);
+      for (const attemptedContent of [recoverySource.incidents[0].title, recoverySource.updates[0].details]) assert.ok(!text.includes(attemptedContent), `${path} excludes the failed generation`);
       assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
       // Badge protocols retain their consumer schema; every surface carries
       // the stale/generated-at HTTP headers checked above. Human and status
@@ -154,7 +165,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       assert.deepEqual(Buffer.from(await response.arrayBuffer()), bytes, 'the cold retained snapshot preserves uploaded theme bytes');
     }
     assert.equal((await read('/health?storage=down')).status, 503);
-    const restored = await rebuild({ generation: 3 }); assert.equal(restored.failure, null); assert.equal(restored.completed, true);
+    const restored = await rebuild({ source: recoverySource, generation: 3 }); assert.equal(restored.failure, null); assert.equal(restored.completed, true);
     assert.notEqual(restored.pointer.version, generation.pointer.version);
     for (const [index, path] of paths.entries()) {
       const response = await read(path, { headers: { 'If-None-Match': validators.get(path) } });
