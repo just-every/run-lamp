@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { intakeByteFlow } from './intake-byte-flow.mjs';
+import { intakeByteFlow, assertAuthenticationRefusal } from './intake-byte-flow.mjs';
 import { createHmac } from 'node:crypto';
 
 // run-uptime main: notification-content.ts, notification-context.ts and
@@ -7,14 +7,15 @@ import { createHmac } from 'node:crypto';
 const secret = 'synthetic-uptime-signing-secret-for-integration';
 function envelope(monitorId, key, recovered = false) {
   const at = Date.now() - 90000;
-  return { schemaVersion: 2, id: `${key}:${recovered ? 'recovery' : 'trigger'}`, kind: recovered ? 'recovery' : 'trigger', eventType: recovered ? 'uptime.incident.recovered' : 'uptime.incident.firing', incidentKey: key, state: recovered ? 'recovered' : 'firing', title: `${recovered ? 'Recovered' : 'Down'}: Checkout API`, monitorId, monitorRevision: 1, monitorName: 'Checkout API', url: 'https://shop.example.test/health', slotId: key, observedAt: recovered ? Date.now() : at, visibility: 'private', evidenceRef: `/api/monitors/${monitorId}/history`, explanation: 'Confirmed scheduled failure.', probes: [{ name: 'us-east', outcome: recovered ? 'pass' : 'target_failure', reason: recovered ? 'All checks passed' : 'Expected HTTP 200; received 503' }, { name: 'eu-west', outcome: recovered ? 'pass' : 'target_failure', reason: recovered ? 'All checks passed' : 'Expected HTTP 200; received 503' }], consoleUrl: 'https://uptime.example.test', webhookContext: { monitorType: 'http', httpStatusCode: recovered ? 200 : 503, responseTimeMs: 120, ...(recovered ? {} : { failedAssertion: 'status' }) }, incidentContext: { version: 2, confirmedStartedAt: at, confirmedRecoveredAt: recovered ? Date.now() : null, downtimeSeconds: recovered ? 90 : null, originalReason: 'Expected HTTP 200; received 503', failedLocations: [{ probe: 'us-east', name: 'US East', reason: 'HTTP 503' }, { probe: 'eu-west', name: 'EU West', reason: 'HTTP 503' }], timeZone: 'UTC' } };
+  const observedAt = at - 180000;
+  return { schemaVersion: 2, id: `${key}:${recovered ? 'recovery' : 'trigger'}`, kind: recovered ? 'recovery' : 'trigger', eventType: recovered ? 'uptime.incident.recovered' : 'uptime.incident.firing', incidentKey: key, state: recovered ? 'recovered' : 'firing', title: `${recovered ? 'Recovered' : 'Down'}: Checkout API`, monitorId, monitorRevision: 1, monitorName: 'Checkout API', url: 'https://shop.example.test/health', slotId: key, observedAt: recovered ? Date.now() : observedAt, visibility: 'private', evidenceRef: `/api/monitors/${monitorId}/history`, explanation: 'Confirmed scheduled failure.', probes: [{ name: 'us-east', outcome: recovered ? 'pass' : 'target_failure', reason: recovered ? 'All checks passed' : 'Expected HTTP 200; received 503' }, { name: 'eu-west', outcome: recovered ? 'pass' : 'target_failure', reason: recovered ? 'All checks passed' : 'Expected HTTP 200; received 503' }], consoleUrl: 'https://uptime.example.test', webhookContext: { monitorType: 'http', httpStatusCode: recovered ? 200 : 503, responseTimeMs: 120, ...(recovered ? {} : { failedAssertion: 'status' }) }, incidentContext: { version: 2, confirmedStartedAt: at, confirmedRecoveredAt: recovered ? Date.now() : null, downtimeSeconds: recovered ? 90 : null, originalReason: 'Expected HTTP 200; received 503', failedLocations: [{ probe: 'us-east', name: 'US East', reason: 'HTTP 503' }, { probe: 'eu-west', name: 'EU West', reason: 'HTTP 503' }], timeZone: 'UTC' } };
 }
 async function send(source, payload, { timestamp = new Date().toISOString(), signingSecret = secret, body = JSON.stringify(payload), signature } = {}) {
   const response = await fetch(source.endpointUrl, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Lamp-Timestamp': timestamp, 'X-Lamp-Signature': signature ?? createHmac('sha256', signingSecret).update(`${timestamp}.${body}`).digest('base64url') }, body });
   return { status: response.status, body: await response.json() };
 }
 
-export async function uptimePresetFlow({ api, post, component, publicOrigin }) {
+export async function uptimePresetFlow({ api, post, component, publicOrigin, sql, snapshot, t }) {
   const targets = [await component('Checkout API (Uptime)'), await component('Payments worker (Uptime)')];
   const mappings = targets.map((row, index) => ({ monitorId: index ? 'payments' : 'checkout', componentId: row.id }));
   const input = { name: 'Production Uptime evidence', preset: 'uptime', credentialKind: 'hmac-sha256', signingSecret: secret, monitorMappings: mappings };
@@ -26,11 +27,13 @@ export async function uptimePresetFlow({ api, post, component, publicOrigin }) {
   assert.equal(source.credentialKind, 'hmac-sha256');
   assert.deepEqual(source.monitorMappings, mappings);
   assert.ok(!(await api('/api/app/intake/sources')).text.includes(secret));
-  await intakeByteFlow({ api, post, publicOrigin, source, payload: envelope('checkout', 'incident:exact-bytes'), secret });
+  await intakeByteFlow({ api, post, publicOrigin, source, payload: envelope('checkout', 'incident:exact-bytes'), secret, sql, snapshot, t });
   const down = envelope('checkout', 'incident:checkout-first');
-  assert.equal((await send(source, down, { timestamp: new Date(Date.now() - 6 * 60000).toISOString() })).status, 401, 'INTAKE-008 replay outside five minutes');
-  assert.equal((await send(source, down, { signingSecret: 'wrong' })).status, 401);
-  assert.equal((await send(source, down, { signature: createHmac('sha256', secret).update(JSON.stringify(down)).digest('base64url') })).status, 401, 'signature covers timestamp and exact body');
+  for (const [label, options] of [
+    ['signed replay outside five minutes', { timestamp: new Date(Date.now() - 6 * 60000).toISOString() }],
+    ['signed wrong key', { signingSecret: 'synthetic-lamp-wrong' }],
+    ['signature without timestamp prefix', { signature: createHmac('sha256', secret).update(JSON.stringify(down)).digest('base64url') }],
+  ]) await assertAuthenticationRefusal({ request: () => send(source, down, options), label, sql, snapshot, t });
   assert.equal((await send(source, { ...down, kind: 'recovery' })).status, 400, 'unconfirmed or inconsistent transitions refused');
   assert.equal((await send(source, envelope('unmapped', 'incident:unmapped'))).status, 400);
   const firing = await send(source, down);
@@ -41,7 +44,12 @@ export async function uptimePresetFlow({ api, post, component, publicOrigin }) {
   assert.equal(incident.updates.length, 0);
   const brief = (await api(`/api/app/incidents/${incident.id}/brief`)).body.brief;
   assert.deepEqual(brief.whatWeKnow.alerts[0].payload, down);
-  for (const text of ['US East', 'EU West', 'status', new Date(down.incidentContext.confirmedStartedAt).toISOString()]) assert.ok(brief.whatWeKnow.alerts[0].evidenceSummary.includes(text));
+  const confirmedTime = new Date(down.incidentContext.confirmedStartedAt).toISOString();
+  const earlierObservation = new Date(down.observedAt).toISOString();
+  assert.ok(down.observedAt < down.incidentContext.confirmedStartedAt, 'observation predates confirmation in this fixture');
+  assert.equal(brief.whatWeKnow.alerts[0].evidenceSummary, `Vantages: US East (us-east): HTTP 503; EU West (eu-west): HTTP 503. Error category: status. Confirmed failure time: ${confirmedTime}.`);
+  assert.ok(!brief.whatWeKnow.alerts[0].evidenceSummary.includes(earlierObservation), 'the earlier observation is never labelled as a confirmed failure');
+  t.diagnostic(`PROBE INTAKE-008 5: native brief GET with earlier observation -> exact Confirmed failure time: ${confirmedTime}; both vantages and status category retained`);
   const second = await send(source, envelope('payments', 'incident:checkout-first'));
   assert.notEqual(second.body.incidentId, incident.id, 'monitor identity isolates equal incident keys');
   assert.deepEqual((await api(`/api/app/incidents/${second.body.incidentId}`)).body.incident.components.map(row => row.componentId), [targets[1].id]);
@@ -59,6 +67,8 @@ export async function uptimePresetFlow({ api, post, component, publicOrigin }) {
   assert.equal(oldResult.status, 202);
   const oldBrief = (await api(`/api/app/incidents/${oldResult.body.incidentId}/brief`)).body.brief;
   assert.ok(oldBrief.whatWeKnow.alerts[0].evidenceSummary.includes('Confirmed failure time: not supplied'));
+  assert.equal(oldBrief.whatWeKnow.alerts[0].evidenceSummary, 'Vantages: us-east: target_failure — Expected HTTP 200; received 503; eu-west: target_failure — Expected HTTP 200; received 503. Error category: target_failure, target_failure. Confirmed failure time: not supplied.');
+  assert.ok(!oldBrief.whatWeKnow.alerts[0].evidenceSummary.includes(new Date(historical.observedAt).toISOString()), 'missing confirmation does not borrow observedAt');
   const publishedId = second.body.incidentId;
   const draft = { lifecycle: 'Investigating', affectedAudience: 'Customers checking out.', customerImpact: 'Some payments are failing.', whatStillWorks: 'Browsing works.', details: '', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() };
   assert.equal((await api(`/api/app/incidents/${publishedId}/draft`, { method: 'PUT', body: JSON.stringify(draft) })).status, 200);

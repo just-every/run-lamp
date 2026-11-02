@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 // Inspect the retained inventory, then read every artifact through its public URL.
 // All incident and intake mutations still use authenticated native HTTP doors.
-async function publicSnapshot({ runtime, publicOrigin, sql, privateIncidents }) {
+export async function publicSnapshot({ runtime, publicOrigin, sql, privateIncidents = [] }) {
   const deadline = Date.now() + 30_000;
   while (true) {
     const root = await fetch(`${publicOrigin}/`);
@@ -12,7 +12,7 @@ async function publicSnapshot({ runtime, publicOrigin, sql, privateIncidents }) 
     const [work] = sql('SELECT requested_revision, completed_revision FROM public_snapshot_work');
     const building = sql("SELECT id FROM snapshot_builds WHERE status = 'building'");
     if (work && work.requested_revision === work.completed_revision && building.length === 0) break;
-    assert.ok(Date.now() < deadline, 'public snapshot publication settles before recovery proof');
+    assert.ok(Date.now() < deadline, 'public snapshot publication settles before intake proof');
     await new Promise(resolve => setTimeout(resolve, 250));
   }
   const configPath = runtime.env.LAMP_WRANGLER_CONFIG;
