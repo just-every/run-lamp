@@ -3609,7 +3609,7 @@ Core · push-further · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007
 5. Drafting never replaces an existing operator report, and a saved draft remains private until publication.
 6. Published report text is immutable and appears in the public incident record.
 
-**Evidence.** `src/core/features/reports/draft.ts`, `src/core/features/reports/service.ts`, `src/core/features/reports/ui/report-editor.tsx`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-browser.test.mjs`
+**Evidence.** `src/core/features/reports/draft.ts`, `src/core/features/reports/service.ts`, `src/core/features/reports/ui/report-editor.tsx`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-browser.test.mjs`; main’s partial status and recorded gap are retained.
 **Gap.** Old cited evidence asserts The timeline represents every available alert reference; The timeline represents every available published-update reference; The timeline line count equals the total available source count; Every timeline line cites a real source record. Unasserted: Report explicitly labels recorded rather than measured downtime; An empty cause with completed remediation refuses publication; An untouched cause prompt with completed remediation refuses publication; An untouched remediation prompt with completed cause refuses publication; Held policy decides report publication class; The complete persisted report state is unchanged after the refused edit.
 
 #### AGENT-006 — Unreported incidents surface early
