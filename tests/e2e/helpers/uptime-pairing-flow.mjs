@@ -84,6 +84,7 @@ export async function uptimePairingFlow({ api, component, origin, cookie, post, 
         ['paired missing key', address.slice(0, address.lastIndexOf('/')), {}],
         ['paired wrong key', address.replace(/[^/]+$/, 'not-the-key'), {}],
         ['paired missing timestamp', address, { stamp: false }],
+        ['paired future timestamp', address, { timestamp: new Date(Date.now() + 6 * 60000).toISOString() }],
         ['paired stale timestamp', address, { timestamp: new Date(Date.now() - 6 * 60000).toISOString() }],
       ]) await assertAuthenticationRefusal({ request: () => send(endpoint, uptimeEvent(monitorId, 'Storefront', key), options), label, sql, snapshot, t, beforePublic: beforeAuthentication });
       await open();

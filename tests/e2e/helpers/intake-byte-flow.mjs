@@ -38,11 +38,13 @@ export async function intakeByteFlow({ api, post, publicOrigin, source, payload,
       page: await (await fetch(`${publicOrigin}/api/public/status`)).text(),
     };
     const beforePublic = await snapshot();
+    const futureTimestamp = new Date(Date.now() + 360000).toISOString();
     const bom = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), raw]);
     const replacement = Buffer.from(JSON.stringify({ ...payload, title: 'byte-�-evidence' }));
     const invalid = Buffer.concat([replacement.subarray(0, replacement.indexOf(Buffer.from('�'))), Buffer.from([0x80]), replacement.subarray(replacement.indexOf(Buffer.from('�')) + 3)]);
     for (const [label, body, signature, at] of [
       ['missing timestamp', raw, sign(raw), ''],
+      ['future timestamp', raw, sign(raw, futureTimestamp), futureTimestamp],
       ['missing signature', raw, '', timestamp],
       ['wrong signing key', raw, createHmac('sha256', 'synthetic-lamp-wrong').update(`${timestamp}.`).update(raw).digest('base64url'), timestamp],
       ['body-only signature', raw, createHmac('sha256', secret).update(raw).digest('base64url'), timestamp],
