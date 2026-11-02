@@ -8,12 +8,12 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 26 | 163 | 49 | 238 |
+| Core | 42 | 147 | 49 | 238 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 26 | 163 | 54 | 243 |
+| Full target | 42 | 147 | 54 | 243 |
 
-Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
+Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Carried-done recheck on 2 November 2026 by ct judge ct-judge-lamp-restore-20261102-0900, from the code and tests at commit `71bbf96d9499f3c305b6d459e96b127fb9eb8a8a` with push Verify 41392885924: PAGE-004, PAGE-011, COMP-004, UPTIME-002, UPTIME-003, INCIDENT-002, INCIDENT-005, INCIDENT-006, INCIDENT-009, UPDATE-004, MAINT-002, SUB-003, SUB-014, INTAKE-004, INTAKE-007 and HIST-003 are restored to done; COMP-005, INCIDENT-001 and SUB-015 are rechecked and stay partial; other clause judgments are retained. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
 
 ## Core
 
@@ -78,7 +78,7 @@ Core · published · **done** · Cites BASE-PUBLIC-001
 
 #### PAGE-004 — Overall status
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** The overall state is a single label at the top of the page, computed by the owner-replaceable rollup policy.
 
@@ -87,8 +87,8 @@ Core · published · **partial**
 2. The result appears as one labeled state at the top of the page.
 3. With all visible components Operational and no unresolved incident, the label is operational.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
-**Gap.** The cited evidence asserts the other audited outcomes; unasserted: The supplied rollup selects the most severe visible component state.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story, lines 18-282): with an internal component holding a Major outage standing claim, operator standing claims set every adjacent pair of the COMP-001 order and the all-Operational case in both component orders (119-136); the public status JSON reports the most severe visible state with no incident (137-139), and the public page renders exactly one overall-status label, inside the top status section it labels, equal to that state and Operational when every visible component is Operational (125, 145-148).
+**Gap.** None.
 
 #### PAGE-005 — Snapshot read path
 
@@ -175,7 +175,7 @@ Core · published · **partial**
 
 #### PAGE-011 — Embeddable widget
 
-Core · published · **partial** · Cites BASE-PUBLIC-002
+Core · published · **done** · Cites BASE-PUBLIC-002
 
 **Requirement.** An embeddable banner shows overall status and an unresolved incident using the same public snapshot.
 
@@ -183,8 +183,8 @@ Core · published · **partial** · Cites BASE-PUBLIC-002
 1. Installing one script tag renders the overall state and any unresolved incident from PAGE-005 content.
 2. The widget is at most 10 KiB gzipped and loads only from the installation’s own origin.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
-**Gap.** Old cited evidence asserts The widget is at most ten KiB gzipped; The nonempty widget source contains neither XMLHttpRequest nor importScripts. Unasserted: The banner content asserts both overall state and unresolved incident; The widget performs no other foreign-origin or alternate network load; Every widget load is observed to stay on the installation origin.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story, lines 18-282): while the published incident is unresolved (213), the populated widget script is at most 10 KiB gzipped (214-215), one injected script tag installs one banner showing the aggregate Major outage with the incident reference, title and all four submitted wording fields (216-226), and an unlisted origin renders nothing (227-228); `tests/e2e/helpers/widget-privacy-flow.mjs` (widgetPrivacyFlow, lines 5-27), loaded at line 204 of `tests/baseline/e2e-baseline/core-baseline.test.mjs` (An owner publishes private installation data safely, then erases identities and signs out) against the built Worker: the script load and its 30-second poll stay on the status origin as cookieless GET requests with no query or body (11-23), and an unlisted origin renders no banner (24-25).
+**Gap.** None.
 
 #### PAGE-012 — Branding
 
@@ -272,7 +272,7 @@ Core · published · **partial**
 
 #### COMP-004 — State note
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** A bounded plain-text note accompanies a component’s public state.
 
@@ -280,8 +280,8 @@ Core · published · **partial**
 1. A new component note is empty by default.
 2. A note of up to 250 characters appears beside that component’s state exactly as entered; a longer note is refused.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
-**Gap.** The cited evidence asserts the other audited outcomes; unasserted: A new component’s omitted note defaults to empty.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story, lines 18-282): a component created without a note returns an empty note on creation and in an independent read (31-35); 251-character create and edit and an edit omitting the note are refused 400 with the catalogue unchanged (36-41); a 250-character note containing markup characters is saved, read back exactly and shown escaped as plain text in that component's public block beside its state (42-47); an explicit empty note clears it (48-50).
+**Gap.** None.
 
 #### COMP-005 — Internal components
 
@@ -293,8 +293,8 @@ Core · published · **partial**
 1. An internal component is absent from the page, Atom feed, widget and every uptime figure.
 2. It never contributes to overall status.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
-**Gap.** The cited evidence asserts the other audited outcomes; unasserted: Internal components are absent from every uptime figure; An internal severe claim leaves the public overall state unchanged.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story, lines 18-282): an internal component with a note is absent from the public root page (52, 66) and, while it holds a Major outage standing claim, from the public component JSON and the page in every rollup case, with the public status JSON and overall label at the visible rollup and Operational when every visible component is Operational (119-149); `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 84-89): attached to a published incident it stays out of the root page, permalink, Atom feed and widget.
+**Gap.** No journey requests an internal component's component-uptime badge, component badge or component feeds, or reads the uptime template's overall uptime figure while an internal component carries downtime, so absence from every uptime figure is unasserted.
 
 #### COMP-006 — Component state is claimed, not set
 
@@ -340,19 +340,19 @@ Core · published · **done**
 
 #### UPTIME-002 — Downtime weights
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** The owner-replaceable downtime policy weights affected minutes consistently with the displayed incident history.
 
 **Acceptance.**
 1. The supplied weights count Major outage and Partially unavailable as one downtime minute per minute, Degraded performance as one half, and Under maintenance as zero.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`; `tests/e2e/helpers/public-capacity-journey.mjs`; existing Major outage boundary and one-minute rounding controls remain active.
-**Gap.** The cited evidence asserts the other audited outcomes; unasserted: The supplied policy’s Major outage weight is asserted; The supplied policy’s Partially unavailable weight is asserted.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story, line 101), loading `tests/e2e/helpers/public-capacity-journey.mjs` (publicCapacityJourney, lines 8-139): a closed 30-minute correction isolates each state (40-58), and the public component JSON daily record and the availability report charge Major outage 30, Partially unavailable 30, Degraded performance 15 and Under maintenance 0 minutes with no downtime outside the interval (83-90).
+**Gap.** None.
 
 #### UPTIME-003 — Short history
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Uptime begins only where state evidence exists and labels short coverage honestly. Under RL-2, short coverage does not invent a whole day.
 
@@ -361,8 +361,8 @@ Core · published · **partial**
 2. Coverage under one day is labeled in elapsed hours and minutes, with less than 1 minute below a minute; from one day it uses whole days.
 3. A component with no data says No data.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`. First-day coverage reads in hours and minutes (`tests/e2e/public-contract.test.mjs`, line 405); whole-day labels apply from one day (`tests/e2e/public-contract.test.mjs`, line 452). Changed in 1.11.0 by the owner's S4 exception (DIVERGENCE.md "Public page clarity"): first-day coverage reads in hours and minutes, and a component with no data says No data; RELEASE.json records the change.; `tests/e2e/helpers/short-history-flow.mjs`
-**Gap.** Old cited evidence asserts The public percentage denominator starts at the fixture’s first history record rather than inventing ninety days; Sub-day coverage is labeled in hours; Longer coverage is labeled in whole days; A zero-elapsed fixture displays No data. Unasserted: Minute-based short-coverage labels are asserted; Less-than-one-minute coverage labels are asserted.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (UPTIME-003 — newly observed services report only their recorded coverage, line 15), loading `tests/e2e/helpers/short-history-flow.mjs` (shortHistoryFlow, lines 9-111): the public component JSON and a script-disabled browser compute uptime from the first record, 50.00% over 2 minutes and 98.50% over 1 hour 7 minutes beside a two-day component (65-92); labels read less than 1 minute, 1 minute, 2 minutes, 1 hour 7 minutes and 23 hours 59 minutes under a day, then 1 whole day and 2 whole days (67-109); zero elapsed shows No data with no daily observation (51, 65, 91). Changed in 1.11.0 by the owner's S4 exception (DIVERGENCE.md "Public page clarity"); RELEASE.json records the change.
+**Gap.** None.
 
 #### UPTIME-004 — Corrections
 
@@ -419,12 +419,12 @@ Core · published · **partial**
 2. A new incident starts in Investigating.
 3. Only publishing an update changes the incident to the lifecycle that update selects.
 
-**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Asserted: Investigating; Identified; Resolved; starts Investigating; published lifecycle. Unasserted in old cited evidence: Monitoring; exactly one lifecycle; no unpublished lifecycle change.
+**Evidence.** `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 30-301): a new incident is Investigating (54); publishing Resolved and Investigating updates sets those lifecycles (145-148, 168-171); a saved, reviewed and scheduled Resolved draft leaves the incident Investigating until its scheduled publication, then Resolved (194-205); `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story, line 213) reads Identified after publication; `tests/e2e/helpers/pagerduty-flow.mjs` (pagerDutyFlow, line 247), loaded at line 439 of `tests/e2e/channels-and-presets.test.mjs`, reads Monitoring after published Monitoring updates.
+**Gap.** No journey tries to save an update with two lifecycles or with a lifecycle outside Investigating, Identified, Monitoring and Resolved and checks that it is refused with the incident and draft unchanged, so exactly one state is unasserted.
 
 #### INCIDENT-002 — Impact
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** An incident retains the greatest component impact it has reached.
 
@@ -433,8 +433,8 @@ Core · published · **partial**
 2. Resolution retains that peak impact.
 3. Without attached components the incident has no impact and cannot be published; UPDATE-001 governs the required attachment.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Asserted: peak impact; resolved peak impact. Unasserted in old cited evidence: no-component impact absent; no-component publication refused.
+**Evidence.** `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 30-301): the incident keeps Major outage as its impact after its attached components drop to Degraded performance and after a cleared override (100-112), and resolution retains it with effective impact critical (145-150); a never-published incident whose only component is detached has no impact (277-283), and publishing its reviewed draft is refused 400 with the draft, persisted publications and four public surfaces unchanged (284-299).
+**Gap.** None.
 
 #### INCIDENT-003 — Reference
 
@@ -468,7 +468,7 @@ Core · published · **partial**
 
 #### INCIDENT-005 — Reopening
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** An erroneous resolution can be corrected without losing its history.
 
@@ -476,12 +476,12 @@ Core · published · **partial**
 1. Publishing Investigating reopens a resolved incident.
 2. Resolution and reopening both remain on its public timeline.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Asserted: reopened lifecycle; resolution retained; reopening retained. Unasserted in old cited evidence: both public.
+**Evidence.** `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 30-301): publishing Investigating reopens the Resolved incident (168-171), and the public permalink keeps the resolution and the reopening as separate update articles, each with its lifecycle header and exact publication instant (172-193).
+**Gap.** None.
 
 #### INCIDENT-006 — Overdue update
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Operators distinguish a missed commitment from public incident wording.
 
@@ -489,8 +489,8 @@ Core · published · **partial**
 1. When the latest published next-update time passes without newer publication, the operator app marks the incident overdue.
 2. The public page retains the committed time and contains no overdue label.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Asserted: operator overdue; no public overdue label. Unasserted in old cited evidence: public committed time.
+**Evidence.** `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 30-301): after a published update whose next-update commitment has passed with no newer publication, the operator incident read marks the incident overdue (117-129); the public root page and permalink keep the labeled Next update by field with its exact committed instant and configured-zone text and carry no overdue label (130-142).
+**Gap.** None.
 
 #### INCIDENT-007 — Deletion
 
@@ -521,7 +521,7 @@ Core · published · **partial** · Cites BASE-ACCESS-002, BASE-ROLE-001
 
 #### INCIDENT-009 — Retroactive incidents
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Operators record past incidents without replaying subscriber notifications.
 
@@ -531,8 +531,8 @@ Core · published · **partial**
 3. Component claims enter state history at those times and contribute to UPTIME-001.
 4. No update of the retroactive incident notifies subscribers, including later current-time updates.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Old cited evidence asserts first original time; resolution original time; history first time; history resolution time. Unasserted: public timeline original times.
+**Evidence.** `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 30-301): an incident opened at a historical instant is published at its original instants (209-221); its permalink and month history show those instants in the configured zone (227-242); its claims enter component history at those instants and the month's availability report charges its downtime (223-226, 243-246); none of its three updates, including a later current-time correction, commits a delivery or reaches the mail provider while a confirmed email subscriber follows the component (70-74, 247-253).
+**Gap.** None.
 
 #### INCIDENT-010 — Update due
 
@@ -600,7 +600,7 @@ Core · published · **done**
 
 #### UPDATE-004 — Preview
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Before publication the composer previews the customer-facing update.
 
@@ -608,8 +608,8 @@ Core · published · **partial**
 1. The composer shows the update as the public page renders it.
 2. The composer shows the update as the notification email renders it.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`; `tests/e2e/publishing-browser.test.mjs`; explicit publication retains the Page preview fields and exact commitment on the public incident page. `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion): native preview wording remains asserted and the captured notification subject and complete customer message equal the preview before personal subscription links. Both journeys run in push Verify.
-**Gap.** Asserted: public preview customer impact; email preview customer impact. Unasserted in old cited evidence: composer displays the public preview; composer displays the email preview.
+**Evidence.** `tests/e2e/publishing-browser.test.mjs` (compiled visual edits and the operator publication journey, lines 501-749): the composer Page preview shows the public page heading, lifecycle and every field with the configured-zone commitment and component transition (649-656), the published permalink update renders exactly those previewed fields (686-695), and preview leaves the draft private (657-658); the Email preview shows the exact subject, From, Reply-To, header, fields, impact and footer (660-674). `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion, lines 67-82): the captured notification's subject and complete message before personal links equal the preview route the composer reads.
+**Gap.** None.
 
 #### UPDATE-005 — Drafts
 
@@ -703,7 +703,7 @@ Core · published · **partial**
 
 #### MAINT-002 — Automatic transitions
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Automatic maintenance follows its declared window.
 
@@ -711,8 +711,8 @@ Core · published · **partial**
 1. Scheduled moves to In progress within 240 seconds after start without an operator action.
 2. In progress moves to Completed within 240 seconds after end without an operator action.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Asserted: scheduled event starts; scheduled event completes. Unasserted in old cited evidence: 240-second start bound; 240-second completion bound.
+**Evidence.** `tests/e2e/publishing-contract.test.mjs` (owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history, lines 303-456): with only native scheduled ticks and no operator action, a future automatic window stays Scheduled one millisecond before start (404-420), is In progress 240 seconds after start with exactly one system-authored started notice while a repeated tick adds nothing (422-433), stays In progress one millisecond before end (435-439) and is Completed 240 seconds after end with exactly one system-authored completed notice while repeated ticks add nothing (441-454).
+**Gap.** None.
 
 #### MAINT-003 — Component states
 
@@ -801,15 +801,15 @@ Core · published · **done**
 
 #### SUB-003 — Pending expiry
 
-Core · published · **partial** · Cites BASE-DATA-002
+Core · published · **done** · Cites BASE-DATA-002
 
 **Requirement.** Unverified pending addresses are retained only while confirmation remains possible. Supersedes `BASE-DATA-002` for pending subscriptions because the submitting visitor may not own the address.
 
 **Acceptance.**
 1. An unconfirmed pending subscription and its address are deleted after 72 hours.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/public-contract.test.mjs`; `tests/e2e/helpers/subscriber-expiry-flow.mjs` (subscriberExpiryFlow), loaded by the Subscriber consent journey in `tests/e2e/delivery-contract.test.mjs`: two public email subscriptions retain their pending rows and addresses immediately before each creation-plus-72-hour deadline, then native scheduled processing deletes each row and every persisted address copy exactly at its deadline. Operator inventory reconciles independently with D1; confirmed subscription fields remain unchanged; expired confirmation replay and repeated scheduled processing cannot restore an address. `tests/e2e/helpers/incident-follow-consent-flow.mjs` (incidentFollowConsentFlow), loaded by the Scoped incident subscriptions journey in the same test file, retains incident-scoped expiry. `tests/e2e/sorry-import.test.mjs` (Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow) retains imported-address custody erasure.
-**Gap.** Old cited evidence asserts a very old pending subscriber row is absent after expiry runs. Unasserted: expiry takes effect at the specified 72-hour boundary.
+**Evidence.** `tests/e2e/delivery-contract.test.mjs` (Subscriber consent, selected publication, channel delivery, export and erasure, lines 19-28), loading `tests/e2e/helpers/subscriber-expiry-flow.mjs` (subscriberExpiryFlow, lines 7-72): two public email subscriptions stay pending with their addresses one millisecond before creation plus 72 hours; at each deadline native scheduled processing deletes the row and every persisted copy of the address, the operator inventory reconciles, the old confirmation returns 404, the confirmed subscription is unchanged and a repeat tick adds nothing (54-70); `tests/e2e/helpers/incident-follow-consent-flow.mjs` (incidentFollowConsentFlow, lines 6-17), loaded by the Scoped incident subscriptions journey in the same file, expires unconfirmed incident subscriptions after the same 72 hours.
+**Gap.** None.
 
 #### SUB-004 — Component selection
 
@@ -1153,7 +1153,7 @@ Core · published · **done** · Cites BASE-OPS-003
 
 #### INTAKE-004 — Recovery alerts
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** A recovery alert adds evidence against its matching alert without publishing a resolution.
 
@@ -1161,8 +1161,8 @@ Core · published · **partial**
 1. A recovered event records its recovery time against the matching alert key.
 2. Recovery changes no public surface and no incident lifecycle state.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Unchanged lifecycle and zero updates are asserted. Recovery timestamp readback and complete public-artifact equality are not asserted.
+**Evidence.** `tests/e2e/channels-and-presets.test.mjs` (AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence, lines 398-444, called at 428), loading `tests/e2e/helpers/preset-recovery-flow.mjs` (presetRecoveryFlow, lines 75-150): for Datadog, UptimeRobot, Better Stack and Pingdom each recovery is recorded against the matching alert key with a request-bounded recovery instant, also set on the original firing receipt (89-101); a published incident per preset keeps its lifecycle, every published-update field, its persisted update records and every retained public artifact, response byte and generation (126-147), while unpublished preset drafts close under INTAKE-007 (103-112); `tests/e2e/incident-brief.test.mjs` (authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails, lines 90-96): a generic signed source's recovery leaves its published incident Identified with the recovery check holding.
+**Gap.** None.
 
 #### INTAKE-005 — Payload mapping
 
@@ -1195,7 +1195,7 @@ Core · published · **done** · Cites BASE-INPUT-001
 
 #### INTAKE-007 — Preset recovery
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Preset recovery closes only unpublished drafts. Published incidents retain their lifecycle and receive evidence under INTAKE-004.
 
@@ -1203,8 +1203,8 @@ Core · published · **partial**
 1. Each preset’s recovery resolves its matching never-published draft without publishing any update or public trace.
 2. A published incident retains its lifecycle and records the recovery evidence.
 
-**Evidence.** `tests/e2e/channels-and-presets.test.mjs`
-**Gap.** Private draft resolution, zero updates and published lifecycle are asserted. Public-artifact absence after recovery and the published recovery record are not read back.
+**Evidence.** `tests/e2e/channels-and-presets.test.mjs` (AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence, lines 398-444, called at 428), loading `tests/e2e/helpers/preset-recovery-flow.mjs` (presetRecoveryFlow, lines 75-150): each of Datadog, UptimeRobot, Better Stack and Pingdom resolves only its matching never-published draft, with zero updates, unchanged persisted update records, an identical retained public artifact inventory, bytes and generation and a 404 private permalink, while other presets' drafts stay Investigating (103-117); a fresh published incident per preset keeps its lifecycle and every published-update field while its recovery and firing receipts record the matching recovery (126-149).
+**Gap.** None.
 
 ### Drafting
 
@@ -1360,15 +1360,15 @@ Core · published · **partial**
 
 #### HIST-003 — Report due
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** A sufficiently severe resolved incident without a report becomes visibly report-due under the replaceable report-due policy.
 
 **Acceptance.**
 1. Seven days after an incident that claimed Partially unavailable or Major outage resolves without a report, the operator app marks it as owing a report.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`; additional landing evidence: `tests/e2e/update-reminders.test.mjs`, loading `tests/e2e/helpers/report-reminders-flow.mjs` and `tests/e2e/helpers/automation-clock-worker.ts`, asserts both severe incident states absent one millisecond before seven days and present exactly at seven days, matching Overview obligations, and exclusion after reviewed publication or reasoned waiver.
-**Gap.** Old cited evidence asserts A representative Major-outage incident is listed as report-due after eight days; The severity rule is represented by another Major-outage report-due case. Unasserted: The operator report-due listing is asserted at the seven-day boundary.
+**Evidence.** `tests/e2e/update-reminders.test.mjs` (AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders, line 158), loading `tests/e2e/helpers/report-reminders-flow.mjs` (reportRemindersFlow, lines 7-167): incidents that claimed Major outage and Partially unavailable resolve without a report (46-75); the native report-owing listing and the Overview obligation are absent seven days minus one millisecond after resolution and present at seven days, Overview turning overdue at that instant (76-95, 126-130); publication and a reasoned waiver remove the mark (135-160).
+**Gap.** None.
 
 #### HIST-004 — Export contents
 
@@ -2395,7 +2395,7 @@ Core · target · **partial** · From SUB-013 · Cites BASE-INPUT-002, BASE-MAIL
 
 #### SUB-014 — Self-serve Slack subscriptions
 
-Core · target · **partial** · Cites BASE-MAIL-001 · Register R-41
+Core · target · **done** · Cites BASE-MAIL-001 · Register R-41
 
 **Requirement.** A public visitor receives selected-component updates in their Slack workspace through Slack's own authorization step. The technical profile is specified in [Delivery details](docs/contract/delivery-details.md).
 
@@ -2406,8 +2406,8 @@ Core · target · **partial** · Cites BASE-MAIL-001 · Register R-41
 4. App removal, revoked tokens and an archived-channel response each deactivate with that reason and prevent the next publication.
 5. A recorded provider-schema OAuth exchange creates the subscription and its recorded app-uninstalled event removes it.
 
-**Evidence.** `tests/e2e/channels-and-presets.test.mjs` (SUB-014 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links, notifications shard), loading `tests/e2e/helpers/self-serve-chat-flow.mjs` (selfServeChatFlow) and `tests/e2e/slack-subscriptions-helper.mjs` (prepareSlackSubscription, removeSlackSubscription, verifySlackPublication). The recorded synthetic provider-edge request and response in `tests/fixtures/slack-subscriptions/oauth-exchange.json` are matched at the real Slack OAuth adapter: POST, client, code and callback path; the public Get updates in Slack control requests only incoming-webhook, selects components and completes cookie-free hashed-state installation at 1440/390. The active subscription receives the next eligible publish, and its webhook is stored encrypted in the existing subscriber-owned Slack kind from additive migration `migrations/core/0056_subscriber_channels_preferences.sql`. The signed app_uninstalled payload in `tests/fixtures/slack-subscriptions/events.json`, using its test signing secret, deactivates the subscription with that reason; selfServeChatFlow asserts the next publication skips it. verifySlackPublication asserts See <https://help.example.com/kb/123>. with punctuation outside the URL. The recorded tokens_revoked payload also deactivates and suppresses the next publish; a channel_is_archived edge reply deactivates with that reason and later publication skips it. Continuation and callback axe, overflow and script-error checks pass at both widths. `tests/e2e/update-reminders.test.mjs` (INCIDENT-010 — INCIDENT-011 NOTIFY-016 AGENT-002 AUTO-003 owner reminders, durable follow-ups, reasoned failure dismissal and Queue recovery follow the original commitment) consumes the same OAuth reply and preserves the separation of public subscriptions from private operator alerts. These are recorded synthetic edge fixtures; no live Slack install or provider acceptance is claimed. Completion is a proposal pending ct judgment.; no live Slack install or provider acceptance is claimed. Completion is a proposal pending ct judgment. Additional landing-candidate proof in the same selfServeChatFlow and prepareSlackSubscription helpers asserts the named public Get updates in Slack submit control, selected and unrelated visible component choices, exactly the two selected persisted component identities, the chosen Slack workspace/channel identity and name, selected mode, and a nonempty encrypted webhook. These assertions address the previously unasserted public-control and component-selection points; the inherited partial judgment remains pending ct review.
-**Gap.** Old cited evidence asserts minimal OAuth scope; active Slack state; sealed Slack URL. It does not assert: named public control; selected components persisted.
+**Evidence.** `tests/e2e/channels-and-presets.test.mjs` (INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links, lines 237-397, called at 385), loading `tests/e2e/helpers/self-serve-chat-flow.mjs` (selfServeChatFlow, lines 9-91) and `tests/e2e/slack-subscriptions-helper.mjs` (prepareSlackSubscription, verifySlackPublication and removeSlackSubscription, lines 14-80): the public page offers the Get updates in Slack form with the selected and an unrelated visible component (helper 23-33); authorization requests only incoming-webhook (35-45); the recorded provider-schema OAuth exchange, matched at the provider edge (flow 13-19), creates an active subscriber with the recorded channel, an encrypted webhook and exactly the selected components (helper 46-63); the next publication delivers one Slack post with bare URL text and punctuation outside (flow 49-51, helper 66-70); the signed app_uninstalled and tokens_revoked events and a channel_is_archived reply each deactivate with that reason, and the next publication posts nothing (flow 53-76, helper 71-80). These are recorded synthetic edge fixtures; no live Slack install is claimed.
+**Gap.** None.
 
 #### SUB-015 — Self-serve Microsoft Teams subscriptions
 
@@ -2422,8 +2422,8 @@ Core · target · **partial** · Cites BASE-MAIL-001, BASE-INPUT-002 · Register
 4. Every secure-web link shows its URL with trailing punctuation outside; other schemes and markup are never links.
 5. Component selection and SUB-010's failing-destination rules apply.
 
-**Evidence.** Synthetic Workflows network-edge proof: `tests/e2e/channels-and-presets.test.mjs` (SUB-014 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links), `tests/e2e/helpers/self-serve-chat-flow.mjs` (selfServeChatFlow) and `tests/e2e/teams-subscriptions-helper.mjs`. A native public form sends a verification Adaptive Card; only channel confirmation activates the encrypted selected-component subscription, which receives the next publish. Non-Microsoft hosts return 400. Bare HTTPS links show the URL itself with punctuation outside. Other schemes and markup are asserted for the operator card in `tests/e2e/channels-and-presets.test.mjs`:135-146; the subscriber card proof asserts the Acceptance sentence’s HTTPS link. Ten failed deliveries deactivate the endpoint and the next publish skips it. Submission, channel confirmation and success screens pass axe, overflow and hydration checks at 1440/390. No live Teams call was made from this run.
-**Gap.** Old cited evidence asserts non-Microsoft refusal; one verification card; card receipt pending; link open pending. Unasserted: the refused non-Microsoft destination receives no outbound card; component selection asserted in tests/e2e/helpers/chat-preferences-flow.mjs outside the old Evidence set.
+**Evidence.** `tests/e2e/channels-and-presets.test.mjs` (INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links, lines 237-397, called at 385), loading `tests/e2e/helpers/self-serve-chat-flow.mjs` (selfServeChatFlow, lines 9-91), `tests/e2e/teams-subscriptions-helper.mjs` (prepareTeamsSubscription and verifyTeamsPublication, lines 10-62) and `tests/e2e/helpers/chat-preferences-flow.mjs` (chatPreferencesFlow, lines 7-65): a non-Microsoft host is refused 400 (helper 16-20); one verification Adaptive Card reaches the documented Workflows endpoint, and its receipt and opened link leave the subscription pending until explicit confirmation (22-45); the next publication arrives once as an Adaptive Card whose HTTPS link shows its own URL with punctuation outside (50-61); event-kind preferences and maintenance notices apply through the management link (preferences 34-61); ten refused deliveries deactivate the destination and the next publication sends no card (flow 77-85). These are recorded synthetic edge fixtures; no live Teams call is claimed.
+**Gap.** The journey never records requests to the refused host, so a card reaching it is unobserved; no published update carries another scheme or markup, so never links is checked only on text without them; and no update for an unselected component is published while the Teams subscriber exists, so component selection's exclusion is unasserted.
 
 #### SUB-016 — Preferences on every channel
 
