@@ -152,13 +152,13 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.ok(Date.parse(monitoring.publishedAt) > Date.parse(first.publishedAt));
     const timeline = await j.visible(`/incidents/${incident.reference}`, correctedRecovery.details);
     const matchingDescendants = (node, predicate) => (node.childNodes ?? []).flatMap(child => [...(predicate(child) ? [child] : []), ...matchingDescendants(child, predicate)]);
-    const attribute = (node, name) => node.attrs?.find(attr => attr.name === name)?.value;
-    const text = node => node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(text).join('');
-    const articles = matchingDescendants(parseFragment(timeline), node => node.tagName === 'article' && attribute(node, 'class') === 'update');
-    const publicUpdates = articles.map(article => {
-      const head = matchingDescendants(article, node => attribute(node, 'class') === 'update-head')[0];
-      const fields = Object.fromEntries(matchingDescendants(article, node => node.tagName === 'div').filter(node => node.childNodes?.some(child => child.tagName === 'dt')).map(node => [text(node.childNodes.find(child => child.tagName === 'dt')), text(node.childNodes.find(child => child.tagName === 'dd'))]));
-      return { lifecycle: text(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: attribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Customer impact'], details: fields['Additional details'] };
+    const publishedAttribute = (node, name) => node.attrs?.find(attr => attr.name === name)?.value;
+    const publishedText = node => node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(publishedText).join('');
+    const publishedArticles = matchingDescendants(parseFragment(timeline), node => node.tagName === 'article' && publishedAttribute(node, 'class') === 'update');
+    const publicUpdates = publishedArticles.map(article => {
+      const head = matchingDescendants(article, node => publishedAttribute(node, 'class') === 'update-head')[0];
+      const fields = Object.fromEntries(matchingDescendants(article, node => node.tagName === 'div').filter(node => node.childNodes?.some(child => child.tagName === 'dt')).map(node => [publishedText(node.childNodes.find(child => child.tagName === 'dt')), publishedText(node.childNodes.find(child => child.tagName === 'dd'))]));
+      return { lifecycle: publishedText(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: publishedAttribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Customer impact'], details: fields['Additional details'] };
     });
     assert.deepEqual(publicUpdates, [
       { ...correctedRecovery, publishedAt: corrected.publishedAt },
