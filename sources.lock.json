@@ -7160,7 +7160,7 @@
       "executable": false
     },
     "tests/e2e/helpers/update-link-surfaces.mjs": {
-      "sha256": "373b4a7db2151f8f3b6c043d8618046d66d45991633084ae57409a388345a03e",
+      "sha256": "089a1bcd88dbb26255f4b8402e50629719ef06263891f28bc206c53ff59bf5b0",
       "executable": false
     },
     "tests/e2e/helpers/uptime-pairing-flow.mjs": {
@@ -7208,7 +7208,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "5435a6b6a877220e0ab7381b8b3326002692e82bb1a7e11cd039d6edc2e111c3",
+      "sha256": "76b71d026d24ec9a2a81a344fefa88ca7530b1601914f164d1263ee838ef148b",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
