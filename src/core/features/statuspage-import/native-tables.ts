@@ -28,7 +28,9 @@ export const sealedDefaults: Record<string, Row> = {
   subscribers: { created_by_operator_id: null, webhook_format: "lamp", event_kinds_json: '["incidents","maintenance","components"]', minimum_impact: null, chat_kind: null, preferences_set: 0, sms_kind: 0 },
   // Existing import journals predate per-update component snapshots. Empty
   // migration defaults are not an operator edit; real published changes are.
-  incident_updates: { component_changes_json: "[]", component_snapshot_json: "[]", automation_attribution: null, automation_receipt_id: null },
+  // Imported history has no inferred review evidence. Null additive fields
+  // preserve sealed journals; a real reviewer or review time remains an edit.
+  incident_updates: { component_changes_json: "[]", component_snapshot_json: "[]", automation_attribution: null, automation_receipt_id: null, reviewed_by_operator_id: null, reviewed_at: null },
   // Unapproved automation defaults do not turn imported templates into edits.
   incident_templates: { channels_json: "[]", resolved_update_json: null },
   incidents: { impact_override: null },
