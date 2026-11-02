@@ -7212,7 +7212,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "91f7ebea6b5e4310f0a539fd2baa3d00f7448020a9c199747e16569e5ea3b3fa",
+      "sha256": "d81333ac6e488d8ea8ed0419a8357b2ebaadbfef6a78f4065d97250a7f301d3a",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {

@@ -574,7 +574,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   const composer = incidentComposer(page);
   await page.reload(); await operatorHydrated(page); await saved();
   assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
-  await composer.moreOptions();
+  await composer.option('Details');
   const internalWording = 'Internal https://db-prod-3.internal/x and https://10.0.0.5/x need operator review.';
   await composer.details.fill(internalWording); await saved();
   const findings = page.getByRole('status', { name: 'Wording findings', exact: true });
