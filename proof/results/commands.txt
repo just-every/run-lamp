@@ -1,0 +1,17 @@
+$ node states.mjs after ../proof-raw/final
+exit 0  (node states.mjs after ../proof-raw/final)
+$ node behaviour.mjs ../proof-raw/final
+exit 0  (node behaviour.mjs ../proof-raw/final)
+$ node refresh60.mjs ../proof-raw/final
+exit 0  (node refresh60.mjs ../proof-raw/final)
+$ node extras.mjs ../proof-raw/final
+exit 0  (node extras.mjs ../proof-raw/final)
+$ node hover-shots.mjs after ../proof-raw/final-hover
+exit 0  (node hover-shots.mjs after ../proof-raw/final-hover)
+$ node clip.mjs ../proof-raw/final/clip-ancestors.json
+exit 1  (node clip.mjs ../proof-raw/final/clip-ancestors.json)
+$ node static-inventory.mjs ../proof-raw/final/static-after.json
+exit 0  (node static-inventory.mjs ../proof-raw/final/static-after.json)
+$ node clip.mjs ../proof-raw/final/clip-ancestors.json (rerun after a first attempt failed waiting for the composer to render)
+exit 0  (node clip.mjs ../proof-raw/final/clip-ancestors.json)
+exit 0  (node setup-proof.mjs after ../proof-raw/final-setup)

@@ -1,0 +1,18 @@
+heavy-slot: remote unavailable (uncommitted work or no committed worktree); local FIFO only; run from the clean committed clone to let m1-runner/win-runner take it
+heavy-slot: slot 2 of 6; running after 0.37s; 6 slots; free+inactive 33.1%; load5 24.30; browser max-hold=45min
+build exit 0
+✓ built in 1.73s
+Your application is built
+build: complete (exit 0)
+✔ TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities (76011.173084ms)
+ℹ PROBE INCIDENT-014 Slack Settings 1440: Create link code -> signed /api/chat/slack 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+ℹ PROBE INCIDENT-014 Teams Settings 1440: Create link code -> signed /api/chat/teams 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+ℹ PROBE INCIDENT-014 removal 1440: both Settings Remove chat link controls -> 204, native list and storage empty after reload; axe, overflow and hydration pass
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 76860.596417

@@ -2547,6 +2547,10 @@
       "sha256": "21140784bdaf5d7cf348f7502b8ddbb0d640f46b3380f36ad14e98e84471fb9a",
       "executable": false
     },
+    "proof/REPORT.md": {
+      "sha256": "af99c933c3e763524284c4e093f8b6b381ca10f70379454b9f83f16fbf2adf3c",
+      "executable": false
+    },
     "proof/results/behaviour-checks.json": {
       "sha256": "3ee045f761d9dfe4191563ab231809a9ca85f388da6f9943e5d7cd8efa45f7a4",
       "executable": false
@@ -2555,12 +2559,24 @@
       "sha256": "b896f241c1867ab56c1b9bce3e9777b8ecbc3f0ce3986568075c21498d17521d",
       "executable": false
     },
+    "proof/results/commands.txt": {
+      "sha256": "501d4493d25c425934a83ffcef275fae8d591c51dcac6d5798d934c032fc46ea",
+      "executable": false
+    },
     "proof/results/desktop-tab-composer.json": {
       "sha256": "102eb53c2f55ea02d76aa506d6355243a31e84171025679db443eff15b8b4e2e",
       "executable": false
     },
     "proof/results/desktop-tab-settings-look.json": {
       "sha256": "3c74fe2a28f4d772f6948fc08a6fcf614382cea478311dfc88b533cc6b231d00",
+      "executable": false
+    },
+    "proof/results/existing-tests-run1.txt": {
+      "sha256": "62b169f720df99d151bad997f120ba2f050c692fd25c6bb8059550f9f167eb91",
+      "executable": false
+    },
+    "proof/results/existing-tests-run2.txt": {
+      "sha256": "84bebde6c5fbce3d05eecd81dbcdc7284f2275480a1f640c2f9959b89a00f81a",
       "executable": false
     },
     "proof/results/extras-checks.json": {

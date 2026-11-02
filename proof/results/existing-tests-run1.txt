@@ -1,0 +1,180 @@
+heavy-slot: shallow clone; fetching full history so the bundle is complete
+heavy-slot: committed 8bdcebf1f1c665701d1c1e084aa3d87b96ba4237; routing to m1-runner (bundle)
+REMOTE_JOB 20261102T071332147028Z-heavy-slot-f4f31593 stream=/Users/zemaj/www/rer-consolidation/logs/remote/20261102T071332147028Z-heavy-slot-f4f31593.stream exit=/Users/zemaj/www/rer-consolidation/logs/remote/20261102T071332147028Z-heavy-slot-f4f31593.exit
+QUEUED ticket=23169 job=20261102T071332147028Z-heavy-slot-f4f31593
+ADMITTED slot=3 cap=6 load=3.61
+RESOLVED_SHA 8bdcebf1f1c665701d1c1e084aa3d87b96ba4237
+NODE v22.20.0; source=.node-version; TZ=UTC; provider credentials absent
+PACKAGE_MANAGER pnpm@10.12.4
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +177
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 177, reused 177, downloaded 0, added 176
+Progress: resolved 177, reused 177, downloaded 0, added 177, done
+
+dependencies:
++ @radix-ui/react-slot 1.3.3
++ @tanstack/react-router 1.170.41
++ @tanstack/react-start 1.168.60
++ class-variance-authority 0.7.1
++ clsx 2.1.1
++ css-tree 3.2.1
++ drizzle-orm 0.45.2
++ hono 4.13.7
++ parse5 8.0.1
++ react 19.2.8
++ react-dom 19.2.8
++ tailwind-merge 3.6.0
++ zod 4.5.4
+
+devDependencies:
++ @axe-core/playwright 4.12.1
++ @cloudflare/vite-plugin 1.54.5
++ @cloudflare/workers-types 5.20260908.1
++ @playwright/test 1.63.0
++ @runeditrun/rer 0.2.76
++ @tailwindcss/vite 4.3.3
++ @types/css-tree 3.2.0
++ @types/node 22.19.17
++ @types/react 19.2.18
++ @types/react-dom 19.2.7
++ @vitejs/plugin-react 6.1.1
++ ical.js 2.2.1
++ marked 18.0.14
++ playwright 1.63.0
++ tailwindcss 4.3.3
++ typescript 5.9.3
++ vite 8.2.2
++ wrangler 4.129.1
+
+Done in 4.2s using pnpm v10.12.4
+PLAYWRIGHT Version 1.63.0; shared cache /Users/m1-runner/rer-remote/playwright
+PLAYWRIGHT_INSTALL 1.63.0 chromium under runner Node v22.20.0; stall limit 300s without growth
+COMMAND_START nice=10
+TAP version 13
+# (node:4074) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+ok 1 - INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+  ---
+  duration_ms: 87742.986666
+  type: 'test'
+  ...
+# INTEG-002 browser 1440px: Settings connected an account, concealed the saved credential, saved post-by-default on/off; composer respected deselection and reset each new update to the owner default.
+# INTEG-002 browser: Settings, incident composer and maintenance scheduling at 1440 and 390 have no horizontal overflow or serious/critical accessibility findings; account removed through Settings. Screens retained under ./test-results/social; private sign-in links are never retained.
+# PROBE NOTIFY-012 atomic commit: POST /api/app/incidents/:id/publish with chat and a second-post storage fault -> 409; complete inventories stay at 1 update/2 posts, unchanged draft and receivers; retry commits exactly 1 update/2 following posts.
+# PROBE NOTIFY-012 original request replay: POST the captured body and If-Match revision, then two scheduled passes -> 409; all 2 update/4 post identities and 4 receiver requests unchanged.
+# PROBE NOTIFY-012 retroactive silence: POST a distinct saved draft with chat selected and the earlier publication timestamp -> 200, isRetroactive=true, 3 updates; complete 4-post inventory and 4 receiver requests unchanged.
+# SUB-014 SUB-015 synthetic Slack OAuth and Teams Workflows public subscriptions; no live provider call
+# INTEG-002 acceptance 1: recorded X, Bluesky and Mastodon edges receive one bounded post per selected account; credentials stay sealed.
+# INTEG-002 x first post (279/280): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+# INTEG-002 bluesky first post (300/300): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking\\nhttps://status.example.test/incidents/INC-1"; postId=at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1
+# INTEG-002 mastodon first post (337/500): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking successful payments before recovery.\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+# INTEG-002 acceptance 2: the second update uses each network’s native reply field and replies to the first provider id.
+# INTEG-002 thread fields: X {"in_reply_to_tweet_id":"synthetic-lamp-post-1"}; Bluesky {"root":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"},"parent":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"}}; Mastodon in_reply_to_id=synthetic-lamp-post-1
+# INTEG-002 acceptance 3: explicit deselection queues and posts nothing even with post by default on; retroactive updates and imports stay silent.
+# INTEG-002 acceptance 4: X 503 receives five retries, then a failed row and one operator alert; public artifacts, email and the other accounts continue.
+# INTEG-002 X 503 attempts=6; final={"id":"01M6DHSBKBH4G1ZE9TZ33GXYJ6.01M6DHS9YPQ39QRDX0G2573H5C","eventId":"01M6DHSBKBH4G1ZE9TZ33GXYJ6","accountId":"01M6DHS9YPQ39QRDX0G2573H5C","account":"Synthetic Lamp x","network":"x","reference":"INC-5","text":"Synthetic Lamp service status: Investigating: Synthetic social failure must not delay public status or subscriber email.\\nhttps://status.example.test/incidents/INC-5","queuedAt":"2026-11-02T07:15:10.591Z","outcomeAt":"2026-11-02T07:15:10.965Z","postId":null,"postCid":null,"attempts":6,"state":"failed","attemptLog":[{"number":1,"startedAt":1793603710726,"finishedAt":1793603710749,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":2,"startedAt":1793603710831,"finishedAt":1793603710834,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":3,"startedAt":1793603710866,"finishedAt":1793603710869,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":4,"startedAt":1793603710900,"finishedAt":1793603710903,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":5,"startedAt":1793603710930,"finishedAt":1793603710934,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":6,"startedAt":1793603710962,"finishedAt":1793603710965,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"}]}; NOTIFY-006 operator mail=1; page, Atom, email, Bluesky and Mastodon delivered before X exhaustion.
+# Subtest: AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+ok 2 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+  ---
+  duration_ms: 202811.089125
+  type: 'test'
+  ...
+# PROBE INTAKE-007 1 datadog: authenticated recovery -> matching Resolved draft, zero updates, unchanged 66 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 uptimerobot: authenticated recovery -> matching Resolved draft, zero updates, unchanged 66 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 betterstack: authenticated recovery -> matching Resolved draft, zero updates, unchanged 66 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 pingdom: authenticated recovery -> matching Resolved draft, zero updates, unchanged 66 public artifacts and private permalink 404
+# PROBE INTAKE-007 2 datadog: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 uptimerobot: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 betterstack: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 pingdom: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PagerDuty: start the real Worker and apply the prior schema.
+# PagerDuty: Worker ready.
+# PagerDuty: D1 binding ready.
+# PagerDuty: migration retained prior rows; authenticate the owner.
+# PagerDuty: map signed webhook evidence and publish responder notes.
+# PagerDuty: publish one note per update, including provider failure.
+# PagerDuty: export and restore without credentials.
+# PagerDuty workerd proof: signed mapping, private recovery, timed brief, one note per publication, visible HTTP 403, sealed custom authorship, owner-default reconnection, credential-free restore, and source erasure.
+# INTAKE-014 and INTAKE-011: bearer, alertId dedup, all component matchers, private notes/brief evidence, fixed vendor notes/close, unpublished recovery and New Relic workflow fixture passed.
+# AUTO-001 draft: no saved rule and an explicit draft rule preserve byte-identical retained public artifacts.
+# AUTO-001 validation: unauthenticated, malformed, unknown and incomplete-template rule requests change no product rows or public snapshot.
+# AUTO-001 claim: the saved named state reaches the public component in under 30 seconds, with no update or subscriber notification, and recovery releases it.
+# AUTO-001 measured claim to public state: 108.1ms.
+# AUTO-001 claim and publish: only saved operator text is published, using saved channel selection and one publication per firing/recovery despite redelivery and Queue retries.
+# AUTO-001 grouped alerts: two ruled fingerprints, a separately mapped unruled firing component, partial recovery, component recovery and repeated deliveries create exactly one update/email per phase.
+# AUTO-001 broken template: removing saved recovery wording degrades the rule visibly to draft without a claim, update or notification.
+# AUTO-001 audit: rule create, edit and delete appear with the saving owner and valid instants through TEAM-007's audit API.
+# AUTO-001 erasure: deleting a source releases its active rule claim with append-only history, no publication and a retained audit entry.
+# AUTO-001 durable work: a transaction rejection is visible, Cron resumes it without redelivery, and recovery before the first publication closes the private run without late text or duplicate notifications.
+# AUTO-002: controlled 60-second firing, three-minute firing, two-minute refire during five-minute hold, full recovery, silent claim, attributed claim and publication Undo, replay refusal and pending-source erasure pass.
+# UPTIME-008/INTAKE-011: next-snapshot pushes, four real provider adapters at fake edges, twenty-minute disconnected gap, verified Uptime timings and aggregate retention passed.
+# Subtest: TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+not ok 3 - TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+  ---
+  duration_ms: 37054.908708
+  type: 'test'
+  location: '/Users/m1-runner/rer-remote/jobs/20261102T071332Z-heavy-slot-f4f31593/repo/tests/e2e/publishing-browser.test.mjs:250:1'
+  failureType: 'testCodeFailure'
+  error: 'Vite did not emit the Start Worker configuration at dist/server/wrangler.json.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    readBuiltWorkerArtifact (file:///Users/m1-runner/rer-remote/jobs/20261102T071332Z-heavy-slot-f4f31593/repo/scripts/build-output.mjs:17:13)
+    async browserWorker (file:///Users/m1-runner/rer-remote/jobs/20261102T071332Z-heavy-slot-f4f31593/repo/tests/chat-desk/runtime.mjs:15:3)
+    async runtime (file:///Users/m1-runner/rer-remote/jobs/20261102T071332Z-heavy-slot-f4f31593/repo/tests/chat-desk/runtime.mjs:35:32)
+    async Module.chatLinksSettingsFlow (file:///Users/m1-runner/rer-remote/jobs/20261102T071332Z-heavy-slot-f4f31593/repo/tests/chat-desk/settings-browser-flow.mjs:13:13)
+    async TestContext.<anonymous> (file:///Users/m1-runner/rer-remote/jobs/20261102T071332Z-heavy-slot-f4f31593/repo/tests/e2e/publishing-browser.test.mjs:254:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+ok 4 - INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+  ---
+  duration_ms: 34681.712583
+  type: 'test'
+  ...
+# {"phase":"acknowledged","finalEdit":1793603975318,"refreshDelivered":1793603975342,"refreshReceived":1793603975344,"putDispatched":1793603975833,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1793603975845,"putStatus":200,"finalEditPerformance":1276.1000000014901,"nativeAcknowledged":1793603975844,"nativeAcknowledgedPerformance":1802.5,"saved":1793603975854,"savedPerformance":1811.800000000745,"elapsedToSaved":536,"deadlinePassed":true}
+# {"finalEdit":1793603975318,"refreshDelivered":1793603975342,"refreshReceived":1793603975344,"putDispatched":1793603975833,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1793603975845,"putStatus":200,"finalEditPerformance":1276.1000000014901,"nativeAcknowledged":1793603975844,"nativeAcknowledgedPerformance":1802.5,"saved":1793603975854,"savedPerformance":1811.800000000745,"storedDraft":{"id":"01M6DJ1EMNCF7SHZMTPYBHB7RX","incidentId":"01M6DJ1CV07C077MZ7GKAE07H7","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-02T07:19:33.984Z","updatedAt":"2026-11-02T07:19:35.843Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":536,"deadlinePassed":true}
+# {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-9,"browserAckBeforeSavedMs":9.300000000745058}
+# {"earlierPersisted":1793603978741,"finalEdit":1793603978764,"earlierAcknowledged":1793603979771,"latestAcknowledged":1793603979793,"finalEditPerformance":1760.1000000014901,"nativeAcknowledged":1793603979793,"nativeAcknowledgedPerformance":2789.60000000149,"saved":1793603979803,"savedPerformance":2799.60000000149,"writes":[{"at":1793603978723,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1793603979781,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1039,"deadlinePassed":true}
+# {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-10,"browserAckBeforeSavedMs":10}
+# Phone desk: 390 sign-in
+# Phone desk: 390 alerts
+# Phone desk: 390 composer
+# Phone desk: 390 preview
+# Phone desk: 390 resolve
+# Phone desk: 390 resolved
+# Phone desk: 390 claim
+# Phone desk: 390 components
+# Phone desk: 390 schedule
+# Phone desk: 390 scheduled
+# Subtest: INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke
+ok 5 - INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke
+  ---
+  duration_ms: 14619.527083
+  type: 'test'
+  ...
+# Subtest: THEME-001 — owner publishes branded themes and layouts within the page budget
+ok 6 - THEME-001 — owner publishes branded themes and layouts within the page budget
+  ---
+  duration_ms: 80258.741667
+  type: 'test'
+  ...
+# THEME-001 — owner settings reach the retained page; unsafe CSS and HTML never execute
+# default: 200 public components with the saved palette, uploaded font, banner and links: 33881 bytes gzipped, 4 own-origin requests
+# calm: 200 public components with the saved palette, uploaded font, banner and links: 30936 bytes gzipped, 4 own-origin requests
+# uptime: 200 public components with the saved palette, uploaded font, banner and links: 38859 bytes gzipped, 4 own-origin requests
+# regions: 200 public components with the saved palette, uploaded font, banner and links: 36520 bytes gzipped, 4 own-origin requests
+1..6
+# tests 6
+# suites 0
+# pass 5
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 459240.585542
+RESULT exit=1 wall_seconds=466.751 command_seconds=459.37 retained=True
+LOCAL_LOG /Users/zemaj/www/rer-consolidation/logs/remote/20261102T071332147028Z-heavy-slot-f4f31593.log
