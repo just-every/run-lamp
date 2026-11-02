@@ -21,6 +21,7 @@ import { sessionCookieName } from "../helpers/session-cookie.mjs";
 import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
+import { promiseDraftBrowserFlow } from "./helpers/promise-draft-browser-flow.mjs";
 
 let appUrl = "";
 let pageUrl = "";
@@ -246,6 +247,10 @@ async function previewScreens(screen, name) {
     }
   } finally { await screen.setViewportSize({ width: 1440, height: 1000 }); }
 }
+
+test('AGENT-002 — prepared promise evidence remains complete and every source opens the submitted fact', { timeout: 180_000 }, async t => {
+  await promiseDraftBrowserFlow({ browser, t });
+});
 
 test('TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities', { timeout: 300_000 }, async t => {
   const {actors}=await (await import('./helpers/operator-roles-flow.mjs')).operatorRolesFlow({appFetch,appUrl,persistTo:statePath,configPath});
