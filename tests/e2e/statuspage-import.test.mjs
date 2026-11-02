@@ -6,6 +6,7 @@ import { notificationActivity, assertNoNewNotifications, moveInDoor } from '../h
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
+import { invitationFiles, importInvitationFlow, unsentExpiredImportFlow } from './helpers/import-invitation-flow.mjs';
 
 const fixtures = source => readdirSync(`tests/fixtures/${source}/small`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/small/${name}`, 'utf8') }));
 const parsed = (files, name) => JSON.parse(files.find(file => file.name === name).text);
@@ -20,10 +21,18 @@ function sourceHistory(source, files) {
 
 test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes', { timeout: 600_000 }, async t => {
   const sourceFiles = fixtures('statuspage'), apiKey = 'synthetic-owner-import-key';
-  const requests = [];
+  const requests = [], invitationControl = { uncertainRecipient: null };
   let incidentSubscriberProbe = false;
-  const runtime = await openStatusJourney({ providerEdge: async request => {
+  const runtime = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/import-invitation.worker.ts', providerEdge: async request => {
     const url = new URL(request.url);
+    if (url.origin === 'https://api.resend.com' && invitationControl.uncertainRecipient) {
+      const message = await request.clone().json();
+      if (message.to.includes(invitationControl.uncertainRecipient)) {
+        runtime.messages.push(message);
+        runtime.mailReceipts.push({ id: 'synthetic-lamp-uncertain-invitation', idempotencyKey: request.headers.get('Idempotency-Key') });
+        return Response.json({ message: 'Synthetic invitation acknowledgement interrupted' }, { status: 500 });
+      }
+    }
     if (url.origin !== 'https://api.statuspage.io') return;
     requests.push({ method: request.method, path: url.pathname, url: url.href, authorization: request.headers.get('authorization') });
     if (request.headers.get('authorization') !== `OAuth ${apiKey}`) return Response.json({}, { status: 401 });
@@ -76,7 +85,8 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     // Each row is the same owner migration, using one saved export per provider.
     // Assertions compare source records with native documents, rather than pinning fixture sizes.
     for (const source of ['statuspage', 'betterstack', 'instatus']) {
-      const files = fixtures(source), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
+      const priorIds = new Set((await api('/api/app/subscribers?limit=100')).body.subscribers.map(row => row.id));
+      const files = invitationFiles(source, fixtures(source)), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
       const before = await counts(), quiet = await notificationActivity(runtime);
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
       assert.deepEqual(await counts(), before, `${source} review writes nothing`);
@@ -123,34 +133,14 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       assert.equal(draft.status, 200, JSON.stringify(draft.body));
       const published = await api(`/api/app/incidents/${edited.id}/publish`, { channels: [] }, { 'If-Match': `${draft.body.draft.id}:${edited.updates.length}` });
       assert.equal(published.status, 200, JSON.stringify(published.body));
-      if (source === 'statuspage') {
-        const pending = (await api('/api/app/subscribers?limit=100')).body.subscribers;
-        assert.ok(pending.length && pending.every(row => row.state === 'pending'));
-        const expired = pending.at(-1), delayed = pending[0];
-        const originalReview = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-        const originalDeadline = new Date(Date.parse(originalReview) + 72 * 60 * 60 * 1000).toISOString();
-        await runtime.db.prepare('UPDATE subscribers SET created_at=? WHERE id=?').bind(originalReview, delayed.id).run();
-        await runtime.db.prepare('UPDATE subscribers SET created_at=? WHERE id=?').bind(new Date(Date.now() - 73 * 60 * 60 * 1000).toISOString(), expired.id).run();
-        const mailBefore = runtime.messages.length;
-        const invited = await api(`/api/app/statuspage-import/jobs/${result.job.id}/send-invitations`, {});
-        assert.equal((await api(`/api/app/statuspage-import/jobs/${result.job.id}/send-invitations`, {})).status, 200);
-        const messages = runtime.messages.slice(mailBefore).map(message => ({ message: { ...message, to: message.to[0] } }));
-        assert.equal(invited.status, 200, JSON.stringify(invited.body));
-        assert.equal(invited.body.report.cutover.invitations.expired, 1);
-        assert.equal(messages.length, pending.length - 1, 'expired pending subscribers receive no invitation');
-        assert.ok(messages.find(row => row.message.to === delayed.destination)?.message.text.includes(originalDeadline), 'delayed sending preserves the original confirmation deadline');
-        assert.equal(new Set(messages.map(row => row.message.to)).size, pending.length - 1, 'explicit repeats hand off each invitation once');
-        assert.ok(messages.every(row => !row.message.text.includes(edited.title)), 'confirmation invitations mention no past incident');
-        const link = messages[0].message.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/u)[0];
-        assert.equal((await fetch(link)).status, 200);
-        assert.ok((await api('/api/app/subscribers?limit=100')).body.subscribers.some(row => row.destination === messages[0].message.to && row.state === 'active'));
-      }
+      await importInvitationFlow({ runtime, api, source, result, priorIds, control: invitationControl });
       const undone = await moveIn.undo(result.door); assert.equal(undone.status, 200, JSON.stringify(undone.body));
       assert.equal(undone.body.job.state, 'undone');
       assert.ok(undone.body.undo.dispositions.some(row => row.targetKind === 'incident' && row.disposition === 'retained' && row.reason));
       const retained = (await api('/api/app/incidents')).body.incidents;
       assert.ok(retained.some(row => row.id === edited.id && row.updates.some(update => update.customerImpact === 'Owner correction after import')));
       assert.equal(retained.length, before.incidents + 1, 'untouched source history is removed while the owner correction survives');
+      await unsentExpiredImportFlow({ runtime, api, moveIn, source, files });
     }
     // Published reports, private reports and reusable templates travel with a source,
     // remain private until publication, and retain operator edits through undo.
