@@ -3133,6 +3133,8 @@ The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e
 
 SUB-005 retains current-main's partial judgment and recorded gap. The replay of `65e4cc1a470d69e04b087f58eb2a2bd7cc41a12e` adds anonymous token scope, authenticator, operator-isolation and revocation assertions through `tests/e2e/helpers/subscriber-token-authority-flow.mjs`, loaded by the existing delivery journey. These assertions supplement the evidence without promoting the clause.
 
+UPDATE-013 retains current main's partial Status, Evidence and Gap judgment. The replay of candidate `ca01647bcdf03577e5a32746e6c8ab1c224297d6` adds registered proof in `tests/e2e/public-contract.test.mjs` and `tests/e2e/publishing-contract.test.mjs`, loading `tests/e2e/helpers/update-link-evidence.mjs` and `tests/e2e/helpers/update-link-surfaces.mjs`, for literal Markdown and labelled destinations, exact published-update identity, direct links and punctuation across public root, history, permalink, Atom, RSS, aliases and component feeds. `tests/e2e/publishing-browser.test.mjs` adds saved internal-host and IP wording advice without blocking publication. These assertions and the shared tokenizer change supplement the inherited evidence without promoting the clause or overriding its recorded gap. Current widget, history and composer assertions remain active.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 31 | 76 | 0 | 107 |
