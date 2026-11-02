@@ -4,25 +4,31 @@ import { readFile } from 'node:fs/promises';
 
 // Inspect the retained inventory, then read every artifact through its public URL.
 // All incident and intake mutations still use authenticated native HTTP doors.
-async function publicSnapshot({ runtime, publicOrigin, sql, privateIncidents }) {
+export async function retainedPublicSnapshot({ runtime, worker, publicOrigin, sql, privateIncidents = [] }) {
+  const read = (path, init) => worker ? worker.dispatchFetch(`${publicOrigin}${path}`, init) : fetch(`${publicOrigin}${path}`, init);
   const deadline = Date.now() + 30_000;
   while (true) {
-    const root = await fetch(`${publicOrigin}/`);
+    const root = await read('/');
     await root.arrayBuffer();
-    const [work] = sql('SELECT requested_revision, completed_revision FROM public_snapshot_work');
-    const building = sql("SELECT id FROM snapshot_builds WHERE status = 'building'");
+    const [work] = await sql('SELECT requested_revision, completed_revision FROM public_snapshot_work');
+    const building = await sql("SELECT id FROM snapshot_builds WHERE status = 'building'");
     if (work && work.requested_revision === work.completed_revision && building.length === 0) break;
     assert.ok(Date.now() < deadline, 'public snapshot publication settles before recovery proof');
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-  const configPath = runtime.env.LAMP_WRANGLER_CONFIG;
-  const config = JSON.parse(await readFile(configPath, 'utf8'));
-  const bucket = config.r2_buckets.find(row => row.binding === 'SNAPSHOTS').bucket_name;
-  function object(key) {
+  const configPath = runtime?.env.LAMP_WRANGLER_CONFIG;
+  const config = runtime && JSON.parse(await readFile(configPath, 'utf8'));
+  const bucket = worker ? await worker.getR2Bucket('SNAPSHOTS') : config.r2_buckets.find(row => row.binding === 'SNAPSHOTS').bucket_name;
+  async function object(key) {
+    if (worker) {
+      const stored = await bucket.get(key);
+      assert.ok(stored, `${key} is retained`);
+      return stored.json();
+    }
     return JSON.parse(execFileSync('pnpm', ['exec', 'wrangler', 'r2', 'object', 'get', `${bucket}/${key}`, '--local', '--persist-to', runtime.state, '--config', configPath, '--pipe'], { env: runtime.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30_000 }));
   }
-  const pointer = object('snapshots/current.json');
-  const bundle = object(`snapshots/${pointer.version}/retained.json`);
+  const pointer = await object('snapshots/current.json');
+  const bundle = await object(`snapshots/${pointer.version}/retained.json`);
   assert.equal(bundle.version, pointer.version);
   assert.equal(bundle.generation, pointer.generation);
   const artifacts = bundle.artifacts.toSorted((a, b) => a.key.localeCompare(b.key));
@@ -47,7 +53,7 @@ async function publicSnapshot({ runtime, publicOrigin, sql, privateIncidents }) 
       const collection = /^api\/public\/v1\/(components|incidents|maintenance)(?:\/(.+))?\.json$/.exec(artifact.key);
       if (collection) path = `/api/public/v1/${collection[1]}${collection[2] ? `?cursor=${collection[2]}` : ''}`;
     }
-    const response = await fetch(`${publicOrigin}${path}`, { redirect: 'manual' });
+    const response = await read(path, { redirect: 'manual' });
     const bytes = Buffer.from(await response.arrayBuffer()).toString('base64');
     const expectedStatus = artifact.key === 'not-found.html' ? 404 : artifact.contentType === 'application/vnd.lamp.redirect+json' ? 301 : 200;
     assert.equal(response.status, expectedStatus, path);
@@ -57,7 +63,7 @@ async function publicSnapshot({ runtime, publicOrigin, sql, privateIncidents }) 
   }
   const absent = [];
   for (const incident of privateIncidents) {
-    const response = await fetch(`${publicOrigin}/incidents/${incident.reference}`);
+    const response = await read(`/incidents/${incident.reference}`);
     assert.equal(response.status, 404, `${incident.reference} stays private`);
     absent.push({ reference: incident.reference, status: response.status, bytes: Buffer.from(await response.arrayBuffer()).toString('base64') });
   }
@@ -75,7 +81,7 @@ async function receipt(api, id) {
 export async function presetRecoveryFlow({ api, post, runtime, publicOrigin, sql, sources, payloads, t }) {
   const keys = { datadog: 'cycle-1', uptimerobot: '778', betterstack: '25', pingdom: '12345' };
   const privateIncidents = Object.values(sources).map(source => source.incident);
-  const snapshot = () => publicSnapshot({ runtime, publicOrigin, sql, privateIncidents });
+  const snapshot = () => retainedPublicSnapshot({ runtime, publicOrigin, sql, privateIncidents });
   const updates = () => sql('SELECT * FROM incident_updates ORDER BY id');
   async function send(source, payload) {
     const started = Date.now();

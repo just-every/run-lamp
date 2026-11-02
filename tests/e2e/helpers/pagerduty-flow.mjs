@@ -12,6 +12,7 @@ import { fixtureProcessEnv } from '../../helpers/worker-environment.mjs';
 import { localWranglerConfig } from '../../helpers/wrangler-config.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
 import { requestHeaders } from '../../helpers/request-headers.mjs';
+import { retainedPublicSnapshot } from './preset-recovery-flow.mjs';
 
 const require = createRequire(import.meta.url), workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
@@ -23,11 +24,12 @@ const apiKey = 'synthetic-pagerduty-rest-api-key';
 const pagerDutyFromEmail = ['synthetic-lamp-15', 'example.test'].join('@');
 const trigger = JSON.parse(await readFile(new URL('../../fixtures/pagerduty/triggered.json', import.meta.url), 'utf8'));
 
-function event(type, id, { incidentId = 'PDINC1', serviceId = 'PAPI123', at = '2026-10-20T01:01:00.000Z', title = trigger.event.data.title } = {}) {
+function event(type, id, { incidentId = 'PDINC1', serviceId = 'PAPI123', serviceName = 'Production API', at = '2026-10-20T01:01:00.000Z', title = trigger.event.data.title } = {}) {
   const payload = structuredClone(trigger);
   Object.assign(payload.event, { id, event_type: `incident.${type}`, occurred_at: at });
   Object.assign(payload.event.data, { id: incidentId, title });
   payload.event.data.service.id = serviceId;
+  payload.event.data.service.summary = serviceName;
   return payload;
 }
 
@@ -119,21 +121,48 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     const put = (path, body) => api(path, { method: 'PUT', body: JSON.stringify(body) });
     const receipts = async sourceId => (await api('/api/app/intake/receipts?limit=250')).body.receipts.filter(row => row.sourceId === sourceId);
     const incident = async id => (await api(`/api/app/incidents/${id}`)).body.incident;
+    const receipt = async id => {
+      const loaded = await api(`/api/app/intake/receipts?receipt=${id}`);
+      assert.equal(loaded.status, 200, loaded.text);
+      assert.equal(loaded.body.receipts.length, 1, 'independently read exactly the returned receipt');
+      assert.equal(loaded.body.receipts[0].id, id);
+      return loaded.body.receipts[0];
+    };
+    const rows = async query => (await (await worker.getD1Database('DB')).prepare(query).all()).results;
+    const updates = () => rows('SELECT * FROM incident_updates ORDER BY id');
+    const snapshot = () => retainedPublicSnapshot({ worker, publicOrigin, sql: rows });
+    const privateDrafts = [];
+    async function privateReadback(draft, retained) {
+      assert.equal(draft.updates.length, 0);
+      assert.ok(!retained.artifacts.some(row => row.key === `incidents/${draft.reference}.html`));
+      for (const artifact of retained.artifacts) {
+        for (const value of [draft.id, draft.reference, draft.title]) assert.ok(!artifact.body.includes(value), `${artifact.key} excludes private ${value}`);
+      }
+      const response = await worker.dispatchFetch(`${publicOrigin}/incidents/${draft.reference}`);
+      assert.equal(response.status, 404, 'private permalink stays absent');
+      await response.arrayBuffer();
+    }
     t.diagnostic("PagerDuty: map signed webhook evidence and publish responder notes.");
-    const targets = await Promise.all(['Production API', 'API background workers'].map(name => post('/api/app/components', { groupId: null, name, description: '', internal: false, displayOrder: 0, note: '' })));
+    const targets = await Promise.all(['Production API', 'API background workers', 'API name match'].map(name => post('/api/app/components', { groupId: null, name, description: '', internal: false, displayOrder: 0, note: '' })));
     for (const target of targets) assert.equal(target.status, 201, target.text);
     const input = { name: 'PagerDuty production responders', preset: 'pagerduty', credentialKind: 'hmac-sha256', signingSecret,
-      labelMatchers: targets.map(target => ({ componentId: target.body.component.id, labels: { service_id: 'PAPI123' } })) };
+      labelMatchers: [
+        { componentId: targets[0].body.component.id, labels: { service_id: 'PAPI123', service_name: 'Production API' } },
+        { componentId: targets[1].body.component.id, labels: { service_id: 'PAPI123' } },
+        { componentId: targets[2].body.component.id, labels: { service_name: 'Production API' } },
+      ] };
     const created = await post('/api/app/intake/sources', { ...input, signingSecret: undefined });
     assert.equal(created.status, 201, created.text);
     const source = created.body.source;
     assert.equal(source.responderConnection, 'not-connected');
     assert.equal(source.webhookConnected, false);
     const send = async (payload, { signature, raw = JSON.stringify(payload, null, 2), endpoint = source.endpointUrl } = {}) => {
+      const started = Date.now();
       const valid = createHmac('sha256', signingSecret).update(raw).digest('hex');
       const response = await worker.dispatchFetch(endpoint, { method: 'POST', headers: { Host: new URL(endpoint).host,
         'Content-Type': 'application/json', 'CF-Connecting-IP': '192.0.2.10', 'X-PagerDuty-Signature': signature ?? `v1=${'0'.repeat(64)}, v1=${valid}, v1=${'f'.repeat(64)}` }, body: raw });
-      return { status: response.status, body: await response.json() };
+      const body = await response.json();
+      return { status: response.status, body, started, finished: Date.now() };
     };
     assert.equal((await send(trigger)).status, 401, 'an endpoint can be created before the subscription secret is connected');
     assert.deepEqual(await receipts(source.id), []);
@@ -153,7 +182,32 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     const originalSignature = `v1=${createHmac('sha256', signingSecret).update(originalRaw).digest('hex')}`;
     assert.equal((await send(trigger, { raw: `${originalRaw}\n`, signature: originalSignature })).status, 401, 'a valid signature cannot authenticate changed raw bytes');
     assert.deepEqual(await receipts(source.id), [], 'tampering records no receipt');
-    const fired = await send(trigger);
+    // Keep a real published story in every privacy comparison, including its permalink.
+    const control = await post('/api/app/incidents', { title: 'Synthetic Lamp public control', components: [{ componentId: targets[1].body.component.id, state: 'Degraded performance', relationship: 'Primary' }] });
+    assert.equal(control.status, 201, control.text);
+    const controlId = control.body.incident.id;
+    const controlDraft = await put(`/api/app/incidents/${controlId}/draft`, { lifecycle: 'Investigating', affectedAudience: 'Synthetic Lamp customers', customerImpact: 'Synthetic Lamp public control remains visible.', whatStillWorks: 'Existing requests', details: 'An operator published this control.', nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() });
+    assert.equal(controlDraft.status, 200, controlDraft.text);
+    const controlPublication = await post(`/api/app/incidents/${controlId}/publish`, { channels: [] });
+    assert.equal(controlPublication.status, 200, controlPublication.text);
+    const visibleControl = await incident(controlId);
+    const baseline = await snapshot();
+    const controlPage = baseline.responses.find(row => row.key === `incidents/${visibleControl.reference}.html`);
+    assert.ok(controlPage && Buffer.from(controlPage.bytes, 'base64').toString('utf8').includes('Synthetic Lamp public control remains visible.'), 'the inventory contains a served, nonempty published story');
+    async function privateEvent(payload, options) {
+      const before = await snapshot(), beforeUpdates = await updates();
+      const result = await send(payload, options);
+      assert.equal(result.status, 202, JSON.stringify(result));
+      assert.equal(result.body.replayed, false);
+      const after = await snapshot();
+      assert.deepEqual(after, before, `${payload.event.event_type} preserves every retained artifact, public response byte and generation`);
+      assert.deepEqual(await updates(), beforeUpdates, 'private intake appends no published update');
+      const draft = await incident(result.body.incidentId);
+      if (!privateDrafts.some(row => row.id === draft.id)) privateDrafts.push(draft);
+      for (const hidden of privateDrafts) await privateReadback(await incident(hidden.id), after);
+      return result;
+    }
+    const fired = await privateEvent(trigger);
     assert.equal(fired.status, 202, JSON.stringify(fired));
     const id = fired.body.incidentId;
     const initial = await incident(id);
@@ -162,11 +216,21 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     assert.ok(initial.components.every(row => row.publishedAt === null));
     assert.equal((await send(trigger)).body.incidentId, id, 'delivery replay retains the linked draft');
     assert.equal((await receipts(source.id)).length, 1);
+    for (const [key, fields, expected] of [
+      ['PDIDONLY', { serviceName: 'Production API extra' }, [targets[1].body.component.id]],
+      ['PDNAMEONLY', { serviceId: 'PAPI123-extra' }, [targets[2].body.component.id]],
+    ]) {
+      const matched = await privateEvent(event('triggered', key, { ...fields, incidentId: key, title: `Synthetic Lamp ${key}` }));
+      assert.deepEqual((await incident(matched.body.incidentId)).components.map(row => row.componentId), expected, 'a partial compound match attaches only the independently matching row');
+    }
+    t.diagnostic('PROBE INTAKE-009 3: signed exact and partial service matches -> all three exact components; ID-only and name-only controls exclude the compound component');
     const timeline = [event('acknowledged', 'PDACK1'), event('escalated', 'PDESC1', { at: '2026-10-20T01:02:00.000Z' })];
+    const responderReceipts = [];
     for (const payload of timeline) {
-      const accepted = await send(payload);
+      const accepted = await privateEvent(payload);
       assert.equal(accepted.status, 202, JSON.stringify(accepted));
       assert.equal(accepted.body.incidentId, id);
+      responderReceipts.push(accepted.body.receiptId);
     }
     const brief = (await api(`/api/app/incidents/${id}/brief`)).body.brief;
     for (const payload of timeline) {
@@ -176,21 +240,57 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
       assert.ok(entry.evidenceSummary.includes(payload.event.occurred_at), 'brief shows provider occurrence time');
       assert.ok(entry.evidenceSummary.includes('Primary responder'), 'brief identifies the responder');
     }
-    for (const payload of [event('triggered', 'PDUNMAPPED', { serviceId: 'POTHER' }), event('reassigned', 'PDUNSUPPORTED')]) {
+    for (const payload of [event('triggered', 'PDUNMAPPED', { serviceId: 'POTHER', serviceName: 'Other API' }), event('reassigned', 'PDUNSUPPORTED')]) {
       const refused = await send(payload);
       assert.equal(refused.status, 400, JSON.stringify(refused));
       assert.equal(refused.body.incidentId, null);
-      const receipt = (await receipts(source.id)).find(row => row.id === refused.body.receiptId);
-      assert.equal(receipt.state, 'invalid');
-      assert.ok(receipt.error);
+      const refusedReceipt = await receipt(refused.body.receiptId);
+      assert.equal(refusedReceipt.state, 'invalid');
+      assert.match(refusedReceipt.error, payload.event.id === 'PDUNMAPPED' ? /Unmapped PagerDuty service/ : /Expected a PagerDuty v3/);
     }
     const privateTrigger = event('triggered', 'PDPRIVATE', { incidentId: 'PDPRIVATE1', title: 'Private recovered outage' });
-    const privateId = (await send(privateTrigger)).body.incidentId;
-    const privateRecovery = await send(event('resolved', 'PDPRIVATERESOLVED', { incidentId: 'PDPRIVATE1', title: privateTrigger.event.data.title }));
+    const privateFiring = await privateEvent(privateTrigger);
+    const privateId = privateFiring.body.incidentId;
+    const independent = await post('/api/app/intake/sources', { ...input, name: 'Synthetic Lamp recovery isolation' });
+    assert.equal(independent.status, 201, independent.text);
+    const independentFiring = await privateEvent(privateTrigger, { endpoint: independent.body.source.endpointUrl });
+    assert.notEqual(independentFiring.body.incidentId, privateId, 'the same provider incident on another source is independent');
+    async function recover(payload, firing, latestFiringId) {
+      const firingBefore = await receipt(firing.receiptId);
+      const latestBefore = await receipt(latestFiringId);
+      const otherBefore = (await rows('SELECT * FROM alert_receipts ORDER BY id')).filter(row => row.id !== latestFiringId);
+      const before = await snapshot(), beforeUpdates = await updates();
+      const result = await send(payload);
+      assert.equal(result.status, 202, JSON.stringify(result));
+      assert.equal(result.body.replayed, false);
+      assert.equal(result.body.incidentId, firing.incidentId);
+      assert.notEqual(result.body.receiptId, firing.receiptId);
+      const recovered = await receipt(result.body.receiptId);
+      assert.deepEqual([recovered.sourceId, recovered.deduplicationKey, recovered.incidentId, recovered.state, recovered.error], [source.id, payload.event.data.id, firing.incidentId, 'recovered', null]);
+      const persistedRecovery = (await rows('SELECT * FROM alert_receipts ORDER BY id')).find(row => row.id === recovered.id);
+      assert.deepEqual(JSON.parse(persistedRecovery.payload_json), payload, 'the returned recovery identity retains the exact provider occurrence time');
+      const recoveryBrief = (await api(`/api/app/incidents/${firing.incidentId}/brief`)).body.brief;
+      const recoveryEvidence = recoveryBrief.whatWeKnow.alerts.find(row => row.payload?.event?.id === payload.event.id);
+      assert.ok(recoveryEvidence, 'the linked incident brief shows the recovery event');
+      assert.deepEqual([recoveryEvidence.source, recoveryEvidence.state, recoveryEvidence.receivedAt, recoveryEvidence.payload], [input.name, 'recovered', recovered.receivedAt, payload]);
+      assert.ok(recoveryEvidence.evidenceSummary.includes(payload.event.occurred_at), 'the operator sees the provider occurrence time');
+      assert.equal(recovered.recoveredAt, recovered.receivedAt);
+      assert.ok(Date.parse(recovered.recoveredAt) >= result.started && Date.parse(recovered.recoveredAt) <= result.finished, 'recorded recovery is bounded by its request, independently of provider event time');
+      assert.deepEqual([firingBefore.sourceId, firingBefore.deduplicationKey, firingBefore.incidentId, firingBefore.state], [source.id, payload.event.data.id, firing.incidentId, 'firing']);
+      assert.deepEqual(await receipt(latestFiringId), { ...latestBefore, recoveredAt: recovered.recoveredAt, updatedAt: recovered.recoveredAt }, 'the matching latest firing evidence carries the same recovery instant');
+      assert.deepEqual((await rows('SELECT * FROM alert_receipts ORDER BY id')).filter(row => row.id !== latestFiringId && row.id !== result.body.receiptId), otherBefore, 'other source, key and earlier responder receipts remain unchanged');
+      assert.deepEqual(await updates(), beforeUpdates, 'recovery preserves every persisted publication');
+      assert.deepEqual(await snapshot(), before, 'recovery preserves complete public artifacts, served bytes and generation');
+      return result;
+    }
+    const privateRecovery = await recover(event('resolved', 'PDPRIVATERESOLVED', { incidentId: 'PDPRIVATE1', title: privateTrigger.event.data.title, at: '2026-10-20T01:08:00.000Z' }), privateFiring.body, privateFiring.body.receiptId);
     assert.equal(privateRecovery.status, 202);
     const recoveredPrivate = await incident(privateId);
     assert.equal(recoveredPrivate.lifecycle, 'Resolved');
     assert.equal(recoveredPrivate.updates.length, 0);
+    assert.equal((await incident(independentFiring.body.incidentId)).lifecycle, 'Investigating', 'recovering one source cannot close the same provider identity on another source');
+    for (const hidden of privateDrafts) await privateReadback(await incident(hidden.id), await snapshot());
+    t.diagnostic('PROBE INTAKE-009 6 private: receipt identity reads -> correct source, key, incident, recovered state and provider time; only matching private draft closes; all public bytes retained');
     const publicBefore = await (await worker.dispatchFetch(`${publicOrigin}/api/public/status`)).text();
     for (const hidden of [initial.reference, recoveredPrivate.reference, privateTrigger.event.data.title]) assert.ok(!publicBefore.includes(hidden));
     assert.equal(notes.length, 0, 'private drafts and responder events send no note');
@@ -241,12 +341,16 @@ export async function pagerDutyFlow({ runtime: nativeRuntime, t }) {
     const redirectFailure = (await receipts(source.id)).find(row => row.state === 'invalid' && row.error?.includes('302'));
     assert.ok(redirectFailure && redirectFailure.incidentId === id, 'redirect rejection has a linked operator receipt');
     assert.equal((await incident(id)).updates.length, 4, 'a redirect cannot undo the publication');
-    const recovery = await send(event('resolved', 'PDRESOLVED1', { at: '2026-10-20T01:10:00.000Z' }));
+    const publishedBefore = await incident(id);
+    const recovery = await recover(event('resolved', 'PDRESOLVED1', { at: '2026-10-20T01:10:00.000Z' }), fired.body, responderReceipts.at(-1));
     assert.equal(recovery.status, 202);
     assert.equal(recovery.body.incidentId, id);
     assert.equal((await incident(id)).lifecycle, 'Monitoring', 'provider recovery after publication is evidence only');
     assert.equal((await incident(id)).updates.length, 4);
+    assert.deepEqual((await incident(id)).updates, publishedBefore.updates, 'recovery preserves every published update field');
     assert.equal(notes.length, 4);
+    t.diagnostic('PROBE INTAKE-009 6 published: returned recovery receipt -> exact source, incident, state and provider time; Monitoring and complete published updates retained');
+    t.diagnostic(`PROBE INTAKE-009 7: fresh triggers, acknowledged and escalated events -> unchanged complete public inventory (${baseline.artifacts.length} artifacts), response bytes and generation; private permalinks 404`);
 
     t.diagnostic("PagerDuty: export and restore without credentials.");
     await worker.dispose(); worker = undefined;
