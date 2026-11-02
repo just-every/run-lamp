@@ -30,12 +30,20 @@ export async function incidentSubscriptionApiFlow() {
     assert.equal((await call(path,writer.token)).status,403,"write scope does not grant address listing");
     assert.deepEqual(await state(),before,"scope refusals change no subscriber, audit, usage or outbound mail");
     const beforeUnsafe=await fixture.databaseState(),mailBeforeUnsafe=messages.length,outboundBeforeUnsafe=outbound.length;
-    for(const destination of ["https://[::1]/synthetic-lamp-1","https://[::ffff:127.0.0.1]/x","https://[::ffff:7f00:1]/x","https://[fc00::]/x"]) {
+    const unsafeDestinations=["https://[::1]/synthetic-lamp-1","https://[::ffff:127.0.0.1]/x","https://[::ffff:7f00:1]/x","https://[fc00::]/x",
+      "https://[64:ff9b::7f00:1]/x","https://[64:ff9b:1::7f00:1]/x","https://[2002:7f00:1::]/x","https://[::127.0.0.1]/x","https://[::7f00:1]/x",
+      "https://localhost./x","https://foo.localhost./x","https://[fec0::1]/x","https://[ff02::1]/x","https://[2001:db8::1]/x","https://[2001::1]/x",
+      "https://[::ffff:100.64.0.1]/x","https://100.64.0.1/x","https://198.18.0.1/x","https://192.0.0.1/x","https://224.0.0.1/x"];
+    for(const destination of unsafeDestinations) {
       const refused=await call(path,writer.token,"POST",{channel:"webhook",destination,contactEmail:address("unsafe-webhook")});
       assert.equal(refused.status,400,`${destination}: ${await refused.text()}`);
     }
     const publicRefused=await raw(fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination:"https://[::1]/synthetic-lamp-1",contactEmail:address("unsafe-public-webhook")}).toString()});
     assert.equal(publicRefused.status,400,await publicRefused.text());
+    for(const destination of unsafeDestinations.slice(4)) {
+      const refusedPublic=await raw(fixture.publicOrigin+"/subscribe/incident",{method:"POST",headers:{Origin:fixture.publicOrigin,"Content-Type":"application/x-www-form-urlencoded","CF-Connecting-IP":"203.0.113."+(unsafeDestinations.indexOf(destination)+1)},body:new URLSearchParams({incidentId:incident.id,channel:"webhook",destination,contactEmail:address("unsafe-public-webhook")}).toString()});
+      assert.equal(refusedPublic.status,400,`${destination}: ${await refusedPublic.text()}`);
+    }
     const afterUnsafe=await fixture.databaseState();
     // Refused public writes still consume their existing abuse-control allowance.
     beforeUnsafe.delete("request_rate_windows");afterUnsafe.delete("request_rate_windows");
@@ -48,6 +56,11 @@ export async function incidentSubscriptionApiFlow() {
     assert.ok((await fixture.list()).some(row=>row.id===safeId&&row.state==="pending"));
     assert.equal(fixture.messagesFor(address("public-webhook")).length,1,"a public HTTPS destination still receives confirmation");
     assert.equal((await call(`${path}/${safeId}`,writer.token,"DELETE")).status,204);
+    for(const [index,destination] of ["https://[2606:4700:4700::1111]/synthetic-lamp-2","https://[2001:4860:4860::8888]/synthetic-lamp-3"].entries()) {
+      const publicV6=await call(path,writer.token,"POST",{channel:"webhook",destination,contactEmail:address("public-v6-"+index)});
+      assert.equal(publicV6.status,201,`${destination}: ${await publicV6.clone().text()}`);
+      assert.equal((await call(`${path}/${(await publicV6.json()).subscriberId}`,writer.token,"DELETE")).status,204);
+    }
     const created=await call(path,writer.token,"POST",{channel:"email",email:address("native-incident"),includeReport:false});
     assert.equal(created.status,201,await created.clone().text());
     const native=await created.json();
