@@ -7,6 +7,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright";
+import { marked } from "marked";
+import { parseFragment } from "parse5";
 
 import { legacyApiFixtureSql } from "./fixtures/legacy-api-fixture.mjs";
 import { insertRealOperatorSession } from "./real-session-helper.mjs";
@@ -83,6 +85,81 @@ function appRequest(path, init = {}) {
 
 function pageRequest(path, init = {}) {
   return request(path, pageHost, init, pagePort);
+}
+
+const docsManifest = JSON.parse(await readFile("docs/site.json", "utf8"));
+const docsPages = docsManifest.sections.flatMap(section => section.pages);
+const normalizedText = value => value.replace(/\s+/g, " ").trim();
+
+// Read the source independently of the docs build and its virtual modules.
+// Inline formatting and rewritten destinations must preserve the guidance text.
+function markdownText(tokens) {
+  const text = tokens.map(token => token.type === "br" ? " " : token.tokens
+    ? markdownText(token.tokens) : token.text ?? "").join("");
+  const fragment = parseFragment(text.replace(/</g, "&lt;"));
+  const contents = node => node.nodeName === "#text" ? node.value : (node.childNodes ?? []).map(contents).join("");
+  return normalizedText(contents(fragment));
+}
+
+async function publicDocsProof() {
+  const browser = await chromium.launch({
+    executablePath: process.env.LAMP_CHROMIUM_PATH, headless: true,
+    args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"],
+  });
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
+  try {
+    const page = await context.newPage();
+    const response = await page.goto(`${appOrigin}/docs`);
+    assert.equal(response.status(), 200, "the built documentation index is public without scripting or a session");
+    const inventory = await page.locator(".docs-index-section").evaluateAll(sections => sections.map(section => ({
+      title: section.querySelector("h2").textContent.trim(),
+      pages: [...section.querySelectorAll(".docs-index-card")].map(card => ({
+        title: card.querySelector("h3").textContent.trim(),
+        summary: card.querySelector("p").textContent.trim(),
+        href: card.getAttribute("href"),
+      })),
+    })));
+    assert.deepEqual(inventory, docsManifest.sections.map(section => ({
+      title: section.title,
+      pages: section.pages.map(item => ({ title: item.title, summary: item.summary, href: `/docs/${item.slug}` })),
+    })), "the index exposes every selected section, title, guidance summary and exact destination in reading order");
+    const expectedNavigation = docsManifest.sections.map(section => ({
+      title: section.title,
+      links: section.pages.map(item => ({ title: item.title, href: `/docs/${item.slug}` })),
+    }));
+    const navigation = () => page.locator(".docs-sidebar .docs-nav-group").evaluateAll(groups => groups.map(group => ({
+      title: group.querySelector(".docs-nav-section").textContent.trim(),
+      links: [...group.querySelectorAll("a")].map(link => ({ title: link.textContent.trim(), href: link.getAttribute("href") })),
+    })));
+    assert.deepEqual(await navigation(), expectedNavigation, "the index sidebar exposes the same complete navigation");
+    assert.equal(await page.locator('.docs-sidebar-home[aria-current="page"]').getAttribute("href"), "/docs");
+
+    for (const item of docsPages) {
+      await page.locator(`.docs-index-card[href="/docs/${item.slug}"]`).click();
+      assert.equal(new URL(page.url()).pathname, `/docs/${item.slug}`, "each index card reaches its selected page");
+      assert.equal(await page.locator("h1").textContent(), item.title);
+      assert.equal(await page.locator(".docs-head .docs-lead").textContent(), item.summary);
+      assert.deepEqual(await navigation(), expectedNavigation, `${item.slug}: chapter navigation remains available`);
+      assert.equal(await page.locator('.docs-sidebar a[aria-current="page"]').getAttribute("href"), `/docs/${item.slug}`);
+      const tokens = marked.lexer(await readFile(item.source, "utf8"));
+      const chapters = tokens.filter(token => token.type === "heading" && token.depth > 1)
+        .map(token => ({ level: token.depth, text: markdownText(token.tokens) }));
+      assert.deepEqual(await page.locator(".docs-prose h2, .docs-prose h3, .docs-prose h4, .docs-prose h5, .docs-prose h6")
+        .evaluateAll(headings => headings.map(heading => ({ level: Number(heading.tagName.slice(1)), text: heading.textContent.replace(/\s+/g, " ").trim() }))),
+      chapters, `${item.slug}: the published chapters correspond to repository Markdown`);
+      const guidance = tokens.filter(token => token.type === "paragraph").map(token => markdownText(token.tokens));
+      assert.ok(guidance.length, `${item.source} supplies actual guidance beyond its title and summary`);
+      assert.deepEqual((await page.locator(".docs-prose > p").allTextContents()).map(normalizedText), guidance,
+        `${item.slug}: the built page retains the repository's guidance, including its current release content`);
+      assert.equal(await page.locator(".docs-source code").textContent(), item.source);
+      assert.equal((await context.cookies()).length, 0, "reading selected guidance never needs or creates an operator session");
+      await page.locator('.docs-sidebar-home[href="/docs"]').click();
+    }
+    console.log(JSON.stringify({ publicDocs: { sections: inventory.length, pages: docsPages.length, markdownGuidance: "matched" } }));
+  } finally {
+    await context.close();
+    await browser.close();
+  }
 }
 
 async function waitForPublicSnapshot() {
@@ -249,7 +326,7 @@ after(async () => {
   await rm(statePath, { recursive: true, force: true });
 });
 
-test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono/R2, Start auth, dispatch, 404s, and client navigation", { timeout: 240_000 }, async () => {
+test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation", { timeout: 240_000 }, async () => {
   {
   const browser = await chromium.launch({
     executablePath: process.env.LAMP_CHROMIUM_PATH, headless: true, args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"] });
@@ -323,6 +400,7 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono/
   assert.equal(formerLanding.headers.get("location"), `${appOrigin}/`);
   const docs = await request("/docs", appHost, { headers: { "Sec-Fetch-Mode": "navigate" } });
   assert.equal(docs.status, 200, "the app host serves the docs without a session");
+  await publicDocsProof();
   const docsPage = await request("/docs/moving-in", appHost, { headers: { "Sec-Fetch-Mode": "navigate" } });
   assert.equal(docsPage.status, 200, "a docs page is rendered by the built Worker");
   assert.match(await docsPage.text(), /class="docs-prose"/, "from the repository's Markdown compiled into the build");
@@ -345,6 +423,9 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono/
   assert.equal((await pageRequest("/signin")).status, 404, "sign-in is app-host-only");
   assert.equal((await pageRequest("/lamp")).status, 404, "the former landing address is app-host-only");
   assert.equal((await pageRequest("/docs")).status, 404, "the docs are app-host-only: the page host's paths are the status snapshot's");
+  for (const item of docsPages) {
+    assert.equal((await pageRequest(`/docs/${item.slug}`)).status, 404, `${item.slug}: selected documentation stays off the status host`);
+  }
   const pageHealth = await pageRequest("/health");
   assert.equal(pageHealth.status, 200, "the page host answers /health like the app host");
   const pageHealthBody = await pageHealth.json();
