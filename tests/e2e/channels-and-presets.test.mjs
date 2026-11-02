@@ -10,7 +10,7 @@ import { operationsAlertsFlow } from "./helpers/operations-alerts-flow.mjs";
 import { selfServeChatFlow } from "./helpers/self-serve-chat-flow.mjs";
 import { channelDeletionFlow } from "./helpers/channel-deletion-flow.mjs";
 import { channelsBrowserFlow } from "./helpers/channels-browser-flow.mjs";
-import { presetRecoveryFlow } from "./helpers/preset-recovery-flow.mjs";
+import { presetRecoveryFlow, publicSnapshot } from "./helpers/preset-recovery-flow.mjs";
 import { uptimePresetFlow } from "./helpers/uptime-preset-flow.mjs";
 import { uptimePairingFlow } from "./helpers/uptime-pairing-flow.mjs";
 import { openFollowUpsRuntime, eventuallyFollowUp } from "./helpers/follow-ups-runtime.mjs";
@@ -397,6 +397,8 @@ const sources = {};
 
 test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence", { timeout: 600_000 }, async t => {
   await uptimePairingFlow({ api, component, origin, cookie });
+  const inventory = () => Object.fromEntries(['incidents', 'incident_drafts', 'incident_updates', 'alert_receipts', 'audit_entries'].map(table => [table, sql(`SELECT * FROM ${table} ORDER BY id`)]));
+  const snapshot = () => publicSnapshot({ runtime, publicOrigin, sql, privateIncidents: Object.values(sources).flatMap(source => source.incident ? [source.incident] : []) });
   for (const preset of Object.keys(payloads)) {
     const target = await component(`Shop (${preset})`);
     const created = await post("/api/app/intake/sources", { name: `${preset} preset`, preset, componentId: target.id, credentialKind: "bearer-token" });
@@ -407,19 +409,51 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
     const listed = await api("/api/app/intake/sources");
     assert.doesNotMatch(listed.text, new RegExp(token), "the token is shown once");
     const send = (body, init = {}) => fetch(init.path ?? endpointUrl, { method: "POST", headers: { "Content-Type": "application/json", ...init.headers }, body: JSON.stringify(body) });
-    assert.equal((await send(payloads[preset].down)).status, 401, `${preset}: no credential`);
-    assert.equal((await send(payloads[preset].down, { headers: { Authorization: "Bearer wrong-token-wrong-token" } })).status, 401, `${preset}: wrong credential`);
+    for (const [credential, init] of [
+      ['missing', {}],
+      ['wrong', { headers: { Authorization: 'Bearer synthetic-lamp-wrong' } }],
+    ]) {
+      const before = inventory();
+      const refused = await send(payloads[preset].down, init);
+      assert.equal(refused.status, 401, `${preset}: ${credential} credential`);
+      await refused.arrayBuffer();
+      assert.deepEqual(inventory(), before, `${preset}: ${credential} credential changes no incident, draft, published update, receipt or audit record`);
+      t.diagnostic(`PROBE INTAKE-006 3 ${preset} ${credential}: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged`);
+    }
     const other = Object.keys(payloads).find((candidate) => candidate !== preset);
-    assert.equal((await send(payloads[other].down, { headers: { Authorization: `Bearer ${token}` } })).status, 400, `${preset}: another tool's payload`);
+    const invalid = await send(payloads[other].down, { headers: { Authorization: `Bearer ${token}` } });
+    assert.equal(invalid.status, 400, `${preset}: another tool's payload`);
+    const invalidResult = await invalid.json();
+    const invalidReadback = await api(`/api/app/intake/receipts?receipt=${invalidResult.receiptId}`);
+    assert.equal(invalidReadback.status, 200, invalidReadback.text);
+    assert.equal(invalidReadback.body.receipts.length, 1);
+    assert.deepEqual([invalidReadback.body.receipts[0].sourceId, invalidReadback.body.receipts[0].state, invalidReadback.body.receipts[0].incidentId], [id, 'invalid', null]);
+    const beforePublic = await snapshot();
+    const beforeUpdates = sql('SELECT * FROM incident_updates ORDER BY id');
     // Header for tools that send one, path segment for those that cannot.
     const accepted = await send(payloads[preset].down, preset === "datadog" || preset === "uptimerobot" ? { headers: { Authorization: `Bearer ${token}` } } : { path: `${endpointUrl}/${token}` });
     assert.equal(accepted.status, 202, `${preset}: documented alert`);
     const firing = await accepted.json();
-    const incident = (await api(`/api/app/incidents/${firing.incidentId}`)).body.incident;
+    assert.equal(firing.replayed, false, `${preset}: fresh accepted firing`);
+    const loaded = await api(`/api/app/incidents/${firing.incidentId}`);
+    assert.equal(loaded.status, 200, loaded.text);
+    const incident = loaded.body.incident;
+    assert.equal(incident.id, firing.incidentId);
+    assert.ok(incident.draft, `${preset}: operator can read the private draft`);
+    assert.equal(incident.draft.lifecycle, 'Investigating');
+    assert.equal(incident.lifecycle, 'Investigating');
     Object.assign(sources[preset], { firing, incident });
     assert.equal(incident.updates.length, 0, "never published");
     assert.deepEqual(incident.components.map((row) => row.componentId), [target.id]);
     assert.equal(incident.components[0].publishedAt ?? null, null);
+    assert.deepEqual(sql('SELECT * FROM incident_updates ORDER BY id'), beforeUpdates, `${preset}: firing appends no published update`);
+    const afterPublic = await snapshot();
+    const { absent: beforeAbsent, ...beforeArtifacts } = beforePublic;
+    const { absent: afterAbsent, ...afterArtifacts } = afterPublic;
+    assert.deepEqual(afterArtifacts, beforeArtifacts, `${preset}: firing preserves every retained artifact, public response byte and generation`);
+    assert.deepEqual(afterAbsent.slice(0, -1), beforeAbsent, `${preset}: earlier private permalinks retain their 404 bytes`);
+    assert.equal(afterAbsent.at(-1).reference, incident.reference, `${preset}: the new private permalink was probed too`);
+    t.diagnostic(`PROBE INTAKE-006 1 and 5 ${preset}: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged ${beforePublic.artifacts.length} retained artifacts, generation and public response bytes; private permalink 404`);
   }
   const receipts = (await api("/api/app/intake/receipts")).body.receipts;
   assert.equal(receipts.filter((receipt) => receipt.state === "invalid").length, 4, "refused payloads are recorded against their source");
