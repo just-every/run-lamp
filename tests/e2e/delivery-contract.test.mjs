@@ -2,7 +2,7 @@ import { incidentSubscriptionApiFlow } from './helpers/incident-subscription-api
 import { incidentFollowFlow } from './helpers/incident-follow-flow.mjs';
 import { test } from 'node:test';
 import { createServer } from 'vite';
-import { subscriberAddFlow } from './helpers/subscriber-add-flow.mjs';
+import { subscriberAddFlow, subscriberTokenAddFlow } from './helpers/subscriber-add-flow.mjs';
 import { subscriberIntakeBrowserFlow } from './helpers/subscriber-intake-browser-flow.mjs';
 import { subscriberExpiryFlow } from './helpers/subscriber-expiry-flow.mjs';
 import { subscriberPreferencesFlow } from './helpers/subscriber-preferences-flow.mjs';
@@ -19,6 +19,7 @@ import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
 test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 — Subscriber consent, selected publication, channel delivery, export and erasure', { timeout: 600_000 }, async t => {
   await subscriberExpiryFlow();
   await subscriberAddFlow();
+  await subscriberTokenAddFlow();
   await subscriberPreferencesFlow();
   await subscriberCsvFlow();
   await subscriberIntakeBrowserFlow(t);

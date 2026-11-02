@@ -1,10 +1,13 @@
 import { SubscriberLimitError } from "./limits";
 import { createUlid } from "../../shared/ids";
-import type { IntakeCounts, IntakeRow } from "./intake-schema";
+import type { IntakeCounts, IntakeRow, IntakeToken } from "./intake-schema";
 
 export interface IntakeInsert extends IntakeRow {id:string;tokenHash:string}
 export interface AddedBy {id:string;displayName:string}
 export interface SubscriberExportRow {channel:string;destination:string;contactEmail:string|null;state:string;components:string;consentAt:string|null}
+
+/** The audit view's reason names the management token that acted for its issuer. */
+const tokenReason=(tokenId:string|null)=>tokenId?`Management token ${tokenId}`:null;
 
 export function createSubscriberIntakeRepository(db:D1Database) {
   return {
@@ -22,12 +25,14 @@ export function createSubscriberIntakeRepository(db:D1Database) {
     async has(subscriberId:string):Promise<boolean> {
       return Boolean(await db.prepare("SELECT 1 FROM subscriber_intake WHERE subscriber_id=?").bind(subscriberId).first());
     },
-    async insert(rows:IntakeInsert[],operatorId:string,source:"csv"|"operator",batchId:string|null,counts:IntakeCounts,now:string):Promise<string[]> {
+    /** A token write repeats its live issuer fence here and names the token in each audit entry. */
+    async insert(rows:IntakeInsert[],operatorId:string,source:"csv"|"operator",batchId:string|null,counts:IntakeCounts,now:string,token?:IntakeToken):Promise<string[]> {
       const components=[...new Set(rows.flatMap(row=>row.componentIds))];
       const statements:D1PreparedStatement[]=[db.prepare(`SELECT CASE WHEN
         EXISTS(SELECT 1 FROM oa_operators WHERE id=? AND status='active')
         AND (SELECT COUNT(*) FROM components WHERE internal=0 AND id IN (SELECT value FROM json_each(?)))=json_array_length(?)
-        THEN 1 ELSE json('Subscriber intake changed.') END`).bind(operatorId,JSON.stringify(components),JSON.stringify(components))];
+        ${token?`AND (${token.authority.sql})`:""}
+        THEN 1 ELSE json('Subscriber intake changed.') END`).bind(operatorId,JSON.stringify(components),JSON.stringify(components),...(token?token.authority.params:[]))];
       const resultPositions:number[]=[];
       for(let start=0;start<rows.length;start+=50) {
         const json=JSON.stringify(rows.slice(start,start+50));
@@ -46,10 +51,10 @@ export function createSubscriberIntakeRepository(db:D1Database) {
         statements.push(db.prepare(`INSERT INTO subscriber_components(id,subscriber_id,component_id,created_at,updated_at)
           SELECT upper(substr(hex(randomblob(16)),1,26)),s.id,c.value,?,? FROM json_each(?) r
           JOIN subscriber_directory s ON s.id=json_extract(r.value,'$.id') CROSS JOIN json_each(r.value,'$.componentIds') c`).bind(now,now,json));
-        statements.push(db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
-          SELECT ? || '/' || s.id,'subscriber',s.id,?,?,json_object('channel',s.channel),?,?
+        statements.push(db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,reason,payload_json,created_at,updated_at)
+          SELECT ? || '/' || s.id,'subscriber',s.id,?,?,?,CASE WHEN ? IS NULL THEN json_object('channel',s.channel) ELSE json_object('channel',s.channel,'tokenId',?) END,?,?
           FROM json_each(?) r JOIN subscriber_directory s ON s.id=json_extract(r.value,'$.id')`)
-          .bind(createUlid(),source==="csv"?"subscriber.imported":"subscriber.added",operatorId,now,now,json));
+          .bind(createUlid(),source==="csv"?"subscriber.imported":"subscriber.added",operatorId,tokenReason(token?.id??null),token?.id??null,token?.id??null,now,now,json));
       }
       if(batchId)statements.push(db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
         SELECT ?,'subscriber-import',?,'subscriber.import-applied',?,json_object('created',COUNT(*),'skipped',?-COUNT(*),'refused',?),?,?
@@ -82,7 +87,7 @@ export function createSubscriberIntakeRepository(db:D1Database) {
         WHERE a.batch_id=? AND (a.invitation_claimed_at IS NULL OR a.invitation_claimed_at<s.created_at) AND s.state='pending'
           AND julianday(s.created_at,'+72 hours')>julianday('now')`).bind(batchId).first<{count:number}>())?.count??0);
     },
-    async claimInvitation(subscriberId:string,emailHash:string,now:string,operatorId:string|null,ownerOnly:boolean):Promise<boolean> {
+    async claimInvitation(subscriberId:string,emailHash:string,now:string,operatorId:string|null,ownerOnly:boolean,tokenId:string|null=null):Promise<boolean> {
       const cutoff=new Date(Date.parse(now)-24*60*60_000).toISOString();
       const allowed=`EXISTS(SELECT 1 FROM subscriber_intake a JOIN subscriber_directory s ON s.id=a.subscriber_id
         WHERE s.id=? AND s.state='pending' AND (a.invitation_claimed_at IS NULL OR a.invitation_claimed_at<s.created_at) AND julianday(s.created_at,'+72 hours')>julianday('now'))
@@ -94,9 +99,9 @@ export function createSubscriberIntakeRepository(db:D1Database) {
           WHERE subscriber_confirmation_attempts.last_sent_at<? RETURNING email_hash`)
           .bind(emailHash,now,now,now,subscriberId,operatorId,operatorId,Number(ownerOnly),cutoff),
         db.prepare(`UPDATE subscriber_intake SET invitation_claimed_at=? WHERE subscriber_id=? AND changes()=1`).bind(now,subscriberId),
-        db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
-          SELECT ?,'subscriber',?,'subscriber.invitation-requested',?,'{}',?,? WHERE changes()=1`)
-          .bind(createUlid(),subscriberId,operatorId,now,now),
+        db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,reason,payload_json,created_at,updated_at)
+          SELECT ?,'subscriber',?,'subscriber.invitation-requested',?,?,CASE WHEN ? IS NULL THEN '{}' ELSE json_object('tokenId',?) END,?,? WHERE changes()=1`)
+          .bind(createUlid(),subscriberId,operatorId,tokenReason(tokenId),tokenId,tokenId,now,now),
       ]);
       return slot.results.length===1;
     },

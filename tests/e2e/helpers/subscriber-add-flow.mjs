@@ -177,3 +177,109 @@ export async function subscriberAddFlow() {
     for (const [table, data] of remaining) for (const address of [email, contact, destination]) assert.ok(!data.includes(address), `subscriber erasure left a retained address in ${table}`);
   } finally { await fixture.close(); }
 }
+
+/** API-001's subscribers:write token runs the same native intake as Add
+ * subscriber, acting as its issuer: one confirmation, pending until confirmed,
+ * the exact selection, and an audit naming the issuer and the token. */
+export async function subscriberTokenAddFlow() {
+  const fixture = await openSubscriberManagementFixture();
+  const { api, post, raw, appOrigin, list, messagesFor, webhookRequests } = fixture;
+  try {
+    const owner = (await api("/api/app/session")).body.operator;
+    const first = await fixture.createComponent("Synthetic Lamp token first API");
+    const second = await fixture.createComponent("Synthetic Lamp token second API");
+    const third = await fixture.createComponent("Synthetic Lamp token unselected API");
+    const internal = await fixture.createComponent("Synthetic Lamp token hidden API", true);
+    const mint = async scopes => {
+      const minted = await post("/api/app/management-tokens", { name: "Synthetic Lamp subscriber integration", scopes, expiresInSeconds: 3600 });
+      assert.equal(minted.status, 201, minted.text);
+      return minted.body;
+    };
+    const writer = await mint(["subscribers:write"]), reader = await mint(["read", "subscribers:read"]);
+    const create = async (token, input) => {
+      const response = await raw(appOrigin + "/api/v1/subscribers", { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(input) });
+      const text = await response.text();
+      let body = null; try { body = JSON.parse(text); } catch { /* the status assertion reports the text */ }
+      return { status: response.status, body, text };
+    };
+    const selected = row => row.componentSelections.map(selection => selection.componentId).sort();
+    const both = [first.id, second.id].sort();
+    const email = "synthetic-lamp-token-reader@example.test";
+    const destination = "https://receiver.example.test/synthetic-lamp-1", contact = "synthetic-lamp-token-hook@example.test";
+    const added = [];
+    for (const [input, recipient] of [
+      [{ channel: "email", email, componentIds: [second.id, first.id] }, email],
+      [{ channel: "webhook", destination, contactEmail: contact, componentIds: [second.id, first.id] }, contact],
+    ]) {
+      const created = await create(writer.token, input);
+      assert.equal(created.status, 201, created.text);
+      assert.equal(created.body.created, true);
+      assert.equal(created.body.confirmationSent, true);
+      assert.equal(created.body.subscriber.state, "pending");
+      assert.deepEqual(created.body.subscriber.componentIds, both);
+      assert.equal(messagesFor(recipient).length, 1, "the token's add sends exactly one confirmation");
+      assert.match(messagesFor(recipient)[0].text, /\/confirm-subscription\//);
+      added.push(created.body.subscriberId);
+    }
+    const readBack = async () => { const rows = await list(); return added.map(id => rows.find(row => row.id === id)); };
+    const [emailRow, webhookRow] = await readBack();
+    const stored = row => ({ channel: row.channel, destination: row.destination, contactEmail: row.contactEmail, state: row.state, selectionMode: row.selectionMode });
+    assert.deepEqual(stored(emailRow), { channel: "email", destination: email, contactEmail: null, state: "pending", selectionMode: "selected" });
+    assert.deepEqual(stored(webhookRow), { channel: "webhook", destination, contactEmail: contact, state: "pending", selectionMode: "selected" });
+    for (const row of [emailRow, webhookRow]) {
+      assert.deepEqual(selected(row), both, "the token's exact component selection reads back");
+      assert.deepEqual(row.addedBy, { id: owner.id, displayName: owner.displayName }, "the list names the token's issuer");
+    }
+    const repeated = await create(writer.token, { channel: "email", email, componentIds: [third.id] });
+    assert.equal(repeated.status, 200, repeated.text);
+    assert.deepEqual(repeated.body, { subscriberId: emailRow.id, created: false, confirmationSent: false, subscriber: null }, "an existing destination is neither changed nor disclosed");
+    assert.equal(messagesFor(email).length, 1, "a repeated token add sends no second confirmation");
+    assert.deepEqual(selected((await readBack())[0]), both);
+    const tokenReason = `Management token ${writer.credential.id}`;
+    for (const action of ["subscriber.added", "subscriber.invitation-requested"]) {
+      const audit = await api(`/api/app/audit-log?action=${action}&limit=100`);
+      assert.equal(audit.status, 200, audit.text);
+      for (const id of added) assert.deepEqual(audit.body.entries.filter(entry => entry.entityId === id).map(entry => [entry.actorId, entry.reason]), [[owner.id, tokenReason]], `${action} is attributed to the token and its issuer`);
+      for (const address of [email, contact, destination]) assert.ok(!audit.text.includes(address), "token audit entries copy no destination");
+    }
+    assert.ok(Number.isFinite((await api("/api/app/management-tokens")).body.tokens.find(token => token.id === writer.credential.id).lastUsedAt), "the token records its use");
+
+    await fixture.publish(first, "Synthetic Lamp token pending publication");
+    assert.equal(messagesFor(email).length, 1, "a pending token-added email receives no incident update");
+    assert.equal(messagesFor(contact).length, 1, "a pending webhook's contact receives only its confirmation");
+    assert.equal(webhookRequests.length, 0, "a pending token-added endpoint receives no delivery");
+    await fixture.confirm(email);
+    await fixture.confirm(contact);
+    for (const row of await readBack()) {
+      assert.equal(row.state, "active", "the emailed confirmation activates the token-added subscriber");
+      assert.deepEqual(selected(row), both, "confirmation keeps the exact selection");
+    }
+    fixture.recoverWebhook();
+    const confirmedPublication = await fixture.publish(second, "Synthetic Lamp token confirmed publication");
+    const unselectedPublication = await fixture.publish(third, "Synthetic Lamp token unselected publication");
+    const delivered = messagesFor(email).filter(message => !message.text.includes("/confirm-subscription/"));
+    assert.equal(delivered.length, 1, "the active email receives its selected update and nothing for the third component");
+    assert.ok(delivered[0].text.includes(confirmedPublication.incident.reference));
+    assert.ok(!delivered[0].text.includes(unselectedPublication.incident.reference));
+    assert.equal(webhookRequests.length, 1, "the active endpoint receives its selected update once");
+    assert.ok(webhookRequests[0].headers["webhook-signature"]);
+
+    // Every authenticated request counts toward its own token's minute window
+    // (API-001's per-token limit); a refusal changes no other row.
+    const apartFromWindow = (state, tokenId) => new Map([...state].map(([name, rows]) => [name, name === "request_rate_windows" ? JSON.stringify(JSON.parse(rows).filter(row => JSON.parse(row).rate_key !== `management-token:${tokenId}`)) : rows]));
+    const refused = async (token, input, status, counted) => {
+      const before = await fixture.databaseState(), mail = fixture.messages.length, hooks = webhookRequests.length;
+      const response = await create(token.token, input);
+      assert.equal(response.status, status, response.text);
+      assert.equal(fixture.messages.length, mail, "a refused token request sends no mail");
+      assert.equal(webhookRequests.length, hooks, "a refused token request contacts no endpoint");
+      if (counted) assert.deepEqual(apartFromWindow(await fixture.databaseState(), token.credential.id), apartFromWindow(before, token.credential.id), "a refused token request changes no row");
+      else await fixture.assertUnchanged(before);
+    };
+    await refused(reader, { channel: "email", email: "synthetic-lamp-token-unscoped@example.test", componentIds: [first.id] }, 403, false);
+    await refused(writer, { channel: "email", email: "synthetic-lamp-token-internal@example.test", componentIds: [internal.id] }, 400, true);
+    await refused(writer, { channel: "webhook", destination: "http://127.0.0.1/synthetic-lamp-1", contactEmail: "synthetic-lamp-token-unsafe@example.test", componentIds: [first.id] }, 400, true);
+    assert.equal((await post(`/api/app/management-tokens/${writer.credential.id}/revoke`, {})).status, 200);
+    await refused(writer, { channel: "email", email: "synthetic-lamp-token-revoked@example.test", componentIds: [first.id] }, 401, false);
+  } finally { await fixture.close(); }
+}
