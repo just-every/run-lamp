@@ -5,6 +5,7 @@ import { chatDeskNativeFlow } from '../chat-desk/flow.mjs';
 import { assertLinkedUpdateHtml, assertLinkedFeed } from './helpers/update-link-evidence.mjs';
 import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
+import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -225,6 +226,12 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.ok(availability.incidents.some(row => row.id === historical.id));
     assert.ok(Number(availability.downtimeMinutes) > 0);
     await j.visible(`/history/${start.slice(0, 7)}`, historical.title);
+    const retainedHistorical = await j.read(historical.id);
+    assert.deepEqual(retainedHistorical.updates.map(update => update.id).sort(), [original.id, historicalResolution.id].sort());
+    assertHistoryRecord(await j.publicText(`/history/${start.slice(0, 7)}`), {
+      href: `/incidents/${historical.reference}`, title: historical.title, state: 'Resolved', startsAt: start, endsAt: end,
+      duration: '1h 0m', components: [component.name], updates: [original, historicalResolution],
+    });
     for (const path of [`/incidents/${historical.reference}`, `/history/${start.slice(0, 7)}`]) {
       const html = await j.visible(path, resolutionDetails);
       for (const [details, lifecycle, instant, display] of [
