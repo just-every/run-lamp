@@ -12,6 +12,7 @@ import { channelDeletionFlow } from "./helpers/channel-deletion-flow.mjs";
 import { channelsBrowserFlow } from "./helpers/channels-browser-flow.mjs";
 import { presetRecoveryFlow, publicSnapshot } from "./helpers/preset-recovery-flow.mjs";
 import { uptimePresetFlow } from "./helpers/uptime-preset-flow.mjs";
+import { intakeAuthenticationFlow, intakeInventory } from "./helpers/intake-byte-flow.mjs";
 import { uptimePairingFlow } from "./helpers/uptime-pairing-flow.mjs";
 import { openFollowUpsRuntime, eventuallyFollowUp } from "./helpers/follow-ups-runtime.mjs";
 import { groupedAlertsFlow } from "./helpers/grouped-alerts-flow.mjs";
@@ -412,12 +413,15 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
     for (const [credential, init] of [
       ['missing', {}],
       ['wrong', { headers: { Authorization: 'Bearer synthetic-lamp-wrong' } }],
+      ['malformed', { headers: { Authorization: `Basic ${token}` } }],
     ]) {
       const before = inventory();
+      const completeBefore = await intakeInventory(sql);
       const refused = await send(payloads[preset].down, init);
       assert.equal(refused.status, 401, `${preset}: ${credential} credential`);
       await refused.arrayBuffer();
       assert.deepEqual(inventory(), before, `${preset}: ${credential} credential changes no incident, draft, published update, receipt or audit record`);
+      assert.deepEqual(await intakeInventory(sql), completeBefore, `${preset}: ${credential} credential preserves complete persisted records`);
       t.diagnostic(`PROBE INTAKE-006 3 ${preset} ${credential}: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged`);
     }
     const other = Object.keys(payloads).find((candidate) => candidate !== preset);
@@ -460,7 +464,8 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
   const page = await (await fetch(`${publicOrigin}/api/public/status`)).text();
   assert.doesNotMatch(page, /Checkout latency|Shop \(/, "no public surface changes");
   await presetRecoveryFlow({ api, post, runtime, publicOrigin, sql, sources, payloads, t });
-  await uptimePresetFlow({ api, post, component, publicOrigin });
+  await intakeAuthenticationFlow({ t });
+  await uptimePresetFlow({ api, post, component, publicOrigin, sql });
   await groupedAlertsFlow({ api, post, component, sql, origin, publicOrigin, cookie });
   await monitorSetupJourney({ api, component, origin, publicOrigin, cookie });
   await metricSetupJourney({ api, post, component, origin, cookie });
