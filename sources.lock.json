@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ba8ca0fe996de6b8a0b03d790fd062691a5da2d7dda44ab5a916fcfd0a754ec0",
+      "sha256": "70878b9554cbbb9036a06b8b999d46dfd25121dfb98cbd3d566d09c018e7001a",
       "executable": false
     },
     "DEMO.md": {
@@ -7176,7 +7176,7 @@
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-flow.mjs": {
-      "sha256": "b011f642b696f30e407eb4b01c99298d20164faa3efe3d2f3f0c79b6dab2be67",
+      "sha256": "26bf4d60066186a78b114f36bd3c99e25d3ea367bf4e9cbc437ec7a01e903fd9",
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-runtime.mjs": {
@@ -7184,7 +7184,7 @@
       "executable": false
     },
     "tests/e2e/helpers/traffic-resolution-flow.mjs": {
-      "sha256": "2828af0b711cf37703a1a666571638eb5833388e462bdc3501da932f84bea239",
+      "sha256": "ca4867563c6cf6ab510e5185b8d19b36d9ef15ba5cfb9d7290b462fe1e031e45",
       "executable": false
     },
     "tests/e2e/helpers/update-component-flow.mjs": {
