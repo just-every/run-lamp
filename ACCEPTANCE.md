@@ -8,12 +8,12 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 44 | 145 | 49 | 238 |
+| Core | 45 | 144 | 49 | 238 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 44 | 145 | 54 | 243 |
+| Full target | 45 | 144 | 54 | 243 |
 
-Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Carried-done recheck on 2 November 2026 by ct judge ct-judge-lamp-restore-20261102-0900, from the code and tests at commit `71bbf96d9499f3c305b6d459e96b127fb9eb8a8a` with push Verify 41392885924: PAGE-004, PAGE-011, COMP-004, UPTIME-002, UPTIME-003, INCIDENT-002, INCIDENT-005, INCIDENT-006, INCIDENT-009, UPDATE-004, MAINT-002, SUB-003, SUB-014, INTAKE-004, INTAKE-007 and HIST-003 are restored to done; COMP-005, INCIDENT-001 and SUB-015 are rechecked and stay partial; other clause judgments are retained. SUB-017 is rechecked on this landing candidate using the API-001 token subscriber create and non-owner invitation refusal journeys judged at `18b2432f9f0d7f391e1fffc014b34ecbab831868` with push Verify 41536706829; earlier clause judgments remain unchanged. SUB-004 is rechecked on this landing candidate using `tests/e2e/helpers/subscriber-components-flow.mjs` (subscriberComponentsFlow), loaded by the Subscriber consent journey in `tests/e2e/delivery-contract.test.mjs`, judged at 2dc37452faf56a714522db6ec4481a51f62600e0 by ct-judge-lamp-sub004-20261103-1630; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
+Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Carried-done recheck on 2 November 2026 by ct judge ct-judge-lamp-restore-20261102-0900, from the code and tests at commit `71bbf96d9499f3c305b6d459e96b127fb9eb8a8a` with push Verify 41392885924: PAGE-004, PAGE-011, COMP-004, UPTIME-002, UPTIME-003, INCIDENT-002, INCIDENT-005, INCIDENT-006, INCIDENT-009, UPDATE-004, MAINT-002, SUB-003, SUB-014, INTAKE-004, INTAKE-007 and HIST-003 are restored to done; COMP-005, INCIDENT-001 and SUB-015 are rechecked and stay partial; other clause judgments are retained. SUB-017 is rechecked on this landing candidate using the API-001 token subscriber create and non-owner invitation refusal journeys judged at `18b2432f9f0d7f391e1fffc014b34ecbab831868` with push Verify 41536706829; earlier clause judgments remain unchanged. SUB-004 is rechecked on this landing candidate using `tests/e2e/helpers/subscriber-components-flow.mjs` (subscriberComponentsFlow), loaded by the Subscriber consent journey in `tests/e2e/delivery-contract.test.mjs`, judged at 2dc37452faf56a714522db6ec4481a51f62600e0 by ct-judge-lamp-sub004-20261103-1630; earlier clause judgments remain unchanged. UPTIME-005 is rechecked on this landing candidate using statedUptimeMethodJourney in `tests/e2e/public-contract.test.mjs` and the no-component publication refusal in `tests/e2e/publishing-contract.test.mjs`, judged at 94fca2bdd4b2c60bd06b9319fcbe4e49567983b7 by ct-judge-lamp-uptime005-fix1-20261103-1800; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
 
 ## Core
 
@@ -381,7 +381,7 @@ Core · published · **partial** · Cites BASE-AUDIT-001
 
 #### UPTIME-005 — Stated method
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** The initial public page explains uptime weights and window beside its figures; every published incident contributes through its component claims.
 
@@ -389,8 +389,8 @@ Core · published · **partial**
 1. Initial HTML names the selected weight of each state and the reporting-window length.
 2. No published incident is invisible to uptime: publishing requires at least one claimed component.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
-**Gap.** The cited evidence asserts the other audited outcomes; unasserted: Every state’s selected weight is asserted; Every published incident’s component claim affects the displayed uptime.
+**Evidence.** `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story), loading statedUptimeMethodJourney: on the default, Calm headline, Uptime-history-led and Regions map layouts the initial HTML beside the component figure names all five selected weights and the ninety-day window; a native incident published and resolved at controlled instants contributes thirty downtime minutes and reduces the associated public collection and root-page figure from 100.00% to 66.66%. `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion): publishing the reviewed draft of an incident with no attached component is refused 400 with the draft, every publication and four public surfaces unchanged.
+**Gap.** None.
 
 #### UPTIME-006 — Daily record
 
