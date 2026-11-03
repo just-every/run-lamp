@@ -7,6 +7,9 @@ import { assertLinkedUpdateHtml, assertLinkedFeed } from './helpers/update-link-
 import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
+import { snapshotMutationsFlow } from './helpers/snapshot-mutations-flow.mjs';
+
+test('PAGE-005 — native content mutations reconcile complete page, Atom and widget generations', snapshotMutationsFlow);
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
