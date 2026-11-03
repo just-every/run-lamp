@@ -5596,7 +5596,7 @@
       "executable": false
     },
     "src/core/platform/auth/http.ts": {
-      "sha256": "8f4539d38a5f4d3380d5ca5084ceb9f679bd49cfef0059884cf209a218d696f4",
+      "sha256": "a7ef5f2279c29a4530a3e2e6e9c086f952afb1d7dc9537cefa678c1a40e8576b",
       "executable": false
     },
     "src/core/platform/auth/identity-provider-guides.ts": {
@@ -6772,7 +6772,7 @@
       "executable": false
     },
     "tests/demo/owner-claim.test.mjs": {
-      "sha256": "9ef80ee15e5946b7592fa1c75148781002130ee61d43ff079d1583d0559c91f0",
+      "sha256": "35e0017ab77e8f3ff841dc86bf29f0448970e4ee2eaacc89dbc52f76157ae64e",
       "executable": false
     },
     "tests/dev-ingress/runtime.mjs": {
