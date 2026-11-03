@@ -3122,6 +3122,8 @@ The replay of `acbc1ef` adds native Cron assertions in `tests/e2e/publishing-con
 
 The replay of `f61d588` adds assertions in `tests/e2e/publishing-contract.test.mjs` for peak impact after recovery, absent impact after detaching a never-published incident’s sole component, and refusal to publish its reviewed draft without changing the incident, persisted publications or checked public surfaces. These assertions are INCIDENT-002’s done evidence from the 2 November 2026 recheck.
 
+INTAKE-001 authentication proof from candidate `fe392d3dfa571fb8ed43d6cb3a7a2ba90249f759` is replayed onto current main: the registered channels-and-presets journey asserts exact-byte HMAC authentication, both five-minute boundaries, bearer admission, and complete persisted-record invariance after credential refusal. Main’s newer partial Status, Evidence and Gap judgment remains authoritative; these additional assertions do not promote the clause.
+
 INTAKE-019 proof is from the code and tests at commit `3e8eddbd01b6569201bb2c14cd4cf187fc959ac6` (29 October 2026); the candidate retains those source and journey bytes. Other clause judgments remain inherited.
 
 The replay of `cc385f264c61cec1aacb67c2aa57b3e42bc32e97` adds assertions in `tests/e2e/publishing-contract.test.mjs` for the saved public commitment instant and configured-zone text, original historical publication instants on permanent and monthly-history pages, original component-history transitions and silent historical corrections. The original monthly-history title assertion remains. These assertions are INCIDENT-006’s and INCIDENT-009’s done evidence from the 2 November 2026 recheck.
