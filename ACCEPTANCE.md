@@ -837,7 +837,7 @@ Core · published · **partial** · Cites BASE-PUBLIC-001
 2. Deactivation or deletion revokes that subscription's tokens.
 3. Token-page responses suppress referrers and indexing.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/helpers/subscriber-token-authority-flow.mjs`; the managed setup generates a 32-byte cryptographic signing secret. Scope substitution, token and subscription identity substitution, signature tampering and use as operator authority are refused without changing subscription, token, selection or component inventories. Valid management changes only its own subscription. Native deletion of pending and active controls revokes every issued scope; old confirmation, management and unsubscribe authority cannot restore or change any subscription, while an unrelated management link remains usable. The same journey and `tests/e2e/helpers/subscriber-preferences-flow.mjs` (subscriberPreferencesFlow) prove management refusal and unchanged records after unsubscribe. Token responses retain referrer suppression, indexing suppression and no cookies. Additional candidate assertions supplement the evidence; main's partial judgment and recorded gap remain authoritative.
 **Gap.** Old cited evidence asserts referrer suppression; indexing suppression. Unasserted: one-subscription scope and no unrelated capability; at least 128 bits of entropy; a previously usable management token is refused after unsubscribe; deletion revokes every token.
 
 #### SUB-006 — One-click unsubscribe
