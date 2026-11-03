@@ -23,6 +23,7 @@ export function chatTransports(getRuntime) {
   const slack = async (action, options = {}) => {
     const r = getRuntime();
     const payload = structuredClone(slackFixture); payload.user.id = options.unlinked ? 'synthetic-lamp-99' : payload.user.id;
+    if (options.deliveryId) payload.trigger_id = options.deliveryId;
     if (options.identity) { payload.team.id = options.identity.tenant; payload.user.id = options.identity.subject; }
     payload.actions[0].value = JSON.stringify(action);
     if (options.card) {
@@ -49,6 +50,7 @@ export function chatTransports(getRuntime) {
   const teams = async (action, options = {}) => {
     const r = getRuntime();
     const body = structuredClone(teamsFixture);
+    if (options.deliveryId) body.id = options.deliveryId;
     if (options.unlinked) body.from.aadObjectId = 'synthetic-lamp-99';
     if (options.identity) { body.channelData.tenant.id = options.identity.tenant; body.from.aadObjectId = options.identity.subject; }
     if (options.code) { body.type = 'message'; body.text = `link ${options.code}`; delete body.name; delete body.value; }
@@ -71,6 +73,78 @@ export function chatTransports(getRuntime) {
     return response(await r.worker.dispatchFetch((r.origin ?? origin) + '/api/chat/teams', { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token(options.wrongAudience ? 'synthetic-lamp-incorrect' : r.appId, options)}` } }));
   };
   return { slack, teams };
+}
+
+async function chatReviewFlow({ r, slack, teams, card, t }) {
+  const reviewer = await r.db.prepare('SELECT id,email FROM oa_operators WHERE id<>?').bind(r.operator).first();
+  const reviewerCookie = await r.signIn(reviewer.email);
+  const identity = { tenant: 'synthetic-lamp-review-tenant', subject: 'synthetic-lamp-reviewer' };
+  const component = (await r.call('/api/app/components', { groupId: null, name: 'Synthetic Lamp reviewed component', description: '', internal: false, displayOrder: 10, note: '' })).body.component;
+  const records = () => Promise.all([
+    'incidents', 'incident_drafts', 'incident_updates', 'incident_components', 'components',
+    'component_state_history', 'component_claim_events', 'notification_channel_selections',
+    'notification_outbox', 'notification_deliveries', 'audit_entries',
+  ].map(async table => ({ table, rows: (await r.db.prepare(`SELECT * FROM ${table}`).all()).results.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))) })));
+  for (const [name, send] of [['Slack', slack], ['Teams', teams]]) {
+    for (const [credential, actor] of [[r.cookie, {}], [reviewerCookie, { identity }]]) {
+      const minted = await r.call('/api/app/chat-links', {}, 'POST', credential);
+      assert.equal(minted.status, 201, JSON.stringify(minted.body));
+      assert.equal((await send(null, { ...actor, code: minted.body.code })).status, 200);
+    }
+    const opened = await send({ action: 'open', title: `Synthetic Lamp ${name} reviewed publication`, components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }], update: { ...update(), customerImpact: '' } });
+    assert.equal(opened.status, 200, JSON.stringify(opened.body));
+    const { incidentId } = opened.body.result;
+    const incomplete = card(name, opened.body);
+    const invalidBefore = await records();
+    const overlength = await send({ action: 'save', incidentId, version: opened.body.result.version, update: { ...update(), affectedAudience: 'x'.repeat(251) } });
+    assert.equal(overlength.status, 400, `${name} uses the web field-length validation`);
+    assert.deepEqual(await records(), invalidBefore, `${name} invalid field input changes no business records`);
+    const incompletePreview = await send(null, { card: incomplete, control: 'Preview update' });
+    assert.equal(incompletePreview.status, 200, JSON.stringify(incompletePreview.body));
+    const invalidPublish = await send(null, { card: card(name, incompletePreview.body), control: 'Publish update' });
+    assert.equal(invalidPublish.status, 409);
+    assert.equal(invalidPublish.body.error, 'Who is affected and customer impact are required.');
+    assert.deepEqual(await records(), invalidBefore, `${name} incomplete publication changes no business records`);
+    const completed = await send(null, { card: incomplete, control: 'Save draft', values: update() });
+    assert.equal(completed.status, 200, JSON.stringify(completed.body));
+    const editor = card(name, completed.body);
+    const before = await records();
+    const publicBefore = await (await r.worker.dispatchFetch(page + '/')).text();
+    const selfReview = await send(null, { card: editor, control: 'Review draft' });
+    assert.equal(selfReview.status, 409);
+    assert.equal(selfReview.body.error, 'A different operator must review the saved draft.');
+    assert.deepEqual(await records(), before, `${name} self-review refusal changes no incident, draft, claim, history, publication, delivery or audit record`);
+    const previewed = await send(null, { card: editor, control: 'Preview update' });
+    assert.equal(previewed.status, 200, JSON.stringify(previewed.body));
+    const unreviewed = await send(null, { card: card(name, previewed.body), control: 'Publish update' });
+    assert.equal(unreviewed.status, 409);
+    assert.equal(unreviewed.body.error, 'This update requires review by another operator.');
+    assert.deepEqual(await records(), before, `${name} unreviewed publication refusal changes no persisted business records`);
+    assert.equal(await (await r.worker.dispatchFetch(page + '/')).text(), publicBefore, `${name} refused review and publication expose no public change`);
+    const reviewed = await send(null, { card: editor, control: 'Review draft', identity });
+    assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+    const draft = (await r.call(`/api/app/incidents/${incidentId}`)).body.incident.draft;
+    assert.equal(draft.authorOperatorId, r.operator);
+    assert.equal(draft.reviewedByOperatorId, reviewer.id, `${name} distinct linked reviewer is recorded on the saved draft`);
+    assert.ok(Number.isFinite(Date.parse(draft.reviewedAt)));
+    const freshPreview = await send(null, { card: card(name, reviewed.body), control: 'Preview update', deliveryId: `synthetic-lamp-reviewed-${name}` });
+    assert.equal(freshPreview.status, 200, JSON.stringify(freshPreview.body));
+    const published = await send(null, { card: card(name, freshPreview.body), control: 'Publish update' });
+    assert.equal(published.status, 200, JSON.stringify(published.body));
+    const current = (await r.call(`/api/app/incidents/${incidentId}`)).body.incident;
+    assert.equal(current.updates.length, 1);
+    assert.equal(current.updates[0].id, published.body.result.updateId);
+    assert.equal(current.updates[0].authorOperatorId, r.operator, `${name} explicit Publish retains the linked publisher's attribution`);
+    assert.equal((await r.db.prepare('SELECT author_operator_id FROM incident_updates WHERE id=?').bind(published.body.result.updateId).first()).author_operator_id, r.operator);
+    const audit = await r.db.prepare("SELECT operator_id FROM audit_entries WHERE action='chat-desk' AND entity_id=?").bind(published.body.result.updateId).first();
+    assert.equal(audit.operator_id, r.operator);
+    const publicAfter = await (await r.worker.dispatchFetch(page + `/incidents/${current.reference}`)).text();
+    assert.ok(publicAfter.includes(current.title) && publicAfter.includes(draft.customerImpact), `${name} reviewed publication reaches the public incident`);
+    const after = await records();
+    assert.equal((await send(null, { card: card(name, freshPreview.body), control: 'Publish update' })).status, 409);
+    assert.deepEqual(await records(), after, `${name} replay creates no second publication`);
+    t.diagnostic(`PROBE INCIDENT-012 point 4 ${name}: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused`);
+  }
 }
 
 export async function chatDeskNativeFlow(t) {
@@ -100,23 +174,52 @@ export async function chatDeskNativeFlow(t) {
       assert.equal((await send(null, { code: minted.body.code })).status, 200);
       assert.equal((await send(null, { code: minted.body.code })).status, 409, 'a link code is single use');
       const composer = await send(null, { compose: true }); assert.equal(composer.status, 200, JSON.stringify(composer.body));
-      const openControls = { card: card(name, composer.body), control: 'Open draft', values: { title: open.title, ...open.update, state: 'Major outage', components: name === 'Slack' ? [componentIds[0]] : componentIds[0] } };
+      const openControls = { card: card(name, composer.body), control: 'Open draft', values: { title: open.title, ...open.update, state: 'Major outage', components: name === 'Slack' ? [componentIds[0], componentIds[2]] : componentIds[0] } };
       const opened = await send(null, openControls); assert.equal(opened.status, 200, JSON.stringify(opened.body));
       if (name === 'Teams') assert.equal(opened.body.task.value.card.content.type, 'AdaptiveCard');
       let result = opened.body.result, id = result.incidentId, editorCard = card(name, opened.body);
       assert.equal((await r.call(`/api/app/incidents/${id}`)).body.incident.updates.length, 0);
       assert.equal((await send(null, openControls)).status, 409, 'replayed open creates no second draft');
       assert.equal(await count('incidents'), before + 1);
-      if (name === 'Teams') {
-        const attached = await send(null, { card: editorCard, control: 'Save draft', values: Object.fromEntries(componentIds.slice(1).map(componentId => [`component_${componentId}`, 'Major outage'])) });
+      const claims = rows => rows.map(({ componentId, state }) => ({ componentId, state })).sort((a, b) => a.componentId.localeCompare(b.componentId));
+      if (name === 'Slack') {
+        const selected = (await r.call(`/api/app/incidents/${id}`)).body.incident.components;
+        assert.deepEqual(claims(selected), claims([0, 2].map(n => ({ componentId: componentIds[n], state: 'Major outage' }))), 'Slack opens exactly the selected components, excluding the unselected component');
+      }
+      const expectedClaims = name === 'Slack'
+        ? [{ componentId: componentIds[0], state: 'Partially unavailable' }, { componentId: componentIds[2], state: 'Degraded performance' }]
+        : componentIds.map(componentId => ({ componentId, state: 'Major outage' }));
+      const submitted = { ...open.update, lifecycle: 'Identified' };
+      {
+        const attached = await send(null, { card: editorCard, control: 'Save draft', values: { ...submitted, ...Object.fromEntries(expectedClaims.map(({ componentId, state }) => [`component_${componentId}`, state])) } });
         assert.equal(attached.status, 200, JSON.stringify(attached.body)); result = attached.body.result; editorCard = card(name, attached.body);
         const staged = (await r.call(`/api/app/incidents/${id}`)).body.incident.draft.componentChanges;
-        assert.deepEqual(staged.filter(component => componentIds.slice(1).includes(component.componentId)).map(({ componentId, state }) => ({ componentId, state })).sort((a, b) => a.componentId.localeCompare(b.componentId)), componentIds.slice(1).map(componentId => ({ componentId, state: 'Major outage' })).sort((a, b) => a.componentId.localeCompare(b.componentId)), 'Teams attaches both selected component identities with their claimed states');
+        assert.deepEqual(claims(staged), claims(expectedClaims), `${name} stages exactly the selected component identities and their independent claimed states`);
       }
       const premature = await send({ action: 'publish', incidentId: id, version: result.version, previewCode: randomBytes(24).toString('hex') }); assert.equal(premature.status, 409);
       const previewed = await send(null, { card: editorCard, control: 'Preview update' }); assert.equal(previewed.status, 200, JSON.stringify(previewed.body));
       const web = await r.call(`/api/app/incidents/${id}`);
       assert.deepEqual(previewed.body.result.preview, web.body.preview, 'chat preview is UPDATE-004 renderer output');
+      const next = new Date(submitted.nextUpdateAt);
+      const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][next.getUTCMonth()];
+      const fields = [
+        { label: 'Who is affected', value: submitted.affectedAudience },
+        { label: 'Customer impact', value: submitted.customerImpact },
+        { label: 'What still works', value: submitted.whatStillWorks },
+        { label: 'Next update by', value: `${month} ${next.getUTCDate()}, ${next.getUTCFullYear()}, ${next.toISOString().slice(11, 16)} UTC+00:00`, instant: submitted.nextUpdateAt },
+        { label: 'Additional details', value: submitted.details },
+      ];
+      const expectedHeading = `${web.body.incident.reference}: ${open.title}`;
+      const expectedSubject = `Synthetic Lamp: [${web.body.incident.reference}] ${open.title}`;
+      const preview = previewed.body.result.preview;
+      assert.equal(preview.public.heading, expectedHeading);
+      assert.equal(preview.public.lifecycle, 'Identified');
+      assert.deepEqual(preview.public.fields.filter(field => field.label !== 'Component state'), fields, `${name} preview independently retains every UPDATE-001 field and submitted value`);
+      const componentLines = expectedClaims.map(({ componentId, state }) => `synthetic-lamp-${componentIds.indexOf(componentId) + 1}: Operational → ${state}`);
+      assert.deepEqual(preview.public.fields.filter(field => field.label === 'Component state').map(field => field.value).sort(), [...componentLines].sort());
+      assert.equal(preview.email.subject, expectedSubject);
+      const expectedEmail = ['Synthetic Lamp', expectedHeading, 'Status: Identified', ...fields.map(field => `${field.label}: ${field.value}`), ...componentLines.map(line => `Component state: ${line}`), `Incident impact: ${name === 'Slack' ? 'Major' : 'Critical'}`].join('\n\n');
+      assert.equal(preview.email.plainText, expectedEmail, `${name} email preview retains the complete independently expected message`);
       assert.ok(JSON.stringify(name === 'Teams' ? previewed.body.value : previewed.body.blocks).includes(open.update.customerImpact));
       const visible = name === 'Slack' ? previewed.body.blocks.filter(block => block.type === 'section').map(block => block.text.text).join('') : previewed.body.value.body.filter(block => block.type === 'TextBlock').map(block => block.text).join('\n');
       for (const text of [web.body.preview.public.heading, `Status: ${web.body.preview.public.lifecycle}`, ...web.body.preview.public.fields.map(field => `${field.label}: ${field.value}`), `Email subject: ${web.body.preview.email.subject}`, web.body.preview.email.plainText]) assert.ok(visible.includes(text), `${name}'s visible card carries UPDATE-004 preview: ${text}`);
@@ -124,6 +227,12 @@ export async function chatDeskNativeFlow(t) {
       assert.equal((await r.call(`/api/app/incidents/${id}`)).body.incident.updates[0].authorOperatorId, r.operator);
       const html = await (await r.worker.dispatchFetch(page + '/')).text(); assert.ok(html.includes(open.title)); assert.ok(html.includes(open.update.customerImpact));
       const snapshot = await r.db.prepare('SELECT author_operator_id FROM incident_updates WHERE id=?').bind(published.body.result.updateId).first(); assert.equal(snapshot.author_operator_id, r.operator);
+      const committed = (await r.call(`/api/app/incidents/${id}`)).body.incident;
+      assert.deepEqual(claims(committed.components), claims(expectedClaims), `${name} commits exactly the selected component identities and claims`);
+      const committedUpdate = committed.updates.find(update => update.id === published.body.result.updateId);
+      for (const [field, value] of Object.entries(submitted)) assert.equal(committedUpdate[field], value, `${name} commits submitted ${field}`);
+      assert.deepEqual(committedUpdate.componentSnapshot.map(({ componentId, newState }) => ({ componentId, state: newState })).sort((a, b) => a.componentId.localeCompare(b.componentId)), claims(expectedClaims), `${name} immutable publication retains the selected claims`);
+      t.diagnostic(`PROBE INCIDENT-012 points 2 and 3 ${name}: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched`);
       if (name === 'Teams') {
         const current = (await r.call(`/api/app/incidents/${id}`)).body.incident;
         assert.equal(current.components.find(component => component.componentId === componentIds[1]).state, 'Major outage', 'Teams component initially claims Major outage');
@@ -150,7 +259,7 @@ export async function chatDeskNativeFlow(t) {
     for (const link of links) assert.equal((await r.call(`/api/app/chat-links/${link.id}`, undefined, 'DELETE')).status, 204);
     assert.equal((await r.call('/api/app/chat-links')).body.links.length, 0);
     assert.equal((await r.db.prepare("SELECT count(*) AS n FROM audit_entries WHERE action='chat-desk'").first()).n, 7, 'two links, two removals and three explicit publications are audited');
-    assert.equal(r.replies.length, 3, 'Slack draft, preview and publication replies use the declared response endpoint');
+    assert.equal(r.replies.length, 4, 'Slack draft, save, preview and publication replies use the declared response endpoint');
     assert.equal(r.requests.length, 2, 'Bot Framework metadata and keys are cached between verified activities');
     const revokeCode = (await r.call('/api/app/chat-links', {})).body.code;
     assert.equal((await slack(null, { code: revokeCode })).status, 200);
@@ -169,6 +278,8 @@ export async function chatDeskNativeFlow(t) {
     }
     await r.close(); r = await runtime(t,[jwk]);
     await (await import('./roles.mjs')).chatRoleFlow({r,slack,teams,update});
+    await r.close(); r = await runtime(t, [jwk], { requireReview: true });
+    await chatReviewFlow({ r, slack, teams, card, t });
     await r.close(); r = await runtime(t, [jwk], { configured: false });
     for (const endpoint of ['slack', 'teams']) assert.equal((await r.worker.dispatchFetch(`${origin}/api/chat/${endpoint}`, { method: 'POST', body: '{}' })).status, 503);
     assert.equal(await count('incidents'), 0);
