@@ -6991,6 +6991,10 @@
       "sha256": "772b5c9d99613063d67632f2a7881dc38c185c18a36a4ca0189b12bfdf83f14e",
       "executable": false
     },
+    "tests/e2e/helpers/incident-references-flow.mjs": {
+      "sha256": "4dee729efa8c16bb38ebdcd1449b8e5934a9c83bebce8a8f9379346a2b5168e9",
+      "executable": false
+    },
     "tests/e2e/helpers/incident-subscriber-import-flow.mjs": {
       "sha256": "f0ece336f23ffe443fe6b19358a883b94da982404c47745dbd006b47cb8c8e53",
       "executable": false
@@ -7328,7 +7332,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "d1e7f8059ace494adf430d06a38043a96b11ff85e5051d8102382eba8357cccb",
+      "sha256": "498993edfc2f0483a07f815fbff9bf7bda2aa77d53b6420c22a1b8cd3dd2e09b",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
