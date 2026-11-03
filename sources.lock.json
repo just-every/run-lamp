@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ef653300aaa969287c8102e06d2561385df5d06c1dab1f7822ae065c6ba5be9e",
+      "sha256": "6f66ad6b0f4e63d2fdbb1d6f80d217e2aee38c4b41e09716f79ec89cc57d2471",
       "executable": false
     },
     "DEMO.md": {
@@ -6987,6 +6987,10 @@
       "sha256": "db8841c1f602246e578c389c13475458c70ca420acef2b1121eebce9b20e79ea",
       "executable": false
     },
+    "tests/e2e/helpers/maintenance-reminder-flow.mjs": {
+      "sha256": "32eb653113e16c345dd7c204e7a5bda11916becb2754dfc471901daf18be7bb8",
+      "executable": false
+    },
     "tests/e2e/helpers/metric-setup-journey.mjs": {
       "sha256": "7d914316ff76810f90b2ab900eb1f29902e6ad572716d2baedbddf268b8c14eb",
       "executable": false
@@ -7248,7 +7252,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "739d227c25bbaecf7387af86df1eef0a5e71f5a4b454d53a56c8afbff308f6a7",
+      "sha256": "de67dff2617d6b0def4c1c4eb89e043f903ec81b77e01dd9ac664353b79f401e",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
