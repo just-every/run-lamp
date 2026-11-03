@@ -3131,6 +3131,8 @@ NOTIFY-005 additional concurrency proof is retained from candidate commit `e9427
 
 The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e2e/helpers/preset-recovery-flow.mjs`, loaded by `tests/e2e/channels-and-presets.test.mjs`, to compare the settled public artifact inventory and response bytes, private permalink absence, request-bounded recovery receipts and original firing evidence for Datadog, UptimeRobot, Better Stack and Pingdom, and unchanged published lifecycle and complete update records. These assertions are INTAKE-007’s done evidence from the 2 November 2026 recheck.
 
+The replay of candidate `6dd15d523dec9e5bc6d35eae52dd843a8278d94f` retains MOVE-003’s newer done judgment from the 2 November 2026 recheck. Its complete repeated-import inventories, cross-source identity and scheduled-silence assertions are already retained in the current journeys. Later owner uploads remain reviewed catch-ups, with corrected source records replaced in place and owner-edited records preserved; the earlier blanket refusal and partial judgment are superseded. No clause status changes.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 31 | 76 | 0 | 107 |
