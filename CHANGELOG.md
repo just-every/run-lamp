@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.2
+
+**Sign-in keeps working after setup on a Lamp installed through your Business.** When Run Edit Run installs Lamp for your Business, you claim the new installation once as its owner, and Run Edit Run then retires the installation's one-time setup token. In 1.11.1 and earlier, from that moment the sign-in page and every sign-in step answered with an error, so you could not sign in to your own Lamp. Lamp 1.11.2 keeps sign-in working after setup finishes, the same as on any other installation:
+
+- While setup is still running, the one-time owner claim is checked exactly as before: its signature, that it is meant for this installation, the address it is sent from, and that it is used only once.
+- After setup finishes, the owner claim answers that it is no longer available and changes nothing.
+
+Who was affected: owners of a Lamp that Run Edit Run installed for their Business. Installations you deploy yourself behave as before. Nothing was lost: the refused sign-ins changed nothing.
+
+Upgrading from 1.11.1: back up first, update the checkout to `v1.11.2`, run `pnpm install --frozen-lockfile` (rer 0.2.76, unchanged) and `rer deploy` with the same environment and input file. There is no migration and no configuration change. An installation on 1.10.0 also follows the 1.11.1 notes below: their migrations and steps still apply.
+
 ## 1.11.1
 
 Lamp 1.11.1 is the first tagged release since 1.10.0. Version 1.11.0 was recorded but never tagged, so this release also carries everything listed under 1.11.0 below. Moving in from Sorry leads it: a saved public Sorry page now goes into Move in as one folder, a new command checks a saved page in a throwaway test installation and signs a receipt, and Lamp records its Sorry importer as verified. Incidents gain a communication owner and a list of what is owed, maintenance windows choose their own automation, people have more ways to follow your page, and the page itself can take your layout and look.
