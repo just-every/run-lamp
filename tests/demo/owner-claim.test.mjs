@@ -51,7 +51,8 @@ const doorOrigin = 'https://status-admin.example.test', doorEmail = 'owner@lamp.
 const json64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
 const keyPair = () => generateKeyPairSync('ec', { namedCurve: 'P-256' });
 
-/** A Business-provisioned install opens its import door at the first bootstrap claim, and only there. */
+/** A Business-provisioned install opens its import door at the first bootstrap claim, and only there.
+ * Once the platform retires SETUP_TOKEN, with the trust still bound, sign-in and the door keep answering. */
 async function businessDoorAtFirstClaim(createApp) {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-door-claim-'));
   const rer = keyPair(), stranger = keyPair();
@@ -63,13 +64,13 @@ async function businessDoorAtFirstClaim(createApp) {
     const storage = await database(state), cache = await openSnapshotCacheRuntime(state);
     installs.push(storage, cache);
     const installationId = randomUUID(), setupToken = randomUUID();
-    const env = { DB: storage.db, SNAPSHOT_CACHE: cache.namespace, SNAPSHOTS: storage.bucket, AUTH_ORIGIN: doorOrigin,
+    let env = { DB: storage.db, SNAPSHOT_CACHE: cache.namespace, SNAPSHOTS: storage.bucket, AUTH_ORIGIN: doorOrigin,
       LAMP_APP_HOST: new URL(doorOrigin).host, LAMP_PAGE_HOST: 'status.example.test', MAIL_FROM_ADDRESS: 'status@lamp.invalid',
       OWNER_EMAIL: doorEmail, SESSION_SECRET: randomUUID() + randomUUID(), SETUP_TOKEN: setupToken,
       RER_OWNER_CLAIM_PUBLIC_KEYS: JSON.stringify({ [kid]: rer.publicKey.export({ format: 'jwk' }) }),
       RER_OWNER_CLAIM_ISSUER: issuer, RER_OWNER_CLAIM_INSTALLATION_ID: installationId, RER_OWNER_CLAIM_APP_ORIGIN: doorOrigin,
       ...(door ? { RER_IMPORT_DOOR: door } : {}) };
-    const { app } = createApp(env);
+    let { app } = createApp(env);
     const call = (path, init = {}) => app.fetch(new Request(doorOrigin + path, { ...init,
       headers: { Host: new URL(doorOrigin).host, Origin: doorOrigin, 'CF-Connecting-IP': '192.0.2.1', ...init.headers } }), env);
     const claim = token => call('/auth/bootstrap', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -90,7 +91,16 @@ async function businessDoorAtFirstClaim(createApp) {
         body: JSON.stringify({ name: 'statuspage.json', bundleSha256: sha, totalBytes: bytes.length, totalChunks: 1, index: 0, chunkSha256: sha, base64: bytes.toString('base64') }) });
       return { status: response.status, body: await response.json() };
     };
-    return { setupToken, claim, settings, choose, upload, signIn(response) { cookie = response.headers.get('set-cookie').split(';')[0]; } };
+    // RER's own signed owner claim for this installation, and the answer of the claim route.
+    const signedClaim = () => {
+      const iat = Math.floor(Date.now() / 1000);
+      const input = `${json64({ alg: 'ES256', typ: 'rer-owner-claim+jwt', kid })}.${json64({ v: 1, iss: issuer, aud: doorOrigin, installationId, email: doorEmail, jti: randomUUID(), iat, exp: iat + 300 })}`;
+      return `${input}.${sign('sha256', Buffer.from(input), { key: rer.privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
+    };
+    const ownerClaim = async (init = {}) => { const response = await call('/auth/owner-claim', init); return { status: response.status, body: await response.json() }; };
+    // The platform retires the token after the claim: the same installation, redeployed without SETUP_TOKEN.
+    const retire = () => { const { SETUP_TOKEN, ...retired } = env; env = retired; ({ app } = createApp(env)); };
+    return { setupToken, call, claim, settings, choose, upload, signedClaim, ownerClaim, retire, signIn(response) { cookie = response.headers.get('set-cookie').split(';')[0]; } };
   }
   try {
     const business = await install('on');
@@ -113,6 +123,13 @@ async function businessDoorAtFirstClaim(createApp) {
     assert.equal((await business.upload()).status, 404);
     await business.choose(true);
     assert.equal((await business.upload()).status, 200, 'the owner can turn the door back on');
+    business.retire();
+    assert.equal((await business.call('/signin')).status, 200, 'sign-in answers after the platform retires SETUP_TOKEN with the trust bound');
+    assert.equal(await business.settings(), true, "the claimed owner's session and the door still answer");
+    assert.equal((await business.upload()).status, 200, 'the trust stays bound for RER grants');
+    for (const init of [{}, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token: business.signedClaim() }) }]) {
+      assert.deepEqual(await business.ownerClaim(init), { status: 409, body: { error: 'claim_unavailable' } }, 'without SETUP_TOKEN even a signed claim is unavailable');
+    }
 
     const selfHost = await install(undefined);
     const owner = await selfHost.claim(selfHost.setupToken);
