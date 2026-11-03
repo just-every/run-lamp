@@ -23,11 +23,14 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
     const signedIn = await signedInOwnerRedirect(request, auth);
     if (signedIn) return signedIn;
     // A host-configured key set selects native signed claims. Claims never choose their own authority.
-    const trust = ownerClaimConfig(env);
-    let response = trust ? await createOwnerClaimHandler({ db: env.DB, authConfig: config,
-      clientIp: () => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '',
-      ...trust,
-    })(request) : null;
+    // The signed claim exists only on its own route, and only while the platform still holds SETUP_TOKEN. The trust stays bound after the
+    // claim (the import door reads it), but the platform then retires the token: every other route must not build the handler.
+    const trust = url.pathname === '/auth/owner-claim' ? ownerClaimConfig(env) : null;
+    let response = !trust ? null : !env.SETUP_TOKEN ? Response.json({ error: 'claim_unavailable' }, { status: 409, headers: securityHeaders() })
+      : await createOwnerClaimHandler({ db: env.DB, authConfig: config,
+        clientIp: () => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '',
+        ...trust,
+      })(request);
     if (!response) {
       const claim=createIdpOwnerClaimHandler({db:env.DB,authConfig:config,clientIp:()=>config.local?'loopback':request.headers.get('CF-Connecting-IP')??''});
       const dependency=await createDependencies({db:env.DB,origin:config.origin,name:'Lamp',provider:env.IDENTITY_PROVIDER,local:config.local,auth,
