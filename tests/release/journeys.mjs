@@ -15,7 +15,7 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
   const c = client(mf, data.cookie);
   assert.deepEqual(
     (await c.api("/api/app/session")).operator,
-    data.owner,
+    { ...data.owner, role: "owner" },
     "existing native owner session and setup authority survive",
   );
   assert.equal(
@@ -208,7 +208,7 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
   await signIn(c, mail);
   assert.deepEqual(
     (await c.api("/api/app/session")).operator,
-    data.owner,
+    { ...data.owner, role: "owner" },
     "fresh sign-in resolves the same owner identity",
   );
   const next = (

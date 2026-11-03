@@ -416,7 +416,7 @@
       "executable": false
     },
     ".github/workflows/release.yml": {
-      "sha256": "b6e92d29c658ac925146e2850091374b84fba53aa46b0e088bb9f1dd427e23a4",
+      "sha256": "55f89af4d800e02aae8c1fdd81e1520be19a940ad6fcd9bd1e56a31ec9cfca5e",
       "executable": false
     },
     ".github/workflows/rer-managed.yml": {
@@ -8016,7 +8016,7 @@
       "executable": false
     },
     "tests/release/journeys.mjs": {
-      "sha256": "a859fd38b383f411a7fc38eb1583e79cfdd9fa84f8bfb3117f6037415e391760",
+      "sha256": "6dc7fdca24ece7929f216384a092c14816773f412cf5db88684f8720eda5959f",
       "executable": false
     },
     "tests/release/populate.mjs": {
@@ -8024,7 +8024,7 @@
       "executable": false
     },
     "tests/release/README.md": {
-      "sha256": "216511767944b9d6071ff108fb766dfa350fba0aa941ede8d909f2b118cfae19",
+      "sha256": "ffdb2056601b234900043b9c9f789102d859335d01e6c18d490c99483aae57ee",
       "executable": false
     },
     "tests/release/runtime.mjs": {
@@ -8032,7 +8032,7 @@
       "executable": false
     },
     "tests/release/upgrade.test.mjs": {
-      "sha256": "47b069390df0f1905c2ee713b4d32648ec16dda2ba4d7c1c9813892d1daf1da6",
+      "sha256": "30f9dac728f56ccbb44ed4b39a3d23b6ed8acd7ee4a13ccbffec63d19e3863f7",
       "executable": false
     },
     "tests/release/verify.mjs": {
