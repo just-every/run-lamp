@@ -5,8 +5,11 @@ node tests/release/verify.mjs
 node tests/release/verify.mjs --from v1.4.0 --evidence /absolute/evidence/directory
 ```
 
-The default previous tag comes from `RELEASE.json.previousVersion`. Fetch that
-release tag before running (CI must retain Git history and tags). The test builds
+The default previous tag is the newest tagged release in the declared chain:
+`RELEASE.json.previousVersion`, then each `release-history` record's own
+`previousVersion`. A release that was recorded but never tagged is passed over,
+and the test refuses when no predecessor has a tag. Fetch the release tags
+before running (CI must retain Git history and tags). The test builds
 isolated previous and current checkouts; it never builds the caller's `dist`.
 The current checkout includes tracked working edits. No local installation
 configuration, credentials, emitted artifacts or saved state are copied.
@@ -39,7 +42,7 @@ outside this release upgrade check.
 
 `.github/workflows/release.yml` runs three independent jobs on release tags,
 nightly and manual dispatch. The upgrade job fetches full tag history and runs
-`verify:release` with the exact `RELEASE.json.previousVersion` tag. The other jobs
+`verify:release` from that default previous tag. The other jobs
 run the actual standalone browser installer and the README's canonical local
 launch journey. They stay outside the ordinary push/PR verification plan.
 

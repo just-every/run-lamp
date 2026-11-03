@@ -66,10 +66,10 @@ jobs:
           }
       - name: Upgrade from the declared previous release tag
         if: matrix.journey == 'upgrade'
+        # verify:release resolves the newest tagged release in RELEASE.json's
+        # declared previousVersion chain and refuses when none is tagged.
         run: |
-          previous=$(node --input-type=module -e 'import fs from "node:fs"; const version=JSON.parse(fs.readFileSync("RELEASE.json")).previousVersion; if (!/^\d+\.\d+\.\d+$/.test(version)) throw Error("Missing previous release version"); console.log("v"+version);')
-          git rev-parse --verify "refs/tags/$previous^{commit}"
-          nice -n 15 pnpm run verify:release --from "$previous" --evidence "$RUNNER_TEMP/lamp-release/upgrade" 2>&1 | tee "$RUNNER_TEMP/lamp-release/upgrade.log"
+          nice -n 15 pnpm run verify:release --evidence "$RUNNER_TEMP/lamp-release/upgrade" 2>&1 | tee "$RUNNER_TEMP/lamp-release/upgrade.log"
       - name: Run the actual installation journey from a fresh public clone
         if: matrix.journey != 'upgrade'
         env:
