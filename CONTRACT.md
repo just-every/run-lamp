@@ -3126,6 +3126,8 @@ SUB-010 is promoted to done by the replay of `2e8dbaa7e7706f0bbef8b7dc214422cf7c
 
 TEAM-002 retains current main's partial judgment and recorded gap. Replayed candidate `e647bcc45f0d2f3257c519410968742389dd523d` adds the Settings invitation, confirmation, removal and revoked-session browser journey in `tests/e2e/helpers/operator-management-flow.mjs`, registered by `tests/e2e/auth-adoption-journey.test.mjs`, and active-Owner setup-identity protection assertions in `tests/auth-adoption/upgrade.test.mjs`. Additional proof does not change the newer clause judgment.
 
+Maintenance proof replay retains the registered MAINT-005 and MAINT-006 journeys from candidate `378203e3cd8c547453347d1ba72e5dfd6420c507` and merge `55105dbc1ccdf740d7fb3afedcf237fc8357877b`. Current-main clause judgments and gaps are unchanged; the additional assertions are evidence for subsequent review.
+
 The replay of `acbc1ef` adds native Cron assertions in `tests/e2e/publishing-contract.test.mjs` for future-window start and completion deadlines, public permalink transitions, system-authored notices and repeated-tick idempotency. These assertions are MAINT-002’s done evidence from the 2 November 2026 recheck.
 
 The replay of `f61d588` adds assertions in `tests/e2e/publishing-contract.test.mjs` for peak impact after recovery, absent impact after detaching a never-published incident’s sole component, and refusal to publish its reviewed draft without changing the incident, persisted publications or checked public surfaces. These assertions are INCIDENT-002’s done evidence from the 2 November 2026 recheck.
