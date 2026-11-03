@@ -1,3 +1,4 @@
+import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
 import { themeOwnerJourney } from "./helpers/theme-owner-journey.mjs";
 import { stripVTControlCharacters } from "node:util";
 import { requestHeaders } from "../helpers/request-headers.mjs";
@@ -797,6 +798,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   assert.equal(erased.contactEmail, null); assert.equal(erased.state, 'deactivated');
 
   if (process.env.LAMP_SCREENSHOTS) { await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true }); await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, '1440-operator-journey.png'), fullPage: true }); }
+  await maintenanceBrowserFlow({ page, appUrl, pageUrl, api, screenshots: previewScreens });
 });
 
 test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async () => {

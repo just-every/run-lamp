@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { test } from 'node:test';
 import { parse } from 'parse5';
+import { maintenanceIdentityFlow, assertSeparateRecords } from './helpers/maintenance-identity-flow.mjs';
 import { chatDeskNativeFlow } from '../chat-desk/flow.mjs';
 import { literalLinkFields } from './helpers/update-link-evidence.mjs';
 import { assertUpdateLinkSurfaces } from './helpers/update-link-surfaces.mjs';
@@ -364,7 +365,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     const input = { title: 'Database capacity upgrade ;,\\\n' + 'é'.repeat(70), affectedAudience: 'Customers using the database', customerImpact: 'Writes may pause during the upgrade.', startsAt, endsAt, componentIds: [component.id], autoStart: true, autoComplete: false };
     const maintenance = (await j.json('/api/app/maintenance', 'POST', input, 201)).maintenance;
     const endpoint = `/api/app/maintenance/${maintenance.id}`;
-    assert.ok(maintenance.reference);
+    const separateIncident = await maintenanceIdentityFlow(j, component, maintenance, input);
     const uid = `lamp-maintenance-${maintenance.id}@lamp`;
     const readCalendar = async () => {
       const response = await j.publicResponse('/maintenance.ics');
@@ -388,6 +389,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd });
     await j.tick(Date.now());
     assert.equal((await list()).state, 'In progress');
+    const sharedStatus = await eventually(async () => (await (await j.publicResponse('/api/public/status')).json()), value => value.maintenance?.reference === maintenance.reference, 'active shared status');
+    assert.equal(sharedStatus.incident.reference, separateIncident.reference);
+    assert.equal(sharedStatus.maintenance.reference, maintenance.reference);
     assert.equal((await list()).overrunning, false, 'an unfinished window has no overrun label before fifteen minutes');
     calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 1, 'rescheduled calendar event');
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
@@ -433,6 +437,10 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await eventually(readCalendar, value => !value.event, 'completed window leaves the calendar');
     assert.ok(completed.notices.some(row => row.kind === 'rescheduled'));
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Operational');
+    await j.save(separateIncident.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await j.publish(separateIncident.id);
+    const sharedHistory = await j.visible('/history', input.title.trim());
+    assertSeparateRecords(sharedHistory, separateIncident, maintenance, 'history-item');
     const feed = await j.visible('/feed.atom', input.customerImpact);
     assert.ok(feed.includes(maintenance.reference));
     const cancelled = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Cancelled upgrade' }, 201)).maintenance;
