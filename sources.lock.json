@@ -2328,7 +2328,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "0accbd9e98f645da26dc9c76faa8305092ec768384aa2d350a7a70ffb9c17878",
+      "sha256": "88f5509dec9b97ad7bf2055bbae48b050424353eb657ec5d423d2b26371c2e6e",
       "executable": false
     },
     "package.json": {
@@ -2880,7 +2880,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "cea3228d5be4d1e02d38c8097a652382a72b6a74145dad4366f720d43f7b9ae2",
+      "sha256": "485e50370dd92c564a284fe80ea78d9f57acc70dbd6076f81b786e8fe200a38b",
       "executable": false
     },
     "scripts/installer/README.md": {
@@ -6720,7 +6720,7 @@
       "executable": false
     },
     "tests/auth-adoption/dependencies.test.mjs": {
-      "sha256": "f6c149e45e4f9cdeb8cb1a2111314dde9ec290317671cfdc010fc9df5dfce0b2",
+      "sha256": "34919f86dbf5ce163d82e2ac8ec756d6aa2cc385334ea3c1e920b28f6fbc7e71",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
