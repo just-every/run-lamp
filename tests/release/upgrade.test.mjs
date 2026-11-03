@@ -14,10 +14,48 @@ import { tmpdir } from "node:os";
 import { client, inventory, run, runtime, settle } from "./runtime.mjs";
 import { populate } from "./populate.mjs";
 import { upgradedJourneys } from "./journeys.mjs";
+import { readReleaseHistory } from "../../scripts/release-metadata.mjs";
 
 const root = process.cwd();
 const release = JSON.parse(await readFile(join(root, "RELEASE.json"), "utf8"));
-const previous = process.env.LAMP_UPGRADE_FROM ?? `v${release.previousVersion}`;
+// The declared chain can retain a release that was recorded but never tagged.
+// Upgrade from the newest predecessor in that chain published as a release tag.
+async function newestTaggedPredecessor() {
+  const schema = JSON.parse(
+    await readFile(join(root, "schema/RELEASE.schema.json"), "utf8"),
+  );
+  const history = await readReleaseHistory(
+    release,
+    schema,
+    join(root, "release-history"),
+  );
+  const untagged = [];
+  for (const { release: record } of history.reverse()) {
+    const tag = `v${record.version}`;
+    const published = await run(root, "git", [
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      `refs/tags/${tag}^{commit}`,
+    ]).then(
+      () => true,
+      () => false,
+    );
+    if (published) {
+      if (untagged.length)
+        console.log(
+          `Upgrading from ${tag}: ${untagged.join(", ")} in the declared chain has no release tag.`,
+        );
+      return tag;
+    }
+    untagged.push(record.version);
+  }
+  throw new Error(
+    `No predecessor of ${release.version} in the declared chain has a release tag; fetch release tags first.`,
+  );
+}
+const previous =
+  process.env.LAMP_UPGRADE_FROM ?? (await newestTaggedPredecessor());
 const evidence = process.env.LAMP_UPGRADE_EVIDENCE
   ? resolve(process.env.LAMP_UPGRADE_EVIDENCE)
   : null;
@@ -293,7 +331,10 @@ test(
           `restore retains ${key}`,
         );
       const rc = client(mf, c.cookie);
-      assert.deepEqual((await rc.api("/api/app/session")).operator, data.owner);
+      assert.deepEqual((await rc.api("/api/app/session")).operator, {
+        ...data.owner,
+        role: "owner",
+      });
       assert.equal(
         (await rc.public(`/incidents/${published.reference}`)).status,
         200,
