@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "655cf6ea59c1e2c1ca734c9fdca1087e62a740b62bed28001020e8c312e450ee",
+      "sha256": "824443bcc1d50d30ef4c5a541effecde4fd8cd9cb5b056780030fe869a7340e0",
       "executable": false
     },
     "DEMO.md": {
@@ -7019,6 +7019,10 @@
       "sha256": "db8841c1f602246e578c389c13475458c70ca420acef2b1121eebce9b20e79ea",
       "executable": false
     },
+    "tests/e2e/helpers/maintenance-audience-flow.mjs": {
+      "sha256": "79635ee286ce913d496d8eb18dea64c5634cb4994175d44b4cdb2b3998e5581b",
+      "executable": false
+    },
     "tests/e2e/helpers/maintenance-browser-flow.mjs": {
       "sha256": "111405465ee9139d1899151d2f4c7ea123f3d7a1c507ea8f3d5bb1f990f6dac4",
       "executable": false
@@ -7332,7 +7336,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "792c948cc4958069e04b113fa541e041536c7cea2bed476614625bb87aad02c7",
+      "sha256": "e40ffc88e5466685d210a049be05011509248595b254605c086a671210b25d8e",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
