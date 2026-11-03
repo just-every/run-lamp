@@ -1,6 +1,7 @@
 import type { PublicSnapshotModel } from "../renderer";
 import { groupComponentsByHeading } from "../../../shared/component-order";
 import { escapeHtml } from "../format";
+import { uptimeMethod } from "../uptime-method";
 import { componentIcon, stateGlyph } from "./icons";
 import { maintenanceEntry, openIncidentEntry, resolvedEntry } from "./history";
 import { brand, componentNote, dayBar, feedLinks, quietLine, records, sentenceSize, situation, subscribeForm, tagline, toneOf, updatedLine, uptimeCaption, uptimeValue, type Component, type TemplateParts } from "./parts";
@@ -18,7 +19,8 @@ function components(model: PublicSnapshotModel, parts: TemplateParts) {
     const rows = `<ul class="calm-list">${list.map(component => componentRow(component, named ? "h4" : "h3")).join("")}</ul>`;
     return model.theme.groupsCollapsed ? `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${rows}</details>` : `${named ? `<h3 class="calm-group">${escapeHtml(heading)}</h3>` : ""}${rows}`;
   }).join("");
-  return `<section class="calm-components" aria-labelledby="components-title" data-live="components"><h2 id="components-title" class="tpl-kicker">Components</h2>${groups}<div class="component-extension">${parts.slot("status-page.components.after.v1")}</div></section>`;
+  const method = `<details class="tpl-about"><summary>How these figures are calculated</summary><p>Availability days use ${escapeHtml(model.settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p></details>`;
+  return `<section class="calm-components" aria-labelledby="components-title" data-live="components"><h2 id="components-title" class="tpl-kicker">Components</h2>${groups}${method}<div class="component-extension">${parts.slot("status-page.components.after.v1")}</div></section>`;
 }
 
 function history(model: PublicSnapshotModel, parts: TemplateParts) {
