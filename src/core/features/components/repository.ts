@@ -1,8 +1,10 @@
+import { componentNotificationStatements } from "../deliveries/component-notifications.repository";
 import { currentStateHistoryStatement } from "./state-history-repository";
 import { deletionAudit } from "./deletion-audit";
 import { and, desc, eq, isNull, lte, ne, sql } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
+import { createUlid } from "../../shared/ids";
 import {
   componentGroups,
   componentClaimEvents,
@@ -68,6 +70,7 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
           groupId: components.groupId,
           name: components.name,
           description: components.description,
+          region: components.region,
           internal: components.internal,
           onlyShowIfDegraded: components.onlyShowIfDegraded,
           uptimeStartDate: components.uptimeStartDate,
@@ -268,7 +271,11 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       });
     },
     async appendCurrentStateHistory(input) {
-      return currentStateHistoryStatement(binding, input).first<{ previousState: ComponentState; newState: ComponentState }>();
+      const [history] = await binding.batch<{ previousState: ComponentState; newState: ComponentState }>([
+        currentStateHistoryStatement(binding, input),
+        ...componentNotificationStatements(binding, input.id, input.createdAt),
+      ]);
+      return history.results[0] ?? null;
     },
     async findStateAt(componentId, instant) {
       const state = await database
@@ -321,13 +328,19 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         .bind(input.id, input.historyId, input.operatorId, input.reason, input.payloadJson, input.createdAt, input.updatedAt).run();
     },
     async replaceStandingClaim(input) {
+      const audit = input.state === null
+        ? binding.prepare(`INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, payload_json, created_at, updated_at)
+            SELECT ?, 'component-standing-claim', component_id, 'deleted', ?, json_object('state', state), ?, ?
+            FROM component_standing_claims WHERE component_id = ?`)
+          .bind(createUlid(), input.operatorId, input.updatedAt, input.updatedAt, input.componentId)
+        : null;
       const claim = input.state
         ? binding.prepare(`INSERT INTO component_standing_claims (id, component_id, state, operator_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(component_id) DO UPDATE SET state = excluded.state, operator_id = excluded.operator_id, updated_at = excluded.updated_at`)
           .bind(input.id, input.componentId, input.state, input.operatorId, input.createdAt, input.updatedAt)
         : binding.prepare(`DELETE FROM component_standing_claims WHERE component_id = ?`).bind(input.componentId);
       const event = binding.prepare(`INSERT INTO component_claim_events (id, component_id, cause_type, cause_id, state, changed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
         .bind(input.event.id, input.event.componentId, input.event.causeType, input.event.causeId, input.event.state, input.event.changedAt, input.event.createdAt, input.event.updatedAt);
-      await binding.batch([claim, event]);
+      await binding.batch([...(audit ? [audit] : []), claim, event]);
     },
     async insertGroup(input) {
       await database.insert(componentGroups).values(input);
@@ -368,8 +381,8 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
     },
     async insertComponent(input, initialState) {
       await binding.batch([
-        binding.prepare(`INSERT INTO components (id,group_id,name,description,internal,only_show_if_degraded,uptime_start_date,display_order,note,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
-          .bind(input.id, input.groupId, input.name, input.description, input.internal ? 1 : 0, input.onlyShowIfDegraded ? 1 : 0, input.uptimeStartDate ?? null, input.displayOrder, input.note, input.createdAt, input.updatedAt),
+        binding.prepare(`INSERT INTO components (id,group_id,name,description,region,internal,only_show_if_degraded,uptime_start_date,display_order,note,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+          .bind(input.id, input.groupId, input.name, input.description, input.region ?? null, input.internal ? 1 : 0, input.onlyShowIfDegraded ? 1 : 0, input.uptimeStartDate ?? null, input.displayOrder, input.note, input.createdAt, input.updatedAt),
         binding.prepare(`INSERT INTO component_claim_events (id,component_id,cause_type,cause_id,state,changed_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)`)
           .bind(initialState.event.id, initialState.event.componentId, initialState.event.causeType, initialState.event.causeId, initialState.event.state, initialState.event.changedAt, initialState.event.createdAt, initialState.event.updatedAt),
         binding.prepare(`INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)`)

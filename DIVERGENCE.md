@@ -94,7 +94,9 @@ The composer keeps the customer-facing fields and publish action primary, omits
 obvious field explanations and the implementation banner, and offers email
 preview and schedule/backdate controls through named disclosures. A configured
 historical timestamp remains exposed and the action says “Publish historical
-update”; clearing optional timing restores current-time publication. Channel
+update”; clearing optional timing restores current-time publication. (The
+composer layout was replaced on 22 October 2026; see “Incident page in one
+screen”.) Channel
 selection, autosave failure/retry, review, privacy and historical-notification
 rules are unchanged. Successful publication refreshes the operator lifecycle and
 timeline and opens a fresh empty draft for the next update (UPDATE-005 amendment). Maintenance date editing opens on demand, with explicit
@@ -1564,6 +1566,21 @@ existing typography, colours and surfaces stay as they are.
 
 Operator screens use the owner's words, including folded reports and history controls. Development and demo mail stays silent and shows the same accepted-send success as a real send; stored outcomes and real delivery behavior stay intact. Website component suggestions prefer supported product navigation, strip decorative badges and descriptions, exclude account/community/company navigation, and retain the eight-name cap.
 
+
+## Built-in public page templates — owner L9, 20 October 2026
+
+The original public page remains the default, and its shared stylesheet and script
+stay byte for byte as they were: a chosen template publishes its own
+`assets/template.css` and `assets/template.js`, which only its page links. Settings
+can publish Calm headline, Uptime-history-led, or Regions map, each laid out after
+the owner's L9 study drawing, with the business's own name, accent and mark and the
+same public facts. The saved template and why it is showing stay visible in
+Settings. Regions map needs public components in at least two regions (an optional
+component region); with fewer, the public page quietly shows Calm headline and only
+Settings explains why. Regions without a known map position stay filterable and are
+listed as not on the map. Built-in choices do not require AI. Generated house style
+is a later feature and is not offered as an implemented option.
+
 ## Managed sender status — 21 October 2026
 
 The RunEditRun relay owns sender identity and exposes mail submission, with no
@@ -1571,3 +1588,92 @@ provider domain-verification read capability. Overview describes configured
 Managed mail neutrally instead of warning about an unsupported check. Missing
 configuration and direct-provider check failures retain their warnings. This
 Overview presentation makes no verification or subscriber-delivery claim.
+
+## Settings publish as they change — 22 October 2026 (owner L8/L15)
+
+Settings text saves after a short pause; selections and toggles publish immediately. Writes are serialized and never replace an editable draft with an earlier response. A failed save keeps the entered value and offers a retry. Sender email and allowed widget websites publish only after their inline Confirm. Embed tag choices are retained across reload and portable exports. Add channel, Invite operator, uploads, imports and erasure remain explicit actions.
+
+Leaving Settings or signing out waits for pending edits to save; a refused save keeps the owner on Settings with its reason and Retry. Reloading or closing sends pending edits as the page unloads, past any unanswered write, as keepalive requests within the browser's 64 KiB allowance; ordinary writes and Retry are plain requests. Save status and refusal reasons stay pinned in view while editing.
+
+## Incident page in one screen — owner L12, 22 October 2026
+
+The owner found the incident page one 2,500 px screen asking for everything at once.
+A new incident is now one screen (`/app/incidents/new`, shown in place of an empty
+list): what is happening (title and impact), who is affected (component chips with
+the claimed state, and the audience), the next-update time and Publish, beside the
+renderer's preview with a Page and Email switch. Publish creates the incident with
+that update as its saved draft and publishes it; a refused publication leaves the
+saved draft on the incident page with the reason and with the notification and
+timing choices the operator made (as does Save as private draft). A scheduled update
+opens the incident page as the server holds it, with its time and channels, so moving
+only the time keeps who is notified. Whatever the new screen reports on arrival
+(published, scheduled, refused or saved) shows once: a reload or a return to the page
+does not replay it. Any draft edit clears a stored schedule, and the page then says so instead of
+still claiming the update is scheduled. Everything else is under More
+options (starting status, what still works, details, opening time, channels,
+schedule or backdate, relationships, templates, Save as private draft). An open
+incident keeps the same plate: status choice, the same fields, the preview, the
+timeline, reach only once the provider accepted or delivered a send, the brief closed to one line unless
+alerts brought facts, and notes, review, correction, public impact and deletion under
+Private actions. The design was chosen from four 12ui options by a fresh Opus pass
+(evidence/uip-lamp-l12-incident). UPDATE-001, -004, -005 (autosave of an existing
+incident's draft, an empty draft after publication), -006, -007, -009, NOTIFY-007,
+INCIDENT-001, -009 and DRAFT-004 are unchanged; the preview of an incident not yet
+created uses the same renderer with the next reference.
+
+## Alerts connect one tool at a time — 23 October 2026 (owner L13)
+
+Alerts opens on a "Connect a tool" picker. Choosing a tool opens only its form, which says in one line what the tool does and asks only for what that tool needs; Lamp makes every key it can and shows it once. A connected tool is one row (name, state, Edit and Remove) with its form closed. Its choices save as they change, with Settings' quiet Saved state pinned in view while any row is edited; a pasted secret or a new key takes its own button. Closing the form, opening another, leaving Alerts (a link or Back) and signing out wait for the choices to save through the same leave guard as Settings: a refused save keeps the owner on the open form with the typed value, its reason and Retry brought into view, and leaving it behind afterwards takes one confirm. Reloading or closing the tab with a write pending or refused warns first. A screen keeps showing its data while a new visit reads it again, so a held form is never remounted underneath the owner (U9). On Alerts and Settings alike, a move that stays on the screen (its own link, a Settings tab, Back or Forward between tabs) reads nothing again, and a read for another screen that fails, offline for one, keeps the open page in place of the router's error page, with the typed value, its reason and Retry. Recent alerts appear only once something has arrived. Uptime makes each destination's signing secret itself and offers no key-authenticated read of its monitors, so Lamp pairs it without either: the address Lamp makes carries Lamp's key, Uptime's X-Lamp-Timestamp still bounds replays to five minutes, and the owner picks a component for each monitor by the name Uptime's own events carry. An event from a monitor not yet picked is refused and recorded. Sources saved with Uptime's signing secret keep HMAC verification.
+
+## Subscriber and component delivery archive continuity — 24 October 2026
+
+The unlanded 0056–0058 migrations preserve every table and row represented by
+older technical backups. Chat subscriptions retain the original webhook
+transport row, with an explicit chat kind and subscriber-owned encrypted
+destination; they never claim an operator author. One subscriber-directory
+projection supplies logical channels and channel-specific default preferences.
+Explicit preferences stay authoritative. Owner channels and subscriber channels
+share dispatch queries while retaining their distinct ownership constraints.
+
+Component-only notifications use an additive delivery/attempt partition rather
+than relaxing the incident-or-maintenance invariant on existing deliveries. One
+dispatcher, receipt query and failure policy spans both partitions. Existing
+subscription identifiers, tokens, consent, delivery outcomes, frozen envelopes
+and provider callback mappings retain their original storage. Erasure scrubs
+both delivery partitions. The pinned restore bridge continues to enforce
+archive identity, migration history, schema compatibility and empty-target
+requirements; it needs no new capability for this schema.
+
+## Public footer operator entry — 28 October 2026
+
+The public page keeps its operator sign-in entry usable beside the customer resource links, including when the optional credit is hidden. The entry has a full touch target rather than relying on surrounding whitespace; the public customer journey retains its WCAG 2.2 accessibility check.
+
+## Lamp's sections follow the owner's jobs; configuration under Settings — owner L19
+
+The owner approved L19 option C on 23 October 2026. On the incident page and New incident, a round + ("Update
+options") at the left of the Publish row replaces More options: What still works and Details (and a new incident's
+Opened at) join the fields under "Who's affected?"; Notify, Schedule, Backdate, Relationship and the two template
+entries each open one panel under the Publish row; Mark draft reviewed acts at once and Publish as a correction first
+asks which update. New incident keeps its starting status pills in that menu and adds Save as private draft. Above
+620 px the + opens a menu; at 620 px and under a bottom sheet. Every panel and field stays mounted while closed, so a
+refused publication still keeps every choice, and the hint beside Publish says what the options changed. Under the
+timeline, one list of named rows replaces Private actions and the blocks under the page: Brief, Reach (once something
+was sent), Notes, Impact, the post-incident report once Resolved (with its waiver), the communication owner, the
+incident's subscribers (a row once someone follows it), extension rows, then Delete incident. This replaces where the
+L12 record put these controls; UPDATE-001, -004, -005, -006, -007, -009, NOTIFY-007, INCIDENT-001, -009, DRAFT-001
+and DRAFT-004 are unchanged.
+
+## Google and Okta sign-in are set up in Settings › Sign-in — owner L14, 1 November 2026
+
+The owner asked that provider setup stop being a developer runbook outside the app (stop rer, edit `.dev.vars`,
+paste JSON). The owner sets Google and Okta up in Settings › Team › Sign-in, which extends the L19 design that
+reserved that pane: the client ID and secret go into fields, Lamp stores them, and they work on the next request. A
+Test sign-in runs the provider's real flow and reports a truthful result; Working comes only from Base reporting
+a healthy pin after a verified exchange. Lamp keeps each registration in its own D1 with the client secret sealed
+(AES-GCM from `WEBHOOK_SIGNING_SECRET`, bound to the provider), never shows it again, and writes it as NULL in every
+archive, so a restore asks for it again. It is not deploy-secret authority: the Worker holds none (only the owner's
+`rer deploy --set-secret` and RER's delivery service do), so the app cannot write the deploy file or redeploy, and the
+deploy-file `AUTH_PROVIDERS` path stays and wins per ID. Every change needs the current owner and fresh email proof.
+Okta signs in only the people paired explicitly by Okta user ID, never by a reported email. Microsoft Entra and Run
+Edit Run Auth stay on `/auth/settings/identity`; Managed hosting has no outbound connection, so Save is refused there.
+ACCESS-002 and PORT-001 are unchanged; `tests/auth-adoption/sign-in-providers.test.mjs` exercises them for Google and Okta.

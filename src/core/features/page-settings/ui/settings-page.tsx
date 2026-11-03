@@ -1,53 +1,45 @@
-import { EmailBrandingSettings } from "./email-branding-settings";
-import { AuditLog } from "../../audit-log/ui/audit-log";
-import { PublicResources } from "./public-resources";
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { Link, getRouteApi, useBlocker } from "@tanstack/react-router";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 
-import type { PageSettingsInput } from "../../../shared/schemas";
-import type { PageSettingsService, PageSettingsView } from "../service";
+import type { PageSettingsService } from "../service";
 import type { OverviewService } from "../../overview/service";
-import { ClientExtensionSlot } from "../../../app/client/extensions";
-import { appApi, useAppData } from "../../../app/client/ui/api";
-import { Button } from "../../../app/client/ui/button";
-import { Icon } from "../../../app/client/ui/icon";
-import { LoadingState } from "../../../app/client/ui/states";
-import { ErrorState } from "../../../app/client/ui/lit-states";
-import { ChannelsCard } from "../../channels/ui/channels-card";
+import { AuditLog } from "../../audit-log/ui/audit-log";
+import { YourPageFacts } from "../../overview/ui/your-page";
 import { OperatorsPanel } from "../../operators/ui/operators-panel";
-import { WordingSettings } from "./wording-settings";
-import { ImportDoorSetting } from "./import-door-setting";
-import { AiAssistanceCard, type AiStatus } from "./ai-assistance-card";
-import { PageDataCard } from "../../page-export/ui/page-data-card";
-import { PageHero } from "./page-hero";
-import { BrandCard } from "./brand-card";
-import { SenderStatusLine } from "./sender-status";
-import { SettingsTabs, useSettingsTab } from "./settings-tabs";
+import { useAppData } from "../../../app/client/ui/api";
+import { useLeaveGuard } from "../../../app/client/ui/leave-guard";
+import { FormError, LoadingState } from "../../../app/client/ui/states";
+import { ErrorState } from "../../../app/client/ui/lit-states";
+import { type AiStatus } from "./ai-assistance-card";
+import { settingsLabel, usePaneLeaveGuard, useSettingsTab, type SettingsTab } from "./settings-tabs";
+import { PublicResources } from "./public-resources";
+import { PageSettingsTab } from "./page-settings-tab";
+import { LookSettingsTab } from "./look-settings-tab";
+import { NotificationSettingsTab } from "./notification-settings-tab";
+import type { TrafficSavePhase } from "./traffic-alert-settings";
+import { WritingSettingsTab } from "./writing-settings-tab";
+import { TemplatesSettingsTab } from "./templates-settings-tab";
+import { ConnectedToolsTab } from "./connected-tools-tab";
+import { ReportsSettingsTab } from "./reports-settings-tab";
+import { ExportSettingsTab } from "./export-settings-tab";
+import { SettingsSaveState } from "./settings-save-state";
+import { useSettingsAutosave } from "./use-settings-autosave";
 
 const operatorRoute = getRouteApi("/app");
-
+// Sign-in is one pane among many; its modules load only when it is opened, so no other Settings pane pays for them.
+const SignInPane = lazy(() => import("../../sign-in-providers/ui/sign-in-pane").then(module => ({ default: module.SignInPane })));
 type SettingsResponse = { settings: Awaited<ReturnType<PageSettingsService["get"]>> };
 type OverviewResponse = { overview: Awaited<ReturnType<OverviewService["get"]>> };
-type SettingsForm = Omit<Required<PageSettingsInput>, "emailBranding"> & { emailBranding: PageSettingsView["emailBranding"] };
 
-function toSettingsForm(settings: PageSettingsView): SettingsForm {
-  return {
-    pageName: settings.pageName,
-    tagline: settings.tagline,
-    accentColor: settings.accentColor,
-    timezone: settings.timezone,
-    hostname: settings.hostname,
-    footerCreditEnabled: settings.footerCreditEnabled,
-    widgetAllowedOrigins: settings.widgetAllowedOrigins,
-    mailFromAddress: settings.mailFromAddress,
-    emailBranding: settings.emailBranding,
-    aiToneInstructions: settings.aiToneInstructions,
-    wordingBlockedTerms: settings.wordingBlockedTerms,
-    wordingFriendlyLength: settings.wordingFriendlyLength,
-  };
-}
-
-const zones = () => { try { return Intl.supportedValuesOf("timeZone"); } catch { return []; } };
+// Panes of page settings that save as they change, laid out as one form.
+const FORMS = new Set<SettingsTab>(["page", "look", "notifications", "writing", "templates", "embeds"]);
+// The one save note sits under the title of every pane that saves. Connected tools' forms show their own.
+const SAVES = new Set<SettingsTab>([...FORMS, "operators"]);
+// A pane's title says what it is; a line under it only where it adds something.
+const LINES: Partial<Record<SettingsTab, string>> = {
+  tools: "Alerts from your tools open private drafts. Nothing is public until you publish, or a rule you saved does.",
+  "sign-in": "Invited people can sign in with Google or Okta. Email sign-in links keep working.",
+};
 
 export function SettingsPage() {
   const { data, error, loading } = useAppData<SettingsResponse>("/api/app/page-settings");
@@ -55,92 +47,49 @@ export function SettingsPage() {
   const publicOrigin = operatorRoute.useLoaderData().publicPageOrigin;
   const aiStatus = useAppData<AiStatus>("/api/app/ai/status");
   const tab = useSettingsTab();
-  const [saved, setSaved] = useState<PageSettingsView | null>(data?.settings ?? null);
-  const [settings, setSettings] = useState<SettingsForm | null>(() => data?.settings ? toSettingsForm(data.settings) : null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
+  const autosave = useSettingsAutosave(data?.settings ?? undefined, () => {
+    window.dispatchEvent(new Event("lamp:page-settings-changed"));
+    overview.refresh();
+  });
+  const { settings, saved, update } = autosave;
+  const [brandBusy, setBrandBusy] = useState(false);
+  const [brandStatus, setBrandStatus] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
-  const dirty = Boolean(settings && saved && JSON.stringify(settings) !== JSON.stringify(toSettingsForm(saved)));
-  useBlocker({
-    shouldBlockFn: ({ next }) => dirty && next.pathname !== "/app/settings" && !window.confirm("Leave Settings without saving your changes?"),
-    enableBeforeUnload: dirty,
-  });
-  useEffect(() => {
-    if (data?.settings && !settings) { setSettings(toSettingsForm(data.settings)); setSaved(data.settings); }
-  }, [data, settings]);
+  const [trafficPhase, setTrafficPhase] = useState<TrafficSavePhase>("saved");
+  // The pane's one save note reads "Saved · live" only once every write on it has landed.
+  const phases = tab === "notifications" ? [autosave.phase, trafficPhase] : [autosave.phase];
+  const phase = (["error", "saving", "waiting"] as const).find(candidate => phases.includes(candidate)) ?? "saved";
+  // Leaving Settings, another pane or signing out waits for pending edits to save; a refused save keeps the owner here with its reason and Retry.
+  useLeaveGuard(autosave.leave, autosave.unsaved);
+  usePaneLeaveGuard();
   if (loading && !data) return <LoadingState />;
-  if (error) return <ErrorState onRetry={() => window.location.reload()}>{error}</ErrorState>;
+  if (error && !settings) return <ErrorState onRetry={() => window.location.reload()}>{error}</ErrorState>;
   if (!settings || !saved) return null;
 
   const live = overview.data?.overview.live ?? null;
-  const components = (overview.data?.overview.components ?? []).filter((component) => !component.internal).map((component) => ({ name: component.name, state: component.publicState }));
+  const components = (overview.data?.overview.components ?? []).filter(component => !component.internal).map(component => ({ id: component.id, name: component.name, state: component.publicState }));
   const markSrc = saved.logoKey ? `/api/app/page-settings/brand/logo?v=${encodeURIComponent(saved.updatedAt)}` : `/api/app/page-settings/brand/mark?v=${encodeURIComponent(saved.updatedAt)}`;
-  const update = <K extends keyof SettingsForm>(field: K, value: SettingsForm[K]) => { setStatus(null); setSettings((current) => current ? { ...current, [field]: value } : current); };
-  // A logo change saves on its own; the form keeps any unsaved edits.
-  const adoptSaved = (next: PageSettingsView) => { setSaved(next); window.dispatchEvent(new Event("lamp:page-settings-changed")); };
-  async function save(event: FormEvent) {
-    event.preventDefault(); setSaving(true); setStatus(null);
-    try {
-      const body = await appApi<SettingsResponse>("/api/app/page-settings", { method: "PUT", body: JSON.stringify(settings) });
-      const next = body.settings;
-      if (next) {
-        setSaved(next);
-        setSettings((current) => current === settings ? toSettingsForm(next) : current);
-      }
-      window.dispatchEvent(new Event("lamp:page-settings-changed"));
-      overview.refresh();
-      setStatus("Saved and live.");
-    } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : "Settings could not be saved.");
-    } finally { setSaving(false); }
-  }
-  const timezones = zones();
-  const saveBar = <div className="settings-save-bar">
-    <div><p className="settings-save-note">{dirty ? "Unsaved changes" : <><Icon name="check" width={16} height={16} />Changes go live when you save.</>}</p>{status ? <p className="save-message" role="status">{status}</p> : null}</div>
-    <Button disabled={saving}>{saving ? "Saving…" : "Save settings"}</Button>
-  </div>;
-  const form = (children: ReactNode) => <form className="settings-form page-stack" onSubmit={save}>{children}{saveBar}</form>;
 
   return <div className="page-stack settings-page" inert={!ready}>
-    <section className="page-title-row"><h1>Settings</h1></section>
-    <SettingsTabs current={tab} />
-    {tab === "page" ? form(<>
-      <PageHero live={live} pageName={settings.pageName} accentColor={settings.accentColor} markSrc={markSrc} components={components} />
-      <div className="settings-pair">
-        <section className="data-card page-card" aria-labelledby="page-card-title">
-          <p className="card-kicker" id="page-card-title">Page</p>
-          <label className="form-label">Page name<input required maxLength={120} value={settings.pageName} onChange={(event) => update("pageName", event.target.value)} /></label>
-          <label className="form-label">Tagline<textarea required maxLength={280} value={settings.tagline} onChange={(event) => update("tagline", event.target.value)} /></label>
-          <label className="form-label">Time zone{timezones.length ? <select value={settings.timezone} onChange={(event) => update("timezone", event.target.value)}>{(timezones.includes(settings.timezone) ? timezones : [settings.timezone, ...timezones]).map((zone) => <option key={zone} value={zone}>{zone}</option>)}</select> : <input required maxLength={100} value={settings.timezone} onChange={(event) => update("timezone", event.target.value)} />}</label>
-        </section>
-        <BrandCard settings={saved} accentColor={settings.accentColor} footerCreditEnabled={settings.footerCreditEnabled} onAccentChange={(value) => update("accentColor", value)} onFooterCreditChange={(value) => update("footerCreditEnabled", value)} onSettings={adoptSaved} busy={saving} setBusy={setSaving} setStatus={setStatus} />
-      </div>
-      <ClientExtensionSlot id="settings.sections.v1" context={{}} />
-    </>) : null}
-    {tab === "notifications" ? form(<>
-      <section className="data-card" aria-labelledby="sender-title">
-        <p className="card-kicker" id="sender-title">Sender</p>
-        <label className="form-label">From email<input required type="email" value={settings.mailFromAddress} onChange={(event) => update("mailFromAddress", event.target.value)} /><small>Notification email is sent only from this configured address.</small></label>
-        <SenderStatusLine sender={live?.sender ?? null} />
-      </section>
-      <EmailBrandingSettings value={settings.emailBranding} onChange={(value) => update("emailBranding", value)} identityEditable={saved.mailIdentityEditable} />
-    </>) : null}
-    {tab === "writing" ? form(<>
-      <AiAssistanceCard toneInstructions={settings.aiToneInstructions} status={aiStatus.data ?? null} loading={aiStatus.loading} error={aiStatus.error} onToneInstructionsChange={(value) => update("aiToneInstructions", value)} />
-      <WordingSettings terms={settings.wordingBlockedTerms} friendlyLength={settings.wordingFriendlyLength} onTermsChange={(value) => update("wordingBlockedTerms", value)} onLengthChange={(value) => update("wordingFriendlyLength", value)} />
-    </>) : null}
-    {tab === "embeds" ? form(<>
-      <PublicResources publicOrigin={publicOrigin} allowedOrigins={settings.widgetAllowedOrigins} onOriginsChange={(value) => update("widgetAllowedOrigins", value)} />
-    </>) : null}
-    {tab === "channels" ? <>
-      <ChannelsCard />
-    </> : null}
-    {tab === "operators" ? <OperatorsPanel /> : null}
-    {tab === "data" ? <>
-      <section className="data-card intake-link-card"><p className="card-kicker">Moving here</p><h2>Move in</h2><p>Bring components, incident history, maintenance and subscribers, with a dry run first and undo after.</p><ImportDoorSetting /><Link className="text-link" to="/app/move-in">Start a move-in <Icon name="arrow" width={16} height={16} /></Link><a className="text-link" href="/app/cutover">Cutover preview</a></section>
-      <PageDataCard />
-      <AuditLog />
-    </> : null}
+    <section className="page-title-row"><div><h1>{settingsLabel(tab)}</h1>{LINES[tab] && <p>{LINES[tab]}</p>}</div></section>
+    {SAVES.has(tab) && <SettingsSaveState phase={phase} error={autosave.error} retry={autosave.retry} />}
+    <div className={FORMS.has(tab) ? "settings-form page-stack" : "page-stack"}>
+      {tab === "page" && <>
+        {live ? <YourPageFacts live={live} pageName={saved.pageName} accentColor={saved.accentColor} components={components} /> : overview.error ? <FormError>{overview.error}</FormError> : null}
+        <PageSettingsTab settings={settings} live={live} markSrc={markSrc} update={update} />
+      </>}
+      {tab === "look" && <LookSettingsTab settings={settings} saved={saved} components={components} update={update} adoptSaved={autosave.adoptSaved} busy={brandBusy} setBusy={setBrandBusy} status={brandStatus} setStatus={setBrandStatus} />}
+      {tab === "notifications" && <NotificationSettingsTab settings={settings} live={live} identityEditable={saved.mailIdentityEditable} update={update} needsConfirm={autosave.pending("mailFromAddress")} confirm={() => autosave.confirm("mailFromAddress")} onTrafficPhase={setTrafficPhase} />}
+      {tab === "writing" && <WritingSettingsTab settings={settings} aiStatus={aiStatus} update={update} />}
+      {tab === "templates" && <TemplatesSettingsTab />}
+      {tab === "tools" && <ConnectedToolsTab />}
+      {tab === "embeds" && <PublicResources publicOrigin={publicOrigin} allowedOrigins={settings.widgetAllowedOrigins} onOriginsChange={value => update("widgetAllowedOrigins", value)} appearance={settings.widgetAppearance} onAppearanceChange={(value, immediate) => update("widgetAppearance", value, immediate)} needsConfirm={autosave.pending("widgetAllowedOrigins")} onConfirm={() => autosave.confirm("widgetAllowedOrigins")} />}
+      {tab === "operators" && <OperatorsPanel />}
+      {tab === "sign-in" && <Suspense fallback={<LoadingState>Loading sign-in…</LoadingState>}><SignInPane /></Suspense>}
+      {tab === "reports" && <ReportsSettingsTab />}
+      {tab === "export" && <ExportSettingsTab />}
+      {tab === "audit" && <AuditLog />}
+    </div>
   </div>;
 }

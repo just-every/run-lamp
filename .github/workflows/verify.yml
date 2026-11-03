@@ -2,7 +2,7 @@ name: Verify
 
 on:
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
   workflow_dispatch:
 
@@ -10,33 +10,89 @@ permissions:
   contents: read
 
 concurrency:
-  group: verify-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
     outputs:
+      skip: ${{ steps.reuse.outputs.skip }}
       shards: ${{ steps.plan.outputs.shards }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          fetch-depth: 2
           persist-credentials: false
+      - id: reuse
+        name: Reuse only verified push evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          WF_REF: ${{ github.workflow_ref }}
+        run: bash scripts/ci/verify-reuse.sh
       - id: plan
         name: Read the shared local and CI verification plan
         run: node --input-type=module -e 'import { ciShardNames } from "./scripts/verification/plan.mjs"; console.log("shards=" + JSON.stringify(ciShardNames));' >> "$GITHUB_OUTPUT"
 
-  shards:
+  build:
     needs: plan
-    runs-on: ubuntu-latest
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: package.json
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ~/.local/share/pnpm/store
+          key: lamp-pnpm-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install pinned tools and dependencies
+        run: bash scripts/ci/bootstrap.sh
+      - name: Build the production Worker once
+        env:
+          LAMP_VERIFY_SHARD: build
+          LAMP_VERIFICATION_DIRECTORY: ${{ runner.temp }}/lamp-verification/ci-shards
+        run: |
+          pnpm run verify:app
+          tar -czf "$RUNNER_TEMP/lamp-built-worker.tar.gz" dist .wrangler/deploy/config.json
+      - name: Retain commit-bound build completion
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: lamp-shard-${{ github.run_id }}-${{ github.run_attempt }}-build
+          path: ${{ runner.temp }}/lamp-verification/ci-shards/build.json
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: lamp-build-${{ github.run_id }}-${{ github.sha }}
+          overwrite: true
+          path: ${{ runner.temp }}/lamp-built-worker.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  shards:
+    needs: [plan, build]
+    if: needs.plan.outputs.skip != 'true'
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
         shard: ${{ fromJSON(needs.plan.outputs.shards) }}
     env:
-      # Bootstrap-installed pinned binaries must win in every shell step.
-      PATH: /usr/local/bin:/usr/bin:/bin
       PLAYWRIGHT_SKIP_BROWSER_GC: '1'
     defaults:
       run:
@@ -45,16 +101,23 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Cache shared pnpm store and Chromium
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: package.json
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ~/.local/share/pnpm/store
+          key: lamp-pnpm-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Cache Chromium and its system packages
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
         with:
           path: |
-            ~/.local/share/pnpm/store
             ~/.cache/ms-playwright
-          key: lamp-linux-${{ runner.arch }}-${{ hashFiles('scripts/agent-bootstrap.sh', 'pnpm-lock.yaml', 'package.json') }}
+            ${{ runner.temp }}/rer-apt/archives
+          key: lamp-chromium-${{ runner.arch }}-${{ hashFiles('scripts/ci/bootstrap.sh', 'pnpm-lock.yaml') }}
       # Base requires 15 GiB free before starting native local servers.
       - name: Reserve disk for native runtime journeys
-        if: contains(fromJSON('["adoption", "demo", "imports-cutover-browser", "portability"]'), matrix.shard)
+        if: contains(fromJSON('["ownership", "demo", "imports", "portability"]'), matrix.shard)
         run: |
           # Leave room for bootstrap without deleting every toolchain on every
           # machine. The other shards do not start a Base-managed server.
@@ -66,8 +129,24 @@ jobs:
           df -h / "$RUNNER_TEMP"
       - name: Prepare verification logs
         run: mkdir -p "$RUNNER_TEMP/lamp-verification"
-      - name: Install pinned tools, dependencies and browser
-        run: bash scripts/agent-bootstrap.sh 2>&1 | tee "$RUNNER_TEMP/lamp-verification/bootstrap.log"
+      - name: Install pinned tools and dependencies
+        run: bash scripts/ci/bootstrap.sh 2>&1 | tee "$RUNNER_TEMP/lamp-verification/bootstrap.log"
+      - name: Install Chromium only for browser shards
+        # These shards exercise source, API and contract doors without a browser.
+        if: matrix.shard != 'portability'
+        run: |
+          set -euo pipefail
+          pnpm exec playwright install chromium
+          pnpm exec node scripts/chromium-probe.mjs || {
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/install-chromium-deps.py
+            pnpm exec node scripts/chromium-probe.mjs
+          }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: lamp-build-${{ github.run_id }}-${{ github.sha }}
+          path: ${{ runner.temp }}/lamp-build
+      - name: Restore the shared production Worker
+        run: tar -xzf "$RUNNER_TEMP/lamp-build/lamp-built-worker.tar.gz"
       - name: Verify this product shard
         env:
           LAMP_VERIFY_SHARD: ${{ matrix.shard }}
@@ -102,20 +181,26 @@ jobs:
 
   # Preserve the stable required-check name while requiring every planned shard.
   verify:
-    needs: shards
+    needs: [plan, build, shards]
     if: ${{ always() }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
+      - name: Require a successful plan
+        env:
+          PLAN_RESULT: ${{ needs.plan.result }}
+        run: test "$PLAN_RESULT" = success
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: needs.plan.outputs.skip != 'true'
         with:
           persist-credentials: false
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: needs.plan.outputs.skip != 'true'
         with:
           pattern: lamp-shard-${{ github.run_id }}-*
           path: ${{ runner.temp }}/lamp-verification/ci-shards
           merge-multiple: false
       - name: Require every planned command to succeed on this commit
-        if: ${{ always() }}
+        if: ${{ always() && needs.plan.outputs.skip != 'true' }}
         env:
           SHARDS_RESULT: ${{ needs.shards.result }}
           LAMP_VERIFICATION_DIRECTORY: ${{ runner.temp }}/lamp-verification/ci-shards
@@ -123,7 +208,7 @@ jobs:
           node scripts/verification/aggregate.mjs
           test "$SHARDS_RESULT" = success
       - name: Retain combined verification verdict
-        if: ${{ always() }}
+        if: ${{ always() && needs.plan.outputs.skip != 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: lamp-verification-${{ github.run_id }}-${{ github.run_attempt }}

@@ -1,3 +1,6 @@
+import { claimImportInvitation, releaseImportInvitation } from "./invitation-claim.repository";
+import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
+import { createSubscriberLimitRepository } from "../subscribers/limits.repository";
 import { fetchSorryPublicResponses } from "./sorry";
 import { releaseSorrySubscribers, type SorryReleaseApproval } from "./sorry-release.repository";
 import { readCutover } from "./cutover.repository";
@@ -12,11 +15,15 @@ import { canonicalJson, readD1ImportJob, readD1ImportUndoReport, resumeD1Import,
 import { stored } from "../../../../modules/import-kit/src/d1/jobs.ts";
 import { nowIso } from "../../shared/ids";
 import { planMoveIn, reportFromPlan, type MoveInReport } from "./planning";
-import type { Snapshot } from "./rows";
+import type { Accounting, Snapshot } from "./rows";
+import { ownedWithoutBaseline, type OwnedRecord } from "./ownership.repository";
 import { importSources, isImportSource, sourceAdapter, type SourceInput } from "./adapters";
-import { statuspageTargets } from "./targets";
+import type { SavedFile } from "./source";
+import type { StatusFeedVendor } from "../../platform/status-feeds/index.ts";
+import { attributedStatuspageTargets } from "./targets";
 import { doorMapping, moveInPlan, readDoorExport } from './door-plan';
 import { approvalCaption } from '../../../../modules/import-kit/src/door/failures';
+import { readImportVerification } from './verification.repository';
 
 const DESTINATION = "lamp";
 const INVITES_PER_REQUEST = 50;
@@ -37,7 +44,7 @@ export interface MoveInHooks {
 function importContext(db: D1Database, actor: MoveInActor, namespace = "statuspage", principalId = actor.operator.id): D1ImportContext {
   return {
     destination: DESTINATION, namespace, mappingVersion: "1",
-    storage: { database: db as never, targets: statuspageTargets },
+    storage: { database: db as never, targets: attributedStatuspageTargets(actor.operator.id) },
     batchSize: 4, maxBatches: 3, reversalPolicy: "preserve-conflicts",
     authorization: {
       principalId,
@@ -52,9 +59,20 @@ function importContext(db: D1Database, actor: MoveInActor, namespace = "statuspa
 function doorPreparationContext(db: D1Database, principalId: string, namespace: string, authority: D1Sql): D1ImportContext {
   return {
     destination: DESTINATION, namespace, mappingVersion: "1",
-    storage: { database: db as never, targets: statuspageTargets },
+    storage: { database: db as never, targets: attributedStatuspageTargets(principalId) },
     authorization: { principalId, predicate: () => authority },
   };
+}
+
+/** Up to three records as the dry run names them, so the owner can find them. */
+function recordNames(plan: ImportPlan, records: OwnedRecord[]) {
+  const named = new Map(plan.entries.map(entry => [`${entry.source.kind}:${entry.source.sourceId}`,
+    (entry.source.payload as { accounting?: Accounting[] }).accounting?.find(item => item.kind === entry.source.kind)?.name]));
+  const names = [...new Set(records.map(({ kind, sourceId }) => {
+    const points = Array.from(named.get(`${kind}:${sourceId}`) || sourceId);
+    return points.length > 48 ? `${points.slice(0, 47).join('')}…` : points.join('');
+  }))];
+  return names.length > 3 ? `${names.slice(0, 3).join(', ')} and ${names.length - 3} more` : names.join(', ');
 }
 
 /** A source's saved responses, by file name and content. */
@@ -63,7 +81,7 @@ const artifactIdentity = (plan: ImportPlan | { artifacts: Array<{ name: string; 
   return canonicalJson(artifacts.map((artifact) => ({ name: artifact.name, sha256: artifact.sha256 })).sort((a, b) => a.name.localeCompare(b.name)));
 };
 
-export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks, options: { apiOrigin?: string } = {}) {
+export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks, options: { apiOrigin?: string; capturePublicFeeds?: (source: StatusFeedVendor, publicUrl: string) => Promise<SavedFile[]> } = {}) {
   /** An import Move in made before the door (the operator's own, by its source
    * namespace) or a door import of a listed source, under the session's authority. */
   async function jobOf(id: string, actor: MoveInActor) {
@@ -104,6 +122,8 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     await assertAuthority(context);
     const last = Object.fromEntries(counters.results.map((row) => [row.namespace, Number(row.last_number)]));
     return {
+      subscriberCounts: await createSubscriberLimitRepository(db).counts(),
+      incidentIncludeReport: (await createIncidentFollowSettingsRepository(db).get()).includeReport,
       maxGroupOrder: Number(groups.results[0].value), maxComponentOrder: Number(components.results[0].value),
       lastReference: { INC: last.INC ?? 0, SCH: last.SCH ?? 0 },
       allocated: new Set(allocated.results.map((row) => String(row.reference))),
@@ -115,7 +135,22 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
   }
 
   /** Equal operators share native data, but each source record lands once. */
-  async function sourceClear(plan: ImportPlan) {
+  async function sourceClear(plan: ImportPlan, business = false) {
+    // Door jobs use a bundle-specific kit namespace, so owner uploads are
+    // compared with the source's explicit identities. A later upload of an
+    // imported source is that import's catch-up (docs/moving-in.md): the door
+    // matches its records with the applied snapshot and never imports one
+    // twice. A record held outside that baseline would be imported again, so
+    // it is refused. Business preparation keeps its own reviewed lineage,
+    // archive and restore-check paths and their revision guards.
+    if (!business) {
+      const owned = await ownedWithoutBaseline(db, DESTINATION, plan.namespace, plan.entries.filter(entry => entry.source.kind !== 'metadata')
+        .map((entry): [string, string] => [entry.source.kind, entry.source.sourceId]));
+      // An undo keeps records changed in Lamp, and that import stays undone:
+      // the owner leaves those records out, and Lamp keeps its own versions.
+      if (owned.length && owned.every(row => ['undone', 'rolled_back'].includes(row.state))) throw new Error(`Some of these records stayed in Lamp when their import was undone, because they were changed here: ${recordNames(plan, owned)}. Leave them out of the saved responses to import the rest.`);
+      if (owned.length) throw new Error("Some of these records were imported already. Undo that import first, or import only new saved responses.");
+    }
     // Exclude this operation so the import kit's post-write authority check
     // accepts its own new job, while serializing competing alias reservations.
     const otherJobs = `SELECT count(*) AS n FROM ik_jobs WHERE destination='lamp' AND namespace IN ${SOURCES} AND NOT (principal_id=? AND fingerprint=?)`;
@@ -154,20 +189,20 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     await assertAuthority(context);
     const subscriberIds = plan.entries.flatMap((entry) => entry.effects.filter((effect) => effect.targetKind === "subscriber").map((effect) => effect.targetId));
     if (subscriberIds.length) await db.batch(subscriberIds.map((id) => db.prepare(`INSERT OR IGNORE INTO statuspage_import_invites (subscriber_id, job_id, sent_at) SELECT ?, ?, NULL WHERE ${fence.sql}`).bind(id, jobId, ...fence.params ?? [])));
-    const due = (await db.prepare("SELECT i.subscriber_id AS id FROM statuspage_import_invites i JOIN subscribers s ON s.id=i.subscriber_id WHERE i.job_id=? AND i.sent_at IS NULL AND s.state='pending' AND s.channel='email' AND julianday(s.created_at) > julianday('now','-72 hours') ORDER BY i.subscriber_id LIMIT ?").bind(jobId, INVITES_PER_REQUEST).all<{ id: string }>()).results;
+    const due = (await db.prepare(`SELECT i.subscriber_id AS id,d.destination FROM statuspage_import_invites i JOIN subscribers s ON s.id=i.subscriber_id JOIN subscriber_directory d ON d.id=s.id
+      WHERE i.job_id=? AND i.sent_at IS NULL AND s.state='pending' AND s.channel='email' AND julianday(s.created_at)>julianday('now','-72 hours')
+      AND NOT EXISTS(SELECT 1 FROM incident_subscriptions f WHERE f.subscriber_id=s.id AND (f.ended_at IS NOT NULL OR f.resolution_at IS NOT NULL))
+      AND (i.confirmation_address_hash IS NULL OR NOT EXISTS(SELECT 1 FROM subscriber_confirmation_attempts a WHERE a.email_hash=i.confirmation_address_hash AND julianday(a.last_sent_at)>=julianday('now','-24 hours')))
+      ORDER BY i.subscriber_id LIMIT ?`).bind(jobId, INVITES_PER_REQUEST).all<{ id: string;destination:string }>()).results;
     let sent = 0;
-    for (const { id } of due) {
+    for (const { id,destination } of due) {
       let claimedAt: string | undefined;
       try {
         if (await hooks.inviteSubscriber(id, async () => {
           // The final authority and eligibility check is atomic with the claim.
           const timestamp = nowIso();
-          const claimed = await db.prepare(`UPDATE statuspage_import_invites SET sent_at=?
-            WHERE subscriber_id=? AND job_id=? AND sent_at IS NULL AND ${fence.sql}
-            AND EXISTS (SELECT 1 FROM subscribers s WHERE s.id=subscriber_id AND s.state='pending' AND s.channel='email' AND julianday(s.created_at) > julianday('now','-72 hours'))
-            AND EXISTS (SELECT 1 FROM ik_jobs WHERE id=? AND state='completed')`)
-            .bind(timestamp, id, jobId, ...fence.params ?? [], jobId).run();
-          if (claimed.meta.changes === 1) { claimedAt = timestamp; return true; }
+          const claimed=await claimImportInvitation(db,{id,jobId,destination,at:timestamp,fence});
+          if(claimed){claimedAt=timestamp;return true;}
           await assertAuthority(context);
           return false;
         })) sent += 1;
@@ -175,7 +210,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
         // A transport rejection/timeout or arbitrary extension error is not
         // evidence that nothing was sent. Release only this invocation's claim
         // when the adapter explicitly proves it never reached transport.
-        if (claimedAt && isMailPreparationError(error)) await db.prepare('UPDATE statuspage_import_invites SET sent_at=NULL WHERE subscriber_id=? AND job_id=? AND sent_at=?').bind(id, jobId, claimedAt).run();
+        if (claimedAt && isMailPreparationError(error)) await releaseImportInvitation(db,{id,jobId,destination,at:claimedAt});
         throw error;
       }
     }
@@ -211,6 +246,15 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
   }
 
   return {
+    /** Hash-only persisted evidence for a receipt, under the same current
+     * session and retained-job authority as Move in's normal job read. */
+    async verification(id: string, actor: MoveInActor) {
+      const context = await contextForJob(id, actor);
+      await assertAuthority(context);
+      const evidence = await readImportVerification(id, context);
+      await assertAuthority(context);
+      return evidence;
+    },
     /** One door upload, planned as Move in has always planned a source, for the
      * door's own plan: the records it reads and the mapping it applies. Read-only;
      * the door admitted the session or grant first. */
@@ -220,7 +264,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
       const context = doorPreparationContext(db, principalId, input.source, authority);
       // Imported records name the operator who imported them as their author.
       const plan = await planMoveIn(read,await snapshot(context),context,operatorId,asOf);
-      await sourceClear(plan);
+      await sourceClear(plan, business);
       await assertAuthority(context);
       return doorMapping(plan, business);
     },
@@ -249,6 +293,11 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     async fetchSource(input: SourceInput, actor: MoveInActor) {
       await assertAuthority(importContext(db, actor));
       if (input.source === "sorry" && input.publicUrl) return fetchSorryPublicResponses({ publicUrl: input.publicUrl });
+      // A Statuspage, Instatus or Better Stack page's own public feeds, read keyless through the website reader's guard.
+      if (input.publicUrl && (input.source === "statuspage" || input.source === "instatus" || input.source === "betterstack")) {
+        if (!options.capturePublicFeeds) throw new Error("Lamp can't read public status pages here.");
+        return options.capturePublicFeeds(input.source, input.publicUrl).catch(() => { throw new Error("That status page's public feeds could not be read."); });
+      }
       if (!input.pageId || !input.apiKey) throw new Error(`Choose saved ${sourceAdapter(input.source).label} responses, or enter a page ID and API key.`);
       return sourceAdapter(input.source).fetch({ pageId: input.pageId, apiKey: input.apiKey }, options.apiOrigin);
     },

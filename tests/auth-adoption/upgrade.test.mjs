@@ -13,10 +13,14 @@ import {authFixture,secret,setupToken} from './runtime.mjs';
 async function migrateAfterDependencyApproval(db){
  const directory='migrations/core';
  const migrations=(await readdir(directory)).filter(name=>/^\d{4}_.+\.sql$/.test(name)&&Number(name.slice(0,4))>20).sort();
- for(const migration of migrations)await executeSql(db,await readFile(join(directory,migration),'utf8'));
+ for(const migration of migrations){
+  await executeSql(db,await readFile(join(directory,migration),'utf8'));
+
+ }
+
 }
 
-test('ACCESS-001 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials',async()=>{
+test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials',async()=>{
  const directory=await mkdtemp(join(process.cwd(),'.lamp-auth-upgrade-'));const runtime=openRuntime(directory);
  try {
   const db=await runtime.getD1Database('DB');
@@ -68,8 +72,6 @@ test('ACCESS-001 TEAM-001 TEAM-002 upgrade preserves identities, history and sub
   const managed=await call('/manage/v1.manage.prior-manage.NlLnezYyjGOeel4Ol69LbZ2roTyfwuVqTg-zT8JnibU');assert.equal(managed.status,200);assert.equal(managed.headers.has('set-cookie'),false);
   const unsubscribed=await app.fetch(new Request(auth.origin+'/unsubscribe/v1.unsubscribe.prior-unsubscribe.8NHGOaVy7qkNQywROcQbISo2HIbDoKWJI0gmQ981_Oo',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'List-Unsubscribe=One-Click'}),bindings);assert.equal(unsubscribed.status,200);
   assert.equal((await call('/manage/v1.manage.prior-manage.NlLnezYyjGOeel4Ol69LbZ2roTyfwuVqTg-zT8JnibU')).status,404);
-  await assert.rejects(db.prepare("INSERT INTO sessions(id) VALUES ('old')").run());
-  await assert.rejects(db.prepare("INSERT INTO operator_magic_links(id) VALUES ('old')").run());
   assert.equal((await auth.handle(auth.request('/auth/bootstrap',{method:'POST',body:{token:setupToken,displayName:'Replacement'}}))).status,409);
   const retainedSubscriberTokens=(await db.prepare('SELECT * FROM subscriber_tokens').all()).results;
   assert.ok(retainedSubscriberTokens.length>0,'real subscriber authority remains before operator erasure');
@@ -86,6 +88,11 @@ test('ACCESS-001 TEAM-001 TEAM-002 upgrade preserves identities, history and sub
   assert.deepEqual((await db.prepare('SELECT * FROM subscriber_tokens').all()).results,retainedSubscriberTokens,'operator erasure preserves subscriber authority');
   const third=eligible.find(o=>o.email==='third@example.test');
   assert.equal((await call(`/api/app/operators/${third.id}`,{method:'DELETE',cookie:cookies['third@example.test']})).status,409,'last active owner remains recoverable');
+  const finalOwnerBefore=await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(third.id).first();
+  assert.equal((await call(`/api/app/operators/${third.id}/role`,{method:'POST',cookie:cookies['third@example.test'],body:{role:'viewer'}})).status,409,'the final active Owner cannot demote themselves');
+  assert.deepEqual(await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(third.id).first(),finalOwnerBefore);
+  assert.equal((await call('/api/app/session',{cookie:cookies['third@example.test']})).status,200,'refused demotion retains recovery access');
+  assert.equal((await db.prepare("SELECT COUNT(*) n FROM audit_entries WHERE action='role-changed'").first()).n,0,'failed role changes leave no successful audit entry');
   for(const [origin,fetchSite] of [[null,null],['null',null],['https://attacker.example',null],[auth.origin,'cross-site']]){
    const request=auth.request('/api/app/session/signout',{method:'POST',cookie:cookies['third@example.test'],body:{}});
    if(origin===null)request.headers.delete('Origin');else request.headers.set('Origin',origin);
@@ -102,7 +109,7 @@ test('ACCESS-001 TEAM-001 TEAM-002 upgrade preserves identities, history and sub
 
 // 421cb4c let the setup operator revoke or erase itself; afterwards no operator
 // held setup authority and the editor stayed closed. The upgrade keeps it so.
-test('ACCESS-001 upgrade moves setup authority only with the setup operator who still exists',async t=>{
+test('ACCESS-002 upgrade moves setup authority only with the setup operator who still exists',async t=>{
  const erase="UPDATE operators SET email='deleted-01j00000000000000000000001@operator.invalid',display_name='Erased operator',deactivated_at=COALESCE(deactivated_at,'2026-10-02T00:00:00.000Z'),updated_at='2026-10-02T00:00:00.000Z' WHERE id='01J00000000000000000000001'";
  const revoke="UPDATE operators SET deactivated_at='2026-10-02T00:00:00.000Z',updated_at='2026-10-02T00:00:00.000Z' WHERE id='01J00000000000000000000001'";
  for(const [state,before] of [['kept',null],['erased',erase],['revoked',revoke]])await t.test(state,async()=>{

@@ -1,7 +1,8 @@
-import { CommunicationPerformance } from "../../communication-performance/ui/communication-performance";
 import { Link } from "@tanstack/react-router";
 
 import { LiveStrip } from "./live-strip";
+import { FollowUps } from "./follow-ups";
+import { IncidentOwnerLabel } from "./incident-owner-label";
 import type { OverviewService } from "../service";
 import { ClientExtensionSlot } from "../../../app/client/extensions";
 import { Button } from "../../../app/client/ui/button";
@@ -52,7 +53,7 @@ export function OverviewPage() {
       <div className="card-heading"><h2>Active incidents</h2><Link className="text-link" to="/app/incidents">All incidents <Icon name="arrow" width={15} height={15} /></Link></div>
       {activeIncidents.length ? <div className="record-list">{activeIncidents.map((incident) => <Link key={incident.id} className={`record-row${incident.overdue ? " live-block" : ""}`} to="/app/incidents/$incidentId" params={{ incidentId: incident.id }}>
         <span className={`status-icon${severeImpact(incident.impact) ? " is-down" : ""}`}><Icon name="warning" width={20} height={20} /></span>
-        <span><strong>{incident.reference} · {incident.title}</strong><small>Opened {formatOperatorTime(incident.openedAt)}{incident.impact ? ` · ${incident.impact}` : " · No component impact"}{updateDueLabel(incident, committedTime) ? <> · <span className="overdue-note">{updateDueLabel(incident, committedTime)}</span></> : null}</small></span>
+        <span><strong>{incident.reference} · {incident.title}</strong><small>Opened {formatOperatorTime(incident.openedAt)}{incident.impact ? ` · ${incident.impact}` : " · No component impact"}{updateDueLabel(incident, committedTime) ? <> · <span className="overdue-note">{updateDueLabel(incident, committedTime)}</span></> : null}<IncidentOwnerLabel owner={incident.owner} unowned={incident.unowned} /></small></span>
         <StatePill state={incident.lifecycle} /><Icon name="arrow" width={18} height={18} />
       </Link>)}</div> : <EmptyState lamp={components.length === 0}>No active incidents.<br /><Button asChild className="overview-empty-action"><Link to="/app/incidents" hash="new">Report an incident</Link></Button></EmptyState>}
     </section>
@@ -70,7 +71,7 @@ export function OverviewPage() {
         {upcoming.length ? <><div className="compact-records">{upcoming.map((item) => <div key={item.id}><strong className="record-ref">{item.reference}</strong><span>{item.title}</span><small>{item.state} · {formatOperatorTime(item.startsAt)}</small></div>)}</div><Link className="text-link" to="/app/maintenance">View maintenance <Icon name="arrow" width={15} height={15} /></Link></> : <EmptyState icon="maintenance">No upcoming maintenance.<br /><Button asChild className="overview-empty-action"><Link to="/app/maintenance" hash="schedule-maintenance">Schedule maintenance</Link></Button></EmptyState>}
       </article>
     </section>
-    <CommunicationPerformance />
+    <FollowUps />
     <ClientExtensionSlot id="overview.dashboard.after.v1" context={{}} />
   </div>;
 }

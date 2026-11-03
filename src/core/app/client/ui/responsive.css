@@ -1,48 +1,40 @@
-@media (max-width: 1180px) {
-  .incident-workspace { grid-template-columns: minmax(220px, .8fr) minmax(390px, 1.35fr); grid-template-areas: "heading heading" "context composer" "context preview" "context actions"; grid-template-rows: auto auto auto auto; }
-  /* Stacked, only the composer keeps the amber: the preview and the Resolve/Publish row after it stay white. */
-  .preview-panel { border-top: 1px solid var(--line); border-left: 0; }
-  .composer-submit { background: var(--card); box-shadow: none; border-top: 1px solid var(--line); padding: 20px 24px 24px; }
-}
-
 /* The phone menu keeps every section visible together, above the current page. */
 @media (max-width: 900px) {
   .operator-shell { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); overflow-x: clip; }
-  .operator-rail, .operator-workspace, .operator-header, .operator-main { width: 100%; min-width: 0; max-width: 100%; }
+  .operator-rail, .operator-workspace, .operator-main { width: 100%; min-width: 0; max-width: 100%; }
   .operator-workspace { border-left: 0; }
   .operator-rail { position: static; height: auto; border-bottom: 1px solid var(--line); padding: 10px 16px; }
   .app-brand { width: fit-content; padding: 0; }
   .operator-brand-row .operator-menu-button { display: inline-flex; min-height: 44px; }
-  .operator-navigation-panel { display: none; max-height: calc(100dvh - 65px); overflow-y: auto; }
+  .operator-navigation-panel { display: none; max-height: calc(100dvh - 65px); }
   .operator-navigation-panel.is-open { display: flex; }
-  .operator-navigation { margin-top: 12px; }
-  .operator-rail-footer { margin-top: 12px; padding: 14px 12px; }
-  .operator-header { display: none; }
-  .operator-header.is-menu-open { position: static; display: flex; height: auto; min-height: 64px; padding: 10px 28px; }
-  .operator-header > p { display: none; }
-  .operator-header .operator-account { width: 100%; justify-content: space-between; }
-  .operator-header .operator-identity { justify-items: start; }
+  .operator-navigation { margin: 12px 0 0; }
+  .operator-rail-footer { margin-top: 12px; padding: 14px 12px 4px; }
+  .operator-page-link, .operator-signout { min-height: 44px; }
+  /* In Settings the sheet is the Settings list alone: text rows at touch height, no icons and no foot, on one screen. */
+  .settings-menu { gap: 0; }
+  .settings-menu .operator-nav-link, .settings-menu-back { min-height: 44px; }
+  .settings-menu .operator-nav-link svg, .operator-rail.is-settings .operator-rail-footer { display: none; }
+  .settings-menu-title { margin-top: 0; }
+  .settings-menu-topic { gap: 0; }
+  .settings-menu-topic > p { margin-top: 6px; }
+  .settings-pill { display: inline-flex; width: fit-content; max-width: 100%; min-height: 44px; align-items: center; gap: 10px; margin-bottom: 16px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--card); color: var(--ink); padding: 0 16px; font-size: 15px; font-weight: 500; }
+  .settings-pill svg { flex: none; }
+  .settings-pill svg:last-child { color: var(--ink-3); }
   .operator-main { padding: 24px 16px; }
-  .incident-workspace { grid-template-columns: 1fr; grid-template-areas: "heading" "composer" "preview" "actions" "context"; }
-  aside.incident-context { border-right: 0; border-top: 1px solid var(--line); }
-  .settings-workspace, .alert-source-grid, .maintenance-workspace { grid-template-columns: 1fr; }
+  .settings-workspace, .maintenance-workspace { grid-template-columns: 1fr; }
   .maintenance-schedule-card { position: static; }
   .subscriber-webhook-card, .subscriber-webhook-form, .operators-invite-form { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
   h1 { font-size: 32px; }
-  .operator-account { max-width: 100%; gap: 10px; }
-  .operator-identity { min-width: 0; font-size: 13px; overflow-wrap: anywhere; }
-  .operator-identity small { display: none; }
-  .header-signout { min-height: 36px; padding: 6px 14px; font-size: 13px; }
   .operator-main { padding: 20px 16px; }
   .page-title-row { align-items: stretch; flex-direction: column; min-height: 0; }
   .page-title-row .button { width: 100%; }
-  .overview-grid, .settings-grid, .alert-editor-form, .row-window { grid-template-columns: minmax(0, 1fr); }
+  .overview-grid, .settings-grid, .row-window { grid-template-columns: minmax(0, 1fr); }
   .data-card { padding: 16px; }
   .subscriber-table-card, .component-group-card { padding: 0; }
-  .incident-create-panel { padding: 16px; }
   .app-state-empty { padding: 24px 8px; }
   .app-state-error { min-height: calc(100vh - 200px); border-radius: 16px; padding: 0 16px 40px; }
   .error-lamp { --lamp-static-w: 200px; }
@@ -60,21 +52,6 @@
   .incident-row-state { grid-area: state; display: flex; flex-wrap: wrap; align-items: center; justify-items: start; gap: 8px; }
   .incident-list-row .row-chevron { grid-area: chevron; }
   .compact-records > div { grid-template-columns: 56px minmax(0, 1fr); }
-  .incident-workspace-heading { padding: 20px 16px; }
-  .incident-workspace-heading .context-facts { grid-template-columns: 1fr; gap: 0; }
-  .incident-workspace-heading .context-facts div { flex-direction: row; justify-content: space-between; border-bottom: 1px solid var(--line); padding: 10px 0; }
-  .incident-workspace-heading .context-facts div + div { border-left: 0; padding-left: 0; }
-  .incident-workspace-heading .context-facts div:last-child { border-bottom: 0; }
-  .incident-workspace-heading .context-facts strong { text-align: right; }
-  .composer-panel, aside.incident-context, .preview-panel { padding: 20px 16px; }
-  .composer-submit { padding: 16px; }
-  .composer-actions { flex-direction: column; }
-  .composer-actions .button { width: 100%; }
-  .lifecycle-control { grid-template-columns: 1fr; gap: 6px; }
-  .publication-controls { flex-direction: column; }
-  .template-form { flex-direction: column; align-items: stretch; }
-  .template-form .form-label { flex-basis: auto; }
-  .composer-heading { flex-wrap: wrap; }
   .list-controls { align-items: stretch; flex-direction: column; }
   .list-pagination { align-items: stretch; flex-direction: column; }
   .list-pagination > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -88,11 +65,11 @@
 
 /* Phone operators need the same reachable controls as the desktop desk. */
 @media (max-width: 620px) {
-  .operator-shell :is(button, select, summary, .operator-nav-link, .back-link, .text-link, .checkbox-label) { min-height: 44px; }
+  .operator-shell :is(button, select, summary, .operator-nav-link, .back-link, .text-link, .checkbox-label, .view-switch a) { min-height: 44px; }
   .operator-shell :is(.icon-button, .copy-button) { min-width: 44px; }
   .operator-shell :is(.back-link, .text-link) { align-items: center; }
   .operator-shell .checkbox-label { padding-block: 10px; }
-  .operator-shell :is(.component-fact, .incident-workspace-heading, .maintenance-row) { overflow-wrap: anywhere; }
+  .operator-shell .maintenance-row { overflow-wrap: anywhere; }
   .operator-shell .brief-columns { grid-template-columns: minmax(0, 1fr); }
   .signin-page :is(button, .button) { min-height: 44px; }
 }
@@ -105,17 +82,13 @@
   .receipt-card tbody, .receipt-card tr { display: grid; }
   .receipt-card tr { padding: 12px 0; border-top: 1px solid var(--line); }
   .receipt-card td { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 12px; padding: 6px 0; border: 0; overflow-wrap: anywhere; }
-  .receipt-card td::before { content: attr(data-label); color: var(--ink-3); font-size: 12px; }
+  .receipt-card td::before { content: attr(data-label); color: var(--ink-3); font-size: var(--text-small); }
   .receipt-card td[colspan] { display: block; }
 }
 
-/* First run, Your page and Settings stack under 900px; the hero's small preview gives way first. */
-@media (max-width: 1180px) {
-  .page-hero { grid-template-columns: 84px minmax(0, 1fr); }
-  .page-hero-preview { display: none; }
-}
+/* First run and Settings › Page stack under 900px. */
 @media (max-width: 900px) {
-  .your-page-grid, .settings-pair { grid-template-columns: minmax(0, 1fr); }
+  .your-page-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 760px) {
   .found-card { grid-template-columns: minmax(0, 1fr); }
@@ -129,5 +102,4 @@
   .your-page-preview { padding: 12px; }
   .page-preview-large .page-preview-bar { padding: 16px 18px; font-size: 19px; }
   .page-preview-large .page-preview-body { padding: 16px 18px 20px; }
-  .your-page-actions .button { flex: 1 1 auto; }
 }

@@ -9,10 +9,17 @@ import { createRetainedSnapshotCache } from "../../src/core/platform/blobs/retai
 import { createR2BlobStore } from "../../src/core/platform/blobs/r2";
 export { SnapshotCache } from "../../src/core/platform/blobs/snapshot-cache";
 
+let databaseTouches = 0;
+const blobReads = { getText: new Map<string, number>(), getBytes: new Map<string, number>() };
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const cache = createRetainedSnapshotCache(env);
+    if (url.pathname === "/test/database-touches") return Response.json({ accesses: databaseTouches });
+    if (url.pathname === "/test/blob-reads") return Response.json({
+      getText: Object.fromEntries(blobReads.getText), getBytes: Object.fromEntries(blobReads.getBytes),
+    });
     if (url.pathname === "/test/rebuild") return Response.json(await exerciseRebuild(env, await request.json()));
     if (url.pathname === "/test/retain") {
       try { await cache.write(await request.text()); return new Response(null, { status: 204 }); }
@@ -32,9 +39,14 @@ export default {
     const failing = new Proxy(blobs, { get(target, key) {
       if (url.searchParams.get("storage") === "down") return async () => { throw new Error("R2 unavailable"); };
       if (url.searchParams.get("storage") === "malformed" && key === "getText") return async () => ({ text: "{", eTag: "bad", contentType: "application/json" });
+      if (key === "getText" || key === "getBytes") return async (objectKey: string) => {
+        const counts = blobReads[key];
+        counts.set(objectKey, (counts.get(objectKey) ?? 0) + 1);
+        return target[key](objectKey);
+      };
       return Reflect.get(target, key);
     } });
-    const repository = new Proxy({}, { get() { throw new Error("PUBLIC READ TOUCHED D1"); } });
+    const repository = new Proxy({}, { get() { databaseTouches++; throw new Error("PUBLIC READ TOUCHED D1"); } });
     const replica = url.searchParams.get("replica") === "down"
       ? { ...cache, read: async () => { throw new Error("Replica unavailable"); } }
       : cache;
@@ -43,7 +55,7 @@ export default {
     const down = async (): Promise<never> => { throw new Error("D1 unavailable"); };
     registerPublicSnapshotRoutes(app, service);
     registerHealthRoutes(app, createHealthService({ key: env, checkDatabase: down, lastGood: down, recordGood: down, forgetGood: down }, {}));
-    if (url.searchParams.get("cacheWrites") !== "down") return app.fetch(request, env);
+    if (url.searchParams.get("cacheWrites") !== "down") return app.fetch(request, env, ctx);
     // Cache API is another network/storage edge. Failing its writes must not
     // prevent serving a verified generation from R2.
     const open = caches.open.bind(caches);
@@ -54,7 +66,7 @@ export default {
         return typeof value === "function" ? value.bind(target) : value;
       },
     });
-    try { return await app.fetch(request, env); }
+    try { return await app.fetch(request, env, ctx); }
     finally { caches.open = open; }
   },
 };

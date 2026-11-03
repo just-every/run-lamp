@@ -1,4 +1,5 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { defaultWidgetAppearance } from "./widget-appearance";
 
 import type {
   ComponentState,
@@ -32,9 +33,13 @@ export const pageSettings = sqliteTable("page_settings", {
   timezone: text().notNull(),
   hostname: text().notNull(),
   footerCreditEnabled: integer("footer_credit_enabled", { mode: "boolean" }).notNull().default(true),
+  template: text({ enum: ["default", "calm", "uptime", "regions"] }).notNull().default("default"),
+  theme: text("theme").notNull().default("{}"),
+  themeAssets: text("theme_assets").notNull().default("{}"),
   logoKey: text("logo_key"),
   logoContentType: text("logo_content_type"),
   widgetAllowedOrigins: text("widget_allowed_origins").notNull().default("[]"),
+  widgetAppearance: text("widget_appearance").notNull().default(JSON.stringify(defaultWidgetAppearance)),
   mailFromAddress: text("mail_from_address").notNull().default(""),
   emailBranding: text("email_branding").notNull().default("{}"),
   aiToneInstructions: text("ai_tone_instructions").notNull().default(""),
@@ -56,6 +61,7 @@ export const components = sqliteTable("components", {
   groupId: text("group_id").references(() => componentGroups.id),
   name: text().notNull(),
   description: text().notNull().default(""),
+  region: text(),
   internal: integer({ mode: "boolean" }).notNull().default(false),
   onlyShowIfDegraded: integer("only_show_if_degraded", { mode: "boolean" }).notNull().default(false),
   uptimeStartDate: text("uptime_start_date"),
@@ -144,6 +150,8 @@ export const incidentComponents = sqliteTable("incident_components", {
 }, (table) => [index("incident_components_incident_id_idx").on(table.incidentId), index("incident_components_component_id_idx").on(table.componentId)]);
 
 export const incidentUpdates = sqliteTable("incident_updates", {
+  automationAttribution: text("automation_attribution"),
+  automationReceiptId: text("automation_receipt_id"),
   id: text().primaryKey(),
   incidentId: text("incident_id").notNull().references(() => incidents.id),
   lifecycle: text({ enum: ["Investigating", "Identified", "Monitoring", "Resolved"] }).$type<IncidentLifecycle>().notNull(),
@@ -198,6 +206,8 @@ export const maintenance = sqliteTable("maintenance", {
   id: text().primaryKey(),
   reference: text().notNull().unique(),
   title: text().notNull(),
+  affectedAudience: text("affected_audience"),
+  customerImpact: text("customer_impact"),
   state: text({ enum: ["Scheduled", "In progress", "Completed", "Cancelled"] }).$type<MaintenanceState>().notNull(),
   startsAt: text("starts_at").notNull(),
   endsAt: text("ends_at").notNull(),
@@ -215,9 +225,11 @@ export const maintenanceComponents = sqliteTable("maintenance_components", {
   ...timestamps,
 }, (table) => [index("maintenance_components_maintenance_id_idx").on(table.maintenanceId)]);
 
-export const subscribers = sqliteTable("subscribers", {
+const subscribersColumns = () => ({
   id: text().primaryKey(),
-  channel: text({ enum: ["email", "webhook"] }).$type<DeliveryChannel>().notNull(),
+  channel: text({ enum: ["email", "webhook", "slack", "teams", "sms"] }).$type<DeliveryChannel | "slack" | "teams" | "sms">().notNull(),
+  eventKindsJson: text("event_kinds_json").notNull().default('["incidents","maintenance","components"]'),
+  minimumImpact: text("minimum_impact", { enum: ["Partially unavailable"] }),
   destination: text().notNull().unique(),
   contactEmail: text("contact_email"),
   state: text({ enum: ["pending", "active", "deactivated"] }).$type<SubscriberState>().notNull(),
@@ -226,7 +238,9 @@ export const subscribers = sqliteTable("subscribers", {
   deactivationReason: text("deactivation_reason"),
   deactivatedAt: text("deactivated_at"),
   ...timestamps,
-}, (table) => [index("subscribers_state_idx").on(table.state)]);
+});
+export const subscriberDirectory = sqliteTable("subscriber_directory", subscribersColumns());
+export const subscribers = sqliteTable("subscribers", subscribersColumns(), (table) => [index("subscribers_state_idx").on(table.state)]);
 
 export const subscriberComponents = sqliteTable("subscriber_components", {
   id: text().primaryKey(),
@@ -235,7 +249,7 @@ export const subscriberComponents = sqliteTable("subscriber_components", {
   ...timestamps,
 }, (table) => [uniqueIndex("subscriber_components_subscriber_component_idx").on(table.subscriberId, table.componentId)]);
 
-export const notificationDeliveries = sqliteTable("notification_deliveries", {
+const notificationDeliveriesColumns = () => ({
   id: text().primaryKey(),
   subscriberId: text("subscriber_id").notNull().references(() => subscribers.id),
   incidentUpdateId: text("incident_update_id").references(() => incidentUpdates.id),
@@ -245,7 +259,9 @@ export const notificationDeliveries = sqliteTable("notification_deliveries", {
   queuedAt: text("queued_at").notNull(),
   outcomeAt: text("outcome_at"),
   ...timestamps,
-}, (table) => [
+});
+export const deliveryRecords = sqliteTable("notification_delivery_records", notificationDeliveriesColumns());
+export const notificationDeliveries = sqliteTable("notification_deliveries", notificationDeliveriesColumns(), (table) => [
   index("notification_deliveries_subscriber_idx").on(table.subscriberId, table.queuedAt),
   index("notification_deliveries_update_idx").on(table.incidentUpdateId, table.queuedAt),
 ]);

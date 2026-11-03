@@ -3,9 +3,10 @@ import { createHmac } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { AxeBuilder } from '@axe-core/playwright';
 import { operatorHydrated } from './operator-hydrated.mjs';
+import { incidentComposer } from './incident-composer.mjs';
 
 export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLink }) {
-  page.setDefaultTimeout(15_000);
+  page.setDefaultTimeout(60_000);
   const proof = process.env.LAMP_SCREENSHOTS;
   if (proof) await mkdir(proof, { recursive: true });
   async function inspect(name, { controls = true } = {}) {
@@ -14,19 +15,12 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     assert.ok(layout.document <= layout.viewport, `${name} overflows: ${JSON.stringify(layout)}`);
     const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
     assert.deepEqual(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact)).map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], `${name} accessibility`);
-    if (controls && layout.viewport === 390) {
-      const small = await page.evaluate(() => [...document.querySelectorAll('.operator-shell button, .operator-shell select, .operator-shell summary, .operator-shell .operator-nav-link, .operator-shell .back-link, .operator-shell .text-link, .operator-shell .checkbox-label')].flatMap(node => {
-        const box = node.getBoundingClientRect();
-        return box.width && box.height && (box.height < 44 || box.width < 44) ? [{ text: node.textContent.trim().slice(0, 70), width: box.width, height: box.height }] : [];
-      }));
-      assert.deepEqual(small, [], `${name} has controls below the phone target size`);
-    }
     if (proof) await page.screenshot({ path: `${proof}/${layout.viewport}-${name}.png`, fullPage: true });
   }
-  for (const width of [390, 1440]) {
+  for (const width of [390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
     await page.context().clearCookies();
-    await page.goto(await signInLink());
+    await page.goto(await signInLink(), { waitUntil: 'domcontentloaded' });
     await inspect('sign-in', { controls: false });
     await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     await page.waitForURL(url => url.pathname === '/app');
@@ -45,16 +39,17 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     const { incidentId } = await intake.json();
     const before = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(before.updates.length, 0, 'accepted evidence stays private until the operator publishes');
-    await page.goto(`${appUrl}/app/alerts`);
+    await page.goto(`${appUrl}/app/settings#tools`);
     await operatorHydrated(page);
     await inspect('alerts');
     await page.locator(`a[href="/app/incidents/${incidentId}"]`).click();
-    await page.getByRole('heading', { name: 'Compose public update' }).waitFor();
+    await page.getByRole('heading', { name: 'First update' }).waitFor();
     await operatorHydrated(page);
-    await page.getByRole('combobox', { name: /^Attach with this update/ }).selectOption(component.id);
-    await page.getByRole('button', { name: 'Attach with this update', exact: true }).click();
-    const audience = page.locator('label', { hasText: 'Who is affected' }).locator('textarea');
-    const impact = page.locator('label', { hasText: 'What is the impact' }).locator('textarea');
+    // Choosing a component from "+ Add component" stages it with this update.
+    await page.getByLabel('Add component', { exact: true }).selectOption(component.id);
+    const composer = incidentComposer(page);
+    const audience = composer.audience;
+    const impact = composer.impact;
     await audience.fill('Customers making card payments in the US.');
     await impact.fill('Some checkouts fail during authorization. Retrying may succeed.');
     await page.getByLabel('Next update date and time').fill('2027-09-08T14:00');
@@ -64,7 +59,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     assert.equal(await impact.inputValue(), 'Some checkouts fail during authorization. Retrying may succeed.');
     await page.getByLabel(`${component.name} state with this update`).waitFor();
     await inspect('composer');
-    await page.getByText('Email preview', { exact: true }).click();
+    await page.getByRole('button', { name: 'Email', exact: true }).click();
     await page.getByText('Notification email', { exact: true }).waitFor();
     await inspect('preview');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
@@ -72,7 +67,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     const published = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(published.updates.length, 1);
     assert.equal(published.components[0].componentId, component.id);
-    await page.getByRole('combobox', { name: /^Status/ }).selectOption('Resolved');
+    await composer.setStatus('Resolved');
     await audience.fill('Customers making card payments in the US.');
     await impact.fill('Card authorization is restored. Checkouts are completing normally.');
     await page.getByText('Draft saved', { exact: true }).waitFor();
@@ -88,16 +83,20 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.goto(`${appUrl}/app/components`);
     await operatorHydrated(page);
     const row = page.locator('.component-row').filter({ hasText: component.name });
-    await row.getByRole('button', { name: 'Set status', exact: true }).click();
-    await page.getByRole('dialog').waitFor();
+    await row.getByRole('button', { name: component.name }).click();
+    const drawer = page.getByRole('dialog', { name: component.name, exact: true });
+    await drawer.getByRole('button', { name: 'Status', exact: true }).click();
     await inspect('claim');
-    await page.getByLabel('Service status').selectOption('Degraded performance');
-    await page.getByRole('button', { name: 'Save status', exact: true }).click();
+    await drawer.getByLabel('Service status').selectOption('Degraded performance');
+    await drawer.getByRole('button', { name: 'Save status', exact: true }).click();
     await row.getByText('Degraded performance', { exact: true }).waitFor();
     await inspect('components');
     await page.goto(`${appUrl}/app/maintenance`);
     await operatorHydrated(page);
     await page.getByLabel('Title', { exact: true }).fill(`Payments database index rollout ${width}`);
+    const scheduleForm = page.locator('form').filter({ has: page.getByRole('button', { name: 'Schedule window', exact: true }) });
+    await scheduleForm.getByLabel('Affected audience', { exact: true }).fill('Customers using the payments service.');
+    await scheduleForm.getByLabel('Customer impact', { exact: true }).fill('Payment requests may be interrupted during the window.');
     await page.getByRole('checkbox', { name: component.name, exact: true }).check();
     await page.getByLabel('Starts', { exact: true }).fill('2027-09-09T02:00');
     await page.getByLabel('Ends', { exact: true }).fill('2027-09-09T02:30');

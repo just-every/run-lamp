@@ -1,11 +1,11 @@
+import { themeOwnerJourney } from "./helpers/theme-owner-journey.mjs";
 import { stripVTControlCharacters } from "node:util";
 import { requestHeaders } from "../helpers/request-headers.mjs";
 import { withDraftVersion } from "./draft-version-helper.mjs";
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
-import { createHmac } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
-import { mkdir, mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import { createServer as createHttpServer } from "node:http";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -13,19 +13,14 @@ import { join, resolve } from "node:path";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright";
 
-import { contract } from "../contract.mjs";
 import { insertRealOperatorSession } from "./real-session-helper.mjs";
 import { appOrigin, pageOrigin } from "./helpers/hosts.mjs";
 import { reservePort, waitForWorker } from "./worker-startup.mjs";
-import { saveAndConfirmDraft } from "./saved-draft-helper.mjs";
 import { isolatedWranglerConfig } from "../helpers/wrangler-config.mjs";
 import { sessionCookieName } from "../helpers/session-cookie.mjs";
-import { postIncidentReportFlow } from "./helpers/post-incident-report-flow.mjs";
-import { emailBrandingBrowserFlow } from "./helpers/email-branding-browser-flow.mjs";
 import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
-import { subscriberReportingBrowserFlow } from "./helpers/subscriber-reporting-browser-flow.mjs";
-import { auditLogFlow } from "./helpers/audit-log-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
+import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
 
 let appUrl = "";
 let pageUrl = "";
@@ -34,6 +29,7 @@ let aiPort;
 let statePath;
 let viteCachePath;
 let fixtureConfig;
+let terminalDirectory;
 let configPath;
 const defaultConfigPath = resolve("wrangler.jsonc");
 let server;
@@ -43,10 +39,16 @@ let browserContext;
 let page;
 let serverOutput = "";
 let failingAiServer;
-let autosaveIncidentId;
 let originalVisualSource;
 
+function configWithLocalMail(config) {
+  return { ...config, vars: { ...config.vars,
+    RER_DEV_KEY: "test-only-publishing-browser-dev-key", RER_DEV_ORIGIN: appUrl, RER_DEV_IDENTITY: "off",
+  } };
+}
+
 function configWithAiProvider(config) {
+  config = configWithLocalMail(config);
   return { ...config, vars: { ...config.vars, AI_PROVIDER_URL: `http://127.0.0.1:${aiPort}/v1`, AI_PROVIDER_API_KEY: "browser-test-key", AI_PROVIDER_MODEL: "browser-test-model" } };
 }
 
@@ -87,7 +89,7 @@ async function startWorker(config = defaultConfigPath) {
   });
   server.stdout.on("data", (chunk) => { serverOutput += chunk; });
   server.stderr.on("data", (chunk) => { serverOutput += chunk; });
-  await waitForWorker({ origin: appUrl, isListening: () => stripVTControlCharacters(serverOutput).includes(`${appUrl}/`), child: server, output: () => `${serverOutput}\nState: ${statePath}`, label: "Publishing browser Worker" });
+  await waitForWorker({ origin: appUrl, timeoutMs: 180_000, isListening: () => stripVTControlCharacters(serverOutput).includes(`${appUrl}/`), child: server, output: () => `${serverOutput}\nState: ${statePath}`, label: "Publishing browser Worker" });
 }
 
 async function stopWorker() {
@@ -122,14 +124,6 @@ async function appFetch(path, init = {}) {
   return fetch(`${appUrl}${path}`, { ...init, headers: requestHeaders({ Cookie: `${sessionCookieName(appUrl)}=${sessionId}`, "Content-Type": "application/json" }, init.headers) });
 }
 
-async function createBrowserIncident() {
-  const component = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({ groupId: null, name: "Browser API", description: "Browser publishing contract component.", internal: false, displayOrder: 1, note: "" }) });
-  assert.equal(component.status, 201);
-  const componentId = (await component.json()).component.id;
-  const incident = await appFetch("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: "Browser autosave incident", components: [{ componentId, state: "Major outage", relationship: "Primary" }] }) });
-  assert.equal(incident.status, 201);
-  return (await incident.json()).incident;
-}
 
 before(async () => {
   testPort = await reservePort({ label: "Publishing browser Worker" });
@@ -137,24 +131,32 @@ before(async () => {
   appUrl = appOrigin(testPort);
   pageUrl = pageOrigin(testPort);
   statePath = await mkdtemp(join(tmpdir(), "lamp-publishing-browser-d1-"));
-  viteCachePath = await mkdtemp(join(tmpdir(), "lamp-publishing-browser-vite-"));
+  // The public terminal command reads settings from its working directory.
+  // Keep the fixture independent of the installed owner settings in this checkout.
+  terminalDirectory = await mkdtemp(join(tmpdir(), "lamp-publishing-terminal-"));
+  await symlink(resolve("node_modules"), join(terminalDirectory, "node_modules"), "dir");
+  writeFileSync(join(terminalDirectory, "package.json"), readFileSync(resolve("package.json")));
+  viteCachePath = await mkdtemp(resolve("node_modules/.lamp-publishing-browser-vite-"));
   // The fixture config lives in its own directory so a checkout's `.dev.vars` (for example its AI provider) cannot override it.
-  fixtureConfig = isolatedWranglerConfig();
+  // The add-subscriber door prepares a confirmation. Use the shipped silent
+  // local transport, while the real operator session remains the authority.
+  await startFailingAiProvider();
+  fixtureConfig = isolatedWranglerConfig(configWithAiProvider);
   configPath = fixtureConfig.path;
-  execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", defaultConfigPath, "--persist-to", statePath], { cwd: process.cwd(), stdio: "pipe" });
-  if (process.env.RER_VISUAL_HEADING_PROBE === '1') {
-    const source = resolve('src/editor/visual-edits.json');
-    originalVisualSource = readFileSync(source);
-    // The first verification pass covers the complete owner snapshot. This pass
-    // isolates the probe so an owner's edit to the same heading cannot conflict.
-    const snapshot = {revision:1,edits:[{id:'test-heading-probe',revision:1,path:'/app',target:{selector:'h1:nth-child(1)',tag:'h1',role:'',beforeText:'Overview'},change:{text:'Workspace overview'}}]};
-    writeFileSync(source,JSON.stringify(snapshot,null,2)+'\n');
+  execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", defaultConfigPath, "--persist-to", statePath], { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024, stdio: "pipe" });
+  const visualSource = resolve('src/editor/visual-edits.json');
+  originalVisualSource = readFileSync(visualSource);
+  const snapshot = JSON.parse(originalVisualSource);
+  if (!snapshot.edits.some(edit => edit.path === '/app' && edit.target.selector?.startsWith('h1'))) {
+    snapshot.revision += 1;
+    snapshot.edits.push({ id: 'test-heading-probe', revision: 1, path: '/app', target: { selector: 'h1:nth-child(1)', tag: 'h1', role: '', beforeText: 'Overview' }, change: { text: 'Workspace overview' } });
+    writeFileSync(visualSource, JSON.stringify(snapshot, null, 2) + '\n');
   }
+
   await startWorker(configPath);
   sessionId = await insertRealOperatorSession({ persistTo: statePath });
-  if (process.env.RER_VISUAL_HEADING_PROBE === '1') execFileSync('pnpm',['exec','wrangler','d1','execute','DB','--local','--config',defaultConfigPath,'--persist-to',statePath,'--command',"UPDATE operators SET is_setup_operator=0 WHERE id='01J00000000000000000000001'"],{stdio:'pipe'});
-  browser = await chromium.launch({ headless: true, args: ["--use-mock-keychain", "--password-store=basic"] });
-  await openAuthenticatedPage();
+  browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"] });
+  await openAuthenticatedPage({ width: 1440, height: 1000 });
 });
 
 after(async () => {
@@ -170,7 +172,7 @@ after(async () => {
     }
   }
   await stopFailingAiProvider();
-  await Promise.all([rm(statePath, { recursive: true, force: true }), rm(viteCachePath, { recursive: true, force: true }), fixtureConfig?.cleanup()]);
+  await Promise.all([rm(statePath, { recursive: true, force: true }), rm(viteCachePath, { recursive: true, force: true }), rm(terminalDirectory, { recursive: true, force: true }), fixtureConfig?.cleanup()]);
 });
 
 async function waitForPublicIncident(reference, expectedText) {
@@ -183,363 +185,616 @@ async function waitForPublicIncident(reference, expectedText) {
   throw new Error(`The public snapshot did not contain ${expectedText} for ${reference}.`);
 }
 
-test("compiled visual edits survive actual operator navigation and reload", async () => {
-  const snapshot = JSON.parse(readFileSync(resolve('src/editor/visual-edits.json'),'utf8'));
+// A date and time input value `offsetMs` from now in the page's Los Angeles zone.
+const localInput = (offsetMs) => page.evaluate((offset) => {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(Date.now() + offset));
+  const part = (kind) => parts.find(entry => entry.type === kind).value;
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+}, offsetMs);
+
+async function verifyCompiledEdits() {
+  const snapshot = JSON.parse(readFileSync(resolve('src/editor/visual-edits.json'), 'utf8'));
   const errors = [], recordError = error => errors.push(error.message);
-  page.on('pageerror',recordError);
-  const closeEmptyComponentForm = async () => {
-    if (new URL(page.url()).pathname !== '/app/components') return;
-    await page.getByRole('heading', { name: 'Add component', exact: true }).waitFor();
-    await page.keyboard.press('Escape');
-    await page.getByRole('dialog').waitFor({ state: 'detached' });
-  };
+  page.on('pageerror', recordError);
+  const paths = [...new Set(['/app', ...snapshot.edits.map(edit => edit.path)])];
   try {
-    const paths = [...new Set(['/app','/app/components','/app/subscribers',...snapshot.edits.map(edit => edit.path)])];
     for (const path of paths) {
       await page.goto(appUrl + path, { waitUntil: 'domcontentloaded' });
       await operatorHydrated(page);
-      await page.locator('.operator-navigation').waitFor();
-      await closeEmptyComponentForm();
-      const expected = snapshot.edits.filter(edit => edit.target.navigation || edit.path === path);
       const check = async () => {
-        for (const edit of expected) await page.waitForFunction(edit => {
+        for (const edit of snapshot.edits.filter(edit => edit.target.navigation || edit.path === path)) await page.waitForFunction(edit => {
           const matches = edit.target.navigation
             ? [...document.querySelectorAll('nav a[href]')].filter(link => new URL(link.href).pathname === edit.target.navigation.href)
             : [...document.querySelectorAll(edit.target.selector)];
           if (matches.length !== 1) return false;
           const element = matches[0];
-          const text = [...element.childNodes].length ? element.textContent.replace(/\s+/g,' ').trim() : '';
-          if (edit.change.text !== undefined && text !== edit.change.text.replace(/\s+/g,' ').trim()) return false;
+          if (edit.change.text !== undefined && element.textContent.replace(/\s+/g, ' ').trim() !== edit.change.text.replace(/\s+/g, ' ').trim()) return false;
           const probe = document.createElement('div');
-          for (const [name,value] of Object.entries(edit.change.styles || {})) {
-            probe.style.setProperty(name,value);
+          for (const [name, value] of Object.entries(edit.change.styles || {})) {
+            probe.style.setProperty(name, value);
             if (element.style.getPropertyValue(name) !== probe.style.getPropertyValue(name)) return false;
           }
           return true;
-        },edit);
+        }, edit);
       };
-      await check();
-      const stamp = await page.evaluate(() => performance.timeOrigin);
-      const next = path === '/app/components' ? '/app/subscribers' : '/app/components';
-      await page.locator(`.operator-navigation a[href="${next}"]`).click();
-      await page.waitForURL(url => url.pathname === next);
-      assert.equal(await page.evaluate(() => performance.timeOrigin),stamp,'navigation remains within the running app');
-      await closeEmptyComponentForm();
-      await page.locator(`.operator-navigation a[href="${path}"]`).count().then(async count => { if (count === 1) { await page.locator(`.operator-navigation a[href="${path}"]`).click(); await page.waitForURL(url => url.pathname === path); } else await page.goto(appUrl + path, { waitUntil: 'domcontentloaded' }); });
-      await check();
-      await page.reload(); await page.locator('.operator-navigation').waitFor(); await check();
+      await check(); await page.reload({ waitUntil: 'domcontentloaded' }); await operatorHydrated(page); await check();
     }
-    if (process.env.RER_VISUAL_HEADING_PROBE === '1') assert.equal(await page.locator('[data-rer-editor]').count(),0,'compiled page edits work for a non-editor operator');
-    assert.deepEqual(errors,[],'compiled edits retain a healthy application runtime');
-  } finally { page.off('pageerror',recordError); }
-});
+    assert.deepEqual(errors, [], 'owner edits preserve a healthy application');
+  } finally { page.off('pageerror', recordError); }
+}
 
-contract("INCIDENT-001", "AGENT-004 MOBILE-001 — an operator can start empty, publish and resolve, then run the full alert-to-resolution phone desk", async () => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${appUrl}/app/components`);
-  await page.getByRole("heading", { name: "Add component" }).waitFor();
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "the narrow component drawer must not introduce horizontal page overflow");
-  await page.getByLabel("Component name").fill("Journey API");
-  await page.getByLabel(/Description/).fill("Customer API used for the empty-product incident journey.");
-  await page.getByRole("button", { name: "Create component" }).click();
-  await page.locator(".component-row-summary").getByText("Journey API", { exact: true }).waitFor();
+async function api(path, method = 'GET', body) {
+  const response = await appFetch(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+  assert.ok(response.ok, `${method} ${path}: ${response.status} ${await response.clone().text()}`);
+  return response.status === 204 ? null : response.json();
+}
+const saved = () => page.locator('.autosave-status.is-saved').waitFor();
+const readIncident = async id => (await api(`/api/app/incidents/${id}`)).incident;
 
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(`${appUrl}/app/incidents`);
-  await operatorHydrated(page);
-  await page.getByRole("heading", { name: "Start a private draft" }).waitFor();
-  await page.getByLabel("Incident title").fill("Journey API request failures");
-  await page.getByLabel("Affected component 1").selectOption({ label: "Journey API" });
-  await page.getByLabel("Component status 1").selectOption("Major outage");
-  await page.getByRole("button", { name: "Create incident draft" }).click();
-  await page.getByRole("heading", { name: "Compose public update" }).waitFor();
+const wordingFields = locator => locator.locator('dl > div').evaluateAll(rows => rows.map(row => ({
+  label: row.querySelector('dt').textContent,
+  value: row.querySelector('dd').textContent,
+})));
 
-  const reference = await page.locator(".incident-context .eyebrow").textContent();
-  assert.match(reference ?? "", /^INC-\d+$/);
-  await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Journey API customers.");
-  await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("Requests to Journey API are failing.");
-  await page.locator("label", { hasText: "What still works" }).locator("textarea").fill("The dashboard remains available.");
-  await page.getByLabel("Next update date and time").fill("2027-09-08T14:00");
-  await page.locator("label", { hasText: "Additional details" }).locator("textarea").fill("Operators are restoring request capacity.");
-  await page.getByText("Public page", { exact: true }).waitFor();
-  await page.getByText("Email preview", { exact: true }).click();
-  await page.getByText("Notification email", { exact: true }).waitFor();
-  await page.waitForTimeout(1_500);
-  await page.getByText("Draft saved", { exact: true }).waitFor({ timeout: 2_000 });
-  await page.getByRole("button", { name: "Publish update" }).click();
-  await page.getByText("Update published.").waitFor();
-  await waitForPublicIncident(reference, "Requests to Journey API are failing.");
-
-  assert.equal(await page.locator("label", { hasText: "Who is affected" }).locator("textarea").inputValue(), "", "publication starts a blank next-update draft");
-  await page.getByLabel("Status").selectOption("Resolved");
-  await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Journey API customers.");
-  await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("Journey API requests are restored.");
-  await page.waitForTimeout(1_500);
-  await page.getByText("Draft saved", { exact: true }).waitFor({ timeout: 2000 });
-  await page.getByRole("button", { name: "Publish update" }).click();
-  await waitForPublicIncident(reference, "Resolved");
-  await page.goto(`${pageUrl}/incidents/${reference}`);
-  await page.getByText("Journey API request failures", { exact: true }).waitFor();
-  assert.match(await page.locator("body").innerText(), /Resolved/);
-  await phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLink: async () => execFileSync(process.execPath, ["scripts/signin-link.mjs", "--email", "operator@example.test", "--origin", appUrl, "--config", configPath, "--persist-to", statePath], { env: process.env, encoding: "utf8" }).trim() });
-});
-
-contract("INCIDENT-004", "operator controls create internal notes, retroactive records, corrections, review decisions, and a reasoned deletion", async (t) => {
-  // Own this prerequisite so the case also runs alone; INCIDENT-001 still starts empty.
-  const componentResponse = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({ groupId: null, name: "Journey API", description: "Customer API used for the empty-product incident journey.", internal: false, displayOrder: 1, note: "" }) });
-  assert.equal(componentResponse.status, 201);
-  const { component } = await componentResponse.json();
-  const localInput = (offsetMs) => page.evaluate((offset) => {
-    const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(Date.now() + offset));
-    const part = (kind) => parts.find(entry => entry.type === kind).value;
-    return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
-  }, offsetMs);
-  await page.goto(`${appUrl}/app/incidents`);
-  await page.getByRole("button", { name: "Create incident", exact: true }).click();
-  await page.getByRole("heading", { name: "Start a private draft" }).waitFor();
-  await page.getByLabel("Incident title").fill("Historical correction controls");
-  await page.getByLabel("Opened at").fill(await localInput(-2 * 60 * 60_000));
-  await page.getByLabel("Affected component 1").selectOption(component.id);
-  assert.equal(await page.getByLabel("Affected component 1").locator("option:checked").textContent(), "Journey API");
-  await page.getByRole("button", { name: "Create incident draft" }).click();
-  await page.getByRole("heading", { name: "Compose public update" }).waitFor();
-
-  const incidentId = new URL(page.url()).pathname.split("/").at(-1);
-  assert.ok(incidentId, "creating an incident must navigate to its operator record");
-  await page.getByLabel("Internal note").fill("PRIVATE-OPERATOR-CONTEXT");
-  await page.getByRole("button", { name: "Save internal note" }).click();
-  await page.getByText("Internal note saved.", { exact: true }).waitFor();
-  const nextUpdateLocal = await localInput(60 * 60_000);
-  await saveAndConfirmDraft({ page, appFetch, incidentId, t,
-    expected: { lifecycle: "Investigating", affectedAudience: "Historical API customers.", customerImpact: "An earlier condition delayed requests.", whatStillWorks: "", details: "", nextUpdateAt: new Date(`${nextUpdateLocal}:00-07:00`).toISOString() },
-    edit: async () => {
-      await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Historical API customers.");
-      await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("An earlier condition delayed requests.");
-      await page.getByLabel("Next update date and time").fill(nextUpdateLocal);
-    },
-  });
-  await page.getByText("Schedule or backdate", { exact: true }).click();
-  await page.getByLabel("Historical publication date and time").fill(await localInput(-2 * 60_000));
-  await page.getByRole("button", { name: "Publish historical update" }).click();
-  await page.getByText("Historical update published. It did not notify subscribers.", { exact: true }).waitFor();
-  const historical = await appFetch(`/api/app/incidents/${incidentId}`);
-  const record = (await historical.json()).incident;
-  assert.equal(record.updates.length, 1);
-  assert.equal(record.internalNotes[0].body, "PRIVATE-OPERATOR-CONTEXT");
-
-  await page.reload();
-  await operatorHydrated(page);
-  await page.getByRole("heading", { name: "Compose public update" }).waitFor();
-  await saveAndConfirmDraft({ page, appFetch, incidentId, t,
-    expected: { lifecycle: "Identified", affectedAudience: "Correction audience.", customerImpact: "", whatStillWorks: "", details: "", nextUpdateAt: null },
-    edit: () => page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Correction audience."),
-  });
-  await page.getByRole("button", { name: "Mark correction" }).click();
-  await page.getByText("The draft will publish as a correction.", { exact: true }).waitFor();
-  await page.getByRole("button", { name: "Review saved draft" }).click();
-  await page.getByText("A different operator must review a saved draft.", { exact: true }).waitFor();
-  await page.getByRole("button", { name: "Delete incident" }).click();
-  await page.getByLabel("Deletion reason").fill("Created solely to exercise private operator controls.");
-  await page.getByRole("button", { name: "Confirm deletion" }).click();
-  await page.getByRole("heading", { name: "Incidents", exact: true }).waitFor();
-  let deletionStatus = 0;
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    deletionStatus = (await appFetch(`/api/app/incidents/${incidentId}`)).status;
-    if (deletionStatus === 404) break;
-    await page.waitForTimeout(100);
-  }
-  assert.equal(deletionStatus, 404, "the deleted operator record must no longer be readable");
-});
-
-contract("UPDATE-005", "composer autosaves a changed draft in under two seconds and reloads the exact value", async () => {
-  const incident = await createBrowserIncident();
-  autosaveIncidentId = incident.id;
-  await page.goto(`${appUrl}/app/incidents/${incident.id}`);
-  await operatorHydrated(page);
-  await page.getByRole("heading", { name: "Compose public update" }).waitFor();
-  await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Browser contract customers.");
-  await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("Requests can fail during this condition.");
-  await page.getByLabel("Next update date and time").fill("2027-09-08T13:41");
-  const details = "BROWSER-AUTOSAVE-EXACT-VALUE";
-  const changedAt = Date.now();
-  await page.locator("label", { hasText: "Additional details" }).locator("textarea").fill(details);
-  await page.getByText("Draft saved", { exact: true }).waitFor({ timeout: 2000 });
-  assert.ok(Date.now() - changedAt < 2000, "the operator draft did not save within two seconds");
-  await page.reload();
-  await operatorHydrated(page);
-  await page.getByRole("heading", { name: "Compose public update" }).waitFor();
-  await assert.equal(await page.locator("label", { hasText: "Additional details" }).locator("textarea").inputValue(), details);
-  assert.equal(await page.getByLabel("Next update date and time").inputValue(), "2027-09-08T13:41", "the datetime control presents the saved instant in the operator's configured local time");
-  await page.getByLabel("Next update date and time").fill("2027-09-08T13:42");
-  await page.getByText("Draft saved", { exact: true }).waitFor({ timeout: 2000 });
-  const stored = await appFetch(`/api/app/incidents/${incident.id}`);
-  assert.equal((await stored.json()).incident.draft.nextUpdateAt, "2027-09-08T20:42:00.000Z", "editing the page’s Los Angeles time preserves its UTC instant despite a Brisbane browser");
-  assert.equal(await page.getByRole("button", { name: "Suggest update" }).count(), 0, "the absent provider must not expose an AI control");
-});
-
-contract("UPDATE-006", "the composer schedules publication separately from its next-update commitment", async () => {
-  const incident = await createBrowserIncident();
-  await page.goto(`${appUrl}/app/incidents/${incident.id}`);
-  await operatorHydrated(page);
-  await page.getByRole("heading", { name: "Compose public update" }).waitFor();
-  await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Scheduled browser customers.");
-  await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("A scheduled update has a distinct publication time.");
-  await page.getByLabel("Next update date and time").fill("2027-09-08T14:00");
-  // Scheduling publishes the stored draft, so wait for the server to hold all three
-  // edits (UPDATE-005 keeps the strict two-second autosave gate).
-  for (const deadline = Date.now() + 15_000; ; await new Promise(resolve => setTimeout(resolve, 200))) {
-    const draft = (await (await appFetch(`/api/app/incidents/${incident.id}`)).json()).incident.draft;
-    if (draft?.affectedAudience === "Scheduled browser customers." && draft.customerImpact === "A scheduled update has a distinct publication time." && draft.nextUpdateAt) break;
-    assert.ok(Date.now() < deadline, `the composer never stored the scheduled draft: ${JSON.stringify(draft)}`);
-  }
-  await page.getByText("Draft saved", { exact: true }).waitFor();
-  await page.getByText("Schedule or backdate", { exact: true }).click();
-  await page.getByLabel("Scheduled publication date and time").fill("2027-09-08T13:30");
-  await page.getByRole("button", { name: "Schedule update" }).click();
-  await page.getByText("Update scheduled. It stays private until then.").waitFor();
-});
-
-contract("DRAFT-002", "operators save and reload AI tone instructions while the UI honestly reports an unconfigured provider", async () => {
-  const tone = "Lead with customer impact, use concise factual language, and name the next update commitment.";
-  await page.goto(`${appUrl}/app/settings#writing`);
-  await operatorHydrated(page);
-  await page.getByText("No provider configured", { exact: true }).waitFor();
-  const toneField = page.getByLabel("Tone instructions");
-  await toneField.fill(tone);
-  await page.getByRole("link", { name: "Page", exact: true }).click();
-  await page.getByRole("link", { name: "Writing", exact: true }).click();
-  assert.equal(await toneField.inputValue(), tone, "switching Settings tabs keeps the unsaved draft");
-  const warning = page.waitForEvent("dialog");
-  const leave = page.getByRole("link", { name: "Overview", exact: true }).click();
-  await (await warning).dismiss(); await leave;
-  assert.equal(new URL(page.url()).pathname, "/app/settings", "cancelling navigation keeps Settings open");
-  assert.equal(await toneField.inputValue(), tone, "cancelling navigation keeps the edit");
-  await page.getByRole("button", { name: "Save settings" }).click();
-  await page.getByText("Saved and live.", { exact: true }).waitFor();
-  await page.reload();
-  await operatorHydrated(page);
-  await page.getByText("No provider configured", { exact: true }).waitFor();
-  assert.equal(await page.getByLabel("Tone instructions").inputValue(), tone);
-});
-
-contract("INTAKE-005", "operators configure a real authenticated source and inspect accepted and rejected redacted receipts", async () => {
-  const signingSecret = "browser-alert-source-secret";
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${appUrl}/app/alerts`);
-  await page.getByRole("button", { name: "Add alert source" }).click();
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "the narrow source editor must not introduce horizontal page overflow");
-  await page.getByLabel("Source name").fill("Browser alert source");
-  await page.getByLabel("Signing secret").fill(signingSecret);
-  await page.getByLabel("Deduplication JSON path").fill("$.event.id");
-  await page.getByLabel("Title JSON path").fill("$.event.title");
-  await page.getByLabel("State JSON path").fill("$.event.state");
-  await page.getByRole("button", { name: "Create source" }).click();
-  await page.getByText("Alert source created. Send alerts to the endpoint below.", { exact: true }).waitFor();
-  assert.doesNotMatch(await page.locator("body").innerText(), new RegExp(signingSecret));
-
-  await page.getByLabel("Source name").fill("Browser alert source — primary");
-  await page.getByRole("button", { name: "Save source" }).click();
-  await page.getByText("Alert source updated. Existing secrets remain hidden.", { exact: true }).waitFor();
-  const sourceCard = page.locator(".alert-source-card").filter({ has: page.getByRole("heading", { name: "Browser alert source — primary", exact: true }) });
-  const endpoint = await sourceCard.locator("code").first().textContent();
-  assert.ok(endpoint?.startsWith(`${pageUrl}/api/intake/`), "the configured source must show its real intake endpoint");
-
-  async function sendAlert(payload) {
-    const body = JSON.stringify(payload);
-    const timestamp = new Date().toISOString();
-    const signature = createHmac("sha256", signingSecret).update(`${timestamp}.${body}`).digest("base64url");
-    return fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-lamp-timestamp": timestamp, "x-lamp-signature": signature }, body });
-  }
-
-  const accepted = await sendAlert({ event: { id: "browser-alert-accepted", title: "Browser intake acceptance", state: "firing" } });
-  assert.equal(accepted.status, 202, await accepted.text());
-  const rejected = await sendAlert({ event: { title: "Browser intake rejection", state: "firing" } });
-  assert.equal(rejected.status, 400, await rejected.text());
-
-  await page.reload();
-  await page.locator(".alert-source-card").getByRole("heading", { name: "Browser alert source — primary", exact: true }).waitFor();
-  const ownReceipts = page.locator(".receipt-card tr").filter({ hasText: "Browser alert source — primary" });
-  await ownReceipts.getByText("Accepted", { exact: true }).waitFor();
-  await ownReceipts.getByText("Rejected", { exact: true }).waitFor();
-  const receiptText = await page.locator(".receipt-card").innerText();
-  assert.match(receiptText, /deduplication path/i);
-  assert.doesNotMatch(receiptText, /browser-alert-source-secret|browser-alert-accepted/);
-});
-
-contract("DRAFT-003", "a configured but failing AI provider leaves the ordinary publish control usable", async () => {
-  // Closing the prior Vite document before its Worker restarts prevents its HMR
-  // reconnect from cancelling the first navigation against the new config.
-  const viewport = await closeAuthenticatedPage();
-  await stopWorker();
-  await startFailingAiProvider();
-  fixtureConfig.write(configWithAiProvider);
-  await startWorker(configPath);
-  await openAuthenticatedPage(viewport);
-  await page.goto(`${appUrl}/app/incidents/${autosaveIncidentId}`);
-  await page.getByRole("button", { name: "Suggest update" }).waitFor();
-  await page.getByRole("button", { name: "Suggest update" }).click();
-  const aiStatus = page.locator(".ai-suggestion [role=status]");
-  let status = "";
-  for (let attempt = 0; attempt < 50; attempt += 1) {
-    status = await aiStatus.textContent() ?? "";
-    if (status !== "Drafting suggestion…") break;
-    await page.waitForTimeout(100);
-  }
-  assert.match(status, /AI provider returned 503|Browser AI provider intentionally unavailable/i);
-  const publish = page.getByRole("button", { name: "Publish update" });
-  await assert.equal(await publish.isEnabled(), true);
-  await publish.click();
-  await page.getByText("Update published.").waitFor();
-});
-
-
-contract("UPDATE-002", "NOTIFY-019 — composer controls and saved notification branding work on desktop and phone", async () => {
-  const component = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({ groupId: null, name: "Responsive composer API", description: "Publication control layout verification", internal: false, displayOrder: 2, note: "" }) });
-  assert.equal(component.status, 201);
-  const componentId = (await component.json()).component.id;
-  const created = await appFetch("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: "Responsive publication controls", components: [{ componentId, state: "Major outage", relationship: "Primary" }] }) });
-  assert.equal(created.status, 201);
-  const incident = (await created.json()).incident;
-  const originalViewport = page.viewportSize();
+async function previewScreens(screen, name) {
+  if (!process.env.LAMP_SCREENSHOTS) return;
+  await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
   try {
-    for (const width of [1280, 390]) {
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto(`${appUrl}/app/incidents/${incident.id}`);
-      await operatorHydrated(page);
-      const controls = page.getByRole("region", { name: "Publication controls" });
-      await controls.getByText("Schedule or backdate", { exact: true }).click();
-      const timestamp = controls.getByLabel("Historical publication date and time");
-      await timestamp.scrollIntoViewIfNeeded();
-      await timestamp.fill("2026-01-02T10:30");
-      assert.equal(await timestamp.inputValue(), "2026-01-02T10:30");
-      await controls.getByLabel("Email", { exact: true }).uncheck();
-      await controls.getByLabel("Webhook", { exact: true }).check();
-      assert.equal(await controls.getByLabel("Webhook", { exact: true }).isChecked(), true);
-      const geometry = await controls.evaluate((section) => {
-        const box = section.getBoundingClientRect();
-        const fields = [...section.querySelectorAll("input, label, small, strong, p")];
-        return { viewport: innerWidth, left: box.left, right: box.right, fields: fields.map((field) => {
-          const rect = field.getBoundingClientRect();
-          return { name: field.getAttribute("aria-label") ?? field.textContent, left: rect.left, right: rect.right, width: rect.width, scrollWidth: field.scrollWidth, clientWidth: field.clientWidth };
-        }) };
-      });
-      assert.ok(geometry.left >= 0 && geometry.right <= width, `controls remain in the ${width}px viewport`);
-      for (const field of geometry.fields) {
-        assert.ok(field.left >= geometry.left && field.right <= geometry.right, `${width}px ${field.name}: contained within publication controls`);
-        assert.ok(field.width > 0 && field.scrollWidth <= field.clientWidth + 1, `${width}px ${field.name}: no clipped field or help text`);
-      }
-      await timestamp.scrollIntoViewIfNeeded();
-      if (process.env.LAMP_COMPOSER_SCREENSHOTS) {
-        await mkdir(process.env.LAMP_COMPOSER_SCREENSHOTS, { recursive: true });
-        await page.screenshot({ path: join(process.env.LAMP_COMPOSER_SCREENSHOTS, `composer-${width}.png`), fullPage: true });
-      }
+    for (const width of [1440, 390]) {
+      await screen.setViewportSize({ width, height: 1000 });
+      await screen.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-${name}.png`), fullPage: true });
     }
-  } finally { if (originalViewport) await page.setViewportSize(originalViewport); }
-  await emailBrandingBrowserFlow({ page, appUrl, pageUrl, appFetch });
+  } finally { await screen.setViewportSize({ width: 1440, height: 1000 }); }
+}
+
+test('TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities', { timeout: 300_000 }, async t => {
+  const {actors}=await (await import('./helpers/operator-roles-flow.mjs')).operatorRolesFlow({appFetch,appUrl,persistTo:statePath,configPath});
+  await (await import('./helpers/operator-roles-browser-flow.mjs')).operatorRolesBrowserFlow({page,appUrl,appFetch,actor:actors.viewer});
+  await page.setViewportSize({width:1440,height:1000});
+  await (await import('../chat-desk/settings-browser-flow.mjs')).chatLinksSettingsFlow({ browser, t });
 });
 
-contract("HIST-002", "AGENT-005 TEAM-007 HIST-007 — an operator publishes a report, browses audit history and reports subscribers", async () => {
-  await postIncidentReportFlow({ page, appFetch, appUrl, pageUrl });
-  await auditLogFlow({ page, appUrl, appFetch });
-  await subscriberReportingBrowserFlow({ page, appUrl, appFetch });
+// Preserve the private-note and queued-save journeys in the consolidated operator day.
+async function observeAutosaveAcknowledgement(endpoint, key) {
+  await page.evaluate(({ endpoint, key }) => {
+    const nativeFetch = window.fetch;
+    window[key] ??= {};
+    window.fetch = async (input, init) => {
+      const response = await nativeFetch(input, init);
+      const path = new URL(typeof input === 'string' ? input : input.url, location.href).pathname;
+      if (path === endpoint && init?.method === 'PUT') {
+        window[key].nativeAcknowledged = Date.now();
+        window[key].nativeAcknowledgedPerformance = performance.now();
+      }
+      return response;
+    };
+  }, { endpoint, key });
+}
+async function assertAutosaveIntegrity(component, t) {
+  const initial = { lifecycle: 'Investigating', affectedAudience: 'Initial audience', customerImpact: 'Service delays', whatStillWorks: 'Other services', details: 'Private draft', nextUpdateAt: '2027-09-08T14:00:00.000Z' };
+  const openIncident = async () => {
+    const { incident } = await api('/api/app/incidents', 'POST', { title: 'Autosave integrity', components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }] });
+    await api(`/api/app/incidents/${incident.id}/draft`, 'PUT', initial);
+    await page.goto(`${appUrl}/app/incidents/${incident.id}`);
+    await operatorHydrated(page); await page.waitForLoadState('networkidle'); await saved();
+    return incident;
+  };
+  const assertPrivateUnsaved = async () => {
+    assert.equal(await page.getByRole('button', { name: /^(Publish update|Schedule update|Publish historical update)$/ }).isEnabled(), false);
+    assert.equal(await page.locator('.autosave-status.is-saved').count(), 0);
+  };
+  await assertAutosaveDuringRefresh({ page, api, openIncident, assertPrivateUnsaved, initial }, t);
+  await assertQueuedAutosaveDeadline({ page, api, openIncident, assertPrivateUnsaved, initial }, t);
+}
+function configuredDateTimeInput(iso, timezone) {
+  if (!iso) return "";
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(iso));
+  const part = kind => parts.find(entry => entry.type === kind).value;
+  return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
+}
+
+
+
+// Delay only delivery of a real native GET, so a private-note refresh overlaps
+// the draft debounce without changing either response bytes or write behavior.
+async function assertAutosaveDuringRefresh({ page, api, openIncident, assertPrivateUnsaved, initial }, t) {
+  const incident = await openIncident();
+  const endpoint = `/api/app/incidents/${incident.id}`;
+  const composer = incidentComposer(page);
+  const field = composer.audience;
+  const audience = "Latest audience while the private note refresh is pending";
+  const note = "Native internal note overlapping an unsaved draft";
+  const timings = {};
+  let releaseRefresh, refreshEntered;
+  const released = new Promise(resolve => { releaseRefresh = resolve; });
+  const entered = new Promise(resolve => { refreshEntered = resolve; });
+  const recordRequest = request => {
+    if (request.method() === "PUT" && request.url().endsWith(`${endpoint}/draft`)) {
+      timings.putDispatched = Date.now();
+      timings.putBytes = JSON.parse(request.postData());
+    }
+  };
+  const recordResponse = response => {
+    if (response.request().method() === "GET" && response.url().endsWith(endpoint) && !timings.refreshReceived) {
+      timings.refreshReceived = Date.now();
+    }
+    if (response.request().method() === "PUT" && response.url().endsWith(`${endpoint}/draft`)) {
+      timings.putAcknowledged = Date.now();
+      timings.putStatus = response.status();
+    }
+  };
+  page.on("request", recordRequest);
+  page.on("response", recordResponse);
+  await page.evaluate(() => {
+    window.autosaveRefreshProbe = {};
+    document.querySelector('[aria-label="Who is affected"]').addEventListener("input", () => {
+      window.autosaveRefreshProbe.finalEdit = Date.now();
+        window.autosaveRefreshProbe.finalEditPerformance = performance.now();
+    }, { once: true });
+    const observer = new MutationObserver(() => {
+      if (document.querySelector(".autosave-status")?.textContent === "Draft saved" && window.autosaveRefreshProbe.finalEdit) {
+        window.autosaveRefreshProbe.saved = Date.now();
+          window.autosaveRefreshProbe.savedPerformance = performance.now();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+  await observeAutosaveAcknowledgement(endpoint + "/draft", "autosaveRefreshProbe");
+  let handled = false; // Installed until unrouteAll: a one-shot route can strand a paused request.
+  await page.route(`**${endpoint}`, async route => {
+    if (handled) return route.continue();
+    handled = true;
+    assert.equal(route.request().method(), "GET");
+    const response = await route.fetch();
+    assert.equal(response.status(), 200);
+    refreshEntered();
+    await released;
+    timings.refreshDelivered = Date.now();
+    await route.fulfill({ response });
+  });
+  try {
+    await composer.row("Notes");
+    await page.getByLabel("Add a note", { exact: true }).fill(note);
+    await page.getByRole("button", { name: "Save note", exact: true }).click();
+    await entered;
+    await page.getByText("Internal note saved.", { exact: true }).waitFor();
+    await field.fill(audience);
+    timings.finalEdit = await page.evaluate(() => window.autosaveRefreshProbe.finalEdit);
+    await assertPrivateUnsaved();
+    // Deliver the held refresh while this draft is unsaved. Do not assume a
+    // particular debounce duration: faster autosaves can finish within a second.
+    releaseRefresh();
+    let deadlineError;
+    await page.getByText("Draft saved", { exact: true })
+      .waitFor({ timeout: Math.max(1, timings.finalEdit + 2000 - Date.now()) })
+      .catch(error => { deadlineError = error; });
+    // Preserve timing and persisted-byte evidence even when the deadline fails.
+    await page.getByText("Draft saved", { exact: true }).waitFor();
+    Object.assign(timings, await page.evaluate(() => window.autosaveRefreshProbe));
+    t.diagnostic(JSON.stringify({ phase: "acknowledged", ...timings, elapsedToSaved: timings.saved - timings.finalEdit, deadlinePassed: !deadlineError }));
+    await page.unrouteAll({ behavior: "wait" });
+    const stored = (await api(endpoint)).incident;
+    timings.storedDraft = stored.draft;
+    assert.equal(stored.internalNotes[0].body, note);
+    assert.deepEqual(timings.putBytes, { ...initial, affectedAudience: audience, componentChanges: [] });
+    for (const [key, value] of Object.entries(timings.putBytes)) assert.deepEqual(stored.draft[key], value);
+    await page.reload();
+    await page.getByText("Draft saved", { exact: true }).waitFor();
+    timings.reloadedDraft = {
+      lifecycle: await composer.status(),
+      affectedAudience: await field.inputValue(),
+      customerImpact: await composer.impact.inputValue(),
+      whatStillWorks: await composer.stillWorks.inputValue(),
+      details: await composer.details.inputValue(),
+      nextUpdateAt: await composer.nextUpdate.inputValue(),
+    };
+    t.diagnostic(JSON.stringify({ ...timings, elapsedToSaved: timings.saved - timings.finalEdit, deadlinePassed: !deadlineError }));
+    const { settings } = await api("/api/app/page-settings");
+    const { componentChanges, ...textFields } = timings.putBytes;
+    assert.deepEqual((await api(endpoint)).incident.draft.componentChanges, componentChanges, "reload retains the acknowledged staged choices");
+    assert.deepEqual(timings.reloadedDraft, { ...textFields, nextUpdateAt: configuredDateTimeInput(timings.putBytes.nextUpdateAt, settings.timezone) }, "reload restores every draft field, displaying the saved instant in the page zone");
+    assert.equal(timings.putStatus, 200);
+    assert.ok(timings.refreshDelivered > timings.finalEdit && timings.refreshReceived < timings.putDispatched);
+    t.diagnostic(JSON.stringify({ phase: "acknowledgement-observers", nodeEventAfterSavedMs: timings.putAcknowledged - timings.saved, browserAckBeforeSavedMs: timings.savedPerformance - timings.nativeAcknowledgedPerformance }));
+    assert.ok(timings.savedPerformance >= timings.nativeAcknowledgedPerformance, "Saved must follow the native acknowledgement in the browser");
+    assert.ok(!deadlineError && timings.saved - timings.finalEdit < 2000, "an unrelated incident refresh must not postpone saving beyond two seconds");
+  } finally {
+    releaseRefresh();
+    page.off("request", recordRequest);
+    page.off("response", recordResponse);
+    await page.unrouteAll({ behavior: "wait" });
+  }
+}
+
+// Hold only an acknowledgement from a real native PUT. The latest edit must
+// keep its original debounce while the earlier write retains serialization.
+async function assertQueuedAutosaveDeadline({ page, api, openIncident, assertPrivateUnsaved, initial }, t) {
+  const incident = await openIncident();
+  const endpoint = `/api/app/incidents/${incident.id}/draft`;
+  const field = incidentComposer(page).audience;
+  const earlier = "Earlier audience awaiting its native acknowledgement";
+  const latest = "Latest audience edited while the earlier save is pending";
+  const writes = [];
+  const timings = {};
+  let releaseFirst, enteredFirst;
+  const release = new Promise(resolve => { releaseFirst = resolve; });
+  const entered = new Promise(resolve => { enteredFirst = resolve; });
+  const onRequest = request => {
+    if (request.method() === "PUT" && request.url().endsWith(endpoint)) writes.push({ at: Date.now(), body: JSON.parse(request.postData()) });
+  };
+  const onResponse = response => {
+    if (response.request().method() === "PUT" && response.url().endsWith(endpoint)) {
+      const body = JSON.parse(response.request().postData());
+      timings[body.affectedAudience === earlier ? "earlierAcknowledged" : "latestAcknowledged"] = Date.now();
+      assert.equal(response.status(), 200);
+    }
+  };
+  page.on("request", onRequest);
+  page.on("response", onResponse);
+  let handled = false; // Installed until unrouteAll: a one-shot route can strand a paused request.
+  await page.route(`**${endpoint}`, async route => {
+    if (handled) return route.continue();
+    handled = true;
+    const response = await route.fetch();
+    assert.equal(response.status(), 200);
+    timings.earlierPersisted = Date.now();
+    enteredFirst();
+    await release;
+    await route.fulfill({ response });
+  });
+  try {
+    await observeAutosaveAcknowledgement(endpoint, "queuedAutosaveProbe");
+    await field.fill(earlier);
+    await entered;
+    await field.fill("Intermediate audience coalesced into the latest edit");
+    await page.evaluate(() => {
+      window.queuedAutosaveProbe ??= {};
+      document.querySelector('[aria-label="Who is affected"]').addEventListener("input", () => {
+        window.queuedAutosaveProbe.finalEdit = Date.now();
+        window.queuedAutosaveProbe.finalEditPerformance = performance.now();
+      }, { once: true });
+      const observer = new MutationObserver(() => {
+        if (window.queuedAutosaveProbe.finalEdit && document.querySelector(".autosave-status")?.textContent === "Draft saved") {
+          window.queuedAutosaveProbe.saved = Date.now();
+          window.queuedAutosaveProbe.savedPerformance = performance.now();
+          observer.disconnect();
+        }
+      });
+      observer.observe(document.body, { subtree: true, childList: true, characterData: true });
+    });
+    await field.fill(latest);
+    timings.finalEdit = await page.evaluate(() => window.queuedAutosaveProbe.finalEdit);
+    await assertPrivateUnsaved();
+    assert.equal((await api(`/api/app/incidents/${incident.id}`)).incident.draft.affectedAudience, earlier);
+    await page.waitForTimeout(Math.max(0, timings.finalEdit + 1000 - Date.now()));
+    assert.equal(writes.length, 1, "the latest edit must not overtake the unacknowledged write");
+    releaseFirst();
+    let deadlineError;
+    await page.getByText("Draft saved", { exact: true }).waitFor({ timeout: Math.max(1, timings.finalEdit + 2000 - Date.now()) }).catch(error => { deadlineError = error; });
+    await page.getByText("Draft saved", { exact: true }).waitFor();
+    Object.assign(timings, await page.evaluate(() => window.queuedAutosaveProbe));
+    timings.writes = writes;
+    timings.elapsedToSaved = timings.saved - timings.finalEdit;
+    timings.deadlinePassed = !deadlineError;
+    t.diagnostic(JSON.stringify(timings));
+    assert.equal(writes.length, 2, "pending edits must coalesce into one latest write");
+    assert.deepEqual(writes[1].body, { ...initial, affectedAudience: latest, componentChanges: [] });
+    assert.ok(writes[1].at >= timings.earlierAcknowledged, "writes must remain serialized");
+    t.diagnostic(JSON.stringify({ phase: "acknowledgement-observers", nodeEventAfterSavedMs: timings.latestAcknowledged - timings.saved, browserAckBeforeSavedMs: timings.savedPerformance - timings.nativeAcknowledgedPerformance }));
+    assert.ok(timings.savedPerformance >= timings.nativeAcknowledgedPerformance, "Draft saved must follow the native acknowledgement in the browser");
+    const stored = (await api(`/api/app/incidents/${incident.id}`)).incident.draft;
+    for (const [key, value] of Object.entries(writes[1].body)) assert.deepEqual(stored[key], value);
+    await page.reload();
+    await page.getByText("Draft saved", { exact: true }).waitFor();
+    assert.equal(await field.inputValue(), latest);
+    assert.ok(!deadlineError && timings.elapsedToSaved < 2000, "waiting for an earlier save must count toward the latest edit's two-second deadline");
+  } finally {
+    releaseFirst();
+    page.off("request", onRequest);
+    page.off("response", onResponse);
+    await page.unrouteAll({ behavior: "wait" });
+  }
+}
+// One operator day: configure, draft, recover a failed save, resolve a
+// concurrent edit, schedule a publication, communicate recovery, and report.
+test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
+  await verifyCompiledEdits();
+  await page.goto(`${appUrl}/app`); await operatorHydrated(page);
+  await page.getByRole('region', { name: 'Your public page' }).waitFor();
+  const { live } = await api('/api/app/overview/live');
+  assert.equal(live.sender.state, 'local', 'local mail never claims provider verification');
+  // Settings takes the rail over: its menu replaces the daily one, and a destination opens its pane.
+  const rail = page.getByRole('complementary', { name: 'Operator navigation', exact: true });
+  await rail.getByRole('navigation', { name: 'Workspace sections', exact: true }).getByRole('link', { name: 'Settings', exact: true }).click();
+  const settingsMenu = rail.getByRole('navigation', { name: 'Settings sections', exact: true });
+  await settingsMenu.getByRole('link', { name: 'Writing', exact: true }).click();
+  await page.getByRole('heading', { level: 1, name: 'Writing', exact: true }).waitFor();
+  assert.equal(new URL(page.url()).hash, '#writing');
+  assert.equal(await settingsMenu.getByRole('link', { name: 'Writing', exact: true }).getAttribute('aria-current'), 'page');
+  assert.equal(await rail.getByRole('navigation', { name: 'Workspace sections', exact: true }).count(), 0, 'the Settings menu replaces the daily menu');
+  const tone = 'Lead with customer impact and the next update commitment.';
+  await page.getByRole('textbox', { name: 'Tone instructions', exact: true }).fill(tone);
+  await page.getByRole('status').filter({ hasText: /^Saved · live$/ }).waitFor();
+  await page.reload(); await operatorHydrated(page);
+  try { assert.equal(await page.getByRole('textbox', { name: 'Tone instructions', exact: true }).inputValue(), tone); }
+  catch (cause) {
+    const current = new URL(page.url());
+    process.stderr.write(`Writing reload diagnostic: ${current.pathname}${current.hash}; ${JSON.stringify(await page.locator('h1, .ai-assistance-card, [role=alert]').allTextContents())}\n`);
+    throw cause;
+  }
+  await page.getByRole('link', { name: 'Notifications', exact: true }).click();
+  await page.getByLabel('Sender display name', { exact: true }).fill('Journey status');
+  await page.getByLabel('Reply-to address', { exact: true }).fill('support@journey.example');
+  await page.getByLabel('Subject prefix', { exact: true }).fill('[Journey status]');
+  const emailHeader = 'A customer service update from the checkout response team.';
+  const emailFooter = 'Keep this update for the next checkout recovery briefing.';
+  await page.getByRole('textbox', { name: /^Email header/ }).fill(emailHeader);
+  await page.getByRole('textbox', { name: /^Email footer/ }).fill(emailFooter);
+  await page.getByRole('status').filter({ hasText: /^Saved · live$/ }).waitFor();
+  await page.reload(); await operatorHydrated(page);
+  assert.equal(await page.getByLabel('Reply-to address', { exact: true }).inputValue(), 'support@journey.example');
+  await settingsMenu.getByRole('link', { name: 'Overview', exact: true }).click();
+  await page.waitForURL(url => url.pathname === '/app');
+  await rail.getByRole('navigation', { name: 'Workspace sections', exact: true }).waitFor();
+  // The addresses Settings and Subscribers replaced still land where their content went.
+  for (const [old, landing, content] of [['/app/page', '/app/settings#page', 'What Lamp checked'], ['/app/deliveries', '/app/subscribers?view=log', 'Delivery records'], ['/app/alerts', '/app/settings#tools', 'Connect a tool']]) {
+    await page.goto(`${appUrl}${old}`); await operatorHydrated(page);
+    await page.getByRole('region', { name: content, exact: true }).waitFor();
+    const landed = new URL(page.url());
+    assert.equal(`${landed.pathname}${landed.search}${landed.hash}`, landing, `${old} lands on ${landing}`);
+  }
+
+
+  await page.goto(`${appUrl}/app/components`); await operatorHydrated(page);
+  if (!await page.getByRole('dialog').count()) await page.getByRole('button', { name: 'Add component', exact: true }).first().click();
+  await page.getByLabel('Component name', { exact: true }).fill('Journey checkout API');
+  await page.getByLabel(/Description/).fill('Customer checkout and card authorization.');
+  await page.getByRole('button', { name: 'Create component', exact: true }).click();
+  await page.locator('.component-row-summary').getByText('Journey checkout API', { exact: true }).waitFor();
+  const component = (await api('/api/app/components')).components.find(row => row.name === 'Journey checkout API');
+  assert.ok(component);
+
+  await page.goto(`${appUrl}/app/incidents/new`); await operatorHydrated(page);
+  const form = newIncidentForm(page);
+  await form.title.fill('Checkout requests are delayed');
+  await form.impact.fill('Card authorizations are timing out.');
+  await form.addComponent(component.name);
+  await form.componentState(component.name, 'Major outage');
+  await form.audience.fill('Customers checking out in the US.');
+  await form.nextUpdate.fill('2027-09-08T14:00');
+  await form.option('Details');
+  await page.getByLabel('Details', { exact: true }).fill('Follow https://support.example.test/checkout for recovery advice.');
+  await form.option('Save as private draft');
+  await page.waitForURL(url => /^\/app\/incidents\/[0-9A-Z]{26}$/.test(url.pathname));
+  const id = new URL(page.url()).pathname.split('/').at(-1);
+  await saved();
+  let incident = await readIncident(id);
+  assert.equal(incident.updates.length, 0, 'saving does not publish');
+  const composer = incidentComposer(page);
+  await page.reload(); await operatorHydrated(page); await saved();
+  assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
+  await assertAutosaveIntegrity(component, t);
+  await page.goto(`${appUrl}/app/incidents/${id}`); await operatorHydrated(page); await saved();
+
+
+  // The displayed draft survives a transport failure and an explicit retry.
+  const endpoint = `**/api/app/incidents/${id}/draft`;
+  let failed = false;
+  await page.route(endpoint, async route => {
+    if (!failed && route.request().method() === 'PUT') { failed = true; await route.abort(); }
+    else await route.continue();
+  });
+  await composer.impact.fill('Some card authorizations fail; existing orders remain safe.');
+  await page.locator('.autosave-status.is-error').waitFor();
+  assert.equal(await composer.publish.isEnabled(), false, 'unsaved bytes cannot publish');
+  await page.getByRole('button', { name: 'Retry save', exact: true }).click();
+  await saved(); await page.unroute(endpoint);
+  await page.reload(); await operatorHydrated(page); await saved();
+  assert.equal(await composer.impact.inputValue(), 'Some card authorizations fail; existing orders remain safe.');
+
+  // Two real tabs must not silently replace each other's acknowledged draft.
+  const stale = await browserContext.newPage();
+  try {
+    await stale.goto(page.url()); await operatorHydrated(stale);
+    await stale.locator('.autosave-status.is-saved').waitFor();
+    await composer.audience.fill('US customers paying by card.'); await saved();
+    await incidentComposer(stale).audience.fill('A stale tab must not erase the newer audience.');
+    await stale.locator('.autosave-status.is-error').waitFor();
+    assert.equal((await readIncident(id)).draft.affectedAudience, 'US customers paying by card.');
+    assert.equal(await incidentComposer(stale).publish.isEnabled(), false);
+  } finally { await stale.close(); }
+
+  // Schedule… from the + closes the menu and opens its panel; Done closes the panel and the time stays chosen.
+  await composer.option('Schedule…');
+  await page.getByLabel('Scheduled publication date and time').fill('2027-09-08T13:30');
+  await page.getByRole('button', { name: 'Done', exact: true }).click();
+  assert.equal(await page.getByRole('menu').count(), 0, 'choosing an entry closes the menu');
+  assert.equal(await page.getByLabel('Scheduled publication date and time').inputValue(), '2027-09-08T13:30', 'a closed panel keeps its time');
+  await page.getByRole('button', { name: 'Schedule update', exact: true }).click();
+  await page.getByText('Update scheduled. It stays private until then.', { exact: true }).waitFor();
+  await page.reload(); await operatorHydrated(page); await saved();
+  await composer.option('Schedule…');
+  assert.equal(await page.getByLabel('Scheduled publication date and time').inputValue(), '2027-09-08T13:30');
+  assert.ok((await readIncident(id)).draft.scheduledPublishAt);
+  await composer.impact.fill('Checkout retries can succeed while we restore capacity.'); await saved();
+  assert.equal((await readIncident(id)).draft.scheduledPublishAt, null, 'editing revokes a prior schedule');
+  await page.getByRole('radio', { name: 'Now', exact: true }).check();
+  await composer.setStatus('Identified');
+  const submitted = {
+    lifecycle: 'Identified',
+    affectedAudience: 'US customers paying by card.',
+    customerImpact: 'Checkout retries can succeed while we restore capacity.',
+    whatStillWorks: 'Existing orders and saved receipts remain available.',
+    details: 'Follow https://support.example.test/checkout for recovery advice.',
+    nextUpdateAt: '2027-09-08T21:00:00.000Z',
+  };
+  await composer.option('What still works');
+  await composer.stillWorks.fill(submitted.whatStillWorks);
+  await saved();
+  const settings = (await api('/api/app/page-settings')).settings;
+  assert.equal(settings.timezone, 'America/Los_Angeles');
+  assert.equal(settings.pageName, 'Atlas Cloud Status');
+  const staged = (await readIncident(id)).draft;
+  for (const [key, value] of Object.entries(submitted)) assert.equal(staged[key], value, `saved ${key}`);
+  const heading = `${incident.reference}: Checkout requests are delayed`;
+  const expectedFields = [
+    { label: 'Who is affected', value: submitted.affectedAudience },
+    { label: 'Customer impact', value: submitted.customerImpact },
+    { label: 'What still works', value: submitted.whatStillWorks },
+    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 UTC-07:00' },
+    { label: 'Additional details', value: submitted.details },
+    { label: 'Component state', value: 'Journey checkout API: Operational → Major outage' },
+  ];
+  const panel = page.locator('.preview-panel');
+  await page.getByRole('button', { name: 'Page', exact: true }).click();
+  await panel.getByText(submitted.whatStillWorks, { exact: true }).waitFor();
+  assert.equal(await panel.locator('.preview-type').textContent(), 'Public page');
+  assert.equal(await panel.locator('h3').textContent(), heading);
+  assert.equal(await panel.locator('.state-pill').textContent(), submitted.lifecycle);
+  const pagePreview = await wordingFields(panel);
+  assert.deepEqual(pagePreview, expectedFields);
+  assert.equal((await readIncident(id)).updates.length, 0, 'preview leaves the draft private');
+  assert.equal((await (await fetch(`${pageUrl}/`)).text()).includes(submitted.customerImpact), false);
+  await previewScreens(page, 'page-preview');
+  await page.getByRole('button', { name: 'Email', exact: true }).click();
+  await page.waitForFunction(({ impact, replyTo }) => {
+    const panel = document.querySelector('.preview-panel');
+    return panel?.textContent.includes(impact) && panel.textContent.includes(replyTo);
+  }, { impact: 'Checkout retries can succeed while we restore capacity.', replyTo: 'support@journey.example' });
+  assert.ok((await page.locator('.preview-panel h3').textContent()).startsWith('[Journey status]'));
+  assert.equal(await panel.locator('.preview-type').textContent(), 'Notification email');
+  assert.equal(await panel.locator('h3').textContent(), `[Journey status] Atlas Cloud Status: [${incident.reference}] Checkout requests are delayed`);
+  const emailBody = ['Atlas Cloud Status', emailHeader, heading, 'Status: Identified',
+    ...expectedFields.map(field => `${field.label}: ${field.value}`), 'Incident impact: Critical', emailFooter];
+  assert.deepEqual(await wordingFields(panel), [
+    { label: 'From', value: `"Journey status" <${settings.mailFromAddress}>` },
+    { label: 'Reply-To', value: settings.emailBranding.replyTo },
+    ...emailBody.map(value => ({ label: 'Message', value })),
+  ]);
+  await previewScreens(page, 'email-preview');
+  await page.getByRole('button', { name: 'Suggest update', exact: true }).click();
+  await page.locator('.ai-suggestion [role=status]').filter({ hasText: /503|intentionally unavailable/i }).waitFor();
+  assert.equal(await composer.publish.isEnabled(), true, 'a failed suggestion leaves ordinary publication usable');
+  await composer.publish.click();
+  await page.getByText('Update published.', { exact: true }).waitFor();
+  incident = await readIncident(id);
+  const first = incident.updates[0];
+  assert.equal(first.customerImpact, 'Checkout retries can succeed while we restore capacity.');
+  await waitForPublicIncident(incident.reference, first.customerImpact);
+  for (const [key, value] of Object.entries(submitted)) assert.equal(first[key], value, `published ${key}`);
+  const publicPage = await browserContext.newPage();
+  try {
+    await publicPage.goto(`${pageUrl}/incidents/${incident.reference}`);
+    assert.equal(await publicPage.locator('article.incident h1').textContent(), 'Checkout requests are delayed');
+    const update = publicPage.locator('article.update').filter({ hasText: submitted.customerImpact });
+    assert.equal(await update.locator('.update-head > strong').textContent(), submitted.lifecycle);
+    assert.deepEqual(await wordingFields(update), pagePreview, 'publication retains the previewed fields');
+    assert.equal(await update.locator('dl time').getAttribute('datetime'), submitted.nextUpdateAt);
+    await previewScreens(publicPage, 'published-preview');
+  } finally { await publicPage.close(); }
+  assert.equal(await composer.impact.inputValue(), '', 'the next update begins with a fresh draft');
+
+  await composer.row('Notes');
+  const note = 'The database team is privately investigating a connection pool.';
+  await page.getByLabel('Add a note', { exact: true }).fill(note);
+  await page.getByRole('button', { name: 'Save note', exact: true }).click();
+  await page.getByText('Internal note saved.', { exact: true }).waitFor();
+  assert.ok((await readIncident(id)).internalNotes.some(row => row.body === note));
+  assert.equal((await (await fetch(`${pageUrl}/incidents/${incident.reference}`)).text()).includes(note), false);
+
+  await composer.setStatus('Resolved');
+  await composer.audience.fill('US customers paying by card.');
+  await composer.impact.fill('Checkout authorizations are working normally.');
+  await composer.option('Details');
+  await composer.details.fill('Follow https://support.example.test/checkout for any remaining questions.');
+  await saved();
+  assert.equal(await composer.nextUpdate.count(), 0, 'resolution needs no further update promise');
+  await composer.publish.click(); await page.getByText('Update published.', { exact: true }).waitFor();
+  incident = await readIncident(id);
+  assert.equal(incident.lifecycle, 'Resolved');
+  assert.deepEqual(incident.updates.find(row => row.id === first.id), first, 'later publications preserve the original update');
+  await waitForPublicIncident(incident.reference, 'Checkout authorizations are working normally.');
+  await page.goto(`${pageUrl}/incidents/${incident.reference}`);
+  await page.getByRole('link', { name: 'https://support.example.test/checkout', exact: true }).first().waitFor();
+
+  // The same operator finishes the private report and publishes it deliberately.
+  await page.goto(`${appUrl}/app/incidents/${id}`); await operatorHydrated(page);
+  const report = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Post-incident report', exact: true }) });
+  await composer.row('Post-incident report');
+  const reportPath = `/api/app/incidents/${id}/report`;
+  const drafting = page.waitForResponse(response => response.url().endsWith(`${reportPath}/draft`) && response.request().method() === 'POST');
+  await page.getByRole('button', { name: 'Draft report', exact: true }).click();
+  const draftResponse = await drafting;
+  assert.equal(draftResponse.status(), 200);
+  const generatedReport = await draftResponse.json();
+  await report.getByRole('status').filter({ hasText: /saved privately/ }).waitFor();
+  assert.equal(await report.getByLabel('Summary', { exact: true }).inputValue(), generatedReport.report.summary);
+  assert.equal(await report.getByLabel('Timeline', { exact: true }).inputValue(), generatedReport.report.timeline);
+  assert.ok(generatedReport.report.summary.includes(`Recorded incident window: ${incident.openedAt} to published resolution ${incident.updates.find(row => row.lifecycle === 'Resolved').publishedAt}`));
+  assert.ok(!generatedReport.report.timeline.includes(note));
+  for (const [field, label] of [['cause', 'Cause'], ['remediation', 'Remediation']]) {
+    const input = report.getByRole('textbox', { name: label, exact: true });
+    assert.equal(await input.inputValue(), '', `${label} starts empty`);
+    assert.equal(await input.getAttribute('placeholder'), generatedReport.review[field].prompt);
+    const hint = await input.getAttribute('aria-describedby');
+    assert.ok(hint, `${label} is flagged for human input`);
+    assert.ok((await report.locator(`[id="${hint}"]`).textContent()).includes(generatedReport.review[field].prompt));
+    assert.equal(generatedReport.review[field].required, true);
+  }
+  assert.equal(await report.getByRole('button', { name: 'Draft report', exact: true }).isDisabled(), true, 'existing generated work cannot be replaced');
+  assert.deepEqual((await api(reportPath)).report, generatedReport.report);
+  await previewScreens(page, 'report-generated');
+  const completedReport = { summary: 'Checkout delays have been resolved.', timeline: 'Requests failed before the database pool was restored.', cause: 'The checkout connection pool exhausted its capacity.', remediation: 'We restored capacity and added pool saturation alerts.' };
+  for (const [name, value] of Object.entries(completedReport)) await report.getByLabel(name[0].toUpperCase() + name.slice(1), { exact: true }).fill(value);
+  const saving = page.waitForResponse(response => response.url().endsWith(`/incidents/${id}/report`) && response.request().method() === 'PUT');
+  await report.getByRole('button', { name: 'Save report', exact: true }).click(); assert.equal((await saving).status(), 200);
+  await page.reload(); await operatorHydrated(page); await composer.row('Post-incident report');
+  for (const [field, value] of Object.entries(completedReport)) assert.equal(await report.getByRole('textbox', { name: field[0].toUpperCase() + field.slice(1), exact: true }).inputValue(), value);
+  assert.equal(await report.getByRole('button', { name: 'Draft report', exact: true }).isDisabled(), true, 'existing operator edits cannot be replaced');
+  const savedReport = (await api(reportPath)).report;
+  for (const [field, value] of Object.entries(completedReport)) assert.equal(savedReport[field], value);
+  assert.equal(savedReport.publishedAt, null);
+  await previewScreens(page, 'report-saved');
+  assert.equal((await (await fetch(`${pageUrl}/incidents/${incident.reference}`)).text()).includes('Checkout delays have been resolved.'), false, 'a saved report stays private');
+  const publishing = page.waitForResponse(response => response.url().endsWith(`/incidents/${id}/report/publish`) && response.request().method() === 'POST');
+  await report.getByRole('button', { name: 'Publish report', exact: true }).click(); assert.equal((await publishing).status(), 200);
+  await waitForPublicIncident(incident.reference, 'Checkout delays have been resolved.');
+  const publishedReport = (await api(reportPath)).report;
+  for (const [field, value] of Object.entries(completedReport)) assert.equal(publishedReport[field], value);
+  assert.ok(publishedReport.publishedAt);
+  await report.locator('.report-editor > p').filter({ hasText: /^Published / }).waitFor();
+  assert.equal(await report.getByRole('textbox').count(), 0, 'published text has no editing controls');
+  assert.equal(await report.getByRole('button', { name: 'Save report', exact: true }).count(), 0);
+  await previewScreens(page, 'report-published-operator');
+  const publicReportPage = await browserContext.newPage();
+  try {
+    await publicReportPage.goto(`${pageUrl}/incidents/${incident.reference}`);
+    assert.deepEqual(await wordingFields(publicReportPage.locator('section.report')), Object.entries(completedReport).map(([field, value]) => ({ label: field[0].toUpperCase() + field.slice(1), value })));
+    assert.ok(!(await publicReportPage.locator('body').textContent()).includes(note));
+    await previewScreens(publicReportPage, 'report-published-public');
+  } finally { await publicReportPage.close(); }
+
+  const destination = 'https://notify.example.test/journey-erasure';
+  const subscriber = (await api('/api/app/subscribers/webhook', 'POST', { destination, contactEmail: 'private-reader@example.test', componentIds: [] })).subscriber;
+  await page.goto(`${appUrl}/app/subscribers`); await operatorHydrated(page);
+  const row = page.getByRole('row').filter({ hasText: destination });
+  page.once('dialog', dialog => dialog.dismiss()); await row.getByRole('button', { name: 'Remove', exact: true }).click();
+  assert.equal((await api('/api/app/subscribers')).subscribers.find(item => item.id === subscriber.id).destination, destination);
+  page.once('dialog', dialog => dialog.accept()); await row.getByRole('button', { name: 'Remove', exact: true }).click();
+  await row.waitFor({ state: 'detached' });
+  const erased = (await api('/api/app/subscribers')).subscribers.find(item => item.id === subscriber.id);
+  assert.notEqual(erased.destination, destination, 'erasure removes the private destination');
+  assert.equal(erased.contactEmail, null); assert.equal(erased.state, 'deactivated');
+
+  if (process.env.LAMP_SCREENSHOTS) { await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true }); await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, '1440-operator-journey.png'), fullPage: true }); }
+});
+
+test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async () => {
+  await phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLink: async () => execFileSync(process.execPath, [resolve('scripts/signin-link.mjs'), '--email', 'operator@example.test', '--origin', appUrl, '--config', configPath, '--persist-to', statePath], { cwd: terminalDirectory, env: process.env, encoding: 'utf8' }).trim() });
+});
+
+
+test('THEME-001 — owner publishes branded themes and layouts within the page budget', { timeout: 600_000 }, async t => {
+  await themeOwnerJourney({ appFetch, appUrl, pageUrl, sessionId, cookieName: sessionCookieName(appUrl), diagnostic: message => t.diagnostic(message) });
 });

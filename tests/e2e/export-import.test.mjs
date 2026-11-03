@@ -1,303 +1,60 @@
-import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { test } from "node:test";
+import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import { promisify } from 'node:util';
+import { checkout } from '../helpers/native-transfer.mjs';
+import { fixtureProcessEnv } from '../helpers/worker-environment.mjs';
 
-import { getPlatformProxy } from "wrangler";
+const execute = promisify(execFile);
 
-import { contract } from "../contract.mjs";
-import { applyOwnerMigrations } from "../../scripts/owner-migrations.mjs";
-import { importHistoryForRestore, undoHistoryAfterRestore } from "../betterstack/portability.mjs";
-import { installManaged } from "./helpers/managed-install.mjs";
-
-const configPath = "wrangler.jsonc";
-const logo = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Jm4kAAAAASUVORK5CYII=", "base64");
-
-function run(args) {
-  execFileSync("pnpm", args, { cwd: process.cwd(), stdio: "pipe" });
-}
-
-function platformFor(statePath) {
-  return getPlatformProxy({ configPath, remoteBindings: false, persist: { path: join(statePath, "v3") } });
-}
-
-function quoted(name) {
-  return `"${name.replaceAll('"', '""')}"`;
-}
-
-// One record of every released kind, and an original image with its metadata.
-async function populate(env) {
-  await env.DB.batch([
-    env.DB.prepare("INSERT INTO operators (id, email, display_name, is_setup_operator, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)").bind("operator-export", "owner@example.test", "Owner", 1, "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT OR REPLACE INTO page_settings (id, page_name, tagline, accent_color, timezone, hostname, footer_credit_enabled, logo_key, logo_content_type, widget_allowed_origins, mail_from_address, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("default", "Export status", "Portable archive", "#16794c", "UTC", "status.example.test", 1, "branding/original.png", "image/png", '["https://embed.example.test"]', "status@example.test", "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO component_groups (id, name, display_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?)").bind("group-export", "Core services", 1, "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO components (id, group_id, name, description, internal, display_order, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("component-export", "group-export", "Public API", "Customer API", 0, 1, "Watch this component.", "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO component_state_history (id, component_id, previous_state, new_state, cause_type, cause_id, operator_id, supersedes_history_id, changed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("history-export", "component-export", "Operational", "Major outage", "incident", "incident-export", "operator-export", null, "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO incidents (id, reference, title, lifecycle, opened_at, resolved_at, created_by_operator_id, deleted_at, deletion_reason, peak_impact, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("incident-export", "INC-4242", "API availability", "Resolved", "2026-09-08T00:00:00.000Z", "2026-09-08T00:15:00.000Z", "operator-export", null, null, "Major outage", "2026-09-08T00:00:00.000Z", "2026-09-08T00:15:00.000Z"),
-    env.DB.prepare("INSERT INTO incident_components (id, incident_id, component_id, component_name, state, relationship, published_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("incident-component-export", "incident-export", "component-export", "Public API", "Major outage", "Primary", "2026-09-08T00:05:00.000Z", "2026-09-08T00:00:00.000Z", "2026-09-08T00:05:00.000Z"),
-    env.DB.prepare("INSERT INTO incident_updates (id, incident_id, lifecycle, affected_audience, customer_impact, what_still_works, details, next_update_at, published_at, author_operator_id, corrects_update_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("update-export", "incident-export", "Resolved", "API customers", "Requests failed", "Dashboard remained available", "The incident is resolved.", "2026-09-08T00:15:00.000Z", "2026-09-08T00:15:00.000Z", "operator-export", null, "2026-09-08T00:00:00.000Z", "2026-09-08T00:15:00.000Z"),
-    env.DB.prepare("INSERT INTO incident_reports (id, incident_id, summary, timeline, cause, remediation, published_at, author_operator_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("report-export", "incident-export", "Summary", "Timeline", "Cause", "Remediation", "2026-09-08T01:00:00.000Z", "operator-export", "2026-09-08T01:00:00.000Z", "2026-09-08T01:00:00.000Z"),
-    env.DB.prepare("INSERT INTO maintenance (id, reference, title, state, starts_at, ends_at, completed_at, created_by_operator_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("maintenance-export", "SCH-4242", "Database maintenance", "Completed", "2026-09-09T00:00:00.000Z", "2026-09-09T01:00:00.000Z", "2026-09-09T01:00:00.000Z", "operator-export", "2026-09-08T00:00:00.000Z", "2026-09-09T01:00:00.000Z"),
-    env.DB.prepare("INSERT INTO maintenance_components (id, maintenance_id, component_id, component_name, state, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)").bind("maintenance-component-export", "maintenance-export", "component-export", "Public API", "Under maintenance", "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO import_maintenance_updates (id,maintenance_id,body,published_at,source_states) VALUES (?,?,?,?,?)").bind("imported-maintenance-update", "maintenance-export", "Original provider maintenance message", "2026-09-09T00:15:00.000Z", "[]"),
-    env.DB.prepare("INSERT INTO maintenance_notices (id, maintenance_id, kind, body, published_at, author_operator_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").bind("notice-export", "maintenance-export", "completed", "Maintenance complete.", "2026-09-09T01:00:00.000Z", "operator-export", "2026-09-09T01:00:00.000Z", "2026-09-09T01:00:00.000Z"),
-    env.DB.prepare("INSERT INTO subscribers (id, channel, destination, contact_email, state, selection_mode, token_hash, deactivation_reason, deactivated_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("subscriber-export", "email", "reader@example.test", "reader@example.test", "active", "selected", "token-hash-export", null, null, "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO subscriber_components (id, subscriber_id, component_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?)").bind("subscriber-component-export", "subscriber-export", "component-export", "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-    env.DB.prepare("INSERT INTO notification_deliveries (id, subscriber_id, incident_update_id, maintenance_id, channel, outcome, queued_at, outcome_at, created_at, updated_at, notification_event_id, notification_event_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("delivery-export", "subscriber-export", "update-export", null, "email", "delivered", "2026-09-08T00:15:00.000Z", "2026-09-08T00:15:01.000Z", "2026-09-08T00:15:00.000Z", "2026-09-08T00:15:01.000Z", "update-export", "incident-update"),
-    env.DB.prepare("INSERT INTO alert_sources (id,name,credential_kind,bearer_token_hash,deduplication_path,title_path,state_path,created_by_operator_id,created_at,updated_at,grouped_preset,label_matchers_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").bind("group-source-export","Production Alertmanager","bearer-token","synthetic-archive-hash","preset:alertmanager","preset:alertmanager","preset:alertmanager","operator-export","2026-09-08","2026-09-08","alertmanager",JSON.stringify([{componentId:"component-export",labels:{service:"api",region:"us-east"}}])),
-    env.DB.prepare("INSERT INTO alert_sources (id,name,credential_kind,signing_secret,deduplication_path,title_path,state_path,created_by_operator_id,created_at,updated_at,uptime_preset,monitor_mappings_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").bind("uptime-source-export","Production Uptime","hmac-sha256","synthetic-archive-uptime-secret","preset:uptime","preset:uptime","preset:uptime","operator-export","2026-09-08","2026-09-08","uptime",JSON.stringify([{monitorId:"checkout",componentId:"component-export"}])),
-    env.DB.prepare("INSERT INTO alert_group_members (source_id,incident_id,group_key,fingerprint,state,received_at,recovered_at) VALUES (?,?,?,?,?,?,?)").bind("group-source-export","incident-export","service-group","alert-fingerprint","resolved","2026-09-08T00:15:00.000Z","2026-09-08T00:15:00.000Z"),
-    env.DB.prepare("INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, reason, payload_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)").bind("audit-export", "component-state-history", "history-export", "corrected", "operator-export", "Verified export", '{"before":"Operational","after":"Major outage"}', "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
-  ]);
-  await env.SNAPSHOTS.put("branding/original.png", logo, { httpMetadata: { contentType: "image/png", contentDisposition: "attachment; filename=brand.png", cacheControl: "public, max-age=60" }, customMetadata: { owner: "portable-brand" } });
-}
-
-contract("HIST-004", "export restores every JSON entity, settings and audit entry plus original image bytes into an empty local deployment and into a new RER Managed installation", async () => {
-  const sourceState = await mkdtemp(join(tmpdir(), "lamp-export-source-"));
-  const targetState = await mkdtemp(join(tmpdir(), "lamp-export-target-"));
-  const archive = await mkdtemp(join(tmpdir(), "lamp-export-archive-"));
-  const restoredArchive = await mkdtemp(join(tmpdir(), "lamp-export-restored-"));
-  let importedHistory;
+// Owner SQL uses Lamp's declared migration and technical-archive commands. The
+// native rer archive journey separately exercises installation identity and
+// temporary authority; neither test substitutes an internal helper for the CLI.
+test('HIST-004 PORT-001 — owner SQL rolls back a failed upgrade, recovers once, and travels through a clean technical backup and restore', { timeout: 600_000 }, async () => {
+  const temporary = await mkdtemp(join(tmpdir(), 'lamp-owner-archive-'));
+  const installation = join(temporary, 'installation');
+  const source = join(installation, '.wrangler/state'), target = join(temporary, 'restored-state');
+  const archive = join(temporary, 'archive'), reexport = join(temporary, 'reexport');
+  const { RER_LOCAL_OPERATION, RER_STATE_DIR, ...inherited } = fixtureProcessEnv();
+  const env = { ...inherited, LAMP_WORKERS_STATE_PATH: source, WRANGLER_SEND_METRICS: 'false' };
+  const command = async (binary, args) => {
+    try { return await execute(binary, args, { cwd: installation, env, encoding: 'utf8', timeout: 300_000, maxBuffer: 4 * 1024 * 1024 }); }
+    catch (error) { throw new Error(`Owner archive command ${args[1] ?? binary} failed: ${String(error.stderr ?? error.code)}`); }
+  };
+  const script = (name, ...args) => command('pnpm', ['run', name, ...args]);
+  const query = async (state, sql) => {
+    const result = await command('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--config', 'wrangler.jsonc', '--persist-to', state, '--json', '--command', sql]);
+    return JSON.parse(result.stdout).map(item => item.results);
+  };
   try {
-    run(["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--persist-to", sourceState, "--config", configPath]);
-    await applyOwnerMigrations(configPath, ["--local", "--persist-to", sourceState]);
-    const source = await platformFor(sourceState);
-    try {
-      await populate(source.env);
-      importedHistory=await importHistoryForRestore(source.env.DB);
-    } finally {
-      await source.dispose();
-    }
+    await checkout(process.cwd(), installation);
+    await mkdir(join(installation, 'migrations/ext'), { recursive: true });
+    await writeFile(join(installation, 'migrations/ext/0001_owner.sql'), await readFile('tests/e2e/fixtures/owner-portability.sql'));
+    await script('migrate:local');
 
-    run(["run", "export:cloudflare", "--", "--out", archive, "--persist-to", sourceState]);
-    const manifestPath = join(archive, "manifest.json");
-    const originalManifest = await readFile(manifestPath, "utf8");
-    const damagedManifest = JSON.parse(originalManifest);
-    damagedManifest.migrations[0].sha256 = "0".repeat(64);
-    await writeFile(manifestPath, JSON.stringify(damagedManifest));
-    assert.throws(() => run(["run", "import:cloudflare", "--", "--from", archive, "--persist-to", targetState]), /Command failed/);
-    const untouched = await platformFor(targetState);
-    try {
-      const tables = await untouched.env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'").all();
-      assert.equal(tables.results.length, 0, "schema mismatch must be rejected before destination migrations or records are written");
-      assert.equal((await untouched.env.SNAPSHOTS.list()).objects.length, 0);
-    } finally { await untouched.dispose(); }
-    await writeFile(manifestPath, originalManifest);
-    const originalEntities = await readFile(join(archive, "entities.json"));
-    const incompatibleEntities = JSON.parse(originalEntities);
-    incompatibleEntities.tables.push({ name: "missing_owner_table", dependsOn: [], rows: [{ id: "cannot-restore" }] });
-    const incompatibleBytes = Buffer.from(JSON.stringify(incompatibleEntities));
-    const incompatibleManifest = JSON.parse(originalManifest);
-    incompatibleManifest.database.sha256 = createHash("sha256").update(incompatibleBytes).digest("hex");
-    await writeFile(join(archive, "entities.json"), incompatibleBytes);
-    await writeFile(manifestPath, JSON.stringify(incompatibleManifest));
-    const partialState = join(targetState, "partial-attempt");
-    assert.throws(() => run(["run", "import:cloudflare", "--", "--from", archive, "--persist-to", partialState]), /Command failed/, "a real SQL restore failure must stop without publishing");
-    await writeFile(join(archive, "entities.json"), originalEntities);
-    await writeFile(manifestPath, originalManifest);
-    assert.throws(() => run(["run", "import:cloudflare", "--", "--from", archive, "--persist-to", partialState]), /Command failed/, "a failed destination must not be silently overwritten on retry");
-    run(["run", "import:cloudflare", "--", "--from", archive, "--persist-to", targetState]);
-    assert.throws(() => run(["run", "import:cloudflare", "--", "--from", archive, "--persist-to", targetState]), /Command failed/, "rerunning import must never overwrite a populated destination");
-    run(["run", "export:cloudflare", "--", "--out", restoredArchive, "--persist-to", targetState]);
+    const pending = join(installation, 'migrations/ext/0002_owner.sql');
+    await writeFile(pending, "UPDATE owner_labels SET label='Uncommitted edit' WHERE id='owner-1'; INSERT INTO missing_owner_table VALUES(1);");
+    await assert.rejects(script('migrate:local'), /failed/, 'a failed custom upgrade stops before backup');
+    assert.deepEqual((await query(source, "SELECT label FROM owner_labels WHERE id='owner-1'"))[0], [{ label: 'Preserve this owner intent' }], 'its earlier write rolled back');
+    await writeFile(pending, "INSERT INTO owner_labels(id,label) VALUES('owner-recovery','Corrected owner migration');");
+    await script('migrate:local');
+    await script('migrate:local'); // An applied migration does not run again.
+    await query(source, "DELETE FROM owner_labels WHERE id='deleted'; DELETE FROM owner_empty;");
 
-    const entities = JSON.parse(await readFile(join(archive, "entities.json"), "utf8"));
-    const target = await platformFor(targetState);
-    try {
-      const restored = [];
-      for (const table of entities.tables) {
-        const rows = await target.env.DB.prepare(`SELECT * FROM ${quoted(table.name)} ORDER BY rowid`).all();
-        restored.push({ name: table.name, dependsOn: table.dependsOn, rows: rows.results });
-      }
-      assert.deepEqual(restored, entities.tables);
-      assert.ok(entities.tables.find((table) => table.name === "page_settings")?.rows.length, "settings must be JSON entities in the archive");
-      assert.ok(entities.tables.find((table) => table.name === "audit_entries")?.rows.length, "audit entries must be JSON entities in the archive");
-      for (const name of ["components", "component_state_history", "incidents", "incident_updates", "incident_reports", "maintenance", "maintenance_notices", "subscribers", "notification_deliveries"]) {
-        assert.ok(entities.tables.find((table) => table.name === name)?.rows.length, `${name} must be represented by a real entity row`);
-      }
-      const restoredLogo = await target.env.SNAPSHOTS.get("branding/original.png");
-      assert.equal(restoredLogo?.httpMetadata?.contentType, "image/png");
-      assert.equal(restoredLogo.httpMetadata.contentDisposition, "attachment; filename=brand.png");
-      assert.equal(restoredLogo.httpMetadata.cacheControl, "public, max-age=60");
-      assert.deepEqual(restoredLogo.customMetadata, { owner: "portable-brand" });
-      assert.deepEqual(Buffer.from(await restoredLogo.arrayBuffer()), logo);
-      await undoHistoryAfterRestore(target.env.DB,importedHistory);
-    } finally {
-      await target.dispose();
-    }
-    assert.deepEqual(
-      JSON.parse(await readFile(join(restoredArchive, "entities.json"), "utf8")),
-      entities,
-      "a second export after import must preserve the entire entity graph",
-    );
-    // Archives from before subscriber reporting have no observed daily facts.
-    // Restore their real inventory as a new baseline rather than inventing it
-    // from historical creation dates.
-    const legacyEntities = { ...entities, tables: entities.tables.filter(table => !table.name.startsWith("subscriber_reporting_")) };
-    const legacyBytes = Buffer.from(JSON.stringify(legacyEntities));
-    const legacyManifest = JSON.parse(originalManifest);
-    legacyManifest.database.sha256 = createHash("sha256").update(legacyBytes).digest("hex");
-    await writeFile(join(archive, "entities.json"), legacyBytes);
-    await writeFile(manifestPath, JSON.stringify(legacyManifest));
-    const legacyState = join(targetState, "legacy-copy");
-    run(["run", "import:cloudflare", "--", "--from", archive, "--persist-to", legacyState]);
-    const legacy = await platformFor(legacyState);
-    try {
-      const baseline = (await legacy.env.DB.prepare("SELECT channel, eligible FROM subscriber_reporting_baseline ORDER BY channel").all()).results;
-      const actual = (await legacy.env.DB.prepare("SELECT channels.channel, COUNT(s.id) AS eligible FROM (SELECT 'email' AS channel UNION ALL SELECT 'webhook') channels LEFT JOIN subscribers s ON s.channel = channels.channel AND s.state IN ('pending', 'active') AND s.destination NOT LIKE 'deleted:%' GROUP BY channels.channel ORDER BY channels.channel").all()).results;
-      assert.deepEqual(baseline, actual);
-      assert.equal((await legacy.env.DB.prepare("SELECT COUNT(*) AS n FROM subscriber_reporting_daily").first()).n, 0);
-      assert.ok((await legacy.env.DB.prepare("SELECT started_at FROM subscriber_reporting_tracking WHERE id = 1").first()).started_at);
-    } finally { await legacy.dispose(); }
-    await managedRoundTrip();
-  } finally {
-    await Promise.all([rm(sourceState, { recursive: true, force: true }), rm(targetState, { recursive: true, force: true }), rm(archive, { recursive: true, force: true }), rm(restoredArchive, { recursive: true, force: true })]);
-  }
-});
-
-
-// A RER Managed installation exports and restores into a new Managed
-// installation while each keeps its own Platform migration ledger.
-async function managedRoundTrip() {
-  const sandbox = await mkdtemp(join(tmpdir(), "lamp-managed-archive-"));
-  const state = (name) => join(sandbox, name);
-  const archive = join(sandbox, "archive");
-  const sql = (name, command) => run(["exec", "wrangler", "d1", "execute", "DB", "--local", "--persist-to", state(name), "--config", configPath, "--command", command]);
-  const exportFrom = (name, out) => run(["run", "export:cloudflare", "--", "--out", out, "--persist-to", state(name)]);
-  const importInto = (name, from = archive) => run(["run", "import:cloudflare", "--", "--from", from, "--persist-to", state(name)]);
-  const refused = (action, reason) => assert.throws(action, (error) => reason.test(String(error.stderr)));
-  async function read(name, query) {
-    const platform = await platformFor(state(name));
-    try { return (await platform.env.DB.prepare(query).all()).results; } finally { await platform.dispose(); }
-  }
-  const ledger = (name) => read(name, "SELECT name, sha256, applied_at FROM rer_migrations ORDER BY name");
-  const mismatch = /does not list exactly this revision's migrations/;
-  try {
-    for (const name of ["source", "target", "fresh"]) await installManaged(state(name), { config: configPath, pageName: `Managed ${name}` });
-    for (const [name, time] of [["target", "2026-10-19T06:00:00Z"], ["fresh", "2026-10-19T07:00:00Z"]]) sql(name, `UPDATE rer_migrations SET applied_at = '${time}'`);
-    const source = await platformFor(state("source"));
-    try { await populate(source.env); } finally { await source.dispose(); }
-    const [sourceLedger, targetLedger, freshLedger] = await Promise.all(["source", "target", "fresh"].map(ledger));
-    assert.equal(sourceLedger.filter((row) => row.name.startsWith("core-")).length, (await readdir("migrations/core")).filter((file) => file.endsWith(".sql")).length);
-    assert.ok(sourceLedger.some((row) => row.name === "setup-initial-page.sql"), "Platform records the page initializer");
-    assert.deepEqual(await read("source", "SELECT name FROM sqlite_master WHERE name = 'd1_migrations'"), [], "Platform installs carry only its own ledger");
-
-    // Lamp 1.8.0 archived this ledger as owner data, refused the Managed
-    // destination as non-empty, and its restore would have rewritten the ledger.
-    exportFrom("source", archive);
-    const entities = JSON.parse(await readFile(join(archive, "entities.json"), "utf8"));
-    assert.ok(!entities.tables.some((table) => table.name === "rer_migrations"), "the ledger never travels");
-    importInto("target");
-    assert.deepEqual(await ledger("target"), targetLedger, "restore neither rewrites nor drops the destination's Platform history");
-    assert.deepEqual(await ledger("source"), sourceLedger);
-    exportFrom("target", join(sandbox, "re-export"));
-    assert.deepEqual(JSON.parse(await readFile(join(sandbox, "re-export", "entities.json"), "utf8")), entities, "re-export after restore is identical");
-    assert.deepEqual(JSON.parse(await readFile(join(sandbox, "re-export", "manifest.json"), "utf8")).objects, JSON.parse(await readFile(join(archive, "manifest.json"), "utf8")).objects, "original image bytes and metadata round trip");
-    refused(() => importInto("target"), /new RER Managed installation whose owner has not signed in/);
-
-    // The ledger is checked on both doors, not skipped.
-    const [first, last] = [sourceLedger[0], sourceLedger.findLast((row) => row.name.startsWith("core-"))];
-    sql("source", `UPDATE rer_migrations SET sha256 = '${"0".repeat(64)}' WHERE name = '${first.name}'`);
-    refused(() => exportFrom("source", join(sandbox, "tampered")), mismatch);
-    sql("source", `UPDATE rer_migrations SET sha256 = '${first.sha256}' WHERE name = '${first.name}'`);
-    for (const [tamper, undo] of [
-      [`UPDATE rer_migrations SET sha256 = '${"0".repeat(64)}' WHERE name = '${first.name}'`, `UPDATE rer_migrations SET sha256 = '${first.sha256}' WHERE name = '${first.name}'`],
-      [`UPDATE rer_migrations SET name = '${last.name}#0-1' WHERE name = '${last.name}'`, `UPDATE rer_migrations SET name = '${last.name}' WHERE name = '${last.name}#0-1'`],
-      [`DELETE FROM rer_migrations WHERE name = '${last.name}'`, `INSERT INTO rer_migrations VALUES ('${last.name}', '${last.sha256}', '2026-10-19T07:00:00Z')`],
-      ["INSERT INTO rer_migrations(name, sha256) VALUES ('core-9999_unrecognized.sql', '" + "1".repeat(64) + "')", "DELETE FROM rer_migrations WHERE name = 'core-9999_unrecognized.sql'"],
-    ]) {
-      sql("fresh", tamper);
-      refused(() => importInto("fresh"), mismatch);
-      sql("fresh", undo);
-    }
-    // Exact-name recognition: any other rer_ table is unknown on either side.
-    sql("fresh", "CREATE TABLE rer_migrations_future (id TEXT)");
-    refused(() => importInto("fresh"), /tables differ from the archive \(rer_migrations_future\)/);
-    sql("fresh", "DROP TABLE rer_migrations_future");
-    sql("source", "CREATE TABLE rer_migrations_future (id TEXT)");
-    exportFrom("source", join(sandbox, "unknown"));
-    refused(() => importInto("fresh", join(sandbox, "unknown")), /tables differ from the archive \(rer_migrations_future\)/);
-    assert.deepEqual(await ledger("fresh"), freshLedger);
-    assert.deepEqual(await read("fresh", "SELECT id FROM operators"), [], "refused restores write nothing");
-
-    // A 1.8.0 archive that carried the source ledger as data restores without writing it.
-    const legacy = { ...entities, tables: [...entities.tables, { name: "rer_migrations", dependsOn: [], rows: sourceLedger }] };
-    const legacyBytes = Buffer.from(JSON.stringify(legacy));
-    const legacyManifest = JSON.parse(await readFile(join(archive, "manifest.json"), "utf8"));
-    legacyManifest.database.sha256 = createHash("sha256").update(legacyBytes).digest("hex");
-    await writeFile(join(archive, "entities.json"), legacyBytes);
-    await writeFile(join(archive, "manifest.json"), JSON.stringify(legacyManifest));
-    importInto("fresh");
-    assert.deepEqual(await ledger("fresh"), freshLedger);
-    assert.deepEqual(await read("fresh", "SELECT id FROM operators"), [{ id: "operator-export" }]);
-  } finally {
-    await rm(sandbox, { recursive: true, force: true });
-  }
-}
-
-test("owner sidecar migrations apply once and survive export/import/export", async () => {
-  const sandbox = await mkdtemp(join(tmpdir(), "lamp-owner-portability-"));
-  const original = process.cwd();
-  const sourceState = join(sandbox, "source");
-  const targetState = join(sandbox, "target");
-  const archive = join(sandbox, "archive");
-  const config = resolve(configPath);
-  const execute = (args) => execFileSync("pnpm", args, { cwd: sandbox, stdio: "pipe" });
-  try {
-    await mkdir(join(sandbox, "migrations", "ext"), { recursive: true });
-    await symlink(join(original, "migrations", "core"), join(sandbox, "migrations", "core"));
-    await symlink(join(original, "node_modules"), join(sandbox, "node_modules"));
-    await writeFile(join(sandbox, "package.json"), JSON.stringify({ private: true, packageManager: "pnpm@10.12.4" }));
-    await writeFile(join(sandbox, "migrations", "ext", "0001_owner_labels.sql"), await readFile(join(original, "tests/e2e/fixtures/owner-portability.sql")));
-    execute(["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--persist-to", sourceState, "--config", config]);
-    const migrationScript = `import { applyOwnerMigrations } from ${JSON.stringify(join(original, "scripts", "owner-migrations.mjs"))}; await applyOwnerMigrations(${JSON.stringify(config)}, ["--local", "--persist-to", ${JSON.stringify(sourceState)}]);`;
-    for (let attempt = 0; attempt < 2; attempt++) execFileSync(process.execPath, ["--input-type=module", "-e", migrationScript], { cwd: sandbox, stdio: "pipe" });
-    execute(["exec", "wrangler", "d1", "execute", "DB", "--local", "--persist-to", sourceState, "--config", config, "--command", "DELETE FROM owner_labels WHERE id = 'deleted'; DELETE FROM owner_empty;"]);
-    execute(["exec", "node", join(original, "scripts", "export.mjs"), "--config", config, "--persist-to", sourceState, "--out", archive]);
-    // Corrupt the entity graph with a valid checksum: FK enforcement must
-    // reject it, roll back all data writes, and restore application triggers.
-    const entitiesPath = join(archive, "entities.json");
-    const manifestPath = join(archive, "manifest.json");
-    const validEntities = await readFile(entitiesPath);
-    const validManifest = await readFile(manifestPath);
-    const invalid = JSON.parse(validEntities);
-    invalid.tables.find((table) => table.name === "owner_tree").rows[0].parent = "absent-parent";
-    const invalidBytes = Buffer.from(JSON.stringify(invalid));
-    const invalidManifest = JSON.parse(validManifest);
-    invalidManifest.database.sha256 = createHash("sha256").update(invalidBytes).digest("hex");
-    await writeFile(entitiesPath, invalidBytes);
-    await writeFile(manifestPath, JSON.stringify(invalidManifest));
-    const failedState = join(sandbox, "invalid-graph");
-    assert.throws(() => execute(["exec", "node", join(original, "scripts", "import.mjs"), "--config", config, "--persist-to", failedState, "--from", archive]), /Command failed/);
-    const failedRows = JSON.parse(execute(["exec", "wrangler", "d1", "execute", "DB", "--local", "--persist-to", failedState, "--config", config, "--json", "--command", "SELECT id FROM owner_labels ORDER BY id; SELECT name FROM sqlite_master WHERE type='trigger' AND name='owner_label_insert'; PRAGMA foreign_key_check;"]).toString());
-    assert.deepEqual(failedRows[0].results, [{ id: "deleted" }, { id: "owner-1" }], "failed restore rolls back to migration seed rows");
-    assert.deepEqual(failedRows[1].results, [{ name: "owner_label_insert" }], "failed restore restores triggers transactionally");
-    assert.deepEqual(failedRows[2].results, [], "invalid references never commit");
-    await writeFile(entitiesPath, validEntities);
-    await writeFile(manifestPath, validManifest);
-    const laterMigration = join(sandbox, "migrations", "ext", "0002_backfill_owner_labels.sql");
-    await writeFile(laterMigration, "UPDATE owner_labels SET label = 'Backfilled owner intent';");
-    assert.throws(() => execute(["exec", "node", join(original, "scripts", "import.mjs"), "--config", config, "--persist-to", targetState, "--from", archive]), /Command failed/, "restoring an older archive must not run later backfills against an empty table and then mark them applied");
-    await rm(laterMigration);
-    execute(["exec", "node", join(original, "scripts", "import.mjs"), "--config", config, "--persist-to", targetState, "--from", archive]);
-    const restored = join(sandbox, "restored");
-    execute(["exec", "node", join(original, "scripts", "export.mjs"), "--config", config, "--persist-to", targetState, "--out", restored]);
-    const entities = JSON.parse(await readFile(join(archive, "entities.json"), "utf8"));
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_labels").rows, [{ id: "owner-1", label: "Preserve this owner intent" }]);
-    assert.deepEqual(JSON.parse(await readFile(join(restored, "entities.json"), "utf8")), entities);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_compound").rows, [{ category: "a", name: "first", value: "Owner value A" }, { category: "b", name: "second", value: "Owner value B" }]);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_empty").rows, []);
-    assert.deepEqual(entities.tables.find((table) => table.name === "xcf_owner").rows, [{ id: "Must not be mistaken for a reserved table" }]);
-    assert.deepEqual(entities.tables.find((table) => table.name === "sqliteXowner").rows, [{ id: "Owner table, not SQLite metadata" }]);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_changes").rows, []);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_generated").rows, [{ id: "generated", qty: 3, total: 6 }]);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_tree").rows, [{ id: "a-child", parent: "z-parent" }, { id: "z-parent", parent: null }]);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_left").rows, [{ id: "left", right_id: "right" }]);
-    assert.deepEqual(entities.tables.find((table) => table.name === "owner_right").rows, [{ id: "right", left_id: "left" }]);
-    const triggerOutput = execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--persist-to", targetState, "--config", config, "--json", "--command", "INSERT INTO owner_labels VALUES ('after-restore', 'Trigger remains active'); SELECT label FROM owner_changes"], { cwd: sandbox, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] });
-    assert.match(triggerOutput, /Trigger remains active/);
-    assert.equal(JSON.parse(await readFile(join(archive, "manifest.json"), "utf8")).ownerMigrations.length, 1);
-  } finally { await rm(sandbox, { recursive: true, force: true }); }
+    await script('export:cloudflare', '--out', archive, '--persist-to', source);
+    await script('import:cloudflare', '--from', archive, '--persist-to', target);
+    await assert.rejects(script('import:cloudflare', '--from', archive, '--persist-to', target), /failed/, 'restore never overwrites a populated installation');
+    await script('export:cloudflare', '--out', reexport, '--persist-to', target);
+    const original = JSON.parse(await readFile(join(archive, 'entities.json'), 'utf8'));
+    assert.deepEqual(JSON.parse(await readFile(join(reexport, 'entities.json'), 'utf8')), original, 'all owner tables, relationships, generated values and empty/deleted state survive unchanged');
+    assert.deepEqual((await query(target, 'SELECT id,label FROM owner_labels ORDER BY id'))[0], [
+      { id: 'owner-1', label: 'Preserve this owner intent' },
+      { id: 'owner-recovery', label: 'Corrected owner migration' },
+    ]);
+    const triggered = await query(target, "INSERT INTO owner_labels(id,label) VALUES('after-restore','Owner customization still works'); SELECT label FROM owner_changes WHERE label='Owner customization still works';");
+    assert.deepEqual(triggered[1], [{ label: 'Owner customization still works' }], 'the restored customization retains its behavior');
+  } finally { await rm(temporary, { recursive: true, force: true }); }
 });

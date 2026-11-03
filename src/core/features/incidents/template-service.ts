@@ -29,12 +29,12 @@ export function createIncidentTemplateService(repository: IncidentRepository, co
       const parsed = templateSchema.parse(input);
       const timestamp = nowIso(); const id = createUlid();
       const components = await componentRecords(parsed.components, id, timestamp);
-      await repository.saveTemplate({ ...parsed, id, title: "", folder: "", shouldSendNotifications: null, fieldsToShorten: [], affectedAudience: parsed.affectedAudience.trim(), customerImpact: parsed.customerImpact.trim(), whatStillWorks: parsed.whatStillWorks.trim(), details: parsed.details.trim(), createdByOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp }, components);
+      await repository.saveTemplate({ ...parsed, channels: parsed.channels ?? [], resolvedUpdate: parsed.resolvedUpdate ?? null, id, title: "", folder: "", shouldSendNotifications: null, fieldsToShorten: [], affectedAudience: parsed.affectedAudience.trim(), customerImpact: parsed.customerImpact.trim(), whatStillWorks: parsed.whatStillWorks.trim(), details: parsed.details.trim(), createdByOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp }, components);
       const saved = (await repository.listTemplates()).find(template => template.name === parsed.name);
       if (!saved) throw new Error("Incident template could not be saved.");
       return saved;
     },
-    async updateTemplate(templateId, input, _operatorId) {
+    async updateTemplate(templateId, input, operatorId) {
       const edit = templateUpdateSchema.parse(input);
       const existing = await repository.findTemplate(templateId);
       if (!existing) return null;
@@ -48,7 +48,7 @@ export function createIncidentTemplateService(repository: IncidentRepository, co
       });
       const timestamp = new Date(Math.max(Date.now(), Date.parse(existing.updatedAt) + 1)).toISOString();
       const components = edit.components === undefined ? undefined : await componentRecords(edit.components, templateId, timestamp);
-      await repository.updateTemplate({ ...existing, ...edit, ...fields, fieldsToShorten: [], updatedAt: timestamp }, components);
+      await repository.updateTemplate({ ...existing, ...edit, ...fields, fieldsToShorten: [], updatedAt: timestamp }, components, operatorId);
       return repository.findTemplate(templateId);
     },
     async applyTemplate(incidentId, templateId, operatorId, expectedVersion) {

@@ -38,6 +38,12 @@ export function registerStatuspageImportRoutes(app: Hono<AppEnv>, service: Statu
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Your status pages could not be listed." }, 400); }
   });
   app.get("/api/app/statuspage-import/jobs", async (context) => context.json({ jobs: await service.list(context.get("operatorSession")) }));
+  app.get("/api/app/statuspage-import/jobs/:id/verification", async (context) => {
+    const id = jobId.safeParse(context.req.param("id"));
+    if (!id.success) return context.json({ error: "Import not found." }, 404);
+    try { return context.json(await service.verification(id.data, context.get("operatorSession"))); }
+    catch (cause) { return context.json({ error: refused(cause) }, 409); }
+  });
   // Imports made before the door keep their read, resume and undo here; every
   // import keeps its read and its Cutover invitations.
   app.get("/api/app/statuspage-import/jobs/:id", async (context) => {
@@ -51,6 +57,7 @@ export function registerStatuspageImportRoutes(app: Hono<AppEnv>, service: Statu
     const action = context.req.param("action");
     if (!id.success || (action !== "resume" && action !== "undo" && action !== "send-invitations")) return context.json({ error: "Import not found." }, 404);
     const who = context.get("operatorSession");
+    if (action === "send-invitations" && who.operator.role !== "owner") return context.json({ error: "Only the owner can send imported subscriber invitations." }, 403);
     try {
       const command = await context.req.json().catch(() => null);
       if (action === 'send-invitations' && !z.union([z.object({}).strict(), z.object({ liveOrigin: z.string().url().max(2048), hostnameLive: z.literal(true), watchWindowClosed: z.literal(true) }).strict()]).safeParse(command).success) return context.json({ error: 'Confirm the live hostname and closed watch window before sending Sorry invitations.' }, 400);

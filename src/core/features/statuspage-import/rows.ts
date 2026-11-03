@@ -1,3 +1,4 @@
+import { planSubscriberCapacity, type SubscriberCounts } from "../subscribers/limits";
 import { attachPostmortem } from "./postmortems";
 import { mapTemplates } from "./templates";
 import { mostSevereState, type ComponentState, type IncidentLifecycle } from "../../shared/domain";
@@ -9,6 +10,8 @@ export type EntityKind = "group" | "component" | "incident" | "maintenance" | "s
 export interface NativeValue { tables: Record<string, Row[]> }
 export interface Accounting { kind: string; sourceId: string; name: string; outcome: "imported" | "changed" | "skipped" | "rejected" | "kept-private"; reason: string }
 export interface Snapshot {
+  subscriberCounts: SubscriberCounts;
+  incidentIncludeReport?: boolean;
   maxGroupOrder: number;
   maxComponentOrder: number;
   lastReference: { INC: number; SCH: number };
@@ -22,7 +25,7 @@ export interface Snapshot {
   /** Each template name, with its template when an active import created it. */
   templateNames?: Map<string, string | null>;
 }
-export interface Mapped { kind: EntityKind; sourceId: string; value?: NativeValue; accounting: Accounting[] }
+export interface Mapped { kind: EntityKind; sourceId: string; value?: NativeValue; accounting: Accounting[]; subscriberCapacity?: { overLimit: boolean; summaries: string[] } }
 
 /** Each native table group an imported entity owns, keyed by its owning column. */
 export const entityTables: Record<EntityKind, Record<string, string>> = {
@@ -31,7 +34,7 @@ export const entityTables: Record<EntityKind, Record<string, string>> = {
   incident: { incidents: "id", incident_components: "incident_id", incident_updates: "incident_id", incident_reports: "incident_id" },
   maintenance: { maintenance: "id", maintenance_components: "maintenance_id" },
   template: { incident_templates: "id", incident_template_components: "template_id" },
-  subscriber: { subscribers: "id", subscriber_components: "subscriber_id" },
+  subscriber: { subscribers: "id", subscriber_components: "subscriber_id", incident_subscriptions: "subscriber_id" },
 };
 
 const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -76,7 +79,9 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
   const components = new Map<string, { id: string; name: string; created: string }>();
   const componentAccounting = new Map<string, Accounting[]>();
   [...data.components].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id)).forEach((component) => {
-    components.set(component.id, { id: identify(`component:${component.id}`, component.created_at), name: clip(component.name, 120), created: iso(component.created_at) });
+    // A public feed may not say when a component began: its identity stays stable, and Lamp's record of it begins with this import.
+    const begins = data.publicFeed === true && !component.created_at;
+    components.set(component.id, { id: identify(`component:${component.id}`, begins ? "1970-01-01T00:00:00.000Z" : component.created_at), name: clip(component.name, 120), created: iso(begins ? asOf : component.created_at) });
     const notes: string[] = [];
     if (component.group_id && !groupIds.has(component.group_id)) notes.push("its group was not in the saved responses, so it is ungrouped");
     if (namespace === "statuspage" && component.status && component.status !== "operational") notes.push(`its current '${component.status}' status is set by open incidents and maintenance here, not carried as a manual status`);
@@ -98,7 +103,7 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
   const nextIncident = references("INC"), nextMaintenance = references("SCH");
 
   for (const incident of [...data.incidents].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))) {
-    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, namespace === "sorry" && incident.impact === "none", namespace === "statuspage");
+    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || data.publicFeed === true, data.publicFeed === true);
     attachPostmortem(mapped, incident, operatorId, asOf, identify);
     results.push(mapped);
   }
@@ -123,23 +128,45 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
     } } });
   });
 
-  const subscriberResults = data.subscribers.map((subscriber) => mapSubscriber(subscriber, components, snapshot, asOf, identify, namespace));
+  const existingDestinations=new Set(snapshot.destinations.keys());
+  const subscriberResults = data.subscribers.map((subscriber) => {
+    if (namespace !== "statuspage" || !subscriber.incident_id) return mapSubscriber(subscriber, components, snapshot, asOf, identify, namespace);
+    const followed = results.find(row => row.kind === "incident" && row.sourceId === subscriber.incident_id)?.value?.tables.incidents?.[0];
+    return mapIncidentSubscriber(subscriber, followed, snapshot, asOf, identify);
+  });
+  {
+    const candidates=subscriberResults.filter(row=>row.value && !existingDestinations.has(String(row.value.tables.subscribers[0].destination)));
+    const capacity=planSubscriberCapacity(snapshot.subscriberCounts,candidates.map(row=>({channel:"email" as const,row})));
+    for(const item of capacity.refused) {
+      delete item.row.value;
+      item.row.accounting=[{...item.row.accounting[0],outcome:"rejected",reason:"over the subscriber limit"}];
+    }
+    if(subscriberResults.length) subscriberResults[0].subscriberCapacity={overLimit:capacity.refused.size>0,summaries:capacity.summaries};
+  }
   const templates = mapTemplates(data, components, snapshot, operatorId, asOf, identify);
   const order: EntityKind[] = ["group", "component", "incident", "maintenance", "template", "subscriber"];
   return [...results, ...componentResults, ...templates, ...subscriberResults].sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
 }
 
-function mapIncident(incident: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, sourceEndedAt?: string | null, allowUnattached = false, independentImpact = false): Mapped {
+function mapIncident(incident: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, sourceEndedAt?: string | null, allowUnattached = false, independentImpact = false, namesListed = false): Mapped {
   const name = incident.name;
   const updates = [...incident.incident_updates].sort((a, b) => at(a).localeCompare(at(b)) || a.id.localeCompare(b.id));
   if (!updates.length) return { kind: "incident", sourceId: incident.id, accounting: [{ kind: "incident", sourceId: incident.id, name, outcome: "rejected", reason: "No published updates to carry." }] };
   const id = identify(`incident:${incident.id}`, incident.created_at);
-  const claimEndsAt = sourceEndedAt ? iso(sourceEndedAt) : null;
+  // The source's resolved state outranks the order of its update times: an update stamped after the resolution
+  // cannot reopen the incident, so the resolution ends its component claims and its lifecycle stays Resolved.
+  const resolvedUpdates = updates.filter((update) => lifecycles[update.status] === "Resolved");
+  const lastLifecycle = updates.reduce<IncidentLifecycle>((current, update) => lifecycles[update.status] ?? current, "Investigating");
+  const reopenedByLateUpdate = incident.status === "resolved" && lastLifecycle !== "Resolved";
+  const sourceResolvedAt = reopenedByLateUpdate ? iso(incident.resolved_at ?? (resolvedUpdates.length ? at(resolvedUpdates[resolvedUpdates.length - 1]) : at(updates[updates.length - 1]))) : null;
+  const claimEndsAt = sourceEndedAt ? iso(sourceEndedAt) : sourceResolvedAt;
   const notes = new Set<string>();
   const current = new Map<string, ComponentState>();
   const peak: ComponentState[] = [];
   // Statuspage impact is the recorded incident severity, not component evidence.
   for (const listed of independentImpact ? [] : incident.components ?? []) if (components.has(listed.id)) current.set(listed.id, impactStates[incident.impact ?? "minor"] ?? "Degraded performance");
+  // A public feed's incident names its components even where no update states theirs.
+  const listedNames = namesListed ? (incident.components ?? []).flatMap((entry) => components.has(entry.id) ? [components.get(entry.id)!.name] : []) : [];
   const rows: Row[] = [];
   let lifecycle: IncidentLifecycle = "Investigating";
   let resolvedAt: string | null = null;
@@ -162,9 +189,11 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
     const impact = clip(body, 250);
     const details = points.length > 250 ? clip(points.slice(249).join(""), 500) : "";
     if (points.length > 749) notes.add("long update text was shortened to Lamp's update fields");
-    const names = [...current.keys()].map((code) => components.get(code)!.name);
+    const stated = [...current.keys()].map((code) => components.get(code)!.name);
+    const names = stated.length ? stated : listedNames;
     rows.push({ id: identify(`incident-update:${update.id}`, publishedAt), incident_id: id, lifecycle, affected_audience: clip(names.length ? `Customers using ${names.join(", ")}` : "All customers", 250), customer_impact: impact, what_still_works: "", details, next_update_at: null, published_at: publishedAt, author_operator_id: operatorId, corrects_update_id: null, is_retroactive: 1, created_at: asOf, updated_at: asOf });
   }
+  if (reopenedByLateUpdate) { lifecycle = "Resolved"; resolvedAt = sourceResolvedAt; }
   if (claimEndsAt) for (const code of current.keys()) claims.push({ componentId: components.get(code)!.id, causeType: "incident", causeId: id, state: null, changedAt: claimEndsAt });
   if (independentImpact && incident.components?.some(component => !current.has(component.id))) notes.add("a listed component has no explicit state in the saved updates; no component claim was invented from the incident impact");
   const firstPublished = at(updates[0]);
@@ -221,6 +250,31 @@ function mapSubscriber(subscriber: SourceSubscriber, components: Map<string, { i
     subscribers: [{ id, channel: "email", destination: email, contact_email: null, state: namespace === "sorry" ? "deactivated" : "pending", selection_mode: selected.length ? "selected" : "all", token_hash: sha256(`${namespace}-import-subscriber:${subscriber.id}:${email}`), deactivation_reason: namespace === "sorry" ? "held for Sorry cutover" : null, deactivated_at: null, created_at: asOf, updated_at: asOf }],
     subscriber_components: selected.map((code) => ({ id: identify(`subscriber-component:${subscriber.id}:${code}`, since), subscriber_id: id, component_id: components.get(code)!.id, created_at: asOf, updated_at: asOf })),
   } }, accounting: [{ kind: "subscriber", sourceId: subscriber.id, name: "Email subscriber", outcome: "imported", reason: namespace === "sorry" ? "Held without mail or confirmation expiry until you approve invitations after hostname cutover and the watch window. Each recipient must confirm in Lamp." : "Pending until they confirm one invitation; they are sent nothing about past incidents." }] };
+}
+
+/** Incident subscriptions retain their distinct scope even when the address
+ * already holds a page subscription. Import only supplies a pending record;
+ * the same explicit owner invitation and confirmation doors supply consent. */
+function mapIncidentSubscriber(subscriber: SourceSubscriber, incident: Row | undefined, snapshot: Snapshot, asOf: string, identify: typeof stableId): Mapped {
+  const sourceId = `incident:${subscriber.incident_id}:${subscriber.id}`;
+  const skip = (reason: string): Mapped => ({ kind: "subscriber", sourceId, accounting: [{ kind: "subscriber", sourceId, name: "Incident email subscriber", outcome: "skipped", reason }] });
+  if (!incident || incident.lifecycle === "Resolved") return skip("Only an unresolved incident imported into Lamp can retain incident subscribers.");
+  if (subscriber.mode !== "email") return skip(`Lamp carries email incident subscribers; ${subscriber.mode} subscribers subscribe again here.`);
+  const email = subscriber.email?.trim().toLowerCase();
+  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/u.test(email)) return skip("No valid email address.");
+  if (subscriber.quarantined_at) return skip("Quarantined at the source after delivery failures.");
+  const since = subscriber.created_at ?? "1970-01-01T00:00:00.000Z";
+  const id = identify(`subscriber:${sourceId}`, since);
+  const digest = sha256(email);
+  const addressHash = btoa(String.fromCharCode(...digest.match(/../gu)!.map(pair => parseInt(pair, 16)))).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+  const destination = `incident:${incident.id}:email:${addressHash}`;
+  if (snapshot.destinations.has(destination) && snapshot.destinations.get(destination) !== id) return skip("This address already follows this incident here.");
+  snapshot.destinations.set(destination, id);
+  return { kind: "subscriber", sourceId, value: { tables: {
+    subscribers: [{ id, channel: "email", destination, contact_email: null, state: "pending", selection_mode: "all", event_kinds_json: '["incidents"]', preferences_set: 1, token_hash: sha256(`statuspage-import-subscriber:${sourceId}:${email}`), deactivation_reason: null, deactivated_at: null, created_at: asOf, updated_at: asOf }],
+    subscriber_components: [],
+    incident_subscriptions: [{ subscriber_id: id, incident_id: incident.id, destination: email, include_report: snapshot.incidentIncludeReport === false ? 0 : 1, resolution_at: null, resolution_delivered_at: null, ended_at: null, final_event_id: null, created_at: asOf }],
+  } }, accounting: [{ kind: "subscriber", sourceId, name: "Incident email subscriber", outcome: "imported", reason: "Pending until they confirm the owner's explicit invitation; follows this unresolved incident only, with no replay of past updates." }] };
 }
 
 /** The aggregate state timeline for one new component: an Operational

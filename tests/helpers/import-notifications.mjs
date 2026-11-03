@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { join } from 'node:path';
-import { Hono } from 'hono';
-import { getPlatformProxy } from 'wrangler';
-import { load } from '../operator-readiness/runtime.mjs';
-import { authFixture } from '../auth-adoption/runtime.mjs';
 
 // Ordinary dev suppresses mail. Observe the durable work and invitation claims
 // instead of a captured-message viewer. Undo may delete rows, but must add none.
@@ -14,6 +9,7 @@ export async function notificationActivity(runtime) {
     UNION ALL SELECT 'delivery',id FROM notification_deliveries
     UNION ALL SELECT 'invitation',subscriber_id || ':' || sent_at
       FROM statuspage_import_invites WHERE sent_at IS NOT NULL ORDER BY kind,id`;
+  if (runtime.db) return (await runtime.db.prepare(query).all()).results.map(row => `${row.kind}:${row.id}`);
   const output = execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB',
     '--local', '--config', 'wrangler.jsonc', '--persist-to', runtime.state,
     '--json', '--command', query], { env: runtime.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -25,55 +21,71 @@ export async function assertNoNewNotifications(runtime, before, message = 'impor
   assert.deepEqual((await notificationActivity(runtime)).filter(row => !prior.has(row)), [], message);
 }
 
-// Exercise hosted invitation effects on the SAME imported D1 data. Pause Vite
-// while a binding proxy owns its persisted store. The real owner middleware,
-// import route, subscriber tokens and Resend serializer run; only Resend's paid
-// HTTP boundary is faked. Restart Vite so the emitted link can be opened there.
-export async function sendImportedInvitations(t, runtime, { origin, publicOrigin, operator, jobId }) {
-  await runtime.stop();
-  let platform, provider;
-  try {
-    platform = await getPlatformProxy({ configPath: runtime.env.LAMP_WRANGLER_CONFIG ?? 'wrangler.jsonc',
-      remoteBindings: false, persist: { path: join(runtime.state, 'v3') } });
-    const db = platform.env.DB;
-    const [modules, { ResendMailSender }] = await Promise.all([
-      load('tests/auth-adoption/adapter.ts'), load('src/core/platform/mail/resend.ts'),
-    ]);
-    const page = await db.prepare("SELECT page_name,mail_from_address FROM page_settings WHERE id='default'").first();
-    const base = authFixture(db, { origin, owner: operator });
-    const cookie = await base.signIn();
-    const messages = [], fetcher = globalThis.fetch;
-    provider = t.mock.method(globalThis, 'fetch', async (input, init) => {
-      const request = new Request(input, init), url = new URL(request.url);
-      if (url.origin === 'https://api.resend.com' && url.pathname === '/emails') {
-        const message = await request.json();
-        messages.push({ message: { ...message, to: message.to[0] } });
-        return Response.json({ id: `import-invitation-${messages.length}` });
-      }
-      if (['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)) return fetcher(input, init);
-      throw new Error('The import invitation proof forbids external network');
-    });
-    const subscribers = modules.createSubscribersService(modules.createSubscriberRepository(db), {
-      mail: new ResendMailSender({ apiKey: 'test-only-resend-key', fromAddress: page.mail_from_address }),
-      fromAddress: page.mail_from_address, tokenSecret: runtime.env.SESSION_SECRET,
-    });
-    const app = new Hono();
-    app.use('/api/app/*', modules.requireOperator(() => base.auth));
-    modules.registerStatuspageImportRoutes(app, modules.createStatuspageImportService(db, {
-      inviteSubscriber: (id, claim) => subscribers.inviteImported(id, publicOrigin, page.page_name, claim),
-      async publicDataChanged() { throw new Error('Sending invitations must not publish imported history'); },
-    }));
-    const send = () => app.fetch(base.request(`/api/app/statuspage-import/jobs/${jobId}/send-invitations`,
-      { method: 'POST', cookie, body: {} }), { DB: db });
-    const response = await send();
-    const invited = { status: response.status, body: await response.json() };
-    const repeated = await send();
-    assert.equal(repeated.status, 200, 'repeating the owner action succeeds without another handoff');
-    return { invited, messages };
-  } finally {
-    provider?.mock.restore();
-    try { await platform?.dispose(); } finally { await runtime.start(); }
+// Compare complete rows, including child content and attribution, independently
+// of the import mapper. Sorting whole rows also handles composite primary keys.
+async function tableInventory(runtime, tables) {
+  const inventory = {};
+  for (const table of tables) {
+    inventory[table] = (await runtime.db.prepare(`SELECT * FROM ${table}`).all()).results
+      .map(row => Object.fromEntries(Object.entries(row).sort(([a], [b]) => a.localeCompare(b))))
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
   }
+  return inventory;
+}
+
+export function importedRecordInventory(runtime) {
+  return tableInventory(runtime, [
+    'component_groups', 'components', 'component_standing_claims', 'component_claim_events', 'component_state_history',
+    'incidents', 'incident_components', 'incident_updates', 'incident_drafts', 'incident_attachments', 'incident_reports',
+    'maintenance', 'maintenance_components', 'maintenance_notices', 'import_maintenance_updates',
+    'subscribers', 'subscriber_components', 'incident_subscriptions', 'incident_templates', 'incident_template_components',
+    'statuspage_import_targets', 'statuspage_import_template_targets', 'reference_allocations', 'reference_counters',
+  ]);
+}
+
+export async function notificationInventory(runtime) {
+  return {
+    tables: await tableInventory(runtime, [
+      'notification_outbox', 'notification_channel_selections', 'notification_deliveries', 'notification_delivery_attempts',
+      'component_notification_events', 'component_notification_deliveries', 'component_delivery_attempts',
+      'report_notification_deliveries', 'report_delivery_attempts', 'sms_deliveries',
+      'channel_posts', 'subscriber_channel_posts', 'integration_deliveries', 'integration_attempts',
+      'statuspage_import_invites', 'subscriber_confirmation_attempts', 'subscriber_tokens', 'mail_send_ledger',
+    ]),
+    transports: structuredClone({ messages: runtime.messages, receipts: runtime.mailReceipts, webhooks: runtime.webhookRequests, channels: runtime.channelRequests }),
+  };
+}
+
+/** Read the retained alias inventory, then exercise each address on the public
+ * host. A new snapshot may have a new generation clock, but keeps these routes. */
+export async function publicAliasInventory(runtime) {
+  const deadline = Date.now() + 30_000;
+  for (;;) {
+    await (await runtime.raw(runtime.publicOrigin + '/')).arrayBuffer();
+    const work = await runtime.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first();
+    const building = await runtime.db.prepare("SELECT count(*) AS n FROM snapshot_builds WHERE status='building'").first();
+    if (work && work.requested_revision === work.completed_revision && building.n === 0) break;
+    assert.ok(Date.now() < deadline, 'import snapshot settles before alias reconciliation');
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  const bucket = await runtime.runtime.getR2Bucket('SNAPSHOTS');
+  const pointer = await (await bucket.get('snapshots/current.json')).json();
+  const bundle = await (await bucket.get(`snapshots/${pointer.version}/retained.json`)).json();
+  const aliases = bundle.artifacts.filter(row => row.key.startsWith('aliases/') || ['feed.atom', 'history.atom'].includes(row.key)).map(row => ({
+    path: row.key.startsWith('aliases/') ? decodeURIComponent(row.key.slice('aliases/'.length, -5)) : '/' + row.key,
+    contentType: row.contentType,
+    target: row.contentType === 'application/vnd.lamp.redirect+json' ? JSON.parse(row.body).target : null,
+  })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.equal(new Set(aliases.map(row => row.path)).size, aliases.length, 'each public alias occurs once');
+  const atom = await (await runtime.raw(runtime.publicOrigin + '/feed.atom')).text();
+  for (const alias of aliases) {
+    const response = await runtime.raw(runtime.publicOrigin + alias.path, { redirect: 'manual' });
+    assert.equal(response.status, alias.target ? 301 : 200, alias.path);
+    assert.equal(response.headers.get('location'), alias.target, alias.path);
+    if (alias.path.endsWith('.atom')) assert.equal(await response.text(), atom, 'old feed addresses retain the actual native feed');
+    if (alias.target) assert.equal((await runtime.raw(runtime.publicOrigin + alias.target)).status, 200, alias.target);
+  }
+  return aliases;
 }
 
 /** Move in's transport, exactly as the screen drives it: saved responses (read
@@ -97,14 +109,17 @@ export function moveInDoor(send) {
   return {
     door, read,
     /** The dry run: the door's plan with Move in's report, and the fetched responses. */
-    async preview({ source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false }) {
+    async preview({ source = 'statuspage', files, pageId = '', apiKey, publicUrl, publicAccessAcknowledged = false, components }) {
       let fetched;
       if (!files?.length) {
         const response = await send('/api/app/statuspage-import/fetch', { source, publicAccessAcknowledged, pageId, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}), apiKey });
         if (response.status !== 200) return response;
         fetched = response.body.files;
       }
-      const upload = { source, files: fetched ?? files, pageId, publicAccessAcknowledged, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}) };
+      // Setup's "Bring its incident history too" uploads a page's public feeds with
+      // the components kept at setup, and nothing else (bring-history.ts).
+      const upload = components ? { source, files: fetched ?? files, publicUrl, components }
+        : { source, files: fetched ?? files, pageId, publicAccessAcknowledged, ...(source === 'sorry' && publicUrl ? { publicUrl } : {}) };
       for (let attempt; ;) {
         const bytes = Buffer.from(JSON.stringify(attempt ? { ...upload, attempt } : upload));
         const totalChunks = Math.ceil(bytes.length / 65536);
