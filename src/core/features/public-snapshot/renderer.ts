@@ -12,7 +12,7 @@ import { reportMarkup } from "./report-markup";
 import { historyMonths, renderHistoryContent } from "./history";
 import { isPublicComponentShown } from "./component-visibility";
 import { renderImportAliases } from "./import-aliases";
-import { COMPONENT_STATES, mostSevereState, type ComponentState } from "../../shared/domain";
+import { mostSevereState, type ComponentState } from "../../shared/domain";
 import type { LampServerSlots } from "../../api/extensions";
 import { groupComponentsByHeading } from "../../shared/component-order";
 
@@ -30,6 +30,7 @@ import { publicComponentResources } from "./component-address";
 import { incidentMarkup, maintenanceMarkup, resolvedMarkup, statePill, type PublicIncident, type PublicMaintenance } from "./record-markup";
 import { DAY, REPORTING_DAYS, durationText, escapeHtml, stateClass, timestamp, timezoneLabel } from "./format";
 import { computeUptime, type Uptime, uptimeMarkup } from "./uptime";
+import { uptimeMethod } from "./uptime-method";
 
 export interface SnapshotArtifact {
   key: string;
@@ -101,10 +102,6 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
 
-function uptimeMethod(policies: PublicSnapshotPolicies) {
-  return COMPONENT_STATES.map((state) => `${state} counts as ${policies.uptimeDowntimeWeight(state)} downtime minute${policies.uptimeDowntimeWeight(state) === 1 ? "" : "s"}`).join("; ");
-}
-
 type GeneralPublicSlot = Exclude<keyof LampServerSlots, "status-page.incident.after.v1">;
 
 function slotContext(model: ReturnType<typeof toPublicModel>) {
@@ -161,7 +158,7 @@ function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
   if (!charts) return "";
   const starts = components.flatMap(component => component.uptime.trackingSince ? [component.uptime.trackingSince] : []).sort();
   const since = starts[0] ? `<p class="availability-since">History since ${timestamp(starts[0], settings.timezone)}.</p>` : "";
-  const method = `<p>Availability days use ${escapeHtml(settings.timezone)}. Uptime uses a ${model.theme.historyDays}-day window. ${escapeHtml(uptimeMethod(model.policies))}.</p>`;
+  const method = `<p>Availability days use ${escapeHtml(settings.timezone)}. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p>`;
   return `<section class="component-health" aria-labelledby="components-title"><header class="section-heading"><h2 id="components-title">Components</h2><p>Uptime over the last ${model.theme.historyDays} days</p></header><div class="availability-charts">${charts}</div>${since}<div class="availability-foot"><aside class="availability-legend" aria-label="Availability legend"><span><i class="legend-good"></i>Available</span><span><i class="legend-degraded"></i>Degraded</span><span><i class="legend-downtime"></i>Downtime</span><span><i class="legend-no-data"></i>No data</span></aside><details class="availability-method"><summary>How availability is calculated</summary>${method}</details></div></section>`;
 }
 

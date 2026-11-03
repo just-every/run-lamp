@@ -28,6 +28,14 @@ function nodeText(node) {
 function hasClass(node, name) {
   return node.attrs?.some(attr => attr.name === 'class' && attr.value.split(' ').includes(name));
 }
+const statedMethod = [
+  'Operational counts as 0 downtime minutes',
+  'Under maintenance counts as 0 downtime minutes',
+  'Degraded performance counts as 0.5 downtime minutes',
+  'Partially unavailable counts as 1 downtime minute',
+  'Major outage counts as 1 downtime minute',
+  'Uptime uses a 90-day window',
+];
 
 // A single isolated component keeps a published incident's contribution separate
 // from standing claims, corrections and the other journey's capacity fixtures.
@@ -97,14 +105,7 @@ async function statedUptimeMethodJourney() {
     const method = descendants(section).find(node => hasClass(node, 'availability-method'));
     assert.ok(method, 'the method is present before scripting runs');
     const methodText = nodeText(method);
-    for (const expected of [
-      'Operational counts as 0 downtime minutes',
-      'Under maintenance counts as 0 downtime minutes',
-      'Degraded performance counts as 0.5 downtime minutes',
-      'Partially unavailable counts as 1 downtime minute',
-      'Major outage counts as 1 downtime minute',
-      'Uptime uses a 90-day window',
-    ]) assert.ok(methodText.includes(expected), `initial HTML explains ${expected}`);
+    for (const expected of statedMethod) assert.ok(methodText.includes(expected), `initial HTML explains ${expected}`);
 
     browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
     const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
@@ -121,6 +122,22 @@ async function statedUptimeMethodJourney() {
         await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-stated-uptime-method.png`, fullPage: true });
       }
     }
+
+    // Every other built-in layout an owner publishes from Settings states the same method beside its figures.
+    // Regions map needs public components in two regions: the component gains one and a second joins another.
+    await j.json(`/api/app/components/${component.id}`, 'PUT', { name: component.name, groupId: null, description: '', region: 'North America', internal: false, displayOrder: 0, note: '' });
+    await j.component('Synthetic Lamp second region', { region: 'Europe', displayOrder: 1 });
+    const layouts = { calm: ['calm-components', 'calm-row'], uptime: ['up-heatmap', 'hm-label'], regions: ['rg-components', 'rg-row'] };
+    const stated = {};
+    for (const [template, [sectionClass, rowClass]] of Object.entries(layouts)) {
+      await j.json('/api/app/page-settings', 'PUT', { ...settings, pageName: 'Synthetic Lamp uptime method', template });
+      const layoutHtml = await eventually(() => j.publicText('/'), body => body.includes(`data-template="${template}"`), `${template} layout reaches the public root`);
+      const layoutSection = descendants(parse(layoutHtml)).find(node => hasClass(node, sectionClass));
+      const layoutText = layoutSection ? nodeText(layoutSection) : '';
+      const row = layoutSection && descendants(layoutSection).find(node => hasClass(node, rowClass) && nodeText(node).includes(component.name));
+      stated[template] = { figure: row && nodeText(row).match(/\d+\.\d{2}%/)?.[0], method: statedMethod.filter(statement => layoutText.includes(statement)) };
+    }
+    assert.deepEqual(stated, Object.fromEntries(Object.keys(layouts).map(template => [template, { figure: '66.66%', method: statedMethod }])), 'each built-in layout states every weight and the window beside the component figure');
   } finally { await browser?.close(); await j.close(); }
 }
 
