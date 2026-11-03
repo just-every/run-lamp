@@ -3143,6 +3143,8 @@ HIST-010 retains current-main's partial judgment, Evidence and recorded Gap. The
 
 SUB-004 is promoted to done by the replay of candidate `29e81076eae7171125ec1cacb8542be8eb588b32` (independent gate PASS on that head), judged as `2dc37452faf56a714522db6ec4481a51f62600e0` and accepted by ct-judge-lamp-sub004-20261103-1630: `tests/e2e/helpers/subscriber-components-flow.mjs`, loaded by the existing delivery journey in `tests/e2e/delivery-contract.test.mjs`, passes with every current-main assertion retained. Other clause judgments remain inherited.
 
+The replay of candidate `6dd15d523dec9e5bc6d35eae52dd843a8278d94f` retains MOVE-003’s newer done judgment from the 2 November 2026 recheck. Its complete repeated-import inventories, cross-source identity and scheduled-silence assertions are already retained in the current journeys. Later owner uploads remain reviewed catch-ups, with corrected source records replaced in place and owner-edited records preserved; the earlier blanket refusal and partial judgment are superseded. No clause status changes.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 33 | 74 | 0 | 107 |
