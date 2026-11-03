@@ -1,13 +1,21 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { randomBytes } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { parseEnv } from 'node:util';
 import { database, load } from '../operator-readiness/runtime.mjs';
 import { migrate, openRuntime } from '../reference-storage/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
 import { authFixture, installationKey, otherInstallationKey, secret, setupToken } from './runtime.mjs';
 import { provider } from '../fixtures/base/oidc-idp.mjs';
 import { linkEdge } from '../fixtures/base/provider-edge.mjs';
+import { cloudflareEdge, edgeFetch } from '../helpers/cloudflare-edge.mjs';
+import { deploymentConfig, resourceNames } from '../../scripts/ops-config.mjs';
+import { deploymentOwnership } from '../../scripts/deployment-ownership.mjs';
+import { withDeploymentSecrets } from '../../scripts/deployment-secrets.mjs';
 
 // Real Lamp Hono routes and D1 transactions; only the external provider's network
 // is substituted. The copied Base edge validates signed client assertions.
@@ -206,5 +214,83 @@ test('ACCESS-002 an installation linked before sealing keeps its provider key, s
     await cache.dispose();
     await runtime.dispose();
     await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// The rotation RELEASE.json names, through rer's own command, on a Lamp that Lamp's deploy code provisioned and
+// recorded (scripts/setup.mjs's D1, deployment-ownership's Worker upload). Only Cloudflare is substituted
+// (../helpers/cloudflare-edge.mjs); the deployed Worker's D1 is this test's real Lamp D1.
+test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY reseals the dependency keys under a new key and retires the old one', async () => {
+  const root = process.cwd(), environment = `key-rotation-${randomBytes(3).toString('hex')}`, names = resourceNames(environment);
+  const dir = await mkdtemp(join(root, '.lamp-key-rotation-'));
+  const storage = await database(dir);
+  const cache = await openSnapshotCacheRuntime(dir);
+  const state = join(root, '.rer'), records = join(state, 'deploy'), existing = [state, records].filter(path => existsSync(path)), custodyFile = join(records, `${environment}.secrets.env`);
+  const hex = () => randomBytes(32).toString('hex'), oldKey = hex(), appHost = 'app.example.test';
+  const credentials = { CLOUDFLARE_ACCOUNT_ID: randomBytes(16).toString('hex'), CLOUDFLARE_API_TOKEN: `synthetic-${hex()}` };
+  const { createApp } = await load('src/core/app/server.ts');
+  const jobs = { async send() {}, async sendBatch() {} };
+  // The deployed Worker: its live version's vars and secrets over this test's D1, R2, cache and queue.
+  const serve = async (version, request, keys = {}) => {
+    const env = { DB: storage.db, SNAPSHOTS: storage.bucket, SNAPSHOT_CACHE: cache.namespace, JOBS: jobs, RER_VERSION: { id: version.id },
+      ...Object.fromEntries(version.bindings.filter(binding => binding.text !== undefined).map(binding => [binding.name, binding.text])), ...keys };
+    const work = [];
+    const response = await createApp(env).app.fetch(request, env, { waitUntil: promise => work.push(promise), passThroughOnException() {} });
+    await Promise.allSettled(work);
+    return response;
+  };
+  const edge = await cloudflareEdge({ accountId: credentials.CLOUDFLARE_ACCOUNT_ID, token: credentials.CLOUDFLARE_API_TOKEN, subdomain: 'synthetic-owner', d1: storage.db, workerHost: { host: appHost, name: names.worker }, app: serve });
+  const hosts = ['api.cloudflare.com', appHost], originalFetch = globalThis.fetch;
+  globalThis.fetch = edgeFetch({ edge: edge.origin, hosts, fetch: originalFetch });
+  try {
+    const config = deploymentConfig({ LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: 'page.example.test', LAMP_PAGE_NAME: 'Synthetic key rotation', LAMP_PAGE_TAGLINE: 'Installation key rotation', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C',
+      SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_DKIM_SELECTOR: 'resend', MAIL_PROVIDER_API_KEY: `synthetic-${hex()}`,
+      SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), SETUP_TOKEN: hex(), INSTALLATION_KEY: oldKey }, environment);
+    const ownership = deploymentOwnership(config, credentials);
+    const created = await ownership.resource('d1', names.database, async () => (await ownership.api.list('/d1/database')).find(row => row.name === names.database),
+      () => ownership.api.request('/d1/database', { method: 'POST', body: { name: names.database } }));
+    const identity = { source: 'synthetic-source-commit', fingerprint: hex() };
+    const vars = { LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: config.pageHost, AUTH_ORIGIN: `https://${appHost}`, SETUP_OPERATOR_EMAIL: config.setupOperatorEmail, MAIL_FROM_ADDRESS: config.mailFromAddress,
+      MAIL_PROVIDER: config.mailProvider, RER_DEPLOY_SOURCE: identity.source, RER_DEPLOY_FINGERPRINT: identity.fingerprint };
+    await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
+    // What rer keeps for a deployed environment: its generated secrets in .rer/deploy/<environment>.secrets.env.
+    await mkdir(records, { recursive: true, mode: 0o700 });
+    await writeFile(custodyFile, Object.entries({ INSTALLATION_KEY: oldKey, SESSION_SECRET: config.sessionSecret, SUBSCRIBER_TOKEN_SECRET: config.subscriberTokenSecret, WEBHOOK_SIGNING_SECRET: config.webhookSigningSecret })
+      .map(([name, value]) => `${name}=${value}\n`).join(''), { mode: 0o600 });
+    const jwks = async () => {
+      const response = await fetch(`https://${appHost}/.well-known/rer-link/jwks/oidc-provider@1`);
+      assert.equal(response.status, 200, await response.clone().text());
+      return (await response.json()).keys.map(({ kid, x, y }) => [kid, x, y]);
+    };
+    const signingKey = await jwks(); // the live Worker seals the provider signing key under the old key
+
+    const child = spawn(process.execPath, ['node_modules/@runeditrun/rer/bin/rer.mjs', 'deploy', '--environment', environment, '--rotate-secret', 'INSTALLATION_KEY'], { cwd: root, timeout: 180000, stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(CLOUDFLARE_|MAIL_|NODE_OPTIONS$)/.test(name))), ...credentials,
+        NODE_OPTIONS: `--import=${new URL('../helpers/cloudflare-edge-preload.mjs', import.meta.url).href}`, LAMP_FAKE_EDGE: edge.origin, LAMP_FAKE_EDGE_HOSTS: hosts.join(',') } });
+    let output = '';
+    child.stdout.on('data', chunk => { output += chunk; });
+    child.stderr.on('data', chunk => { output += chunk; });
+    assert.equal(await new Promise(resolve => child.once('close', resolve)), 0, output);
+    const custody = parseEnv(await readFile(custodyFile, 'utf8'));
+    const held = Object.fromEntries(edge.live(names.worker).bindings.filter(binding => binding.type === 'secret_text').map(binding => [binding.name, binding.text]));
+    assert.match(custody.INSTALLATION_KEY, /^[0-9a-f]{64}$/);
+    assert.notEqual(custody.INSTALLATION_KEY, oldKey);
+    assert.equal(held.INSTALLATION_KEY, custody.INSTALLATION_KEY, 'the Worker holds the key this checkout keeps');
+    assert.equal('INSTALLATION_KEY_PREVIOUS' in held, false, 'the previous key is retired from the Worker');
+    assert.equal('INSTALLATION_KEY_PREVIOUS' in custody, false, 'the rotation finished, so the next rer deploy is not refused');
+    assert.deepEqual(await jwks(), signingKey, 'the new key alone opens the resealed key, and linked providers keep the public key they registered');
+    const retired = await serve(edge.live(names.worker), new Request(`https://${appHost}/.well-known/rer-link/jwks/oidc-provider@1`), { INSTALLATION_KEY: oldKey });
+    assert.equal(retired.status, 503);
+    assert.deepEqual(await retired.json(), { error: 'installation_key_unavailable' }, 'the old key no longer opens any dependency key');
+  } finally {
+    globalThis.fetch = originalFetch;
+    await edge.close();
+    await cache.dispose();
+    await storage.runtime.dispose();
+    await rm(dir, { recursive: true, force: true });
+    // Remove only what this test made: the whole .rer or .rer/deploy it created, else its two environment files.
+    const made = [state, records].find(path => !existing.includes(path));
+    if (made) await rm(made, { recursive: true, force: true });
+    else for (const name of [`${environment}.json`, `${environment}.secrets.env`]) await rm(join(records, name), { force: true });
   }
 });
