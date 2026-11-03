@@ -10,7 +10,7 @@ import { operationsAlertsFlow } from "./helpers/operations-alerts-flow.mjs";
 import { selfServeChatFlow } from "./helpers/self-serve-chat-flow.mjs";
 import { channelDeletionFlow } from "./helpers/channel-deletion-flow.mjs";
 import { channelsBrowserFlow } from "./helpers/channels-browser-flow.mjs";
-import { presetRecoveryFlow, publicSnapshot } from "./helpers/preset-recovery-flow.mjs";
+import { presetRecoveryFlow, publicSnapshot, closePublicSnapshot } from "./helpers/preset-recovery-flow.mjs";
 import { uptimePresetFlow } from "./helpers/uptime-preset-flow.mjs";
 import { uptimePairingFlow } from "./helpers/uptime-pairing-flow.mjs";
 import { openFollowUpsRuntime, eventuallyFollowUp } from "./helpers/follow-ups-runtime.mjs";
@@ -230,7 +230,7 @@ before(async () => {
 
 after(async () => {
   database?.close();
-  await runtime?.close();
+  try { await closePublicSnapshot(runtime); } finally { await runtime?.close(); }
   await new Promise((resolve) => receiver?.close(resolve));
 });
 
@@ -395,10 +395,10 @@ const payloads = {
 };
 const sources = {};
 
-test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence", { timeout: 600_000 }, async t => {
-  await uptimePairingFlow({ api, component, origin, cookie });
+test("INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings", { timeout: 600_000 }, async t => {
   const inventory = () => Object.fromEntries(['incidents', 'incident_drafts', 'incident_updates', 'alert_receipts', 'audit_entries'].map(table => [table, sql(`SELECT * FROM ${table} ORDER BY id`)]));
   const snapshot = () => publicSnapshot({ runtime, publicOrigin, sql, privateIncidents: Object.values(sources).flatMap(source => source.incident ? [source.incident] : []) });
+  await uptimePairingFlow({ api, post, component, origin, cookie, sql, snapshot, t });
   for (const preset of Object.keys(payloads)) {
     const target = await component(`Shop (${preset})`);
     const created = await post("/api/app/intake/sources", { name: `${preset} preset`, preset, componentId: target.id, credentialKind: "bearer-token" });
@@ -460,7 +460,16 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
   const page = await (await fetch(`${publicOrigin}/api/public/status`)).text();
   assert.doesNotMatch(page, /Checkout latency|Shop \(/, "no public surface changes");
   await presetRecoveryFlow({ api, post, runtime, publicOrigin, sql, sources, payloads, t });
-  await uptimePresetFlow({ api, post, component, publicOrigin });
+  await uptimePresetFlow({ api, post, component, publicOrigin, sql, snapshot, t });
+  await closePublicSnapshot(runtime);
+  // Each public-artifact read consumes a native ingress replay proof. Give the
+  // next browser journey a fresh transport window, retaining all product rows
+  // and the same owner session, as the automation browser journey does below.
+  await runtime.stop();
+  await runtime.start();
+});
+
+test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence", { timeout: 600_000 }, async t => {
   await groupedAlertsFlow({ api, post, component, sql, origin, publicOrigin, cookie });
   await monitorSetupJourney({ api, component, origin, publicOrigin, cookie });
   await metricSetupJourney({ api, post, component, origin, cookie });

@@ -1,8 +1,26 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 
+// Complete persisted inventories complement the public route responses, including
+// drafts and immutable updates absent from an incident-list response.
+export function intakeInventories(sql) {
+  return Object.fromEntries(['incidents', 'incident_drafts', 'incident_updates', 'alert_receipts'].map(table => [table, sql(`SELECT * FROM ${table} ORDER BY id`)]));
+}
+
+export async function assertAuthenticationRefusal({ request, label, sql, snapshot, t, beforePublic = undefined }) {
+  beforePublic ??= await snapshot();
+  const before = intakeInventories(sql);
+  const response = await request();
+  assert.equal(response.status, 401, label);
+  await response.body?.cancel?.();
+  const after = intakeInventories(sql);
+  for (const table of Object.keys(before)) assert.deepEqual(after[table], before[table], `${label}: complete ${table} inventory is unchanged`);
+  assert.deepEqual(await snapshot(), beforePublic, `${label}: all settled public artifact identities and response bytes are unchanged`);
+  t.diagnostic(`PROBE INTAKE-008 2 ${label}: intake POST -> 401; four complete inventories and ${beforePublic.artifacts.length} public artifacts unchanged`);
+}
+
 /** Public-route authentication must bind the bytes, before any JSON decoding. */
-export async function intakeByteFlow({ api, post, publicOrigin, source, payload, secret }) {
+export async function intakeByteFlow({ api, post, publicOrigin, source, payload, secret, sql, snapshot, t }) {
   const generic = { name: 'Exact-byte generic source', credentialKind: 'hmac-sha256', signingSecret: secret, deduplicationPath: '$.key', titlePath: '$.title', statePath: '$.state' };
   const sources = [{ source, payload }, ...await Promise.all([{}, { timestampHeader: 'x-monitor-at', signatureHeader: 'x-monitor-sign' }].map(async headers => {
     const created = await post('/api/app/intake/sources', { ...generic, name: `${generic.name} ${headers.timestampHeader ?? 'default'}`, ...headers });
@@ -19,10 +37,17 @@ export async function intakeByteFlow({ api, post, publicOrigin, source, payload,
       incidents: (await api('/api/app/incidents')).body,
       page: await (await fetch(`${publicOrigin}/api/public/status`)).text(),
     };
+    const beforePublic = await snapshot();
+    const futureTimestamp = new Date(Date.now() + 360000).toISOString();
     const bom = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), raw]);
     const replacement = Buffer.from(JSON.stringify({ ...payload, title: 'byte-�-evidence' }));
     const invalid = Buffer.concat([replacement.subarray(0, replacement.indexOf(Buffer.from('�'))), Buffer.from([0x80]), replacement.subarray(replacement.indexOf(Buffer.from('�')) + 3)]);
     for (const [label, body, signature, at] of [
+      ['missing timestamp', raw, sign(raw), ''],
+      ['future timestamp', raw, sign(raw, futureTimestamp), futureTimestamp],
+      ['missing signature', raw, '', timestamp],
+      ['wrong signing key', raw, createHmac('sha256', 'synthetic-lamp-wrong').update(`${timestamp}.`).update(raw).digest('base64url'), timestamp],
+      ['body-only signature', raw, createHmac('sha256', secret).update(raw).digest('base64url'), timestamp],
       ['prepended UTF-8 BOM', bom, sign(raw), timestamp],
       ['invalid UTF-8 replacing signed replacement character', invalid, sign(replacement), timestamp],
       ['added whitespace', Buffer.concat([raw, Buffer.from(' ')]), sign(raw), timestamp],
@@ -30,9 +55,7 @@ export async function intakeByteFlow({ api, post, publicOrigin, source, payload,
       ['changed timestamp', raw, sign(raw), new Date(Date.parse(timestamp) + 1000).toISOString()],
       ['stale timestamp', raw, sign(raw, new Date(Date.now() - 360000).toISOString()), new Date(Date.now() - 360000).toISOString()],
     ]) {
-      const response = await send(body, signature, at);
-      assert.equal(response.status, 401, `${source.preset ?? source.timestampHeader}: ${label} must fail before recording anything`);
-      await response.body?.cancel();
+      await assertAuthenticationRefusal({ request: () => send(body, signature, at), label: `${source.preset ?? source.timestampHeader}: ${label}`, sql, snapshot, t, beforePublic });
     }
     assert.deepEqual((await api('/api/app/intake/receipts?limit=250')).body, before.receipts, 'authentication failures create no receipt');
     assert.deepEqual((await api('/api/app/incidents')).body, before.incidents, 'authentication failures create no draft');

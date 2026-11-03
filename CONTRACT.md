@@ -3133,6 +3133,8 @@ The replay of candidate `cbf311b56735924c82663239c758c7482a794197` adds `tests/e
 
 SUB-005 retains current-main's partial judgment and recorded gap. The replay of `65e4cc1a470d69e04b087f58eb2a2bd7cc41a12e` adds anonymous token scope, authenticator, operator-isolation and revocation assertions through `tests/e2e/helpers/subscriber-token-authority-flow.mjs`, loaded by the existing delivery journey. These assertions supplement the evidence without promoting the clause.
 
+INTAKE-008 retains current main’s partial judgment, Evidence and Gap. The replay adds native intake assertions in the registered channels-and-presets journey for complete refusal inventories, saved mappings, confirmed-time labels and recovery readbacks; these assertions remain a proposal pending clause judgment. AUTO-001 and COMP-008 retain their own mapping, transition, adoption and release prerequisites; this intake proof does not qualify monitor claims.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 31 | 76 | 0 | 107 |
