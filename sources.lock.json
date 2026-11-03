@@ -676,11 +676,11 @@
       "executable": false
     },
     "hosted-check-managed.json": {
-      "sha256": "458ddb5569aaeb85550f88cc40510e240036206f57128584726db06ae0bad12a",
+      "sha256": "ec8b3ddda6a6d996287e2e376f5c9b7a882ec0f74646c36438aa108b10ade293",
       "executable": false
     },
     "hosted-check.json": {
-      "sha256": "4cb65429246e16bcd82ed1d516bd50cbc58d937ef15263c0c37fb79a5b4e1b61",
+      "sha256": "c8ca8c78ebbcc755cfbfb6d3c2652004f208b72111a55e3dc6a272eaf83f9f34",
       "executable": false
     },
     "importers.json": {
@@ -6720,7 +6720,7 @@
       "executable": false
     },
     "tests/auth-adoption/dependencies.test.mjs": {
-      "sha256": "2d157949800b3bf6b43c795922e8cc3604cefb57f9baf8c34faf0345c8af8a50",
+      "sha256": "f6c149e45e4f9cdeb8cb1a2111314dde9ec290317671cfdc010fc9df5dfce0b2",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
@@ -7957,6 +7957,14 @@
     },
     "tests/helpers/archive-history.mjs": {
       "sha256": "b4052ac8f7e74b6dbbbc830d92b0f9f5d3be92ee765db7d23c43a301d70904d3",
+      "executable": false
+    },
+    "tests/helpers/cloudflare-edge-preload.mjs": {
+      "sha256": "4f1b89803387d810937e7b6c600d2e07d7414bf06fc50edccfdbed70b463a036",
+      "executable": false
+    },
+    "tests/helpers/cloudflare-edge.mjs": {
+      "sha256": "5d35fee22532ed1637c355f53ca6c0d495ff78b43da25e19938b857342e25451",
       "executable": false
     },
     "tests/helpers/dev-key.mjs": {
