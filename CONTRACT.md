@@ -3139,6 +3139,8 @@ HIST-010 retains current-main's partial judgment, Evidence and recorded Gap. The
 
 SUB-004 is promoted to done by the replay of candidate `29e81076eae7171125ec1cacb8542be8eb588b32` (independent gate PASS on that head), judged as `2dc37452faf56a714522db6ec4481a51f62600e0` and accepted by ct-judge-lamp-sub004-20261103-1630: `tests/e2e/helpers/subscriber-components-flow.mjs`, loaded by the existing delivery journey in `tests/e2e/delivery-contract.test.mjs`, passes with every current-main assertion retained. Other clause judgments remain inherited.
 
+The replay of `4e3140f853a796ed562875e80d8cf5dd20203a76` adds the registered INCIDENT-003 journey in `tests/e2e/publishing-contract.test.mjs`, loading `tests/e2e/helpers/incident-references-flow.mjs`, for numeric and legacy references, the shared manual and authenticated-intake sequence, retained canonical public addresses, deletion, failed creation through both doors and persisted Worker restarts. Current main’s partial Status, Evidence and Gap remain authoritative; retaining these assertions does not promote the clause. Other clause judgments remain inherited.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 32 | 75 | 0 | 107 |
