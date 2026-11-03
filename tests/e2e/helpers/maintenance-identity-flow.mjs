@@ -14,8 +14,9 @@ export function recordContaining(html, title, className) {
 export function assertSeparateRecords(html, incident, maintenance, className) {
   const left = recordContaining(html, incident.title, className ?? 'incident');
   const right = recordContaining(html, maintenance.title, className ?? 'maintenance');
-  assert.match(text(left), /[Ii]ncident/);
-  assert.match(text(right), /[Mm]aintenance/);
+  const kicker = node => descendants(node).filter(child => child.attrs?.some(attr => attr.name === 'class' && /(?:section|tl)-kicker/.test(attr.value))).map(text).join(' ');
+  assert.match(kicker(left), /[Ii]ncident|Ongoing/);
+  assert.match(kicker(right), /[Mm]aintenance/);
   assert.ok(!text(left).includes(maintenance.title));
   assert.ok(!text(right).includes(incident.title));
 }
@@ -65,6 +66,17 @@ export async function maintenanceIdentityFlow(j, component, maintenance, input) 
   assert.ok(overview.maintenance.some(row => row.id === maintenance.id));
   assert.ok(!overview.maintenance.some(row => row.id === incident.id));
   assertSeparateRecords(await j.visible('/', 'Unscheduled requests are failing beside planned maintenance.'), incident, maintenance);
+  await j.component('Synthetic Lamp western region', { region: 'California' });
+  await j.component('Synthetic Lamp eastern region', { region: 'Virginia' });
+  const savedSettings = (await j.json('/api/app/page-settings')).settings;
+  const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, savedSettings[key]]));
+  for (const template of ['calm', 'uptime', 'regions']) {
+    await j.json('/api/app/page-settings', 'PUT', { ...settings, template });
+    const html = await eventually(() => j.publicText('/'), body => body.includes(`data-template="${template}"`) && body.includes(incident.title) && body.includes(maintenance.title), `${template} separates the two record kinds`);
+    assertSeparateRecords(html, incident, maintenance, 'tl-body');
+  }
+  await j.json('/api/app/page-settings', 'PUT', settings);
+  await eventually(() => j.publicText('/'), body => body.includes('class="incident"') && body.includes(incident.title), 'restore the original public layout');
   const summary = await eventually(async () => (await (await j.publicResponse('/api/v2/summary.json')).json()),
     value => value.incidents.some(row => row.shortlink.endsWith(`/incidents/${incident.reference}`)), 'mixed public summary');
   assert.ok(!summary.incidents.some(row => row.shortlink.endsWith(`/maintenance/${maintenance.reference}`)));

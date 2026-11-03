@@ -365,6 +365,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     const input = { title: 'Database capacity upgrade ;,\\\n' + 'é'.repeat(70), affectedAudience: 'Customers using the database', customerImpact: 'Writes may pause during the upgrade.', startsAt, endsAt, componentIds: [component.id], autoStart: true, autoComplete: false };
     const maintenance = (await j.json('/api/app/maintenance', 'POST', input, 201)).maintenance;
     const endpoint = `/api/app/maintenance/${maintenance.id}`;
+    assert.ok(maintenance.reference);
     const separateIncident = await maintenanceIdentityFlow(j, component, maintenance, input);
     const uid = `lamp-maintenance-${maintenance.id}@lamp`;
     const readCalendar = async () => {
