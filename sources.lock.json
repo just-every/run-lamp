@@ -448,7 +448,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "ffe924c7cf716437a431f551bbba521d4846d45e2aabed8fe7def5e00db4c741",
+      "sha256": "13cfaf6ff2f07dab1287fb228daea6f68517255b8c1b2b22e14e05339562b1ce",
       "executable": false
     },
     "AGENTS.md": {
@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ab5e7c7f9c6b491ffe96ed0553ad16ce98d2c21dd6838eb47f695b5dbc059de4",
+      "sha256": "22d982f8cbe8a47fda76bece8be1c22e66b9c4fee9679c7635f1586b8c53e4d1",
       "executable": false
     },
     "DEMO.md": {
@@ -2324,7 +2324,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "0accbd9e98f645da26dc9c76faa8305092ec768384aa2d350a7a70ffb9c17878",
+      "sha256": "d28f8426a5f27b791841be2c63f265fcaa85ea3f3101e6344882dd50b99b6439",
       "executable": false
     },
     "package.json": {
@@ -3772,7 +3772,7 @@
       "executable": false
     },
     "src/core/features/deliveries/service.ts": {
-      "sha256": "e1c7e61592cee92b9e410ac684bda9c3bb1d788dbff5d38ee047ccc50f01d613",
+      "sha256": "62b10e1dbb00022a59e475f37090b25001caaeb5f4d13001f0061a14245f7120",
       "executable": false
     },
     "src/core/features/deliveries/ses-events.ts": {
@@ -5720,7 +5720,7 @@
       "executable": false
     },
     "src/core/platform/mail/rer.ts": {
-      "sha256": "c1f6f75a416238acc329eb6cb20283ff0f122eb8033c06e8cd278cc4654a8ed7",
+      "sha256": "926680f06833ef2c1836f339520dcced7eabcd345917a3e369dbe5540d7dec12",
       "executable": false
     },
     "src/core/platform/mail/resend-webhooks.ts": {
@@ -6983,6 +6983,14 @@
       "sha256": "e95d0515320279d2798e443491869f74af912441771ba68045aa27cf4e382664",
       "executable": false
     },
+    "tests/e2e/helpers/mail-dns-cli-edge.mjs": {
+      "sha256": "3db3b6ba6f63b8295ad2b4500dd058d5233e931e6e04a8abadd2d8d53c0f0b21",
+      "executable": false
+    },
+    "tests/e2e/helpers/mail-dns-cli-flow.mjs": {
+      "sha256": "f411504dd6fd9bf87490dab2a0b075f834550e6588c6737b5518c740faead54e",
+      "executable": false
+    },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
       "sha256": "dd169d597eb57dca640ac7208e8c53e32afa900d24ffc7298c12ec27bc2e2151",
       "executable": false
@@ -7232,7 +7240,7 @@
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
-      "sha256": "8ae6fd35caf702251b2dbce168caec8d2fa879628e8da2513ee38c50d9318859",
+      "sha256": "ff2f4a67d9960fecfc8fc4e7a7ce48b62208a0e25e3a5cd30e70d9a2691ea4bb",
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
@@ -7272,7 +7280,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "6b1bb797826f10b8093c57bced310d6c5bb3b91f1e75b58be25a2769e9af5254",
+      "sha256": "95a662fbae2ceeec7ac2f2e075b30653e2b295614d5fd65c6068cfa798653d1e",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

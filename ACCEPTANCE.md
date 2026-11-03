@@ -1063,7 +1063,7 @@ Core · published · **partial** · Cites BASE-MAIL-001 · Register R-40
 3. Setup and deployment refuse a missing reachable configured DKIM key or DMARC policy and name the missing record.
 4. Aligned DKIM is accepted without SPF on the From domain.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/rer-mail.test.mjs`
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/rer-mail.test.mjs`; `tests/e2e/independent-release.test.mjs`; `tests/e2e/helpers/mail-dns-cli-flow.mjs`
 **Gap.** Old cited evidence asserts List-Id is present; List-Archive is present; List-Help is present; page identity. Unasserted: setup missing DKIM refusal; deployment missing DKIM refusal; setup missing DMARC refusal; deployment missing DMARC refusal; missing record named; aligned DKIM without From-domain SPF.
 
 #### NOTIFY-009 — Delivery never blocks publication
