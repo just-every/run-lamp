@@ -980,6 +980,10 @@
     {
       "id": "0075_sign_in_providers.sql",
       "buyerSteps": "Apply after 0074. Adds the Google and Okta sign-in registrations the owner makes in Settings › Team › Sign-in: each client ID with its client secret sealed, and Okta's pairings of an Okta user ID to an operator. Nothing changes until the owner sets a provider up; email sign-in links and any AUTH_PROVIDERS deploy entry keep working, and a deploy entry wins for its ID. Native archives keep the rows and pairings but never the sealed secret, so a restored registration asks the owner to paste it again. No provider account or key is needed to apply it."
+    },
+    {
+      "id": "0076_update_review.sql",
+      "buyerSteps": "Apply after 0075 before starting the updated Worker. Newly published incident updates retain the saved reviewer identity and review time as private attribution. Earlier updates retain null review evidence; no review is inferred. Existing owner review policy, public content and notification behavior are unchanged. No account or credential is required."
     }
   ],
   "breaking": false,
