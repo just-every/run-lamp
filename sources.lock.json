@@ -468,7 +468,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "08462691083a2b98a6155b41b1af231061389fa070554a692e00edfbf909a0f3",
+      "sha256": "2a91c9d38b0ed98efacc37d4f6e6a6fc4a8f460ecd5345e7a0163a5d21a78ad0",
       "executable": false
     },
     "CLAUDE.md": {
@@ -520,7 +520,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "0f76a944c9290e4d915f0390ec9760bb3686adab773d4fa90fcbd71e11175559",
+      "sha256": "2c53942c7e6180a4b03dee3e6b7d60ce936e591e7871ede638925a7a6179c45b",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -616,7 +616,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "c9ded092a8c1445d681324b0748d2bf24dabe5f07ee8b6246c6e1e586a695e08",
+      "sha256": "20e71d55a78192cd03b622507e23a11065b67929cdb354d8651347e6d4d5a51e",
       "executable": false
     },
     "docs/maintenance.md": {
@@ -2360,7 +2360,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "31db4c946bd579a10baaea0bb51b2c7e24c2e5e0b8941b1dc83373e185230093",
+      "sha256": "349cd8405181bea16e9738673b47afcc8cc99a7a175714a2a28c43108ba42259",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -2508,7 +2508,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "85562b3cf789fad522d80669334ef6212d55234c3b3eacac26f0bf22a788f0ff",
+      "sha256": "7a9e440bbbc09f29e05fde02249aba032de1d113ec1b0bf216894a9b6066520d",
       "executable": false
     },
     "rer-packaging.json": {
@@ -2516,7 +2516,7 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "ade0fe1135c32c8580081bdf19f804799f70d183bf55fcea0d0b33d8ba949055",
+      "sha256": "ec6e8a25206b255f5fec50ffa91c8cd3f4ea583e981af9cefa22efbcd6ee7b52",
       "executable": false
     },
     "rer-setup.json": {
@@ -2528,7 +2528,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "83d3470bb9eaba2d216773a3068ac0884214199bc31291b941593cd784e2b282",
+      "sha256": "bf335909ccaaef964de7ec1e1844f8780f70cd6d569106c91205118c2d2c85ba",
       "executable": false
     },
     "schema/dependencies.mjs": {

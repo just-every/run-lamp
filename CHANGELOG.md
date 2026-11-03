@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.11.3
+
+Lamp 1.11.3 seals the signing keys your Lamp uses with a linked Run Edit Run Auth installation for single sign-on, and the Calm headline, Uptime-history-led and Regions map layouts now say how their uptime figures are calculated. If you run your own Lamp, read the first part before you update: Lamp now needs one more secret, which `rer` creates for you.
+
+### If you run your own Lamp
+
+- **Sign-in signing keys are sealed at rest.** When your Lamp is linked to a Run Edit Run Auth installation for single sign-on, it keeps the private signing keys of that link in its database. Lamp now keeps them encrypted under a new secret, `INSTALLATION_KEY`, so a copy of the database or a backup alone cannot use them. A key stored by an earlier Lamp is sealed the first time it is used after the update and keeps the same public key, so an Auth installation you already linked keeps trusting your Lamp.
+- **The new secret is created for you.** `rer` generates `INSTALLATION_KEY` once and `rer deploy` keeps it with your deployment's other private secrets. A deploy sends the key only to a Worker that has none, never replaces a key the Worker already holds, and stops before uploading anything when the key is missing or malformed. If you deploy Lamp without `rer deploy`, bind a generated 64-character lowercase hex `INSTALLATION_KEY` as a Worker secret before the updated Worker starts, and keep it.
+- **Without the key, linking and sign-in stop.** A Lamp running without `INSTALLATION_KEY` cannot be linked to an Auth installation, and once one is linked, sign-in answers with an error too; nothing is rewritten.
+- **Keep the key with your private secrets.** Backups carry the sealed keys but never the key, so restoring into a new installation needs the same `INSTALLATION_KEY`. Never replace the key by hand: a different key cannot open keys sealed under the old one. Lamp 1.11.2 and earlier cannot open sealed keys, so once you update, stay on 1.11.3 or later.
+- **Changing the key.** `rer deploy --rotate-secret INSTALLATION_KEY` moves to a new key and re-seals every stored key under it. On an installation deployed with a custom `LAMP_RESOURCE_PREFIX`, that command is refused up front (exit code 4) and changes nothing: the key, its private copy and the Worker stay as they are, and later deploys run as before. Changing the key is not available on such an installation in this release.
+
+### On your status page
+
+- **The uptime method beside the figures on every built-in layout.** The Calm headline and Regions map layouts now have a **How these figures are calculated** note beside their component figures, as the default layout already did, and the note on Uptime-history-led now covers every state. Each note names the window the figures cover, 90 days unless you chose fewer, and how many downtime minutes a minute in each of the five component states counts as. By default Degraded performance counts as half a minute, Partially unavailable and Major outage as a whole minute, and Operational and Under maintenance as none.
+
+Upgrading from 1.11.2: back up first, update the checkout to `v1.11.3`, run `pnpm install --frozen-lockfile` (the checkout now pins rer 0.2.98) and `rer deploy` with the same environment and input file. The deploy creates `INSTALLATION_KEY` if your deployment has none and applies one database migration, which adds two columns for the sealed keys and leaves your data as it is. An installation on 1.11.1 or earlier also follows the notes below: their migrations and steps still apply.
+
 ## 1.11.2
 
 **Sign-in keeps working after setup on a Lamp installed through your Business.** When Run Edit Run installs Lamp for your Business, you claim the new installation once as its owner, and Run Edit Run then retires the installation's one-time setup token. In 1.11.1 and earlier, from that moment the sign-in page and every sign-in step answered with an error, so you could not sign in to your own Lamp. Lamp 1.11.2 keeps sign-in working after setup finishes, the same as on any other installation:

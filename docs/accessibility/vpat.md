@@ -11,6 +11,8 @@ Edition note (28 October 2026): Version 1.11.1 reorganizes the contract document
 
 Edition note (3 November 2026): Version 1.11.2 changes only how sign-in answers after setup on a Lamp installed through your Business; no page, form or control changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
+Edition note (3 November 2026): Version 1.11.3 adds a "How these figures are calculated" disclosure beside the component figures on the Calm headline and Regions map layouts and completes the one on the Uptime-history-led layout; no form changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
+
 ## Product description
 
 Lamp is a self-hostable status page and incident communication application. It publishes public component states, incident and maintenance permalinks, history and subscription forms; its operator application composes those records. This report describes the release source, not a separately deployed installation or every possible owner-authored message.
