@@ -8,6 +8,7 @@ import { subscriberIntakeBrowserFlow } from './helpers/subscriber-intake-browser
 import { subscriberExpiryFlow } from './helpers/subscriber-expiry-flow.mjs';
 import { subscriberTokenAuthorityFlow } from './helpers/subscriber-token-authority-flow.mjs';
 import { subscriberPreferencesFlow } from './helpers/subscriber-preferences-flow.mjs';
+import { subscriberComponentsFlow } from './helpers/subscriber-components-flow.mjs';
 import { subscriberCsvFlow } from './helpers/subscriber-csv-flow.mjs';
 import { smsSubscriberFlow } from './helpers/sms-subscriber-flow.mjs';
 import { statuspageWebhookFlow } from './helpers/statuspage-webhook-flow.mjs';
@@ -25,6 +26,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await subscriberAddFlow();
   await subscriberTokenAddFlow();
   await subscriberPreferencesFlow();
+  await subscriberComponentsFlow();
   await subscriberCsvFlow();
   await subscriberIntakeBrowserFlow(t);
   await statuspageWebhookFlow();

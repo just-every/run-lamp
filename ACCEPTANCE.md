@@ -8,12 +8,12 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 43 | 146 | 49 | 238 |
+| Core | 44 | 145 | 49 | 238 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 43 | 146 | 54 | 243 |
+| Full target | 44 | 145 | 54 | 243 |
 
-Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Carried-done recheck on 2 November 2026 by ct judge ct-judge-lamp-restore-20261102-0900, from the code and tests at commit `71bbf96d9499f3c305b6d459e96b127fb9eb8a8a` with push Verify 41392885924: PAGE-004, PAGE-011, COMP-004, UPTIME-002, UPTIME-003, INCIDENT-002, INCIDENT-005, INCIDENT-006, INCIDENT-009, UPDATE-004, MAINT-002, SUB-003, SUB-014, INTAKE-004, INTAKE-007 and HIST-003 are restored to done; COMP-005, INCIDENT-001 and SUB-015 are rechecked and stay partial; other clause judgments are retained. SUB-017 is rechecked on this landing candidate using the API-001 token subscriber create and non-owner invitation refusal journeys judged at `18b2432f9f0d7f391e1fffc014b34ecbab831868` with push Verify 41536706829; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
+Judged from the code and tests at commit `d116690d2db42e82ef085086429887f2a1c28839` (30 October 2026); MOVE-013 (2 November 2026) and NOTIFY-011 are rechecked on the landing candidate, with earlier clause judgments retained. HIST-008 is rechecked on this landing candidate using the history journeys introduced at `ea687462d9d53f2d964fe27637a86c75bfd6a563`; earlier clause judgments remain unchanged. HIST-001 is rechecked on the landing candidate with the native public-history journey added in `411cc37f16343c62e03e36ce45ed21582ed7869a`; all other clause judgments remain inherited. MOVE-003 is rechecked on landing candidate 9d2996590a4a0e3b0323404ec2decd50cd6a58c8 (2 November 2026), building on the first-pass judgment of 22c803b842d42da602103de16ed472841a225a18; earlier clause judgments remain unchanged. INTAKE-006 is rechecked on this landing candidate; its acceptance text and all other clause judgments are retained. NOTIFY-007 is rechecked on this landing candidate using the per-update channel journey introduced at d66b6e1f5dd0a7d63a583ca5e647b09791e99c8a; earlier clause judgments remain unchanged. Carried-done recheck on 2 November 2026 by ct judge ct-judge-lamp-restore-20261102-0900, from the code and tests at commit `71bbf96d9499f3c305b6d459e96b127fb9eb8a8a` with push Verify 41392885924: PAGE-004, PAGE-011, COMP-004, UPTIME-002, UPTIME-003, INCIDENT-002, INCIDENT-005, INCIDENT-006, INCIDENT-009, UPDATE-004, MAINT-002, SUB-003, SUB-014, INTAKE-004, INTAKE-007 and HIST-003 are restored to done; COMP-005, INCIDENT-001 and SUB-015 are rechecked and stay partial; other clause judgments are retained. SUB-017 is rechecked on this landing candidate using the API-001 token subscriber create and non-owner invitation refusal journeys judged at `18b2432f9f0d7f391e1fffc014b34ecbab831868` with push Verify 41536706829; earlier clause judgments remain unchanged. SUB-004 is rechecked on this landing candidate using `tests/e2e/helpers/subscriber-components-flow.mjs` (subscriberComponentsFlow), loaded by the Subscriber consent journey in `tests/e2e/delivery-contract.test.mjs`, judged at 2dc37452faf56a714522db6ec4481a51f62600e0 by ct-judge-lamp-sub004-20261103-1630; earlier clause judgments remain unchanged. Field proof register: 19 rows; 0 passed, 0 failed, 19 not run.
 
 ## Core
 
@@ -813,7 +813,7 @@ Core · published · **done** · Cites BASE-DATA-002
 
 #### SUB-004 — Component selection
 
-Core · published · **partial**
+Core · published · **done**
 
 **Requirement.** Subscribers choose the components whose incident and maintenance communication they receive.
 
@@ -823,8 +823,8 @@ Core · published · **partial**
 3. An unnarrowed subscription follows visible components added later, while a narrowed selection remains unchanged.
 4. Attaching a component to an unresolved incident sends one latest-update catch-up to each eligible subscriber who has never received that incident; subsequent updates then arrive normally.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`
-**Gap.** Old cited evidence asserts initial selected components; management selected or all; incident recipient selection; newly eligible catch-up recipient. Unasserted: maintenance recipient selection; all-components subscriber follows new components; narrowed selection unchanged by component creation.
+**Evidence.** `tests/e2e/delivery-contract.test.mjs` (Subscriber consent, selected publication, channel delivery, export and erasure), loading `tests/e2e/helpers/subscriber-components-flow.mjs` (subscriberComponentsFlow): acceptance 1 exact public form and management selections, with empty selection following all visible components; acceptance 2 exact committed email and webhook recipients, actual sends and unrelated-component silence for incident updates and scheduled and started maintenance; acceptance 3 confirmed all-components controls follow a newly created visible component while narrowed identities remain unchanged; acceptance 4 attachment delivers only the latest update once to each newly eligible subscriber, another attachment does not repeat it, and ordinary subsequent updates arrive. `tests/e2e/helpers/subscriber-preferences-flow.mjs` (subscriberPreferencesFlow), loaded by the same journey, retains the script-free management browser proof.
+**Gap.** None.
 
 #### SUB-005 — Cookieless subscriber tokens
 
