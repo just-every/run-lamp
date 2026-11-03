@@ -29,6 +29,38 @@ function brisbaneTime(instant) {
   return `${month} ${local.getUTCDate()}, ${local.getUTCFullYear()}, ${local.toISOString().slice(11, 16)} UTC+10:00`;
 }
 
+function assertPublicationPage(html, publication, expectedFields, surface) {
+  const update = publicUpdate(html, publication.customerImpact);
+  const heading = update.childNodes.find(node => node.tagName === 'div');
+  assert.equal(nodeText(heading.childNodes.find(node => node.tagName === 'strong')), publication.lifecycle, surface);
+  assert.equal(descendants(heading).find(node => node.tagName === 'time').attrs.find(attr => attr.name === 'datetime').value, publication.publishedAt, surface);
+  const fields = descendants(update).filter(node => node.tagName === 'div' && node.childNodes.some(child => child.tagName === 'dt'));
+  assert.deepEqual(fields.map(field => [nodeText(field.childNodes.find(node => node.tagName === 'dt')), nodeText(field.childNodes.find(node => node.tagName === 'dd'))])
+    .filter(([label]) => label !== 'Component state'), expectedFields, `${surface}: the complete wording belongs to this publication`);
+  if (publication.nextUpdateAt) {
+    const commitment = fields.find(field => nodeText(field.childNodes.find(node => node.tagName === 'dt')) === 'Next update by');
+    assert.equal(descendants(commitment).find(node => node.tagName === 'time').attrs.find(attr => attr.name === 'datetime').value, publication.nextUpdateAt, `${surface}: exact commitment instant`);
+  }
+}
+
+function atomPublication(xml, publication) {
+  const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map(match => match[1])
+    .filter(entry => entry.includes(`:event:update-${publication.id}</id>`));
+  assert.equal(entries.length, 1, 'one Atom entry has this committed publication identity');
+  assert.equal(entries[0].match(/<updated>([^<]+)<\/updated>/)[1], publication.publishedAt);
+  const encoded = entries[0].match(/<content type="html">([^<]*)<\/content>/)[1];
+  return nodeText(parse(nodeText(parse(encoded))));
+}
+
+function assertPublicationText(text, incident, publication, expectedFields, surface) {
+  const paragraphs = text.split('\n\n');
+  assert.ok(paragraphs.includes(`${incident.reference}: ${incident.title}`), `${surface}: incident identity`);
+  assert.ok(paragraphs.includes(`Status: ${publication.lifecycle}`), `${surface}: publication lifecycle`);
+  const labels = ['Who is affected', 'Customer impact', 'What still works', 'Next update by', 'Additional details'];
+  assert.deepEqual(paragraphs.filter(paragraph => labels.some(label => paragraph.startsWith(`${label}:`))),
+    expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
+}
+
 test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
   const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
   const reviewer = 'synthetic-lamp-reviewer@example.test';
@@ -93,11 +125,44 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assertLinkedUpdateHtml(firstBody, 'public incident');
     assertLinkedUpdateHtml(await j.publicText('/'), 'public root');
     assertLinkedFeed(await j.publicText('/feed.atom'), 'public Atom');
+    const populatedFields = [
+      ['Who is affected', wording.affectedAudience], ['Customer impact', wording.customerImpact],
+      ['What still works', wording.whatStillWorks], ['Next update by', brisbaneTime(privateDraft.nextUpdateAt)],
+      ['Additional details', wording.details],
+    ];
+    assert.equal(first.nextUpdateAt, privateDraft.nextUpdateAt);
+    assert.deepEqual((await j.read(incident.id)).updates.find(update => update.id === first.id), first);
+    for (const path of ['/', `/incidents/${incident.reference}`]) {
+      assertPublicationPage(await j.publicText(path), first, populatedFields, path);
+    }
+    assertPublicationText(atomPublication(await j.publicText('/feed.atom'), first), incident, first, populatedFields, 'populated Atom');
+    assertPublicationText(customerMail.text, incident, first, populatedFields, 'actual populated email');
     for (const value of Object.values(wording).filter(value => value !== 'Identified')) {
       assert.ok(preview.preview.public.fields.some(field => field.value === value));
       assert.ok(preview.preview.email.plainText.includes(value));
     }
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Major outage');
+
+    const blankWording = {
+      affectedAudience: 'Customers waiting for a second payment attempt.',
+      customerImpact: 'Second payment attempts remain queued for review.',
+      whatStillWorks: '', details: '', nextUpdateAt: new Date(Date.now() + 7200_000).toISOString(),
+    };
+    await saveReviewed(incident.id, blankWording);
+    const blank = (await j.publish(incident.id, { channels: ['email'] })).update;
+    const blankFields = [
+      ['Who is affected', blankWording.affectedAudience], ['Customer impact', blankWording.customerImpact],
+      ['Next update by', brisbaneTime(blankWording.nextUpdateAt)],
+    ];
+    assert.equal(blank.whatStillWorks, ''); assert.equal(blank.details, '');
+    assert.equal(blank.nextUpdateAt, blankWording.nextUpdateAt);
+    for (const path of ['/', `/incidents/${incident.reference}`]) {
+      assertPublicationPage(await j.visible(path, blankWording.customerImpact), blank, blankFields, path);
+    }
+    assertPublicationText(atomPublication(await j.publicText('/feed.atom'), blank), incident, blank, blankFields, 'blank-optional Atom');
+    await j.tick(Date.now());
+    const blankMail = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber) && mail.text.includes(blankWording.customerImpact)), Boolean, 'blank-optional publication reaches the subscriber');
+    assertPublicationText(blankMail.text, incident, blank, blankFields, 'actual blank-optional email');
 
     await saveReviewed(incident.id, { lifecycle: 'Monitoring', customerImpact: 'Payments are recovering.', componentChanges: [
       { componentId: component.id, state: 'Degraded performance' },
@@ -144,8 +209,23 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
       assert.doesNotMatch(nodeText(parse(html)), /overdue/i, `${path}: no public overdue label`);
     }
 
-    await saveReviewed(incident.id, { lifecycle: 'Resolved', customerImpact: 'Payment processing has recovered.', nextUpdateAt: null });
-    const resolution = (await j.publish(incident.id)).update;
+    await saveReviewed(incident.id, { lifecycle: 'Resolved', customerImpact: 'Payment processing has recovered.', whatStillWorks: '', details: '', nextUpdateAt: null });
+    const resolution = (await j.publish(incident.id, { channels: ['email'] })).update;
+    const resolvedFields = [['Who is affected', wording.affectedAudience], ['Customer impact', 'Payment processing has recovered.']];
+    assert.equal(resolution.nextUpdateAt, null);
+    assertPublicationPage(await j.visible(`/incidents/${incident.reference}`, resolution.customerImpact), resolution, resolvedFields, 'resolved permalink');
+    const resolvedRoot = descendants(parse(await j.visible('/', resolution.customerImpact))).filter(node => node.tagName === 'article'
+      && node.attrs.some(attr => attr.name === 'class' && attr.value.split(' ').includes('resolved-incident'))
+      && nodeText(node).includes(incident.title));
+    assert.equal(resolvedRoot.length, 1, 'the root shows this resolved incident');
+    assert.ok(nodeText(resolvedRoot[0]).includes('Payment processing has recovered.'));
+    for (const label of ['What still works', 'Additional details', 'Next update by']) {
+      assert.ok(!nodeText(resolvedRoot[0]).includes(label), `resolved root omits ${label}`);
+    }
+    assertPublicationText(atomPublication(await j.publicText('/feed.atom'), resolution), incident, resolution, resolvedFields, 'resolved Atom');
+    await j.tick(Date.now());
+    const resolvedMail = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber) && mail.text.includes('Payment processing has recovered.')), Boolean, 'resolved publication reaches the subscriber');
+    assertPublicationText(resolvedMail.text, incident, resolution, resolvedFields, 'actual resolved email');
     const resolved = await j.read(incident.id);
     assert.equal(resolved.lifecycle, 'Resolved');
     assert.equal(resolved.impact, 'Major outage', 'resolution retains the greatest published component impact');
