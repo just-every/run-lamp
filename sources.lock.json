@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ab5e7c7f9c6b491ffe96ed0553ad16ce98d2c21dd6838eb47f695b5dbc059de4",
+      "sha256": "5cce8b7c26dda5cc2128613e044705f07c5e5a38ddeddf09808f446f1d7b854a",
       "executable": false
     },
     "DEMO.md": {
@@ -7063,6 +7063,10 @@
       "sha256": "749f7b2eba73dbf7279208077afe7ebcb4e78f98432e045bdea290465cb22e6d",
       "executable": false
     },
+    "tests/e2e/helpers/report-publication-flow.mjs": {
+      "sha256": "faeff80e606cf04347f2cd46b0f764ced4a389164d962cec3cd6dd3f36496539",
+      "executable": false
+    },
     "tests/e2e/helpers/report-reminders-flow.mjs": {
       "sha256": "4127816af28d6fd37c2d09a90658a3c55ec57e46d331caaea582c65e808785b7",
       "executable": false
@@ -7252,7 +7256,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "05ad96ba028157940e1d9ae780f60b42ace147a1958c5ad5d0b45cf23a9ef61e",
+      "sha256": "20fd1e1395322ac920c70c9ea99177852fa9b2aedcc75f56a9d9a3a3cae95b49",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
