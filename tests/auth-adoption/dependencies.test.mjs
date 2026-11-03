@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, rmdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { parseEnv } from 'node:util';
 import { database, load } from '../operator-readiness/runtime.mjs';
@@ -289,6 +289,55 @@ test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY reseals the depende
     await storage.runtime.dispose();
     await rm(dir, { recursive: true, force: true });
     // Remove only what this test made: the whole .rer or .rer/deploy it created, else its two environment files.
+    const made = [state, records].find(path => !existing.includes(path));
+    if (made) await rm(made, { recursive: true, force: true });
+    else for (const name of [`${environment}.json`, `${environment}.secrets.env`]) await rm(join(records, name), { force: true });
+  }
+});
+
+// The pinned rer re-keys only the Worker its deploy kit names lamp-<environment>. On an installation deployed under a
+// custom LAMP_RESOURCE_PREFIX it must refuse the rotation before it saves a new key pair: a saved pair it cannot
+// finish would refuse every later rer deploy of the environment.
+test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change', async () => {
+  const root = process.cwd(), environment = `key-prefix-${randomBytes(3).toString('hex')}`, names = resourceNames(environment, `synthetic-${randomBytes(3).toString('hex')}`);
+  const state = join(root, '.rer'), records = join(state, 'deploy'), existing = [state, records].filter(path => existsSync(path)), custodyFile = join(records, `${environment}.secrets.env`), recordFile = join(records, `${environment}.json`);
+  const seed = join(root, '.seed'), deployment = join(seed, 'deployment'), madeDirectories = [deployment, seed].filter(path => !existsSync(path));
+  const hex = () => randomBytes(32).toString('hex'), oldKey = hex(), appHost = 'app.example.test';
+  const credentials = { CLOUDFLARE_ACCOUNT_ID: randomBytes(16).toString('hex'), CLOUDFLARE_API_TOKEN: `synthetic-${hex()}` };
+  const edge = await cloudflareEdge({ accountId: credentials.CLOUDFLARE_ACCOUNT_ID, token: credentials.CLOUDFLARE_API_TOKEN, subdomain: 'synthetic-owner', workerHost: { host: appHost, name: names.worker }, app: () => new Response('Lamp') });
+  const hosts = ['api.cloudflare.com', appHost], originalFetch = globalThis.fetch;
+  globalThis.fetch = edgeFetch({ edge: edge.origin, hosts, fetch: originalFetch });
+  try {
+    const config = deploymentConfig({ LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: 'page.example.test', LAMP_RESOURCE_PREFIX: names.worker, LAMP_PAGE_NAME: 'Synthetic prefixed key rotation', LAMP_PAGE_TAGLINE: 'Installation key rotation', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C',
+      SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_DKIM_SELECTOR: 'resend', MAIL_PROVIDER_API_KEY: `synthetic-${hex()}`,
+      SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), SETUP_TOKEN: hex(), INSTALLATION_KEY: oldKey }, environment);
+    const ownership = deploymentOwnership(config, credentials);
+    const created = await ownership.resource('d1', names.database, async () => (await ownership.api.list('/d1/database')).find(row => row.name === names.database),
+      () => ownership.api.request('/d1/database', { method: 'POST', body: { name: names.database } }));
+    const identity = { source: 'synthetic-source-commit', fingerprint: hex() };
+    const vars = { LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: config.pageHost, AUTH_ORIGIN: `https://${appHost}`, SETUP_OPERATOR_EMAIL: config.setupOperatorEmail, MAIL_FROM_ADDRESS: config.mailFromAddress,
+      MAIL_PROVIDER: config.mailProvider, RER_DEPLOY_SOURCE: identity.source, RER_DEPLOY_FINGERPRINT: identity.fingerprint };
+    await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
+    await writeFile(custodyFile, Object.entries({ INSTALLATION_KEY: oldKey, SESSION_SECRET: config.sessionSecret, SUBSCRIBER_TOKEN_SECRET: config.subscriberTokenSecret, WEBHOOK_SIGNING_SECRET: config.webhookSigningSecret })
+      .map(([name, value]) => `${name}=${value}\n`).join(''), { mode: 0o600 });
+    const custody = await readFile(custodyFile, 'utf8'), record = await readFile(recordFile, 'utf8'), live = edge.live(names.worker);
+
+    const child = spawn(process.execPath, ['node_modules/@runeditrun/rer/bin/rer.mjs', 'deploy', '--environment', environment, '--rotate-secret', 'INSTALLATION_KEY'], { cwd: root, timeout: 180000, stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(CLOUDFLARE_|MAIL_|NODE_OPTIONS$)/.test(name))), ...credentials,
+        NODE_OPTIONS: `--import=${new URL('../helpers/cloudflare-edge-preload.mjs', import.meta.url).href}`, LAMP_FAKE_EDGE: edge.origin, LAMP_FAKE_EDGE_HOSTS: hosts.join(',') } });
+    let output = '';
+    child.stdout.on('data', chunk => { output += chunk; });
+    child.stderr.on('data', chunk => { output += chunk; });
+    assert.equal(await new Promise(resolve => child.once('close', resolve)), 4, `a safety refusal: ${output}`);
+    assert.equal(await readFile(custodyFile, 'utf8'), custody, 'custody keeps the current key and holds no INSTALLATION_KEY_PREVIOUS, so later deploys are not refused as an unfinished rotation');
+    assert.equal(await readFile(recordFile, 'utf8'), record, 'the deployment record is unchanged');
+    assert.equal(edge.live(names.worker).id, live.id, 'the Worker keeps its live version, holding the current key');
+  } finally {
+    globalThis.fetch = originalFetch;
+    await edge.close();
+    // The declaration Lamp derived for this environment, then each directory this test made, only once it is empty.
+    await rm(join(deployment, `${environment}.hosted-check.json`), { force: true });
+    for (const path of madeDirectories) await rmdir(path).catch(() => {});
     const made = [state, records].find(path => !existing.includes(path));
     if (made) await rm(made, { recursive: true, force: true });
     else for (const name of [`${environment}.json`, `${environment}.secrets.env`]) await rm(join(records, name), { force: true });
