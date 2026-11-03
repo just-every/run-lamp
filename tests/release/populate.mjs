@@ -181,9 +181,24 @@ export async function populate(mf, source, mail) {
     },
   });
   assert.equal(draft.status, 200, await draft.clone().text());
+  const [major, minor] = JSON.parse(
+    await readFile(join(source, "RELEASE.json"), "utf8"),
+  ).version
+    .split(".")
+    .map(Number);
+  // A new window needs customer wording from 1.11.0; earlier strict Workers
+  // refuse the extra fields.
+  const maintenanceWording =
+    major > 1 || (major === 1 && minor >= 11)
+      ? {
+          affectedAudience: "API customers",
+          customerImpact: "Scheduled work may briefly slow requests",
+        }
+      : {};
   const maintenance = (
     await c.api("/api/app/maintenance", {
       title: "Retained maintenance",
+      ...maintenanceWording,
       startsAt: new Date(Date.now() + 172800000).toISOString(),
       endsAt: new Date(Date.now() + 176400000).toISOString(),
       componentIds: [component.id],
@@ -216,10 +231,6 @@ export async function populate(mf, source, mail) {
       }),
     ),
   );
-  const version = JSON.parse(
-    await readFile(join(source, "RELEASE.json"), "utf8"),
-  ).version;
-  const [major, minor] = version.split(".").map(Number);
   const explicitInvitations = major > 1 || (major === 1 && minor >= 4);
   // From 1.8.0 Move in runs only through the import door.
   const throughDoor = major > 1 || (major === 1 && minor >= 8);
