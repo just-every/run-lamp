@@ -10,6 +10,7 @@ import { openStatusJourney, eventually, wording, visibleText } from './helpers/s
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
+import { maintenanceReminderFlow } from './helpers/maintenance-reminder-flow.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -691,6 +692,8 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
 });
 
 test('UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence', scheduledUpdateFlow);
+test('MAINT-005 — subscribers receive scheduling, the exact twenty-four-hour reminder, start and completion once', { timeout: 120_000 }, maintenanceReminderFlow);
+
 test('INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams', chatDeskNativeFlow);
 
 test('AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text', async t => {
