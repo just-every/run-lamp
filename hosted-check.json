@@ -1,5 +1,5 @@
 {
-  "$comment": "rer verify serves the production build at one https origin with stand-ins for these secrets. Lamp answers built files and /health on its app host. The MAIL_PROVIDER/MAIL_FROM/MAIL_API_KEY mappings also expose Lamp's native input names to rer's shared production sign-in preflight; the native upload still uses OPERATIONS.md and its own generated bindings.",
+  "$comment": "rer verify serves the production build at one https origin with stand-ins for these secrets. Lamp answers built files and /health on its app host. The MAIL_PROVIDER/MAIL_FROM/MAIL_API_KEY mappings also expose Lamp's native input names to rer's shared production sign-in preflight; the native upload still uses OPERATIONS.md and its own generated bindings. The DB d1 entry is the database rer deploy --rotate-secret INSTALLATION_KEY reseals: lamp-<environment>-db, as Lamp's setup records it.",
   "project": "just-every/lamp",
   "vars": {
     "LAMP_APP_HOST": "rer-hosted-check.invalid",
@@ -7,6 +7,11 @@
     "SETUP_OPERATOR_EMAIL": "owner@rer-hosted-check.invalid",
     "MAIL_PROVIDER": "resend"
   },
+  "d1": [
+    {
+      "binding": "DB"
+    }
+  ],
   "secrets": [
     {
       "binding": "SETUP_TOKEN",
@@ -15,6 +20,15 @@
     {
       "binding": "SESSION_SECRET",
       "environment": "SESSION_SECRET"
+    },
+    {
+      "binding": "INSTALLATION_KEY",
+      "environment": "INSTALLATION_KEY"
+    },
+    {
+      "binding": "INSTALLATION_KEY_PREVIOUS",
+      "environment": "INSTALLATION_KEY_PREVIOUS",
+      "optional": true
     },
     {
       "binding": "SUBSCRIBER_TOKEN_SECRET",

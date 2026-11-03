@@ -32,11 +32,17 @@ export function deployProviders(env: AppBindings): Array<{ id: string; clientId?
   try { return (providers(env.AUTH_PROVIDERS) ?? []).filter(provider => typeof provider?.id === 'string'); } catch { return []; }
 }
 
-export function authConfig(env: AppBindings, stored: AuthConfig['providers'] = []): AuthConfig {
+/** The Worker secrets Base seals the dependency signing keys with at rest: the generated 64-hex INSTALLATION_KEY
+ * and, only during a rotation, INSTALLATION_KEY_PREVIOUS. They pass through as bound: with an absent or malformed
+ * key Base refuses dependency discovery, linking and, once a provider is linked, sign-in with 503 installation_key_missing. */
+export type InstallationKeyBindings = { INSTALLATION_KEY?: string; INSTALLATION_KEY_PREVIOUS?: string };
+
+export function authConfig(env: AppBindings & InstallationKeyBindings, stored: AuthConfig['providers'] = []): AuthConfig {
   const origin = authOrigin(env);
   return {
     origin, local: env.AUTH_LOCAL === 'true' || Boolean(env.LAMP_LOCAL_ORIGIN && isLoopbackHostname(new URL(origin).hostname)),
     OWNER_EMAIL: (env.SETUP_OPERATOR_EMAIL || env.OWNER_EMAIL)!, SESSION_SECRET: env.SESSION_SECRET!, SETUP_TOKEN: env.SETUP_TOKEN,
+    INSTALLATION_KEY: env.INSTALLATION_KEY, INSTALLATION_KEY_PREVIOUS: env.INSTALLATION_KEY_PREVIOUS,
     MAIL_FROM: env.MAIL_FROM_ADDRESS, linkSeconds: 20 * 60,
     branding: { productName: 'Lamp', accentColor: '#163c60', signInPath: '/signin', theme: '/rer-theme.css' },
     dependencies: true,

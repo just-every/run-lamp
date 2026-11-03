@@ -1,7 +1,7 @@
 {
   "id": "lamp",
   "name": "Lamp",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "maturity": "ui-port-local-runtime",
   "category": "status",
   "spine": {
@@ -585,6 +585,19 @@
       "required": true,
       "secret": true,
       "why": "Stable random secret of at least 32 characters for Base operator session and link hashes. Installer generates and preserves it."
+    },
+    {
+      "name": "INSTALLATION_KEY",
+      "required": true,
+      "secret": true,
+      "why": "Stable generated 64-character hex key that seals Base dependency signing keys at rest. Without it dependency discovery and provider linking refuse with 503, and so does sign-in once an Auth provider is linked. Installer generates and preserves it; archives never carry it."
+    },
+    {
+      "name": "INSTALLATION_KEY_PREVIOUS",
+      "required": false,
+      "requiredWhen": "During an explicit installation-key rotation or retired-key reopen.",
+      "secret": true,
+      "why": "The previous installation key, bound only while the sealed dependency signing keys are re-sealed under INSTALLATION_KEY."
     },
     {
       "name": "IDENTITY_PROVIDER",

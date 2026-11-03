@@ -475,6 +475,8 @@ Both Workers serve the same compiled source and retain the configured host check
 
 This mode is supported by native `rer deploy`. The independent delivery artifact contract describes one Worker; it does not package this two-Worker topology.
 
+With a custom `LAMP_RESOURCE_PREFIX`, rer refuses `rer deploy --rotate-secret INSTALLATION_KEY` before it changes the key, its private custody or the Worker: the pinned rer rotates the installation key only on the Worker it names `lamp-<environment>`, and a rotation it could not finish there would stop every later deploy.
+
 ### Local operational inspection
 
 Local dev signs the owner in with one click and silently suppresses mail.

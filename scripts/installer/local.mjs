@@ -1,5 +1,6 @@
+import {mkdirSync,readFileSync,renameSync,writeFileSync} from 'node:fs';
 import {access,readFile} from 'node:fs/promises';
-import {join} from 'node:path';
+import {dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parseEnv} from 'node:util';
 import {localInstaller} from '@runeditrun/rer/local-installer';
@@ -86,10 +87,33 @@ export const commandAdapter=createCommandAdapter(adapter,{
  input:{names:{email:'SETUP_OPERATOR_EMAIL',name:'OWNER_DISPLAY_NAME'},defaults:async()=>({target:'local',OWNER_DISPLAY_NAME:'Owner',LAMP_PAGE_NAME:'Status',LAMP_PAGE_TAGLINE:'Current service status',LAMP_PAGE_TIMEZONE:'UTC'})},
 });
 
+// rer's installation key rotation (and retired-key reopen) re-keys the Worker its deploy
+// kit names lamp-<environment>. An environment deployed under a custom
+// LAMP_RESOURCE_PREFIX records another Worker, and the kit refuses that only after rer
+// saved the new key pair, which leaves every later deploy refused. There rer reads the
+// declaration without INSTALLATION_KEY_PREVIOUS and refuses the change before it saves
+// anything; the derived copy lives with Lamp's ignored deployment records.
+const root=fileURLToPath(new URL('../../',import.meta.url));
+function environmentDeclaration(file){
+ const at=process.argv.indexOf('--environment'),environment=at<0?'production':process.argv[at+1]??'';
+ if(!/^[a-z][a-z0-9-]{0,39}$/.test(environment))return file;
+ let worker;
+ try{({worker}=JSON.parse(readFileSync(join(root,'.rer','deploy',`${environment}.json`),'utf8')));}catch{return file;}
+ if(typeof worker!=='string'||worker===`lamp-${environment}`)return file;
+ const declaration=JSON.parse(readFileSync(join(root,file),'utf8'));
+ declaration.secrets=declaration.secrets.filter(item=>item.binding!=='INSTALLATION_KEY_PREVIOUS');
+ declaration.$comment=`Rewritten from ${file} by scripts/installer/local.mjs for environment ${environment}, whose Worker is ${worker}: without INSTALLATION_KEY_PREVIOUS, so rer refuses to rotate its installation key. Edit ${file}, not this copy.`;
+ const derived=join('.seed','deployment',`${environment}.${file}`),path=join(root,derived),temporary=`${path}.${process.pid}.tmp`;
+ mkdirSync(dirname(path),{recursive:true});
+ writeFileSync(temporary,JSON.stringify(declaration,null,2)+'\n');
+ renameSync(temporary,path);
+ return derived;
+}
+
 // Read after rer applies --env-file: each provider keeps its actual credential
 // mapping for the shared production-auth preflight and hosted-output checks.
 Object.defineProperty(commandAdapter, 'deployDeclaration', {
  enumerable: true,
  get: () => process.argv.includes('--demo') ? 'deploy.json'
-  : process.env.MAIL_PROVIDER?.trim() === 'rer' ? 'hosted-check-managed.json' : 'hosted-check.json',
+  : environmentDeclaration(process.env.MAIL_PROVIDER?.trim() === 'rer' ? 'hosted-check-managed.json' : 'hosted-check.json'),
 });

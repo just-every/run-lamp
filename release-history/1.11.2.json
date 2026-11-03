@@ -1,0 +1,11 @@
+{
+  "version": "1.11.2",
+  "previousVersion": "1.11.1",
+  "date": "2026-11-03",
+  "publicReleaseNotes": "Lamp 1.11.2 keeps sign-in working after setup on a Lamp installed through your Business. After the owner claims such an installation, Run Edit Run retires its one-time setup token; in 1.11.1 and earlier the sign-in page and every sign-in step then answered with an error, so the owner could not sign in. Sign-in now keeps working after setup finishes, the same as on any other installation. While setup is still running, the one-time owner claim is checked exactly as before; after setup it answers that it is no longer available and changes nothing. Installations you deploy yourself behave as before, and the refused sign-ins changed nothing. There is no migration and no configuration change, and Lamp still pins rer 0.2.76: back up first, update the checkout to v1.11.2, then run pnpm install --frozen-lockfile and rer deploy as before.",
+  "contractChanges": {},
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "From v1.11.1: back up data and owner source first, update the checkout to v1.11.2, run pnpm install --frozen-lockfile (the checkout still pins rer 0.2.76 and carries no rer patch) and rer deploy with the same environment and input file. No migration applies and no configuration changes. An installation on v1.10.0 first honors the retained records release-history/1.11.0.json and release-history/1.11.1.json (migrations 0043 through 0075 with their buyer steps, and the 1.11.1 update steps); the same deploy applies those migrations in order. The one behaviour change is in src/core/platform/auth/http.ts: Lamp builds the signed owner-claim handler only for /auth/owner-claim and only while SETUP_TOKEN is bound. With the token bound, that route keeps its signature, installation, origin and one-shot checks unchanged; once the platform retires the token it answers 409 claim_unavailable, and every other /signin, /auth and /.well-known/rer route runs without that handler, so sign-in keeps working while the owner-claim trust stays bound for the Business import door. Preserve that scoping in any customization of the auth routes, preserve every published release record and immutable contract snapshot, and run the existing verifier and release validator before adopting."
+}
