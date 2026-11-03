@@ -3,8 +3,9 @@ import { test } from 'node:test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { database, load } from '../operator-readiness/runtime.mjs';
+import { migrate, openRuntime } from '../reference-storage/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
-import { authFixture, secret, setupToken } from './runtime.mjs';
+import { authFixture, installationKey, otherInstallationKey, secret, setupToken } from './runtime.mjs';
 import { provider } from '../fixtures/base/oidc-idp.mjs';
 import { linkEdge } from '../fixtures/base/provider-edge.mjs';
 
@@ -20,7 +21,7 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     const origin = 'https://app.example.test', issuer = 'https://identity.example.test';
     const idp = await provider({ issuer, clientId: 'lamp-client', redirectUri: origin + '/auth/oidc/auth/callback', alg: 'ES256', method: 'private_key_jwt', rerInterfaces: ['oidc-provider@1.0.0'], claims: { email: 'owner@example.test' } });
     await storage.db.prepare('CREATE TABLE fixture_state(key TEXT PRIMARY KEY,value TEXT NOT NULL)').run();
-    const edge = linkEdge(storage.db, issuer, 'lamp-client', Date.now);
+    const edge = linkEdge(storage.db, issuer, 'lamp-client', Date.now, async () => (await call('/.well-known/rer-link/jwks/oidc-provider@1')).json());
     const messages = [];
     const relay = 'https://relay.example.test/api/managed-mail/send';
     globalThis.fetch = async (uri, init) => {
@@ -32,7 +33,7 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     };
     const env = { DB: storage.db, SNAPSHOT_CACHE: cache.namespace, SNAPSHOTS: storage.bucket,
       LAMP_APP_HOST: 'app.example.test', LAMP_PAGE_HOST: 'page.example.test', AUTH_ORIGIN: origin,
-      SETUP_OPERATOR_EMAIL: 'owner@example.test', SESSION_SECRET: secret, SETUP_TOKEN: setupToken,
+      SETUP_OPERATOR_EMAIL: 'owner@example.test', SESSION_SECRET: secret, SETUP_TOKEN: setupToken, INSTALLATION_KEY: installationKey,
       MAIL_FROM_ADDRESS: 'lamp@example.test', IDENTITY_PROVIDER: issuer, MAIL_PROVIDER: 'rer', MAIL_FROM: 'lamp@example.test', MAIL_RELAY_URL: relay, MAIL_API_KEY: 'synthetic-identity-mail-key' };
     const native = authFixture(storage.db, { origin });
     const { app } = createApp(env);
@@ -147,6 +148,63 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     globalThis.fetch = originalFetch;
     await cache.dispose();
     await storage.runtime.dispose();
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+// A Lamp that linked its Auth provider on rer 0.2.76 or earlier holds that link's signing key
+// in plaintext. 0076 keeps the row; the installation key seals it on first use under the same
+// public key, so the provider's registered key still verifies Lamp. Without the key, or with
+// another one, every dependency route refuses and nothing in D1 is rewritten.
+test('ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it', async () => {
+  const dir = await mkdtemp(join(process.cwd(), '.lamp-installation-key-'));
+  const runtime = openRuntime(dir);
+  const cache = await openSnapshotCacheRuntime(dir);
+  try {
+    const db = await runtime.getD1Database('DB');
+    await migrate(db, name => name < '0076');
+    // Exactly what rer 0.2.76's dependency store wrote: its keyPair() JSON, unsealed.
+    const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const legacy = JSON.stringify({ ...await crypto.subtle.exportKey('jwk', pair.privateKey), kid: 'synthetic-legacy-signing-key', alg: 'ES256', use: 'sig' });
+    await db.batch([
+      db.prepare("INSERT INTO rer_dependency_installation(singleton,sector_id) VALUES(1,'synthetic-legacy-sector')"),
+      db.prepare("INSERT INTO rer_dependency_keys(interface,private_key) VALUES('oidc-provider@1',?)").bind(legacy),
+    ]);
+    await migrate(db, name => name.startsWith('0076_'));
+    const installation = () => db.prepare('SELECT sector_id,keys_sealed,key_ids FROM rer_dependency_installation').first();
+    const stored = async () => (await db.prepare("SELECT private_key FROM rer_dependency_keys WHERE interface='oidc-provider@1'").first()).private_key;
+    assert.deepEqual(await installation(), { sector_id: 'synthetic-legacy-sector', keys_sealed: 0, key_ids: '[]' });
+    const { createApp } = await load('src/core/app/server.ts');
+    const origin = 'https://app.example.test';
+    const get = (path, key) => {
+      const env = { DB: db, SNAPSHOT_CACHE: cache.namespace, LAMP_APP_HOST: 'app.example.test', LAMP_PAGE_HOST: 'page.example.test', AUTH_ORIGIN: origin,
+        SETUP_OPERATOR_EMAIL: 'owner@example.test', SESSION_SECRET: secret, SETUP_TOKEN: setupToken, MAIL_FROM_ADDRESS: 'lamp@example.test', ...(key ? { INSTALLATION_KEY: key } : {}) };
+      return createApp(env).app.fetch(new Request(origin + path, { headers: { Host: 'app.example.test' } }), env);
+    };
+    const routes = ['/.well-known/rer-dependencies', '/.well-known/rer-link/jwks', '/.well-known/rer-link/jwks/oidc-provider@1'];
+    for (const path of routes) {
+      const refused = await get(path);
+      assert.equal(refused.status, 503, path);
+      assert.deepEqual(await refused.json(), { error: 'installation_key_missing' }, path);
+    }
+    assert.equal((await get('/signin')).status, 200, 'email sign-in stays available without the key');
+    assert.equal(await stored(), legacy, 'a refused read rewrites nothing');
+    const jwks = await get('/.well-known/rer-link/jwks', installationKey);
+    assert.equal(jwks.status, 200);
+    const { x, y, d } = JSON.parse(legacy);
+    assert.deepEqual((await jwks.json()).keys.map(key => [key.kid, key.x, key.y]), [['synthetic-legacy-signing-key', x, y]], 'the provider keeps the public key it registered');
+    const envelope = JSON.parse(await stored());
+    assert.deepEqual(Object.keys(envelope).sort(), ['ciphertext', 'iv', 'kid', 'version']);
+    assert.equal((await stored()).includes(d), false, 'the private key no longer sits in D1 in the clear');
+    assert.deepEqual(await installation(), { sector_id: 'synthetic-legacy-sector', keys_sealed: 1, key_ids: JSON.stringify([envelope.kid]) });
+    for (const path of routes) assert.equal((await get(path, installationKey)).status, 200, path);
+    const wrong = await get('/.well-known/rer-link/jwks', otherInstallationKey);
+    assert.equal(wrong.status, 503);
+    assert.deepEqual(await wrong.json(), { error: 'installation_key_unavailable' }, 'another key never opens or replaces the sealed key');
+    assert.deepEqual(JSON.parse(await stored()), envelope);
+  } finally {
+    await cache.dispose();
+    await runtime.dispose();
     await rm(dir, { recursive: true, force: true });
   }
 });
