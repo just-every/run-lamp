@@ -81,6 +81,13 @@ function optionalSecret(value, name) {
   return value ? secret(value, name) : undefined;
 }
 
+// Base seals the dependency signing keys at rest under this key and accepts only
+// its generated form, 64 lowercase hex characters; there is no default.
+function installationKey(value) {
+  if (!/^[a-f0-9]{64}$/.test(value)) throw new Error("INSTALLATION_KEY must be the generated 64-character lowercase hex installation key; rer deploy generates and keeps it.");
+  return value;
+}
+
 function tomlString(value) {
   return JSON.stringify(value);
 }
@@ -191,6 +198,7 @@ export function deploymentConfig(env = process.env, environment = "production", 
     mailFromAddress,
     setupOperatorEmail,
     sessionSecret: secret(required(env,"SESSION_SECRET"),"SESSION_SECRET"),
+    installationKey: installationKey(required(env,"INSTALLATION_KEY")),
     setupToken: claimsOwner ? secret(required(env,"SETUP_TOKEN"),"SETUP_TOKEN") : optionalSecret(optional(env.SETUP_TOKEN),"SETUP_TOKEN"),
     setupOperatorDisplayName,
     mailProviderApiKey,

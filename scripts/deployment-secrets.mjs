@@ -12,6 +12,16 @@ import { join } from 'node:path';
 // one on purpose.
 export const signingSecrets = ['SESSION_SECRET', 'SUBSCRIBER_TOKEN_SECRET', 'WEBHOOK_SIGNING_SECRET', 'OIDC_TRANSACTION_SECRET'];
 
+// The generated key Base seals the dependency signing keys with at rest. Any other
+// value locks every sealed key away (503 installation_key_unavailable), sign-in
+// included once an Auth provider is linked, so a Worker that holds one always keeps
+// it and the value reaches only a Worker without one. No replace list takes it:
+// `rer deploy --rotate-secret INSTALLATION_KEY` runs rer's own rotation, which binds
+// INSTALLATION_KEY_PREVIOUS, re-seals and verifies every dependency key, then retires
+// that binding. This upload never carries INSTALLATION_KEY_PREVIOUS, so Wrangler keeps
+// whatever the Worker holds.
+export const installationKeySecret = 'INSTALLATION_KEY';
+
 export function replacedSecrets(env = process.env) {
   // rer deploy --rotate-secret NAME reaches this script as RER_ROTATE_SECRETS.
   const sources = [['LAMP_REPLACE_SECRETS', 'LAMP_REPLACE_SECRETS'], ['RER_ROTATE_SECRETS', 'rer deploy --rotate-secret']];
@@ -29,9 +39,10 @@ export function ignoredOidcSecretNotice(config, kept) {
   return 'Kept the OIDC_TRANSACTION_SECRET this Worker already holds; the value in your input file was not uploaded. A page first deployed by Lamp 1.6.0 or earlier holds it empty: if you have just added it to your file for single sign-on, deploy once with --rotate-secret OIDC_TRANSACTION_SECRET.';
 }
 
-/** The signing secrets this upload leaves as they are on a Worker that holds them. */
+/** The signing secrets and installation key this upload leaves as they are on a Worker that holds them. */
 export function keptSecrets(held, replace = []) {
-  return signingSecrets.filter(name => held.includes(name) && !replace.includes(name));
+  return [...signingSecrets.filter(name => held.includes(name) && !replace.includes(name)),
+    ...(held.includes(installationKeySecret) ? [installationKeySecret] : [])];
 }
 
 export async function withDeploymentSecrets(config, kept, action) {
@@ -44,6 +55,7 @@ export async function withDeploymentSecrets(config, kept, action) {
     MAIL_PROVIDER_API_KEY: config.mailProviderApiKey ?? "",
     MAIL_API_KEY: config.mailApiKey ?? "",
     SESSION_SECRET: config.sessionSecret,
+    [installationKeySecret]: config.installationKey,
     SETUP_TOKEN: config.setupToken,
     AUTH_PROVIDERS:config.authProviders??"",
     // Absent, it is left out rather than blanked: Wrangler keeps what the Worker holds.
