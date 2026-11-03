@@ -8,6 +8,12 @@ import { assertUpdateLinkSurfaces } from './helpers/update-link-surfaces.mjs';
 import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
+import { assertIncidentReferences } from './helpers/incident-references-flow.mjs';
+
+test('INCIDENT-003 — manual and authenticated intake share durable references and permanent public addresses through deletion, failed creation and restart', async () => {
+  const j = await openStatusJourney();
+  try { await assertIncidentReferences(j); } finally { await j.close(); }
+});
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
