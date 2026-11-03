@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ef653300aaa969287c8102e06d2561385df5d06c1dab1f7822ae065c6ba5be9e",
+      "sha256": "aea425ff707d4a47de36a5985eec1ba85e97a9634016c4aafedaf88cf22e0f39",
       "executable": false
     },
     "DEMO.md": {
@@ -6800,7 +6800,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "3936bddc9b7118e48aa4bb908dcad9944e5e67b8ef43a508504ca8eb3f856c96",
+      "sha256": "47a332f22fbae3e5fd79cc02fcd9a3eee69accd97539b1dd43f19fa76daf69ac",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -7141,6 +7141,10 @@
     },
     "tests/e2e/helpers/subscriber-management-fixture.mjs": {
       "sha256": "aeef10ccf9d0b4156daab22890af511b1564be947a0af35155a9a077267fcc4f",
+      "executable": false
+    },
+    "tests/e2e/helpers/subscriber-one-click-flow.mjs": {
+      "sha256": "d04338b1d0d3ce62828290c7ce491ca122d982f9c81f4c5f3bb817a14e63b7f7",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-preferences-flow.mjs": {
