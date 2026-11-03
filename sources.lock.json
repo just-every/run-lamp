@@ -448,7 +448,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d75c2f73cbc3b74576065a5910e0fb126d7b54d211d959fa5ab265e48340373b",
+      "sha256": "cecb791dcf3498642b44da8004d330554645f65596a01ea1483b8f2c8c24e09d",
       "executable": false
     },
     "AGENTS.md": {
@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "da12d808b0a8e875bc0425c87cdae1a4743a9b9f0d4d30df7b78414bba43481c",
+      "sha256": "f7811fcd6ee297bc87cabce3b203b21e92e6ec5cbf3bc8d4a543e47f8d1b4523",
       "executable": false
     },
     "DEMO.md": {
@@ -6756,7 +6756,7 @@
       "executable": false
     },
     "tests/chat-desk/flow.mjs": {
-      "sha256": "5b15ceef0b0009b9ef644445f67f454a9b8535b3df8a95a5262f93281002f3a5",
+      "sha256": "98390755c1f0f2653cea5dc13445769d746ec58fa8f5cb78140a531978cdd5ce",
       "executable": false
     },
     "tests/chat-desk/roles.mjs": {
@@ -6764,7 +6764,7 @@
       "executable": false
     },
     "tests/chat-desk/runtime.mjs": {
-      "sha256": "fd34447e287da392d0db63fc2f3adc494b62f5963bafebb313a805e3f6ba1912",
+      "sha256": "f8025a517125e5d8461efa2655fd2f074eed0c8fdef2491deb86e9515a90c8b2",
       "executable": false
     },
     "tests/chat-desk/settings-browser-flow.mjs": {
@@ -7648,7 +7648,7 @@
       "executable": false
     },
     "tests/fixtures/chat-desk/worker.ts": {
-      "sha256": "a79c31ac2142a50e04662f5a849a2cefb19118034083e61fe60aea71e6da0e8a",
+      "sha256": "109cb49563a6ee3338236f7fd5745b1095a858173d782f8932afa159c47ba862",
       "executable": false
     },
     "tests/fixtures/instatus/large/instatus-audience-groups.json": {
