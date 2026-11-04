@@ -1,20 +1,23 @@
+import { componentIdChunks } from "../deliveries/publication";
 import { eventPreferenceSql } from "../deliveries/subscriber-eligibility";
 
 export function createChatEventRepository(db: D1Database) {
   return {
     maintenanceStatements(input: {eventId:string;componentIds:readonly string[];queuedAt:string;recipientScope?:"eligible"|"previous";previousEventIds?:readonly string[]}) {
-      const placeholders=input.componentIds.length?input.componentIds.map(()=>"?").join(','):"NULL";
       const previous=input.recipientScope==='previous';
-      const previousIds=input.previousEventIds ?? [];
-      const eligibility=previous
-        ? `EXISTS(SELECT 1 FROM channel_subscriber_events prior WHERE prior.subscriber_id=s.id AND prior.kind='maintenance' AND prior.event_id IN (${previousIds.length?previousIds.map(()=>'?').join(','):'NULL'}))`
-        : `(s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc JOIN components c ON c.id=sc.component_id WHERE sc.subscriber_id=s.id AND sc.component_id IN (${placeholders}) AND c.internal=0)) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (${placeholders}) AND c.internal=0)`;
-      return [db.prepare(`INSERT OR IGNORE INTO channel_subscriber_events(id,subscriber_id,event_id,kind,queued_at)
-        SELECT ? || '.' || s.id,s.id,?,'maintenance',? FROM subscriber_directory s
-        WHERE s.channel IN ('slack','teams') AND s.state='active' AND ${eventPreferenceSql("maintenance")}
-          AND ${eligibility}
-          AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)`)
-        .bind(input.eventId,input.eventId,input.queuedAt,...(previous?previousIds:[...input.componentIds,...input.componentIds]),input.eventId)];
+      return (previous ? [[]] : componentIdChunks(input.componentIds)).map(componentIds => {
+        const placeholders=componentIds.length?componentIds.map(()=>"?").join(','):"NULL";
+        const previousIds=input.previousEventIds ?? [];
+        const eligibility=previous
+          ? `EXISTS(SELECT 1 FROM channel_subscriber_events prior WHERE prior.subscriber_id=s.id AND prior.kind='maintenance' AND prior.event_id IN (${previousIds.length?previousIds.map(()=>'?').join(','):'NULL'}))`
+          : `(s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc JOIN components c ON c.id=sc.component_id WHERE sc.subscriber_id=s.id AND sc.component_id IN (${placeholders}) AND c.internal=0)) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (${placeholders}) AND c.internal=0)`;
+        return db.prepare(`INSERT OR IGNORE INTO channel_subscriber_events(id,subscriber_id,event_id,kind,queued_at)
+          SELECT ? || '.' || s.id,s.id,?,'maintenance',? FROM subscriber_directory s
+          WHERE s.channel IN ('slack','teams') AND s.state='active' AND ${eventPreferenceSql("maintenance")}
+            AND ${eligibility}
+            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)`)
+          .bind(input.eventId,input.eventId,input.queuedAt,...(previous?previousIds:[...componentIds,...componentIds]),input.eventId);
+      });
     },
     async pending(limit:number) {
       return (await db.prepare(`SELECT x.id,x.subscriber_id AS subscriberId,x.kind,d.kind AS channelKind,

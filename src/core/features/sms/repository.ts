@@ -1,3 +1,4 @@
+import { componentIdChunks } from "../deliveries/publication";
 import { finishIncidentSubscriptionStatements } from "../subscribers/incident-lifecycle.repository";
 import { createUlid } from "../../shared/ids";
 import { eventPreferenceSql, incidentThresholdSql, ordinarySubscriptionSql, incidentFollowRecipientSql, incidentFinalDeliverySql, incidentDispatchAllowedSql } from "../deliveries/subscriber-eligibility";
@@ -78,21 +79,28 @@ export function createSmsRepository(db:D1Database) {
       return result[0].results.length>0;
     },
     publicationStatements(input:{eventId:string;kind:SmsDelivery['kind'];incidentUpdateId?:string;maintenanceId?:string;incidentReportId?:string;componentIds:readonly string[];queuedAt:string;recipientScope?:'eligible'|'previous';previousEventIds?:readonly string[];ordinaryEnabled?:boolean}) {
-      const slots=input.componentIds.length?input.componentIds.map(()=>'?').join(','):'NULL';
       const previous=input.recipientScope==='previous';
-      const previousIds=input.previousEventIds??[];
-      const eligible=previous?`EXISTS(SELECT 1 FROM sms_deliveries d WHERE d.subscriber_id=s.id AND d.kind='maintenance-notice' AND d.event_id IN (${previousIds.length?previousIds.map(()=>'?').join(','):'NULL'}))`:
-        `(s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc WHERE sc.subscriber_id=s.id AND sc.component_id IN (${slots}))) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (${slots}) AND c.internal=0)`;
-      const threshold=input.kind==='maintenance-notice'?'1':incidentThresholdSql('(SELECT incident_id FROM follow_event)');
-      const follow=input.kind==='maintenance-notice'?'0':incidentFollowRecipientSql('(SELECT incident_id FROM follow_event)','(SELECT event_at FROM follow_event)',input.kind==='incident-report');
-      return [db.prepare(`WITH follow_event AS (SELECT ${input.kind==='maintenance-notice'?'NULL':`(SELECT incident_id FROM ${input.kind==='incident-update'?'incident_updates':'incident_reports'} WHERE id=?)`} AS incident_id,? AS event_at${input.kind==='incident-update'?`,EXISTS(SELECT 1 FROM incident_updates live_update WHERE live_update.id=? AND live_update.is_retroactive=0) AS live`:''})
-        INSERT OR IGNORE INTO sms_deliveries(id,subscriber_id,event_id,kind,incident_update_id,maintenance_id,incident_report_id,outcome,queued_at,outcome_at)
-        SELECT ?||'.'||s.id,s.id,?,?,?,?,?,CASE WHEN s.state='active' THEN 'queued' ELSE 'suppressed' END,?,CASE WHEN s.state='active' THEN NULL ELSE ? END
-        FROM subscriber_directory s WHERE s.channel='sms' AND s.state IN ('active','deactivated') AND s.destination NOT LIKE 'deleted:%' AND ((${ordinarySubscriptionSql()} AND ${input.ordinaryEnabled===false?'0':'1'} AND ${eligible}
-          AND ${eventPreferenceSql(input.kind==='maintenance-notice'?'maintenance':'incidents')} AND ${threshold}) OR (${follow}${input.kind==='incident-update'?' AND (SELECT live FROM follow_event)':''}))
-          ${input.kind==='maintenance-notice'?'AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)':''}`)
-        .bind(...(input.kind==='maintenance-notice'?[]:[input.incidentUpdateId??input.incidentReportId??null]),input.queuedAt,...(input.kind==='incident-update'?[input.incidentUpdateId??null]:[]),input.eventId,input.eventId,input.kind,input.incidentUpdateId??null,input.maintenanceId??null,input.incidentReportId??null,input.queuedAt,input.queuedAt,
-          ...(previous?previousIds:[...input.componentIds,...input.componentIds]),...(input.kind==='maintenance-notice'?[input.eventId]:[]))];
+      const chunks=previous?[[]]:componentIdChunks(input.componentIds);
+      // The selected match and the public-component witness may be in different
+      // chunks. Pair them independently to retain the original SMS predicate;
+      // deterministic event/subscriber ids make overlap idempotent in one batch.
+      return chunks.flatMap(componentIds => chunks.map(publicIds => {
+        const slots=componentIds.length?componentIds.map(()=>'?').join(','):'NULL';
+        const publicSlots=publicIds.length?publicIds.map(()=>'?').join(','):'NULL';
+        const previousIds=input.previousEventIds??[];
+        const eligible=previous?`EXISTS(SELECT 1 FROM sms_deliveries d WHERE d.subscriber_id=s.id AND d.kind='maintenance-notice' AND d.event_id IN (${previousIds.length?previousIds.map(()=>'?').join(','):'NULL'}))`:
+          `(s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc WHERE sc.subscriber_id=s.id AND sc.component_id IN (${slots}))) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (${publicSlots}) AND c.internal=0)`;
+        const threshold=input.kind==='maintenance-notice'?'1':incidentThresholdSql('(SELECT incident_id FROM follow_event)');
+        const follow=input.kind==='maintenance-notice'?'0':incidentFollowRecipientSql('(SELECT incident_id FROM follow_event)','(SELECT event_at FROM follow_event)',input.kind==='incident-report');
+        return db.prepare(`WITH follow_event AS (SELECT ${input.kind==='maintenance-notice'?'NULL':`(SELECT incident_id FROM ${input.kind==='incident-update'?'incident_updates':'incident_reports'} WHERE id=?)`} AS incident_id,? AS event_at${input.kind==='incident-update'?`,EXISTS(SELECT 1 FROM incident_updates live_update WHERE live_update.id=? AND live_update.is_retroactive=0) AS live`:''})
+          INSERT OR IGNORE INTO sms_deliveries(id,subscriber_id,event_id,kind,incident_update_id,maintenance_id,incident_report_id,outcome,queued_at,outcome_at)
+          SELECT ?||'.'||s.id,s.id,?,?,?,?,?,CASE WHEN s.state='active' THEN 'queued' ELSE 'suppressed' END,?,CASE WHEN s.state='active' THEN NULL ELSE ? END
+          FROM subscriber_directory s WHERE s.channel='sms' AND s.state IN ('active','deactivated') AND s.destination NOT LIKE 'deleted:%' AND ((${ordinarySubscriptionSql()} AND ${input.ordinaryEnabled===false?'0':'1'} AND ${eligible}
+            AND ${eventPreferenceSql(input.kind==='maintenance-notice'?'maintenance':'incidents')} AND ${threshold}) OR (${follow}${input.kind==='incident-update'?' AND (SELECT live FROM follow_event)':''}))
+            ${input.kind==='maintenance-notice'?'AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)':''}`)
+          .bind(...(input.kind==='maintenance-notice'?[]:[input.incidentUpdateId??input.incidentReportId??null]),input.queuedAt,...(input.kind==='incident-update'?[input.incidentUpdateId??null]:[]),input.eventId,input.eventId,input.kind,input.incidentUpdateId??null,input.maintenanceId??null,input.incidentReportId??null,input.queuedAt,input.queuedAt,
+            ...(previous?previousIds:[...componentIds,...publicIds]),...(input.kind==='maintenance-notice'?[input.eventId]:[]));
+      }));
     },
     async deliveries(updateId?:string,limit=100,pending=false) {
       return (await db.prepare(`SELECT d.id,d.subscriber_id AS subscriberId,s.destination,d.event_id AS eventId,d.kind,d.incident_update_id AS incidentUpdateId,
