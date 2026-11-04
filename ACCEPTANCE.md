@@ -376,7 +376,7 @@ Core · published · **partial** · Cites BASE-AUDIT-001
 3. Every affected uptime figure is recomputed within sixty seconds.
 4. The audit records operator, interval and reason.
 
-**Evidence.** `tests/e2e/public-contract.test.mjs`
+**Evidence.** `tests/e2e/public-contract.test.mjs`  Additional replayed evidence (pending clause judgment): `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story), loading `tests/e2e/helpers/uptime-correction-journey.mjs` (uptimeCorrectionJourney): native corrected state, exact closed interval and reason; empty-reason and unauthenticated refusal without history changes; one superseding fact with all original values retained; one measured sixty-second deadline per correction for all four warmed public layouts, their daily minutes and the overall uptime figure, native component collection, component uptime badge and both affected monthly and quarterly JSON, CSV and PDF reports; searchable and exported operator audit plus persisted interval and reason. The controlled Worker clock isolates a two-hour outage across a month and quarter boundary.
 **Gap.** Old cited evidence asserts The corrected state is retained; The stored correction retains the exact interval start; The stored correction retains the exact interval end; The reason is retained. Unasserted: Every affected figure is observed within sixty seconds.
 
 #### UPTIME-005 — Stated method
@@ -581,7 +581,7 @@ Core · published · **partial**
 1. Page, Atom feed, widget and email retain every populated update field.
 2. Each surface omits fields the update does not carry.
 
-**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`. Changed in 1.10.0 with UPDATE-013: every surface renders the same links from the shared renderer; RELEASE.json records the change.
+**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`. Changed in 1.10.0 with UPDATE-013: every surface renders the same links from the shared renderer; RELEASE.json records the change. Additional proposed proof from candidate d45c1787ac530001c268ebc3fb7e75ab0e3183ea: `tests/e2e/publishing-contract.test.mjs` (reviewed incident from private template to immutable updates, recovery, report and audited deletion): complete populated fields and configured-zone commitments on the public root, permalink, matching Atom event and actual subscriber email; distinctive blank-optional and resolved publications omit absent fields. `tests/e2e/public-contract.test.mjs` (owner maintains a complete catalogue and customers read, refresh, embed and retain its public story): an installed widget retains every populated wording field and the exact configured-zone commitment, replaces it with a distinct blank-optional publication, then clears stale wording and commitment after resolution. Both journeys run in push Verify. These assertions supplement the evidence without changing main’s partial judgment or recorded gap.
 **Gap.** Old cited evidence asserts Atom renders affected-audience wording; Atom renders customer-impact wording; Atom renders what-still-works wording; Atom renders details wording. Unasserted: The public root page renders every populated update field; Atom renders the populated next-update commitment; widget renders the populated next-update commitment; The email renders the populated affected-audience wording; The email renders the populated customer-impact wording; The email renders the populated what-still-works wording; The email renders the populated next-update commitment; absent fields omitted everywhere.
 
 #### UPDATE-003 — Sets the lifecycle
@@ -640,7 +640,7 @@ Core · published · **partial**
 2. Before its time no public surface or notification carries it.
 3. Under the owner’s review policy, an unreviewed due update stays a draft and raises a NOTIFY-006 operator notice.
 
-**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`
+**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`. Additional proposed proof: `tests/e2e/publishing-contract.test.mjs` (UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence), loading `tests/e2e/helpers/scheduled-update-flow.mjs` (scheduledUpdateFlow): acceptance 1 measures committed publication and public root and permalink readback within 240 seconds of the saved instant; acceptance 2 reconciles every populated retained artifact and public response, unchanged generation and draft, absent notification work and subscriber transport silence before eligibility, then positively observes selected email and webhook dispatch. `tests/e2e/update-reminders.test.mjs` (NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private): acceptance 3 retains the entire unreviewed scheduled draft, zero updates, public privacy, actual operator mail and repeated-tick deduplication. Current main status and gap are retained pending clause judgment.
 **Gap.** Old cited evidence asserts After its scheduled trigger the specific incident permalink contains the scheduled draft’s unique wording; public privacy before time. Unasserted: 240-second bound; no early notification; review hold stays draft; operator notice for held schedule.
 
 #### UPDATE-007 — Review
@@ -852,7 +852,7 @@ Core · published · **partial** · Cites BASE-ACCESS-003, BASE-PUBLIC-001 · Re
 3. The message signature covers both unsubscribe headers.
 4. One token's rate allowance never consumes another token's allowance, including requests from one mailbox provider.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/rer-mail.test.mjs`
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/rer-mail.test.mjs`; `tests/e2e/helpers/subscriber-one-click-flow.mjs`; the R-40 live-provider receipt remains outstanding.
 **Gap.** Old cited evidence asserts mail unsubscribe value is present; web unsubscribe value is present; one-click declaration; URL-encoded deactivation. Unasserted: visible unsubscribe link in notification body; multipart form deactivation; DKIM coverage of both unsubscribe headers; per-token allowance independence.
 
 #### SUB-007 — Managing a subscription
@@ -911,7 +911,7 @@ Core · published · **partial**
 4. Ten consecutive failed webhook deliveries deactivate the endpoint with that reason and email its contact.
 5. A deactivated destination receives no further notification.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/helpers/subscriber-failures-flow.mjs` supplements the evidence with native failure and queued/future suppression assertions; inherited judgment and gaps retained pending review.
 **Gap.** Old cited evidence asserts hard bounce deactivates the subscriber; hard-bounce reason is recorded; spam complaint deactivates the subscriber; spam-complaint reason is recorded. Unasserted: a fresh notification after the complaint is suppressed; post-deactivation pending webhook backlog sends nothing.
 
 #### SUB-011 — Operator view
@@ -1448,7 +1448,7 @@ Core · published · **partial** · From ACCESS-001 · Cites BASE-SIGNIN-001 · 
 1. The optional provider is unused until the owner links it and enables sign-in.
 2. Auth, Google, Microsoft and Okta sign-in can be linked while native email access remains usable.
 
-**Evidence.** `tests/auth-adoption/dependencies.test.mjs`, `tests/auth-adoption/portability.test.mjs`, `tests/auth-adoption/upgrade.test.mjs`
+**Evidence.** `tests/auth-adoption/dependencies.test.mjs`, `tests/auth-adoption/portability.test.mjs`, `tests/auth-adoption/upgrade.test.mjs`  Additional candidate evidence (pending clause judgment): `tests/auth-adoption/dependencies.test.mjs` (ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable) proves acceptance 1 through owner-approved dependency linking, disabled and unlinked refusals, and acceptance 2 through signed Auth authorization, private_key_jwt exchange, callback, exact native operator readback and a fresh independent email sign-in. `tests/auth-adoption/sign-in-providers.test.mjs` (ACCESS-002 the owner sets up Google in Settings, tests the real flow, replaces and disconnects it, and the secret is write-only; ACCESS-002 TEAM-003 Okta pairs people and deploy providers complete native sign-in while unusable rows and Managed hosting keep their boundaries) completes Google, Okta and single-tenant Microsoft callbacks, checks native operator sessions, exact Microsoft subject pairing, disabled and unlinked refusals, and independent native email access after Microsoft. `tests/auth-adoption/portability.test.mjs` (SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority) and `tests/auth-adoption/upgrade.test.mjs` (ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials) retain the existing adoption and restore rider. Standards fixtures do not qualify real-tenant register rows R-80, R-81 or R-82, or change Microsoft app-specific-subject setup limitations.
 **Gap.** The cited dependency journey asserts optional provider discovery, linked/enabled state, provider redirect and retained email access against one standards fixture. It does not complete sign-in for the full named provider set. Unasserted outcomes: Auth standards sign-in completes; Google standards sign-in completes; Microsoft standards sign-in completes; Okta standards sign-in completes.
 
 ### Moving in
