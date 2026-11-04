@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9b0eb501eb33967731e52fe0ace0487a1582f48ccbfcb9b640fcd570cd1e0912",
+      "sha256": "ddfea80dc386a3bbf4a8a03b5d43df41702d2e67d69fe9e9417f95048be9a63a",
       "executable": false
     },
     "DEMO.md": {
@@ -6899,6 +6899,10 @@
       "sha256": "8edf31a7fd61f3e93f7dacb565a0234fd7681f785a88cf89676e00567cdb5335",
       "executable": false
     },
+    "tests/e2e/helpers/conditional-component-flow.mjs": {
+      "sha256": "a2509e905da20bcf1b4108f8f87af1b91cf7450f411111aea8397f31ef52284b",
+      "executable": false
+    },
     "tests/e2e/helpers/email-capacity-flow.mjs": {
       "sha256": "eab7f1474b57c8ef07c4ace9ab671f5368905a9d4a1a4579ecbfaf3b03d3b67e",
       "executable": false
@@ -7276,7 +7280,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "4b464a10035996602abb7ebaa4c3cab9a766cf6cdfea2710c1acaff254fe08ee",
+      "sha256": "7550518155553b0405131f746073fbf21a31259d0f3d7f9e1578f5f724b7a76c",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
@@ -7332,7 +7336,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "2f7693d90fe30a86234808a6d5b658835166649e726796040b9952471849fa78",
+      "sha256": "feb11fda427d9fda0c5d8d5c5d64f23e39a218265c3e00d41a9166f7867c80a6",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {

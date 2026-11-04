@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { openStatusJourney } from './helpers/status-journey.mjs';
+import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
@@ -109,6 +109,12 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       // publication work before measuring this independent silent import.
       await runtime.tick(Date.now());
       const files = invitationFiles(source, fixtures(source)), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
+      if (source === 'statuspage') {
+        const componentFile = files.find(file => file.name === 'components.json');
+        const components = JSON.parse(componentFile.text);
+        components[0].only_show_if_degraded = true;
+        componentFile.text = JSON.stringify(components);
+      }
       const before = await counts(), quiet = await notificationActivity(runtime);
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
       assert.deepEqual(await counts(), before, `${source} review writes nothing`);
@@ -120,6 +126,25 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       const after = await counts();
       for (const [kind, plural] of [['component', 'components'], ['group', 'groups'], ['incident', 'incidents'], ['maintenance', 'maintenance'], ['subscriber', 'subscribers']]) {
         assert.equal(after[plural] - before[plural], result.report.counts[kind].imported + result.report.counts[kind].changed, `${source} applies its complete reviewed ${kind} inventory`);
+      }
+      if (source === 'statuspage') {
+        const sourceComponents = parsed(files, 'components.json');
+        const imported = (await api('/api/app/components')).body.components;
+        const conditional = imported.find(row => row.name === sourceComponents[0].name);
+        const visible = imported.find(row => row.name === sourceComponents[1].name);
+        assert.ok(conditional && visible, 'both reviewed source components are independently readable after import');
+        assert.equal(conditional.onlyShowIfDegraded, true, 'reviewed import preserves a true conditional flag');
+        assert.equal(visible.onlyShowIfDegraded, false, 'reviewed import preserves the false flag control');
+        assert.equal(conditional.publicState, 'Operational');
+        const componentLists = await eventually(async () => Promise.all(['/api/v2/components.json', '/api/v2/summary.json'].map(async path => {
+          const response = await fetch(publicOrigin + path);
+          assert.equal(response.status, 200);
+          return (await response.json()).components;
+        })), lists => lists.every(rows => !rows.some(row => row.name === conditional.name) && rows.some(row => row.name === visible.name)), 'operational imported conditional component is omitted from Statuspage-compatible lists');
+        for (const rows of componentLists) {
+          assert.equal(rows.find(row => row.name === visible.name).only_show_if_degraded, false, 'the visible control explicitly exposes its compatible conditional flag');
+          assert.ok(!rows.some(row => row.name === conditional.name), 'a preserved true flag hides its Operational component');
+        }
       }
       const incidents = (await api('/api/app/incidents')).body.incidents;
       for (const row of sourceHistory(source, files)) {

@@ -13,6 +13,7 @@ import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
 import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
 import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
 import { publicHistoryFlow } from './helpers/public-history-flow.mjs';
+import { conditionalComponentFlow } from './helpers/conditional-component-flow.mjs';
 
 test('HIST-008 — reviewed imported history stays completely browsable without scripts', { timeout: 120_000 }, browsableHistoryFlow);
 
@@ -144,6 +145,7 @@ async function statedUptimeMethodJourney() {
 // One catalogue-to-customer journey: no renderer or uptime helper is imported.
 test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
   await statedUptimeMethodJourney();
+  await conditionalComponentFlow();
   const j = await openStatusJourney({ pageHost: 'localhost' });
   let browser;
   try {
