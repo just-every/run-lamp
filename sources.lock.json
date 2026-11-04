@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "parent": null,
   "edition": "just-every/lamp",
-  "manifest": "65254f11040e3fb91db608fa6d2d7d9c41fdc68d851db974a69ff846b6f4b27e",
+  "manifest": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf",
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
@@ -368,6 +368,34 @@
         "digest": "689c5fbd78ec243f10d5ff0bfce360f1b385d6659358d27fe064d769074ade13",
         "sha256": "ea21210645c8e4fa22b910b3851c4cd34f985ddfb35a6b8faf6cac1c8ea3a7ce"
       }
+    },
+    {
+      "id": "just-every/lamp-import-d1",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "modules/import-kit/src/d1/preserved-reverse.ts"
+        ],
+        "origin": {
+          "repository": "https://github.com/runeditrun/base.git",
+          "revision": "052e5ea88c1e7b73cca10c4813524a5f72580af8",
+          "path": ".",
+          "paths": [
+            "modules/import-kit/src/d1/preserved-reverse.ts"
+          ]
+        },
+        "mappings": [
+          {
+            "path": "modules/import-kit/src/d1/preserved-reverse.ts",
+            "originPath": "modules/import-kit/src/d1/preserved-reverse.ts"
+          }
+        ]
+      },
+      "baseline": {
+        "key": "08eebdfe1a175e8a134e1b9e66f266ce5c4a775490b404b8856085ddb156b036",
+        "digest": "1dc72aaa83b3f6f805c6268e73bfa229723c374e3bace08d79647828f37b1b2b",
+        "sha256": "235914e65b007aec993d6aaa6c58665cb226a976fce3dc6158c87f8a2182e957"
+      }
     }
   ],
   "files": {
@@ -460,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "504a737c88c3c26238a727aa9701d4e621c5673ec84384c14137e4a65055794d",
+      "sha256": "a4209037a7f8c65d449d59fbcbf0180eea4c00e2872e8b3c6334b72f9c304a33",
       "executable": false
     },
     "BASELINE.md": {
@@ -668,7 +696,7 @@
       "executable": false
     },
     "edition.json": {
-      "sha256": "65254f11040e3fb91db608fa6d2d7d9c41fdc68d851db974a69ff846b6f4b27e",
+      "sha256": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf",
       "executable": false
     },
     "HANDOVER.md": {
