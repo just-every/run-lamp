@@ -7280,7 +7280,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "a0d125a46ac9bf6b0aeaefc8f99b34ac2dc0b5ae402670429b69929caa787a5e",
+      "sha256": "8b4b568142d3f7bbd98036be7557d078dc05732eeaf7d76e4f155f9e32e62eaa",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {

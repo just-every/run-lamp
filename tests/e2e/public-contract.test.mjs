@@ -379,18 +379,18 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await j.save(incident.id, widgetWording);
     const linkedUpdate = (await j.publish(incident.id)).update;
     await j.visible('/', incident.title);
-    const maintenance = (await j.json('/api/app/maintenance', 'POST', {
+    const refreshMaintenance = (await j.json('/api/app/maintenance', 'POST', {
       title: 'Customer dashboard upgrade', affectedAudience: 'Dashboard users', customerImpact: 'Dashboard access may pause.',
       startsAt: new Date(Date.now() - 60_000).toISOString(), endsAt: new Date(Date.now() + 3600_000).toISOString(),
       componentIds: [other.id], autoStart: false, autoComplete: false,
     }, 201)).maintenance;
-    await j.json(`/api/app/maintenance/${maintenance.id}/start`, 'POST', {});
+    await j.json(`/api/app/maintenance/${refreshMaintenance.id}/start`, 'POST', {});
     const firstStatus = await eventually(async () => (await j.publicResponse('/api/public/status')).json(),
-      status => status.maintenance?.reference === maintenance.reference, 'in-progress maintenance reaches the refresh response');
+      status => status.maintenance?.reference === refreshMaintenance.reference, 'in-progress maintenance reaches the refresh response');
     const fields = value => Object.keys(value).sort();
     assert.deepEqual(fields(firstStatus), ['generatedAt', 'incident', 'maintenance', 'overall', 'version']);
     assert.deepEqual(fields(firstStatus.maintenance), ['reference', 'state', 'title']);
-    assert.deepEqual(firstStatus.maintenance, { reference: maintenance.reference, title: 'Customer dashboard upgrade', state: 'In progress' });
+    assert.deepEqual(firstStatus.maintenance, { reference: refreshMaintenance.reference, title: 'Customer dashboard upgrade', state: 'In progress' });
     assert.deepEqual(fields(firstStatus.incident), ['impact', 'lifecycle', 'message', 'publishedAt', 'reference', 'summary', 'title']);
     const publishedUpdate = (await j.read(incident.id)).updates[0];
     assert.equal(firstStatus.version, 1);
@@ -454,7 +454,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the script-free incident form fits its public document');
     } finally { await staticContext.close(); }
     assert.ok(!permalink.includes(hidden.name));
-    await j.json(`/api/app/maintenance/${maintenance.id}/complete`, 'POST', {});
+    await j.json(`/api/app/maintenance/${refreshMaintenance.id}/complete`, 'POST', {});
     const feedBefore = await j.publicText('/feed.atom');
     assert.ok(feedBefore.includes(incident.reference));
     for (const path of ['/', '/feed.atom', '/widget.js']) {
