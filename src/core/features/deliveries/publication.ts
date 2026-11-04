@@ -2,6 +2,14 @@ import { eventPreferenceSql, incidentThresholdSql, ordinarySubscriptionSql, inci
 import type { DeliveryChannel } from "../../shared/domain";
 import { createUlid } from "../../shared/ids";
 
+/** Two component lists plus at most 13 fixed binds stay below D1's 100.
+ * Keep one empty chunk so incident follows still capture without components. */
+export function componentIdChunks(componentIds: readonly string[]): string[][] {
+  const chunks: string[][] = [];
+  for (let offset = 0; offset < componentIds.length; offset += 40) chunks.push(componentIds.slice(offset, offset + 40));
+  return chunks.length ? chunks : [[]];
+}
+
 export type NotificationEventType = "incident-update" | "maintenance-notice" | "incident-report";
 
 export interface NotificationPublicationInput {
@@ -28,7 +36,6 @@ export function notificationPublicationStatements(binding: D1Database, input: No
   const channels = [...new Set(input.eventType === "maintenance-notice" ? input.channels : [...input.channels, ...followChannels])];
   if (!channels.length) return [];
   const requiresPublishedNotice = input.eventType === "maintenance-notice";
-  const componentPlaceholders = input.componentIds.length ? input.componentIds.map(() => "?").join(", ") : "NULL";
   const statements: D1PreparedStatement[] = [];
   if (input.incidentUpdateId) {
     for (const channel of input.channels) {
@@ -36,8 +43,13 @@ export function notificationPublicationStatements(binding: D1Database, input: No
         .bind(input.incidentUpdateId, channel, input.queuedAt));
     }
   }
-  for (const channel of channels) {
-    const selection = input.componentIds.length
+  const usePrevious = input.recipientScope === "previous";
+  // Return every chunk to the caller's original atomic batch. Unique event /
+  // subscriber / channel keys collapse recipients matching multiple chunks.
+  const chunks = usePrevious ? [[]] : componentIdChunks(input.componentIds);
+  for (const channel of channels) for (const componentIds of chunks) {
+    const componentPlaceholders = componentIds.length ? componentIds.map(() => "?").join(", ") : "NULL";
+    const selection = componentIds.length
       ? `(s.selection_mode = 'all' AND EXISTS (SELECT 1 FROM components public_component WHERE public_component.id IN (${componentPlaceholders}) AND public_component.internal = 0))
           OR (s.selection_mode = 'selected' AND EXISTS (
             SELECT 1
@@ -48,7 +60,6 @@ export function notificationPublicationStatements(binding: D1Database, input: No
               AND selected_component.internal = 0
           ))`
       : "0";
-    const usePrevious = input.recipientScope === "previous";
     const previousPlaceholders = input.previousEventIds?.length ? input.previousEventIds.map(() => "?").join(", ") : "NULL";
     const eventPreference = eventPreferenceSql(input.eventType === "maintenance-notice" ? "maintenance" : "incidents");
     const threshold = input.eventType === "maintenance-notice" ? "1" : incidentThresholdSql("(SELECT incident_id FROM follow_event)");
@@ -78,7 +89,7 @@ export function notificationPublicationStatements(binding: D1Database, input: No
       input.queuedAt,
       input.eventId,
       input.eventType,
-      ...(usePrevious ? [...(input.previousEventIds ?? []), channel] : [channel, ...input.componentIds, ...input.componentIds]),
+      ...(usePrevious ? [...(input.previousEventIds ?? []), channel] : [channel, ...componentIds, ...componentIds]),
       ...(requiresPublishedNotice ? [input.eventId] : []),
     ));
   }
