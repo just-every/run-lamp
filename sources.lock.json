@@ -1388,7 +1388,7 @@
       "executable": false
     },
     "modules/import-kit/src/d1/preserved-reverse.ts": {
-      "sha256": "72ea2770b1d7cddb292f50bb2715d02c2edef94be118a1724367545822732170",
+      "sha256": "2c2bf627370396eaab5ba63a2650791d1aa539415a54cc24f5d1f2144f86b725",
       "executable": false
     },
     "modules/import-kit/src/d1/provenance-set.ts": {
@@ -5200,7 +5200,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/door.ts": {
-      "sha256": "47c2bd597e44fbd04947d647366c6cfe7f5241af58b0bd5323f3f080e095cd5a",
+      "sha256": "46c69158a570d51a32d16ef80b28ae227c0da866ca94e2f207e2b20352b0a77d",
       "executable": false
     },
     "src/core/features/statuspage-import/expiry-audit.ts": {
@@ -7412,7 +7412,7 @@
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
-      "sha256": "c23641c9888db9de69a56e0148788e764fdabc9a78a910246b2c91516ccaf090",
+      "sha256": "aa2b437e2f51c5adf3779240de4d564500386fc46bc82f1b4c2f564551e09710",
       "executable": false
     },
     "tests/e2e/real-session-helper.mjs": {
@@ -7448,7 +7448,7 @@
       "executable": false
     },
     "tests/e2e/sorry-import.test.mjs": {
-      "sha256": "8dbc7a352ffe90ac497c2972c72712cb64da063526231eea6797b6672e0db000",
+      "sha256": "bed9e78b053e066add2b418071517abc3c1dadb1411018528d5a1c01397ae68e",
       "executable": false
     },
     "tests/e2e/start-runtime.test.mjs": {

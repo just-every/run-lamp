@@ -3,7 +3,7 @@ import { createHash, generateKeyPairSync, randomUUID, sign } from 'node:crypto';
 import { inflateRawSync } from 'node:zlib';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { openStatusJourney } from './helpers/status-journey.mjs';
+import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { sorryReceiptFlow } from './helpers/sorry-receipt-flow.mjs';
 import { sorryCaptureFlow } from './helpers/sorry-capture-flow.mjs';
 import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
@@ -27,7 +27,16 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
   const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
   const kid = 'synthetic-business', installationId = randomUUID(), issuer = 'https://business.example.test';
   const trust = { RER_OWNER_CLAIM_PUBLIC_KEYS: JSON.stringify({ [kid]: publicKey.export({ format: 'jwk' }) }), RER_OWNER_CLAIM_ISSUER: issuer, RER_OWNER_CLAIM_INSTALLATION_ID: installationId };
-  const runtime = await openStatusJourney({ extraBindings: trust });
+  const work = { prepares: 0, builds: 0, finished: 0 };
+  let rebuildHeld, releaseRebuild, failBuild = false;
+  const runtime = await openStatusJourney({ extraBindings: { ...trust, LAMP_TEST_IMPORT_WORK: 'https://import-work.example.test' }, providerEdge: async request => {
+    const url = new URL(request.url);
+    if (url.hostname !== 'import-work.example.test') return;
+    if (url.pathname === '/prepare') work.prepares++;
+    if (url.pathname === '/finished') work.finished++;
+    if (url.pathname === '/rebuild') { work.builds++; await rebuildHeld; if (failBuild) { failBuild = false; return new Response(null, { status: 500 }); } }
+    return new Response(null, { status: 204 });
+  } });
   const origin = runtime.appOrigin, publicOrigin = runtime.publicOrigin, operator = 'synthetic-lamp-owner@example.test';
   const fetch = (input, init) => runtime.raw(input, init);
   const nativeRequest = (path, { json, ...init } = {}) => runtime.raw(path, { ...init, ...(json === undefined ? {} : { body: JSON.stringify(json), headers: { 'Content-Type': 'application/json', ...init.headers } }) });
@@ -44,6 +53,25 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     const door = async (action, source, body, approval = {}) => {
       const response = await nativeRequest(`/api/rer/import/${action}`, { method: 'POST', json: body, headers: { Authorization: `Bearer ${grant(action, source, approval)}` } });
       return { status: response.status, body: await response.json() };
+    };
+    const importWork = async () => ({ ...work });
+    const beforeRebuild = async (action, operation) => {
+      await eventually(importWork, work => work.builds === work.finished, 'earlier import builds settle');
+      const before = await importWork();
+      rebuildHeld = new Promise(resolve => { releaseRebuild = resolve; });
+      let pending, answered;
+      await t.test(`${action} answers before rebuilding the public page`, async () => {
+        try {
+          pending = operation();
+          answered = await Promise.race([pending.then(() => true), new Promise(resolve => setTimeout(() => resolve(false), 10_000))]);
+          assert.equal(answered, true, `${action} answers while its public snapshot rebuild is held`);
+          const during = await eventually(importWork, work => work.builds > before.builds, `${action} schedules a rebuild`);
+          assert.equal(during.finished, before.finished, `${action} answers before the rebuild finishes`);
+        } finally { failBuild = answered === true; releaseRebuild(); rebuildHeld = undefined; await pending; }
+      });
+      await eventually(importWork, work => work.builds === work.finished, 'failed background rebuild settles');
+      await runtime.tick(Date.now());
+      if (answered) t.diagnostic(`PROBE move-in deadline: ${action} answered with the rebuild held; injected background failure recovered through native scheduled retry`);
     };
     const snapshot = async () => {
       const rows = await Promise.all(['/api/app/components', '/api/app/incidents', '/api/app/maintenance', '/api/app/subscribers'].map(path => owner(path)));
@@ -162,7 +190,13 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
       }
       assert.fail(`${action} did not finish`);
     };
+    const preparing = (await importWork()).prepares;
     const reviewed = await plan(files); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+    const prepared = (await importWork()).prepares;
+    assert.equal(prepared, preparing + 1, 'the first Business plan prepares its bundle once');
+    const repeated = await plan(files); assert.deepEqual(repeated, reviewed, 'an unchanged upload returns its complete retained plan');
+    await t.test('unchanged Business plan skips preparation', () => assert.equal(work.prepares, prepared, 'a second unchanged Business plan does not prepare again'));
+    t.diagnostic(`PROBE move-in deadline: first/unchanged Business plans prepare ${prepared - preparing}/${work.prepares - prepared} times`);
     assert.deepEqual(await snapshot(), baseline, 'Business planning writes nothing native');
     const approval = { fingerprint: reviewed.body.fingerprint, approvalRecordId: randomUUID(), approvedAt: new Date().toISOString() };
     assert.equal((await door('apply', 'statuspage', { planId: reviewed.body.planId, reviewedFingerprint: 'unreviewed' }, approval)).status, 403);
@@ -182,15 +216,21 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     addition.incident_updates = addition.incident_updates.map((row, ordinal) => ({ ...row, id: `${addition.id}u${ordinal}`, incident_id: addition.id })); changedRows.push(addition);
     changedFiles.find(file => file.name === 'incidents.json').text = JSON.stringify(changedRows);
     const standing = { catchup: 'bounded', approvalRecordId: randomUUID(), approvedAt: new Date().toISOString() };
+    const beforeChanged = (await importWork()).prepares;
     const caught = await plan(changedFiles, standing); assert.equal(caught.status, 200, JSON.stringify(caught.body));
+    assert.equal((await importWork()).prepares, beforeChanged + 1, 'changed upload bytes prepare a fresh plan');
+    t.diagnostic(`PROBE move-in deadline: changed Business bundle prepares ${work.prepares - beforeChanged} time`);
     assert.deepEqual(await snapshot(), imported, 'catch-up review writes nothing');
-    await run('apply', caught.body, { ...standing, fingerprint: caught.body.fingerprint });
+    await beforeRebuild('apply', () => run('apply', caught.body, { ...standing, fingerprint: caught.body.fingerprint }));
+    await eventually(() => runtime.publicText(`/incidents/${original.reference}`), html => html.includes(changedRows[1].name), 'the changed public incident converges after apply');
     const updated = await snapshot();
     assert.ok(updated.incidents.some(row => row.id === original.id && row.reference === original.reference && row.title === changedRows[1].name));
     assert.equal(updated.incidents.filter(row => row.title === addition.name).length, 1);
     assert.equal((await door('reconcile', 'statuspage', { planId: caught.body.planId })).body.ok, true);
     assert.equal((await door('undo', 'statuspage', { planId: reviewed.body.planId })).status, 409, 'undo begins with the newest catch-up');
-    await run('undo', caught.body); assert.deepEqual(await snapshot(), imported, 'catch-up undo restores the original native documents');
+    await beforeRebuild('undo', () => run('undo', caught.body));
+    await eventually(() => runtime.publicText(`/incidents/${original.reference}`), html => html.includes(incidents[1].name) && !html.includes(changedRows[1].name), 'the original public incident converges after undo');
+    assert.deepEqual(await snapshot(), imported, 'catch-up undo restores the original native documents');
     const over = structuredClone(changedFiles), overRows = JSON.parse(over.find(file => file.name === 'incidents.json').text);
     for (const row of overRows.slice(2, 6)) row.name += ' additional source edit';
     over.find(file => file.name === 'incidents.json').text = JSON.stringify(overRows);

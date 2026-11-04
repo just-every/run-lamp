@@ -16,7 +16,7 @@ import { reversalState, reportHash, reversalGuards, undoEvidence } from './undo-
 import { classifyUndo } from './undo-snapshot.ts';
 import { insertJsonRows } from './sets.ts';
 
-/** Called after public authority, binding, reversal-mode and custody checks. */
+/** Called after public authority, binding, reversal-mode and original custody checks. */
 export async function preserveReverse(current: { job: ImportJob; plan: ImportPlan }, context: D1ImportContext, action: 'undo' | 'rollback'): Promise<ImportJob> {
   const { maxBatches, batchSize } = limits(context), id = current.job.id;
   const reversing = action === 'undo' ? 'undoing' : 'rolling_back', terminal = action === 'undo' ? 'undone' : 'rolled_back';
@@ -24,14 +24,18 @@ export async function preserveReverse(current: { job: ImportJob; plan: ImportPla
   if (!targets.preparePreservedUndo) throw new Error('IMPORT_PRESERVED_UNDO_ADAPTER_REQUIRED');
   if (current.job.state !== reversing) {
     await atomic(context, action, [...boundary(current.job, current.plan, action), await noSuccessors(id, context), ...custodyGuards(current.plan, id), ...await inventoryGuards(current.job, current.plan, context), changed(sql('UPDATE ik_jobs SET state=?,fence=fence+1 WHERE id=?', reversing, id),updateRows('ik_jobs',row=>row.id===id,row=>({...row,state:reversing,fence:current.job.fence+1})))], storedReads(current.job),nativeStagingScope(current.job,current.plan));
-    current = await stored(id, context, action);
+    // Keep the verified plan and its retained-original storage version. The
+    // boundary still guards those exact bytes against a concurrent custody edit.
+    current = { ...await stored(id, context, action), plan: current.plan };
   }
   let published: ImportJob | undefined;
   try {
     for (let count = 0; count < maxBatches; count++) {
       const { job, plan } = current, state = reversalState(job);
       if (job.state !== reversing) throw new Error('REVERSAL_MODE_CONFLICT');
-      await readOriginals(plan, id, context);
+      // The caller just verified these originals. Later batches load a new
+      // plan and must verify its originals again before publishing any writes.
+      if (count > 0) await readOriginals(plan, id, context);
       const scope=nativeStagingScope(job,plan);
       const statements: D1Sql[] = [...boundary(job, plan, action), await noSuccessors(id, context), ...custodyGuards(plan, id), ...await inventoryGuards(job, plan, context)];
       const { results: rows } = await db.prepare('SELECT * FROM ik_provenance WHERE job_id=? AND reversed=0 ORDER BY ordinal DESC,effect_ordinal DESC').bind(id).all();
