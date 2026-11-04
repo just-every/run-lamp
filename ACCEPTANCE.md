@@ -1296,7 +1296,7 @@ Core · published · **partial** · Cites BASE-SIGNIN-001
 2. Settings can remove an operator.
 3. Only the setup operator can remove their own protected setup identity.
 
-**Evidence.** `tests/auth-adoption/upgrade.test.mjs`, `tests/e2e/delivery-contract.test.mjs`
+**Evidence.** `tests/auth-adoption/upgrade.test.mjs`, `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/auth-adoption-journey.test.mjs`; `tests/e2e/helpers/operator-management-flow.mjs`; setup self-removal remains allowed while another Owner exists, and last-Owner removal and demotion remain refused. Both registered journeys run in push Verify’s ownership shard. These assertions supplement the evidence; current main's partial judgment and recorded gap remain pending clause review.
 **Gap.** Old cited evidence asserts Native operator-removal route durably deactivates the identity; Native operator-removal route anonymizes the email; Another owner cannot revoke setup owner; Self-removal succeeds. Unasserted: Settings invitation outcome; Settings removal is completed through the browser; Other owner cannot delete setup owner while still active.
 
 #### TEAM-003 — Attribution
