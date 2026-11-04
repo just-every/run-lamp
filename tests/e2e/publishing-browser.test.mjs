@@ -22,6 +22,7 @@ import { sessionCookieName } from "../helpers/session-cookie.mjs";
 import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
+import { suggestedUpdateFlow } from "./helpers/suggested-update-flow.mjs";
 
 let appUrl = "";
 let pageUrl = "";
@@ -40,6 +41,7 @@ let browserContext;
 let page;
 let serverOutput = "";
 let failingAiServer;
+let aiAnswer = null;
 let originalVisualSource;
 
 function configWithLocalMail(config) {
@@ -54,9 +56,12 @@ function configWithAiProvider(config) {
 }
 
 async function startFailingAiProvider() {
-  const provider = createHttpServer((_request, response) => {
-    response.writeHead(503, { "Content-Type": "application/json" });
-    response.end(JSON.stringify({ error: "Browser AI provider intentionally unavailable" }));
+  const provider = createHttpServer(async (request, response) => {
+    for await (const _chunk of request) { /* consume the real provider request */ }
+    response.writeHead(aiAnswer ? 200 : 503, { "Content-Type": "application/json" });
+    response.end(JSON.stringify(aiAnswer
+      ? { choices: [{ message: { content: JSON.stringify(aiAnswer) } }] }
+      : { error: "Browser AI provider intentionally unavailable" }));
   });
   failingAiServer = provider;
   await new Promise((resolve, reject) => {
@@ -501,6 +506,8 @@ async function assertQueuedAutosaveDeadline({ page, api, openIncident, assertPri
 // concurrent edit, schedule a publication, communicate recovery, and report.
 test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
   await verifyCompiledEdits();
+  await suggestedUpdateFlow({ page, appUrl, api, screens: previewScreens,
+    configureSuggestion: answer => { aiAnswer = answer; }, diagnostic: message => t.diagnostic(message) });
   await page.goto(`${appUrl}/app`); await operatorHydrated(page);
   await page.getByRole('region', { name: 'Your public page' }).waitFor();
   const { live } = await api('/api/app/overview/live');
