@@ -3155,6 +3155,8 @@ SUB-004 is promoted to done by the replay of candidate `29e81076eae7171125ec1cac
 
 SUB-005 retains current-main's partial judgment and recorded gap. The replay of `65e4cc1a470d69e04b087f58eb2a2bd7cc41a12e` adds anonymous token scope, authenticator, operator-isolation and revocation assertions through `tests/e2e/helpers/subscriber-token-authority-flow.mjs`, loaded by the existing delivery journey. These assertions supplement the evidence without promoting the clause.
 
+INTAKE-009 retains current main's partial Status, Evidence and Gap. The replay of candidate `e69216352d75444b1387c829807a0ee5b88b89ef` retains `tests/e2e/helpers/pagerduty-flow.mjs` (pagerDutyFlow), loaded by the existing monitor journey in `tests/e2e/channels-and-presets.test.mjs` and push Verify's delivery shard. Its additional assertions cover every supplied compound service matcher field, all matching components, exact replay identities and unchanged complete intake inventories, independently loaded private and published recovery receipts with source, incident, state and provider time, complete retained public artifact inventories and served response bytes around private triggers and responder events, private permalink refusal, and source erasure preserving every operator publication and drafted report field. `tests/e2e/helpers/preset-recovery-flow.mjs` exports the shared retainedPublicSnapshot reader while retaining its existing monitor recovery journey. These additional assertions are retained for clause judgment; the candidate's proposed promotion to done does not replace main's newer judgment. R-60 remains not run.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 35 | 72 | 0 | 107 |
