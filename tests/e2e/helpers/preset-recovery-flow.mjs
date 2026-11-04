@@ -1,6 +1,25 @@
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { getPlatformProxy } from 'wrangler';
+
+const readers = new WeakMap();
+async function snapshotReader(runtime) {
+  if (!readers.has(runtime)) readers.set(runtime, (async () => {
+    const config = JSON.parse(await readFile(runtime.env.LAMP_WRANGLER_CONFIG, 'utf8'));
+    const path = join(runtime.directory, 'snapshot-reader.json');
+    await writeFile(path, JSON.stringify({ name: 'lamp-snapshot-reader', compatibility_date: config.compatibility_date, r2_buckets: config.r2_buckets }), { mode: 0o600 });
+    // The same native R2 binding reads retained bytes without starting a new
+    // Wrangler process for every artifact comparison. It owns no product route.
+    return getPlatformProxy({ configPath: path, envFiles: [], remoteBindings: false, persist: { path: join(runtime.state, 'v3') } });
+  })());
+  return readers.get(runtime);
+}
+
+export async function closePublicSnapshot(runtime) {
+  const reader = readers.get(runtime);
+  if (reader) { readers.delete(runtime); await (await reader).dispose(); }
+}
 
 // Inspect the retained inventory, then read every artifact through its public URL.
 // All incident and intake mutations still use authenticated native HTTP doors.
@@ -16,16 +35,13 @@ export async function retainedPublicSnapshot({ runtime, worker, publicOrigin, sq
     assert.ok(Date.now() < deadline, 'public snapshot publication settles before intake proof');
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-  const configPath = runtime?.env.LAMP_WRANGLER_CONFIG;
-  const config = runtime && JSON.parse(await readFile(configPath, 'utf8'));
-  const bucket = worker ? await worker.getR2Bucket('SNAPSHOTS') : config.r2_buckets.find(row => row.binding === 'SNAPSHOTS').bucket_name;
+  // A Worker under test exposes its own R2 binding; a local runtime is read through
+  // one native platform proxy instead of a Wrangler process per artifact.
+  const bucket = worker ? await worker.getR2Bucket('SNAPSHOTS') : (await snapshotReader(runtime)).env.SNAPSHOTS;
   async function object(key) {
-    if (worker) {
-      const stored = await bucket.get(key);
-      assert.ok(stored, `${key} is retained`);
-      return stored.json();
-    }
-    return JSON.parse(execFileSync('pnpm', ['exec', 'wrangler', 'r2', 'object', 'get', `${bucket}/${key}`, '--local', '--persist-to', runtime.state, '--config', configPath, '--pipe'], { env: runtime.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 30_000 }));
+    const stored = await bucket.get(key);
+    assert.ok(stored, `retained object ${key} exists`);
+    return stored.json();
   }
   const pointer = await object('snapshots/current.json');
   const bundle = await object(`snapshots/${pointer.version}/retained.json`);
