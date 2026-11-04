@@ -852,7 +852,7 @@ Core · published · **partial** · Cites BASE-ACCESS-003, BASE-PUBLIC-001 · Re
 3. The message signature covers both unsubscribe headers.
 4. One token's rate allowance never consumes another token's allowance, including requests from one mailbox provider.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/rer-mail.test.mjs`
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`, `tests/e2e/rer-mail.test.mjs`; `tests/e2e/helpers/subscriber-one-click-flow.mjs`; the R-40 live-provider receipt remains outstanding.
 **Gap.** Old cited evidence asserts mail unsubscribe value is present; web unsubscribe value is present; one-click declaration; URL-encoded deactivation. Unasserted: visible unsubscribe link in notification body; multipart form deactivation; DKIM coverage of both unsubscribe headers; per-token allowance independence.
 
 #### SUB-007 — Managing a subscription
