@@ -21,7 +21,9 @@ export function assertSeparateRecords(html, incident, maintenance, className) {
   assert.ok(!text(right).includes(incident.title));
 }
 
-export async function maintenanceIdentityFlow(j, component, maintenance, input) {
+// `attached` lists every component the maintenance window holds (default: just `component`);
+// `priorIncidents` counts incidents the journey already created before this flow runs.
+export async function maintenanceIdentityFlow(j, component, maintenance, input, { attached = [component], priorIncidents = 0 } = {}) {
   const number = (reference, prefix) => {
     assert.match(reference, new RegExp(`^${prefix}-[0-9]+$`));
     return Number(reference.slice(prefix.length + 1));
@@ -31,17 +33,17 @@ export async function maintenanceIdentityFlow(j, component, maintenance, input) 
   for (const record of [maintenance, saved]) {
     assert.equal(record.startsAt, input.startsAt); assert.equal(record.endsAt, input.endsAt);
     assert.deepEqual(record.components.map(row => ({ id: row.componentId, name: row.componentName, state: row.state })), [
-      { id: component.id, name: component.name, state: 'Under maintenance' },
+      ...attached.map(row => ({ id: row.id, name: row.name, state: 'Under maintenance' })),
     ]);
   }
   const publicRows = async kind => (await (await j.publicResponse(`/api/public/v1/${kind}`)).json()).data;
   const nativePublic = await eventually(() => publicRows('maintenance'), rows => rows.some(row => row.id === maintenance.id), 'saved public maintenance');
   const publicRecord = nativePublic.find(row => row.id === maintenance.id);
   assert.equal(publicRecord.startsAt, input.startsAt); assert.equal(publicRecord.endsAt, input.endsAt);
-  assert.deepEqual(publicRecord.components, [component.name]);
+  assert.deepEqual(publicRecord.components, attached.map(row => row.name));
   const permalink = await j.visible(`/maintenance/${maintenance.reference}`, input.customerImpact);
   const article = recordContaining(permalink, input.title.trim(), 'maintenance');
-  assert.ok(text(article).includes(component.name));
+  for (const row of attached) assert.ok(text(article).includes(row.name));
   assert.deepEqual(descendants(article).filter(node => node.tagName === 'time').slice(0, 2)
     .map(node => node.attrs.find(attr => attr.name === 'datetime').value), [input.startsAt, input.endsAt]);
 
@@ -52,14 +54,14 @@ export async function maintenanceIdentityFlow(j, component, maintenance, input) 
     .bind('01J00000000000000000000081', legacyMaintenance, 'Synthetic Lamp legacy maintenance', maintenance.id).run();
   const incidentComponent = await j.component('Synthetic Lamp incident-only service');
   const incident = await j.incident('Synthetic Lamp unscheduled incident', [incidentComponent]);
-  assert.equal(number(incident.reference, 'INC'), 1, 'maintenance does not advance incidents');
+  assert.equal(number(incident.reference, 'INC'), priorIncidents + 1, 'maintenance does not advance incidents');
   await j.db.prepare(`INSERT INTO incidents(id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at)
     SELECT ?,?,?,'Resolved',opened_at,opened_at,created_by_operator_id,created_at,updated_at FROM incidents WHERE id=?`)
     .bind('01J00000000000000000000082', legacyIncident, 'Synthetic Lamp legacy incident', incident.id).run();
   await j.save(incident.id, { customerImpact: 'Unscheduled requests are failing beside planned maintenance.' });
   await j.publish(incident.id);
   const secondIncident = await j.incident('Synthetic Lamp independent second incident', [incidentComponent]);
-  assert.equal(number(secondIncident.reference, 'INC'), 2, 'legacy timestamps do not raise the short incident sequence');
+  assert.equal(number(secondIncident.reference, 'INC'), priorIncidents + 2, 'legacy timestamps do not raise the short incident sequence');
   const overview = (await j.json('/api/app/overview')).overview;
   assert.ok(overview.activeIncidents.some(row => row.id === incident.id));
   assert.ok(!overview.activeIncidents.some(row => row.id === maintenance.id));
@@ -149,6 +151,6 @@ export async function maintenanceIdentityFlow(j, component, maintenance, input) 
   assert.equal(readBack.find(row => row.id === '01J00000000000000000000081').reference, legacyMaintenance);
   assert.equal((await j.read('01J00000000000000000000082')).reference, legacyIncident);
   const thirdIncident = await j.incident('Synthetic Lamp incident after restart', [incidentComponent]);
-  assert.equal(number(thirdIncident.reference, 'INC'), 3, 'failed, deleted and restarted maintenance never consume incident numbers');
+  assert.equal(number(thirdIncident.reference, 'INC'), priorIncidents + 3, 'failed, deleted and restarted maintenance never consume incident numbers');
   return incident;
 }
