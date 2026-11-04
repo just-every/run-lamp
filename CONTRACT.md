@@ -3161,6 +3161,8 @@ INTAKE-009 retains current main's partial Status, Evidence and Gap. The replay o
 
 INTAKE-008 retains current main’s partial judgment, Evidence and Gap. The replay adds native intake assertions in the registered channels-and-presets journey for complete refusal inventories, saved mappings, confirmed-time labels and recovery readbacks; these assertions remain a proposal pending clause judgment. AUTO-001 and COMP-008 retain their own mapping, transition, adoption and release prerequisites; this intake proof does not qualify monitor claims.
 
+Supplementary PAGE-014 evidence from `cloud/sd-lamp-c-f46` is retained on `cloud/sd-lamp-c-f46-land-9da9242b77` (30 October 2026). `tests/e2e/public-contract.test.mjs` asserts the exact populated refresh field set, thirty-second polling, in-place live-region identity and configured time zone, and an unchanged script-disabled document and generation instant across a different publication and more than two refresh intervals. Its `tests/e2e/helpers/public-capacity-journey.mjs` helper compares actual refresh-response byte lengths at one and 200 components while retaining the same public story. Browser proof captures scripted and script-disabled screens at 1440 and 390. The newer main Status, Evidence and Gap judgment for PAGE-014 below remains partial; these additional assertions do not replace that judgment.
+
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 35 | 72 | 0 | 107 |
