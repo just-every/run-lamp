@@ -3,6 +3,7 @@ import { incidentSubscriptionApiFlow } from './helpers/incident-subscription-api
 import { incidentFollowFlow } from './helpers/incident-follow-flow.mjs';
 import { test } from 'node:test';
 import { createServer } from 'vite';
+import { subscriberDirectoryFlow } from './helpers/subscriber-directory-flow.mjs';
 import { subscriberAddFlow, subscriberTokenAddFlow } from './helpers/subscriber-add-flow.mjs';
 import { subscriberIntakeBrowserFlow } from './helpers/subscriber-intake-browser-flow.mjs';
 import { subscriberExpiryFlow } from './helpers/subscriber-expiry-flow.mjs';
@@ -26,6 +27,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await subscriberTokenAuthorityFlow();
   await subscriberAddFlow();
   await subscriberTokenAddFlow();
+  await subscriberDirectoryFlow();
   await subscriberPreferencesFlow();
   await subscriberComponentsFlow();
   await subscriberCsvFlow();
