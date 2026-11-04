@@ -18,6 +18,7 @@ import { mailFailoverFlow } from './helpers/mail-failover-flow.mjs';
 import { mailSettingsBrowserFlow } from './helpers/mail-settings-browser-flow.mjs';
 import { emailCapacityFlow } from './helpers/email-capacity-flow.mjs';
 import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
+import { subscriberFailuresFlow } from './helpers/subscriber-failures-flow.mjs';
 
 // Consent, publication, delivery and erasure are exercised through the ordinary
 // operator/public HTTP doors and captured provider transports. No repository or
@@ -54,3 +55,4 @@ test('Scoped incident subscriptions — native and Statuspage API consent, priva
 });
 
 test('NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes', { timeout: 360_000 }, emailCapacityFlow);
+test('Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications', { timeout: 300_000 }, subscriberFailuresFlow);
