@@ -698,7 +698,7 @@ Core · published · **partial**
 2. Its SCH- reference has digits and new references increase independently of incidents and legacy timestamps.
 3. Existing references remain unchanged; deletion, restart and failed creation never allow reuse, although failures may leave gaps.
 
-**Evidence.** `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`
+**Evidence.** `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`; `tests/e2e/helpers/maintenance-identity-flow.mjs`; independent numeric INC/SCH sequences; retained legacy references; durable reservations after import undo, failed insertion and Worker restart. `tests/e2e/helpers/maintenance-browser-flow.mjs`, called by the existing operator publication journey in `tests/e2e/publishing-browser.test.mjs`, asserts separate populated overview/public records and the saved maintenance window and components at 1440.
 **Gap.** Asserted: independent SCH sequence; legacy reference unchanged; SCH sequence survives restart. Unasserted in old cited evidence: window and attachments retained; separate incident/maintenance display; deleted and failed SCH reference never reused.
 
 #### MAINT-002 — Automatic transitions
