@@ -8,14 +8,3 @@ CREATE TRIGGER component_state_audit AFTER INSERT ON component_state_history BEG
       'recordName', (SELECT name FROM components WHERE id=NEW.component_id)),
     strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'));
 END;
-
--- Both owner-session and Business doors commit their retained approval before
--- applying any record. Mirror that fact atomically without copying an identity.
-CREATE TRIGGER move_in_approval_audit AFTER INSERT ON ik_door_approvals BEGIN
-  INSERT INTO audit_entries(id, entity_type, entity_id, action, operator_id, payload_json, created_at, updated_at)
-  SELECT 'import-approval/' || NEW.plan_id, 'import', NEW.plan_id, 'import-approved',
-    (SELECT id FROM oa_operators WHERE email=NEW.owner),
-    json_object('recordName', CASE namespace WHEN 'sorry' THEN 'Sorry' WHEN 'statuspage' THEN 'Statuspage' WHEN 'betterstack' THEN 'Better Stack' WHEN 'instatus' THEN 'Instatus' ELSE namespace END || ' import', 'approvedAt', NEW.approved_at),
-    strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now')
-  FROM ik_door_plans WHERE id=NEW.plan_id;
-END;

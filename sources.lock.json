@@ -516,7 +516,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "f2bb0e81f5d311c293134bd3a804505ef4d1748b31c5d10d4c10af4feb16f04d",
+      "sha256": "5cca934e8a7c46d7bdaf18bbf35759ec3fbe73cc94b39ba96ffa1fc0217e90fb",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -1036,7 +1036,7 @@
       "executable": false
     },
     "migrations/core/0077_import_audit.sql": {
-      "sha256": "6b5e74db8781370975f4723bad2b5a6d23d956c5849e51291ab3b511490ce609",
+      "sha256": "b0c25aff0858e7e9fbf0dfbdf01b239e0d8a1e84870d5aa92f990b2246eff7f0",
       "executable": false
     },
     "migrations/README.md": {
@@ -2512,7 +2512,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "10462b64e29dceec2580fe1d4324131d65607032eb963eb7fdd4d22d9f97238f",
+      "sha256": "06e112b0f42cdc7747d2e7ff2f299e2450587610d423e6d6a5962a395f5105d5",
       "executable": false
     },
     "rer-packaging.json": {
@@ -5144,11 +5144,11 @@
       "executable": false
     },
     "src/core/features/statuspage-import/door.repository.ts": {
-      "sha256": "ec606f63cc6751e10ddf8e5a0b9f125568bd6778a2491cc2de61700b09150d81",
+      "sha256": "e15405d9ab24b5b17715d83b4cb56e02a78531d46e0d433e54036563967b665b",
       "executable": false
     },
     "src/core/features/statuspage-import/door.ts": {
-      "sha256": "cfe19a1ef7f1c2c269c5abc1ea87e78ba5da823466dcf0e15793d3e35183a76e",
+      "sha256": "47c2bd597e44fbd04947d647366c6cfe7f5241af58b0bd5323f3f080e095cd5a",
       "executable": false
     },
     "src/core/features/statuspage-import/expiry-audit.ts": {
