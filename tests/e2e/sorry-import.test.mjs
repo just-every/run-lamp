@@ -166,6 +166,11 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     const approval = { fingerprint: reviewed.body.fingerprint, approvalRecordId: randomUUID(), approvedAt: new Date().toISOString() };
     assert.equal((await door('apply', 'statuspage', { planId: reviewed.body.planId, reviewedFingerprint: 'unreviewed' }, approval)).status, 403);
     const firstBusiness = await run('apply', reviewed.body, approval);
+    const businessJob = (await owner('/api/app/statuspage-import/jobs')).body.jobs.find(row => row.id === firstBusiness.job.id);
+    assert.equal(businessJob.approver, operator); assert.equal(businessJob.approvedAt, approval.approvedAt);
+    assert.match(businessJob.approvalCaption, /approved via Business/);
+    assert.ok(businessJob.planId && businessJob.fingerprint, 'Business import history carries the owner undo action');
+    assert.ok((await owner('/api/app/audit-log?action=import-approved')).body.entries.some(row => row.entityId === reviewed.body.planId && Date.parse(row.createdAt) >= Date.parse(approval.approvedAt)));
     const imported = await snapshot(), original = imported.incidents.find(row => row.title === incidents[1].name);
     assert.equal(imported.incidents.length, baseline.incidents.length + incidents.length);
     assert.ok(imported.subscribers.every(row => row.state === 'deactivated'), 'Business never activates subscribers on import');
