@@ -24,9 +24,9 @@ export function normalizeSorryComponents(rows: SorryComponent[], accounting: Acc
     const parents = ancestors(row);
     if (parentIds.has(row.id)) {
       groups.push({ id: row.id, name: [...parents.map((parent) => parent.name), row.name].join(" / "), description: row.description, components: rows.filter((child) => child.parent_id === row.id).map((child) => child.id), position: row.position ?? rows.indexOf(row), created_at: row.created_at });
-      accounting.push({ kind: "group", sourceId: row.id, name: row.name, outcome: "changed", reason: parents.length ? "Nested Sorry component grouping is represented as a named flat group; the parent remains an affected component." : "Sorry parent is retained as a component and as its children's visual group." });
+      accounting.push({ kind: "group", sourceId: row.id, name: row.name, outcome: "changed", reason: parents.length ? "Nested Sorry component grouping is represented as a named flat group." : "Sorry parent is represented once as its children's visual group." });
     }
-    components.push({ id: row.id, name: row.name, description: row.description, group_id: row.parent_id, position: row.position ?? rows.indexOf(row), status: states[row.state], created_at: row.created_at });
+    else components.push({ id: row.id, name: row.name, description: row.description, group_id: row.parent_id, position: row.position ?? rows.indexOf(row), status: states[row.state], created_at: row.created_at });
   }
   return { groups, components };
 }

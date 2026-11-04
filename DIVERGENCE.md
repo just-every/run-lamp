@@ -1677,3 +1677,14 @@ deploy-file `AUTH_PROVIDERS` path stays and wins per ID. Every change needs the 
 Okta signs in only the people paired explicitly by Okta user ID, never by a reported email. Microsoft Entra and Run
 Edit Run Auth stay on `/auth/settings/identity`; Managed hosting has no outbound connection, so Save is refused there.
 ACCESS-002 and PORT-001 are unchanged; `tests/auth-adoption/sign-in-providers.test.mjs` exercises them for Google and Okta.
+
+## Move-in history and Sorry parent mapping — 4 November 2026
+
+Settings → Move in lists imports across all providers, including Business
+approvals, so changing the selected provider cannot hide the undo path. Audit
+entries record the native write instant separately from retained source history
+and name the component. Both import doors record approval in that transaction.
+Sorry parents map only to groups; references to a parent resolve to that group's
+descendant components. Sorry's Imported counts describe native records, including
+transformed records; Changed still discloses transformations. Platform source
+record totals include internal metadata and are not Lamp's per-kind inventory.

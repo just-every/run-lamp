@@ -1,6 +1,6 @@
 import { createUlid, nowIso } from '../../shared/ids';
 export interface AuditFilter { actorId?: string; action?: string; from?: string; until?: string }
-export interface AuditEntry { id: string; entityType: string; entityId: string; action: string; actorId: string | null; actorName: string; reason: string | null; createdAt: string }
+export interface AuditEntry { id: string; entityType: string; entityId: string; entityName: string; action: string; actorId: string | null; actorName: string; reason: string | null; createdAt: string }
 
 /** Read identities at display time so erasure never leaves a copied name behind. */
 export function createAuditLogRepository(db: D1Database) {
@@ -9,7 +9,8 @@ export function createAuditLogRepository(db: D1Database) {
     for (const [key, column, comparison] of [["actorId", "a.operator_id", "="], ["action", "a.action", "="], ["from", "a.created_at", ">="], ["until", "a.created_at", "<"]] as const) {
       if (filter[key]) { conditions.push(`${column} ${comparison} ?`); values.push(filter[key]!); }
     }
-    const sql = `SELECT a.id, a.entity_type AS entityType, a.entity_id AS entityId, a.action,
+    const sql = `SELECT a.id, a.entity_type AS entityType, a.entity_id AS entityId,
+      COALESCE((SELECT name FROM components WHERE a.entity_type='component' AND id=a.entity_id), json_extract(a.payload_json,'$.recordName'), a.entity_id) AS entityName, a.action,
       a.operator_id AS actorId,
       CASE WHEN a.operator_id IS NULL THEN 'System'
         WHEN o.id IS NULL OR o.email = 'deleted-' || lower(o.id) || '@operator.invalid' THEN 'Erased operator · ' || a.operator_id

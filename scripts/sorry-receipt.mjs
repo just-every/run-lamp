@@ -85,8 +85,9 @@ async function capture(path) {
   const bytes = Buffer.from(JSON.stringify(upload));
   const components = files.filter(file => /^sorry-components(?:-\d+)?\.json$/.test(file.name)).flatMap(file => JSON.parse(file.text).components);
   const notices = files.filter(file => /^sorry-notices(?:-\d+)?\.json$/.test(file.name)).flatMap(file => JSON.parse(file.text).notices);
-  const sourceCounts = { group: new Set(components.flatMap(row => row.parent_id == null ? [] : [String(row.parent_id)])).size,
-    component: components.length, incident: notices.filter(row => row.type !== 'planned').length,
+  const parents = new Set(components.flatMap(row => row.parent_id == null ? [] : [String(row.parent_id)]));
+  const sourceCounts = { group: parents.size,
+    component: components.filter(row => !parents.has(String(row.id))).length, incident: notices.filter(row => row.type !== 'planned').length,
     maintenance: notices.filter(row => row.type === 'planned').length,
     updates: notices.reduce((count, row) => count + JSON.parse(files.find(file => file.name === `sorry-notice-${row.id}.json`)?.text ?? 'null')?.notice?.updates?.length, 0) };
   assert.ok(Object.values(sourceCounts).every(Number.isSafeInteger), 'Every notice needs its original complete detail.');
