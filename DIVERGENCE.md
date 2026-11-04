@@ -1683,7 +1683,8 @@ ACCESS-002 and PORT-001 are unchanged; `tests/auth-adoption/sign-in-providers.te
 Settings → Move in lists imports across all providers, including Business
 approvals, so changing the selected provider cannot hide the undo path. Audit
 entries record the native write instant separately from retained source history
-and name the component. Both import doors record approval in that transaction.
+and name the component. Both import doors mirror their retained approval after applying a batch, through
+the existing writer rather than a custody trigger, preserving older backup restores.
 Sorry parents map only to groups; references to a parent resolve to that group's
 descendant components. Sorry's Imported counts describe native records, including
 transformed records; Changed still discloses transformations. Platform source

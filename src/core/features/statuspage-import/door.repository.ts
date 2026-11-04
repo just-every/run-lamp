@@ -50,6 +50,18 @@ export function createImportDoorRepository(db: D1Database) {
     async save(key: string, actor: Session, changes: {enabled:boolean;revokedKids?:string[]}) {
       await writeImportDoorSettings(db,key,changes,sessionAuthority(actor));
     },
+    /** Mirrors a retained approval after the door applies a batch. Keeping this
+     * in Lamp's writer avoids a trigger from excluded import custody into the
+     * portable audit catalogue, so earlier archives still restore unchanged. */
+    async recordApproval(jobId: string, authority: D1Sql) {
+      await db.prepare(`INSERT OR IGNORE INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
+        SELECT 'import-approval/'||p.id,'import',p.id,'import-approved',
+          (SELECT id FROM oa_operators WHERE email=a.owner),
+          json_object('recordName',CASE p.namespace WHEN 'sorry' THEN 'Sorry' WHEN 'statuspage' THEN 'Statuspage' WHEN 'betterstack' THEN 'Better Stack' WHEN 'instatus' THEN 'Instatus' ELSE p.namespace END||' import','approvedAt',a.approved_at),
+          strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        FROM ik_door_plans p JOIN ik_door_approvals a ON a.plan_id=p.id AND a.fingerprint=p.fingerprint
+        WHERE p.job_id=? AND (${authority.sql})`).bind(jobId,...authority.params ?? []).run();
+    },
     /** A complete door upload's bytes in this installation and namespace, as the door itself reads them. */
     async uploadBytes(installationId: string, namespace: string, uploadId: string) {
       const upload = await db.prepare('SELECT bundle_sha256,total_bytes,total_chunks FROM ik_door_uploads WHERE id=? AND installation_id=? AND namespace=?').bind(uploadId,installationId,namespace).first<{bundle_sha256:string;total_bytes:number;total_chunks:number}>();

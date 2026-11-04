@@ -12,7 +12,7 @@
     },
     {
       "id": "0077_import_audit.sql",
-      "buyerSteps": "Apply after 0076 through the ordinary migration runner. Records subsequent component-state audit events at their database write time and retains a readable component name, without changing source history timestamps. Records approvals from both Move in import doors atomically with their retained approval. Existing audit entries are preserved."
+      "buyerSteps": "Apply after 0076 through the ordinary migration runner. Records subsequent component-state audit events at their database write time and retains a readable component name, without changing source history timestamps. Existing audit entries are preserved."
     }
   ],
   "breaking": true,
