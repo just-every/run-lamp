@@ -33,6 +33,20 @@ export default {
       }
     }
     const runtime = createApp(bindings);
+    // Observe preparation and hold/fail the rebuild through the journey's
+    // existing outbound-edge seam. Native storage and grant checks stay real.
+    const importEdge = (env as unknown as Record<string, string>).LAMP_TEST_IMPORT_WORK;
+    if (importEdge) {
+      const prepare = runtime.services.statuspageImport.prepareDoor;
+      runtime.services.statuspageImport.prepareDoor = async (...args) => { await fetch(`${importEdge}/prepare`); return prepare(...args); };
+      if (/^\/api\/(?:rer|operator)\/import\/(?:apply|undo)$/.test(url.pathname)) {
+        const rebuild = runtime.services.publicSnapshots.rebuild;
+        runtime.services.publicSnapshots.rebuild = async (...args) => {
+          try { if (!(await fetch(`${importEdge}/rebuild`)).ok) throw new Error("Test-injected import snapshot failure"); await rebuild(...args); }
+          finally { await fetch(`${importEdge}/finished`); }
+        };
+      }
+    }
     if (url.hostname === env.LAMP_APP_HOST && url.pathname === "/test/rebuild" && request.method === "POST") {
       await runtime.services.publicSnapshots.rebuild();
       return new Response(null, { status: 204 });

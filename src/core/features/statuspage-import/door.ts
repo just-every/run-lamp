@@ -93,13 +93,16 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
   };
   /** What every successful apply or undo changes, whichever authority approved
    * it. The door's response is read once and answered with the same body. */
-  const settle = async (path: string, response: Response, fence: D1Sql): Promise<Response> => {
+  const settle = async (path: string, response: Response, fence: D1Sql, after: (work: Promise<unknown>) => void): Promise<Response> => {
     if (!response.ok || !['apply', 'undo'].includes(path.slice(path.lastIndexOf('/') + 1))) return response;
     const body = await response.text();
     const { job } = JSON.parse(body) as { job?: { id: string; state: string } };
     if (job) {
       if (path.endsWith('/undo')) await service.forgetUndoneInvites(job.id, fence);
-      await changed();
+      else await repository.recordApproval(job.id, fence);
+      // Native writes already record durable snapshot work. A failed build stays
+      // pending for Cron; it cannot turn the committed import into a failed door.
+      after(Promise.resolve().then(changed).catch(cause => console.error('Lamp could not rebuild after an import; Cron retries it.', cause)));
     }
     return new Response(body, { status: response.status, headers: response.headers });
   };
@@ -109,18 +112,19 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
    * names the expired plan for Business to undo before it plans them afresh. */
   const refuseExpired = async (action: string, namespace: string, input: { uploadId?: unknown; planId?: unknown } | null | undefined) => {
     const key = await repository.key(bindings);
-    let planId: string | undefined;
+    let planId: string | undefined, retained = false;
     if (action === 'apply' && typeof input?.planId === 'string') planId = (await repository.unstarted(key, namespace, input.planId))?.id;
     if (action === 'plan' && typeof input?.uploadId === 'string') {
       const bytes = await repository.uploadBytes(key, namespace, input.uploadId);
       const existing = bytes ? await repository.planOf(key, namespace, sha256(bytes)) : null;
-      if (existing && !existing.started) planId = existing.id;
+      if (existing && !existing.started) { planId = existing.id; retained = true; }
     }
     const saved = planId ? await repository.planSnapshot(key, planId) : null;
     const review = saved ? reviewedPage(saved.plan) : undefined;
     if(action === "apply" && review?.overSubscriberLimit)throw new DoorError("This import is over the subscriber limit. Leave out subscribers or channels and run a fresh dry run.",409);
     const asOf = review?.asOf;
     if (asOf && expired(asOf)) throw new DoorError(EXPIRED, 409, action === 'plan' ? { planId } : undefined);
+    return retained;
   };
 
   app.get('/api/app/import-door/settings',async c=> {
@@ -166,12 +170,14 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
       // Resolved once the grant is verified and before it is recorded: a Business
       // plan or apply of a dry run past its review window is refused and writes nothing.
       source:async namespace=> {
-        if (isImportSource(namespace)) await refuseExpired(action, namespace, input);
-        return importSource(namespace,isImportSource(namespace) ? preparing(namespace) : null);
+        const retained = isImportSource(namespace) && await refuseExpired(action, namespace, input);
+        // The kit returns this complete, unapplied snapshot without parsing or
+        // mapping. Changed bytes still prepare; expiry and grant checks still run.
+        return importSource(namespace,isImportSource(namespace) && !retained ? preparing(namespace) : null);
       },
     });
     const response = await handle(read?.request ?? c.req.raw);
-    return response ? settle(c.req.path, response, authority) : c.notFound();
+    return response ? settle(c.req.path, response, authority, work => c.executionCtx.waitUntil(work)) : c.notFound();
   });
 
   // The owner's own Move in: the current owner session, same-origin requests,
@@ -274,7 +280,7 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
       const { error } = await answered.clone().json().catch(() => ({})) as { error?: string };
       if (error === 'plan_not_found' || (starts && error === 'review_fingerprint_mismatch')) return c.json({ error: CHANGED }, 409, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     }
-    const response = await settle(c.req.path, answered, authority);
+    const response = await settle(c.req.path, answered, authority, work => c.executionCtx.waitUntil(work));
     if (action !== 'plan' || !response.ok) return response;
     const plan = await response.json() as { planId: string };
     const saved = await repository.planSnapshot(key, plan.planId);

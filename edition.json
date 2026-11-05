@@ -340,6 +340,30 @@
           }
         ]
       }
+    },
+    {
+      "id": "just-every/lamp-import-d1",
+      "role": "module",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "modules/import-kit/src/d1/preserved-reverse.ts"
+        ],
+        "origin": {
+          "repository": "https://github.com/runeditrun/base.git",
+          "revision": "052e5ea88c1e7b73cca10c4813524a5f72580af8",
+          "path": ".",
+          "paths": [
+            "modules/import-kit/src/d1/preserved-reverse.ts"
+          ]
+        },
+        "mappings": [
+          {
+            "path": "modules/import-kit/src/d1/preserved-reverse.ts",
+            "originPath": "modules/import-kit/src/d1/preserved-reverse.ts"
+          }
+        ]
+      }
     }
   ]
 }

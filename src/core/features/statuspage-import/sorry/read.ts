@@ -36,14 +36,16 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
   const normalized = normalizeSorryComponents(saved.components.map(({ raw }) => raw), accounting);
   const data: SourceData = { ...normalized, incidents: [], maintenance: [], subscribers: [] };
   const components = new Set(data.components.map((row) => row.id));
+  const children = new Map(data.groups.map(group => [group.id, group.components]));
+  const leaves = (id: string): string[] => components.has(id) ? [id] : (children.get(id) ?? []).flatMap(leaves);
+  const componentScope = new Map(saved.components.map(({ raw }) => [raw.id, leaves(raw.id)]));
   function add(kind: string, sourceId: string, raw: unknown, origin: SourceArtifact) {
     const payload = retainedSorry(raw);
     records.push({ namespace: "sorry", kind, sourceId, payload, payloadHash: sha256(canonicalJson(payload)), artifactHash: origin.sha256, location: { artifact: origin.name } });
     origins.set(`${kind}:${sourceId}`, origin);
   }
   for (const { raw, origin } of saved.components) {
-    add("component", raw.id, raw, origin);
-    if (data.groups.some((group) => group.id === raw.id)) add("group", raw.id, raw, origin);
+    add(data.groups.some((group) => group.id === raw.id) ? "group" : "component", raw.id, raw, origin);
   }
   for (const { raw: list } of saved.notices) {
     const kind = list.type === "planned" ? "maintenance" : "incident";
@@ -61,7 +63,7 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
     if (addresses.length) {
       publicAddresses[`${kind}:${row.id}`] = [...new Set(addresses.flatMap((address) => [address, new URL(`/notices/${row.id}`, address).href]))];
     }
-    const incident = normalizeSorryNotice(row, parsedUpdates, saved.isPublic, components, accounting);
+    const incident = normalizeSorryNotice(row, parsedUpdates, saved.isPublic, componentScope, accounting);
     if (incident) (kind === "maintenance" ? data.maintenance : data.incidents).push(incident);
   }
   for (const { raw: row, origin } of saved.subscribers) {
@@ -76,10 +78,10 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
     const omitted = channels.length ? ` ${channels.join(", ")} channels were not carried; their values were not retained.` : "";
     if (!row.notify_by_email || !row.email) reason = "Sorry subscription has no enabled email channel; no subscriber was created.";
     else if (row.confirmed === false || row.verified === false || row.email_verified === false || row.unsubscribed === true || row.unsubscribed_at || row.deleted_at || row.deactivated_at) reason = "Sorry subscription is explicitly unconfirmed, unsubscribed or inactive; consent was not carried.";
-    else if (!selected || selected.some((id) => !components.has(id))) reason = "Sorry component preferences are absent or unresolved; importing would broaden the subscription.";
+    else if (!selected || selected.some((id) => !componentScope.has(id))) reason = "Sorry component preferences are absent or unresolved; importing would broaden the subscription.";
     else if (row.components && row.component_ids && canonicalJson([...selected].sort()) !== canonicalJson([...row.component_ids].sort())) reason = "Sorry subscription component_ids and included components disagree.";
     if (reason) { accounting.push({ kind: "subscriber", sourceId: row.id, name: "Sorry subscriber", outcome: "skipped", reason: reason + omitted }); continue; }
-    data.subscribers.push({ id: row.id, mode: "email", email: row.email, components: [...new Set(selected!)] });
+    data.subscribers.push({ id: row.id, mode: "email", email: row.email, components: [...new Set(selected!.flatMap(id => componentScope.get(id)!))] });
     accounting.push({ kind: "subscriber", sourceId: row.id, name: "Sorry subscriber", outcome: "changed", reason: "Documented enabled email preference retained for an owner-released confirmation invitation; no active subscription or notification is created by import." + omitted });
   }
   return { namespace: "sorry", records, artifacts: saved.artifacts, data, origins, accounting, publicAddresses,
