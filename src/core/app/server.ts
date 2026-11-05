@@ -48,6 +48,7 @@ import { registerAiRoutes } from "../features/ai";
 import { registerBriefRoutes } from "../features/brief";
 import { registerStatuspageImportRoutes } from "../features/statuspage-import";
 import { registerImportDoor } from '../features/statuspage-import/door';
+import { registerOwnerClaimStatus } from '../features/owner-claim/status';
 import { registerRerCutoverStatus } from '../features/statuspage-import/rer-cutover-status';
 import { registerSocialRoutes } from "../features/social/routes";
 import { registerChannelRoutes } from "../features/channels";
@@ -117,6 +118,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerStatuspageImportRoutes(app, services.statuspageImport);
   registerImportDoor(app, bindings, services.statuspageImport,()=>services.publicSnapshots.rebuild(true), services.auth);
   registerRerCutoverStatus(app, bindings);
+  registerOwnerClaimStatus(app, bindings);
   registerChannelRoutes(app, services.channels);
   registerSocialRoutes(app, services.social);
   registerSignInRoutes(app, services.signIn);

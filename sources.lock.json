@@ -535,6 +535,10 @@
       "sha256": "d489cc504e9136fe8fce03d9f8fc4c32e1c7cf3135fa4e2d52035076637579c0",
       "executable": false
     },
+    "docs/business-self-host.md": {
+      "sha256": "ebfbc055de32187eecc7a76592d44dbaea81f05b170e23a7f363ad273d4e13ef",
+      "executable": false
+    },
     "docs/chat-desk.md": {
       "sha256": "c5a159c740300aa732694a2b8d9a31a4827810c98cf4f9c412ebcabdada83692",
       "executable": false
@@ -2328,7 +2332,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "88f5509dec9b97ad7bf2055bbae48b050424353eb657ec5d423d2b26371c2e6e",
+      "sha256": "99d1fbdb1498fb9a26bbb3f4a689afee5ee5eaa4128880e65c1998e5a862cf43",
       "executable": false
     },
     "package.json": {
@@ -2960,11 +2964,11 @@
       "executable": false
     },
     "scripts/ops-config.mjs": {
-      "sha256": "1b2ef7eff4cb47a738365b2286d4c9228640419b585daab3baa87915a050e2fe",
+      "sha256": "89c420f64b3ec2519e0b72385292212d64d807fff079f5d1b4cee63a259edf19",
       "executable": false
     },
     "scripts/owner-claim-config.mjs": {
-      "sha256": "9077fb91c2a761f2f5a72faea2d31ac6bf2118046e075d2c18c6dbd6cb2ba3db",
+      "sha256": "2b3a9a6c15e7d7c8471c810a20478e9c08341ece8930780fdf3ed59387e572a7",
       "executable": false
     },
     "scripts/owner-migrations.mjs": {
@@ -3328,7 +3332,7 @@
       "executable": false
     },
     "src/core/app/host-dispatch.ts": {
-      "sha256": "484c77a33b1c7972ca409ca9ba4ed3ed5ed62341b9e5414d6b8406b3877a9d81",
+      "sha256": "61cd887e803fec49bc0c57b4228e52c93a3f2905a646266ec8d0e04eca1a66a4",
       "executable": false
     },
     "src/core/app/hosting.ts": {
@@ -3356,7 +3360,7 @@
       "executable": false
     },
     "src/core/app/server.ts": {
-      "sha256": "5c943beb54ce93210a61580e40c6b45abe067306b7c4a3d3069c7d2bfa90e6ff",
+      "sha256": "bdfda7a577249817e20f26c0d7ff1440a44ba3d1c512bb1f36861fcb230819db",
       "executable": false
     },
     "src/core/app/services.ts": {
@@ -4465,6 +4469,14 @@
     },
     "src/core/features/overview/ui/your-page.tsx": {
       "sha256": "8f642f1583c8fbac601ff8a244e17e9eb284e6b7460bde3bd16061ea90dfd4c4",
+      "executable": false
+    },
+    "src/core/features/owner-claim/repository.ts": {
+      "sha256": "8d09eefa6e7d6bdd873f36f8d360f34e913744348c1e8c3b7d9f19dccdb02482",
+      "executable": false
+    },
+    "src/core/features/owner-claim/status.ts": {
+      "sha256": "7c453e551844d01759eaebe7c61c0856b06ced550ceefba8cf9cd615822d96bd",
       "executable": false
     },
     "src/core/features/page-export/format.ts": {
@@ -6104,7 +6116,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "91f9c25c753d2ac703c8651e86ba73495a2cd948e0754af3011086449427a26a",
+      "sha256": "141a20d89188d5d5f4534f329f17d9be949ab403f00e10c1dbd54a182601e6e9",
       "executable": false
     },
     "src/site/docs/body.ts": {
@@ -6793,6 +6805,10 @@
     },
     "tests/demo/journey.test.mjs": {
       "sha256": "92853ceb380222cdb8891b2702cb3522b01bcec9e23f7824613c7691db4603d0",
+      "executable": false
+    },
+    "tests/demo/owner-claim-status.test.mjs": {
+      "sha256": "dbbfc2748fa75e307cd8dbb14681c3910cd60c07038bdc1417a1370b41fcf76e",
       "executable": false
     },
     "tests/demo/owner-claim.test.mjs": {
