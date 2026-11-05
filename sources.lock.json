@@ -7296,7 +7296,7 @@
       "executable": false
     },
     "tests/e2e/incident-brief.test.mjs": {
-      "sha256": "95bb29cf2d20a4b4d710346a02c4e86eb1eadb2048344fdc80a5c851974078a1",
+      "sha256": "c4a545a5c21e5af4bc6a3d9a74843a2f65f837e1030d3a4a904ceb83d09e6e12",
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
@@ -7324,7 +7324,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "e41cf4efcce4d4a042e98120d541ba200c6a013010d4e6e61f8dba0872a16bbd",
+      "sha256": "def2e8034f2919976874fb618b404a38b56b61097de222db79a91548a4e21af3",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
