@@ -3140,6 +3140,8 @@ The replay of candidate `11498c1262b1ae480593220c66e8728db3ba79da` adds assertio
 
 UPTIME-004 is promoted to done by the replay of candidate 77620fd33bb67bf690cc648d63881ac9b629a745 (b94b3cc963aeae99caf67e4d427ff04a2da2bbd9 on main), judged on main 39cc85511edae23b240002e4724be5e789ed21b4 by ct-judge-lamp-uptime004-20261104-0830: `tests/e2e/helpers/uptime-correction-journey.mjs` (uptimeCorrectionJourney), loaded by the public catalogue journey in `tests/e2e/public-contract.test.mjs`, passes with every current-main assertion retained. Other clause judgments remain inherited.
 
+INTAKE-001 authentication proof from candidate `fe392d3dfa571fb8ed43d6cb3a7a2ba90249f759` is replayed onto current main: the registered channels-and-presets journey asserts exact-byte HMAC authentication, both five-minute boundaries, bearer admission, and complete persisted-record invariance after credential refusal. Main’s newer partial Status, Evidence and Gap judgment remains authoritative; these additional assertions do not promote the clause.
+
 INTAKE-019 proof is from the code and tests at commit `3e8eddbd01b6569201bb2c14cd4cf187fc959ac6` (29 October 2026); the candidate retains those source and journey bytes. Other clause judgments remain inherited.
 
 The replay of `cc385f264c61cec1aacb67c2aa57b3e42bc32e97` adds assertions in `tests/e2e/publishing-contract.test.mjs` for the saved public commitment instant and configured-zone text, original historical publication instants on permanent and monthly-history pages, original component-history transitions and silent historical corrections. The original monthly-history title assertion remains. These assertions are INCIDENT-006’s and INCIDENT-009’s done evidence from the 2 November 2026 recheck.
