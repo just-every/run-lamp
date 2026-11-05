@@ -5,6 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { openStatusJourney } from './helpers/status-journey.mjs';
 import { sorryReceiptFlow } from './helpers/sorry-receipt-flow.mjs';
+import { sorryCaptureFlow } from './helpers/sorry-capture-flow.mjs';
 import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 
 const fixture = (source, family) => readdirSync(`tests/fixtures/${source}/${family}`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/${family}/${name}`, 'utf8') }));
@@ -203,4 +204,57 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     const revokedRead = await nativeRequest('/api/rer/cutover-status', { method: 'POST', json: { since: new Date(0).toISOString() }, headers: { Authorization: `Bearer ${grant('cutover-status')}` } });
     assert.equal(revokedRead.status, 403, 'revoked Business authority cannot read cutover state');
   } finally { await runtime.close(); }
+});
+
+test('MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers', { timeout: 300_000 }, async () => {
+  const fixtureFiles = ['sorry-status.json', 'sorry-components.json', 'sorry-notices.json', 'sorry-notice-100.json', 'sorry-notice-101.json'];
+  const flow = await sorryCaptureFlow();
+  const { runtime, seen } = flow;
+  try {
+    await flow.refused('no bearer', 401, 'grant_required', () => flow.capture({}, null));
+    await flow.refused('another action', 403, 'invalid_grant', () => flow.capture({}, flow.grant('cutover-status')));
+    await flow.refused('imports off', 404, 'import_door_off', () => flow.capture());
+    await flow.refused('a GET', 405, 'method_not_allowed', () => runtime.raw('/api/rer/source-capture'));
+    assert.deepEqual(seen, [], 'the refusals never reach Sorry');
+    await flow.setImports(true);
+    await flow.refused('a body that is not a bare Sorry origin', 400, 'invalid_capture', () => flow.capture({ publicUrl: `${flow.origin}/status` }));
+    await flow.refused('maxBytes of zero', 400, 'invalid_capture', () => flow.capture({ maxBytes: 0 }));
+    await flow.refused('over maxBytes', 413, 'capture_too_large', () => flow.capture({ maxBytes: 1000 }));
+    flow.mode = 'private'; await flow.refused('a private page', 409, 'source_restricted', () => flow.capture());
+    flow.mode = 'redirect'; await flow.refused('a redirect', 422, 'source_invalid', () => flow.capture());
+    flow.mode = 'down'; await flow.refused('an unreachable page', 502, 'source_unreachable', () => flow.capture());
+    assert.ok(!seen.some(request => request.origin !== flow.origin), 'no redirect was followed');
+    seen.length = 0; flow.mode = 'ok';
+
+    const before = await flow.rows();
+    const response = await flow.capture();
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal(response.headers.get('content-type'), 'application/json');
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    const text = await response.text(), bundle = JSON.parse(text);
+    assert.deepEqual(Object.keys(bundle), ['source', 'publicUrl', 'publicAccessAcknowledged', 'files']);
+    assert.deepEqual([bundle.source, bundle.publicUrl, bundle.publicAccessAcknowledged], ['sorry', flow.origin, true]);
+    assert.deepEqual(bundle.files.map(file => file.name).sort(), [...fixtureFiles].sort());
+    assert.ok(bundle.files.every(file => file.text === flow.page(file.name)), 'the bytes are Sorry\'s own');
+    assert.ok(seen.length === fixtureFiles.length && seen.every(request => request.method === 'GET' && request.origin === flow.origin && !request.authorization && !request.search), 'fixed-path GETs on the selected origin, without credentials');
+    assert.deepEqual(await flow.rows(), before, 'a capture writes nothing');
+
+    // The door plans exactly what Move in would plan from the same page.
+    const reference = await flow.door('plan', { uploadId: await flow.upload(Buffer.from(JSON.stringify({ source: 'sorry', publicUrl: flow.origin, publicAccessAcknowledged: true, files: fixtureFiles.map(name => ({ name, text: flow.page(name) })) }))) });
+    assert.equal(reference.status, 200, JSON.stringify(reference.body));
+    assert.equal((await flow.door('undo', { planId: reference.body.planId })).status, 200);
+    const planned = await flow.door('plan', { uploadId: await flow.upload(Buffer.from(text)) });
+    assert.equal(planned.status, 200, JSON.stringify(planned.body));
+    assert.deepEqual(planned.body.rejected, []);
+    assert.deepEqual(planned.body.counts, reference.body.counts, 'the same source records as the fixture page');
+  } finally { await runtime.close(); }
+
+  // Managed hosting reads it too: this keyless public read is not the outbound connection Managed lacks.
+  const managed = await sorryCaptureFlow({ extraBindings: { MAIL_PROVIDER: 'rer', MAIL_FROM: 'synthetic-lamp-sender@example.test', MAIL_API_KEY: 'synthetic-lamp-managed-1', MAIL_RELAY_URL: 'https://relay.example.test/api/managed-mail/send' } });
+  try {
+    await managed.setImports(true);
+    const response = await managed.capture();
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal((await response.json()).files.length, fixtureFiles.length);
+  } finally { await managed.runtime.close(); }
 });

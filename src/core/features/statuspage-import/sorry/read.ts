@@ -6,6 +6,7 @@ import { normalizeSorryComponents } from "./groups.ts";
 import { retainedSorry, sorrySubscriberChannels } from "./json.ts";
 import { normalizeSorryNotice } from "./notices.ts";
 import { accessFields, agree, readSorryFiles } from "./saved.ts";
+import { SorryReadError } from "./errors.ts";
 import { noticeSchema, publicUrl, updateSchema, type ObjectValue } from "./schema.ts";
 
 function restricted(value: unknown): boolean {
@@ -28,8 +29,8 @@ export interface SorryReadOptions { pageId?: string; publicAccessAcknowledged?: 
  * confirmation of unrestricted publication; authentication never implies it. */
 export async function readSorryResponses(files: SavedFile[], options: SorryReadOptions = {}): Promise<SorryRead> {
   const saved = await readSorryFiles(files, options.pageId, options.publicUrl);
-  if (!options.publicAccessAcknowledged) throw new Error("Confirm that this Sorry page and all supplied history are published and unrestricted, without private access or visitor SSO.");
-  if (restricted(saved.page) || [...saved.components, ...saved.notices, ...saved.details.values()].some(({ raw }) => restricted(raw)) || [...saved.updates.values()].flat().some(({ raw }) => restricted(raw))) throw new Error("Private, unpublished, password-protected or audience-scoped Sorry history cannot become a public Lamp page.");
+  if (!options.publicAccessAcknowledged) throw new SorryReadError("invalid", "Confirm that this Sorry page and all supplied history are published and unrestricted, without private access or visitor SSO.");
+  if (restricted(saved.page) || [...saved.components, ...saved.notices, ...saved.details.values()].some(({ raw }) => restricted(raw)) || [...saved.updates.values()].flat().some(({ raw }) => restricted(raw))) throw new SorryReadError("restricted", "Private, unpublished, password-protected or audience-scoped Sorry history cannot become a public Lamp page.");
   const records: SourceRecord[] = [], accounting: Accounting[] = [];
   const origins = new Map<string, SourceArtifact>();
   const publicAddresses: Record<string, string[]> = {};
@@ -48,7 +49,7 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
   for (const { raw: list } of saved.notices) {
     const kind = list.type === "planned" ? "maintenance" : "incident";
     const detail = saved.details.get(list.id);
-    if (!detail) throw new Error("Every Sorry notice requires its complete saved detail and update history; capture every detail before importing.");
+    if (!detail) throw new SorryReadError("invalid", "Every Sorry notice requires its complete saved detail and update history; capture every detail before importing.");
     const row = noticeSchema.parse(detail.raw);
     agree(list, row, accessFields);
     const history = saved.updates.get(list.id)!;

@@ -79,6 +79,11 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
           mailReceipts.push({ id, idempotencyKey: request.headers.get("Idempotency-Key") });
           return Response.json({ id });
         }
+        if (url.href === "https://relay.example.test/api/managed-mail/send") {
+          const message = await request.json();
+          messages.push(message);
+          return Response.json({ messageId: `<synthetic-lamp-relay-${messages.length}@relay.example.test>` }, { status: 202 });
+        }
         if (url.origin === "https://receiver.example.test" && ["/synthetic-lamp-1", "/synthetic-lamp-components"].includes(url.pathname)) {
           const rawBody = await request.text();
           const captured = { rawBody, body: JSON.parse(rawBody), headers: Object.fromEntries(request.headers) };

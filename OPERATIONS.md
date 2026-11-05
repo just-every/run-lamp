@@ -599,8 +599,10 @@ relink, and **Working** comes only from Base reporting a healthy pin after a
 verified exchange. Archives (`rer export`, the technical archive) carry the rows
 and People but write the sealed secret as NULL; after a restore the row reads
 **Needs its client secret** and is not offered until the owner pastes it again.
-Managed hosting (`MAIL_PROVIDER=rer`) has no outbound connection, so the pane
-says so and Save is refused. Microsoft Entra and Run Edit Run Auth stay on
+Managed hosting (`MAIL_PROVIDER=rer`) has no outbound connection for sign-in
+providers, so the pane says so and Save is refused. It makes one kind of outbound
+read: a keyless public status-page read, for Move in and for Business imports
+(`POST /api/rer/source-capture`), which sign-in never uses. Microsoft Entra and Run Edit Run Auth stay on
 `/auth/settings/identity`.
 
 ### Direct Google, Microsoft and Okta registration in the deploy file
