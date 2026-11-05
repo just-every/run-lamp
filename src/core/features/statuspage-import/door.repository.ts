@@ -23,6 +23,12 @@ export function createImportDoorRepository(db: D1Database) {
       const stored = await db.prepare('SELECT installation_id FROM ik_door_settings ORDER BY rowid LIMIT 1').first<{installation_id:string}>();
       return stored?.installation_id ?? (bindings.RER_OWNER_CLAIM_INSTALLATION_ID?.trim() || 'lamp');
     },
+    /** Whether a key the owner revoked signed this read, and whether Business imports are on for the door key. */
+    async rerReadState(installationId: string, kid: string) {
+      const row = await db.prepare(`SELECT EXISTS(SELECT 1 FROM ik_door_revoked_keys WHERE installation_id=? AND kid=?) AS revoked,
+        COALESCE((SELECT enabled FROM ik_door_settings WHERE installation_id=?),0) AS enabled`).bind(installationId,kid,installationId).first<{revoked:number;enabled:number}>();
+      return {revoked:row?.revoked===1,enabled:row?.enabled===1};
+    },
     /** Pins the door key with Business grants off, under the owner's authority. */
     async ensureSettings(key: string, authority: D1Sql) {
       if (!await db.prepare('SELECT 1 FROM ik_door_settings WHERE installation_id=?').bind(key).first()) await writeImportDoorSettings(db,key,{enabled:false},authority);

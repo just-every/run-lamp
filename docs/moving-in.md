@@ -655,6 +655,26 @@ maintenance and subscribers created in Lamp since (imported records excluded), a
 each alert source's id, kind and receipts since. It never returns a name, title,
 address or secret.
 
+For a public Sorry page, Business can also have Lamp read the page for it:
+`POST /api/rer/source-capture`, on the same trust and only while Business imports
+are on. It takes an RER grant of action `source-capture` under the owner-claim
+keys (401 without a grant, 403 for a revoked key, another action, installation or
+owner, or an expired grant, 405 for anything but POST, 404 when RER's trust is not
+configured and 404 `import_door_off` while Business imports are off) and
+`{"source":"sorry","publicUrl":"https://<host>","maxBytes":<1 to 16777216>}`, at
+most 4 KiB. Lamp reads the page keylessly, as **Run dry run** on a public page
+does: four fixed GET paths on that origin, no credential, no redirect followed, at
+most 120 s and `maxBytes` of responses. It checks the answer with its own Sorry
+reader, then answers the bundle the door's `uploads` and `plan` take
+(`source`, `publicUrl`, `publicAccessAcknowledged: true`, `files`). A refusal is
+`{"error":<code>}` alone: `source_restricted` (409, a private, password, SSO,
+unpublished or audience-scoped page), `source_invalid` (422), `source_unreachable`
+(502), `capture_too_large` (413), `capture_timeout` (504) or `invalid_capture`
+(400). It never writes: no record, upload, plan, nonce or setting changes, and
+nothing is logged about the page. The dry run and your review still come before
+any import. Managed hosting answers it: this keyless read is the one outbound
+read it makes, with Move in's.
+
 Saved text carries over byte for byte, including U+0000, emoji, combining marks
 and right-to-left text; half of a surrogate pair with no partner reads as U+FFFD
 (�). A field Lamp shortens is cut between characters, never inside one.
