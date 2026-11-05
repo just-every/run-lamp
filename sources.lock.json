@@ -5235,6 +5235,10 @@
       "sha256": "942c498d8bbafb024eb36451539bef860aa482152a3e261863acba0025ba8f0c",
       "executable": false
     },
+    "src/core/features/statuspage-import/rer-source-capture.ts": {
+      "sha256": "ac687f2fc0abc3e557d1117f4ec29d8e0c0b6f2aa62b8327e91b7fa2b3e6292f",
+      "executable": false
+    },
     "src/core/features/statuspage-import/rich-text.ts": {
       "sha256": "763030c341722069915dfa4944f561ac9958c25fc83283087d2eb3d992e2a8b1",
       "executable": false
@@ -5253,6 +5257,10 @@
     },
     "src/core/features/statuspage-import/sorry-release.repository.ts": {
       "sha256": "e758c735cebd6b43e7455983c3c8071dfb735afe5932c705673c17ad362a7da6",
+      "executable": false
+    },
+    "src/core/features/statuspage-import/sorry/errors.ts": {
+      "sha256": "8c3b5ba54539d2eb06d7161c76f5baa58445fe30e827a861be49cc451d306e09",
       "executable": false
     },
     "src/core/features/statuspage-import/sorry/fetch.ts": {
@@ -7141,6 +7149,10 @@
     },
     "tests/e2e/helpers/social-posts-flow.mjs": {
       "sha256": "a1fff330e84a23726ebd80b3961771ab5180bf22d6be22b38f24a9cf960ba11c",
+      "executable": false
+    },
+    "tests/e2e/helpers/sorry-capture-flow.mjs": {
+      "sha256": "613a860e0c401dfbd00f70a12d9bb06e6adb93541b2d223409dc65ad1076dd8b",
       "executable": false
     },
     "tests/e2e/helpers/sorry-public-edge.mjs": {
