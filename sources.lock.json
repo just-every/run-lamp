@@ -496,7 +496,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "fcf5b32de37af2a7e9f09595d31353ebb57609b6606900c7712cedcc7123fcfc",
+      "sha256": "30b781ae41c181c9affe5d4bfd4103e826a238464a43519cb5029738cdcbfbb7",
       "executable": false
     },
     "DEMO.md": {
@@ -6816,7 +6816,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "9707a9775c45592047bbaf159d72e19922389bc78ec04f00ee2a428f3c2f182a",
+      "sha256": "57b3406b60d832aabf0392fc22b3700755fdffb501e9d39c600192b0b5a4bca0",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
@@ -7004,7 +7004,7 @@
       "executable": false
     },
     "tests/e2e/helpers/intake-byte-flow.mjs": {
-      "sha256": "72bb3681a79cce56a3b69c1f8be27d78f9a1f183cfb941e1c4d2dcd68f10630f",
+      "sha256": "d451e8bcd82b83bf5fcf97c6d6eca0f15cca23657e7c59eefb760719cd78cb2d",
       "executable": false
     },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
