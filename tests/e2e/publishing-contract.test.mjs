@@ -10,6 +10,7 @@ import { openStatusJourney, eventually, wording, visibleText } from './helpers/s
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
+import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -471,6 +472,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.deepEqual(await Promise.all(publicPaths.map(path => j.publicText(path))), beforePublic, 'refusal leaves every checked public surface unchanged');
     for (const body of beforePublic) assert.ok(!body.includes(unclaimed.title));
   } finally { await j.close(); }
+  await reportPublicationFlow();
 });
 
 test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history', async () => {
