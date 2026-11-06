@@ -2212,7 +2212,7 @@ Core · target · **partial** · From UPDATE-013
 2. Slack incoming-webhook subscribers receive Slack message form: own-URL HTTPS links, punctuation outside, escaped literal markup and schemes, and rich text reassembling unchanged fields.
 3. Both formats’ signatures verify over the exact delivered body.
 
-**Evidence.** `src/core/shared/update-links.ts`, `src/core/features/channels/slack-message.ts`, `src/core/features/channels/messages.ts`, `src/core/features/incidents/wording-checks.ts`, `tests/e2e/helpers/update-link-evidence.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/channels-and-presets.test.mjs`, `tests/e2e/publishing-browser.test.mjs`; `tests/e2e/helpers/component-notification-flow.mjs`; `tests/e2e/helpers/statuspage-webhook-flow.mjs`; main’s partial judgment and recorded gap remain pending rejudgment.
+**Evidence.** `src/core/shared/update-links.ts`, `src/core/features/channels/slack-message.ts`, `src/core/features/channels/messages.ts`, `src/core/features/incidents/wording-checks.ts`, `tests/e2e/helpers/update-link-evidence.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/channels-and-presets.test.mjs`, `tests/e2e/publishing-browser.test.mjs`; `tests/e2e/helpers/component-notification-flow.mjs`; `tests/e2e/helpers/statuspage-webhook-flow.mjs`; main’s partial judgment and recorded gap remain pending rejudgment.; `tests/e2e/delivery-contract.test.mjs`
 **Gap.** Old cited evidence asserts Slack fields reassemble; Slack link text equals URL; only HTTPS links; Slack-webhook text retains period punctuation outside its URL. Unasserted: Lamp fields byte-for-byte.
 
 ### Scheduled maintenance — target
