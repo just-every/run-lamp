@@ -99,6 +99,7 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
     const { job } = JSON.parse(body) as { job?: { id: string; state: string } };
     if (job) {
       if (path.endsWith('/undo')) await service.forgetUndoneInvites(job.id, fence);
+      else await repository.recordApproval(job.id, fence);
       await changed();
     }
     return new Response(body, { status: response.status, headers: response.headers });

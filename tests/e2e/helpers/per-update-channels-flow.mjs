@@ -151,6 +151,76 @@ export async function perUpdateChannelsFlow() {
     }
     const persistedDeliveries = (await fixture.db.prepare('SELECT id, subscriber_id AS subscriberId, channel, incident_update_id AS incidentUpdateId FROM notification_delivery_records ORDER BY id').all()).results;
     assert.deepEqual(persistedDeliveries, expectedDeliveries.sort((a, b) => a.id.localeCompare(b.id)), 'the complete persisted delivery inventory contains no omitted-channel recipients');
+
+    // Exercise the same operator publication with small and multi-chunk scopes.
+    const current = await fixture.api('/api/app/components/bulk');
+    assert.equal(current.status, 200, current.text);
+    const catalogue = current.body.catalogue;
+    for (let index = 1; index < 100; index++) catalogue.components.push({ ...catalogue.components[0],
+      id: String(index).padStart(26, '0'), name: `Synthetic Lamp chunk service ${index}`, displayOrder: index + 1 });
+    const review = await fixture.post('/api/app/components/bulk/preview', { catalogue, revision: current.body.revision });
+    assert.equal(review.status, 200, review.text);
+    const applied = await fixture.post('/api/app/components/bulk/apply', { catalogue: review.body.catalogue, revision: review.body.revision, reviewToken: review.body.reviewToken });
+    assert.equal(applied.status, 200, applied.text);
+    const components = applied.body.catalogue.components;
+    assert.equal(components.length, 100);
+    const controls = subscribers.map(row => ({ ...row, componentIds: [component.id] }));
+    for (const channel of ['email', 'webhook']) for (const mode of ['all', 'last', 'overlap']) {
+      const componentIds = mode === 'all' ? [] : mode === 'last' ? [components.at(-1).id] : [component.id, components[40].id, components.at(-1).id];
+      const address = `synthetic-lamp-chunk-${channel}-${mode}@example.test`;
+      const added = await fixture.post('/api/app/subscribers', {
+        channel, componentIds, eventKinds: ['incidents'],
+        ...(channel === 'email' ? { email: address } : { destination: `https://receiver.example.test/synthetic-lamp-components?chunk=${mode}`, contactEmail: address }),
+      });
+      assert.equal(added.status, 201, added.text);
+      await fixture.confirm(address);
+      controls.push({ id: added.body.subscriber.id, channel, componentIds, mode });
+    }
+    for (const count of [1, 10, 100]) {
+      const affected = components.slice(0, count);
+      const created = await fixture.post('/api/app/incidents', { title: `Synthetic Lamp ${count} component publication`,
+        components: affected.map(row => ({ componentId: row.id, state: 'Partially unavailable', relationship: 'Primary' })) });
+      assert.equal(created.status, 201, created.text);
+      const path = `/api/app/incidents/${created.body.incident.id}`;
+      const saved = await fixture.api(`${path}/draft`, { method: 'PUT', body: JSON.stringify({ lifecycle: 'Identified',
+        affectedAudience: 'Synthetic Lamp chunk readers', customerImpact: `${count} services have delayed requests.`,
+        whatStillWorks: 'Other services work.', details: 'Operators are investigating.', nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() }) });
+      assert.equal(saved.status, 200, saved.text);
+      await pause(true);
+      if (count === 100) {
+        const late = controls.find(row => row.channel === 'email' && row.mode === 'last');
+        await fixture.db.prepare(`CREATE TRIGGER synthetic_chunk_failure BEFORE INSERT ON notification_deliveries
+          WHEN NEW.subscriber_id = '${late.id}' BEGIN SELECT RAISE(ABORT, 'synthetic late-chunk failure'); END`).run();
+        try {
+          const before = await fixture.databaseState();
+          const failed = await fixture.post(`${path}/publish`, { channels: ['email', 'webhook'] });
+          assert.equal(failed.status, 409, failed.text);
+          assert.match(failed.text, /synthetic late-chunk failure/);
+          await fixture.assertUnchanged(before);
+        } finally { await fixture.db.prepare('DROP TRIGGER synthetic_chunk_failure').run(); }
+      }
+      const published = await fixture.post(`${path}/publish`, { channels: ['email', 'webhook'] });
+      assert.equal(published.status, 200, `${count} components: ${published.text}`);
+      assert.equal(published.body.update.id, saved.body.draft.id);
+      const wanted = controls.filter(row => !row.componentIds.length || row.componentIds.some(id => affected.some(component => component.id === id)))
+        .map(row => ({ subscriberId: row.id, channel: row.channel })).sort((a, b) => a.subscriberId.localeCompare(b.subscriberId));
+      const captured = await deliveries(published.body.update.id);
+      assert.deepEqual(captured.map(({ subscriberId, channel }) => ({ subscriberId, channel })).sort((a, b) => a.subscriberId.localeCompare(b.subscriberId)), wanted,
+        `${count} components capture all, overlapping and final-component subscribers exactly once`);
+      assert.ok(captured.every(row => row.outcome === 'queued'));
+      await pause(false);
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const dispatched = await worker.queue('lamp-follow-ups-jobs', [{ id: `synthetic-lamp-chunk-${count}-${attempt}`, timestamp: new Date(), attempts: 1,
+          body: { type: 'delivery-dispatch', eventId: published.body.update.id } }]);
+        assert.equal(dispatched.outcome, 'ok');
+        await eventuallySubscriber(() => deliveries(published.body.update.id), rows => rows.length === wanted.length && rows.every(row => row.channel === 'email' ? Boolean(row.providerAcceptedAt) : row.outcome === 'delivered'), 'every chunk recipient crosses its actual transport');
+      }
+      for (const delivery of captured) {
+        const sends = delivery.channel === 'email' ? mailRequests.filter(row => row.key === `notification/${delivery.id}`)
+          : fixture.webhookRequests.filter(row => row.headers['webhook-id'] === delivery.id);
+        assert.equal(sends.length, 1, `${count} components send ${delivery.channel} once despite overlap and Queue redelivery`);
+      }
+    }
   } finally {
     await browser?.close();
     await fixture.close();

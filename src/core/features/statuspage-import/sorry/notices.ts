@@ -9,13 +9,14 @@ const maintenanceStates = { scheduled: "scheduled", underway: "in_progress", com
 
 /** A management update doesn't document authored lifecycle. Text/time remain
  * exact; incident impact is bounded separately by the notice's began/ended times. */
-export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], isPublic: boolean, componentIds: Set<string>, accounting: Accounting[]): SourceIncident | undefined {
+export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], isPublic: boolean, componentScope: Map<string, string[]>, accounting: Accounting[]): SourceIncident | undefined {
   const kind = row.type === "planned" ? "maintenance" : "incident";
   const refuse = (reason: string) => { accounting.push({ kind, sourceId: row.id, name: row.subject, outcome: "rejected", reason }); return undefined; };
-  const selected = row.components?.map((component) => component.id) ?? row.component_ids;
-  if (!selected) return refuse("Sorry affected component history is absent; capture notice details with include=components,updates.");
-  if (row.components && row.component_ids && canonicalJson([...selected].sort()) !== canonicalJson([...row.component_ids].sort())) return refuse("Sorry component_ids and included components disagree.");
-  if (selected.some((id) => !componentIds.has(id))) return refuse("A Sorry affected component is absent from the saved component list.");
+  const supplied = row.components?.map((component) => component.id) ?? row.component_ids;
+  if (!supplied) return refuse("Sorry affected component history is absent; capture notice details with include=components,updates.");
+  if (row.components && row.component_ids && canonicalJson([...supplied].sort()) !== canonicalJson([...row.component_ids].sort())) return refuse("Sorry component_ids and included components disagree.");
+  if (supplied.some((id) => !componentScope.has(id))) return refuse("A Sorry affected component is absent from the saved component list.");
+  const selected = [...new Set(supplied.flatMap(id => componentScope.get(id)!))];
   if (!updates.length) return refuse("Sorry notice has no progress update history; no publication time or message was invented.");
   const ids = new Set<string>();
   let projected = false;
