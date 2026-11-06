@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { DependencySettings } from "../../dependencies/ui/dependency-settings";
 import { getRouteApi } from "@tanstack/react-router";
 
 import type { PageSettingsService } from "../service";
@@ -84,6 +85,7 @@ export function SettingsPage() {
       {tab === "writing" && <WritingSettingsTab settings={settings} aiStatus={aiStatus} update={update} />}
       {tab === "templates" && <TemplatesSettingsTab />}
       {tab === "tools" && <ConnectedToolsTab />}
+      {tab === "dependencies" && <DependencySettings />}
       {tab === "embeds" && <PublicResources publicOrigin={publicOrigin} allowedOrigins={settings.widgetAllowedOrigins} onOriginsChange={value => update("widgetAllowedOrigins", value)} appearance={settings.widgetAppearance} onAppearanceChange={(value, immediate) => update("widgetAppearance", value, immediate)} needsConfirm={autosave.pending("widgetAllowedOrigins")} onConfirm={() => autosave.confirm("widgetAllowedOrigins")} />}
       {tab === "operators" && <OperatorsPanel />}
       {tab === "sign-in" && <Suspense fallback={<LoadingState>Loading sign-in…</LoadingState>}><SignInPane /></Suspense>}
