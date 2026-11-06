@@ -28,6 +28,7 @@ function isHonoRequest(surface: LampSurface, request: Request, pathname: string)
     || pathname.startsWith("/api/v1/")
     || pathname.startsWith('/api/rer/import/')
     || pathname === '/api/rer/cutover-status'
+    || pathname === '/api/rer/owner-claim-status'
     || pathname === '/api/rer/source-capture'
     || pathname.startsWith('/api/operator/import/')
 ;

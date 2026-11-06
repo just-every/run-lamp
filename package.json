@@ -59,7 +59,7 @@
     "test:site": "node --test --test-concurrency=1 tests/lamp-site/browser.test.mjs tests/e2e/website-onboarding.test.mjs",
     "test": "node scripts/verification/run.mjs",
     "test:baseline": "node scripts/baseline/run.mjs",
-    "test:owner-claim": "node --test --test-concurrency=1 tests/demo/owner-claim.test.mjs",
+    "test:owner-claim": "node --test --test-concurrency=1 tests/demo/owner-claim.test.mjs tests/demo/owner-claim-status.test.mjs",
     "test:channels": "node --test --test-concurrency=1 tests/e2e/channels-and-presets.test.mjs",
     "test:mail": "node --test --test-concurrency=1 tests/e2e/rer-mail.test.mjs",
     "build:site": "rer build --site",

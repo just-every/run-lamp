@@ -676,3 +676,7 @@ Disabling provider sign-in revokes provider sessions; enabling it does not
 restore them. Existing and restored installations need explicit enablement;
 restored links also require fresh approval. Native email access and application
 invitations remain authoritative throughout.
+
+## Business self-host trust
+
+[Link a self-hosted Lamp to Business](docs/business-self-host.md) documents the ordinary setup/deploy trust file, native-owner verification door and existing-owner recovery. Standalone configuration leaves Business trust and its import door unconfigured.
