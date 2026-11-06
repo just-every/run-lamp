@@ -1355,7 +1355,7 @@ Core · published · **partial**
 2. Publication appears on its public incident page within ten seconds.
 3. Subscribers are notified only on the channels selected for the report, using NOTIFY-007’s channel selection.
 
-**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`
+**Evidence.** `tests/e2e/publishing-browser.test.mjs`, `tests/e2e/publishing-contract.test.mjs`; `tests/e2e/helpers/report-publication-flow.mjs` (native saved-field readback, public permalink deadline and selected-channel dispatch assertions; retained for recheck without changing the inherited judgment)
 **Gap.** Old cited evidence asserts The saved report retains summary; The saved report retains timeline; The saved report retains cause; The saved report retains remediation. Unasserted: Ten-second bound; Selected report channels and omitted channels.
 
 #### HIST-003 — Report due
