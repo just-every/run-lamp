@@ -23,6 +23,12 @@ export function createImportDoorRepository(db: D1Database) {
       const stored = await db.prepare('SELECT installation_id FROM ik_door_settings ORDER BY rowid LIMIT 1').first<{installation_id:string}>();
       return stored?.installation_id ?? (bindings.RER_OWNER_CLAIM_INSTALLATION_ID?.trim() || 'lamp');
     },
+    /** Whether a key the owner revoked signed this read, and whether Business imports are on for the door key. */
+    async rerReadState(installationId: string, kid: string) {
+      const row = await db.prepare(`SELECT EXISTS(SELECT 1 FROM ik_door_revoked_keys WHERE installation_id=? AND kid=?) AS revoked,
+        COALESCE((SELECT enabled FROM ik_door_settings WHERE installation_id=?),0) AS enabled`).bind(installationId,kid,installationId).first<{revoked:number;enabled:number}>();
+      return {revoked:row?.revoked===1,enabled:row?.enabled===1};
+    },
     /** Pins the door key with Business grants off, under the owner's authority. */
     async ensureSettings(key: string, authority: D1Sql) {
       if (!await db.prepare('SELECT 1 FROM ik_door_settings WHERE installation_id=?').bind(key).first()) await writeImportDoorSettings(db,key,{enabled:false},authority);
@@ -49,6 +55,18 @@ export function createImportDoorRepository(db: D1Database) {
     },
     async save(key: string, actor: Session, changes: {enabled:boolean;revokedKids?:string[]}) {
       await writeImportDoorSettings(db,key,changes,sessionAuthority(actor));
+    },
+    /** Mirrors a retained approval after the door applies a batch. Keeping this
+     * in Lamp's writer avoids a trigger from excluded import custody into the
+     * portable audit catalogue, so earlier archives still restore unchanged. */
+    async recordApproval(jobId: string, authority: D1Sql) {
+      await db.prepare(`INSERT OR IGNORE INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
+        SELECT 'import-approval/'||p.id,'import',p.id,'import-approved',
+          (SELECT id FROM oa_operators WHERE email=a.owner),
+          json_object('recordName',CASE p.namespace WHEN 'sorry' THEN 'Sorry' WHEN 'statuspage' THEN 'Statuspage' WHEN 'betterstack' THEN 'Better Stack' WHEN 'instatus' THEN 'Instatus' ELSE p.namespace END||' import','approvedAt',a.approved_at),
+          strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')
+        FROM ik_door_plans p JOIN ik_door_approvals a ON a.plan_id=p.id AND a.fingerprint=p.fingerprint
+        WHERE p.job_id=? AND (${authority.sql})`).bind(jobId,...authority.params ?? []).run();
     },
     /** A complete door upload's bytes in this installation and namespace, as the door itself reads them. */
     async uploadBytes(installationId: string, namespace: string, uploadId: string) {

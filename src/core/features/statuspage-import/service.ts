@@ -352,7 +352,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
       const rows = (await db.prepare(`SELECT j.id,coalesce(d.namespace,j.namespace) AS namespace,j.state,j.checkpoint,j.total,d.id AS planId,d.fingerprint,a.plan_id AS approved,a.owner,a.approved_at,a.approval_id,a.reviewer,f.reason_code AS failure FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id LEFT JOIN ik_door_approvals a ON a.plan_id=d.id LEFT JOIN ik_door_apply_failures f ON f.plan_id=d.id WHERE j.destination=? AND ((d.id IS NULL AND j.principal_id=? AND j.namespace IN ${SOURCES}) OR d.namespace IN ${SOURCES}) ORDER BY j.rowid DESC LIMIT 30`).bind(DESTINATION, actor.operator.id).all<Record<string, unknown>>()).results;
       await assertAuthority(context);
       // An owner's approval reads "approved by …", Business's "approved via Business by …", and a failed apply says so.
-      return rows.map(({ approved, owner, approved_at, approval_id, reviewer, failure, ...job }) => ({ ...job, approvalCaption: approved === null ? null : approvalCaption({ owner, approved_at, approval_id, reviewer }, job.fingerprint, failure) }));
+      return rows.map(({ approved, owner, approved_at, approval_id, reviewer, failure, ...job }) => ({ ...job, approver: owner ?? null, approvedAt: approved_at ?? null, approvalCaption: approved === null ? null : approvalCaption({ owner, approved_at, approval_id, reviewer }, job.fingerprint, failure) }));
     },
   };
 }

@@ -9,6 +9,10 @@
     {
       "id": "0076_dependency_keys_sealed.sql",
       "buyerSteps": "Apply after 0075, and bind INSTALLATION_KEY before the updated Worker starts: rer deploy generates it once and keeps it, and the platform provisions it on an RER Managed installation. Adds keys_sealed (default 0) and key_ids (default []) to rer_dependency_installation; the sector ID, provider links and dependency signing keys stay as they are. With the key bound, each provider signing key that rer 0.2.76 stored in plaintext is sealed at rest on first use under the same public key, so a linked identity provider keeps verifying Lamp. Without the key, dependency discovery and provider linking answer 503 installation_key_missing, and so does sign-in once an Auth provider is linked; nothing is rewritten. Archives carry the sealed keys but never the key: keep INSTALLATION_KEY with the deployment's private secrets and supply the same key when restoring into a new installation."
+    },
+    {
+      "id": "0077_import_audit.sql",
+      "buyerSteps": "Apply after 0076 through the ordinary migration runner. Records subsequent component-state audit events at their database write time and retains a readable component name, without changing source history timestamps. Existing audit entries are preserved."
     }
   ],
   "breaking": true,

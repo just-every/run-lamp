@@ -181,6 +181,15 @@ subscribers created in Lamp since (imported records excluded), and each alert
 source's receipts since. The Sorry import test (`tests/e2e/sorry-import.test.mjs`)
 exercises it through the Worker.
 
+`POST /api/rer/source-capture` (`src/core/features/statuspage-import/rer-source-capture.ts`)
+is Run Edit Run's signed read of a public Sorry page for its managed runner: an RER
+grant of action `source-capture`, refused for a revoked key, 404 `import_door_off`
+while Business imports are off. It reads the page with `fetchSorryPublicResponses`
+(bounded by an overall abort and a byte budget), checks the bundle with the door's
+own `readDoorExport`, writes nothing and answers codes only. Reader failures are
+`SorryReadError` kinds; the route maps by kind, never by message. Managed hosting
+runs it: it is not behind `outboundUnavailable`.
+
 Delivery packages use the Base producer's schema 2 with raw payloads.
 `.github/workflows/rer-managed.yml` and `.github/workflows/deploy.yml` build with
 `runeditrun/delivery` `trusted-build.yml@86c8b37399c901bffd9a240dbd1148a65ec83b34`,
