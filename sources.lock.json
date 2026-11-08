@@ -588,7 +588,7 @@
       "executable": false
     },
     "docs/contract/public-details.md": {
-      "sha256": "e800c82157555da1e2b6bd9e2c8e5509b50cc63ec637dde517aabdcbdb1d485f",
+      "sha256": "4a11e76b442e5ad2e586332e8731550d709d02280ee222011de4b58762fef0a5",
       "executable": false
     },
     "docs/contract/publishing-details.md": {
@@ -4828,11 +4828,11 @@
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
-      "sha256": "013395429a910178762123d4d9fdf44fe19fb579d3a6732347104b9e1e080339",
+      "sha256": "21e9ae2674f9992d9b3c9f4b3382857e04d1bd66418bead051ae86bf10ec2946",
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "c6a07bed82eeaa72bd1619887cc446aef0ca545735844c8484ee1de8654952de",
+      "sha256": "14b667d5ad3436a424a3c7ca233c49ac61b3335218382bf77ab6d8570df3d966",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -4996,7 +4996,7 @@
       "executable": false
     },
     "src/core/features/setup/routes.ts": {
-      "sha256": "ea182bfb9e1642908c867e0606788ef16b7786edff862b613f2e909ec77bc277",
+      "sha256": "3dd5e05fd7718a5f0bb52cfdc532b7d51102779555be8c3c7a80e51e0b383caa",
       "executable": false
     },
     "src/core/features/setup/ui/bring-history.ts": {
@@ -5700,7 +5700,7 @@
       "executable": false
     },
     "src/core/platform/blobs/retained-bundle.ts": {
-      "sha256": "e27e3cc42f8d46d4c4d855d8d5956cbd792b86acff968e5ed4ccdff4dc765e75",
+      "sha256": "d96e460abe5a619a422dd76948edae2d0176414c20d5c44226be6fa281fc63ce",
       "executable": false
     },
     "src/core/platform/blobs/retained.ts": {

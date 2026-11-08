@@ -3,28 +3,9 @@ import type { AppEnv } from '../../app/types';
 import type { AppServices } from '../../app/services';
 import { createSetupRepository } from './repository';
 
-// Setup is never undone while a Worker runs, so each isolate asks D1 only until it sees the owner.
-const claimed=new WeakSet<D1Database>();
-const notSetUp = (status: 503) => new Response('This status page is not set up yet', { status, headers: { 'Content-Type': 'text/plain; charset=UTF-8', 'Cache-Control': 'no-store' } });
-
 export function registerSetupRoutes(app:Hono<AppEnv>,services:AppServices) {
-  // Until the owner completes setup, the page host's home answers 503, as the
-  // page readiness declaration's pendingSetupStatuses says. A deployment that
-  // stored its page settings has already published a snapshot; that page keeps
-  // its body, so a visitor still sees it.
-  app.get('/',async (c,next)=> {
-    if(claimed.has(c.env.DB))return next();
-    let initialized:boolean;
-    try {initialized=await createSetupRepository(c.env.DB).initialized();} catch {return next(); /* Snapshot outage response remains authoritative. */}
-    if(initialized){claimed.add(c.env.DB);return next();}
-    await next();
-    const rendered=c.res;
-    const headers=new Headers(rendered.headers);
-    headers.set('Cache-Control','no-store');headers.delete('ETag');headers.delete('Last-Modified');
-    // Hono copies the replaced response's headers onto a new one unless it is cleared first.
-    c.res=undefined;
-    c.res=rendered.status===200?new Response(rendered.body,{status:503,headers}):notSetUp(503);
-  });
+  // Owner setup is private readiness, not public availability. The snapshot
+  // routes alone decide whether published content exists and can be served.
   app.get('/setup/status',async c=> {
     c.header('Cache-Control','no-store');
     if(!await createSetupRepository(c.env.DB).initialized())return c.json({state:'setup_required'},409);

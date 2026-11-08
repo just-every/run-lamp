@@ -15,6 +15,8 @@ const CURRENT_POINTER_KEY = "snapshots/current.json";
 const STALE_MARKER_KEY = "snapshots/stale.json";
 const STALE_BUILD_MS = 5 * 60_000;
 const RETRY_LEASE_MS = 2 * 60_000;
+// The minute scheduler periodically rereads source data even without a mutation.
+const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v21";
 
@@ -305,7 +307,8 @@ export function createPublicSnapshotService(
             const archived = await blobs.getText(`snapshots/${pointer.version}/retained.json`);
             if (archived) { await retained!.write(archived.text); return true; }
           }
-          if (!missingReplica && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer)) return false;
+          const refreshDue = pointer && now.getTime() - Date.parse(pointer.generatedAt) >= SNAPSHOT_REFRESH_MS;
+          if (!missingReplica && !refreshDue && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer)) return false;
           await repository.requestWork(nowText);
           work = await repository.currentWork();
         }

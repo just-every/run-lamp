@@ -60,6 +60,7 @@ async function labelledStaleResponse(cached: Response, artifact: string) {
   const headers = new Headers(cached.headers);
   headers.set("Cache-Control", CACHE_CONTROL);
   headers.set("X-Lamp-Snapshot-State", "stale");
+  headers.set("X-Lamp-Snapshot-Retained", "true");
   headers.delete("ETag");
   headers.set("Warning", '110 - "Response is stale"');
   const contentType = headers.get("Content-Type") ?? "";

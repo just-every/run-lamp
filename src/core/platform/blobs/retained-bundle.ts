@@ -23,5 +23,5 @@ export function readRetainedArtifact(encoded: string, key: string) {
   const artifact = bundle.artifacts.find((item) => item.key === key);
   if (!artifact) return null;
   const bytes = artifact.encoding === "base64" ? Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer : new TextEncoder().encode(artifact.body).buffer;
-  return { bytes, contentType: artifact.contentType, version: bundle.version, generatedAt: new Date(bundle.generatedAt).toISOString(), stale: true };
+  return { bytes, contentType: artifact.contentType, version: bundle.version, generatedAt: new Date(bundle.generatedAt).toISOString(), stale: true, retainedReady: true };
 }
