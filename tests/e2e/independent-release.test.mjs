@@ -1,6 +1,7 @@
 import {secret as sessionSecret} from '../auth-adoption/runtime.mjs';
 import {setupPageSettingsStatement} from '../../scripts/ops-config.mjs';
 import test from 'node:test';
+import {openStatusJourney} from './helpers/status-journey.mjs';
 import {unstable_splitSqlQuery} from 'wrangler';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
@@ -65,13 +66,14 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   assert.equal((await publicRequest('/auth/bootstrap',setup)).status,404);
   assert.equal((await request('/auth/bootstrap',{...setup,headers:{...setup.headers,Origin:'https://other.test'}})).status,403);
   // A hosted deployment stores the page settings before the owner claims it, and
-  // health publishes that page. Until setup the page answers its declared pending status.
+  // health publishes that page. Public availability is independent of owner setup.
   await db.prepare(setupPageSettingsStatement({pageName:owner.pageName,pageTagline:owner.tagline,pageTimezone:owner.timezone,pageHost:'status.lamp.test',mailFromAddress:'status@example.test',pageAccentColor:'#16794C'})).run();
   assert.equal((await request('/health')).status,200);
   assert.equal((await request('/setup/status')).status,409);
   const pendingPage=await publicRequest('/');
-  assert.equal(pendingPage.status,503);
-  assert.equal(pendingPage.headers.get('cache-control'),'no-store');
+  assert.equal(pendingPage.status,200,'a configured published page is available before owner claim');
+  assert.equal(pendingPage.headers.get('x-lamp-snapshot-retained'),'true');
+  assert.ok(pendingPage.headers.get('etag'),'the public page retains its generation validator');
   assert.match(await pendingPage.text(),/Independent Lamp/);
   const created=await request('/auth/bootstrap',setup);
   assert.equal(created.status,303);
@@ -137,5 +139,47 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const privateCandidate=spawnSync(process.execPath,[producer],{cwd:unsafe,encoding:'utf8',timeout:30000});
   assert.equal(privateCandidate.status,1,'a credential sidecar never ships');
   assert.match(privateCandidate.stderr,/private|credential/i);
+
+  await runtime.dispose();runtime=undefined;
+  // Keep the Managed unclaimed state across a cold Worker, then advance only
+  // the test clock and exercise the native scheduler and actual R2/DO storage.
+ const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+ try {
+  const ferry = await j.component('Synthetic Lamp river crossings');
+  await j.visible('/', ferry.name);
+  const published = await j.publicResponse('/');
+  const generatedAt = published.headers.get('x-lamp-snapshot-generated-at');
+  await published.arrayBuffer();
+  await j.execute('DELETE FROM oa_bootstrap');
+  await j.restart();
+  const probe = async label => {
+    const response = await j.publicResponse('/');
+    const result = { label, status: response.status, generatedAt: response.headers.get('x-lamp-snapshot-generated-at'), retained: response.headers.get('x-lamp-snapshot-retained'), state: response.headers.get('x-lamp-snapshot-state') };
+    console.log(JSON.stringify(result));
+    assert.equal(result.status, 200, 'a published page remains available before its owner claims it');
+    assert.equal(result.retained, 'true');
+    const html = await response.text();
+    assert.ok(html.includes(ferry.name) && html.includes('Operational'));
+    return result;
+  };
+  assert.equal((await probe('unclaimed published page')).generatedAt, generatedAt);
+  const later = Date.parse(generatedAt) + 6 * 60_000;
+  assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: later }) })).status, 204);
+  assert.equal((await probe('past freshness bound, before scheduler')).generatedAt, generatedAt, 'an idle snapshot never pretends to be fresh');
+  await j.tick(later);
+  const refreshed = await probe('past freshness bound, after scheduler');
+  assert.ok(Date.parse(refreshed.generatedAt) > Date.parse(generatedAt), 'the scheduler refreshes even without a source mutation');
+  assert.equal(refreshed.state, null);
+  const bucket=await j.runtime.getR2Bucket('SNAPSHOTS');
+  await bucket.delete('snapshots/current.json');
+  const retained=await j.publicResponse('/');
+  console.log(JSON.stringify({label:'primary snapshot unavailable',status:retained.status,generatedAt:retained.headers.get('x-lamp-snapshot-generated-at'),retained:retained.headers.get('x-lamp-snapshot-retained'),state:retained.headers.get('x-lamp-snapshot-state')}));
+  assert.equal(retained.status,200);
+  assert.equal(retained.headers.get('x-lamp-snapshot-state'),'stale');
+  assert.equal(retained.headers.get('x-lamp-snapshot-retained'),'true');
+  assert.equal(retained.headers.get('x-lamp-snapshot-generated-at'),refreshed.generatedAt,'an unavailable primary source cannot invent a fresh timestamp');
+  const retainedBody=await retained.text();
+  assert.ok(retainedBody.includes(ferry.name)&&retainedBody.includes(refreshed.generatedAt),'the retained page identifies its actual generation and keeps the known service facts');
+ } finally {await j.close();}
  }finally{await runtime?.dispose();await rm(temporary,{recursive:true,force:true});}
 });

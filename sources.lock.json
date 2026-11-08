@@ -7372,7 +7372,7 @@
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
-      "sha256": "8ae6fd35caf702251b2dbce168caec8d2fa879628e8da2513ee38c50d9318859",
+      "sha256": "ad484c73eb24d2383a306752c97fda416f25cf53d58260b2d88f330e949bef99",
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
@@ -7432,7 +7432,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "1f6ca74a0f3d5c5b722d0ac8c5f71548555b43d47c7e981bd74945fe27d3100e",
+      "sha256": "3dc4f6cc2fca9a021cde024f13fb5dfd20b736de348496e3f2ac016eeae1aab3",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
