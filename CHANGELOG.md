@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.11.4
+
+**Your published status page stays available.** Whether you run your own Lamp or use a Managed one, a published public page now answers successfully (HTTP 200) before you finish claiming the installation and when the primary data source is briefly unavailable. It refreshes itself about every five minutes while the scheduler is running. When Lamp can only serve a retained copy, the page says so and shows how old it is, keeping its actual generation time instead of answering as an error while saying Operational. A page that has never been published still reports that it is unavailable.
+
+Also in this version:
+
+- **Follow your providers in Settings → Dependencies.** Choose a supported vendor or a public Statuspage, RSS, Atom or configured JSON source. Vendor reports appear separately by default. You can include them in overall status or have an outage prepare a private incident from a saved template for an operator to review and publish. Vendor recovery never resolves your incident. Reads are at least two minutes apart; repeated failures keep the last observation and mark it unavailable. Team alerts about vendor changes are not available yet.
+- **Find all your imports together.** Your imports shows moves from every supported provider and Business approvals regardless of the provider currently selected. Sorry parent components become groups, with incident and subscriber references mapped to their descendants; imported counts describe the records Lamp actually creates.
+- **Clearer audit history.** New component-state entries show the component name and when Lamp made the change, while imported history keeps its source timestamps. Import approvals also appear in the audit log.
+- **Publish updates across many components.** Selecting recipients no longer exceeds the database query limit when an update affects many components, while keeping each recipient once in that publication.
+- **Link a self-hosted Lamp to Business.** Setup and deployment retain Business's trust settings so Business can verify the active native owner at your configured address. With Business imports enabled, Business can also capture a public Sorry page without a provider key; review and approval still come before import. Owner verification does not establish which source revision is deployed.
+- **Readable recovery checks.** Monitor details no longer expose internal deduplication keys.
+
+Upgrading from 1.11.3: back up data and your source changes first, update the checkout to `v1.11.4`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies two migrations for import audit history and vendor followers. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.3
 
 Lamp 1.11.3 seals the signing keys your Lamp uses with a linked Run Edit Run Auth installation for single sign-on, and the Calm headline, Uptime-history-led and Regions map layouts now say how their uptime figures are calculated. If you run your own Lamp, read the first part before you update: Lamp now needs one more secret, which `rer` creates for you.

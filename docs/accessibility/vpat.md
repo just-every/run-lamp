@@ -3,7 +3,7 @@
 VPAT® Version 2.5 Rev, Revised Section 508 Edition (April 2025).
 
 Product name: Lamp
-Product version: 1.11.3
+Product version: 1.11.4
 Evaluation date: 25 October 2026 (UTC; 2026-10-25)
 Report date: 25 October 2026
 
@@ -12,6 +12,8 @@ Edition note (28 October 2026): Version 1.11.1 reorganizes the contract document
 Edition note (3 November 2026): Version 1.11.2 changes only how sign-in answers after setup on a Lamp installed through your Business; no page, form or control changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 Edition note (3 November 2026): Version 1.11.3 adds a "How these figures are calculated" disclosure beside the component figures on the Calm headline and Regions map layouts and completes the one on the Uptime-history-led layout; no form changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
+
+Edition note (8 November 2026): Version 1.11.4 changes retained public-page availability and freshness, adds vendor follower settings and reports, and updates import history and recovery details. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 ## Product description
 
