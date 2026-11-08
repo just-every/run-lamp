@@ -7432,7 +7432,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "3dc4f6cc2fca9a021cde024f13fb5dfd20b736de348496e3f2ac016eeae1aab3",
+      "sha256": "1f6ca74a0f3d5c5b722d0ac8c5f71548555b43d47c7e981bd74945fe27d3100e",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {

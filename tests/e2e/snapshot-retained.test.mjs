@@ -53,6 +53,37 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     await j.tick(Date.now()); assert.ok(pings > beforeOutage); assert.equal((await j.request('/health')).status, 200);
     await j.close(); j = null;
 
+    // Managed publishes configured page data before the owner claims Lamp.
+    // Keep that installation state across a cold Worker, then advance only the
+    // test clock past the documented refresh bound and run the real scheduler.
+    j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+    const ferry = await j.component('Synthetic Lamp river crossings');
+    await j.visible('/', ferry.name);
+    const published = await j.publicResponse('/');
+    const generatedAt = published.headers.get('x-lamp-snapshot-generated-at');
+    await published.arrayBuffer();
+    await j.execute('DELETE FROM oa_bootstrap');
+    await j.restart();
+    const probe = async label => {
+      const response = await j.publicResponse('/');
+      const result = { label, status: response.status, generatedAt: response.headers.get('x-lamp-snapshot-generated-at'), retained: response.headers.get('x-lamp-snapshot-retained'), state: response.headers.get('x-lamp-snapshot-state') };
+      console.log(JSON.stringify(result));
+      assert.equal(result.status, 200, 'a published page remains available before its owner claims it');
+      assert.equal(result.retained, 'true');
+      const html = await response.text();
+      assert.ok(html.includes(ferry.name) && html.includes('Operational'));
+      return result;
+    };
+    assert.equal((await probe('unclaimed published page')).generatedAt, generatedAt);
+    const later = Date.parse(generatedAt) + 6 * 60_000;
+    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: later }) })).status, 204);
+    assert.equal((await probe('past freshness bound, before scheduler')).generatedAt, generatedAt, 'an idle snapshot never pretends to be fresh');
+    await j.tick(later);
+    const refreshed = await probe('past freshness bound, after scheduler');
+    assert.ok(Date.parse(refreshed.generatedAt) > Date.parse(generatedAt), 'the scheduler refreshes even without a source mutation');
+    assert.equal(refreshed.state, null);
+    await j.close(); j = null;
+
     // Real public routes, R2 and durable replica. Its repository throws on every
     // read; only the provider edges are replaced to inject failure.
     const built = await build({ entryPoints: ['tests/e2e/snapshot-retained.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false, external: ['cloudflare:workers'], plugins: [{ name: 'vite-assets', setup(builder) {
@@ -175,7 +206,8 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     for (const path of paths) {
       const response = await read(path + '?storage=down'); assert.equal(response.status, 200, path);
       assert.equal(response.headers.get('x-lamp-snapshot-state'), 'stale');
-      assert.ok(response.headers.get('x-lamp-snapshot-generated-at'));
+      assert.equal(response.headers.get('x-lamp-snapshot-retained'), 'true');
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generation.pointer.generatedAt, 'a source failure preserves the actual publication time');
       const text = await response.text();
       assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
       // Badge protocols retain their consumer schema; every surface carries
