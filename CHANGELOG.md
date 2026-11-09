@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.5
+
+**More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.
+
+- **Imports finish without waiting for the public page to rebuild.** Applying or undoing an import can return its saved result while Lamp refreshes the public page in the background. If that refresh fails, Lamp keeps it pending for a scheduled retry. Repeating an unchanged Business dry run also reuses its saved review.
+
+Upgrading from 1.11.4: back up data and your source changes first, update the checkout to `v1.11.5`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.4
 
 **Your published status page stays available.** Whether you run your own Lamp or use a Managed one, a published public page now answers successfully (HTTP 200) before you finish claiming the installation and when the primary data source is briefly unavailable. It refreshes itself about every five minutes while the scheduler is running. When Lamp can only serve a retained copy, the page says so and shows how old it is, keeping its actual generation time instead of answering as an error while saying Operational. A page that has never been published still reports that it is unavailable.
