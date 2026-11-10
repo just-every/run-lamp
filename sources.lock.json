@@ -9200,7 +9200,7 @@
       "executable": false
     },
     "tests/release/installation-runtime.mjs": {
-      "sha256": "79c5f2a77e59295b0b3efc3893a56bc3e867f937e1f0a42128724f4a804d3a1d",
+      "sha256": "dd94247fb8247f4638528c467c8855feaa7d9cad44c43f7be7b49f855c31352f",
       "executable": false
     },
     "tests/release/journeys.mjs": {
