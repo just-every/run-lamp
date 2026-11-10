@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.7
+
+**Setup no longer reports success when database migrations did not apply.** Setting up a new Lamp now reads the applied migrations back from the database. If any did not apply, setup stops with a clear error that names the missing migrations and says how many of the total are applied, instead of reporting that migrations and page settings are initialized. Nothing further is written; run setup again to finish applying them.
+
+- **Move in shows how the old page's rows become Lamp's components and groups.** When you move in from Sorry, the dry run and the receipt now state how the source rows arrive, for example `16 source component rows -> 14 components + 2 groups`: Sorry shows a parent row once, as its children's group, so Lamp does the same. They name the rows that became groups and explain why the effect total is lower than the number of source rows. Move in no longer warns that a row is unmapped when Lamp deliberately shows it as a group; a row that genuinely is not carried over still warns.
+
+Upgrading from 1.11.6: back up data and your source changes first, update the checkout to `v1.11.7`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.6
 
 **More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.

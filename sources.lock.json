@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "88a6509e9b4716f70776bc3f8735e2eb226fcaaf950a5c6f7c6e1676d2afeb14",
+      "sha256": "58d2caf710ec75e43ef1926554cca4dc9ef8f1fdf149e4eff9e5352954ddea34",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "8675c754d2e2339a91d2bc98b4966336016a9844a1b9c43cd11b9710b7b839d5",
+      "sha256": "60c32edb9430bb03ee22fcd4bd726cc4fa15b871dfd208e6e1dfe09681b4c8c1",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -648,7 +648,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "2845da39bffb339148cf49cd555c39dda09e08312f9f3d021409b8f2c6b2d636",
+      "sha256": "0a7c2bcd6223d5afd491bc34129951abf3b59572a8c4a137831615eea7c16e5a",
       "executable": false
     },
     "docs/maintenance.md": {
@@ -2372,7 +2372,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "6ce5c0121ba83acb78266576c21af48a2c6f9b9a6112a807f2f43762bd56700c",
+      "sha256": "0c46ed3e2f180d5339f21d0b5ed662df3a53e0d59b1d6b11b25d8260e302da1d",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2400,7 +2400,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "e7ff893cb28074bd2a4158186aa10bdeac6504e43e94d10444090b0255f2899b",
+      "sha256": "607dc4108f7f5a26b4888463af2641b11d3c100e8e3a47b29c1bb8386336b7bb",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -2473,6 +2473,14 @@
     },
     "release-history/1.11.5.json": {
       "sha256": "f9e7cd453bbb7b2b03bb1bf1ea89c2e6f0d4cb3ce6a4885a467474992f0c2cb7",
+      "executable": false
+    },
+    "release-history/1.11.6.CONTRACT.md": {
+      "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c",
+      "executable": false
+    },
+    "release-history/1.11.6.json": {
+      "sha256": "f3963a6ae6cd3c4886186bdbcb54b53361eec360b2ef1f0f8659cb2aa1dc3a71",
       "executable": false
     },
     "release-history/1.2.0.CONTRACT.md": {
@@ -2572,7 +2580,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "f3963a6ae6cd3c4886186bdbcb54b53361eec360b2ef1f0f8659cb2aa1dc3a71",
+      "sha256": "27782dc8c2d1f041b503583c953746d521b1fde2dde72046e001acd5bb3c1f0d",
       "executable": false
     },
     "rer-packaging.json": {
@@ -2592,7 +2600,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "0ebf40772c3af74fc779f179ce1cdd3f11f67117ac95794dd77364a603ec0563",
+      "sha256": "8cf801e5167542d5cca45adbddece3d8edf5cc5190f447043b22d7dd8df8e4a9",
       "executable": false
     },
     "schema/dependencies.mjs": {
@@ -3124,7 +3132,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "422a4ba4c640d3c1cc7feb2921f2d91e83ef14fb39f55551d11b41c0d876e456",
+      "sha256": "5e072dc0377d6c180a1e5b871818c0cd72fa6291dd3d1413e54c85bbde407ab9",
       "executable": false
     },
     "src/base/actor.ts": {

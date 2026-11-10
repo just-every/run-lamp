@@ -3,7 +3,7 @@
 VPAT® Version 2.5 Rev, Revised Section 508 Edition (April 2025).
 
 Product name: Lamp
-Product version: 1.11.6
+Product version: 1.11.7
 Evaluation date: 25 October 2026 (UTC; 2026-10-25)
 Report date: 25 October 2026
 
@@ -18,6 +18,8 @@ Edition note (8 November 2026): Version 1.11.4 changes retained public-page avai
 Edition note (9 November 2026): Version 1.11.5 improves Managed build reliability and import response handling. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 Edition note (10 November 2026): Version 1.11.6 adds a pre-launch setting that hides public subscribe forms and asks search engines to stay away while it is on. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
+
+Edition note (11 November 2026): Version 1.11.7 makes setup stop when database migrations did not apply and adds a source-row reconciliation statement to Move in. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 ## Product description
 
