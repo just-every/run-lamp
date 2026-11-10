@@ -580,11 +580,15 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "2e6bc67140e337bbeae8c6ec5f3b846603b54bcec6f5614a68c40b29d771ab27",
+      "sha256": "f1155812b9e63d47f00c6af82e52c07df6898add238a255613cd282e38dea426",
       "executable": false
     },
     "docs/components-and-groups.md": {
       "sha256": "472ddf0f4b442c9284b76572f826874c52a89f21949e2e55e98eb6ca74420404",
+      "executable": false
+    },
+    "docs/contract/ANCHOR.json": {
+      "sha256": "419a62e6fa4ad52f5ff577d684c2919207c8626bb88518f7b762cd45aa64175f",
       "executable": false
     },
     "docs/contract/COVERAGE.json": {
