@@ -5,7 +5,7 @@ import { createHash, randomUUID } from 'node:crypto';
 // in its own process (cloudflare-edge-preload.mjs routes its requests here): the workers.dev subdomain; one
 // Worker's versions, deployments, settings, content and secrets, where a version upload with
 // bindings_inherit=strict holds exactly its listed bindings and a secret DELETE deploys a version of its own;
-// D1 creation and the D1 query API over a real Lamp D1; and the Worker's own host, answered by `app` with the
+// D1 creation and the D1 query API over a real Lamp D1; R2 bucket and Queue creation; and the Worker's own host, answered by `app` with the
 // live version. Request bodies carry secret values and are never kept.
 const envelope = (status, result, errors = []) => Response.json({ success: !errors.length, errors, messages: [], result }, { status });
 const ok = result => envelope(200, result);
@@ -23,7 +23,7 @@ export function edgeFetch({ edge, hosts, fetch: send = globalThis.fetch }) {
 }
 
 export async function cloudflareEdge({ accountId, token, subdomain, d1, workerHost, app }) {
-  const workers = new Map(), databases = new Map();
+  const workers = new Map(), databases = new Map(), buckets = new Map(), queues = new Map();
   const live = name => {
     const worker = workers.get(name), id = worker?.deployments[0].versions[0].version_id;
     return worker?.versions.find(version => version.id === id);
@@ -96,6 +96,18 @@ export async function cloudflareEdge({ accountId, token, subdomain, d1, workerHo
       const database = { uuid: randomUUID(), name: (await request.json()).name };
       databases.set(database.uuid, database);
       return ok(database);
+    }
+    if ((match = /^\/r2\/buckets\/([a-z0-9-]+)$/.exec(path)) && method === 'GET') return buckets.has(match[1]) ? ok(buckets.get(match[1])) : fail(404, 'The specified bucket does not exist.');
+    if (path === '/r2/buckets' && method === 'POST') {
+      const bucket = { name: (await request.json()).name, creation_date: new Date().toISOString() };
+      buckets.set(bucket.name, bucket);
+      return ok(bucket);
+    }
+    if (path === '/queues' && method === 'GET') return ok([...queues.values()]);
+    if (path === '/queues' && method === 'POST') {
+      const queue = { queue_id: randomUUID().replaceAll('-', ''), queue_name: (await request.json()).queue_name };
+      queues.set(queue.queue_name, queue);
+      return ok(queue);
     }
     if ((match = /^\/d1\/database\/([0-9a-f-]{36})(\/query)?$/.exec(path)) && databases.has(match[1])) {
       if (!match[2] && method === 'GET') return ok(databases.get(match[1]));

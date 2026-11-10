@@ -7,6 +7,7 @@ import { assertMailDns } from "./mail-dns.mjs";
 import { deploymentOwnership } from "./deployment-ownership.mjs";
 
 import { applyOwnerMigrations } from "./owner-migrations.mjs";
+import { assertMigrationsApplied, coreLedgerQuery, ledgerNames, shippedMigrations } from "./setup-migrations.mjs";
 import { deploymentConfig, deploymentRecordPath, parseArgs, resourceNames, setupPageSettingsStatement, writeDeploymentRecord, writeGeneratedWrangler } from "./ops-config.mjs";
 
 // The checkout's own Wrangler, run by this Node: a restore needs no global pnpm.
@@ -75,6 +76,8 @@ async function main() {
     if (imported.status !== 0) throw new Error("Restore did not complete. The Worker has not been deployed; preserve the archive and use a fresh environment for recovery.");
   }
   wrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", "wrangler.toml"]);
+  // An apply that exits cleanly is not proof that it finished: read the ledger back and compare it with the shipped list.
+  assertMigrationsApplied(shippedMigrations(), ledgerNames(wrangler(["d1", "execute", "DB", "--remote", "--json", "--config", "wrangler.toml", "--command", coreLedgerQuery])));
   await applyOwnerMigrations("wrangler.toml", ["--remote"]);
   wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", `${setupPageSettingsStatement(config)}`]);
   if (!existsSync("wrangler.toml")) throw new Error("Setup did not generate wrangler.toml.");

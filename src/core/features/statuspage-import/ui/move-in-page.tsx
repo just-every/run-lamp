@@ -21,7 +21,14 @@ type Result = { job: Job; door: DoorPlan | null; report: MoveInReport; invites: 
 const kindLabels: Record<string, string> = { group: "Component groups", component: "Components", incident: "Incidents", maintenance: "Maintenance", subscriber: "Subscribers", postmortem: "Postmortems", template: "Incident templates" };
 
 function ReportTable({ report }: { report: MoveInReport }) {
-  return <>{report.limits.length ? <div role="status"><ul>{report.limits.map(summary=><li key={summary}>{summary}</li>)}</ul><p>Leave out subscriber channels or excess subscriber rows and run a fresh dry run.</p></div> : null}{report.unavailableAddresses?.length > 0 && <div role="status"><p>Some old public addresses are unavailable:</p><ul>{report.unavailableAddresses.map((reason) => <li key={reason}>{reason}</li>)}</ul></div>}<div className="table-scroll" tabIndex={0} role="region" aria-label="Move-in counts"><table><thead><tr><th scope="col">Records</th><th scope="col">Read</th><th scope="col">Imported</th><th scope="col">Kept private</th><th scope="col">Changed</th><th scope="col">Skipped</th><th scope="col">Refused</th></tr></thead><tbody>{Object.entries(report.counts).map(([kind, count]) => <tr key={kind}><th scope="row">{kindLabels[kind] ?? kind}</th><td>{count.read}</td><td>{count.imported}</td><td>{count["kept-private"] ?? 0}</td><td>{count.changed}</td><td>{count.skipped}</td><td>{count.rejected}</td></tr>)}</tbody></table></div></>;
+  return <><Reconciliation report={report} />{report.limits.length ? <div role="status"><ul>{report.limits.map(summary=><li key={summary}>{summary}</li>)}</ul><p>Leave out subscriber channels or excess subscriber rows and run a fresh dry run.</p></div> : null}{report.unavailableAddresses?.length > 0 && <div role="status"><p>Some old public addresses are unavailable:</p><ul>{report.unavailableAddresses.map((reason) => <li key={reason}>{reason}</li>)}</ul></div>}<div className="table-scroll" tabIndex={0} role="region" aria-label="Move-in counts"><table><thead><tr><th scope="col">Records</th><th scope="col">Read</th><th scope="col">Imported</th><th scope="col">Kept private</th><th scope="col">Changed</th><th scope="col">Skipped</th><th scope="col">Refused</th></tr></thead><tbody>{Object.entries(report.counts).map(([kind, count]) => <tr key={kind}><th scope="row">{kindLabels[kind] ?? kind}</th><td>{count.read}</td><td>{count.imported}</td><td>{count["kept-private"] ?? 0}</td><td>{count.changed}</td><td>{count.skipped}</td><td>{count.rejected}</td></tr>)}</tbody></table></div></>;
+}
+
+/** How the source's rows arrive, so a buyer checking counts against the incumbent sees why they differ. */
+function Reconciliation({ report }: { report: MoveInReport }) {
+  const reconciliation = report.reconciliation;
+  if (!reconciliation) return null;
+  return <div role="status" aria-label="Source rows to Lamp records"><p><strong>{reconciliation.statement}</strong></p><p>Shown as groups: {reconciliation.groupRows.map(row => row.name).join(", ")}.</p><p>{reconciliation.effects.statement}</p></div>;
 }
 
 function ReportItems({ report }: { report: MoveInReport }) {

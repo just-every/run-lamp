@@ -13,7 +13,7 @@ commands provision a real D1 database, R2 bucket and Queue by environment name,
 apply migrations, initialize the first operator and page settings, build the
 Worker and publish the emitted artifact. `rer deploy` runs all of these;
 `node scripts/setup.mjs --environment <name> --env-file <file>` runs the
-provisioning alone. (`rer setup` is the local first-owner setup.)
+provisioning alone. Setup reads the applied migrations back from D1 and fails, naming any shipped migration that is missing, instead of reporting success; run it again to apply the rest. (`rer setup` is the local first-owner setup.)
 
 Owner task guides are published at `/docs` on the app host. Use
 [`RUN-LOCALLY.md`](RUN-LOCALLY.md) for local launch, export, reset and restore;

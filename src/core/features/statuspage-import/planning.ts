@@ -6,6 +6,7 @@ import { mapSource, type Accounting, type EntityKind, type Snapshot } from "./ro
 import { entityTables } from "./rows";
 import { moveInPlan } from './door-plan';
 import { namespace, type ReadSource } from "./source";
+import { isIntentionalParentGroup, sorryRowReconciliation, type RowReconciliation } from "./reconciliation";
 
 const json = (value: unknown) => JSON.parse(JSON.stringify(value)) as Json;
 /** Every source string well formed: a lone surrogate in an export reads as U+FFFD,
@@ -57,7 +58,8 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
       const rejected = accounting.find((item) => item.outcome === "rejected" && item.kind === source.kind);
       return {
         effects: effect ? [effect] : [],
-        unmapped: accounting.filter((item) => item.outcome === "skipped" || item.outcome === "changed").map((item) => ({ field: item.kind, reason: item.reason })),
+        // A Sorry parent shown once as its children's group is the deliberate mapping, explained by the report's reconciliation; it is not unmapped.
+        unmapped: accounting.filter((item) => (item.outcome === "skipped" || item.outcome === "changed") && !isIntentionalParentGroup(item)).map((item) => ({ field: item.kind, reason: item.reason })),
         ...(rejected ? { rejection: rejected.reason } : {}),
       };
     },
@@ -66,7 +68,7 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
 
 export type CountKind = EntityKind | "postmortem";
 export type Counts = Record<CountKind, { read: number; imported: number; changed: number; skipped: number; rejected: number; "kept-private": number }>;
-export interface MoveInReport { limits:string[]; state: string; asOf: string; fingerprint: string; counts: Counts; items: Accounting[]; cutover: CutoverPreview; unavailableAddresses: string[] }
+export interface MoveInReport { limits:string[]; state: string; asOf: string; fingerprint: string; counts: Counts; items: Accounting[]; /** How source rows arrive as native records (Sorry parents shown as groups). */ reconciliation?: RowReconciliation; cutover: CutoverPreview; unavailableAddresses: string[] }
 
 /** The dry-run report, rebuilt from the reviewed plan so a saved job reports exactly what it applied. */
 export function reportFromPlan(plan: ImportPlan, state = "dry run"): MoveInReport {
@@ -88,5 +90,6 @@ export function reportFromPlan(plan: ImportPlan, state = "dry run"): MoveInRepor
   const candidates = plan.entries.filter((entry) => !entry.erased && ["incident", "maintenance"].includes(entry.source.kind)).flatMap((entry) => entry.effects.map((effect) => ({ namespace: entry.source.namespace, sourceId: entry.source.sourceId, targetId: effect.targetId, targetKind: effect.targetKind, target: `${effect.targetKind}:${effect.targetId}`, publicAddresses: (entry.source.payload as { publicAddresses?: string[] }).publicAddresses, shortlink: (entry.source.payload as { raw?: { shortlink?: unknown } }).raw?.shortlink })));
   const { unavailable: unavailableAddresses } = resolvePublicAddresses(candidates);
   const limits=metadata?.raw?.subscriberCapacity?.summaries ?? [];
-  return { limits, cutover: cutoverFromPlan(plan, metadata?.raw?.asOf ?? ""), unavailableAddresses, state, asOf: metadata?.raw?.asOf ?? "", fingerprint: plan.fingerprint, counts, items };
+  const reconciliation = sorryRowReconciliation(plan);
+  return { limits, cutover: cutoverFromPlan(plan, metadata?.raw?.asOf ?? ""), unavailableAddresses, state, asOf: metadata?.raw?.asOf ?? "", fingerprint: plan.fingerprint, counts, items, ...(reconciliation ? { reconciliation } : {}) };
 }

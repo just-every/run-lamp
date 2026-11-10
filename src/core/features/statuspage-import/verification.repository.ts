@@ -3,6 +3,8 @@ import { stored } from '../../../../modules/import-kit/src/d1/jobs';
 import { attachmentHash } from '../../../../modules/import-kit/src/provenance/identity';
 import type { ProvenanceRow } from '../../../../modules/import-kit/src/types';
 import type { NativeValue } from './rows';
+import { sorryRowReconciliation } from './reconciliation';
+import { moveInPlan } from './door-plan';
 
 /** The policy describes the real version-1 mapping; its implementation is bound
  * separately by the candidate revision in the signed receipt. */
@@ -94,6 +96,7 @@ export async function readImportVerification(id: string, context: D1ImportContex
     counts: plan.counts,
     mapping: { version: plan.mappingVersion, policy: mappingPolicy, policySha256: sha256(mappingPolicy) },
     reconciliation: { rows: comparison(manifests.rows.source, manifests.rows.target), provenance: comparison(manifests.provenance.source, manifests.provenance.target), attachments: comparison(manifests.attachments.source, manifests.attachments.target) },
+    rowReconciliation: sorryRowReconciliation(moveInPlan(plan)) ?? null,
     unmapped: { count: items.length, itemManifestSha256: digest(items), items },
     sourceCounts: entityCounts(expectedRows), nativeCounts: entityCounts(actualRows), manifests, differences, notifications,
     unexplainedDifferences: Object.values(differences).reduce((total, count) => total + count, 0),
