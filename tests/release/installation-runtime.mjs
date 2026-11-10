@@ -89,10 +89,12 @@ export async function installation(mode) {
   try {
     // The Run page's one line clones the public repository into its repo-name folder; do that clone, then select this candidate.
     const runPage = await readFile(join(source, "src/site/run.ts"), "utf8");
-    const line = /clone:\s*'npx -y @runeditrun\/rer dev just-every\/([\w-]+)'/.exec(runPage);
-    const folder = /folder:\s*'([\w-]+)'/.exec(runPage);
-    assert.ok(line && folder && folder[1] === line[1], "Run page provides the one-line install and its repo-name folder");
-    const clone = [null, `https://github.com/just-every/${line[1]}.git`, folder[1]];
+    const line = /clone:\s*'npx -y @runeditrun\/rer dev (just-every\/([\w.-]+))'/.exec(runPage);
+    const repository = /repository:\s*'(https:\/\/github\.com\/just-every\/[\w.-]+?)(?:\.git)?'/.exec(runPage);
+    // The folder `git clone` creates is the repository's name in the clone URL, minus .git; the one-line install names the same repository.
+    const folder = repository && /\/([^/]+)$/.exec(repository[1]);
+    assert.ok(line && repository && folder && folder[1] === line[2], "Run page provides the one-line install and its repo-name folder");
+    const clone = [null, `${repository[1]}.git`, folder[1]];
     const sha = (await run("git", ["rev-parse", "HEAD"], source)).trim();
     await run("git", ["clone", clone[1], clone[2]]);
     root = join(directory, clone[2]);
@@ -111,7 +113,7 @@ export async function installation(mode) {
       }
     }
     const site = await readFile(join(root, "src/base/run-site.ts"), "utf8");
-    const installer = /installRer = 'curl -fsSL (https:\/\/[^\s']+) \| sh'/.exec(site);
+    const installer = /curl -fsSL (https:\/\/[^\s'`]+) \| sh/.exec(site);
     assert.ok(installer, "Run page provides its actual public installer");
     const installerPath = join(directory, "install-rer.sh");
     await run("curl", ["-fsSL", installer[1], "-o", installerPath]);
