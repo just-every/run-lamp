@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.6
+
+**More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.
+
+- **Keep an unannounced page private with a pre-launch setting.** Owners can hide every subscribe form, refuse subscriptions and ask search engines to stay away until launch. An owner or admin turns it on in Settings → Notifications → Pre-launch (or with `PATCH /api/app/prelaunch` and `{"enabled": true}`) and turns it off the same way; the forms, subscriptions and indexing return on the next request, with no redeploy. While it is on, the public page, its history and incident pages show no subscribe or follow form, every subscription request (including the Slack return) is refused with a plain 503 before anything is saved or sent, and every answer from the page host asks search engines not to index it, with `/robots.txt` reading `Disallow: /`. Operators keep the whole app, and subscribers who already confirmed keep their confirm, manage and unsubscribe links. The setting is off by default, so a page that is already public does not change, and it needs no migration. It is not part of a page export: after restoring one into a new installation, set it again if the page is not yet live.
+
+Upgrading from 1.11.5: back up data and your source changes first, update the checkout to `v1.11.6`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.5
 
 **More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.

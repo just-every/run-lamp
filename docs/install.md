@@ -6,7 +6,7 @@ The [local guide](../RUN-LOCALLY.md) has the details. Local mail is silently
 suppressed and not retained; use a hosted installation to exercise real email delivery.
 
 That start line clones `main`, Lamp's development source, not a release tag. The latest release tag
-is `v1.11.5` (rer 0.2.98); see [source and tooling versions](../README.md#source-and-tooling-versions)
+is `v1.11.6` (rer 0.2.98); see [source and tooling versions](../README.md#source-and-tooling-versions)
 to use it instead. `rer --version` names the `rer` you installed first and the
 version the checkout pins second; inside the checkout, `rer` runs the pinned one.
 
