@@ -2483,6 +2483,14 @@
       "sha256": "f3963a6ae6cd3c4886186bdbcb54b53361eec360b2ef1f0f8659cb2aa1dc3a71",
       "executable": false
     },
+    "release-history/1.11.7.CONTRACT.md": {
+      "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c",
+      "executable": false
+    },
+    "release-history/1.11.7.json": {
+      "sha256": "27782dc8c2d1f041b503583c953746d521b1fde2dde72046e001acd5bb3c1f0d",
+      "executable": false
+    },
     "release-history/1.2.0.CONTRACT.md": {
       "sha256": "4c9ba364ef456661518cb8fa4b915c271513b5270b364780fe66df621e90380b",
       "executable": false
