@@ -70,8 +70,9 @@ export async function prelaunchFlow() {
     const unsubscribeLink = fixture.messagesFor(existing).flatMap(message => message.text.match(/https?:\/\/\S+\/unsubscribe\/\S+/) ?? [])[0];
     assert.ok(unsubscribeLink, 'the confirmation carries an unsubscribe link');
     const linkIn = (email, pattern) => fixture.messagesFor(email).flatMap(message => message.text.match(pattern) ?? [])[0];
-    const manageLink = linkIn(existing, /https?:\/\/\S+\/manage\/\S+/);
-    assert.ok(manageLink, 'the confirmation carries a manage link');
+    // The manage link travels with a notification, so the existing subscriber is notified of a second incident.
+    await fixture.publish(component, 'Synthetic Lamp prelaunch notification');
+    const manageLink = await eventuallySubscriber(async () => linkIn(existing, /https?:\/\/\S+\/manage\/\S+/), Boolean, 'the existing subscriber gets a manage link');
     // A second subscriber who has not confirmed yet: their link must still work once the page is pre-launch.
     const pending = 'synthetic-lamp-pending@example.test';
     assert.equal((await form('/subscribe', { email: pending })).status, 202);
