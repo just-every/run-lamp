@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.11.9
+
+**`rer deploy --dry-run` now finishes cleanly and tells you what a real deploy still needs.** A dry run no longer fails after your setup step has been checked. It prints its completion line only after it has finished planning, and it lists what a real deploy still needs from you, including the owner name.
+
+- **Deploys cope with a partial answer from Cloudflare.** When Cloudflare returns only part of its deployments list while the deploy retires the setup token, the deploy no longer fails, and a secret change is settled the same way. A pending secret change is also settled before the deploy's own setup step runs.
+- **`rer signin` prints your custom domain's link.** On an installation with its own domain, the sign-in link it prints now uses that domain.
+- **On your own computer, setup and sign-in say more.** The first-run page notes that a local account needs no email verification, and the front page of a local installation points to choosing a local persona on the sign-in page or running `rer dev --as owner`.
+- **The Run and Roadmap pages on Lamp's site changed.** The Run page now sets out three ways to run Lamp: on your own computer, Assisted or Managed. The Contract page is now called Roadmap, shows only product wording (file paths are no longer displayed in the clauses) and marks what is still to build.
+- **The pinned `rer` is 0.2.106**, which carries these deploy and sign-in fixes.
+
+Upgrading from 1.11.8: back up data and your source changes first, update the checkout to `v1.11.9`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout now keeps rer 0.2.106 (the 1.11.8 text said 0.2.98); `pnpm install --frozen-lockfile` installs it. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.8
 
 **More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.
