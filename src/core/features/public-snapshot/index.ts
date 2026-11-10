@@ -1,5 +1,5 @@
 export { createSnapshotRepository } from "./repository";
-export { createPublicSnapshotService } from "./service";
+export { createPublicSnapshotService, runningReleaseIdentity } from "./service";
 export { registerPublicSnapshotRoutes } from "./routes";
 export { defaultPageStatusRollup, defaultPublicSnapshotPolicies, defaultUptimeDowntimeWeight } from "./policies";
 export { defaultPublicSnapshotEvents } from "./events";

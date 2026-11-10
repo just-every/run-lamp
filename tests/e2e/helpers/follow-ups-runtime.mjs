@@ -46,7 +46,7 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     // Allocate for this open after bundling, never across fixture lifetimes.
     const appPort = await reservePort({ label: "follow-ups Worker" });
     const appOrigin = `http://127.0.0.1:${appPort}`;
-    const runtimeOptions = convertV4MiniflareOptions({
+    const miniflareOptions = (bindingOverrides = {}) => convertV4MiniflareOptions({
       name: "lamp-follow-ups-test", modules: true, script: built.outputFiles[0].text,
       port: appPort, inspectorPort: 0, compatibilityDate: "2026-09-08", compatibilityFlags: ["nodejs_compat"],
       bindings: {
@@ -58,7 +58,7 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         MAIL_PROVIDER: "resend", MAIL_PROVIDER_API_KEY: "synthetic-lamp-mail-1",
         MAIL_FROM_ADDRESS: "synthetic-lamp-sender@example.test",
         ...(resendWebhookSecret ? { RESEND_WEBHOOK_SECRET: resendWebhookSecret } : {}),
-        ...extraBindings,
+        ...extraBindings, ...bindingOverrides,
       },
       d1Databases: ["DB"], r2Buckets: ["SNAPSHOTS"],
       durableObjects: { SNAPSHOT_CACHE: { className: "SnapshotCache", useSQLite: true } },
@@ -98,7 +98,7 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         throw new Error(`Unexpected follow-up fixture network edge: ${url.origin}${url.pathname}`);
       },
     });
-    runtime = new Miniflare(runtimeOptions);
+    runtime = new Miniflare(miniflareOptions());
     db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
     for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) await execute(await readFile(join("migrations/core", migration), "utf8"));
@@ -148,9 +148,10 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     await signIn();
     return {
       get runtime() { return runtime; }, get db() { return db; },
-      async restart() {
+      /** A new Worker over the same storage; `bindings` replace the ones it started with, as a deploy does. */
+      async restart({ bindings = {} } = {}) {
         await runtime.dispose();
-        runtime = new Miniflare(runtimeOptions);
+        runtime = new Miniflare(miniflareOptions(bindings));
         db = await runtime.getD1Database("DB");
         await runtime.ready;
       },

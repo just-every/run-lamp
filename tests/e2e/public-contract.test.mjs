@@ -15,9 +15,12 @@ import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
 import { publicHistoryFlow } from './helpers/public-history-flow.mjs';
 import { publicIsolationFlow } from './helpers/public-isolation-flow.mjs';
 import { conditionalComponentFlow } from './helpers/conditional-component-flow.mjs';
+import { snapshotReleaseRebuildFlow } from './helpers/snapshot-release-rebuild-flow.mjs';
 import { uptimeCorrectionJourney } from './helpers/uptime-correction-journey.mjs';
 
 test('HIST-008 — reviewed imported history stays completely browsable without scripts', { timeout: 120_000 }, browsableHistoryFlow);
+
+test('PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch', { timeout: 240_000 }, snapshotReleaseRebuildFlow);
 
 test('UPTIME-003 — newly observed services report only their recorded coverage', shortHistoryFlow);
 test('HIST-001 — completed native records retain their month, window, components and complete publication inventory', publicHistoryFlow);

@@ -43,6 +43,9 @@ export interface AppBindings {
   RER_DEPLOY_SOURCE?: string;
   RER_DEPLOY_FINGERPRINT?: string;
   RER_VERSION?: { id: string };
+  /** Set by RER's delivery: the digest of the release this Worker runs, and its uploaded version. */
+  RER_RELEASE_DIGEST?: string;
+  RER_VERSION_METADATA?: { id: string };
   LAMP_PAGE_HOST: string;
   LAMP_APP_HOST: string;
   MAIL_FROM_ADDRESS: string;

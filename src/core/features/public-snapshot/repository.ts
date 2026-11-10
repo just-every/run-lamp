@@ -29,7 +29,8 @@ export interface SnapshotRepository {
   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
   latestBuild(): Promise<typeof snapshotBuilds.$inferSelect | null>;
-  reserveGeneration(now: string): Promise<number>;
+  /** The next generation, strictly above `atLeast` (the generation already published elsewhere). */
+  reserveGeneration(now: string, atLeast: number): Promise<number>;
   requestWork(now: string): Promise<number>;
   currentWork(): Promise<{ requestedRevision: number; completedRevision: number }>;
   completeWork(revision: number, now: string): Promise<void>;
@@ -189,8 +190,8 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
     async latestBuild() {
       return (await database.select().from(snapshotBuilds).orderBy(desc(snapshotBuilds.startedAt)).limit(1).get()) ?? null;
     },
-    async reserveGeneration(now) {
-      const result = await binding.prepare(`UPDATE snapshot_build_control SET next_generation = next_generation + 1, updated_at = ? WHERE id = 'default' RETURNING next_generation AS generation`).bind(now).first<{ generation: number }>();
+    async reserveGeneration(now, atLeast) {
+      const result = await binding.prepare(`UPDATE snapshot_build_control SET next_generation = MAX(next_generation, ?) + 1, updated_at = ? WHERE id = 'default' RETURNING next_generation AS generation`).bind(atLeast, now).first<{ generation: number }>();
       if (!result || !Number.isInteger(result.generation)) throw new Error("Public snapshot generation control is unavailable.");
       return result.generation;
     },

@@ -4,6 +4,7 @@ import { encodeRetainedBundle, readRetainedArtifact } from "../../platform/blobs
 import { createUlid, nowIso } from "../../shared/ids";
 import type { BlobObject, BlobStore } from "../../platform/blobs/store";
 import type { LampServerSlots } from "../../api/extensions";
+import type { AppBindings } from "../../app/types";
 
 import { readGenerationArtifact } from "./generation-cache";
 import { renderPublicSnapshot } from "./renderer";
@@ -28,6 +29,8 @@ interface SnapshotPointer {
   generation: number;
   sourceRevision: number;
   rendererVersion: string | null;
+  /** The running release (RER_RELEASE_DIGEST, else the Worker version id) that built this generation; null before it was recorded or where the host names none. */
+  releaseIdentity: string | null;
   /** This generation was built with pre-launch on. Pointers written before the setting read false. */
   prelaunch: boolean;
 }
@@ -57,6 +60,13 @@ export interface PublicSnapshotService {
   /** When the page customers see now was published; null before the first snapshot. */
   publishedAt(): Promise<string | null>;
   retryPendingBuild(): Promise<boolean>;
+  /** Whether the stored page was built by other code than the running release, by another renderer version, or has work still pending. Reads the pointer and the work row only. */
+  needsRebuild(): Promise<boolean>;
+}
+
+/** The release this Worker is running: the delivery digest, else the uploaded Worker version. Null where the host names neither (local development). */
+export function runningReleaseIdentity(bindings: Pick<AppBindings, "RER_RELEASE_DIGEST" | "RER_VERSION_METADATA" | "RER_VERSION">): string | null {
+  return bindings.RER_RELEASE_DIGEST || bindings.RER_VERSION_METADATA?.id || bindings.RER_VERSION?.id || null;
 }
 
 function parsePointer(object: BlobObject): SnapshotPointer {
@@ -70,6 +80,7 @@ function parsePointer(object: BlobObject): SnapshotPointer {
     // Older deployments did not persist a renderer identity. Unknown values
     // are treated as stale so the scheduler can publish a known version.
     rendererVersion: typeof parsed.rendererVersion === "string" && parsed.rendererVersion.length > 0 ? parsed.rendererVersion : null,
+    releaseIdentity: typeof parsed.releaseIdentity === "string" && parsed.releaseIdentity.length > 0 ? parsed.releaseIdentity : null,
     prelaunch: parsed.prelaunch === true,
   };
 }
@@ -85,8 +96,14 @@ export function createPublicSnapshotService(
   events: PublicSnapshotEvents = defaultPublicSnapshotEvents,
   slots: LampServerSlots = {},
   retained?: RetainedSnapshotCache,
+  releaseIdentity: string | null = null,
 ): PublicSnapshotService {
   let rebuildTail: Promise<void> = Promise.resolve();
+
+  /** A stored page built by another release is rebuilt: the hand-bumped renderer version cannot name every code change. */
+  function releaseNeedsRebuild(pointer: SnapshotPointer | null) {
+    return pointer !== null && releaseIdentity !== null && pointer.releaseIdentity !== releaseIdentity;
+  }
 
   /** An artifact from a retained bundle; the bundle holds a robots.txt only when it was built pre-launch. */
   function retainedArtifact(bundle: string, key: string) {
@@ -153,7 +170,11 @@ export function createPublicSnapshotService(
     let attempts = 0;
     let lastError: unknown;
     try {
-      const generation = await repository.reserveGeneration(timestamp);
+      // The bucket pointer and the retained replica outlive the database (a reset or a
+      // previous preview's database restarts the counter): both refuse a generation that
+      // is not above their own, so the new one is reserved above whichever is higher.
+      const stored = Math.max((await readPointer())?.generation ?? 0, (await retained?.generation()) ?? 0);
+      const generation = await repository.reserveGeneration(timestamp, stored);
       await repository.startBuild({
         id: buildId,
         status: "building",
@@ -206,7 +227,7 @@ export function createPublicSnapshotService(
         if (retained) await retained.write(bundle);
         const replicaGeneration = retained ? await retained.generation() : generation;
         const advanced = replicaGeneration === generation
-          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
+          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
           : false;
         const finishedAt = nowIso();
         await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
@@ -266,6 +287,12 @@ export function createPublicSnapshotService(
         if (!retained) throw cause;
       }
       return Boolean(await retained?.read());
+    },
+    async needsRebuild() {
+      const work = await repository.currentWork();
+      if (work.completedRevision < work.requestedRevision) return true;
+      const pointer = await readPointer();
+      return rendererNeedsRebuild(pointer) || releaseNeedsRebuild(pointer);
     },
     async readArtifact(key) {
       try {
@@ -331,7 +358,7 @@ export function createPublicSnapshotService(
             if (archived) { await retained!.write(archived.text); return true; }
           }
           const refreshDue = pointer && now.getTime() - Date.parse(pointer.generatedAt) >= SNAPSHOT_REFRESH_MS;
-          if (!missingReplica && !refreshDue && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer)) return false;
+          if (!missingReplica && !refreshDue && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer) && !releaseNeedsRebuild(pointer)) return false;
           await repository.requestWork(nowText);
           work = await repository.currentWork();
         }
