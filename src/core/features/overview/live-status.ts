@@ -35,6 +35,8 @@ const NO_FORM = 'No subscribe form found. Check your public address in Settings.
 export function createLiveStatusService(repository: OverviewRepository, settings: PageSettingsService, options: {
   publicOrigin: () => Promise<string>;
   publishedAt: () => Promise<string | null>;
+  /** A page that has not launched offers no subscribe form; that is not a failure. */
+  prelaunch: () => Promise<boolean>;
   sender: SenderCheckOptions;
   fetcher?: typeof fetch;
 }): LiveStatusService {
@@ -52,7 +54,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
         // Inspect the real rendered form; a route constant says nothing about
         // whether a visitor can reach its input and submit control.
         const forms = (await response.text()).match(/<form\b[^>]*>[\s\S]*?<\/form>/gi) ?? [];
-        if (!forms.some(form => /\baction=["']\/subscribe["']/i.test(form) && /\bmethod=["']post["']/i.test(form) && /<input\b[^>]*\bname=["']email["']/i.test(form) && /<button\b/i.test(form))) subscribe = NO_FORM;
+        if (!await options.prelaunch() && !forms.some(form => /\baction=["']\/subscribe["']/i.test(form) && /\bmethod=["']post["']/i.test(form) && /<input\b[^>]*\bname=["']email["']/i.test(form) && /<button\b/i.test(form))) subscribe = NO_FORM;
       }
     } catch { page = NOT_ANSWERING; }
     await repository.record(PAGE_STEP, JSON.stringify({ origin, page, subscribe: page ? NOT_ANSWERING : subscribe }));
@@ -103,7 +105,8 @@ export function createLiveStatusService(repository: OverviewRepository, settings
       if (stale && publishedAt) { await runChecks(); stored = await storedPageChecks(origin); }
       await checkSenderIfDue();
       const check = (reason: string | null): LiveCheck | null => stored ? { ok: reason === null, checkedAt: stored.checkedAt, reason } : null;
-      return { publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: check(stored?.subscribe ?? null), sender: await sender(),
+      const prelaunch = await options.prelaunch();
+      return { publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: prelaunch ? null : check(stored?.subscribe ?? null), sender: await sender(),
         senderVerificationManaged: !options.sender.local && options.sender.provider === 'rer' && options.sender.mail.configured };
     },
     runChecks,

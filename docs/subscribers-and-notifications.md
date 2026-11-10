@@ -5,6 +5,33 @@ link and become active only after confirming. A pending address expires after
 72 hours. Subscribers can manage their component selection or unsubscribe from
 their emailed link.
 
+## Before you launch
+
+A new Lamp page accepts subscriptions from the moment it is reachable. If the page
+is live on a hostname you have not announced yet, turn on **Settings → Notifications →
+Pre-launch** (an owner or admin can) before you load real data or share the address.
+While it is on:
+
+- the public page, its history and incident pages show no subscribe or follow form
+  and no link to one;
+- `POST /subscribe`, `/subscribe/incident`, `/subscribe/teams`, `/subscribe/sms` and
+  `/subscribe/slack`, and the Slack return `GET /subscribe/slack/callback`, answer
+  503 before anything is saved or sent, so a stranger who finds the address gets no
+  message under your name;
+- every answer from the page host carries `X-Robots-Tag: noindex, nofollow`, and
+  `/robots.txt` on the page host reads `Disallow: /`.
+
+Operators keep the whole app. Subscribers who already confirmed keep their confirm,
+manage and unsubscribe links. Turn the setting off when you launch: the forms, the
+routes and indexing return on the next request, with no redeploy. The operator
+API is `GET` and `PATCH /api/app/prelaunch` (`{"enabled": true}`).
+
+The setting is off on a new installation and on every existing one, so nothing
+changes for a page that is already public. It is stored with the public snapshot
+in object storage, not in the database, so it is not part of a page export:
+after restoring an export into a new installation, set it again if the page is
+not yet live.
+
 ## Follow one incident
 
 Open an incident's permanent page and use **Get updates on this incident**.

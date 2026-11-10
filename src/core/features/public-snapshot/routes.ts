@@ -9,6 +9,7 @@ import { escapeHtml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
 import { nativeApiArtifact } from "./native-api";
+import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
 
 // Stable public URLs are selectors, not immutable artifacts. Revalidate the
 // generation on every reuse; downstream stale-while-revalidate can otherwise
@@ -162,7 +163,16 @@ function currentMaintenanceOverruns(response: Response, now: number) {
 }
 
 export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService) {
-  const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => async (context: Context<AppEnv>) => {
+  // While the page is pre-launch every answer from the page host asks search engines to stay away.
+  const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
+    const answer = answerArtifact(artifact, download, missingArtifact);
+    return async (context: Context<AppEnv>) => {
+      const response = await answer(context);
+      if (await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+      return response;
+    };
+  };
+  const answerArtifact = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => async (context: Context<AppEnv>): Promise<Response> => {
     // Only the fixed surface crosses this boundary: never the request, path,
     // query, cookie, address or user agent. Counting cannot delay public bytes.
     const key = artifact(context);
@@ -233,6 +243,14 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
     }
   };
 
+  // Today's answer for this path is the Worker's plain 404; only a pre-launch page has a robots.txt.
+  app.get("/robots.txt", async context => {
+    const object = await service.readArtifact(PRELAUNCH_ROBOTS_KEY).catch(() => null);
+    if (!object || !await service.prelaunch()) return new Response("Not found.", { status: 404 });
+    const response = publicResponse(object.bytes, object.contentType, context.req.url);
+    response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+    return response;
+  });
   app.get("*", async (context, next) => {
     const path = new URL(context.req.url).pathname;
     if (["/history.atom", "/history.rss"].includes(path)) return next();

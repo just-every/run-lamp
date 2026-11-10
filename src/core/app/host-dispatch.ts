@@ -18,6 +18,7 @@ const pageExactPaths = new Set([
   "/api/public/sms/status",
   "/subscribe",
   "/unsubscribe",
+  "/robots.txt",
 ]);
 const pagePathPrefixes = ["/subscribe/", "/history/", "/incidents/", "/maintenance/", "/components/", "/api/v2/", "/api/public/v1/", "/assets/", "/manage/", "/unsubscribe/", "/confirm-subscription/", "/api/intake/"];
 // `/lamp` is the landing page's former address; server.ts redirects it to `/` for one release.

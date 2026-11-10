@@ -42,6 +42,8 @@ export interface PublicSnapshotSource {
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
   smsEnabled?: boolean;
   incidentIncludeReport?:boolean;
+  /** Pre-launch: the page offers no way to subscribe and asks search engines to stay away. Set by the service from the owner setting. */
+  prelaunch?: boolean;
   metrics?: PublicMetric[];
   websiteUrl?: string | null;
   publicOrigin?: string;

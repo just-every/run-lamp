@@ -19,6 +19,11 @@ need the page's API key; move them in later from Settings → Move in.
 Lamp reads only public addresses, follows at most five redirects, and runs
 nothing from the site. Settings → Page can read the site again later.
 
+Before you share the address, decide whether the page is ready for readers: while
+it is not, turn on [Pre-launch](subscribers-and-notifications.md#before-you-launch)
+in Settings → Notifications. It hides every subscribe form, refuses subscriptions
+and asks search engines to stay away until you turn it off.
+
 ## Nothing else to set up
 
 Every change republishes your public page. Lamp checks the page and its

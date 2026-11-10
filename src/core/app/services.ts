@@ -34,6 +34,7 @@ import { createIntakeRepository, createIntakeService } from "../features/intake"
 import { createMaintenanceRepository, createMaintenanceService } from "../features/maintenance";
 import { createOverviewRepository } from "../features/overview/repository";
 import { createLiveStatusService } from "../features/overview/live-status";
+import { readPrelaunch } from "../features/prelaunch/store";
 import { createWebsiteRepository, createWebsiteService, websiteReader, statusPageReader, statusFeedCapture } from "../features/website";
 import { notificationOrigin } from "./mail";
 import { outboundUnavailable } from "./hosting";
@@ -235,6 +236,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   const aiUnavailable = outboundUnavailable(bindings, "AI suggestions");
   const ai = createAiService(briefs, aiUnavailable ? null : aiProvider, aiUnavailable);
   const overview = createOverviewService(components, incidents, maintenance, createLiveStatusService(createOverviewRepository(bindings.DB), pageSettings, {
+    prelaunch: () => readPrelaunch(blobs),
     // An operator request reads the page host at its own scheme and port, as
     // the Settings link to the public page does; Cron uses the deployment's.
     publicOrigin: async () => {

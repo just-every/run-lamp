@@ -37,7 +37,8 @@ export function tagline(model: PublicSnapshotModel) {
 
 /** The subscribe form of SUB-001: a plain POST that works without script. Components are chosen later, on the
  *  management page every confirmation links to (SUB-004). */
-export function subscribeForm(id: string, className = "", placeholder = "Your email address") {
+export function subscribeForm(model: PublicSnapshotModel, id: string, className = "", placeholder = "Your email address") {
+  if (model.prelaunch) return "";
   return `<form class="tpl-subscribe${className ? ` ${className}` : ""}" method="post" action="/subscribe"><label class="sr-only" for="${id}">Email address</label><input id="${id}" name="email" type="email" autocomplete="email" required placeholder="${placeholder}"><button type="submit">Subscribe</button></form>`;
 }
 

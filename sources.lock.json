@@ -524,7 +524,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "2a72e905c96ba05640e2b01ac04d573651f0cfe4f597d42e4895ef32de961a35",
+      "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c",
       "executable": false
     },
     "DEMO.md": {
@@ -636,7 +636,7 @@
       "executable": false
     },
     "docs/first-run.md": {
-      "sha256": "24e8828e1aebf2a0aa778a1fbde685cbb145d20138430968dc48fd53238aa247",
+      "sha256": "e6bd6521054224c0c35251f8a70359ab965e20f836fd96fc606ea6f3b54a512c",
       "executable": false
     },
     "docs/getting-started.md": {
@@ -688,7 +688,7 @@
       "executable": false
     },
     "docs/subscribers-and-notifications.md": {
-      "sha256": "b936a4c87390e25ca0f6c1136199bbec403e984119068b24536941552a066168",
+      "sha256": "6c255700103fe4c86eeacf7a9ecbc8d46c424a1962b80d784d3815e20f5a2c00",
       "executable": false
     },
     "docs/updating.md": {
@@ -3388,7 +3388,7 @@
       "executable": false
     },
     "src/core/app/host-dispatch.ts": {
-      "sha256": "c5fb5c74c065ddb0eb933b42751ef7676170b1341178134606c83d2edcbf1e69",
+      "sha256": "7a2138272039c8b75fe26a2d09bbbb52ad998cdf237980cd44e52f618bf4b336",
       "executable": false
     },
     "src/core/app/hosting.ts": {
@@ -3416,11 +3416,11 @@
       "executable": false
     },
     "src/core/app/server.ts": {
-      "sha256": "9c62cf450c787943b9e8350891501fdb29bf495ce4a952588d8eade63dff68d7",
+      "sha256": "266673cbf427ea3f189fe9ca023dd7ace9bffba2cfbb9edfd471f884907e1f61",
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "d73e5c04073210f33bf713333536b2b67bfbe92b9c7243c1ae6136eb84c23bf0",
+      "sha256": "ea7fec32deffb1b03b114d423d17c3c5c49ba6e83c51a725b8ffb9c5560fd21f",
       "executable": false
     },
     "src/core/app/types.ts": {
@@ -4512,7 +4512,7 @@
       "executable": false
     },
     "src/core/features/overview/live-status.ts": {
-      "sha256": "cc70394a8e663feddef4b82eab5aaeaf15c35353f0d1e89bc419ef79f14b4ae2",
+      "sha256": "3ad04883100a696427d3f3c14186621ffde02c414da98a1d801e1da4a9941c61",
       "executable": false
     },
     "src/core/features/overview/repository.ts": {
@@ -4660,7 +4660,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/notification-settings-tab.tsx": {
-      "sha256": "dc7c2da22f8de17c58d7a9afa2c5437da83f3ea15ead12fd75dc64c556e65550",
+      "sha256": "f80f35be5ab65ab90b30ec2d20f2b425cc20086d51422196acd7179d0d3f2943",
       "executable": false
     },
     "src/core/features/page-settings/ui/page-hero.tsx": {
@@ -4673,6 +4673,10 @@
     },
     "src/core/features/page-settings/ui/page-settings-tab.tsx": {
       "sha256": "f81f0e99fb0c11c902b5816fa69565c2bfa001ea81f1bca9edbf2be6cfa887bf",
+      "executable": false
+    },
+    "src/core/features/page-settings/ui/prelaunch-settings.tsx": {
+      "sha256": "ed5f5c13d55c8194869e0dbf2ce0ee8e302b73201766307ad664d289f484c451",
       "executable": false
     },
     "src/core/features/page-settings/ui/public-resources.tsx": {
@@ -4741,6 +4745,26 @@
     },
     "src/core/features/page-settings/ui/writing-settings-tab.tsx": {
       "sha256": "6a38ec691d5aa0843dd028cc9e1f75948b6d22e3ef55171597dc88c921c44efa",
+      "executable": false
+    },
+    "src/core/features/prelaunch/gate.ts": {
+      "sha256": "0592e821bdbe84e7f5eab692ca2ac193bfe54b98abd04d504bfaf98c98524ab0",
+      "executable": false
+    },
+    "src/core/features/prelaunch/index.ts": {
+      "sha256": "6cfee85afafa95eea650e344aec6f2bb746108ba770fb91f60bbb68292e1e122",
+      "executable": false
+    },
+    "src/core/features/prelaunch/policy.ts": {
+      "sha256": "982f3f50a27663651878f98adb98deefb878f39a83c582cb59aa35b027fe2c2d",
+      "executable": false
+    },
+    "src/core/features/prelaunch/routes.ts": {
+      "sha256": "a1b83b17df2ebc9b11d6c729fb50dce39dda323d1957bab85c6897e5a1ec07e7",
+      "executable": false
+    },
+    "src/core/features/prelaunch/store.ts": {
+      "sha256": "537bf9c0fbe212aca19448b2f4f2317ffd117a43e4a45a0a6f4f30f4f8b7a8f4",
       "executable": false
     },
     "src/core/features/public-snapshot/api-identity-repository.ts": {
@@ -4836,7 +4860,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/page-chrome.ts": {
-      "sha256": "2fc23521f6d7f5893a3b295993642e9699eb768eb830469034ad4be8ff0bde40",
+      "sha256": "47ba2ab4702de4798e88ded97d68da4df515859ac5f0a567e27ffd98f4b6b921",
       "executable": false
     },
     "src/core/features/public-snapshot/policies.ts": {
@@ -4860,7 +4884,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "560fcefd06f348ccfa8c75debc3371d04b72db4068c301f0f8cd6ec5fac7e92b",
+      "sha256": "add8fbdbdb8eb11e7f22df2fa9e5384fef1516d9861a7f5fae5cc8b443289a71",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -4868,15 +4892,15 @@
       "executable": false
     },
     "src/core/features/public-snapshot/repository.ts": {
-      "sha256": "88ac6444b4fc3856200161ee1960d5e533664430e73b43579153a845eab11ccd",
+      "sha256": "41c686f2a9f7afe5285bb5c4f824fed4fca84bdd941f140dde41f928a2dc3a39",
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
-      "sha256": "21e9ae2674f9992d9b3c9f4b3382857e04d1bd66418bead051ae86bf10ec2946",
+      "sha256": "4099b484b93962f8db43b72eef167cc5af682ae64dfe96710c2b929fb100a6f7",
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "14b667d5ad3436a424a3c7ca233c49ac61b3335218382bf77ab6d8570df3d966",
+      "sha256": "b82ba110a4750c8bb31197757f0793a78b1c440b0aaaee730b073ddfea5e062b",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -4912,7 +4936,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/templates/calm.ts": {
-      "sha256": "a5413718e7d5672380087b24e26f2eec29b55d172e4142cff49fcc3520cf27c9",
+      "sha256": "93369042b702b36d7b799610702e81202f276c432b40acf018795f4d41d559d8",
       "executable": false
     },
     "src/core/features/public-snapshot/templates/heatmap-axis.ts": {
@@ -4920,7 +4944,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/templates/history-led.ts": {
-      "sha256": "c64b18cf6a9497a455fddd59f2170ff7582eb3905506a8854448a1cda4255c33",
+      "sha256": "2dd34340c94c3f2b81a8609af82ca35da8bd4f351028444b5ba9ea481dd11fa3",
       "executable": false
     },
     "src/core/features/public-snapshot/templates/history.ts": {
@@ -4940,7 +4964,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/templates/parts.ts": {
-      "sha256": "0368ef5deb015332017f9178adc43f21f26156728facb15d81e2f5ee01881fd0",
+      "sha256": "cf3997f724982afdab479abd1ae15a38161cba9ab5ad0c2a60ebbaa1d3ee4175",
       "executable": false
     },
     "src/core/features/public-snapshot/templates/places.ts": {
@@ -4948,7 +4972,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/templates/regions.ts": {
-      "sha256": "e8171195f3e9a9be25e3f185dbd10ba1c243096256c38d74737df3ac8075e66b",
+      "sha256": "3698adbfbd71b3bceb730c0659390bb0b4365a9f23b04a799ab5342883937c90",
       "executable": false
     },
     "src/core/features/public-snapshot/templates/script.js": {
@@ -6928,7 +6952,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "b132e8165bd388dcd77c5ad4687d05d6df8f128f77d232104c1b9589f4321fd7",
+      "sha256": "b25cebf0c746b34afb2973cc070e8db10147c74c2f3bc21ef0b36258ce241edb",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -7197,6 +7221,10 @@
     },
     "tests/e2e/helpers/postmortem-template-import-flow.mjs": {
       "sha256": "a408259db40f8b6b456386b7f80495ea556a592deb04d338272248f3d01c0593",
+      "executable": false
+    },
+    "tests/e2e/helpers/prelaunch-flow.mjs": {
+      "sha256": "323fd20f9937e830fac4d1c3082d19eb8e9b3d0e10163753d0e2815dc381456f",
       "executable": false
     },
     "tests/e2e/helpers/preset-recovery-flow.mjs": {

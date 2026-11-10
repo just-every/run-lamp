@@ -35,7 +35,7 @@ function history(model: PublicSnapshotModel, parts: TemplateParts) {
 
 export function calmPage(model: PublicSnapshotModel, parts: TemplateParts) {
   const text = situation(model);
-  const head = `<header class="calm-head wrap"><div class="calm-brand">${brand(model)}${tagline(model)}</div><div class="calm-actions">${subscribeForm("subscribe-email", "", "Your email")}${feedLinks()}</div></header>`;
+  const head = `<header class="calm-head wrap"><div class="calm-brand">${brand(model)}${tagline(model)}</div><div class="calm-actions">${subscribeForm(model, "subscribe-email", "", "Your email")}${feedLinks()}</div></header>`;
   const status = `<section class="calm-status wrap" aria-labelledby="overall-status"><div class="tpl-live" id="status-live" role="status" aria-live="polite" aria-atomic="true" data-live="status"><h1 id="overall-status" class="calm-sentence ${sentenceSize(text)}">${escapeHtml(text)}</h1><span class="sr-only">${escapeHtml(model.overall)}</span></div>${updatedLine(model)}</section>`;
   return `${head}${parts.slot("status-page.header.after.v1")}${status}<div class="calm-body wrap">${components(model, parts)}${history(model, parts)}</div>`;
 }

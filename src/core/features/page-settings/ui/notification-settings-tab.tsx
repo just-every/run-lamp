@@ -7,6 +7,7 @@ import { MailDeliverySettings } from "./mail-delivery-settings";
 import { EmailBrandingSettings } from "./email-branding-settings";
 import { SmsSettings } from "./sms-settings";
 import { IncidentFollowSettings } from "./incident-follow-settings";
+import { PrelaunchSettings } from "./prelaunch-settings";
 import { MaintenanceAutomationCard } from "../../maintenance/ui/automation-default-card";
 
 export function NotificationSettingsTab({ settings, live, identityEditable, update, needsConfirm, confirm, onTrafficPhase }: {
@@ -24,6 +25,7 @@ export function NotificationSettingsTab({ settings, live, identityEditable, upda
     <TrafficAlertSettings onPhase={onTrafficPhase} />
     <MailDeliverySettings />
     <SmsSettings />
+    <PrelaunchSettings />
     <IncidentFollowSettings />
     <EmailBrandingSettings value={settings.emailBranding} onChange={(value, immediate) => update("emailBranding", value, immediate)} identityEditable={identityEditable} />
     <MaintenanceAutomationCard />

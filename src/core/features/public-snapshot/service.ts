@@ -8,6 +8,8 @@ import type { LampServerSlots } from "../../api/extensions";
 import { readGenerationArtifact } from "./generation-cache";
 import { renderPublicSnapshot } from "./renderer";
 import type { SnapshotRepository } from "./repository";
+import { PRELAUNCH_ROBOTS_KEY } from "../prelaunch/policy";
+import { readPrelaunch } from "../prelaunch/store";
 import { defaultPublicSnapshotPolicies, type PublicSnapshotPolicies } from "./policies";
 import { defaultPublicSnapshotEvents, type PublicSnapshotEvents } from "./events";
 
@@ -26,6 +28,8 @@ interface SnapshotPointer {
   generation: number;
   sourceRevision: number;
   rendererVersion: string | null;
+  /** This generation was built with pre-launch on. Pointers written before the setting read false. */
+  prelaunch: boolean;
 }
 
 interface SnapshotStaleMarker {
@@ -47,6 +51,8 @@ export interface PublicSnapshotService {
   rebuild(force?: boolean): Promise<void>;
   hasCurrentSnapshot(): Promise<boolean>;
   readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean } | null>;
+  /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
+  prelaunch(): Promise<boolean>;
   latestBuild(): ReturnType<SnapshotRepository["latestBuild"]>;
   /** When the page customers see now was published; null before the first snapshot. */
   publishedAt(): Promise<string | null>;
@@ -64,6 +70,7 @@ function parsePointer(object: BlobObject): SnapshotPointer {
     // Older deployments did not persist a renderer identity. Unknown values
     // are treated as stale so the scheduler can publish a known version.
     rendererVersion: typeof parsed.rendererVersion === "string" && parsed.rendererVersion.length > 0 ? parsed.rendererVersion : null,
+    prelaunch: parsed.prelaunch === true,
   };
 }
 
@@ -161,6 +168,7 @@ export function createPublicSnapshotService(
         const logoContentType = logo?.contentType ?? source.settings.logoContentType;
         if (logo && !logoContentType) throw new Error("Configured logo content type is missing.");
         const version = createUlid();
+        source.prelaunch = await readPrelaunch(blobs);
         const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null }, slots);
         rendered.artifacts.push(...await themeAssetArtifacts(source.settings.themeAssets, blobs));
         const uploadedFont = rendered.artifacts.find(artifact => artifact.key === "assets/theme-font");
@@ -192,7 +200,7 @@ export function createPublicSnapshotService(
         if (retained) await retained.write(bundle);
         const replicaGeneration = retained ? await retained.generation() : generation;
         const advanced = replicaGeneration === generation
-          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION })
+          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
           : false;
         const finishedAt = nowIso();
         await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
@@ -287,6 +295,14 @@ export function createPublicSnapshotService(
         if (!bundle) throw cause;
         return readRetainedArtifact(bundle, key);
       }
+    },
+    async prelaunch() {
+      try {
+        const pointer = await readPointer();
+        if (pointer) return pointer.prelaunch;
+        const bundle = await retained?.read();
+        return Boolean(bundle && readRetainedArtifact(bundle, PRELAUNCH_ROBOTS_KEY));
+      } catch { return false; }
     },
     latestBuild: () => repository.latestBuild(),
     async publishedAt() {
