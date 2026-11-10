@@ -193,6 +193,12 @@ signing secrets `SETUP_TOKEN`, `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET` and
 `WEBHOOK_SIGNING_SECRET` and keeps them in `.rer/deploy/production.secrets.env`
 in the Lamp folder; a later deploy reuses them.
 
+The last check reads your status page's public snapshot at `LAMP_PAGE_HOST`. A
+hostname that is slow to appear in DNS is retried for about a minute. If the
+hostname is not in DNS at all (a detached page host), the deploy prints
+`Page host detached: skipped.` and completes; a host that answers but is not
+serving the snapshot fails the deploy.
+
 `--environment` names this installation; it defaults to `production`. Use
 another name, with its own input file and step 3 addresses, for a second one.
 

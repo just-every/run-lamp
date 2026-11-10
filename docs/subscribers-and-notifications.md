@@ -19,10 +19,12 @@ While it is on:
   503 before anything is saved or sent, so a stranger who finds the address gets no
   message under your name;
 - every answer from the page host carries `X-Robots-Tag: noindex, nofollow`, and
-  `/robots.txt` on the page host reads `Disallow: /`.
+  `/robots.txt` on the page host reads `Disallow: /`;
+- the app host's home page and docs carry the same header, and its `/robots.txt`
+  reads `Disallow: /` (with the setting off it has none).
 
 Operators keep the whole app. Subscribers who already confirmed keep their confirm,
-manage and unsubscribe links. Turn the setting off when you launch: the forms, the
+manage and unsubscribe links; those pages show no Subscribe link. Turn the setting off when you launch: the forms, the
 routes and indexing return on the next request, with no redeploy. The operator
 API is `GET` and `PATCH /api/app/prelaunch` (`{"enabled": true}`).
 

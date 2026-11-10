@@ -69,6 +69,30 @@ export async function prelaunchFlow() {
     await fixture.confirm(existing);
     const unsubscribeLink = fixture.messagesFor(existing).flatMap(message => message.text.match(/https?:\/\/\S+\/unsubscribe\/\S+/) ?? [])[0];
     assert.ok(unsubscribeLink, 'the confirmation carries an unsubscribe link');
+    const linkIn = (email, pattern) => fixture.messagesFor(email).flatMap(message => message.text.match(pattern) ?? [])[0];
+    // The manage link travels with a notification, so the existing subscriber is notified of a second incident.
+    await fixture.publish(component, 'Synthetic Lamp prelaunch notification');
+    const manageLink = await eventuallySubscriber(async () => linkIn(existing, /https?:\/\/\S+\/manage\/\S+/), Boolean, 'the existing subscriber gets a manage link');
+    // A second subscriber who has not confirmed yet: their link must still work once the page is pre-launch.
+    const pending = 'synthetic-lamp-pending@example.test';
+    assert.equal((await form('/subscribe', { email: pending })).status, 202);
+    const confirmLink = await eventuallySubscriber(async () => linkIn(pending, /https?:\/\/\S+\/confirm-subscription\/\S+/), Boolean, 'the pending subscriber gets a confirmation link');
+    // The link pages of subscribers and the Teams card, each with its own function. The Teams token is unissued:
+    // the page still wears the same masthead.
+    const unissued = '0'.repeat(26);
+    const subscriberPages = [
+      ['confirmation', async () => raw(confirmLink, { headers: { 'CF-Connecting-IP': '192.0.2.201' } }), 200],
+      ['manage', async () => raw(manageLink, { headers: { 'CF-Connecting-IP': '192.0.2.202' } }), 200],
+      ['unsubscribe', async () => raw(unsubscribeLink, { headers: { 'CF-Connecting-IP': '192.0.2.203' } }), 200],
+      ['Teams confirmation', async () => send(`/subscribe/teams/confirm/${unissued}`), 404],
+      ['unissued confirmation', async () => send(`/confirm-subscription/${unissued}`), 404],
+    ];
+    const mastheadSubscribe = html => /class="subscribe-link"/.test(html);
+    for (const [name, open, status] of subscriberPages.filter(([name]) => name !== 'confirmation')) {
+      const response = await open();
+      assert.equal(response.status, status, name);
+      assert.ok(mastheadSubscribe(await response.text()), `${name} page has the masthead Subscribe link while the page is open`);
+    }
 
     outbound.length = 0; // the open phase sent real messages through the captured edges
 
@@ -95,6 +119,18 @@ export async function prelaunchFlow() {
     assert.equal(fixture.messages.length, mailBefore, 'no mail left the Worker');
     assert.deepEqual(outbound, [], 'no SMS, Slack or Teams message left the Worker');
 
+    // The link pages of existing subscribers keep their function and offer no way to subscribe.
+    const linkPageHtml = [];
+    for (const [name, open, status] of subscriberPages) {
+      const response = await open();
+      assert.equal(response.status, status, `${name} page still answers`);
+      const text = await response.text();
+      linkPageHtml.push(text);
+      assert.ok(!mastheadSubscribe(text), `${name} page has no masthead Subscribe link`);
+      assert.ok(!text.includes('#subscribe'), `${name} page points nowhere at a subscribe form`);
+      assert.equal(response.headers.get('x-robots-tag'), 'noindex');
+    }
+
     // The shipped layouts carry their own subscribe forms: none may survive.
     const saved = (await fixture.api('/api/app/page-settings')).body.settings;
     const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, saved[key]]));
@@ -108,6 +144,10 @@ export async function prelaunchFlow() {
 
     // Existing subscribers still manage and leave; operators keep the whole app.
     assert.equal((await raw(unsubscribeLink, { headers: { 'CF-Connecting-IP': '192.0.2.200' } })).status, 200, 'the unsubscribe link still opens');
+    const left = await form(new URL(unsubscribeLink).pathname, { action: 'unsubscribe' });
+    assert.equal(left.status, 200, 'an existing subscriber can still unsubscribe');
+    const goodbye = await left.text();
+    assert.ok(!mastheadSubscribe(goodbye) && !goodbye.includes('#subscribe'), 'the goodbye page offers no way back to a subscribe form');
     assert.equal((await fixture.api('/api/app/subscribers')).status, 200);
     browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
     const html = (await publicHtml('/')).text;
@@ -119,6 +159,12 @@ export async function prelaunchFlow() {
         await page.setContent(html, { waitUntil: 'domcontentloaded' });
         assert.equal(await page.locator('form[action^="/subscribe"], a[href$="#subscribe"]').count(), 0, `no subscription control at ${width}`);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `no horizontal overflow at ${width}`);
+        for (const [index, linkPage] of linkPageHtml.entries()) {
+          await page.setContent(linkPage, { waitUntil: 'domcontentloaded' });
+          assert.equal(await page.locator('.masthead a', { hasText: 'Subscribe' }).count(), 0, `link page ${index} has no Subscribe link at ${width}`);
+          assert.equal(await page.locator('.masthead .brand').count(), 1, `link page ${index} keeps its masthead at ${width}`);
+          assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `link page ${index} has no horizontal overflow at ${width}`);
+        }
       } finally { await context.close(); }
     }
 
@@ -127,6 +173,7 @@ export async function prelaunchFlow() {
     const restored = await publicHtml('/');
     assert.ok(offersSubscription(restored.text));
     assert.equal(restored.headers.get('x-robots-tag'), null);
+    assert.ok(mastheadSubscribe(await (await send(`/confirm-subscription/${unissued}`)).text()), 'link pages carry the masthead Subscribe link again');
     assert.equal((await send('/robots.txt')).status, 404);
     assert.equal((await form('/subscribe', { email: 'synthetic-lamp-later@example.test' })).status, 202, 'a stranger can subscribe once the page has launched');
   } finally {

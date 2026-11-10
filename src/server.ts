@@ -16,6 +16,7 @@ import { admitsDevelopmentRequest } from "./core/platform/development/access";
 import type { AppBindings } from "./core/app/types";
 import { ensureDevelopmentSnapshot, runQueue, runScheduled } from "./core/app/worker-lifecycle";
 import { queueDueWork } from "./core/app/request-work";
+import { appHostRobots, noindexAppDocument } from "./core/features/prelaunch/app-host";
 
 function isHonoRequest(surface: LampSurface, request: Request, pathname: string) {
   if (surface === "page") return true;
@@ -105,7 +106,8 @@ export default withDemo({
       if (secure) return secure;
       // The app host's / is the shared Lobby; /setup/state says whether the owner has claimed this installation.
       const home = await installedHomeResponse(request, bindings);
-      if (home) return home;
+      if (home) return noindexAppDocument(request, bindings, home);
+      if (url.pathname === "/robots.txt") return appHostRobots(request, bindings);
     }
 
     const runtime = createApp(await prepareAppMailBindings(bindings, request), request);
@@ -130,13 +132,13 @@ export default withDemo({
       queueDueWork(runtime, bindings, executionContext, request, response);
       // Proxies must preserve the HTML React hydrates, including docs addresses.
       // Keep Start's existing cache policy and leave server-function data alone.
-      if (!response.headers.get("content-type")?.includes("text/html")) return response;
+      if (!response.headers.get("content-type")?.includes("text/html")) return noindexAppDocument(request, bindings, response);
       const headers = new Headers(response.headers);
       const cacheControl = headers.get("Cache-Control");
       if (!/(^|[\s,])no-transform($|[\s,])/i.test(cacheControl ?? "")) {
         headers.set("Cache-Control", cacheControl ? `${cacheControl}, no-transform` : "no-transform");
       }
-      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+      return noindexAppDocument(request, bindings, new Response(response.body, { status: response.status, statusText: response.statusText, headers }));
     }
     return new Response("Not found.", { status: 404 });
   },

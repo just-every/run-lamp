@@ -1,6 +1,7 @@
 import { registerDependencyRoutes } from "../features/dependencies/routes";
 import { registerAlertRuleRoutes } from "../features/intake/rule-routes";
 import { registerPrelaunchGate, registerPrelaunchRoutes } from "../features/prelaunch";
+import { readPrelaunch } from "../features/prelaunch/store";
 import { registerIncidentFollowSettingsRoutes } from "../features/subscribers/incident-follow-settings.routes";
 import { registerTrafficAlertRoutes } from "../features/traffic-alerts/routes";
 import { registerSmsRoutes } from "../features/sms/routes";
@@ -74,6 +75,8 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   // Before every route that subscribes someone or sends a message.
   const snapshotBlobs = createSnapshotBlobStore(bindings);
   registerPrelaunchGate(app, snapshotBlobs, bindings.DB);
+  // Subscriber link pages must open whatever the setting does; an unreadable one only hides their Subscribe link.
+  const linkPagesPrelaunch = () => readPrelaunch(snapshotBlobs).catch(() => true);
   registerSlackSubscriptionRoutes(app,createSlackSubscriptionsService(bindings.DB,{
     clientId:bindings.SLACK_CLIENT_ID,clientSecret:bindings.SLACK_CLIENT_SECRET,signingSecret:bindings.SLACK_SIGNING_SECRET,
     webhookSecret:bindings.WEBHOOK_SIGNING_SECRET,tokenSecret:bindings.SUBSCRIBER_TOKEN_SECRET,pageName:()=>services.subscribers.getPageName(),limitsChanged:()=>services.subscribers.checkLimits(),
@@ -115,11 +118,11 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerBriefRoutes(app, services.briefs);
   registerAiRoutes(app, services.ai);
   registerMaintenanceRoutes(app, services.maintenance);
-  registerSubscriberRoutes(app, services.subscribers, { rateLimiter: publicWriteLimiter });
+  registerSubscriberRoutes(app, services.subscribers, { rateLimiter: publicWriteLimiter, prelaunch: linkPagesPrelaunch });
   registerIncidentFollowSettingsRoutes(app,bindings.DB,services.publicSnapshots.rebuild);
   registerPrelaunchRoutes(app,snapshotBlobs,bindings.DB,()=>services.publicSnapshots.rebuild(true));
   registerSmsRoutes(app,services.sms,()=>services.subscribers.getPageName(),bindings.TWILIO_AUTH_TOKEN,publicWriteLimiter);
-  registerTeamsSubscriptionRoutes(app, services.teamsSubscriptions, services.subscribers, publicWriteLimiter);
+  registerTeamsSubscriptionRoutes(app, services.teamsSubscriptions, services.subscribers, publicWriteLimiter, linkPagesPrelaunch);
   registerPageSettingsRoutes(app, services.pageSettings, (key) => services.publicSnapshots.readArtifact(key));
   registerWebsiteRoutes(app, services.website);
   registerPageExportRoutes(app, services.pageExport);

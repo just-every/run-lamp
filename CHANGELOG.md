@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.8
+
+**More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.
+
+- **Your app host also stays out of search while Pre-launch is on.** With the Pre-launch setting on, your app host's front page and its docs (including Moving in and the accessibility report) now also ask search engines not to index them or follow their links, and the app host's `/robots.txt` reads `Disallow: /`, as your page host already did. Turning Pre-launch off brings back the normal answers on the next request, with no redeploy.
+- **Subscription link pages no longer offer a Subscribe link before launch.** While Pre-launch is on, the confirm, manage, unsubscribe, teams-confirm and goodbye pages no longer show a Subscribe link in the page header, and they also ask search engines to stay away. Subscribers who already confirmed keep their confirm, manage and unsubscribe links.
+- **`rer deploy` copes with a page host that is not ready yet, and with one that is detached.** The deploy's last check now retries for about a minute when the page host's DNS is not ready yet. When the page host is detached and not in DNS at all, the deploy prints `Page host detached: skipped.` and completes. A page host that answers but does not serve the page still fails the deploy.
+
+Upgrading from 1.11.7: back up data and your source changes first, update the checkout to `v1.11.8`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.7
 
 **Setup no longer reports success when database migrations did not apply.** Setting up a new Lamp now reads the applied migrations back from the database. If any did not apply, setup stops with a clear error that names the missing migrations and says how many of the total are applied, instead of reporting that migrations and page settings are initialized. Nothing further is written; run setup again to finish applying them.

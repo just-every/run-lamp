@@ -57,9 +57,9 @@ const SUBSCRIBER_ICONS = {
 } as const;
 
 /** One branded card under the business's masthead: the subscribe result and every emailed-link page. */
-export function renderSubscriberTokenPage(title: string, body: string, pageName: string = lampConfig.pageName, icon?: keyof typeof SUBSCRIBER_ICONS) {
+export function renderSubscriberTokenPage(title: string, body: string, pageName: string = lampConfig.pageName, icon?: keyof typeof SUBSCRIBER_ICONS, subscribeOffered = true) {
   const mark = icon ? `<span class="subscriber-icon">${SUBSCRIBER_ICONS[icon]}</span>` : "";
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(title)} · ${escapeHtml(pageName)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body><main class="page subscriber-page">${publicMasthead(pageName, "subscribe")}<section class="subscriber-document" aria-labelledby="subscriber-title">${mark}<h1 id="subscriber-title">${escapeHtml(title)}</h1>${body}</section></main></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(title)} · ${escapeHtml(pageName)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body><main class="page subscriber-page">${publicMasthead(pageName, subscribeOffered ? "subscribe" : undefined, "", subscribeOffered)}<section class="subscriber-document" aria-labelledby="subscriber-title">${mark}<h1 id="subscriber-title">${escapeHtml(title)}</h1>${body}</section></main></body></html>`;
 }
 
 /** What a visitor sees right after the subscribe form. The same for new, pending, active and suppressed addresses. */
@@ -373,10 +373,10 @@ export function createSubscribersService(
   };
 }
 
-export function renderSubscriberManagementPage(input: { unsubscribeToken: string; subscriber: SubscriberView; components: Array<{ id: string; name: string }> }, pageName: string = lampConfig.pageName) {
+export function renderSubscriberManagementPage(input: { unsubscribeToken: string; subscriber: SubscriberView; components: Array<{ id: string; name: string }> }, pageName: string = lampConfig.pageName, subscribeOffered = true) {
   const selected = new Set(input.subscriber.componentSelections.map((selection) => selection.componentId));
   const checks = input.components.map((component) => `<label><input type="checkbox" name="componentId" value="${escapeHtml(component.id)}"${input.subscriber.selectionMode === "all" || selected.has(component.id) ? " checked" : ""}> ${escapeHtml(component.name)}</label>`).join("");
   const format = input.subscriber.channel === "webhook" ? renderWebhookFormatField(input.subscriber.webhookFormat) : "";
   const selection = !input.subscriber.incident && (checks || format || input.subscriber.preferences) ? `<form method="post">${checks?`<fieldset><legend>Components</legend><p>Clear every selection to follow all current and future visible components.</p>${checks}</fieldset>`:""}${format}${renderPreferenceFields(input.subscriber.preferences)}<button type="submit">Save selection</button></form>` : "";
-  return renderSubscriberTokenPage("Manage subscription", `${input.subscriber.incident?`<p>Following ${escapeHtml(input.subscriber.incident.reference)}</p>`:""}<p>Channel: ${escapeHtml(input.subscriber.channel)}</p>${selection}<form method="post" action="/unsubscribe/${encodeURIComponent(input.unsubscribeToken)}"><input type="hidden" name="action" value="unsubscribe"><button type="submit">Unsubscribe</button></form>`, pageName);
+  return renderSubscriberTokenPage("Manage subscription", `${input.subscriber.incident?`<p>Following ${escapeHtml(input.subscriber.incident.reference)}</p>`:""}<p>Channel: ${escapeHtml(input.subscriber.channel)}</p>${selection}<form method="post" action="/unsubscribe/${encodeURIComponent(input.unsubscribeToken)}"><input type="hidden" name="action" value="unsubscribe"><button type="submit">Unsubscribe</button></form>`, pageName, undefined, subscribeOffered);
 }
