@@ -1,4 +1,6 @@
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { parseContract } from "../../src/base/seed-contract.mjs";
 
 export const baselineId = /^BASE-[A-Z][A-Z0-9]*-[0-9]{3}$/;
@@ -16,7 +18,11 @@ export async function readBaselineCatalog(baselinePath = "BASELINE.md", contract
     const [id, title] = match.slice(1);
     if (clauses.has(id)) throw new Error(`BASELINE.md defines ${id} more than once.`);
     const rest = baseline.slice(match.index + match[0].length).split(/\n(?=- \*\*BASE-|#{1,6} )/, 1)[0];
-    clauses.set(id, { id, title, line: lineOf(baseline, match.index), planned: /Base conformance journey:\s*planned\b/i.test(rest), supersededBy: [] });
+    // Base's canonical clause link names the module that proves it (`../modules/agent-door/CLAUSES.md` from Base's export/).
+    // An edition that does not carry that module has no executed journey for the clause yet, so it stays planned.
+    const module = /\[Canonical clause\]\((?:\.\.\/)+(modules\/[^/)]+)\//.exec(rest)?.[1];
+    const moduleAbsent = module !== undefined && !existsSync(join(dirname(baselinePath), module));
+    clauses.set(id, { id, title, line: lineOf(baseline, match.index), planned: moduleAbsent || /Base conformance journey:\s*planned\b/i.test(rest), supersededBy: [] });
   }
   if (!clauses.size) throw new Error("BASELINE.md does not contain any BASE clauses.");
 

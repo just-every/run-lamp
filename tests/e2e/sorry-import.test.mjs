@@ -194,7 +194,10 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     const reviewed = await plan(files); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
     const prepared = (await importWork()).prepares;
     assert.equal(prepared, preparing + 1, 'the first Business plan prepares its bundle once');
-    const repeated = await plan(files); assert.deepEqual(repeated, reviewed, 'an unchanged upload returns its complete retained plan');
+    const repeated = await plan(files);
+    assert.equal(reviewed.body.created, true, 'the first plan request creates the plan');
+    assert.equal(repeated.body.created, false, 'an unchanged upload creates no second plan');
+    assert.deepEqual({ ...repeated, body: { ...repeated.body, created: true } }, reviewed, 'an unchanged upload returns its complete retained plan');
     await t.test('unchanged Business plan skips preparation', () => assert.equal(work.prepares, prepared, 'a second unchanged Business plan does not prepare again'));
     t.diagnostic(`PROBE move-in deadline: first/unchanged Business plans prepare ${prepared - preparing}/${work.prepares - prepared} times`);
     assert.deepEqual(await snapshot(), baseline, 'Business planning writes nothing native');

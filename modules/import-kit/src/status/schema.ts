@@ -1,6 +1,6 @@
 import importersSchemaJson from '../../schema/importers.schema.json' with { type: 'json' };
 import receiptSchemaJson from '../../schema/importer-verification-receipt.schema.json' with { type: 'json' };
-import { canonicalJson } from './encoding.ts';
+import { canonicalReceiptJson as canonicalJson } from '../receipt/encoding.ts';
 import type { ImporterValidationIssue } from './types.ts';
 
 interface JsonSchema {
@@ -13,6 +13,8 @@ interface JsonSchema {
   pattern?: string;
   minimum?: number;
   minItems?: number;
+  maxItems?: number;
+  uniqueItems?: boolean;
   minProperties?: number;
   required?: string[];
   properties?: Record<string, JsonSchema>;
@@ -66,7 +68,7 @@ function schemaIssues(value: unknown, schema: JsonSchema, root: JsonSchema, path
   }
 
   if (typeof value === 'string') {
-    const length = Array.from(value).length;
+    const length = codePointLength(value);
     if (schema.minLength !== undefined && value.trim().length === 0) {
       issues.push({ code: 'SCHEMA_BLANK_STRING', path, message: 'A non-empty string cannot contain only whitespace.' });
     }
@@ -91,6 +93,12 @@ function schemaIssues(value: unknown, schema: JsonSchema, root: JsonSchema, path
     if (schema.minItems !== undefined && value.length < schema.minItems) {
       issues.push({ code: 'SCHEMA_MIN_ITEMS', path, message: `Array must contain at least ${schema.minItems} item(s).` });
     }
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+      issues.push({ code: 'SCHEMA_MAX_ITEMS', path, message: `Array must contain no more than ${schema.maxItems} item(s).` });
+    }
+    if (schema.uniqueItems && new Set(value.map(canonicalJson)).size !== value.length) {
+      issues.push({ code: 'SCHEMA_UNIQUE_ITEMS', path, message: 'Array items must be unique.' });
+    }
     if (schema.items) {
       for (let index = 0; index < value.length; index += 1) {
         issues.push(...schemaIssues(value[index], schema.items, root, `${path}[${index}]`));
@@ -108,7 +116,8 @@ function schemaIssues(value: unknown, schema: JsonSchema, root: JsonSchema, path
       issues.push({ code: 'SCHEMA_MIN_PROPERTIES', path, message: `Object must contain at least ${schema.minProperties} property/properties.` });
     }
     for (const [key, propertyValue] of Object.entries(value)) {
-      const propertySchema = schema.properties?.[key];
+      // Own members only: `constructor` or `__proto__` must not resolve to Object.prototype.
+      const propertySchema = schema.properties && Object.hasOwn(schema.properties, key) ? schema.properties[key] : undefined;
       if (propertySchema) {
         issues.push(...schemaIssues(propertyValue, propertySchema, root, `${path}.${key}`));
       } else if (schema.additionalProperties === false) {
@@ -120,6 +129,19 @@ function schemaIssues(value: unknown, schema: JsonSchema, root: JsonSchema, path
   }
 
   return issues;
+}
+
+/** Array.from(value).length without building the array: a surrogate pair counts once, a lone surrogate once. */
+function codePointLength(value: string): number {
+  let length = value.length;
+  for (let index = 0; index + 1 < value.length; index += 1) {
+    const unit = value.charCodeAt(index);
+    if (unit >= 0xd800 && unit <= 0xdbff) {
+      const next = value.charCodeAt(index + 1);
+      if (next >= 0xdc00 && next <= 0xdfff) { length -= 1; index += 1; }
+    }
+  }
+  return length;
 }
 
 function resolveSchemaReference(root: JsonSchema, reference: string): JsonSchema | undefined {
