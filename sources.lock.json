@@ -4896,11 +4896,11 @@
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
-      "sha256": "4099b484b93962f8db43b72eef167cc5af682ae64dfe96710c2b929fb100a6f7",
+      "sha256": "7d7cb886c5933ec9cc0b6c1a4b8501f13b194c609d6b8e902bc57b461fbc3470",
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "b82ba110a4750c8bb31197757f0793a78b1c440b0aaaee730b073ddfea5e062b",
+      "sha256": "756dd93a7ad9194d450ad43e0c1d881ffdf6cada93c2a934bf0cf0737bec1834",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {

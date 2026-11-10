@@ -165,14 +165,16 @@ function currentMaintenanceOverruns(response: Response, now: number) {
 export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService) {
   // While the page is pre-launch every answer from the page host asks search engines to stay away.
   const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
-    const answer = answerArtifact(artifact, download, missingArtifact);
     return async (context: Context<AppEnv>) => {
-      const response = await answer(context);
-      if (await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+      // The artifact read already carries the generation's pre-launch flag, so a served page reads the pointer once;
+      // only an answer that never reached a stored artifact asks the service again.
+      const seen: { prelaunch?: boolean } = {};
+      const response = await answerArtifact(artifact, download, missingArtifact, seen)(context);
+      if (seen.prelaunch ?? await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
       return response;
     };
   };
-  const answerArtifact = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => async (context: Context<AppEnv>): Promise<Response> => {
+  const answerArtifact = (artifact: (context: Context<AppEnv>) => string, download: boolean, missingArtifact: string | undefined, seen: { prelaunch?: boolean }) => async (context: Context<AppEnv>): Promise<Response> => {
     // Only the fixed surface crosses this boundary: never the request, path,
     // query, cookie, address or user agent. Counting cannot delay public bytes.
     const key = artifact(context);
@@ -185,6 +187,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
     const cacheRequest = new Request(cacheUrl, { method: "GET" });
     try {
       const object = await service.readArtifact(artifact(context));
+      if (object) seen.prelaunch = object.prelaunch;
       if (object) {
         const redirect = object.contentType === "application/vnd.lamp.redirect+json" ? JSON.parse(new TextDecoder().decode(object.bytes)).target : null;
         const path = new URL(context.req.url).pathname;
@@ -223,6 +226,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
       if (missingArtifact) {
         const notFound = await service.readArtifact(missingArtifact);
         if (notFound) {
+          seen.prelaunch = notFound.prelaunch;
           const response = installedSignIn(publicResponse(notFound.bytes, notFound.contentType, context.req.url, 404), context);
           response.headers.set("X-Lamp-Snapshot-Generated-At", notFound.generatedAt);
           if (notFound.retainedReady) response.headers.set("X-Lamp-Snapshot-Retained", "true");
@@ -246,7 +250,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   // Today's answer for this path is the Worker's plain 404; only a pre-launch page has a robots.txt.
   app.get("/robots.txt", async context => {
     const object = await service.readArtifact(PRELAUNCH_ROBOTS_KEY).catch(() => null);
-    if (!object || !await service.prelaunch()) return new Response("Not found.", { status: 404 });
+    if (!object?.prelaunch) return new Response("Not found.", { status: 404 });
     const response = publicResponse(object.bytes, object.contentType, context.req.url);
     response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
     return response;

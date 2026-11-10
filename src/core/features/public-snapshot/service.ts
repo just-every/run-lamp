@@ -50,7 +50,7 @@ function logoDataUrl(logo: { bytes: ArrayBuffer; contentType: string }) {
 export interface PublicSnapshotService {
   rebuild(force?: boolean): Promise<void>;
   hasCurrentSnapshot(): Promise<boolean>;
-  readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean } | null>;
+  readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean; prelaunch: boolean } | null>;
   /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
   prelaunch(): Promise<boolean>;
   latestBuild(): ReturnType<SnapshotRepository["latestBuild"]>;
@@ -87,6 +87,12 @@ export function createPublicSnapshotService(
   retained?: RetainedSnapshotCache,
 ): PublicSnapshotService {
   let rebuildTail: Promise<void> = Promise.resolve();
+
+  /** An artifact from a retained bundle; the bundle holds a robots.txt only when it was built pre-launch. */
+  function retainedArtifact(bundle: string, key: string) {
+    const artifact = readRetainedArtifact(bundle, key);
+    return artifact ? { ...artifact, prelaunch: Boolean(readRetainedArtifact(bundle, PRELAUNCH_ROBOTS_KEY)) } : null;
+  }
 
   async function readPointer(): Promise<SnapshotPointer | null> {
     const object = await blobs.getText(CURRENT_POINTER_KEY);
@@ -266,7 +272,7 @@ export function createPublicSnapshotService(
         const pointer = await readPointer();
         if (!pointer) {
           const bundle = await retained?.read();
-          return bundle ? readRetainedArtifact(bundle, key) : null;
+          return bundle ? retainedArtifact(bundle, key) : null;
         }
         const object = await readGenerationArtifact(blobs, pointer.version, key);
         if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
@@ -289,11 +295,12 @@ export function createPublicSnapshotService(
           retainedReady,
           generatedAt: pointer.generatedAt,
           stale: Boolean(marker && marker.marker.revision > pointer.sourceRevision),
+          prelaunch: pointer.prelaunch,
         } : null;
       } catch (cause) {
         const bundle = await retained?.read();
         if (!bundle) throw cause;
-        return readRetainedArtifact(bundle, key);
+        return retainedArtifact(bundle, key);
       }
     },
     async prelaunch() {
