@@ -36,5 +36,10 @@ export async function appHostPrelaunchProof({ request, appRequest, appHost }) {
   } finally {
     await setPrelaunch(false);
   }
-  assert.deepEqual(await snapshot(), open, 'clearing pre-launch gives back every app-host answer, header and byte');
+  const cleared = await snapshot();
+  for (const path of Object.keys(open)) {
+    assert.equal(cleared[path].status, open[path].status, `${path} status is back`);
+    assert.deepEqual(cleared[path].headers, open[path].headers, `${path} headers are back`);
+    assert.ok(cleared[path].body === open[path].body, `${path} body is back byte for byte`);
+  }
 }

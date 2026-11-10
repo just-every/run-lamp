@@ -120,10 +120,12 @@ export async function prelaunchFlow() {
     assert.deepEqual(outbound, [], 'no SMS, Slack or Teams message left the Worker');
 
     // The link pages of existing subscribers keep their function and offer no way to subscribe.
+    const linkPageHtml = [];
     for (const [name, open, status] of subscriberPages) {
       const response = await open();
       assert.equal(response.status, status, `${name} page still answers`);
       const text = await response.text();
+      linkPageHtml.push(text);
       assert.ok(!mastheadSubscribe(text), `${name} page has no masthead Subscribe link`);
       assert.ok(!text.includes('#subscribe'), `${name} page points nowhere at a subscribe form`);
       assert.equal(response.headers.get('x-robots-tag'), 'noindex');
@@ -157,6 +159,12 @@ export async function prelaunchFlow() {
         await page.setContent(html, { waitUntil: 'domcontentloaded' });
         assert.equal(await page.locator('form[action^="/subscribe"], a[href$="#subscribe"]').count(), 0, `no subscription control at ${width}`);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `no horizontal overflow at ${width}`);
+        for (const [index, linkPage] of linkPageHtml.entries()) {
+          await page.setContent(linkPage, { waitUntil: 'domcontentloaded' });
+          assert.equal(await page.locator('.masthead a', { hasText: 'Subscribe' }).count(), 0, `link page ${index} has no Subscribe link at ${width}`);
+          assert.equal(await page.locator('.masthead .brand').count(), 1, `link page ${index} keeps its masthead at ${width}`);
+          assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `link page ${index} has no horizontal overflow at ${width}`);
+        }
       } finally { await context.close(); }
     }
 
