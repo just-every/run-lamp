@@ -18,7 +18,6 @@ const pageExactPaths = new Set([
   "/api/public/sms/status",
   "/subscribe",
   "/unsubscribe",
-  "/robots.txt",
 ]);
 const pagePathPrefixes = ["/subscribe/", "/history/", "/incidents/", "/maintenance/", "/components/", "/api/v2/", "/api/public/v1/", "/assets/", "/manage/", "/unsubscribe/", "/confirm-subscription/", "/api/intake/"];
 // `/lamp` is the landing page's former address; server.ts redirects it to `/` for one release.
@@ -75,6 +74,8 @@ export function createHostDispatch(bindings: HostDispatchBindings) {
         if (requestHost === appHost) return "app";
         return null;
       }
+      // Both hosts have a robots.txt: the page host's is the snapshot's, the app host's exists only while pre-launch is on.
+      if (pathname === "/robots.txt") return requestHost === pageHost ? "page" : requestHost === appHost ? "app" : null;
       // The page host answers the same /health as the app host: it is one Worker, and the answer holds no
       // secret (ok, the last check time, and the deployment's source, fingerprint and version ids).
       if (pathname === "/health" && requestHost === pageHost) return "page";

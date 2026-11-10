@@ -36,16 +36,16 @@ function tokenResponse(request: Request, body: string, status = 200) {
   return response;
 }
 
-function publicFormResponse(request: Request, title: string, message: string, status: number, pageName: string) {
+function publicFormResponse(request: Request, title: string, message: string, status: number, pageName: string, subscribeOffered = true) {
   if (request.headers.get("Accept")?.includes("text/html")) {
-    return tokenResponse(request, renderSubscriberTokenPage(title, `<p>${message}</p><p><a href="/#subscribe">Back to the subscribe form</a></p>`, pageName), status);
+    return tokenResponse(request, renderSubscriberTokenPage(title, `<p>${message}</p>${subscribeOffered ? '<p><a href="/#subscribe">Back to the subscribe form</a></p>' : ""}`, pageName, undefined, subscribeOffered), status);
   }
   return new Response(message, { status, headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }
 
-async function allowedTokenRequest(context: { req: { raw: Request } }, limiter: PublicWriteRateLimiter | undefined, scope: string, token: string, pageName: string) {
+async function allowedTokenRequest(context: { req: { raw: Request } }, limiter: PublicWriteRateLimiter | undefined, scope: string, token: string, pageName: string, subscribeOffered: boolean) {
   if (!limiter || await limiter.allow({ scope, subject: token, limit: 30 })) return null;
-  const response = publicFormResponse(context.req.raw, "Too many requests", "Too many requests for this subscription link. Try again in a minute.", 429, pageName);
+  const response = publicFormResponse(context.req.raw, "Too many requests", "Too many requests for this subscription link. Try again in a minute.", 429, pageName, subscribeOffered);
   tokenHeaders(response.headers);
   return response;
 }
@@ -58,8 +58,10 @@ function parsedComponentIds(value: unknown) {
   });
 }
 
-export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter } = {}) {
+export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; prelaunch?: () => Promise<boolean> } = {}) {
   registerSubscriberIntakeRoutes(app,service);
+  // The link pages of existing subscribers keep working before launch, but offer no way back to a form that is not there.
+  const subscribeOffered = async () => !(await options.prelaunch?.());
   const full = (request: Request, pageName: string) => tokenResponse(request, renderSubscriberTokenPage("Subscriptions full", `<p>This page cannot take new subscriptions on that channel right now.</p><p>Follow the feeds for updates.</p><nav class="status-utilities" aria-label="Feeds"><a href="/feed.atom">Atom feed</a><a href="/feed.rss">RSS feed</a></nav>`, pageName), 409);
   registerIncidentSubscriberRoutes(app,service,{...options,response:tokenResponse,full});
   app.post("/subscribe", async (context) => {
@@ -86,39 +88,39 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
     }
   });
   app.get("/confirm-subscription/:token", async (context) => {
-    const pageName = await service.getPageName();
-    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-confirm", context.req.param("token") ?? "", pageName);
+    const pageName = await service.getPageName(), offered = await subscribeOffered();
+    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-confirm", context.req.param("token") ?? "", pageName, offered);
     if (limited) return limited;
     const incident = await service.getConfirmationIncident(context.req.param("token") ?? "");
     const confirmed = await service.confirm(context.req.param("token") ?? "");
-    return tokenResponse(context.req.raw, confirmed ? renderSubscriberTokenPage("Subscription confirmed", `${incident?`<p>Following ${escapeHtml(incident.reference)}</p>`:""}<p>${incident?`You'll get updates about ${escapeHtml(incident.reference)} only.`:`You'll get ${escapeHtml(pageName)} updates through this subscription.`}</p><p><a href="/">See current status</a></p>`, pageName, "done") : renderSubscriberTokenPage("Subscription unavailable", "<p>This confirmation link is invalid or has expired.</p>", pageName), confirmed ? 200 : 404);
+    return tokenResponse(context.req.raw, confirmed ? renderSubscriberTokenPage("Subscription confirmed", `${incident?`<p>Following ${escapeHtml(incident.reference)}</p>`:""}<p>${incident?`You'll get updates about ${escapeHtml(incident.reference)} only.`:`You'll get ${escapeHtml(pageName)} updates through this subscription.`}</p><p><a href="/">See current status</a></p>`, pageName, "done", offered) : renderSubscriberTokenPage("Subscription unavailable", "<p>This confirmation link is invalid or has expired.</p>", pageName, undefined, offered), confirmed ? 200 : 404);
   });
   app.get("/manage/:token", async (context) => {
-    const pageName = await service.getPageName();
+    const pageName = await service.getPageName(), offered = await subscribeOffered();
     const token = context.req.param("token") ?? "";
-    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-manage", token, pageName);
+    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-manage", token, pageName, offered);
     if (limited) return limited;
     const managed = await service.getManagedSubscription(token);
-    return managed ? tokenResponse(context.req.raw, renderSubscriberManagementPage(managed, pageName)) : tokenResponse(context.req.raw, renderSubscriberTokenPage("Subscription unavailable", "<p>This subscription link is invalid or no longer active.</p>", pageName), 404);
+    return managed ? tokenResponse(context.req.raw, renderSubscriberManagementPage(managed, pageName, offered)) : tokenResponse(context.req.raw, renderSubscriberTokenPage("Subscription unavailable", "<p>This subscription link is invalid or no longer active.</p>", pageName, undefined, offered), 404);
   });
   app.post("/manage/:token", async (context) => {
-    const pageName = await service.getPageName();
+    const pageName = await service.getPageName(), offered = await subscribeOffered();
     const token = context.req.param("token") ?? "";
-    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-manage", token, pageName);
+    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-manage", token, pageName, offered);
     if (limited) return limited;
     const parsed=managementSchema.safeParse(await context.req.parseBody({all:true}));
-    if(!parsed.success)return tokenResponse(context.req.raw,renderSubscriberTokenPage("Subscription unavailable","<p>Choose valid components and a supported webhook format.</p>",pageName),400);
+    if(!parsed.success)return tokenResponse(context.req.raw,renderSubscriberTokenPage("Subscription unavailable","<p>Choose valid components and a supported webhook format.</p>",pageName,undefined,offered),400);
     const updated = await service.updateManagedSelection(token, parsedComponentIds(parsed.data.componentId),parsed.data.webhookFormat,formPreferences(parsed.data));
-    return updated ? tokenResponse(context.req.raw, renderSubscriberTokenPage("Subscription updated", "<p>Your selection is saved.</p><p><a href=\"/\">See current status</a></p>", pageName, "done")) : tokenResponse(context.req.raw, renderSubscriberTokenPage("Subscription unavailable", "<p>This subscription link is invalid or no longer active.</p>", pageName), 404);
+    return updated ? tokenResponse(context.req.raw, renderSubscriberTokenPage("Subscription updated", "<p>Your selection is saved.</p><p><a href=\"/\">See current status</a></p>", pageName, "done", offered)) : tokenResponse(context.req.raw, renderSubscriberTokenPage("Subscription unavailable", "<p>This subscription link is invalid or no longer active.</p>", pageName, undefined, offered), 404);
   });
   app.get("/unsubscribe/:token", async (context) => {
-    const pageName = await service.getPageName();
-    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-unsubscribe", context.req.param("token") ?? "", pageName);
-    return limited ?? tokenResponse(context.req.raw, renderSubscriberTokenPage("Unsubscribe", "<form method=\"post\"><input type=\"hidden\" name=\"action\" value=\"unsubscribe\"><button type=\"submit\">Unsubscribe</button></form>", pageName));
+    const pageName = await service.getPageName(), offered = await subscribeOffered();
+    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-unsubscribe", context.req.param("token") ?? "", pageName, offered);
+    return limited ?? tokenResponse(context.req.raw, renderSubscriberTokenPage("Unsubscribe", "<form method=\"post\"><input type=\"hidden\" name=\"action\" value=\"unsubscribe\"><button type=\"submit\">Unsubscribe</button></form>", pageName, undefined, offered));
   });
   app.post("/unsubscribe/:token", async (context) => {
-    const pageName = await service.getPageName();
-    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-unsubscribe", context.req.param("token") ?? "", pageName);
+    const pageName = await service.getPageName(), offered = await subscribeOffered();
+    const limited = await allowedTokenRequest(context, options.rateLimiter, "subscription-unsubscribe", context.req.param("token") ?? "", pageName, offered);
     if (limited) return limited;
     const form = await context.req.parseBody();
     const oneClick = form["List-Unsubscribe"] === "One-Click";
@@ -126,8 +128,8 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
     const unsubscribed = accepted && await service.unsubscribe(context.req.param("token") ?? "");
     if (!oneClick && context.req.header("Accept")?.includes("text/html")) {
       return tokenResponse(context.req.raw, renderSubscriberTokenPage(unsubscribed ? "Unsubscribed" : "Subscription unavailable", unsubscribed
-        ? "<p>You won't get status updates any more.</p><p><a href=\"/#subscribe\">Subscribe again</a></p>"
-        : "<p>This subscription link is invalid or no longer active.</p>", pageName), unsubscribed ? 200 : 404);
+        ? `<p>You won't get status updates any more.</p>${offered ? '<p><a href="/#subscribe">Subscribe again</a></p>' : ""}`
+        : "<p>This subscription link is invalid or no longer active.</p>", pageName, undefined, offered), unsubscribed ? 200 : 404);
     }
     const response = new Response(unsubscribed ? "" : "Subscription link is invalid or no longer active.", { status: unsubscribed ? 200 : 404 });
     tokenHeaders(response.headers);

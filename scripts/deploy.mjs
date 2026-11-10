@@ -11,6 +11,7 @@ import { dryRunInputFailure, realDeployInputFailure, realDeployNotice } from "./
 import { readBuiltWorkerArtifact } from "./build-output.mjs";
 import { deployFingerprint, deploySource, identityVars, reportsIdentity } from "./deployment-identity.mjs";
 import { deploymentOwnership } from './deployment-ownership.mjs';
+import { awaitPageHostSnapshot } from './page-host-readiness.mjs';
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, { stdio: "inherit", ...options });
@@ -101,17 +102,10 @@ async function main() {
     await claimed.body?.cancel();
     if (![303,409].includes(claimed.status)) throw new Error('Owner bootstrap failed after deployment. Inspect the auth configuration.');
   }
-  const deadline = Date.now() + 90_000;
-  let retained = false;
-  do {
-    const snapshot = await fetch(`https://${config.pageHost}/api/public/status`, { cache: "no-store", signal: AbortSignal.timeout(15_000), redirect: "error" });
-    if (snapshot.ok && snapshot.headers.get("X-Lamp-Snapshot-Retained") === "true") { retained = true; break; }
-    await new Promise((resolve) => setTimeout(resolve, 2_000));
-  } while (Date.now() < deadline);
-  if (!retained) throw new Error("Deployment is live but retained snapshot readiness is unverified; inspect snapshot build failures before accepting this deployment.");
+  const page = await awaitPageHostSnapshot(config.pageHost);
   if (flags.get("result-file")) await writeFile(resolve(flags.get("result-file")), JSON.stringify({ deployed: true, environment, origin: `https://${config.appHost}` }) + '\n', { mode: 0o600, flag: 'wx' });
   console.log(`Deployment smoke check passed for ${config.appHost}.`);
-  console.log(`Your public status page: https://${config.pageHost} · sign in at https://${config.appHost}`);
+  console.log(page.state === "detached" ? `Sign in at https://${config.appHost} (page host ${config.pageHost} is detached).` : `Your public status page: https://${config.pageHost} · sign in at https://${config.appHost}`);
 }
 
 main().catch((error) => { console.error(error instanceof Error ? error.message : error); process.exit(1); });

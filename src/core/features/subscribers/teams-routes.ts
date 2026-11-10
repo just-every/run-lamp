@@ -8,9 +8,9 @@ import { formPreferences } from "./preferences";
 import { SubscriberLimitError } from "./limits";
 import type { TeamsSubscriptionsService } from "./teams-subscriptions";
 
-export function registerTeamsSubscriptionRoutes(app: Hono<AppEnv>, service: TeamsSubscriptionsService, subscribers: SubscribersService, limiter?: PublicWriteRateLimiter) {
-  function page(request: Request, name: string, title: string, body: string, status = 200) {
-    const response = new Response(renderSubscriberTokenPage(title, body, name), { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "referrer-policy": "no-referrer", "x-robots-tag": "noindex" } });
+export function registerTeamsSubscriptionRoutes(app: Hono<AppEnv>, service: TeamsSubscriptionsService, subscribers: SubscribersService, limiter?: PublicWriteRateLimiter, prelaunch?: () => Promise<boolean>) {
+  async function page(request: Request, name: string, title: string, body: string, status = 200) {
+    const response = new Response(renderSubscriberTokenPage(title, body, name, undefined, !await prelaunch?.()), { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "referrer-policy": "no-referrer", "x-robots-tag": "noindex" } });
     applyPublicIsolationHeaders(response.headers, new URL(request.url).origin);
     return response;
   }
