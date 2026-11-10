@@ -10,6 +10,7 @@ import { chromium } from "playwright";
 import { marked } from "marked";
 import { parseFragment } from "parse5";
 
+import { appHostPrelaunchProof } from "./helpers/app-host-prelaunch.mjs";
 import { legacyApiFixtureSql } from "./fixtures/legacy-api-fixture.mjs";
 import { insertRealOperatorSession } from "./real-session-helper.mjs";
 import { reservePort, waitForWorker } from "./worker-startup.mjs";
@@ -410,6 +411,7 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   const currentVersion = JSON.parse(await readFile("package.json", "utf8")).version;
   assert.ok(vpatHtml.includes(`Product version: ${currentVersion}`), "the nested VPAT describes the current release");
   assert.equal((await request("/docs/not-a-page", appHost, { headers: { "Sec-Fetch-Mode": "navigate" } })).status, 404, "an unlisted docs address is a real 404");
+  await appHostPrelaunchProof({ request, appRequest, appHost });
   const mailEventsOnAppHost = await request("/api/intake/mail-events", appHost, { method: "POST", body: "[]" });
   assert.equal(mailEventsOnAppHost.status, 404, "mail events belong only on the page host");
   // RER's cutover check of a status hostname reads /health there: the page host answers it like the app host.
