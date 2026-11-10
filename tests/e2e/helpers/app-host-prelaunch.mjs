@@ -21,6 +21,10 @@ export async function appHostPrelaunchProof({ request, appRequest, appHost }) {
     assert.equal(response.status, 200, await response.text());
   };
   const open = await snapshot();
+  // Server-rendered documents may carry per-request markup: those are compared by status and headers only.
+  const again = await snapshot();
+  const stable = Object.keys(open).filter(path => open[path].body === again[path].body);
+  assert.ok(stable.includes('/') && stable.includes('/robots.txt'), 'the Lobby and robots.txt answer the same bytes every time');
   for (const path of PUBLIC_APP_PATHS) assert.equal(open[path].status, 200, `${path} is public on the app host`);
   assert.equal(open['/robots.txt'].status, 404, 'an app host that is not pre-launch has no robots.txt of its own');
   await setPrelaunch(true);
@@ -40,6 +44,6 @@ export async function appHostPrelaunchProof({ request, appRequest, appHost }) {
   for (const path of Object.keys(open)) {
     assert.equal(cleared[path].status, open[path].status, `${path} status is back`);
     assert.deepEqual(cleared[path].headers, open[path].headers, `${path} headers are back`);
-    assert.ok(cleared[path].body === open[path].body, `${path} body is back byte for byte`);
+    if (stable.includes(path)) assert.ok(cleared[path].body === open[path].body, `${path} body is back byte for byte`);
   }
 }
