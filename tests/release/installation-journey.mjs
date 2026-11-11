@@ -21,8 +21,15 @@ try {
     const readme = await readFile(join(fixture.root, "README.md"), "utf8");
     assert.match(readme, /\]\(RUN-LOCALLY\.md\)/, "README links to the canonical local guide");
     const guide = await readFile(join(fixture.root, "RUN-LOCALLY.md"), "utf8");
-    const documented = /```sh\s*\n([^`]+)```/.exec(guide)?.[1].trim();
-    assert.equal(documented, "rer dev", "the documented initial journey is one dev command");
+    const blocks = [...guide.matchAll(/```sh\s*\n([^`]+)```/g)].map(match => match[1].trim());
+    // The guide opens with the Run page's one-line installer; the fixture has already run that public
+    // installer, so the journey continues with the guide's own `rer dev` start step that follows it.
+    const installer = /^curl -fsSL (https:\/\/\S+) \| sh -s -- dev just-every\/run-lamp$/.exec(blocks[0] ?? "");
+    assert.ok(installer, "the guide's first command is the one-line installer");
+    const site = await readFile(join(fixture.root, "src/base/run-site.ts"), "utf8");
+    assert.ok(site.includes(`curl -fsSL ${installer[1]} | sh -s -- dev `), "the guide's installer line is the Run page's line");
+    const documented = blocks.slice(1).find(block => block === "rer dev");
+    assert.equal(documented, "rer dev", "the documented journey continues with one dev command after the installer");
     const port = await reservePort({ label: "release README journey" });
     const process = fixture.launch(fixture.rer, [...documented.split(/\s+/).slice(1), "--port", String(port)]);
     let open;
