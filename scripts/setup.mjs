@@ -79,8 +79,7 @@ async function main() {
   // An apply that exits cleanly is not proof that it finished: read the ledger back and compare it with the shipped list.
   assertMigrationsApplied(shippedMigrations(), ledgerNames(wrangler(["d1", "execute", "DB", "--remote", "--json", "--config", "wrangler.toml", "--command", coreLedgerQuery])));
   await applyOwnerMigrations("wrangler.toml", ["--remote"]);
-  wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", `${setupPageSettingsStatement(config)}`]);
-  wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", pageHostBindingStatement(config)]);
+  wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", `${setupPageSettingsStatement(config)} ${pageHostBindingStatement(config)}`]);
   if (!existsSync("wrangler.toml")) throw new Error("Setup did not generate wrangler.toml.");
   console.log(`Provisioned ${names.worker}; migrations and page settings are initialized.`);
 }
