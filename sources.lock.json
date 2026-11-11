@@ -9232,7 +9232,7 @@
       "executable": false
     },
     "tests/release/installation-journey.mjs": {
-      "sha256": "d1c3133be84f4ac20dfabd264de9c0ccdc4d1643f90d4ebb95e1fc7ee5746c6d",
+      "sha256": "62630fe9cb7c09f23afa7f4bbc6d933d293b3d2188a611e38de0b38f91a511c3",
       "executable": false
     },
     "tests/release/installation-runtime.mjs": {
