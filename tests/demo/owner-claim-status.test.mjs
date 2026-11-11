@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { database, load } from '../operator-readiness/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
-import { deploymentConfig, renderWranglerToml, resourceNames } from '../../scripts/ops-config.mjs';
+import { deploymentConfig, pageHostBindingStatement, renderWranglerToml, resourceNames, setupPageSettingsStatement } from '../../scripts/ops-config.mjs';
 
 const json64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
 test('ordinary host configuration carries public Business trust into a read-only native owner verification', async () => {
@@ -65,4 +65,51 @@ test('ordinary host configuration carries public Business trust into a read-only
   assert.equal((await read()).status,403,'permanent-key revocation applies to ownership reads');
   assert.equal((await call('/api/rer/owner-claim-status')).status,405);
  } finally { await cache.dispose();await storage.runtime.dispose();await rm(directory,{recursive:true,force:true}); }
+});
+
+// Page host route mode (Cloudflare for SaaS): rendering, refusals and the stored hostname following the binding.
+const routeInputs = { LAMP_PAGE_HOST: 'status.example.org', LAMP_APP_HOST: 'app.lamp-provider.test', LAMP_PAGE_NAME: 'Acme', LAMP_PAGE_TAGLINE: 'Service status', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#123456',
+ SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_FROM_ADDRESS: 'status@example.test', MAIL_DKIM_SELECTOR: 'mail',
+ SESSION_SECRET: randomUUID()+randomUUID(), INSTALLATION_KEY: randomBytes(32).toString('hex'), SETUP_TOKEN: randomUUID()+randomUUID(),
+ MAIL_PROVIDER_API_KEY: randomUUID()+randomUUID(), SUBSCRIBER_TOKEN_SECRET: randomUUID()+randomUUID(), WEBHOOK_SIGNING_SECRET: randomUUID()+randomUUID(),
+ LAMP_PAGE_HOST_ROUTE_ZONE: 'lamp-provider.test', LAMP_PAGE_HOST_TARGET: 'domains.lamp-provider.test' };
+test('a page host on a zone outside the deploy account renders as a Worker route, and every inconsistent pair is refused by setting name', () => {
+ const render = inputs => renderWranglerToml(deploymentConfig(inputs), { ...resourceNames('production'), databaseId: randomUUID() });
+ const routed = render(routeInputs);
+ assert.match(routed, /workers_dev = false\nroutes = \[\n  \{ pattern = "status\.example\.org\/\*", zone_name = "lamp-provider\.test" \},\n  \{ pattern = "app\.lamp-provider\.test", custom_domain = true \}\n\]\n/);
+ assert.match(routed, /LAMP_PAGE_HOST = "status\.example\.org"\nLAMP_APP_HOST = "app\.lamp-provider\.test"\n/);
+ const { LAMP_PAGE_HOST_ROUTE_ZONE, LAMP_PAGE_HOST_TARGET, ...plain } = routeInputs;
+ assert.match(render({ ...plain, LAMP_PAGE_HOST: 'status.lamp-provider.test' }), /\{ pattern = "status\.lamp-provider\.test", custom_domain = true \}/);
+ const refused = [
+  [{ LAMP_PAGE_HOST_TARGET: undefined }, /LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET must be set together/],
+  [{ LAMP_PAGE_HOST_ROUTE_ZONE: undefined }, /LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET must be set together/],
+  [{ LAMP_HOSTING: 'workers-dev' }, /LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET cannot be used with LAMP_HOSTING=workers-dev/],
+  [{ LAMP_PAGE_HOST_ROUTE_ZONE: 'Lamp-Provider.test' }, /LAMP_PAGE_HOST_ROUTE_ZONE must be a bare lowercase hostname/],
+  [{ LAMP_PAGE_HOST_TARGET: 'https://domains.lamp-provider.test/' }, /LAMP_PAGE_HOST_TARGET must be a bare lowercase hostname/],
+  [{ LAMP_PAGE_HOST_TARGET: 'domains.other.test' }, /LAMP_PAGE_HOST_TARGET must be lamp-provider\.test or a name under it/],
+  [{ LAMP_PAGE_HOST: 'status.lamp-provider.test' }, /LAMP_PAGE_HOST is lamp-provider\.test or a name under it/],
+  [{ LAMP_PAGE_HOST: 'domains.lamp-provider.test' }, /LAMP_PAGE_HOST must differ from LAMP_PAGE_HOST_TARGET/],
+ ];
+ for (const [patch, message] of refused) assert.throws(() => deploymentConfig({ ...routeInputs, ...patch }), message);
+});
+
+test('a deploy points the stored page hostname at LAMP_PAGE_HOST and changes no other page setting', async () => {
+ const directory = await mkdtemp(join(tmpdir(), 'lamp-page-host-binding-'));
+ const storage = await database(directory);
+ try {
+  const first = deploymentConfig({ ...routeInputs, LAMP_PAGE_HOST_ROUTE_ZONE: undefined, LAMP_PAGE_HOST_TARGET: undefined, LAMP_PAGE_HOST: 'status.lamp-provider.test' });
+  const row = async () => storage.db.prepare("SELECT * FROM page_settings WHERE id = 'default'").first();
+  await storage.db.prepare(setupPageSettingsStatement(first)).run();
+  await storage.db.prepare(pageHostBindingStatement(first)).run();
+  const before = await row();
+  assert.equal(before.hostname, 'status.lamp-provider.test');
+  await storage.db.prepare("UPDATE page_settings SET page_name = 'Edited by the owner' WHERE id = 'default'").run();
+  await storage.db.prepare(setupPageSettingsStatement(deploymentConfig(routeInputs))).run();
+  await storage.db.prepare(pageHostBindingStatement(deploymentConfig(routeInputs))).run();
+  const after = await row();
+  assert.equal(after.hostname, 'status.example.org');
+  const { hostname: _h, updated_at: _u, ...others } = after;
+  const { hostname: _bh, updated_at: _bu, ...beforeOthers } = before;
+  assert.deepEqual(others, { ...beforeOthers, page_name: 'Edited by the owner' });
+ } finally { await storage.runtime.dispose(); await rm(directory, { recursive: true, force: true }); }
 });

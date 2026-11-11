@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.11
+
+**A public page can now be served on a name whose DNS is outside your Cloudflare account.** Set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET` together and `rer deploy` attaches the page host as a Worker route on a Cloudflare for SaaS provider zone in your account instead of a custom domain, which Cloudflare refuses for a zone you do not own. Without the two settings the generated configuration and the deploy are unchanged.
+
+- **The deploy finishes while the page host's DNS still points elsewhere.** In route mode, a page host whose DNS does not yet reach the target is reported (`Page host <host> does not point at <target> yet: skipped.`) and the deploy completes; once its CNAME (or addresses) reach the target, the usual retained-snapshot check runs. A resolver that keeps failing still fails the deploy.
+- **The stored page hostname follows `LAMP_PAGE_HOST`.** Every deploy sets the page's stored hostname to `LAMP_PAGE_HOST`, so the public API's page hostname and the theme's origin no longer keep a previous name. No other page setting changes.
+- **`docs/domains.md` gains the setup steps** for Cloudflare for SaaS: fallback origin, custom hostname with TXT validation, the DNS-only CNAME, CAA, and the two settings.
+
 ## 1.11.10
 
 **A Managed Lamp's public pages and previews now rebuild reliably after a change.** The stored public page now records which release built it. When the running release or the page renderer is not the one that built the stored page, or when updates to the page are still waiting, the page is rebuilt on its own, so a change shows up on a preview that already holds a page without anyone bumping a version by hand. A rebuild that fails never takes the installation's health check down; its work simply waits for the next try. A database that was reset still moves the page forward. What the page shows, its privacy and the Pre-launch behaviour are unchanged.

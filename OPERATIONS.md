@@ -155,8 +155,14 @@ address. See [Cloudflare's custom-domain documentation](https://developers.cloud
    `https://<LAMP_APP_HOST>/health`. Verify the public page and operator sign-in on
    their respective hostnames before routing customers to the new setup.
 
-DNS hosted by another provider is unsupported. The registrar can remain elsewhere,
-but it must delegate the domain to the active Cloudflare zone before setup.
+A page host whose DNS is hosted elsewhere, or in another Cloudflare account, cannot be a custom
+domain. Serve it through Cloudflare for SaaS instead: make it a custom hostname on a provider zone in the
+deploy account and set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET`, which attach it as a Worker
+route on that zone. The deploy completes while the page host's DNS still points at its old service, logs
+`does not point at <target> yet: skipped`, and checks the page once the DNS record is switched. The steps
+are in `docs/domains.md` ("A page host whose DNS is in another Cloudflare account or elsewhere"). The app host
+and any other hostname still need DNS in an active Cloudflare zone in the deploy account; the registrar can
+remain elsewhere.
 
 ## Deployment and checks
 
