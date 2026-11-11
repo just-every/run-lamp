@@ -39,3 +39,12 @@ Final exact-head browser receipt and CI conclusion are recorded in CHECKS.json a
 ## Custody and limits
 
 Verify run 43012346068 belongs to the exact product SHA above. The PR and final run conclusion are recorded in CI-RECEIPT.json. The fleet Mac must run its publication scan and landing gates; this cloud did not claim to run that unavailable scan. Evidence transport is report-only and independent of product readiness, acceptance or landing. No hosted mail account or real inbox was needed or used.
+
+## Final custody
+
+PR: https://github.com/just-every/run-lamp/pull/332 (open for the lane).
+Exact-SHA Verify: completed/success, run 43012346068, https://github.com/just-every/run-lamp/actions/runs/43012346068, head bf1ada897c06515e86abdbb225877826a1e4c1c7.
+The earlier product head 8df965814f0e5972e2fe0577f96b1e834623510a and its run 43011953723 were superseded by the hosted-label correction; no success is claimed from that earlier run.
+Seven of the ten GitHub API calls were used; CI discovery/status checks followed the five-minute interval. No workflow was dispatched or rerun.
+
+Blockers: none. The product is a READY candidate, not a claim that it has landed. The fleet retains its independent publication scan and landing gates. The actual packet remains outside the product clone and is published through the separate evidence ref. The pushed clone is removed after final evidence publication.

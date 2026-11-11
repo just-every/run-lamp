@@ -1,0 +1,80 @@
+[
+  {
+    "time": 1794396391.4955876,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=8df965814f0e5972e2fe0577f96b1e834623510a&per_page=100"
+    ],
+    "exit": 0
+  },
+  {
+    "time": 1794396570.6003869,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=bf1ada897c06515e86abdbb225877826a1e4c1c7&per_page=100",
+      "--jq",
+      "{workflow_runs: [.workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}]}"
+    ],
+    "exit": 0
+  },
+  {
+    "time": 1794396881.1577008,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43012346068",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "time": 1794396901.2558331,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/pulls",
+      "--method",
+      "POST",
+      "-f",
+      "title=Make local subscriber confirmation and delivery outcomes usable",
+      "-f",
+      "head=cloud/main-lamp-local-subscribers-1",
+      "-f",
+      "base=main",
+      "-F",
+      "body=@/tmp/lamp-pr-body.md",
+      "--jq",
+      "{number,html_url,state,head_sha:.head.sha}"
+    ],
+    "exit": 0
+  },
+  {
+    "time": 1794397182.4711795,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43012346068",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "time": 1794397483.784957,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43012346068",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "time": 1794397785.0815337,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43012346068",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  }
+]
