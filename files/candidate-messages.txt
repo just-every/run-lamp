@@ -1,0 +1,3 @@
+bada25fde98be3ad83610385a2524127b2393d37
+Show a ready-to-send first alert for Another tool
+

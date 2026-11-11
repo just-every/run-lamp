@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-another-tool-1-c1",
+  "head": "bada25fde98be3ad83610385a2524127b2393d37",
+  "remote_head": "bada25fde98be3ad83610385a2524127b2393d37",
+  "remote_ref_verified": true,
+  "checked_at": "2026-11-11T12:40:16.425899+00:00",
+  "main_ref_at_last_fetch": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "product_worktree_clean": true,
+  "pr": "https://github.com/just-every/run-lamp/pull/333",
+  "product_push": "guard attempt 1 success",
+  "new_product_commits": 0
+}

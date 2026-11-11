@@ -1,0 +1,52 @@
+[
+  {
+    "call": 1,
+    "time": "2026-11-11T12:28:17.389437+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=bada25fde98be3ad83610385a2524127b2393d37&per_page=100"
+    ]
+  },
+  {
+    "call": 2,
+    "time": "2026-11-11T12:28:18.113119+00:00",
+    "args": [
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-lamp/pulls",
+      "--input",
+      "../pr-request.json"
+    ]
+  },
+  {
+    "call": 3,
+    "time": "2026-11-11T12:33:18.425744+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43020555830",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 4,
+    "time": "2026-11-11T12:38:20.041634+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43020555830",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 5,
+    "time": "2026-11-11T12:43:21.707636+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43020555830",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

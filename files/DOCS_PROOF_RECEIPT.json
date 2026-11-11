@@ -1,0 +1,16 @@
+[
+  {
+    "width": 1440,
+    "status": 200,
+    "fits_viewport": true,
+    "section": "Another tool",
+    "screenshot": "1440-another-tool-docs.png"
+  },
+  {
+    "width": 390,
+    "status": 200,
+    "fits_viewport": true,
+    "section": "Another tool",
+    "screenshot": "390-another-tool-docs.png"
+  }
+]

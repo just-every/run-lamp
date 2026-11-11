@@ -1,0 +1,15 @@
+{
+  "candidate_commits": [
+    {
+      "sha": "bada25fde98be3ad83610385a2524127b2393d37",
+      "author": "James Peter <github@zemaj.com>",
+      "committer": "James Peter <github@zemaj.com>",
+      "trailers": "",
+      "permitted": true
+    }
+  ],
+  "all_side_parents_included": true,
+  "diff_check": "passed",
+  "credential_shape_check": "passed",
+  "full_publication_scan": "Deferred to fleet Mac: task preamble states this cloud cannot run the fleet publication scan; this precheck is not COMPLETE publication proof."
+}

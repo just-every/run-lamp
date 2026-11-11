@@ -1,0 +1,23 @@
+{
+  "candidate_registered": 79,
+  "assertion_scripts": 10,
+  "candidate_checks": 89,
+  "main_checks": 88,
+  "c1_before_checks": 89,
+  "c1_after_checks": 89,
+  "default_cap": 200,
+  "new_c1_registrations": 0,
+  "contract_before": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "contract_after": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "clause_status_changes": []
+}

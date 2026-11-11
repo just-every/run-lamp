@@ -1,0 +1,87 @@
+{
+  "tag": "main-lamp-another-tool-1-c1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-another-tool-1-c1",
+  "head": "bada25fde98be3ad83610385a2524127b2393d37",
+  "base_main": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "at": "2026-11-11T12:27:16.422883+00:00",
+  "merge": "Already up to date",
+  "new_product_commits": 0,
+  "contract_counts": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "checks": {
+    "typecheck": 0,
+    "contract-docs": 0,
+    "source-lock-write": 0,
+    "source-lock-check": 0,
+    "verification-plan": 0,
+    "another-tool-1440": 0,
+    "browser-proof-390": 0,
+    "build": 0,
+    "diff-check": 0,
+    "docs-proof": 0
+  },
+  "registered_cases": 79,
+  "assertion_scripts": 10,
+  "total_checks": 89,
+  "before_after": {
+    "c1_registered_checks": [
+      89,
+      89
+    ],
+    "original_round_registered_checks": [
+      88,
+      89
+    ],
+    "contract_done": [
+      57,
+      57
+    ],
+    "contract_partial": [
+      132,
+      132
+    ],
+    "contract_missing": [
+      55,
+      55
+    ],
+    "clause_status_changes": []
+  },
+  "browser_launch": {
+    "executable": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ],
+    "method": "temporary external launch adapter; tracked tests unchanged"
+  },
+  "screenshots": [
+    "screenshots/1440-another-tool-connect.png",
+    "screenshots/1440-another-tool-connected.png",
+    "screenshots/1440-another-tool-docs.png",
+    "screenshots/1440-another-tool-edit.png",
+    "screenshots/1440-another-tool-new-token.png",
+    "screenshots/390-another-tool-connect.png",
+    "screenshots/390-another-tool-connected.png",
+    "screenshots/390-another-tool-docs.png",
+    "screenshots/390-another-tool-edit.png",
+    "screenshots/390-another-tool-new-token.png"
+  ],
+  "product_tree_unchanged": true,
+  "exact_sha_verify": {
+    "run_id": 43020555830,
+    "head": "bada25fde98be3ad83610385a2524127b2393d37",
+    "conclusion": "success",
+    "head_sha": "bada25fde98be3ad83610385a2524127b2393d37",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43020555830",
+    "status": "completed"
+  },
+  "github_calls": 5,
+  "result": "READY",
+  "finalized_at": "2026-11-11T12:44:01.035108+00:00"
+}
