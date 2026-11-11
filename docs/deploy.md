@@ -16,11 +16,22 @@ to your subscribers. On the Free path that mail goes through your own SendGrid o
 Resend account, from a domain you own and have authenticated there (step 6 shows
 how). If you have no domain you can add DNS records to, choose Managed instead.
 
-Do the steps in order. Each step names the inputs it gives you; `rer deploy
---dry-run` lists any you have not set yet by the same names, in the same order.
-You need the Lamp folder that `rer dev just-every/run-lamp` made (run every
+You need the Lamp folder from [Run Lamp locally](../RUN-LOCALLY.md) (run every
 command below from it), a Cloudflare account, a mail account at SendGrid or
 Resend, and a domain whose DNS records you can change.
+
+After the curl install, if `~/.local/bin` is missing from your PATH, run the
+installer's Bash line once to make the command available now and in future
+terminals:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
+```
+
+For another shell, `"$HOME/.local/bin/rer" cli path` prints its line.
+
+Do the steps in order. Each step names the inputs it gives you; `rer deploy
+--dry-run` lists any you have not set yet by the same names, in the same order.
 
 ## Step 1: Make a private input file
 
@@ -172,7 +183,15 @@ SPF at your sending domain is not required.
 
 ## Step 7: Check, then deploy
 
-From the Lamp folder:
+Stop the development server before the dry run; an active server owns the
+checkout's local state and prevents deployment. From the Lamp folder:
+
+```sh
+rer dev --stop
+```
+
+If you are running a production preview instead, stop it with `rer preview --stop`.
+Then check your inputs:
 
 ```sh
 rer deploy --dry-run --environment production --env-file "$LAMP_DEPLOY_ENV"
