@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 
 import { appApi } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -7,17 +7,30 @@ import { createOpaqueToken } from "../../../platform/security/opaque-tokens";
 import { CopyField, NewKey, SaveNote, ShownOnce, ToolHeading, type Copyable } from "./tool-parts";
 import { toolDoes, type Source } from "./tools";
 import { useSourceAutosave } from "./use-source-autosave";
+import { webhookSample } from "./webhook-sample";
 
 type Fields = { name: string; timestampHeader: string; signatureHeader: string; deduplicationPath: string; titlePath: string; statePath: string; recoveredValue: string };
 const DEFAULTS: Omit<Fields, "name"> = { timestampHeader: "x-lamp-timestamp", signatureHeader: "x-lamp-signature", deduplicationPath: "$.alert.id", titlePath: "$.alert.title", statePath: "$.alert.state", recoveredValue: "recovered" };
-const PATHS: Array<[keyof Fields, string]> = [["deduplicationPath", "Deduplication JSON path"], ["titlePath", "Title JSON path"], ["statePath", "State JSON path"], ["recoveredValue", "Recovery value"]];
-const HEADERS: Array<[keyof Fields, string]> = [["timestampHeader", "Timestamp header"], ["signatureHeader", "Signature header"]];
+const PATHS: Array<[keyof Fields, string, string]> = [
+  ["deduplicationPath", "Alert ID path", "The JSON field holding a unique alert ID; repeats update the same draft."],
+  ["titlePath", "Title path", "The JSON field holding the private incident's title."],
+  ["statePath", "State path", "The JSON field holding the alert's firing or recovered state."],
+  ["recoveredValue", "Recovered value", "The exact state value that means recovery; any other value opens an alert."],
+];
+const HEADERS: Array<[keyof Fields, string, string]> = [["timestampHeader", "Timestamp header", "The header carrying the request's ISO time."], ["signatureHeader", "Signature header", "The header carrying the HMAC-SHA256 signature."]];
 const fieldsOf = (source: Source): Fields => ({ name: source.name, timestampHeader: source.timestampHeader, signatureHeader: source.signatureHeader, deduplicationPath: source.deduplicationPath, titlePath: source.titlePath, statePath: source.statePath, recoveredValue: source.recoveredValue });
 const complete = (fields: Fields, hmac: boolean) => [fields.name, fields.deduplicationPath, fields.titlePath, fields.statePath, fields.recoveredValue, ...(hmac ? [fields.timestampHeader, fields.signatureHeader] : [])].every(value => value.trim());
 
 function howToSend(hmac: boolean, fields: Pick<Fields, "timestampHeader" | "signatureHeader">) {
   return hmac ? `Post JSON to this address. Put the ISO time in ${fields.timestampHeader} and the HMAC-SHA256 of time.body, base64url, in ${fields.signatureHeader}.`
-    : "Post JSON to this address with the header Authorization: Bearer and the token.";
+    : "Send this sample request to open a private alert draft. The token is shown only once. To replace it later, choose Edit → New token → Make a new token.";
+}
+
+function instructions(source: Source, key: string, made: boolean): Copyable[] {
+  const hmac = source.credentialKind === "hmac-sha256";
+  return [{ label: "Address", value: source.endpointUrl, copy: "Copy address" },
+    ...(made ? [{ label: hmac ? "Signing secret" : "Token", value: key, copy: hmac ? "Copy secret" : "Copy token" }] : []),
+    ...(!hmac ? [{ label: "Sample request", value: webhookSample(source, key), copy: "Copy request", multiline: true }] : [])];
 }
 
 /** Any other tool that posts JSON: Lamp makes its token or signing secret unless the tool brings its own secret. */
@@ -38,15 +51,15 @@ function ConnectWebhook({ onConnected, onClose }: { onConnected: () => void; onC
     try {
       const { source } = await appApi<{ source: Source }>("/api/app/intake/sources", { method: "POST", body: JSON.stringify({ ...fields, credentialKind: hmac ? "hmac-sha256" : "bearer-token", ...(hmac ? { signingSecret: key } : { bearerToken: key }) }) });
       const made = !hmac || !ownSecret.trim();
-      setShown({ hmac, once: made, fields: [{ label: "Address", value: source.endpointUrl, copy: "Copy address" }, ...(made ? [{ label: hmac ? "Signing secret" : "Token", value: key, copy: hmac ? "Copy secret" : "Copy token" }] : [])] });
+      setShown({ hmac, once: made, fields: instructions(source, key, made) });
       onConnected();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The tool could not be connected."); }
     finally { setBusy(false); }
   }
   const set = (key: keyof Fields, value: string) => setFields(current => ({ ...current, [key]: value }));
-  return <section className="data-card tool-form" aria-labelledby="tool-form-title">
+  return <section className="data-card tool-form webhook-form" aria-labelledby="tool-form-title">
     <ToolHeading title="Connect another tool" does={toolDoes("webhook")} close={{ label: shown ? "Close" : "Back", onClick: onClose }} />
-    {shown ? <ShownOnce once={shown.once} fields={shown.fields} onDone={onClose}>{howToSend(shown.hmac, fields)}</ShownOnce>
+    {shown ? <ShownOnce once={shown.once && shown.hmac} fields={shown.fields} onDone={onClose}>{howToSend(shown.hmac, fields)}</ShownOnce>
       : <form className="tool-fields" onSubmit={connect}>
         <label className="form-label">Name<input required maxLength={120} value={fields.name} placeholder="Checkout monitor" onChange={event => set("name", event.target.value)} /></label>
         <label className="form-label">Proof<select value={hmac ? "hmac" : "token"} onChange={event => setHmac(event.target.value === "hmac")}><option value="token">A token Lamp makes</option><option value="hmac">An HMAC signature</option></select></label>
@@ -62,7 +75,7 @@ function EditWebhook({ source, onSaved, onClose }: { source: Source; onSaved: ()
   const autosave = useSourceAutosave(source.id, onSaved);
   const hmac = source.credentialKind === "hmac-sha256";
   const [fields, setFields] = useState<Fields>(() => fieldsOf(source));
-  const [key, setKey] = useState<string | null>(null);
+  const [shown, setShown] = useState<Copyable[] | null>(null);
   function set(name: keyof Fields, value: string) {
     const next = { ...fields, [name]: value };
     setFields(next);
@@ -71,10 +84,10 @@ function EditWebhook({ source, onSaved, onClose }: { source: Source; onSaved: ()
   }
   async function newKey() {
     const made = createOpaqueToken();
-    await appApi(`/api/app/intake/sources/${source.id}`, { method: "PUT", body: JSON.stringify({ ...fields, credentialKind: source.credentialKind, ...(hmac ? { signingSecret: made } : { bearerToken: made }) }) });
-    setKey(made); onSaved();
+    const { source: saved } = await appApi<{ source: Source }>(`/api/app/intake/sources/${source.id}`, { method: "PUT", body: JSON.stringify({ ...fields, credentialKind: source.credentialKind, ...(hmac ? { signingSecret: made } : { bearerToken: made }) }) });
+    setShown(instructions(saved, made, true).filter(field => field.label !== "Address")); onSaved();
   }
-  return <section className="data-card tool-form" aria-labelledby="tool-form-title">
+  return <section className="data-card tool-form webhook-form" aria-labelledby="tool-form-title">
     <ToolHeading title={source.name} does={toolDoes("webhook")} close={{ label: "Close", onClick: onClose }} />
     <SaveNote phase={autosave.phase} error={autosave.error} retry={autosave.retry} held={autosave.held} />
     <div className="tool-fields">
@@ -82,15 +95,19 @@ function EditWebhook({ source, onSaved, onClose }: { source: Source; onSaved: ()
       <PayloadFields fields={fields} hmac={hmac} set={set} />
     </div>
     <CopyField label="Address" value={source.endpointUrl} copy="Copy address" />
-    {key ? <ShownOnce fields={[{ label: hmac ? "Signing secret" : "Token", value: key, copy: hmac ? "Copy secret" : "Copy token" }]} onDone={() => setKey(null)}>{howToSend(hmac, fields)}</ShownOnce>
+    {shown ? <ShownOnce once={hmac} fields={shown} onDone={() => setShown(null)}>{howToSend(hmac, fields)}</ShownOnce>
       : <NewKey what={hmac ? "signing secret" : "token"} replace={newKey} />}
   </section>;
 }
 
 /** Lamp's own alert shape fills every field; a tool with another shape changes them here. */
 function PayloadFields({ fields, hmac, set }: { fields: Fields; hmac: boolean; set: (name: keyof Fields, value: string) => void }) {
-  return <details className="tool-more">
-    <summary>Payload fields</summary>
-    <div className="tool-fields">{[...PATHS, ...(hmac ? HEADERS : [])].map(([name, label]) => <label key={name} className="form-label">{label}<input required maxLength={name === "recoveredValue" ? 100 : name.endsWith("Header") ? 120 : 250} value={fields[name]} onChange={event => set(name, event.target.value)} /></label>)}</div>
-  </details>;
+  const id = useId();
+  return <fieldset className="webhook-payload-fields">
+    <legend>Payload fields</legend>
+    <div className="tool-fields">{[...PATHS, ...(hmac ? HEADERS : [])].map(([name, label, meaning]) => <div key={name}>
+      <label className="form-label">{label}<input required aria-describedby={`${id}-${name}`} maxLength={name === "recoveredValue" ? 100 : name.endsWith("Header") ? 120 : 250} value={fields[name]} onChange={event => set(name, event.target.value)} /></label>
+      <p id={`${id}-${name}`} className="webhook-field-meaning">{meaning}</p>
+    </div>)}</div>
+  </fieldset>;
 }

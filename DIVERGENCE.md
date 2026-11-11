@@ -1,5 +1,13 @@
 # DIVERGENCE.md
 
+## Another tool's first alert — 11 November 2026
+
+Another tool keeps its payload mappings visible and explains each field. Connecting
+with a Bearer token, or replacing that token, shows a copyable first request using
+the installation's returned address and saved mappings. The token is shown only
+once, with the path to make a replacement. This preserves the private draft and
+operator publication behavior of monitoring alerts.
+
 Where this product did not fit the planted documents, what it needed instead, and why. Input to the later pass that decides what the shared docs missed. This historical record predates the edition-authoring conversion; the unified `AGENTS.md` now governs every author and fork.
 
 ## 1 — BASE-ACCESS-003 rate-limits the surface that must never be rate limited
