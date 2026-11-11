@@ -1,0 +1,2 @@
+Optional: make rer available in future terminals. rer is not on your PATH yet. Running the following line adds ~/.local/bin to your shell's startup file and this terminal. rer changes no shell file itself:
+  echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"

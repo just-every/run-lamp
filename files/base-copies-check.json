@@ -1,0 +1,1565 @@
+{
+  "ok": true,
+  "record": "base-copies.json",
+  "origin": "not checked (--offline): local bytes against recorded SHA-256 only",
+  "copies": [
+    {
+      "path": ".github/workflows/run-demo.yml",
+      "originPath": "export/run-demo.yml",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": ".github/workflows/run-site.yml",
+      "originPath": "export/run-site.yml",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": ".node-version",
+      "originPath": "default-seed/.node-version",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "BASELINE.md",
+      "originPath": "export/BASELINE.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "CLAUDE.md",
+      "originPath": "export/CLAUDE.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/owner-migrations/LICENSE",
+      "originPath": "LICENSE",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/owner-migrations/README.md",
+      "originPath": "deployment/OWNER-MIGRATIONS.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/sendgrid-email/LICENSE",
+      "originPath": "modules/sendgrid-email/LICENSE",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/sendgrid-email/README.md",
+      "originPath": "modules/sendgrid-email/README.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "LICENSE",
+      "originPath": "LICENSE",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/d1-transport",
+      "originPath": "modules/d1-transport",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 4
+    },
+    {
+      "path": "modules/demo",
+      "originPath": "modules/demo",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 14
+    },
+    {
+      "path": "modules/import-kit/CONTRACT.md",
+      "originPath": "modules/import-kit/CONTRACT.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/README.md",
+      "originPath": "modules/import-kit/README.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/schema",
+      "originPath": "modules/import-kit/schema",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 2
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply.ts",
+      "originPath": "modules/import-kit/src/d1/apply.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/budget.ts",
+      "originPath": "modules/import-kit/src/d1/budget.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/compressed-plan.ts",
+      "originPath": "modules/import-kit/src/d1/compressed-plan.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/creation.ts",
+      "originPath": "modules/import-kit/src/d1/creation.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/custody-fence.ts",
+      "originPath": "modules/import-kit/src/d1/custody-fence.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/custody-state-schema.ts",
+      "originPath": "modules/import-kit/src/d1/custody-state-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/database.ts",
+      "originPath": "modules/import-kit/src/d1/database.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/entry-locator.ts",
+      "originPath": "modules/import-kit/src/d1/entry-locator.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-artifacts.ts",
+      "originPath": "modules/import-kit/src/d1/erased-artifacts.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-custody.ts",
+      "originPath": "modules/import-kit/src/d1/erased-custody.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-plan.ts",
+      "originPath": "modules/import-kit/src/d1/erased-plan.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-reversal.ts",
+      "originPath": "modules/import-kit/src/d1/erased-reversal.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-bounded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-bounded.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-claims.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-claims.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-compiler.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-compiler.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-disposition.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-disposition.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-fragments.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-fragments.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-index.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-index.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-pages.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-pages.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-progress.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-progress.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-related.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-related.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-report.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-report.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-schema.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-selection.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-selection.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-snapshot.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-stage.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-stage.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-step.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-step.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-values.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-values.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-writes.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-writes.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure.ts",
+      "originPath": "modules/import-kit/src/d1/erasure.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "originPath": "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/expected-state.ts",
+      "originPath": "modules/import-kit/src/d1/expected-state.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/field-redaction.ts",
+      "originPath": "modules/import-kit/src/d1/field-redaction.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/guards.ts",
+      "originPath": "modules/import-kit/src/d1/guards.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/history.ts",
+      "originPath": "modules/import-kit/src/d1/history.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/index.ts",
+      "originPath": "modules/import-kit/src/d1/index.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/integrity.ts",
+      "originPath": "modules/import-kit/src/d1/integrity.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/inventory-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/inventory-snapshot.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/jobs.ts",
+      "originPath": "modules/import-kit/src/d1/jobs.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-set.ts",
+      "originPath": "modules/import-kit/src/d1/native-set.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-admission.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-admission.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-context.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-context.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-offset.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-offset.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-publication.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-publication.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-rows.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-rows.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-schema.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-state.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-state.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/original-copies.ts",
+      "originPath": "modules/import-kit/src/d1/original-copies.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/original-storage.ts",
+      "originPath": "modules/import-kit/src/d1/original-storage.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/originals.ts",
+      "originPath": "modules/import-kit/src/d1/originals.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/plan-dictionary.ts",
+      "originPath": "modules/import-kit/src/d1/plan-dictionary.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/plans.ts",
+      "originPath": "modules/import-kit/src/d1/plans.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-header.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-header.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-reader.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-reader.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-schema.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-state.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-state.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-combine.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-combine.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-control.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-control.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-hash.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-hash.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-pages.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-pages.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-steps.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-steps.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparations.ts",
+      "originPath": "modules/import-kit/src/d1/preparations.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/provenance-set.ts",
+      "originPath": "modules/import-kit/src/d1/provenance-set.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/publication-fence.ts",
+      "originPath": "modules/import-kit/src/d1/publication-fence.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "originPath": "modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/published-stream.ts",
+      "originPath": "modules/import-kit/src/d1/published-stream.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/read-fence.ts",
+      "originPath": "modules/import-kit/src/d1/read-fence.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/read-results.ts",
+      "originPath": "modules/import-kit/src/d1/read-results.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/README.md",
+      "originPath": "modules/import-kit/src/d1/README.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/redacted-custody.ts",
+      "originPath": "modules/import-kit/src/d1/redacted-custody.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/redaction-step.ts",
+      "originPath": "modules/import-kit/src/d1/redaction-step.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/referenced-plans.ts",
+      "originPath": "modules/import-kit/src/d1/referenced-plans.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retained-values.ts",
+      "originPath": "modules/import-kit/src/d1/retained-values.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-bounded.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-bounded.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-door.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-door.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-schema.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-scope.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-scope.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-steps.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-steps.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-tally.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-tally.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement.ts",
+      "originPath": "modules/import-kit/src/d1/retirement.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-fence.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-fence.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reverse.ts",
+      "originPath": "modules/import-kit/src/d1/reverse.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reviewed-source.ts",
+      "originPath": "modules/import-kit/src/d1/reviewed-source.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/sets.ts",
+      "originPath": "modules/import-kit/src/d1/sets.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-admission.ts",
+      "originPath": "modules/import-kit/src/d1/staging-admission.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-control.ts",
+      "originPath": "modules/import-kit/src/d1/staging-control.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-erasure.ts",
+      "originPath": "modules/import-kit/src/d1/staging-erasure.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-lifecycle.ts",
+      "originPath": "modules/import-kit/src/d1/staging-lifecycle.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-plan.ts",
+      "originPath": "modules/import-kit/src/d1/staging-plan.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-privacy.ts",
+      "originPath": "modules/import-kit/src/d1/staging-privacy.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-publication.ts",
+      "originPath": "modules/import-kit/src/d1/staging-publication.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-schema.ts",
+      "originPath": "modules/import-kit/src/d1/staging-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-statements.ts",
+      "originPath": "modules/import-kit/src/d1/staging-statements.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-transport.ts",
+      "originPath": "modules/import-kit/src/d1/staging-transport.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-boundary.ts",
+      "originPath": "modules/import-kit/src/d1/stream-boundary.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-create.ts",
+      "originPath": "modules/import-kit/src/d1/stream-create.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-identity-admission.ts",
+      "originPath": "modules/import-kit/src/d1/stream-identity-admission.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-input.ts",
+      "originPath": "modules/import-kit/src/d1/stream-input.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-layout.ts",
+      "originPath": "modules/import-kit/src/d1/stream-layout.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-origin.ts",
+      "originPath": "modules/import-kit/src/d1/stream-origin.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-page-integrity.ts",
+      "originPath": "modules/import-kit/src/d1/stream-page-integrity.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-partition.ts",
+      "originPath": "modules/import-kit/src/d1/stream-partition.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-plan.ts",
+      "originPath": "modules/import-kit/src/d1/stream-plan.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-receipt.ts",
+      "originPath": "modules/import-kit/src/d1/stream-receipt.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-revision-schema.ts",
+      "originPath": "modules/import-kit/src/d1/stream-revision-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/stream-snapshot.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-stage.ts",
+      "originPath": "modules/import-kit/src/d1/stream-stage.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-state.ts",
+      "originPath": "modules/import-kit/src/d1/stream-state.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-working-set.ts",
+      "originPath": "modules/import-kit/src/d1/stream-working-set.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/streams.ts",
+      "originPath": "modules/import-kit/src/d1/streams.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/target-guards.ts",
+      "originPath": "modules/import-kit/src/d1/target-guards.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/target-identities.ts",
+      "originPath": "modules/import-kit/src/d1/target-identities.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/transport.ts",
+      "originPath": "modules/import-kit/src/d1/transport.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/types.ts",
+      "originPath": "modules/import-kit/src/d1/types.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-observations.ts",
+      "originPath": "modules/import-kit/src/d1/undo-observations.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-report.ts",
+      "originPath": "modules/import-kit/src/d1/undo-report.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/undo-snapshot.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-state.ts",
+      "originPath": "modules/import-kit/src/d1/undo-state.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-types.ts",
+      "originPath": "modules/import-kit/src/d1/undo-types.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/door",
+      "originPath": "modules/import-kit/src/door",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 27
+    },
+    {
+      "path": "modules/import-kit/src/engine",
+      "originPath": "modules/import-kit/src/engine",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 3
+    },
+    {
+      "path": "modules/import-kit/src/index.ts",
+      "originPath": "modules/import-kit/src/index.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/journal",
+      "originPath": "modules/import-kit/src/journal",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 4
+    },
+    {
+      "path": "modules/import-kit/src/plan",
+      "originPath": "modules/import-kit/src/plan",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 3
+    },
+    {
+      "path": "modules/import-kit/src/provenance",
+      "originPath": "modules/import-kit/src/provenance",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 9
+    },
+    {
+      "path": "modules/import-kit/src/readers",
+      "originPath": "modules/import-kit/src/readers",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 11
+    },
+    {
+      "path": "modules/import-kit/src/reconcile",
+      "originPath": "modules/import-kit/src/reconcile",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/status",
+      "originPath": "modules/import-kit/src/status",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 5
+    },
+    {
+      "path": "modules/import-kit/src/storage",
+      "originPath": "modules/import-kit/src/storage",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 6
+    },
+    {
+      "path": "modules/import-kit/src/types.ts",
+      "originPath": "modules/import-kit/src/types.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/integrations/core",
+      "originPath": "modules/integrations/core",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 17
+    },
+    {
+      "path": "modules/integrations/README.md",
+      "originPath": "modules/integrations/README.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/integrations/slack",
+      "originPath": "modules/integrations/slack",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 6
+    },
+    {
+      "path": "modules/mail",
+      "originPath": "modules/mail",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 59
+    },
+    {
+      "path": "modules/operator-auth",
+      "originPath": "modules/operator-auth",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 43
+    },
+    {
+      "path": "modules/owner-claim/index.d.mts",
+      "originPath": "modules/owner-claim/index.d.mts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/owner-claim/verify.d.mts",
+      "originPath": "modules/owner-claim/verify.d.mts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/owner-claim/verify.mjs",
+      "originPath": "modules/owner-claim/verify.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/sendgrid-email",
+      "originPath": "modules/sendgrid-email",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 3
+    },
+    {
+      "path": "schema/dependencies.mjs",
+      "originPath": "schema/dependencies.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "schema/json-schema.mjs",
+      "originPath": "schema/json-schema.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "schema/SEED.schema.json",
+      "originPath": "schema/SEED.schema.json",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "schema/setup-validation.mjs",
+      "originPath": "schema/setup-validation.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "schema/validate.mjs",
+      "originPath": "schema/validate.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/artifact.mjs",
+      "originPath": "modules/delivery-producer/artifact.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/bindings.mjs",
+      "originPath": "modules/delivery-producer/bindings.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/capabilities.mjs",
+      "originPath": "modules/delivery-producer/capabilities.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/cli.mjs",
+      "originPath": "modules/delivery-producer/cli.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/declarations.mjs",
+      "originPath": "modules/delivery-producer/declarations.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/export.mjs",
+      "originPath": "modules/delivery-producer/export.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/integration.mjs",
+      "originPath": "modules/delivery-producer/generators/integration.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/managed.mjs",
+      "originPath": "modules/delivery-producer/generators/managed.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/project.mjs",
+      "originPath": "modules/delivery-producer/generators/project.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/validation.mjs",
+      "originPath": "modules/delivery-producer/generators/validation.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/mail.mjs",
+      "originPath": "modules/delivery-producer/mail.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/migrations.mjs",
+      "originPath": "modules/delivery-producer/migrations.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/native-export.mjs",
+      "originPath": "modules/delivery-producer/native-export.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/package.mjs",
+      "originPath": "modules/delivery-producer/package.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/paths.mjs",
+      "originPath": "modules/delivery-producer/paths.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/payloads.mjs",
+      "originPath": "modules/delivery-producer/payloads.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/dependencies.mjs",
+      "originPath": "schema/dependencies.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/json-schema.mjs",
+      "originPath": "schema/json-schema.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/setup-validation.mjs",
+      "originPath": "schema/setup-validation.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/SETUP.schema.json",
+      "originPath": "schema/SETUP.schema.json",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/sign-in.mjs",
+      "originPath": "modules/delivery-producer/sign-in.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/spec.mjs",
+      "originPath": "modules/delivery-producer/spec.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/sql-statements.mjs",
+      "originPath": "modules/delivery-producer/sql-statements.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/deployment/OWNER-MIGRATIONS.md",
+      "originPath": "deployment/OWNER-MIGRATIONS.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/deployment/owner-migrations.mjs",
+      "originPath": "deployment/owner-migrations.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/edition-authoring",
+      "originPath": "edition-authoring",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 150
+    },
+    {
+      "path": "scripts/installer/ui/background.svg",
+      "originPath": "default-seed/scripts/installer/ui/background.svg",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/operations.mjs",
+      "originPath": "operations/operations.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/project-operations.mjs",
+      "originPath": "operations/project-operations.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "SEED-COMMAND-CONTRACT.md",
+      "originPath": "export/SEED-COMMAND-CONTRACT.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/actor.ts",
+      "originPath": "foundation/runtime/actor.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/command-receipts.sql",
+      "originPath": "foundation/runtime/command-receipts.sql",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/command-receipts.ts",
+      "originPath": "foundation/runtime/command-receipts.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-docs.mjs",
+      "originPath": "foundation/runtime/contract-docs.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-filter.ts",
+      "originPath": "foundation/runtime/contract-filter.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-page.ts",
+      "originPath": "foundation/runtime/contract-page.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-style.ts",
+      "originPath": "foundation/runtime/contract-style.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/deployment-health.ts",
+      "originPath": "foundation/runtime/deployment-health.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/dispatch.ts",
+      "originPath": "foundation/runtime/dispatch.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/font-head.ts",
+      "originPath": "foundation/runtime/font-head.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/font-response.ts",
+      "originPath": "foundation/runtime/font-response.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/intro-guard.ts",
+      "originPath": "foundation/runtime/hydration/intro-guard.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/README.md",
+      "originPath": "foundation/runtime/hydration/README.md",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/report.ts",
+      "originPath": "foundation/runtime/hydration/report.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/unit.tsx",
+      "originPath": "foundation/runtime/hydration/unit.tsx",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/icon-head.ts",
+      "originPath": "foundation/runtime/icon-head.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/identity.ts",
+      "originPath": "foundation/runtime/identity.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/lobby.ts",
+      "originPath": "foundation/runtime/lobby.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/page-style.ts",
+      "originPath": "foundation/runtime/page-style.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/rejected-response.ts",
+      "originPath": "foundation/runtime/rejected-response.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-site.ts",
+      "originPath": "foundation/runtime/run-site.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/seed-contract.d.mts",
+      "originPath": "foundation/runtime/seed-contract.d.mts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/seed-contract.mjs",
+      "originPath": "foundation/runtime/seed-contract.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/select-style.ts",
+      "originPath": "foundation/runtime/select-style.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/setup-state.ts",
+      "originPath": "foundation/runtime/setup-state.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/setup.ts",
+      "originPath": "foundation/runtime/setup.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/static-assets.ts",
+      "originPath": "foundation/runtime/static-assets.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/theme-frame.ts",
+      "originPath": "foundation/runtime/theme-frame.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/editor/editor-surface.ts",
+      "originPath": "modules/editor/src/widget/editor-surface.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/editor/live-edit-contracts.ts",
+      "originPath": "modules/editor/src/widget/live-edit-contracts.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/editor/live-edit-dom.ts",
+      "originPath": "modules/editor/src/widget/live-edit-dom.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/editor/visual-style.ts",
+      "originPath": "modules/editor/src/widget/visual-style.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-pricing.ts",
+      "originPath": "foundation/runtime/run-pricing.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply-reads.ts",
+      "originPath": "modules/import-kit/src/d1/apply-reads.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply-effects.ts",
+      "originPath": "modules/import-kit/src/d1/apply-effects.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/verified-plan.ts",
+      "originPath": "modules/import-kit/src/d1/verified-plan.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staged-creation.ts",
+      "originPath": "modules/import-kit/src/d1/staged-creation.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/atomic-prefix.ts",
+      "originPath": "modules/import-kit/src/d1/atomic-prefix.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/column-layout.ts",
+      "originPath": "modules/import-kit/src/d1/column-layout.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preserved-preview.ts",
+      "originPath": "modules/import-kit/src/d1/preserved-preview.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-journal.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-journal.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/wave-boundary.ts",
+      "originPath": "modules/import-kit/src/d1/wave-boundary.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/wave-retirement.ts",
+      "originPath": "modules/import-kit/src/d1/wave-retirement.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/snapshot-text.ts",
+      "originPath": "modules/import-kit/src/d1/snapshot-text.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/index.ts",
+      "originPath": "modules/import-kit/src/receipt/index.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/uri.ts",
+      "originPath": "modules/import-kit/src/receipt/uri.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/types.ts",
+      "originPath": "modules/import-kit/src/receipt/types.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/encoding.ts",
+      "originPath": "modules/import-kit/src/receipt/encoding.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "schema/business-field-inputs.mjs",
+      "originPath": "schema/business-field-inputs.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/business-field-inputs.mjs",
+      "originPath": "schema/business-field-inputs.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-anchor.mjs",
+      "originPath": "foundation/runtime/contract-anchor.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-prose.mjs",
+      "originPath": "foundation/runtime/contract-prose.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/hosting-page.ts",
+      "originPath": "foundation/runtime/hosting-page.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-chooser-style.ts",
+      "originPath": "foundation/runtime/run-chooser-style.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/policy.ts",
+      "originPath": "modules/import-kit/src/receipt/policy.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/validation.ts",
+      "originPath": "modules/import-kit/src/receipt/validation.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-prose-patterns.mjs",
+      "originPath": "foundation/runtime/contract-prose-patterns.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-data.mjs",
+      "originPath": "foundation/runtime/run-data.mjs",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-data.d.mts",
+      "originPath": "foundation/runtime/run-data.d.mts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1
+    }
+  ],
+  "drift": [],
+  "unrecordedCopies": [],
+  "adapted": [
+    {
+      "path": "src/base/run-site.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf"
+    }
+  ],
+  "meaning": "Undeclared copies claim Base byte equality. Declared adaptations must match their acknowledged local bytes and mode; their recorded Base bytes and revision remain comparison baselines."
+}
+

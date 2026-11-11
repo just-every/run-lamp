@@ -1,0 +1,70 @@
+{
+  "context": "Unchanged homepage assertion in tests/lamp-site/browser.test.mjs:114 after jumping directly to footer; no test rerun",
+  "browser": "154.0.8037.57",
+  "images": [
+    {
+      "src": "/site-assets/lamp-badge-DIkgGAxu.svg",
+      "loading": "auto",
+      "complete": true,
+      "naturalWidth": 64,
+      "top": 32
+    },
+    {
+      "src": "/site-assets/bulb-glow-720-fswawJfh.avif",
+      "loading": "auto",
+      "complete": true,
+      "naturalWidth": 337,
+      "top": -7337
+    },
+    {
+      "src": "/site-assets/lamp-off-720-BqTRFQSu.avif",
+      "loading": "auto",
+      "complete": true,
+      "naturalWidth": 337,
+      "top": -7337
+    },
+    {
+      "src": "/site-assets/lamp-on-720-_hQ3xdmq.avif",
+      "loading": "auto",
+      "complete": true,
+      "naturalWidth": 337,
+      "top": -7337
+    },
+    {
+      "src": "/site-assets/bulb-glow-720-fswawJfh.avif",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 267,
+      "top": -4425
+    },
+    {
+      "src": "/site-assets/lamp-on-720-_hQ3xdmq.avif",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 267,
+      "top": -4425
+    },
+    {
+      "src": "/site-assets/bulb-glow-720-fswawJfh.avif",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 267,
+      "top": 213
+    },
+    {
+      "src": "/site-assets/lamp-on-720-_hQ3xdmq.avif",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 267,
+      "top": 213
+    },
+    {
+      "src": "/site-assets/lamp-badge-DIkgGAxu.svg",
+      "loading": "lazy",
+      "complete": true,
+      "naturalWidth": 64,
+      "top": 858
+    }
+  ],
+  "unready": []
+}

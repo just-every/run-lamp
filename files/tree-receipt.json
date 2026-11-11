@@ -1,0 +1,36 @@
+{
+  "head": "b32a0197ddfcf30633faf495a692c35574afee08",
+  "clean": true,
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "115ad6787b625e6247297ef78e533eb502f34efb0daad766b434f573a121117c",
+      "matches_committed_head": true
+    },
+    {
+      "path": "RUN-LOCALLY.md",
+      "sha256": "1e1fc87cdd052905f0458347e262680d13e5b1cb3227c2c885ac5fd47e684c24",
+      "matches_committed_head": true
+    },
+    {
+      "path": "docs/deploy.md",
+      "sha256": "9ed9b440427bc42ace3aee905e16b0b6fb1f1e1e2c6fb2a9db2e545c20da9e3c",
+      "matches_committed_head": true
+    },
+    {
+      "path": "src/base/run-site.ts",
+      "sha256": "1839c6ab85ec622b91d0338c47391b5a9cd73304f86da45c74c204dcff541b6a",
+      "matches_committed_head": true
+    },
+    {
+      "path": "base-copies.json",
+      "sha256": "9c1a61af743550edad9d34d0feb5f3b724b1f6611f0aa5c8e7addce68ae63120",
+      "matches_committed_head": true
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "f41e6938a60eb702ca03e17b019e2d70b037d5269d0bc23bb29b4b15efafb513",
+      "matches_committed_head": true
+    }
+  ]
+}

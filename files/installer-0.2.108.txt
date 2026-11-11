@@ -1,0 +1,5 @@
+Allow roughly 500 MB–1 GB of downloads and 1–3 GB of disk space for a first run, including Node, rer, the app and its dependencies. The app and your computer can need more; later runs reuse downloads.
+Downloading rer 0.2.108 from https://registry.npmjs.org
+Installed rer 0.2.108 in /home/agent/rer-consolidation/work/main-lamp-run-docs-1/stranger-home/.local/share/rer/versions/0.2.108-d366cfbd.
+/home/agent/rer-consolidation/work/main-lamp-run-docs-1/stranger-home/.local/bin/rer runs it.
+Next, start an app: '/home/agent/rer-consolidation/work/main-lamp-run-docs-1/stranger-home/.local/bin/rer' dev <owner>/<repo>

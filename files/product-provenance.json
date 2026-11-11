@@ -1,0 +1,8 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-run-docs-1",
+  "head": "b32a0197ddfcf30633faf495a692c35574afee08",
+  "base": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "commit": "docs: align Lamp launch and deploy instructions",
+  "tree": "607973ecd37241b8f1ce342ba1c02ab977c3567c"
+}

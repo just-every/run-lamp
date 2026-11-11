@@ -1,0 +1,46 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-run-docs-1",
+  "head": "b32a0197ddfcf30633faf495a692c35574afee08",
+  "pr": 330,
+  "verify_run_id": 43011556088,
+  "typecheck": "pass",
+  "site_build": "pass",
+  "source_lock": "pass",
+  "base_copies_offline": "pass",
+  "contract_docs": "pass",
+  "local_site_journey": "pass on one retry; first attempt timed out at unchanged homepage image wait, line 114",
+  "browser_widths": [
+    1440,
+    390
+  ],
+  "browser_routes": [
+    "/run",
+    "/docs/run-locally",
+    "/docs/deploy"
+  ],
+  "readme_capture": "local Markdown preview; no app route",
+  "test_counts_before": {
+    "registrations": 78,
+    "assertion_scripts": 10,
+    "total": 88
+  },
+  "test_counts_after": {
+    "registrations": 78,
+    "assertion_scripts": 10,
+    "total": 88
+  },
+  "contract_status_changes": [],
+  "publication_scan": "Mac fleet at landing; unavailable in this cloud",
+  "product_pushed": true,
+  "local_site_journey_attempts": 2,
+  "verify_last_observed": {
+    "conclusion": "success",
+    "head_sha": "b32a0197ddfcf30633faf495a692c35574afee08",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43011556088",
+    "status": "completed"
+  },
+  "explicit_repository_rest_calls": 7,
+  "verify": "completed/success on exact SHA",
+  "blockers": []
+}

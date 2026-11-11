@@ -1,0 +1,19 @@
+✖ DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey (95993.772153ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 96904.139572
+
+✖ failing tests:
+
+test at tests/lamp-site/browser.test.mjs:82:1
+✖ DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey (95993.772153ms)
+  page.waitForFunction: Timeout 30000ms exceeded.
+      at TestContext.<anonymous> (/home/agent/rer-consolidation/work/main-lamp-run-docs-1/repo/tests/lamp-site/browser.test.mjs:114:16) {
+    name: 'TimeoutError',
+    log: []
+  }

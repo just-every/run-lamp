@@ -1,0 +1,4 @@
+Public installer rer 0.2.108; Bash without ~/.local/bin on initial PATH
+command: installer Bash PATH line, then rer --version
+exit: 0
+0.2.108

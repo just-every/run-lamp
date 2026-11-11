@@ -1,0 +1,175 @@
+diff --git a/README.md b/README.md
+index 31f3a9c..25a2267 100644
+--- a/README.md
++++ b/README.md
+@@ -38,18 +38,35 @@ information.
+ 
+ ## Run it locally
+ 
++```sh
++curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
++```
++
++That one line gets Lamp, brings Node and pnpm, installs everything, makes you the
++owner and prints a link that opens Lamp signed in. Git is required. See the
++[Run page](https://run-lamp.com/run) for the same launch and hosting options.
++
++Already have Node 22 or later? Use this alternative:
++
+ ```sh
+ npx -y @runeditrun/rer dev just-every/run-lamp
+ ```
+ 
+-That one line gets Lamp, installs everything, makes you the owner and prints a link
+-that opens Lamp signed in. To start it again later, run `cd run-lamp && rer dev`; after
+-the `curl` installer below, a terminal without `~/.local/bin` on PATH needs
+-`export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add
+-that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows
+-the line for your shell).
+-No Node? `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`
+-brings its own and does the same.
++After the curl install, if `~/.local/bin` is missing from your PATH, run the
++installer's Bash line once to make the command available now and in future
++terminals:
++
++```sh
++echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
++```
++
++For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. To start
++Lamp again later:
++
++```sh
++cd run-lamp
++rer dev
++```
+ 
+ ## Owner guides
+ 
+@@ -67,8 +84,8 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
+ 
+ ## Source and tooling versions
+ 
+-The Run page's start line, `npx -y @runeditrun/rer dev just-every/run-lamp`, clones the default branch, `main`, not a release tag, into a `run-lamp`
+-folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
++The [Run page's](https://run-lamp.com/run) combined curl line above clones the
++default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
+ development source and may hold changes not yet in a release; it pins
+ `@runeditrun/rer` 0.2.108. The latest tagged release is `v1.11.10`, which pins
+ `@runeditrun/rer` 0.2.107 too. To use that release instead, clone the tag and start it:
+diff --git a/RUN-LOCALLY.md b/RUN-LOCALLY.md
+index a14525e..50eb3b1 100644
+--- a/RUN-LOCALLY.md
++++ b/RUN-LOCALLY.md
+@@ -1,16 +1,39 @@
+ # Run it locally
+ 
+-Use `rer` from the project root. The checkout pins `@runeditrun/rer` 0.2.108,
+-which every `rer` command here runs whatever `rer` you installed;
+-`rer describe` reports the commands and tooling in use. Lamp runs on
+-your computer without a Cloudflare account or mail credentials; development mail
+-is silently suppressed.
+-
+-The one start line, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`, installs `rer` with its own Node when needed, clones `main` (development source, not a release tag) into `run-lamp` and starts it. Git is required; rer brings Node and pnpm. When `~/.local/bin` is not on your PATH, the installer's last lines give the one required step: run `export PATH="$HOME/.local/bin:$PATH"` and keep it in your shell startup file (`"$HOME/.local/bin/rer" cli path` shows the line for other shells); a terminal without it says `rer: command not found` at `rer dev`. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-lamp` does the same. The latest
+-release tag, `v1.11.10`, pins rer 0.2.107; if you choose the tag, use that
+-checkout's own instructions. See [source and tooling versions](README.md#source-and-tooling-versions).
+-`rer` selects the project's pinned Node 22.20.0 and pnpm 10.12.4, downloading
+-its Node version when needed even if your shell has a newer Node.
++Lamp runs on your computer without a Cloudflare account or mail credentials;
++development mail is silently suppressed. Start it with the same line as the
++[Run page](https://run-lamp.com/run):
++
++```sh
++curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
++```
++
++Git is required; the installer brings Node when needed and rer brings pnpm.
++This clones `main` (development source, not a release tag) into `run-lamp` and
++starts it. Already have Node 22 or later? Use this alternative:
++
++```sh
++npx -y @runeditrun/rer dev just-every/run-lamp
++```
++
++After the curl install, if `~/.local/bin` is missing from your PATH, run the
++installer's Bash line once to make the command available now and in future
++terminals:
++
++```sh
++echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
++```
++
++For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. Run the
++remaining commands from the `run-lamp` folder.
++
++The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever
++rer you installed; `rer describe` reports the commands and tooling in use.
++The latest release tag, `v1.11.10`, pins rer 0.2.107; if you choose the tag, use
++that checkout's own instructions. See
++[source and tooling versions](README.md#source-and-tooling-versions).
++rer selects the project's pinned Node 22.20.0 and pnpm 10.12.4, downloading its
++Node version when needed even if your shell has a newer Node.
+ 
+ ## Start Lamp
+ 
+diff --git a/docs/deploy.md b/docs/deploy.md
+index 66d98ff..453afa5 100644
+--- a/docs/deploy.md
++++ b/docs/deploy.md
+@@ -16,12 +16,23 @@ to your subscribers. On the Free path that mail goes through your own SendGrid o
+ Resend account, from a domain you own and have authenticated there (step 6 shows
+ how). If you have no domain you can add DNS records to, choose Managed instead.
+ 
+-Do the steps in order. Each step names the inputs it gives you; `rer deploy
+---dry-run` lists any you have not set yet by the same names, in the same order.
+-You need the Lamp folder that `rer dev just-every/run-lamp` made (run every
++You need the Lamp folder from [Run Lamp locally](../RUN-LOCALLY.md) (run every
+ command below from it), a Cloudflare account, a mail account at SendGrid or
+ Resend, and a domain whose DNS records you can change.
+ 
++After the curl install, if `~/.local/bin` is missing from your PATH, run the
++installer's Bash line once to make the command available now and in future
++terminals:
++
++```sh
++echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
++```
++
++For another shell, `"$HOME/.local/bin/rer" cli path` prints its line.
++
++Do the steps in order. Each step names the inputs it gives you; `rer deploy
++--dry-run` lists any you have not set yet by the same names, in the same order.
++
+ ## Step 1: Make a private input file
+ 
+ Your inputs live in one file outside the Lamp folder that only you can read. Run
+@@ -172,7 +183,15 @@ SPF at your sending domain is not required.
+ 
+ ## Step 7: Check, then deploy
+ 
+-From the Lamp folder:
++Stop the development server before the dry run; an active server owns the
++checkout's local state and prevents deployment. From the Lamp folder:
++
++```sh
++rer dev --stop
++```
++
++If you are running a production preview instead, stop it with `rer preview --stop`.
++Then check your inputs:
+ 
+ ```sh
+ rer deploy --dry-run --environment production --env-file "$LAMP_DEPLOY_ENV"
+diff --git a/src/base/run-site.ts b/src/base/run-site.ts
+index bc53194..2e8db82 100644
+--- a/src/base/run-site.ts
++++ b/src/base/run-site.ts
+@@ -201,7 +201,7 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?:
+     + `<section class="self" aria-labelledby="self"><div class="self-heading"><span class="badge">${escape(self.badge)}</span><h2 id="self">${escape(self.title)}</h2><p class="self-body">${escape(self.body(run.name))}</p></div>`
+     + codeBlock(startLine(run), self.title)
+     + `<section class="paste-panel" aria-labelledby="paste-title"><h3 id="paste-title">${escape(self.pasteTitle)}</h3><div class="paste-track">${stops(steps, true)}<p class="track-note">${escape(self.note)}</p></div></section>`
+-    + `<details class="other-ways"><summary>Other ways to run locally</summary><p class="alt"><span>${escape(self.alt)}</span>${inlineStart(run)}</p><div class="alt"><span>To install rer separately:</span><pre><code>curl -fsSL https://runeditrun.com/install.sh | sh</code></pre><span>Then run:</span><pre><code>$HOME/.local/bin/rer dev ${escape(repo)}</code></pre></div><p class="alt"><span>Optional, for future terminals: add <code>$HOME/.local/bin</code> to your shell’s PATH. The one-line launch above already finds rer for this run; you can do this later.</span></p></details><p class="requirements">${escape(self.requirements)}${run.paths.requirementsExtra ? ' ' + escape(run.paths.requirementsExtra) : ''}</p><p class="email-note">${escape(self.email)}</p>`
++    + `<details class="other-ways"><summary>Other ways to run locally</summary><p class="alt"><span>${escape(self.alt)}</span>${inlineStart(run)}</p><div class="alt"><span>To install rer separately:</span><pre><code>curl -fsSL https://runeditrun.com/install.sh | sh</code></pre><span>Then run:</span><pre><code>$HOME/.local/bin/rer dev ${escape(repo)}</code></pre></div><div class="alt"><span>The one-line launch above already finds rer for this run. If <code>~/.local/bin</code> is missing from your PATH, run the installer’s Bash line once before using bare <code>rer</code> commands in this terminal or future ones:</span><pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc &amp;&amp; export PATH="$HOME/.local/bin:$PATH"</code></pre><span>For another shell, <code>"$HOME/.local/bin/rer" cli path</code> prints its line. See <a href="/docs/run-locally">Run Lamp locally</a> for restart and backup steps.</span></div></details><p class="requirements">${escape(self.requirements)}${run.paths.requirementsExtra ? ' ' + escape(run.paths.requirementsExtra) : ''}</p><p class="email-note">${escape(self.email)}</p>`
+     + `<div class="timeline">${stops([self.start, ...steps])}<span class="track-divider" aria-hidden="true"></span><p class="track-note">${escape(self.note)}</p></div>`
+     + (run.docs ? `<p class="guide">${action(self.guide.href, self.guide.label)}</p>` : '')
+     + `</section><div class="doors">${doors}</div><div class="quiet"><p>${escape(PATHS.business.lead)} ${action(PATHS.business.href, PATHS.business.action)}</p></div>`

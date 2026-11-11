@@ -1,0 +1,4 @@
+Public installer rer 0.2.108; Bash without ~/.local/bin on initial PATH
+command: rer --version
+exit: 127
+bash: line 1: rer: command not found

@@ -1,0 +1,54 @@
+[
+  {
+    "width": 1440,
+    "route": "/run",
+    "status": 200,
+    "documentFits": true,
+    "title": "Run Lamp"
+  },
+  {
+    "width": 1440,
+    "route": "/docs/run-locally",
+    "status": 200,
+    "documentFits": true,
+    "title": "Run it locally — Lamp docs"
+  },
+  {
+    "width": 1440,
+    "route": "/docs/deploy",
+    "status": 200,
+    "documentFits": true,
+    "title": "Deploy to Cloudflare — Lamp docs"
+  },
+  {
+    "width": 1440,
+    "route": "README.md local Markdown preview (no app route)",
+    "documentFits": true
+  },
+  {
+    "width": 390,
+    "route": "/run",
+    "status": 200,
+    "documentFits": true,
+    "title": "Run Lamp"
+  },
+  {
+    "width": 390,
+    "route": "/docs/run-locally",
+    "status": 200,
+    "documentFits": true,
+    "title": "Run it locally — Lamp docs"
+  },
+  {
+    "width": 390,
+    "route": "/docs/deploy",
+    "status": 200,
+    "documentFits": true,
+    "title": "Deploy to Cloudflare — Lamp docs"
+  },
+  {
+    "width": 390,
+    "route": "README.md local Markdown preview (no app route)",
+    "documentFits": true
+  }
+]
