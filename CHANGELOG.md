@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.10
+
+**A Managed Lamp's public pages and previews now rebuild reliably after a change.** The stored public page now records which release built it. When the running release or the page renderer is not the one that built the stored page, or when updates to the page are still waiting, the page is rebuilt on its own, so a change shows up on a preview that already holds a page without anyone bumping a version by hand. A rebuild that fails never takes the installation's health check down; its work simply waits for the next try. A database that was reset still moves the page forward. What the page shows, its privacy and the Pre-launch behaviour are unchanged.
+
+- **The pinned `rer` is 0.2.107.** `pnpm install --frozen-lockfile` installs it.
+
+Upgrading from 1.11.9: back up data and your source changes first, update the checkout to `v1.11.10`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout now keeps rer 0.2.107 (the 1.11.9 text said 0.2.106). Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.9
 
 **`rer deploy --dry-run` now finishes cleanly and tells you what a real deploy still needs.** A dry run no longer fails after your setup step has been checked. It prints its completion line only after it has finished planning, and it lists what a real deploy still needs from you, including the owner name.

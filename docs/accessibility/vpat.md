@@ -3,7 +3,7 @@
 VPAT® Version 2.5 Rev, Revised Section 508 Edition (April 2025).
 
 Product name: Lamp
-Product version: 1.11.9
+Product version: 1.11.10
 Evaluation date: 25 October 2026 (UTC; 2026-10-25)
 Report date: 25 October 2026
 
@@ -24,6 +24,8 @@ Edition note (11 November 2026): Version 1.11.7 makes setup stop when database m
 Edition note (11 November 2026): Version 1.11.8 extends the Pre-launch setting to the app host (search-engine headers and robots.txt) and removes the Subscribe link from the subscription link pages while it is on; no other page, form or control changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 Edition note (11 November 2026): Version 1.11.9 changes the public Run and Roadmap pages of the project site and adds a short note to the local first-run page; no other page, form or control changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
+
+Edition note (11 November 2026): Version 1.11.10 changes how a Managed Lamp rebuilds its stored public page after a release change; no page, form or control changed. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 ## Product description
 
