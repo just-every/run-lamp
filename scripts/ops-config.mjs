@@ -143,6 +143,7 @@ export function deploymentConfig(env = process.env, environment = "production", 
   const appHost = hostname(required(env, "LAMP_APP_HOST"), "LAMP_APP_HOST");
   const hosting = optional(env.LAMP_HOSTING) ?? "custom-domain";
   if (!["custom-domain", "workers-dev"].includes(hosting)) throw new Error("LAMP_HOSTING must be custom-domain or workers-dev.");
+  const route = pageHostRoute(env, hosting, pageHost);
   const resourcePrefix = optional(env.LAMP_RESOURCE_PREFIX);
   if (resourcePrefix && !/^[a-z0-9](?:[a-z0-9-]{0,45}[a-z0-9])?$/.test(resourcePrefix)) throw new Error("LAMP_RESOURCE_PREFIX must be a lowercase resource name of at most 47 characters.");
   if (hosting === "workers-dev") {
@@ -154,7 +155,6 @@ export function deploymentConfig(env = process.env, environment = "production", 
     }
   } else if (pageHost.endsWith(".workers.dev") || appHost.endsWith(".workers.dev")) throw new Error("Use LAMP_HOSTING=workers-dev for workers.dev hostnames.");
   if (pageHost === appHost) throw new Error("LAMP_PAGE_HOST and LAMP_APP_HOST must be distinct for a deployment.");
-  const route = pageHostRoute(env, hosting, pageHost);
   const pageName = text(env.LAMP_PAGE_NAME, "LAMP_PAGE_NAME", 120);
   const pageTagline = text(env.LAMP_PAGE_TAGLINE, "LAMP_PAGE_TAGLINE", 280);
   const pageTimezone = timezone(env.LAMP_PAGE_TIMEZONE);
