@@ -22,6 +22,9 @@
 .incident-side { grid-area: side; min-width: 0; border-left: 1px solid var(--line); }
 .preview-panel { min-width: 0; padding: 24px; }
 .incident-record { min-width: 0; margin: 0; border-top: 1px solid var(--line); padding: 20px 24px 24px; }
+.incident-compose.is-resolved { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "side" "panel"; }
+.incident-compose.is-resolved .incident-side, .incident-compose.is-resolved .incident-panel { border-left: 0; }
+.incident-compose.is-resolved .incident-record { border-top: 0; }
 
 /* The update: plain questions over their fields. */
 .composer-heading, .preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
@@ -84,6 +87,7 @@ select.add-component { width: auto; min-height: 38px; border-style: dashed; bord
 .update-options-toggle:hover { border-color: var(--ink-3); }
 .update-options-toggle[aria-expanded="true"] { border-color: var(--pill); background: var(--pill); color: var(--on-ink); }
 .publish-hint { color: var(--ink-3); font-size: 13px; }
+.publish-reason { flex-basis: 100%; margin: 0; color: var(--ink-2); font-size: 14px; text-align: right; }
 .option-message { margin: 12px 0 0; color: var(--ink-2); font-size: 14px; font-weight: 500; }
 .composer-publish > .form-note { margin-top: 12px; }
 

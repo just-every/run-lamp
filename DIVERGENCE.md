@@ -2,6 +2,16 @@
 
 Where this product did not fit the planted documents, what it needed instead, and why. Input to the later pass that decides what the shared docs missed. This historical record predates the edition-authoring conversion; the unified `AGENTS.md` now governs every author and fork.
 
+## Incident publication feedback — 11 November 2026
+
+The incident composer explains every disabled publication action beside its button.
+Each later update keeps the previous published audience as editable text, while
+starting a fresh customer message and next-update commitment. This is the requested
+exception to UPDATE-005 acceptance 3's empty next-update draft: audience continuity
+does not revive the prior published message. Publication refreshes the Brief and
+Impact in the current visit, and a published resolution leaves the timeline and
+existing incident actions in place of the update form.
+
 ## 1 — BASE-ACCESS-003 rate-limits the surface that must never be rate limited
 
 **Baseline:** every public path "is rate-limited at the limits in `seed.json` and returns 429 when exceeded."
@@ -1693,3 +1703,14 @@ record totals include internal metadata and are not Lamp's per-kind inventory.
 ## The public page is rebuilt when the deployed release changes — 11 November 2026
 
 The stored public page records the running release that built it (`RER_RELEASE_DIGEST`, else the Worker version id). `/health`, once per Worker isolate, rebuilds a page built by another release, by another `PUBLIC_SNAPSHOT_RENDERER_VERSION`, or with work still pending, so a code change shows on a preview that already holds a page without a hand-bumped version. A rebuild that fails never fails `/health`; its work stays pending for the next try. A new generation is always reserved above the bucket pointer's and the retained replica's, so a database that was reset still advances the page. The page content, privacy and Pre-launch behaviour (SUB-024) are unchanged. `tests/e2e/public-contract.test.mjs` exercises it.
+
+## Readable Overview dates and precise scheduling guidance — 11 November 2026
+
+Overview shows publication and page/form check times in the configured page zone,
+using the same readable absolute format as other operator records, including the
+initial HTML. Maintenance shows the end-after-start hint only when both times
+can be compared; incomplete inputs and daylight-saving errors keep their own
+validation, and valid windows clear the ordering hint. Subscriber reporting uses
+singular for one current subscriber and plural for every other total. These are
+presentation corrections; existing publication, maintenance and reporting
+requirements remain unchanged.
