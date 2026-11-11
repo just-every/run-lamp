@@ -1,0 +1,68 @@
+{
+  "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+  "browser": "Chromium /usr/bin/chromium",
+  "results": [
+    {
+      "width": 1440,
+      "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+      "browserTimezone": "America/Los_Angeles",
+      "pageTimezone": "Australia/Brisbane",
+      "banner": "Live at localhost:8899·published Nov 11, 2026, 21:19 UTC+10:00·page and subscribe form checked Nov 11, 2026, 21:28 UTC+10:00·Review page·Change address",
+      "valid": {
+        "hint": "Starts automatically. Completes automatically.",
+        "scheduleEnabled": true
+      },
+      "invalid": {
+        "hint": "Choose an end time after the start time.",
+        "scheduleEnabled": false
+      },
+      "reportSummary": "1 current subscriber",
+      "layout": {
+        "overview": {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        },
+        "maintenance": {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        },
+        "reports": {
+          "viewport": 1440,
+          "scrollWidth": 1440
+        }
+      },
+      "errors": []
+    },
+    {
+      "width": 390,
+      "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+      "browserTimezone": "America/Los_Angeles",
+      "pageTimezone": "Australia/Brisbane",
+      "banner": "Live at localhost:8899·published Nov 11, 2026, 21:19 UTC+10:00·page and subscribe form checked Nov 11, 2026, 21:28 UTC+10:00·Review page·Change address",
+      "valid": {
+        "hint": "Starts automatically. Completes automatically.",
+        "scheduleEnabled": true
+      },
+      "invalid": {
+        "hint": "Choose an end time after the start time.",
+        "scheduleEnabled": false
+      },
+      "reportSummary": "1 current subscriber",
+      "layout": {
+        "overview": {
+          "viewport": 390,
+          "scrollWidth": 390
+        },
+        "maintenance": {
+          "viewport": 390,
+          "scrollWidth": 390
+        },
+        "reports": {
+          "viewport": 390,
+          "scrollWidth": 390
+        }
+      },
+      "errors": []
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+✔ MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard (67280.39779ms)
+ℹ PAGE-020 1440px public status page: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px public history: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px public incident permalink: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px VPAT document: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px: full-page status, history, incident, maintenance, VPAT, subscribe result, confirmation, management and saved selection axe passed; keyboard-only subscribe/manage with visible focus and ordered controls passed
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68047.582739

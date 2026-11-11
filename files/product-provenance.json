@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-readable-copy-1",
+  "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+  "tree": "7aa244c520a7d57622f2f1ad2caa582f315fc96e",
+  "parent": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "origin": "https://github.com/just-every/run-lamp.git",
+  "pr": "https://github.com/just-every/run-lamp/pull/331",
+  "pushed": true,
+  "push_attempts": 1,
+  "working_tree_clean": true,
+  "publication_scan": "Mac fleet lander, not run here",
+  "contract_status_changes": []
+}

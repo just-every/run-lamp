@@ -1,0 +1,26 @@
+{
+  "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+  "viewport": 1440,
+  "observations": [
+    {
+      "nativeTotal": 1,
+      "display": "1 current subscriber"
+    },
+    {
+      "nativeTotal": 2,
+      "display": "2 current subscribers"
+    },
+    {
+      "nativeTotal": 0,
+      "display": "0 current subscribers"
+    },
+    {
+      "nativeTotal": 1,
+      "display": "1 current subscriber"
+    }
+  ],
+  "initialHtmlFacts": [
+    "published Nov 11, 2026, 21:29 UTC+10:00",
+    "page and subscribe form checked Nov 11, 2026, 21:31 UTC+10:00"
+  ]
+}

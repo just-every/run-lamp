@@ -1,0 +1,51 @@
+{
+  "base": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "origin": "http://127.0.0.1:8899",
+  "publicDoor": "rer setup → rer dev native owner entry → /setup → /app",
+  "timezone": "Australia/Brisbane",
+  "viewport": 1440,
+  "overview": "Live at localhost:8899·published just now·page and subscribe form checked just now·Review page·Change address",
+  "ssrFacts": [
+    "published 2026-11-11T11:19:48.679Z",
+    "page and subscribe form checked 2026-11-11T11:20:09.613Z"
+  ],
+  "maintenance": [
+    {
+      "name": "valid",
+      "values": [
+        "2027-07-15T09:00",
+        "2027-07-15T10:00"
+      ],
+      "hint": "Starts automatically. Completes automatically.",
+      "enabled": true
+    },
+    {
+      "name": "equal",
+      "values": [
+        "2027-07-15T09:00",
+        "2027-07-15T09:00"
+      ],
+      "hint": "Choose an end time after the start time.",
+      "enabled": false
+    },
+    {
+      "name": "reversed",
+      "values": [
+        "2027-07-15T10:00",
+        "2027-07-15T09:00"
+      ],
+      "hint": "Choose an end time after the start time.",
+      "enabled": false
+    },
+    {
+      "name": "valid-restored",
+      "values": [
+        "2027-07-15T09:00",
+        "2027-07-15T10:00"
+      ],
+      "hint": "Starts automatically. Completes automatically.",
+      "enabled": true
+    }
+  ],
+  "reports": "1 current subscribers"
+}

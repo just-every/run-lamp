@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-readable-copy-1",
+  "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+  "required_workflow": "Verify",
+  "run_id": 43011534745,
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/just-every/run-lamp/actions/runs/43011534745",
+  "product_custody": "READY",
+  "landing": "Owned by fleet; not performed by cloud",
+  "evidence_publication": "Separate report-only transport; not proof of landing"
+}

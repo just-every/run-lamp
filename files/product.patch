@@ -1,0 +1,166 @@
+commit 54ac16e2e892b9b914508cb3d5dfc241e582ab1d
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Wed Nov 11 11:23:13 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Wed Nov 11 11:23:13 2026 +0000
+
+    Show readable Overview dates and precise maintenance and report copy
+
+diff --git a/DIVERGENCE.md b/DIVERGENCE.md
+index 460be00..8852986 100644
+--- a/DIVERGENCE.md
++++ b/DIVERGENCE.md
+@@ -1693,3 +1693,14 @@ record totals include internal metadata and are not Lamp's per-kind inventory.
+ ## The public page is rebuilt when the deployed release changes — 11 November 2026
+ 
+ The stored public page records the running release that built it (`RER_RELEASE_DIGEST`, else the Worker version id). `/health`, once per Worker isolate, rebuilds a page built by another release, by another `PUBLIC_SNAPSHOT_RENDERER_VERSION`, or with work still pending, so a code change shows on a preview that already holds a page without a hand-bumped version. A rebuild that fails never fails `/health`; its work stays pending for the next try. A new generation is always reserved above the bucket pointer's and the retained replica's, so a database that was reset still advances the page. The page content, privacy and Pre-launch behaviour (SUB-024) are unchanged. `tests/e2e/public-contract.test.mjs` exercises it.
++
++## Readable Overview dates and precise scheduling guidance — 11 November 2026
++
++Overview shows publication and page/form check times in the configured page zone,
++using the same readable absolute format as other operator records, including the
++initial HTML. Maintenance shows the end-after-start hint only when both times
++can be compared; incomplete inputs and daylight-saving errors keep their own
++validation, and valid windows clear the ordering hint. Subscriber reporting uses
++singular for one current subscriber and plural for every other total. These are
++presentation corrections; existing publication, maintenance and reporting
++requirements remain unchanged.
+diff --git a/sources.lock.json b/sources.lock.json
+index 677cac6..5280fbd 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -544,7 +544,7 @@
+       "executable": false
+     },
+     "DIVERGENCE.md": {
+-      "sha256": "a5b1e7b12b12a8ffa45cc175b73b17516275e79cefb106396d8fa50f8c11a1dc",
++      "sha256": "6ba050737235416926afe718eeb56a7ba471e1409829d48db3b7a1b52e4af2c1",
+       "executable": false
+     },
+     "docs/accessibility/vpat.md": {
+@@ -5188,7 +5188,7 @@
+       "executable": false
+     },
+     "src/core/features/maintenance/ui/maintenance-page.tsx": {
+-      "sha256": "504fdf02d1d353f7963dd944ee71a3fccbd159a32f35eac07625e196439f46f1",
++      "sha256": "0e85a61fdb05fed14bad1717b24cd201015575f8dcec183682971b759bed237b",
+       "executable": false
+     },
+     "src/core/features/maintenance/ui/window-time.ts": {
+@@ -5396,7 +5396,7 @@
+       "executable": false
+     },
+     "src/core/features/overview/ui/live-strip.tsx": {
+-      "sha256": "ce66b91a71073fb702e77fb2a5da3506463666e26148331c3c3e416d945025b8",
++      "sha256": "d5ea94916647b310fae9d93c3f6277022866d1b6c61a623a677540e129645f95",
+       "executable": false
+     },
+     "src/core/features/overview/ui/overview-page.tsx": {
+@@ -6352,7 +6352,7 @@
+       "executable": false
+     },
+     "src/core/features/subscriber-reporting/ui/subscriber-reporting.tsx": {
+-      "sha256": "7bf319d5c314d8cdfa0edfbd5b3374898fa72b2375df8dee1664ea54291b2743",
++      "sha256": "90d32e16c09a0b54a256e228ced98d787445d762c053ef9a7bf0fa418397d5a4",
+       "executable": false
+     },
+     "src/core/features/subscribers/chat.repository.ts": {
+@@ -8328,7 +8328,7 @@
+       "executable": false
+     },
+     "tests/e2e/maintenance-timezone.test.mjs": {
+-      "sha256": "db906172addf385e319f23ef2a431921ebcd48627968f1ce37c6e1dc845d5209",
++      "sha256": "8ba5bf4745d0fda324643d215a190a86b9c79a7b1433e840e6f7687d3a93be02",
+       "executable": false
+     },
+     "tests/e2e/owned-process-group.mjs": {
+diff --git a/src/core/features/maintenance/ui/maintenance-page.tsx b/src/core/features/maintenance/ui/maintenance-page.tsx
+index f714b59..3fc36d4 100644
+--- a/src/core/features/maintenance/ui/maintenance-page.tsx
++++ b/src/core/features/maintenance/ui/maintenance-page.tsx
+@@ -33,10 +33,11 @@ export function MaintenancePage() {
+   let startInstant: string | null = null, endInstant: string | null = null, timeError: string | null = null;
+   try { startInstant = fromPageDateTime(startsAt, timezone); endInstant = fromPageDateTime(endsAt, timezone); } catch (cause) { timeError = (cause as Error).message; }
+   const validWindow = Boolean(startInstant && endInstant && endInstant > startInstant);
++  const comparableWindow = Boolean(startInstant && endInstant);
+   const schedule = async (event: React.FormEvent) => { event.preventDefault(); if (!validWindow) return; setSaving(true); setError(null); try { await appApi("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title, affectedAudience, customerImpact, startsAt: startInstant, endsAt: endInstant, componentIds, autoStart, autoComplete, social }) }); setTitle(""); setAffectedAudience(""); setCustomerImpact(""); setStartsAt(""); setEndsAt(""); setComponentIds([]); setAutoStart(null); setAutoComplete(null); setSocial(false); maintenance.refresh(); } catch (cause) { setError(cause instanceof Error ? cause.message : "Maintenance could not be scheduled."); } finally { setSaving(false); } };
+   return <div className="page-stack"><section className="page-title-row"><div><h1>Maintenance</h1><p>Schedule planned work.</p></div></section>{error ? <FormError>{error}</FormError> : null}<div className="maintenance-workspace">
+     <section className="data-card maintenance-record-card"><div className="card-heading"><div><h2>Planned work</h2></div><span className="count-label">{maintenance.data.maintenance.length} total</span></div>{maintenance.data.maintenance.length ? <div className="maintenance-list">{maintenance.data.maintenance.map((item) => <MaintenanceRow key={`${item.id}:${item.startsAt}:${item.endsAt}:${item.autoStart}:${item.autoComplete}:${item.state}:${item.affectedAudience}:${item.customerImpact}`} item={item} refresh={maintenance.refresh} onError={setError} />)}</div> : <EmptyState>No maintenance planned.</EmptyState>}</section>
+-    <form id="schedule-maintenance" className="data-card maintenance-schedule-card" onSubmit={schedule}><div className="card-heading"><div><h2>Schedule maintenance</h2></div></div><p className="schedule-copy">Components show Under maintenance when work begins.</p><label className="form-label">Title<input required maxLength={250} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Database maintenance" /></label><MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required /><fieldset className="maintenance-components"><legend>Components</legend>{visible.map((component) => <label className="checkbox-label" key={component.id}><input type="checkbox" checked={componentIds.includes(component.id)} onChange={() => setComponentIds((current) => current.includes(component.id) ? current.filter((id) => id !== component.id) : [...current, component.id])} />{component.name}</label>)}</fieldset><p>Times in {timezone}.</p>{timeError ? <FormError>{timeError}</FormError> : null}<div className="schedule-window"><label className="form-label">Starts<input required type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label><label className="form-label">Ends<input required type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label></div><MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} /><label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label><p className={`window-validation ${validWindow ? "is-valid" : ""}`}>{validWindow ? `${autoStart ? "Starts automatically." : "An operator starts this window."} ${autoComplete ? "Completes automatically." : "An operator completes this window."}` : "Choose an end time after the start time."}</p><div className="form-actions"><Button type="submit" disabled={saving || !validWindow || componentIds.length === 0}>{saving ? "Scheduling…" : "Schedule window"}</Button></div></form>
++    <form id="schedule-maintenance" className="data-card maintenance-schedule-card" onSubmit={schedule}><div className="card-heading"><div><h2>Schedule maintenance</h2></div></div><p className="schedule-copy">Components show Under maintenance when work begins.</p><label className="form-label">Title<input required maxLength={250} value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Database maintenance" /></label><MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required /><fieldset className="maintenance-components"><legend>Components</legend>{visible.map((component) => <label className="checkbox-label" key={component.id}><input type="checkbox" checked={componentIds.includes(component.id)} onChange={() => setComponentIds((current) => current.includes(component.id) ? current.filter((id) => id !== component.id) : [...current, component.id])} />{component.name}</label>)}</fieldset><p>Times in {timezone}.</p>{timeError ? <FormError>{timeError}</FormError> : null}<div className="schedule-window"><label className="form-label">Starts<input required type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label><label className="form-label">Ends<input required type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label></div><MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} /><label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label>{comparableWindow ? <p className={`window-validation ${validWindow ? "is-valid" : ""}`}>{validWindow ? `${autoStart ? "Starts automatically." : "An operator starts this window."} ${autoComplete ? "Completes automatically." : "An operator completes this window."}` : "Choose an end time after the start time."}</p> : null}<div className="form-actions"><Button type="submit" disabled={saving || !validWindow || componentIds.length === 0}>{saving ? "Scheduling…" : "Schedule window"}</Button></div></form>
+   </div></div>;
+ }
+ 
+diff --git a/src/core/features/overview/ui/live-strip.tsx b/src/core/features/overview/ui/live-strip.tsx
+index af6e6ca..7dbc0cc 100644
+--- a/src/core/features/overview/ui/live-strip.tsx
++++ b/src/core/features/overview/ui/live-strip.tsx
+@@ -1,12 +1,12 @@
+ import { Link } from "@tanstack/react-router";
+ 
+ import type { LiveStatus } from "../live-status";
+-import { useRelativeTime } from "../../../app/client/ui/relative-time";
++import { useOperatorTime } from "../../../app/client/ui/states";
+ 
+ /** Setup, reduced to one line: the page is live, published and checked. A failing check turns it amber with
+  * its reason and the one thing to do; nothing here asks the owner to run a check. */
+ export function LiveStrip({ live }: { live: LiveStatus }) {
+-  const relativeTime = useRelativeTime();
++  const formatOperatorTime = useOperatorTime();
+   const host = new URL(live.publicOrigin).host;
+   const address = <a className="live-address" href={`${live.publicOrigin}/`} target="_blank" rel="noopener">{host}</a>;
+   // A page that does not answer fails both checks for the same reason; say it once.
+@@ -15,7 +15,7 @@ export function LiveStrip({ live }: { live: LiveStatus }) {
+   if (!live.publishedAt) return <section className="live-strip" aria-label="Your public page"><span className="live-dot is-pending" />Publishing {address}…</section>;
+   const checkedAt = live.page?.checkedAt;
+   return <section className={`live-strip${problems.length ? " is-failing" : ""}`} aria-label="Your public page">
+-    <p><span className={`live-dot${problems.length ? " is-failing" : ""}`} />Live at {address}<span className="live-sep">·</span><span className="live-fact">published {relativeTime(live.publishedAt)}</span>{checkedAt && !problems.length ? <><span className="live-sep">·</span><span className="live-fact">page and subscribe form checked {relativeTime(checkedAt)}</span></> : null}<span className="live-sep">·</span><Link className="live-link" to="/app/page">Review page</Link><span className="live-sep">·</span><Link className="live-link" to="/app/settings">Change address</Link></p>
++    <p><span className={`live-dot${problems.length ? " is-failing" : ""}`} />Live at {address}<span className="live-sep">·</span><span className="live-fact">published {formatOperatorTime(live.publishedAt)}</span>{checkedAt && !problems.length ? <><span className="live-sep">·</span><span className="live-fact">page and subscribe form checked {formatOperatorTime(checkedAt)}</span></> : null}<span className="live-sep">·</span><Link className="live-link" to="/app/page">Review page</Link><span className="live-sep">·</span><Link className="live-link" to="/app/settings">Change address</Link></p>
+     {live.senderVerificationManaged ? <p className="live-fact">Mail sender: Uses the RunEditRun relay; sender domain checks are managed there.</p> : null}
+     {problems.map((problem) => <p key={problem} className="live-problem" role="status">{problem}</p>)}
+   </section>;
+diff --git a/src/core/features/subscriber-reporting/ui/subscriber-reporting.tsx b/src/core/features/subscriber-reporting/ui/subscriber-reporting.tsx
+index 23278d2..2efd616 100644
+--- a/src/core/features/subscriber-reporting/ui/subscriber-reporting.tsx
++++ b/src/core/features/subscriber-reporting/ui/subscriber-reporting.tsx
+@@ -30,7 +30,7 @@ export function SubscriberReporting({ refreshKey }: { refreshKey: number }) {
+     {error || csv.error ? <FormError>{error ?? csv.error}</FormError> : null}
+     {loading ? <p role="status">Loading subscriber reporting…</p> : null}
+     {data ? <>
+-      <p><strong>{data.total} current subscribers</strong> · {data.eligible} pending or active. Includes inactive subscribers; excludes deleted people. The month filters growth only.</p>
++      <p><strong>{data.total} current {data.total === 1 ? "subscriber" : "subscribers"}</strong> · {data.eligible} pending or active. Includes inactive subscribers; excludes deleted people. The month filters growth only.</p>
+       {counts.length ? <div className="table-scroll" tabIndex={0} role="region" aria-label="Current subscriber counts"><table className="subscriber-reporting-current"><thead><tr><th scope="col">Channel</th><th scope="col">State</th><th scope="col">Subscribers</th></tr></thead><tbody>{counts.map(row => <tr key={`${row.channel}/${row.state}`}><td>{row.channel}</td><td>{row.state}</td><td>{row.count}</td></tr>)}</tbody></table></div> : <p>No current subscribers to count.</p>}
+       <details><summary>Counts by component</summary><p>All-component subscriptions count for each visible component. Selected subscriptions count for their selected visible components. Counts overlap.</p>
+         {components.length ? <div className="table-scroll" tabIndex={0} role="region" aria-label="Subscriber counts by component"><table className="subscriber-reporting-stack"><thead><tr><th scope="col">Component</th><th scope="col">Group</th><th scope="col">Channel</th><th scope="col">State</th><th scope="col">Subscribers</th></tr></thead><tbody>{components.map(row => <tr key={`${row.componentId}/${row.channel}/${row.state}`}><td data-label="Component">{row.componentName}</td><td data-label="Group">{row.groupName ?? "Ungrouped"}</td><td data-label="Channel">{row.channel}</td><td data-label="State">{row.state}</td><td data-label="Subscribers">{row.count}</td></tr>)}</tbody></table></div> : <p>No subscriber component selections to count.</p>}
+diff --git a/tests/e2e/maintenance-timezone.test.mjs b/tests/e2e/maintenance-timezone.test.mjs
+index 014f227..13ff1f5 100644
+--- a/tests/e2e/maintenance-timezone.test.mjs
++++ b/tests/e2e/maintenance-timezone.test.mjs
+@@ -71,8 +71,27 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
+     await create.getByLabel("Affected audience", { exact: true }).fill("Customers using the configured-zone service.");
+     await create.getByLabel("Customer impact", { exact: true }).fill("Requests may be interrupted during the configured window.");
+     await create.getByLabel("Configured-zone service", { exact: true }).check();
++    const orderingHint = create.locator(".window-validation:not(.is-valid)");
++    const scheduleWindow = create.getByRole("button", { name: "Schedule window", exact: true });
++    assert.equal(await orderingHint.count(), 0);
+     await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T09:00");
++    assert.equal(await orderingHint.count(), 0);
++    for (const end of ["2027-07-15T08:00", "2027-07-15T09:00"]) {
++      await create.getByLabel("Ends", { exact: true }).fill(end);
++      await orderingHint.waitFor();
++      assert.equal(await scheduleWindow.isEnabled(), false);
++    }
+     await create.getByLabel("Ends", { exact: true }).fill("2027-07-15T10:00");
++    await orderingHint.waitFor({ state: "detached" });
++    assert.equal(await scheduleWindow.isEnabled(), true);
++    await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T11:00");
++    await orderingHint.waitFor();
++    assert.equal(await scheduleWindow.isEnabled(), false);
++    await create.getByLabel("Starts", { exact: true }).fill("");
++    await orderingHint.waitFor({ state: "detached" });
++    assert.equal(await scheduleWindow.isEnabled(), false);
++    await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T09:00");
++    assert.equal(await scheduleWindow.isEnabled(), true);
+     const created = page.waitForResponse(response => response.url().endsWith("/api/app/maintenance") && response.request().method() === "POST");
+     await create.getByRole("button", { name: "Schedule window", exact: true }).click();
+     const window = (await (await created).json()).maintenance;

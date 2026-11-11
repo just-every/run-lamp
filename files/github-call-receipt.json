@@ -1,0 +1,36 @@
+{
+  "explicit_gh_calls_completed": 7,
+  "budget": 10,
+  "poll_interval_seconds": 300,
+  "calls": [
+    {
+      "kind": "read_reference",
+      "result": "HTTP 404"
+    },
+    {
+      "kind": "read_reference",
+      "result": "HTTP 404"
+    },
+    {
+      "kind": "create_pr",
+      "pr": 331
+    },
+    {
+      "kind": "discover_exact_head_verify",
+      "run": 43011534745
+    },
+    {
+      "kind": "poll_verify",
+      "receipt": "ci-poll-1.json"
+    },
+    {
+      "kind": "poll_verify",
+      "receipt": "ci-poll-2.json"
+    },
+    {
+      "kind": "poll_verify",
+      "receipt": "ci-poll-3.json"
+    }
+  ],
+  "notes": "Launcher auth readiness is separate from explicit task API calls. No workflow was dispatched or rerun."
+}

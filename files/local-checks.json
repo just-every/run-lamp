@@ -1,0 +1,74 @@
+{
+  "head": "54ac16e2e892b9b914508cb3d5dfc241e582ab1d",
+  "branch": "cloud/main-lamp-readable-copy-1",
+  "test": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+    "exit": 0,
+    "passed": 1,
+    "failed": 0,
+    "duration_ms": 68047.582739,
+    "registration": "MAINT-009 PAGE-020 \u2014 operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard",
+    "assertions": "Ordering hint absent while incomplete; visible and scheduling disabled for equal/reversed windows; corrected times enable scheduling; later start invalidates; clearing start removes ordering warning but keeps scheduling disabled. Existing schedule/reschedule configured-zone and keyboard subscription journey retained.",
+    "log": "maintenance-test.log"
+  },
+  "typecheck": {
+    "command": "pnpm run typecheck",
+    "exit": 0,
+    "log": "typecheck.log"
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "log": "build.log"
+  },
+  "source_check": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "contract_check": {
+    "command": "node src/base/contract-docs.mjs check",
+    "exit": 0
+  },
+  "before": {
+    "registrations": 78,
+    "assertion_scripts": 10,
+    "total_checks": 88,
+    "contract": {
+      "done": 57,
+      "partial": 132,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "after": {
+    "registrations": 78,
+    "assertion_scripts": 10,
+    "total_checks": 88,
+    "contract": {
+      "done": 57,
+      "partial": 132,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "files": [
+    {
+      "path": "src/core/features/maintenance/ui/maintenance-page.tsx",
+      "sha256": "0e85a61fdb05fed14bad1717b24cd201015575f8dcec183682971b759bed237b"
+    },
+    {
+      "path": "src/core/features/overview/ui/live-strip.tsx",
+      "sha256": "d5ea94916647b310fae9d93c3f6277022866d1b6c61a623a677540e129645f95"
+    },
+    {
+      "path": "src/core/features/subscriber-reporting/ui/subscriber-reporting.tsx",
+      "sha256": "90d32e16c09a0b54a256e228ced98d787445d762c053ef9a7bf0fa418397d5a4"
+    },
+    {
+      "path": "tests/e2e/maintenance-timezone.test.mjs",
+      "sha256": "8ba5bf4745d0fda324643d215a190a86b9c79a7b1433e840e6f7687d3a93be02"
+    }
+  ],
+  "clauses_changed": [],
+  "publication_scan": "Fleet Mac lander; unavailable in this cloud by task instruction."
+}

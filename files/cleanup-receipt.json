@@ -1,0 +1,12 @@
+{
+  "owned_dev_server_pid": 7858,
+  "stop_signal": "SIGTERM",
+  "preview_process_pids_stopped": [
+    6403,
+    6433,
+    6575,
+    6603
+  ],
+  "browser_contexts_closed": true,
+  "port_8899_closed": true
+}
