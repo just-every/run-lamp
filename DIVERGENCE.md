@@ -2,6 +2,16 @@
 
 Where this product did not fit the planted documents, what it needed instead, and why. Input to the later pass that decides what the shared docs missed. This historical record predates the edition-authoring conversion; the unified `AGENTS.md` now governs every author and fork.
 
+## Incident publication feedback — 11 November 2026
+
+The incident composer explains every disabled publication action beside its button.
+Each later update keeps the previous published audience as editable text, while
+starting a fresh customer message and next-update commitment. This is the requested
+exception to UPDATE-005 acceptance 3's empty next-update draft: audience continuity
+does not revive the prior published message. Publication refreshes the Brief and
+Impact in the current visit, and a published resolution leaves the timeline and
+existing incident actions in place of the update form.
+
 ## 1 — BASE-ACCESS-003 rate-limits the surface that must never be rate limited
 
 **Baseline:** every public path "is rate-limited at the limits in `seed.json` and returns 429 when exceeded."
