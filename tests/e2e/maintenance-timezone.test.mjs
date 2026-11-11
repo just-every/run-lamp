@@ -71,8 +71,27 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await create.getByLabel("Affected audience", { exact: true }).fill("Customers using the configured-zone service.");
     await create.getByLabel("Customer impact", { exact: true }).fill("Requests may be interrupted during the configured window.");
     await create.getByLabel("Configured-zone service", { exact: true }).check();
+    const orderingHint = create.locator(".window-validation:not(.is-valid)");
+    const scheduleWindow = create.getByRole("button", { name: "Schedule window", exact: true });
+    assert.equal(await orderingHint.count(), 0);
     await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T09:00");
+    assert.equal(await orderingHint.count(), 0);
+    for (const end of ["2027-07-15T08:00", "2027-07-15T09:00"]) {
+      await create.getByLabel("Ends", { exact: true }).fill(end);
+      await orderingHint.waitFor();
+      assert.equal(await scheduleWindow.isEnabled(), false);
+    }
     await create.getByLabel("Ends", { exact: true }).fill("2027-07-15T10:00");
+    await orderingHint.waitFor({ state: "detached" });
+    assert.equal(await scheduleWindow.isEnabled(), true);
+    await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T11:00");
+    await orderingHint.waitFor();
+    assert.equal(await scheduleWindow.isEnabled(), false);
+    await create.getByLabel("Starts", { exact: true }).fill("");
+    await orderingHint.waitFor({ state: "detached" });
+    assert.equal(await scheduleWindow.isEnabled(), false);
+    await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T09:00");
+    assert.equal(await scheduleWindow.isEnabled(), true);
     const created = page.waitForResponse(response => response.url().endsWith("/api/app/maintenance") && response.request().method() === "POST");
     await create.getByRole("button", { name: "Schedule window", exact: true }).click();
     const window = (await (await created).json()).maintenance;
