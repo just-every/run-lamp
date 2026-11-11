@@ -47,7 +47,7 @@ const MAIL_KINDS = { confirmation: "Confirmation email", "already-subscribed": "
 
 // Confirmation and other subscription emails: sent once each, with no retries,
 // so they sit apart from the notification records above.
-function SubscriptionMail({ rows, providerName, localConfirmationAllowed, onChanged }: { rows: DeliveriesResponse["subscriptionMail"]; providerName: string; localConfirmationAllowed: boolean; onChanged: () => void }) {
+function SubscriptionMail({ rows, providerName, localMail, localConfirmationAllowed, onChanged }: { rows: DeliveriesResponse["subscriptionMail"]; providerName: string; localMail: boolean; localConfirmationAllowed: boolean; onChanged: () => void }) {
   const [confirming, setConfirming] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   async function confirm(subscriberId: string) {
@@ -64,12 +64,12 @@ function SubscriptionMail({ rows, providerName, localConfirmationAllowed, onChan
     <p>The latest confirmation and subscription emails, newest first.</p>
     {rows.length === 0 ? <EmptyState>No subscription email has been sent yet.</EmptyState> : <div className="table-scroll" tabIndex={0} role="region" aria-label="Subscription emails">
       <table role="table">
-        <thead role="rowgroup"><tr role="row"><th scope="col">Destination</th><th scope="col">Email</th><th scope="col">Outcome</th><th scope="col">Recorded</th>{localConfirmationAllowed && <th scope="col">Local action</th>}</tr></thead>
+        <thead role="rowgroup"><tr role="row"><th scope="col">Destination</th><th scope="col">Email</th><th scope="col">Outcome</th><th scope="col">{localMail ? "Recorded" : "Sent"}</th>{localConfirmationAllowed && <th scope="col">Local action</th>}</tr></thead>
         <tbody role="rowgroup">{rows.map((row) => <tr role="row" key={row.id}>
           <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{row.destination}</strong><small>{row.subscriberState} subscriber</small></td>
           <td role="cell" data-label="Email">{MAIL_KINDS[row.kind]}</td>
           <td role="cell" data-label="Outcome"><span className={`state-pill state-${row.outcome}`}>{row.outcome === "suppressed" ? "Not sent locally" : row.outcome === "accepted" ? `Accepted by ${providerName}` : "Failed"}</span></td>
-          <td role="cell" data-label="Recorded">{formatOperatorTime(row.sentAt)}</td>
+          <td role="cell" data-label={localMail ? "Recorded" : "Sent"}>{formatOperatorTime(row.sentAt)}</td>
           {localConfirmationAllowed && <td role="cell" className="subscriber-actions">{row.kind === "confirmation" && row.outcome === "suppressed" && row.subscriberState === "pending" && <Button type="button" variant="secondary" className="table-action" disabled={confirming !== null} onClick={() => void confirm(row.subscriberId)}>{confirming === row.subscriberId ? "Confirming…" : "Confirm locally"}</Button>}</td>}
         </tr>)}</tbody>
       </table>
@@ -137,6 +137,6 @@ export function DeliveryLog() {
       </div>
       {data.deliveries.length === 0 ? <EmptyState>No delivery records match these filters.</EmptyState> : <ListPagination label="Delivery" offset={data.offset} shown={data.deliveries.length} hasMore={data.hasMore} onPrevious={() => setOffset((current) => Math.max(0, current - data.limit))} onNext={() => setOffset((current) => current + data.limit)} />}
     </section>
-    <SubscriptionMail rows={data.subscriptionMail} providerName={providerName} localConfirmationAllowed={data.localConfirmationAllowed} onChanged={refresh} />
+    <SubscriptionMail rows={data.subscriptionMail} providerName={providerName} localMail={data.mail.local} localConfirmationAllowed={data.localConfirmationAllowed} onChanged={refresh} />
   </div>;
 }

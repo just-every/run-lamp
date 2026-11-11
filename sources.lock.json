@@ -4724,7 +4724,7 @@
       "executable": false
     },
     "src/core/features/deliveries/ui/deliveries-page.tsx": {
-      "sha256": "1ba5777c5b29779691c2b9c379c29bbf35928994c352cac0fa409c0e1a8d94a5",
+      "sha256": "9a703df9887631dc4ce98363153d004085a1c47686a12c2d7d865e7b065f18e6",
       "executable": false
     },
     "src/core/features/demo/repository.ts": {
