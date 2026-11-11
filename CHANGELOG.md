@@ -2,11 +2,19 @@
 
 ## 1.11.11
 
-**A public page can now be served on a name whose DNS is outside your Cloudflare account.** Set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET` together and `rer deploy` attaches the page host as a Worker route on a Cloudflare for SaaS provider zone in your account instead of a custom domain, which Cloudflare refuses for a zone you do not own. Without the two settings the generated configuration and the deploy are unchanged.
+**You can now serve the public status page on a hostname whose DNS zone is in another Cloudflare account.** Set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET` together in your private deployment inputs and `rer deploy` attaches the page host as a Worker route on a Cloudflare for SaaS provider zone in your own account, instead of a custom domain, which Cloudflare refuses for a zone you do not own. The steps (fallback origin, custom hostname, the DNS-only CNAME, CAA and the two settings) are in `docs/domains.md` under "A page host whose DNS is in another Cloudflare account or elsewhere". Without the two settings, the default rendering and behaviour of the page host are unchanged.
 
-- **The deploy finishes while the page host's DNS still points elsewhere.** In route mode, a page host whose DNS does not yet reach the target is reported (`Page host <host> does not point at <target> yet: skipped.`) and the deploy completes; once its CNAME (or addresses) reach the target, the usual retained-snapshot check runs. A resolver that keeps failing still fails the deploy.
-- **The stored page hostname follows `LAMP_PAGE_HOST`.** Every deploy sets the page's stored hostname to `LAMP_PAGE_HOST`, so the public API's page hostname and the theme's origin no longer keep a previous name. No other page setting changes.
-- **`docs/domains.md` gains the setup steps** for Cloudflare for SaaS: fallback origin, custom hostname with TXT validation, the DNS-only CNAME, CAA, and the two settings.
+- **The deploy finishes while the page host still points elsewhere.** In this mode, a page host whose DNS does not yet reach the target is reported (`Page host <host> does not point at <target> yet: skipped.`) and the deploy completes; once the page host's CNAME reaches the target, the usual check that the page answers runs. A DNS lookup that keeps failing still fails the deploy.
+- **Every deploy now keeps the stored page hostname equal to `LAMP_PAGE_HOST`.** The public API's page hostname and the theme's origin therefore follow the name in the route, with or without the new settings. No other page setting changes.
+- **Overview shows readable dates.** When the page was published and last checked now read in your page's time zone in the same format as other operator records. The Maintenance form shows its end-after-start hint only once both times are filled in, and subscriber reporting says "1 subscriber" for one.
+- **Publishing an incident update explains itself.** Beside a disabled publish button, the incident composer now says what is missing. A later update starts with the previous audience as editable text, the Brief and Impact refresh as soon as you publish, and a resolved incident keeps its timeline and actions.
+- **Another tool shows a ready-to-send first alert.** After you connect it with a bearer token (or make a new one), Lamp shows a copyable first request with your real address, token and saved payload mappings. The token is shown only once; the guide says how to make a replacement.
+- **The launch and deploy guides agree.** They start with the one-line install, add the one-time PATH line for `~/.local/bin`, and tell you to stop the development server before a dry run.
+- **The pinned `rer` is 0.2.108.** `pnpm install --frozen-lockfile` installs it.
+
+Not covered yet: a Managed deploy does not yet keep the stored page hostname in step with `LAMP_PAGE_HOST`, and the `rer setup` form does not list the two new settings; put them in your private environment file.
+
+Upgrading from 1.11.10: back up data and your source changes first, update the checkout to `v1.11.11`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout now keeps rer 0.2.108 (the 1.11.10 text said 0.2.107). Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
 
 ## 1.11.10
 
