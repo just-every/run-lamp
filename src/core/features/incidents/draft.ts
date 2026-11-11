@@ -15,8 +15,8 @@ export function normalizeResolvedDraft(draft: IncidentDraftInput): IncidentDraft
   return draft.lifecycle === "Resolved" ? { ...draft, nextUpdateAt: null } : draft;
 }
 
-export function draftFromIncident(incident: Pick<IncidentView, "draft" | "lifecycle">): IncidentDraftInput {
-  if (!incident.draft) return { ...blankDraft, lifecycle: ({ Investigating: "Identified", Identified: "Monitoring", Monitoring: "Resolved", Resolved: "Resolved" } as const)[incident.lifecycle] };
+export function draftFromIncident(incident: Pick<IncidentView, "draft" | "lifecycle" | "updates">): IncidentDraftInput {
+  if (!incident.draft) return { ...blankDraft, affectedAudience: incident.updates[0]?.affectedAudience ?? "", lifecycle: ({ Investigating: "Identified", Identified: "Monitoring", Monitoring: "Resolved", Resolved: "Resolved" } as const)[incident.lifecycle] };
   return normalizeResolvedDraft({
     lifecycle: incident.draft.lifecycle,
     affectedAudience: incident.draft.affectedAudience,

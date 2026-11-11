@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "a5b1e7b12b12a8ffa45cc175b73b17516275e79cefb106396d8fa50f8c11a1dc",
+      "sha256": "44add8f8c5a9064d5dd6ed5100a1aee1cf4d55c0bf3511b250bbd9888ab3fb46",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -4132,7 +4132,7 @@
       "executable": false
     },
     "src/core/app/client/ui/composer.css": {
-      "sha256": "562760cd35dce0bf5581cedd7227e1c80e71e648ee007e54c0e519b0805ffa90",
+      "sha256": "3a0eeaf6cf5a65e716fda9e61afa28aaed0b911ef80e2f68e6b0cd2c9bea22f5",
       "executable": false
     },
     "src/core/app/client/ui/copy-button.tsx": {
@@ -4804,7 +4804,7 @@
       "executable": false
     },
     "src/core/features/incidents/draft.ts": {
-      "sha256": "3ae2985b78d0e0b23d433e06bb9b2585dd388184e44037f6b876869352addc07",
+      "sha256": "e65c90deffdf438f2a06579d023f81fa4425268ed3cee97dfe2e1e239a1d141e",
       "executable": false
     },
     "src/core/features/incidents/index.ts": {
@@ -4892,7 +4892,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/incident-detail-page.tsx": {
-      "sha256": "c11ab43f730638fbe0e1e4b6e5b4db8768cde250f92bac98c841bb162ad14d47",
+      "sha256": "022379f07db65d2a6c9db2d5166c9101e119474f6ccee0d34989eeaf828b6b50",
       "executable": false
     },
     "src/core/features/incidents/ui/incident-header.tsx": {
@@ -4908,7 +4908,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/incident-panel.tsx": {
-      "sha256": "01322fa4d568ef0565481e9c535c0acd669ea94e482d413a109313e7a34838ea",
+      "sha256": "766a7532aa05ac9fa977d5282ac8c7e9de59dcc95a0b80fca39f98d12552de7e",
       "executable": false
     },
     "src/core/features/incidents/ui/incident-preview.tsx": {
@@ -4949,6 +4949,10 @@
     },
     "src/core/features/incidents/ui/publish-options.tsx": {
       "sha256": "51a0aa153048349cedd0d616680db9c9b05fbbd75e08ab541dc6ac2e18cc36ef",
+      "executable": false
+    },
+    "src/core/features/incidents/ui/publish-readiness.ts": {
+      "sha256": "0314bc8424bdcf26e5ceaa4d236df94984e2e84db730b30761f820617b6543ba",
       "executable": false
     },
     "src/core/features/incidents/ui/recovery-check.tsx": {
@@ -8119,6 +8123,10 @@
       "sha256": "7f1722e4b396f73ae1c312b6d64141cbd6d6eea685e155118cef1baf88a241f8",
       "executable": false
     },
+    "tests/e2e/helpers/published-incident-state.mjs": {
+      "sha256": "20c1ebcf8d8e56570b383f46e7732cac310b9b0a143d742e2c8d56f00c8b90b8",
+      "executable": false
+    },
     "tests/e2e/helpers/report-publication-flow.mjs": {
       "sha256": "faeff80e606cf04347f2cd46b0f764ced4a389164d962cec3cd6dd3f36496539",
       "executable": false
@@ -8348,7 +8356,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "e3357c64f1b45b57ee657c22eeba36de2d4bf58a9d5167aff7b6489286535bd1",
+      "sha256": "771eff4baf2d7180b56a20bd51df57f9df400a46fc75c9022464ea327d5e849c",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
