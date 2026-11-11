@@ -43,6 +43,7 @@ Optional values follow the required entries in the table.
 | `MAIL_PROVIDER` | `resend` (native default) or `sendgrid`. Set explicitly to match the API key. |
 | `OWNER_DISPLAY_NAME` | Optional first-owner name, 1–120 characters; the native default is `Owner`. Existing owners keep their name. |
 | `LAMP_HOSTING` | `custom-domain` (default) or `workers-dev`. |
+| `LAMP_PAGE_HOST_ROUTE_ZONE`, `LAMP_PAGE_HOST_TARGET` | Optional, set together: serve `LAMP_PAGE_HOST` as a Worker route on a Cloudflare for SaaS provider zone in your account (`LAMP_PAGE_HOST_ROUTE_ZONE`) when its own DNS is elsewhere. The target is the proxied name on that zone (a CNAME to the fallback origin) that the page host's DNS points at: the zone or a name under it. Bare lowercase hostnames; the page host must be outside the zone; not valid with `LAMP_HOSTING=workers-dev`. See [a page host whose DNS is elsewhere](domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere). |
 | `LAMP_RESOURCE_PREFIX` | Optional resource namespace: lowercase letters, digits and hyphens, at most 47 characters. Defaults to `lamp-<environment>`. |
 | `SENDGRID_WEBHOOK_PUBLIC_KEY` or `RESEND_WEBHOOK_SECRET` | Optional at deploy time, required for accepting the selected provider's signed delivery receipts. Without a key or the optional signed SendGrid relay, feedback callbacks are rejected. The delivery log shows **Accepted by SendGrid** (or **Accepted by Resend**) as the final email status available; CSV retains the transport outcome and acceptance timestamp. |
 

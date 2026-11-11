@@ -1,16 +1,39 @@
 # Run it locally
 
-Use `rer` from the project root. The checkout pins `@runeditrun/rer` 0.2.108,
-which every `rer` command here runs whatever `rer` you installed;
-`rer describe` reports the commands and tooling in use. Lamp runs on
-your computer without a Cloudflare account or mail credentials; development mail
-is silently suppressed.
+Lamp runs on your computer without a Cloudflare account or mail credentials;
+development mail is silently suppressed. Start it with the same line as the
+[Run page](https://run-lamp.com/run):
 
-The one start line, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`, installs `rer` with its own Node when needed, clones `main` (development source, not a release tag) into `run-lamp` and starts it. Git is required; rer brings Node and pnpm. When `~/.local/bin` is not on your PATH, the installer's last lines give the one required step: run `export PATH="$HOME/.local/bin:$PATH"` and keep it in your shell startup file (`"$HOME/.local/bin/rer" cli path` shows the line for other shells); a terminal without it says `rer: command not found` at `rer dev`. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-lamp` does the same. The latest
-release tag, `v1.11.10`, pins rer 0.2.107; if you choose the tag, use that
-checkout's own instructions. See [source and tooling versions](README.md#source-and-tooling-versions).
-`rer` selects the project's pinned Node 22.20.0 and pnpm 10.12.4, downloading
-its Node version when needed even if your shell has a newer Node.
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
+```
+
+Git is required; the installer brings Node when needed and rer brings pnpm.
+This clones `main` (development source, not a release tag) into `run-lamp` and
+starts it. Already have Node 22 or later? Use this alternative:
+
+```sh
+npx -y @runeditrun/rer dev just-every/run-lamp
+```
+
+After the curl install, if `~/.local/bin` is missing from your PATH, run the
+installer's Bash line once to make the command available now and in future
+terminals:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
+```
+
+For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. Run the
+remaining commands from the `run-lamp` folder.
+
+The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever
+rer you installed; `rer describe` reports the commands and tooling in use.
+The latest release tag, `v1.11.11`, pins rer 0.2.108; if you choose the tag, use
+that checkout's own instructions. See
+[source and tooling versions](README.md#source-and-tooling-versions).
+rer selects the project's pinned Node 22.20.0 and pnpm 10.12.4, downloading its
+Node version when needed even if your shell has a newer Node.
 
 ## Start Lamp
 

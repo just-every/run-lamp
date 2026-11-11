@@ -6,6 +6,7 @@ import { socialPostsFlow } from "./helpers/social-posts-flow.mjs";
 import { metricsFlow } from "./helpers/metrics-flow.mjs";
 import { metricSetupJourney } from "./helpers/metric-setup-journey.mjs";
 import { monitorSetupJourney } from "./helpers/monitor-setup-journey.mjs";
+import { anotherToolSetupJourney } from "./helpers/another-tool-setup-journey.mjs";
 import { operationsAlertsFlow } from "./helpers/operations-alerts-flow.mjs";
 import { selfServeChatFlow } from "./helpers/self-serve-chat-flow.mjs";
 import { channelDeletionFlow } from "./helpers/channel-deletion-flow.mjs";
@@ -472,6 +473,10 @@ test("INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evide
   // and the same owner session, as the automation browser journey does below.
   await runtime.stop();
   await runtime.start();
+});
+
+test("INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request", { timeout: 180_000 }, async () => {
+  await anotherToolSetupJourney({ origin, cookie, api });
 });
 
 test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence", { timeout: 600_000 }, async t => {

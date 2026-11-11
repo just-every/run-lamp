@@ -27,6 +27,27 @@ function hostname(value, name) {
   return normalized;
 }
 
+// The opt-in page host route: the page host is a Worker route on a provider zone in the deploy account,
+// reached through a Cloudflare for SaaS custom hostname, instead of a Custom Domain on its own zone.
+function pageHostRoute(env, hosting, pageHost) {
+  const zoneInput = optional(env.LAMP_PAGE_HOST_ROUTE_ZONE);
+  const targetInput = optional(env.LAMP_PAGE_HOST_TARGET);
+  if (zoneInput === undefined && targetInput === undefined) return undefined;
+  if (zoneInput === undefined || targetInput === undefined) throw new Error("LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET must be set together.");
+  if (hosting === "workers-dev") throw new Error("LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET cannot be used with LAMP_HOSTING=workers-dev.");
+  const bare = (value, name) => {
+    if (value !== value.toLowerCase() || !value.includes(".") || !hostnamePattern.test(value)) throw new Error(`${name} must be a bare lowercase hostname without a protocol, port, or path.`);
+    return value;
+  };
+  const zone = bare(zoneInput, "LAMP_PAGE_HOST_ROUTE_ZONE");
+  const target = bare(targetInput, "LAMP_PAGE_HOST_TARGET");
+  const within = (name) => name === zone || name.endsWith(`.${zone}`);
+  if (!within(target)) throw new Error(`LAMP_PAGE_HOST_TARGET must be ${zone} or a name under it.`);
+  if (pageHost === target) throw new Error("LAMP_PAGE_HOST must differ from LAMP_PAGE_HOST_TARGET.");
+  if (within(pageHost)) throw new Error(`LAMP_PAGE_HOST is ${zone} or a name under it: leave LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET unset so Cloudflare attaches it as a custom domain.`);
+  return { zone, target };
+}
+
 function email(value, name) {
   const normalized = value.trim().toLowerCase();
   if (!emailPattern.test(normalized)) throw new Error(`${name} must be a valid email address.`);
@@ -122,6 +143,7 @@ export function deploymentConfig(env = process.env, environment = "production", 
   const appHost = hostname(required(env, "LAMP_APP_HOST"), "LAMP_APP_HOST");
   const hosting = optional(env.LAMP_HOSTING) ?? "custom-domain";
   if (!["custom-domain", "workers-dev"].includes(hosting)) throw new Error("LAMP_HOSTING must be custom-domain or workers-dev.");
+  const route = pageHostRoute(env, hosting, pageHost);
   const resourcePrefix = optional(env.LAMP_RESOURCE_PREFIX);
   if (resourcePrefix && !/^[a-z0-9](?:[a-z0-9-]{0,45}[a-z0-9])?$/.test(resourcePrefix)) throw new Error("LAMP_RESOURCE_PREFIX must be a lowercase resource name of at most 47 characters.");
   if (hosting === "workers-dev") {
@@ -194,6 +216,7 @@ export function deploymentConfig(env = process.env, environment = "production", 
     resourcePrefix,
     accountId: optional(env.CLOUDFLARE_ACCOUNT_ID),
     pageHost,
+    pageHostRoute: route,
     appHost,
     pageName,
     pageTagline,
@@ -235,7 +258,8 @@ export function resourceNames(environment, resourcePrefix) {
 }
 
 export function renderWranglerToml(config, resources) {
-  const hosting = config.hosting === "workers-dev" ? "workers_dev = true\n" : `workers_dev = false\nroutes = [\n  { pattern = ${tomlString(config.pageHost)}, custom_domain = true },\n  { pattern = ${tomlString(config.appHost)}, custom_domain = true }\n]\n`;
+  const pageRoute = config.pageHostRoute ? `{ pattern = ${tomlString(`${config.pageHost}/*`)}, zone_name = ${tomlString(config.pageHostRoute.zone)} }` : `{ pattern = ${tomlString(config.pageHost)}, custom_domain = true }`;
+  const hosting = config.hosting === "workers-dev" ? "workers_dev = true\n" : `workers_dev = false\nroutes = [\n  ${pageRoute},\n  { pattern = ${tomlString(config.appHost)}, custom_domain = true }\n]\n`;
   const trustVars = config.ownerClaim ? Object.entries({
     RER_OWNER_CLAIM_ISSUER: config.ownerClaim.issuer,
     RER_OWNER_CLAIM_INSTALLATION_ID: config.ownerClaim.installationId,
@@ -301,4 +325,10 @@ export function setupPageSettingsStatement(config, now = new Date().toISOString(
   const condition = ownerJustCreated ? "changes() = 1" : "NOT EXISTS (SELECT 1 FROM page_settings WHERE id = 'default')";
   const conflict = ownerJustCreated ? " ON CONFLICT(id) DO UPDATE SET page_name=excluded.page_name,tagline=excluded.tagline,accent_color=excluded.accent_color,timezone=excluded.timezone,hostname=excluded.hostname,mail_from_address=excluded.mail_from_address,feed_id=CASE WHEN page_settings.feed_id = 'pending-feed-identity' OR page_settings.feed_id = '' THEN excluded.feed_id ELSE page_settings.feed_id END,updated_at=excluded.updated_at" : "";
   return `INSERT INTO page_settings (id, page_name, tagline, accent_color, timezone, hostname, feed_id, footer_credit_enabled, widget_allowed_origins, mail_from_address, created_at, updated_at) SELECT 'default', ${sqlLiteral(config.pageName)}, ${sqlLiteral(config.pageTagline)}, ${sqlLiteral(config.pageAccentColor)}, ${sqlLiteral(config.pageTimezone)}, ${sqlLiteral(config.pageHost)}, lower(hex(randomblob(16))), 1, '[]', ${sqlLiteral(config.mailFromAddress)}, ${sqlLiteral(now)}, ${sqlLiteral(now)} WHERE ${condition}${conflict};`;
+}
+
+// The stored page hostname follows LAMP_PAGE_HOST on every deploy. Only the hostname (and, when it changes, the
+// updated_at stamp) is written: a first setup or a new owner already stored it through setupPageSettingsStatement.
+export function pageHostBindingStatement(config, now = new Date().toISOString()) {
+  return `UPDATE page_settings SET hostname = ${sqlLiteral(config.pageHost)}, updated_at = ${sqlLiteral(now)} WHERE id = 'default' AND hostname <> ${sqlLiteral(config.pageHost)};`;
 }

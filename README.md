@@ -39,17 +39,34 @@ information.
 ## Run it locally
 
 ```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
+```
+
+That one line gets Lamp, brings Node and pnpm, installs everything, makes you the
+owner and prints a link that opens Lamp signed in. Git is required. See the
+[Run page](https://run-lamp.com/run) for the same launch and hosting options.
+
+Already have Node 22 or later? Use this alternative:
+
+```sh
 npx -y @runeditrun/rer dev just-every/run-lamp
 ```
 
-That one line gets Lamp, installs everything, makes you the owner and prints a link
-that opens Lamp signed in. To start it again later, run `cd run-lamp && rer dev`; after
-the `curl` installer below, a terminal without `~/.local/bin` on PATH needs
-`export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add
-that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows
-the line for your shell).
-No Node? `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`
-brings its own and does the same.
+After the curl install, if `~/.local/bin` is missing from your PATH, run the
+installer's Bash line once to make the command available now and in future
+terminals:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
+```
+
+For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. To start
+Lamp again later:
+
+```sh
+cd run-lamp
+rer dev
+```
 
 ## Owner guides
 
@@ -67,14 +84,14 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 
 ## Source and tooling versions
 
-The Run page's start line, `npx -y @runeditrun/rer dev just-every/run-lamp`, clones the default branch, `main`, not a release tag, into a `run-lamp`
-folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
+The [Run page's](https://run-lamp.com/run) combined curl line above clones the
+default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
 development source and may hold changes not yet in a release; it pins
-`@runeditrun/rer` 0.2.108. The latest tagged release is `v1.11.10`, which pins
-`@runeditrun/rer` 0.2.107 too. To use that release instead, clone the tag and start it:
+`@runeditrun/rer` 0.2.108. The latest tagged release is `v1.11.11`, which pins
+`@runeditrun/rer` 0.2.108 too. To use that release instead, clone the tag and start it:
 
 ```sh
-git clone --branch v1.11.10 https://github.com/just-every/run-lamp.git lamp
+git clone --branch v1.11.11 https://github.com/just-every/run-lamp.git lamp
 cd lamp && rer dev
 ```
 

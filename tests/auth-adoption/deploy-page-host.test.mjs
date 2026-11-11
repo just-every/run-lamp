@@ -49,3 +49,23 @@ test('Deploy still fails when the page host answers but is not serving the retai
   const unretained = seam([answering(200)]);
   await assert.rejects(awaitPageHostSnapshot(host, unretained.options), /unverified/);
 });
+
+test('A page host behind a Cloudflare for SaaS route is checked once its DNS reaches the target, skipped until then, and still fails when the resolver never answers', async () => {
+  const target = 'domains.provider.test';
+  const dns = answers => async name => { const answer = answers[name]; if (answer instanceof Error) throw answer; return answer; };
+  const pointed = { [host]: { chain: [target], addresses: [] } };
+  const run = seam([retained]);
+  assert.deepEqual(await awaitPageHostSnapshot(host, { ...run.options, target, resolve: dns(pointed) }), { state: 'retained' });
+  assert.equal(run.calls.length, 1);
+  const flattened = seam([retained]);
+  assert.deepEqual(await awaitPageHostSnapshot(host, { ...flattened.options, target, resolve: dns({ [host]: { chain: [], addresses: ['2001:db8::1', '192.0.2.7'] }, [target]: { chain: [], addresses: ['2001:db8::1', '192.0.2.7'] } }) }), { state: 'retained' });
+  for (const elsewhere of [{ [host]: { chain: ['old.example.net'], addresses: ['192.0.2.10'] }, [target]: { chain: [], addresses: ['192.0.2.7'] } }, { [host]: dnsFailure('ENOTFOUND') }]) {
+    const waiting = seam([retained]);
+    assert.deepEqual(await awaitPageHostSnapshot(host, { ...waiting.options, target, resolve: dns(elsewhere) }), { state: 'not-pointed' });
+    assert.deepEqual(waiting.lines, [`Page host ${host} does not point at ${target} yet: skipped.`]);
+    assert.equal(waiting.calls.length, 0, 'a page host that is not pointed yet is never fetched');
+  }
+  const failing = seam([retained]);
+  await assert.rejects(awaitPageHostSnapshot(host, { ...failing.options, target, resolve: dns({ [host]: dnsFailure('EAI_AGAIN') }) }), error => error.message.includes(host) && error.message.includes('EAI_AGAIN'));
+  assert.equal(failing.calls.length, 0);
+});

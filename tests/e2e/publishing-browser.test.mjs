@@ -23,6 +23,7 @@ import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
 import { suggestedUpdateFlow } from "./helpers/suggested-update-flow.mjs";
+import { emptyAudienceReason, publishedIncidentState } from "./helpers/published-incident-state.mjs";
 
 let appUrl = "";
 let pageUrl = "";
@@ -618,7 +619,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   await form.title.fill('Checkout requests are delayed');
   await form.impact.fill('Card authorizations are timing out.');
   await form.addComponent(component.name);
-  await form.componentState(component.name, 'Major outage');
+  await form.componentState(component.name, 'Degraded performance');
   await form.audience.fill('Customers checking out in the US.');
   await form.nextUpdate.fill('2027-09-08T14:00');
   await form.option('Details');
@@ -632,6 +633,8 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   const composer = incidentComposer(page);
   await page.reload(); await operatorHydrated(page); await saved();
   assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
+  await page.getByLabel(`${component.name} state with this update`, { exact: true }).selectOption('Major outage');
+  await saved();
   await composer.option('Details');
   const internalWording = 'Internal https://db-prod-3.internal/x and https://10.0.0.5/x need operator review.';
   await composer.details.fill(internalWording); await saved();
@@ -748,6 +751,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   await page.getByText('Update published.', { exact: true }).waitFor();
   incident = await readIncident(id);
   const first = incident.updates[0];
+  await publishedIncidentState({ page, composer, component, update: first, screens: previewScreens });
   assert.equal(first.customerImpact, 'Checkout retries can succeed while we restore capacity.');
   await waitForPublicIncident(incident.reference, first.customerImpact);
   for (const [key, value] of Object.entries(submitted)) assert.equal(first[key], value, `published ${key}`);
@@ -762,6 +766,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
     await previewScreens(publicPage, 'published-preview');
   } finally { await publicPage.close(); }
   assert.equal(await composer.impact.inputValue(), '', 'the next update begins with a fresh draft');
+  await emptyAudienceReason({ page, composer, audience: 'US customers paying by card.', screens: previewScreens });
 
   await composer.row('Notes');
   const note = 'The database team is privately investigating a connection pool.';
@@ -781,6 +786,7 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   await composer.publish.click(); await page.getByText('Update published.', { exact: true }).waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
+  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, screens: previewScreens });
   assert.deepEqual(incident.updates.find(row => row.id === first.id), first, 'later publications preserve the original update');
   await waitForPublicIncident(incident.reference, 'Checkout authorizations are working normally.');
   await page.goto(`${pageUrl}/incidents/${incident.reference}`);

@@ -102,10 +102,14 @@ async function main() {
     await claimed.body?.cancel();
     if (![303,409].includes(claimed.status)) throw new Error('Owner bootstrap failed after deployment. Inspect the auth configuration.');
   }
-  const page = await awaitPageHostSnapshot(config.pageHost);
+  const page = await awaitPageHostSnapshot(config.pageHost, { target: config.pageHostRoute?.target });
   if (flags.get("result-file")) await writeFile(resolve(flags.get("result-file")), JSON.stringify({ deployed: true, environment, origin: `https://${config.appHost}` }) + '\n', { mode: 0o600, flag: 'wx' });
   console.log(`Deployment smoke check passed for ${config.appHost}.`);
-  console.log(page.state === "detached" ? `Sign in at https://${config.appHost} (page host ${config.pageHost} is detached).` : `Your public status page: https://${config.pageHost} · sign in at https://${config.appHost}`);
+  const closing = {
+    detached: `Sign in at https://${config.appHost} (page host ${config.pageHost} is detached).`,
+    "not-pointed": `Sign in at https://${config.appHost} (page host ${config.pageHost} does not point at ${config.pageHostRoute?.target} yet).`,
+  }[page.state] ?? `Your public status page: https://${config.pageHost} · sign in at https://${config.appHost}`;
+  console.log(closing);
 }
 
 main().catch((error) => { console.error(error instanceof Error ? error.message : error); process.exit(1); });

@@ -4335,7 +4335,16 @@
       },
       "originFiles": [
         "foundation/runtime/run-site.ts"
-      ]
+      ],
+      "adapted": {
+        "src/base/run-site.ts": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf"
+      },
+      "acknowledged": {
+        "src/base/run-site.ts": {
+          "sha256": "1839c6ab85ec622b91d0338c47391b5a9cd73304f86da45c74c204dcff541b6a",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "src/base/seed-contract.d.mts",
