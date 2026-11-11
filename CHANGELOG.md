@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.12
+
+**On a Lamp running on your own computer you can now try subscriber notifications honestly.** A local Lamp sends no email, and it now says so wherever a subscriber is added or subscribes: the public subscribe form and its result page, the incident follow page, the Add subscriber form and the operator invitation message each say that no email was sent on this computer. The local owner can then confirm a pending subscriber from Subscribers → Delivery log (a "Confirm locally" button on the pending confirmation row), which uses the ordinary signed confirmation and keeps the usual three-day expiry, so a confirmed subscriber receives notifications from then on in the local record. The button exists only on a local Lamp and only for the owner: it is absent on a deployed Lamp and on the demo.
+
+- **The Delivery log reads "Not sent locally" for a row whose email was held back.** A subscription-mail row whose outcome is suppressed (an old row held back instead of sent) used to read "Accepted by <provider>", which implied an email went out; it now reads "Not sent locally". On a local Lamp an email notification row held back the same way reads that too, with its time column headed "Recorded". This is an operator screen only.
+- **A deployed Lamp sends and shows the same as before to subscribers.** The subscribe form, the confirmation and subscription emails, their wording and their times, and the pre-launch and pause behaviour are unchanged.
+
+Not covered yet: a local Lamp still cannot send a real email. Confirming a subscriber locally only records the confirmation; to see a real confirmation email you still deploy with a mail provider.
+
+Upgrading from 1.11.11: back up data and your source changes first, update the checkout to `v1.11.12`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.11
 
 **You can now serve the public status page on a hostname whose DNS zone is in another Cloudflare account.** Set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET` together in your private deployment inputs and `rer deploy` attaches the page host as a Worker route on a Cloudflare for SaaS provider zone in your own account, instead of a custom domain, which Cloudflare refuses for a zone you do not own. The steps (fallback origin, custom hostname, the DNS-only CNAME, CAA and the two settings) are in `docs/domains.md` under "A page host whose DNS is in another Cloudflare account or elsewhere". Without the two settings, the default rendering and behaviour of the page host are unchanged.
