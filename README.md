@@ -43,7 +43,11 @@ npx -y @runeditrun/rer dev just-every/run-lamp
 ```
 
 That one line gets Lamp, installs everything, makes you the owner and prints a link
-that opens Lamp signed in. To start it again later, run `cd run-lamp && rer dev`.
+that opens Lamp signed in. To start it again later, run `cd run-lamp && rer dev`; after
+the `curl` installer below, a terminal without `~/.local/bin` on PATH needs
+`export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found` (add
+that line to your shell startup file to keep it; `"$HOME/.local/bin/rer" cli path` shows
+the line for your shell).
 No Node? `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`
 brings its own and does the same.
 
@@ -66,7 +70,7 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 The Run page's start line, `npx -y @runeditrun/rer dev just-every/run-lamp`, clones the default branch, `main`, not a release tag, into a `run-lamp`
 folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
 development source and may hold changes not yet in a release; it pins
-`@runeditrun/rer` 0.2.107. The latest tagged release is `v1.11.10`, which pins
+`@runeditrun/rer` 0.2.108. The latest tagged release is `v1.11.10`, which pins
 `@runeditrun/rer` 0.2.107 too. To use that release instead, clone the tag and start it:
 
 ```sh
@@ -111,7 +115,7 @@ You can also export the input names in the calling shell. The
 [input reference](docs/deployment-reference.md) distinguishes required owner
 values from secrets that `rer` generates on a first deploy.
 
-Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.107. Before a
+Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.108. Before a
 command that builds or verifies the checkout,
 stop a running development server with `rer dev --stop` or a production preview
 with `rer preview --stop`.
