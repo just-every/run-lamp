@@ -1,0 +1,115 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-local-subscribers-1",
+  "head": "bf1ada897c06515e86abdbb225877826a1e4c1c7",
+  "tree": "5d27227eb4945a31e2c740da401d0479ea2ed843",
+  "worktree_clean": true,
+  "tests_before": 88,
+  "tests_after": 90,
+  "test_cap": 200,
+  "checks": [
+    {
+      "command": "node --test tests/e2e/rer-mail.test.mjs",
+      "exit": 0,
+      "registered_tests": 1,
+      "stdout": "provider-mail-tests.txt"
+    },
+    {
+      "command": "node --test tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "registered_tests": 3,
+      "stdout": "touched-browser-tests.txt"
+    },
+    {
+      "command": "node --test --test-name-pattern='Local owner confirms|Local operator invitations' tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "registered_tests": 2,
+      "head": "bf1ada897c06515e86abdbb225877826a1e4c1c7",
+      "stdout": "exact-head-browser-tests.txt"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "stdout": "typecheck.txt"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "stdout": "test-count.txt"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "stdout": "contract-docs-check.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "local-add-subscriber-1440.png",
+      "sha256": "ec3392f43e50efe62bcaba42a08b105b709f838095048f5592a334b0171c274b"
+    },
+    {
+      "path": "local-add-subscriber-390.png",
+      "sha256": "14995cdafba999a583bf8f41bfc7820f8932b1e32ba3263c3047cbe0c275d5d7"
+    },
+    {
+      "path": "local-incident-follower-1440.png",
+      "sha256": "b8ebdbc95dd82040ba38ad9fd32fc174d65c4f19bba3986153b3452279550b47"
+    },
+    {
+      "path": "local-incident-follower-390.png",
+      "sha256": "489b8c05c027a3402a414b871d0bb36df2bb574adfbc56a81652646eefc57980"
+    },
+    {
+      "path": "local-incident-subscription-1440.png",
+      "sha256": "ad2b3b7ca0fdfe16cac1d0e39f4efc98f7d845e73cf56aaad6d2e15c703064d1"
+    },
+    {
+      "path": "local-incident-subscription-390.png",
+      "sha256": "3bcb4278cc9e6285d44817be4a784cb56acbbbf08cfd3ae8b3fb2212bf77e879"
+    },
+    {
+      "path": "local-notification-delivery-log-1440.png",
+      "sha256": "b3fea98fece79b565e92457b4370270d4a87dc546866bafb3370426c173133fc"
+    },
+    {
+      "path": "local-notification-delivery-log-390.png",
+      "sha256": "62d545fc01bf45f6a73e6b97565c2749acba06a5ccd12fd6fd9e9e3835d202fa"
+    },
+    {
+      "path": "local-operator-invitation-1440.png",
+      "sha256": "ec4ceedde007d263f8573561f14401e7f6650fe7aae1977a8fa2ac30e6946d75"
+    },
+    {
+      "path": "local-operator-invitation-390.png",
+      "sha256": "1db6578ee3a5d066770cadacdb84581145089e47670e87afbaa204e06e684a9a"
+    },
+    {
+      "path": "local-page-subscription-1440.png",
+      "sha256": "9b87c64ff74ce0346ba84c9e5c016125d669bbaf6e4583c145c9526c0c3fdffe"
+    },
+    {
+      "path": "local-page-subscription-390.png",
+      "sha256": "a21bcf2a8c840312d7f8a8d847011d4e8f4c01cc17d7e1d3d8f029cdceb0cc87"
+    },
+    {
+      "path": "local-pending-delivery-log-1440.png",
+      "sha256": "18470476764c67b4e5bed4f8ee69658ae35ee6da217a3986df6c14d6388e364a"
+    },
+    {
+      "path": "local-pending-delivery-log-390.png",
+      "sha256": "b3a91465e482392268c82a6be1c01a844cad1a98ee30563c1fcc0cd7e330a228"
+    }
+  ],
+  "publication_scan": "Fleet Mac gate; unavailable in cloud",
+  "contract_status_changes": []
+}

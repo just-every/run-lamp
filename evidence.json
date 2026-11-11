@@ -1,0 +1,178 @@
+{
+  "files": [
+    {
+      "blob": "6fdf9a823bc9a321be59a764b584277aef8d7cd6",
+      "bytes": 3692,
+      "path": "CHECKS.json",
+      "sha256": "f30faec1f23879cca644c96a0709ceb764662f9147587a1dcdc140634c2dcf94"
+    },
+    {
+      "blob": "8c442ad197cad40eb9bb63471da61ed0ff8402bc",
+      "bytes": 174,
+      "path": "CI-RECEIPT.json",
+      "sha256": "d9d2ee4e0db8f870289efe517faa690960a143801a8c6dbd82e110db50310b85"
+    },
+    {
+      "blob": "7b477077c8da0bbf92f6c1a034b4db73e94a8e36",
+      "bytes": 2046,
+      "path": "PLAN.md",
+      "sha256": "663b5ba7202a4cdeb1da04b5e683c3e033fbc2e0ba5d893b5ab829cd277735a2"
+    },
+    {
+      "blob": "4372cd8f66096c6fa4759305b3af0d4912ac17a7",
+      "bytes": 145,
+      "path": "PR.json",
+      "sha256": "43a81ecd73df04dda6a2eb07e2f6e82b44b0ffdc9006d380b23a2369eb146146"
+    },
+    {
+      "blob": "64322143dfd890d20af9a661b2ae358ae3a52504",
+      "bytes": 1091,
+      "path": "PRODUCT.json",
+      "sha256": "16a2745611a281d246118a6c0de9a083cbbfef8c059bbfc1286aebcf7a9bb39b"
+    },
+    {
+      "blob": "5ce3a5698d209f5fe7bc3c66b500799f5c88d7f1",
+      "bytes": 5289,
+      "path": "REPORT.md",
+      "sha256": "1ec768b77404326f4850aabcad5407b3deaf0ca38d8404bc323a019ca5cc574d"
+    },
+    {
+      "blob": "c27d4513afb36846d850e25a01c313c11cd8fff7",
+      "bytes": 223,
+      "path": "ci-discovery.json",
+      "sha256": "29f6cbd7ed2929d8045c53d5a5721307f767b5fd8283a1876c6bff08c012c955"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-docs-check.txt",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "fc6d7a4ecf5c297a02611d1a0799181d14b1691f",
+      "bytes": 341,
+      "path": "exact-head-browser-tests.txt",
+      "sha256": "905bbe55dc84d375ff9fd4cd7419b105317472a179075d89661604a1a80b8c35"
+    },
+    {
+      "blob": "c6e54e3481fb3f63a3fe7666376f384bbe609c81",
+      "bytes": 264721,
+      "path": "local-add-subscriber-1440.png",
+      "sha256": "ec3392f43e50efe62bcaba42a08b105b709f838095048f5592a334b0171c274b"
+    },
+    {
+      "blob": "a83a534efe2753980ff95ccb455efe29e4a9273c",
+      "bytes": 242726,
+      "path": "local-add-subscriber-390.png",
+      "sha256": "14995cdafba999a583bf8f41bfc7820f8932b1e32ba3263c3047cbe0c275d5d7"
+    },
+    {
+      "blob": "fd9470f56d5bc5d424f79368a0b44e8b992a3762",
+      "bytes": 156971,
+      "path": "local-incident-follower-1440.png",
+      "sha256": "b8ebdbc95dd82040ba38ad9fd32fc174d65c4f19bba3986153b3452279550b47"
+    },
+    {
+      "blob": "2265ce7bc87a6eb351755972ad6d637ac35a11f0",
+      "bytes": 136877,
+      "path": "local-incident-follower-390.png",
+      "sha256": "489b8c05c027a3402a414b871d0bb36df2bb574adfbc56a81652646eefc57980"
+    },
+    {
+      "blob": "3d34dc9bd0e5471df7ec9d2c33be336aa90bcb19",
+      "bytes": 170654,
+      "path": "local-incident-subscription-1440.png",
+      "sha256": "ad2b3b7ca0fdfe16cac1d0e39f4efc98f7d845e73cf56aaad6d2e15c703064d1"
+    },
+    {
+      "blob": "412fc33d3a308389c886c6f4fbab7110810c3bb6",
+      "bytes": 59665,
+      "path": "local-incident-subscription-390.png",
+      "sha256": "3bcb4278cc9e6285d44817be4a784cb56acbbbf08cfd3ae8b3fb2212bf77e879"
+    },
+    {
+      "blob": "2ac386ac109ede8c10c4edf9329bb4be15c90e7e",
+      "bytes": 145238,
+      "path": "local-notification-delivery-log-1440.png",
+      "sha256": "b3fea98fece79b565e92457b4370270d4a87dc546866bafb3370426c173133fc"
+    },
+    {
+      "blob": "dc05afaefa2f3b57e919c1089cb768d6d67342f1",
+      "bytes": 129508,
+      "path": "local-notification-delivery-log-390.png",
+      "sha256": "62d545fc01bf45f6a73e6b97565c2749acba06a5ccd12fd6fd9e9e3835d202fa"
+    },
+    {
+      "blob": "5866059bdf8b62a5a74c95d076cc4e89a9dcb43c",
+      "bytes": 111020,
+      "path": "local-operator-invitation-1440.png",
+      "sha256": "ec4ceedde007d263f8573561f14401e7f6650fe7aae1977a8fa2ac30e6946d75"
+    },
+    {
+      "blob": "dbabb5ac434b2da2b15e87fa93d319fa0dd3bc98",
+      "bytes": 73333,
+      "path": "local-operator-invitation-390.png",
+      "sha256": "1db6578ee3a5d066770cadacdb84581145089e47670e87afbaa204e06e684a9a"
+    },
+    {
+      "blob": "db9e9da454a46cc18bce52c42c081d73f01cf392",
+      "bytes": 183792,
+      "path": "local-page-subscription-1440.png",
+      "sha256": "9b87c64ff74ce0346ba84c9e5c016125d669bbaf6e4583c145c9526c0c3fdffe"
+    },
+    {
+      "blob": "08ee9046938df1864b37051d2102eb6f2a4000f5",
+      "bytes": 70024,
+      "path": "local-page-subscription-390.png",
+      "sha256": "a21bcf2a8c840312d7f8a8d847011d4e8f4c01cc17d7e1d3d8f029cdceb0cc87"
+    },
+    {
+      "blob": "c7596506967d80366869f6dc025f50b37f212e10",
+      "bytes": 114388,
+      "path": "local-pending-delivery-log-1440.png",
+      "sha256": "18470476764c67b4e5bed4f8ee69658ae35ee6da217a3986df6c14d6388e364a"
+    },
+    {
+      "blob": "b2c28cf43ea21c4a034f25934d0d0a6c205faa5d",
+      "bytes": 88954,
+      "path": "local-pending-delivery-log-390.png",
+      "sha256": "b3a91465e482392268c82a6be1c01a844cad1a98ee30563c1fcc0cd7e330a228"
+    },
+    {
+      "blob": "e6416a12d1cc9010c86029ceccb0f690d99a4bda",
+      "bytes": 615,
+      "path": "provider-mail-tests.txt",
+      "sha256": "b3fe113c0250912f17c390da281c57496fed475e0670d59e3fa059d66c54cbad"
+    },
+    {
+      "blob": "4c9d5299c01fad539ccb91470b72a17a0f20fc05",
+      "bytes": 65,
+      "path": "reproduction.json",
+      "sha256": "e61b1903f79de9d2a25782209826e06e58c9aa038f91a4620fd21123f4ac3e8d"
+    },
+    {
+      "blob": "3ceb3d13ad5db2f408ba0c2736438e479b28d5db",
+      "bytes": 168,
+      "path": "test-count.txt",
+      "sha256": "7b76ccac815c42d3d76efe910f184d5052c5a7e76a5db78480b123735753549a"
+    },
+    {
+      "blob": "fe3ee9348308adbf7d27db4fa1414e41aad1350a",
+      "bytes": 1086,
+      "path": "touched-browser-tests.txt",
+      "sha256": "04c48d218790e45c1becc02c163685688bdc7def4cb0fa475eb69629f4b5c18c"
+    },
+    {
+      "blob": "aef4db462d48b116871512d7e09774359c0aec9e",
+      "bytes": 218,
+      "path": "typecheck.txt",
+      "sha256": "8500e21aae25b37cbc1e7917827c28a854985c5c05e0462b8b8dd13980c1614c"
+    }
+  ],
+  "product_branch": "cloud/main-lamp-local-subscribers-1",
+  "product_head": "bf1ada897c06515e86abdbb225877826a1e4c1c7",
+  "ref": "refs/heads/evidence/main-lamp-local-subscribers-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "main-lamp-local-subscribers-1"
+}

@@ -1,0 +1,29 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-local-subscribers-1",
+  "head": "bf1ada897c06515e86abdbb225877826a1e4c1c7",
+  "base": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "commits": [
+    {
+      "head": "bf1ada897c06515e86abdbb225877826a1e4c1c7",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "subject": "Preserve hosted subscription mail time wording"
+    },
+    {
+      "head": "8df965814f0e5972e2fe0577f96b1e834623510a",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "subject": "Make local subscriber confirmation and delivery outcomes usable"
+    }
+  ],
+  "product_push_guard": "cloud-push.py",
+  "product_pushes_succeeded": true,
+  "identity_and_trailers_inspected_before_every_push": true,
+  "generated_views_committed": false,
+  "contract_status_changed": false
+}

@@ -1,0 +1,10 @@
+✔ SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications (58408.267934ms)
+✔ TEAM-002 — Local operator invitations disclose suppressed email (4257.978103ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63486.305411
