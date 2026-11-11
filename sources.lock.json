@@ -488,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "f375998dbdf7fab3a4a2f63ac087c20c5f2d01c9623c27dcf2e5d33db5dd02a5",
+      "sha256": "9c1a61af743550edad9d34d0feb5f3b724b1f6611f0aa5c8e7addce68ae63120",
       "executable": false
     },
     "BASELINE.md": {
@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "e23ceca1e6bf984e3ca1271460f093aec25791e20923b65507a19dc53e7f7ab6",
+      "sha256": "9ed9b440427bc42ace3aee905e16b0b6fb1f1e1e2c6fb2a9db2e545c20da9e3c",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -2608,7 +2608,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "e582d5fc77f98c4fae116f306c6cf86adf2c327ceb190acbab913ef547d88b8c",
+      "sha256": "115ad6787b625e6247297ef78e533eb502f34efb0daad766b434f573a121117c",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -2832,7 +2832,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "a2dfd3e3b7e5920f7a8a2fb95e950739c868dd1b3056979c70b1ef6cca45b748",
+      "sha256": "1e1fc87cdd052905f0458347e262680d13e5b1cb3227c2c885ac5fd47e684c24",
       "executable": false
     },
     "schema/business-field-inputs.mjs": {
@@ -4052,7 +4052,7 @@
       "executable": false
     },
     "src/base/run-site.ts": {
-      "sha256": "6de213e1e3c086246f5ec2854b6d6506a4b02fab18f9c42a3442cb7e2ea13078",
+      "sha256": "1839c6ab85ec622b91d0338c47391b5a9cd73304f86da45c74c204dcff541b6a",
       "executable": false
     },
     "src/base/seed-contract.d.mts": {
