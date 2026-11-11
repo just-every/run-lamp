@@ -488,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "7b56853f1bfc31f959af27a72038924c7dfc5cf78c0e16017d6e4af6f442a8f8",
+      "sha256": "f375998dbdf7fab3a4a2f63ac087c20c5f2d01c9623c27dcf2e5d33db5dd02a5",
       "executable": false
     },
     "BASELINE.md": {
@@ -652,7 +652,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "5f0bfc2c57fb245433f942827505c300bb3c3bd52f89a0ca07ec41bb4a3e4da5",
+      "sha256": "1e8de649860295083eff2364acd7e3dd62cb53f658cde28fdbe44560869ff34e",
       "executable": false
     },
     "docs/maintenance.md": {
@@ -2580,11 +2580,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "0932e9f2f3de98d2fd8348ecf69adc46b150574ca44aa2b369c4fe5aa166c6bf",
+      "sha256": "d516aab2fba6e4c02014edf4152d8a74e94de3f6a588775a3eef265d11e520ef",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "ed7bf4f2e716b7a9bc65a0f525221cea226c1050c09ad7f10709e246aefe427c",
+      "sha256": "9bcb80d7ce2f6bfdaa2fc47231e2446b702b825b391c70178290217f1a5b35a6",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -2608,7 +2608,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "2b724e67fb78c0833fd05e650c06c007471848419871261bc2909548e1ea6efe",
+      "sha256": "e582d5fc77f98c4fae116f306c6cf86adf2c327ceb190acbab913ef547d88b8c",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -2832,7 +2832,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "7b9b7b0647d51e95438b18aaf9e5e9321a062b6ef5a40f6e567ef87925754f5c",
+      "sha256": "a2dfd3e3b7e5920f7a8a2fb95e950739c868dd1b3056979c70b1ef6cca45b748",
       "executable": false
     },
     "schema/business-field-inputs.mjs": {
