@@ -4,8 +4,9 @@ Open **Settings → Connected tools** and choose a tool under **Connect a tool**
 Datadog, UptimeRobot, Better Stack, Pingdom, Alertmanager, Grafana, or
 **Another tool** for any tool that posts JSON. Only that tool's form opens. It
 asks only for what the tool needs, and Lamp makes the key the tool posts with.
-The key is part of the address Lamp shows once: copy it into the tool before you
-close the form. A connected tool then shows as one row with its state, **Edit**
+Presets can carry the key in the address Lamp shows once; copy that address into
+the tool before you close the form. **Another tool** uses an address plus a
+separate bearer token, or an HMAC signature. A connected tool then shows as one row with its state, **Edit**
 and **Remove**. Edits save as you make them. A key or secret changes only through
 its own button. **Remove** asks once; the tool's address stops working and its
 alert log is erased, while its drafts stay.
@@ -131,10 +132,44 @@ Name the tool and choose how it proves itself: a token Lamp makes, sent as
 `Authorization: Bearer <token>`, or an HMAC signature. For a signature, paste
 the tool's own signing secret, or leave it empty and Lamp makes one. Lamp
 checks the HMAC-SHA256 of `timestamp.body` in the signature header (unpadded
-base64url) and an ISO time in the timestamp header, within five minutes. **Payload fields** names, as JSON paths, the
-deduplication key, title and state, and the state value that means recovered;
-Lamp's own alert shape fills them by default. A request whose payload lacks the
-deduplication path returns 400 and is listed under Recent alerts.
+base64url) and an ISO time in the timestamp header, within five minutes.
+
+For a bearer token, **Connect** shows a ready-to-send curl request with your real
+address, token and configured payload. Copy it before closing the form: the token
+is shown only once. The following example uses the default payload; replace the
+example address and `YOUR_TOKEN` with the values from Connect, or copy its complete
+request:
+
+```sh
+curl --request POST 'https://status.example.com/api/intake/SOURCE_ID' \
+  --header 'Authorization: Bearer YOUR_TOKEN' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+  "alert": {
+    "state": "firing",
+    "title": "First alert from your monitoring tool",
+    "id": "lamp-first-alert"
+  }
+}'
+```
+
+**Payload fields** maps your JSON to the values Lamp reads:
+
+- **Alert ID path** defaults to `$.alert.id`. Keep the same ID for
+  deliveries about the same unresolved alert so they attach to one incident.
+- **Title path** defaults to `$.alert.title`. Its text names the private draft.
+- **State path** defaults to `$.alert.state`. A value exactly matching
+  **Recovered value** (`recovered` by default) records recovery; other values mean
+  firing.
+
+If you change the mappings, the request shown after Connect reflects those
+configured paths. A request whose payload lacks the deduplication path returns
+400 and is listed under Recent alerts. An accepted alert stays private until you
+review the draft and publish a customer update to the public page.
+
+If you did not keep the token, open the connected tool's **Edit → New token →
+Make a new token**. The current token stops working immediately. Copy the new
+token and request while they are shown, and update the sending tool.
 
 ## Public performance charts
 

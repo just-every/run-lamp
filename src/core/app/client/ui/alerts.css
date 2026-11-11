@@ -42,6 +42,14 @@
 .tool-more > summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--ink); font-weight: 500; }
 .tool-more > .tool-fields, .tool-more > .tool-secret { margin-top: 8px; }
 
+/* Another tool's mappings stay visible, beside a complete request to send first. */
+.webhook-payload-fields { min-width: 0; margin: 0; border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.webhook-payload-fields legend { padding: 0 6px; color: var(--ink); font-size: 15px; font-weight: 500; }
+.webhook-field-meaning { margin: 6px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
+.webhook-form .copy-field:has(textarea) { grid-template-columns: minmax(0, 1fr); }
+.webhook-form .copy-field textarea { field-sizing: content; min-height: 240px; }
+.webhook-form .copy-field:has(textarea) .copy-button { justify-self: start; }
+
 /* Uptime's monitors, each beside the component it feeds. */
 .monitor-picks { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 .monitor-picks .form-label { grid-template-columns: minmax(0, 1fr) minmax(0, 340px); align-items: center; gap: 16px; overflow-wrap: anywhere; }
