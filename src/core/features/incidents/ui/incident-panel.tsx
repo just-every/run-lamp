@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 
 import type { IncidentView } from "../service";
 import { ClientExtensionSlot } from "../../../app/client/extensions";
@@ -39,6 +39,12 @@ export function IncidentPanel({ incident, briefRevision, captureVisit, captureUp
   const brief = useIncidentBrief(incident.id, briefRevision);
   const reach = useIncidentReach(incident.id, incident.updates.map(update => update.id));
   const impact = useIncidentImpact(incident.id);
+  const seenPublication = useRef(incident.updates.length);
+  useEffect(() => {
+    if (seenPublication.current === incident.updates.length) return;
+    seenPublication.current = incident.updates.length;
+    impact.refresh();
+  }, [incident.updates.length, impact.refresh]);
   const report = useIncidentReport(incident.id);
   // With no one following the incident there is nothing to open: the row reads as a quiet line, as the empty card did.
   const followers = useAppData<{ subscribers: unknown[] }>(`/api/app/incidents/${incident.id}/subscribers?limit=1&offset=0`);
