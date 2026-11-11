@@ -33,19 +33,30 @@ a custom hostname, and Lamp attaches the page host to the Worker as a Worker rou
 custom domain. Cloudflare does not allow a custom domain on a zone you do not own, which is why the default
 setup stops with "Could not find zone" for such a name. The app host stays a custom domain in the deploy account.
 
-1. **Enable Cloudflare for SaaS** on the provider zone (SSL/TLS, Custom Hostnames). Cloudflare may ask for
-   billing details.
-2. **Make a fallback origin.** Create a proxied record on the provider zone that exists only to be the target,
-   for example `domains.lamp-provider.test` as `AAAA 100::` with the proxy on, then set that name as the zone's
-   **fallback origin** (Custom Hostnames, Fallback Origin). Wait until it reports active.
-3. **Add the page host as a custom hostname** (`status.example.org`) with TXT certificate validation and TLS 1.2
-   or later. Cloudflare returns a TXT name and value for the certificate.
-4. **Publish the owner's records.** In the page host's own DNS zone, the owner adds the TXT record from step 3
-   (`_acme-challenge.status`). Wait until the certificate reports **active**. This changes nothing visitors see.
-5. **Check CAA.** If the page host's zone has CAA records, they must allow the certificate authorities Cloudflare
-   for SaaS issues from: Let's Encrypt (`letsencrypt.org`), Google Trust Services (`pki.goog`) and SSL.com
-   (`ssl.com`). Add any that are missing. Without a CAA record nothing needs to change.
-6. **Set the two settings** in the private deployment inputs, next to `LAMP_PAGE_HOST` (here `status.example.org`):
+1. **Enable Cloudflare for SaaS** on the provider zone: the zone's **SSL/TLS** → **Custom Hostnames** → **Enable**.
+   Cloudflare may ask for billing details.
+2. **Add two proxied records** on the provider zone. The first is the fallback origin, for example
+   `fallback.lamp-provider.test` as `AAAA 100::`, which you designate as the zone's **fallback origin** (Custom
+   Hostnames, Fallback Origin); wait until it reports active. The second is the target the page host's owner
+   points at, for example `domains.lamp-provider.test` as a `CNAME` to `fallback.lamp-provider.test`.
+   `LAMP_PAGE_HOST_TARGET` names the second.
+3. **Add the page host as a custom hostname** (`status.example.org`) with TXT certificate validation. The page
+   host's owner adds the `_acme-challenge` TXT records Cloudflare returns, and the ownership TXT record if
+   Cloudflare offers one, then waits until the hostname reports `ssl.status: active`. Adding the records changes
+   nothing visitors see.
+4. **Point the page host at the target** with a **DNS-only CNAME that is not flattened**: `status.example.org`
+   CNAME `domains.lamp-provider.test`, grey cloud. Cloudflare's CNAME flattening returns addresses instead of the
+   CNAME, and custom-hostname validation looks for a CNAME to the provider zone ("Custom hostname does not CNAME
+   to this zone"). If the page host's zone flattens all CNAMEs, validation may not complete. To go back, point the
+   record at its previous service.
+5. **Expect a short gap for a hostname whose zone is already on Cloudflare.** Cloudflare cannot pre-validate such a
+   hostname, so it validates only after the CNAME in step 4 exists. Until the hostname is active, send no-change
+   `PATCH` requests to the custom hostname (the same `ssl` settings, every few seconds) to prompt validation. The
+   page is not served until it is active.
+6. **Check CAA.** The CAA records that apply to the page host must allow the authority Cloudflare picks: Let's
+   Encrypt (`letsencrypt.org`), Google Trust Services (`pki.goog`) or SSL.com (`ssl.com`). Cloudflare reports
+   "CAA records block issuance" when they do not. A page host with no CAA records needs no change.
+7. **Set the two settings** in the private deployment inputs, next to `LAMP_PAGE_HOST` (here `status.example.org`):
 
    ```
    LAMP_PAGE_HOST_ROUTE_ZONE=lamp-provider.test
@@ -58,12 +69,10 @@ setup stops with "Could not find zone" for such a name. The app host stays a cus
    zone. While the page host's DNS still points somewhere else, the deploy logs
    `Page host status.example.org does not point at domains.lamp-provider.test yet: skipped.` and completes; it
    ends with `Sign in at https://<LAMP_APP_HOST> (page host status.example.org does not point at
-   domains.lamp-provider.test yet).`
-7. **Switch the page host's DNS** to a **DNS-only** CNAME (grey cloud, not proxied) from `status.example.org` to
-   `domains.lamp-provider.test`. Lamp serves the page as soon as the certificate is active and the record is
-   published. To go back, point the record at its previous service.
-8. **Deploy again.** Once the page host's CNAME chain contains the target (or its addresses equal the target's),
-   the deploy checks the page like any other: it must answer with the retained snapshot or the deploy fails.
+   domains.lamp-provider.test yet).` You can run this step before or after steps 3 to 5.
+8. **Deploy again once the CNAME exists.** When the page host's CNAME chain contains the target (or its
+   addresses equal the target's), the deploy checks the page like any other: it must answer with the retained
+   snapshot or the deploy fails.
 
 Every deploy also stores `LAMP_PAGE_HOST` as the page's hostname, so the public API's page hostname and the
 theme's origin follow the name in the route. Leave both settings out for the ordinary case: they exist only for
