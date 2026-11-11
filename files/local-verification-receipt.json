@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-11T12:29:46.388554+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-incident-publish-1-c1",
+  "head": "cfea30d03d857dc3e0a13fcc6279c0c6bedc23d4",
+  "product_edits_this_round": 0,
+  "merge": {
+    "origin_main": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+    "result": "Already up to date; main is an ancestor of candidate",
+    "history_rewritten": false
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='compiled visual edits and the operator publication journey' tests/e2e/publishing-browser.test.mjs",
+      "exit_code": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "duration_ms": 105372.024585,
+      "assertion_width": 1440,
+      "log": "publishing-browser.log",
+      "browser_executable": "/usr/bin/chromium",
+      "browser_args": [
+        "--no-sandbox",
+        "--use-mock-keychain",
+        "--password-store=basic"
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "tracked_diff_after_regeneration": false
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "ok": true
+    }
+  ],
+  "test_count_before": {
+    "registered": 78,
+    "assertionScripts": 10,
+    "cap": 200
+  },
+  "test_count_after": {
+    "registered": 78,
+    "assertionScripts": 10,
+    "cap": 200
+  },
+  "contract_counts_before": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "contract_counts_after": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "clause_status_changes": [],
+  "screenshots": [
+    {
+      "file": "screenshots/1440-incident-published.png",
+      "sha256": "615146e3de156fabdfed1a0c1da86c00be38e12626dbccc6f3eabc67447154ba",
+      "bytes": 253554,
+      "width": 1440,
+      "reviewed": true,
+      "fixture": "synthetic operator publication journey"
+    },
+    {
+      "file": "screenshots/1440-incident-missing-audience.png",
+      "sha256": "a541abd622f19192663961c0dd15899508e2494ae2fb817191ddc74a555b1550",
+      "bytes": 259547,
+      "width": 1440,
+      "reviewed": true,
+      "fixture": "synthetic operator publication journey"
+    },
+    {
+      "file": "screenshots/1440-incident-resolved.png",
+      "sha256": "e51942920c69668c4b7376f8d26c4ed3cfeea59bf0cec76491302e23381974ff",
+      "bytes": 156391,
+      "width": 1440,
+      "reviewed": true,
+      "fixture": "synthetic operator publication journey"
+    },
+    {
+      "file": "screenshots/390-incident-published.png",
+      "sha256": "c84774199c4feb0b851d1aee2ed812b04d590e2c65c50c068e902801fabc7df1",
+      "bytes": 219171,
+      "width": 390,
+      "reviewed": true,
+      "fixture": "synthetic operator publication journey"
+    },
+    {
+      "file": "screenshots/390-incident-missing-audience.png",
+      "sha256": "c92f7a8fa4115854ff7636b6232bc08f95152a6b89d853fe654911043ddce1c0",
+      "bytes": 223731,
+      "width": 390,
+      "reviewed": true,
+      "fixture": "synthetic operator publication journey"
+    },
+    {
+      "file": "screenshots/390-incident-resolved.png",
+      "sha256": "1fa4fcb5da3ffca3abbf536c42bca0a904bfe0e14ea32c5db928a90e415afce9",
+      "bytes": 123372,
+      "width": 390,
+      "reviewed": true,
+      "fixture": "synthetic operator publication journey"
+    }
+  ],
+  "publication_scan": {
+    "status": "deferred to fleet machine by cloud assignment; unavailable in this VM"
+  },
+  "processes": {
+    "browser_closed": true,
+    "test_server_stopped_by_fixture": true
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-11T12:44:52.217064+00:00",
+  "repository": "just-every/run-lamp",
+  "product_branch": "cloud/main-lamp-incident-publish-1-c1",
+  "product_head": "cfea30d03d857dc3e0a13fcc6279c0c6bedc23d4",
+  "product_push": "succeeded first attempt",
+  "product_new_commits_this_round": 0,
+  "product_head_retained_from_original_branch": true,
+  "pr": {
+    "number": 334,
+    "html_url": "https://github.com/just-every/run-lamp/pull/334",
+    "state": "open",
+    "title": "Explain incident publish readiness and refresh published state",
+    "head": "cfea30d03d857dc3e0a13fcc6279c0c6bedc23d4",
+    "head_branch": "cloud/main-lamp-incident-publish-1-c1",
+    "base": "main"
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "cfea30d03d857dc3e0a13fcc6279c0c6bedc23d4",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43020656858",
+    "id": 43020656858,
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "github_calls_used": 5,
+  "failed_jobs_rerun": 0,
+  "local_verification_receipt_sha256": "8f6788f3c34dba968d13135c56601852a228eb292a113b2fa5f326916bfc4f02",
+  "contract_counts_before": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "contract_counts_after": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "clause_status_changes": [],
+  "test_checks_before": 88,
+  "test_checks_after": 88,
+  "blockers": [],
+  "fleet_publication_scan": "required on fleet machine; not run in cloud",
+  "landing": "not attempted; fleet owns landing"
+}

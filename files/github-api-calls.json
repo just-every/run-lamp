@@ -1,0 +1,76 @@
+[
+  {
+    "call": 1,
+    "epoch": 1794400149.5613034,
+    "utc": "2026-11-11T12:29:09.561483+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=cfea30d03d857dc3e0a13fcc6279c0c6bedc23d4&per_page=100"
+    ],
+    "runIds": [
+      "43020656858",
+      "43014887342"
+    ],
+    "exitCode": 0
+  },
+  {
+    "call": 2,
+    "epoch": 1794400150.184245,
+    "utc": "2026-11-11T12:29:10.184373+00:00",
+    "args": [
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-lamp/pulls",
+      "--input",
+      "/tmp/lamp-pr-input.json"
+    ],
+    "runIds": [],
+    "exitCode": 0
+  },
+  {
+    "call": 3,
+    "epoch": 1794400450.586026,
+    "utc": "2026-11-11T12:34:10.586226+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43020656858",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url,run_attempt}"
+    ],
+    "runIds": [
+      "43020656858"
+    ],
+    "exitCode": 0
+  },
+  {
+    "call": 4,
+    "epoch": 1794400751.6289165,
+    "utc": "2026-11-11T12:39:11.629210+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43020656858",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url,run_attempt}"
+    ],
+    "runIds": [
+      "43020656858"
+    ],
+    "exitCode": 0
+  },
+  {
+    "call": 5,
+    "epoch": 1794401052.6569092,
+    "utc": "2026-11-11T12:44:12.657088+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43020656858",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url,run_attempt}"
+    ],
+    "runIds": [
+      "43020656858"
+    ],
+    "exitCode": 0
+  }
+]
