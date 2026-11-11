@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "c60d92ae05fd2bd9591e092af81dc6316ffbde14",
+      "bytes": 11135,
+      "path": "R5-SOURCE-EVIDENCE.md",
+      "sha256": "b677a47b13832c91769ee16452367debf8fdbb91b825d00764e6b0caea966be9"
+    },
+    {
+      "blob": "2ee5e502f33e26d5bc88f5f1f81e9bf3778fdcb4",
+      "bytes": 10205,
+      "path": "R6-DRAFT.patch",
+      "sha256": "a0f486634fe3fa4b1d77f2493bd197dd839715fd5bd31e82f909ab04fe5313e4"
+    },
+    {
+      "blob": "167d89ae35c66beeba61134e6458c71b0dd28153",
+      "bytes": 2156,
+      "path": "RECEIPT.json",
+      "sha256": "895a37480cffaf628e14ba6522dfe172e4edc8bd8752e6599c7de353f5bb96a1"
+    },
+    {
+      "blob": "1dd7b9fe48572188c505f45febd0cdface866290",
+      "bytes": 8772,
+      "path": "REPORT.md",
+      "sha256": "d223fb4034691fa5c9f1c56c912b6aaab20514dd75b5434f4bd8ecbefdb5faf0"
+    },
+    {
+      "blob": "59c0f29c62dacdd4ad5335256d053bbb27f4ad10",
+      "bytes": 160,
+      "path": "main-since-v1.11.10.txt",
+      "sha256": "d0eb3c8de631da66ec437647828a57bf6851b1aefc4a892f8e074f18c79f9659"
+    },
+    {
+      "blob": "284ee8724b5e032ae455ad0f5185729fd4a22636",
+      "bytes": 3112,
+      "path": "test-inventory.json",
+      "sha256": "49291276dab15791152abe00e5d702af31110cbcb483c025b6443dfb99098442"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-pagehost-route-1",
+  "product_head": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "ref": "refs/heads/evidence/sd-lamp-pagehost-route-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-pagehost-route-1"
+}

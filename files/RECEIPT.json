@@ -1,0 +1,84 @@
+{
+  "blocker": "R5 unconditional deploy synchronization would replace a hostname accepted from an owner through the settings API and used as the theme origin.",
+  "branch": "cloud/sd-lamp-pagehost-route-1",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "git",
+        "log",
+        "origin/main..HEAD",
+        "--format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "ciRunIds": [],
+  "claim": "none",
+  "clausesChanged": [],
+  "contractCountsAfter": {
+    "done": 57,
+    "missing": 55,
+    "partial": 132,
+    "total": 244
+  },
+  "contractCountsBefore": {
+    "done": 57,
+    "missing": 55,
+    "partial": 132,
+    "total": 244
+  },
+  "default": "Preserve the existing owner-supplied hostname. Await an explicit synchronization or migration ruling before implementing R5.",
+  "draft": {
+    "files": [
+      "CHANGELOG.md",
+      "OPERATIONS.md",
+      "docs/deployment-reference.md",
+      "docs/domains.md"
+    ],
+    "patch": "R6-DRAFT.patch",
+    "sha256": "a0f486634fe3fa4b1d77f2493bd197dd839715fd5bd31e82f909ab04fe5313e4"
+  },
+  "draftAddedEmailAddresses": 0,
+  "fullHistory": true,
+  "githubApiCalls": 0,
+  "head": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "inventoryMethod": "Repository testInventory() using isolated TypeScript 5.9.3 dependency; static count, no tests executed.",
+  "newProductCommits": 0,
+  "notRun": [
+    "rer setup",
+    "touched runtime tests",
+    "typecheck",
+    "wrangler deploy --dry-run",
+    "contract generation",
+    "lock regeneration",
+    "Verify"
+  ],
+  "originMain": "ccc4f7a2f1c18223078b2f5e03440fd413d1575d",
+  "patchReverseCheckExit": 0,
+  "pr": null,
+  "productPushed": false,
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "status": "BLOCKED",
+  "tag": "sd-lamp-pagehost-route-1",
+  "testCounts": {
+    "after": 78,
+    "assertionScripts": 10,
+    "before": 78,
+    "newTestCases": 0,
+    "totalChecks": 88
+  },
+  "timestamp": "2026-11-11T11:53:00.853958+00:00"
+}

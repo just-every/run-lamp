@@ -1,0 +1,148 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 0a49130..b6aff31 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,15 @@
+ # Changelog
+ 
++## 1.11.11 (unreleased)
++
++- **Keep your public page's DNS in another account or with another provider.**
++  Cloudflare for SaaS route mode uses `LAMP_PAGE_HOST_ROUTE_ZONE` and
++  `LAMP_PAGE_HOST_TARGET` to attach the public hostname as a Worker route on a
++  provider zone in the deploy account. Deploy can complete before the page host
++  points there, and checks the retained page once it does. The app host remains
++  a Custom Domain; leaving both settings absent keeps the existing deployment
++  behavior. See [the domain setup steps](docs/domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere).
++
+ ## 1.11.10
+ 
+ **A Managed Lamp's public pages and previews now rebuild reliably after a change.** The stored public page now records which release built it. When the running release or the page renderer is not the one that built the stored page, or when updates to the page are still waiting, the page is rebuilt on its own, so a change shows up on a preview that already holds a page without anyone bumping a version by hand. A rebuild that fails never takes the installation's health check down; its work simply waits for the next try. A database that was reset still moves the page forward. What the page shows, its privacy and the Pre-launch behaviour are unchanged.
+diff --git a/OPERATIONS.md b/OPERATIONS.md
+index fe4a6c7..a1f1842 100644
+--- a/OPERATIONS.md
++++ b/OPERATIONS.md
+@@ -133,10 +133,10 @@ release. The landing page is a public, indexable document on the operator name.
+ 
+ ## Your own domain
+ 
+-Lamp attaches the public page and operator app as Cloudflare Worker custom domains.
+-Each hostname must be in a domain whose DNS zone is active in the Cloudflare account
+-used for setup. Cloudflare creates the required DNS records and TLS certificates
+-when the custom domains are provisioned; do not point a CNAME at a guessed Worker
++By default, Lamp attaches the public page and operator app as Cloudflare Worker
++custom domains. Each hostname must then be in a domain whose DNS zone is active in
++the Cloudflare account used for setup. Cloudflare creates the required DNS records
++and TLS certificates when the custom domains are provisioned; do not point a CNAME at a guessed Worker
+ address. See [Cloudflare's custom-domain documentation](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
+ 
+ 1. Add the domain or domains that contain your chosen hostnames to the intended
+@@ -155,8 +155,18 @@ address. See [Cloudflare's custom-domain documentation](https://developers.cloud
+    `https://<LAMP_APP_HOST>/health`. Verify the public page and operator sign-in on
+    their respective hostnames before routing customers to the new setup.
+ 
+-DNS hosted by another provider is unsupported. The registrar can remain elsewhere,
+-but it must delegate the domain to the active Cloudflare zone before setup.
++For a public page whose DNS stays in another Cloudflare account or with another
++provider, use [Cloudflare for SaaS route mode](docs/domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere).
++Enable SaaS on a provider zone in the deploy account, configure its proxied target
++as fallback origin and add the page's custom hostname with TXT certificate
++validation. The public hostname's DNS owner supplies the validation TXT records
++and, when ready, a DNS-only CNAME to the target; restrictive CAA must permit the
++SaaS authorities. Set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET`
++together in the private deployment inputs. The page host must be outside the
++provider zone; the app host remains a Custom Domain in the deploy account. While
++the page host does not point at the target, deploy completes with `not-pointed`
++and says so. Once pointed, the existing retained-page check runs. With neither
++setting, the Custom Domain steps above remain unchanged.
+ 
+ ## Deployment and checks
+ 
+diff --git a/docs/deployment-reference.md b/docs/deployment-reference.md
+index e0666b9..7f3b88c 100644
+--- a/docs/deployment-reference.md
++++ b/docs/deployment-reference.md
+@@ -43,6 +43,8 @@ Optional values follow the required entries in the table.
+ | `MAIL_PROVIDER` | `resend` (native default) or `sendgrid`. Set explicitly to match the API key. |
+ | `OWNER_DISPLAY_NAME` | Optional first-owner name, 1–120 characters; the native default is `Owner`. Existing owners keep their name. |
+ | `LAMP_HOSTING` | `custom-domain` (default) or `workers-dev`. |
++| `LAMP_PAGE_HOST_ROUTE_ZONE` | Optional Cloudflare for SaaS provider zone in the deploy account, as a bare lowercase hostname. Set together with `LAMP_PAGE_HOST_TARGET`, with `LAMP_HOSTING` absent or `custom-domain`. The page host must be outside this zone. Lamp attaches the public page as a Worker route on this zone; see [the SaaS setup steps](domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere). |
++| `LAMP_PAGE_HOST_TARGET` | Optional Cloudflare for SaaS target hostname in the provider zone, as a bare lowercase hostname. Set together with `LAMP_PAGE_HOST_ROUTE_ZONE`. Before the page host points at this target, deploy completes with state `not-pointed`; after it points there, the retained-page check applies. |
+ | `LAMP_RESOURCE_PREFIX` | Optional resource namespace: lowercase letters, digits and hyphens, at most 47 characters. Defaults to `lamp-<environment>`. |
+ | `SENDGRID_WEBHOOK_PUBLIC_KEY` or `RESEND_WEBHOOK_SECRET` | Optional at deploy time, required for accepting the selected provider's signed delivery receipts. Without a key or the optional signed SendGrid relay, feedback callbacks are rejected. The delivery log shows **Accepted by SendGrid** (or **Accepted by Resend**) as the final email status available; CSV retains the transport outcome and acceptance timestamp. |
+ 
+diff --git a/docs/domains.md b/docs/domains.md
+index 9d8c5f3..6d663b8 100644
+--- a/docs/domains.md
++++ b/docs/domains.md
+@@ -6,9 +6,9 @@ page host serves the public page and its feed and widget.
+ 
+ ## Use a custom domain
+ 
+-The zones for both hostnames must be active in the Cloudflare account used for
+-setup. You can use one zone or separate zones. If another provider currently
+-hosts DNS, review and import its existing records into Cloudflare, then point
++By default, the zones for both hostnames must be active in the Cloudflare account
++used for setup. You can use one zone or separate zones. If another provider
++currently hosts DNS, review and import its existing records into Cloudflare, then point
+ the registrar's nameservers to the nameservers assigned by Cloudflare and wait
+ for the zone to become active. The registrar can remain elsewhere; DNS authority
+ must be Cloudflare.
+@@ -22,3 +22,57 @@ For `workers.dev` hostnames, see the [deployment
+ reference's hostname lookup and examples](deployment-reference.md#find-your-workersdev-hostnames).
+ Both hostname inputs are still required and must match the Worker names under
+ the registered account subdomain. You do not need custom DNS for this mode.
++
++## A page host whose DNS is in another Cloudflare account or elsewhere
++
++Use Cloudflare for SaaS when the public page's DNS stays outside the account
++where Lamp deploys. The app host still uses a Worker Custom Domain in an active
++zone in the deploy account. Lamp attaches the public hostname as a Worker route
++on that account's provider zone, instead of trying to create a Custom Domain in
++the public hostname's zone.
++
++For example, use `example.net` as the provider zone, `domains.example.net` as its
++SaaS target, `ops.example.net` for the app and `status.example.com` for the public
++page:
++
++1. Enable **Cloudflare for SaaS** on the provider zone in the deploy account.
++2. Create a proxied target DNS record there: an `AAAA` record for
++   `domains.example.net` with value `100::`. Set that hostname as the zone's
++   **fallback origin** in Cloudflare for SaaS.
++3. Add `status.example.com` as a **custom hostname** on the provider zone. Choose
++   **TXT certificate validation** so its certificate can be validated before
++   changing the public page's traffic.
++4. Give the public hostname's DNS owner the exact TXT name and value Cloudflare
++   supplies, and have them publish it in their DNS zone. Wait for the custom
++   hostname and its certificate to be active. If CAA records restrict certificate
++   issuance, they must allow the SaaS certificate authorities: Let's Encrypt
++   (`letsencrypt.org`), `pki.goog` and `ssl.com`.
++5. Add both settings to the same private deployment input file as the two hosts:
++
++   ```text
++   LAMP_PAGE_HOST=status.example.com
++   LAMP_APP_HOST=ops.example.net
++   LAMP_PAGE_HOST_ROUTE_ZONE=example.net
++   LAMP_PAGE_HOST_TARGET=domains.example.net
++   ```
++
++   Leave `LAMP_HOSTING` absent or set it to `custom-domain`. The zone and target
++   must be bare lowercase hostnames, the target must be in the provider zone,
++   and the page host must be outside that zone. This mode cannot be combined
++   with `workers-dev`.
++6. Deploy Lamp with that input file. While the page's DNS still points at the
++   previous service or does not resolve, the deploy completes with a message
++   saying the page host does not point at the target yet. That message does not
++   establish that the public page is serving Lamp.
++7. When ready to move traffic, have the public hostname's DNS owner replace its
++   old record with a **DNS-only CNAME** from `status.example.com` to
++   `domains.example.net`. Do not proxy that CNAME through the customer's account.
++   Keep the certificate-validation TXT records Cloudflare requires for renewal.
++8. Check the public page and `https://ops.example.net/health`, then redeploy to
++   run Lamp's retained-page check against the pointed hostname. Once DNS reaches
++   the target, an incorrect page response still fails the deploy.
++
++The provider-zone route and custom hostname are separate parts of this setup;
++creating the Worker route alone does not validate the certificate or switch DNS.
++Without the two optional settings, Lamp continues using Custom Domains for both
++hosts.
