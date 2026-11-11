@@ -3872,7 +3872,7 @@
       "executable": false
     },
     "scripts/setup.mjs": {
-      "sha256": "6b801a0ab9629c1c8dc5379bad4859cd575e99d8fb0b1d859add702141beb6e1",
+      "sha256": "d32eedb004fe05f2346045edd337c489602771204f14090d8d61676d886a275a",
       "executable": false
     },
     "scripts/signin-link.mjs": {
