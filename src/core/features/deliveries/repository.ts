@@ -16,7 +16,7 @@ export type DeliveryLogChannel = "email" | "webhook" | "sms";
 export type DeliveryRow = Omit<typeof deliveryRecords.$inferSelect, "channel"> & { incidentReportId: string | null; channel: DeliveryLogChannel; providerOutcome?: "delivered" | "undelivered" | "failed" | null; destination: string; subscriberState: "pending" | "active" | "deactivated"; providerAcceptedAt: string | null; acceptingProvider: string | null; latestError: string | null; localCaptureId: string | null; localCapturedAt: string | null; maintenanceReference: string | null; maintenanceTitle: string | null; maintenanceNoticeKind: string | null; incidentReference: string | null; incidentTitle: string | null; incidentLifecycle: string | null };
 
 /** A confirmation or other subscription email, sent outside notification deliveries (subscribers/service.ts). */
-export interface SubscriptionMailRow { id: string; destination: string; subscriberState: "pending" | "active" | "deactivated"; kind: "confirmation" | "already-subscribed" | "subscribed"; outcome: "accepted" | "suppressed" | "failed"; sentAt: string }
+export interface SubscriptionMailRow { id: string; subscriberId: string; destination: string; subscriberState: "pending" | "active" | "deactivated"; kind: "confirmation" | "already-subscribed" | "subscribed"; outcome: "accepted" | "suppressed" | "failed"; sentAt: string }
 
 export interface DispatchableDelivery {
   componentEventId: string | null;
@@ -212,7 +212,7 @@ export function createDeliveryRepository(binding: D1Database, mailReceipts?: { p
       return input.limit === undefined ? rows : rows.slice(input.offset ?? 0,(input.offset ?? 0)+input.limit);
     },
     async listSubscriptionMail(limit) {
-      const result = await binding.prepare(`SELECT a.id, s.destination, s.state AS subscriberState, json_extract(a.payload_json, '$.kind') AS kind, json_extract(a.payload_json, '$.outcome') AS outcome, a.created_at AS sentAt
+      const result = await binding.prepare(`SELECT a.id, s.id AS subscriberId, s.destination, s.state AS subscriberState, json_extract(a.payload_json, '$.kind') AS kind, json_extract(a.payload_json, '$.outcome') AS outcome, a.created_at AS sentAt
         FROM audit_entries a JOIN subscriber_directory s ON s.id = a.entity_id
         WHERE a.entity_type = 'subscriber' AND a.action = 'subscription-mail' ORDER BY a.created_at DESC, a.id DESC LIMIT ?`).bind(limit).all<SubscriptionMailRow>();
       return result.results;

@@ -22,7 +22,7 @@ export function subscriberIntakeFailure(context:Context<AppEnv>,cause:unknown) {
   return context.json({error:"Subscriber intake could not complete. No existing subscription was changed."},503);
 }
 
-export function registerSubscriberIntakeRoutes(app:Hono<AppEnv>,service:SubscribersService) {
+export function registerSubscriberIntakeRoutes(app:Hono<AppEnv>,service:SubscribersService,options:{localMail?:boolean}={}) {
   // A JSON escape can occupy six bytes per CSV character; the decoded CSV is
   // separately bounded to the same 8 MiB as the existing source imports.
   app.use("/api/app/subscribers/import/*",bodyLimit({maxSize:50*1024*1024,onError:context=>context.json({error:"The CSV request is too large."},413)}));
@@ -60,6 +60,6 @@ export function registerSubscriberIntakeRoutes(app:Hono<AppEnv>,service:Subscrib
     const parsed=subscriberAddSchema.safeParse(await context.req.json().catch(()=>null));
     if(!parsed.success)return context.json({error:"Choose a valid email, phone number or public webhook, contact address and components."},400);
     if(context.env.EFFECTS_PAUSED==="1")return context.json({error:"Outbound effects are paused."},409);
-    try{const result=await service.intake.add(parsed.data,context.get("operator").id,await notificationOrigin(context.env));return context.json(result,result.created?201:200);}catch(cause){return subscriberIntakeFailure(context,cause);}
+    try{const result=await service.intake.add(parsed.data,context.get("operator").id,await notificationOrigin(context.env));return context.json({...result,mailSuppressed:options.localMail===true&&parsed.data.channel!=="sms"},result.created?201:200);}catch(cause){return subscriberIntakeFailure(context,cause);}
   });
 }

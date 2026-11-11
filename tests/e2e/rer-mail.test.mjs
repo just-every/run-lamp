@@ -93,6 +93,9 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal(created.status, 201); const component = (await created.json()).component;
       assert.equal((await subscribe(reader)).status, 202);
       assert.equal((await subscribe(pending)).status, 202);
+      const pendingReader = (await (await call('/api/app/subscribers')).json()).subscribers.find(row => row.destination === reader);
+      assert.equal((await call(`/api/app/subscribers/${pendingReader.id}/confirm-local`, {})).status, 404, 'a configured production Worker has no local confirmation door');
+      assert.equal((await (await call('/api/app/deliveries')).json()).localConfirmationAllowed, false);
       const confirmUrl = textFor(reader).match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0];
       assert.equal((await raw(confirmUrl)).status, 200);
       const initialSettings = (await (await call('/api/app/page-settings')).json()).settings;

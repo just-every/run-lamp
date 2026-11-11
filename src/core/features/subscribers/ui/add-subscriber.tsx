@@ -6,7 +6,7 @@ import { SubscriberSelection } from "./subscriber-selection";
 import { WebhookFormatChoice, type WebhookFormat } from "./webhook-format";
 import { defaultPreferences, eventKinds, type SubscriberEventKind } from "../preferences";
 
-export function AddSubscriber({ onChanged }: { onChanged: () => void }) {
+export function AddSubscriber({ onChanged, localMail = false }: { onChanged: () => void; localMail?: boolean }) {
   const [channel, setChannel] = useState<"email" | "webhook" | "sms">("email");
   const [email, setEmail] = useState("");
   const [destination, setDestination] = useState("");
@@ -23,14 +23,14 @@ export function AddSubscriber({ onChanged }: { onChanged: () => void }) {
     try {
       const preferences = { eventKinds: selectedEvents, minimumImpact };
       const input = channel === "email" ? { channel, email, componentIds, ...preferences } : channel === "sms" ? { channel, phone, componentIds, ...preferences } : { channel, destination, contactEmail: email, componentIds, webhookFormat, ...preferences };
-      const response = await appApi<{ created: boolean; confirmationSent: boolean }>("/api/app/subscribers", { method: "POST", body: JSON.stringify(input) });
-      setResult(response.created ? response.confirmationSent ? "Subscriber added as pending. One confirmation invitation was sent." : "Subscriber added as pending. A recent confirmation to this contact prevented another invitation." : response.confirmationSent ? "One confirmation invitation was sent to the pending subscriber." : "This subscriber already exists. Their subscription was preserved and no invitation was sent.");
+      const response = await appApi<{ created: boolean; confirmationSent: boolean; mailSuppressed?: boolean }>("/api/app/subscribers", { method: "POST", body: JSON.stringify(input) });
+      setResult(response.mailSuppressed ? "No email was sent on this computer. Confirm pending subscribers in the Delivery log." : response.created ? response.confirmationSent ? "Subscriber added as pending. One confirmation invitation was sent." : "Subscriber added as pending. A recent confirmation to this contact prevented another invitation." : response.confirmationSent ? "One confirmation invitation was sent to the pending subscriber." : "This subscriber already exists. Their subscription was preserved and no invitation was sent.");
       setEmail(""); setPhone(""); setDestination(""); setComponentIds([]); onChanged();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The subscriber could not be added."); }
     finally { setPending(false); }
   }
   return <section className="data-card" aria-label="Add subscriber">
-    <h2>Add subscriber</h2><p>Your add sends one confirmation invitation. The subscription stays pending until the recipient confirms.</p>
+    <h2>Add subscriber</h2><p>{localMail && channel !== "sms" ? "No email is sent on this computer. Add the subscriber, then confirm them in the Delivery log." : "Your add sends one confirmation invitation. The subscription stays pending until the recipient confirms."}</p>
     <form className="incident-note-form" onSubmit={submit}>
       <label className="form-label">Channel<select aria-label="Channel" value={channel} disabled={pending} onChange={event => { const next = event.target.value as "email" | "webhook" | "sms"; setChannel(next); setSelectedEvents(defaultPreferences(next).eventKinds); setMinimumImpact(null); setResult(null); }}><option value="email">Email</option><option value="sms">SMS</option><option value="webhook">Webhook</option></select></label>
       {channel === "webhook" ? <label className="form-label">Endpoint URL<input type="url" required disabled={pending} value={destination} onChange={event => setDestination(event.target.value)} /></label> : null}
@@ -44,7 +44,7 @@ export function AddSubscriber({ onChanged }: { onChanged: () => void }) {
       </fieldset>
       {error ? <FormError>{error}</FormError> : null}
       {result ? <p role="status">{result}</p> : null}
-      <Button type="submit" disabled={pending}>{pending ? "Adding subscriber…" : "Add subscriber and send confirmation"}</Button>
+      <Button type="submit" disabled={pending}>{pending ? "Adding subscriber…" : localMail && channel !== "sms" ? "Add subscriber" : "Add subscriber and send confirmation"}</Button>
     </form>
   </section>;
 }

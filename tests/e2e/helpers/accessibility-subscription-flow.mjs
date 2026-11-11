@@ -99,7 +99,8 @@ export async function accessibilitySubscriptionFlow({ page, appUrl, pageUrl, inc
       const submitted = page.waitForResponse(response => new URL(response.url()).pathname === "/subscribe" && response.request().method() === "POST");
       await page.keyboard.press("Enter");
       assert.equal((await submitted).status(), 202);
-      await page.getByRole("heading", { name: "Check your inbox", exact: true }).waitFor();
+      await page.getByRole("heading", { name: "Local subscription", exact: true }).waitFor();
+      await expect(page.locator("main")).toContainText("No email was sent on this computer");
       await audit(page, `${width}px subscription result`);
       const issued = await tokenRows(address);
       const confirm = issued.find(row => row.scope === "confirm"), manage = issued.find(row => row.scope === "manage");

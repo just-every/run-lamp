@@ -38,6 +38,7 @@ export interface SubscribersService {
   list(limit?: number, offset?: number): Promise<SubscriberView[]>;
   requestEmailSubscription(email: string, origin: string, componentIds?: string[], preferences?: SubscriberPreferences): Promise<void>;
   confirm(token: string): Promise<boolean>;
+  confirmLocally(subscriberId: string): Promise<boolean>;
   getManagedSubscription(token: string): Promise<{ unsubscribeToken: string; subscriber: SubscriberView; components: Array<{ id: string; name: string }> } | null>;
   updateManagedSelection(token: string, componentIds: string[],webhookFormat?:WebhookFormat, preferences?: SubscriberPreferences): Promise<boolean>;
   unsubscribe(token: string): Promise<boolean>;
@@ -63,10 +64,11 @@ export function renderSubscriberTokenPage(title: string, body: string, pageName:
 }
 
 /** What a visitor sees right after the subscribe form. The same for new, pending, active and suppressed addresses. */
-export function renderSubscribeResult(input: { email: string; components: string[] }, pageName: string) {
+export function renderSubscribeResult(input: { email: string; components: string[] }, pageName: string, localMail = false) {
   const email = `<strong class="subscriber-email">${escapeHtml(input.email)}</strong>`;
   const scope = `<div class="subscriber-scope"><p class="subscriber-kicker">You'll hear about</p><p class="subscriber-scope-value">${input.components.length ? input.components.map(escapeHtml).join(", ") : "All components"}</p></div>`;
   const again = `<p><a class="subscriber-again" href="/#subscribe">Wrong address? Subscribe again <span aria-hidden="true">→</span></a></p>`;
+  if (localMail) return renderSubscriberTokenPage("Local subscription", `<p>No email was sent on this computer for ${email}.</p>${scope}<p>The local owner can confirm pending subscribers in Subscribers → Delivery log.</p>${again}`, pageName, "mail");
   return renderSubscriberTokenPage("Check your inbox", `<p>We sent ${email} a link to confirm or manage your ${escapeHtml(pageName)} updates.</p>${scope}<p>Confirmation links work for 3 days.</p>${again}`, pageName, "mail");
 }
 
@@ -270,6 +272,16 @@ export function createSubscribersService(
         text: `${pageName}\n\nConfirm this subscription: ${confirmationUrl}\n\nIf this was not you, you can ignore this email. Unsubscribe: ${unsubscribeUrl}\nReturn to status: ${new URL("/", origin).href}`,
         headers: { "Auto-Submitted": "auto-generated" }, idempotencyKey: `subscriber-confirmation/${subscriber.id}/${subscriber.createdAt}`,
       });
+    },
+    async confirmLocally(subscriberId) {
+      const subscriber = await repository.findSubscriber(subscriberId);
+      if (!subscriber || subscriber.state !== "pending" || !["email", "webhook"].includes(subscriber.channel)) return false;
+      const deadline = new Date(Date.parse(subscriber.createdAt) + PENDING_WINDOW_MS).toISOString();
+      if (Date.parse(deadline) <= Date.now()) return false;
+      // Reuse the signed confirmation token and its normal lifecycle checks,
+      // including the confirmation event, rather than writing active directly.
+      const { token } = await issuedToken(subscriberId, "confirm", deadline);
+      return this.confirm(token);
     },
     async confirm(token) {
       const matched = await fromToken(token, "confirm");

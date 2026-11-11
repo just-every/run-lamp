@@ -49,6 +49,7 @@ export function registerDeliveryRoutes(app: Hono<AppEnv>, service: DeliveriesSer
       deliveries: rows.slice(0, parsed.data.limit),
       subscriptionMail: await service.listSubscriptionMail(),
       mail: { provider: mailProvider, secondaryProvider: options.secondaryMailProvider ?? null, local: options.localMail === true, receiptProviders, receiptsConfigured },
+      localConfirmationAllowed: options.localMail === true && context.get("operator").role === "owner",
       sms: { configured: options.smsConfigured?.() ?? false },
       limit: parsed.data.limit,
       offset: parsed.data.offset,

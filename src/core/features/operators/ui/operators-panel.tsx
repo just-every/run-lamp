@@ -47,9 +47,9 @@ export function OperatorsPanel() {
     event.preventDefault();
     setSaving(true); setMessage(null);
     try {
-      await appApi<{ email: "sent" | "suppressed" }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName }) });
+      const result = await appApi<{ email: "sent" | "suppressed" }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName }) });
       setNeedsConfirmation(false);
-      setEmail(""); setDisplayName(""); setMessage("Invitation email sent.");
+      setEmail(""); setDisplayName(""); setMessage(result.email === "suppressed" ? "Invitation created. No email was sent on this computer." : "Invitation email sent.");
       invited.refresh();
     } catch (cause) {
       showError(cause, "The invitation could not be sent.");

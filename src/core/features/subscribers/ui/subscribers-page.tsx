@@ -14,7 +14,7 @@ import { SubscriberImportExport } from "./subscriber-import-export";
 import { WebhookFormatLabel } from "./webhook-format";
 import { SubscribersViews } from "./subscribers-views";
 
-type SubscribersResponse = { capacity:SubscriberCapacity[]; subscribers: Awaited<ReturnType<SubscribersService["list"]>>; limit: number; offset: number; hasMore: boolean };
+type SubscribersResponse = { localMail: boolean; capacity:SubscriberCapacity[]; subscribers: Awaited<ReturnType<SubscribersService["list"]>>; limit: number; offset: number; hasMore: boolean };
 
 export function SubscribersPage() {
   const formatOperatorTime = useOperatorTime();
@@ -38,7 +38,7 @@ export function SubscribersPage() {
     <section className="page-title-row"><div><h1>Subscribers</h1><p>People and services that get your updates.</p></div><SubscribersViews /></section>
     <section className="data-card" aria-label="Subscriber capacity"><h2>Capacity</h2><dl className="context-facts subscriber-capacity">{data.capacity.map(item=><div key={item.channel}><dt>{item.channel === "all" ? "All channels" : item.channel === "slack-and-teams" ? "Slack and Teams together" : item.channel === "slack" ? "Slack" : item.channel === "teams" ? "Teams" : item.channel === "email" ? "Email" : item.channel === "sms" ? "SMS" : "Webhooks"}</dt><dd>{item.count.toLocaleString()} / {item.limit.toLocaleString()}{item.count>=item.limit ? " · Full" : ""}</dd></div>)}</dl><p>Pending and active subscriptions count. Email, SMS, webhooks, Slack and Teams share the all-channel limit; Slack and Teams also share their channel limit.</p></section>
     {mutationError && <FormError>{mutationError}</FormError>}
-    <AddSubscriber onChanged={refresh} />
+    <AddSubscriber onChanged={refresh} localMail={data.localMail} />
     <section className="data-card subscriber-table-card subscriber-directory-card">
       <div className="table-scroll" tabIndex={0} role="region" aria-label="Subscriber records">
         <table role="table">

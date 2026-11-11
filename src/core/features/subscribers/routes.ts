@@ -58,8 +58,8 @@ function parsedComponentIds(value: unknown) {
   });
 }
 
-export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; prelaunch?: () => Promise<boolean> } = {}) {
-  registerSubscriberIntakeRoutes(app,service);
+export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; prelaunch?: () => Promise<boolean>; localMail?: boolean } = {}) {
+  registerSubscriberIntakeRoutes(app,service,options);
   // The link pages of existing subscribers keep working before launch, but offer no way back to a form that is not there.
   const subscribeOffered = async () => !(await options.prelaunch?.());
   const full = (request: Request, pageName: string) => tokenResponse(request, renderSubscriberTokenPage("Subscriptions full", `<p>This page cannot take new subscriptions on that channel right now.</p><p>Follow the feeds for updates.</p><nav class="status-utilities" aria-label="Feeds"><a href="/feed.atom">Atom feed</a><a href="/feed.rss">RSS feed</a></nav>`, pageName), 409);
@@ -78,8 +78,10 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
       const preferences = formPreferences(body);
       await service.requestEmailSubscription(parsed.data.email, new URL(context.req.url).origin, componentIds, preferences);
       // Preserve the same response for active, pending and suppressed requests.
-      if (!context.req.header("Accept")?.includes("text/html")) return result("Check your inbox", "Check your email to confirm or manage this subscription.", 202);
-      return tokenResponse(context.req.raw, renderSubscribeResult({ email: parsed.data.email, components: await service.componentNames(componentIds) }, pageName), 202);
+      if (!context.req.header("Accept")?.includes("text/html")) return options.localMail
+        ? result("Local subscription", "No email was sent on this computer. The local owner can confirm pending subscribers in Subscribers → Delivery log.", 202)
+        : result("Check your inbox", "Check your email to confirm or manage this subscription.", 202);
+      return tokenResponse(context.req.raw, renderSubscribeResult({ email: parsed.data.email, components: await service.componentNames(componentIds) }, pageName, options.localMail), 202);
     } catch (error) {
       if (error instanceof SubscriberLimitError) return full(context.req.raw, pageName);
       if (error instanceof z.ZodError) return result("Check your preferences", "Choose supported update events and an incident threshold.", 400);
@@ -136,6 +138,17 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
     return response;
   });
 
+  // Only the development mail mode exposes this owner action. Production and
+  // demo requests cannot enable it with a host, request body or runtime flag.
+  if (options.localMail) app.post("/api/app/subscribers/:subscriberId/confirm-local", async context => {
+    if (context.get("operator").role !== "owner") return context.json({ error: "Only the local owner can confirm a subscriber." }, 403);
+    const id = ulidSchema.safeParse(context.req.param("subscriberId"));
+    if (!id.success) return context.json({ error: "Choose a pending subscriber." }, 400);
+    return await service.confirmLocally(id.data)
+      ? context.json({ confirmed: true })
+      : context.json({ error: "This subscriber is not pending or their confirmation has expired." }, 409);
+  });
+
   app.get("/api/app/subscribers", async (context) => {
     const parsed = subscriberQuerySchema.safeParse(context.req.query());
     if (!parsed.success) return context.json({ error: "Invalid subscriber query.", issues: parsed.error.issues }, 400);
@@ -143,6 +156,7 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
     return context.json({
       subscribers: rows.slice(0, parsed.data.limit),
       capacity: await service.getLimits(),
+      localMail: options.localMail === true,
       limit: parsed.data.limit,
       offset: parsed.data.offset,
       hasMore: rows.length > parsed.data.limit,

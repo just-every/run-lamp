@@ -3,7 +3,9 @@ import { useState } from "react";
 import { DELIVERY_CHANNELS, DELIVERY_OUTCOMES, type DeliveryOutcome } from "../../../shared/domain";
 import type { DeliveryLogChannel } from "../repository";
 import type { DeliveriesService } from "../service";
-import { useAppData } from "../../../app/client/ui/api";
+import { appApi, useAppData } from "../../../app/client/ui/api";
+import { Button } from "../../../app/client/ui/button";
+import { FormError } from "../../../app/client/ui/states";
 import { Icon } from "../../../app/client/ui/icon";
 import { ListPagination } from "../../../app/client/ui/pagination";
 import { LoadingState, useOperatorTime } from "../../../app/client/ui/states";
@@ -18,6 +20,7 @@ type DeliveriesResponse = {
   hasMore: boolean;
   mail: { provider: "rer" | "resend" | "sendgrid" | "mailgun" | "ses" | "postmark"; secondaryProvider:string|null; receiptProviders:Record<string,boolean>; local: boolean; receiptsConfigured: boolean };
   sms: { configured: boolean };
+  localConfirmationAllowed: boolean;
 };
 
 const label = (value: string) => value === "sms" ? "SMS" : value === "email" ? "Email" : value === "webhook" ? "Webhook" : value === "suppressed" ? "Skipped" : value.charAt(0).toUpperCase() + value.slice(1);
@@ -44,22 +47,34 @@ const MAIL_KINDS = { confirmation: "Confirmation email", "already-subscribed": "
 
 // Confirmation and other subscription emails: sent once each, with no retries,
 // so they sit apart from the notification records above.
-function SubscriptionMail({ rows, providerName }: { rows: DeliveriesResponse["subscriptionMail"]; providerName: string }) {
+function SubscriptionMail({ rows, providerName, localConfirmationAllowed, onChanged }: { rows: DeliveriesResponse["subscriptionMail"]; providerName: string; localConfirmationAllowed: boolean; onChanged: () => void }) {
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  async function confirm(subscriberId: string) {
+    setConfirming(subscriberId); setError(null);
+    try {
+      await appApi(`/api/app/subscribers/${subscriberId}/confirm-local`, { method: "POST", body: "{}" });
+      onChanged();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "The subscriber could not be confirmed."); }
+    finally { setConfirming(null); }
+  }
   const formatOperatorTime = useOperatorTime();
-  return <section className="data-card subscriber-table-card" aria-labelledby="subscription-mail-title">
+  return <section className="data-card subscriber-table-card subscriber-directory-card" aria-labelledby="subscription-mail-title">
     <h2 id="subscription-mail-title">Subscription emails</h2>
     <p>The latest confirmation and subscription emails, newest first.</p>
     {rows.length === 0 ? <EmptyState>No subscription email has been sent yet.</EmptyState> : <div className="table-scroll" tabIndex={0} role="region" aria-label="Subscription emails">
-      <table>
-        <thead><tr><th scope="col">Destination</th><th scope="col">Email</th><th scope="col">Outcome</th><th scope="col">Sent</th></tr></thead>
-        <tbody>{rows.map((row) => <tr key={row.id}>
-          <td><strong>{row.destination}</strong><small>{row.subscriberState} subscriber</small></td>
-          <td>{MAIL_KINDS[row.kind]}</td>
-          <td><span className={`state-pill state-${row.outcome === "suppressed" ? "accepted" : row.outcome}`}>{row.outcome === "accepted" || row.outcome === "suppressed" ? `Accepted by ${providerName}` : "Failed"}</span></td>
-          <td>{formatOperatorTime(row.sentAt)}</td>
+      <table role="table">
+        <thead role="rowgroup"><tr role="row"><th scope="col">Destination</th><th scope="col">Email</th><th scope="col">Outcome</th><th scope="col">Recorded</th>{localConfirmationAllowed && <th scope="col">Local action</th>}</tr></thead>
+        <tbody role="rowgroup">{rows.map((row) => <tr role="row" key={row.id}>
+          <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{row.destination}</strong><small>{row.subscriberState} subscriber</small></td>
+          <td role="cell" data-label="Email">{MAIL_KINDS[row.kind]}</td>
+          <td role="cell" data-label="Outcome"><span className={`state-pill state-${row.outcome}`}>{row.outcome === "suppressed" ? "Not sent locally" : row.outcome === "accepted" ? `Accepted by ${providerName}` : "Failed"}</span></td>
+          <td role="cell" data-label="Recorded">{formatOperatorTime(row.sentAt)}</td>
+          {localConfirmationAllowed && <td role="cell" className="subscriber-actions">{row.kind === "confirmation" && row.outcome === "suppressed" && row.subscriberState === "pending" && <Button type="button" variant="secondary" className="table-action" disabled={confirming !== null} onClick={() => void confirm(row.subscriberId)}>{confirming === row.subscriberId ? "Confirming…" : "Confirm locally"}</Button>}</td>}
         </tr>)}</tbody>
       </table>
     </div>}
+    {error && <FormError>{error}</FormError>}
   </section>;
 }
 
@@ -72,7 +87,7 @@ export function DeliveryLog() {
   const search = new URLSearchParams({ limit: "100", offset: String(offset) });
   if (channel) search.set("channel", channel);
   if (outcome) search.set("outcome", outcome);
-  const { data, error, loading } = useAppData<DeliveriesResponse>(`/api/app/deliveries?${search.toString()}`);
+  const { data, error, loading, refresh } = useAppData<DeliveriesResponse>(`/api/app/deliveries?${search.toString()}`);
   if (loading && !data) return <LoadingState />;
   if (error) return <ErrorState onRetry={() => window.location.reload()}>{error}</ErrorState>;
   if (!data) return null;
@@ -88,6 +103,7 @@ export function DeliveryLog() {
       <div><h1>Subscribers</h1><p>See what happened to your updates.</p></div>
       <div className="page-title-actions"><SubscribersViews /><a className="quiet-link delivery-export" href={csvHref}>Export CSV <Icon name="external" width={15} height={15} /></a></div>
     </section>
+    {data.mail.local && <section className="capability-note">No email is sent on this computer. Confirm pending subscribers below to try notifications locally.</section>}
     {!data.mail.local && <section className="capability-note">
       <Icon name="warning" width={18} height={18} />
       <div>{receiptNote(data.mail, data.sms.configured)}</div>
@@ -103,12 +119,12 @@ export function DeliveryLog() {
           <tbody role="rowgroup">{data.deliveries.map((delivery) => {
             const localAccepted = data.mail.local && delivery.channel === "email" && delivery.outcome === "suppressed";
             const rowReceiptsConfigured=data.mail.receiptProviders[delivery.acceptingProvider??data.mail.provider]??false;
-            const acceptedWithoutReceipt = localAccepted || !data.mail.local && delivery.channel === "email" && delivery.outcome === "queued" && Boolean(delivery.providerAcceptedAt) && !rowReceiptsConfigured;
+            const acceptedWithoutReceipt = !data.mail.local && delivery.channel === "email" && delivery.outcome === "queued" && Boolean(delivery.providerAcceptedAt) && !rowReceiptsConfigured;
             return <tr role="row" key={delivery.id}>
               <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{delivery.destination}</strong><small>{delivery.subscriberState} subscriber</small>{delivery.maintenanceReference ? <small>{delivery.maintenanceReference}: {delivery.maintenanceTitle} · {delivery.maintenanceNoticeKind}</small> : null}{delivery.incidentReference ? <small>{delivery.incidentReference}: {delivery.incidentTitle} · {delivery.incidentLifecycle?.toLowerCase()}</small> : null}</td>
               <td role="cell" data-label="Channel">{label(delivery.channel)}</td>
               <td role="cell" data-label="Outcome"><div>
-                <span className={`state-pill state-${acceptedWithoutReceipt ? "accepted" : delivery.outcome}`} data-provider-outcome={delivery.providerOutcome ?? undefined}>{acceptedWithoutReceipt ? `Accepted by ${delivery.acceptingProvider ? providerLabel(delivery.acceptingProvider) : providerName}` : label(delivery.outcome)}</span>
+                <span className={`state-pill state-${acceptedWithoutReceipt ? "accepted" : delivery.outcome}`} data-provider-outcome={delivery.providerOutcome ?? undefined}>{localAccepted ? "Not sent locally" : acceptedWithoutReceipt ? `Accepted by ${delivery.acceptingProvider ? providerLabel(delivery.acceptingProvider) : providerName}` : label(delivery.outcome)}</span>
                 {delivery.providerOutcome === "undelivered" ? <small>Undelivered by carrier</small> : null}
                 {!data.mail.local && delivery.providerAcceptedAt ? <small>{delivery.acceptingProvider ? `${providerLabel(delivery.acceptingProvider)} accepted` : "Provider accepted"} {formatOperatorTime(delivery.providerAcceptedAt)}{delivery.outcome === "queued" && rowReceiptsConfigured ? " · awaiting confirmation" : ""}</small> : null}
                 {delivery.latestError && (delivery.outcome === "failed" || delivery.outcome === "queued") ? <small>{delivery.latestError}</small> : null}
@@ -121,6 +137,6 @@ export function DeliveryLog() {
       </div>
       {data.deliveries.length === 0 ? <EmptyState>No delivery records match these filters.</EmptyState> : <ListPagination label="Delivery" offset={data.offset} shown={data.deliveries.length} hasMore={data.hasMore} onPrevious={() => setOffset((current) => Math.max(0, current - data.limit))} onNext={() => setOffset((current) => current + data.limit)} />}
     </section>
-    <SubscriptionMail rows={data.subscriptionMail} providerName={providerName} />
+    <SubscriptionMail rows={data.subscriptionMail} providerName={providerName} localConfirmationAllowed={data.localConfirmationAllowed} onChanged={refresh} />
   </div>;
 }

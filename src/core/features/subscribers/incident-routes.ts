@@ -19,6 +19,7 @@ const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"
 
 export function registerIncidentSubscriberRoutes(app:Hono<AppEnv>,service:SubscribersService,options:{
   rateLimiter?:PublicWriteRateLimiter;
+  localMail?:boolean;
   response:(request:Request,body:string,status?:number)=>Response;
   full:(request:Request,pageName:string)=>Response;
 }) {
@@ -31,6 +32,7 @@ export function registerIncidentSubscriberRoutes(app:Hono<AppEnv>,service:Subscr
     if(!input.success)return result("Check your subscription","Choose a valid incident, channel and address.",400);
     try {
       const incident=await service.requestIncidentSubscription(input.data,new URL(context.req.url).origin);
+      if(options.localMail&&input.data.channel!=="sms")return result("Local subscription",`No email was sent on this computer. The local owner can confirm pending subscribers in Subscribers → Delivery log. Following ${escapeHtml(incident.reference)} only.`,202);
       return result(input.data.channel==="sms"?"Check your messages":"Check your inbox",`Check your ${input.data.channel==="sms"?"messages":"email"} to confirm or manage this subscription. Following ${escapeHtml(incident.reference)} only.`,202);
     } catch(cause) {
       if(cause instanceof SubscriberLimitError)return options.full(context.req.raw,pageName);

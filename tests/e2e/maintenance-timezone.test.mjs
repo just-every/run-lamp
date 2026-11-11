@@ -1,10 +1,11 @@
+import { localSubscribersFlow } from "./helpers/local-subscribers-flow.mjs";
 import { stripVTControlCharacters } from "node:util";
 import {appHost, appOrigin, pageOrigin} from './helpers/hosts.mjs';
 import { devKey } from '../helpers/dev-key.mjs';
 import { accessibilitySubscriptionFlow } from './helpers/accessibility-subscription-flow.mjs';
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, test } from "node:test";
@@ -148,4 +149,34 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
       }, diagnostic: text => t.diagnostic(text),
     });
   } finally { await context.close(); }
+});
+
+
+test("SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications", { timeout: 180_000 }, async () => {
+  const localContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await localContext.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
+  try { await localSubscribersFlow({ browser, context: localContext, origin }); }
+  finally { await localContext.close(); }
+});
+
+
+test("TEAM-002 — Local operator invitations disclose suppressed email", { timeout: 120_000 }, async () => {
+  const localContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await localContext.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
+  try {
+    const localPage = await localContext.newPage();
+    await localPage.goto(origin + '/app/settings#operators'); await operatorHydrated(localPage);
+    const panel = localPage.getByRole('region', { name: 'Operators', exact: true });
+    await panel.getByLabel('Email', { exact: true }).fill('synthetic-lamp-local-operator@example.test');
+    await panel.getByLabel('Name', { exact: true }).fill('Synthetic Lamp local operator');
+    await panel.getByRole('button', { name: 'Invite operator', exact: true }).click();
+    await panel.getByRole('status').filter({ hasText: 'No email was sent on this computer.' }).waitFor();
+    if (process.env.LAMP_LOCAL_SUBSCRIBERS_EVIDENCE) {
+      await mkdir(process.env.LAMP_LOCAL_SUBSCRIBERS_EVIDENCE, { recursive: true });
+      for (const width of [1440, 390]) {
+        await localPage.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await localPage.screenshot({ path: join(process.env.LAMP_LOCAL_SUBSCRIBERS_EVIDENCE, `local-operator-invitation-${width}.png`), fullPage: true });
+      }
+    }
+  } finally { await localContext.close(); }
 });

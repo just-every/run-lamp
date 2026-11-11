@@ -1693,3 +1693,12 @@ record totals include internal metadata and are not Lamp's per-kind inventory.
 ## The public page is rebuilt when the deployed release changes — 11 November 2026
 
 The stored public page records the running release that built it (`RER_RELEASE_DIGEST`, else the Worker version id). `/health`, once per Worker isolate, rebuilds a page built by another release, by another `PUBLIC_SNAPSHOT_RENDERER_VERSION`, or with work still pending, so a code change shows on a preview that already holds a page without a hand-bumped version. A rebuild that fails never fails `/health`; its work stays pending for the next try. A new generation is always reserved above the bucket pointer's and the retained replica's, so a database that was reset still advances the page. The page content, privacy and Pre-launch behaviour (SUB-024) are unchanged. `tests/e2e/public-contract.test.mjs` exercises it.
+
+## Try subscriber notifications on one computer — 11 November 2026
+
+The local owner can confirm a pending email subscription in Subscribers → Delivery
+log while development mail is suppressed. It uses the ordinary signed confirmation
+and event path and keeps the original three-day expiry. Local public forms and
+subscription/notification records say that no email was sent; local operator
+invitations use the API's suppressed result. The owner action is absent in
+production and demos. Hosted subscriber consent and mail sending remain unchanged.
