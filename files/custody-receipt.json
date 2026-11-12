@@ -1,0 +1,17 @@
+{
+  "head": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+  "at": "2026-11-12T10:06:42.908268+00:00",
+  "remoteRefs": {
+    "refs/heads/cloud/sd-lamp-c-f120": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+    "refs/heads/main": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b"
+  },
+  "mainEqualsCandidate": false,
+  "fullHistory": true,
+  "publicationScan": {
+    "status": "NOT RUN: cloud hands the scan to the guarded fleet lander",
+    "commit": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  }
+}

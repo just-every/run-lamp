@@ -1,0 +1,12 @@
+{
+  "head": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+  "runId": 43195863784,
+  "event": "push",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/just-every/run-lamp/actions/runs/43195863784",
+  "observedAt": "2026-11-12T10:13:49.938985+00:00",
+  "githubCalls": 6,
+  "watchers": 1,
+  "minimumPollIntervalSeconds": 300
+}

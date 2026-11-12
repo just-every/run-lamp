@@ -1,0 +1,16 @@
+{
+  "head": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+  "command": [
+    "perl",
+    "-e",
+    "alarm 1200; exec @ARGV",
+    "--",
+    "node",
+    "--test",
+    "--test-name-pattern=owner maintains a complete catalogue",
+    "tests/e2e/public-contract.test.mjs"
+  ],
+  "startedAt": "2026-11-12T09:56:32.593969+00:00",
+  "exit": 0,
+  "completedAt": "2026-11-12T10:08:11.928027+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "head": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+  "command": [
+    "perl",
+    "-e",
+    "alarm 1200; exec @ARGV",
+    "--",
+    "node",
+    "--test",
+    "--test-name-pattern=Generic public email consent",
+    "tests/e2e/delivery-contract.test.mjs"
+  ],
+  "startedAt": "2026-11-12T10:03:29.799199+00:00",
+  "exit": 0,
+  "completedAt": "2026-11-12T10:03:57.746845+00:00"
+}

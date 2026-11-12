@@ -1,0 +1,23 @@
+{
+  "head": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+  "at": "2026-11-12T10:03:05.985702+00:00",
+  "changedFiles": [
+    "sources.lock.json",
+    "src/core/features/subscribers/repository.ts",
+    "tests/e2e/delivery-contract.test.mjs",
+    "tests/e2e/helpers/subscriber-public-consent-flow.mjs"
+  ],
+  "protectedFiles": {
+    "CONTRACT.md": true,
+    "ACCEPTANCE.md": true,
+    "docs/CLAIMS.md": true
+  },
+  "candidateIdentities": [
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>"
+  ],
+  "noCoauthorTrailer": true,
+  "noSkipMarker": true,
+  "noNewEmailShapedFixtureLiteral": true,
+  "cleanCheckout": true
+}

@@ -1,0 +1,14 @@
+{
+  "head": "f18784ba3a649ed6abde85401f3ea29dc793f19b",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "startedAt": "2026-11-12T09:59:46.526244+00:00",
+  "exit": 0,
+  "completedAt": "2026-11-12T09:59:50.465171+00:00"
+}

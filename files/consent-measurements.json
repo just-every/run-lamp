@@ -1,0 +1,35 @@
+{
+  "journey": "subscriberPublicConsentFlow",
+  "measurements": [
+    {
+      "operation": "confirmation",
+      "elapsedMs": 79.92790699983016,
+      "recipientCount": 1,
+      "providerAccepted": true
+    },
+    {
+      "operation": "confirmation",
+      "elapsedMs": 33.20845999987796,
+      "recipientCount": 1,
+      "providerAccepted": true
+    },
+    {
+      "operation": "confirmation",
+      "elapsedMs": 29.513774999883026,
+      "recipientCount": 1,
+      "providerAccepted": true
+    },
+    {
+      "operation": "confirmation",
+      "elapsedMs": 50.1034679999575,
+      "recipientCount": 1,
+      "providerAccepted": true
+    }
+  ],
+  "boundaryBeforeMs": 86399999,
+  "boundaryAtMs": 86400000,
+  "unsubscribeResetWithoutAdvance": true,
+  "pendingPublicationRecipients": 0,
+  "activePublicationRecipients": 1,
+  "crossSiteRefusals": 2
+}
