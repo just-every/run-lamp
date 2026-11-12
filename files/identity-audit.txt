@@ -1,0 +1,12 @@
+f74465f05b4ef4dc70000a11b3421eac891fd5aa
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+test: isolate capacity groups within public request allowances
+
+f1aaea10271847208e1d00d140d0801643c6da66
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+test: prove inactive subscriber capacity and full-channel invariance
+

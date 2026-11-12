@@ -1,0 +1,15 @@
+# sd-lamp-c-f125 execution plan
+
+Write scope: just-every/run-lamp, cloud/sd-lamp-c-f125 only. Evidence is separate on evidence/sd-lamp-c-f125. No main push, Status-table edits, generated-view commits, documentation-site edits or visual changes.
+
+1. Read launcher instructions, repository AGENTS.md, CONTRACT.md and ACCEPTANCE.md; map SUB-020 and its existing active journeys. Read inline builder rules, DONE-RIDERS, campaign extract and lamp rulings. Record main and native proof boundaries.
+2. Extend the existing subscriberLimitsFlow, reached through subscriberCsvFlow in the registered Subscriber consent journey. Preserve all existing CSV refusal, deletion release and incident-capacity assertions.
+3. Native group 1: saturate total capacity with fixture population plus real pending and active public subscriptions. Unsubscribe using captured recipient authority, retain the deactivated record, independently reconcile all stored identities and eligible counts against native capacity reports, then admit and confirm a replacement through the real public door.
+4. Native group 2: at full capacity submit a pending, active, deactivated and new address. Require identical script-free refusal pages with both feeds, unchanged complete application records apart from attempted-write rate-limit accounting, and unchanged complete captured mail inventories after each refusal. Preserve the full CSV refusal and native deletion recovery.
+5. Inspect limits.ts, limits.repository.ts and intake.service.ts for necessary nonvisual corrections. Change production logic only if public-door proof demonstrates a defect.
+6. Run the touched native helper, the registered delivery journey and typecheck. Run first-party rer checks, generate and check contract views then restore main's view files. Regenerate and check source lock last. No test registrations are added or removed.
+7. Fetch and integrate updated main before candidate publication. Install and retain fleet identity and commit hooks. Audit every candidate author, committer and trailer before each guarded push. Push the first real commit and subsequent substantial commits, with skip-ci for saves.
+8. Discover and follow exact-SHA Verify through REST within the ten-call and five-minute-per-run budget. Claim only observed results; a running Verify is PUSHED under this cloud adaptation. No duplicate dispatch or workflow edits.
+9. Keep actual non-secret report and receipts in this packet and explicitly publish them through the separate evidence entrypoint. Include clause claim, remaining gaps, counts, run identities and sd POST line in terminal report. Delete the clone only after work and evidence are safely published.
+
+Scope boundary: this round closes the assigned native groups in acceptance 2 and 5. Webhook capacity admission, combined chat count, Settings placement and browser counts, every-channel threshold alerts and persistent full-capacity Follow-ups remain omitted under the planner's held remainder. SUB-023 retains CSV capacity review ownership. Hosted delivery qualification and other provider or Base prerequisites remain unproven. Therefore the whole clause remains PARTIAL.

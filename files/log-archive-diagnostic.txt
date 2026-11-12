@@ -1,0 +1,5 @@
+gh run view 43225499439 --repo just-every/run-lamp --job 131208197413 --log-failed
+exit=1
+failed to get run log: zip: not a valid zip file
+HTTP status: unknown, not supplied by gh
+The aggregate-job log command succeeded and cached a complete archive locally. The public failed step was recovered from that local archive without another HTTP call.

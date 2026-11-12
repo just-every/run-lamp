@@ -1,0 +1,310 @@
+{
+  "tag": "sd-lamp-c-f125",
+  "repository": "just-every/run-lamp",
+  "product_branch": "cloud/sd-lamp-c-f125",
+  "product_head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+  "initial_main": "b6115a1a54e6587bcbb069cfc41538597868a966",
+  "counts_before": {
+    "done": 59,
+    "partial": 130,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "changes": [
+    "tests/e2e/helpers/subscriber-limits-flow.mjs",
+    "sources.lock.json"
+  ],
+  "source_sha256": "65803ebeeb92fb111ee55c0e945c9c8d441b9c30e051a07098f9553f1d42e0fe",
+  "diagnostics": [
+    {
+      "scope": "ad hoc runner",
+      "cause": "--input-type=module was inherited by the Miniflare synchronous worker thread; runtime blocked before D1 fixture setup",
+      "resolution": "Stopped only those owned processes. Reran from a normal .mjs file on pinned Node; passed."
+    },
+    {
+      "scope": "initial delivery suite",
+      "error": "browserType.launch: Executable does not exist in the downloaded Playwright browser cache",
+      "resolution": "Configured the prescribed /usr/bin/chromium executable and reran the full file: seven pass, zero fail. No source, assertion or guard changes."
+    }
+  ],
+  "ci": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43229852601",
+    "id": 43229852601,
+    "name": "Verify",
+    "status": "completed",
+    "observed_at": "2026-11-12T13:58:00.840534+00:00",
+    "api_calls_total": 9,
+    "prior_failed_run": 43225499439,
+    "prior_failed_job": 131208197413,
+    "repair_rounds": 1
+  },
+  "product_pushed": true,
+  "publication_scan": {
+    "status": "not_run_in_cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Maintained Mac lander owns the exact-SHA full-history scan.",
+    "commit": "f74465f05b4ef4dc70000a11b3421eac891fd5aa"
+  },
+  "landing": {
+    "main_equals_candidate": false,
+    "candidate_run_site": null,
+    "guarded_lander_pending": true
+  },
+  "migrations_changed": false,
+  "ui_changed": false,
+  "contract_changed": false,
+  "generated_views_committed": false,
+  "mechanical": {
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "views": {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "restored_from_main": true,
+      "committed": false
+    },
+    "migration_ledger": {
+      "command": null,
+      "exit": 0,
+      "reason": "No migration changed."
+    }
+  },
+  "scoped_rubric": {
+    "R1": "MET by passing final exact-head public shard",
+    "R2": "MET by passing final exact-head public shard",
+    "R3": "MET by passing final exact-head public shard",
+    "R4": "MET by passing final exact-head public shard",
+    "R5": "MET by passing final exact-head public shard"
+  },
+  "claim": {
+    "id": "SUB-020",
+    "status": "PARTIAL",
+    "points": [
+      2,
+      5
+    ],
+    "contract_cells_changed": false
+  },
+  "worktree_clean": true,
+  "reproduction": {
+    "head": "f1aaea10271847208e1d00d140d0801643c6da66",
+    "job": 131208197413,
+    "command": "LAMP_VERIFY_SHARD=public pnpm run verify:app",
+    "test": "Subscriber consent, selected publication, channel delivery, export and erasure; subscriberLimitsFlow:95",
+    "exit": 1,
+    "failure": "429 !== 409",
+    "tests_pass": 6,
+    "tests_fail": 1,
+    "duration_ms": 753039.701199,
+    "log": "reproduce-shard.log",
+    "receipt": "reproduced-shard/public.json"
+  },
+  "previous_candidate": {
+    "head": "f1aaea10271847208e1d00d140d0801643c6da66",
+    "ci": {
+      "main_verify": 43222738144,
+      "main_site": 43222738172,
+      "candidate_verify": 43225499439,
+      "candidate_event": "push",
+      "candidate_status": "completed",
+      "candidate_conclusion": "failure",
+      "api_calls": 8,
+      "observed_at": "2026-11-12T13:30:34.619757+00:00",
+      "failed_job": 131208197413,
+      "aggregate_failed_job": 131215246849
+    },
+    "local_delivery_passed": {
+      "tests": 7,
+      "fail": 0,
+      "duration_ms": 764030.828559
+    },
+    "source_sha256": "d97b6bc026565fe5ce9e731098e22418838874ab0515a81644eaf921619a8264"
+  },
+  "integrated_main": "708ff579db8ac27b05765f63e00a80f8832bebba",
+  "count_delta_note": "An independently landed PAGE-019 judgment arrived on main. This round changes no clause Status, Gap or Evidence cell relative to integrated main; SUB-020 stays partial.",
+  "repair": {
+    "round": 1,
+    "production_changed": false,
+    "clock": "existing automation-clock-worker.ts, frozen minute",
+    "request_groups": "consent uses one reserved synthetic visitor; all four refusals use another visitor; real rate limiter remains enabled",
+    "supported_probe_exit": 0,
+    "supported_probe_log": "repaired-native.log"
+  },
+  "commands_before_repair": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "output": "Build, migrations and local owner setup completed. Private setup output is excluded."
+    },
+    {
+      "command": "node /tmp/sd-lamp-native.mjs",
+      "exit": 0,
+      "log": "native-capacity.log",
+      "head_binding": "Relevant source bytes equal the committed candidate. Executed before commit."
+    },
+    {
+      "command": "pnpm typecheck",
+      "node": "22.20.0",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "cases": 85,
+      "assertion_scripts": 10,
+      "checks": 95,
+      "log": "test-plan.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": "Wrote 0 contract documents."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": "Contract prose: 0 errors, 0 warnings. Contract documents are current."
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git fetch origin main; git rebase origin/main",
+      "exit": 0,
+      "output": "Current branch cloud/sd-lamp-c-f125 is up to date."
+    },
+    {
+      "command": "cloud-push.py origin cloud/sd-lamp-c-f125",
+      "exit": 0,
+      "attempt": 1,
+      "output": "PUSH_OK branch=cloud/sd-lamp-c-f125"
+    },
+    {
+      "command": "cloud_run timeout --kill-after=15s 1200 node --test --test-concurrency=1 tests/e2e/delivery-contract.test.mjs",
+      "node": "22.20.0",
+      "chromium": "/usr/bin/chromium",
+      "exit": 0,
+      "head": "f1aaea10271847208e1d00d140d0801643c6da66",
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "duration_ms": 764030.828559,
+      "log": "delivery.log"
+    }
+  ],
+  "commands": [
+    {
+      "command": "pnpm typecheck",
+      "node": "22.20.0",
+      "exit": 0,
+      "head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+      "log": "final-typecheck.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+      "views_restored_from_main": true
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa"
+    },
+    {
+      "command": "cloud-push.py origin cloud/sd-lamp-c-f125",
+      "exit": 0,
+      "head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+      "attempt": 1
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+      "exit": 0,
+      "log": "final-first-party.log"
+    },
+    {
+      "command": "LAMP_VERIFY_SHARD=public pnpm run verify:app",
+      "head": "f74465f05b4ef4dc70000a11b3421eac891fd5aa",
+      "exit": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "duration_ms": 806985.928005,
+      "log": "final-shard.log",
+      "receipt": "final-shard/public.json"
+    }
+  ],
+  "registered_journeys_passed_so_far_before_repair": [
+    {
+      "path": "tests/e2e/delivery-contract.test.mjs",
+      "name": "SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure",
+      "duration_ms": 333695.410499,
+      "head": "f1aaea10271847208e1d00d140d0801643c6da66"
+    },
+    {
+      "path": "tests/e2e/delivery-contract.test.mjs",
+      "name": "Scoped incident subscriptions \u2014 native and Statuspage API consent, private reads and revoked writes",
+      "duration_ms": 118111.081592,
+      "head": "f1aaea10271847208e1d00d140d0801643c6da66"
+    }
+  ],
+  "baseline_comparison": {
+    "head": "b6115a1a54e6587bcbb069cfc41538597868a966",
+    "command": "LAMP_VERIFY_SHARD=public pnpm run verify:app",
+    "exit": 0,
+    "tests_pass": 7,
+    "tests_fail": 0,
+    "skipped": 0,
+    "duration_ms": 819697.995844,
+    "log": "main-shard.log",
+    "receipt": "main-shard/public.json",
+    "same_vm_and_toolchain": true,
+    "note": "Incoming main changes only contract views, their lock, and widget proof files. Relevant delivery tests and subscriber implementation are byte-identical to this baseline."
+  },
+  "full_history": true,
+  "ready": true,
+  "pre_ready": {
+    "selected_native_outcomes_pass": true,
+    "no_assertion_weakened": true,
+    "new_registrations": 0,
+    "no_ui_change": true,
+    "no_policy_default": true,
+    "exact_sha_verify_success": true,
+    "source_lock_fresh": true,
+    "publication_scan_owned_by_lander": true,
+    "run_site_owned_by_lander": true
+  }
+}

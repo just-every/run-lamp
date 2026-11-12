@@ -1,0 +1,23 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+429 !== 409
+
+    at subscriberLimitsFlow (file:///tmp/sd-lamp-fixed-minute-reproduction.mjs:97:53)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///tmp/sd-lamp-fixed-minute-reproduction.mjs:143:1 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 429,
+  expected: 409,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.20.0

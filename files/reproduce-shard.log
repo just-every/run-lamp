@@ -1,0 +1,138 @@
+
+> lamp@1.11.12 verify:app /workspace/run-lamp-sd-lamp-c-f125
+> node scripts/verification/run.mjs
+
+Verification plan: 8 test shards and one shared build, 34 routine test files, 85 registered cases (including release qualification) + 10 assertion scripts = 95 checks.
+
+Verifying public: test:delivery
+
+> lamp@1.11.12 test:delivery /workspace/run-lamp-sd-lamp-c-f125
+> node --test --test-concurrency=1 tests/e2e/delivery-contract.test.mjs
+
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+not ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+  ---
+  duration_ms: 249516.911746
+  type: 'test'
+  location: '/workspace/run-lamp-sd-lamp-c-f125/tests/e2e/delivery-contract.test.mjs:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    429 !== 409
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    subscriberLimitsFlow (file:///workspace/run-lamp-sd-lamp-c-f125/tests/e2e/helpers/subscriber-limits-flow.mjs:95:53)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async subscriberCsvFlow (file:///workspace/run-lamp-sd-lamp-c-f125/tests/e2e/helpers/subscriber-csv-flow.mjs:108:3)
+    async TestContext.<anonymous> (file:///workspace/run-lamp-sd-lamp-c-f125/tests/e2e/delivery-contract.test.mjs:38:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# (node:6011) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# SUB-019: opening native Worker fixture
+# Subtest: NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+ok 2 - NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+  ---
+  duration_ms: 89907.526519
+  type: 'test'
+  ...
+# NOTIFY-013 1440px default-off owner choice persists; real Resend acceptance names its provider in Deliveries
+# SUB-019: native Worker signed in
+# SUB-019: created INC-1
+# SUB-019: created INC-2
+# SUB-019: created INC-3
+# SUB-019: created INC-4
+# SUB-019: created INC-5
+# SUB-019: created INC-6
+# SUB-019: created INC-7
+# SUB-019: created INC-8
+# SUB-019: created INC-9
+# SUB-019: published and delivered INC-7 Identified: Synthetic Lamp INC-7 initial update.
+# SUB-019: published and delivered INC-8 Identified: Synthetic Lamp INC-8 initial update.
+# SUB-019: published and delivered INC-7 Identified: Synthetic Lamp INC-7 next update.
+# SUB-019: published and delivered INC-8 Identified: Synthetic Lamp INC-8 same-component update.
+# SUB-019: published and delivered INC-7 Resolved: Synthetic Lamp INC-7 delivered resolution.
+# SUB-019: published and delivered INC-7 Investigating: Synthetic Lamp INC-7 update after ending.
+# SUB-019: created INC-10
+# SUB-019: published and delivered INC-10 Identified: Synthetic Lamp report-follow initial publication.
+# SUB-019: published and delivered INC-10 Resolved: Synthetic Lamp report-follow first resolution.
+# SUB-019: published and delivered INC-10 Investigating: Synthetic Lamp report-follow reopened before ending.
+# SUB-019: published and delivered INC-10 Resolved: Synthetic Lamp report-follow final resolution.
+# SUB-019: published and delivered INC-10 Investigating: Synthetic Lamp update after report ending.
+# SUB-019: created INC-11
+# SUB-019: published and delivered INC-11 Identified: Synthetic Lamp deadline initial update.
+# SUB-019: published and delivered INC-11 Resolved: Synthetic Lamp deadline resolution.
+# SUB-019: published and delivered INC-11 Investigating: Synthetic Lamp deadline late reopening.
+# SUB-019: published and delivered INC-11 Identified: Synthetic Lamp update after token unsubscribe.
+# SUB-019: opening native Worker fixture
+# SUB-019: native Worker signed in
+# SUB-019: created INC-1
+# SUB-019: created INC-2
+# SUB-019: created INC-3
+# SUB-019: created INC-4
+# SUB-019: created INC-5
+# SUB-019: created INC-6
+# SUB-019: created INC-7
+# SUB-019: published and provider-accepted INC-7 Identified: Synthetic Lamp receiptless initial publication.
+# SUB-019: published and provider-accepted INC-7 Resolved: Synthetic Lamp receiptless resolution.
+# SUB-019: published and provider-accepted INC-7 Investigating: Synthetic Lamp receiptless reopening.
+# SUB-019: created INC-8
+# SUB-019: published and provider-accepted INC-8 Identified: Synthetic Lamp backstop initial publication.
+# SUB-019: published and provider-accepted INC-8 Investigating: Synthetic Lamp reopening after backstop.
+# SUB-019: published and delivered INC-7 Identified: Synthetic Lamp webhook before consent.
+# SUB-019: published and delivered INC-7 Identified: Synthetic Lamp webhook after consent.
+# SUB-019: published and delivered INC-7 Identified: Synthetic Lamp webhook after erasure.
+# SUB-019: published and delivered INC-7 Resolved: Synthetic Lamp shared-address incident resolution.
+# SUB-019: capacity setup from 0 to 25,000
+# SUB-019: capacity fixture is full
+# Subtest: Scoped incident subscriptions — native and Statuspage API consent, private reads and revoked writes
+ok 3 - Scoped incident subscriptions — native and Statuspage API consent, private reads and revoked writes
+  ---
+  duration_ms: 145934.985611
+  type: 'test'
+  ...
+# Subtest: NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes
+ok 4 - NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes
+  ---
+  duration_ms: 210630.441127
+  type: 'test'
+  ...
+# {"probe":"NOTIFY-002","recipients":1000,"persistedAcceptances":1000,"actualAcceptances":1000,"quotaPerSecond":10,"acknowledgementMs":100,"schedulerDelayMs":60000,"p95Ms":185324.19666299998,"lastAcceptanceMs":192309.35795100004,"duplicateRecipients":0}
+# Subtest: Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications
+ok 5 - Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications
+  ---
+  duration_ms: 29403.885838
+  type: 'test'
+  ...
+# Subtest: SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search
+ok 6 - SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search
+  ---
+  duration_ms: 12973.757802
+  type: 'test'
+  ...
+# Subtest: SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary
+ok 7 - SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary
+  ---
+  duration_ms: 11756.625572
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 6
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 753039.701199
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,24 @@
+2026-11-12T13:20:21.0032424Z not ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+2026-11-12T13:20:21.0034324Z   ---
+2026-11-12T13:20:21.0034840Z   duration_ms: 201968.717034
+2026-11-12T13:20:21.0035320Z   type: 'test'
+2026-11-12T13:20:21.0035909Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/delivery-contract.test.mjs:28:1'
+2026-11-12T13:20:21.0036645Z   failureType: 'testCodeFailure'
+2026-11-12T13:20:21.0036936Z   error: |-
+2026-11-12T13:20:21.0037206Z     Expected values to be strictly equal:
+2026-11-12T13:20:21.0037520Z     
+2026-11-12T13:20:21.0037713Z     429 !== 409
+2026-11-12T13:20:21.0037923Z     
+2026-11-12T13:20:21.0038134Z   code: 'ERR_ASSERTION'
+2026-11-12T13:20:21.0038389Z   name: 'AssertionError'
+2026-11-12T13:20:21.0038636Z   expected: 409
+2026-11-12T13:20:21.0038852Z   actual: 429
+2026-11-12T13:20:21.0039364Z   operator: 'strictEqual'
+2026-11-12T13:20:21.0039661Z   stack: |-
+2026-11-12T13:20:21.0040298Z     subscriberLimitsFlow (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/subscriber-limits-flow.mjs:95:53)
+2026-11-12T13:20:21.0041106Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2026-11-12T13:20:21.0041860Z     async subscriberCsvFlow (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/subscriber-csv-flow.mjs:108:3)
+2026-11-12T13:20:21.0042753Z     async TestContext.<anonymous> (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/delivery-contract.test.mjs:38:3)
+2026-11-12T13:20:21.0043405Z     async Test.run (node:internal/test_runner/test:1054:7)
+2026-11-12T13:20:21.0044205Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+2026-11-12T13:20:21.0044772Z   ...
