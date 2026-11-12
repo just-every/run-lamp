@@ -1,0 +1,38 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE PAGE-019 1: native maintenance without an incident -> both floating installations visible; inactive and operational controls hide every configured variant
+PROBE PAGE-019 2: four served installations and populated script artifacts -> exact shared snapshot, raw and gzip size within ten KiB
+PROBE PAGE-019 4: native publication and polling -> floating notices appear with exact selected corners and computed colors
+PROBE PAGE-019 4: native resolution followed by eight actual HTTP polls -> original floating nodes remain attached and are positively hidden
+PROBE COMP-010 minute=0 state=Operational shown=false uptime=null downtime=0 history=1 elapsedMs=460.1
+PROBE COMP-010 minute=10 state=Degraded performance shown=true uptime=100.00% downtime=0 history=2 elapsedMs=377.7
+PROBE COMP-010 minute=20 state=Operational shown=false uptime=75.00% downtime=5 history=3 elapsedMs=370.7
+PROBE COMP-010 minute=30 state=Major outage shown=true uptime=83.33% downtime=5 history=4 elapsedMs=269.2
+PROBE COMP-010 minute=40 state=Operational shown=false uptime=62.50% downtime=15 history=5 elapsedMs=260.9
+PROBE COMP-010 minute=50 state=Partially unavailable shown=true uptime=70.00% downtime=15 history=6 elapsedMs=300.4
+PROBE COMP-010 minute=60 state=Operational shown=false uptime=58.33% downtime=25 history=7 elapsedMs=258.7
+PROBE COMP-010 minute=70 state=Under maintenance shown=true uptime=64.28% downtime=25 history=8 elapsedMs=274.6
+PROBE COMP-010 minute=80 state=Operational shown=false uptime=68.75% downtime=25 history=9 elapsedMs=283.9
+UPTIME_CORRECTION_DEADLINE {"template":"default","elapsedMs":213,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"calm","elapsedMs":255,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"uptime","elapsedMs":249,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"regions","elapsedMs":240,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+PROBE PAGE-013 acceptance2 default: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+PROBE PAGE-013 acceptance3 default: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+PROBE PAGE-013 acceptance2 calm: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+PROBE PAGE-013 acceptance3 calm: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+PROBE PAGE-013 acceptance2 uptime: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+PROBE PAGE-013 acceptance3 uptime: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+PROBE PAGE-013 acceptance2 regions: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+PROBE PAGE-013 acceptance3 regions: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+COMP-007 public disappearance: 46.5 ms
+✔ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (320671.894781ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 322226.283092

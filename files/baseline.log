@@ -1,0 +1,13 @@
+PROBE PAGE-019 3: banner allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+PROBE PAGE-019 3: dot allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+PROBE PAGE-019 3: floating allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+PROBE PAGE-019 3: compatibility allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+✔ [baseline:BASE-ACCESS-001] [baseline:BASE-ACCESS-002] [baseline:BASE-ACCESS-003] [baseline:BASE-ACCESS-004] [baseline:BASE-INPUT-001] [baseline:BASE-INPUT-002] [baseline:BASE-INPUT-003] [baseline:BASE-SECRET-001] [baseline:BASE-DATA-002] [baseline:BASE-DATA-003] [baseline:BASE-DATA-004] [baseline:BASE-DATA-005] [baseline:BASE-PUBLIC-001] [baseline:BASE-PUBLIC-002] An owner publishes private installation data safely, then erases identities and signs out (52097.644343ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 52664.090498

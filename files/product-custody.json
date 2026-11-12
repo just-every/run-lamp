@@ -1,0 +1,14 @@
+{
+  "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+  "main": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b",
+  "remote_branch": "refs/heads/cloud/sd-lamp-c-f122",
+  "remote_head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+  "worktree_clean": true,
+  "source_status_untouched": true,
+  "changed_files": [
+    "sources.lock.json",
+    "tests/e2e/helpers/widget-privacy-flow.mjs",
+    "tests/e2e/public-contract.test.mjs"
+  ],
+  "identity_log": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n"
+}

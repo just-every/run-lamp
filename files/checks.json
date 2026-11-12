@@ -1,0 +1,171 @@
+{
+  "tag": "sd-lamp-c-f122",
+  "base": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log",
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log",
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "log": "views-write.log",
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "views-check.log",
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    },
+    {
+      "command": "node --test --test-name-pattern='An owner publishes private installation data safely' tests/baseline/e2e-baseline/core-baseline.test.mjs",
+      "exit": 0,
+      "log": "baseline.log",
+      "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+    }
+  ],
+  "notes": [
+    "The embedding document is synthetic; all script and polling responses are native Lamp responses.",
+    "Controlled browser timers trigger actual HTTP polls; no runtime response is replaced.",
+    "Local browser access permission is granted so the native script executes its origin decision.",
+    "Application runtime and appearance sources remain unchanged."
+  ],
+  "source_counts": {
+    "done": 57,
+    "partial": 132,
+    "missing": 55,
+    "total": 244
+  },
+  "proposed_after_acceptance": {
+    "done": 58,
+    "partial": 131,
+    "missing": 55,
+    "total": 244
+  },
+  "test_inventory": {
+    "registrations_before": 84,
+    "registrations_after": 84,
+    "assertion_scripts_before": 10,
+    "assertion_scripts_after": 10
+  },
+  "screens": [
+    {
+      "path": "screens/widget-initial-hidden-1440.png",
+      "sha256": "9b0b246d603dc94a7a99d043119a9f9402feb936ad70e815ad5455a39985e994"
+    },
+    {
+      "path": "screens/widget-initial-hidden-390.png",
+      "sha256": "87b415bc5530f859ab6db510f5a9098e8a55b43fd776a00f38c6870909b60256"
+    },
+    {
+      "path": "screens/widget-maintenance-1440.png",
+      "sha256": "e482560fc35ca18dcaf4bd1f8f71b4eea1688dbda0d276b8404736e621ab614b"
+    },
+    {
+      "path": "screens/widget-maintenance-390.png",
+      "sha256": "2d1b0f591900526b603f335455b05faef8552ac8f82f4bd69de73b06d91ddfba"
+    },
+    {
+      "path": "screens/widget-published-1440.png",
+      "sha256": "9e47369c6bd65b3d353f526aef7ad804628f3f32692f6b848c314168a0a1f9b2"
+    },
+    {
+      "path": "screens/widget-published-390.png",
+      "sha256": "13516fdbf9e10ffc69e759549b9be88ef88e33eb2d5cf7fe592e421138267406"
+    },
+    {
+      "path": "screens/widget-resolved-1440.png",
+      "sha256": "f217e478f78bdd5006973cf90f3aeaa03127fd747eefb8ff1c22df0ddbacfbcd"
+    },
+    {
+      "path": "screens/widget-resolved-390.png",
+      "sha256": "87b415bc5530f859ab6db510f5a9098e8a55b43fd776a00f38c6870909b60256"
+    }
+  ],
+  "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+  "branch": "cloud/sd-lamp-c-f122",
+  "repository": "just-every/run-lamp",
+  "product_push": {
+    "status": "published",
+    "attempt": 1,
+    "ref": "refs/heads/cloud/sd-lamp-c-f122",
+    "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c"
+  },
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43197750664",
+    "status": "completed",
+    "verify_run_id": 43197750664,
+    "event": "push"
+  },
+  "publication_scan": {
+    "commit": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "NOT_RUN_CLOUD_LANDER"
+  },
+  "landing": {
+    "main_equals_candidate": false,
+    "run_site_on_candidate": null,
+    "status": "branch_only"
+  },
+  "exact_head_baseline": {
+    "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+    "exit": 0,
+    "duration_ms": 52664.090498,
+    "log": "baseline.log"
+  },
+  "exact_head_public": {
+    "head": "c49a47abcaf5fa5124dc77fa2253a91c1865054c",
+    "exit": 0,
+    "duration_ms": 322226.283092,
+    "log": "public.log"
+  },
+  "local_checks_complete": true,
+  "riders": {
+    "1": "pass",
+    "2": "pass",
+    "3": "pass",
+    "4": "pass",
+    "5": "pass",
+    "6": "pass",
+    "7": "pass",
+    "8": "pass",
+    "9": "pass",
+    "10": "pass",
+    "11": "pending_lander"
+  },
+  "claim": {
+    "id": "PAGE-019",
+    "status": "DONE",
+    "points": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "counting": "accept_on_landing"
+  },
+  "github_api_calls": 6
+}

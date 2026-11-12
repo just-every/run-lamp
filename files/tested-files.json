@@ -1,0 +1,10 @@
+{
+  "tests/e2e/public-contract.test.mjs": "ff2101783c0c344cbe344bf262ccbef25bb35daef252c719abaa952017eb22b2",
+  "tests/e2e/helpers/widget-privacy-flow.mjs": "c1e279fb05041c1d947394af1291e75e4e0487d214ccc493403917f82776676e",
+  "tests/baseline/e2e-baseline/core-baseline.test.mjs": "2ecbe4738923e894be56fd63643abcfb769a694e5fe81086283ac7c391a0a513",
+  "src/core/features/public-snapshot/widget-runtime.js": "80593e889a2a3f91354f3e9568102f62dbaafd2aa30f917a80ce91659c4a1f5e",
+  "src/core/features/public-snapshot/widget.ts": "e03a4b4ed7f80e58fa50b708ebf6bf272ddafb30331a363f337fa7e3d3fdd4c8",
+  "src/core/features/public-snapshot/feed-widget.ts": "b08fcc4765f40418aa0a59d81291943e4d11743918bdfbbf0b63f6b357f84e5f",
+  "src/core/features/public-snapshot/renderer.ts": "add8fbdbdb8eb11e7f22df2fa9e5384fef1516d9861a7f5fae5cc8b443289a71",
+  "src/core/features/page-settings/ui/public-resources.tsx": "21b4a422b394e3279b9784270d5fcb7377c0bfc84feab87ca802047fdecfbba1"
+}
