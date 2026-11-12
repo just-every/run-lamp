@@ -1,0 +1,44 @@
+TAP version 13
+# Subtest: SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+ok 1 - SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+  ---
+  duration_ms: 65773.215432
+  type: 'test'
+  ...
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+ok 2 - INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+  ---
+  duration_ms: 158110.914785
+  type: 'test'
+  ...
+# PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+# PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+# PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+# PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+# PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+# PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+# PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+# {"phase":"acknowledged","finalEdit":1794503840378,"refreshDelivered":1794503840458,"refreshReceived":1794503840463,"putDispatched":1794503841057,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794503841087,"putStatus":200,"finalEditPerformance":2349.20000000007,"nativeAcknowledged":1794503841081,"nativeAcknowledgedPerformance":3051.9000000000233,"saved":1794503841102,"savedPerformance":3073.5,"elapsedToSaved":724,"deadlinePassed":true}
+# {"finalEdit":1794503840378,"refreshDelivered":1794503840458,"refreshReceived":1794503840463,"putDispatched":1794503841057,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794503841087,"putStatus":200,"finalEditPerformance":2349.20000000007,"nativeAcknowledged":1794503841081,"nativeAcknowledgedPerformance":3051.9000000000233,"saved":1794503841102,"savedPerformance":3073.5,"storedDraft":{"id":"01M78C758CHSY6BAJ4GB9TGPHN","incidentId":"01M78C728A8WRB6FXKWH43ES69","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-12T17:17:17.962Z","updatedAt":"2026-11-12T17:17:21.076Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":724,"deadlinePassed":true}
+# {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-15,"browserAckBeforeSavedMs":21.599999999976717}
+# {"earlierPersisted":1794503846064,"finalEdit":1794503846112,"earlierAcknowledged":1794503847123,"latestAcknowledged":1794503847179,"finalEditPerformance":2708.70000000007,"nativeAcknowledged":1794503847178,"nativeAcknowledgedPerformance":3775.5,"saved":1794503847211,"savedPerformance":3808.100000000093,"writes":[{"at":1794503846041,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794503847142,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1099,"deadlinePassed":true}
+# {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-32,"browserAckBeforeSavedMs":32.60000000009313}
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+ok 3 - AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+  ---
+  duration_ms: 25792.463381
+  type: 'test'
+  ...
+# HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+# HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 255120.744084

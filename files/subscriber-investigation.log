@@ -1,0 +1,97 @@
+TAP version 13
+# Local subscriber journey at http://127.0.0.1:35119/app/incidents/01M78C8Z9NKF5E34ZW9AHB66KG Lamp
+# Overview
+# Incidents
+# Components
+# Maintenance
+# Subscribers
+# Settings
+# View your page
+# C
+# Contract Operator
+# Sign out
+# ← Incidents
+# INC-1
+# Synthetic Lamp local payment delays
+# Identified
+# Opened Nov 12, 09:18
+# Next update due 10:18
+# UPDATE DRAFT
+# Not saved yet
+# Status
+# Investigating
+# Identified
+# Monitoring
+# Resolved
+# What’s happening?
+# Who’s affected?
+# Synthetic Lamp local payments
+# Major outage
+# Partially unavailable
+# Degraded performance
+# Operational
+# Next update
+# 15 min
+# 30 min
+# 1 hour
+# 2 hours
+# Times in America/Los_Angeles.
+# PREVIEW
+# Page
+# Email
+# PUBLIC PAGE
+# Monitoring
+# INC-1: Synthetic Lamp local payment delays
+# WHO IS AFFECTED
+# Synthetic Lamp local customers
+# NEXT UPDATE BY
+# Not yet committed
+# Timeline
+# Identified
+# Nov 12, 2026, 09:18 UTC-08:00
+# Payment processing is recovering.
+# Identified
+# Nov 12, 2026, 09:18 UTC-08:00
+# Payment requests are delayed.
+# Synthetic Lamp local payments: Operational → Partially unavailable
+# Emails subscribers · no webhooks
+# Publish update
+# Describe what’s happening before publishing.
+# Brief
+# No open questions
+# Notes
+# No notes yet
+# Impact
+# Major · from components
+# Communication owner
+# Contract Operator
+# Incident subscribers
+# No one follows this incident yet
+# Delete incident
+# Subtest: SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+not ok 1 - SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+  ---
+  duration_ms: 111146.932307
+  type: 'test'
+  location: '/workspace/run-lamp/tests/e2e/maintenance-timezone.test.mjs:174:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.click: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: 'Incident subscribers', exact: true })
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    localSubscribersFlow (/workspace/run-lamp/tests/e2e/helpers/local-subscribers-flow.mjs:157:83)
+    async TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/maintenance-timezone.test.mjs:177:9)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 112466.531807

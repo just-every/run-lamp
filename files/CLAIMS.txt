@@ -1,0 +1,6 @@
+CLAIM SUB-011 PARTIAL points=3 tests=tests/e2e/maintenance-timezone.test.mjs#SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications; tests/e2e/publishing-browser.test.mjs#INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+CLAIM HIST-003 PARTIAL points=1 tests=tests/e2e/update-reminders.test.mjs#AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+DEFAULT SUB-011: Keep existing erasure and anonymous retained history exactly; render tombstones as a plain removed-subscriber label.
+DEFAULT HIST-003: Use the existing replaceable Reports owing service, including the seven-day boundary and publication/waiver exclusions.
+GAP SUB-011: This scoped round does not rejudge every operator-view acceptance point or change the existing partial status.
+GAP HIST-003: This builder makes no DONE promotion; the existing done judgment is retained unchanged.

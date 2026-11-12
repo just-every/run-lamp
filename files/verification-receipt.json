@@ -1,0 +1,202 @@
+{
+  "head": "7bfb459185882497098b4fed00155f248874ce81",
+  "tree": "75cf78391415dc8182e4d7772153721a6a71477c",
+  "base": "f1d878b33ec5063be9ea6a331f8fbd9d090c0a65",
+  "branch": "cloud/main-lamp-readable-records-1",
+  "productFiles": [
+    {
+      "path": "DIVERGENCE.md",
+      "sha256": "6cf6ffd04394cbd4afa677db0cfebf14e5d277556b778ee489e0d17cf9885416"
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "9951c8f2d91653ba21dee745daeb0aa6291619607c0a20eb5f6ae16caefd430f"
+    },
+    {
+      "path": "src/core/features/deliveries/ui/deliveries-page.tsx",
+      "sha256": "cf785bf04af7614ea48c8ae6a328105741a1c73e2d0f07a944a411f8d618589e"
+    },
+    {
+      "path": "src/core/features/reports/routes.ts",
+      "sha256": "31722367e204cd10c91c6c133e003b15a30092489f9f4f3bd03aa9b32d3624b6"
+    },
+    {
+      "path": "src/core/features/reports/ui/report-editor.tsx",
+      "sha256": "0540be4c490715c6e3bc4d3bb83acd372681657d705d152bc683a586044c8236"
+    },
+    {
+      "path": "src/core/features/subscribers/ui/destination-label.ts",
+      "sha256": "e7a855ce77b8737b363cce91fe062ff637eb1102147121068245a6f00594268a"
+    },
+    {
+      "path": "src/core/features/subscribers/ui/subscribers-page.tsx",
+      "sha256": "b5dbc4f532009c4b7474522ee928872237cb56bad955a322a680c309c528577b"
+    },
+    {
+      "path": "tests/e2e/helpers/local-subscribers-flow.mjs",
+      "sha256": "cb1ece8d42af05722f68bfae00fee937d0320015737fab5f8cf36c80ea6f9036"
+    },
+    {
+      "path": "tests/e2e/helpers/report-reminders-flow.mjs",
+      "sha256": "a170892a4a14479a2da0a6f3592184d7bbf6541f09694b6a8e5b92af86ab5340"
+    },
+    {
+      "path": "tests/e2e/publishing-browser.test.mjs",
+      "sha256": "f0cbf3e0a17818e3322a4c0e4f40fc9c7316987ff9a724443b9ca64ceb85917b"
+    }
+  ],
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='Local owner confirms|both severe incidents|compiled visual edits' tests/e2e/maintenance-timezone.test.mjs tests/e2e/update-reminders.test.mjs tests/e2e/publishing-browser.test.mjs",
+      "exit": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "receipt": "touched-tests.log"
+    },
+    {
+      "command": "node --test --test-name-pattern='Local owner confirms' tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "receipt": "subscriber-final.log",
+      "purpose": "final removal assertions and 1440/390 screenshots"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write && node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "receipt": "contract-check.log",
+      "generatedFilesCommitted": false
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-check.json",
+      "regeneratedLast": true
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "registeredCasesBefore": 89,
+      "registeredCasesAfter": 89,
+      "assertionScripts": 10,
+      "totalBefore": 99,
+      "totalAfter": 99,
+      "cap": 200
+    },
+    {
+      "command": "node /tmp/lamp-due-proof.mjs",
+      "exit": 0,
+      "receipt": "owed-browser-receipt.json",
+      "head": "016bb893f9a6f1e1c621527aec2442b2b16ae56e",
+      "screens": [
+        "after-major-report-owed-1440.png",
+        "after-major-report-owed-390.png",
+        "after-major-report-waived-1440.png",
+        "after-major-report-waived-390.png"
+      ]
+    }
+  ],
+  "investigation": {
+    "receipt": "subscriber-investigation.log",
+    "result": "A provisional extra assertion assumed an erased personal incident subscription remained. The ordinary erasure removes it entirely; no product change was needed there. The final test asserts absence instead, while all new directory/history privacy assertions remain. Final repeat passes."
+  },
+  "contract": {
+    "statusEdits": false,
+    "countsBefore": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "countsAfter": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "statuses": {
+      "SUB_011": "partial -> partial",
+      "HIST_003": "done -> done"
+    }
+  },
+  "push": {
+    "success": true,
+    "attempt": 1,
+    "receipt": "product-push.log"
+  },
+  "workflow": {
+    "id": 43269791457,
+    "head_sha": "7bfb459185882497098b4fed00155f248874ce81",
+    "status": "in_progress at discovery",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/43269791457"
+  },
+  "initialHead": "016bb893f9a6f1e1c621527aec2442b2b16ae56e",
+  "initialWorkflow": {
+    "id": 43268652793,
+    "head_sha": "016bb893f9a6f1e1c621527aec2442b2b16ae56e",
+    "status": "completed",
+    "conclusion": "failure",
+    "job": 131359081715,
+    "step": "source:check",
+    "cause": "The lock was generated before the new helper was tracked; the resolver omitted its entry. Reproduced locally on committed tree. Generated correction adds only the missing helper entry."
+  },
+  "correction": {
+    "publishedHistoryRewritten": false,
+    "mergedMain": "f1d878b33ec5063be9ea6a331f8fbd9d090c0a65",
+    "sourceLockRegenerated": true,
+    "sourceCheckOnCommittedHead": true,
+    "sourceCheckReceipt": "source-check-final.json",
+    "productPushReceipt": "product-push-final.log",
+    "productPushAttempt": 1,
+    "featureSourceUnchanged": true
+  },
+  "initialProductFiles": [
+    {
+      "path": "DIVERGENCE.md",
+      "sha256": "6cf6ffd04394cbd4afa677db0cfebf14e5d277556b778ee489e0d17cf9885416"
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "2e7a664c3343d3ecc4c69b479be1051cd5d6bc7d04222a37442d6d720d20eb1b"
+    },
+    {
+      "path": "src/core/features/deliveries/ui/deliveries-page.tsx",
+      "sha256": "cf785bf04af7614ea48c8ae6a328105741a1c73e2d0f07a944a411f8d618589e"
+    },
+    {
+      "path": "src/core/features/reports/routes.ts",
+      "sha256": "31722367e204cd10c91c6c133e003b15a30092489f9f4f3bd03aa9b32d3624b6"
+    },
+    {
+      "path": "src/core/features/reports/ui/report-editor.tsx",
+      "sha256": "0540be4c490715c6e3bc4d3bb83acd372681657d705d152bc683a586044c8236"
+    },
+    {
+      "path": "src/core/features/subscribers/ui/destination-label.ts",
+      "sha256": "e7a855ce77b8737b363cce91fe062ff637eb1102147121068245a6f00594268a"
+    },
+    {
+      "path": "src/core/features/subscribers/ui/subscribers-page.tsx",
+      "sha256": "b5dbc4f532009c4b7474522ee928872237cb56bad955a322a680c309c528577b"
+    },
+    {
+      "path": "tests/e2e/helpers/local-subscribers-flow.mjs",
+      "sha256": "cb1ece8d42af05722f68bfae00fee937d0320015737fab5f8cf36c80ea6f9036"
+    },
+    {
+      "path": "tests/e2e/helpers/report-reminders-flow.mjs",
+      "sha256": "a170892a4a14479a2da0a6f3592184d7bbf6541f09694b6a8e5b92af86ab5340"
+    },
+    {
+      "path": "tests/e2e/publishing-browser.test.mjs",
+      "sha256": "f0cbf3e0a17818e3322a4c0e4f40fc9c7316987ff9a724443b9ca64ceb85917b"
+    }
+  ]
+}

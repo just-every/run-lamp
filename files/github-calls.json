@@ -1,0 +1,78 @@
+[
+  {
+    "number": 1,
+    "time": "2026-11-12T17:22:01.846608+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=016bb8985d65d9b6c955f5d7015c23b6822b8d64&per_page=100",
+      "--jq",
+      ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 2,
+    "time": "2026-11-12T17:22:11.671036+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=016bb893f9a6f1e1c621527aec2442b2b16ae56e&per_page=100",
+      "--jq",
+      ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 3,
+    "time": "2026-11-12T17:27:15.463231+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43268652793",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 4,
+    "time": "2026-11-12T17:27:22.859310+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43268652793/jobs",
+      "--jq",
+      ".jobs[] | {id,name,status,conclusion,steps:[.steps[] | select(.conclusion==\"failure\") | {name,conclusion}]}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 5,
+    "time": "2026-11-12T17:27:30.136625+00:00",
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "43268652793",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "131359081715",
+      "--log-failed"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 6,
+    "time": "2026-11-12T17:28:41.274724+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=7bfb459185882497098b4fed00155f248874ce81&per_page=100",
+      "--jq",
+      ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  }
+]

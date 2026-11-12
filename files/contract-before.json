@@ -1,0 +1,18 @@
+{
+  "counts": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "targets": [
+    {
+      "id": "SUB-011",
+      "status": "partial"
+    },
+    {
+      "id": "HIST-003",
+      "status": "done"
+    }
+  ]
+}

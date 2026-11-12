@@ -1,0 +1,24 @@
+{
+  "origin": "local rer dev",
+  "widths": [
+    1440,
+    390
+  ],
+  "assertionWidth": 1440,
+  "subscriberRemoval": "passed through Remove confirmation; no address parts, internal IDs or tombstones in directory or delivery log; history facts retained",
+  "minorReport": {
+    "owed": false,
+    "canDraft": true,
+    "waiveAction": false
+  },
+  "screens": [
+    "local-removed-subscribers-1440.png",
+    "local-removed-subscribers-390.png",
+    "local-removed-delivery-log-1440.png",
+    "local-removed-delivery-log-390.png",
+    "after-minor-report-1440.png",
+    "after-minor-report-390.png"
+  ],
+  "candidateHead": "016bb893f9a6f1e1c621527aec2442b2b16ae56e",
+  "captureNote": "The directory and delivery-log images were refreshed by the final isolated local Worker journey before the candidate commit. Its UI source matches the candidate; the minor report images came from the initial successful rer dev proof on the same report UI source. The later owed/waived proof ran on the exact committed head."
+}

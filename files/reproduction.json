@@ -1,0 +1,15 @@
+{
+  "base": "main",
+  "subscriber": {
+    "removedAddressAbsent": true,
+    "internalIdVisible": true,
+    "evidence": "before-removed-subscribers-1440.png; first removal through UI before editing source",
+    "historyInternalIdVisible": "Not independently asserted before the display fix; the original directory reproduction is captured."
+  },
+  "minorReport": {
+    "reportsOwing": false,
+    "panelSummary": "Owed: draft it or waive the reminder",
+    "waiveControlVisible": true
+  },
+  "base_full_sha": "26cd67a3e41c0b12c7011348ae792e4007071bbc"
+}
