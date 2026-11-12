@@ -56,7 +56,7 @@ export async function updateReachBrowserFlow({ browser, diagnostic }) {
       await mkdir(evidence, { recursive: true });
       for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-        await panel.screenshot({ path: join(evidence, `reach-${updates.length}-updates-${width}.png`) });
+        await page.screenshot({ path: join(evidence, `reach-${updates.length}-updates-${width}.png`), fullPage: true });
       }
     } finally { await context.close(); }
   } });
