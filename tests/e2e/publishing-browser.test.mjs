@@ -305,6 +305,10 @@ async function assertAssistantDisclosure(id, t) {
   } finally { aiAnswer = null; }
 }
 
+test('TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys', { timeout: 180_000 }, async () => {
+  await (await import('./helpers/audit-labels-flow.mjs')).auditLabelsFlow({ page, appUrl, appFetch });
+});
+
 test('TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities', { timeout: 300_000 }, async t => {
   const {actors}=await (await import('./helpers/operator-roles-flow.mjs')).operatorRolesFlow({appFetch,appUrl,persistTo:statePath,configPath});
   await (await import('./helpers/operator-roles-browser-flow.mjs')).operatorRolesBrowserFlow({page,appUrl,appFetch,actor:actors.viewer});
