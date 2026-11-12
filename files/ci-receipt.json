@@ -1,7 +1,7 @@
 {
   "repository": "just-every/run-lamp",
   "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
-  "calls": 3,
+  "calls": 7,
   "observations": [
     {
       "id": 43268843208,
@@ -32,8 +32,51 @@
       "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
       "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
       "observed_at": "2026-11-12T17:33:16.291865+00:00"
+    },
+    {
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "observed_at": "2026-11-12T17:38:17.093555+00:00"
+    },
+    {
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "observed_at": "2026-11-12T17:43:17.827050+00:00"
+    },
+    {
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "observed_at": "2026-11-12T17:48:18.544597+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "status": "in_progress",
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "observed_at": "2026-11-12T17:53:25.086096+00:00"
     }
   ],
   "run_id": 43268843208,
-  "conclusion": null
+  "conclusion": null,
+  "total_github_invocations_including_pr": 8,
+  "github_budget_remaining": 2,
+  "final_observed_status": "in_progress"
 }

@@ -8,5 +8,10 @@
   "push_attempts": 1,
   "identity": "Run Edit Run fleet <fleet@runeditrun.com>",
   "trailers": [],
-  "full_publication_scan": "fleet lander owns this gate; not run in cloud"
+  "full_publication_scan": "fleet lander owns this gate; not run in cloud",
+  "custody": "PUSHED",
+  "verify_run_id": 43268843208,
+  "verify_status": "in_progress",
+  "verify_conclusion": null,
+  "verify_observed_at": "2026-11-12T17:53:25.086096+00:00"
 }

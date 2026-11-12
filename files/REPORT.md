@@ -80,4 +80,14 @@ The actual final screenshots were reviewed at 1440 and 390. Correction reference
 
 PR: https://github.com/just-every/run-lamp/pull/344
 
-Exact-SHA push Verify: https://github.com/just-every/run-lamp/actions/runs/43268843208 (pending completion at report preparation).
+Exact-SHA push Verify: https://github.com/just-every/run-lamp/actions/runs/43268843208 (last observed in progress at 2026-11-12T17:53:25.086096+00:00).
+
+## Final CI result and handoff
+
+Exact product SHA: 56dc48869caa37051e382e58e348842c41abc593.
+
+Push Verify run 43268843208 remains in progress after thirty minutes. Seven exact-SHA observations used discovery followed by observations at least 300 seconds apart, from one watcher and its final continuation. Including PR creation, eight of the ten permitted GitHub invocations were used; two remain for completed-run failure diagnostics. The remaining budget is short for further polling together with those diagnostics, so this return uses the prescribed PUSHED custody. No completed/success conclusion is claimed, and no READY signal is issued. No failed-job logs were read while the run was in progress.
+
+All requested product changes and local touched checks are complete. The outstanding gate is a successful exact-SHA Verify. The fleet owns the full publication scan and landing; main was not changed by this cloud run. The complete report and actual receipts are returned through refs/heads/evidence/main-lamp-incident-corrections-1, separately from product custody. The final evidence manifest binds all 25 selected files to this product SHA.
+
+No contract clause status changed. PARTIAL builder claims are INCIDENT-004 points 2,3 and INCIDENT-005 points 1,2, as recorded in claims.txt. No provider-delivery claim or new correction policy is added. The existing incident lifecycle and immutable publication rules are retained.
