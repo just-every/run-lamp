@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
 import { createHmac } from 'node:crypto';
 import { performance as clock } from 'node:perf_hooks';
 import { test } from 'node:test';
@@ -74,12 +75,15 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
   const linkedWording = literalLinkFields(wording);
   const reviewer = 'synthetic-lamp-reviewer@example.test';
   const owner = () => j.signIn();
+  let creator, publisher;
   const review = async id => {
     await j.signIn(reviewer);
+    publisher = (await j.json('/api/app/session')).operator;
     await j.json(`/api/app/incidents/${id}/draft/review`, 'POST', {});
   };
   const saveReviewed = async (id, patch) => { await owner(); await j.save(id, patch); await review(id); };
   try {
+    creator = (await j.json('/api/app/session')).operator;
     const savedSettings = (await j.json('/api/app/page-settings')).settings;
     const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, savedSettings[key]]));
     await j.json('/api/app/page-settings', 'PUT', { ...settings, timezone: ['Australia', 'Brisbane'].join('/') });
@@ -93,6 +97,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
       components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }],
     }, 201)).template;
     const incident = await j.incident('Payment requests delayed', [component, hidden]);
+    assert.equal(incident.createdByOperatorId, creator.id);
     const endpoint = `/api/app/incidents/${incident.id}`;
     const publishedUpdates = async () => (await j.db.prepare('SELECT * FROM incident_updates WHERE incident_id = ? ORDER BY published_at, created_at, id').bind(incident.id).all()).results;
     assert.equal(incident.lifecycle, 'Investigating');
@@ -102,6 +107,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await j.publish(incident.id, {}, 400);
     await j.json(`${endpoint}/templates/${template.id}/apply`, 'POST', {});
     const privateDraft = (await j.read(incident.id)).draft;
+    assert.equal(privateDraft.authorOperatorId, creator.id);
     assert.equal(privateDraft.customerImpact, linkedWording.customerImpact);
     for (const path of ['/', '/history', '/feed.atom', '/api/public/status']) {
       const body = await j.publicText(path);
@@ -117,7 +123,9 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(subscription.status, 202);
     const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber)), Boolean, 'subscriber confirmation mail');
     assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
+    assert.notEqual(publisher.id, creator.id, 'the reviewer publishes another operator’s draft');
     const first = (await j.publish(incident.id, { channels: ['email'] })).update;
+    await assertPublicationActor(j, incident.id, first, publisher);
     await j.tick(Date.now());
     const reached = await eventually(() => j.json(`${endpoint}/reach?updateId=${first.id}`), body => body.updates[0].channels.some(row => row.channel === 'email' && row.providerAccepted === 1), 'the frozen publication reaches its committed subscriber');
     assert.equal(reached.updates[0].channels.find(row => row.channel === 'email').committed, 1);
@@ -226,8 +234,11 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     const committedTime = (await j.read(incident.id)).draft.nextUpdateAt;
     assert.ok(committedTime, 'the saved draft has a next-update commitment');
     await j.json(`${endpoint}/draft/correction`, 'POST', { updateId: monitoring.id });
+    assert.equal((await j.read(incident.id)).draft.authorOperatorId, creator.id);
     await review(incident.id);
+    assert.notEqual(publisher.id, creator.id, 'the correction publisher differs from its draft author');
     const corrected = (await j.publish(incident.id)).update;
+    await assertPublicationActor(j, incident.id, corrected, publisher);
     assert.equal(corrected.nextUpdateAt, committedTime, 'publication keeps the saved commitment');
     assert.equal(corrected.correctsUpdateId, monitoring.id);
     const correctedView = await j.read(incident.id);
@@ -567,6 +578,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     const endsAt = new Date(now + 7200000).toISOString();
     const input = { title: 'Database capacity upgrade ;,\\\n' + 'é'.repeat(70), affectedAudience: 'Customers using the database', customerImpact: 'Writes may pause during the upgrade.', startsAt, endsAt, componentIds: [component.id, operatorComponent.id, incidentComponent.id], autoStart: true, autoComplete: false };
     const maintenance = (await j.json('/api/app/maintenance', 'POST', input, 201)).maintenance;
+    const { creator: scheduler, actor: maintainer } = await admitAttributionOperator(j, 'maintenance-actor');
+    assert.equal(maintenance.createdByOperatorId, scheduler.id);
+    assert.equal(maintenance.notices.find(row => row.kind === 'scheduled').authorOperatorId, scheduler.id);
     const endpoint = `/api/app/maintenance/${maintenance.id}`;
     const list = async () => (await j.json('/api/app/maintenance')).maintenance.find(row => row.id === maintenance.id);
     const attachments = async () => (await j.db.prepare('SELECT * FROM maintenance_components WHERE maintenance_id = ? ORDER BY component_id').bind(maintenance.id).all()).results;
@@ -621,7 +635,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 1);
     const actualStart = new Date(now - 7200000).toISOString();
     const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
+    let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd });
+    await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
     await j.tick(Date.now());
     assert.equal((await list()).state, 'In progress');
     await reconcileClaims('In progress', 'Under maintenance', true);
@@ -656,7 +672,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal((await list()).state, 'In progress', 'an unchecked automatic completion never ends the window');
     await reconcileClaims('In progress', 'Under maintenance', true);
     const later = new Date(now + 4 * 3600000).toISOString();
+    priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: later });
+    await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
     assert.equal((await list()).startsAt, actualStart);
     assert.equal((await list()).endsAt, later);
     assert.equal((await list()).overrunning, false);
@@ -666,7 +684,10 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.ok(!extendedPage.includes('Running longer than planned'));
     calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 2, 'extended calendar event');
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
+    priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/complete`, 'POST', {});
+    await assertMaintenanceActor(j, maintenance.id, 'completed', maintainer, priorNotices);
+    assert.equal((await list()).createdByOperatorId, scheduler.id, 'a change never replaces the creator');
     await j.json(`${endpoint}/complete`, 'POST', {}, 409);
     const completed = await eventually(list, row => row.state === 'Completed', 'manual completion');
     await reconcileClaims('Completed', 'Operational', false);
@@ -682,9 +703,16 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assertSeparateRecords(sharedHistory, separateIncident, maintenance, 'history-item');
     const feed = await j.visible('/feed.atom', input.customerImpact);
     assert.ok(feed.includes(maintenance.reference));
+    await j.signIn();
     const cancelled = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Cancelled upgrade' }, 201)).maintenance;
+    await j.signIn(['synthetic-lamp-maintenance-actor', 'example.test'].join('@'));
+    const beforeCancellationEdits = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
     await j.json(`/api/app/maintenance/${cancelled.id}/window`, 'PUT', { startsAt: new Date(now + 5 * 3600000).toISOString(), endsAt: new Date(now + 6 * 3600000).toISOString() });
+    await assertMaintenanceActor(j, cancelled.id, 'rescheduled', maintainer, beforeCancellationEdits);
+    const beforeCancel = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
     await j.json(`/api/app/maintenance/${cancelled.id}/cancel`, 'POST', {});
+    await assertMaintenanceActor(j, cancelled.id, 'cancelled', maintainer, beforeCancel);
+    await j.signIn();
     assert.equal((await j.json('/api/app/maintenance')).maintenance.find(row => row.id === cancelled.id).state, 'Cancelled');
     await eventually(readCalendar, value => value.events.some(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${cancelled.id}@lamp` && event.getFirstPropertyValue('status') === 'CANCELLED'), 'cancelled calendar event');
     const internal = await j.component('Internal database topology', { internal: true });
