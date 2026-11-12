@@ -11,6 +11,7 @@ import { ListPagination } from "../../../app/client/ui/pagination";
 import { LoadingState, useOperatorTime } from "../../../app/client/ui/states";
 import { EmptyState, ErrorState } from "../../../app/client/ui/lit-states";
 import { SubscribersViews } from "../../subscribers/ui/subscribers-views";
+import { subscriberDestinationLabel } from "../../subscribers/ui/destination-label";
 
 type DeliveriesResponse = {
   deliveries: Awaited<ReturnType<DeliveriesService["list"]>>;
@@ -66,7 +67,7 @@ function SubscriptionMail({ rows, providerName, localMail, localConfirmationAllo
       <table role="table">
         <thead role="rowgroup"><tr role="row"><th scope="col">Destination</th><th scope="col">Email</th><th scope="col">Outcome</th><th scope="col">{localMail ? "Recorded" : "Sent"}</th>{localConfirmationAllowed && <th scope="col">Local action</th>}</tr></thead>
         <tbody role="rowgroup">{rows.map((row) => <tr role="row" key={row.id}>
-          <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{row.destination}</strong><small>{row.subscriberState} subscriber</small></td>
+          <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{subscriberDestinationLabel(row.destination)}</strong><small>{row.subscriberState} subscriber</small></td>
           <td role="cell" data-label="Email">{MAIL_KINDS[row.kind]}</td>
           <td role="cell" data-label="Outcome"><span className={`state-pill state-${row.outcome}`}>{row.outcome === "suppressed" ? "Not sent locally" : row.outcome === "accepted" ? `Accepted by ${providerName}` : "Failed"}</span></td>
           <td role="cell" data-label={localMail ? "Recorded" : "Sent"}>{formatOperatorTime(row.sentAt)}</td>
@@ -121,7 +122,7 @@ export function DeliveryLog() {
             const rowReceiptsConfigured=data.mail.receiptProviders[delivery.acceptingProvider??data.mail.provider]??false;
             const acceptedWithoutReceipt = !data.mail.local && delivery.channel === "email" && delivery.outcome === "queued" && Boolean(delivery.providerAcceptedAt) && !rowReceiptsConfigured;
             return <tr role="row" key={delivery.id}>
-              <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{delivery.destination}</strong><small>{delivery.subscriberState} subscriber</small>{delivery.maintenanceReference ? <small>{delivery.maintenanceReference}: {delivery.maintenanceTitle} · {delivery.maintenanceNoticeKind}</small> : null}{delivery.incidentReference ? <small>{delivery.incidentReference}: {delivery.incidentTitle} · {delivery.incidentLifecycle?.toLowerCase()}</small> : null}</td>
+              <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{subscriberDestinationLabel(delivery.destination)}</strong><small>{delivery.subscriberState} subscriber</small>{delivery.maintenanceReference ? <small>{delivery.maintenanceReference}: {delivery.maintenanceTitle} · {delivery.maintenanceNoticeKind}</small> : null}{delivery.incidentReference ? <small>{delivery.incidentReference}: {delivery.incidentTitle} · {delivery.incidentLifecycle?.toLowerCase()}</small> : null}</td>
               <td role="cell" data-label="Channel">{label(delivery.channel)}</td>
               <td role="cell" data-label="Outcome"><div>
                 <span className={`state-pill state-${acceptedWithoutReceipt ? "accepted" : delivery.outcome}`} data-provider-outcome={delivery.providerOutcome ?? undefined}>{localAccepted ? "Not sent locally" : acceptedWithoutReceipt ? `Accepted by ${delivery.acceptingProvider ? providerLabel(delivery.acceptingProvider) : providerName}` : label(delivery.outcome)}</span>

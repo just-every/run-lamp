@@ -5,6 +5,67 @@ link and become active only after confirming. A pending address expires after
 72 hours. Subscribers can manage their component selection or unsubscribe from
 their emailed link.
 
+## Connect email delivery
+
+**Settings → Notifications → Email delivery** reports the sender this installation
+actually uses. On a local `rer dev` installation, email is off even when a provider
+name is present: sign-in uses the one-click owner entry, subscriber pages say no
+email was sent, and the delivery log records **Not sent locally**. Adding hosted
+credentials does not turn local mail on. Use a hosted installation to send mail.
+
+On your own hosted installation, configure mail in the deploy's private input file
+outside the checkout (mode `0600`), or export the same names in the shell that runs
+deployment. These are deployment inputs, not fields you paste into Notifications.
+The [deploy guide's private input file step](deploy.md#step-1-make-a-private-input-file)
+shows where to keep the file; [step 6](deploy.md#step-6-mail)
+walks through authenticating a sender and obtaining a SendGrid or Resend key.
+
+1. Set `MAIL_PROVIDER` to `resend`, `sendgrid`, `mailgun`, `ses` or `postmark`.
+   Set `MAIL_FROM_ADDRESS` to the verified sender and `MAIL_PROVIDER_API_KEY` to
+   that provider's sending credential. Set `MAIL_DKIM_SELECTOR` for the sender's
+   DNS authentication check. The [provider-specific details below](#secondary-email-provider)
+   cover Mailgun's region, SES credentials and Postmark's separate domain-check key.
+2. Run `rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"` from
+   the Lamp folder, using the file path you chose in step 1 of the deploy guide.
+   A deployment using exported environment inputs can omit `--env-file`.
+3. Reopen **Settings → Notifications**. A configured sender is named as the
+   primary provider; missing sender credentials leave email off. A provider name
+   means its sending inputs are configured, not that a message reached a mailbox.
+   Follow the deploy guide's sender and received-message checks before relying on
+   delivery. Signed delivery callbacks have their own keys, described below.
+
+For Managed hosting, Run Edit Run supplies `MAIL_PROVIDER=rer`, `MAIL_FROM`,
+`MAIL_RELAY_URL` and the private `MAIL_API_KEY`; ask the hosting operator to repair
+missing managed-mail inputs. For an edition with a custom `mail.sender.v1`
+adapter, its author configures that adapter in `src/ext/index.server.ts`.
+Keep all credential values private; Notifications displays provider names only.
+
+## Connect SMS delivery
+
+SMS uses your Twilio account and a registered 10DLC campaign or verified toll-free
+sender. In the same private deployment input file (or exported deploy environment),
+set `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`. Add either `TWILIO_FROM_NUMBER`
+(your registered E.164 sender) or `TWILIO_MESSAGING_SERVICE` (the Messaging Service
+SID that owns your registered sender). Lamp uses the service when both are set.
+Obtain these from your [Twilio Console](https://console.twilio.com/); never put
+their values in source or a screenshot.
+
+Redeploy with `rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"`
+as described in [the private input file step](deploy.md#step-1-make-a-private-input-file).
+`rer deploy` also maintains the generated `SUBSCRIBER_TOKEN_SECRET` used for SMS
+management links. Reopen **Settings → Notifications → SMS delivery** to check that
+SMS is configured, then save the accepted countries and support contact there.
+Countries and contact are page preferences; they do not connect a provider.
+SMS stays off when required inputs are missing, outbound SMS is unavailable on
+the hosting plan, or the installation's external effects are paused.
+
+In Twilio, set incoming messages to POST to
+`https://<your-public-page-host>/api/public/sms/inbound` for YES/STOP/HELP replies.
+Lamp includes `https://<your-public-page-host>/api/public/sms/status` as the delivery
+callback when sending. Both routes verify Twilio's signature with the auth token.
+A configured status does not prove registration, carrier delivery or consent;
+subscribers still complete the existing SMS opt-in.
+
 ## Before you launch
 
 A new Lamp page accepts subscriptions from the moment it is reachable. If the page
@@ -294,6 +355,14 @@ Choose a growth month and channel, then **Download CSV** to export the same figu
 Daily growth measures pending plus active subscriptions: a new pending subscription joins inventory, confirmation does not add it again, and deactivation or erasure leaves inventory. Dates use UTC. Tracking starts with the first subscriber change or report read, from the baseline displayed on the report; earlier daily changes are unknown. The first tracked day and the current day are incomplete. Technical backups retain this anonymous history; restoring an older archive starts a new baseline. Audience and language reporting are not yet available.
 
 ### Secondary email provider
+
+Set `MAIL_SECONDARY_PROVIDER` and `MAIL_SECONDARY_API_KEY` in the
+[same private deployment inputs](deploy.md#step-1-make-a-private-input-file) as
+the primary sender, then redeploy with
+`rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"`.
+Reopen **Settings → Notifications → Email delivery** and choose the now-available
+secondary. Choosing **None** turns failover off without removing its private
+credentials. Managed mail does not support a direct secondary provider.
 
 Ordinary hosted deployments can select `mailgun` alongside `resend` and
 `sendgrid`, `ses` and `postmark` through `MAIL_PROVIDER`. Mailgun uses the sender address's domain and

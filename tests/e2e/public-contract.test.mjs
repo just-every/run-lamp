@@ -1,3 +1,4 @@
+import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintenanceActor } from './helpers/operator-attribution.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
@@ -455,8 +456,12 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: customerReview.catalogue, revision: customerReview.revision, reviewToken: customerReview.reviewToken });
 
     // Read component aggregation itself, independently of the page-wide rollup.
+    await admitAttributionOperator(j, 'component-creator');
     const claimsComponent = await j.component('Synthetic claim service');
     const standingPath = `/api/app/components/${claimsComponent.id}/standing-claim`;
+    const originalStateHistory = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+    const { creator: componentCreator, actor: stateActor, email: stateActorEmail } = await admitAttributionOperator(j, 'state-actor');
+    assert.equal(originalStateHistory[0].operatorId, componentCreator.id);
     const assertComponentState = async (expected, description) => {
       assert.equal((await j.json('/api/app/components')).components.find(row => row.id === claimsComponent.id).publicState, expected, `${description}: operator state`);
       const published = await eventually(async () => (await (await j.publicResponse('/api/public/v1/components')).json()).data.find(row => row.id === claimsComponent.id), row => row?.state === expected, `${description}: public component state`);
@@ -468,7 +473,26 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     ], 'the native door accepts exactly the contractual state vocabulary');
     await assertComponentState('Operational', 'refusing an unknown state leaves the component unchanged');
     for (const state of ['Operational', 'Degraded performance', 'Partially unavailable', 'Major outage', 'Under maintenance']) {
+      const beforeState = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+      const requestedAt = Date.now();
       await j.json(standingPath, 'PUT', { state });
+      const respondedAt = Date.now();
+      const history = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+      const appended = history.filter(row => !beforeState.some(prior => prior.id === row.id));
+      assert.equal(appended.length, state === 'Operational' ? 0 : 1);
+      for (const row of appended) {
+        assert.equal(row.previousState, beforeState[0].newState);
+        assert.equal(row.newState, state);
+        assert.equal(row.causeType, 'standing-claim');
+        assert.equal(row.causeId, null);
+        assert.ok(Date.parse(row.changedAt) >= requestedAt && Date.parse(row.changedAt) <= respondedAt);
+        assert.equal(row.operatorId, stateActor.id, 'state history records the actor rather than the creator');
+        assert.equal((await j.db.prepare('SELECT operator_id FROM component_state_history WHERE id = ?').bind(row.id).first()).operator_id, stateActor.id);
+      }
+      assert.deepEqual(history.filter(row => !appended.some(added => added.id === row.id)), beforeState, 'a new actor retains every earlier history value');
+      const claim = await j.db.prepare('SELECT * FROM component_standing_claims WHERE component_id = ?').bind(claimsComponent.id).first();
+      assert.equal(claim.operator_id, stateActor.id);
+      assert.equal(claim.state, state);
       await assertComponentState(state, `standing claim ${state}`);
     }
     await j.json(standingPath, 'PUT', { state: 'Operational' });
@@ -497,12 +521,17 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       await j.publish(claim.id);
     }
     await assertComponentState('Operational', 'resolved incident claims leave the standing Operational claim');
+    await j.signIn(componentCreator.email);
     const window = (await j.json('/api/app/maintenance', 'POST', {
       title: 'Synthetic claim service maintenance', affectedAudience: 'Service customers', customerImpact: 'Routine service maintenance.',
       startsAt: new Date(Date.now() + 3600000).toISOString(), endsAt: new Date(Date.now() + 7200000).toISOString(),
       componentIds: [claimsComponent.id], autoStart: false, autoComplete: false,
     }, 201)).maintenance;
+    assert.equal(window.createdByOperatorId, componentCreator.id);
+    await j.signIn(stateActorEmail);
+    const beforeManualStart = await actorAudits(j, 'maintenance', window.id, 'notice-published');
     await j.json(`/api/app/maintenance/${window.id}/start`, 'POST', {});
+    await assertMaintenanceActor(j, window.id, 'started', stateActor, beforeManualStart);
     await assertComponentState('Under maintenance', 'maintenance outranks an earlier standing Operational claim');
     await j.json(standingPath, 'PUT', { state: 'Operational' });
     await assertComponentState('Under maintenance', 'maintenance outranks a later standing Operational claim');
@@ -518,9 +547,16 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await j.publish(firstClaim.id);
     await j.json(standingPath, 'PUT', { state: 'Operational' });
     await assertComponentState('Under maintenance', 'resolving degradation retains active maintenance');
+    const beforeManualComplete = await actorAudits(j, 'maintenance', window.id, 'notice-published');
     await j.json(`/api/app/maintenance/${window.id}/complete`, 'POST', {});
+    await assertMaintenanceActor(j, window.id, 'completed', stateActor, beforeManualComplete);
     await eventually(() => j.json('/api/app/components'), body => body.components.find(row => row.id === claimsComponent.id).publicState === 'Operational', 'completion releases the maintenance claim');
     await assertComponentState('Operational', 'completion restores the standing Operational state');
+    const beforeRelease = await actorAudits(j, 'component-standing-claim', claimsComponent.id, 'deleted');
+    await j.json(standingPath, 'PUT', { state: null });
+    await assertActorAudit(j, 'component-standing-claim', claimsComponent.id, 'deleted', stateActor, beforeRelease);
+    assert.equal(await j.db.prepare('SELECT * FROM component_standing_claims WHERE component_id = ?').bind(claimsComponent.id).first(), null);
+    await j.signIn();
     await j.json(`/api/app/components/${claimsComponent.id}`, 'DELETE', undefined, 204);
 
     browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });

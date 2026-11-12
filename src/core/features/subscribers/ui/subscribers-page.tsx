@@ -13,6 +13,7 @@ import { AddSubscriber } from "./add-subscriber";
 import { SubscriberImportExport } from "./subscriber-import-export";
 import { WebhookFormatLabel } from "./webhook-format";
 import { SubscribersViews } from "./subscribers-views";
+import { subscriberDestinationLabel } from "./destination-label";
 
 type SubscribersResponse = { localMail: boolean; capacity:SubscriberCapacity[]; subscribers: Awaited<ReturnType<SubscribersService["list"]>>; limit: number; offset: number; hasMore: boolean };
 
@@ -44,7 +45,7 @@ export function SubscribersPage() {
         <table role="table">
           <thead role="rowgroup"><tr role="row"><th scope="col">Destination</th><th scope="col">Channel</th><th scope="col">State</th><th scope="col">Selection</th><th scope="col">Joined</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
           <tbody role="rowgroup">{data.subscribers.map((subscriber) => <tr role="row" className={subscriber.incident ? "incident-subscriber-row" : undefined} key={subscriber.id}>
-            <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{subscriber.channel === "slack" ? "Slack channel" : subscriber.channel === "teams" ? "Teams channel" : subscriber.destination}</strong>{subscriber.contactEmail && <small>Contact {subscriber.contactEmail}</small>}<ClientExtensionSlot id="subscriber.detail.after.v1" context={{ subscriber: { id: subscriber.id, channel: subscriber.channel, state: subscriber.state, destination: subscriber.destination } }} /></td>
+            <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{subscriberDestinationLabel(subscriber.destination, subscriber.channel)}</strong>{subscriber.contactEmail && <small>Contact {subscriber.contactEmail}</small>}<ClientExtensionSlot id="subscriber.detail.after.v1" context={{ subscriber: { id: subscriber.id, channel: subscriber.channel, state: subscriber.state, destination: subscriber.destination } }} /></td>
             <td role="cell" data-label="Channel"><div>{subscriber.channel}<WebhookFormatLabel channel={subscriber.channel} format={subscriber.webhookFormat} /></div></td>
             <td role="cell" data-label="State"><div><span className={`state-pill state-${subscriber.state}`}>{subscriber.state}</span>{subscriber.deactivationReason && <small>{subscriber.deactivationReason}{subscriber.deactivatedAt ? ` · ${formatOperatorTime(subscriber.deactivatedAt)}` : ""}</small>}</div></td>
             <td role="cell" data-label="Selection">{subscriber.incident ? <a href={`/app/incidents/${subscriber.incident.id}`}>Following {subscriber.incident.reference}</a> : subscriber.selectionMode === "all" ? "All components" : `${subscriber.componentSelections.length} selected component${subscriber.componentSelections.length === 1 ? "" : "s"}`}</td>
