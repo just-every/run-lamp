@@ -1,0 +1,190 @@
+{
+  "tag": "sd-lamp-c-f127",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f127",
+  "base": "b6115a1a54e6587bcbb069cfc41538597868a966",
+  "full_history": true,
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node --check for all four edited JavaScript files",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "changed-text email and credential-shaped value check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check after final integration",
+      "exit": 0
+    }
+  ],
+  "ledger": {
+    "command": null,
+    "reason": "No migration was added or edited",
+    "exit": 0
+  },
+  "counts": {
+    "before": {
+      "done": 59,
+      "partial": 130,
+      "missing": 55,
+      "total": 244
+    },
+    "after": {
+      "done": 59,
+      "partial": 130,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "test_inventory": {
+    "before_cases": 85,
+    "after_cases": 85,
+    "before_assertion_scripts": 10,
+    "after_assertion_scripts": 10
+  },
+  "relevant_bytes": {
+    "tests/e2e/helpers/operator-attribution.mjs": "276cd6e3d4de38a4bd0cc62317a614c8389e034a33d9eb5ce739937a70114b23",
+    "tests/e2e/helpers/subscriber-add-flow.mjs": "d1891438b1e3ce558b3ed96725e983762d1545bfa039dcf341cf1b4f4a27050a",
+    "tests/e2e/public-contract.test.mjs": "354369b57a1adcfed40abf2fcebe9e9be5d9584f663fd1be0cc56753f13c6836",
+    "tests/e2e/publishing-contract.test.mjs": "821ccca5f0bd6df8ad727dbdb5a3e6a74ff3b18fa75e9da369c9522e140f8a14",
+    "tests/e2e/helpers/uptime-correction-journey.mjs": "e23747e0dade3eb22a154b1c181e2aad3401b3ef294730e640f142d9148789e4"
+  },
+  "claim": {
+    "clause": "TEAM-003",
+    "status": "PARTIAL",
+    "points": [
+      1
+    ],
+    "gap": "Acceptance 2: private acting-name display and complete public-name exclusion are unproved and omitted by the supplied planner."
+  },
+  "publication_scan": {
+    "status": "NOT RUN in cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "main_equality": "Not landed; cloud branch only",
+  "candidate_run_site": "Not applicable before landing; maintained Mac lander owns it",
+  "pr": null,
+  "head": "7f1dbcec21df69ffa113e40f33c9ab6e2b1c0d00",
+  "tree": "e778e67736de6f2abf12f3933534b56ddef41b19",
+  "base_after_integration": "b6115a1a54e6587bcbb069cfc41538597868a966",
+  "integration": {
+    "command": "git fetch origin main then git rebase origin/main",
+    "result": "already up to date",
+    "exit": 0
+  },
+  "product_push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-c-f127",
+    "exit": 0,
+    "attempts": 1,
+    "status": "PUSH_OK",
+    "head": "7f1dbcec21df69ffa113e40f33c9ab6e2b1c0d00"
+  },
+  "identity_audit": {
+    "range": "origin/main..HEAD",
+    "commits": 1,
+    "side_parents_included": true,
+    "author_and_committer": "fleet",
+    "trailers": [],
+    "exit": 0
+  },
+  "contract_diff_bytes": 0,
+  "generated_view_diff_bytes": 0,
+  "relevant_committed_bytes_match_local_runs": true,
+  "suites": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 101552.043923,
+      "bytes_match_candidate": true
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "exit": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 404442.357848,
+      "bytes_match_candidate": true
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/delivery-contract.test.mjs",
+      "exit": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 565755.270436,
+      "bytes_match_candidate": true
+    }
+  ],
+  "ci_discovery": {
+    "total_count": 1,
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "7f1dbcec21df69ffa113e40f33c9ab6e2b1c0d00",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43226152365",
+        "id": 43226152365,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ]
+  },
+  "github_api_calls": 2,
+  "remote_product_head_verified": "7f1dbcec21df69ffa113e40f33c9ab6e2b1c0d00",
+  "product_checkout_clean": true,
+  "source_lock_tracked_new_helper": true,
+  "clone_cleanup": "Scheduled after successful evidence publication and verification; recovery packet remains outside the clone."
+}

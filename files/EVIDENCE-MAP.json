@@ -1,0 +1,47 @@
+[
+  {
+    "item": "publication",
+    "path": "tests/e2e/publishing-contract.test.mjs",
+    "line": 128
+  },
+  {
+    "item": "correction publication",
+    "path": "tests/e2e/publishing-contract.test.mjs",
+    "line": 241
+  },
+  {
+    "item": "state history",
+    "path": "tests/e2e/public-contract.test.mjs",
+    "line": 331
+  },
+  {
+    "item": "manual start",
+    "path": "tests/e2e/public-contract.test.mjs",
+    "line": 375
+  },
+  {
+    "item": "manual maintenance edits",
+    "path": "tests/e2e/publishing-contract.test.mjs",
+    "line": 638
+  },
+  {
+    "item": "history correction",
+    "path": "tests/e2e/helpers/uptime-correction-journey.mjs",
+    "line": 184
+  },
+  {
+    "item": "erasure",
+    "path": "tests/e2e/helpers/subscriber-add-flow.mjs",
+    "line": 171
+  },
+  {
+    "item": "exact audits",
+    "path": "tests/e2e/helpers/operator-attribution.mjs",
+    "line": 24
+  },
+  {
+    "item": "independent admission",
+    "path": "tests/e2e/helpers/operator-attribution.mjs",
+    "line": 5
+  }
+]
