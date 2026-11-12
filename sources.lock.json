@@ -8344,7 +8344,7 @@
       "executable": false
     },
     "tests/e2e/helpers/uptime-correction-journey.mjs": {
-      "sha256": "e23747e0dade3eb22a154b1c181e2aad3401b3ef294730e640f142d9148789e4",
+      "sha256": "ed26216a7c1639470626bd6edb2ac2295e066b37d783ca0e71876c97cf70bdeb",
       "executable": false
     },
     "tests/e2e/helpers/uptime-pairing-flow.mjs": {
@@ -8404,7 +8404,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "e1dbf1a8da20c75121ae8fe1d8a7c2440e7d3a4b1f25c38af850ed78a2d48377",
+      "sha256": "1c063f9b605a909cf16729924478ae2872c7b55419fbf01f69f9049f5e12c4ac",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
