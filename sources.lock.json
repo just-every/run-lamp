@@ -8268,7 +8268,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-limits-flow.mjs": {
-      "sha256": "f748a97db1736be1ad7b054c7d6ac365f31535fbf9361af0db1d2be589f9fdf8",
+      "sha256": "546b66f392085427b50e38f673daf057fdcb93bb28ac889a4e372964277afe7c",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-management-fixture.mjs": {
@@ -8464,7 +8464,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "e378598d668540c1a849cfc28601a1c26725ea1a9ab8ee79e2b1b31acb8273dd",
+      "sha256": "d400f149e33c89c19a6b6e0d5faffbc4e80c428647af1f1a2b7565c057f16085",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
