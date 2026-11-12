@@ -1,5 +1,13 @@
 # DIVERGENCE.md
 
+## Notification provider guidance — 12 November 2026
+
+Settings → Notifications reports the composed sender's actual configuration and
+local suppression, so a fresh local install reads as email off. Email and SMS
+name their private deployment inputs and link to the on-site setup steps.
+Configured hosted senders retain their primary provider name. Sending, retries,
+failover and local suppression retain their existing behavior.
+
 ## Statuspage reader guidance — 12 November 2026
 
 The native Cutover report names the existing compatibility embed as served on
