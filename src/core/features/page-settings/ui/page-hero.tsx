@@ -12,11 +12,11 @@ export function PageHero({ live, markSrc }: { live: LiveStatus | null; markSrc: 
   return <section className="data-card page-hero" id="public-address" aria-labelledby="page-hero-address">
     <img className="page-hero-mark" src={markSrc} alt="" width={84} height={84} />
     <div className="page-hero-facts">
-      <p className="card-kicker">Your status page</p>
+      <p className="card-kicker">{live?.preview ? "Your preview copy" : "Your status page"}</p>
       {origin ? <a id="page-hero-address" className="page-hero-address" href={`${origin}/`} target="_blank" rel="noopener">{new URL(origin).host}<Icon name="external" width={18} height={18} /></a> : <p id="page-hero-address" className="page-hero-address">Loading address…</p>}
-      <p className={`page-hero-live${problem ? " is-failing" : ""}`}><span className="live-dot" />{problem ?? (live?.publishedAt ? `Live · last published ${relativeTime(live.publishedAt)}. Changes publish automatically.` : "Publishing…")}</p>
-      {origin && isLocal(origin) ? <p className="page-hero-note">This address works only on this computer. <a className="text-link" href="/docs/deploy">Deploy Lamp</a> to give customers a public one.</p> : null}
-      <a className="text-link" href="/docs/domains">Use a custom domain</a>
+      <p className={`page-hero-live${problem ? " is-failing" : ""}`}><span className="live-dot" />{problem ?? (live?.preview ? (live.publishedAt ? `Preview last published ${relativeTime(live.publishedAt)}. Changes update this preview automatically.` : "Preparing preview…") : (live?.publishedAt ? `Live · last published ${relativeTime(live.publishedAt)}. Changes publish automatically.` : "Publishing…"))}</p>
+      {live?.preview ? <p className="page-hero-note">This is not your customers’ address. No subscribers are notified. Return to RunEditRun and publish this version to make it live.</p> : origin && isLocal(origin) ? <p className="page-hero-note">This address works only on this computer. <a className="text-link" href="/docs/deploy">Deploy Lamp</a> to give customers a public one.</p> : null}
+      {!live?.preview && <a className="text-link" href="/docs/domains">Use a custom domain</a>}
     </div>
   </section>;
 }

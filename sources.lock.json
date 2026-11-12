@@ -4292,11 +4292,11 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "84ba51d5e579dd17b0dbd91498ecdaed7b054464750da3fda03fee53fcd64751",
+      "sha256": "564851ef8389b328a4bbccdce86da7db9fe12da0ab00cbc4c05809f0b22573ba",
       "executable": false
     },
     "src/core/app/types.ts": {
-      "sha256": "6afb1da953c8e7048482ab4c986ab6a0d40b03d4b7ed02c38f8b578bb78eba9b",
+      "sha256": "80540a948d919c662d20b92e27a8682fab8495f21260c06e48f2127179bafd4c",
       "executable": false
     },
     "src/core/app/worker-lifecycle.ts": {
@@ -5392,7 +5392,7 @@
       "executable": false
     },
     "src/core/features/overview/live-status.ts": {
-      "sha256": "3ad04883100a696427d3f3c14186621ffde02c414da98a1d801e1da4a9941c61",
+      "sha256": "32844e4788fbd0f4e35968004f3bd8e650391b5f55377131403c190600d2bb8c",
       "executable": false
     },
     "src/core/features/overview/repository.ts": {
@@ -5420,7 +5420,7 @@
       "executable": false
     },
     "src/core/features/overview/ui/live-strip.tsx": {
-      "sha256": "d5ea94916647b310fae9d93c3f6277022866d1b6c61a623a677540e129645f95",
+      "sha256": "4b14cd5ec6b7c8ba44696da5043dcb77780271131827a66600b20a088718a129",
       "executable": false
     },
     "src/core/features/overview/ui/overview-page.tsx": {
@@ -5428,7 +5428,7 @@
       "executable": false
     },
     "src/core/features/overview/ui/your-page.tsx": {
-      "sha256": "8f642f1583c8fbac601ff8a244e17e9eb284e6b7460bde3bd16061ea90dfd4c4",
+      "sha256": "ae33876f2b8ea2ba8aacbdd4f7b4cfb701c5f116fa1feccbc46de4e003c35c84",
       "executable": false
     },
     "src/core/features/owner-claim/repository.ts": {
@@ -5544,7 +5544,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/page-hero.tsx": {
-      "sha256": "f8d37c7edadf872bba34945e803a3a1b591a4a0a5289fa04421677792291c580",
+      "sha256": "66901218375cc53b9ccf3739952a6ae8ec89749806c95a7cffc9e70d8080ec35",
       "executable": false
     },
     "src/core/features/page-settings/ui/page-preview.tsx": {
@@ -5576,11 +5576,11 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-page.tsx": {
-      "sha256": "fa766a9b5ecec6b64f9d3b05744cdbf0296b6d05f49ec2248cb981f763c3380c",
+      "sha256": "49b4f707527c581de55b810606b98318ac8f950d39004661c569355b2c0c43eb",
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-save-state.tsx": {
-      "sha256": "396a13b82e5b1564e085d73995cd967e66969563d8722b114a967f2e5c5ddbff",
+      "sha256": "41e60251ea9ec49048930b9fca287ec4cb86ffd4544bc9e38d45a978ded18e4b",
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-tabs.tsx": {

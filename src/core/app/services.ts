@@ -236,6 +236,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   const aiUnavailable = outboundUnavailable(bindings, "AI suggestions");
   const ai = createAiService(briefs, aiUnavailable ? null : aiProvider, aiUnavailable);
   const overview = createOverviewService(components, incidents, maintenance, createLiveStatusService(createOverviewRepository(bindings.DB), pageSettings, {
+    preview: bindings.RER_PREVIEW_OWNER_SIGNIN === '/auth/owner-signin',
     prelaunch: () => readPrelaunch(blobs),
     // An operator request reads the page host at its own scheme and port, as
     // the Settings link to the public page does; Cron uses the deployment's.

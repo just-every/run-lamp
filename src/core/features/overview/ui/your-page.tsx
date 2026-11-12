@@ -23,7 +23,7 @@ export function YourPageFacts({ live, pageName, accentColor, components }: { liv
       <section className="data-card" aria-labelledby="checked-title">
         <p className="card-kicker" id="checked-title">What Lamp checked</p>
         <ul className="checked-list">
-          <Fact ok={live.publishedAt ? true : null} label="Page published" detail={live.publishedAt ? relativeTime(live.publishedAt) : "Publishing now"} />
+          <Fact ok={live.publishedAt ? true : null} label={live.preview ? "Preview published" : "Page published"} detail={live.publishedAt ? relativeTime(live.publishedAt) : "Publishing now"} />
           <Fact ok={live.page ? live.page.ok : null} label="Address answering" detail={live.page?.reason ?? host} />
           <Fact ok={live.subscribe ? live.subscribe.ok : null} label="Subscribe form working" detail={live.subscribe?.reason ?? (live.subscribe ? `checked ${relativeTime(live.subscribe.checkedAt)}` : "Checking soon")} />
           {live.sender.state === "local" ? null : <Fact ok={live.sender.state === "verified" ? true : live.sender.state === "failed" ? false : null} label="Mail sender" detail={live.sender.message ?? (live.sender.state === "verified" ? "Verified by your mail provider" : "Checking soon")} />}

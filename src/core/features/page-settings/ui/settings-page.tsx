@@ -74,7 +74,7 @@ export function SettingsPage() {
 
   return <div className="page-stack settings-page" inert={!ready}>
     <section className="page-title-row"><div><h1>{settingsLabel(tab)}</h1>{LINES[tab] && <p>{LINES[tab]}</p>}</div></section>
-    {SAVES.has(tab) && <SettingsSaveState phase={phase} error={autosave.error} retry={autosave.retry} />}
+    {SAVES.has(tab) && <SettingsSaveState phase={phase} error={autosave.error} retry={autosave.retry} preview={live?.preview} />}
     <div className={FORMS.has(tab) ? "settings-form page-stack" : "page-stack"}>
       {tab === "page" && <>
         {live ? <YourPageFacts live={live} pageName={saved.pageName} accentColor={saved.accentColor} components={components} /> : overview.error ? <FormError>{overview.error}</FormError> : null}

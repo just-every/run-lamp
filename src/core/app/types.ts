@@ -9,6 +9,8 @@ export interface AppBindings {
   EFFECTS_PAUSED?: string;
   RER_DEMO?: string;
   RER_DEMO_EXPIRES?: string;
+  /** The declared owner-entry path, supplied by RER only on preview Workers. */
+  RER_PREVIEW_OWNER_SIGNIN?: string;
   OWNER_EMAIL?: string;
   RER_OWNER_CLAIM_PUBLIC_KEYS?: string;
   RER_OWNER_CLAIM_ISSUER?: string;

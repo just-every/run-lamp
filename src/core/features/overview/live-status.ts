@@ -6,6 +6,7 @@ import { checkSender, senderEvidenceKey, type SenderCheckOptions } from './sende
 export interface LiveCheck { ok: boolean; checkedAt: string; reason: string | null }
 export interface SenderStatus { state: 'local' | 'verified' | 'failed' | 'unchecked'; message: string | null; checkedAt: string | null }
 export interface LiveStatus {
+  preview: boolean;
   publicOrigin: string;
   publishedAt: string | null;
   page: LiveCheck | null;
@@ -33,6 +34,7 @@ const NOT_ANSWERING = 'Your public page is not answering. Check the deployment a
 const NO_FORM = 'No subscribe form found. Check your public address in Settings.';
 
 export function createLiveStatusService(repository: OverviewRepository, settings: PageSettingsService, options: {
+  preview?: boolean;
   publicOrigin: () => Promise<string>;
   publishedAt: () => Promise<string | null>;
   /** A page that has not launched offers no subscribe form; that is not a failure. */
@@ -106,7 +108,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
       await checkSenderIfDue();
       const check = (reason: string | null): LiveCheck | null => stored ? { ok: reason === null, checkedAt: stored.checkedAt, reason } : null;
       const prelaunch = await options.prelaunch();
-      return { publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: prelaunch ? null : check(stored?.subscribe ?? null), sender: await sender(),
+      return { preview: options.preview === true, publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: prelaunch ? null : check(stored?.subscribe ?? null), sender: await sender(),
         senderVerificationManaged: !options.sender.local && options.sender.provider === 'rer' && options.sender.mail.configured };
     },
     runChecks,
