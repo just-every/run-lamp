@@ -105,6 +105,14 @@ export async function updateReachFlow({ observe = async () => {}, diagnostic = (
         assert.equal(single.updates[0].updateId, update.id);
         for (const result of [single.updates[0], reach.updates.find(row => row.updateId === update.id)]) check(result, expected);
         const logged = await deliveries(update);
+        const expectedOutcome = subscriberId => index === 0
+          ? subscriberId === recipients[9].id ? 'bounced' : 'delivered'
+          : index === 1
+            ? [recipients[0].id, recipients[10].id].includes(subscriberId) ? 'suppressed'
+              : [recipients[1].id, recipients[11].id].includes(subscriberId) ? 'failed' : 'delivered'
+            : 'delivered';
+        assert.deepEqual(logged.map(row => ({ ...identity([row])[0], outcome: row.outcome })).sort((a, b) => a.id.localeCompare(b.id)),
+          updates[index].frozen.map(row => ({ ...row, outcome: expectedOutcome(row.subscriberId) })), 'each retained recipient has its independently expected outcome');
         assert.deepEqual(identity(logged), updates[index].frozen, 'outcomes and retries retain the complete committed delivery identities');
         const persisted = (await fixture.db.prepare('SELECT id,subscriber_id AS subscriberId,channel,outcome FROM notification_delivery_records WHERE incident_update_id = ? ORDER BY id').bind(update.id).all()).results;
         assert.deepEqual(persisted, logged.map(row => ({ id: row.id, subscriberId: row.subscriberId, channel: row.channel, outcome: row.outcome })).sort((a, b) => a.id.localeCompare(b.id)), 'the native delivery log reads the retained facts exactly');
