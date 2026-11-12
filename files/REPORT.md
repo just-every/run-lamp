@@ -12,7 +12,7 @@ Current main's counts are 57 done, 132 partial, 55 missing, 244 total. The produ
 
 ## Frozen outcome rubric and acceptance coverage
 
-All rows below use tests/e2e/statuspage-import.test.mjs, test “SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes”, loading postmortemTemplateImportFlow in tests/e2e/helpers/postmortem-template-import-flow.mjs. Local results are in validation.json and the native journey log. Exact-SHA push Verify: push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: in progress (last REST observation; not yet green).
+All rows below use tests/e2e/statuspage-import.test.mjs, test “SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes”, loading postmortemTemplateImportFlow in tests/e2e/helpers/postmortem-template-import-flow.mjs. Local results are in validation.json and the native journey log. Exact-SHA push Verify: push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: completed, success.
 
 | Item | Acceptance outcome and ordinary door | Assertion evidence | Result |
 | --- | --- | --- | --- |
@@ -29,9 +29,9 @@ The six requested outcome groups are R1 names and identities, R1 lifecycles, R2 
 
 | Rider | Result and evidence |
 | --- | --- |
-| 1 | PASS: all six acceptance outcomes are reached through the real migrated Worker and native owner routes; R1-R6 above. Exact-SHA Verify is push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: in progress (last REST observation; not yet green). |
+| 1 | PASS: all six acceptance outcomes are reached through the real migrated Worker and native owner routes; R1-R6 above. Exact-SHA Verify is push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: completed, success. |
 | 2 | PASS: seeded nonempty template control; exact three-template inventory; independent literal lifecycles, wording, states and two selected components; capture two complete rows before undo. The former empty-set-vulnerable membership check remains and is now preceded by exact nonempty equality. Unsafe oversized application is refused before shortening. |
-| 3 | push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: in progress (last REST observation; not yet green): existing test:imports is in the imports shard of Verify, as declared by scripts/verification/plan.mjs and package.json. No conditional or nightly-only registration. |
+| 3 | PASS: push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: completed, success: existing test:imports is in the imports shard of Verify, as declared by scripts/verification/plan.mjs and package.json. No conditional or nightly-only registration. |
 | 4 | PASS: validation is bound to the final candidate and relevant file hashes; no source or test byte changes after the successful validation. |
 | 5 | INSPECTED: MOVE-014 explicitly derives from MOVE-011. It adds no new Base duty or policy. The surrounding duties remain in their existing receiving clauses. |
 | 6 | PASS mechanical: generator write and check exit 0, no generated documents changed, both views restored from origin/main. Status, Gap, Evidence and counts are unchanged for the lander to promote from the claim. |
@@ -47,12 +47,12 @@ The six requested outcome groups are R1 names and identities, R1 lifecycles, R2 
 | --- | --- |
 | MOVE-011 report meaning, privacy, original publication time and no implicit notification | The same helper retains its existing source report body and original-time assertions, private report and template exclusion across public surfaces, native report reads, repeat and preserve-conflicts undo. The parent journey retains notification inventories and scheduled processing controls. PASS. |
 | Existing owner-only import authority and replay safety | Active parent journey lines 84-100 denies signed-out and revoked-session import without native changes; repeatImport checks complete native rows, aliases, delivery work and captured transports after repeat and scheduled tick. PASS. |
-| Adoption, export and equivalent restore | No schema, export policy, mapping implementation or restore implementation changed. tests/auth-adoption/portability.test.mjs:111 includes nonempty native templates, and lines 114-122 refuse damaged archives and compare the complete restored and re-exported product graph. These unchanged checks remain in the portability shard. INSPECTED locally; exact-SHA full Verify is push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: in progress (last REST observation; not yet green). The broader PORT-001 judgment and all release prerequisites stay unchanged. |
+| Adoption, export and equivalent restore | No schema, export policy, mapping implementation or restore implementation changed. tests/auth-adoption/portability.test.mjs:111 includes nonempty native templates, and lines 114-122 refuse damaged archives and compare the complete restored and re-exported product graph. These unchanged checks remain in the portability shard. INSPECTED locally; exact-SHA full Verify is push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: completed, success. The broader PORT-001 judgment and all release prerequisites stay unchanged. |
 | UI and browser proof | No product screen, UI source, style, icon control or browser behavior changed. Existing browser journeys stay registered. New proof uses native HTTP routes; extra width-specific screenshots are not applicable to this assertion-only change. |
 
 ## Pre-ready self-check
 
-1. All named native template outcomes now have user-visible readback assertions over populated data. Exact-SHA Verify: push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: in progress (last REST observation; not yet green).
+1. All named native template outcomes now have user-visible readback assertions over populated data. Exact-SHA Verify: push Verify 43196633030 on dd8195b432d28dbfa513cdd8019b591a77834b7d: completed, success.
 2. No assertion was weakened, skipped or moved behind a condition. The dry-run count-only equality was strengthened to complete-object equality. All previous oversized, body-mapping, private-application, repeat, no-publication and component membership assertions remain.
 3. Existing revoked-session, replay and erasure controls remain in the same active journey. No new credential or identifier is stored by application code.
 4. No touched screens; typography, tooltips, borders and Settings placement are unchanged.
@@ -88,3 +88,13 @@ PROBE MOVE-014 6: repeated reviewed import and preserve-conflicts undo -> no dup
 
 
 All eight local candidate checks passed with clean checkout, Node v22.20.0. Exact command, exit, duration and output hash appear in validation.json. The final committed native journey passed one case, zero failures, zero skips.
+
+## Claim for the independent landing gate
+
+CLAIM MOVE-014 DONE points=1,2,3,4,5,6 tests=tests/e2e/statuspage-import.test.mjs#SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes; tests/e2e/helpers/postmortem-template-import-flow.mjs#postmortemTemplateImportFlow
+
+This is the candidate claim, subject to the independent gate and guarded landing. All native outcome probes and exact-candidate local checks pass; release, provider and Base boundaries stay with their existing clauses. The rider table above records the exact proof and pending landing gates.
+
+## Final gate state
+
+Exact-SHA push Verify 43196633030 completed with success on dd8195b432d28dbfa513cdd8019b591a77834b7d. Five GitHub API calls were used; no dispatch, rerun, CI repair or PR was needed. All local candidate checks passed, with a clean checkout. DONE-RIDERS 1 through 10 pass (inspection where noted); row 11 remains the guarded lander's main equality, publication scan and Run site receipt. The candidate is ready for that independent gate and landing, not claimed already landed. No native MOVE-014 gap remains.

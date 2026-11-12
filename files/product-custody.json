@@ -35,5 +35,16 @@
   "run_site": {
     "status": "not run",
     "reason": "Main-only workflow after guarded landing"
-  }
+  },
+  "remote_head_verified": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+  "remote_ref_verified": "refs/heads/cloud/sd-lamp-c-f121",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43196633030",
+    "id": 43196633030,
+    "status": "completed"
+  },
+  "ready_for_guarded_landing": true
 }

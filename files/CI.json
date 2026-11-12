@@ -13,12 +13,12 @@
     }
   ],
   "latest": {
-    "conclusion": null,
+    "conclusion": "success",
     "event": "push",
     "head_sha": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
     "html_url": "https://github.com/just-every/run-lamp/actions/runs/43196633030",
     "id": 43196633030,
-    "status": "in_progress"
+    "status": "completed"
   },
   "api_calls": [
     {
@@ -32,6 +32,33 @@
     },
     {
       "at": 1794478017.7214005,
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43196633030",
+        "--jq",
+        "{id,status,conclusion,head_sha,html_url,event}"
+      ]
+    },
+    {
+      "at": 1794478317.7626603,
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43196633030",
+        "--jq",
+        "{id,status,conclusion,head_sha,html_url,event}"
+      ]
+    },
+    {
+      "at": 1794478618.0602322,
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43196633030",
+        "--jq",
+        "{id,status,conclusion,head_sha,html_url,event}"
+      ]
+    },
+    {
+      "at": 1794478918.1240702,
       "args": [
         "api",
         "repos/just-every/run-lamp/actions/runs/43196633030",
