@@ -19,7 +19,8 @@ export function ChatLinksPanel() {
   }
   return <section className="data-card chat-links-card" aria-labelledby="chat-links-title">
     <h2 id="chat-links-title">Chat links</h2>
-    <p>Create a code and send it privately to the Lamp app in Slack or Teams. It expires after ten minutes and works once.</p>
+    <p><a className="text-link" href="/docs/chat-desk">Set up Slack or Teams</a></p>
+    <p>Once the app is installed, create a code and send the command in a private conversation. It expires after ten minutes and works once.</p>
     <Button variant="secondary" type="button" disabled={busy} onClick={() => void act(async () => setCode((await request<{ code: string }>('/api/app/chat-links', 'POST')).code))}>Create link code</Button>
     {code && <div role="status"><p>Slack: <code>/lamp link {code}</code></p><p>Teams: <code>link {code}</code></p><Button variant="secondary" type="button" onClick={() => setCode('')}>Hide link code</Button></div>}
     <Button variant="secondary" type="button" disabled={busy} onClick={() => void act(refresh)}>Refresh chat links</Button>

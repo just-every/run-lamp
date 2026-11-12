@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "30008aa9545b4c86191e7e1251d277adb2ac92da6544d83b785650525afc48f5",
+      "sha256": "231d055bcabd088cfecf0268ce019c0ab701a084a93b65b52d4b6adfdee2031e",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -568,11 +568,11 @@
       "executable": false
     },
     "docs/chat-desk.md": {
-      "sha256": "c5a159c740300aa732694a2b8d9a31a4827810c98cf4f9c412ebcabdada83692",
+      "sha256": "0fe1c6a998548479c7b488d40daa1830a004232f8797d5231abf44ced9ae7855",
       "executable": false
     },
     "docs/chat-desk/slack-manifest.json": {
-      "sha256": "cee80d5fffc62f662bfd16943fb4f3de19cc9a248d24dad3ec17cb1886a63359",
+      "sha256": "422febc2f4b965e45a4b2063670f36b645fcff78235b97f4fdbc95021af81e52",
       "executable": false
     },
     "docs/chat-desk/teams-manifest.json": {
@@ -688,7 +688,11 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "843afbd307b7d6a4238d259d1d4aedc8685cc966cfa4eed4773e7bcf30e08a5b",
+      "sha256": "94977bbccf558843b103c06dacf032b0c16afbd15279798124fc832e629868a6",
+      "executable": false
+    },
+    "docs/social-accounts.md": {
+      "sha256": "8771c232ba702275ab9f6f761f31d04e1f431edfd8b204ba1fc385057ef4e166",
       "executable": false
     },
     "docs/subscribers-and-notifications.md": {
@@ -4524,7 +4528,7 @@
       "executable": false
     },
     "src/core/features/chat-desk/ui/chat-links-panel.tsx": {
-      "sha256": "cee4250e13972aa57752178ff91aa7e416cf72c03520e0c64c418ef6291c346b",
+      "sha256": "bfc35bd78c4562dd27cc6eb464bf542bd96a981da9f1d1b28348677a311127ed",
       "executable": false
     },
     "src/core/features/communication-performance/csv.ts": {
@@ -6100,7 +6104,7 @@
       "executable": false
     },
     "src/core/features/social/ui/social-settings.tsx": {
-      "sha256": "7e310fd841b3d5a0c0df4c7626082ee51cc3b437528b4a92d889b87cdbedf424",
+      "sha256": "63b71eacd91e6c0fbad3af26f620b06fae4fa9c4bc2d1c2a9a440296cbff4b45",
       "executable": false
     },
     "src/core/features/statuspage-import/adapters.ts": {
