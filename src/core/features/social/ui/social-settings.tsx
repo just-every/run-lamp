@@ -54,7 +54,7 @@ export function SocialSettings() {
       {network === "bluesky" && <label className="form-label">Bluesky handle<input required maxLength={253} disabled={saving} autoComplete="off" value={identifier} onChange={event => setIdentifier(event.target.value)} /></label>}
       {network !== "x" && <label className="form-label">{network === "mastodon" ? "Mastodon instance" : "Bluesky service"}<input required={network === "mastodon"} type="url" disabled={saving} value={host} onChange={event => setHost(event.target.value)} placeholder={network === "mastodon" ? "https://mastodon.social" : "https://bsky.social"} /></label>}
       <label className="form-label full-width">{network === "bluesky" ? "Bluesky app password" : network === "mastodon" ? "Mastodon access token (write:statuses)" : "X OAuth 2.0 user token (tweet.write)"}<input required type="password" autoComplete="off" maxLength={4096} disabled={saving} value={credential} onChange={event => setCredential(event.target.value)} /></label>
-      {network === "x" && <p className="full-width">Use a user token from your X developer app with tweet.write permission. Your X API tier and costs apply.</p>}
+      <p className="full-width"><a className="text-link" href={`/docs/social-accounts#${network}`}>Set up {networkNames[network]}</a></p>
       <Button type="submit" disabled={saving || resource.loading}>{saving ? "Saving…" : "Connect social account"}</Button>
     </form>
     {(error || resource.error) && <FormError>{error || resource.error}</FormError>}
