@@ -8356,7 +8356,7 @@
       "executable": false
     },
     "tests/e2e/helpers/widget-privacy-flow.mjs": {
-      "sha256": "b6f39f6eeb280ad2ff4300f34b4de1182b331e1b8d9298b14c0248c2138b7a2f",
+      "sha256": "c1e279fb05041c1d947394af1291e75e4e0487d214ccc493403917f82776676e",
       "executable": false
     },
     "tests/e2e/incident-brief.test.mjs": {
@@ -8384,7 +8384,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "b43b88beaf956ad6b1bb9fe8daac2d7c5641ce8822ec00dc59ff0259b28b0031",
+      "sha256": "ff2101783c0c344cbe344bf262ccbef25bb35daef252c719abaa952017eb22b2",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
