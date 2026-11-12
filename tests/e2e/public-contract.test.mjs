@@ -456,6 +456,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: customerReview.catalogue, revision: customerReview.revision, reviewToken: customerReview.reviewToken });
 
     // Read component aggregation itself, independently of the page-wide rollup.
+    await admitAttributionOperator(j, 'component-creator');
     const claimsComponent = await j.component('Synthetic claim service');
     const standingPath = `/api/app/components/${claimsComponent.id}/standing-claim`;
     const originalStateHistory = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
@@ -473,15 +474,22 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await assertComponentState('Operational', 'refusing an unknown state leaves the component unchanged');
     for (const state of ['Operational', 'Degraded performance', 'Partially unavailable', 'Major outage', 'Under maintenance']) {
       const beforeState = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+      const requestedAt = Date.now();
       await j.json(standingPath, 'PUT', { state });
+      const respondedAt = Date.now();
       const history = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
       const appended = history.filter(row => !beforeState.some(prior => prior.id === row.id));
       assert.equal(appended.length, state === 'Operational' ? 0 : 1);
       for (const row of appended) {
+        assert.equal(row.previousState, beforeState[0].newState);
         assert.equal(row.newState, state);
+        assert.equal(row.causeType, 'standing-claim');
+        assert.equal(row.causeId, null);
+        assert.ok(Date.parse(row.changedAt) >= requestedAt && Date.parse(row.changedAt) <= respondedAt);
         assert.equal(row.operatorId, stateActor.id, 'state history records the actor rather than the creator');
         assert.equal((await j.db.prepare('SELECT operator_id FROM component_state_history WHERE id = ?').bind(row.id).first()).operator_id, stateActor.id);
       }
+      assert.deepEqual(history.filter(row => !appended.some(added => added.id === row.id)), beforeState, 'a new actor retains every earlier history value');
       const claim = await j.db.prepare('SELECT * FROM component_standing_claims WHERE component_id = ?').bind(claimsComponent.id).first();
       assert.equal(claim.operator_id, stateActor.id);
       assert.equal(claim.state, state);
@@ -513,7 +521,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       await j.publish(claim.id);
     }
     await assertComponentState('Operational', 'resolved incident claims leave the standing Operational claim');
-    await j.signIn();
+    await j.signIn(componentCreator.email);
     const window = (await j.json('/api/app/maintenance', 'POST', {
       title: 'Synthetic claim service maintenance', affectedAudience: 'Service customers', customerImpact: 'Routine service maintenance.',
       startsAt: new Date(Date.now() + 3600000).toISOString(), endsAt: new Date(Date.now() + 7200000).toISOString(),

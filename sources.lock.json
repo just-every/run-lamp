@@ -8088,7 +8088,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operator-attribution.mjs": {
-      "sha256": "276cd6e3d4de38a4bd0cc62317a614c8389e034a33d9eb5ce739937a70114b23",
+      "sha256": "343fc1d1ccdf4a02086a75cf3be1586f615c714a28509f37fb1e53130d4de71c",
       "executable": false
     },
     "tests/e2e/helpers/operator-email-proof.mjs": {
@@ -8232,7 +8232,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-add-flow.mjs": {
-      "sha256": "d1891438b1e3ce558b3ed96725e983762d1545bfa039dcf341cf1b4f4a27050a",
+      "sha256": "45a386a4bed79d7b69d5f45728e96d8fdc04b770c4b3c5c0e3ac71fe176e69e7",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-components-flow.mjs": {
@@ -8336,7 +8336,7 @@
       "executable": false
     },
     "tests/e2e/helpers/uptime-correction-journey.mjs": {
-      "sha256": "e23747e0dade3eb22a154b1c181e2aad3401b3ef294730e640f142d9148789e4",
+      "sha256": "ff65381b52de5490c4e88bf2e0d650676e0f319086a1728dee1f2617644c63b9",
       "executable": false
     },
     "tests/e2e/helpers/uptime-pairing-flow.mjs": {
@@ -8388,7 +8388,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "a4b586fe484ba765ef545b8ea27d45d4c3171ced43e7315d951f5b9a1ccfd054",
+      "sha256": "b60b0b123d07a7028ae8738e5f73073c0fb8096d428d7032f0c97945185e0c73",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
@@ -8396,7 +8396,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "821ccca5f0bd6df8ad727dbdb5a3e6a74ff3b18fa75e9da369c9522e140f8a14",
+      "sha256": "b694b7fbe2eef4d72caa41b6f0422834339c48dcff1b82e8cb5339fd00a0eff6",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {

@@ -45,7 +45,10 @@ export async function assertPublicationActor(j, incidentId, update, actor) {
   const stored = await j.db.prepare('SELECT * FROM incident_updates WHERE id = ?').bind(update.id).first();
   assert.equal(stored.author_operator_id, actor.id, 'publication storage names its publisher');
   const audit = await assertActorAudit(j, 'incident-update', update.id, 'published', actor);
-  assert.equal(JSON.parse(audit.payload_json).correctsUpdateId, update.correctsUpdateId);
+  const payload = JSON.parse(audit.payload_json);
+  assert.equal(payload.incidentId, incidentId);
+  assert.equal(payload.publishedAt, update.publishedAt);
+  assert.equal(payload.correctsUpdateId, update.correctsUpdateId);
   assert.equal(audit.created_at, stored.created_at);
 }
 
@@ -56,6 +59,9 @@ export async function assertMaintenanceActor(j, maintenanceId, kind, actor, befo
   assert.ok(notice, `the native record retains the ${kind} notice`);
   assert.equal(notice.authorOperatorId, actor.id);
   const stored = await j.db.prepare('SELECT * FROM maintenance_notices WHERE id = ?').bind(notice.id).first();
+  assert.equal(stored.maintenance_id, maintenanceId);
+  assert.equal(stored.kind, kind);
+  assert.equal(stored.published_at, notice.publishedAt);
   assert.equal(stored.author_operator_id, actor.id);
   const audit = await assertActorAudit(j, 'maintenance', maintenanceId, 'notice-published', actor, before);
   assert.equal(audit.created_at, stored.created_at, 'the notice and its audit belong to the same action');
