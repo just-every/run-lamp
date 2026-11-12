@@ -1,0 +1,157 @@
+{
+  "tag": "sd-lamp-audit-labels-1",
+  "recordedAt": "2026-11-12T17:37:18.015401+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-audit-labels-1",
+  "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "base": "b2ba93174222d086693aa6e137c598ff7b51c951",
+  "sourceFilesSha256": {
+    "sources.lock.json": "46e6b8e4eab22b88b7832a49aaf16984b8877e93fce169299d6efcfe068e2039",
+    "src/core/features/audit-log/labels.ts": "5e5d145f4f4a66cc8151387990997f7ba992f1fc774006f6c66973e03ebd6dca",
+    "src/core/features/audit-log/repository.ts": "5dec21b0e77562040c2dab994cdfdb3be18b885848ce37dd1c8c6f49a7621732",
+    "src/core/features/audit-log/routes.ts": "26d19fee184b78b3470b8214de63f663dbf2f5bf62469120cd1d6f826ca22d99",
+    "src/core/features/audit-log/ui/audit-log.tsx": "b88850702c762bd93c6768c70deda848a136d3427717cd880a3cd5d22ff738e6",
+    "tests/e2e/helpers/audit-labels-flow.mjs": "47551ac4abb7015c1d168ab0cd06db84105b5da24c61ef8320da873ae4249705",
+    "tests/e2e/publishing-browser.test.mjs": "18ef92f8c15148b5218f073f92234cd93862d90992ccfd1dd59eca5f5526746d"
+  },
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-name-pattern='TEAM-007 \u2014 audit labels' tests/e2e/publishing-browser.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "log": "touched-test.log",
+      "node": "22.20.0"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "lock.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "lock-check.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "initialTestAttempt": {
+    "exit": 1,
+    "cause": "The wrapped Operator label includes option text in its accessible name, so exact getByLabel did not find the combobox. Test selector corrected to role/name prefix. Product assertions were retained.",
+    "log": "touched-test-attempt-1.log"
+  },
+  "rebase": {
+    "command": "git fetch origin main && git rebase --autostash origin/main",
+    "exit": 0,
+    "result": "Main unchanged; original owner editor bytes restored after test; clean candidate checkout."
+  },
+  "identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "candidateCommits": 1,
+    "trailers": [],
+    "allSideParentsIncluded": true
+  },
+  "productPush": {
+    "status": "pushed",
+    "attempts": 1,
+    "log": "push.log"
+  },
+  "browser": {
+    "installation": "fresh rer setup and rer dev",
+    "authentication": "native local owner entry; no credentials or sessions exported",
+    "publicOperations": [
+      "component creation",
+      "incident draft and publication",
+      "maintenance scheduling",
+      "operator invitation"
+    ],
+    "before": [
+      "before-audit-1440.png",
+      "before-audit-390.png"
+    ],
+    "after": [
+      "after-audit-1440.png",
+      "after-audit-390.png"
+    ],
+    "assertionWidth": 1440,
+    "screenshotsWidths": [
+      1440,
+      390
+    ]
+  },
+  "counts": {
+    "contractBefore": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "contractAfter": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "directTrackedTestRegistrationsBefore": 81,
+    "directTrackedTestRegistrationsAfter": 82,
+    "auditVisibleOpaqueIdOccurrencesBefore": 10,
+    "auditVisibleOpaqueIdOccurrencesAfter": 0,
+    "unresolvedTargetLabelsBefore": 3,
+    "unresolvedTargetLabelsAfter": 0
+  },
+  "contract": {
+    "TEAM-007": {
+      "before": "partial",
+      "after": "partial",
+      "points": "none",
+      "holds": "Existing logo removal/replacement, standing-claim removal without aggregate change, and archive-restored subscriber expiry proof remain."
+    }
+  },
+  "publicationScan": {
+    "status": "fleet-Mac gate",
+    "reason": "Cloud instructions reserve the publication scan and landing to the fleet Mac; no local full scan claimed."
+  },
+  "ci": {
+    "runId": 43267587466,
+    "status": "in_progress",
+    "conclusion": null,
+    "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/43267587466",
+    "discoveredAt": "2026-11-12T17:16:17Z",
+    "apiCallsUsed": 5,
+    "transportFailures": [
+      "ci-status-transport-failure.json"
+    ],
+    "credentialRefresh": "Prescribed launcher refresh and Git setup restored access; the 17:26:18 UTC exact-SHA status read succeeded.",
+    "lastObservedAt": "2026-11-12T17:36:20.683311+00:00",
+    "watcherFinished": true,
+    "handoff": "Exact-SHA Verify is still in progress after the bounded watcher. No green, READY, acceptance or landing is claimed."
+  },
+  "pr": "https://github.com/just-every/run-lamp/pull/343",
+  "blockers": [],
+  "prHead": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "apiBudget": {
+    "ciReads": 5,
+    "prRequests": 1,
+    "launcherAuthStatusInvocations": 2,
+    "usedConservative": 8,
+    "unusedReserve": 2,
+    "reason": "Budget is short; retain two calls for completed-failure job/log diagnostics. Final run remains in progress; return PUSHED under the cloud contract."
+  },
+  "terminalStatus": "PUSHED",
+  "pending": [
+    "Verify 43267587466 completion on 4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+    "Fleet Mac publication scan and landing gates"
+  ],
+  "productCheckoutClean": true,
+  "evidenceRef": "refs/heads/evidence/sd-lamp-audit-labels-1",
+  "cleanup": "Owned dev/test app and browser processes stopped. Product clone will be removed only after successful evidence publication; packet retained outside the clone."
+}

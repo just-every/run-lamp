@@ -1,0 +1,26 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (103136.571342ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104642.666472
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:308:1
+✖ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (103136.571342ms)
+  locator.selectOption: Timeout 60000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('#audit-log').getByLabel('Operator', { exact: true })[22m
+  
+      at Module.auditLabelsFlow (/home/agent/rer-consolidation/work/sd-lamp-audit-labels-1/run-lamp/tests/e2e/helpers/audit-labels-flow.mjs:45:55)
+      at async TestContext.<anonymous> (/home/agent/rer-consolidation/work/sd-lamp-audit-labels-1/run-lamp/tests/e2e/publishing-browser.test.mjs:309:3) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('#audit-log').getByLabel('Operator', { exact: true })" ]
+  }

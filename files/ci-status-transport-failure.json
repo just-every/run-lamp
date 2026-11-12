@@ -1,0 +1,10 @@
+{
+  "run_id": 43267587466,
+  "head_sha": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "attemptedAt": "2026-11-12T17:21:17Z",
+  "api_call": 2,
+  "command": "gh api repos/just-every/run-lamp/actions/runs/43267587466 --jq '{status,conclusion,head_sha,html_url}'",
+  "exit": 1,
+  "httpStatus": "unknown; diagnostic was not retained by the first watcher",
+  "recovery": "Refreshed launcher bundle and repeated prescribed Git setup; no other credential used. Next run read no earlier than 17:26:18 UTC."
+}

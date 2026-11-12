@@ -1,0 +1,80 @@
+{
+  "phase": "before",
+  "at": "2026-11-12T17:10:06.523Z",
+  "rows": [
+    "Nov 12, 2026, 17:10 UTC+00:00Ownerbd8c5f42-7535-4a8a-9c51-124b64c5f2b3invitedoperator3c5dafd9-785c-46ee-b015-1abe029a26ff—",
+    "Nov 12, 2026, 17:10 UTC+00:00Ownerbd8c5f42-7535-4a8a-9c51-124b64c5f2b3notice-publishedmaintenance01M78BSSWW8GTPA3TG271PTC47—",
+    "Nov 12, 2026, 17:10 UTC+00:00Ownerbd8c5f42-7535-4a8a-9c51-124b64c5f2b3state-changedcomponentPayments API—",
+    "Nov 12, 2026, 17:10 UTC+00:00Ownerbd8c5f42-7535-4a8a-9c51-124b64c5f2b3publishedincident-update01M78BSSP1ZRB0W37AQNF92EHA—",
+    "Nov 12, 2026, 17:10 UTC+00:00Ownerbd8c5f42-7535-4a8a-9c51-124b64c5f2b3state-changedcomponentPayments API—",
+    "Nov 12, 2026, 17:08 UTC+00:00Ownerbd8c5f42-7535-4a8a-9c51-124b64c5f2b3sign-in link created from the command lineoperatorbd8c5f42-7535-4a8a-9c51-124b64c5f2b3—"
+  ],
+  "entries": [
+    {
+      "id": "01M78BST2AZPEYTWHRNNHDAJ4T",
+      "entityType": "operator",
+      "entityId": "3c5dafd9-785c-46ee-b015-1abe029a26ff",
+      "entityName": "3c5dafd9-785c-46ee-b015-1abe029a26ff",
+      "action": "invited",
+      "actorId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "actorName": "Owner",
+      "reason": null,
+      "createdAt": "2026-11-12T17:10:03.594Z"
+    },
+    {
+      "id": "01M78BSSWXK31GC1D0V1FMBSAP-audit",
+      "entityType": "maintenance",
+      "entityId": "01M78BSSWW8GTPA3TG271PTC47",
+      "entityName": "01M78BSSWW8GTPA3TG271PTC47",
+      "action": "notice-published",
+      "actorId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "actorName": "Owner",
+      "reason": null,
+      "createdAt": "2026-11-12T17:10:03.420Z"
+    },
+    {
+      "id": "state-history/01M78BSSRVRF4Z2SH076VNAJCP",
+      "entityType": "component",
+      "entityId": "01M78BSSE24SZ7T3EBR40Y29S9",
+      "entityName": "Payments API",
+      "action": "state-changed",
+      "actorId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "actorName": "Owner",
+      "reason": null,
+      "createdAt": "2026-11-12T17:10:03.293Z"
+    },
+    {
+      "id": "01M78BSSP1ZRB0W37AQNF92EHA-audit",
+      "entityType": "incident-update",
+      "entityId": "01M78BSSP1ZRB0W37AQNF92EHA",
+      "entityName": "01M78BSSP1ZRB0W37AQNF92EHA",
+      "action": "published",
+      "actorId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "actorName": "Owner",
+      "reason": null,
+      "createdAt": "2026-11-12T17:10:03.281Z"
+    },
+    {
+      "id": "state-history/01M78BSSE2JTJYAW3191FPAGYK",
+      "entityType": "component",
+      "entityId": "01M78BSSE24SZ7T3EBR40Y29S9",
+      "entityName": "Payments API",
+      "action": "state-changed",
+      "actorId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "actorName": "Owner",
+      "reason": null,
+      "createdAt": "2026-11-12T17:10:02.947Z"
+    },
+    {
+      "id": "01M78BPS52P9JSMXM4KVWYG35V",
+      "entityType": "operator",
+      "entityId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "entityName": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "action": "sign-in link created from the command line",
+      "actorId": "bd8c5f42-7535-4a8a-9c51-124b64c5f2b3",
+      "actorName": "Owner",
+      "reason": null,
+      "createdAt": "2026-11-12T17:08:17.979Z"
+    }
+  ]
+}
