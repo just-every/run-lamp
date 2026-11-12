@@ -1,5 +1,5 @@
 import type { PublicSnapshotModel } from "../renderer";
-import type { PublicIncident, PublicMaintenance } from "../record-markup";
+import { correctionMarkup, type PublicIncident, type PublicMaintenance } from "../record-markup";
 import { mostSevereState, type ComponentState } from "../../../shared/domain";
 import { escapeHtml } from "../format";
 import { lineIcon, stateGlyph } from "./icons";
@@ -26,8 +26,8 @@ export function openIncidentEntry(incident: PublicIncident, model: PublicSnapsho
   if (!newest) return "";
   const state = incidentState(incident, model);
   const next = newest.nextUpdateAt ? `<p class="tl-next">Next update by ${when(newest.nextUpdateAt, timezone, newest.publishedAt)}</p>` : "";
-  const before = earlier.map((update) => `<li><p class="tpl-meta"><span class="tl-earlier-word">Earlier: </span>${escapeHtml(update.lifecycle)} · ${when(update.publishedAt, timezone, newest.publishedAt)}</p>${earlierText(update)}</li>`).join("");
-  return `<li class="tl tl-open tone-${toneOf(state)}"><span class="tl-mark">${stateGlyph(state)}</span><article class="tl-body" data-incident-impact="${incident.effectiveImpact}"><p class="tl-kicker">Ongoing</p><h3 class="tl-title">${incidentLink(incident)}</h3><p class="tl-state"><span class="tone-${toneOf(state)}">${escapeHtml(state)}</span></p><p class="tpl-meta">${escapeHtml(newest.lifecycle)} · ${when(newest.publishedAt, timezone)}</p>${updateText(newest)}${next || before ? `<div class="tl-thread">${next}${before ? `<ol class="tl-earlier">${before}</ol>` : ""}</div>` : ""}${allUpdatesLink(incident, MAX_OPEN_UPDATES)}${parts.incidentSlot(incident)}</article></li>`;
+  const before = earlier.map((update) => `<li><p class="tpl-meta"><span class="tl-earlier-word">Earlier: </span>${escapeHtml(update.lifecycle)} · ${when(update.publishedAt, timezone, newest.publishedAt)}</p>${correctionMarkup(incident, update, timezone)}${earlierText(update)}</li>`).join("");
+  return `<li class="tl tl-open tone-${toneOf(state)}"><span class="tl-mark">${stateGlyph(state)}</span><article class="tl-body" data-incident-impact="${incident.effectiveImpact}"><p class="tl-kicker">Ongoing</p><h3 class="tl-title">${incidentLink(incident)}</h3><p class="tl-state"><span class="tone-${toneOf(state)}">${escapeHtml(state)}</span></p><p class="tpl-meta">${escapeHtml(newest.lifecycle)} · ${when(newest.publishedAt, timezone)}</p>${correctionMarkup(incident, newest, timezone)}${updateText(newest)}${next || before ? `<div class="tl-thread">${next}${before ? `<ol class="tl-earlier">${before}</ol>` : ""}</div>` : ""}${allUpdatesLink(incident, MAX_OPEN_UPDATES)}${parts.incidentSlot(incident)}</article></li>`;
 }
 
 export function maintenanceEntry(item: PublicMaintenance, model: PublicSnapshotModel) {
@@ -40,7 +40,7 @@ export function maintenanceEntry(item: PublicMaintenance, model: PublicSnapshotM
  *  layout that shows them one way on a wide screen and the other on a phone. */
 export function resolvedEntry(incident: PublicIncident, model: PublicSnapshotModel, fold = false) {
   const timezone = model.settings.timezone;
-  const updates = incident.updates.slice(0, MAX_RESOLVED_UPDATES).map((update) => `<li><p class="tpl-meta">${escapeHtml(update.lifecycle)} · ${when(update.publishedAt, timezone, incident.openedAt)}</p>${earlierText(update)}</li>`).join("");
+  const updates = incident.updates.slice(0, MAX_RESOLVED_UPDATES).map((update) => `<li><p class="tpl-meta">${escapeHtml(update.lifecycle)} · ${when(update.publishedAt, timezone, incident.openedAt)}</p>${correctionMarkup(incident, update, timezone)}${earlierText(update)}</li>`).join("");
   const thread = `${updates ? `<ol class="tl-earlier">${updates}</ol>` : ""}${allUpdatesLink(incident, MAX_RESOLVED_UPDATES)}`;
   const folded = fold && thread ? `<details class="tl-fold"><summary>${lineIcon("chevron", "tl-chevron")}<span class="sr-only">Updates on ${escapeHtml(incident.title)}</span></summary>${thread}</details>` : "";
   return `<li class="tl tl-resolved tone-ok${folded ? " folds" : ""}"><span class="tl-mark">${stateGlyph("Operational")}</span><article class="tl-body" data-incident-impact="${incident.effectiveImpact}"><p class="tl-kicker">Resolved</p><h3 class="tl-title">${incidentLink(incident)}</h3><p class="tpl-meta">${resolvedSpan(incident, timezone)}</p>${thread}${folded}</article></li>`;

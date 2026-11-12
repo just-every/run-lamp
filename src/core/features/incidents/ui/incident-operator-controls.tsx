@@ -9,9 +9,10 @@ type Incident = NonNullable<Awaited<ReturnType<IncidentsService["get"]>>>;
 
 /** The draft's own actions under the +: Mark draft reviewed acts at once; Publish as a correction first asks which
  * published update. Both answer beside the Publish row, and a publication in between makes the answer stale. */
-export function useDraftActions({ incidentId, captureUpdate, getDraftVersion, onChanged }: { incidentId: string; captureUpdate: () => () => boolean; getDraftVersion: () => string; onChanged: () => void }) {
+export function useDraftActions({ incidentId, updateKey, captureUpdate, getDraftVersion, onChanged }: { incidentId: string; updateKey: number; captureUpdate: () => () => boolean; getDraftVersion: () => string; onChanged: () => void }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  useEffect(() => { setMessage(null); setError(null); }, [updateKey]);
   const run = async (action: () => Promise<string>) => {
     const isCurrent = captureUpdate();
     setError(null); setMessage(null);

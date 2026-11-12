@@ -100,3 +100,6 @@ body { background: var(--paper); }
   .tpl-subscribe input, .tpl-subscribe button { height: 40px; }
   .tpl-foot-meta { margin-left: 0; }
 }
+
+.update-correction { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.update-correction a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
