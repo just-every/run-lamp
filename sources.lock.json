@@ -4327,12 +4327,16 @@
       "sha256": "7db813b4519c7d26c5b4d00eb5e1b6f018341840c2e3a8525cee470c154ad97c",
       "executable": false
     },
+    "src/core/features/audit-log/labels.ts": {
+      "sha256": "5e5d145f4f4a66cc8151387990997f7ba992f1fc774006f6c66973e03ebd6dca",
+      "executable": false
+    },
     "src/core/features/audit-log/repository.ts": {
-      "sha256": "3370a465d6306469c19aab07183913e1bc9358200c93e5abc5b5849799adf8a2",
+      "sha256": "e67a503619790a9dd1e1abbf6df79e3328ad543dab2cb155532fb4c74350785f",
       "executable": false
     },
     "src/core/features/audit-log/routes.ts": {
-      "sha256": "3a44da842b7b8d3a99f88cd68bd40fcb3c99dad4f3938b3fdab3d7da834a65c6",
+      "sha256": "26d19fee184b78b3470b8214de63f663dbf2f5bf62469120cd1d6f826ca22d99",
       "executable": false
     },
     "src/core/features/audit-log/ui/audit-log.css": {
@@ -4340,7 +4344,7 @@
       "executable": false
     },
     "src/core/features/audit-log/ui/audit-log.tsx": {
-      "sha256": "956998b2089aa78f20e9ff537cbdd7ded19c63282b99106ea8ce9d714b101ca5",
+      "sha256": "b88850702c762bd93c6768c70deda848a136d3427717cd880a3cd5d22ff738e6",
       "executable": false
     },
     "src/core/features/availability-reports/csv.ts": {
@@ -7895,6 +7899,10 @@
       "sha256": "46c9ec02866280077a5aa4c6b525c897655e7ca3c910534c33e54313cf98fc8f",
       "executable": false
     },
+    "tests/e2e/helpers/audit-labels-flow.mjs": {
+      "sha256": "47551ac4abb7015c1d168ab0cd06db84105b5da24c61ef8320da873ae4249705",
+      "executable": false
+    },
     "tests/e2e/helpers/automation-clock-worker.ts": {
       "sha256": "64c460eea587efde9d63df4e6028ef9d5e1464f44928a41aff1bbc378a4d5439",
       "executable": false
@@ -7912,7 +7920,7 @@
       "executable": false
     },
     "tests/e2e/helpers/automation-rules-browser-flow.mjs": {
-      "sha256": "bb741a141a1656d869188d08e48f0c9bacb4f69ab977f7500626e192de2959c4",
+      "sha256": "79723117328c35104e878935243efd11e56c7443f066461ca0b99b34ffebeea3",
       "executable": false
     },
     "tests/e2e/helpers/automation-rules-flow.mjs": {
@@ -8280,7 +8288,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-limits-flow.mjs": {
-      "sha256": "e4c83e8298697753e02cd0ce13513146173dba238734cdacb9cd1986c2edf3af",
+      "sha256": "4ec374562f6f34fb5b2b36e57a37ee9767b44ab38c6839ce61400f55945e3351",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-management-fixture.mjs": {
@@ -8420,7 +8428,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "f0cbf3e0a17818e3322a4c0e4f40fc9c7316987ff9a724443b9ca64ceb85917b",
+      "sha256": "305b4b7ba37f2851f2a6f46f520e3d94234d798386f2eb293a33d99bc19bf685",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
