@@ -5,6 +5,14 @@ Starting audit-label revision: 4e97cd125e6e6cb60a8c05e05878a3c96d78490b (verifie
 Integrated main: 7bfb459185882497098b4fed00155f248874ce81.
 Candidate: 3f0e64e7bd465d33d312e73d8c69921b7db4924f.
 
+## Final custody and CI
+
+PUSHED, not READY. The exact product head is preserved remotely, and all local touched checks passed. Verify run 43285493624 succeeded in both originally failing shards: delivery job 131418482560 and public job 131418482495. Build, plan, imports, demo, ownership, portability and runtime also succeeded. Composer job 131418482217 was cancelled after 45 minutes 17 seconds (the workflow declares a 45-minute job timeout); aggregate verify job 131445618059 consequently failed. No product assertion failure was supplied by that cancellation metadata. Its underlying cause is not established, and no unrelated code or timeout was changed.
+
+The single permitted retry of composer and its dependent jobs was requested through `POST repos/just-every/run-lamp/actions/jobs/131418482217/rerun`; GitHub accepted it with HTTP/2.0 201 Created at 2026-11-12T19:51:53.954329+00:00. The ten-call GitHub budget is exhausted, so its final result is not observed and no READY claim is made. COMPOSER-RETRY-RECEIPT.json and the CI JSON files retain the actual responses. No duplicate workflow dispatch or source change was made to obtain another run.
+
+No PR was created while the retry was pending. PR-REQUEST.json contains the prepared request for the lane to open after green push evidence, avoiding duplicate full verification. PR 343 was not changed. The fleet still owns publication scanning, required exact-SHA completion, integration and landing. No product landing or main/tag write was attempted.
+
 ## Plan and scope
 
 The full working plan is PLAN.md. Integrate the existing readable-label implementation with current main, reproduce both reported failures, preserve all recording/filter/CSV guarantees, fix only obsolete audit selectors and rendering defects demonstrated by those tests, run touched journeys and typecheck, regenerate/check the source lock last, then push the named branch and inspect its exact-SHA Verify. Return reports through the separate evidence ref. No landing, main/tag write, unrelated screen change, clause-status change or PR 343 change is authorized or performed.

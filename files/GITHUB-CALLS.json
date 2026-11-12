@@ -1,0 +1,46 @@
+{
+  "budget": 10,
+  "used": 10,
+  "calls": [
+    {
+      "number": 1,
+      "command": "gh run view 43267587466 --repo just-every/run-lamp --job 131355946277 --log-failed"
+    },
+    {
+      "number": 2,
+      "command": "gh run view 43267587466 --repo just-every/run-lamp --job 131355946011 --log-failed"
+    },
+    {
+      "number": 3,
+      "command": "gh api repos/just-every/run-lamp/actions/runs?head_sha=3f0e64e7bd465d33d312e73d8c69921b7db4924f&per_page=100 (initial discovery; empty)"
+    },
+    {
+      "number": 4,
+      "command": "gh api repos/just-every/run-lamp/actions/runs?head_sha=3f0e64e7bd465d33d312e73d8c69921b7db4924f&per_page=100 (second discovery)"
+    },
+    {
+      "number": 5,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43285493624 (poll 19:10:10Z)"
+    },
+    {
+      "number": 6,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43285493624 (poll 19:20:15Z)"
+    },
+    {
+      "number": 7,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43285493624 (poll 19:35:20Z)"
+    },
+    {
+      "number": 8,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43285493624 (poll 19:50:30Z)"
+    },
+    {
+      "number": 9,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43285493624/jobs?per_page=100"
+    },
+    {
+      "number": 10,
+      "command": "gh api --method POST repos/just-every/run-lamp/actions/jobs/131418482217/rerun --include"
+    }
+  ]
+}

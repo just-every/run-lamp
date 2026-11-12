@@ -1,0 +1,7 @@
+{
+  "title": "Restore readable audit assertions and resolve live rule labels",
+  "head": "cloud/sd-lamp-audit-labels-fix-1",
+  "base": "main",
+  "body": "Settings audit rows identify the operator and subject through readable labels while retaining recorded IDs and action codes in API filters and CSV. The monitor journey previously waited for a raw rule ID and `updated` in the visible table. It now finds the saved rule name, human action and approving operator, while preserving event, actor and time checks. Existing alert rules also resolve their current names rather than appearing as removed items.\n\nThis branch incorporates the original readable-audit revision and current main, preserves main's newer tests, and regenerates the source lock. No contract status or generated view is changed.\n\nValidation: full affected AUTO-001 monitor journey; unchanged reported SUB-019 subscriber journey; readable audit/filter/CSV/erasure journey; related roles/permissions/audit journey; typecheck; source-lock check; contract document check. Audit screen proof at 1440 and 390 is retained in the separate evidence branch. Test inventory remains 100. Exact-SHA push Verify: https://github.com/just-every/run-lamp/actions/runs/43285493624.\n\nTEAM-007 remains PARTIAL with its existing gaps. No landing or change to PR 343.",
+  "draft": false
+}

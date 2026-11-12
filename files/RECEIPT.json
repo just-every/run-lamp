@@ -6,7 +6,7 @@
   "integrated_main": "7bfb459185882497098b4fed00155f248874ce81",
   "original_labels_head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
   "save_head": "36c8db6fefadd53f93001d6e836e024b55a78949",
-  "utc_updated": "2026-11-12T19:05:29.248438+00:00",
+  "utc_updated": "2026-11-12T19:52:49.509373+00:00",
   "product_push": {
     "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-audit-labels-fix-1",
     "attempts": 1,
@@ -117,8 +117,8 @@
   "generated_views": "byte-identical to integrated origin/main; neither view committed",
   "identity": "all three candidate commits, including side parent, have fleet author/committer and no trailers",
   "ci": {
-    "status": "in_progress",
-    "github_calls_used": 4,
+    "status": "single composer retry accepted; final outcome not observed",
+    "github_calls_used": 10,
     "historical_run": 43267587466,
     "historical_jobs": [
       131355946011,
@@ -127,11 +127,59 @@
     ],
     "run_id": 43285493624,
     "head_sha": "3f0e64e7bd465d33d312e73d8c69921b7db4924f",
-    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43285493624"
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43285493624",
+    "initial_attempt_conclusion": "cancelled",
+    "github_call_budget": 10,
+    "delivery": {
+      "job_id": 131418482560,
+      "conclusion": "success"
+    },
+    "public": {
+      "job_id": 131418482495,
+      "conclusion": "success"
+    },
+    "composer": {
+      "job_id": 131418482217,
+      "conclusion": "cancelled",
+      "started_at": "2026-11-12T19:00:46Z",
+      "completed_at": "2026-11-12T19:46:03Z",
+      "workflow_job_timeout_minutes": 45,
+      "retry": {
+        "command": "gh api --method POST repos/just-every/run-lamp/actions/jobs/131418482217/rerun --include",
+        "repository": "just-every/run-lamp",
+        "run_id": 43285493624,
+        "job_id": 131418482217,
+        "head_sha": "3f0e64e7bd465d33d312e73d8c69921b7db4924f",
+        "utc_requested": "2026-11-12T19:51:53.954329+00:00",
+        "exit_code": 0,
+        "http_status": "HTTP/2.0 201 Created",
+        "retry_number": 1,
+        "github_calls_used": 10
+      }
+    },
+    "aggregate": {
+      "job_id": 131445618059,
+      "conclusion": "failure"
+    }
   },
-  "pr": null,
+  "pr": {
+    "created": false,
+    "reason": "Verify retry pending and GitHub API budget exhausted; PR request prepared for the lane",
+    "request_file": "PR-REQUEST.json"
+  },
   "blockers": [],
   "publication_scan": "fleet Mac gate retained; unavailable in this cloud; no claim of COMPLETE",
   "landing": "not attempted; fleet owns landing",
-  "evidence_publication": "pending separate report-only ref"
+  "evidence_publication": {
+    "ref": "refs/heads/evidence/sd-lamp-audit-labels-fix-1",
+    "checkpoint_head": "65ecb11293b02f351df1b165e0dd293ef86113cd",
+    "checkpoint_status": "published",
+    "final_receipt_note": "Final selected packet publication result and exact evidence head are recorded in the terminal EVIDENCE line, avoiding a self-referential manifest."
+  },
+  "terminal_custody": "PUSHED; not READY; required exact-SHA Verify retry outcome pending at the ten-call budget",
+  "outstanding_gates": [
+    "completed/success on exact-SHA Verify after the accepted composer retry",
+    "fleet publication scan and landing",
+    "lane PR creation after successful push evidence, per repository rules"
+  ]
 }
