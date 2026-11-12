@@ -1,0 +1,193 @@
+{
+  "ci": {
+    "candidate": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "73da3c6d427f333f8b1058d5ad05d252f5df6975",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43225100399",
+        "id": 43225100399,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "github_calls": 3,
+    "last_observation": {
+      "conclusion": null,
+      "head_sha": "73da3c6d427f333f8b1058d5ad05d252f5df6975",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43225100399",
+      "observed_at": "2026-11-12T13:18:30Z",
+      "run_id": 43225100399,
+      "status": "in_progress"
+    },
+    "main_run_site": 43222738172,
+    "main_verify": 43222738144
+  },
+  "commands": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "output_published": false,
+      "reason": "setup output can contain temporary sign-in authority"
+    },
+    {
+      "command": "cloud_run timeout 1200 node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "log": "publishing.log",
+      "same_test_bytes_as_candidate": true
+    },
+    {
+      "command": "cloud_run timeout 1200 node --test --test-concurrency=1 --test-name-pattern='INCIDENT-013 \u2014' tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "head": "73da3c6d427f333f8b1058d5ad05d252f5df6975",
+      "log": "candidate-impact.log"
+    },
+    {
+      "command": "cloud_run timeout 240 node --test /tmp/lamp-uptime-regression.test.mjs",
+      "exit": 0,
+      "log": "uptime-regression.log",
+      "same_test_bytes_as_candidate": true
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "head": "73da3c6d427f333f8b1058d5ad05d252f5df6975",
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "wrote": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "73da3c6d427f333f8b1058d5ad05d252f5df6975"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0
+    },
+    {
+      "command": "migration-ledger",
+      "reason": "no migration change",
+      "status": "NOT_APPLICABLE"
+    }
+  ],
+  "counts_after": {
+    "done": 59,
+    "missing": 55,
+    "partial": 130,
+    "total": 244
+  },
+  "counts_before": {
+    "done": 59,
+    "missing": 55,
+    "partial": 130,
+    "total": 244
+  },
+  "handoff": {
+    "blockers": [],
+    "ci_gate": "pending exact-SHA completion, not asserted green",
+    "clause_claim": "PARTIAL",
+    "product_custody": "pushed branch candidate; local touched checks pass",
+    "publication_scan": "pending Mac lander"
+  },
+  "identity": {
+    "all_candidate_authors_and_committers": "Run Edit Run fleet",
+    "all_candidate_emails": "fleet@runeditrun.com",
+    "checked_all_side_parents": true,
+    "trailers": []
+  },
+  "product": {
+    "base_main": "b6115a1a54e6587bcbb069cfc41538597868a966",
+    "branch": "cloud/sd-lamp-c-f126",
+    "head": "73da3c6d427f333f8b1058d5ad05d252f5df6975",
+    "main_unchanged": true,
+    "pull_request": null,
+    "push_attempts": 1,
+    "pushed": true,
+    "worktree_clean": true
+  },
+  "product_files": [
+    {
+      "path": "sources.lock.json",
+      "sha256": "16886640023be607dbb5cd89c01cf2bf11c2027268a04dd387f63a5bf7816d31"
+    },
+    {
+      "path": "tests/e2e/helpers/uptime-correction-journey.mjs",
+      "sha256": "ed26216a7c1639470626bd6edb2ac2295e066b37d783ca0e71876c97cf70bdeb"
+    },
+    {
+      "path": "tests/e2e/publishing-contract.test.mjs",
+      "sha256": "21300f9812510bca6013d031dd7c8b951fb80de6c0b8ae53dff8c9b4e265ac1d"
+    }
+  ],
+  "publication_scan": {
+    "commit": "73da3c6d427f333f8b1058d5ad05d252f5df6975",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "required_owner": "Mac lander",
+    "status": "NOT_RUN_CLOUD"
+  },
+  "recorded_at": "2026-11-12T13:19:14.895979+00:00",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "scope": {
+    "after": "partial",
+    "before": "partial",
+    "clause": "INCIDENT-013",
+    "contract_diff_empty": true,
+    "held_points": [
+      2,
+      5
+    ],
+    "policy_defaults": [],
+    "proven_points": [
+      1,
+      3,
+      4
+    ]
+  },
+  "screen_proof": {
+    "browser": "/usr/bin/chromium",
+    "changed_screen_captures": "not applicable",
+    "existing_uptime_journey_browser_width": 1440,
+    "no_sandbox": true,
+    "ui_changed": false
+  },
+  "screening": {
+    "added_credential_shaped_values": 0,
+    "added_email_literals": 0,
+    "packet_injected_secret_matches": 0,
+    "symlinks_selected": 0
+  },
+  "tag": "sd-lamp-c-f126",
+  "tests": {
+    "assertion_scripts_after": 10,
+    "assertion_scripts_before": 10,
+    "candidate_groups_passed": 3,
+    "cap": 200,
+    "cases_after": 88,
+    "cases_before": 85,
+    "failed": 0,
+    "local_node": "24.19.0",
+    "pnpm": "10.12.4",
+    "publishing_passed": 8,
+    "skipped": 0,
+    "uptime_regression_passed": 1
+  }
+}

@@ -1,0 +1,36 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-002 email: native saved-field readback, public permalink in 13.4 ms, committed=2, email=2, webhook=0
+PROBE HIST-002 webhook: native saved-field readback, public permalink in 12.1 ms, committed=2, email=0, webhook=2
+PROBE HIST-002 email-webhook: native saved-field readback, public permalink in 9.5 ms, committed=4, email=2, webhook=2
+PROBE HIST-002 silent: native saved-field readback, public permalink in 9.5 ms, committed=0, email=0, webhook=0
+✔ INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion (25499.293413ms)
+✔ INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components (8504.85507ms)
+✔ INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history (3978.245978ms)
+✔ INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime (5775.898119ms)
+✔ MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history (45139.900471ms)
+✔ UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence (7644.273434ms)
+ℹ PROBE UPDATE-006 2: native schedule with confirmed email and webhook, repeated Cron through saved instant minus 1 ms -> unchanged draft, 38 populated public artifacts and generation, absent permalink, zero notification work and zero subscriber sends
+ℹ PROBE UPDATE-006 1: reviewed draft scheduled through native route, Worker Date and Cron advanced to saved instant plus 60000 ms -> exact saved update committed and read from public root and permalink after 60314 ms (deadline 240000 ms)
+ℹ PROBE UPDATE-006 2 delivery control: after eligibility the exact committed recipient set receives one captured email and one acknowledged webhook; repeated Cron adds no update or send
+✔ INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams (14448.474544ms)
+ℹ INCIDENT-012 Slack: signed identity, private draft, shared preview, explicit attributed publication and state changes
+ℹ PROBE INCIDENT-012 points 2 and 3 Slack: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+ℹ INCIDENT-012 Teams: signed identity, private draft, shared preview, explicit attributed publication and state changes
+ℹ PROBE INCIDENT-012 points 2 and 3 Teams: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+ℹ PROBE INCIDENT-012 point 4 Slack: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+ℹ PROBE INCIDENT-012 point 4 Teams: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+✔ AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text (4243.19898ms)
+ℹ PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent
+ℹ PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records
+ℹ PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report
+ℹ PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 116567.205638

@@ -1,0 +1,16 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+UPTIME_CORRECTION_DEADLINE {"template":"default","elapsedMs":246,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"calm","elapsedMs":200,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"uptime","elapsedMs":236,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"regions","elapsedMs":211,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+✔ shared uptime correction journey (18813.910556ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20226.374728

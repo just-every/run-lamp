@@ -1,0 +1,13 @@
+node src/base/contract-docs.mjs write: exit=0; Wrote 0 contract documents.
+node src/base/contract-docs.mjs check: exit=0; Contract prose: 0 errors, 0 warnings. Contract documents are current.
+git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md: exit=0.
+node scripts/edition-authoring/cli.mjs lock: exit=0.
+node scripts/edition-authoring/cli.mjs check: exit=0.
+node --check tests/e2e/publishing-contract.test.mjs: exit=0.
+node --check tests/e2e/helpers/uptime-correction-journey.mjs: exit=0.
+node scripts/verification/check-plan.mjs: exit=0; 88 registered cases + 10 assertion scripts.
+git diff --check: exit=0.
+npx -y @runeditrun/rer check --profile first-party: exit=0; no diagnostic output.
+Migration ledger: not applicable; no migration changed.
+CONTRACT.md: cached diff empty before commit; origin/main...HEAD diff empty before push.
+Generated acceptance views: neither changed nor committed.
