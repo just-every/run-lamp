@@ -1,0 +1,247 @@
+diff --git a/src/core/features/audit-log/labels.ts b/src/core/features/audit-log/labels.ts
+new file mode 100644
+index 0000000..fbbc263
+--- /dev/null
++++ b/src/core/features/audit-log/labels.ts
+@@ -0,0 +1,28 @@
++/** Presentation only: the recorded codes remain the filter and export keys. */
++const actionLabels: Record<string, string> = {
++  published: "Published an incident update",
++  "notice-published": "Published a maintenance notice",
++  invited: "Invited an operator",
++  "access-revoked": "Revoked operator access",
++  "access-denied": "Denied access",
++  "role-changed": "Changed an operator role",
++  "state-changed": "Changed a component state",
++  "components-changed": "Changed incident components",
++  "impact-changed": "Changed incident impact",
++  corrected: "Published a correction",
++  deleted: "Removed an item",
++  erased: "Erased personal data",
++  created: "Created an item",
++  updated: "Updated an item",
++  expired: "Expired a pending subscription",
++  "import-approved": "Approved an import",
++};
++
++export function auditRecordLabel(value: string): string {
++  const words = value.replace(/[._-]+/g, " ");
++  return words.charAt(0).toUpperCase() + words.slice(1);
++}
++
++export function auditActionLabel(action: string): string {
++  return actionLabels[action] ?? auditRecordLabel(action);
++}
+diff --git a/src/core/features/audit-log/repository.ts b/src/core/features/audit-log/repository.ts
+index 7a81bea..0c8c166 100644
+--- a/src/core/features/audit-log/repository.ts
++++ b/src/core/features/audit-log/repository.ts
+@@ -10,11 +10,22 @@ export function createAuditLogRepository(db: D1Database) {
+       if (filter[key]) { conditions.push(`${column} ${comparison} ?`); values.push(filter[key]!); }
+     }
+     const sql = `SELECT a.id, a.entity_type AS entityType, a.entity_id AS entityId,
+-      COALESCE((SELECT name FROM components WHERE a.entity_type='component' AND id=a.entity_id), json_extract(a.payload_json,'$.recordName'), a.entity_id) AS entityName, a.action,
++      COALESCE(CASE a.entity_type
++        WHEN 'operator' THEN (SELECT email FROM oa_operators subject WHERE subject.id=a.entity_id
++          AND subject.email <> 'deleted-' || lower(subject.id) || '@operator.invalid')
++        WHEN 'incident-update' THEN (SELECT i.title FROM incident_updates u JOIN incidents i ON i.id=u.incident_id
++          WHERE u.id=a.entity_id AND i.deleted_at IS NULL)
++        WHEN 'incident' THEN (SELECT title FROM incidents WHERE id=a.entity_id AND deleted_at IS NULL)
++        WHEN 'maintenance' THEN (SELECT title FROM maintenance WHERE id=a.entity_id)
++        WHEN 'component' THEN (SELECT name FROM components WHERE id=a.entity_id)
++        WHEN 'component-group' THEN (SELECT name FROM component_groups WHERE id=a.entity_id)
++        WHEN 'alert-rule' THEN (SELECT name FROM alert_rules WHERE id=a.entity_id)
++        ELSE json_extract(a.payload_json,'$.recordName')
++      END, 'Removed item') AS entityName, a.action,
+       a.operator_id AS actorId,
+       CASE WHEN a.operator_id IS NULL THEN 'System'
+-        WHEN o.id IS NULL OR o.email = 'deleted-' || lower(o.id) || '@operator.invalid' THEN 'Erased operator · ' || a.operator_id
+-        ELSE o.display_name END AS actorName,
++        WHEN o.id IS NULL OR o.email = 'deleted-' || lower(o.id) || '@operator.invalid' THEN 'Erased operator'
++        ELSE COALESCE(NULLIF(trim(o.display_name), ''), o.email) END AS actorName,
+       a.reason, a.created_at AS createdAt
+       FROM audit_entries a LEFT JOIN oa_operators o ON o.id = a.operator_id
+       ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""}
+@@ -38,7 +49,7 @@ export function createAuditLogRepository(db: D1Database) {
+       const [actions, actors] = await db.batch([
+         db.prepare("SELECT DISTINCT action FROM audit_entries ORDER BY action"),
+         db.prepare(`SELECT DISTINCT a.operator_id AS id,
+-          CASE WHEN o.id IS NULL OR o.email = 'deleted-' || lower(o.id) || '@operator.invalid' THEN 'Erased operator · ' || a.operator_id ELSE o.display_name END AS name
++          CASE WHEN o.id IS NULL OR o.email = 'deleted-' || lower(o.id) || '@operator.invalid' THEN 'Erased operator' ELSE COALESCE(NULLIF(trim(o.display_name), ''), o.email) END AS name
+           FROM audit_entries a LEFT JOIN oa_operators o ON o.id = a.operator_id WHERE a.operator_id IS NOT NULL ORDER BY name, id`),
+       ]);
+       return { actions: (actions.results as Array<{ action: string }>).map(row => row.action), actors: actors.results as Array<{ id: string; name: string }> };
+diff --git a/src/core/features/audit-log/routes.ts b/src/core/features/audit-log/routes.ts
+index 6aa41ee..ddda95f 100644
+--- a/src/core/features/audit-log/routes.ts
++++ b/src/core/features/audit-log/routes.ts
+@@ -1,12 +1,13 @@
++import { auditActionLabel } from "./labels";
+ import type { Hono } from "hono";
+ import { z } from "zod";
+ import type { AppEnv } from "../../app/types";
+ import { createAuditLogRepository, type AuditEntry } from "./repository";
+ 
+ const filter = z.object({ actorId: z.string().min(1).max(200).optional(), action: z.string().min(1).max(100).optional(), from: z.iso.datetime().optional(), until: z.iso.datetime().optional(), limit: z.coerce.number().int().min(1).max(100).default(50), offset: z.coerce.number().int().min(0).max(1_000_000_000).default(0), format: z.enum(["json", "csv"]).optional() }).strict().refine(value => !value.from || !value.until || value.from < value.until, "The end must follow the start.");
+-const columns = ["id", "createdAt", "actorId", "actorName", "action", "entityType", "entityId", "entityName", "reason"] as const;
++const columns = ["id", "createdAt", "actorId", "actorName", "action", "actionLabel", "entityType", "entityId", "entityName", "reason"] as const;
+ function cell(value: string | null) { const text = value ?? ""; return `"${(/^[=+\-@\t\r]/.test(text) ? "'" + text : text).replaceAll('"', '""')}"`; }
+-export function auditCsv(rows: AuditEntry[]) { return [columns.join(","), ...rows.map(row => columns.map(key => cell(row[key])).join(","))].join("\r\n") + "\r\n"; }
++export function auditCsv(rows: AuditEntry[]) { return [columns.join(","), ...rows.map(row => columns.map(key => cell(key === "actionLabel" ? auditActionLabel(row.action) : row[key])).join(","))].join("\r\n") + "\r\n"; }
+ 
+ /** Uses the same session admission as Settings, under TEAM-001's equal operators. */
+ export function registerAuditLogRoutes(app: Hono<AppEnv>, repository: ReturnType<typeof createAuditLogRepository>) {
+diff --git a/src/core/features/audit-log/ui/audit-log.tsx b/src/core/features/audit-log/ui/audit-log.tsx
+index c23e2d9..42ea1c9 100644
+--- a/src/core/features/audit-log/ui/audit-log.tsx
++++ b/src/core/features/audit-log/ui/audit-log.tsx
+@@ -3,6 +3,7 @@ import { useAppData } from "../../../app/client/ui/api";
+ import { Button } from "../../../app/client/ui/button";
+ import { ListPagination } from "../../../app/client/ui/pagination";
+ import { useOperatorTime } from "../../../app/client/ui/states";
++import { auditActionLabel, auditRecordLabel } from "../labels";
+ import type { AuditEntry } from "../repository";
+ 
+ type AuditResponse = { entries: AuditEntry[]; actions: string[]; actors: Array<{ id: string; name: string }>; limit: number; offset: number; hasMore: boolean };
+@@ -22,11 +23,11 @@ function AuditRecords() {
+   }
+   return <div className="page-stack"><p>Who published, changed or removed something. Everyone can view this log. Times use your page timezone; date filters use UTC.</p><form className="settings-grid" onSubmit={apply}>
+     <label className="form-label">Operator<select value={actorId} onChange={event => setActor(event.target.value)}><option value="">Everyone</option>{data?.actors.map(actor => <option key={actor.id} value={actor.id}>{actor.name}</option>)}</select></label>
+-    <label className="form-label">Audit action<select value={action} onChange={event => setAction(event.target.value)}><option value="">Every action</option>{data?.actions.map(value => <option key={value}>{value}</option>)}</select></label>
++    <label className="form-label">Audit action<select value={action} onChange={event => setAction(event.target.value)}><option value="">Every action</option>{data?.actions.map(value => <option key={value} value={value}>{auditActionLabel(value)}</option>)}</select></label>
+     <label className="form-label">From date (UTC)<input type="date" value={from} onChange={event => setFrom(event.target.value)} /></label>
+     <label className="form-label">Through date (UTC)<input type="date" min={from || undefined} value={until} onChange={event => setUntil(event.target.value)} /></label>
+     <div className="form-actions full-width"><Button>Apply filters</Button><Button type="button" variant="secondary" onClick={refresh}>Refresh audit log</Button><a className="text-link" href={`/api/app/audit-log?format=csv${selection}`}>Export matching audit CSV</a></div>
+-  </form>{error ? <p role="alert">{error}</p> : loading ? <p role="status">Loading audit entries…</p> : data ? <><div className="table-scroll" tabIndex={0} role="region" aria-label="Audit entries"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Time</th><th role="columnheader" scope="col">Operator</th><th role="columnheader" scope="col">Action</th><th role="columnheader" scope="col">Record</th><th role="columnheader" scope="col">Reason</th></tr></thead><tbody role="rowgroup">{data.entries.map(entry => <tr role="row" key={entry.id}><td role="cell" data-label="Time">{time(entry.createdAt)}</td><td role="cell" data-label="Operator">{entry.actorName}<small>{entry.actorId ?? "Automated operation"}</small></td><td role="cell" data-label="Action">{entry.action}</td><td role="cell" data-label="Record">{entry.entityType}<small>{entry.entityName}</small></td><td role="cell" data-label="Reason">{entry.reason ?? "—"}</td></tr>)}</tbody></table></div>{!data.entries.length && <p>No audit entries match these filters.</p>}<ListPagination label="Audit entry" offset={offset} shown={data.entries.length} hasMore={data.hasMore} onPrevious={() => setOffset(value => Math.max(0, value - data.limit))} onNext={() => setOffset(value => value + data.limit)} /></> : null}</div>;
++  </form>{error ? <p role="alert">{error}</p> : loading ? <p role="status">Loading audit entries…</p> : data ? <><div className="table-scroll" tabIndex={0} role="region" aria-label="Audit entries"><table role="table"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Time</th><th role="columnheader" scope="col">Operator</th><th role="columnheader" scope="col">Action</th><th role="columnheader" scope="col">Record</th><th role="columnheader" scope="col">Reason</th></tr></thead><tbody role="rowgroup">{data.entries.map(entry => <tr role="row" key={entry.id}><td role="cell" data-label="Time">{time(entry.createdAt)}</td><td role="cell" data-label="Operator">{entry.actorName}</td><td role="cell" data-label="Action">{auditActionLabel(entry.action)}</td><td role="cell" data-label="Record">{entry.entityName}<small>{auditRecordLabel(entry.entityType)}</small></td><td role="cell" data-label="Reason">{entry.reason ?? "—"}</td></tr>)}</tbody></table></div>{!data.entries.length && <p>No audit entries match these filters.</p>}<ListPagination label="Audit entry" offset={offset} shown={data.entries.length} hasMore={data.hasMore} onPrevious={() => setOffset(value => Math.max(0, value - data.limit))} onNext={() => setOffset(value => value + data.limit)} /></> : null}</div>;
+ }
+ export function AuditLog() {
+   const [open, setOpen] = useState(false);
+diff --git a/tests/e2e/helpers/audit-labels-flow.mjs b/tests/e2e/helpers/audit-labels-flow.mjs
+new file mode 100644
+index 0000000..36388f2
+--- /dev/null
++++ b/tests/e2e/helpers/audit-labels-flow.mjs
+@@ -0,0 +1,78 @@
++import assert from 'node:assert/strict';
++import { expect } from '@playwright/test';
++import { operatorHydrated } from './operator-hydrated.mjs';
++
++/** Readable audit attribution, subjects and export through native operator doors. */
++export async function auditLabelsFlow({ page, appUrl, appFetch }) {
++  const since = new Date().toISOString();
++  async function api(path, method = 'GET', body) {
++    const response = await appFetch(path, { method, ...(body ? { body: JSON.stringify(body) } : {}), headers: { Origin: appUrl } });
++    assert.ok(response.ok, `${method} ${path}: ${response.status} ${await response.clone().text()}`);
++    return response.status === 204 ? null : response.json();
++  }
++  const actor = (await api('/api/app/session')).operator;
++  const { component } = await api('/api/app/components', 'POST', { name: 'Synthetic Lamp audit payments', description: '', groupId: null, internal: false, displayOrder: 0, note: '' });
++  const { incident } = await api('/api/app/incidents', 'POST', { title: 'Synthetic Lamp payment delays', components: [{ componentId: component.id, state: 'Degraded performance', relationship: 'Primary' }] });
++  await api(`/api/app/incidents/${incident.id}/draft`, 'PUT', { lifecycle: 'Investigating', affectedAudience: 'Payment customers', customerImpact: 'Payments are delayed', whatStillWorks: '', details: '', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() });
++  await api(`/api/app/incidents/${incident.id}/publish`, 'POST', { channels: [] });
++  const { maintenance } = await api('/api/app/maintenance', 'POST', { title: 'Synthetic Lamp audit database upgrade', affectedAudience: 'Payment customers', customerImpact: 'Payments may briefly pause', startsAt: new Date(Date.now() + 86400000).toISOString(), endsAt: new Date(Date.now() + 90000000).toISOString(), componentIds: [component.id] });
++  const email = 'synthetic-lamp-audit-1@example.test';
++  await api('/api/app/operators/invite', 'POST', { email, displayName: 'Synthetic Lamp audit invitee' });
++  const invitee = (await api('/api/app/operators/invited')).operators.find(row => row.email === email);
++  assert.ok(invitee);
++  const selection = new URLSearchParams({ from: since, actorId: actor.id, limit: '100' });
++  const entries = (await api(`/api/app/audit-log?${selection}`)).entries;
++  const update = entries.find(row => row.action === 'published' && row.entityName === incident.title);
++  assert.ok(update, 'publication resolves its incident title through the saved update');
++  const subjects = [
++    [update.entityId, incident.title], [maintenance.id, maintenance.title],
++    [component.id, component.name], [invitee.id, email],
++  ];
++  for (const [id, name] of subjects) {
++    const rows = entries.filter(row => row.entityId === id);
++    assert.ok(rows.length, `the native operation for ${name} is audited`);
++    assert.ok(rows.every(row => row.entityName === name && row.actorName === actor.displayName));
++  }
++  await page.setViewportSize({ width: 1440, height: 1000 });
++  await page.goto(appUrl + '/app/settings#audit'); await operatorHydrated(page);
++  await page.getByRole('button', { name: 'Open audit log', exact: true }).click();
++  const panel = page.locator('#audit-log'), table = panel.getByRole('region', { name: 'Audit entries', exact: true });
++  for (const [, name] of subjects) await expect(table.getByRole('cell', { name: new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).first()).toBeVisible();
++  const visible = await table.innerText();
++  for (const id of [actor.id, ...subjects.map(([id]) => id)]) assert.ok(!visible.includes(id), 'opaque ids stay out of the visible audit table');
++  assert.ok(!visible.includes('notice-published') && !visible.includes('state-changed'), 'action codes are readable sentences');
++  // Selecting a human label must still send the exact recorded code.
++  await panel.getByRole('combobox', { name: /^Operator/ }).selectOption(actor.id);
++  const action = panel.getByRole('combobox', { name: /^Audit action/ });
++  const label = await action.locator('option[value="notice-published"]').innerText();
++  assert.ok(!label.includes('notice-published'));
++  await action.selectOption({ label });
++  const filteredResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/audit-log' && new URL(response.url()).searchParams.get('action') === 'notice-published');
++  await panel.getByRole('button', { name: 'Apply filters', exact: true }).click();
++  const filtered = (await (await filteredResponse).json()).entries;
++  assert.ok(filtered.length && filtered.every(row => row.action === 'notice-published' && row.actorId === actor.id));
++  await expect(table.locator('tbody tr')).toHaveCount(filtered.length);
++  const csv = await page.request.get(appUrl + await panel.getByRole('link', { name: 'Export matching audit CSV', exact: true }).getAttribute('href'));
++  assert.equal(csv.status(), 200);
++  // Values here contain no quotes/newlines; compare the real export by its headers.
++  const [header, ...lines] = (await csv.text()).trimEnd().split('\r\n');
++  const keys = header.split(','), exported = lines.map(line => Object.fromEntries(line.split(',').map((value, index) => [keys[index], value.slice(1, -1)])));
++  assert.deepEqual(exported.map(row => row.id), filtered.map(row => row.id));
++  for (const row of exported) {
++    const native = filtered.find(entry => entry.id === row.id);
++    for (const key of ['actorId', 'actorName', 'action', 'entityId', 'entityName']) assert.equal(row[key], native[key]);
++    assert.equal(row.actionLabel, label, 'CSV keeps the display label beside the machine code');
++  }
++  // Erasure resolves labels again; no copied invitation identity can survive.
++  await api(`/api/app/operators/${invitee.id}`, 'DELETE');
++  const erased = (await api(`/api/app/audit-log?${selection}`)).entries.filter(row => row.entityId === invitee.id);
++  assert.ok(erased.length && erased.every(row => row.entityName === 'Removed item'));
++  assert.ok(!JSON.stringify(erased).includes(email), 'erased subjects never regain their address from historic payloads');
++  // A soft-deleted publication remains auditable without exposing a dead id/title.
++  await api(`/api/app/incidents/${incident.id}`, 'DELETE', { reason: 'Synthetic Lamp audit removal' });
++  const removed = (await api(`/api/app/audit-log?${selection}`)).entries.find(row => row.id === update.id);
++  assert.equal(removed.entityName, 'Removed item');
++  await action.selectOption('');
++  await panel.getByRole('button', { name: 'Apply filters', exact: true }).click();
++  await expect(table.getByRole('cell', { name: 'Removed item', exact: false }).first()).toBeVisible();
++}
+diff --git a/tests/e2e/helpers/automation-rules-browser-flow.mjs b/tests/e2e/helpers/automation-rules-browser-flow.mjs
+index eaa38e5..8d22cd5 100644
+--- a/tests/e2e/helpers/automation-rules-browser-flow.mjs
++++ b/tests/e2e/helpers/automation-rules-browser-flow.mjs
+@@ -77,15 +77,21 @@ export async function automationRulesBrowserFlow({ origin, publicOrigin, cookie,
+     await page.goto(`${origin}/app/settings#audit-log`); await operatorHydrated(page);
+     const auditPanel = page.locator("#audit-log");
+     await auditPanel.getByRole("button", { name: "Open audit log", exact: true }).click();
+-    // The audit API supplies the exact row id; the native view supplies the actor
+-    // and operator-formatted time alongside the action and rule record.
++    // Keep the machine-key assertion in the native read, then identify the
++    // visible edit by its rule title, plain action and approving operator.
+     const records = (await api("/api/app/audit-log?limit=100")).body.entries.filter(row => row.entityType === "alert-rule");
+     const edited = records.find(row => row.action === "updated" && row.actorId === rule.approvedByOperatorId);
+     assert.ok(edited, "an edit is in the native audit view's backing read");
+-    const auditRow = auditPanel.locator("tbody tr").filter({ hasText: edited.entityId }).filter({ hasText: "updated" }).first();
++    assert.equal(edited.entityId, rule.id, "the edit records the approved rule's machine key");
++    assert.equal(edited.entityName, rule.name, "the existing rule resolves to its saved name");
++    const auditRow = auditPanel.locator("tbody tr")
++      .filter({ has: page.getByRole("cell", { name: rule.name, exact: false }) })
++      .filter({ has: page.getByRole("cell", { name: "Updated an item", exact: true }) })
++      .filter({ has: page.getByRole("cell", { name: edited.actorName, exact: true }) }).first();
+     await auditRow.waitFor();
+     if (proof) await captureBoth("rule-audit", () => auditPanel.screenshot.bind(auditPanel));
+     assert.ok((await auditRow.innerText()).includes(edited.actorName));
++    assert.ok(!(await auditRow.innerText()).includes(rule.id), "the visible edit keeps the readable rule label instead of its id");
+     assert.ok((await auditRow.locator("td").first().innerText()).trim(), "the rule edit displays its time");
+     const alert = { alert_id: "prepared-api-alert", alert_cycle_key: "prepared-api-cycle", alert_transition: "Triggered", alert_title: "Untrusted alert wording must remain private" };
+     const response = await fetch(source.endpointUrl, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${source.token}` }, body: JSON.stringify(alert) });
+diff --git a/tests/e2e/publishing-browser.test.mjs b/tests/e2e/publishing-browser.test.mjs
+index fa0f578..de26dd4 100644
+--- a/tests/e2e/publishing-browser.test.mjs
++++ b/tests/e2e/publishing-browser.test.mjs
+@@ -305,6 +305,10 @@ async function assertAssistantDisclosure(id, t) {
+   } finally { aiAnswer = null; }
+ }
+ 
++test('TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys', { timeout: 180_000 }, async () => {
++  await (await import('./helpers/audit-labels-flow.mjs')).auditLabelsFlow({ page, appUrl, appFetch });
++});
++
+ test('TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities', { timeout: 300_000 }, async t => {
+   const {actors}=await (await import('./helpers/operator-roles-flow.mjs')).operatorRolesFlow({appFetch,appUrl,persistTo:statePath,configPath});
+   await (await import('./helpers/operator-roles-browser-flow.mjs')).operatorRolesBrowserFlow({page,appUrl,appFetch,actor:actors.viewer});

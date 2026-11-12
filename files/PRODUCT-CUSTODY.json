@@ -1,0 +1,9 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-audit-labels-fix-1",
+  "local_head": "3f0e64e7bd465d33d312e73d8c69921b7db4924f",
+  "remote_head": "3f0e64e7bd465d33d312e73d8c69921b7db4924f",
+  "remote_ref": "refs/heads/cloud/sd-lamp-audit-labels-fix-1",
+  "clean": true,
+  "utc_verified": "2026-11-12T19:01:05.696158+00:00"
+}

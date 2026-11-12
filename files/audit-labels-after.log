@@ -1,0 +1,26 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+ok 1 - TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+  ---
+  duration_ms: 114277.833806
+  type: 'test'
+  ...
+# Subtest: TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+ok 2 - TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+  ---
+  duration_ms: 34828.143619
+  type: 'test'
+  ...
+# PROBE INCIDENT-014 Slack Settings 1440: Create link code -> signed /api/chat/slack 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+# PROBE INCIDENT-014 Teams Settings 1440: Create link code -> signed /api/chat/teams 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+# PROBE INCIDENT-014 removal 1440: both Settings Remove chat link controls -> 204, native list and storage empty after reload; axe, overflow and hydration pass
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 152724.634068

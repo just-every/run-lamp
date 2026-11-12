@@ -1,0 +1,137 @@
+{
+  "tag": "sd-lamp-audit-labels-fix-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-audit-labels-fix-1",
+  "head": "3f0e64e7bd465d33d312e73d8c69921b7db4924f",
+  "integrated_main": "7bfb459185882497098b4fed00155f248874ce81",
+  "original_labels_head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "save_head": "36c8db6fefadd53f93001d6e836e024b55a78949",
+  "utc_updated": "2026-11-12T19:05:29.248438+00:00",
+  "product_push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-audit-labels-fix-1",
+    "attempts": 1,
+    "exit_code": 0,
+    "status": "pushed"
+  },
+  "local_checks": [
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 --test-name-pattern='^AUTO-001 INTAKE-014' tests/e2e/channels-and-presets.test.mjs",
+      "phase": "before repair",
+      "node": "24.19.0",
+      "exit_code": 1,
+      "passed": 0,
+      "failed": 1,
+      "duration_ms": 399287.896036,
+      "reason": "stale visible raw-ULID/updated selector",
+      "log": "delivery-before.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium LAMP_AUTO_SCREENSHOTS=<owned-proof-directory> cloud_run node --test --test-concurrency=1 --test-name-pattern='^AUTO-001 INTAKE-014' tests/e2e/channels-and-presets.test.mjs",
+      "phase": "candidate",
+      "node": "22.20.0",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "duration_ms": 612898.961748,
+      "log": "delivery-after.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 --test-name-pattern='^SUB-019 SUB-001' tests/e2e/delivery-contract.test.mjs",
+      "phase": "unchanged public-failure reproduction after main integration",
+      "node": "24.19.0",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "duration_ms": 445144.06706,
+      "log": "public-before.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 --test-name-pattern='^TEAM-007 \u2014 audit labels|^TEAM-001 TEAM-004 TEAM-007' tests/e2e/publishing-browser.test.mjs",
+      "phase": "candidate",
+      "node": "22.20.0",
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "duration_ms": 152724.634068,
+      "log": "audit-labels-after.log"
+    },
+    {
+      "command": "cloud_run pnpm typecheck",
+      "phase": "candidate",
+      "node": "22.20.0",
+      "exit_code": 0,
+      "log": "typecheck-after.log"
+    },
+    {
+      "command": "node --check tests/e2e/helpers/automation-rules-browser-flow.mjs",
+      "exit_code": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-docs-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "note": "generated last before repair commit"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "locked_files": 2255,
+      "note": "repeated on clean candidate after browser fixture restoration and before final push"
+    }
+  ],
+  "test_inventory": {
+    "before": {
+      "registrations": 90,
+      "assertionScripts": 10,
+      "total": 100
+    },
+    "after": {
+      "registrations": 90,
+      "assertionScripts": 10,
+      "total": 100
+    },
+    "added": 0,
+    "removed": 0,
+    "skipped": 0
+  },
+  "proof": [
+    {
+      "file": "proof/1440-rule-audit.png",
+      "viewport_width": 1440,
+      "sha256": "752a14e676676f964425fc80b4506c04f323fb050c32a808cc2ed779f3b77f2b",
+      "inspection": "saved rule title, human action and operator name visible"
+    },
+    {
+      "file": "proof/390-rule-audit.png",
+      "viewport_width": 390,
+      "sha256": "613927a0dc94f45eb93bb0e5e733056cb88251714e9bb89ed024325431e86012",
+      "inspection": "saved rule title, human action and operator name visible"
+    }
+  ],
+  "contract_status_changes": [],
+  "TEAM-007": "PARTIAL; points=none; GAP unchanged",
+  "generated_views": "byte-identical to integrated origin/main; neither view committed",
+  "identity": "all three candidate commits, including side parent, have fleet author/committer and no trailers",
+  "ci": {
+    "status": "in_progress",
+    "github_calls_used": 4,
+    "historical_run": 43267587466,
+    "historical_jobs": [
+      131355946011,
+      131355946277,
+      131383327537
+    ],
+    "run_id": 43285493624,
+    "head_sha": "3f0e64e7bd465d33d312e73d8c69921b7db4924f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43285493624"
+  },
+  "pr": null,
+  "blockers": [],
+  "publication_scan": "fleet Mac gate retained; unavailable in this cloud; no claim of COMPLETE",
+  "landing": "not attempted; fleet owns landing",
+  "evidence_publication": "pending separate report-only ref"
+}

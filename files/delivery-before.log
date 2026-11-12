@@ -1,0 +1,26 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✖ AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence (396735.135715ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 399287.896036
+
+✖ failing tests:
+
+test at tests/e2e/channels-and-presets.test.mjs:482:1
+✖ AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence (396735.135715ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+    - waiting for locator('#audit-log').locator('tbody tr').filter({ hasText: '01M78HAB1EVCX4DNNRD1EKEQJY' }).filter({ hasText: 'updated' }).first() to be visible
+  
+      at automationRulesBrowserFlow (/home/agent/rer-consolidation/work/sd-lamp-audit-labels-fix-1/run-lamp/tests/e2e/helpers/automation-rules-browser-flow.mjs:86:20)
+      at async TestContext.<anonymous> (/home/agent/rer-consolidation/work/sd-lamp-audit-labels-fix-1/run-lamp/tests/e2e/channels-and-presets.test.mjs:491:3) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('#audit-log').locator('tbody tr').filter({ hasText: '01M78HAB1EVCX4DNNRD1EKEQJY' }).filter({ hasText: 'updated' }).first() to be visible" ]
+  }

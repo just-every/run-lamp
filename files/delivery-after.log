@@ -1,0 +1,45 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# (node:6007) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+ok 1 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+  ---
+  duration_ms: 607486.338518
+  type: 'test'
+  ...
+# PagerDuty: start the real Worker and apply the prior schema.
+# PagerDuty: Worker ready.
+# PagerDuty: D1 binding ready.
+# PagerDuty: migration retained prior rows; authenticate the owner.
+# PagerDuty: map signed webhook evidence and publish responder notes.
+# PROBE INTAKE-009 4: exact captured signed delivery replay -> original incident and receipt identities; complete intake inventories and public bytes unchanged
+# PROBE INTAKE-009 3: signed exact and partial service matches -> all three exact components; ID-only and name-only controls exclude the compound component
+# PROBE INTAKE-009 6 private: receipt identity reads -> correct source, key, incident, recovered state and provider time; only matching private draft closes; all public bytes retained
+# PagerDuty: publish one note per update, including provider failure.
+# PROBE INTAKE-009 6 published: returned recovery receipt -> exact source, incident, state and provider time; Monitoring and complete published updates retained
+# PROBE INTAKE-009 7: fresh triggers, acknowledged and escalated events -> unchanged complete public inventory (46 artifacts), response bytes and generation; private permalinks 404
+# PagerDuty: export and restore without credentials.
+# PagerDuty workerd proof: signed mapping, private recovery, timed brief, one note per publication, visible HTTP 403, sealed custom authorship, owner-default reconnection, credential-free restore, and source erasure.
+# INTAKE-014 and INTAKE-011: bearer, alertId dedup, all component matchers, private notes/brief evidence, fixed vendor notes/close, unpublished recovery and New Relic workflow fixture passed.
+# AUTO-001 draft: no saved rule and an explicit draft rule preserve byte-identical retained public artifacts.
+# AUTO-001 validation: unauthenticated, malformed, unknown and incomplete-template rule requests change no product rows or public snapshot.
+# AUTO-001 claim: the saved named state reaches the public component in under 30 seconds, with no update or subscriber notification, and recovery releases it.
+# AUTO-001 measured claim to public state: 205.1ms.
+# AUTO-001 claim and publish: only saved operator text is published, using saved channel selection and one publication per firing/recovery despite redelivery and Queue retries.
+# AUTO-001 grouped alerts: two ruled fingerprints, a separately mapped unruled firing component, partial recovery, component recovery and repeated deliveries create exactly one update/email per phase.
+# AUTO-001 broken template: removing saved recovery wording degrades the rule visibly to draft without a claim, update or notification.
+# AUTO-001 audit: rule create, edit and delete appear with the saving owner and valid instants through TEAM-007's audit API.
+# AUTO-001 erasure: deleting a source releases its active rule claim with append-only history, no publication and a retained audit entry.
+# AUTO-001 durable work: a transaction rejection is visible, Cron resumes it without redelivery, and recovery before the first publication closes the private run without late text or duplicate notifications.
+# AUTO-002: controlled 60-second firing, three-minute firing, two-minute refire during five-minute hold, full recovery, silent claim, attributed claim and publication Undo, replay refusal and pending-source erasure pass.
+# UPTIME-008/INTAKE-011: next-snapshot pushes, four real provider adapters at fake edges, twenty-minute disconnected gap, verified Uptime timings and aggregate retention passed.
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 612898.961748

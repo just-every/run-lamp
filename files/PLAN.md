@@ -1,0 +1,8 @@
+# sd-lamp-audit-labels-fix-1
+
+1. Verify the starting audit-label commit 4e97cd125e6e6cb60a8c05e05878a3c96d78490b and merge it with current main, retaining main's tests and source contract judgments. Resolve the source lock by regeneration, restore generated views from main and preserve the integrated branch immediately.
+2. Reproduce the delivery AUTO-001 monitor journey and the public SUB-019 subscriber journey. Audit every browser audit-log selector and keep API and CSV machine-key assertions intact. Classify unrelated failures separately and compare to main if reproducible.
+3. Update stale visible-row selectors to operator, human action and subject labels with the same event/actor/time guarantees. Fix only readable audit rendering defects demonstrated by these journeys. Add no test registrations or clause-status edits.
+4. Run touched journeys and typecheck, keep the TEAM-007 readable-label journey and anonymized-actor coverage, and capture changed audit screens at 1440 and 390. Regenerate source lock last, check it and restore generated views whole from main.
+5. Inspect every candidate author, committer and trailer, push only cloud/sd-lamp-audit-labels-fix-1 using the fleet guard, and watch one exact-SHA Verify through REST within ten GitHub calls and 300-second polling cadence. Respect existing PR rules without changing PR 343.
+6. Write actual non-secret report/receipts, publish explicitly selected files only to evidence/sd-lamp-audit-labels-fix-1, preserve any unpublished work on failure and return custody/claim/POST lines. No landing, main/tag writes or private scan claims.

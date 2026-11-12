@@ -1,0 +1,10 @@
+{
+  "repository": "just-every/run-lamp",
+  "run_id": 43267587466,
+  "head_sha": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "calls": [
+    {"command": "gh run view 43267587466 --repo just-every/run-lamp --job 131355946277 --log-failed", "exit_code": 0, "stdout_bytes": 0, "stderr_bytes": 0},
+    {"command": "gh run view 43267587466 --repo just-every/run-lamp --job 131355946011 --log-failed", "exit_code": 0, "stdout_bytes": 0, "stderr_bytes": 0}
+  ],
+  "assessment": "Both permitted once-per-failed-job archive reads returned no log content. No assertion or transport failure was inferred from empty output; local reproductions determine the failures. No blob redirect downloads were attempted."
+}
