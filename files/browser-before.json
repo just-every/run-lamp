@@ -1,0 +1,62 @@
+{
+  "phase": "before",
+  "screens": [
+    {
+      "width": 1440,
+      "screen": "Chat links",
+      "text": "Chat links\n\nCreate a code and send it privately to the Lamp app in Slack or Teams. It expires after ten minutes and works once.\n\nCreate link codeRefresh chat links\n\nNo chat identities linked.",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "x",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nX OAuth 2.0 user token (tweet.write)\n\nUse a user token from your X developer app with tweet.write permission. Your X API tier and costs apply.\n\nConnect social account",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "bluesky",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nBluesky handle\nBluesky service\nBluesky app password\nConnect social account",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "mastodon",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nMastodon instance\nMastodon access token (write:statuses)\nConnect social account",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "Chat links",
+      "text": "Chat links\n\nCreate a code and send it privately to the Lamp app in Slack or Teams. It expires after ten minutes and works once.\n\nCreate link codeRefresh chat links\n\nNo chat identities linked.",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "x",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nX OAuth 2.0 user token (tweet.write)\n\nUse a user token from your X developer app with tweet.write permission. Your X API tier and costs apply.\n\nConnect social account",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "bluesky",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nBluesky handle\nBluesky service\nBluesky app password\nConnect social account",
+      "links": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "mastodon",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nMastodon instance\nMastodon access token (write:statuses)\nConnect social account",
+      "links": [],
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

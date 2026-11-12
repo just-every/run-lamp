@@ -1,0 +1,150 @@
+{
+  "phase": "after",
+  "head": "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+  "screens": [
+    {
+      "width": 1440,
+      "screen": "Chat links",
+      "text": "Chat links\n\nSet up Slack or Teams\n\nOnce the app is installed, create a code and send the command in a private conversation. It expires after ten minutes and works once.\n\nCreate link codeRefresh chat links\n\nNo chat identities linked.",
+      "links": [
+        {
+          "label": "Set up Slack or Teams",
+          "href": "/docs/chat-desk"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "x",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nX OAuth 2.0 user token (tweet.write)\n\nSet up X\n\nConnect social account",
+      "links": [
+        {
+          "label": "Set up X",
+          "href": "/docs/social-accounts#x"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "bluesky",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nBluesky handle\nBluesky service\nBluesky app password\n\nSet up Bluesky\n\nConnect social account",
+      "links": [
+        {
+          "label": "Set up Bluesky",
+          "href": "/docs/social-accounts#bluesky"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "mastodon",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nMastodon instance\nMastodon access token (write:statuses)\n\nSet up Mastodon\n\nConnect social account",
+      "links": [
+        {
+          "label": "Set up Mastodon",
+          "href": "/docs/social-accounts#mastodon"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "Chat links",
+      "text": "Chat links\n\nSet up Slack or Teams\n\nOnce the app is installed, create a code and send the command in a private conversation. It expires after ten minutes and works once.\n\nCreate link codeRefresh chat links\n\nNo chat identities linked.",
+      "links": [
+        {
+          "label": "Set up Slack or Teams",
+          "href": "/docs/chat-desk"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "x",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nX OAuth 2.0 user token (tweet.write)\n\nSet up X\n\nConnect social account",
+      "links": [
+        {
+          "label": "Set up X",
+          "href": "/docs/social-accounts#x"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "bluesky",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nBluesky handle\nBluesky service\nBluesky app password\n\nSet up Bluesky\n\nConnect social account",
+      "links": [
+        {
+          "label": "Set up Bluesky",
+          "href": "/docs/social-accounts#bluesky"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "mastodon",
+      "text": "SOCIAL ACCOUNTS\n\nX, Bluesky and Mastodon\n\nPost incident updates to the page’s accounts. Credentials are encrypted and never shown again. Choose Social accounts on each update to post.\n\nNo social accounts connected.\n\nPost by default\nSocial network\nX\nBluesky\nMastodon\nAccount name\nPost prefix\nMastodon instance\nMastodon access token (write:statuses)\n\nSet up Mastodon\n\nConnect social account",
+      "links": [
+        {
+          "label": "Set up Mastodon",
+          "href": "/docs/social-accounts#mastodon"
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "chat-desk",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "screen": "social-accounts",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "chat-desk",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "screen": "social-accounts",
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "chatGuide": {
+    "status": 200,
+    "url": "/docs/chat-desk",
+    "headings": [
+      "Before you start",
+      "Slack",
+      "Teams",
+      "Link codes and access",
+      "Current limits"
+    ]
+  },
+  "xGuide": {
+    "status": 200,
+    "path": "/docs/social-accounts",
+    "hash": "#x"
+  },
+  "blueskyGuide": {
+    "status": 200,
+    "path": "/docs/social-accounts",
+    "hash": "#bluesky"
+  },
+  "mastodonGuide": {
+    "status": 200,
+    "path": "/docs/social-accounts",
+    "hash": "#mastodon"
+  },
+  "indexLinks": 4
+}

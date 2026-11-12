@@ -1,0 +1,89 @@
+{
+  "checked_date": "2026-11-12",
+  "method": "Current public provider documentation checked by independent read-only research and compared with local handlers/manifests. No provider login, live registration or delivery was performed.",
+  "sources": [
+    {
+      "provider": "Slack",
+      "url": "https://docs.slack.dev/app-manifests/configuring-apps-with-app-manifests/",
+      "facts": "Create an app from manifest; review workspace and settings."
+    },
+    {
+      "provider": "Slack",
+      "url": "https://docs.slack.dev/app-management/distribution/",
+      "facts": "Install to workspace and permission/approval boundary."
+    },
+    {
+      "provider": "Slack",
+      "url": "https://docs.slack.dev/interactivity/implementing-slash-commands/",
+      "facts": "Slash commands from conversations; endpoint and signing verification."
+    },
+    {
+      "provider": "Teams",
+      "url": "https://learn.microsoft.com/en-us/microsoftteams/platform/teams-sdk/teams/azure-configuration",
+      "facts": "Azure Bot, Single Tenant for new registrations, messaging endpoint and Microsoft Teams channel."
+    },
+    {
+      "provider": "Teams",
+      "url": "https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/apps-package",
+      "facts": "Manifest and 192x192 color/32x32 outline icons at ZIP root."
+    },
+    {
+      "provider": "Teams",
+      "url": "https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload",
+      "facts": "Apps > Manage your apps > Upload an app > Upload a custom app; tenant policy."
+    },
+    {
+      "provider": "X",
+      "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/authorization-code",
+      "facts": "Public client Native App/Single page App; PKCE S256; scopes; code and token endpoints; exact registered callback."
+    },
+    {
+      "provider": "X",
+      "url": "https://docs.x.com/fundamentals/authentication/oauth-2-0/user-access-token",
+      "facts": "User access-token acquisition and typical 2h expiration. Confidential clients require client authentication."
+    },
+    {
+      "provider": "Bluesky",
+      "url": "https://bsky.social/about/blog/5-19-2023-user-faq",
+      "facts": "App passwords for third-party clients; guide uses direct current app-password route rather than unverified nested menu labels."
+    },
+    {
+      "provider": "Bluesky",
+      "url": "https://docs.bsky.app/docs/advanced-guides/posts",
+      "facts": "Account session/createRecord posts on PDS."
+    },
+    {
+      "provider": "Mastodon",
+      "url": "https://docs.joinmastodon.org/client/token/",
+      "facts": "Application registration and requested scopes."
+    },
+    {
+      "provider": "Mastodon",
+      "url": "https://docs.joinmastodon.org/client/authorized/",
+      "facts": "User authorization vs app-only client credentials."
+    },
+    {
+      "provider": "Mastodon",
+      "url": "https://docs.joinmastodon.org/methods/statuses/",
+      "facts": "Posting requires user token and write:statuses."
+    },
+    {
+      "provider": "Slack",
+      "url": "https://docs.slack.dev/reference/scopes/commands/",
+      "facts": "commands supported token type is Bot. Use Bot Token Scopes, not User Token Scopes."
+    },
+    {
+      "provider": "Slack",
+      "url": "https://docs.slack.dev/reference/app-manifest/",
+      "facts": "oauth_config.scopes.bot commands and features.bot_user define an installable slash-command bot app."
+    }
+  ],
+  "limits": [
+    "Mastodon /settings/applications redirected to sign-in; authenticated standard UI labels were not directly exercised. The guide states instance customization and links to official OAuth alternative.",
+    "Bluesky app-password screen is behind sign-in; direct route and official app-password guidance used.",
+    "X loopback callback acceptance was not established, so guide uses an owner-controlled registered HTTPS callback and manually copied return URL.",
+    "Teams stores link message but does not send Connector API reply; Lamp Refresh chat links is the confirmation.",
+    "X refresh tokens are not handled by Lamp; expiration/reconnect documented.",
+    "Original manifest omitted an explicit commands scope and bot user; final manifest declares both. Lamp requires no bot token and no Events API messaging subscription. Slash command from private conversation is the linking path."
+  ]
+}

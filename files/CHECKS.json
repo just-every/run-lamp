@@ -1,0 +1,73 @@
+{
+  "candidate": "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0,
+    "log": "typecheck-final.log"
+  },
+  "docs": {
+    "command": "node --experimental-strip-types --input-type=module (buildDocs(process.cwd()))",
+    "exit": 0,
+    "pages": 33,
+    "receipt": "docs-link-check.json",
+    "checks": "Existing docs compiler validates all internal files, routes and anchors; no new assertion registrations."
+  },
+  "source_lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "receipt": "source-lock-check.json"
+  },
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "exit": 0,
+    "log": "build-final.log"
+  },
+  "existing_journeys": {
+    "initial_command": "node --test --test-concurrency=1 --test-name-pattern='Settings chat identities|Private channels deliver|DOCS-001' tests/e2e/publishing-browser.test.mjs tests/e2e/channels-and-presets.test.mjs tests/e2e/start-runtime.test.mjs",
+    "initial_exit": 1,
+    "passed": [
+      "TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 \u2014 operator roles, permissions, audit and Settings chat identities",
+      "DOCS-001 PAGE-020 \u2014 the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation"
+    ],
+    "initial_failure": "The social/channels journey could not find Playwright default chrome-headless-shell executable. Existing public-door proof already used /usr/bin/chromium. No product assertion failed.",
+    "environment_fix": "Created the expected Playwright default executable symlink to /usr/bin/chromium, outside the repository; all launches use system Chromium and --no-sandbox. No test source edits or skip flags.",
+    "retry_command": "node --test --test-concurrency=1 --test-name-pattern='Private channels deliver' tests/e2e/channels-and-presets.test.mjs",
+    "retry_exit": 0,
+    "retry_passed": [
+      "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links"
+    ],
+    "logs": [
+      "touched-tests-initial.log",
+      "social-retry.log"
+    ],
+    "initial_start_head": "f9bba166685b93ea6d05c8f5ce06d4e055369b2d",
+    "retry_start_head": "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+    "scope_note": "Initial combined run began before the docs/Slack-manifest-only correction. Operator chat runtime/UI was unchanged by that correction. The final-head social retry, final build, final browser proof and exact-SHA Verify are recorded separately."
+  },
+  "runtime": "Pinned Node 22.20.0 for the final tests/typecheck; pnpm 10.12.4; /usr/bin/chromium. Earlier toolchain selected VM Node 24.19.0 for the first typecheck; it also passed.",
+  "full_local_suite": "Not run: focused local checks only; exact-SHA GitHub Verify is the full wall.",
+  "browser": {
+    "head": "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+    "command": "cloud_run node /tmp/lamp-guides-browser.mjs after 1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+    "exit": 0,
+    "receipt": "browser-proof.json",
+    "observed_screens": 12,
+    "widths": [
+      1440,
+      390
+    ],
+    "overflows": 0,
+    "page_errors": 0
+  },
+  "ci": {
+    "push_run_id": 43267894583,
+    "pr_run_id": 43267908323,
+    "head": "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+    "status": "completed",
+    "conclusion": "success",
+    "push_receipt": "ci-final.json",
+    "pr_receipt": "ci-pr-final.json",
+    "api_invocations": 9
+  }
+}

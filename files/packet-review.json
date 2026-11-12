@@ -1,0 +1,11 @@
+{
+  "selected_material": "Actual plan/report, check logs/receipts, source-lock receipts, product provenance, provider sources and synthetic-installation screenshots. No credential files, environment dumps, private held-out materials, symlinks or private sign-in links.",
+  "review": "Filename/type checks and credential/private-entry pattern checks passed. Sources and screenshot content reviewed.",
+  "issues": [],
+  "explicit_publication_files": 50,
+  "raw_private_logs_excluded": [
+    "/tmp/lamp-dev-before.log",
+    "/tmp/lamp-dev-after.log",
+    "/tmp/lamp-setup.log"
+  ]
+}

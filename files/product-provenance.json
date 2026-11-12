@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-connect-guides-1",
+  "head": "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0",
+  "base": "b2ba93174222d086693aa6e137c598ff7b51c951",
+  "product_files": [
+    "DIVERGENCE.md",
+    "docs/chat-desk.md",
+    "docs/chat-desk/slack-manifest.json",
+    "docs/site.json",
+    "docs/social-accounts.md",
+    "sources.lock.json",
+    "src/core/features/chat-desk/ui/chat-links-panel.tsx",
+    "src/core/features/social/ui/social-settings.tsx"
+  ],
+  "clean_checkout": true,
+  "contract_status_changes": [],
+  "generated_views_committed": false,
+  "tests_changed": false,
+  "commits": [
+    "1d7f5db4e6429864d8aa553a5356c4c2c9f325b0 Declare Slack command permissions in the install manifest",
+    "f9bba166685b93ea6d05c8f5ce06d4e055369b2d Guide owners through chat and social connection setup"
+  ],
+  "publication_scan": "Fleet lander runs the full publication scan; not available in cloud and not claimed."
+}

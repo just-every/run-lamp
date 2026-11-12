@@ -1,0 +1,34 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# (node:7928) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+ok 1 - INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+  ---
+  duration_ms: 125883.789285
+  type: 'test'
+  ...
+# INTEG-002 browser 1440px: Settings connected an account, concealed the saved credential, saved post-by-default on/off; composer respected deselection and reset each new update to the owner default.
+# INTEG-002 browser: Settings, incident composer and maintenance scheduling at 1440 and 390 have no horizontal overflow or serious/critical accessibility findings; account removed through Settings. Screens retained under ./test-results/social; private sign-in links are never retained.
+# PROBE NOTIFY-012 atomic commit: POST /api/app/incidents/:id/publish with chat and a second-post storage fault -> 409; complete inventories stay at 1 update/2 posts, unchanged draft and receivers; retry commits exactly 1 update/2 following posts.
+# PROBE NOTIFY-012 original request replay: POST the captured body and If-Match revision, then two scheduled passes -> 409; all 2 update/4 post identities and 4 receiver requests unchanged.
+# PROBE NOTIFY-012 retroactive silence: POST a distinct saved draft with chat selected and the earlier publication timestamp -> 200, isRetroactive=true, 3 updates; complete 4-post inventory and 4 receiver requests unchanged.
+# SUB-014 SUB-015 synthetic Slack OAuth and Teams Workflows public subscriptions; no live provider call
+# INTEG-002 acceptance 1: recorded X, Bluesky and Mastodon edges receive one bounded post per selected account; credentials stay sealed.
+# INTEG-002 x first post (279/280): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+# INTEG-002 bluesky first post (300/300): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking\\nhttps://status.example.test/incidents/INC-1"; postId=at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1
+# INTEG-002 mastodon first post (337/500): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking successful payments before recovery.\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+# INTEG-002 acceptance 2: the second update uses each network’s native reply field and replies to the first provider id.
+# INTEG-002 thread fields: X {"in_reply_to_tweet_id":"synthetic-lamp-post-1"}; Bluesky {"root":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"},"parent":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"}}; Mastodon in_reply_to_id=synthetic-lamp-post-1
+# INTEG-002 acceptance 3: explicit deselection queues and posts nothing even with post by default on; retroactive updates and imports stay silent.
+# INTEG-002 acceptance 4: X 503 receives five retries, then a failed row and one operator alert; public artifacts, email and the other accounts continue.
+# INTEG-002 X 503 attempts=6; final={"id":"01M78CE7GRNPX09Q24Q7F9CZBZ.01M78CE542P68ERNZ79NB2P1C0","eventId":"01M78CE7GRNPX09Q24Q7F9CZBZ","accountId":"01M78CE542P68ERNZ79NB2P1C0","account":"Synthetic Lamp x","network":"x","reference":"INC-5","text":"Synthetic Lamp service status: Investigating: Synthetic social failure must not delay public status or subscriber email.\\nhttps://status.example.test/incidents/INC-5","queuedAt":"2026-11-12T17:21:12.756Z","outcomeAt":"2026-11-12T17:21:13.289Z","postId":null,"postCid":null,"attempts":6,"state":"failed","attemptLog":[{"number":1,"startedAt":1794504072911,"finishedAt":1794504072945,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":2,"startedAt":1794504073060,"finishedAt":1794504073064,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":3,"startedAt":1794504073110,"finishedAt":1794504073114,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":4,"startedAt":1794504073157,"finishedAt":1794504073161,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":5,"startedAt":1794504073203,"finishedAt":1794504073207,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":6,"startedAt":1794504073284,"finishedAt":1794504073289,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"}]}; NOTIFY-006 operator mail=1; page, Atom, email, Bluesky and Mastodon delivered before X exhaustion.
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 127326.354794
