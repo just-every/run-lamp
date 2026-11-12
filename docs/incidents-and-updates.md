@@ -37,11 +37,21 @@ something was sent. Under the timeline, the incident panel lists named rows:
 **Communication owner** and **Incident subscribers**, then a quiet **Delete
 incident**. Each row shows one line and opens on its name.
 
-To reopen an incident resolved in error, publish an update that sets it to
-Investigating. The resolution and reopening updates both remain in history. You
-can also create a retroactive incident with updates dated in the past; its
+Open a resolved incident from **Incidents** to use the same update composer.
+To reopen an incident resolved in error, choose **Investigating** above its fields,
+write the update, set the next-update time and publish. The resolution and
+reopening updates both remain in history. You can also create a retroactive incident with updates dated in the past; its
 component history uses those times and subscribers are not notified about those
 retroactive updates.
+
+To correct an earlier publication, compose a new update, then choose
+**Update options › Publish as a correction…**, select the earlier update and
+choose **Mark as correction** before publishing. This works on resolved incidents
+too; leave the status **Resolved** to keep the incident closed. The public page,
+incident permalink and operator timeline mark the new publication as a correction
+and link to the earlier update by status and publication time. The earlier
+wording stays unchanged, and both remain in publication order, newest first.
+After publication, the next draft starts as an ordinary update.
 
 ## Change affected components
 

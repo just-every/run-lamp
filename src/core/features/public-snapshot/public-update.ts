@@ -7,7 +7,7 @@ export function publicUpdate(source: PublicSnapshotSource, update: PublicSnapsho
   const componentChanges = (update.componentChanges ?? []).filter(change => !change.internal && attachments.some(row =>
     row.componentId === change.componentId || (row.componentId === null && row.componentName === change.name)));
   return {
-    id: update.id, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience,
+    id: update.id, correctsUpdateId: update.correctsUpdateId, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience,
     customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details,
     nextUpdateAt: update.nextUpdateAt, publishedAt: update.publishedAt, componentChanges,
   };
