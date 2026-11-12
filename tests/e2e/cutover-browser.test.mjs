@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, readdir } from 'node:fs/promises';
+import { mkdir, readdir, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
@@ -18,6 +18,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
     await runtime.start(); await runtime.seedOperator();
     browser = await chromium.launch({ executablePath: process.env.LAMP_CHROMIUM_PATH, headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    await context.grantPermissions(['local-network-access'], { origin });
     await context.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
     const entered = await signInAs({ origin, key: devKey });
     await context.addCookies(entered.cookies.map(cookie => ({ ...cookie, url: origin })));
@@ -36,6 +37,18 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       const response = await nativeRequest(path, { cookie: entered.header, ...(body === undefined ? {} : { method: 'POST', json: body }), headers });
       return { status: response.status, body: await response.json() };
     });
+    const assertStatuspageGuide = async () => {
+      const readers = page.getByRole('heading', { name: 'Feeds and other readers', exact: true }).locator('..');
+      const text = await readers.innerText();
+      for (const served of [/RSS is available at \/feed\.rss and \/history\.rss/, /\/history\.atom answers with Lamp’s Atom feed after import, also available at \/feed\.atom/, /Statuspage \/api\/v2\/ read endpoints.*are served/, /\/embed\/script\.js tags serve Lamp’s floating notice on the moved hostname/, /Allow the website that embeds it in Settings/]) assert.match(text, served);
+      for (const unavailable of [/Per-window switches and Verifying are unavailable/, /Webhook body compatibility and component automation email addresses remain unavailable/]) assert.match(text, unavailable);
+      const guide = page.getByRole('heading', { name: 'Operating Lamp after Statuspage', exact: true }).locator('..');
+      const notes = await guide.getByRole('listitem').allTextContents();
+      assert.equal(notes.length, 3);
+      assert.match(notes[0], /A published update is never edited in place.*correction update that names it.*publish it with no channels selected when nobody should be notified again.*Both updates stay on the timeline/);
+      assert.match(notes[1], /Component states change with each update.*set each affected component's state in the update you publish.*publishing applies the states and the update together/);
+      assert.match(notes[2], /Components set to show only while degraded keep that behaviour after import/);
+    };
     const openWizard = async () => {
       const hydrated = page.waitForResponse(response => response.url() === origin + '/api/app/statuspage-import/jobs' && response.request().method() === 'GET' && response.status() === 200);
       await page.goto(origin + '/app/move-in'); await hydrated;
@@ -45,7 +58,16 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       await openWizard();
       await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source);
       const directory = resolve('tests/fixtures', source, source === 'sorry' ? 'public' : 'small');
-      const files = (await readdir(directory)).map(name => join(directory, name));
+      const files = await Promise.all((await readdir(directory)).map(async name => {
+        if (source !== 'statuspage') return join(directory, name);
+        const buffer = await readFile(join(directory, name));
+        if (name !== 'incidents.json') return { name, mimeType: 'application/json', buffer };
+        const incidents = JSON.parse(buffer.toString('utf8'));
+        // A real unresolved imported story makes an empty or hidden notice fail.
+        incidents[0].status = 'investigating'; incidents[0].resolved_at = null;
+        incidents[0].incident_updates = incidents[0].incident_updates.slice(0, 1);
+        return { name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(incidents)) };
+      }));
       const review = async () => {
         await page.getByLabel('Saved responses', { exact: true }).setInputFiles(files);
         if (source === 'instatus') await page.getByLabel('Instatus page ID', { exact: true }).fill('synthpage01');
@@ -63,6 +85,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source); await review();
       await page.getByRole('link', { name: 'Read the Cutover preview', exact: true }).click();
       await page.getByRole('heading', { name: 'Old public addresses', exact: true }).waitFor();
+      if (source === 'statuspage') await assertStatuspageGuide();
       assert.equal(await page.getByRole('button', { name: 'Send invitations', exact: true }).isDisabled(), true);
       await openWizard(); await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source); await review();
       await page.getByLabel('I reviewed what changes, is skipped or is refused.').check();
@@ -102,6 +125,55 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       }
       await page.goto(origin + `/app/cutover?job=${result.job.id}`);
       await page.getByRole('heading', { name: 'Old public addresses', exact: true }).waitFor();
+      if (source === 'statuspage') {
+        await assertStatuspageGuide();
+        const settings = await (await nativeRequest('/api/app/page-settings', { cookie: entered.header })).json();
+        const current = settings.settings;
+        // A separate origin on the local public site keeps this browser request
+        // inside the dev gateway's same-site boundary, without a private key.
+        const website = new URL(publicOrigin); website.port = String(await reservePort());
+        const websiteOrigin = website.origin;
+        const allowed = await nativeRequest('/api/app/page-settings', { cookie: entered.header, method: 'PUT', json: {
+          pageName: current.pageName, tagline: current.tagline, accentColor: current.accentColor,
+          timezone: current.timezone, hostname: current.hostname, mailFromAddress: current.mailFromAddress,
+          footerCreditEnabled: current.footerCreditEnabled,
+          widgetAllowedOrigins: [websiteOrigin],
+        } });
+        assert.equal(allowed.status, 200, await allowed.text());
+        const imported = (await (await nativeRequest('/api/app/incidents', { cookie: entered.header })).json()).incidents.find(row => row.title === 'Elevated API errors');
+        assert.equal(imported.lifecycle, 'Investigating');
+        await context.grantPermissions(['local-network-access'], { origin: websiteOrigin });
+        const noticePage = await context.newPage();
+        try {
+          const errors = [];
+          noticePage.on('pageerror', error => errors.push(error.message));
+          noticePage.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+          noticePage.on('requestfailed', request => errors.push(`${new URL(request.url()).pathname}: ${request.failure()?.errorText}`));
+          // The owner website supplies an old tag without Lamp variant options.
+          await noticePage.route(websiteOrigin + '/synthetic-lamp-embed', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html lang="en"><title>Synthetic Lamp embedding website</title><body><main>Customer website</main><script src="${publicOrigin}/embed/script.js"></script></body></html>` }));
+          const scriptRead = noticePage.waitForResponse(publicOrigin + '/embed/script.js');
+          await noticePage.goto(websiteOrigin + '/synthetic-lamp-embed');
+          const scriptResponse = await scriptRead.catch(error => { throw new Error(`${error.message}; browser errors: ${JSON.stringify(errors)}`); });
+          assert.equal(scriptResponse.status(), 200);
+          const snapshot = await (await fetch(publicOrigin + '/api/public/status')).json();
+          assert.equal(snapshot.incident?.reference, imported.reference, 'the public generation contains the unresolved imported story');
+          assert.ok((await scriptResponse.text()).includes(websiteOrigin), 'the compatibility script carries the saved website allowlist');
+          assert.deepEqual(errors, [], 'the old tag executes without browser errors');
+          const notice = noticePage.getByRole('status');
+          await notice.waitFor({ state: 'visible' });
+          assert.equal(await notice.count(), 1, 'the old tag creates one visible notice');
+          assert.deepEqual(await notice.evaluate(element => ({ position: getComputedStyle(element).position, bottom: getComputedStyle(element).bottom, right: getComputedStyle(element).right })), { position: 'fixed', bottom: '16px', right: '16px' }, 'the compatibility tag selects the floating notice by default');
+          assert.equal(await notice.locator('strong').innerText(), 'Partially unavailable', 'the notice reflects the imported partial-outage claim');
+          const content = await notice.innerText();
+          for (const value of [imported.reference, 'Elevated API errors', 'Status: Investigating', 'We are investigating elevated error rates on the API.']) assert.ok(content.includes(value), `the old tag renders the imported incident content: ${value}`);
+          if (evidence) for (const width of [1440, 390]) {
+            await noticePage.setViewportSize({ width, height: 1000 });
+            await noticePage.screenshot({ path: join(evidence, `statuspage-old-embed-${width}.png`), fullPage: true });
+          }
+        } finally { await noticePage.close(); }
+        console.log('PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording');
+        console.log('PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible');
+      }
       await page.getByLabel('Public address', { exact: true }).fill(publicOrigin);
       await page.getByRole('button', { name: 'Use this address for checks' }).click();
       const checks = page.getByRole('button', { name: 'Check opens', exact: true });

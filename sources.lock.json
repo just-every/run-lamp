@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "5cbae6c145439ade79f9c024c8f54d134cd321983379ed239f45da026a1b819e",
+      "sha256": "3f4ef5a5deb72ad710a7d44c646d3652bded613e9d749ec02523e1c479c24e07",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -6128,7 +6128,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/cutover.ts": {
-      "sha256": "3c4bb3492d5a6e8ae9b9bba96b66d58fe4f728e7aad6207fa2d69add96a76a81",
+      "sha256": "1fbceb4cbf59f40f35747f475758a3ba3485ea5299e902407b43415c6b380404",
       "executable": false
     },
     "src/core/features/statuspage-import/door-claim.ts": {
@@ -7844,7 +7844,7 @@
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
-      "sha256": "14b76e23ae41aa979ea719e954c997eee1436001744ac8e98b971ecf8780f3dd",
+      "sha256": "4c4b25c00d48b61f16f9ee2f25f5f5c30458f984aee51ce199f7ebf974db4e6f",
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
@@ -8444,7 +8444,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "14466901cae0a2af4111388e9a08827ca216162c3f6e32d38590f946b34b0d8c",
+      "sha256": "e378598d668540c1a849cfc28601a1c26725ea1a9ab8ee79e2b1b31acb8273dd",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
