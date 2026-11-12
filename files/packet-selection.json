@@ -28,7 +28,17 @@
     "screens/statuspage-cutover-1440.png",
     "screens/statuspage-cutover-390.png",
     "screens/statuspage-old-embed-1440.png",
-    "screens/statuspage-old-embed-390.png"
+    "screens/statuspage-old-embed-390.png",
+    "packet-selection.json",
+    "evidence-verification.json"
   ],
-  "status": "actual regular non-secret report files explicitly selected"
+  "status": "actual regular non-secret report files explicitly selected",
+  "candidate_verify": {
+    "run_id": 43197814784,
+    "event": "push",
+    "conclusion": "success",
+    "head_sha": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43197814784",
+    "status": "completed"
+  }
 }

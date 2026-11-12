@@ -46,5 +46,20 @@
     "src/core/features/statuspage-import/cutover.ts": "1fbceb4cbf59f40f35747f475758a3ba3485ea5299e902407b43415c6b380404",
     "tests/e2e/cutover-browser.test.mjs": "4c4b25c00d48b61f16f9ee2f25f5f5c30458f984aee51ce199f7ebf974db4e6f",
     "tests/e2e/statuspage-import.test.mjs": "ef867d30300f542fb671993416976e3bf44efacf426e61e856c3f76a4108303c"
+  },
+  "candidate_verify": {
+    "run_id": 43197814784,
+    "event": "push",
+    "conclusion": "success",
+    "head_sha": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43197814784",
+    "status": "completed"
+  },
+  "handoff": {
+    "state": "READY",
+    "branch": "cloud/sd-lamp-c-f119",
+    "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+    "clause_status": "PARTIAL",
+    "evidence_is_landing": false
   }
 }

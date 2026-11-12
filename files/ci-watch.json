@@ -1,6 +1,6 @@
 {
   "last_discovery_at": "2026-11-12T10:09:48.349316+00:00",
-  "calls_used": 4,
+  "calls_used": 7,
   "budget": 10,
   "calls": [
     {
@@ -23,7 +23,25 @@
       "count": 1,
       "run": 43197814784,
       "at": "2026-11-12T10:14:50.066664+00:00"
+    },
+    {
+      "kind": "exact-SHA push Verify status",
+      "count": 1,
+      "run": 43197814784,
+      "at": "2026-11-12T10:19:51.742075+00:00"
+    },
+    {
+      "kind": "exact-SHA push Verify status",
+      "count": 1,
+      "run": 43197814784,
+      "at": "2026-11-12T10:24:53.512490+00:00"
+    },
+    {
+      "kind": "exact-SHA push Verify status",
+      "count": 1,
+      "run": 43197814784,
+      "at": "2026-11-12T10:29:55.171839+00:00"
     }
   ],
-  "last_poll_at": "2026-11-12T10:14:50.066664+00:00"
+  "last_poll_at": "2026-11-12T10:29:55.171839+00:00"
 }

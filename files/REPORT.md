@@ -4,7 +4,7 @@ Repository: just-every/run-lamp
 Branch: cloud/sd-lamp-c-f119
 Full candidate SHA: d6fe7db76f3dee298da44b412b085ee6d8401c12
 Draft review: https://github.com/just-every/run-lamp/pull/336
-Recorded at: 2026-11-12T10:15:08.949421+00:00
+Recorded at: 2026-11-12T10:31:00.151784+00:00
 
 MOVE-009 remains PARTIAL. All four selected native outcome groups are implemented and locally proven. Acceptance 1 and acceptance 3 are closed. Acceptance 2's current served and unavailable branches are proven; future qualified activation and old and new automation-address projection remain held by the brief. No acceptance text or Status, Gap or Evidence cell changed.
 
@@ -33,7 +33,7 @@ T2: tests/e2e/cutover-browser.test.mjs — MOVE-001 MOVE-002 MOVE-003 MOVE-004 M
 Exact-SHA local reruns: PASS. test-receipt.json records actual commands, instants, exits and SHA. Both journeys also passed before the first push.
 Assertions run at 1440. Proof captures Statuspage Cutover and floating notice once each at 1440 and 390; all four images were inspected. Existing four-provider navigation, silent reads, address checks, failed-address state, invitations and undo assertions remain.
 
-Branch Verify run 43197814784: event=push, status=in_progress, conclusion=pending, SHA=d6fe7db76f3dee298da44b412b085ee6d8401c12.
+Branch Verify run 43197814784: event=push, status=completed, conclusion=success, SHA=d6fe7db76f3dee298da44b412b085ee6d8401c12.
 URL: https://github.com/just-every/run-lamp/actions/runs/43197814784
 The existing imports shard invokes both changed files through test:imports. All rubric rows below bind to this run and SHA.
 
@@ -57,7 +57,7 @@ No full DONE or completed landing is claimed.
 | --- | --- |
 | 1 | PASS for the four selected native groups, with A2 future activation held. T1 and T2 execute the actual client, populated notice, native reports and visible guide. |
 | 2 | PASS: nonempty imported components, distinctive unresolved incident wording and populated historical feeds. Empty or hidden notice behavior fails. No money, destructive or new authority path. |
-| 3 | Branch Verify status=in_progress, conclusion=pending, run=43197814784, event=push. Both files remain in the imports shard. Behavioral assertions have no optional screenshot flag guard. |
+| 3 | PASS: Branch Verify status=completed, conclusion=success, run=43197814784, event=push. Both files remain in the imports shard. Behavioral assertions have no optional screenshot flag guard. |
 | 4 | Local exact-SHA test receipt: PASS. No product byte changed after commit. |
 | 5 | PASS INSPECTED: MOVE-009 directly names PAGE-019 and names webhook and automation ownership. No inheritance text added. |
 | 6 | PASS for builder mechanics: contract write and check exit 0, views restored whole, no Status cells edited. The inherited Gap describes earlier proof and is deliberately left for the lane. |
