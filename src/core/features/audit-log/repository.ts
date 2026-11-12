@@ -19,6 +19,7 @@ export function createAuditLogRepository(db: D1Database) {
         WHEN 'maintenance' THEN (SELECT title FROM maintenance WHERE id=a.entity_id)
         WHEN 'component' THEN (SELECT name FROM components WHERE id=a.entity_id)
         WHEN 'component-group' THEN (SELECT name FROM component_groups WHERE id=a.entity_id)
+        WHEN 'alert-rule' THEN (SELECT name FROM alert_rules WHERE id=a.entity_id)
         ELSE json_extract(a.payload_json,'$.recordName')
       END, 'Removed item') AS entityName, a.action,
       a.operator_id AS actorId,
