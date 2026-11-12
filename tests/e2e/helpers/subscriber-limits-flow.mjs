@@ -21,14 +21,18 @@ export const subscriberLimitSourceFiles=(count)=>[
 /** Saturate the capacity declared by this installation, refuse without a
  * partial CSV write or email, then free a real subscription and admit again. */
 export async function subscriberLimitsFlow() {
-  const fixture = await openSubscriberManagementFixture();
+  const fixture = await openSubscriberManagementFixture({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
     const { api, post, db } = fixture;
+    const clock = await fixture.raw('/test/clock', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ now: Date.now() + 60_000 }) });
+    assert.equal(clock.status, 204, await clock.text());
     const capacity = (await api('/api/app/subscribers?limit=1')).body.capacity;
     const all = capacity.find(row => row.channel === 'all');
     assert.ok(all && all.limit > all.count);
     const addressFor = name => [`synthetic-lamp-capacity-${name}`, 'example.test'].join('@');
-    const subscribe = email => fixture.raw(pageOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html' }, body: new URLSearchParams({ email }) });
+    // Each native group represents one visitor within the real write allowance,
+    // even when every request shares the same frozen minute.
+    const subscribe = (email, network = '192.0.2.41') => fixture.raw(pageOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'text/html', 'CF-Connecting-IP': network }, body: new URLSearchParams({ email }) });
     const inventory = async () => JSON.parse((await fixture.databaseState()).get('subscribers')).map(row => JSON.parse(row));
     const retainedIds = new Set((await inventory()).map(row => row.id));
     const seeded = all.limit - all.count - 2;
@@ -92,7 +96,7 @@ export async function subscriberLimitsFlow() {
     const mailBefore = structuredClone(fixture.messages);
     const answers = [];
     for (const email of [address, recoveredAddress, stoppedAddress, addressFor('refused-new')]) {
-      const denied = await subscribe(email); assert.equal(denied.status, 409);
+      const denied = await subscribe(email, '192.0.2.42'); assert.equal(denied.status, 409);
       const html = await denied.text(); answers.push(html);
       assert.ok(html.includes('/feed.atom') && html.includes('/feed.rss'), 'a full page still offers public feeds');
       const after = await fixture.databaseState();

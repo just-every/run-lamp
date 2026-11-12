@@ -17,6 +17,7 @@ import { publicIsolationFlow } from './helpers/public-isolation-flow.mjs';
 import { conditionalComponentFlow } from './helpers/conditional-component-flow.mjs';
 import { snapshotReleaseRebuildFlow } from './helpers/snapshot-release-rebuild-flow.mjs';
 import { uptimeCorrectionJourney } from './helpers/uptime-correction-journey.mjs';
+import { widgetInstallations, installWidget, openWidgetHost } from './helpers/widget-privacy-flow.mjs';
 
 test('HIST-008 — reviewed imported history stays completely browsable without scripts', { timeout: 120_000 }, browsableHistoryFlow);
 
@@ -147,8 +148,158 @@ async function statedUptimeMethodJourney() {
   } finally { await browser?.close(); await j.close(); }
 }
 
+// Keep the same installed nodes across native publication and real HTTP polls.
+async function widgetVariantsJourney() {
+  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  let browser;
+  const now = Date.UTC(2032, 3, 12, 12);
+  let clock = now;
+  const advance = async () => assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: clock += 60000 }) })).status, 204);
+  try {
+    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) })).status, 204);
+    await j.signIn(undefined, { fresh: true });
+    const settings = (await j.json('/api/app/page-settings')).settings;
+    await j.json('/api/app/page-settings', 'PUT', {
+      ...Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'footerCreditEnabled', 'mailFromAddress', 'aiToneInstructions'].map(key => [key, settings[key]])),
+      widgetAllowedOrigins: [j.publicOrigin],
+    });
+    const component = await j.component('Synthetic Lamp embed service');
+    const snapshot = (overall, incident, maintenance) => eventually(async () => (await j.publicResponse('/api/public/status')).json(),
+      data => data.overall === overall && data.incident?.reference === incident && data.maintenance?.state === maintenance,
+      `embed snapshot becomes ${overall} with incident ${incident} and maintenance ${maintenance}`);
+    await snapshot('Operational', undefined, undefined);
+    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await openWidgetHost(context, j.publicOrigin);
+    const servedScripts = async () => {
+      for (const installation of widgetInstallations) {
+        const response = await j.publicResponse(installation.path);
+        assert.equal(response.status, 200);
+        const source = await response.text();
+        assert.ok(Buffer.byteLength(source) <= 10 * 1024, `${installation.id} served script stays within ten KiB`);
+        assert.ok(gzipSync(Buffer.from(source)).byteLength <= 10 * 1024, `${installation.id} served script stays within ten KiB gzipped`);
+      }
+    };
+    await servedScripts();
+    const installed = [];
+    for (const installation of widgetInstallations) {
+      for (const hide of [false, true]) installed.push({ installation, hide, root: await installWidget(page, j.publicOrigin, installation, hide) });
+    }
+    assert.equal(await page.locator('section[role=status]').count(), 8);
+    const reconcile = async (expected, active) => {
+      for (const { installation, hide, root } of installed) {
+        const floating = Boolean(installation.position);
+        assert.equal(await root.locator('strong').textContent(), expected.overall, `${installation.id} exact snapshot state`);
+        assert.equal(await root.evaluate(node => getComputedStyle(node).display), (floating && !active) || (hide && expected.overall === 'Operational') ? 'none' : installation.display, `${installation.id} operational and event visibility`);
+        const style = await root.evaluate(node => {
+          const css = getComputedStyle(node);
+          return { color: css.color, background: css.backgroundColor, position: css.position, top: css.top, bottom: css.bottom, left: css.left, right: css.right, display: css.display, padding: css.padding, border: css.borderWidth };
+        });
+        assert.equal(style.color, 'rgb(18, 52, 86)', `${installation.id} configured foreground`);
+        assert.equal(style.background, 'rgb(228, 239, 250)', `${installation.id} configured background`);
+        if (floating) {
+          assert.equal(style.position, 'fixed', `${installation.id} is a floating notice`);
+          const expectedEdges = installation.position === 'top-left' ? ['16px', 'auto', '16px', 'auto'] : ['auto', '16px', 'auto', '16px'];
+          const selected = installation.position === 'top-left' ? [style.top, style.left] : [style.bottom, style.right];
+          assert.deepEqual(selected, ['16px', '16px'], `${installation.id} exact computed selected corner`);
+          assert.deepEqual(await root.evaluate(node => [node.style.top, node.style.bottom, node.style.left, node.style.right]), expectedEdges.map(value => value === 'auto' ? '' : value), `${installation.id} sets only the selected edges`);
+        } else {
+          assert.equal(style.position, 'static', `${installation.id} remains in document flow`);
+          if (installation.variant === 'dot') {
+            assert.equal(style.padding, '4px 0px');
+            assert.equal(style.border, '0px');
+          } else assert.equal(style.padding, '14px 16px');
+        }
+        const detail = root.locator('span').last();
+        const message = installation.variant === 'dot' ? '' : expected.incident ? expected.incident.message.replace(/\n\n+/g, '\n')
+          : expected.maintenance ? `${expected.maintenance.reference}: ${expected.maintenance.title}\n${expected.maintenance.state}` : '';
+        assert.equal(await detail.textContent(), message, `${installation.id} reconciles the same snapshot content`);
+        assert.equal(await detail.evaluate(node => getComputedStyle(node).color), 'rgb(18, 52, 86)');
+        const dotColor = expected.overall === 'Operational' ? 'rgb(25, 134, 90)' : expected.overall === 'Under maintenance' ? 'rgb(79, 111, 168)' : expected.overall === 'Degraded performance' ? 'rgb(201, 138, 18)' : 'rgb(180, 68, 50)';
+        assert.equal(await root.locator('span').first().evaluate(node => getComputedStyle(node).backgroundColor), dotColor, `${installation.id} exact dot state`);
+      }
+    };
+    const poll = async expected => {
+      const replies = [];
+      const capture = response => { if (new URL(response.url()).pathname === '/api/public/status') replies.push(response); };
+      page.on('response', capture);
+      try {
+        await page.clock.fastForward(30000);
+        await eventually(() => replies.length, count => count === installed.length, 'every installed variant receives an actual polling response');
+        for (const response of replies) { assert.equal(response.status(), 200); assert.deepEqual(await response.json(), expected); }
+        await page.waitForFunction(overall => [...document.querySelectorAll('section[role=status] strong')].every(node => node.textContent === overall), expected.overall);
+      } finally { page.off('response', capture); }
+    };
+    const screen = async name => {
+      if (!process.env.LAMP_WIDGET_SCREENSHOTS) return;
+      await mkdir(process.env.LAMP_WIDGET_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_WIDGET_SCREENSHOTS}/widget-${name}-${width}.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    };
+    await reconcile(await snapshot('Operational', undefined, undefined), false);
+    await screen('initial-hidden');
+    await advance();
+    await j.json(`/api/app/components/${component.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
+    let expected = await snapshot('Degraded performance', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    await j.json(`/api/app/components/${component.id}/standing-claim`, 'PUT', { state: 'Operational' });
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    const maintenance = (await j.json('/api/app/maintenance', 'POST', {
+      title: 'Synthetic Lamp embed maintenance', affectedAudience: 'Service customers', customerImpact: 'Routine maintenance.',
+      startsAt: new Date(now + 3600000).toISOString(), endsAt: new Date(now + 7200000).toISOString(),
+      componentIds: [component.id], autoStart: false, autoComplete: false,
+    }, 201)).maintenance;
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    await j.json(`/api/app/maintenance/${maintenance.id}/start`, 'POST', {});
+    expected = await snapshot('Under maintenance', undefined, 'In progress');
+    assert.equal(expected.incident, null, 'maintenance is the only active event');
+    assert.deepEqual(expected.maintenance, { reference: maintenance.reference, title: maintenance.title, state: 'In progress' });
+    await poll(expected); await reconcile(expected, true); await screen('maintenance');
+    console.log('PROBE PAGE-019 1: native maintenance without an incident -> both floating installations visible; inactive and operational controls hide every configured variant');
+    await advance();
+    await j.json(`/api/app/maintenance/${maintenance.id}/complete`, 'POST', {});
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    const incident = await j.incident('Synthetic Lamp embed publication', [component]);
+    await j.save(incident.id, { affectedAudience: 'Synthetic Lamp embed customers', customerImpact: 'Synthetic Lamp requests are unavailable.', whatStillWorks: 'Saved results remain readable.', details: 'Responders are repairing the gateway.', nextUpdateAt: new Date(now + 3600000).toISOString() });
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    const publication = (await j.publish(incident.id)).update;
+    expected = await snapshot('Major outage', incident.reference, undefined);
+    assert.equal(expected.incident.publishedAt, publication.publishedAt);
+    assert.equal(expected.incident.title, 'Synthetic Lamp embed publication');
+    assert.ok(expected.incident.message.includes('Synthetic Lamp requests are unavailable.'));
+    await poll(expected); await reconcile(expected, true); await servedScripts(); await screen('published');
+    console.log('PROBE PAGE-019 2: four served installations and populated script artifacts -> exact shared snapshot, raw and gzip size within ten KiB');
+    console.log('PROBE PAGE-019 4: native publication and polling -> floating notices appear with exact selected corners and computed colors');
+    await advance();
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'Synthetic Lamp requests have recovered.', nextUpdateAt: null });
+    await j.publish(incident.id);
+    assert.equal((await j.read(incident.id)).lifecycle, 'Resolved');
+    expected = await snapshot('Operational', undefined, undefined);
+    assert.equal(expected.incident, null); assert.equal(expected.maintenance, null);
+    await poll(expected); await reconcile(expected, false);
+    for (const { installation, root } of installed.filter(row => row.installation.position)) {
+      assert.equal(await root.isVisible(), false, `${installation.id} positively disappears after native resolution and polling`);
+      assert.equal(await root.count(), 1, 'the original installed node remains attached');
+    }
+    await screen('resolved');
+    console.log('PROBE PAGE-019 4: native resolution followed by eight actual HTTP polls -> original floating nodes remain attached and are positively hidden');
+  } finally { await browser?.close(); await j.close(); }
+}
+
 // One catalogue-to-customer journey: no renderer or uptime helper is imported.
 test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
+  await widgetVariantsJourney();
   await statedUptimeMethodJourney();
   await conditionalComponentFlow();
   await uptimeCorrectionJourney();
