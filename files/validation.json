@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f121",
+  "head": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+  "started_at": "2026-11-12T10:02:21.157078+00:00",
+  "node": "v22.20.0",
+  "commands": [
+    {
+      "command": [
+        "timeout",
+        "1200",
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "tests/e2e/statuspage-import.test.mjs"
+      ],
+      "exit": 0,
+      "duration_seconds": 233.637,
+      "log": "native-journey.log",
+      "log_sha256": "4d48fa5c7191e4a95a0382f2dd2cf3d3a379100e11bc499691529633e575b5e5"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit": 0,
+      "duration_seconds": 29.87,
+      "log": "typecheck.log",
+      "log_sha256": "a5096275285b8ce0f5ab5569efcde7899f5e47055c967e38974277923238277b"
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party",
+        "--json"
+      ],
+      "exit": 0,
+      "duration_seconds": 1.002,
+      "log": "first-party.jsonl",
+      "log_sha256": "5cbd532107582ced842cecadaad850502c075938fa8bbabdcfa191bb45c755ff"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/verification/check-plan.mjs"
+      ],
+      "exit": 0,
+      "duration_seconds": 1.457,
+      "log": "verification-plan.log",
+      "log_sha256": "611cb6bd688c407528f977745be7b6bb98624987cd97b523ae6feeef0ce7bc8e"
+    },
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.209,
+      "log": "views-write.log",
+      "log_sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    },
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.312,
+      "log": "views-check.log",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.761,
+      "log": "source-lock.json",
+      "log_sha256": "535f527e9bcb110a26cc0f83d39b44ae91c5ef7e06e6cabdd90915424d8aaf0b"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "duration_seconds": 0.472,
+      "log": "source-lock-check.json",
+      "log_sha256": "27f26b8fe51fa89d95fa127449aa638f43ac1742f21e81daa47fd2e9df075b29"
+    }
+  ],
+  "files": {
+    "tests/e2e/helpers/postmortem-template-import-flow.mjs": "b7ff120d4a8c28f8d0e63306793e5c8650b44efb48c64e4215e7c7d10dfb3bf6",
+    "tests/e2e/statuspage-import.test.mjs": "14466901cae0a2af4111388e9a08827ca216162c3f6e32d38590f946b34b0d8c",
+    "sources.lock.json": "89d43079000170362fc4d60412b7b7e9d36aea47c5045c0ba4be4b1fb1c6df45",
+    "CONTRACT.md": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c"
+  },
+  "finished_at": "2026-11-12T10:06:48.939192+00:00",
+  "clean_checkout": true,
+  "ok": true
+}

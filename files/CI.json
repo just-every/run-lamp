@@ -1,0 +1,44 @@
+{
+  "repository": "just-every/run-lamp",
+  "candidate_head": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+  "discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43196633030",
+      "id": 43196633030,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "latest": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43196633030",
+    "id": 43196633030,
+    "status": "in_progress"
+  },
+  "api_calls": [
+    {
+      "at": 1794477707.685076,
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs?head_sha=dd8195b432d28dbfa513cdd8019b591a77834b7d&per_page=100",
+        "--jq",
+        "[.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]"
+      ]
+    },
+    {
+      "at": 1794478017.7214005,
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43196633030",
+        "--jq",
+        "{id,status,conclusion,head_sha,html_url,event}"
+      ]
+    }
+  ],
+  "run_site": "not run; guarded landing only"
+}

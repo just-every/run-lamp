@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f121",
+  "head": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+  "base": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b",
+  "observed_at": "2026-11-12T10:03:06.494578+00:00",
+  "push": {
+    "status": "success",
+    "attempts": 1,
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-c-f121"
+  },
+  "candidate_commits": [
+    {
+      "head": "dd8195b432d28dbfa513cdd8019b591a77834b7d",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>"
+    }
+  ],
+  "trailers": "",
+  "status_table_diff": "",
+  "changed_files": [
+    "sources.lock.json",
+    "tests/e2e/helpers/postmortem-template-import-flow.mjs",
+    "tests/e2e/statuspage-import.test.mjs"
+  ],
+  "pr": null,
+  "main_equal_to_candidate": false,
+  "publication_scan": {
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Deferred to the guarded Mac lander under the cloud route"
+  },
+  "run_site": {
+    "status": "not run",
+    "reason": "Main-only workflow after guarded landing"
+  }
+}
