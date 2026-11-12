@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-c-f124",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f124",
+  "head": "7440c57ec4f27a63faf8f38bc0784df8355cc713",
+  "main_observed": "708ff579db8ac27b05765f63e00a80f8832bebba",
+  "recorded_at": "2026-11-12T13:52:46.576312+00:00",
+  "claim_status": "PARTIAL",
+  "proven_points": [
+    2
+  ],
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "exit": 0,
+      "registered": 6,
+      "passed": 6,
+      "failed": 0,
+      "source_sha256": "3573c472e077f2899cba5c62b3a2f43cdf8511c923c24e11afa217f852aef075",
+      "log": "logs/public-contract.log",
+      "browser": "/usr/bin/chromium",
+      "bound_seconds": 1200
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "logs/typecheck.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "logs/first-party.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "logs/verification-plan.log",
+      "registered_cases": 85,
+      "assertion_scripts": 10
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "log": "logs/contract-docs.log",
+      "generated_files_committed": false
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "logs/contract-docs.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-lock-check.json"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    }
+  ],
+  "probe_observations": [
+    "PAGE-009 generation age at 1440: just now -> 1 minute ago; instant=2026-11-12T13:48:33.235Z; tooltip=Nov 12, 2026, 05:48 UTC-08:00",
+    "PAGE-009 generation age at 390: just now -> 1 minute ago; instant=2026-11-12T13:48:33.235Z; tooltip=Nov 12, 2026, 05:48 UTC-08:00"
+  ],
+  "verify_runs": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "7440c57ec4f27a63faf8f38bc0784df8355cc713",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43231371714",
+      "id": 43231371714,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "pr": {
+    "base": "main",
+    "draft": true,
+    "head": "7440c57ec4f27a63faf8f38bc0784df8355cc713",
+    "html_url": "https://github.com/just-every/run-lamp/pull/339",
+    "number": 339
+  },
+  "custody": {
+    "product_pushed": true,
+    "remote_head": "7440c57ec4f27a63faf8f38bc0784df8355cc713",
+    "evidence_ref": "refs/heads/evidence/sd-lamp-c-f124",
+    "landed": false
+  },
+  "publication_scan": {
+    "commit": "7440c57ec4f27a63faf8f38bc0784df8355cc713",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "NOT RUN in cloud; independent Mac lander required"
+  },
+  "auxiliary_probe": {
+    "exit": 137,
+    "result": "Standalone source-block runner produced no assertion result; stopped only its own Node and Worker after the 180-second timeout did not reap them. The registered native journey supplies the successful POINT probe.",
+    "log": "logs/auxiliary-age-probe.log"
+  },
+  "previous_attempt": {
+    "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+    "exit": 1,
+    "result": "intentionally interrupted after isolating the Playwright context clock, before the new lifecycle group ran",
+    "passed_before_interruption": 4,
+    "log": "logs/public-contract-interrupted.log"
+  },
+  "source_binding": "The final local run loaded these exact source bytes before the Git commit. The final merge changed no tested source bytes; only source-lock metadata and the final visibility assertions already included in this source digest distinguish this candidate from the save. No exact-SHA CI success is inferred from this local run."
+}

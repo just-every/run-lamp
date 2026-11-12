@@ -1,0 +1,49 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+✔ HIST-008 — reviewed imported history stays completely browsable without scripts (37179.641652ms)
+Lamp could not rebuild its public page for this release. Error: Public snapshot build failed after 3 attempts: Configured logo object is missing from object storage.
+    at rebuildOne (file:///workspace/run-lamp/script-0.mjs:90575:13)
+    at async Object.retryPendingBuild (file:///workspace/run-lamp/script-0.mjs:90704:11)
+    at async file:///workspace/run-lamp/script-0.mjs:94152:60
+    at async publication3 (file:///workspace/run-lamp/script-0.mjs:93495:11)
+    at async Promise.all (index 0)
+    at async Object.check (file:///workspace/run-lamp/script-0.mjs:93510:40)
+    at async file:///workspace/run-lamp/script-0.mjs:93444:20
+    at async dispatch2 (file:///workspace/run-lamp/script-0.mjs:51509:17)
+    at async file:///workspace/run-lamp/script-0.mjs:52912:25
+✔ PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch (27691.831288ms)
+✔ UPTIME-003 — newly observed services report only their recorded coverage (13702.189747ms)
+✔ HIST-001 — completed native records retain their month, window, components and complete publication inventory (26421.3045ms)
+PROBE COMP-010 minute=0 state=Operational shown=false uptime=null downtime=0 history=1 elapsedMs=1086.5
+PROBE COMP-010 minute=10 state=Degraded performance shown=true uptime=100.00% downtime=0 history=2 elapsedMs=1376.8
+PROBE COMP-010 minute=20 state=Operational shown=false uptime=75.00% downtime=5 history=3 elapsedMs=1569.6
+PROBE COMP-010 minute=30 state=Major outage shown=true uptime=83.33% downtime=5 history=4 elapsedMs=1392.6
+PROBE COMP-010 minute=40 state=Operational shown=false uptime=62.50% downtime=15 history=5 elapsedMs=1067.2
+PROBE COMP-010 minute=50 state=Partially unavailable shown=true uptime=70.00% downtime=15 history=6 elapsedMs=857.7
+PROBE COMP-010 minute=60 state=Operational shown=false uptime=58.33% downtime=25 history=7 elapsedMs=570.0
+PROBE COMP-010 minute=70 state=Under maintenance shown=true uptime=64.28% downtime=25 history=8 elapsedMs=677.1
+PROBE COMP-010 minute=80 state=Operational shown=false uptime=68.75% downtime=25 history=9 elapsedMs=542.5
+UPTIME_CORRECTION_DEADLINE {"template":"default","elapsedMs":535,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"calm","elapsedMs":536,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"uptime","elapsedMs":460,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+UPTIME_CORRECTION_DEADLINE {"template":"regions","elapsedMs":720,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+✖ tests/e2e/public-contract.test.mjs (275363.905857ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 275377.015283
+
+✖ failing tests:
+
+test at tests/e2e/public-contract.test.mjs:1:1
+✖ tests/e2e/public-contract.test.mjs (275363.905857ms)
+  'test failed'

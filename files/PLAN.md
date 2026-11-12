@@ -1,0 +1,9 @@
+# sd-lamp-c-f124 plan
+
+Scope: just-every/run-lamp, cloud/sd-lamp-c-f124. Close the missing generation-age lifecycle proof in PAGE-009 acceptance 2 by extending the existing public-contract journey. Preserve all existing assertions. Inspect both generation scripts read-only. No runtime, visual, homepage, documentation-site, release, acceptance-text or Status-table edits.
+
+1. Map PAGE-009 acceptance sentences and existing proof. Retain partial status: acceptance 1 and 3 complete notification reconciliation remains explicitly held by the planner.
+2. Within the existing catalogue journey, capture a real generation instant and its initial absolute HTML. Pin browser time relative to that instant in a browser configured for a different zone. At both required widths observe just now, advance a relative-update interval across the minute boundary without any native write, and positively observe 1 minute ago. Reconcile unchanged datetime, absolute configured-zone tooltip, document identity and public generation.
+3. Run the touched public-contract file with system Chromium, typecheck and the first-party check. Generate and check contract views, restore generated files from main, regenerate the source lock last and check integrity. Preserve test registration count.
+4. Commit under fleet identity and hooks, inspect every candidate author, committer and trailer, and push only the named product branch through the fleet push guard. Refresh main before the final candidate, merging after any published save. Record exact-SHA Verify discovery without claiming another SHA's result.
+5. Inspect 1440 and 390 browser screenshots. Save actual non-secret results and receipts in this packet, publish explicitly selected files to the evidence ref, and return PARTIAL points=2 with held gaps. Publication scan, main equality and Run site remain independent Mac lander duties.

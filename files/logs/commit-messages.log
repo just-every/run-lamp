@@ -1,0 +1,14 @@
+7440c57ec4f27a63faf8f38bc0784df8355cc713
+test: prove public generation age refreshes in place
+
+Observe one retained generation crossing a minute boundary without an
+operator write at both required browser widths. Reconcile the visible
+relative age with the unchanged ISO instant and configured-zone tooltip,
+while preserving initial absolute HTML and existing script-disabled proof.
+
+Use an isolated browser clock so the existing polling assertions retain
+their original timing.
+
+e06d5539aa989c77cb18419454fee4b79954558c
+test: save retained generation age lifecycle proof [skip ci]
+
