@@ -77,15 +77,19 @@ export async function automationRulesBrowserFlow({ origin, publicOrigin, cookie,
     await page.goto(`${origin}/app/settings#audit-log`); await operatorHydrated(page);
     const auditPanel = page.locator("#audit-log");
     await auditPanel.getByRole("button", { name: "Open audit log", exact: true }).click();
-    // The audit API supplies the exact row id; the native view supplies the actor
-    // and operator-formatted time alongside the action and rule record.
+    // The audit API retains machine keys; the native view identifies the same
+    // rule by name alongside its actor, readable action and formatted time.
     const records = (await api("/api/app/audit-log?limit=100")).body.entries.filter(row => row.entityType === "alert-rule");
-    const edited = records.find(row => row.action === "updated" && row.actorId === rule.approvedByOperatorId);
+    const edited = records.find(row => row.entityId === rule.id && row.action === "updated" && row.actorId === rule.approvedByOperatorId);
     assert.ok(edited, "an edit is in the native audit view's backing read");
-    const auditRow = auditPanel.locator("tbody tr").filter({ hasText: edited.entityId }).filter({ hasText: "updated" }).first();
+    assert.equal(edited.entityName, rule.name, "the retained rule resolves to its current name");
+    const auditRow = auditPanel.locator("tbody tr")
+      .filter({ hasText: rule.name })
+      .filter({ hasText: /updated/i }).first();
     await auditRow.waitFor();
     if (proof) await captureBoth("rule-audit", () => auditPanel.screenshot.bind(auditPanel));
     assert.ok((await auditRow.innerText()).includes(edited.actorName));
+    assert.ok(!(await auditRow.innerText()).includes(rule.id), "opaque rule keys remain in the API and CSV");
     assert.ok((await auditRow.locator("td").first().innerText()).trim(), "the rule edit displays its time");
     const alert = { alert_id: "prepared-api-alert", alert_cycle_key: "prepared-api-cycle", alert_transition: "Triggered", alert_title: "Untrusted alert wording must remain private" };
     const response = await fetch(source.endpointUrl, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${source.token}` }, body: JSON.stringify(alert) });
