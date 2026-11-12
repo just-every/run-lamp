@@ -1,0 +1,14 @@
+{
+  "repository": "just-every/run-lamp",
+  "run_id": 43268886507,
+  "attempt": 1,
+  "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+  "status": "completed",
+  "conclusion": "failure",
+  "failed_job_id": 131376026337,
+  "failed_job": "shards (delivery)",
+  "failed_step": "Verify this product shard",
+  "assertion": "socialBrowserFlow expected the next ordinary update Social accounts checkbox to be present and unchecked after publication; it was hidden by resetting all Update options panels.",
+  "log_command": "gh run view 43268886507 --repo just-every/run-lamp --job 131376026337 --log-failed",
+  "log_reads": 1
+}

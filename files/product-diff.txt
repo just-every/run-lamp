@@ -1,0 +1,17 @@
+ DIVERGENCE.md                                      |  13 ++
+ docs/incidents-and-updates.md                      |  16 ++-
+ sources.lock.json                                  |  32 +++--
+ src/core/app/client/ui/composer.css                |   3 -
+ .../features/incidents/ui/incident-detail-page.tsx |  26 ++--
+ .../incidents/ui/incident-operator-controls.tsx    |   3 +-
+ src/core/features/incidents/ui/incident-record.tsx |   5 +-
+ src/core/features/incidents/ui/update-options.tsx  |   5 +-
+ src/core/features/public-snapshot/public-update.ts |   2 +-
+ src/core/features/public-snapshot/record-markup.ts |  14 +-
+ .../features/public-snapshot/styles/record.css     |   3 +
+ .../features/public-snapshot/templates/history.ts  |   8 +-
+ .../public-snapshot/templates/styles/shared.css    |   3 +
+ tests/e2e/helpers/incident-corrections-flow.mjs    | 142 +++++++++++++++++++++
+ tests/e2e/helpers/published-incident-state.mjs     |   7 +-
+ tests/e2e/publishing-browser.test.mjs              |   5 +-
+ 16 files changed, 238 insertions(+), 49 deletions(-)

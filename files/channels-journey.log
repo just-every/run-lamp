@@ -1,0 +1,27 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links (166368.992648ms)
+ℹ INTEG-002 browser 1440px: Settings connected an account, concealed the saved credential, saved post-by-default on/off; composer respected deselection and reset each new update to the owner default.
+ℹ INTEG-002 browser: Settings, incident composer and maintenance scheduling at 1440 and 390 have no horizontal overflow or serious/critical accessibility findings; account removed through Settings. Screens retained under ./test-results/social; private sign-in links are never retained.
+ℹ PROBE NOTIFY-012 atomic commit: POST /api/app/incidents/:id/publish with chat and a second-post storage fault -> 409; complete inventories stay at 1 update/2 posts, unchanged draft and receivers; retry commits exactly 1 update/2 following posts.
+ℹ PROBE NOTIFY-012 original request replay: POST the captured body and If-Match revision, then two scheduled passes -> 409; all 2 update/4 post identities and 4 receiver requests unchanged.
+ℹ PROBE NOTIFY-012 retroactive silence: POST a distinct saved draft with chat selected and the earlier publication timestamp -> 200, isRetroactive=true, 3 updates; complete 4-post inventory and 4 receiver requests unchanged.
+ℹ SUB-014 SUB-015 synthetic Slack OAuth and Teams Workflows public subscriptions; no live provider call
+ℹ INTEG-002 acceptance 1: recorded X, Bluesky and Mastodon edges receive one bounded post per selected account; credentials stay sealed.
+ℹ INTEG-002 x first post (279/280): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+ℹ INTEG-002 bluesky first post (300/300): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking\nhttps://status.example.test/incidents/INC-1"; postId=at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1
+ℹ INTEG-002 mastodon first post (337/500): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking successful payments before recovery.\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+ℹ INTEG-002 acceptance 2: the second update uses each network’s native reply field and replies to the first provider id.
+ℹ INTEG-002 thread fields: X {"in_reply_to_tweet_id":"synthetic-lamp-post-1"}; Bluesky {"root":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"},"parent":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"}}; Mastodon in_reply_to_id=synthetic-lamp-post-1
+ℹ INTEG-002 acceptance 3: explicit deselection queues and posts nothing even with post by default on; retroactive updates and imports stay silent.
+ℹ INTEG-002 acceptance 4: X 503 receives five retries, then a failed row and one operator alert; public artifacts, email and the other accounts continue.
+ℹ INTEG-002 X 503 attempts=6; final={"id":"01M78HBWD390STCY9WXJ80K9EC.01M78HBRTHM6WG3J0PEGNKG8HR","eventId":"01M78HBWD390STCY9WXJ80K9EC","accountId":"01M78HBRTHM6WG3J0PEGNKG8HR","account":"Synthetic Lamp x","network":"x","reference":"INC-5","text":"Synthetic Lamp service status: Investigating: Synthetic social failure must not delay public status or subscriber email.\nhttps://status.example.test/incidents/INC-5","queuedAt":"2026-11-12T18:47:18.724Z","outcomeAt":"2026-11-12T18:47:19.390Z","postId":null,"postCid":null,"attempts":6,"state":"failed","attemptLog":[{"number":1,"startedAt":1794509238907,"finishedAt":1794509238950,"outcome":"{\"kind\":\"retryable\",\"code\":\"social_provider_unavailable\",\"status\":503}"},{"number":2,"startedAt":1794509239096,"finishedAt":1794509239103,"outcome":"{\"kind\":\"retryable\",\"code\":\"social_provider_unavailable\",\"status\":503}"},{"number":3,"startedAt":1794509239158,"finishedAt":1794509239163,"outcome":"{\"kind\":\"retryable\",\"code\":\"social_provider_unavailable\",\"status\":503}"},{"number":4,"startedAt":1794509239228,"finishedAt":1794509239236,"outcome":"{\"kind\":\"retryable\",\"code\":\"social_provider_unavailable\",\"status\":503}"},{"number":5,"startedAt":1794509239297,"finishedAt":1794509239304,"outcome":"{\"kind\":\"retryable\",\"code\":\"social_provider_unavailable\",\"status\":503}"},{"number":6,"startedAt":1794509239384,"finishedAt":1794509239390,"outcome":"{\"kind\":\"retryable\",\"code\":\"social_provider_unavailable\",\"status\":503}"}]}; NOTIFY-006 operator mail=1; page, Atom, email, Bluesky and Mastodon delivered before X exhaustion.
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 168096.493712

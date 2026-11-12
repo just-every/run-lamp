@@ -1,0 +1,178 @@
+{
+  "files": [
+    {
+      "blob": "0d9ed8a63dd8a583f13eb6db883651bd45946244",
+      "bytes": 1563,
+      "path": "PLAN.md",
+      "sha256": "2736318d60b0c531b1a497aaa9ddcc221cb8747c386a18683d57b35a37caa682"
+    },
+    {
+      "blob": "3050ea7b0666014063c49413d6af5f42b46b2b82",
+      "bytes": 1554,
+      "path": "RECEIPT.json",
+      "sha256": "3104c339bb82fbeab8e19cef7849acfa8de3c4015ea8e9ae37ec2d3cd72c421f"
+    },
+    {
+      "blob": "c119df3a242d24052539ee2f1a6e06af14d2d307",
+      "bytes": 5703,
+      "path": "REPORT.md",
+      "sha256": "3e6d8197821d922292deb98f6e0391d35dd3c866d44ac16b820510518445348b"
+    },
+    {
+      "blob": "a06f85dfb161d86a6a14c9fd65d8ff1db53d060a",
+      "bytes": 2210,
+      "path": "browser-proof.json",
+      "sha256": "bc306bd4b5c31333004ecf13aaafdb6d4d632da1003c2a7d2d40eec0f48a7a6a"
+    },
+    {
+      "blob": "ede82e29cc61d3a09107382ae9c211de6f8131a8",
+      "bytes": 252,
+      "path": "candidate-identities.txt",
+      "sha256": "0b7b9f8049e13f6b12cc04989e8d9d0ff07238b40237a25f6ccda03f3f8e7305"
+    },
+    {
+      "blob": "e0cc915db19ad9b1516b745b19cd7adaa131313b",
+      "bytes": 5412,
+      "path": "channels-journey.log",
+      "sha256": "38e31a732ce07029d0abf3bc38dbf90057cc29a4e28f1c38b9d49aa5c183c905"
+    },
+    {
+      "blob": "d09837cc7aba8ab4ea5bffa6e269fa656b00b4c0",
+      "bytes": 752,
+      "path": "ci-observations.json",
+      "sha256": "326df315656ef33219fb0591763a106a9627cd8503ce84920d98b384887eb2c3"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-docs.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "a14c34619e95b576d8debae6845aa9faf6a44011",
+      "bytes": 5223,
+      "path": "incident-journey.log",
+      "sha256": "706fc860ae97e778dc48807e99c211f723ad70aff108a760131ae5424c270fec"
+    },
+    {
+      "blob": "f5c8660990c1caed01835f63241be44e7cebcc3b",
+      "bytes": 1400,
+      "path": "local-checks.json",
+      "sha256": "04083f645e0cb4aba2b65a1a66647867c1bc06792e588de1e423c63308298398"
+    },
+    {
+      "blob": "37c298c018385cbe8355e3094e70e1b018717259",
+      "bytes": 6293,
+      "path": "local-reproduction.log",
+      "sha256": "1db739beae3c19c6b5aeec4e524a6a14acb298a447d854befe376295c8638b33"
+    },
+    {
+      "blob": "c36a75b453b2e9acacd8314f5f55200291ccd6c4",
+      "bytes": 626,
+      "path": "prior-ci.json",
+      "sha256": "8187c949e20d379b4c4dc4c8563aebab21ec00516bf7af7b23721fa59ca907e2"
+    },
+    {
+      "blob": "b1ed51955ffc7f9e060a7e397c1c71ddafcb7556",
+      "bytes": 1523,
+      "path": "prior-delivery-failure.txt",
+      "sha256": "b235f18cc194764cf2a6365fa7de4ade62fd14663e149ab41a17957d79c72c57"
+    },
+    {
+      "blob": "c89e832dd1c3ac330272d30d5d6b894c25470456",
+      "bytes": 1052,
+      "path": "product-diff.txt",
+      "sha256": "ba5139a2b3c9334a5a12c4a4220ca189dde19167a2a79b52d26fa94205be3dff"
+    },
+    {
+      "blob": "4f228d5bb63221cc24ea4a36ff019bad49e8965d",
+      "bytes": 673,
+      "path": "product-push.txt",
+      "sha256": "ae6da838511ea1ba09e740915a1f4fad62494874ee54ff3a4a8a11ae631e969c"
+    },
+    {
+      "blob": "3d98b8e4442f9bd76278a341ee9cb0d0f4bddd6c",
+      "bytes": 219702,
+      "path": "screens/active-correction-operator-1440.png",
+      "sha256": "8ae561777b96f735ed8115c43f5f70506a33b41ff6c8de27c1dc1d3e8f96a0c2"
+    },
+    {
+      "blob": "e79fae3e93ff92aae41eff49b6f487ae534c20ba",
+      "bytes": 188253,
+      "path": "screens/active-correction-operator-390.png",
+      "sha256": "f00f20212241ce3a5c2e72428742046229d5b067152c2c6a9d0af5802abb1192"
+    },
+    {
+      "blob": "9da66e4221ece8fc2a108a60a584a5a2c2297153",
+      "bytes": 515993,
+      "path": "screens/active-correction-public-1440.png",
+      "sha256": "6c0df2cf8c31aa643602d0dcc065741586944c4ef7bab228233e266a3c864f6d"
+    },
+    {
+      "blob": "777cb135f25ab2e33df55dee110824a5223ee02b",
+      "bytes": 390397,
+      "path": "screens/active-correction-public-390.png",
+      "sha256": "8a09b0fb54d3ff861dde0ec5e8b7b681a6b0952f3d758fe477602a2daf17bd47"
+    },
+    {
+      "blob": "3480b29dbaa9c0686e3f4f2bbb6bf94535799992",
+      "bytes": 462070,
+      "path": "screens/corrections-permalink-1440.png",
+      "sha256": "635bd425bc507fed4dccce85272fa4f399d9602efe27b402e8699fb054c7b506"
+    },
+    {
+      "blob": "e9c83989509209442d89976b2387c693d3576370",
+      "bytes": 278236,
+      "path": "screens/corrections-permalink-390.png",
+      "sha256": "d845086dec34bd45d9db78c72e8b3fcc132402cb2aa8265deb2db2fb967d84da"
+    },
+    {
+      "blob": "1d6de624050345a81f8b8b49142df23e03c885ae",
+      "bytes": 213602,
+      "path": "screens/resolved-correction-operator-1440.png",
+      "sha256": "6752650925381e8f46a23b86d59dff35ea58dfe8278ff637491d68cb0b3bf11b"
+    },
+    {
+      "blob": "2f04eed0b0c01988aa8beff78dcd0e3552e81bb4",
+      "bytes": 182726,
+      "path": "screens/resolved-correction-operator-390.png",
+      "sha256": "b0b5bb1bdafc7c5911183a1b159c564eb463373b5851efe968be9052707f409a"
+    },
+    {
+      "blob": "0fe820485762330ab5a0bd040915a0a8185593e2",
+      "bytes": 396534,
+      "path": "screens/resolved-correction-public-1440.png",
+      "sha256": "d6f6374d9203051e6c0feee59ffc73a1ace107d21c2bbeacd323f3287d1ae0f1"
+    },
+    {
+      "blob": "1280d9b1d5401fcb45b3a084a4cf95c716623930",
+      "bytes": 265784,
+      "path": "screens/resolved-correction-public-390.png",
+      "sha256": "4947ead58ffb897c14995faa2d5510835af2e56c4de1bf27260ce57b2bf30a90"
+    },
+    {
+      "blob": "5dfb9187824efdeb171214622356c4e8f74f35c7",
+      "bytes": 394046,
+      "path": "source-lock-check.json",
+      "sha256": "a5ae8133848107940e86e29f173612af25a0c4e3cb9a1c1260d4ee8276d8ac67"
+    },
+    {
+      "blob": "dfa341cd7c2d44a6bbc745dddbfcd6347d159633",
+      "bytes": 168,
+      "path": "test-count.txt",
+      "sha256": "c276101290005e412cef84447f4d45d23ac395b3be02cfaf9605c75ec5bff510"
+    },
+    {
+      "blob": "6f9323eed6e38167ba3ed455a35af5f01163610e",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "d97fb56a0935047376eadb6ef15aa15d35898b684e1c92c62c90f6a627a1b271"
+    }
+  ],
+  "product_branch": "cloud/main-lamp-incident-corrections-1-pc1",
+  "product_head": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
+  "ref": "refs/heads/evidence/main-lamp-incident-corrections-1-pc1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "main-lamp-incident-corrections-1-pc1"
+}

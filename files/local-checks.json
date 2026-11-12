@@ -1,0 +1,52 @@
+{
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"Private channels deliver\" tests/e2e/channels-and-presets.test.mjs",
+      "exit_code": 0,
+      "log": "channels-journey.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"compiled visual edits and the operator publication journey\" tests/e2e/publishing-browser.test.mjs",
+      "exit_code": 0,
+      "log": "incident-journey.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-docs.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit_code": 0,
+      "log": "test-count.txt"
+    }
+  ],
+  "runtime": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "browser": "/usr/bin/chromium",
+    "browser_args": [
+      "--no-sandbox"
+    ],
+    "test_launcher_override": "external /tmp/rer-chromium.mjs selects the system Chromium for helpers without environment-path support"
+  },
+  "before": {
+    "registered_cases": 89,
+    "assertion_scripts": 10,
+    "total": 99
+  },
+  "after": {
+    "registered_cases": 89,
+    "assertion_scripts": 10,
+    "total": 99
+  }
+}

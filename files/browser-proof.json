@@ -1,0 +1,67 @@
+{
+  "assertion_width": 1440,
+  "screenshots": [
+    {
+      "file": "screens/active-correction-operator-1440.png",
+      "width": 1440,
+      "height": 1642,
+      "sha256": "8ae561777b96f735ed8115c43f5f70506a33b41ff6c8de27c1dc1d3e8f96a0c2"
+    },
+    {
+      "file": "screens/active-correction-operator-390.png",
+      "width": 390,
+      "height": 2859,
+      "sha256": "f00f20212241ce3a5c2e72428742046229d5b067152c2c6a9d0af5802abb1192"
+    },
+    {
+      "file": "screens/active-correction-public-1440.png",
+      "width": 1440,
+      "height": 3526,
+      "sha256": "6c0df2cf8c31aa643602d0dcc065741586944c4ef7bab228233e266a3c864f6d"
+    },
+    {
+      "file": "screens/active-correction-public-390.png",
+      "width": 390,
+      "height": 4678,
+      "sha256": "8a09b0fb54d3ff861dde0ec5e8b7b681a6b0952f3d758fe477602a2daf17bd47"
+    },
+    {
+      "file": "screens/corrections-permalink-1440.png",
+      "width": 1440,
+      "height": 2248,
+      "sha256": "635bd425bc507fed4dccce85272fa4f399d9602efe27b402e8699fb054c7b506"
+    },
+    {
+      "file": "screens/corrections-permalink-390.png",
+      "width": 390,
+      "height": 3365,
+      "sha256": "d845086dec34bd45d9db78c72e8b3fcc132402cb2aa8265deb2db2fb967d84da"
+    },
+    {
+      "file": "screens/resolved-correction-operator-1440.png",
+      "width": 1440,
+      "height": 1456,
+      "sha256": "6752650925381e8f46a23b86d59dff35ea58dfe8278ff637491d68cb0b3bf11b"
+    },
+    {
+      "file": "screens/resolved-correction-operator-390.png",
+      "width": 390,
+      "height": 2668,
+      "sha256": "b0b5bb1bdafc7c5911183a1b159c564eb463373b5851efe968be9052707f409a"
+    },
+    {
+      "file": "screens/resolved-correction-public-1440.png",
+      "width": 1440,
+      "height": 2547,
+      "sha256": "d6f6374d9203051e6c0feee59ffc73a1ace107d21c2bbeacd323f3287d1ae0f1"
+    },
+    {
+      "file": "screens/resolved-correction-public-390.png",
+      "width": 390,
+      "height": 3118,
+      "sha256": "4947ead58ffb897c14995faa2d5510835af2e56c4de1bf27260ce57b2bf30a90"
+    }
+  ],
+  "source": "incidentCorrectionsFlow, invoked by the existing operator publication journey",
+  "public_provider_data": "synthetic Harbour Cart fixture; no production sessions"
+}

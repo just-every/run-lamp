@@ -1,0 +1,11 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/main-lamp-incident-corrections-1-pc1
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/just-every/run-lamp
+ 	HEAD:refs/heads/cloud/main-lamp-incident-corrections-1-pc1	56dc488..1736dcb
+Done
+remote: 
+remote: GitHub found 25 vulnerabilities on just-every/run-lamp's default branch (10 high, 13 moderate, 2 low). To find out more, visit:        
+remote:      https://github.com/just-every/run-lamp/security/dependabot        
+remote: 
+PUSH_OK branch=cloud/main-lamp-incident-corrections-1-pc1

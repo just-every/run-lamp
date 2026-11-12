@@ -1,0 +1,38 @@
+{
+  "repository": "just-every/run-lamp",
+  "product_branch": "cloud/main-lamp-incident-corrections-1-pc1",
+  "product_head": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
+  "starting_head": "56dc48869caa37051e382e58e348842c41abc593",
+  "merged_main": "7bfb459185882497098b4fed00155f248874ce81",
+  "pr_number": 347,
+  "pr_url": "https://github.com/just-every/run-lamp/pull/347",
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-lamp-incident-corrections-1-pc1",
+    "result": "PUSH_OK",
+    "attempt": 1
+  },
+  "local_checks": "local-checks.json",
+  "screenshots": [
+    "screens/active-correction-operator-1440.png",
+    "screens/active-correction-operator-390.png",
+    "screens/active-correction-public-1440.png",
+    "screens/active-correction-public-390.png",
+    "screens/corrections-permalink-1440.png",
+    "screens/corrections-permalink-390.png",
+    "screens/resolved-correction-operator-1440.png",
+    "screens/resolved-correction-operator-390.png",
+    "screens/resolved-correction-public-1440.png",
+    "screens/resolved-correction-public-390.png"
+  ],
+  "contract_status_changes": [],
+  "publication_scan": "fleet Mac lander; unavailable to this VM",
+  "ci": {
+    "id": 43283798281,
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43283798281",
+    "observed_at": 1794509695.1974332
+  },
+  "terminal_product_status": "PUSHED; exact-SHA Verify in progress"
+}
