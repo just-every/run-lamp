@@ -388,7 +388,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
         <IncidentTimeline incident={incident} />
       </div>
       <div className="composer-publish" inert={publishState === "publishing"}>
-        <UpdateOptions key={updateGeneration.current} groups={groups}
+        <UpdateOptions publicationKey={updateGeneration.current} groups={groups}
           footer={<><span className="publish-hint">{publishHint(channels, timing, timezone)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
           message={<>{draftActions.message ? <p role="status" className="option-message">{draftActions.message}</p> : null}{draftActions.error ? <FormError>{draftActions.error}</FormError> : null}</>}>
           <OptionPanel name="notify" title="Notify"><NotifyChannels channels={channels} onChange={next => { touchedSocialSelection.current = true; setChannels(next); }} /></OptionPanel>

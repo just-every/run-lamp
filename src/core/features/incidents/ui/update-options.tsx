@@ -23,11 +23,14 @@ const PanelContext = createContext<Panels>({ open: null, idFor: name => name, cl
 /** The Publish row's "Update options" (+): everything an update can carry beyond its first fields, in four captioned
  * groups. Above 620 px a menu drops down from the +; at 620 px and under a bottom sheet rises. Every option panel stays
  * mounted while closed, so nothing chosen or typed in one is lost, and only one is open at a time. */
-export function UpdateOptions({ groups, footer, message, children }: { groups: OptionGroup[]; footer: ReactNode; message?: ReactNode; children?: ReactNode }) {
+export function UpdateOptions({ groups, footer, message, children, publicationKey = 0 }: { groups: OptionGroup[]; footer: ReactNode; message?: ReactNode; children?: ReactNode; publicationKey?: number }) {
   const base = useId();
   const idFor = useCallback((name: string) => `${base}-option-${name}`, [base]);
   const [popup, setPopup] = useState<"menu" | "sheet" | null>(null);
   const [panel, setPanel] = useState<string | null>(null);
+  // A correction belongs to the consumed draft. Keep other open panels, such
+  // as Notify, visible so the operator can review the next update's choices.
+  useEffect(() => { setPanel(current => current === "correction" ? null : current); }, [publicationKey]);
   // What takes focus once it is on screen: an opened panel's first control, or a field an entry showed.
   const [focusTarget, setFocusTarget] = useState<{ id: string; inside: boolean } | null>(null);
   const toggle = useRef<HTMLButtonElement>(null);

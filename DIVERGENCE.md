@@ -10,6 +10,17 @@ permanent incident page. Publishing consumes correction feedback together with
 the draft, so it cannot label the next ordinary update. This supersedes the
 11 November presentation decision to hide the composer after resolution;
 publication immutability, lifecycle rules and ordering remain unchanged.
+Publishing closes the consumed correction chooser while keeping other open
+update panels available to review the next draft’s choices.
+
+## Readable removed records and report obligations — 12 November 2026
+
+Removed subscribers appear under a plain anonymous label in the directory,
+notification deliveries and subscription email history. Erasure keeps its
+existing behavior; no destination or contact detail is restored for display.
+The resolved incident panel uses the same replaceable report-due policy result
+as Reports, including the seven-day wait, publication and waiver exclusions.
+Other resolved incidents offer an optional report without an owed reminder.
 
 ## Statuspage reader guidance — 12 November 2026
 
