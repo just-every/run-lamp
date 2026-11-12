@@ -6476,7 +6476,7 @@
       "executable": false
     },
     "src/core/features/subscribers/repository.ts": {
-      "sha256": "8ea2338563204157481a3d3e8defccfdafecbc02e2a8a0dd194b4dd843789123",
+      "sha256": "0b0473d6faec4a801fafdb66a1845ff986dcbe3349506c15c05565e22115b91f",
       "executable": false
     },
     "src/core/features/subscribers/routes.ts": {
@@ -7848,7 +7848,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "b25cebf0c746b34afb2973cc070e8db10147c74c2f3bc21ef0b36258ce241edb",
+      "sha256": "7e54f20fa05a781a1b4c6d37592a0e08bc3cfade513666b100132f9db35e6104",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -8269,6 +8269,10 @@
     },
     "tests/e2e/helpers/subscriber-preferences-flow.mjs": {
       "sha256": "9730ada27c9ca159a6cdca1cd3bb5528a574440f9ce2036cf9217e94c8409480",
+      "executable": false
+    },
+    "tests/e2e/helpers/subscriber-public-consent-flow.mjs": {
+      "sha256": "00e34f320dc8b33ddcbdaf8cd7c7a476e0626a337426a55d1f42cef94f4817d4",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-queued-unsubscribe.mjs": {
