@@ -37,7 +37,11 @@ export function SmsSettings() {
   return <section className="data-card" aria-label="SMS delivery">
     <h2>SMS delivery</h2>
     {settings ? <>
-      <p>{resource.data?.configured ? "SMS sending is configured." : "SMS sending is off. Connect a Twilio provider in your hosting settings to enable it."}</p>
+      <p role="status" data-sms-configured={resource.data?.configured}>{resource.data?.configured ? "SMS sending is configured with Twilio." : "SMS sending is off."}</p>
+      <div className="setup-guide">
+        <p>Set <code>TWILIO_ACCOUNT_SID</code> and <code>TWILIO_AUTH_TOKEN</code>, plus <code>TWILIO_FROM_NUMBER</code> or <code>TWILIO_MESSAGING_SERVICE</code>, in your deploy’s private input file or environment, then redeploy.</p>
+        <p><a href="/docs/subscribers-and-notifications#connect-sms-delivery">Twilio SMS setup</a></p>
+      </div>
       <form className="incident-note-form" onSubmit={submit}>
         <fieldset className="option-group" disabled={saving}>
           <legend>Accepted countries</legend>
