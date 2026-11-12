@@ -25,14 +25,15 @@ export async function eventuallyFollowUp(read, predicate, description) {
 
 /** Disposable migrated Worker. Only the email/webhook network edges are fake;
  * Queue outage injection is the existing queue-outage.worker.ts boundary. */
-export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceiver, pageHost = "status.example.test", extraBindings = {}, providerEdge, workerEntry = "tests/e2e/helpers/follow-ups-worker.ts" } = {}) {
+export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceiver, pageHost = "status.example.test", extraBindings = {}, providerEdge, builtWorker = false, workerEntry = "tests/e2e/helpers/follow-ups-worker.ts" } = {}) {
   const state = await mkdtemp(join(tmpdir(), "lamp-follow-ups-"));
   const messages = [], webhookRequests = [], channelRequests = [], mailReceipts = [];
   let runtime, db, webhookOutage = true, cookie;
   const sessions = new Map();
   const consumedSignInMessages = new Set();
   try {
-    const built = await build({
+    const production = builtWorker ? await (await import('./reach-built-worker.mjs')).reachBuiltWorkerOptions() : null;
+    const built = production ? null : await build({
       entryPoints: [workerEntry], bundle: true,
       format: "esm", platform: "browser", write: false,
       external: ["cloudflare:workers", "node:*"],
@@ -46,8 +47,9 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     // Allocate for this open after bundling, never across fixture lifetimes.
     const appPort = await reservePort({ label: "follow-ups Worker" });
     const appOrigin = `http://127.0.0.1:${appPort}`;
-    const miniflareOptions = (bindingOverrides = {}) => convertV4MiniflareOptions({
-      name: "lamp-follow-ups-test", modules: true, script: built.outputFiles[0].text,
+    const miniflareOptions = (bindingOverrides = {}) => {
+      const native = {
+      name: "lamp-follow-ups-test", modules: true, ...(built ? { script: built.outputFiles[0].text } : {}),
       port: appPort, inspectorPort: 0, compatibilityDate: "2026-09-08", compatibilityFlags: ["nodejs_compat"],
       bindings: {
         LAMP_PAGE_HOST: pageHost, LAMP_APP_HOST: "127.0.0.1",
@@ -58,6 +60,7 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         MAIL_PROVIDER: "resend", MAIL_PROVIDER_API_KEY: "synthetic-lamp-mail-1",
         MAIL_FROM_ADDRESS: "synthetic-lamp-sender@example.test",
         ...(resendWebhookSecret ? { RESEND_WEBHOOK_SECRET: resendWebhookSecret } : {}),
+        ...(pageHost === "localhost" ? { LAMP_LOCAL_ORIGIN: appOrigin } : {}),
         ...extraBindings, ...bindingOverrides,
       },
       d1Databases: ["DB"], r2Buckets: ["SNAPSHOTS"],
@@ -95,9 +98,17 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
           channelRequests.push(await request.json());
           return new Response("invalid_payload", { status: 400 });
         }
+        if (production && [appOrigin, `http://localhost:${appPort}`].includes(url.origin)) return runtime.dispatchFetch(request);
         throw new Error(`Unexpected follow-up fixture network edge: ${url.origin}${url.pathname}`);
       },
-    });
+      };
+      if (!production) return convertV4MiniflareOptions(native);
+      const { externalWorkers, ...worker } = production;
+      const { port, inspectorPort, resourcePersistencePath, modules: _modules, ...bindings } = native;
+      return convertV4MiniflareOptions({ port, inspectorPort, resourcePersistencePath, workers: [
+        { ...worker, ...bindings, bindings: { ...worker.bindings, ...bindings.bindings } }, ...externalWorkers,
+      ] });
+    };
     runtime = new Miniflare(miniflareOptions());
     db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
@@ -155,7 +166,7 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         db = await runtime.getD1Database("DB");
         await runtime.ready;
       },
-      execute, appOrigin, publicOrigin: pageHost === "localhost" ? `http://localhost:${appPort}` : `https://${pageHost}`, api, post, request, raw, messages, mailReceipts, webhookRequests, channelRequests, signIn,
+      execute, get cookie() { return cookie; }, appOrigin, publicOrigin: pageHost === "localhost" ? `http://localhost:${appPort}` : `https://${pageHost}`, api, post, request, raw, messages, mailReceipts, webhookRequests, channelRequests, signIn,
       recoverWebhook() { webhookOutage = false; },
       async close() { try { await runtime.dispose(); } finally { await rm(state, { recursive: true, force: true }); } },
     };

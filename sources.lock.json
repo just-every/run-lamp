@@ -7956,7 +7956,7 @@
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-runtime.mjs": {
-      "sha256": "cd97991e808ebc54bc7d35964065cd7251812e5958715d0199e1322b98861840",
+      "sha256": "a650c884f522607f4de6fb1d1bd381a5191cf39f8dc2d1a42991c374f98925cb",
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-worker.ts": {
@@ -8155,6 +8155,10 @@
       "sha256": "20c1ebcf8d8e56570b383f46e7732cac310b9b0a143d742e2c8d56f00c8b90b8",
       "executable": false
     },
+    "tests/e2e/helpers/reach-built-worker.mjs": {
+      "sha256": "c268999fb95d257f4ac9f1c7c8dc5c2d02c5abdc0d67934318432a175c4aff92",
+      "executable": false
+    },
     "tests/e2e/helpers/report-publication-flow.mjs": {
       "sha256": "faeff80e606cf04347f2cd46b0f764ced4a389164d962cec3cd6dd3f36496539",
       "executable": false
@@ -8260,7 +8264,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-management-fixture.mjs": {
-      "sha256": "aeef10ccf9d0b4156daab22890af511b1564be947a0af35155a9a077267fcc4f",
+      "sha256": "7e34efd791e96e5b3de57c3ce59628f732fc45c4906a655dcc0044981668c1da",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-one-click-flow.mjs": {
@@ -8327,6 +8331,14 @@
       "sha256": "089a1bcd88dbb26255f4b8402e50629719ef06263891f28bc206c53ff59bf5b0",
       "executable": false
     },
+    "tests/e2e/helpers/update-reach-browser-flow.mjs": {
+      "sha256": "f39debe658e7caa9d15df97f88565ed3c359545983ba28f84d50a30d82690a0f",
+      "executable": false
+    },
+    "tests/e2e/helpers/update-reach-flow.mjs": {
+      "sha256": "2e4f74ff0f1c4a6bfb64e00597747f594b7e28f8a485b65bffc60a87d8205b7a",
+      "executable": false
+    },
     "tests/e2e/helpers/uptime-correction-journey.mjs": {
       "sha256": "e23747e0dade3eb22a154b1c181e2aad3401b3ef294730e640f142d9148789e4",
       "executable": false
@@ -8384,11 +8396,11 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "771eff4baf2d7180b56a20bd51df57f9df400a46fc75c9022464ea327d5e849c",
+      "sha256": "081ffcadb30a74b45a29d300c3ad523f36091fec7262fdcdcb92dc5124ef31a0",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "bb169f462dab45914b30a774143ad69f382b5f5253806bd300865fb972de39bd",
+      "sha256": "e1dbf1a8da20c75121ae8fe1d8a7c2440e7d3a4b1f25c38af850ed78a2d48377",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
