@@ -1,0 +1,15 @@
+{
+  "workflow_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43235260507",
+      "id": 43235260507,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "queriedAtEpoch": 1794493822.6680377,
+  "pollCalls": 3
+}

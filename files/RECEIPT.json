@@ -2,15 +2,16 @@
   "branch": "cloud/sd-lamp-c-f132",
   "ci": [
     {
-      "conclusion": null,
+      "conclusion": "success",
       "event": "push",
       "head_sha": "cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c",
       "html_url": "https://github.com/just-every/run-lamp/actions/runs/43235260507",
       "id": 43235260507,
       "name": "Verify",
-      "status": "in_progress"
+      "status": "completed"
     }
   ],
+  "ciApiCallsUsed": 6,
   "clause": {
     "claim": "PARTIAL",
     "held": [
@@ -95,7 +96,7 @@
     "historyScanned": null,
     "status": "delegated to guarded Mac lander"
   },
-  "recordedAt": "2026-11-12T14:15:20.881560+00:00",
+  "recordedAt": "2026-11-12T14:30:54.849977+00:00",
   "repository": "just-every/run-lamp",
   "schema": 1,
   "tag": "sd-lamp-c-f132"

@@ -10,7 +10,7 @@ Acceptance 3's 5,000-subscriber Business and 25,000-subscriber Enterprise admiss
 
 Starting main: bdbb5c7fd63305164dedb3aded8cfea17a80f7c3. Main Verify 43231453480 success; Run site 43231453735 success. The pinned continuation d2812f4aee110ab6de04d4c7dffbb86d34239da9 was replayed on main, resolving only the generated source lock with its documented command; other writers' changes were retained.
 
-First preservation push: 0d0ce5f, message carries skip ci. No PR is required to start the existing branch-push Verify entry point.
+First preservation push: 0d0ce5f38b71cd254644123b60bd4e639c1f9abb, message carries skip ci. No PR is required to start the existing branch-push Verify entry point.
 
 Local investigation: ad hoc commands using Node's input-type module option stalled Miniflare's synchronous worker bridge; the real test entry uses a normal module file. No product behavior was changed to accommodate that harness mistake. Typecheck passed using pinned Node 22.20.0.
 
@@ -69,3 +69,6 @@ Frozen native proof rows: R1 acceptance 1 MET locally; R2 acceptance 2 MET local
 
 CLAIM SUB-023 PARTIAL points=1,2,4,5 tests=tests/e2e/statuspage-import.test.mjs#SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes; tests/e2e/delivery-contract.test.mjs#SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
 GAP SUB-023: Acceptance 3’s Business 5,000 and Enterprise 25,000 admission proof remains unproven, outside this lease.
+
+Terminal CI observation: Verify run 43235260507, event=push, head=cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c, status=completed, conclusion=success. URL: https://github.com/just-every/run-lamp/actions/runs/43235260507. Workflow reads used 6 of the ten-call budget, with one watcher and at least 300 seconds between reads.
+DONE-RIDERS row 3 is PASS for the leased points: push Verify completed successfully on the exact candidate SHA and loaded both registered journeys. The clause remains PARTIAL solely for its unproven, unleased acceptance 3. Row 11 remains delegated to guarded landing.
