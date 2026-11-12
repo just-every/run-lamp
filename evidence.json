@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "2cdeaaf2df054609067b13e0cf84715571539918",
+      "bytes": 266,
+      "path": "CI.json",
+      "sha256": "afa8ed54f00288724154f59b5a58555fe36e5e75debb207784ad7ae5159e5018"
+    },
+    {
+      "blob": "fc602796d3bd7c649d7869874bf0145c0cdbced6",
+      "bytes": 1682,
+      "path": "CLAIMS.txt",
+      "sha256": "6467be2499fcb0b4841463468a89797f66867f3e665c8cd95a8fe2c58720318d"
+    },
+    {
+      "blob": "9a6d96967da27c73e5175278b50e04fa760542f4",
+      "bytes": 262,
+      "path": "PR.json",
+      "sha256": "fee383ddadf6ab5d110108d3881fe32a8f8796554a05bdfb26d8748e2312c676"
+    },
+    {
+      "blob": "d125041f7671d52b76f49d03a6c7fd0af3921bc4",
+      "bytes": 73,
+      "path": "PUSH.txt",
+      "sha256": "13fd237d08c6a3e4e3d7f878c8a7e26a4f5e686ee11d08d5d6d17e59684f896c"
+    },
+    {
+      "blob": "368682f8d42c6fd0e6bd289dec6a70d3c2d46553",
+      "bytes": 6233,
+      "path": "RECEIPT.json",
+      "sha256": "44ded56bb54ffd359ce2670938e88139f61b50701ec1cb8498cb46e764b8f7f3"
+    },
+    {
+      "blob": "c16659f4852350aaa920820deeb1ffe52d883ece",
+      "bytes": 18141,
+      "path": "REPORT.md",
+      "sha256": "44b686bf5e387ae799e6a083c9f1496ce5800d187fb4f86b3797048c8b37d6f4"
+    },
+    {
+      "blob": "4c782cd7c80076d0f94f28126112ef382d673381",
+      "bytes": 1060,
+      "path": "base-ci.json",
+      "sha256": "5d4a919ea2b39aa4f94472a976290e7d5a3091823ae7d0d3015d14b7d44afea7"
+    },
+    {
+      "blob": "994d7c6d13c650d7b9846564e536b3044e07696e",
+      "bytes": 218,
+      "path": "ci-discovery.json",
+      "sha256": "afb5ecaa6b62119ef9581edcecb71f172d7c32851467ced0e1f9e6719fcd2983"
+    },
+    {
+      "blob": "1bfa21176c38c2cac862f079268ea642e99dbad9",
+      "bytes": 5040,
+      "path": "delivery.log",
+      "sha256": "de0b38877c073999982b9c468e7c422a62e61d5204001dda63553e43dc9d4617"
+    },
+    {
+      "blob": "76a992b47aa4254b7cb3949c1cadd2b946de35df",
+      "bytes": 5352,
+      "path": "public-initial-failure.log",
+      "sha256": "0c0b87d4e02e98be2a364c31751272c8e7b97d6eb1704bfc2f35d09b7be15690"
+    },
+    {
+      "blob": "553af5755316b0c31fbe8ef3aee56a416cde321d",
+      "bytes": 4729,
+      "path": "public.log",
+      "sha256": "84b9b42d9ba80493a5ce6862fc585f97724fd07cf410404f556ba50ac6a93fbd"
+    },
+    {
+      "blob": "eb0c37825030b986c49213275458dd82def9bcba",
+      "bytes": 4438,
+      "path": "publishing-initial.log",
+      "sha256": "2eeb9e9af75691a6fe2171b5e4344e9fb1a0a90d9623758403f29fdc8a59710b"
+    },
+    {
+      "blob": "0160bcf252eb12b13fbb299bc255898e23f96ac2",
+      "bytes": 1420,
+      "path": "publishing.log",
+      "sha256": "37d4b367e0a2bf6abf9ad014f38be36a38fe4aeea4d743cc53482698aab4dddb"
+    },
+    {
+      "blob": "a098550487088238963898ec25af4f5a7acdbccb",
+      "bytes": 917,
+      "path": "source-proof.json",
+      "sha256": "2fbb139876376b3e996be4b2c62d2f102aaf20b54901c5bfd0db4abafc6eb8be"
+    },
+    {
+      "blob": "a342fcb93cb2a0c08b72f2ea0d66a2a64e1db25d",
+      "bytes": 168,
+      "path": "test-inventory.log",
+      "sha256": "05fdde01196595edece0628739aefb1cc63e73a83f52c3ba30f4ced8352976ed"
+    },
+    {
+      "blob": "2affc38a1580ea8627e08092c53d2c0601394ef9",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "8bffa2b1c6ca77b380f5d79ee443030897c59749d2974bd302a69b280c6433e7"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "views-check.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "58dd21c218846e90dd798f1845377f7422e45cac",
+      "bytes": 28,
+      "path": "views-write.log",
+      "sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f131",
+  "product_head": "b955bb59701c97cd698814f391f9f3179897a596",
+  "ref": "refs/heads/evidence/sd-lamp-c-f131",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f131"
+}

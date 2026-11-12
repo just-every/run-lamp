@@ -1,0 +1,66 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+✔ HIST-008 — reviewed imported history stays completely browsable without scripts (12190.416165ms)
+Lamp could not rebuild its public page for this release. Error: Public snapshot build failed after 3 attempts: Configured logo object is missing from object storage.
+    at rebuildOne (file:///workspace/run-lamp/script-0.mjs:90575:13)
+    at async Object.retryPendingBuild (file:///workspace/run-lamp/script-0.mjs:90704:11)
+    at async file:///workspace/run-lamp/script-0.mjs:94152:60
+    at async publication3 (file:///workspace/run-lamp/script-0.mjs:93495:11)
+    at async Promise.all (index 0)
+    at async Object.check (file:///workspace/run-lamp/script-0.mjs:93510:40)
+    at async file:///workspace/run-lamp/script-0.mjs:93444:20
+    at async dispatch2 (file:///workspace/run-lamp/script-0.mjs:51509:17)
+    at async file:///workspace/run-lamp/script-0.mjs:52912:25
+✔ PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch (13156.954022ms)
+✔ UPTIME-003 — newly observed services report only their recorded coverage (7517.883585ms)
+✔ HIST-001 — completed native records retain their month, window, components and complete publication inventory (11439.545893ms)
+PROBE PAGE-019 1: native maintenance without an incident -> both floating installations visible; inactive and operational controls hide every configured variant
+PROBE PAGE-019 2: four served installations and populated script artifacts -> exact shared snapshot, raw and gzip size within ten KiB
+PROBE PAGE-019 4: native publication and polling -> floating notices appear with exact selected corners and computed colors
+PROBE PAGE-019 4: native resolution followed by eight actual HTTP polls -> original floating nodes remain attached and are positively hidden
+PROBE COMP-010 minute=0 state=Operational shown=false uptime=null downtime=0 history=1 elapsedMs=374.9
+PROBE COMP-010 minute=10 state=Degraded performance shown=true uptime=100.00% downtime=0 history=2 elapsedMs=345.5
+PROBE COMP-010 minute=20 state=Operational shown=false uptime=75.00% downtime=5 history=3 elapsedMs=371.0
+PROBE COMP-010 minute=30 state=Major outage shown=true uptime=83.33% downtime=5 history=4 elapsedMs=252.7
+PROBE COMP-010 minute=40 state=Operational shown=false uptime=62.50% downtime=15 history=5 elapsedMs=368.4
+PROBE COMP-010 minute=50 state=Partially unavailable shown=true uptime=70.00% downtime=15 history=6 elapsedMs=331.1
+PROBE COMP-010 minute=60 state=Operational shown=false uptime=58.33% downtime=25 history=7 elapsedMs=291.9
+PROBE COMP-010 minute=70 state=Under maintenance shown=true uptime=64.28% downtime=25 history=8 elapsedMs=286.5
+PROBE COMP-010 minute=80 state=Operational shown=false uptime=68.75% downtime=25 history=9 elapsedMs=215.7
+✖ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (25232.262239ms)
+✔ DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control (29042.703253ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100385.613799
+
+✖ failing tests:
+
+test at tests/e2e/public-contract.test.mjs:302:1
+✖ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (25232.262239ms)
+  AssertionError [ERR_ASSERTION]: {"error":"step_up_required"}
+  
+  403 !== 202
+  
+      at admitAttributionOperator (file:///workspace/run-lamp/tests/e2e/helpers/operator-attribution.mjs:11:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async uptimeCorrectionJourney (file:///workspace/run-lamp/tests/e2e/helpers/uptime-correction-journey.mjs:84:37)
+      at async TestContext.<anonymous> (file:///workspace/run-lamp/tests/e2e/public-contract.test.mjs:306:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 403,
+    expected: 202,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

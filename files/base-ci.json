@@ -1,0 +1,5 @@
+{"conclusion":"success","head_sha":"708ff579db8ac27b05765f63e00a80f8832bebba","html_url":"https://github.com/just-every/run-lamp/actions/runs/43226180653","id":43226180653,"name":"Push on main","status":"completed"}
+{"conclusion":"skipped","head_sha":"708ff579db8ac27b05765f63e00a80f8832bebba","html_url":"https://github.com/just-every/run-lamp/actions/runs/43226178507","id":43226178507,"name":"Run demo","status":"completed"}
+{"conclusion":"success","head_sha":"708ff579db8ac27b05765f63e00a80f8832bebba","html_url":"https://github.com/just-every/run-lamp/actions/runs/43226178741","id":43226178741,"name":"Verify","status":"completed"}
+{"conclusion":"success","head_sha":"708ff579db8ac27b05765f63e00a80f8832bebba","html_url":"https://github.com/just-every/run-lamp/actions/runs/43226178483","id":43226178483,"name":"Run site","status":"completed"}
+{"conclusion":"success","head_sha":"708ff579db8ac27b05765f63e00a80f8832bebba","html_url":"https://github.com/just-every/run-lamp/actions/runs/43223174864","id":43223174864,"name":"Verify","status":"completed"}

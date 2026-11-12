@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "head": "b955bb59701c97cd698814f391f9f3179897a596",
+  "base": "708ff579db8ac27b05765f63e00a80f8832bebba",
+  "files": {
+    "sources.lock.json": "a85aeb462c420e513298d5f505e8d07dcfd11783ab3cd7c324d301bafcc3e07a",
+    "tests/e2e/helpers/operator-attribution.mjs": "343fc1d1ccdf4a02086a75cf3be1586f615c714a28509f37fb1e53130d4de71c",
+    "tests/e2e/helpers/subscriber-add-flow.mjs": "45a386a4bed79d7b69d5f45728e96d8fdc04b770c4b3c5c0e3ac71fe176e69e7",
+    "tests/e2e/helpers/uptime-correction-journey.mjs": "ff65381b52de5490c4e88bf2e0d650676e0f319086a1728dee1f2617644c63b9",
+    "tests/e2e/public-contract.test.mjs": "b60b0b123d07a7028ae8738e5f73073c0fb8096d428d7032f0c97945185e0c73",
+    "tests/e2e/publishing-contract.test.mjs": "b694b7fbe2eef4d72caa41b6f0422834339c48dcff1b82e8cb5339fd00a0eff6"
+  },
+  "contractSourceUnchanged": true,
+  "testRegistrationsAdded": 0,
+  "testRegistrationsRemoved": 0
+}

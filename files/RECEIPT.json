@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-c-f131",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f131",
+  "head": "b955bb59701c97cd698814f391f9f3179897a596",
+  "base": "708ff579db8ac27b05765f63e00a80f8832bebba",
+  "status": "PARTIAL",
+  "points": [
+    1
+  ],
+  "held": [
+    2
+  ],
+  "countsBefore": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "countsAfter": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "tests": {
+    "registrations": 85,
+    "assertionScripts": 10,
+    "added": 0,
+    "removed": 0
+  },
+  "journeys": [
+    {
+      "path": "tests/e2e/publishing-contract.test.mjs",
+      "line": 73,
+      "name": "INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 \u2014 reviewed incident from private template to immutable updates, recovery, report and audited deletion",
+      "helper": "tests/e2e/helpers/operator-attribution.mjs"
+    },
+    {
+      "path": "tests/e2e/publishing-contract.test.mjs",
+      "line": 557,
+      "name": "MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 \u2014 owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history",
+      "helper": "tests/e2e/helpers/operator-attribution.mjs"
+    },
+    {
+      "path": "tests/e2e/public-contract.test.mjs",
+      "line": 302,
+      "name": "SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 \u2014 owner maintains a complete catalogue and customers read, refresh, embed and retain its public story",
+      "helper": "tests/e2e/helpers/uptime-correction-journey.mjs"
+    },
+    {
+      "path": "tests/e2e/delivery-contract.test.mjs",
+      "line": 28,
+      "name": "SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure",
+      "helper": "tests/e2e/helpers/subscriber-add-flow.mjs"
+    }
+  ],
+  "mechanical": {
+    "viewsWrite": 0,
+    "viewsCheck": 0,
+    "lock": 0,
+    "lockCheck": 0,
+    "typecheck": 0,
+    "firstParty": 0,
+    "migrations": "unchanged",
+    "sourceLockCheckAfterCommit": 0
+  },
+  "publicationScan": {
+    "commit": "b955bb59701c97cd698814f391f9f3179897a596",
+    "complete": "NOT_RUN",
+    "historyScanned": "NOT_RUN",
+    "findings": "NOT_RUN",
+    "owner": "guarded Mac lander"
+  },
+  "ci": {
+    "conclusion": null,
+    "head_sha": "b955bb59701c97cd698814f391f9f3179897a596",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43230373464",
+    "status": "in_progress",
+    "run": 43230373464,
+    "poll": 3,
+    "observedAt": "2026-11-12T14:01:21Z"
+  },
+  "mainEquality": false,
+  "landing": "not attempted",
+  "localRuns": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "passCount": 5,
+      "stage": "initial build proof"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='reviewed incident from private template|owner schedules, announces' tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "passCount": 2,
+      "stage": "final relevant bytes"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "exit": 1,
+      "passCount": 5,
+      "failCount": 1,
+      "failure": "HTTP 403 step_up_required while inviting the history corrector after advancing the controlled clock"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='owner maintains a complete catalogue' tests/e2e/public-contract.test.mjs",
+      "exit": 0,
+      "passCount": 1,
+      "stage": "fixed authentication and final native state proof"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/delivery-contract.test.mjs",
+      "exit": 0,
+      "passCount": 7,
+      "stage": "final relevant bytes"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "head": "b955bb59701c97cd698814f391f9f3179897a596"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "head": "b955bb59701c97cd698814f391f9f3179897a596"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "head": "b955bb59701c97cd698814f391f9f3179897a596"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write then check",
+      "exit": 0,
+      "viewsRestored": true
+    }
+  ],
+  "sourceLockSha256": "a85aeb462c420e513298d5f505e8d07dcfd11783ab3cd7c324d301bafcc3e07a",
+  "localProofNote": "Native journeys started during authoring; their relevant code and test bytes were retained in the final candidate. Exact commit-bound routine Verify is recorded separately; no pre-commit local run is relabeled as a candidate CI run.",
+  "pushVerified": true,
+  "identityVerified": true,
+  "trailersPresent": false,
+  "ghCallsUsed": 8,
+  "pr": {
+    "base": {
+      "ref": "main",
+      "sha": "bdbb5c7fd63305164dedb3aded8cfea17a80f7c3"
+    },
+    "draft": true,
+    "head": {
+      "ref": "cloud/sd-lamp-c-f131",
+      "sha": "b955bb59701c97cd698814f391f9f3179897a596"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/340",
+    "number": 340,
+    "state": "open"
+  },
+  "terminalCustody": "PUSHED",
+  "ready": false,
+  "proofPacketCredentialPatternMatches": 0,
+  "mainAdvancedDuringCiWait": "bdbb5c7fd63305164dedb3aded8cfea17a80f7c3",
+  "countsScope": "observed integration base 708ff579db8ac27b05765f63e00a80f8832bebba; this round makes no status or count changes"
+}
