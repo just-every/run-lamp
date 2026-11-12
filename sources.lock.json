@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "655dc19ae0753f4fc3b0196e391eec19bf11741ffadd22f3d5832737b5d9c0a6",
+      "sha256": "b29ccd0be2bc29134bb5ea38d2c9a7c1f39abc3f2394cc28118a665b8ceff343",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "38a077e180fac30e91094a9de5ead171fe774b7e340f6582b99de0870d349ba8",
+      "sha256": "e74aadb63b06780e04fdcb0559bdc39ee349fb8253f41553e5a9a43288f438cf",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2580,7 +2580,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "acdc937f86508634eb6b46667149cba1e6b84987b77ea462b9667d3de474d2f8",
+      "sha256": "8e11b6ea6880e4be55e9688405ae0ff2c3d65447078c935c3ec36c7ddfb9b768",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2608,7 +2608,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "9a302ec84c04413a6a47ddaeb150a6bea931257423168d329b0f81270f25ad50",
+      "sha256": "94de338c80d02a07023f811bba35903d7e74afe2c7128ca5905d1c99aad392f2",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -2665,6 +2665,14 @@
     },
     "release-history/1.11.11.json": {
       "sha256": "b54dd3772419bbd7870c4cc87ed9a49ea4f31ceed9834e1c298e244c151ae07c",
+      "executable": false
+    },
+    "release-history/1.11.12.CONTRACT.md": {
+      "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c",
+      "executable": false
+    },
+    "release-history/1.11.12.json": {
+      "sha256": "608a9152ef07201f7c2827897a51b5dbcf0dd5bb3ecfbf71a3b8cd08509624ae",
       "executable": false
     },
     "release-history/1.11.2.CONTRACT.md": {
@@ -2828,7 +2836,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "608a9152ef07201f7c2827897a51b5dbcf0dd5bb3ecfbf71a3b8cd08509624ae",
+      "sha256": "478d7a8dce8e1a92933cda5adf28f22fc9ee7ccd0d0066b9c9d7e88edb492e0a",
       "executable": false
     },
     "rer-packaging.json": {
@@ -3952,7 +3960,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "f1d8571b6a85d9f59e7c85c613d70f562b1d263afb9db997174e27e558a18ded",
+      "sha256": "484de0cd89690f4d7634f1461eb507e287afa2ac80e5e341314ccdea6c441336",
       "executable": false
     },
     "src/base/actor.ts": {
