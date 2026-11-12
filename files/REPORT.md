@@ -82,3 +82,5 @@ Terminal product head: d2812f4aee110ab6de04d4c7dffbb86d34239da9. Branch: cloud/s
 
 CLAIM SUB-023 PARTIAL points=1,2,4,5 tests=tests/e2e/helpers/subscriber-limits-flow.mjs#subscriberMoveInCapacityFlow; tests/e2e/helpers/subscriber-limits-flow.mjs#subscriberLimitsFlow
 GAP SUB-023: Acceptance 3 Business 5,000 and Enterprise 25,000 fits without narrowing remain unproven and outside this lease. No other selected native point remains open.
+
+Evidence transport check: the first complete packet at 7676976e3106e59ee8bacd4a150898bfb2b7d82a was independently fetched and restored with all 15 file sizes, blob identities and SHA-256 hashes verified; product head and index remained unchanged. TRANSFER-VERIFICATION.json retains that actual first-transfer receipt. The final evidence publication adds this receipt to the same product-bound packet.
