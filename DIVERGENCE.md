@@ -7,6 +7,15 @@ self-hosted owner needs the provider app, installation settings and credential
 steps before creating a link code or connecting an account. Detailed guidance
 stays in docs; connecting, linking and posting behavior stays as implemented.
 
+## Readable removed records and report obligations — 12 November 2026
+
+Removed subscribers appear under a plain anonymous label in the directory,
+notification deliveries and subscription email history. Erasure keeps its
+existing behavior; no destination or contact detail is restored for display.
+The resolved incident panel uses the same replaceable report-due policy result
+as Reports, including the seven-day wait, publication and waiver exclusions.
+Other resolved incidents offer an optional report without an owed reminder.
+
 ## Statuspage reader guidance — 12 November 2026
 
 The native Cutover report names the existing compatibility embed as served on

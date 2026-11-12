@@ -799,6 +799,20 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   const report = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Post-incident report', exact: true }) });
   await composer.row('Post-incident report');
   const reportPath = `/api/app/incidents/${id}/report`;
+  assert.equal((await api(reportPath)).owed, false, 'a newly resolved severe incident is not due before seven days');
+  assert.equal(await report.getByRole('button', { name: 'Waive report reminder', exact: true }).count(), 0, 'there is no reminder to waive before the policy marks it owed');
+  const minor = (await api('/api/app/incidents', 'POST', { title: 'Synthetic Lamp minor checkout delay', components: [{ componentId: component.id, state: 'Degraded performance', relationship: 'Primary' }] })).incident;
+  for (const lifecycle of ['Identified', 'Resolved']) {
+    await api(`/api/app/incidents/${minor.id}/draft`, 'PUT', { lifecycle, affectedAudience: 'Synthetic Lamp shoppers', customerImpact: 'Checkout remained available with slower responses.', whatStillWorks: 'Orders could still be placed.', details: '', nextUpdateAt: lifecycle === 'Resolved' ? null : new Date(Date.now() + 3_600_000).toISOString() });
+    await api(`/api/app/incidents/${minor.id}/publish`, 'POST', { channels: [] });
+  }
+  assert.equal((await api(`/api/app/incidents/${minor.id}/report`)).owed, false);
+  assert.ok(!(await api('/api/app/reports/owing')).incidentIds.includes(minor.id));
+  await page.goto(`${appUrl}/app/incidents/${minor.id}#post-incident-report`); await operatorHydrated(page);
+  await report.getByRole('button', { name: 'Draft report', exact: true }).waitFor();
+  assert.equal(await report.getByRole('button', { name: 'Draft report', exact: true }).isEnabled(), true, 'an optional report can still be drafted');
+  assert.equal(await report.getByRole('button', { name: 'Waive report reminder', exact: true }).count(), 0, 'a minor incident offers no owed-report reminder action');
+  await page.goto(`${appUrl}/app/incidents/${id}#post-incident-report`); await operatorHydrated(page);
   const drafting = page.waitForResponse(response => response.url().endsWith(`${reportPath}/draft`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: 'Draft report', exact: true }).click();
   const draftResponse = await drafting;
@@ -862,6 +876,8 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
   const erased = (await api('/api/app/subscribers')).subscribers.find(item => item.id === subscriber.id);
   assert.notEqual(erased.destination, destination, 'erasure removes the private destination');
   assert.equal(erased.contactEmail, null); assert.equal(erased.state, 'deactivated');
+  const desk = await page.locator('main').innerText();
+  for (const value of [subscriber.id, 'deleted:', destination, 'private-reader@example.test']) assert.ok(!desk.includes(value), 'the visible desk contains neither erased personal data nor its internal tombstone identity');
 
   if (process.env.LAMP_SCREENSHOTS) { await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true }); await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, '1440-operator-journey.png'), fullPage: true }); }
   await maintenanceBrowserFlow({ page, appUrl, pageUrl, api, screenshots: previewScreens });
