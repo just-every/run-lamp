@@ -132,10 +132,12 @@
     "receipt": "product-push.log"
   },
   "workflow": {
-    "id": 43269791457,
+    "conclusion": "success",
     "head_sha": "7bfb459185882497098b4fed00155f248874ce81",
-    "status": "in_progress at discovery",
-    "url": "https://github.com/just-every/run-lamp/actions/runs/43269791457"
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43269791457",
+    "status": "completed",
+    "id": 43269791457,
+    "receipt": "ci-final-result.json"
   },
   "initialHead": "016bb893f9a6f1e1c621527aec2442b2b16ae56e",
   "initialWorkflow": {
@@ -198,5 +200,18 @@
       "path": "tests/e2e/publishing-browser.test.mjs",
       "sha256": "f0cbf3e0a17818e3322a4c0e4f40fc9c7316987ff9a724443b9ca64ceb85917b"
     }
-  ]
+  ],
+  "pullRequest": {
+    "base": "main",
+    "head": "7bfb459185882497098b4fed00155f248874ce81",
+    "html_url": "https://github.com/just-every/run-lamp/pull/345",
+    "number": 345
+  },
+  "githubCallBudget": {
+    "used": 10,
+    "limit": 10
+  },
+  "blockers": [],
+  "terminal": "READY branch=cloud/main-lamp-readable-records-1 head=7bfb459185882497098b4fed00155f248874ce81",
+  "workingTreeClean": true
 }

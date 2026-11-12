@@ -65,3 +65,22 @@ Final exact-head Verify: 43269791457, in progress at discovery.
 The final guarded product push succeeded on attempt 1. All three candidate commits, including the merge and its side ancestry outside main, passed fleet author/committer and trailer inspection. No feature source or touched journey source changed between the original passing local/browser proofs and this final head; the final receipt records that comparison.
 
 The first workflow failed before shards, so its red result is not being reported as green. Final workflow result and PR custody follow below.
+
+
+## Final result
+
+READY branch=cloud/main-lamp-readable-records-1 head=7bfb459185882497098b4fed00155f248874ce81
+
+Exact-SHA Verify 43269791457 completed/success on that full SHA:
+https://github.com/just-every/run-lamp/actions/runs/43269791457
+
+PR #345 is open against main at the same head:
+https://github.com/just-every/run-lamp/pull/345
+
+The earlier Verify 43268652793 failed source:check; its missing tracked-file lock entry was corrected in the final head. No failure from that earlier SHA is being counted as success. Ten GitHub calls were used, including one initial lookup with an incorrect SHA, the one failed-job log download, exact-head observations and PR creation. All actual call metadata is retained in github-calls.json.
+
+Local results: three touched journeys passed; the final subscriber journey repeated green with the added erasure-preservation assertion; typecheck, contract docs and committed-tree source integrity checks passed. The final feature and touched journey source is identical to the locally exercised/browser-proven source. Images cover the changed directory, both delivery histories and minor/owed/waived report states at 1440 and 390, with assertions at 1440.
+
+Before/after counts: 99 -> 99 checks (89 registrations and 10 assertion scripts); 60 done / 129 partial / 55 missing / 244 total contract clauses, unchanged. SUB-011 remains partial; HIST-003 remains done. No Status, Gap or Evidence cells were edited and no DONE claim is made.
+
+Blockers: none. No main/default-branch push, force-push, published-history rewrite, inbox write, acceptance promotion or landing was performed. The PR is left for the fleet's publication scan and landing gates. The task clone will be deleted after the final evidence ref has been published and both remote heads checked.

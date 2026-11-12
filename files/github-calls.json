@@ -74,5 +74,57 @@
       ".workflow_runs[] | {id,name,status,conclusion,head_sha,html_url}"
     ],
     "exit": 0
+  },
+  {
+    "number": 7,
+    "time": "2026-11-12T17:33:42.559424+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43269791457",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 8,
+    "time": "2026-11-12T17:37:14.316988+00:00",
+    "command": [
+      "gh",
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-lamp/pulls",
+      "--input",
+      "/tmp/lamp-pr.json",
+      "--jq",
+      "{number,html_url,head:.head.sha,base:.base.ref}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 9,
+    "time": "2026-11-12T17:38:43.853757+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43269791457",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
+  },
+  {
+    "number": 10,
+    "time": "2026-11-12T17:49:32.187020+00:00",
+    "command": [
+      "gh",
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43269791457",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ],
+    "exit": 0
   }
 ]

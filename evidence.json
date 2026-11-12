@@ -13,10 +13,10 @@
       "sha256": "91ea03bb44873cf17a25beb1d04048ab544bb8aff431b6c9f8dabf9cde198e7c"
     },
     {
-      "blob": "bf612c3326cca2c99da422ee140fcbf9d106edbd",
-      "bytes": 8092,
+      "blob": "16dde73fcf0ec19e2ab0387dd69bb36b7aec8e35",
+      "bytes": 9887,
       "path": "REPORT.md",
-      "sha256": "91ec8f36e0494d632dbaa57305c52ead6219f3eb3f33d7506f95de6cc9eef656"
+      "sha256": "f7deed38f4e7ba8f993399bac6db482c7430b5aca005fcdc8e4e3c304ae0ab27"
     },
     {
       "blob": "2b985b45f7e9c701a4b8bb0c9a74157c26eb57f6",
@@ -97,6 +97,24 @@
       "sha256": "7a0f50df49bddcbcd6d52b512d5e86196654eae0ea85bd592e00bcb32fd9d816"
     },
     {
+      "blob": "b7d4bb70fec4d7ae464e952083d017ce12fc1521",
+      "bytes": 174,
+      "path": "ci-final-poll-1.json",
+      "sha256": "480436cc1ac11170b6d777767baffb008fe893492c846df99512a3ed4e2ee8e3"
+    },
+    {
+      "blob": "b7d4bb70fec4d7ae464e952083d017ce12fc1521",
+      "bytes": 174,
+      "path": "ci-final-poll-2.json",
+      "sha256": "480436cc1ac11170b6d777767baffb008fe893492c846df99512a3ed4e2ee8e3"
+    },
+    {
+      "blob": "e95b4273353b5d7ae20ae4fc9a59b24065b5778d",
+      "bytes": 177,
+      "path": "ci-final-result.json",
+      "sha256": "448d81ae0b3920a858c29b26f57b8041db13add38137fc5aff58ce1ac754587a"
+    },
+    {
       "blob": "6906a4bd65f92d5566643a9e662483ac9396b809",
       "bytes": 202523,
       "path": "ci-initial-build-failed.log",
@@ -139,10 +157,10 @@
       "sha256": "14cee29b7bd19487e15f4013d4fb85016e022ef21d230676971a6490c88436d2"
     },
     {
-      "blob": "a6ec09efa159a80d76ff514fca73f2f3f47849fc",
-      "bytes": 1874,
+      "blob": "b1c563c09f5354b14a8ba7c33bce392847366b89",
+      "bytes": 2970,
       "path": "github-calls.json",
-      "sha256": "41a37fd8f1731504942c35e1d2db6ed8f1485a7b635b31b0cc36c1591533bcef"
+      "sha256": "05cb118436d2f16f79db405980d58b2ab3b35ecddc28a4f2a1253a70953df726"
     },
     {
       "blob": "996f26573af81ab7744dd7d17042efbed6821c9e",
@@ -173,6 +191,12 @@
       "bytes": 470,
       "path": "owed-browser-receipt.json",
       "sha256": "0051c7db0e298462e7e4aa5d90689ed7984c7bae6622b8f58d8105b297061d44"
+    },
+    {
+      "blob": "f292b29c7936da469f8c9b4cd866394b8b5972b3",
+      "bytes": 140,
+      "path": "pr-receipt.json",
+      "sha256": "63c1714ab455b80e0e2dd2e10b752d2e773a46effe72801bb61bdd5f0b27dd7f"
     },
     {
       "blob": "22db2384aa8b7857e8e7f283f9297bf00173e5ef",
@@ -241,10 +265,10 @@
       "sha256": "fd7589580fbbadf83fd6b783edc9d58b69888a582566f38c2fccc107290a9024"
     },
     {
-      "blob": "12c8bd7b80e2bb12814238d4cbb9de4795dc05b7",
-      "bytes": 7095,
+      "blob": "c56bf3ba487685aff7da78c3e456d3c4a8f4a2f6",
+      "bytes": 7556,
       "path": "verification-receipt.json",
-      "sha256": "cd2a605586e072ba3803778c6d2f30e6c956da04d092c7849d444112e66ea67e"
+      "sha256": "d08049ddcbd08860dcafea8ce7018844ba79de1d43a6d07101e544cd7f47803f"
     }
   ],
   "product_branch": "cloud/main-lamp-readable-records-1",
