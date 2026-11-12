@@ -96,6 +96,15 @@ export async function mailFailoverFlow({ t, vite, secondaryProvider='mailgun' })
   };
   try {
     const initial=await api('/api/app/mail-settings');assert.equal(initial.status,200,initial.text);
+    assert.equal(initial.body.local,false);
+    assert.equal(initial.body.primaryProvider,bindings.MAIL_PROVIDER,'Settings names the actual configured primary');
+    const missingCredentials={...bindings,MAIL_PROVIDER_API_KEY:undefined,MAIL_SECONDARY_PROVIDER:undefined,MAIL_SECONDARY_API_KEY:undefined};
+    const unavailable=createApp(missingCredentials);
+    const unavailableResponse=await unavailable.app.fetch(new Request(`${appOrigin}/api/app/mail-settings`,{headers:{Origin:appOrigin,Cookie:cookie}}),missingCredentials,execution);
+    assert.equal(unavailableResponse.status,200);
+    const unavailableSettings=await unavailableResponse.json();
+    assert.equal(unavailableSettings.local,false);
+    assert.equal(unavailableSettings.primaryProvider,null,'a configured name without credentials is not a primary sender');
     assert.equal(initial.body.secondaryProvider,null,'secondary delivery is off until an owner chooses it');
     assert.equal(initial.body.configuredSecondaryProvider,secondaryProvider);
     assert.equal((await api('/api/app/mail-settings',{method:'PATCH',body:JSON.stringify({secondaryProvider:'unconnected-provider'})})).status,400);

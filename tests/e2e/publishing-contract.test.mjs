@@ -75,8 +75,9 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
 test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
   const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
   const linkedWording = literalLinkFields(wording);
-  const reviewer = 'synthetic-lamp-reviewer@example.test';
-  const owner = () => j.signIn();
+  const reviewer = ['synthetic-lamp-reviewer', 'example.test'].join('@');
+  let authorEmail;
+  const owner = () => j.signIn(authorEmail);
   let creator, publisher;
   const review = async id => {
     await j.signIn(reviewer);
@@ -85,7 +86,9 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
   };
   const saveReviewed = async (id, patch) => { await owner(); await j.save(id, patch); await review(id); };
   try {
-    creator = (await j.json('/api/app/session')).operator;
+    const admittedAuthor = await admitAttributionOperator(j, 'publication-author');
+    creator = admittedAuthor.actor;
+    authorEmail = admittedAuthor.email;
     const savedSettings = (await j.json('/api/app/page-settings')).settings;
     const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, savedSettings[key]]));
     await j.json('/api/app/page-settings', 'PUT', { ...settings, timezone: ['Australia', 'Brisbane'].join('/') });
@@ -128,6 +131,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.notEqual(publisher.id, creator.id, 'the reviewer publishes another operator’s draft');
     const first = (await j.publish(incident.id, { channels: ['email'] })).update;
     await assertPublicationActor(j, incident.id, first, publisher);
+    assert.equal((await j.read(incident.id)).createdByOperatorId, creator.id, 'publishing preserves the independently admitted creator');
     await j.tick(Date.now());
     const reached = await eventually(() => j.json(`${endpoint}/reach?updateId=${first.id}`), body => body.updates[0].channels.some(row => row.channel === 'email' && row.providerAccepted === 1), 'the frozen publication reaches its committed subscriber');
     assert.equal(reached.updates[0].channels.find(row => row.channel === 'email').committed, 1);
@@ -241,6 +245,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.notEqual(publisher.id, creator.id, 'the correction publisher differs from its draft author');
     const corrected = (await j.publish(incident.id)).update;
     await assertPublicationActor(j, incident.id, corrected, publisher);
+    assert.equal((await j.read(incident.id)).createdByOperatorId, creator.id, 'a correction preserves the independently admitted creator');
     assert.equal(corrected.nextUpdateAt, committedTime, 'publication keeps the saved commitment');
     assert.equal(corrected.correctsUpdateId, monitoring.id);
     const correctedView = await j.read(incident.id);
@@ -754,6 +759,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     const startsAt = new Date(now + 3600000).toISOString();
     const endsAt = new Date(now + 7200000).toISOString();
     const input = { title: 'Database capacity upgrade ;,\\\n' + 'é'.repeat(70), affectedAudience: 'Customers using the database', customerImpact: 'Writes may pause during the upgrade.', startsAt, endsAt, componentIds: [component.id, operatorComponent.id, incidentComponent.id], autoStart: true, autoComplete: false };
+    await admitAttributionOperator(j, 'maintenance-creator');
     const maintenance = (await j.json('/api/app/maintenance', 'POST', input, 201)).maintenance;
     const { creator: scheduler, actor: maintainer } = await admitAttributionOperator(j, 'maintenance-actor');
     assert.equal(maintenance.createdByOperatorId, scheduler.id);
@@ -880,8 +886,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assertSeparateRecords(sharedHistory, separateIncident, maintenance, 'history-item');
     const feed = await j.visible('/feed.atom', input.customerImpact);
     assert.ok(feed.includes(maintenance.reference));
-    await j.signIn();
+    await j.signIn(scheduler.email);
     const cancelled = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Cancelled upgrade' }, 201)).maintenance;
+    assert.equal(cancelled.createdByOperatorId, scheduler.id);
     await j.signIn(['synthetic-lamp-maintenance-actor', 'example.test'].join('@'));
     const beforeCancellationEdits = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
     await j.json(`/api/app/maintenance/${cancelled.id}/window`, 'PUT', { startsAt: new Date(now + 5 * 3600000).toISOString(), endsAt: new Date(now + 6 * 3600000).toISOString() });

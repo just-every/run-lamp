@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { expect } from '@playwright/test';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
+import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
 
 /** Real local public/operator doors and silent development mail; no transport
  * fake and no direct subscriber-state mutation participates in this journey. */
@@ -30,13 +31,28 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
-  const pageEmail = 'synthetic-lamp-local-page@example.test';
-  const incidentEmail = 'synthetic-lamp-local-incident@example.test';
+  const pageEmail = 'synthetic-lamp-local-page@synthetic-lamp-local-page.example';
+  const incidentEmail = 'synthetic-lamp-local-incident@synthetic-lamp-local-incident.example';
   const publish = async (incident, customerImpact, channels) => {
     await api(`/api/app/incidents/${incident.id}/draft`, { lifecycle: 'Identified', affectedAudience: 'Synthetic Lamp local customers', customerImpact, whatStillWorks: 'The status page works.', details: '', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() }, 'PUT');
     return api(`/api/app/incidents/${incident.id}/publish`, { channels });
   };
   try {
+    // The actual local sender suppresses delivery even with a provider name in
+    // the development bindings. Settings must expose that same mode, with no
+    // active primary, before the public journey produces suppressed records.
+    const mailSettings = await api('/api/app/mail-settings');
+    assert.equal(mailSettings.local, true);
+    assert.equal(mailSettings.primaryProvider, null);
+    await page.goto(origin + '/app/settings#notifications'); await operatorHydrated(page);
+    const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
+    await expect(emailStatus).toHaveAttribute('data-mail-mode', 'local');
+    assert.equal(await emailStatus.getAttribute('data-provider'), null);
+    const smsSettings = await api('/api/app/sms/settings');
+    await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
+      .toHaveAttribute('data-sms-configured', String(smsSettings.configured));
+    await screens('local-notification-settings');
+    await providerSettingsGuideFlow(page);
     await api('/api/app/prelaunch', { enabled: false }, 'PATCH');
     await page.goto(publicOrigin + '/');
     const form = page.locator('form[action="/subscribe"]');
@@ -118,6 +134,45 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const added = page.getByRole('region', { name: 'Subscription emails', exact: true }).getByRole('row').filter({ hasText: addedEmail });
     await added.getByRole('button', { name: 'Confirm locally', exact: true }).click();
     await expect(added).toContainText('active subscriber');
+
+    // Remove through the desk, then inspect both anonymous histories. Erasure
+    // must not replace a personal address with an internal identifier on screen.
+    await page.goto(origin + '/app/subscribers'); await operatorHydrated(page);
+    const directory = page.getByRole('region', { name: 'Subscriber records', exact: true });
+    const rowCount = await directory.locator('tbody tr').count();
+    const historyBefore = await api('/api/app/deliveries?limit=100');
+    for (const subscriber of subscribers) {
+      const index = await directory.locator('tbody tr').evaluateAll((rows, email) => rows.findIndex(row => row.textContent.includes(email)), subscriber.destination);
+      assert.ok(index >= 0);
+      const removed = page.waitForResponse(response => response.url().endsWith(`/api/app/subscribers/${subscriber.id}`) && response.request().method() === 'DELETE');
+      page.once('dialog', dialog => dialog.accept());
+      await directory.getByRole('row').filter({ hasText: subscriber.destination }).getByRole('button', { name: 'Remove', exact: true }).click();
+      assert.equal((await removed).status(), 204);
+      await expect(directory).not.toContainText(subscriber.destination);
+      await expect(directory.locator('tbody tr')).toHaveCount(rowCount);
+      const anonymous = directory.locator('tbody tr').nth(index);
+      assert.ok((await anonymous.locator('.subscriber-destination strong').innerText()).trim().length > 0, 'the retained anonymous row has a readable label');
+      await expect(anonymous.getByRole('button')).toHaveCount(0, 'an erased subscriber cannot be removed again');
+    }
+    const assertAnonymousDesk = async () => {
+      for (const subscriber of subscribers) for (const value of [subscriber.id, 'deleted:', ...subscriber.destination.split('@')]) {
+        await expect(page.locator('main')).not.toContainText(value);
+      }
+    };
+    await assertAnonymousDesk();
+    await screens('local-removed-subscribers');
+    await page.goto(origin + '/app/subscribers?view=log'); await operatorHydrated(page);
+    await expect(records.locator('tbody tr')).toHaveCount(historyBefore.deliveries.length);
+    await expect(page.locator('.table-scroll[aria-label="Subscription emails"] tbody tr')).toHaveCount(historyBefore.subscriptionMail.length);
+    await assertAnonymousDesk();
+    const retained = (await api(`/api/app/deliveries?incidentUpdateId=${update.id}`)).deliveries;
+    const historyFacts = rows => rows.map(({ id, subscriberId, incidentUpdateId, channel, outcome, queuedAt, outcomeAt }) => ({ id, subscriberId, incidentUpdateId, channel, outcome, queuedAt, outcomeAt }));
+    assert.deepEqual(historyFacts(retained), historyFacts(logged), 'removal preserves the complete non-identifying delivery history');
+    await screens('local-removed-delivery-log');
+    await page.goto(`${origin}/app/incidents/${incident.id}`); await operatorHydrated(page);
+    const remainingFollowers = (await api(`/api/app/incidents/${incident.id}/subscribers`)).subscribers;
+    assert.ok(!remainingFollowers.some(row => row.id === subscribers.find(row => row.destination === incidentEmail).id), 'erasure removes the personal incident subscription as before');
+    await assertAnonymousDesk();
   } catch (cause) {
     console.error('Local subscriber journey at', page.url(), await page.locator('body').innerText());
     throw cause;
