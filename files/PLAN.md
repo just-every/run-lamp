@@ -1,0 +1,10 @@
+# Plan — Lamp 1.11.13 metadata candidate
+
+1. Refresh the fleet launcher, install credential and push guards and commit hooks; clone only just-every/run-lamp and use cloud/sd-lamp-release-1-11-13.
+2. Confirm main's exact-SHA Verify and Run site are successful, package version is 1.11.12, latest published release is v1.11.12, and v1.11.13 has no tag or matching release branch/PR.
+3. Compare actual v1.11.12 tag bytes to current main. Prepare honest public notes only for those changes. Preserve the v1.11.12 RELEASE.json and exact CONTRACT.md snapshot in release-history; update package.json, seed.json, RELEASE.json and VPAT version references. Add an explicit candidate version to README while retaining the actually published tag in installation examples.
+4. Keep rer 0.2.108 and pnpm-lock.yaml unchanged. Do not create package-lock.json in this pnpm project. Preserve product, tests, contract status/gap/evidence, generated views and homepage.
+5. Install frozen dependencies; run the existing release validator with RELEASE_TAG=v1.11.13, typecheck, metadata consistency checks, and the verification inventory before/after. No behavior tests, local full suite, builds or browsers for a version update.
+6. Fetch/rebase main before first product publication; regenerate the source lock last, check it, inspect the allowed diff and all candidate identities/messages, commit with fleet identity and hooks active, then push only the named branch through cloud-push.py.
+7. Open a PR because AGENTS.md requires PR contributions. Discover and poll exact-SHA Verify by REST with one watcher, at most one call per run per 300 seconds and ten GitHub calls total. Do not dispatch/re-run existing SHA workflows.
+8. Keep actual non-secret reports and receipts outside the product tree; publish selected files only to evidence/sd-lamp-release-1-11-13 through cloud_evidence.py. After successful transfer, delete the clone and dependencies. The Mac fleet owns publication scanning, landing, immutable tag, signing and GitHub Release publication.

@@ -1,0 +1,16 @@
+67d6cd9b10c29f00ad2c12e045267cf24e0b7db9	refs/heads/cloud/sd-lamp-release-1-11-0
+511a966c34f2d95eba3766d1cfa4b4a47b10d76e	refs/heads/cloud/sd-lamp-release-1-11-10
+9bbe26c4fe8cd806fb1d25e23412f2f6b198028c	refs/heads/cloud/sd-lamp-release-1-11-11
+62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b	refs/heads/cloud/sd-lamp-release-1-11-12
+d8fb9a9e366e0d10175d66923de5ce52671a60bd	refs/heads/cloud/sd-lamp-release-1-11-2c
+d42822f3281899cda3d5636ed30915e8bc287ae0	refs/heads/cloud/sd-lamp-release-1-11-3
+720ee842bc0f69fe32b419f40cf9f78d0bf562c5	refs/heads/cloud/sd-lamp-release-1-11-4b
+bfa9d7ed120fb8a6ebd27f82fa1ea6c622caf409	refs/heads/cloud/sd-lamp-release-1-11-5
+420b2ae169d6dbc79f5df2f05d4448e9c920004a	refs/heads/cloud/sd-lamp-release-1-11-6
+8c9a2ad9274041d2d7e21a617b8111a9fd90d8c1	refs/heads/cloud/sd-lamp-release-1-11-7
+698f7c61448d004c731d0aa2c4f4221c40494afa	refs/heads/cloud/sd-lamp-release-1-11-8
+6df2cf86b8c679313750530365d3f1e94b77d0c8	refs/heads/cloud/sd-lamp-release-1-11-9
+81d7056c928459f3f0a022ccdec12528bea2f532	refs/heads/cloud/sd-lamp-release-test-fix-1
+4400459bdcf1d150b6331db35b8aa557a5eb667d	refs/heads/cloud/sd-lamp-release-test-fix-2
+ef9fd813e9c2c683a1ccbcccdaa4643a7280ab43	refs/tags/v1.11.12
+62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b	refs/tags/v1.11.12^{}

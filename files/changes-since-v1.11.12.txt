@@ -1,0 +1,1 @@
+cc961bf U89-16: distinguish Lamp preview copies in owner status

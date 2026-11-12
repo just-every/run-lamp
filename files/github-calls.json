@@ -1,0 +1,78 @@
+[
+  {
+    "utc": "2026-11-12T12:22:51.770105+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/pulls?state=open&per_page=100",
+      "--jq",
+      "[.[]|{number,title,head:.head.ref,url:.html_url}]"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:22:53.087592+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=cc961bfd91120b9b30224c8c552c9b93e70106fe&per_page=100",
+      "--jq",
+      "[.workflow_runs[]|{id,name,status,conclusion,head_sha,html_url}]"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:23:28.213477+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/releases/latest",
+      "--jq",
+      "{id,tag_name,name,draft,prerelease,html_url,target_commitish,published_at}"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:28:05.479405+00:00",
+    "args": [
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-lamp/pulls",
+      "--input",
+      "../pr-request.json",
+      "--jq",
+      "{number,html_url,state,head:{ref:.head.ref,sha:.head.sha},base:{ref:.base.ref,sha:.base.sha}}"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:28:07.431839+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=d110968e819a37e203b903c97ccb1409c94558a9&per_page=100",
+      "--jq",
+      "[.workflow_runs[]|{id,name,event,status,conclusion,head_sha,html_url,created_at}]"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:33:08.488527+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43218109590",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:38:09.559113+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43218109590",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "utc": "2026-11-12T12:43:10.597942+00:00",
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43218109590",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

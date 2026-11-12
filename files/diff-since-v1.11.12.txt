@@ -1,0 +1,10 @@
+ sources.lock.json                                        | 16 ++++++++--------
+ src/core/app/services.ts                                 |  1 +
+ src/core/app/types.ts                                    |  2 ++
+ src/core/features/overview/live-status.ts                |  4 +++-
+ src/core/features/overview/ui/live-strip.tsx             |  9 +++++----
+ src/core/features/overview/ui/your-page.tsx              |  2 +-
+ src/core/features/page-settings/ui/page-hero.tsx         |  8 ++++----
+ src/core/features/page-settings/ui/settings-page.tsx     |  2 +-
+ .../features/page-settings/ui/settings-save-state.tsx    |  5 +++--
+ 9 files changed, 28 insertions(+), 21 deletions(-)

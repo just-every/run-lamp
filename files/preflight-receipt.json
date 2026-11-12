@@ -1,0 +1,34 @@
+{
+  "repository": "just-every/run-lamp",
+  "main": "cc961bfd91120b9b30224c8c552c9b93e70106fe",
+  "observed_main_workflows": [
+    {
+      "id": 43209269170,
+      "name": "Verify",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "cc961bfd91120b9b30224c8c552c9b93e70106fe",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43209269170"
+    },
+    {
+      "id": 43209269374,
+      "name": "Run site",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "cc961bfd91120b9b30224c8c552c9b93e70106fe",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43209269374"
+    }
+  ],
+  "latest_release": {
+    "draft": false,
+    "html_url": "https://github.com/just-every/run-lamp/releases/tag/v1.11.12",
+    "id": 442120959,
+    "name": "Lamp 1.11.12",
+    "prerelease": false,
+    "published_at": "2026-11-11T19:26:45Z",
+    "tag_name": "v1.11.12",
+    "target_commitish": "main"
+  },
+  "release_tag_v1_11_13_present": false,
+  "peer_observation": "No matching 1.11.13 release branch in ls-remote; no release builder in first 100 open PRs observed via REST. Older release refs retained."
+}

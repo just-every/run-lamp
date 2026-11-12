@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "utc": "2026-11-12T12:29:14.458680+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-13",
+  "head": "d110968e819a37e203b903c97ccb1409c94558a9",
+  "base": "cc961bfd91120b9b30224c8c552c9b93e70106fe",
+  "version_before": "1.11.12",
+  "version_after": "1.11.13",
+  "rer_pin_before": "0.2.108",
+  "rer_pin_after": "0.2.108",
+  "paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.12.CONTRACT.md",
+    "release-history/1.11.12.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "historical_bytes": [
+    {
+      "path": "release-history/1.11.12.json",
+      "matches_tag": "v1.11.12:RELEASE.json",
+      "sha256": "608a9152ef07201f7c2827897a51b5dbcf0dd5bb3ecfbf71a3b8cd08509624ae"
+    },
+    {
+      "path": "release-history/1.11.12.CONTRACT.md",
+      "matches_tag": "v1.11.12:CONTRACT.md",
+      "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c"
+    }
+  ],
+  "clause_status_counts_before": {
+    "partial": 132,
+    "done": 57,
+    "missing": 55
+  },
+  "clause_status_counts_after": {
+    "partial": 132,
+    "done": 57,
+    "missing": 55
+  },
+  "clause_status_changes": [],
+  "checks": {
+    "release_validator": "pass, RELEASE_TAG=v1.11.13",
+    "typecheck": "pass",
+    "source_lock": "regenerated last; check pass",
+    "inventory_before": "84 registrations + 10 assertion scripts = 94 checks",
+    "inventory_after": "84 registrations + 10 assertion scripts = 94 checks",
+    "history_snapshot_integrity": "pass",
+    "protected_files_unchanged": "pass",
+    "git_diff_check": "pass",
+    "candidate_identities_and_messages": "pass",
+    "rer_pin_and_lockfile_unchanged": "pass",
+    "contract_parser_counts": "244 clauses: done 57, partial 132, missing 55; unchanged"
+  },
+  "runtime": {
+    "node": "v22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "product_push": "success on first attempt",
+  "pr": {
+    "base": {
+      "ref": "main",
+      "sha": "cc961bfd91120b9b30224c8c552c9b93e70106fe"
+    },
+    "head": {
+      "ref": "cloud/sd-lamp-release-1-11-13",
+      "sha": "d110968e819a37e203b903c97ccb1409c94558a9"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/338",
+    "number": 338,
+    "state": "open"
+  },
+  "verify": {
+    "id": 43218109590,
+    "conclusion": "success",
+    "head_sha": "d110968e819a37e203b903c97ccb1409c94558a9",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43218109590",
+    "status": "completed"
+  },
+  "github_calls": 8,
+  "remote_branch_readback": "matches exact candidate SHA",
+  "candidate_status": "READY"
+}

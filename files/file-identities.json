@@ -1,0 +1,67 @@
+[
+  {
+    "path": "package.json",
+    "sha256": "8e11b6ea6880e4be55e9688405ae0ff2c3d65447078c935c3ec36c7ddfb9b768",
+    "bytes": 5797
+  },
+  {
+    "path": "seed.json",
+    "sha256": "484de0cd89690f4d7634f1461eb507e287afa2ac80e5e341314ccdea6c441336",
+    "bytes": 43584
+  },
+  {
+    "path": "RELEASE.json",
+    "sha256": "478d7a8dce8e1a92933cda5adf28f22fc9ee7ccd0d0066b9c9d7e88edb492e0a",
+    "bytes": 1962
+  },
+  {
+    "path": "CHANGELOG.md",
+    "sha256": "b29ccd0be2bc29134bb5ea38d2c9a7c1f39abc3f2394cc28118a665b8ceff343",
+    "bytes": 244903
+  },
+  {
+    "path": "README.md",
+    "sha256": "94de338c80d02a07023f811bba35903d7e74afe2c7128ca5905d1c99aad392f2",
+    "bytes": 9299
+  },
+  {
+    "path": "docs/accessibility/vpat.md",
+    "sha256": "e74aadb63b06780e04fdcb0559bdc39ee349fb8253f41553e5a9a43288f438cf",
+    "bytes": 25390
+  },
+  {
+    "path": "release-history/1.11.12.json",
+    "sha256": "608a9152ef07201f7c2827897a51b5dbcf0dd5bb3ecfbf71a3b8cd08509624ae",
+    "bytes": 3082
+  },
+  {
+    "path": "release-history/1.11.12.CONTRACT.md",
+    "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c",
+    "bytes": 440779
+  },
+  {
+    "path": "sources.lock.json",
+    "sha256": "44033a06f93051e27bcffd30366a6cde4799344e63bd54cee4b24aa0b88f0263",
+    "bytes": 392991
+  },
+  {
+    "path": "pnpm-lock.yaml",
+    "sha256": "9bcb80d7ce2f6bfdaa2fc47231e2446b702b825b391c70178290217f1a5b35a6",
+    "bytes": 97898
+  },
+  {
+    "path": "CONTRACT.md",
+    "sha256": "2dc299fabd2361bf0fc61199d664c27646c2b38cd1ccb50d50a7ee581382c33c",
+    "bytes": 440779
+  },
+  {
+    "path": "ACCEPTANCE.md",
+    "sha256": "ceccff8d1c084a5aa82ea36dcb051b6d85596fe48a6f4092eecaf5847e6e1d50",
+    "bytes": 393094
+  },
+  {
+    "path": "docs/CLAIMS.md",
+    "sha256": "f1155812b9e63d47f00c6af82e52c07df6898add238a255613cd282e38dea426",
+    "bytes": 7870
+  }
+]
