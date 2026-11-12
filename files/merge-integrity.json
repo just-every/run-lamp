@@ -1,0 +1,59 @@
+{
+  "candidate_diff_stat": " sources.lock.json                               | 12 +++--\n tests/e2e/helpers/operator-attribution.mjs      | 69 +++++++++++++++++++++++++\n tests/e2e/helpers/subscriber-add-flow.mjs       | 25 ++++++++-\n tests/e2e/helpers/uptime-correction-journey.mjs | 14 ++++-\n tests/e2e/public-contract.test.mjs              | 36 +++++++++++++\n tests/e2e/publishing-contract.test.mjs          | 39 +++++++++++++-\n 6 files changed, 186 insertions(+), 9 deletions(-)\n",
+  "contract_parent_checks": [
+    {
+      "all_parent_rows_preserved": true,
+      "merged_table_rows": 389,
+      "parent": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "parent_table_rows": 389
+    },
+    {
+      "all_parent_rows_preserved": true,
+      "merged_table_rows": 389,
+      "parent": "7bfb459185882497098b4fed00155f248874ce81",
+      "parent_table_rows": 389
+    }
+  ],
+  "f131_files": [
+    {
+      "byte_identical_to_f131_resolver": true,
+      "path": "tests/e2e/helpers/operator-attribution.mjs"
+    },
+    {
+      "byte_identical_to_f131_resolver": true,
+      "path": "tests/e2e/helpers/subscriber-add-flow.mjs"
+    },
+    {
+      "byte_identical_to_f131_resolver": true,
+      "path": "tests/e2e/helpers/uptime-correction-journey.mjs"
+    },
+    {
+      "byte_identical_to_f131_resolver": true,
+      "path": "tests/e2e/public-contract.test.mjs"
+    },
+    {
+      "byte_identical_to_f131_resolver": true,
+      "path": "tests/e2e/publishing-contract.test.mjs"
+    }
+  ],
+  "index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9",
+  "migration_changes": [],
+  "protected_files": {
+    ".github/workflows/verify.yml": {
+      "matches_main": true,
+      "matches_refused_candidate": true
+    },
+    "ACCEPTANCE.md": {
+      "matches_main": true,
+      "matches_refused_candidate": true
+    },
+    "CONTRACT.md": {
+      "matches_main": true,
+      "matches_refused_candidate": true
+    },
+    "docs/CLAIMS.md": {
+      "matches_main": true,
+      "matches_refused_candidate": true
+    }
+  }
+}

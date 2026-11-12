@@ -1,0 +1,16 @@
+{
+  "chromium_executable": "/usr/bin/chromium",
+  "command": [
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "lock"
+  ],
+  "exit_code": 0,
+  "finished_at": "2026-11-12T18:12:16Z",
+  "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+  "log": "merged-source-lock.log",
+  "name": "merged-source-lock",
+  "node_version": "v22.20.0",
+  "started_at": "2026-11-12T18:12:16Z",
+  "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+}

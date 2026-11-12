@@ -1,0 +1,19 @@
+UTC start: 2026-11-12T18:07:41Z
+Product SHA: d251b52a5f987cfa19cee75c5c7991e8e6bb5437
+Command: node --test --test-concurrency=1 --test-name-pattern=^HIST-001 — completed native records retain their month, window, components and complete publication inventory$ tests/e2e/public-contract.test.mjs
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ HIST-001 — completed native records retain their month, window, components and complete publication inventory (19550.341226ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21813.002199
+
+UTC end: 2026-11-12T18:08:03Z
+Exit: 0

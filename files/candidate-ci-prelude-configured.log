@@ -1,0 +1,56 @@
+UTC start: 2026-11-12T18:10:27Z
+Product SHA: d251b52a5f987cfa19cee75c5c7991e8e6bb5437
+Command: node --test --test-concurrency=1 --test-name-pattern=^(HIST-008|PAGE-005|UPTIME-003|HIST-001) — tests/e2e/public-contract.test.mjs
+
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+# PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+# PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+# PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+# Subtest: HIST-008 — reviewed imported history stays completely browsable without scripts
+ok 1 - HIST-008 — reviewed imported history stays completely browsable without scripts
+  ---
+  duration_ms: 12321.41297
+  type: 'test'
+  ...
+# Lamp could not rebuild its public page for this release. Error: Public snapshot build failed after 3 attempts: Configured logo object is missing from object storage.
+#     at rebuildOne (file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:90575:13)
+#     at async Object.retryPendingBuild (file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:90704:11)
+#     at async file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:94152:60
+#     at async publication3 (file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:93495:11)
+#     at async Promise.all (index 0)
+#     at async Object.check (file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:93510:40)
+#     at async file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:93444:20
+#     at async dispatch2 (file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:51509:17)
+#     at async file:///home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp/script-0.mjs:52912:25
+# Subtest: PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+ok 2 - PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+  ---
+  duration_ms: 13710.68707
+  type: 'test'
+  ...
+# Subtest: UPTIME-003 — newly observed services report only their recorded coverage
+ok 3 - UPTIME-003 — newly observed services report only their recorded coverage
+  ---
+  duration_ms: 9846.349951
+  type: 'test'
+  ...
+# Subtest: HIST-001 — completed native records retain their month, window, components and complete publication inventory
+ok 4 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+  ---
+  duration_ms: 14248.750537
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 52256.947865
+
+UTC end: 2026-11-12T18:11:19Z
+Exit: 0

@@ -1,0 +1,56 @@
+{
+  "blockers": [],
+  "branch": "cloud/sd-lamp-c-f131-hist001-fix-1",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619",
+    "observed_at": "2026-11-12T18:43:54.868738+00:00",
+    "run_id": 43280012619,
+    "status": "completed"
+  },
+  "clause_status_changes": [],
+  "contract_counts_after": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "contract_counts_before": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "evidence_publication": "separate report-only ref; custody line returned independently after this receipt is created",
+  "f131_claims_and_holds": "unchanged",
+  "github_calls_used": 6,
+  "head": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+  "isolated_hist001_main_candidate_merged": "passed on all three trees under Node 22.20.0",
+  "landing": "not attempted; fleet retains publication scan and landing authority",
+  "local_touched_counts": {
+    "fail": 0,
+    "pass": 4,
+    "tests": 4
+  },
+  "new_task_commits": [
+    "d23151fb5275aebc3365a4fd9b6110767bac55df"
+  ],
+  "original_refused_ci": {
+    "actual_failure": "MiniflareCoreError ERR_ADDRESS_IN_USE at 127.0.0.1:38971",
+    "job_id": 131367787538,
+    "logo_warning": "Expected fault injection in preceding passing PAGE-005 test",
+    "run_id": 43270958170
+  },
+  "outcome": "READY",
+  "pr": {
+    "base": "main",
+    "head": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+    "html_url": "https://github.com/just-every/run-lamp/pull/346",
+    "number": 346,
+    "state": "open"
+  },
+  "product_push": "succeeded on first attempt",
+  "recorded_at": "2026-11-12T18:45:02.239361+00:00",
+  "repository": "just-every/run-lamp",
+  "tag": "sd-lamp-c-f131-hist001-fix-1",
+  "tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+}

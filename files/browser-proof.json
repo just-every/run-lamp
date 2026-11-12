@@ -1,0 +1,18 @@
+{
+  "captured_by": "merged-after-hist001",
+  "note": "Existing native-history browser proof, with scripts disabled, captured at 1440 and 390. No UI implementation change was made for this task.",
+  "recorded_at": "2026-11-12T18:15:37.650128+00:00",
+  "screens": [
+    {
+      "bytes": 616504,
+      "file": "history-1440.png",
+      "sha256": "ea557b9b831b7598c6625c71eee480b843e522ff835380e47918cea460cf097d"
+    },
+    {
+      "bytes": 487537,
+      "file": "history-390.png",
+      "sha256": "1a9eeec9329c1ab96315c4163a13fc5db88265d86d240274306c0afc9b285744"
+    }
+  ],
+  "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+}

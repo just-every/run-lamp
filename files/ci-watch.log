@@ -1,0 +1,6 @@
+CI_DISCOVERED {"conclusion": null, "event": "push", "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619", "id": 43280012619, "status": "in_progress"}
+CI_POLL {"conclusion": null, "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619", "status": "in_progress"}
+CI_POLL {"conclusion": null, "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619", "status": "in_progress"}
+CI_RESUMED run_id=43280012619 head=d23151fb5275aebc3365a4fd9b6110767bac55df
+CI_POLL {"conclusion": "success", "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619", "status": "completed"}
+CI_COMPLETED {"conclusion": "success", "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619", "status": "completed"}

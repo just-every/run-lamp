@@ -1,0 +1,46 @@
+{
+  "branch": "cloud/sd-lamp-c-f131-hist001-fix-1",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619",
+    "observed_at": "2026-11-12T18:43:54.868738+00:00",
+    "run_id": 43280012619,
+    "status": "completed"
+  },
+  "clause_status_changes": [],
+  "contract_status_counts_after": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "contract_status_counts_before": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "f131_test_files_unchanged": true,
+  "head": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+  "identity_audit": "product-identity-audit.log",
+  "new_task_commits": [
+    "d23151fb5275aebc3365a4fd9b6110767bac55df"
+  ],
+  "outcome": "READY",
+  "parents": [
+    "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+    "7bfb459185882497098b4fed00155f248874ce81"
+  ],
+  "pr": {
+    "base": "main",
+    "head": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+    "html_url": "https://github.com/just-every/run-lamp/pull/346",
+    "number": 346,
+    "state": "open"
+  },
+  "product_push": "succeeded on first guard attempt",
+  "push_log": "product-push.log",
+  "recorded_at": "2026-11-12T18:28:10.393384+00:00",
+  "repository": "just-every/run-lamp",
+  "tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9",
+  "working_tree_clean": true
+}

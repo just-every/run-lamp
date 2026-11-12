@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+    "tests/e2e/public-contract.test.mjs"
+  ],
+  "exit_code": 0,
+  "finished_at": "2026-11-12T18:08:45Z",
+  "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+  "log": "candidate-node22-hist001.log",
+  "name": "candidate-node22-hist001",
+  "started_at": "2026-11-12T18:08:27Z"
+}

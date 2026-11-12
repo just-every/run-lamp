@@ -1,0 +1,52 @@
+{
+  "head": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+  "observations": [
+    {
+      "discovery": {
+        "total_count": 1,
+        "workflow_runs": [
+          {
+            "conclusion": null,
+            "event": "push",
+            "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+            "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619",
+            "id": 43280012619,
+            "status": "in_progress"
+          }
+        ]
+      },
+      "observed_at": "2026-11-12T18:27:43.743154+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619",
+      "observed_at": "2026-11-12T18:32:45.410692+00:00",
+      "run_id": 43280012619,
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619",
+      "observed_at": "2026-11-12T18:37:47.003096+00:00",
+      "run_id": 43280012619,
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43280012619",
+      "observed_at": "2026-11-12T18:43:54.868738+00:00",
+      "run_id": 43280012619,
+      "status": "completed"
+    }
+  ],
+  "repository": "just-every/run-lamp",
+  "watcher_resumptions": [
+    {
+      "observed_at": "2026-11-12T18:43:54.277530+00:00",
+      "reason": "Environment transition stopped the original watcher; confirmed its process was defunct. Resume the same run without rediscovery."
+    }
+  ]
+}

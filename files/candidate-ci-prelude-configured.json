@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^(HIST-008|PAGE-005|UPTIME-003|HIST-001) \u2014",
+    "tests/e2e/public-contract.test.mjs"
+  ],
+  "exit_code": 0,
+  "finished_at": "2026-11-12T18:11:19Z",
+  "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+  "log": "candidate-ci-prelude-configured.log",
+  "name": "candidate-ci-prelude-configured",
+  "started_at": "2026-11-12T18:10:27Z"
+}

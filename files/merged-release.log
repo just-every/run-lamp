@@ -1,0 +1,13 @@
+UTC start: 2026-11-12T18:13:24Z
+Product SHA: d251b52a5f987cfa19cee75c5c7991e8e6bb5437
+Command: pnpm validate:release
+
+
+> lamp@1.11.13 validate:release /home/agent/rer-consolidation/work/sd-lamp-c-f131-hist001-fix-1/run-lamp
+> node scripts/validate-release.mjs
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.13.
+
+UTC end: 2026-11-12T18:13:25Z
+Exit: 0

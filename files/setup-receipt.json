@@ -1,0 +1,10 @@
+{
+  "hooks": "fleet cloud commit hook installed after clone and after dependency setup; original repository hooks preserved",
+  "launcher_refresh_exit_code": 0,
+  "private_setup_output": "Not selected for public evidence; no environment dump or private sign-in material is included.",
+  "recorded_at": "2026-11-12T18:17:46.302221+00:00",
+  "setup_command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+  "setup_exit_code": 0,
+  "setup_result": "Owner and page are ready; local setup completed successfully",
+  "toolchain": "pnpm 10.12.4; later test shells explicitly selected project-installed Node 22.20.0"
+}

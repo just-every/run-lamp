@@ -1,0 +1,299 @@
+{
+  "checks": [
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:06:05Z",
+      "head": "7bfb459185882497098b4fed00155f248874ce81",
+      "log": "main-hist001.log",
+      "log_sha256": "27559b7f3345da5a8423cd1e7a02a2c825aa92298f1a800a54cb6e9323477ddd",
+      "name": "main-hist001",
+      "started_at": "2026-11-12T18:05:46Z"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:08:03Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "candidate-before-hist001.log",
+      "log_sha256": "4fdd40c2af1b061c1cbb190d9979118f48ef5c7c38d0a1414ab976d5fca0a95b",
+      "name": "candidate-before-hist001",
+      "started_at": "2026-11-12T18:07:41Z"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:08:45Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "candidate-node22-hist001.log",
+      "log_sha256": "f3fc4717022ba3761b4528c0da4541ebaed1288238b73bca8272113d6eef72f4",
+      "name": "candidate-node22-hist001",
+      "started_at": "2026-11-12T18:08:27Z"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^(HIST-008|PAGE-005|UPTIME-003|HIST-001) \u2014",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 1,
+      "finished_at": "2026-11-12T18:10:16Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "candidate-ci-prelude.log",
+      "log_sha256": "bf82596f7bf6b5645b132ce29e344af605f154423515494906982594ea0167ae",
+      "name": "candidate-ci-prelude",
+      "started_at": "2026-11-12T18:09:24Z"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^(HIST-008|PAGE-005|UPTIME-003|HIST-001) \u2014",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:11:19Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "candidate-ci-prelude-configured.log",
+      "log_sha256": "cc0a22ee72e3c48473d8b720edf5d117306d29bb2b9c8d8beaefc6edba316053",
+      "name": "candidate-ci-prelude-configured",
+      "started_at": "2026-11-12T18:10:27Z"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:11:49Z",
+      "head": "7bfb459185882497098b4fed00155f248874ce81",
+      "log": "main-node22-hist001.log",
+      "log_sha256": "d4c224552f93c3aaf9ea84e481af9d5ff469589b57ed911d18e50640fdba9cce",
+      "name": "main-node22-hist001",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:11:31Z"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+        "tests/e2e/public-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:13:10Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-after-hist001.log",
+      "log_sha256": "34773e0bc5aca82463f33ca06447d2a5570c66c9ab0d6b3ccb66b5bd204e5fae",
+      "name": "merged-after-hist001",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:49Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "write"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:12:15Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-contract-write.log",
+      "log_sha256": "bb02c4a2633b1545f618aaedd253b632103cb878a7149e32d85e4e6c5b922418",
+      "name": "merged-contract-write",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:15Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:12:16Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-contract-check.log",
+      "log_sha256": "f0ea56782b66adc2d4c8536d991737238692f22d2d99b4dd1e40e5edc6590b2f",
+      "name": "merged-contract-check",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:15Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:12:16Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-source-lock.log",
+      "log_sha256": "e5a1433d69e5d2b882c12befb6ab252ada65203c28bb624168999e9486d67218",
+      "name": "merged-source-lock",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:16Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:12:17Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-source-check.log",
+      "log_sha256": "aa94a6ee071be8da6ff248a2142f3648b3d86c311b230959c267107e419b4c8d",
+      "name": "merged-source-check",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:16Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:12:41Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-typecheck.log",
+      "log_sha256": "18018dbbc3d32d45f285644e2ab930d55fd4f390540dfb05f4cefa5a2ae5c420",
+      "name": "merged-typecheck",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:17Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "pnpm",
+        "check:syntax"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:12:55Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-syntax.log",
+      "log_sha256": "b87fb97800bfa694229422178c9ddb5ad145c5e2a7d6f852d1c3e91d29390a28",
+      "name": "merged-syntax",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:12:41Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": null,
+      "command": [
+        "pnpm",
+        "source:copies"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:13:24Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-source-copies.log",
+      "log_sha256": "9f18206841d150bcb23b08f4293efadb74d889f2870678d9107e0efa6bd6a1f4",
+      "name": "merged-source-copies",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:13:23Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": null,
+      "command": [
+        "pnpm",
+        "validate:release"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:13:25Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-release.log",
+      "log_sha256": "ac28531c0bb3c394ce52728a93897f039f445b3870f9fa6e6f90c6059cbff1f6",
+      "name": "merged-release",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:13:24Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": null,
+      "command": [
+        "pnpm",
+        "verify:visual:source"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:13:26Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-visual-source.log",
+      "log_sha256": "0ffd10d74aa7d84ee05501b6e1ffef00dda5c4e430126b9cd19556a1c53b93cf",
+      "name": "merged-visual-source",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:13:25Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    },
+    {
+      "chromium_executable": "/usr/bin/chromium",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-name-pattern=^(SUB-019|INCIDENT-001 INCIDENT-002|MAINT-001)",
+        "tests/e2e/public-contract.test.mjs",
+        "tests/e2e/publishing-contract.test.mjs",
+        "tests/e2e/delivery-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:26:41Z",
+      "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+      "log": "merged-f131-touched.log",
+      "log_sha256": "0ecefb52244a23a2b0f1bd21da26b38cbec120273b2da6aa524a20d9e1084934",
+      "name": "merged-f131-touched",
+      "node_version": "v22.20.0",
+      "started_at": "2026-11-12T18:13:10Z",
+      "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+    }
+  ],
+  "final_product_head": "d23151fb5275aebc3365a4fd9b6110767bac55df",
+  "final_product_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9",
+  "final_touched_test_counts": {
+    "fail": 0,
+    "pass": 4,
+    "tests": 4
+  },
+  "recorded_at": "2026-11-12T18:45:02.239361+00:00",
+  "touched_suite_pending": false
+}

@@ -1,0 +1,77 @@
+{
+  "api_call_budget": 10,
+  "api_calls_used": 6,
+  "calls": [
+    {
+      "command": "gh run view 43270958170 --repo just-every/run-lamp --job 131367787538 --log-failed",
+      "exit_code": 0,
+      "output": "refused-verify-composer.log"
+    },
+    {
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-lamp/actions/runs?head_sha=d23151fb5275aebc3365a4fd9b6110767bac55df&per_page=100",
+        "--jq",
+        "{workflow_runs:[.workflow_runs[]|select(.name==\"Verify\")|{id,status,conclusion,head_sha,html_url,event}],total_count}"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:27:43.736538+00:00",
+      "started_at": "2026-11-12T18:27:43.200700+00:00"
+    },
+    {
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43280012619",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:32:45.402744+00:00",
+      "started_at": "2026-11-12T18:32:44.777859+00:00"
+    },
+    {
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43280012619",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:37:46.996376+00:00",
+      "started_at": "2026-11-12T18:37:46.455155+00:00"
+    },
+    {
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43280012619",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:43:54.862037+00:00",
+      "started_at": "2026-11-12T18:43:54.314905+00:00"
+    },
+    {
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-lamp/pulls",
+        "--method",
+        "POST",
+        "--input",
+        "/tmp/lamp-pr.json",
+        "--jq",
+        "{number,html_url,head:.head.sha,base:.base.ref,state}"
+      ],
+      "exit_code": 0,
+      "finished_at": "2026-11-12T18:44:10.355545+00:00",
+      "started_at": "2026-11-12T18:44:08.133202+00:00"
+    }
+  ],
+  "recorded_at": "2026-11-12T18:14:05.810959+00:00",
+  "repository": "just-every/run-lamp"
+}

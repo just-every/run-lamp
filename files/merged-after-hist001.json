@@ -1,0 +1,18 @@
+{
+  "chromium_executable": "/usr/bin/chromium",
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory$",
+    "tests/e2e/public-contract.test.mjs"
+  ],
+  "exit_code": 0,
+  "finished_at": "2026-11-12T18:13:10Z",
+  "head": "d251b52a5f987cfa19cee75c5c7991e8e6bb5437",
+  "log": "merged-after-hist001.log",
+  "name": "merged-after-hist001",
+  "node_version": "v22.20.0",
+  "started_at": "2026-11-12T18:12:49Z",
+  "tested_index_tree": "4d3b5310cb16aeaf003f208d799dbfd5af56a4f9"
+}
