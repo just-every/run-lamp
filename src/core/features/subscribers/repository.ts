@@ -248,7 +248,7 @@ export function createSubscriberRepository(binding: D1Database): SubscriberRepos
     },
     async recordConfirmationSendIfAllowed(emailHash, cutoff, now) {
       const result = await binding.prepare(
-        "INSERT INTO subscriber_confirmation_attempts (email_hash, last_sent_at, created_at, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(email_hash) DO UPDATE SET last_sent_at = excluded.last_sent_at, updated_at = excluded.updated_at WHERE subscriber_confirmation_attempts.last_sent_at < ?",
+        "INSERT INTO subscriber_confirmation_attempts (email_hash, last_sent_at, created_at, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT(email_hash) DO UPDATE SET last_sent_at = excluded.last_sent_at, updated_at = excluded.updated_at WHERE subscriber_confirmation_attempts.last_sent_at <= ?",
       ).bind(emailHash, now, now, now, cutoff).run();
       return result.meta.changes === 1;
     },
