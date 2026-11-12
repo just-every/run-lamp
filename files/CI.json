@@ -1,0 +1,45 @@
+{
+  "observed_at_utc": "2026-11-12T13:28:56.562306+00:00",
+  "github_api_calls": 3,
+  "candidate": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "d2812f4aee110ab6de04d4c7dffbb86d34239da9",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43227436804",
+      "id": 43227436804,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "integrated_main": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "708ff579db8ac27b05765f63e00a80f8832bebba",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43226178741",
+      "id": 43226178741,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "708ff579db8ac27b05765f63e00a80f8832bebba",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43226178483",
+      "id": 43226178483,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "708ff579db8ac27b05765f63e00a80f8832bebba",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43223174864",
+      "id": 43223174864,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "watch_policy": "one watcher; no further observation of the candidate run sooner than 300 seconds; no workflow dispatch or rerun"
+}

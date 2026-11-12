@@ -1,0 +1,157 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-c-f128",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f128",
+  "head": "d2812f4aee110ab6de04d4c7dffbb86d34239da9",
+  "integrated_main": "708ff579db8ac27b05765f63e00a80f8832bebba",
+  "shallow": "false",
+  "product_push": {
+    "status": "PUSH_OK",
+    "attempts": 1,
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-c-f128"
+  },
+  "test_run": {
+    "command": "node --test --test-concurrency=1 --test-name-pattern='owner reviews provider history|Subscriber consent, selected publication' tests/e2e/statuspage-import.test.mjs tests/e2e/delivery-contract.test.mjs",
+    "wrapper": "cloud_run perl -e 'alarm 1200; exec @ARGV' --",
+    "node": "22.20.0",
+    "exit": 0,
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "duration_ms": 584359.754947,
+    "files_unchanged_after_success": true,
+    "rebase_changed_relevant_code_or_tests": false
+  },
+  "source_hashes": {
+    "tests/e2e/helpers/subscriber-limits-flow.mjs": "546b66f392085427b50e38f673daf057fdcb93bb28ac889a4e372964277afe7c",
+    "tests/e2e/statuspage-import.test.mjs": "c4154ad2aef43cc5de590bf30e02fa904f47fb3ca3f3e9bb2e8f297d1e11ee24"
+  },
+  "checks": {
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    "syntax": {
+      "command": "node --check on each of the two touched modules",
+      "exit": 0
+    },
+    "profile": {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    "views": {
+      "write": "node src/base/contract-docs.mjs write",
+      "write_exit": 0,
+      "check": "node src/base/contract-docs.mjs check",
+      "check_exit": 0,
+      "changed_documents": 0,
+      "restored_from": "origin/main"
+    },
+    "source_lock": {
+      "write": "node scripts/edition-authoring/cli.mjs lock",
+      "write_exit": 0,
+      "check": "node scripts/edition-authoring/cli.mjs check",
+      "check_exit": 0
+    },
+    "migration_ledger": {
+      "command": null,
+      "reason": "No migration change"
+    },
+    "assertion_changes": {
+      "new_registrations": 0,
+      "removed_registrations": 0,
+      "weakened_assertions": 0
+    },
+    "counts_before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "counts_after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "initial_main_counts": {
+      "done": 59,
+      "partial": 130,
+      "missing": 55,
+      "total": 244
+    },
+    "integrated_main_change": "PAGE-019 was independently landed while this round ran; its newer status and generated documents were retained."
+  },
+  "ci": {
+    "observed_at_utc": "2026-11-12T13:28:56.562306+00:00",
+    "github_api_calls": 3,
+    "candidate": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "d2812f4aee110ab6de04d4c7dffbb86d34239da9",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43227436804",
+        "id": 43227436804,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "integrated_main": [
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "708ff579db8ac27b05765f63e00a80f8832bebba",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43226178741",
+        "id": 43226178741,
+        "name": "Verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "708ff579db8ac27b05765f63e00a80f8832bebba",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43226178483",
+        "id": 43226178483,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "708ff579db8ac27b05765f63e00a80f8832bebba",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43223174864",
+        "id": 43223174864,
+        "name": "Verify",
+        "status": "completed"
+      }
+    ],
+    "watch_policy": "one watcher; no further observation of the candidate run sooner than 300 seconds; no workflow dispatch or rerun"
+  },
+  "publication_scan": {
+    "head": "d2812f4aee110ab6de04d4c7dffbb86d34239da9",
+    "status": "NOT RUN in cloud; maintained Mac lander required",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "candidate_main_equality": false,
+  "candidate_run_site": null,
+  "pr": null,
+  "claim": {
+    "id": "SUB-023",
+    "status": "PARTIAL",
+    "points": [
+      1,
+      2,
+      4,
+      5
+    ],
+    "unproven_points": [
+      3
+    ]
+  },
+  "product_tree_clean": true
+}

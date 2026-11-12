@@ -1,0 +1,62 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+  ---
+  duration_ms: 355479.574572
+  type: 'test'
+  ...
+# PROBE SUB-017 Add form: email and webhook retain exact destinations, contact and components after reload; one confirmation each. CSV controls: silent review and apply, two selectable durable batches, isolated invitations and exported inventory. Screens captured at 1440 and 390.
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# PROBE MOVE-013 statuspage: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+# PROBE MOVE-013 statuspage: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+# PROBE MOVE-013 statuspage: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+# PROBE MOVE-013 betterstack: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+# PROBE MOVE-013 betterstack: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+# PROBE MOVE-013 betterstack: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+# PROBE MOVE-013 instatus: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+# PROBE MOVE-013 instatus: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+# PROBE MOVE-013 instatus: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+# SUB-019: opening native Worker fixture
+# SUB-019: native Worker signed in
+# SUB-019: created INC-3
+# SUB-019: published and delivered INC-3 Identified: Synthetic Lamp unrelated live update beside imported history.
+# SUB-019: published and delivered INC-1 Identified: Synthetic Lamp live update after Statuspage import.
+# SUB-019: published and delivered INC-1 Resolved: Synthetic Lamp delivered resolution after Statuspage import.
+# SUB-019: published and delivered INC-1 Investigating: Synthetic Lamp reopening after imported follow ended.
+# Subtest: SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+ok 2 - SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+  ---
+  duration_ms: 224826.663348
+  type: 'test'
+  ...
+# PROBE SUB-023 1: owner Move in review with 300 email rows and 100 free slots -> exact email excess 200, first 100 fit, final 200 refused with over-limit reason
+# PROBE SUB-023 2: apply the over-limit reviewed plan -> 409, every application table and complete outbound inventory unchanged
+# PROBE SUB-023 4: remove email, freshly review and apply -> completed; group, component, complete incident history, report, maintenance and template graph reconciled; existing subscribers and outbound work unchanged
+# PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 1 instatus: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 2: later Statuspage bundles naming owned records -> planned and applied as the catch-up: owned record with a new creation time listed as a conflict, unchanged records kept, corrected record replaced in place, one new component, silent, repeat stable, undo restores; reviewed new-only bundle -> one new component; other namespace stays distinct
+# PROBE MOVE-003 1 betterstack: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 1 instatus: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-014 4: native owner preview over populated templates -> complete existing contents and component rows unchanged
+# PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-014 1: reviewed owner import -> all three source names, identities, lifecycles, metadata and exact component claims reconciled
+# PROBE MOVE-014 2: native template readback -> exact body mapping and audience names both selected components
+# PROBE MOVE-014 5: native apply-template -> private composer fields and component state filled without publication
+# PROBE MOVE-014 3: oversized native template apply -> 409, operator shortening -> 200 with exact shortened details
+# PROBE MOVE-014 6: repeated reviewed import and preserve-conflicts undo -> no duplicates; exact edited template and both original complete component rows retained
+# PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+# PROBE MOVE-003 3: full Move in after setup history -> planned and applied as its catch-up: owner-edited incident listed as a conflict, history replaced in place, left-out component and subscribers added once, silent, repeat stable
+# PROBE MOVE-003 4: after undo kept an owner-edited record -> upload naming it refused with followable advice and no native change; leaving it out imports the rest afresh. Refusal: Some of these records stayed in Lamp when their import was undone, because they were changed here: Slow dashboard loads. Leave them out of the saved responses to import the rest.
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 584359.754947

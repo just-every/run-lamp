@@ -1,0 +1,57 @@
+{
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "node": "22.20.0",
+    "exit": 0
+  },
+  "syntax": {
+    "command": "node --check on each of the two touched modules",
+    "exit": 0
+  },
+  "profile": {
+    "command": "npx -y @runeditrun/rer check --profile first-party",
+    "exit": 0
+  },
+  "views": {
+    "write": "node src/base/contract-docs.mjs write",
+    "write_exit": 0,
+    "check": "node src/base/contract-docs.mjs check",
+    "check_exit": 0,
+    "changed_documents": 0,
+    "restored_from": "origin/main"
+  },
+  "source_lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "write_exit": 0,
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "check_exit": 0
+  },
+  "migration_ledger": {
+    "command": null,
+    "reason": "No migration change"
+  },
+  "assertion_changes": {
+    "new_registrations": 0,
+    "removed_registrations": 0,
+    "weakened_assertions": 0
+  },
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "initial_main_counts": {
+    "done": 59,
+    "partial": 130,
+    "missing": 55,
+    "total": 244
+  },
+  "integrated_main_change": "PAGE-019 was independently landed while this round ran; its newer status and generated documents were retained."
+}
