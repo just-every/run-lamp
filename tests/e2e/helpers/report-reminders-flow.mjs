@@ -65,6 +65,7 @@ export async function reportRemindersFlow(t) {
     };
     const majorCase = await createIncident("synthetic-lamp-12", "Major outage");
     const partialCase = await createIncident("synthetic-lamp-13", "Partially unavailable");
+    const minorCase = await createIncident("synthetic-lamp-14", "Degraded performance");
     await advanceClock(startedAt + 1000);
     const resolveIncident = async (incident, state) => {
       const saved = await api(`/api/app/incidents/${incident.id}/draft`, { method: "PUT", body: JSON.stringify({ lifecycle: "Resolved", affectedAudience: "Synthetic Lamp readers", customerImpact: "Requests were unavailable.", whatStillWorks: "", details: "Service has recovered.", nextUpdateAt: null }) });
@@ -79,6 +80,7 @@ export async function reportRemindersFlow(t) {
     };
     const incident = await resolveIncident(majorCase, "Major outage");
     const partial = await resolveIncident(partialCase, "Partially unavailable");
+    const minor = await resolveIncident(minorCase, "Degraded performance");
     const resolvedAt = Date.parse(incident.resolvedAt);
     assert.equal(partial.resolvedAt, incident.resolvedAt, "both severe cases resolve at the controlled instant");
     const DAY = 86_400_000;
@@ -88,8 +90,16 @@ export async function reportRemindersFlow(t) {
       assert.equal(owing.status, 200, owing.text);
       const overview = await api("/api/app/overview/follow-ups");
       assert.equal(overview.status, 200, overview.text);
+      assert.ok(!owing.body.incidentIds.includes(minor.id), "a minor incident never owes a report");
+      const optional = await api(`/api/app/incidents/${minor.id}/report`);
+      assert.equal(optional.status, 200, optional.text);
+      assert.equal(optional.body.owed, false, "the minor incident panel receives the same optional state as Reports");
+      assert.ok(!overview.body.followUps.some(row => row.id === `report:${minor.id}`));
       for (const record of [incident, partial]) {
         assert.equal(owing.body.incidentIds.includes(record.id), due, `${record.impact} report-due listing at the seven-day boundary`);
+        const panel = await api(`/api/app/incidents/${record.id}/report`);
+        assert.equal(panel.status, 200, panel.text);
+        assert.equal(panel.body.owed, due, "the incident panel and Reports share the seven-day policy result");
         const followUp = overview.body.followUps.find(row => row.id === `report:${record.id}`);
         assert.ok(followUp, `${record.impact} has an Overview report obligation`);
         assert.equal(followUp.dueAt, dueAt);
@@ -108,6 +118,7 @@ export async function reportRemindersFlow(t) {
       assert.equal(overview.status, 200, overview.text);
       for (const record of records) {
         assert.ok(!owing.body.incidentIds.includes(record.id), "published or waived reports are absent from the report-due listing");
+        assert.equal((await api(`/api/app/incidents/${record.id}/report`)).body.owed, false, "the incident panel also clears the report obligation after publication or waiver");
         for (const kind of ["report", "report-reminder"]) assert.ok(!overview.body.followUps.some(row => row.id === `${kind}:${record.id}`), "publication or waiver removes the Overview obligation");
       }
     };
@@ -208,6 +219,7 @@ export async function reportRemindersFlow(t) {
     assert.deepEqual(storedWaiver, waived.body.waiver);
     assert.ok(Date.parse(storedWaiver.createdAt) >= waiverBefore && Date.parse(storedWaiver.createdAt) <= waiverAfter, "stored waiver time falls inside independently controlled request bounds");
     await tick(resolvedAt + 21 * DAY);
+    await assertReminders(minor, 0);
     await assertReminders(incident, 2);
     assert.equal(reportMail(partial).length, 1, "published report stays silent in later weeks");
     assert.ok(!(await api("/api/app/reports/owing")).body.incidentIds.includes(incident.id));

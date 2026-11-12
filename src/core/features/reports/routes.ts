@@ -13,8 +13,8 @@ export function registerReportRoutes(app: Hono<AppEnv>, service: ReportsService)
   app.get("/api/app/incidents/:incidentId/report", async (context) => {
     const incidentId = ulidSchema.safeParse(context.req.param("incidentId"));
     if (!incidentId.success) return context.json({ error: "Invalid incident identifier." }, 400);
-    const report = await service.get(incidentId.data);
-    return context.json({ waiver: await service.waiver(incidentId.data), report, review: report ? reportReview(report) : null });
+    const [report, waiver, owing] = await Promise.all([service.get(incidentId.data), service.waiver(incidentId.data), service.owing()]);
+    return context.json({ waiver, report, review: report ? reportReview(report) : null, owed: owing.includes(incidentId.data) });
   });
   app.post("/api/app/incidents/:incidentId/report/waive", async context => {
     const id=ulidSchema.safeParse(context.req.param("incidentId"));
