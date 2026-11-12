@@ -1,0 +1,162 @@
+{
+  "destination": "/tmp/lamp-evidence-return/work/main-lamp-incident-corrections-1/reports/just-every/run-lamp",
+  "files": [
+    {
+      "blob": "e96c5513de6f1c9cbb7e494fcbc34d03b697dc89",
+      "bytes": 10294,
+      "path": "REPORT.md",
+      "sha256": "8ae712851d8eb86816a714cdc01d99026572518f5223fbcc896d8e48c262ea4f"
+    },
+    {
+      "blob": "90bdecb8d26504f0e33dd58e568a5be6c32a0382",
+      "bytes": 5305,
+      "path": "browser-journey.log",
+      "sha256": "b78af1a122913675fd68d6902da03180605da73c378207a6ec9c19cb4fe0e320"
+    },
+    {
+      "blob": "3100a242b09b98be62e01689d75ee6a463aace8e",
+      "bytes": 2720,
+      "path": "ci-receipt.json",
+      "sha256": "77679328e11bfa55535bccc5197801288df022ce878f8d7f0fb669c92472b89e"
+    },
+    {
+      "blob": "759e116e727cc32ba2df96724a7d7df37d418fa4",
+      "bytes": 640,
+      "path": "claims.txt",
+      "sha256": "829a15c43c1d23029354c4202c5aaf487ad5d61ae0e5b19000025b0a61ef7ee7"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-docs.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "05408ea700369240effc34c48899d5d64da85d12",
+      "bytes": 176,
+      "path": "diff-safety.json",
+      "sha256": "4da1c8769180072557167b4f780511cdeba18f8f691e08841a215a4e6075337b"
+    },
+    {
+      "blob": "02f664697172495570bcf2432d5987da3a02d510",
+      "bytes": 4085,
+      "path": "local-receipt.json",
+      "sha256": "81b0ae6db4b91b24f9bc2c4926dbe094417ec2b161bc6bf98b689df513892e28"
+    },
+    {
+      "blob": "70a447ada9353b4b89ca4204539b68b3e14e9743",
+      "bytes": 6362,
+      "path": "panel-assertion-attempt.log",
+      "sha256": "fc2d562bb2adbd65e06860b211d9dd134fe0f7c6529cd3a47876f9670ea8d132"
+    },
+    {
+      "blob": "e89852d61896d2a2261aa572694a908a2c2c071e",
+      "bytes": 144,
+      "path": "pr-receipt.json",
+      "sha256": "cf4b752cff216a9d6ce1e7694562fc26c4b86d75956392b78e27c89c8612db40"
+    },
+    {
+      "blob": "7333b66d1d894c6d26e5ea307a46b1dfd93d7a6d",
+      "bytes": 1062,
+      "path": "product-push.log",
+      "sha256": "f498489bb3a20819e8e585712f64f403ea955a8a79a79f1847cf75e3be189456"
+    },
+    {
+      "blob": "9c466f3095607887f08126773ca4b22021f0fb5b",
+      "bytes": 616,
+      "path": "product-receipt.json",
+      "sha256": "fc74ac7e6c94882d22c1336f71b98d3d37927417050822cdd1a742da9c180ebb"
+    },
+    {
+      "blob": "94084c1af8cb4da863de2783073cf74fd4d88e03",
+      "bytes": 5474,
+      "path": "reproduction.log",
+      "sha256": "8197544ac39fd3f5f02302f683be4b44d1dbe76b6757542c3c6c68a0fdf2347d"
+    },
+    {
+      "blob": "373436f26350a271770fdcc024096f2979d149aa",
+      "bytes": 221606,
+      "path": "screens/active-correction-operator-1440.png",
+      "sha256": "852bccdef5f45ec25b0af199bbe50285b4596a9ff7c42b665fd579da988fb5cb"
+    },
+    {
+      "blob": "18fdfc2472bf5afc6a137c850e4cd9d9b68cead2",
+      "bytes": 188348,
+      "path": "screens/active-correction-operator-390.png",
+      "sha256": "520819f133e0d10a6135776de357c9fe6525a8360d25e2f49c55a9b04154035a"
+    },
+    {
+      "blob": "975df2cc0385372bc4214426e91620f4fe226afb",
+      "bytes": 486787,
+      "path": "screens/active-correction-public-1440.png",
+      "sha256": "17a1868c438d07cccdaf08cb55444775785ecc920b5a5aef2680093dc65af319"
+    },
+    {
+      "blob": "c750ad9aebac8b537935fb8b291d5cd974ac15f7",
+      "bytes": 363534,
+      "path": "screens/active-correction-public-390.png",
+      "sha256": "472a53674e7515f7ed65a9e8aedec52f290475f62de060370628e8c8d5741767"
+    },
+    {
+      "blob": "7011f85c4379c46a4deaae65553cb6a6fdc4d704",
+      "bytes": 461598,
+      "path": "screens/corrections-permalink-1440.png",
+      "sha256": "6396db868d942146a25d3eadade38d8c9179598ebb9f13062e062e6b9d50ce24"
+    },
+    {
+      "blob": "0542dd680a9f2b701032219e87b3769d59a5ba96",
+      "bytes": 277456,
+      "path": "screens/corrections-permalink-390.png",
+      "sha256": "4816e4d846f0d75871b28346c0bb2fc6eb750b3d7fc4a119a213e104f1b81bd5"
+    },
+    {
+      "blob": "16cbd8662cfc5a6545190223cc27b657ba551f3d",
+      "bytes": 214276,
+      "path": "screens/resolved-correction-operator-1440.png",
+      "sha256": "01a754fab6be77ef46264fcb3a10b078f9cc4861d4f398eb58b698e1fc93387f"
+    },
+    {
+      "blob": "d259026b289f7d183c72391dd200244360ac6c79",
+      "bytes": 182447,
+      "path": "screens/resolved-correction-operator-390.png",
+      "sha256": "a2cb24993664462c2ffc50f480a4c4c2e3d905d4ffc5d6285fe86397b40fc6f7"
+    },
+    {
+      "blob": "f8f9c4f1974e67874d51c8bf9fbc307da7585c53",
+      "bytes": 375128,
+      "path": "screens/resolved-correction-public-1440.png",
+      "sha256": "9761b531e664990aaf9ce89fc2847dde3aefeb5af1e8c8fc8d13c9d339074ef3"
+    },
+    {
+      "blob": "1393b829d00986f452f32f3138c8eaa80990cc12",
+      "bytes": 245797,
+      "path": "screens/resolved-correction-public-390.png",
+      "sha256": "6acdf1e5094b043e13779ea8bff1a30ca8db3f2df857b1cf9a5ab435ceaee53e"
+    },
+    {
+      "blob": "204bb81072c6f68d8dbc12c613383362ff507375",
+      "bytes": 393866,
+      "path": "source-lock-check.json",
+      "sha256": "6addef5e4b2fab05112195eb1a9a00f7b5b804ffd6854ede60d7044ced301293"
+    },
+    {
+      "blob": "dfa341cd7c2d44a6bbc745dddbfcd6347d159633",
+      "bytes": 168,
+      "path": "test-inventory.log",
+      "sha256": "c276101290005e412cef84447f4d45d23ac395b3be02cfaf9605c75ec5bff510"
+    },
+    {
+      "blob": "6f9323eed6e38167ba3ed455a35af5f01163610e",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "d97fb56a0935047376eadb6ef15aa15d35898b684e1c92c62c90f6a627a1b271"
+    }
+  ],
+  "head": "76b90ddfc510a8a9c00ce188782055a51b24e730",
+  "manifest_sha256": "2560b7bab7f9672e19b6fb432cb38f5d21c3bda0ab77d4daa5317fced2e87f66",
+  "product_branch": "cloud/main-lamp-incident-corrections-1",
+  "product_head": "56dc48869caa37051e382e58e348842c41abc593",
+  "ref": "refs/heads/evidence/main-lamp-incident-corrections-1",
+  "repository": "just-every/run-lamp",
+  "status": "restored"
+}
