@@ -1,3 +1,4 @@
+import { admitAttributionOperator, assertActorAudit } from './operator-attribution.mjs';
 import { existsSync } from 'node:fs';
 import { chromium } from "playwright";
 import { AxeBuilder } from "@axe-core/playwright";
@@ -36,7 +37,7 @@ export async function subscriberAddFlow() {
   const fixture = await openSubscriberManagementFixture({ workerEntry: 'tests/e2e/helpers/status-journey.worker.ts' });
   const { api, post, list, messagesFor } = fixture;
   try {
-    const owner = (await api("/api/app/session")).body.operator;
+    const { actor: owner } = await admitAttributionOperator(fixture, 'subscriber-creator');
     const first = await fixture.createComponent("Synthetic Lamp first selected API");
     const second = await fixture.createComponent("Synthetic Lamp second selected API");
     const third = await fixture.createComponent("Synthetic Lamp unselected API");
@@ -167,8 +168,30 @@ export async function subscriberAddFlow() {
 
 
     await subscriberQueuedUnsubscribe({ fixture, component: first, subscriberId: id, email });
+    const { creator: subscriberCreator, actor: eraser } = await admitAttributionOperator(fixture, 'erasure-actor');
+    assert.equal(subscriberCreator.id, owner.id);
+    const beforeErasure = await list();
+    const deletionAudits = async () => (await fixture.db.prepare("SELECT * FROM audit_entries WHERE entity_type = 'subscriber' AND action = 'deleted' ORDER BY id").all()).results;
+    const auditsBeforeErasure = await deletionAudits();
+    const refusedErasure = await fixture.raw(`/api/app/subscribers/${id}`, { method: "DELETE", headers: { Origin: fixture.appOrigin } });
+    assert.equal(refusedErasure.status, 401);
+    assert.deepEqual(await list(), beforeErasure, "anonymous erasure changes no subscriber");
+    assert.deepEqual(await deletionAudits(), auditsBeforeErasure, "anonymous erasure cannot write a successful actor audit");
     assert.equal((await api(`/api/app/subscribers/${id}`, { method: "DELETE" })).status, 204);
     assert.equal((await api(`/api/app/subscribers/${webhook.body.subscriber.id}`, { method: "DELETE" })).status, 204);
+    for (const erasedId of [id, webhook.body.subscriber.id]) {
+      const deletion = await assertActorAudit(fixture, 'subscriber', erasedId, 'deleted', eraser);
+      assert.equal(deletion.payload_json, '{}', 'erasure attribution stores no subscriber identity');
+      const erased = (await list()).find(row => row.id === erasedId);
+      assert.equal(erased.destination, `deleted:${erasedId}`);
+      assert.equal(erased.state, 'deactivated');
+      assert.equal(erased.deactivatedAt, deletion.created_at, 'the erasure fact and actor audit share their exact instant');
+      assert.equal(erased.deactivationReason, 'deleted by operator');
+      const retainedAudits = await deletionAudits();
+      assert.equal((await api(`/api/app/subscribers/${erasedId}`, { method: "DELETE" })).status, 204);
+      await assertActorAudit(fixture, 'subscriber', erasedId, 'deleted', eraser);
+      assert.deepEqual(await deletionAudits(), retainedAudits, 'repeated deletion preserves the original actor and audit');
+    }
     const erasedExport = await fixture.request("/api/app/subscribers.csv");
     assert.equal(erasedExport.status, 200);
     const erasedText = await erasedExport.text();

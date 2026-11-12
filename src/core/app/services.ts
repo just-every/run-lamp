@@ -59,6 +59,14 @@ import { createServerExtensionMount } from "./extensions/server";
 export function createAppServices(bindings: AppBindings, blobs: BlobStore, execution?: MailExecution) {
   const extensions = createServerExtensionMount();
   const { sender: mail, local } = createAppMailTransport(bindings, extensions.adapters["mail.sender.v1"], execution);
+  // Report the composed sender's availability, including local suppression,
+  // rather than treating a provider name in the environment as a working sender.
+  const mailConfiguration = {
+    local: local && bindings.RER_DEMO !== '1',
+    primaryProvider: mail.configured && !(local && bindings.RER_DEMO !== '1')
+      ? extensions.adapters["mail.sender.v1"] ? 'custom' : bindings.MAIL_PROVIDER || 'resend'
+      : null,
+  };
   const snapshotOrigin = bindings.LAMP_LOCAL_ORIGIN ? publicPageOrigin(bindings.LAMP_LOCAL_ORIGIN, bindings.LAMP_PAGE_HOST) : undefined;
   const publicSnapshots = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, twilioConfigured({accountSid:bindings.TWILIO_ACCOUNT_SID,authToken:bindings.TWILIO_AUTH_TOKEN,fromNumber:bindings.TWILIO_FROM_NUMBER,messagingService:bindings.TWILIO_MESSAGING_SERVICE}) && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET) && bindings.EFFECTS_PAUSED !== "1" && !outboundUnavailable(bindings,"SMS messages")), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
   const metrics = createMetricsService(bindings.DB, async()=>{await publicSnapshots.retryPendingBuild();}, { webhookSecret: bindings.WEBHOOK_SIGNING_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1" });
@@ -280,7 +288,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   });
 
   const chatDesk = createChatDeskService(bindings, incidents, components, async () => { const settings = await pageSettings.get(); if (!settings) throw new Error("Page settings are not configured."); return { blockedTerms: settings.wordingBlockedTerms, friendlyLength: settings.wordingFriendlyLength }; });
-  return { dependencies, alertRules, social, trafficStorage, trafficAlerts, sms, metrics, teamsSubscriptions, chatDesk, auth, signInAuth, signIn, operators, availabilityReports, communicationPerformance, incidentImpact, pageSettings, pageExport, components, componentCatalogue, incidents, maintenance, subscribers, deliveries, reports, intake, briefs, ai, overview, website, updateReminders, publicSnapshots, statuspageImport, channels };
+  return { mailConfiguration, dependencies, alertRules, social, trafficStorage, trafficAlerts, sms, metrics, teamsSubscriptions, chatDesk, auth, signInAuth, signIn, operators, availabilityReports, communicationPerformance, incidentImpact, pageSettings, pageExport, components, componentCatalogue, incidents, maintenance, subscribers, deliveries, reports, intake, briefs, ai, overview, website, updateReminders, publicSnapshots, statuspageImport, channels };
 }
 
 export type AppServices = ReturnType<typeof createAppServices>;

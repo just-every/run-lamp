@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { expect } from '@playwright/test';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
+import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
 
 /** Real local public/operator doors and silent development mail; no transport
  * fake and no direct subscriber-state mutation participates in this journey. */
@@ -37,6 +38,21 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     return api(`/api/app/incidents/${incident.id}/publish`, { channels });
   };
   try {
+    // The actual local sender suppresses delivery even with a provider name in
+    // the development bindings. Settings must expose that same mode, with no
+    // active primary, before the public journey produces suppressed records.
+    const mailSettings = await api('/api/app/mail-settings');
+    assert.equal(mailSettings.local, true);
+    assert.equal(mailSettings.primaryProvider, null);
+    await page.goto(origin + '/app/settings#notifications'); await operatorHydrated(page);
+    const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
+    await expect(emailStatus).toHaveAttribute('data-mail-mode', 'local');
+    assert.equal(await emailStatus.getAttribute('data-provider'), null);
+    const smsSettings = await api('/api/app/sms/settings');
+    await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
+      .toHaveAttribute('data-sms-configured', String(smsSettings.configured));
+    await screens('local-notification-settings');
+    await providerSettingsGuideFlow(page);
     await api('/api/app/prelaunch', { enabled: false }, 'PATCH');
     await page.goto(publicOrigin + '/');
     const form = page.locator('form[action="/subscribe"]');
