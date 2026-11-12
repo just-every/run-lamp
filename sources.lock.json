@@ -8128,7 +8128,7 @@
       "executable": false
     },
     "tests/e2e/helpers/postmortem-template-import-flow.mjs": {
-      "sha256": "a408259db40f8b6b456386b7f80495ea556a592deb04d338272248f3d01c0593",
+      "sha256": "b7ff120d4a8c28f8d0e63306793e5c8650b44efb48c64e4215e7c7d10dfb3bf6",
       "executable": false
     },
     "tests/e2e/helpers/prelaunch-flow.mjs": {
@@ -8444,7 +8444,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "feb11fda427d9fda0c5d8d5c5d64f23e39a218265c3e00d41a9166f7867c80a6",
+      "sha256": "14466901cae0a2af4111388e9a08827ca216162c3f6e32d38590f946b34b0d8c",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
