@@ -26,7 +26,9 @@ export function continuityFiles(original, { oversized = false } = {}) {
     id: `continuitytemplate${index}`, name: `Continuity template ${index + 1}`, title: `Private imported title ${index + 1}`,
     body: `${templateText} ${index + 1}\n\n${oversized && index === 2 ? largeDetails : `Follow-up details ${index + 1}.`}`,
     group_id: group.id, group, update_status: ["investigating", "identified", "monitoring"][index], should_send_notifications: index === 0,
-    components: [{ id: components[index % components.length].id, status: ["degraded_performance", "partial_outage", "major_outage"][index] }],
+    components: index === 2
+      ? [{ id: components[1].id, status: "partial_outage" }, { id: components[0].id, status: "major_outage" }]
+      : [{ id: components[index].id, status: ["degraded_performance", "partial_outage"][index] }],
   }))) });
   return files;
 }
@@ -40,16 +42,47 @@ export function assertContinuityCounts(report) {
   assert.equal(report.counts.template.imported + report.counts.template.changed, 3);
 }
 
-export async function postmortemTemplateImportFlow({ api, request, importAll, moveIn, original, publicOrigin, preserveEdits = false, fetcher = globalThis.fetch }) {
+const byId = rows => [...rows].sort((a, b) => a.id.localeCompare(b.id));
+const templateInventory = templates => byId(templates.map(row => ({ ...row, components: byId(row.components) })));
+const templateItems = report => report.items.filter(row => row.kind === "template").sort((a, b) => a.sourceId.localeCompare(b.sourceId));
+
+export async function postmortemTemplateImportFlow({ api, request, importAll, moveIn, original, publicOrigin, runtime, t, preserveEdits = false, fetcher = globalThis.fetch }) {
   const fetch = fetcher;
   const files = continuityFiles(original, { oversized: preserveEdits });
-  const templatesBefore = (await api("/api/app/incident-templates")).body.templates.length;
+  const nativeComponents = (await api("/api/app/components")).body.components;
+  assert.ok(nativeComponents.length > 0, "dry-run control uses an existing native component");
+  const control = await api("/api/app/incident-templates", {
+    name: "Owner template before import", lifecycle: "Identified", affectedAudience: "Existing customers",
+    customerImpact: "Existing impact", whatStillWorks: "Existing unaffected service", details: "Existing complete details",
+    nextUpdateOffsetMinutes: 45, channels: ["email", "webhook"],
+    resolvedUpdate: { affectedAudience: "Recovered customers", customerImpact: "Recovered impact", whatStillWorks: "Recovered service", details: "Recovered details" },
+    components: [{ componentId: nativeComponents[0].id, state: "Degraded performance", relationship: "Dependent" }],
+  });
+  assert.equal(control.status, 201, JSON.stringify(control.body));
+  const readTemplates = async () => {
+    const response = await api("/api/app/incident-templates");
+    assert.equal(response.status, 200, JSON.stringify(response.body));
+    return templateInventory(response.body.templates);
+  };
+  const baseline = await readTemplates();
+  const incidentsBefore = byId((await api("/api/app/incidents")).body.incidents);
+  const templatesBefore = baseline.length;
+  assert.ok(baseline.some(row => row.name === "Owner template before import" && row.components.length > 0));
+  const sourceTemplates = JSON.parse(files.find(file => file.name === "incident-templates.json").text);
+  const expectedSources = sourceTemplates.map(row => ({ sourceId: row.id, name: row.name })).sort((a, b) => a.sourceId.localeCompare(b.sourceId));
+  const expected = [
+    { name: "Continuity template 1", title: "Private imported title 1", lifecycle: "Investigating", affectedAudience: "Customers using Public API", shouldSendNotifications: true, customerImpact: `${templateText} 1`, details: "Follow-up details 1.", components: [{ componentName: "Public API", state: "Degraded performance", relationship: "Primary" }] },
+    { name: "Continuity template 2", title: "Private imported title 2", lifecycle: "Identified", affectedAudience: "Customers using Dashboard", shouldSendNotifications: false, customerImpact: `${templateText} 2`, details: "Follow-up details 2.", components: [{ componentName: "Dashboard", state: "Partially unavailable", relationship: "Primary" }] },
+    { name: "Continuity template 3", title: "Private imported title 3", lifecycle: "Monitoring", affectedAudience: "Customers using Dashboard, Public API", shouldSendNotifications: false, customerImpact: `${templateText} 3`, details: preserveEdits ? largeDetails : "Follow-up details 3.", components: [{ componentName: "Dashboard", state: "Partially unavailable", relationship: "Primary" }, { componentName: "Public API", state: "Major outage", relationship: "Primary" }] },
+  ];
   const preview = await moveIn.preview({ files });
   assert.equal(preview.status, 200, JSON.stringify(preview.body));
   assertContinuityCounts(preview.body.report);
   if (!preserveEdits) assert.equal(preview.body.report.counts.template.imported, 3);
   if (preserveEdits) assert.ok(preview.body.report.items.some(item => item.name === "Continuity template 3" && /details.*shorten|shorten.*details/iu.test(item.reason)));
-  assert.equal((await api("/api/app/incident-templates")).body.templates.length, templatesBefore, "dry run writes no templates");
+  assert.deepEqual(templateItems(preview.body.report).map(({ sourceId, name }) => ({ sourceId, name })), expectedSources, "review names every original source identity exactly once");
+  assert.deepEqual(await readTemplates(), baseline, "dry run preserves every existing template field and component");
+  t.diagnostic("PROBE MOVE-014 4: native owner preview over populated templates -> complete existing contents and component rows unchanged");
   // A refused child report must not discard its valid incident.
   const invalid = files.map(file => ({ ...file }));
   const incidentFile = invalid.find(file => file.name === "incidents.json");
@@ -58,9 +91,28 @@ export async function postmortemTemplateImportFlow({ api, request, importAll, mo
   assert.equal(refused.status, 200, JSON.stringify(refused.body));
   assert.equal(refused.body.report.counts.postmortem.rejected, 1);
   assert.equal(refused.body.report.counts.incident.rejected, 0);
-  const { result } = await importAll(files);
+  assert.deepEqual(await readTemplates(), baseline, "the refused report preview also preserves complete existing templates");
+  const { preview: reviewed, result } = await importAll(files);
   assertContinuityCounts(result.report);
+  const reviewedTemplates = templateItems(reviewed.report);
+  assert.deepEqual(reviewedTemplates, templateItems(preview.body.report));
+  assert.deepEqual(templateItems(result.report), reviewedTemplates, "apply reports exactly the reviewed template identities and dispositions");
+  assert.deepEqual(result.report.counts.template, reviewed.report.counts.template);
+  const reconciliation = await moveIn.door("statuspage", "reconcile", { planId: reviewed.planId });
+  assert.equal(reconciliation.status, 200, JSON.stringify(reconciliation.body));
+  assert.equal(reconciliation.body.ok, true, JSON.stringify(reconciliation.body));
+  assert.deepEqual(reconciliation.body.sourceIds.filter(row => row.kind === "template").map(({ sourceId }) => sourceId).sort(), expectedSources.map(row => row.sourceId));
+  assert.equal(reconciliation.body.counts.byKind.template, 3);
+  const verification = await api(`/api/app/statuspage-import/jobs/${result.job.id}/verification`);
+  assert.equal(verification.status, 200, JSON.stringify(verification.body));
+  assert.equal(verification.body.unexplainedDifferences, 0, "all applied contents and provenance match the persisted reviewed plan");
+  for (const manifest of Object.values(verification.body.reconciliation)) {
+    assert.equal(manifest.sourceCount, manifest.targetCount);
+    assert.equal(manifest.sourceManifestSha256, manifest.targetManifestSha256);
+  }
   const incidents = (await api("/api/app/incidents")).body.incidents;
+  const priorIncidentIds = new Set(incidentsBefore.map(row => row.id));
+  assert.deepEqual(byId(incidents.filter(row => priorIncidentIds.has(row.id))), incidentsBefore, "template import changes no pre-existing incident or publication");
   const redirect = await fetch(`${publicOrigin}/incidents/continuityi1`, { redirect: "manual" });
   const draftRedirect = await fetch(`${publicOrigin}/incidents/continuityi2`, { redirect: "manual" });
   assert.equal(redirect.status, 301);
@@ -75,8 +127,37 @@ export async function postmortemTemplateImportFlow({ api, request, importAll, mo
   assert.deepEqual([report.timeline, report.cause, report.remediation], ["", "", ""]);
   assert.equal((await readReport(draftIncident.id)).publishedAt, null);
   assert.ok((await readReport(draftIncident.id)).summary.includes(privateText));
-  const templates = (await api("/api/app/incident-templates")).body.templates.filter(row => row.name.startsWith("Continuity template"));
+  const afterImport = await readTemplates();
+  const existingIds = new Set(baseline.map(row => row.id));
+  assert.deepEqual(afterImport.filter(row => existingIds.has(row.id)), baseline, "apply preserves complete pre-existing templates");
+  const templates = afterImport.filter(row => !existingIds.has(row.id));
   assert.equal(templates.length, 3);
+  assert.equal(new Set(templates.map(row => row.id)).size, 3);
+  assert.deepEqual(templates.map(row => row.name).sort(), expectedSources.map(row => row.name).sort(), "no reviewed template omitted and no extra template applied");
+  const { results: provenance } = await runtime.db.prepare("SELECT json_extract(record_json, '$.sourceId') AS sourceId, target_id AS targetId FROM ik_provenance WHERE job_id = ? AND json_extract(record_json, '$.sourceKind') = 'template' AND target_kind = 'template' AND reversed = 0 ORDER BY sourceId, target_id").bind(result.job.id).all();
+  assert.deepEqual(provenance, expectedSources.map(source => ({ sourceId: source.sourceId, targetId: templates.find(row => row.name === source.name).id })), "each original source identity owns the native template with its original name");
+  const components = (await api("/api/app/components")).body.components;
+  const sortedClaims = rows => [...rows].sort((a, b) => a.componentName.localeCompare(b.componentName));
+  for (const wanted of expected) {
+    const actual = templates.find(row => row.name === wanted.name);
+    const { components: wantedComponents, ...metadata } = wanted;
+    assert.deepEqual(Object.fromEntries(Object.keys(metadata).map(key => [key, actual[key]])), metadata, wanted.name);
+    assert.equal(actual.folder, "Customer communication");
+    assert.equal(actual.nextUpdateOffsetMinutes, null);
+    assert.equal(actual.whatStillWorks, "");
+    assert.deepEqual(actual.fieldsToShorten, preserveEdits && wanted.name === "Continuity template 3" ? ["details"] : []);
+    const claims = wantedComponents.map(claim => {
+      const matches = components.filter(component => component.name === claim.componentName && !nativeComponents.some(before => before.id === component.id));
+      assert.equal(matches.length, 1, `one imported component for ${claim.componentName}`);
+      return { ...claim, componentId: matches[0].id };
+    });
+    assert.deepEqual(sortedClaims(actual.components.map(({ componentId, componentName, state, relationship }) => ({ componentId, componentName, state, relationship }))), sortedClaims(claims), `${wanted.name} keeps its complete component selection and states`);
+  }
+  t.diagnostic("PROBE MOVE-014 1: reviewed owner import -> all three source names, identities, lifecycles, metadata and exact component claims reconciled");
+  t.diagnostic("PROBE MOVE-014 2: native template readback -> exact body mapping and audience names both selected components");
+  const retainedTemplate = templates.find(row => row.name === "Continuity template 3");
+  const retainedComponents = structuredClone(retainedTemplate.components);
+  assert.equal(retainedComponents.length, 2, "undo starts with a nonempty complete multi-component selection");
   const first = templates.find(row => row.name === "Continuity template 1");
   assert.equal(first.folder, "Customer communication");
   assert.equal(first.title, "Private imported title 1");
@@ -104,14 +185,19 @@ export async function postmortemTemplateImportFlow({ api, request, importAll, mo
   const repeated = await moveIn.apply(unchanged.body);
   assert.equal(repeated.status, 200, JSON.stringify(repeated.body));
   assert.equal((await api("/api/app/incident-templates")).body.templates.length, templatesBefore + 3);
+  assert.deepEqual(await readTemplates(), afterImport, "repeat preserves complete templates and child identities");
   const applied = await request(`/api/app/incidents/${published.id}/templates/${first.id}/apply`, { method: "POST", headers: { "If-Match": `-:${published.updates.length}` }, json: {} });
   assert.equal(applied.status, 200, await applied.clone().text());
   const filled = await applied.json();
+  assert.equal(filled.draft.lifecycle, "Investigating");
+  assert.equal(filled.draft.affectedAudience, "Customers using Public API");
+  assert.equal(filled.draft.whatStillWorks, "");
   assert.equal(filled.draft.customerImpact, first.customerImpact);
   assert.equal(filled.draft.details, first.details);
   assert.equal(filled.draft.nextUpdateAt, null);
   assert.ok(filled.draft.componentChanges.some(change => change.componentId === first.components[0].componentId && change.state === first.components[0].state));
   assert.equal((await api(`/api/app/incidents/${published.id}`)).body.incident.updates.length, published.updates.length, "applying an imported template publishes nothing");
+  t.diagnostic("PROBE MOVE-014 5: native apply-template -> private composer fields and component state filled without publication");
   if (preserveEdits) {
     const overflow = templates.find(row => row.name === "Continuity template 3");
     assert.equal(overflow.details, largeDetails, "whole oversized wording survives");
@@ -123,6 +209,7 @@ export async function postmortemTemplateImportFlow({ api, request, importAll, mo
     const shortened = await request(`/api/app/incidents/${draftIncident.id}/templates/${overflow.id}/apply`, { method: "POST", headers: { "If-Match": `-:${draftIncident.updates.length}` }, json: {} });
     assert.equal(shortened.status, 200, await shortened.clone().text());
     assert.equal((await shortened.json()).draft.details, "Shortened by the operator.");
+    t.diagnostic("PROBE MOVE-014 3: oversized native template apply -> 409, operator shortening -> 200 with exact shortened details");
     const reportSaved = await request(`/api/app/incidents/${draftIncident.id}/report`, { method: "PUT", json: { summary: `${privateText} edited here`, timeline: "Reviewed timeline", cause: "Reviewed cause", remediation: "Reviewed actions" } });
     assert.equal(reportSaved.status, 200, await reportSaved.clone().text());
   }
@@ -135,8 +222,14 @@ export async function postmortemTemplateImportFlow({ api, request, importAll, mo
   if (preserveEdits) {
     const kept = (await api("/api/app/incident-templates")).body.templates.find(row => row.name === "Continuity template 3");
     assert.equal(kept.details, "Shortened by the operator.");
+    assert.equal(kept.id, retainedTemplate.id);
+    assert.deepEqual(kept.components, retainedComponents, "edited-template undo preserves the independently captured complete nonempty component rows");
+    assert.deepEqual((await readTemplates()).filter(row => existingIds.has(row.id)), baseline);
+    assert.deepEqual((await readTemplates()).filter(row => !existingIds.has(row.id)).map(row => row.id), [retainedTemplate.id]);
+    assert.ok(undone.body.undo.dispositions.some(row => row.targetKind === "template" && row.targetId === retainedTemplate.id && row.disposition === "retained"), "undo names the exact edited template as retained");
     const componentIds = new Set((await api("/api/app/components")).body.components.map(row => row.id));
     assert.ok(kept.components.every(component => componentIds.has(component.componentId)), "retained templates keep the components they need");
+    t.diagnostic("PROBE MOVE-014 6: repeated reviewed import and preserve-conflicts undo -> no duplicates; exact edited template and both original complete component rows retained");
     for (const kind of ["incident", "template", "component"]) assert.ok(undone.body.undo.dispositions.some(row => row.targetKind === kind && row.disposition === "retained"), `edited report/template retains ${kind}`);
   }
 }

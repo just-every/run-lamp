@@ -274,7 +274,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       await repeatImport({ files }, result);
       return { preview: review, result };
     };
-    await postmortemTemplateImportFlow({ api, request: (path, init) => nativeRequest(path, init), importAll, moveIn, original: sourceFiles, publicOrigin, preserveEdits: true, fetcher: fetch });
+    await postmortemTemplateImportFlow({ api, request: (path, init) => nativeRequest(path, init), importAll, moveIn, original: sourceFiles, publicOrigin, runtime, t, preserveEdits: true, fetcher: fetch });
     const beforeIncidentFollowers = await counts();
     incidentSubscriberProbe = true;
     const requestOffset = requests.length;
