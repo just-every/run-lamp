@@ -3480,7 +3480,7 @@ Core · target · **partial**
 
 #### MOVE-014 — Incident templates move intact
 
-Core · target · **partial** · From MOVE-011
+Core · target · **done** · From MOVE-011
 
 **Requirement.** Statuspage incident templates retain their metadata, component claims and complete wording when moved to Lamp; exposed templates from Status.io and incident.io follow these rules in their own reader clauses.
 
@@ -3492,8 +3492,8 @@ Core · target · **partial** · From MOVE-011
 5. Applying an imported template fills the composer's components, states and wording without publication.
 6. Repeating the import creates no duplicate; undo removes unchanged templates and preserves and names edited ones with needed components.
 
-**Evidence.** `src/core/features/statuspage-import/postmortems.ts`, `src/core/features/statuspage-import/templates.ts`, `tests/e2e/helpers/postmortem-template-import-flow.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/statuspage-import.test.mjs`, `tests/e2e/publishing-contract.test.mjs`
-**Gap.** Old cited evidence asserts Template source folder survives; Template title survives; Template channel default survives; Template component state survives. Unasserted: Every source lifecycle survives; All three original template names and source identities are preserved; Affected audience is derived from all selected component names; Every existing template content is unchanged by dry run; Application imports exactly the reviewed template plan; The retained template has a nonempty complete original component set after undo.
+**Evidence.** `src/core/features/statuspage-import/postmortems.ts`, `src/core/features/statuspage-import/templates.ts`, `tests/e2e/helpers/postmortem-template-import-flow.mjs`, `tests/e2e/publishing-contract.test.mjs`, `tests/e2e/statuspage-import.test.mjs`, `tests/e2e/publishing-contract.test.mjs`; `tests/e2e/statuspage-import.test.mjs` (SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes); `tests/e2e/helpers/postmortem-template-import-flow.mjs` (postmortemTemplateImportFlow)
+**Gap.** None.
 
 #### MOVE-012 — Private and audience pages move as private
 
