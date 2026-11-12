@@ -1,0 +1,4 @@
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock then check exit=0; views=node src/base/contract-docs.mjs write then check exit=0; generated views restored from origin/main; ledger=none (no migration changed) exit=0
+First-party check: npx -y @runeditrun/rer check --profile first-party exit=0
+Typecheck: pnpm typecheck exit=0
+Touched suites: 8 passed, 0 failed, 0 skipped; exit=0

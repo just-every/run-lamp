@@ -1,0 +1,102 @@
+{
+  "branch": "cloud/sd-lamp-c-f132",
+  "ci": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43235260507",
+      "id": 43235260507,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "clause": {
+    "claim": "PARTIAL",
+    "held": [
+      3
+    ],
+    "id": "SUB-023",
+    "points": [
+      1,
+      2,
+      4,
+      5
+    ]
+  },
+  "countsAfter": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "countsBefore": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "head": "cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c",
+  "landing": {
+    "mainEqualsCandidate": false,
+    "pr": null,
+    "productPushed": true,
+    "runSite": "pending guarded landing"
+  },
+  "local": {
+    "chromium": "/usr/bin/chromium",
+    "contractDiffEmpty": true,
+    "firstParty": {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    "fullHistory": true,
+    "generatedViewDiffEmpty": true,
+    "inventory": {
+      "assertionScripts": 10,
+      "newRegistrations": 0,
+      "registrations": 85,
+      "total": 95
+    },
+    "ledger": {
+      "command": null,
+      "reason": "no migration changed"
+    },
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "node": "22.20.0",
+    "testedFileHashes": {
+      "tests/e2e/delivery-contract.test.mjs": "7e54f20fa05a781a1b4c6d37592a0e08bc3cfade513666b100132f9db35e6104",
+      "tests/e2e/helpers/subscriber-limits-flow.mjs": "e4c83e8298697753e02cd0ce13513146173dba238734cdacb9cd1986c2edf3af",
+      "tests/e2e/statuspage-import.test.mjs": "d400f149e33c89c19a6b6e0d5faffbc4e80c428647af1f1a2b7565c057f16085"
+    },
+    "touchedTests": {
+      "command": "timeout -k 10 1800 node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs tests/e2e/delivery-contract.test.mjs",
+      "exit": 0,
+      "fail": 0,
+      "tests": 8
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "views": {
+      "command": "node src/base/contract-docs.mjs write; node src/base/contract-docs.mjs check; git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    "worktreeClean": true
+  },
+  "main": "bdbb5c7fd63305164dedb3aded8cfea17a80f7c3",
+  "productChanges": "sources.lock.json                            |   4 +-\n tests/e2e/helpers/subscriber-limits-flow.mjs | 162 +++++++++++++++++++++++++--\n tests/e2e/statuspage-import.test.mjs         |   2 +\n 3 files changed, 158 insertions(+), 10 deletions(-)",
+  "publicationScan": {
+    "commit": "cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c",
+    "complete": false,
+    "findings": null,
+    "historyScanned": null,
+    "status": "delegated to guarded Mac lander"
+  },
+  "recordedAt": "2026-11-12T14:15:20.881560+00:00",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f132"
+}

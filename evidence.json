@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "0c2cb905fddbebb8e22a32c2991ff9b2da32e90c",
+      "bytes": 763,
+      "path": "CLAIM.txt",
+      "sha256": "313955f57f17231018ac29050e0c3dabde36957e381d20bdcacdda3381aaf7fa"
+    },
+    {
+      "blob": "1051131cb24fe0876f4195f85eab2413557fdeab",
+      "bytes": 391,
+      "path": "MECHANICAL.log",
+      "sha256": "50b1b82e278f406e74f5323a7f78321860b583291d5f13b355babba14c8d3a93"
+    },
+    {
+      "blob": "67ddd5d0515fadb5f57205bfd9ed4d1f1ecf6042",
+      "bytes": 707,
+      "path": "PRODUCT-PUSH.log",
+      "sha256": "5a118c5b40058d42c23365d822e2ed1cce9ac23580ed4c649407d8faacd15d9c"
+    },
+    {
+      "blob": "c02b18ca28f5eed36806c5edd2f4867382ce9b31",
+      "bytes": 3051,
+      "path": "RECEIPT.json",
+      "sha256": "d909a847969fced36996752c3fcf2825e9734c9ef6817f37d89e52000f4252ea"
+    },
+    {
+      "blob": "0c567c9d4ab8c0395056b18c5fabaf9e5d7a3e98",
+      "bytes": 10710,
+      "path": "REPORT.md",
+      "sha256": "4a425749a3efb8ebf02f4e7f7f8fc73662d62fddd7d2f5c54bfe0079d24e0c69"
+    },
+    {
+      "blob": "a342fcb93cb2a0c08b72f2ea0d66a2a64e1db25d",
+      "bytes": 168,
+      "path": "TEST-INVENTORY.log",
+      "sha256": "05fdde01196595edece0628739aefb1cc63e73a83f52c3ba30f4ced8352976ed"
+    },
+    {
+      "blob": "76c1152c308fadcd0157ef229fcd8e2e29d766fa",
+      "bytes": 13796,
+      "path": "TOUCHED-TESTS.log",
+      "sha256": "9243c34f9a3041cbbb4b57889afe78a2350d3161f1425cc7da79217c1513ce37"
+    },
+    {
+      "blob": "bb6a643483191b28cd49dac392f5dab5c24523ec",
+      "bytes": 101,
+      "path": "TYPECHECK.log",
+      "sha256": "ae0863d1168ed1a7fd6eb87bbf323562b389a583c6dfee1717b2e5981bf31941"
+    },
+    {
+      "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
+      "bytes": 98,
+      "path": "VIEWS.log",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "blob": "e0d585ff8a5839fa40ecf159fb34051f769468d8",
+      "bytes": 351957,
+      "path": "subscriber-import-pending-1440.png",
+      "sha256": "1d1181cc7514e44374aed903cc54d82cdef03e35ea5222e15d0dbdc39d3170c0"
+    },
+    {
+      "blob": "85a14cf8a6217aec50e5f8f12873d25c715350f3",
+      "bytes": 322668,
+      "path": "subscriber-import-pending-390.png",
+      "sha256": "d31f25033fc1c0e3f3d0f33215512bb182be119088af10f5e7fc4a76886db7dc"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f132",
+  "product_head": "cbdfe82b8c8b67313c48e05c401cdb4b68bfc83c",
+  "ref": "refs/heads/evidence/sd-lamp-c-f132",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f132"
+}
