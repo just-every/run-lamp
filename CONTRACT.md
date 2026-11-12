@@ -3185,8 +3185,8 @@ HIST-010 retains current-main's partial judgment, Evidence and recorded Gap. The
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 42 | 65 | 0 | 107 |
-| Target and push further | 16 | 66 | 55 | 137 |
-| All | 58 | 131 | 55 | 244 |
+| Target and push further | 17 | 65 | 55 | 137 |
+| All | 59 | 130 | 55 | 244 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
