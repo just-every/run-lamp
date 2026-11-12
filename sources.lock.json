@@ -568,11 +568,11 @@
       "executable": false
     },
     "docs/chat-desk.md": {
-      "sha256": "32dff70bf48ae607df00d957c4b95c3e5e6102fb076b6e34208384190020072f",
+      "sha256": "0fe1c6a998548479c7b488d40daa1830a004232f8797d5231abf44ced9ae7855",
       "executable": false
     },
     "docs/chat-desk/slack-manifest.json": {
-      "sha256": "cee80d5fffc62f662bfd16943fb4f3de19cc9a248d24dad3ec17cb1886a63359",
+      "sha256": "422febc2f4b965e45a4b2063670f36b645fcff78235b97f4fdbc95021af81e52",
       "executable": false
     },
     "docs/chat-desk/teams-manifest.json": {
@@ -689,6 +689,10 @@
     },
     "docs/site.json": {
       "sha256": "94977bbccf558843b103c06dacf032b0c16afbd15279798124fc832e629868a6",
+      "executable": false
+    },
+    "docs/social-accounts.md": {
+      "sha256": "952618dca51d651ddf5da4f911483b606e3e39decda306b04ed067dae0290fd1",
       "executable": false
     },
     "docs/subscribers-and-notifications.md": {

@@ -36,7 +36,10 @@ the command endpoints.
 2. In the app's **Slash Commands**, confirm `/lamp` has that **Request URL**.
    In **Interactivity & Shortcuts**, confirm interactivity is on and its
    **Request URL** is the same endpoint. The supplied manifest configures both;
-   it does not require Socket Mode, an Events API subscription or a bot token.
+   Lamp does not require Socket Mode, an Events API subscription or the issued
+   bot token. In **OAuth & Permissions → Scopes → Bot Token Scopes**, confirm
+   `commands` is present; if absent choose **Add an OAuth Scope → commands**.
+   The supplied manifest requests this permission so Slack can install `/lamp`.
 3. In **Basic Information → App Credentials → Signing Secret**, reveal the
    secret. Add it to your Lamp app Worker as `SLACK_SIGNING_SECRET`, as described
    above. `SLACK_CLIENT_ID` and `SLACK_CLIENT_SECRET` are for subscriber OAuth,
@@ -48,7 +51,7 @@ the command endpoints.
    open a private conversation, such as your conversation with yourself, and
    send the displayed `/lamp link CODE` command. Select the `/lamp` command
    belonging to the app you just installed. A slash command works from a
-   conversation; the manifest does not create a bot user to DM.
+   conversation; send the slash command, not an ordinary message to the bot.
 6. In Lamp, choose **Refresh chat links**. A Slack entry with your workspace and
    user identifiers confirms the link. If the command is unknown, check the
    workspace and installation; if Lamp says signing is not configured, check
