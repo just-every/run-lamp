@@ -1,0 +1,4 @@
+
+> lamp@1.11.13 typecheck /home/agent/rer-consolidation/work/main-lamp-incident-corrections-1-c1/run-lamp
+> tsc --noEmit
+

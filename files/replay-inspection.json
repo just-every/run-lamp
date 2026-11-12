@@ -1,0 +1,22 @@
+{
+  "prior": "origin/cloud/main-lamp-incident-corrections-1-pc1-land-681acc595e",
+  "base": "535776d40a7882ee0a651f31095c4eb25224ab11",
+  "exact_prior_files": [
+    "DIVERGENCE.md",
+    "docs/incidents-and-updates.md",
+    "src/core/app/client/ui/composer.css",
+    "src/core/features/incidents/ui/incident-detail-page.tsx",
+    "src/core/features/incidents/ui/incident-operator-controls.tsx",
+    "src/core/features/incidents/ui/incident-record.tsx",
+    "src/core/features/incidents/ui/update-options.tsx",
+    "src/core/features/public-snapshot/public-update.ts",
+    "src/core/features/public-snapshot/record-markup.ts",
+    "src/core/features/public-snapshot/styles/record.css",
+    "src/core/features/public-snapshot/templates/history.ts",
+    "src/core/features/public-snapshot/templates/styles/shared.css",
+    "tests/e2e/helpers/incident-corrections-flow.mjs",
+    "tests/e2e/helpers/published-incident-state.mjs"
+  ],
+  "main_contract_views_identical": true,
+  "credential_candidates": []
+}

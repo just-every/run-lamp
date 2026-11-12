@@ -1,0 +1,5 @@
+Respecting prior discovery interval: 219 seconds
+VERIFY {"id": 43315248266, "status": "in_progress", "conclusion": null, "head_sha": "0243c1212ac5251e44328138a49c0f272db5695d", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43315248266"}
+VERIFY {"id": 43315248266, "status": "in_progress", "conclusion": null, "head_sha": "0243c1212ac5251e44328138a49c0f272db5695d", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43315248266"}
+VERIFY {"id": 43315248266, "status": "completed", "conclusion": "success", "head_sha": "0243c1212ac5251e44328138a49c0f272db5695d", "html_url": "https://github.com/just-every/run-lamp/actions/runs/43315248266"}
+VERIFY_SUCCESS head=0243c1212ac5251e44328138a49c0f272db5695d

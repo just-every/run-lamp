@@ -1,0 +1,66 @@
+[
+  {
+    "time": 1794520639.9438138,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/pulls",
+      "--method",
+      "POST",
+      "--input",
+      "/tmp/lamp-pr.json"
+    ],
+    "exit_code": 0
+  },
+  {
+    "time": 1794520642.557572,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=0243c1212ac5251e44328138a49c0f272db5695d&per_page=100"
+    ],
+    "exit_code": 0
+  },
+  {
+    "time": 1794520723.140294,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/pulls/350"
+    ],
+    "exit_code": 0
+  },
+  {
+    "time": 1794520942.5832133,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=0243c1212ac5251e44328138a49c0f272db5695d&per_page=100"
+    ],
+    "exit_code": 0
+  },
+  {
+    "time": 1794521243.2372565,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43315248266"
+    ],
+    "exit_code": 0
+  },
+  {
+    "time": 1794521575.9038296,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43315248266"
+    ],
+    "exit_code": 0
+  },
+  {
+    "time": 1794521611.6878362,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/pulls/350",
+      "--method",
+      "PATCH",
+      "--input",
+      "/tmp/lamp-pr-update.json"
+    ],
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,32 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: THEME-001 — owner publishes branded themes and layouts within the page budget
+not ok 1 - THEME-001 — owner publishes branded themes and layouts within the page budget
+  ---
+  duration_ms: 54459.267604
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/main-lamp-incident-corrections-1-c1/run-lamp/tests/e2e/publishing-browser.test.mjs:898:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+    Client diagnostics: Failed to load resource: the server responded with a status of 400 (Bad Request)
+    Document state: {"readyState":"complete","shellHydrated":true,"settingsInert":false,"scripts":[{"type":"module","path":"/@id/virtual:tanstack-start-dev-client-entry"}],"hydration":0}
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    themeBrowserFlow (file:///home/agent/rer-consolidation/work/main-lamp-incident-corrections-1-c1/run-lamp/tests/e2e/helpers/theme-browser-flow.mjs:197:11)
+    async themeFlow (file:///home/agent/rer-consolidation/work/main-lamp-incident-corrections-1-c1/run-lamp/tests/e2e/helpers/theme-flow.mjs:73:5)
+    async themeOwnerJourney (file:///home/agent/rer-consolidation/work/main-lamp-incident-corrections-1-c1/run-lamp/tests/e2e/helpers/theme-owner-journey.mjs:28:3)
+    async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/main-lamp-incident-corrections-1-c1/run-lamp/tests/e2e/publishing-browser.test.mjs:899:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# THEME-001 — owner settings reach the retained page; unsafe CSS and HTML never execute
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56741.146249

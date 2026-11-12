@@ -1,0 +1,151 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-incident-corrections-1-c1",
+  "head": "0243c1212ac5251e44328138a49c0f272db5695d",
+  "parent": "535776d40a7882ee0a651f31095c4eb25224ab11",
+  "main_at_push": "535776d40a7882ee0a651f31095c4eb25224ab11",
+  "tree": "36734f1b8e039bb9722908ded3796dedb35d457f",
+  "commits_above_main": 1,
+  "changed_files": [
+    "DIVERGENCE.md",
+    "docs/incidents-and-updates.md",
+    "sources.lock.json",
+    "src/core/app/client/ui/composer.css",
+    "src/core/features/incidents/ui/incident-detail-page.tsx",
+    "src/core/features/incidents/ui/incident-operator-controls.tsx",
+    "src/core/features/incidents/ui/incident-record.tsx",
+    "src/core/features/incidents/ui/update-options.tsx",
+    "src/core/features/public-snapshot/public-update.ts",
+    "src/core/features/public-snapshot/record-markup.ts",
+    "src/core/features/public-snapshot/styles/record.css",
+    "src/core/features/public-snapshot/templates/history.ts",
+    "src/core/features/public-snapshot/templates/styles/shared.css",
+    "tests/e2e/helpers/incident-corrections-flow.mjs",
+    "tests/e2e/helpers/published-incident-state.mjs",
+    "tests/e2e/publishing-browser.test.mjs"
+  ],
+  "insertions": 238,
+  "deletions": 49,
+  "product_push": {
+    "exit_code": 0,
+    "attempts": 1,
+    "log": "product-push.log"
+  },
+  "pr": {
+    "url": "https://github.com/just-every/run-lamp/pull/350",
+    "number": 350
+  },
+  "local_checks": [
+    {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit_code": 0,
+      "log": "typecheck-pinned.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit_code": 0,
+      "log": "test-inventory.log",
+      "registered_cases": 90,
+      "assertion_scripts": 10,
+      "before_total": 100,
+      "after_total": 100,
+      "cap": 200
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "receipt": "source-lock-write.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "receipt": "source-lock-check.json"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs",
+      "exit_code": 1,
+      "passed": 5,
+      "failed": 1,
+      "log": "publishing-browser.log",
+      "failure": "Unchanged THEME-001 helper requests an uninstalled Playwright browser. Incident publication, audit-labels, permissions, 390 phone smoke and dependency Settings pass."
+    },
+    {
+      "command": "node --import ../packet/system-chromium.mjs --test --test-concurrency=1 --test-name-pattern=^THEME-001 tests/e2e/publishing-browser.test.mjs",
+      "exit_code": 1,
+      "log": "theme-system-chromium.log",
+      "failure": "System Chromium observes five assets including favicon.svg against the unchanged four-request theme limit."
+    },
+    {
+      "command": "node ../packet/browser-proof.mjs <clone>",
+      "exit_code": 0,
+      "log": "browser-proof.log",
+      "implementation": "built production Worker from identical application source committed in this head",
+      "assertion_width": 1440,
+      "screenshots_widths": [
+        1440,
+        390
+      ],
+      "screenshots": [
+        "screenshots/active-correction-operator-1440.png",
+        "screenshots/active-correction-operator-390.png",
+        "screenshots/active-correction-public-1440.png",
+        "screenshots/active-correction-public-390.png",
+        "screenshots/corrections-permalink-1440.png",
+        "screenshots/corrections-permalink-390.png",
+        "screenshots/notify-after-publication-1440.png",
+        "screenshots/notify-after-publication-390.png",
+        "screenshots/resolved-correction-operator-1440.png",
+        "screenshots/resolved-correction-operator-390.png",
+        "screenshots/resolved-correction-public-1440.png",
+        "screenshots/resolved-correction-public-390.png"
+      ],
+      "results": [
+        "resolved correction preserves resolution",
+        "active correction identifies its original",
+        "immutable original wording retained",
+        "public publication order retained",
+        "Investigating publication reopens a resolved incident",
+        "next draft and next publication are ordinary",
+        "correction selection closes after publication",
+        "Notify remains open after publication",
+        "no page errors"
+      ]
+    }
+  ],
+  "contract": {
+    "contract_and_views_identical_to_main": true,
+    "before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "status_changes": [],
+    "INCIDENT-004": "partial unchanged",
+    "INCIDENT-005": "done unchanged"
+  },
+  "identity_audit": "identity-audit.log",
+  "credential_rule_candidates": 0,
+  "ci": {
+    "id": 43315248266,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "0243c1212ac5251e44328138a49c0f272db5695d",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43315248266"
+  },
+  "full_publication_scan": "reserved for fleet lander per cloud adaptation",
+  "blockers": [],
+  "github_api_invocations": 7
+}

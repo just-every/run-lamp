@@ -1,0 +1,17 @@
+{
+  "before_registrations": 6,
+  "after_registrations": 6,
+  "main_first_two_tests": [
+    "'TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys'",
+    "'TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities'"
+  ],
+  "current_first_two_tests": [
+    "'TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys'",
+    "'TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities'"
+  ],
+  "round_added_registrations": 0,
+  "registered_cases": 90,
+  "assertion_scripts": 10,
+  "seed_cap": 200,
+  "changed_files": 16
+}
