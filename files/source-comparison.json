@@ -1,0 +1,48 @@
+{
+  "main_head": "fbba42453ca699b059154131a86c5fcec6f2c45a",
+  "candidate_head": "3da8bf2e469b229080489af89872f97fd23c76cf",
+  "files": [
+    {
+      "path": "tests/e2e/helpers/traffic-alerts-flow.mjs",
+      "main_sha256": "a3ffce3ab973aedccd26dbf788d5db52e78cc411fb7de9e2dc6f3450c95a3f91",
+      "candidate_sha256": "a3ffce3ab973aedccd26dbf788d5db52e78cc411fb7de9e2dc6f3450c95a3f91",
+      "identical": true
+    },
+    {
+      "path": "tests/e2e/helpers/traffic-alerts-runtime.mjs",
+      "main_sha256": "5bb2bd7409371dbc383800032c0699367def3ceed0b47e2b05dac282e0d8b091",
+      "candidate_sha256": "5bb2bd7409371dbc383800032c0699367def3ceed0b47e2b05dac282e0d8b091",
+      "identical": true
+    },
+    {
+      "path": "tests/e2e/update-reminders.test.mjs",
+      "main_sha256": "b6247b02089cd652e32bc966cefa873614606eda34dfc5559338b2dea696c51e",
+      "candidate_sha256": "b6247b02089cd652e32bc966cefa873614606eda34dfc5559338b2dea696c51e",
+      "identical": true
+    },
+    {
+      "path": "src/core/features/public-snapshot/service.ts",
+      "main_sha256": "51d3947c5e7ca8584b75130961a7b315ac2c6dc435f0b790554f0619996e9fe8",
+      "candidate_sha256": "51d3947c5e7ca8584b75130961a7b315ac2c6dc435f0b790554f0619996e9fe8",
+      "identical": true
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "main_sha256": "bea76389abc32cdb75ab37b34b0a416556af827471dfa80fbb87cf4f92ff80ae",
+      "candidate_sha256": "bea76389abc32cdb75ab37b34b0a416556af827471dfa80fbb87cf4f92ff80ae",
+      "identical": true
+    },
+    {
+      "path": "tests/e2e/helpers/automation-rules-browser-flow.mjs",
+      "main_sha256": "bb741a141a1656d869188d08e48f0c9bacb4f69ab977f7500626e192de2959c4",
+      "candidate_sha256": "bb741a141a1656d869188d08e48f0c9bacb4f69ab977f7500626e192de2959c4",
+      "identical": true
+    },
+    {
+      "path": "tests/e2e/channels-and-presets.test.mjs",
+      "main_sha256": "fe2bf0653ce2989843cda60c77e85bef47b6f24b6319830c2255f77c740b6839",
+      "candidate_sha256": "fe2bf0653ce2989843cda60c77e85bef47b6f24b6319830c2255f77c740b6839",
+      "identical": true
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "utc": "2026-11-12T14:49:52.851801+00:00",
+  "repository": "just-every/run-lamp",
+  "triage_branch": "cloud/sd-lamp-release-1-11-13-ci-triage-1",
+  "triage_checkout_head": "fbba42453ca699b059154131a86c5fcec6f2c45a",
+  "main_at_clone": "fbba42453ca699b059154131a86c5fcec6f2c45a",
+  "candidate_branch": "cloud/sd-lamp-release-1-11-13-rebase-3da8bf2e469b229080489af89872f97fd23c76cf",
+  "candidate_head": "3da8bf2e469b229080489af89872f97fd23c76cf",
+  "original_release_branch": "cloud/sd-lamp-release-1-11-13",
+  "source_changes": 0,
+  "product_commits_created": 0,
+  "product_pushes": 0,
+  "pr_created": null,
+  "clause_status_changes": [],
+  "working_tree_clean": true
+}

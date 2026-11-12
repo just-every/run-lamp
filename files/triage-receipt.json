@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-13-ci-triage-1",
+  "repository": "just-every/run-lamp",
+  "stamp_utc": "2026-11-12T15:02:11.263227+00:00",
+  "candidate_head": "3da8bf2e469b229080489af89872f97fd23c76cf",
+  "run_id": 43236095677,
+  "initial_run_attempt": 1,
+  "initial_run_status": "completed",
+  "initial_conclusion": "failure",
+  "initial_failed_jobs": [
+    {
+      "job_id": 131244441868,
+      "name": "shards (runtime)",
+      "failed_step": "Verify this product shard",
+      "test_file": "tests/e2e/update-reminders.test.mjs",
+      "test_line": 157,
+      "test_name": "HIST-006 \u2014 independent public readership produces private traffic alerts and recoverable owner actions",
+      "assertion_file": "tests/e2e/helpers/traffic-alerts-flow.mjs",
+      "assertion_line": 111,
+      "operator": "strictEqual",
+      "message": "traffic alerts publish no customer-facing incident or content",
+      "expected": {
+        "version": 1,
+        "generatedAt": "2026-11-12T14:25:21.682Z",
+        "overall": "Operational",
+        "maintenance": null,
+        "incident": null
+      },
+      "actual": {
+        "version": 1,
+        "generatedAt": "2026-11-12T14:31:00.000Z",
+        "overall": "Operational",
+        "maintenance": null,
+        "incident": null
+      },
+      "publishing_test_count": 12,
+      "publishing_pass_count": 11,
+      "publishing_fail_count": 1,
+      "preceding_runtime_tests": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0
+      },
+      "runner_id": 1000314748,
+      "runner_name": "GitHub Actions 1000314748",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    },
+    {
+      "job_id": 131244441625,
+      "name": "shards (delivery)",
+      "failed_step": "Verify this product shard",
+      "test_file": "tests/e2e/channels-and-presets.test.mjs",
+      "test_line": 482,
+      "assertion_file": "tests/e2e/helpers/automation-rules-browser-flow.mjs",
+      "assertion_line": 175,
+      "operator": "strictEqual",
+      "message": "the ended change is no longer offered for Undo",
+      "expected": 0,
+      "actual": 1,
+      "test_count": 8,
+      "pass_count": 7,
+      "fail_count": 1,
+      "rerun_by_this_task": false
+    },
+    {
+      "job_id": 131252333234,
+      "name": "verify",
+      "failed_step": "Require every planned command to succeed on this commit",
+      "classification": "downstream aggregate failure"
+    }
+  ],
+  "retry": {
+    "prior_attempt_evidence": "exact-sha-runs.json: run_attempt=1; initial-jobs.json: all 11 jobs run_attempt=1, no retry jobs",
+    "job_id": 131244441868,
+    "requests_by_this_task": 1,
+    "method": "POST",
+    "endpoint": "repos/just-every/run-lamp/actions/jobs/131244441868/rerun",
+    "request_exit": 0,
+    "request_response": {},
+    "subsequent_observed_attempt": 2,
+    "observed_status": "completed",
+    "workflow_dispatches": 0,
+    "whole_workflow_reruns": 0,
+    "other_shard_reruns": 0,
+    "retry_job_id": 131259653057,
+    "retry_conclusion": "success",
+    "started_at": "2026-11-12T14:46:07Z",
+    "completed_at": "2026-11-12T14:51:22Z",
+    "runner_id": 1000314847,
+    "runner_name": "GitHub Actions 1000314847"
+  },
+  "limits": {
+    "gh_invocation_budget": 10,
+    "gh_invocations_so_far": 8,
+    "failed_job_log_archive_reads": 2,
+    "local_test_runs": 0,
+    "baseline_runs": 0,
+    "local_full_suite_runs": 0,
+    "source_edits": 0,
+    "test_edits": 0,
+    "clause_status_changes": 0,
+    "product_commits": 0,
+    "product_pushes": 0,
+    "pr_created": false
+  },
+  "runner_match": {
+    "facility_inspected": "all repository .github/workflows and installed cloud helpers",
+    "verify_runners": "GitHub-hosted ubuntu-24.04",
+    "verify_targeted_test_input": false,
+    "targeted_main_reproduction": "not required: the named runtime test did not remain red after its authorized retry",
+    "cloud_vm_is_original_runner": false,
+    "notes": "The original hosted job runner has ended. Verify declares workflow_dispatch without inputs and always builds/runs its planned shards. Other workflows perform release, deployment, demo, or site work; none is a one-test execution entrypoint. Installed cloud heavy-slot executes in this VM and cannot match the hosted runner. No remote-run controller was shipped."
+  },
+  "final_run": {
+    "conclusion": "failure",
+    "head_sha": "3da8bf2e469b229080489af89872f97fd23c76cf",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43236095677",
+    "id": 43236095677,
+    "run_attempt": 2,
+    "status": "completed",
+    "updated_at": "2026-11-12T14:51:31Z",
+    "runtime_job_id": 131259653057,
+    "runtime_conclusion": "success",
+    "delivery_carried_job_id": 131259655150,
+    "delivery_conclusion": "failure",
+    "aggregate_job_id": 131262940884,
+    "aggregate_conclusion": "failure"
+  },
+  "classification": {
+    "runtime": "intermittent assertion failure recovered by the single authorized runtime retry on unchanged candidate SHA",
+    "mechanism": "probable fixture clock / five-minute public-snapshot refresh interaction; exact causality not proven",
+    "infrastructure_outage_proven": false,
+    "product_defect_proven": false,
+    "failure_on_main_proven": false,
+    "delivery": "separate unclassified failed browser count assertion; not retried by this task"
+  },
+  "counts": {
+    "failed_shards_before": 2,
+    "failed_shards_after": 1,
+    "successful_shards_before": 6,
+    "successful_shards_after": 7,
+    "total_shards": 8,
+    "failed_jobs_including_aggregate_before": 3,
+    "failed_jobs_including_aggregate_after": 2,
+    "verification_inventory_before": 96,
+    "verification_inventory_after": 96,
+    "clause_status_changes": 0,
+    "retry_runtime_per_test_counts": "not downloaded; job and Verify this product shard step both completed/success"
+  },
+  "next_action": "Keep candidate refused. sd should assign delivery job 131244441625 (carried as 131259655150 in attempt 2) its own bounded failed-shard triage. Inspect prior retry evidence, retry only that shard once if unused, then if still red reproduce only its failing named test on main on a matching runner. No whole Verify dispatch, source/test weakening or readmit while red."
+}

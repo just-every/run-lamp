@@ -1,0 +1,9 @@
+M	CHANGELOG.md
+M	README.md
+M	RELEASE.json
+M	docs/accessibility/vpat.md
+M	package.json
+A	release-history/1.11.12.CONTRACT.md
+A	release-history/1.11.12.json
+M	seed.json
+M	sources.lock.json
