@@ -1,5 +1,13 @@
 # DIVERGENCE.md
 
+## Statuspage reader guidance — 12 November 2026
+
+The native Cutover report names the existing compatibility embed as served on
+the moved hostname, including its required website allowlist. It keeps the
+unavailable maintenance, webhook and component automation boundaries explicit.
+The retained provider client and old embed tag are exercised after import;
+Cutover keeps its existing operating guidance and visual components.
+
 ## Another tool's first alert — 11 November 2026
 
 Another tool keeps its payload mappings visible and explains each field. Connecting

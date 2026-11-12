@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.11.13
+
+**Lamp preview copies now identify themselves more clearly.** Overview, page review and Settings label the preview copy and its last preview publication, so an owner can distinguish it from the live customer address. The preview banner directs the owner back to RunEditRun to publish the version.
+
+- **Settings say when a change was saved to the preview.** A successful save reads "Saved · preview"; a failed update reads "Changes kept · preview not updated". Preview screens also leave out the address-change and custom-domain shortcuts.
+
+Upgrading from 1.11.12: back up data and your source changes first, update the checkout to `v1.11.13`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.12
 
 **On a Lamp running on your own computer you can now try subscriber notifications honestly.** A local Lamp sends no email, and it now says so wherever a subscriber is added or subscribes: the public subscribe form and its result page, the incident follow page, the Add subscriber form and the operator invitation message each say that no email was sent on this computer. The local owner can then confirm a pending subscriber from Subscribers → Delivery log (a "Confirm locally" button on the pending confirmation row), which uses the ordinary signed confirmation and keeps the usual three-day expiry, so a confirmed subscriber receives notifications from then on in the local record. The button exists only on a local Lamp and only for the owner: it is absent on a deployed Lamp and on the demo.

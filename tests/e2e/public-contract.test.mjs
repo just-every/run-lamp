@@ -633,6 +633,50 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const zoneLabel = await page.locator('[data-timezone-label]').innerText();
     const generation = page.locator('[data-generated-at] time');
     assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    // Age one retained publication without any operator write. The browser's
+    // own zone differs from Settings, so the tooltip must keep the page zone.
+    const retainedDocument = await j.publicResponse('/');
+    const retainedInstant = retainedDocument.headers.get('x-lamp-snapshot-generated-at');
+    assert.ok(retainedInstant);
+    const initialTimes = descendants(parse(await retainedDocument.text())).filter(node => node.tagName === 'time'
+      && node.parentNode?.attrs?.some(attr => attr.name === 'data-generated-at'));
+    assert.equal(initialTimes.length, 1);
+    assert.equal(initialTimes[0].attrs.find(attr => attr.name === 'datetime').value, retainedInstant);
+    assertVisibleTime(nodeText(initialTimes[0]), retainedInstant, 'America/Los_Angeles');
+    const ageContext = await browser.newContext({ timezoneId: 'America/New_York' });
+    const agePage = await ageContext.newPage();
+    try {
+      const initialClock = new Date(Date.parse(retainedInstant) + 59_000);
+      await agePage.clock.install({ time: initialClock });
+      await agePage.clock.pauseAt(initialClock);
+      for (const width of [1440, 390]) {
+        await agePage.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await agePage.clock.setSystemTime(initialClock);
+        const document = await agePage.goto(j.publicOrigin);
+        assert.equal(document.headers()['x-lamp-snapshot-generated-at'], retainedInstant);
+        const age = agePage.locator('[data-generated-at] time');
+        assert.ok(await age.isVisible(), 'the initial relative age is visible to the reader');
+        assert.equal(await age.innerText(), 'just now', 'the retained generation initially has a relative age below one minute');
+        assert.equal(await age.getAttribute('datetime'), retainedInstant);
+        const absoluteTitle = await age.getAttribute('title');
+        assertVisibleTime(absoluteTitle, retainedInstant, 'America/Los_Angeles');
+        const documentNode = await agePage.locator('html').elementHandle();
+        await agePage.clock.runFor(30_000);
+        await agePage.waitForFunction(() => document.querySelector('[data-generated-at] time')?.textContent === '1 minute ago');
+        assert.equal(await age.innerText(), '1 minute ago', 'the open page visibly ages across the minute boundary without publication');
+        assert.ok(await age.isVisible(), 'the changed relative age stays visible to the reader');
+        assert.equal(await age.getAttribute('datetime'), retainedInstant, 'aging does not replace the generation instant');
+        assert.equal(await age.getAttribute('title'), absoluteTitle, 'aging retains the absolute tooltip');
+        assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles');
+        assert.ok(await documentNode.evaluate(node => node === document.documentElement), 'the document stays open while its label ages');
+        assert.equal((await (await j.publicResponse('/api/public/status')).json()).generatedAt, retainedInstant, 'no new generation was published');
+        console.info('PAGE-009 generation age at ' + width + ': just now -> 1 minute ago; instant=' + retainedInstant + '; tooltip=' + absoluteTitle);
+        if (process.env.LAMP_SCREENSHOTS) {
+          await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+          await agePage.screenshot({ path: process.env.LAMP_SCREENSHOTS + '/' + width + '-generation-age.png' });
+        }
+      }
+    } finally { await ageContext.close(); }
     await j.json(`/api/app/components/${other.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
     const incident = await j.incident('Synthetic Lamp API outage under investigation', [main, hidden]);
     const widgetWording = literalLinkFields({

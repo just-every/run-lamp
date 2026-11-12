@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
+import { updateReachFlow } from './helpers/update-reach-flow.mjs';
 import { createHmac } from 'node:crypto';
 import { performance as clock } from 'node:perf_hooks';
 import { test } from 'node:test';
@@ -13,6 +14,7 @@ import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/cale
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
 import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
+import { recordClosedOutage, rootFigures } from './helpers/uptime-correction-journey.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -554,6 +556,181 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
   await reportPublicationFlow();
 });
 
+const impactClock = '2040-04-02T12:00:00.000Z';
+const impactChoices = ['none', 'minor', 'major', 'critical'];
+const impactChanges = impactChoices.flatMap(choice => [choice, null]);
+
+async function impactIncident(j, state = 'Partially unavailable', component) {
+  component ??= await j.component('synthetic-lamp-impact-1');
+  const incident = await j.incident('synthetic-lamp-impact-2', [component], {
+    components: [{ componentId: component.id, state, relationship: 'Primary' }],
+  });
+  await j.save(incident.id, { nextUpdateAt: '2040-04-02T13:00:00.000Z' });
+  await j.publish(incident.id);
+  return { incident, component, endpoint: `/api/app/incidents/${incident.id}/impact` };
+}
+
+async function publicImpact(j, incident, expected) {
+  const rows = await eventually(
+    async () => (await (await j.publicResponse('/api/public/v1/incidents')).json()).data,
+    rows => rows.find(row => row.id === incident.id)?.effectiveImpact === expected,
+    'the new impact reaches this incident in the retained public generation',
+  );
+  return rows.find(row => row.id === incident.id);
+}
+
+test('INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    await j.signIn(undefined, { fresh: true });
+    // Independently specified severity controls cover both sides of derived
+    // impact, including every explicit choice and the explicit clear action.
+    for (const [state, derivedImpact] of [
+      ['Operational', 'none'], ['Degraded performance', 'minor'],
+      ['Partially unavailable', 'major'], ['Major outage', 'critical'],
+    ]) {
+      const { incident, endpoint } = await impactIncident(j, state);
+      const initial = (await j.json(endpoint)).impact;
+      assert.equal(initial.derivedImpact, derivedImpact);
+      assert.equal(initial.impactOverride, null);
+      assert.equal(initial.effectiveImpact, derivedImpact);
+      assert.deepEqual(initial.history, []);
+      for (const choice of impactChanges) {
+        const expected = choice ?? derivedImpact;
+        const saved = (await j.json(endpoint, 'PUT', { impactOverride: choice })).impact;
+        assert.equal(saved.impactOverride, choice);
+        assert.equal(saved.derivedImpact, derivedImpact);
+        assert.equal(saved.effectiveImpact, expected);
+        const read = (await j.json(endpoint)).impact;
+        assert.deepEqual(read, saved, 'independent native read retains the exact choice or clear');
+        const publicRow = await publicImpact(j, incident, expected);
+        assert.equal(publicRow.impactOverride, choice);
+        assert.equal(publicRow.derivedImpact, derivedImpact);
+        assert.equal(publicRow.impact, expected);
+      }
+      const before = await j.json(endpoint);
+      await j.json(endpoint, 'PUT', { impactOverride: 'unsupported' }, 400);
+      assert.deepEqual(await j.json(endpoint), before, 'an unsupported choice changes nothing');
+    }
+  } finally { await j.close(); }
+});
+
+test('INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const owner = (await j.json('/api/app/session')).operator;
+    const colleagueEmail = owner.email.replace(/^[^@]+/, 'synthetic-lamp-impact-3');
+    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator' }, 202);
+    await j.signIn(colleagueEmail);
+    const colleague = (await j.json('/api/app/session')).operator;
+    assert.notEqual(colleague.id, owner.id);
+    const { incident, endpoint } = await impactIncident(j);
+    const historyPath = `${endpoint}/history`;
+    const expected = [];
+    assert.deepEqual((await j.json(historyPath)).history, []);
+    const auditRows = async () => (await j.db.prepare("SELECT * FROM audit_entries WHERE action = 'impact-changed' AND entity_id = ? ORDER BY created_at DESC, id DESC").bind(incident.id).all()).results;
+    assert.deepEqual(await auditRows(), []);
+    let previousOverride = null;
+    for (const [index, choice] of impactChanges.entries()) {
+      const actor = index % 2 ? owner : colleague;
+      await j.signIn(index % 2 ? owner.email : colleagueEmail);
+      const createdAt = new Date(Date.parse(impactClock) + (index + 1) * 1000).toISOString();
+      await j.json('/test/clock', 'PUT', { now: Date.parse(createdAt) }, 204);
+      const before = await j.json(historyPath);
+      const beforeAudits = await auditRows();
+      const saved = (await j.json(endpoint, 'PUT', { impactOverride: choice })).impact;
+      const after = (await j.json(historyPath)).history;
+      assert.equal(after.length, before.history.length + 1);
+      assert.ok(after[0].id && !expected.some(row => row.id === after[0].id));
+      expected.unshift({ id: after[0].id, operatorId: actor.id, operatorName: actor.displayName, previousOverride, impactOverride: choice, createdAt });
+      assert.deepEqual(after, expected, 'complete private history names this actor and both values without rewriting older events');
+      assert.deepEqual(after.slice(1), before.history);
+      assert.deepEqual(saved.history, expected);
+      assert.deepEqual((await j.json(endpoint)).impact.history, expected);
+      const audits = await auditRows();
+      assert.equal(audits.length, beforeAudits.length + 1);
+      assert.deepEqual(audits.slice(1), beforeAudits, 'prior durable audit values remain intact');
+      assert.equal(audits[0].id, after[0].id);
+      assert.equal(audits[0].operator_id, actor.id);
+      assert.equal(audits[0].created_at, createdAt);
+      assert.deepEqual(JSON.parse(audits[0].payload_json), { previousOverride, impactOverride: choice });
+      const listed = (await j.json(`/api/app/audit-log?action=impact-changed&actorId=${actor.id}&limit=100`)).entries;
+      const entry = listed.find(row => row.id === after[0].id);
+      assert.ok(entry, 'the change is searchable through the actual operator audit door');
+      assert.equal(entry.actorId, actor.id);
+      assert.equal(entry.createdAt, createdAt);
+      // A retried choice is not a second change and cannot fabricate history.
+      await j.json(endpoint, 'PUT', { impactOverride: choice });
+      assert.deepEqual((await j.json(historyPath)).history, expected);
+      assert.deepEqual(await auditRows(), audits);
+      previousOverride = choice;
+    }
+    const before = await j.json(endpoint);
+    const anonymous = await j.raw(endpoint, { method: 'PUT', headers: { Origin: j.appOrigin, 'Content-Type': 'application/json' }, body: JSON.stringify({ impactOverride: 'critical' }) });
+    assert.equal(anonymous.status, 401);
+    assert.equal((await j.raw(historyPath)).status, 401, 'history is private');
+    assert.equal((await j.raw(new URL(historyPath, j.publicOrigin).href)).status, 404, 'the public host has no private timeline door');
+    assert.deepEqual(await j.json(endpoint), before);
+    for (const path of ['/', '/history', `/incidents/${incident.reference}`, '/api/public/v1/incidents']) {
+      const body = await j.publicText(path);
+      for (const actor of [owner, colleague]) {
+        assert.ok(!body.includes(actor.id) && !body.includes(actor.email) && !body.includes(actor.displayName), 'impact history never exposes its operators publicly');
+      }
+      for (const row of expected) assert.ok(!body.includes(row.id), 'private change identities do not appear publicly');
+    }
+  } finally { await j.close(); }
+});
+
+test('INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse('2040-01-01T00:00:00.000Z') }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const target = await j.component('synthetic-lamp-impact-uptime-1');
+    const control = await j.component('synthetic-lamp-impact-uptime-2');
+    await recordClosedOutage(j, target, { startsAt: '2040-03-31T23:00:00.000Z', endsAt: '2040-04-01T01:00:00.000Z' });
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    const { incident, endpoint } = await impactIncident(j, 'Partially unavailable', target);
+    await publicImpact(j, incident, 'major');
+    const figures = async () => ({
+      components: await j.json('/api/app/components'),
+      histories: await Promise.all([target, control].map(component => j.json(`/api/app/components/${component.id}/history`))),
+      claims: (await j.read(incident.id)).components,
+      publicComponents: (await (await j.publicResponse('/api/public/v1/components')).json()).data,
+      overall: (await (await j.publicResponse('/api/public/status')).json()).overall,
+      status: await (await j.publicResponse('/api/v2/status.json')).json(),
+      badges: await Promise.all([target, control].map(component => j.publicText(`/components/${component.id.toLowerCase()}/uptime.svg`))),
+      reports: await Promise.all([target, control].flatMap(component => ['month=2040-03', 'month=2040-04', 'quarter=2040-Q1', 'quarter=2040-Q2'].map(period => j.json(`/api/app/availability-report?component=${component.id}&${period}&format=json`)))),
+    });
+    const baseline = await figures();
+    assert.equal(baseline.overall, 'Partially unavailable');
+    assert.deepEqual(baseline.components.components.map(row => [row.id, row.publicState]).sort(), [[target.id, 'Partially unavailable'], [control.id, 'Operational']].sort());
+    const targetUptime = baseline.publicComponents.find(row => row.id === target.id).uptime;
+    const controlUptime = baseline.publicComponents.find(row => row.id === control.id).uptime;
+    assert.equal(targetUptime.percentage, '99.90%');
+    assert.equal(targetUptime.coverageMinutes, 90 * 1440);
+    assert.equal(controlUptime.percentage, '100.00%');
+    for (const day of ['2040-03-31', '2040-04-01']) {
+      const mark = targetUptime.marks.find(row => row.day === day);
+      assert.equal(mark.downtimeMinutes, 60);
+      assert.equal(mark.worstDowntimeState, 'Major outage');
+      assert.equal(controlUptime.marks.find(row => row.day === day).downtimeMinutes, 0);
+    }
+    for (const report of baseline.reports.slice(0, 4)) assert.equal(report.downtimeMinutes, '60.00');
+    rootFigures(await j.publicText('/'), 'default', target, control, '99.90%', 60, 'Major outage');
+    for (const choice of impactChanges) {
+      await j.json(endpoint, 'PUT', { impactOverride: choice });
+      const selected = await publicImpact(j, incident, choice ?? 'major');
+      assert.equal(selected.impactOverride, choice, 'read the new generation before comparing its figures');
+      assert.deepEqual(await figures(), baseline, `choosing ${choice ?? 'derived'} changes no complete state, claim, history, daily record, current figure, badge or report`);
+      rootFigures(await j.publicText('/'), 'default', target, control, '99.90%', 60, 'Major outage');
+    }
+  } finally { await j.close(); }
+});
+
 test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history', async () => {
   const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
@@ -955,4 +1132,8 @@ test('AGENT-005 HIST-002 — cited report reconciles the retained record, requir
     assert.ok(!publicHtml.includes(internalNote));
     t.diagnostic('PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes');
   } finally { await j.close(); }
+});
+
+test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
+  await updateReachFlow({ diagnostic: message => t.diagnostic(message) });
 });
