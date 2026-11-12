@@ -1,0 +1,82 @@
+{
+  "branch": "cloud/sd-lamp-audit-labels-1-pc1",
+  "browser_proof": {
+    "assertion_width": 1440,
+    "horizontal_overflow": false,
+    "receipt": "browser-proof.json",
+    "screens": [
+      "audit-before-1440.png",
+      "audit-before-390.png",
+      "audit-after-1440.png",
+      "audit-after-390.png"
+    ],
+    "visible_machine_id_occurrences": {
+      "after": 0,
+      "before": 19
+    }
+  },
+  "ci": {
+    "head": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
+    "latest_observation": "2026-11-12T19:20:36+00:00",
+    "receipt": "ci-receipt.json",
+    "run": 43284812971,
+    "status": "in_progress",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/43284812971"
+  },
+  "clause": {
+    "after": "partial",
+    "before": "partial",
+    "claimed_points": [],
+    "id": "TEAM-007"
+  },
+  "date": "2026-11-12T18:55:34.564038+00:00",
+  "github_budget_remaining": 2,
+  "github_invocations_so_far": 8,
+  "head": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
+  "identity_check": "identity-receipt.json",
+  "landing": "not performed",
+  "local_checks": {
+    "audit_labels": {
+      "duration_ms": 63858.755298,
+      "exit": 0,
+      "log": "audit-labels-test.log",
+      "registrations": 1
+    },
+    "automation_audit": {
+      "duration_ms": 369529.788901,
+      "exit": 0,
+      "log": "automation-audit-test.log",
+      "registrations": 1
+    },
+    "source_lock": {
+      "ok": true,
+      "receipt": "source-lock-check.json"
+    },
+    "test_plan": {
+      "after": 100,
+      "assertion_scripts": 10,
+      "before": 100,
+      "log": "test-counts.log",
+      "registered_cases": 90
+    },
+    "typecheck": {
+      "exit": 0,
+      "log": "typecheck.log"
+    }
+  },
+  "merged_main": "7bfb459185882497098b4fed00155f248874ce81",
+  "prior_ci": {
+    "failed_assertion": "automationRulesBrowserFlow audit row locator expected raw rule id and lowercase updated",
+    "failure_job": 131375479964,
+    "run": 43268823033
+  },
+  "product_push": "success",
+  "product_push_receipt": "product-push.log",
+  "publication_scan": "fleet-only landing gate per cloud adaptation",
+  "push_attempts": 1,
+  "pushed_ref": "refs/heads/cloud/sd-lamp-audit-labels-1-pc1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "starting_head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "tag": "sd-lamp-audit-labels-1-pc1"
+}

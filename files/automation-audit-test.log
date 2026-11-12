@@ -1,0 +1,38 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence (367461.988904ms)
+ℹ PagerDuty: start the real Worker and apply the prior schema.
+ℹ PagerDuty: Worker ready.
+ℹ PagerDuty: D1 binding ready.
+ℹ PagerDuty: migration retained prior rows; authenticate the owner.
+ℹ PagerDuty: map signed webhook evidence and publish responder notes.
+ℹ PROBE INTAKE-009 4: exact captured signed delivery replay -> original incident and receipt identities; complete intake inventories and public bytes unchanged
+ℹ PROBE INTAKE-009 3: signed exact and partial service matches -> all three exact components; ID-only and name-only controls exclude the compound component
+ℹ PROBE INTAKE-009 6 private: receipt identity reads -> correct source, key, incident, recovered state and provider time; only matching private draft closes; all public bytes retained
+ℹ PagerDuty: publish one note per update, including provider failure.
+ℹ PROBE INTAKE-009 6 published: returned recovery receipt -> exact source, incident, state and provider time; Monitoring and complete published updates retained
+ℹ PROBE INTAKE-009 7: fresh triggers, acknowledged and escalated events -> unchanged complete public inventory (46 artifacts), response bytes and generation; private permalinks 404
+ℹ PagerDuty: export and restore without credentials.
+ℹ PagerDuty workerd proof: signed mapping, private recovery, timed brief, one note per publication, visible HTTP 403, sealed custom authorship, owner-default reconnection, credential-free restore, and source erasure.
+ℹ INTAKE-014 and INTAKE-011: bearer, alertId dedup, all component matchers, private notes/brief evidence, fixed vendor notes/close, unpublished recovery and New Relic workflow fixture passed.
+ℹ AUTO-001 draft: no saved rule and an explicit draft rule preserve byte-identical retained public artifacts.
+ℹ AUTO-001 validation: unauthenticated, malformed, unknown and incomplete-template rule requests change no product rows or public snapshot.
+ℹ AUTO-001 claim: the saved named state reaches the public component in under 30 seconds, with no update or subscriber notification, and recovery releases it.
+ℹ AUTO-001 measured claim to public state: 169.0ms.
+ℹ AUTO-001 claim and publish: only saved operator text is published, using saved channel selection and one publication per firing/recovery despite redelivery and Queue retries.
+ℹ AUTO-001 grouped alerts: two ruled fingerprints, a separately mapped unruled firing component, partial recovery, component recovery and repeated deliveries create exactly one update/email per phase.
+ℹ AUTO-001 broken template: removing saved recovery wording degrades the rule visibly to draft without a claim, update or notification.
+ℹ AUTO-001 audit: rule create, edit and delete appear with the saving owner and valid instants through TEAM-007's audit API.
+ℹ AUTO-001 erasure: deleting a source releases its active rule claim with append-only history, no publication and a retained audit entry.
+ℹ AUTO-001 durable work: a transaction rejection is visible, Cron resumes it without redelivery, and recovery before the first publication closes the private run without late text or duplicate notifications.
+ℹ AUTO-002: controlled 60-second firing, three-minute firing, two-minute refire during five-minute hold, full recovery, silent claim, attributed claim and publication Undo, replay refusal and pending-source erasure pass.
+ℹ UPTIME-008/INTAKE-011: next-snapshot pushes, four real provider adapters at fake edges, twenty-minute disconnected gap, verified Uptime timings and aggregate retention passed.
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 369529.788901

@@ -1,0 +1,68 @@
+{
+  "date": "2026-11-12T18:47:49.971Z",
+  "install": "fresh rer setup --owner-email fleet@runeditrun.com --non-interactive; rer dev --port 8787",
+  "fixture": "native incident publish, maintenance scheduling and operator invitation; development mail suppressed",
+  "baseline": "origin/main audit rendering before saved defect fix",
+  "before": {
+    "text": "Time\tOperator\tAction\tRecord\tReason\nNov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tinvited\toperator\necf6d909-4bbd-44ab-a9eb-edbd5001b4ee\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tnotice-published\tmaintenance\n01M78HCM766B0E9SGCYSYEG46J\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments 1794509257561\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tpublished\tincident-update\n01M78HCKV518M9XWS22QC1M45N\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments 1794509257561\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tSystem\nAutomated operation\n\tnotice-published\tmaintenance\n01M78HAJB15QJY0JA2ZTN1J2PC\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tinvited\toperator\nf2552c06-619a-46ad-9526-42fe7cf33214\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tnotice-published\tmaintenance\n01M78HAJB15QJY0JA2ZTN1J2PC\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tpublished\tincident-update\n01M78HAJ120PWV8A58CB095GA2\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments\n\t\u2014\nNov 12, 2026, 18:42 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tsign-in link created from the command line\toperator\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\t\u2014",
+    "rows": [
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tinvited\toperator\necf6d909-4bbd-44ab-a9eb-edbd5001b4ee\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tnotice-published\tmaintenance\n01M78HCM766B0E9SGCYSYEG46J\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments 1794509257561\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tpublished\tincident-update\n01M78HCKV518M9XWS22QC1M45N\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments 1794509257561\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tSystem\nAutomated operation\n\tnotice-published\tmaintenance\n01M78HAJB15QJY0JA2ZTN1J2PC\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tinvited\toperator\nf2552c06-619a-46ad-9526-42fe7cf33214\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tnotice-published\tmaintenance\n01M78HAJB15QJY0JA2ZTN1J2PC\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tpublished\tincident-update\n01M78HAJ120PWV8A58CB095GA2\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tstate-changed\tcomponent\nSynthetic Lamp audit payments\n\t\u2014",
+      "Nov 12, 2026, 18:42 UTC+00:00\tOwner\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\tsign-in link created from the command line\toperator\n5ad97235-87ed-45e4-9ec4-a6e5ad9af5bf\n\t\u2014"
+    ],
+    "captures": [
+      {
+        "file": "audit-before-1440.png",
+        "width": 1440,
+        "horizontalOverflow": false
+      },
+      {
+        "file": "audit-before-390.png",
+        "width": 390,
+        "horizontalOverflow": false
+      }
+    ]
+  },
+  "after": {
+    "text": "Time\tOperator\tAction\tRecord\tReason\nNov 12, 2026, 18:47 UTC+00:00\tOwner\tInvited an operator\tsynthetic-lamp-audit-1794509257561@example.test\nOperator\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\tPublished a maintenance notice\tSynthetic Lamp audit database upgrade\nMaintenance\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments 1794509257561\nComponent\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\tPublished an incident update\tSynthetic Lamp payment delays\nIncident update\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments 1794509257561\nComponent\n\t\u2014\nNov 12, 2026, 18:47 UTC+00:00\tSystem\tPublished a maintenance notice\tSynthetic Lamp audit database upgrade\nMaintenance\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\tInvited an operator\tsynthetic-lamp-audit-1@example.test\nOperator\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\tPublished a maintenance notice\tSynthetic Lamp audit database upgrade\nMaintenance\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments\nComponent\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\tPublished an incident update\tSynthetic Lamp payment delays\nIncident update\n\t\u2014\nNov 12, 2026, 18:46 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments\nComponent\n\t\u2014\nNov 12, 2026, 18:42 UTC+00:00\tOwner\tSign in link created from the command line\tfleet@runeditrun.com\nOperator\n\t\u2014",
+    "rows": [
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\tInvited an operator\tsynthetic-lamp-audit-1794509257561@example.test\nOperator\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\tPublished a maintenance notice\tSynthetic Lamp audit database upgrade\nMaintenance\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments 1794509257561\nComponent\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\tPublished an incident update\tSynthetic Lamp payment delays\nIncident update\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments 1794509257561\nComponent\n\t\u2014",
+      "Nov 12, 2026, 18:47 UTC+00:00\tSystem\tPublished a maintenance notice\tSynthetic Lamp audit database upgrade\nMaintenance\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\tInvited an operator\tsynthetic-lamp-audit-1@example.test\nOperator\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\tPublished a maintenance notice\tSynthetic Lamp audit database upgrade\nMaintenance\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments\nComponent\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\tPublished an incident update\tSynthetic Lamp payment delays\nIncident update\n\t\u2014",
+      "Nov 12, 2026, 18:46 UTC+00:00\tOwner\tChanged a component state\tSynthetic Lamp audit payments\nComponent\n\t\u2014",
+      "Nov 12, 2026, 18:42 UTC+00:00\tOwner\tSign in link created from the command line\tfleet@runeditrun.com\nOperator\n\t\u2014"
+    ],
+    "captures": [
+      {
+        "file": "audit-after-1440.png",
+        "width": 1440,
+        "horizontalOverflow": false
+      },
+      {
+        "file": "audit-after-390.png",
+        "width": 390,
+        "horizontalOverflow": false
+      }
+    ]
+  },
+  "visible_machine_id_occurrences": {
+    "before": 19,
+    "after": 0
+  }
+}

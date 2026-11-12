@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "blob": "29514463263afb48808fe0cf992845a1a892a6d3",
+      "bytes": 1941,
+      "path": "PLAN.md",
+      "sha256": "f0ea1d9e985ef75f394deb2e839321c7e3ee3d98817027f7732d6332e1e5746f"
+    },
+    {
+      "blob": "6481d9f11e02cbc55cd030daaeaa0d80f5bfaa3d",
+      "bytes": 2328,
+      "path": "RECEIPT.json",
+      "sha256": "8afd35227194a20524839bcdc5dec0c658fafd369f9553db4e56e4b9dd67f797"
+    },
+    {
+      "blob": "2d9f7603b203e39c17b899c9c162d7c514a86838",
+      "bytes": 7601,
+      "path": "REPORT.md",
+      "sha256": "35f5e025d17136306650e5f0eaf7f2cf00449db5fd68ceea2b52249813f579eb"
+    },
+    {
+      "blob": "cadb24b3064cbfd76ec8d40a1de58a7c8c9eada7",
+      "bytes": 183365,
+      "path": "audit-after-1440.png",
+      "sha256": "a5cf165fb0492e40afcbd876bb0d4357934fed4d76a3d22f1f2de2506211e39a"
+    },
+    {
+      "blob": "b13632aecd376e11549b661fe0d69a11e7e55f52",
+      "bytes": 227390,
+      "path": "audit-after-390.png",
+      "sha256": "8c664bbddb3db6e4eaf4ec910cf042a265b0f6f71d7e88d9fbd44a42fd99ce4b"
+    },
+    {
+      "blob": "1bb17d427d39c320e081f4be61b6f179a4bb7aab",
+      "bytes": 220531,
+      "path": "audit-before-1440.png",
+      "sha256": "ef232172aeb384c3a5b6e96fb378e5d534e000bdda0a0063eee731432c3975bd"
+    },
+    {
+      "blob": "32a622b5222bd44b46ffe45cfdfb5cde79e31656",
+      "bytes": 254137,
+      "path": "audit-before-390.png",
+      "sha256": "c1de5e3949cee3dffc58984733c2928e4f6b97090463115db7417ac8f19e4042"
+    },
+    {
+      "blob": "06e42a4b3d16f074872c57b36f56777ce1812af2",
+      "bytes": 371,
+      "path": "audit-labels-test.log",
+      "sha256": "7ec97b184ba814245f96d35d1860ff3d007fd7c9bf95ba2fa26e82651f59a587"
+    },
+    {
+      "blob": "b80b72cfe8ae05a45f7cd8cc1c28e0ae383d1596",
+      "bytes": 4041,
+      "path": "automation-audit-test.log",
+      "sha256": "19bd3692053a6e09aeea3fd0dc6ce3e5fea47fa6e43066d2c72e57992d92cb38"
+    },
+    {
+      "blob": "33ef1ad0ecfdb47e13a9ef98a0c05de1f30fa3ce",
+      "bytes": 7902,
+      "path": "browser-proof.json",
+      "sha256": "0e3bbbe4dcb6094d20ca0ed0ab82fca6462d7f0c289b551696003b2db9cbfc82"
+    },
+    {
+      "blob": "d9fd12fadcf7c04f8ac160e6b7a8ae6a8ca4a6e1",
+      "bytes": 195,
+      "path": "browser-proof.log",
+      "sha256": "97d75599a218769262509e40d1f0914392606f1fc806898f4ff1b9df82a6286f"
+    },
+    {
+      "blob": "8b397759c3490f5d34b737e6b013a75c1929a9a8",
+      "bytes": 170,
+      "path": "candidate-identities.log",
+      "sha256": "c9f719ac04ee5a87f887bd38a32e08c08cd63abd5a2deb8c3e01856328b8b56d"
+    },
+    {
+      "blob": "5a3a2deb01a7aac97d5f22606f757cef7079c3aa",
+      "bytes": 17254,
+      "path": "ci-receipt.json",
+      "sha256": "5f4035d97d4d671d65148fe09bb4c750fdaeb8cd4e19dce9fd3b26dd8d92489a"
+    },
+    {
+      "blob": "2e2cb719011894da7437d8112619086b92eccd58",
+      "bytes": 1584,
+      "path": "ci-watch.log",
+      "sha256": "5442fe91cc30d5827b9e50fe4c6331f1960e8431982207c6fd4f06f89a7683b5"
+    },
+    {
+      "blob": "e7eff10c396a26fe68bd79457286e049f7682320",
+      "bytes": 608,
+      "path": "identity-receipt.json",
+      "sha256": "24c4d6f1edebd05bf1e812b0be9e3cb946a14a630849226615f4efd2fe345af9"
+    },
+    {
+      "blob": "af7e2f418860c13035034b5359c14efce10b248e",
+      "bytes": 742,
+      "path": "product-push.log",
+      "sha256": "47a04410b9aba08d5695c465a85c720f37dbc5d0bee2d2ba7541a4e01739eca2"
+    },
+    {
+      "blob": "a21a6304bf8bbf8383ae087d679dc84e1db96550",
+      "bytes": 78,
+      "path": "source-lock-check.json",
+      "sha256": "e89d84b616e5ce573c8cd271acec865fd9ea94be57d6758af42f3534b80a67fa"
+    },
+    {
+      "blob": "6034de2b4eeb5bb5b95bafa79aed6ffac283d820",
+      "bytes": 35347,
+      "path": "starting-delivery-failure.log",
+      "sha256": "bf3611525dacfe8a9e556f2b8dddc9a7b9a68c8dadf18297be506a818b138928"
+    },
+    {
+      "blob": "6a68e3aaaca45b6c0976cf5ccda93cf1ee041284",
+      "bytes": 169,
+      "path": "test-counts.log",
+      "sha256": "0dd13eb51cfbe7acbd40c30e7eba66ad4d0b91f65d850cd94f6c2648f1b7cd3e"
+    },
+    {
+      "blob": "ec449b7ee6a1d1157c5d997a9ad90922f3f815ff",
+      "bytes": 219,
+      "path": "typecheck.log",
+      "sha256": "b13fc63cd8ded2edf8cde8a2432a4b7dab5bb15dd430d2571fabbdf02b75fdc6"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-audit-labels-1-pc1",
+  "product_head": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
+  "ref": "refs/heads/evidence/sd-lamp-audit-labels-1-pc1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-audit-labels-1-pc1"
+}

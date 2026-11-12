@@ -1,0 +1,4 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "ok": true
+}
