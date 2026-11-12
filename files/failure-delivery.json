@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-12T18:17:21.783308+00:00",
+  "run_id": 43267587466,
+  "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "job_id": 131355946011,
+  "job": "shards (delivery)",
+  "test": "AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence",
+  "registration": "tests/e2e/channels-and-presets.test.mjs:482:1",
+  "failure_type": "testCodeFailure",
+  "error": "locator.waitFor: Timeout 30000ms exceeded.",
+  "actual_assertion": "waiting for locator('#audit-log').locator('tbody tr').filter({ hasText: '01M78CPQBBQ18HGZGCWH484QQH' }).filter({ hasText: 'updated' }).first() to be visible",
+  "stack": "automationRulesBrowserFlow (tests/e2e/helpers/automation-rules-browser-flow.mjs:86:20)",
+  "generated_view_exception": false,
+  "repair_attempted": false
+}

@@ -1,0 +1,8 @@
+{
+  "run_id": 43267587466,
+  "job_id": 131383327537,
+  "job": "verify",
+  "conclusion": "failure",
+  "failed_step": "Require every planned command to succeed on this commit",
+  "failed_step_log": "verify\tRequire every planned command to succeed on this commit\t\ufeff2026-11-12T18:02:40.1939179Z ##[group]Run node scripts/verification/aggregate.mjs\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.1939541Z \u001b[36;1mnode scripts/verification/aggregate.mjs\u001b[0m\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.1939803Z \u001b[36;1mtest \"$SHARDS_RESULT\" = success\u001b[0m\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.1956186Z shell: /usr/bin/bash -e {0}\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.3666242Z The shard jobs did not all succeed.\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.3667015Z composer: wrong shard, commit or unsuccessful completion\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.3667498Z delivery: wrong shard, commit or unsuccessful completion\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.3667960Z public: wrong shard, commit or unsuccessful completion\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.3668990Z Verification: 6/9 shards completed successfully for this commit.\nverify\tRequire every planned command to succeed on this commit\t2026-11-12T18:02:40.3722825Z ##[error]Process completed with exit code 1.\n"
+}

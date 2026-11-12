@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-12T18:26:22.408533+00:00",
+  "repository": "just-every/run-lamp",
+  "tag": "sd-lamp-audit-labels-r1",
+  "branch": "cloud/sd-lamp-audit-labels-r1",
+  "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "source_branch": "cloud/sd-lamp-audit-labels-1",
+  "product_status": "BLOCKED",
+  "product_branch_push_attempted": false,
+  "product_commits_created": 0,
+  "source_edits": 0,
+  "worktree_clean": true,
+  "main_modified": false,
+  "pr_343_modified": false,
+  "new_pr_created": false,
+  "run_id": 43267587466,
+  "run_conclusion": "failure",
+  "failed_jobs": [
+    131355946011,
+    131355946277,
+    131383327537
+  ],
+  "cancelled_jobs": [
+    131355946033
+  ],
+  "github_invocations": 8,
+  "github_budget": 10,
+  "archive_invocations_per_failed_job": 1,
+  "reruns": 0,
+  "repairs": 0,
+  "clause_status_changes": [],
+  "claim": "TEAM-007 PARTIAL points=none GAP unchanged",
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "evidence_ref": "refs/heads/evidence/sd-lamp-audit-labels-r1",
+  "clone_cleanup": "after evidence publication and manifest/file verification"
+}

@@ -1,0 +1,42 @@
+{
+  "at": "2026-11-12T17:56:37.013943+00:00",
+  "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "files": [
+    {
+      "path": "sources.lock.json",
+      "bytes": 394007,
+      "sha256": "46e6b8e4eab22b88b7832a49aaf16984b8877e93fce169299d6efcfe068e2039"
+    },
+    {
+      "path": "src/core/features/audit-log/labels.ts",
+      "bytes": 1081,
+      "sha256": "5e5d145f4f4a66cc8151387990997f7ba992f1fc774006f6c66973e03ebd6dca"
+    },
+    {
+      "path": "src/core/features/audit-log/repository.ts",
+      "bytes": 3866,
+      "sha256": "5dec21b0e77562040c2dab994cdfdb3be18b885848ce37dd1c8c6f49a7621732"
+    },
+    {
+      "path": "src/core/features/audit-log/routes.ts",
+      "bytes": 2265,
+      "sha256": "26d19fee184b78b3470b8214de63f663dbf2f5bf62469120cd1d6f826ca22d99"
+    },
+    {
+      "path": "src/core/features/audit-log/ui/audit-log.tsx",
+      "bytes": 4518,
+      "sha256": "b88850702c762bd93c6768c70deda848a136d3427717cd880a3cd5d22ff738e6"
+    },
+    {
+      "path": "tests/e2e/helpers/audit-labels-flow.mjs",
+      "bytes": 6618,
+      "sha256": "47551ac4abb7015c1d168ab0cd06db84105b5da24c61ef8320da873ae4249705"
+    },
+    {
+      "path": "tests/e2e/publishing-browser.test.mjs",
+      "bytes": 59547,
+      "sha256": "18ef92f8c15148b5218f073f92234cd93862d90992ccfd1dd59eca5f5526746d"
+    }
+  ],
+  "interpretation": "Static file custody only; this is not new runtime or browser evidence."
+}

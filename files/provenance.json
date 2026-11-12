@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-12T17:53:50.074703+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-audit-labels-r1",
+  "source_branch": "cloud/sd-lamp-audit-labels-1",
+  "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "main": "f1d878b33ec5063be9ea6a331f8fbd9d090c0a65",
+  "common_ancestor": "b2ba93174222d086693aa6e137c598ff7b51c951",
+  "candidate_commits": [
+    "4e97cd125e6e6cb60a8c05e05878a3c96d78490b"
+  ],
+  "identity_pass": true,
+  "trailers": [],
+  "worktree_clean": true,
+  "product_commits_created": 0,
+  "clause": "TEAM-007",
+  "status_before": "partial",
+  "status_after": "partial",
+  "points": "none",
+  "counts_before": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "counts_after": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "candidate_parents": [
+    "b2ba93174222d086693aa6e137c598ff7b51c951"
+  ],
+  "merge_commits_in_candidate_range": 0
+}

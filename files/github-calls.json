@@ -1,0 +1,50 @@
+[
+  {
+    "number": 1,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43267587466",
+    "at": "2026-11-12T17:50:49.889577+00:00",
+    "run_id": 43267587466
+  },
+  {
+    "number": 2,
+    "command": "gh api repos/just-every/run-lamp/actions/runs?head_sha=4e97cd125e6e6cb60a8c05e05878a3c96d78490b&per_page=100",
+    "at": "2026-11-12T17:55:55.392464+00:00",
+    "exit_code": 0
+  },
+  {
+    "number": 3,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43267587466 --jq {status,conclusion,head_sha,html_url}",
+    "at": "2026-11-12T18:00:56.428247+00:00",
+    "exit_code": 0
+  },
+  {
+    "number": 4,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43267587466 --jq {status,conclusion,head_sha,html_url}",
+    "at": "2026-11-12T18:05:57.468410+00:00",
+    "exit_code": 0
+  },
+  {
+    "number": 5,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43267587466/jobs?per_page=100 --jq {total_count,jobs:[.jobs[]|{id,name,status,conclusion,html_url,steps:[.steps[]|{name,status,conclusion,number}]}]}",
+    "at": "2026-11-12T18:10:58.497701+00:00",
+    "exit_code": 0
+  },
+  {
+    "number": 6,
+    "command": "gh run view 43267587466 --repo just-every/run-lamp --job 131355946011 --log-failed",
+    "at": "2026-11-12T18:15:59.541951+00:00",
+    "exit_code": 0
+  },
+  {
+    "number": 7,
+    "command": "gh run view 43267587466 --repo just-every/run-lamp --job 131355946277 --log-failed",
+    "at": "2026-11-12T18:21:00.567785+00:00",
+    "exit_code": 0
+  },
+  {
+    "number": 8,
+    "command": "gh run view 43267587466 --repo just-every/run-lamp --job 131383327537 --log-failed",
+    "at": "2026-11-12T18:26:01.592639+00:00",
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-12T18:22:30.696724+00:00",
+  "run_id": 43267587466,
+  "head": "4e97cd125e6e6cb60a8c05e05878a3c96d78490b",
+  "job_id": 131355946277,
+  "job": "shards (public)",
+  "registration": "tests/e2e/delivery-contract.test.mjs:28:1",
+  "test": "Subscriber consent, selected publication, channel delivery, export and erasure",
+  "failure_type": "testCodeFailure",
+  "error": "Address already in use (127.0.0.1:35489). Please check that you are not already running a server on this address or specify a different port with --port.",
+  "code": "ERR_ADDRESS_IN_USE",
+  "name": "MiniflareCoreError [ERR_ADDRESS_IN_USE]",
+  "generated_view_exception": false,
+  "repair_attempted": false
+}

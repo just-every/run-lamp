@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-12T18:26:22.355118+00:00",
+  "files": [
+    {
+      "file": "failed-job-131355946011.log",
+      "source_sha256": "6499a63a00cc000c8572ef0de12956cded03d334e7cbd06a142b1a52bdd81255",
+      "published_sha256": "5c6854386015214ec30e599142ba53db8c670bd69b22308f9fecf8c97e26d915",
+      "runner_environment_lines_removed": 6,
+      "assertion_output_rewritten": false
+    },
+    {
+      "file": "failed-job-131355946277.log",
+      "source_sha256": "f5b0e578ae3f202a3605ae9da1baa60207130586af0c2023ac37581bd5a6bdc3",
+      "published_sha256": "d754054cf9e2ee3db505127026a57446f20ea448297b47dc56a29e3a7ac2af71",
+      "runner_environment_lines_removed": 6,
+      "assertion_output_rewritten": false
+    },
+    {
+      "file": "failed-job-131383327537.log",
+      "source_sha256": "187eaed55a2566b92b2e49eb8f44ef654a7de7e547819d81c8c40e9ccb50f89c",
+      "published_sha256": "05e5b31e5ee1bed938005754f61525c77be0fe2f35ccc2a15f2e65c27d6f742e",
+      "runner_environment_lines_removed": 4,
+      "assertion_output_rewritten": false
+    }
+  ]
+}
