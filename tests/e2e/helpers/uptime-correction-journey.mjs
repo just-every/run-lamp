@@ -23,7 +23,7 @@ const namedRow = (tree, rowClass, nameClass, name) => {
   return rows[0];
 };
 
-function rootFigures(html, template, target, control, expected, daily, worst) {
+export function rootFigures(html, template, target, control, expected, daily, worst) {
   const tree = parse(html);
   assert.equal(attr(find(tree, node => node.tagName === 'body')[0], 'data-template') ?? 'default', template, 'the regions case must exercise its real layout, not the calm fallback');
   for (const [component, value] of [[target, expected], [control, '100.00%']]) {
@@ -56,6 +56,16 @@ function rootFigures(html, template, target, control, expected, daily, worst) {
   }
 }
 
+// Seed a real closed interval through the same standing-claim door used by an
+// operator. Callers keep the Worker clock fixed while comparing uptime figures.
+export async function recordClosedOutage(j, component, { startsAt, endsAt }) {
+  await j.json('/test/clock', 'PUT', { now: Date.parse(startsAt) }, 204);
+  await j.signIn(undefined, { fresh: true });
+  await j.json(`/api/app/components/${component.id}/standing-claim`, 'PUT', { state: 'Major outage' });
+  await j.json('/test/clock', 'PUT', { now: Date.parse(endsAt) }, 204);
+  await j.json(`/api/app/components/${component.id}/standing-claim`, 'PUT', { state: 'Operational' });
+}
+
 // Four independently warmed native installations prevent a later template edit
 // from masking a missing correction invalidation. All figures for one correction
 // share one real monotonic deadline; the Worker clock stays fixed throughout.
@@ -73,11 +83,7 @@ export async function uptimeCorrectionJourney() {
         const control = await j.component('synthetic-lamp-uptime-2', { region: 'North America' });
         const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'hostname', 'mailFromAddress', 'footerCreditEnabled'].map(key => [key, saved[key]]));
         await j.json('/api/app/page-settings', 'PUT', { ...settings, template, timezone: 'UTC' });
-        await clock(startsAt);
-        await j.signIn(undefined, { fresh: true });
-        await j.json(`/api/app/components/${target.id}/standing-claim`, 'PUT', { state: 'Major outage' });
-        await clock(endsAt);
-        await j.json(`/api/app/components/${target.id}/standing-claim`, 'PUT', { state: 'Operational' });
+        await recordClosedOutage(j, target, { startsAt, endsAt });
         await clock(observedAt);
         const operator = (await j.json('/api/app/session')).operator;
         const correctionPath = `/api/app/components/${target.id}/history-corrections`;
