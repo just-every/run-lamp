@@ -1,7 +1,7 @@
 {
   "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
   "github_calls_prior": 4,
-  "watch_calls": 2,
+  "watch_calls": 5,
   "observations": [
     {
       "id": 43283798281,
@@ -18,8 +18,32 @@
       "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
       "html_url": "https://github.com/just-every/run-lamp/actions/runs/43283798281",
       "observed_at": 1794509695.1974332
+    },
+    {
+      "id": 43283798281,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43283798281",
+      "observed_at": 1794509996.2266304
+    },
+    {
+      "id": 43283798281,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43283798281",
+      "observed_at": 1794510297.259554
+    },
+    {
+      "id": 43283798281,
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43283798281",
+      "observed_at": 1794511197.2973018
     }
   ],
-  "last_call": 1794509695.1974332,
+  "last_call": 1794511197.2973018,
   "run_id": 43283798281
 }

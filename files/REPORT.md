@@ -48,3 +48,13 @@ PR: https://github.com/just-every/run-lamp/pull/347
 The guarded product push succeeded on attempt 1. Main was merged at 7bfb459185882497098b4fed00155f248874ce81. The committed source lock passes; generated views and contract source were not changed. Both targeted journeys and typecheck passed before committing; the only test-side source probe restored its exact original bytes. The product worktree is clean.
 
 Browser inspection: all ten incident screenshots were inspected at their native 1440/390 viewport widths. The resolved composer, active correction, public summary and incident permalink remain readable; the correction link identifies its original lifecycle/time in each surface. No additional UI was introduced by the continuation.
+
+Evidence transport check: an isolated fetch of the first report-only head 01da70958ddbe224e332a01d0d4c2f0128aeba32 restored and verified all 28 selected files against manifest lengths, SHA-256 hashes and Git blob IDs. The actual receipt is evidence-roundtrip.json. The final evidence publication will add the terminal CI observation.
+
+## Final result
+
+Exact-SHA Verify run 43283798281 completed successfully on 1736dcb8a7c87d0f776a97c99a3ddfa222282a0a: https://github.com/just-every/run-lamp/actions/runs/43283798281 . No contract-generator exception was needed. Nine GitHub API/log/PR calls were used, with one watcher and at least 300 seconds between observations of the candidate run. No workflow was rerun or dispatched.
+
+The saved failing head is preserved as a parent of the candidate. Product push succeeded once; PR #347 is left for the lane: https://github.com/just-every/run-lamp/pull/347 . There are no remaining builder blockers. The product clone will be removed after final evidence publication and isolated manifest verification; all reports and receipts remain in the packet outside it. The fleet still owns publication scanning and landing.
+
+READY branch=cloud/main-lamp-incident-corrections-1-pc1 head=1736dcb8a7c87d0f776a97c99a3ddfa222282a0a

@@ -28,11 +28,13 @@
   "publication_scan": "fleet Mac lander; unavailable to this VM",
   "ci": {
     "id": 43283798281,
-    "status": "in_progress",
-    "conclusion": null,
+    "status": "completed",
+    "conclusion": "success",
     "head_sha": "1736dcb8a7c87d0f776a97c99a3ddfa222282a0a",
     "html_url": "https://github.com/just-every/run-lamp/actions/runs/43283798281",
-    "observed_at": 1794509695.1974332
+    "observed_at": 1794511197.2973018
   },
-  "terminal_product_status": "PUSHED; exact-SHA Verify in progress"
+  "terminal_product_status": "READY",
+  "github_api_calls_used": 9,
+  "blockers": []
 }
