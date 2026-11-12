@@ -1,0 +1,109 @@
+{
+  "head": "796e6766e7415a5db261b47acf453973bc397b7f",
+  "branch": "cloud/main-lamp-connect-guides-1-c1",
+  "base": "2ce5da92774ad519d843362dc2d721ddfb0e03fa",
+  "sourceBranch": "cloud/main-lamp-connect-guides-1-land-c71ed656d2",
+  "sourceHead": "31698ca375d783a470c1485b10e448ce6c2b3d16",
+  "sourceMainParent": "7bfb459185882497098b4fed00155f248874ce81",
+  "productCommits": 1,
+  "changedFiles": [
+    "DIVERGENCE.md",
+    "docs/chat-desk.md",
+    "docs/chat-desk/slack-manifest.json",
+    "docs/site.json",
+    "docs/social-accounts.md",
+    "sources.lock.json",
+    "src/core/features/chat-desk/ui/chat-links-panel.tsx",
+    "src/core/features/social/ui/social-settings.tsx"
+  ],
+  "contractViewFilesIdentical": true,
+  "clauseCountsBefore": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "clauseCountsAfter": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "clauseStatusChanges": [],
+  "checkCountsBefore": {
+    "registrations": 89,
+    "assertionScripts": 10,
+    "total": 99
+  },
+  "checkCountsAfter": {
+    "registrations": 89,
+    "assertionScripts": 10,
+    "total": 99
+  },
+  "sec3AddedLineCandidates": 0,
+  "helperAstEquivalentExceptRename": true,
+  "localChecks": {
+    "typecheck": "passed",
+    "contractDocs": "passed",
+    "sourceLock": "passed",
+    "verificationPlan": "passed",
+    "docsSiteBuild": {
+      "status": "passed",
+      "pages": 38,
+      "files": 63
+    },
+    "typecheckRuntime": "Node 22.20.0 / pnpm 10.12.4",
+    "docsJourney": {
+      "status": "passed",
+      "registrations": 1,
+      "failed": 0,
+      "durationMs": 56441.50297,
+      "name": "DOCS-001 PAGE-020 \u2014 Lobby, public Lamp site and accessible owner documentation journey"
+    }
+  },
+  "publicationScan": "Fleet full-history scan deferred to Mac lander as brief requires; added-line SEC-3 review completed",
+  "identity": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>",
+  "sec3SourceRoundAssignmentsBefore": 1,
+  "sec3CandidateAssignmentsAfter": 0,
+  "settingsGuideChoicesBefore": 0,
+  "settingsGuideChoicesAfter": 4,
+  "docsIndexGuidesBefore": 1,
+  "docsIndexGuidesAfter": 2,
+  "proofHarnessCorrection": "Initial probe over-counted docs links by including navigation; narrowed to index cards and reran. No product change.",
+  "browserReceipt": "BROWSER-RECEIPT.json",
+  "visualReview": {
+    "widths": [
+      1440,
+      390
+    ],
+    "screens": [
+      "Chat links",
+      "Social accounts"
+    ],
+    "result": "readable controls, guide links visible, no clipping in captured panels"
+  },
+  "initialCiFailure": {
+    "run": 43299323663,
+    "job": 131466708301,
+    "shard": "runtime",
+    "step": "Verify this product shard",
+    "test": "HIST-006 \u2014 independent public readership produces private traffic alerts and recoverable owner actions",
+    "assertion": "traffic alerts publish no customer-facing incident or content",
+    "difference": "Only snapshot generatedAt differs; overall Operational, maintenance null, incident null are unchanged.",
+    "sourceUnchangedFromMain": true,
+    "logCommand": "gh run view 43299323663 --repo just-every/run-lamp --job 131466708301 --log-failed",
+    "logCommandExit": 0,
+    "diagnostic": "CI-RUNTIME-FAILURE-EXCERPT.txt",
+    "aggregateJob": 131475051296,
+    "aggregateFailure": "Runtime shard completion failed; build and the other seven test shards succeeded."
+  },
+  "terminalCi": {
+    "conclusion": "success",
+    "head_sha": "796e6766e7415a5db261b47acf453973bc397b7f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43299323663",
+    "status": "completed",
+    "run_id": 43299323663,
+    "after_failed_jobs_retry": true
+  },
+  "terminalProductStatus": "READY",
+  "githubCallsUsed": 10,
+  "blockers": []
+}

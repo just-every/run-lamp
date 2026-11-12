@@ -1,0 +1,9 @@
+{
+  "run_id": 43299323663,
+  "head_sha": "796e6766e7415a5db261b47acf453973bc397b7f",
+  "action": "rerun-failed-jobs",
+  "exit_code": 0,
+  "requestedAtEpoch": 1794516112.5957885,
+  "reason": "Unchanged HIST-006 traffic snapshot generatedAt assertion; one retry authorized by brief",
+  "remainingGitHubCalls": 1
+}

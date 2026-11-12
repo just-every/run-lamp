@@ -1,0 +1,24 @@
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4736602Z # Subtest: HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4744605Z not ok 14 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4747135Z   ---
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4747402Z   duration_ms: 20676.041327
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4747626Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4747960Z   location: '[REDACTED]/tests/e2e/update-reminders.test.mjs:157:1'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4748322Z   failureType: 'testCodeFailure'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4748578Z   error: |-
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4748863Z     traffic alerts publish no customer-facing incident or content
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4749193Z     + actual - expected
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4749376Z     
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4749803Z     + '{"version":1,"generatedAt":"2026-11-12T20:31:00.000Z","overall":"Operational","maintenance":null,"incident":null}'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4750465Z     - '{"version":1,"generatedAt":"2026-11-12T20:25:33.934Z","overall":"Operational","maintenance":null,"incident":null}'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4750899Z     
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4751080Z   code: 'ERR_ASSERTION'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4751310Z   name: 'AssertionError'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4751801Z   expected: '{"version":1,"generatedAt":"2026-11-12T20:25:33.934Z","overall":"Operational","maintenance":null,"incident":null}'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4755596Z   actual: '{"version":1,"generatedAt":"2026-11-12T20:31:00.000Z","overall":"Operational","maintenance":null,"incident":null}'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4756253Z   operator: 'strictEqual'
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4756470Z   stack: |-
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4756852Z     trafficAlertsFlow (file://[REDACTED]/tests/e2e/helpers/traffic-alerts-flow.mjs:111:12)
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4757413Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4757878Z     async Test.run (node:internal/test_runner/test:1054:7)
+shards (runtime)	Verify this product shard	2026-11-12T20:25:52.4758320Z     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)

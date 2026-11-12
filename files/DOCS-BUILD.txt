@@ -1,0 +1,8 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Lamp build:workflow [ffabd86e34d9]
+Checking pinned pnpm
+10.12.4
+Building the run site
+{"pages":38,"assets":3,"styles":1}
+Run site written to dist/site (38 pages, 63 files): [REDACTED]/dist/site
+build: complete (exit 0)

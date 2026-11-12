@@ -1,0 +1,116 @@
+[
+  {
+    "number": 1,
+    "time": 1794514848.063187,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/pulls",
+      "--method",
+      "POST",
+      "-f",
+      "title=Guide owners through chat and social connections",
+      "-f",
+      "head=cloud/main-lamp-connect-guides-1-c1",
+      "-f",
+      "base=main",
+      "-F",
+      "body=@/tmp/lamp-pr-body.md",
+      "--jq",
+      "{number,html_url,head_sha:.head.sha}"
+    ]
+  },
+  {
+    "number": 2,
+    "time": 1794514850.1246638,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=796e6766e7415a5db261b47acf453973bc397b7f&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]"
+    ]
+  },
+  {
+    "number": 3,
+    "time": 1794515150.1711454,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43299323663",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 4,
+    "time": 1794515450.210452,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43299323663",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 5,
+    "time": 1794515750.252862,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43299323663",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 6,
+    "time": 1794516050.2969751,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43299323663",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "number": 7,
+    "time": 1794516062.5595908,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43299323663/jobs?per_page=100",
+      "--jq",
+      "[.jobs[] | {id,name,status,conclusion,failed_steps:[.steps[] | select(.conclusion==\"failure\") | {name,number}]}]"
+    ]
+  },
+  {
+    "number": 8,
+    "time": 1794516073.438654,
+    "args": [
+      "run",
+      "view",
+      "43299323663",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "131466708301",
+      "--log-failed"
+    ]
+  },
+  {
+    "number": 9,
+    "time": 1794516110.584057,
+    "args": [
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-lamp/actions/runs/43299323663/rerun-failed-jobs"
+    ]
+  },
+  {
+    "number": 10,
+    "time": 1794516712.6356099,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43299323663",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "head": "796e6766e7415a5db261b47acf453973bc397b7f",
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "checks": [
+    "1440 Settings connected-tool guides: no overflow or serious/critical accessibility violation",
+    "Chat setup and all three social setup choices expose the on-site guide through real Settings controls",
+    "1440 chat guide: no overflow or serious/critical accessibility violation",
+    "chat-desk: all local guide and manifest links return HTTP 200",
+    "social-accounts: all local guide and manifest links return HTTP 200",
+    "1440 social guide: no overflow or serious/critical accessibility violation",
+    "Docs index exposes both connected-tool guides"
+  ],
+  "screenshots": [
+    "screenshots/1440-chat-links.png",
+    "screenshots/1440-social-accounts.png",
+    "screenshots/1440-chat-guide.png",
+    "screenshots/1440-social-guide.png",
+    "screenshots/1440-docs-index.png",
+    "screenshots/390-chat-links.png",
+    "screenshots/390-social-accounts.png",
+    "screenshots/390-chat-desk-guide.png",
+    "screenshots/390-social-accounts-guide.png",
+    "screenshots/390-docs-index.png"
+  ],
+  "pageErrors": [],
+  "providerCalls": false,
+  "fixture": "isolated local Worker and synthetic owner session; no real profile or provider credentials"
+}
