@@ -1,0 +1,20 @@
+{
+  "email": "EMAIL DELIVERY\n\nEmail is off locally. No email is sent from this computer.\n\nFor hosted email, set MAIL_PROVIDER, MAIL_FROM_ADDRESS, MAIL_DKIM_SELECTOR and MAIL_PROVIDER_API_KEY in your deploy’s private input file or environment, then redeploy.\n\nEmail provider setup\n\nSecondary provider\nNone\n\nTo make a secondary available here, set MAIL_SECONDARY_PROVIDER and MAIL_SECONDARY_API_KEY in the same private deployment inputs, then redeploy.\n\nSecondary provider setup",
+  "sms": "SMS delivery\n\nSMS sending is off.\n\nSet TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN, plus TWILIO_FROM_NUMBER or TWILIO_MESSAGING_SERVICE, in your deploy’s private input file or environment, then redeploy.\n\nTwilio SMS setup\n\nAccepted countries\nUnited States\nCanada\nUnited Kingdom\nAustralia\nGermany\nFrance\nIndia\nJapan\nNew Zealand\nIreland\nNetherlands\nSpain\nItaly\nBrazil\nMexico\nSupport contact\nSave SMS settings",
+  "api": {
+    "local": true,
+    "primaryProvider": null,
+    "configuredSecondaryProvider": null,
+    "secondaryProvider": null
+  },
+  "screens": [
+    {
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "overflow": false
+    }
+  ]
+}

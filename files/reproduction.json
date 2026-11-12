@@ -1,0 +1,20 @@
+{
+  "url": "/app/settings#notifications",
+  "email": "EMAIL DELIVERY\n\nPrimary provider: SendGrid\n\nSecondary provider\nNone\n\nConnect a secondary provider in your hosting settings to make it available here.",
+  "sms": "SMS delivery\n\nSMS sending is off. Connect a Twilio provider in your hosting settings to enable it.\n\nAccepted countries\nUnited States\nCanada\nUnited Kingdom\nAustralia\nGermany\nFrance\nIndia\nJapan\nNew Zealand\nIreland\nNetherlands\nSpain\nItaly\nBrazil\nMexico\nSupport contact\nSave SMS settings",
+  "emailApi": {
+    "primaryProvider": "sendgrid",
+    "configuredSecondaryProvider": null,
+    "secondaryProvider": null
+  },
+  "smsApi": {
+    "settings": {
+      "countries": [
+        "US",
+        "CA"
+      ],
+      "supportContact": "lamp@localhost.invalid"
+    },
+    "configured": false
+  }
+}

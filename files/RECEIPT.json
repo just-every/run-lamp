@@ -1,0 +1,89 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-notification-providers-1",
+  "head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+  "base": "b2ba93174222d086693aa6e137c598ff7b51c951",
+  "pull_request": "https://github.com/just-every/run-lamp/pull/342",
+  "test_counts": {
+    "before": 99,
+    "after": 99,
+    "registrations_before": 89,
+    "registrations_after": 89,
+    "assertion_scripts": 10,
+    "cap": 200
+  },
+  "product_push": {
+    "attempts": 1,
+    "status": "succeeded"
+  },
+  "contract_status_changes": [],
+  "verification": {
+    "typecheck": "passed on exact candidate",
+    "production_build": "passed",
+    "source_lock": "passed",
+    "contract_documents": "passed",
+    "local_journey": "passed on exact candidate",
+    "hosted_provider_journey": "passed on exact candidate; 1440px and 390px configured screenshots retained",
+    "exact_sha_verify": {
+      "conclusion": "success",
+      "head_sha": "b56e150a97150f0582fbc0973aff867924f98ca5",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43267868089",
+      "status": "completed",
+      "run_id": 43267868089,
+      "observed_at": 1794504780
+    }
+  },
+  "provider_effects": "Only network-edge test fixtures; no real mail or SMS sent",
+  "publication_scan": "Fleet lander owns full publication scan; not run on cloud",
+  "browser": {
+    "candidate_head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+    "local_widths": [
+      1440,
+      390
+    ],
+    "hosted_widths": [
+      1440,
+      390
+    ],
+    "local_horizontal_overflow": false,
+    "provider_values_exposed": false,
+    "private_launch_logs_in_packet": false,
+    "local_server": "stopped after browser proof"
+  },
+  "commands": [
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-name-pattern=\"Local owner confirms public subscribers\" tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "candidate_head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+      "receipt": "candidate-local-journey.log"
+    },
+    {
+      "command": "LAMP_BROWSER_EVIDENCE=<packet>/hosted PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-name-pattern=\"Owner-selected provider fallback\" tests/e2e/delivery-contract.test.mjs",
+      "exit": 0,
+      "candidate_head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+      "receipt": "candidate-hosted-journey.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "candidate_head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "candidate_head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+      "receipt": "build.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "candidate_head": "b56e150a97150f0582fbc0973aff867924f98ca5",
+      "receipt": "source-lock-check.json"
+    }
+  ],
+  "product_checkout_clean": true,
+  "github_calls_used": 5,
+  "blockers": [],
+  "ready": "READY branch=cloud/main-lamp-notification-providers-1 head=b56e150a97150f0582fbc0973aff867924f98ca5"
+}

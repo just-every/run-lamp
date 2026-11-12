@@ -1,0 +1,6 @@
+Product push succeeded on attempt 1.
+command=python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-lamp-notification-providers-1
+remote=https://github.com/just-every/run-lamp
+ref=refs/heads/cloud/main-lamp-notification-providers-1
+head=b56e150a97150f0582fbc0973aff867924f98ca5
+PUSH_OK branch=cloud/main-lamp-notification-providers-1

@@ -1,0 +1,361 @@
+diff --git a/DIVERGENCE.md b/DIVERGENCE.md
+index 955cc53..c554d87 100644
+--- a/DIVERGENCE.md
++++ b/DIVERGENCE.md
+@@ -1,5 +1,13 @@
+ # DIVERGENCE.md
+ 
++## Notification provider guidance — 12 November 2026
++
++Settings → Notifications reports the composed sender's actual configuration and
++local suppression, so a fresh local install reads as email off. Email and SMS
++name their private deployment inputs and link to the on-site setup steps.
++Configured hosted senders retain their primary provider name. Sending, retries,
++failover and local suppression retain their existing behavior.
++
+ ## Statuspage reader guidance — 12 November 2026
+ 
+ The native Cutover report names the existing compatibility embed as served on
+diff --git a/docs/subscribers-and-notifications.md b/docs/subscribers-and-notifications.md
+index 652b366..dfa8be9 100644
+--- a/docs/subscribers-and-notifications.md
++++ b/docs/subscribers-and-notifications.md
+@@ -5,6 +5,67 @@ link and become active only after confirming. A pending address expires after
+ 72 hours. Subscribers can manage their component selection or unsubscribe from
+ their emailed link.
+ 
++## Connect email delivery
++
++**Settings → Notifications → Email delivery** reports the sender this installation
++actually uses. On a local `rer dev` installation, email is off even when a provider
++name is present: sign-in uses the one-click owner entry, subscriber pages say no
++email was sent, and the delivery log records **Not sent locally**. Adding hosted
++credentials does not turn local mail on. Use a hosted installation to send mail.
++
++On your own hosted installation, configure mail in the deploy's private input file
++outside the checkout (mode `0600`), or export the same names in the shell that runs
++deployment. These are deployment inputs, not fields you paste into Notifications.
++The [deploy guide's private input file step](deploy.md#step-1-make-a-private-input-file)
++shows where to keep the file; [step 6](deploy.md#step-6-mail)
++walks through authenticating a sender and obtaining a SendGrid or Resend key.
++
++1. Set `MAIL_PROVIDER` to `resend`, `sendgrid`, `mailgun`, `ses` or `postmark`.
++   Set `MAIL_FROM_ADDRESS` to the verified sender and `MAIL_PROVIDER_API_KEY` to
++   that provider's sending credential. Set `MAIL_DKIM_SELECTOR` for the sender's
++   DNS authentication check. The [provider-specific details below](#secondary-email-provider)
++   cover Mailgun's region, SES credentials and Postmark's separate domain-check key.
++2. Run `rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"` from
++   the Lamp folder, using the file path you chose in step 1 of the deploy guide.
++   A deployment using exported environment inputs can omit `--env-file`.
++3. Reopen **Settings → Notifications**. A configured sender is named as the
++   primary provider; missing sender credentials leave email off. A provider name
++   means its sending inputs are configured, not that a message reached a mailbox.
++   Follow the deploy guide's sender and received-message checks before relying on
++   delivery. Signed delivery callbacks have their own keys, described below.
++
++For Managed hosting, Run Edit Run supplies `MAIL_PROVIDER=rer`, `MAIL_FROM`,
++`MAIL_RELAY_URL` and the private `MAIL_API_KEY`; ask the hosting operator to repair
++missing managed-mail inputs. For an edition with a custom `mail.sender.v1`
++adapter, its author configures that adapter in `src/ext/index.server.ts`.
++Keep all credential values private; Notifications displays provider names only.
++
++## Connect SMS delivery
++
++SMS uses your Twilio account and a registered 10DLC campaign or verified toll-free
++sender. In the same private deployment input file (or exported deploy environment),
++set `TWILIO_ACCOUNT_SID` and `TWILIO_AUTH_TOKEN`. Add either `TWILIO_FROM_NUMBER`
++(your registered E.164 sender) or `TWILIO_MESSAGING_SERVICE` (the Messaging Service
++SID that owns your registered sender). Lamp uses the service when both are set.
++Obtain these from your [Twilio Console](https://console.twilio.com/); never put
++their values in source or a screenshot.
++
++Redeploy with `rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"`
++as described in [the private input file step](deploy.md#step-1-make-a-private-input-file).
++`rer deploy` also maintains the generated `SUBSCRIBER_TOKEN_SECRET` used for SMS
++management links. Reopen **Settings → Notifications → SMS delivery** to check that
++SMS is configured, then save the accepted countries and support contact there.
++Countries and contact are page preferences; they do not connect a provider.
++SMS stays off when required inputs are missing, outbound SMS is unavailable on
++the hosting plan, or the installation's external effects are paused.
++
++In Twilio, set incoming messages to POST to
++`https://<your-public-page-host>/api/public/sms/inbound` for YES/STOP/HELP replies.
++Lamp includes `https://<your-public-page-host>/api/public/sms/status` as the delivery
++callback when sending. Both routes verify Twilio's signature with the auth token.
++A configured status does not prove registration, carrier delivery or consent;
++subscribers still complete the existing SMS opt-in.
++
+ ## Before you launch
+ 
+ A new Lamp page accepts subscriptions from the moment it is reachable. If the page
+@@ -295,6 +356,14 @@ Daily growth measures pending plus active subscriptions: a new pending subscript
+ 
+ ### Secondary email provider
+ 
++Set `MAIL_SECONDARY_PROVIDER` and `MAIL_SECONDARY_API_KEY` in the
++[same private deployment inputs](deploy.md#step-1-make-a-private-input-file) as
++the primary sender, then redeploy with
++`rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"`.
++Reopen **Settings → Notifications → Email delivery** and choose the now-available
++secondary. Choosing **None** turns failover off without removing its private
++credentials. Managed mail does not support a direct secondary provider.
++
+ Ordinary hosted deployments can select `mailgun` alongside `resend` and
+ `sendgrid`, `ses` and `postmark` through `MAIL_PROVIDER`. Mailgun uses the sender address's domain and
+ `MAILGUN_REGION` (`us` by default, or `eu`). Configure its dedicated
+diff --git a/src/core/app/server.ts b/src/core/app/server.ts
+index 1d1b86a..273a6d8 100644
+--- a/src/core/app/server.ts
++++ b/src/core/app/server.ts
+@@ -106,7 +106,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
+   registerPublicSnapshotRoutes(app, services.publicSnapshots);
+   // Register the reserved mail-events endpoint before /api/intake/:sourceId.
+   registerDeliveryRoutes(app, services.deliveries, { resendWebhookSecret: bindings.RESEND_WEBHOOK_SECRET, relaySecret: bindings.RER_MAIL_RELAY_SECRET, sendGridWebhookPublicKey: bindings.SENDGRID_WEBHOOK_PUBLIC_KEY, mailgunSigningKey: bindings.MAILGUN_WEBHOOK_SIGNING_KEY, sesEventTopicArn: bindings.SES_EVENT_TOPIC_ARN, postmarkWebhookSecret: bindings.POSTMARK_WEBHOOK_SECRET, secondaryMailProvider: bindings.MAIL_SECONDARY_PROVIDER, mailProvider: bindings.MAIL_PROVIDER, localMail, smsConfigured: services.sms.configured });
+-  registerMailSettings(app,bindings);
++  registerMailSettings(app,bindings,services.mailConfiguration);
+   registerTrafficAlertRoutes(app, services.trafficStorage);
+   registerMetricsRoutes(app, services.metrics);
+ 
+diff --git a/src/core/app/services.ts b/src/core/app/services.ts
+index 5f0abbb..4ccb0e6 100644
+--- a/src/core/app/services.ts
++++ b/src/core/app/services.ts
+@@ -59,6 +59,14 @@ import { createServerExtensionMount } from "./extensions/server";
+ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execution?: MailExecution) {
+   const extensions = createServerExtensionMount();
+   const { sender: mail, local } = createAppMailTransport(bindings, extensions.adapters["mail.sender.v1"], execution);
++  // Report the composed sender's availability, including local suppression,
++  // rather than treating a provider name in the environment as a working sender.
++  const mailConfiguration = {
++    local: local && bindings.RER_DEMO !== '1',
++    primaryProvider: mail.configured && !(local && bindings.RER_DEMO !== '1')
++      ? extensions.adapters["mail.sender.v1"] ? 'custom' : bindings.MAIL_PROVIDER || 'resend'
++      : null,
++  };
+   const snapshotOrigin = bindings.LAMP_LOCAL_ORIGIN ? publicPageOrigin(bindings.LAMP_LOCAL_ORIGIN, bindings.LAMP_PAGE_HOST) : undefined;
+   const publicSnapshots = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, twilioConfigured({accountSid:bindings.TWILIO_ACCOUNT_SID,authToken:bindings.TWILIO_AUTH_TOKEN,fromNumber:bindings.TWILIO_FROM_NUMBER,messagingService:bindings.TWILIO_MESSAGING_SERVICE}) && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET) && bindings.EFFECTS_PAUSED !== "1" && !outboundUnavailable(bindings,"SMS messages")), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
+   const metrics = createMetricsService(bindings.DB, async()=>{await publicSnapshots.retryPendingBuild();}, { webhookSecret: bindings.WEBHOOK_SIGNING_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1" });
+@@ -280,7 +288,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
+   });
+ 
+   const chatDesk = createChatDeskService(bindings, incidents, components, async () => { const settings = await pageSettings.get(); if (!settings) throw new Error("Page settings are not configured."); return { blockedTerms: settings.wordingBlockedTerms, friendlyLength: settings.wordingFriendlyLength }; });
+-  return { dependencies, alertRules, social, trafficStorage, trafficAlerts, sms, metrics, teamsSubscriptions, chatDesk, auth, signInAuth, signIn, operators, availabilityReports, communicationPerformance, incidentImpact, pageSettings, pageExport, components, componentCatalogue, incidents, maintenance, subscribers, deliveries, reports, intake, briefs, ai, overview, website, updateReminders, publicSnapshots, statuspageImport, channels };
++  return { mailConfiguration, dependencies, alertRules, social, trafficStorage, trafficAlerts, sms, metrics, teamsSubscriptions, chatDesk, auth, signInAuth, signIn, operators, availabilityReports, communicationPerformance, incidentImpact, pageSettings, pageExport, components, componentCatalogue, incidents, maintenance, subscribers, deliveries, reports, intake, briefs, ai, overview, website, updateReminders, publicSnapshots, statuspageImport, channels };
+ }
+ 
+ export type AppServices = ReturnType<typeof createAppServices>;
+diff --git a/src/core/features/deliveries/mail-settings.ts b/src/core/features/deliveries/mail-settings.ts
+index d07e037..3bc6566 100644
+--- a/src/core/features/deliveries/mail-settings.ts
++++ b/src/core/features/deliveries/mail-settings.ts
+@@ -5,10 +5,10 @@ import { sessionAuthority } from '../../platform/auth/authority';
+ import { createMailSettingsRepository } from '../../platform/mail/settings.repository';
+ const schema=z.object({secondaryProvider:z.enum(['resend','sendgrid','mailgun','ses','postmark']).nullable()}).strict();
+ 
+-export function registerMailSettings(app:Hono<AppEnv>,bindings:AppBindings){
++export function registerMailSettings(app:Hono<AppEnv>,bindings:AppBindings,configuration:{local:boolean;primaryProvider:string|null}){
+   const repository=createMailSettingsRepository(bindings.DB);
+   const configured=bindings.MAIL_SECONDARY_PROVIDER&&bindings.MAIL_SECONDARY_API_KEY?bindings.MAIL_SECONDARY_PROVIDER:null;
+-  const current=async()=>({primaryProvider:bindings.MAIL_PROVIDER||'resend',configuredSecondaryProvider:configured,secondaryProvider:(await repository.selected())===configured?configured:null});
++  const current=async()=>({...configuration,configuredSecondaryProvider:configured,secondaryProvider:(await repository.selected())===configured?configured:null});
+   app.get('/api/app/mail-settings',async c=>{c.header('Cache-Control','private, no-store');return c.json(await current());});
+   app.patch('/api/app/mail-settings',async c=>{
+     const input=schema.safeParse(await c.req.json().catch(()=>null));
+diff --git a/src/core/features/page-settings/ui/mail-delivery-settings.tsx b/src/core/features/page-settings/ui/mail-delivery-settings.tsx
+index 81a931a..fd0d852 100644
+--- a/src/core/features/page-settings/ui/mail-delivery-settings.tsx
++++ b/src/core/features/page-settings/ui/mail-delivery-settings.tsx
+@@ -2,8 +2,8 @@ import { useState } from 'react';
+ import { appApi,useAppData } from '../../../app/client/ui/api';
+ import { FormError } from '../../../app/client/ui/states';
+ 
+-type MailSettings={primaryProvider:string;configuredSecondaryProvider:string|null;secondaryProvider:string|null};
+-const names:Record<string,string>={rer:'RER',resend:'Resend',sendgrid:'SendGrid',mailgun:'Mailgun',ses:'Amazon SES',postmark:'Postmark'};
++type MailSettings={local:boolean;primaryProvider:string|null;configuredSecondaryProvider:string|null;secondaryProvider:string|null};
++const names:Record<string,string>={rer:'RER',resend:'Resend',sendgrid:'SendGrid',mailgun:'Mailgun',ses:'Amazon SES',postmark:'Postmark',custom:'Custom adapter'};
+ const label=(provider:string)=>names[provider]??provider;
+ 
+ export function MailDeliverySettings(){
+@@ -19,11 +19,18 @@ export function MailDeliverySettings(){
+   return <section className="data-card" aria-labelledby="email-delivery-title">
+     <p className="card-kicker" id="email-delivery-title">Email delivery</p>
+     {settings.data?<>
+-      <p>Primary provider: {label(settings.data.primaryProvider)}</p>
++      <p role="status" data-mail-mode={settings.data.local?'local':settings.data.primaryProvider?'configured':'unconfigured'} data-provider={settings.data.primaryProvider??undefined}>
++        {settings.data.local?'Email is off locally. No email is sent from this computer.':settings.data.primaryProvider?<>Primary provider: {label(settings.data.primaryProvider)}</>:'Email sending is off. No provider is configured.'}
++      </p>
++      <div className="setup-guide">
++        {settings.data.primaryProvider==='rer'?<p>Run Edit Run supplies managed mail through the private deployment inputs <code>MAIL_PROVIDER</code>, <code>MAIL_FROM</code>, <code>MAIL_RELAY_URL</code> and <code>MAIL_API_KEY</code>.</p>:settings.data.primaryProvider==='custom'?<p>This installation uses a custom <code>mail.sender.v1</code> adapter configured in <code>src/ext/index.server.ts</code>.</p>:<p>For hosted email, set <code>MAIL_PROVIDER</code>, <code>MAIL_FROM_ADDRESS</code>, <code>MAIL_DKIM_SELECTOR</code> and <code>MAIL_PROVIDER_API_KEY</code> in your deploy’s private input file or environment, then redeploy.</p>}
++        <p><a href="/docs/subscribers-and-notifications#connect-email-delivery">Email provider setup</a></p>
++      </div>
+       <label className="form-label">Secondary provider<select value={selected===undefined?settings.data.secondaryProvider??'':selected??''} disabled={saving} onChange={event=>void change(event.target.value)}>
+         <option value="">None</option>{settings.data.configuredSecondaryProvider&&<option value={settings.data.configuredSecondaryProvider}>{label(settings.data.configuredSecondaryProvider)}</option>}
+       </select></label>
+-      {settings.data.configuredSecondaryProvider?<p>A secondary takes over after five minutes of retryable primary rejections. An unconfirmed send stays with its original provider.</p>:<p>Connect a secondary provider in your hosting settings to make it available here.</p>}
++      {settings.data.configuredSecondaryProvider?<p>A secondary takes over after five minutes of retryable primary rejections. An unconfirmed send stays with its original provider.</p>:<div className="setup-guide"><p>To make a secondary available here, set <code>MAIL_SECONDARY_PROVIDER</code> and <code>MAIL_SECONDARY_API_KEY</code> in the same private deployment inputs, then redeploy.</p></div>}
++      <div className="setup-guide"><p><a href="/docs/subscribers-and-notifications#secondary-email-provider">Secondary provider setup</a></p></div>
+       {saving&&<p role="status">Saving secondary provider…</p>}
+     </>:<p>Loading email providers…</p>}
+     {(error||settings.error)&&<FormError>{error||settings.error}</FormError>}
+diff --git a/src/core/features/page-settings/ui/sms-settings.tsx b/src/core/features/page-settings/ui/sms-settings.tsx
+index ba54ba4..adfccba 100644
+--- a/src/core/features/page-settings/ui/sms-settings.tsx
++++ b/src/core/features/page-settings/ui/sms-settings.tsx
+@@ -37,7 +37,11 @@ export function SmsSettings() {
+   return <section className="data-card" aria-label="SMS delivery">
+     <h2>SMS delivery</h2>
+     {settings ? <>
+-      <p>{resource.data?.configured ? "SMS sending is configured." : "SMS sending is off. Connect a Twilio provider in your hosting settings to enable it."}</p>
++      <p role="status" data-sms-configured={resource.data?.configured}>{resource.data?.configured ? "SMS sending is configured with Twilio." : "SMS sending is off."}</p>
++      <div className="setup-guide">
++        <p>Set <code>TWILIO_ACCOUNT_SID</code> and <code>TWILIO_AUTH_TOKEN</code>, plus <code>TWILIO_FROM_NUMBER</code> or <code>TWILIO_MESSAGING_SERVICE</code>, in your deploy’s private input file or environment, then redeploy.</p>
++        <p><a href="/docs/subscribers-and-notifications#connect-sms-delivery">Twilio SMS setup</a></p>
++      </div>
+       <form className="incident-note-form" onSubmit={submit}>
+         <fieldset className="option-group" disabled={saving}>
+           <legend>Accepted countries</legend>
+diff --git a/tests/e2e/helpers/local-subscribers-flow.mjs b/tests/e2e/helpers/local-subscribers-flow.mjs
+index c7c1cd0..cf1621b 100644
+--- a/tests/e2e/helpers/local-subscribers-flow.mjs
++++ b/tests/e2e/helpers/local-subscribers-flow.mjs
+@@ -4,6 +4,7 @@ import { join } from 'node:path';
+ import { expect } from '@playwright/test';
+ import { operatorHydrated } from './operator-hydrated.mjs';
+ import { withDraftVersion } from '../draft-version-helper.mjs';
++import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
+ 
+ /** Real local public/operator doors and silent development mail; no transport
+  * fake and no direct subscriber-state mutation participates in this journey. */
+@@ -37,6 +38,21 @@ export async function localSubscribersFlow({ browser, context, origin }) {
+     return api(`/api/app/incidents/${incident.id}/publish`, { channels });
+   };
+   try {
++    // The actual local sender suppresses delivery even with a provider name in
++    // the development bindings. Settings must expose that same mode, with no
++    // active primary, before the public journey produces suppressed records.
++    const mailSettings = await api('/api/app/mail-settings');
++    assert.equal(mailSettings.local, true);
++    assert.equal(mailSettings.primaryProvider, null);
++    await page.goto(origin + '/app/settings#notifications'); await operatorHydrated(page);
++    const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
++    await expect(emailStatus).toHaveAttribute('data-mail-mode', 'local');
++    assert.equal(await emailStatus.getAttribute('data-provider'), null);
++    const smsSettings = await api('/api/app/sms/settings');
++    await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
++      .toHaveAttribute('data-sms-configured', String(smsSettings.configured));
++    await screens('local-notification-settings');
++    await providerSettingsGuideFlow(page);
+     await api('/api/app/prelaunch', { enabled: false }, 'PATCH');
+     await page.goto(publicOrigin + '/');
+     const form = page.locator('form[action="/subscribe"]');
+diff --git a/tests/e2e/helpers/mail-failover-flow.mjs b/tests/e2e/helpers/mail-failover-flow.mjs
+index dbd7a4b..7372bab 100644
+--- a/tests/e2e/helpers/mail-failover-flow.mjs
++++ b/tests/e2e/helpers/mail-failover-flow.mjs
+@@ -96,6 +96,15 @@ export async function mailFailoverFlow({ t, vite, secondaryProvider='mailgun' })
+   };
+   try {
+     const initial=await api('/api/app/mail-settings');assert.equal(initial.status,200,initial.text);
++    assert.equal(initial.body.local,false);
++    assert.equal(initial.body.primaryProvider,bindings.MAIL_PROVIDER,'Settings names the actual configured primary');
++    const missingCredentials={...bindings,MAIL_PROVIDER_API_KEY:undefined,MAIL_SECONDARY_PROVIDER:undefined,MAIL_SECONDARY_API_KEY:undefined};
++    const unavailable=createApp(missingCredentials);
++    const unavailableResponse=await unavailable.app.fetch(new Request(`${appOrigin}/api/app/mail-settings`,{headers:{Origin:appOrigin,Cookie:cookie}}),missingCredentials,execution);
++    assert.equal(unavailableResponse.status,200);
++    const unavailableSettings=await unavailableResponse.json();
++    assert.equal(unavailableSettings.local,false);
++    assert.equal(unavailableSettings.primaryProvider,null,'a configured name without credentials is not a primary sender');
+     assert.equal(initial.body.secondaryProvider,null,'secondary delivery is off until an owner chooses it');
+     assert.equal(initial.body.configuredSecondaryProvider,secondaryProvider);
+     assert.equal((await api('/api/app/mail-settings',{method:'PATCH',body:JSON.stringify({secondaryProvider:'unconnected-provider'})})).status,400);
+diff --git a/tests/e2e/helpers/mail-settings-browser-flow.mjs b/tests/e2e/helpers/mail-settings-browser-flow.mjs
+index 302e1cd..c67d55e 100644
+--- a/tests/e2e/helpers/mail-settings-browser-flow.mjs
++++ b/tests/e2e/helpers/mail-settings-browser-flow.mjs
+@@ -13,6 +13,7 @@ import { readBuiltWorkerArtifact } from '../../../scripts/build-output.mjs';
+ import { reservePort } from '../worker-startup.mjs';
+ import { withDraftVersion } from '../draft-version-helper.mjs';
+ import { operatorHydrated } from './operator-hydrated.mjs';
++import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
+ import { migrate,executeSql } from '../../reference-storage/runtime.mjs';
+ 
+ const require=createRequire(import.meta.url),wranglerRequire=createRequire(require.resolve('wrangler'));
+@@ -80,6 +81,15 @@ export async function mailSettingsBrowserFlow(t){
+     for(const width of [1440]){
+       await page.setViewportSize({width,height:width===390?844:1000});
+       await page.goto(`${origin}/app/settings#notifications`);await operatorHydrated(page);
++      const configured = (await api('/api/app/mail-settings')).body;
++      assert.equal(configured.local, false);
++      assert.equal(configured.primaryProvider, bindings.MAIL_PROVIDER);
++      const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
++      await expect(emailStatus).toHaveAttribute('data-mail-mode', 'configured');
++      await expect(emailStatus).toHaveAttribute('data-provider', configured.primaryProvider);
++      await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
++        .toHaveAttribute('data-sms-configured', 'true');
++      await providerSettingsGuideFlow(page); await operatorHydrated(page);
+       const select=page.getByRole('combobox',{name:'Secondary provider',exact:true});await expect(select).toBeVisible();await expect(select).toHaveValue('');
+       const saved=page.waitForResponse(response=>response.url()===`${origin}/api/app/mail-settings`&&response.request().method()==='PATCH');
+       await select.selectOption('mailgun');assert.equal((await saved).status(),200);await expect(select).toBeEnabled();
+@@ -87,7 +97,12 @@ export async function mailSettingsBrowserFlow(t){
+       await page.reload();await operatorHydrated(page);await expect(select).toHaveValue('mailgun');
+       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}px Settings has no overflow`);
+       assert.deepEqual((await new AxeBuilder({page}).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
+-      if(process.env.LAMP_BROWSER_EVIDENCE)await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,`${width}-mail-settings.png`),fullPage:true});
++      if(process.env.LAMP_BROWSER_EVIDENCE){
++        await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,`${width}-mail-settings.png`),fullPage:true});
++        await page.setViewportSize({width:390,height:844});
++        await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,'390-mail-settings.png'),fullPage:true});
++        await page.setViewportSize({width,height:1000});
++      }
+       const disabled=page.waitForResponse(response=>response.url()===`${origin}/api/app/mail-settings`&&response.request().method()==='PATCH');
+       await select.selectOption('');assert.equal((await disabled).status(),200);await expect(select).toBeEnabled();assert.equal((await api('/api/app/mail-settings')).body.secondaryProvider,null);
+     }
+diff --git a/tests/e2e/helpers/provider-settings-guide-flow.mjs b/tests/e2e/helpers/provider-settings-guide-flow.mjs
+new file mode 100644
+index 0000000..35c79e7
+--- /dev/null
++++ b/tests/e2e/helpers/provider-settings-guide-flow.mjs
+@@ -0,0 +1,30 @@
++import assert from 'node:assert/strict';
++
++// Follow the actual Settings links and resolve their section anchors in the
++// public, rendered guide. No copy or environment-name inventory is pinned.
++export async function providerSettingsGuideFlow(page) {
++  const settingsUrl = page.url();
++  const destinations = [];
++  for (const name of ['Email delivery', 'SMS delivery']) {
++    destinations.push(...await page.getByRole('region', { name, exact: true })
++      .getByRole('link').evaluateAll(links => links.map(link => link.href)));
++  }
++  assert.ok(destinations.length >= 2, 'both provider cards offer setup destinations');
++  for (const destination of new Set(destinations)) {
++    const url = new URL(destination);
++    assert.equal(url.origin, new URL(settingsUrl).origin, 'setup guidance stays on this installation');
++    assert.ok(url.hash, 'provider guidance points to a section');
++    const response = await page.goto(destination);
++    assert.equal(response?.status() ?? (await page.request.get(destination)).status(), 200, 'the published setup guide is reachable');
++    await page.locator(`[id="${decodeURIComponent(url.hash.slice(1))}"]`).waitFor({ state: 'visible' });
++    // Deployment steps linked from the provider guide must resolve too.
++    const deployLinks = await page.locator('.docs-prose a[href*="/docs/deploy#"]')
++      .evaluateAll(links => links.map(link => link.href));
++    for (const deployLink of new Set(deployLinks)) {
++      const response = await page.goto(deployLink);
++      assert.equal(response?.status() ?? (await page.request.get(deployLink)).status(), 200);
++      await page.locator(`[id="${new URL(deployLink).hash.slice(1)}"]`).waitFor({ state: 'visible' });
++    }
++  }
++  await page.goto(settingsUrl);
++}
+diff --git a/tests/e2e/maintenance-timezone.test.mjs b/tests/e2e/maintenance-timezone.test.mjs
+index 3c164a4..04574b4 100644
+--- a/tests/e2e/maintenance-timezone.test.mjs
++++ b/tests/e2e/maintenance-timezone.test.mjs
+@@ -171,7 +171,7 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
+ });
+ 
+ 
+-test("SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications", { timeout: 180_000 }, async () => {
++test("SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications", { timeout: 180_000 }, async () => {
+   const localContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+   await localContext.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
+   try { await localSubscribersFlow({ browser, context: localContext, origin }); }
