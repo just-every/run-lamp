@@ -1,5 +1,12 @@
 # DIVERGENCE.md
 
+## Connected-tool setup guidance — 12 November 2026
+
+Chat links and each Social accounts choice link to on-site owner guides. A new
+self-hosted owner needs the provider app, installation settings and credential
+steps before creating a link code or connecting an account. Detailed guidance
+stays in docs; connecting, linking and posting behavior stays as implemented.
+
 ## Statuspage reader guidance — 12 November 2026
 
 The native Cutover report names the existing compatibility embed as served on
