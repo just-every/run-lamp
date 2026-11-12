@@ -1,0 +1,36 @@
+tests/e2e/helpers/update-reach-flow.mjs:57: const recipients = [];
+tests/e2e/helpers/update-reach-flow.mjs:81: const frozen = await deliveries(update);
+tests/e2e/helpers/update-reach-flow.mjs:108: const expectedOutcome = subscriberId => index === 0
+tests/e2e/helpers/update-reach-flow.mjs:115: updates[index].frozen.map(row => ({ ...row, outcome: expectedOutcome(row.subscriberId) })), 'each retained recipient has its independently expected outcome');
+tests/e2e/helpers/update-reach-flow.mjs:134: const baseline = { email: counts(10, 10, 10, 10, 9, 9, 1), webhook: counts(2, 2, 0, 0, 2, 2) };
+tests/e2e/helpers/update-reach-flow.mjs:136: diagnostic('PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2');
+tests/e2e/helpers/update-reach-flow.mjs:159: const secondCounts = { email: counts(9, 9, 7, 7, 7, 7, 0, 1, 1), webhook: counts(2, 2, 0, 0, 0, 0, 0, 1, 1) };
+tests/e2e/helpers/update-reach-flow.mjs:177: const totals = { email: counts(27, 10, 25, 10, 24, 9, 1, 1, 1), webhook: counts(5, 2, 0, 0, 3, 2, 0, 1, 1) };
+tests/e2e/helpers/update-reach-flow.mjs:181: // Queue replay and receipt replay must preserve the same identity sets and
+tests/e2e/helpers/update-reach-flow.mjs:183: const sendsBeforeReplay = fixture.messages.length, hooksBeforeReplay = fixture.webhookRequests.length;
+tests/e2e/helpers/update-reach-flow.mjs:187: assert.equal(fixture.messages.length, sendsBeforeReplay);
+tests/e2e/helpers/update-reach-flow.mjs:188: assert.equal(fixture.webhookRequests.length, hooksBeforeReplay);
+tests/e2e/helpers/update-reach-flow.mjs:190: diagnostic('PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged');
+tests/e2e/helpers/update-reach-flow.mjs:191: diagnostic('PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed');
+tests/e2e/helpers/update-reach-browser-flow.mjs:16: export async function updateReachBrowserFlow({ browser, diagnostic }) {
+tests/e2e/helpers/update-reach-browser-flow.mjs:34: const assertCounts = async (container, expected) => {
+tests/e2e/helpers/update-reach-browser-flow.mjs:44: await assertCounts(panel.locator(':scope > .communication-counts'), incidentExpected);
+tests/e2e/helpers/update-reach-browser-flow.mjs:49: await assertCounts(article.locator(':scope > .communication-counts'), expectedUpdates[index]);
+tests/e2e/helpers/update-reach-browser-flow.mjs:52: const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+tests/e2e/helpers/update-reach-browser-flow.mjs:55: const evidence = process.env.LAMP_REACH_SCREENSHOTS || 'test-results/update-reach';
+tests/e2e/helpers/update-reach-browser-flow.mjs:59: await page.screenshot({ path: join(evidence, `reach-${updates.length}-updates-${width}.png`), fullPage: true });
+tests/e2e/publishing-contract.test.mjs:378: // incident on the component: replay must preserve the current claim.
+tests/e2e/publishing-contract.test.mjs:926: test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
+tests/e2e/publishing-browser.test.mjs:1: import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
+tests/e2e/publishing-browser.test.mjs:251: if (!process.env.LAMP_SCREENSHOTS) return;
+tests/e2e/publishing-browser.test.mjs:252: await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+tests/e2e/publishing-browser.test.mjs:256: await screen.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-${name}.png`), fullPage: true });
+tests/e2e/publishing-browser.test.mjs:295: if (process.env.LAMP_SCREENSHOTS) {
+tests/e2e/publishing-browser.test.mjs:296: await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+tests/e2e/publishing-browser.test.mjs:300: await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-incident-brief.png`), fullPage: true });
+tests/e2e/publishing-browser.test.mjs:561: await updateReachBrowserFlow({ browser, diagnostic: message => t.diagnostic(message) });
+tests/e2e/publishing-browser.test.mjs:866: if (process.env.LAMP_SCREENSHOTS) { await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true }); await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, '1440-operator-journey.png'), fullPage: true }); }
+tests/e2e/publishing-browser.test.mjs:867: await maintenanceBrowserFlow({ page, appUrl, pageUrl, api, screenshots: previewScreens });
+tests/e2e/publishing-browser.test.mjs:907: if(process.env.LAMP_DEP_SCREENSHOTS) {
+tests/e2e/publishing-browser.test.mjs:908: await mkdir(process.env.LAMP_DEP_SCREENSHOTS,{recursive:true});
+tests/e2e/publishing-browser.test.mjs:909: for(const width of [1440,390]) {await page.setViewportSize({width,height:1000});await page.screenshot({path:join(process.env.LAMP_DEP_SCREENSHOTS,`settings-dependencies-${width}.png`),fullPage:true});}

@@ -1,0 +1,258 @@
+{
+  "acceptance_changed": false,
+  "branch": "cloud/sd-lamp-c-f118",
+  "browser": {
+    "assertion_width": 1440,
+    "capture_widths": [
+      1440,
+      390
+    ],
+    "inspected_screens": [
+      "screens/reach-3-updates-1440.png",
+      "screens/reach-3-updates-390.png"
+    ],
+    "inspection": "Existing incident Reach counts readable at both viewport sizes; desktop and phone keep all counts and disclosures. No product UI styles changed.",
+    "screens": [
+      {
+        "bytes": 310252,
+        "path": "screens/reach-1-updates-1440.png",
+        "sha256": "d6b974cc1fe234247735e066f4610fdbd1848f311bc00d9670c0b35155742460"
+      },
+      {
+        "bytes": 265539,
+        "path": "screens/reach-1-updates-390.png",
+        "sha256": "69bca27fbca45ad76118ad02925048fa35adc904ec5019f8e4c6ee1af9ed19d0"
+      },
+      {
+        "bytes": 378550,
+        "path": "screens/reach-2-updates-1440.png",
+        "sha256": "71157c9286be03d267ffe1fa6cff06b4c48e41f6651ee6742ae3bbdf3158da95"
+      },
+      {
+        "bytes": 325391,
+        "path": "screens/reach-2-updates-390.png",
+        "sha256": "107c0f2c150d7aa78eba55755cc0ff7098635a3798180bdd19c33a28dcab3537"
+      },
+      {
+        "bytes": 446265,
+        "path": "screens/reach-3-updates-1440.png",
+        "sha256": "bcbb14c708a91ec9d7d66601812b52e4c2f4c7980700cd24064e16f2937d3599"
+      },
+      {
+        "bytes": 384795,
+        "path": "screens/reach-3-updates-390.png",
+        "sha256": "70e1516508681c93cea20edf54ab907799f09d0ef4f40de23de9f5580d1bf4f7"
+      }
+    ],
+    "transport": "real built Worker with synthetic network edges only"
+  },
+  "ci": {
+    "candidate": [
+      {
+        "conclusion": null,
+        "event": "dynamic",
+        "head_sha": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43198282861",
+        "id": 43198282861,
+        "name": "PR #337",
+        "status": "queued"
+      },
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43198230462",
+        "id": 43198230462,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "github_calls_used": 3,
+    "poll_policy": "One exact-SHA discovery; no run re-polled within 300 seconds. No dispatch or rerun.",
+    "starting_main_run_site": 43083760843,
+    "starting_main_verify": 43083760988
+  },
+  "claim": {
+    "clause": "NOTIFY-015",
+    "held": "Point 3 complete incident CSV parity remains with HIST-005 under the lease",
+    "points": [
+      1,
+      2
+    ],
+    "status": "PARTIAL"
+  },
+  "custody": "PUSHED; independent exact-SHA Verify, complete publication scan and landing remain with the maintained Mac lander",
+  "generated_views_committed": false,
+  "git": {
+    "fetch_main": "current",
+    "identity_audit": "fleet author and committer on every candidate including side parents; no trailers",
+    "log": "product-push.log",
+    "merge_main": "Already up to date",
+    "product_push": "success",
+    "remote_refs": [
+      "ba40ca5fdd232e8286aba0be8dba448cb07f85f2\trefs/heads/cloud/sd-lamp-c-f118",
+      "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b\trefs/heads/main"
+    ],
+    "tracked_worktree": "clean after browser restoration"
+  },
+  "head": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+  "landing": {
+    "main_equality": false,
+    "run_site": "PENDING_LANDER",
+    "status_change": "none"
+  },
+  "local_checks": {
+    "combined_test_harness": {
+      "browser_command_exit": 0,
+      "contract_command_exit": 0,
+      "log": "test-exits.log",
+      "wrapper_exit": 0
+    },
+    "compiled_browser": {
+      "command": "timeout 1200 node --test --test-name-pattern=\"compiled visual edits and the operator publication journey\" tests/e2e/publishing-browser.test.mjs",
+      "command_exit": 0,
+      "duration_ms": 283080.310361,
+      "failed": 0,
+      "head": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+      "log": "publishing-browser.log",
+      "passed": 1
+    },
+    "first_party": {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "command_exit": 0,
+      "log": "first-party.log",
+      "wrapper_exit": 0
+    },
+    "inventory": {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "inventory.log"
+    },
+    "ledger": {
+      "command": null,
+      "exit": 0,
+      "reason": "No migration added or changed"
+    },
+    "lock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0,
+      "log": "lock.log"
+    },
+    "production_build": {
+      "command": "npx -y @runeditrun/rer build",
+      "command_exit": 0,
+      "log": "build.log",
+      "source_relation": "built before final proof-only commit; all application and emitted asset source bytes unchanged",
+      "wrapper_exit": 0
+    },
+    "publication_contract": {
+      "command": "timeout 1200 node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+      "command_exit": 0,
+      "duration_ms": 228230.919043,
+      "failed": 0,
+      "head": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+      "log": "publishing-contract.log",
+      "passed": 6
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "command_exit": 0,
+      "log": "typecheck.log",
+      "wrapper_exit": 0
+    },
+    "views": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "documents_written": 0,
+      "exit": 0,
+      "log": "views.log",
+      "restored_from": "origin/main"
+    }
+  },
+  "main_counts_after": {
+    "done": 57,
+    "missing": 55,
+    "partial": 132
+  },
+  "main_counts_before": {
+    "done": 57,
+    "missing": 55,
+    "partial": 132
+  },
+  "mechanical": "MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0",
+  "policy_defaults": [],
+  "prior_wrapper_observation": {
+    "compiled_browser": {
+      "outer_status": 1,
+      "tap_fail": 0,
+      "tap_pass": 1
+    },
+    "publication_contract": {
+      "outer_status": 1,
+      "tap_fail": 0,
+      "tap_pass": 6
+    },
+    "resolution": "Final commands run in an explicit exit-capturing shell through cloud_run; their actual command exits and final wrapper status are retained."
+  },
+  "product_blockers": [],
+  "product_source_changed": false,
+  "proof_inputs": {
+    "delivery_identities": 32,
+    "email_recipients": 10,
+    "updates": 3,
+    "webhook_recipients": 2
+  },
+  "proof_outputs": {
+    "email": {
+      "bounced": 1,
+      "committed": 27,
+      "delivered": 24,
+      "distinctReached": 9,
+      "distinctSelected": 10,
+      "failed": 1,
+      "suppressed": 1
+    },
+    "webhook": {
+      "committed": 5,
+      "delivered": 3,
+      "distinctReached": 2,
+      "distinctSelected": 2,
+      "failed": 1,
+      "suppressed": 1
+    }
+  },
+  "publication_scan": {
+    "commit": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+    "complete": "NOT_RUN_IN_CLOUD",
+    "custodian": "maintained Mac lander",
+    "findings": "NOT_RUN_IN_CLOUD",
+    "historyScanned": "NOT_RUN_IN_CLOUD"
+  },
+  "pull_request": {
+    "base": "main",
+    "draft": true,
+    "head": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+    "html_url": "https://github.com/just-every/run-lamp/pull/337",
+    "number": 337
+  },
+  "repository": "just-every/run-lamp",
+  "starting_main": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b",
+  "tag": "sd-lamp-c-f118",
+  "test_inventory": {
+    "after": {
+      "assertion_scripts": 10,
+      "registered": 85,
+      "total": 95
+    },
+    "before": {
+      "assertion_scripts": 10,
+      "registered": 84,
+      "total": 94
+    }
+  }
+}

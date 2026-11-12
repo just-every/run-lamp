@@ -1,0 +1,5 @@
+
+> lamp@1.11.12 typecheck /workspace/run-lamp
+> tsc --noEmit
+
+TYPECHECK_COMMAND_EXIT=0
