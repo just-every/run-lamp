@@ -171,7 +171,7 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
 });
 
 
-test("SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications", { timeout: 180_000 }, async () => {
+test("SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications", { timeout: 180_000 }, async () => {
   const localContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   await localContext.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
   try { await localSubscribersFlow({ browser, context: localContext, origin }); }

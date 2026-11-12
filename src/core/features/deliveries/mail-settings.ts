@@ -5,10 +5,10 @@ import { sessionAuthority } from '../../platform/auth/authority';
 import { createMailSettingsRepository } from '../../platform/mail/settings.repository';
 const schema=z.object({secondaryProvider:z.enum(['resend','sendgrid','mailgun','ses','postmark']).nullable()}).strict();
 
-export function registerMailSettings(app:Hono<AppEnv>,bindings:AppBindings){
+export function registerMailSettings(app:Hono<AppEnv>,bindings:AppBindings,configuration:{local:boolean;primaryProvider:string|null}){
   const repository=createMailSettingsRepository(bindings.DB);
   const configured=bindings.MAIL_SECONDARY_PROVIDER&&bindings.MAIL_SECONDARY_API_KEY?bindings.MAIL_SECONDARY_PROVIDER:null;
-  const current=async()=>({primaryProvider:bindings.MAIL_PROVIDER||'resend',configuredSecondaryProvider:configured,secondaryProvider:(await repository.selected())===configured?configured:null});
+  const current=async()=>({...configuration,configuredSecondaryProvider:configured,secondaryProvider:(await repository.selected())===configured?configured:null});
   app.get('/api/app/mail-settings',async c=>{c.header('Cache-Control','private, no-store');return c.json(await current());});
   app.patch('/api/app/mail-settings',async c=>{
     const input=schema.safeParse(await c.req.json().catch(()=>null));

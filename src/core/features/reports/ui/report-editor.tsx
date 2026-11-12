@@ -6,7 +6,7 @@ import { useOperatorTime } from "../../../app/client/ui/states";
 import { REPORT_PROMPTS, reportReview, type ReportReview } from "../draft";
 
 type Report = { summary: string; timeline: string; cause: string; remediation: string; publishedAt: string | null };
-type ReportResource = { report: Report | null; review: ReportReview | null; waiver: { reason: string } | null };
+type ReportResource = { report: Report | null; review: ReportReview | null; waiver: { reason: string } | null; owed: boolean };
 const emptyReport: Report = { summary: "", timeline: "", cause: "", remediation: "", publishedAt: null };
 
 /** The incident's post-incident report as the server holds it; the panel row and the editor share one read. */
@@ -20,7 +20,8 @@ export function reportSummary(data: ReportResource | null, error: string | null,
   if (!data) return error ? "Could not be read" : "Reading the report…";
   if (data.report?.publishedAt) return `Published ${time(data.report.publishedAt)}`;
   if (data.waiver) return data.report ? "Draft saved · reminder waived" : "Reminder waived";
-  return data.report ? "Draft saved, not published" : "Owed: draft it or waive the reminder";
+  if (data.report) return data.owed ? "Draft saved · report owed" : "Draft saved · optional report";
+  return data.owed ? "Owed: draft it or waive the reminder" : "Optional report";
 }
 
 export function ReportEditor({ incidentId, resource }: { incidentId: string; resource: ReturnType<typeof useIncidentReport> }) {
@@ -58,7 +59,7 @@ export function ReportEditor({ incidentId, resource }: { incidentId: string; res
     finally { setPending(false); }
   };
   return <div className="report-editor">
-    <p className="report-prompt">Publish one factual report when this incident is complete.</p>
+    <p className="report-prompt">{data?.owed ? "A report is owed. Publish it or waive the reminder." : "You can publish an optional report for this incident."}</p>
     <Button type="button" variant="secondary" disabled={busy || Boolean(data?.report) || dirty} onClick={draft}>Draft report</Button>
     <p>{data?.report || dirty ? "Keep editing your report. Drafting never replaces existing work." : "Draft a private report from the incident's alerts and published updates."}</p>
     {data?.review?.limitations.map((limitation) => <p key={limitation}>{limitation}</p>)}
@@ -73,6 +74,6 @@ export function ReportEditor({ incidentId, resource }: { incidentId: string; res
     })}
     {message || error ? <p role="status">{message ?? error}</p> : null}
     <div className="form-actions"><Button type="button" variant="secondary" disabled={busy} onClick={save}>Save report</Button><Button type="button" disabled={busy || dirty || !data?.report} onClick={publish}>Publish report</Button></div>
-    <ReportWaiver incidentId={incidentId} waiver={data?.waiver ?? null} onChanged={refresh} />
+    {data?.owed || data?.waiver ? <ReportWaiver incidentId={incidentId} waiver={data.waiver} onChanged={refresh} /> : null}
   </div>;
 }

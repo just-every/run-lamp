@@ -13,6 +13,7 @@ import { readBuiltWorkerArtifact } from '../../../scripts/build-output.mjs';
 import { reservePort } from '../worker-startup.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
+import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
 import { migrate,executeSql } from '../../reference-storage/runtime.mjs';
 
 const require=createRequire(import.meta.url),wranglerRequire=createRequire(require.resolve('wrangler'));
@@ -80,6 +81,15 @@ export async function mailSettingsBrowserFlow(t){
     for(const width of [1440]){
       await page.setViewportSize({width,height:width===390?844:1000});
       await page.goto(`${origin}/app/settings#notifications`);await operatorHydrated(page);
+      const configured = (await api('/api/app/mail-settings')).body;
+      assert.equal(configured.local, false);
+      assert.equal(configured.primaryProvider, bindings.MAIL_PROVIDER);
+      const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
+      await expect(emailStatus).toHaveAttribute('data-mail-mode', 'configured');
+      await expect(emailStatus).toHaveAttribute('data-provider', configured.primaryProvider);
+      await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
+        .toHaveAttribute('data-sms-configured', 'true');
+      await providerSettingsGuideFlow(page); await operatorHydrated(page);
       const select=page.getByRole('combobox',{name:'Secondary provider',exact:true});await expect(select).toBeVisible();await expect(select).toHaveValue('');
       const saved=page.waitForResponse(response=>response.url()===`${origin}/api/app/mail-settings`&&response.request().method()==='PATCH');
       await select.selectOption('mailgun');assert.equal((await saved).status(),200);await expect(select).toBeEnabled();
@@ -87,7 +97,12 @@ export async function mailSettingsBrowserFlow(t){
       await page.reload();await operatorHydrated(page);await expect(select).toHaveValue('mailgun');
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}px Settings has no overflow`);
       assert.deepEqual((await new AxeBuilder({page}).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
-      if(process.env.LAMP_BROWSER_EVIDENCE)await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,`${width}-mail-settings.png`),fullPage:true});
+      if(process.env.LAMP_BROWSER_EVIDENCE){
+        await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,`${width}-mail-settings.png`),fullPage:true});
+        await page.setViewportSize({width:390,height:844});
+        await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,'390-mail-settings.png'),fullPage:true});
+        await page.setViewportSize({width,height:1000});
+      }
       const disabled=page.waitForResponse(response=>response.url()===`${origin}/api/app/mail-settings`&&response.request().method()==='PATCH');
       await select.selectOption('');assert.equal((await disabled).status(),200);await expect(select).toBeEnabled();assert.equal((await api('/api/app/mail-settings')).body.secondaryProvider,null);
     }

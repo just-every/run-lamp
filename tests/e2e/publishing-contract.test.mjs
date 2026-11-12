@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
+import { updateReachFlow } from './helpers/update-reach-flow.mjs';
 import { createHmac } from 'node:crypto';
 import { performance as clock } from 'node:perf_hooks';
 import { test } from 'node:test';
@@ -12,6 +14,7 @@ import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/cale
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
 import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
+import { recordClosedOutage, rootFigures } from './helpers/uptime-correction-journey.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -72,14 +75,20 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
 test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
   const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
   const linkedWording = literalLinkFields(wording);
-  const reviewer = 'synthetic-lamp-reviewer@example.test';
-  const owner = () => j.signIn();
+  const reviewer = ['synthetic-lamp-reviewer', 'example.test'].join('@');
+  let authorEmail;
+  const owner = () => j.signIn(authorEmail);
+  let creator, publisher;
   const review = async id => {
     await j.signIn(reviewer);
+    publisher = (await j.json('/api/app/session')).operator;
     await j.json(`/api/app/incidents/${id}/draft/review`, 'POST', {});
   };
   const saveReviewed = async (id, patch) => { await owner(); await j.save(id, patch); await review(id); };
   try {
+    const admittedAuthor = await admitAttributionOperator(j, 'publication-author');
+    creator = admittedAuthor.actor;
+    authorEmail = admittedAuthor.email;
     const savedSettings = (await j.json('/api/app/page-settings')).settings;
     const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, savedSettings[key]]));
     await j.json('/api/app/page-settings', 'PUT', { ...settings, timezone: ['Australia', 'Brisbane'].join('/') });
@@ -93,6 +102,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
       components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }],
     }, 201)).template;
     const incident = await j.incident('Payment requests delayed', [component, hidden]);
+    assert.equal(incident.createdByOperatorId, creator.id);
     const endpoint = `/api/app/incidents/${incident.id}`;
     const publishedUpdates = async () => (await j.db.prepare('SELECT * FROM incident_updates WHERE incident_id = ? ORDER BY published_at, created_at, id').bind(incident.id).all()).results;
     assert.equal(incident.lifecycle, 'Investigating');
@@ -102,6 +112,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await j.publish(incident.id, {}, 400);
     await j.json(`${endpoint}/templates/${template.id}/apply`, 'POST', {});
     const privateDraft = (await j.read(incident.id)).draft;
+    assert.equal(privateDraft.authorOperatorId, creator.id);
     assert.equal(privateDraft.customerImpact, linkedWording.customerImpact);
     for (const path of ['/', '/history', '/feed.atom', '/api/public/status']) {
       const body = await j.publicText(path);
@@ -117,7 +128,10 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(subscription.status, 202);
     const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber)), Boolean, 'subscriber confirmation mail');
     assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
+    assert.notEqual(publisher.id, creator.id, 'the reviewer publishes another operator’s draft');
     const first = (await j.publish(incident.id, { channels: ['email'] })).update;
+    await assertPublicationActor(j, incident.id, first, publisher);
+    assert.equal((await j.read(incident.id)).createdByOperatorId, creator.id, 'publishing preserves the independently admitted creator');
     await j.tick(Date.now());
     const reached = await eventually(() => j.json(`${endpoint}/reach?updateId=${first.id}`), body => body.updates[0].channels.some(row => row.channel === 'email' && row.providerAccepted === 1), 'the frozen publication reaches its committed subscriber');
     assert.equal(reached.updates[0].channels.find(row => row.channel === 'email').committed, 1);
@@ -226,8 +240,12 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     const committedTime = (await j.read(incident.id)).draft.nextUpdateAt;
     assert.ok(committedTime, 'the saved draft has a next-update commitment');
     await j.json(`${endpoint}/draft/correction`, 'POST', { updateId: monitoring.id });
+    assert.equal((await j.read(incident.id)).draft.authorOperatorId, creator.id);
     await review(incident.id);
+    assert.notEqual(publisher.id, creator.id, 'the correction publisher differs from its draft author');
     const corrected = (await j.publish(incident.id)).update;
+    await assertPublicationActor(j, incident.id, corrected, publisher);
+    assert.equal((await j.read(incident.id)).createdByOperatorId, creator.id, 'a correction preserves the independently admitted creator');
     assert.equal(corrected.nextUpdateAt, committedTime, 'publication keeps the saved commitment');
     assert.equal(corrected.correctsUpdateId, monitoring.id);
     const correctedView = await j.read(incident.id);
@@ -538,6 +556,181 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
   await reportPublicationFlow();
 });
 
+const impactClock = '2040-04-02T12:00:00.000Z';
+const impactChoices = ['none', 'minor', 'major', 'critical'];
+const impactChanges = impactChoices.flatMap(choice => [choice, null]);
+
+async function impactIncident(j, state = 'Partially unavailable', component) {
+  component ??= await j.component('synthetic-lamp-impact-1');
+  const incident = await j.incident('synthetic-lamp-impact-2', [component], {
+    components: [{ componentId: component.id, state, relationship: 'Primary' }],
+  });
+  await j.save(incident.id, { nextUpdateAt: '2040-04-02T13:00:00.000Z' });
+  await j.publish(incident.id);
+  return { incident, component, endpoint: `/api/app/incidents/${incident.id}/impact` };
+}
+
+async function publicImpact(j, incident, expected) {
+  const rows = await eventually(
+    async () => (await (await j.publicResponse('/api/public/v1/incidents')).json()).data,
+    rows => rows.find(row => row.id === incident.id)?.effectiveImpact === expected,
+    'the new impact reaches this incident in the retained public generation',
+  );
+  return rows.find(row => row.id === incident.id);
+}
+
+test('INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    await j.signIn(undefined, { fresh: true });
+    // Independently specified severity controls cover both sides of derived
+    // impact, including every explicit choice and the explicit clear action.
+    for (const [state, derivedImpact] of [
+      ['Operational', 'none'], ['Degraded performance', 'minor'],
+      ['Partially unavailable', 'major'], ['Major outage', 'critical'],
+    ]) {
+      const { incident, endpoint } = await impactIncident(j, state);
+      const initial = (await j.json(endpoint)).impact;
+      assert.equal(initial.derivedImpact, derivedImpact);
+      assert.equal(initial.impactOverride, null);
+      assert.equal(initial.effectiveImpact, derivedImpact);
+      assert.deepEqual(initial.history, []);
+      for (const choice of impactChanges) {
+        const expected = choice ?? derivedImpact;
+        const saved = (await j.json(endpoint, 'PUT', { impactOverride: choice })).impact;
+        assert.equal(saved.impactOverride, choice);
+        assert.equal(saved.derivedImpact, derivedImpact);
+        assert.equal(saved.effectiveImpact, expected);
+        const read = (await j.json(endpoint)).impact;
+        assert.deepEqual(read, saved, 'independent native read retains the exact choice or clear');
+        const publicRow = await publicImpact(j, incident, expected);
+        assert.equal(publicRow.impactOverride, choice);
+        assert.equal(publicRow.derivedImpact, derivedImpact);
+        assert.equal(publicRow.impact, expected);
+      }
+      const before = await j.json(endpoint);
+      await j.json(endpoint, 'PUT', { impactOverride: 'unsupported' }, 400);
+      assert.deepEqual(await j.json(endpoint), before, 'an unsupported choice changes nothing');
+    }
+  } finally { await j.close(); }
+});
+
+test('INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const owner = (await j.json('/api/app/session')).operator;
+    const colleagueEmail = owner.email.replace(/^[^@]+/, 'synthetic-lamp-impact-3');
+    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator' }, 202);
+    await j.signIn(colleagueEmail);
+    const colleague = (await j.json('/api/app/session')).operator;
+    assert.notEqual(colleague.id, owner.id);
+    const { incident, endpoint } = await impactIncident(j);
+    const historyPath = `${endpoint}/history`;
+    const expected = [];
+    assert.deepEqual((await j.json(historyPath)).history, []);
+    const auditRows = async () => (await j.db.prepare("SELECT * FROM audit_entries WHERE action = 'impact-changed' AND entity_id = ? ORDER BY created_at DESC, id DESC").bind(incident.id).all()).results;
+    assert.deepEqual(await auditRows(), []);
+    let previousOverride = null;
+    for (const [index, choice] of impactChanges.entries()) {
+      const actor = index % 2 ? owner : colleague;
+      await j.signIn(index % 2 ? owner.email : colleagueEmail);
+      const createdAt = new Date(Date.parse(impactClock) + (index + 1) * 1000).toISOString();
+      await j.json('/test/clock', 'PUT', { now: Date.parse(createdAt) }, 204);
+      const before = await j.json(historyPath);
+      const beforeAudits = await auditRows();
+      const saved = (await j.json(endpoint, 'PUT', { impactOverride: choice })).impact;
+      const after = (await j.json(historyPath)).history;
+      assert.equal(after.length, before.history.length + 1);
+      assert.ok(after[0].id && !expected.some(row => row.id === after[0].id));
+      expected.unshift({ id: after[0].id, operatorId: actor.id, operatorName: actor.displayName, previousOverride, impactOverride: choice, createdAt });
+      assert.deepEqual(after, expected, 'complete private history names this actor and both values without rewriting older events');
+      assert.deepEqual(after.slice(1), before.history);
+      assert.deepEqual(saved.history, expected);
+      assert.deepEqual((await j.json(endpoint)).impact.history, expected);
+      const audits = await auditRows();
+      assert.equal(audits.length, beforeAudits.length + 1);
+      assert.deepEqual(audits.slice(1), beforeAudits, 'prior durable audit values remain intact');
+      assert.equal(audits[0].id, after[0].id);
+      assert.equal(audits[0].operator_id, actor.id);
+      assert.equal(audits[0].created_at, createdAt);
+      assert.deepEqual(JSON.parse(audits[0].payload_json), { previousOverride, impactOverride: choice });
+      const listed = (await j.json(`/api/app/audit-log?action=impact-changed&actorId=${actor.id}&limit=100`)).entries;
+      const entry = listed.find(row => row.id === after[0].id);
+      assert.ok(entry, 'the change is searchable through the actual operator audit door');
+      assert.equal(entry.actorId, actor.id);
+      assert.equal(entry.createdAt, createdAt);
+      // A retried choice is not a second change and cannot fabricate history.
+      await j.json(endpoint, 'PUT', { impactOverride: choice });
+      assert.deepEqual((await j.json(historyPath)).history, expected);
+      assert.deepEqual(await auditRows(), audits);
+      previousOverride = choice;
+    }
+    const before = await j.json(endpoint);
+    const anonymous = await j.raw(endpoint, { method: 'PUT', headers: { Origin: j.appOrigin, 'Content-Type': 'application/json' }, body: JSON.stringify({ impactOverride: 'critical' }) });
+    assert.equal(anonymous.status, 401);
+    assert.equal((await j.raw(historyPath)).status, 401, 'history is private');
+    assert.equal((await j.raw(new URL(historyPath, j.publicOrigin).href)).status, 404, 'the public host has no private timeline door');
+    assert.deepEqual(await j.json(endpoint), before);
+    for (const path of ['/', '/history', `/incidents/${incident.reference}`, '/api/public/v1/incidents']) {
+      const body = await j.publicText(path);
+      for (const actor of [owner, colleague]) {
+        assert.ok(!body.includes(actor.id) && !body.includes(actor.email) && !body.includes(actor.displayName), 'impact history never exposes its operators publicly');
+      }
+      for (const row of expected) assert.ok(!body.includes(row.id), 'private change identities do not appear publicly');
+    }
+  } finally { await j.close(); }
+});
+
+test('INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse('2040-01-01T00:00:00.000Z') }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const target = await j.component('synthetic-lamp-impact-uptime-1');
+    const control = await j.component('synthetic-lamp-impact-uptime-2');
+    await recordClosedOutage(j, target, { startsAt: '2040-03-31T23:00:00.000Z', endsAt: '2040-04-01T01:00:00.000Z' });
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    const { incident, endpoint } = await impactIncident(j, 'Partially unavailable', target);
+    await publicImpact(j, incident, 'major');
+    const figures = async () => ({
+      components: await j.json('/api/app/components'),
+      histories: await Promise.all([target, control].map(component => j.json(`/api/app/components/${component.id}/history`))),
+      claims: (await j.read(incident.id)).components,
+      publicComponents: (await (await j.publicResponse('/api/public/v1/components')).json()).data,
+      overall: (await (await j.publicResponse('/api/public/status')).json()).overall,
+      status: await (await j.publicResponse('/api/v2/status.json')).json(),
+      badges: await Promise.all([target, control].map(component => j.publicText(`/components/${component.id.toLowerCase()}/uptime.svg`))),
+      reports: await Promise.all([target, control].flatMap(component => ['month=2040-03', 'month=2040-04', 'quarter=2040-Q1', 'quarter=2040-Q2'].map(period => j.json(`/api/app/availability-report?component=${component.id}&${period}&format=json`)))),
+    });
+    const baseline = await figures();
+    assert.equal(baseline.overall, 'Partially unavailable');
+    assert.deepEqual(baseline.components.components.map(row => [row.id, row.publicState]).sort(), [[target.id, 'Partially unavailable'], [control.id, 'Operational']].sort());
+    const targetUptime = baseline.publicComponents.find(row => row.id === target.id).uptime;
+    const controlUptime = baseline.publicComponents.find(row => row.id === control.id).uptime;
+    assert.equal(targetUptime.percentage, '99.90%');
+    assert.equal(targetUptime.coverageMinutes, 90 * 1440);
+    assert.equal(controlUptime.percentage, '100.00%');
+    for (const day of ['2040-03-31', '2040-04-01']) {
+      const mark = targetUptime.marks.find(row => row.day === day);
+      assert.equal(mark.downtimeMinutes, 60);
+      assert.equal(mark.worstDowntimeState, 'Major outage');
+      assert.equal(controlUptime.marks.find(row => row.day === day).downtimeMinutes, 0);
+    }
+    for (const report of baseline.reports.slice(0, 4)) assert.equal(report.downtimeMinutes, '60.00');
+    rootFigures(await j.publicText('/'), 'default', target, control, '99.90%', 60, 'Major outage');
+    for (const choice of impactChanges) {
+      await j.json(endpoint, 'PUT', { impactOverride: choice });
+      const selected = await publicImpact(j, incident, choice ?? 'major');
+      assert.equal(selected.impactOverride, choice, 'read the new generation before comparing its figures');
+      assert.deepEqual(await figures(), baseline, `choosing ${choice ?? 'derived'} changes no complete state, claim, history, daily record, current figure, badge or report`);
+      rootFigures(await j.publicText('/'), 'default', target, control, '99.90%', 60, 'Major outage');
+    }
+  } finally { await j.close(); }
+});
+
 test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history', async () => {
   const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
@@ -566,7 +759,11 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     const startsAt = new Date(now + 3600000).toISOString();
     const endsAt = new Date(now + 7200000).toISOString();
     const input = { title: 'Database capacity upgrade ;,\\\n' + 'é'.repeat(70), affectedAudience: 'Customers using the database', customerImpact: 'Writes may pause during the upgrade.', startsAt, endsAt, componentIds: [component.id, operatorComponent.id, incidentComponent.id], autoStart: true, autoComplete: false };
+    await admitAttributionOperator(j, 'maintenance-creator');
     const maintenance = (await j.json('/api/app/maintenance', 'POST', input, 201)).maintenance;
+    const { creator: scheduler, actor: maintainer } = await admitAttributionOperator(j, 'maintenance-actor');
+    assert.equal(maintenance.createdByOperatorId, scheduler.id);
+    assert.equal(maintenance.notices.find(row => row.kind === 'scheduled').authorOperatorId, scheduler.id);
     const endpoint = `/api/app/maintenance/${maintenance.id}`;
     const list = async () => (await j.json('/api/app/maintenance')).maintenance.find(row => row.id === maintenance.id);
     const attachments = async () => (await j.db.prepare('SELECT * FROM maintenance_components WHERE maintenance_id = ? ORDER BY component_id').bind(maintenance.id).all()).results;
@@ -621,7 +818,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 1);
     const actualStart = new Date(now - 7200000).toISOString();
     const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
+    let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd });
+    await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
     await j.tick(Date.now());
     assert.equal((await list()).state, 'In progress');
     await reconcileClaims('In progress', 'Under maintenance', true);
@@ -656,7 +855,9 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal((await list()).state, 'In progress', 'an unchecked automatic completion never ends the window');
     await reconcileClaims('In progress', 'Under maintenance', true);
     const later = new Date(now + 4 * 3600000).toISOString();
+    priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: later });
+    await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
     assert.equal((await list()).startsAt, actualStart);
     assert.equal((await list()).endsAt, later);
     assert.equal((await list()).overrunning, false);
@@ -666,7 +867,10 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.ok(!extendedPage.includes('Running longer than planned'));
     calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 2, 'extended calendar event');
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
+    priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/complete`, 'POST', {});
+    await assertMaintenanceActor(j, maintenance.id, 'completed', maintainer, priorNotices);
+    assert.equal((await list()).createdByOperatorId, scheduler.id, 'a change never replaces the creator');
     await j.json(`${endpoint}/complete`, 'POST', {}, 409);
     const completed = await eventually(list, row => row.state === 'Completed', 'manual completion');
     await reconcileClaims('Completed', 'Operational', false);
@@ -682,9 +886,17 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assertSeparateRecords(sharedHistory, separateIncident, maintenance, 'history-item');
     const feed = await j.visible('/feed.atom', input.customerImpact);
     assert.ok(feed.includes(maintenance.reference));
+    await j.signIn(scheduler.email);
     const cancelled = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Cancelled upgrade' }, 201)).maintenance;
+    assert.equal(cancelled.createdByOperatorId, scheduler.id);
+    await j.signIn(['synthetic-lamp-maintenance-actor', 'example.test'].join('@'));
+    const beforeCancellationEdits = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
     await j.json(`/api/app/maintenance/${cancelled.id}/window`, 'PUT', { startsAt: new Date(now + 5 * 3600000).toISOString(), endsAt: new Date(now + 6 * 3600000).toISOString() });
+    await assertMaintenanceActor(j, cancelled.id, 'rescheduled', maintainer, beforeCancellationEdits);
+    const beforeCancel = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
     await j.json(`/api/app/maintenance/${cancelled.id}/cancel`, 'POST', {});
+    await assertMaintenanceActor(j, cancelled.id, 'cancelled', maintainer, beforeCancel);
+    await j.signIn();
     assert.equal((await j.json('/api/app/maintenance')).maintenance.find(row => row.id === cancelled.id).state, 'Cancelled');
     await eventually(readCalendar, value => value.events.some(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${cancelled.id}@lamp` && event.getFirstPropertyValue('status') === 'CANCELLED'), 'cancelled calendar event');
     const internal = await j.component('Internal database topology', { internal: true });
@@ -920,4 +1132,8 @@ test('AGENT-005 HIST-002 — cited report reconciles the retained record, requir
     assert.ok(!publicHtml.includes(internalNote));
     t.diagnostic('PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes');
   } finally { await j.close(); }
+});
+
+test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
+  await updateReachFlow({ diagnostic: message => t.diagnostic(message) });
 });

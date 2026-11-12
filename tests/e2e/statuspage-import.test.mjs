@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { chromium } from 'playwright';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
 import { invitationFiles, importInvitationFlow, unsentExpiredImportFlow } from './helpers/import-invitation-flow.mjs';
+import { subscriberMoveInCapacityFlow } from './helpers/subscriber-limits-flow.mjs';
 import { historyCatchupFlow } from './helpers/history-catchup-flow.mjs';
 
 const fixtures = source => readdirSync(`tests/fixtures/${source}/small`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/small/${name}`, 'utf8') }));
@@ -21,6 +23,7 @@ function sourceHistory(source, files) {
 }
 
 test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes', { timeout: 600_000 }, async t => {
+  await subscriberMoveInCapacityFlow(t);
   const sourceFiles = fixtures('statuspage'), apiKey = 'synthetic-owner-import-key';
   const requests = [], invitationControl = { uncertainRecipient: null };
   let incidentSubscriberProbe = false;
@@ -145,6 +148,47 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
           assert.equal(rows.find(row => row.name === visible.name).only_show_if_degraded, false, 'the visible control explicitly exposes its compatible conditional flag');
           assert.ok(!rows.some(row => row.name === conditional.name), 'a preserved true flag hides its Operational component');
         }
+        // Execute the retained provider program unchanged. Only its network
+        // transport is bridged to this migrated Worker's public host.
+        const browser = await chromium.launch({ executablePath: process.env.LAMP_CHROMIUM_PATH, headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+        try {
+          const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+          const reads = [];
+          await context.route(`${publicOrigin}/**`, async route => {
+            if (new URL(route.request().url()).pathname === '/synthetic-lamp-client.js') return route.fulfill({ contentType: 'application/javascript', body: readFileSync('tests/fixtures/statuspage-public/se-v2.js', 'utf8') });
+            const response = await fetch(route.request().url());
+            reads.push(new URL(route.request().url()).pathname);
+            await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+          });
+          const page = await context.newPage();
+          await page.goto(publicOrigin + '/');
+          await page.addScriptTag({ url: publicOrigin + '/synthetic-lamp-client.js' });
+          const summary = await page.evaluate(() => new Promise((resolve, reject) => {
+            const client = new StatusPage.page({ page: 'synthetic-lamp-1', test: true });
+            client.summary({ success: resolve, error: () => reject(new Error('Statuspage client could not read the moved summary')) });
+          }));
+          assert.ok(reads.includes('/api/v2/summary.json'), 'the unmodified client requests the moved summary endpoint');
+          assert.equal(summary.page.url, publicOrigin);
+          assert.deepEqual(summary.status, { indicator: 'none', description: 'All Systems Operational' });
+          assert.deepEqual(summary.components.filter(row => ['Public API', 'Dashboard'].includes(row.name)).map(row => ({ name: row.name, status: row.status, only_show_if_degraded: row.only_show_if_degraded })), [
+            { name: 'Dashboard', status: 'operational', only_show_if_degraded: false },
+          ], 'the retained client parses the imported visible component and omits the degraded-only Operational component');
+          assert.deepEqual(summary.incidents, [], 'resolved imported history is not presented as an unresolved incident');
+          assert.ok(Array.isArray(summary.scheduled_maintenances));
+          await context.close();
+        } finally { await browser.close(); }
+        for (const report of [review.report.cutover, result.report.cutover, (await moveIn.read(result.job.id)).body.report.cutover]) {
+          assert.deepEqual(report.feeds, ['/history.atom']);
+          const readers = report.readerGaps.join(' ');
+          for (const served of [/Statuspage \/api\/v2\/ read endpoints.*are served/, /\/history\.rss.*are served/, /\/history\.atom.*are served/, /\/embed\/script\.js tags serve Lamp’s floating notice on the moved hostname/]) assert.match(readers, served);
+          for (const unavailable of [/Per-window switches and Verifying are unavailable/, /Webhook body compatibility and component automation email addresses remain unavailable/]) assert.match(readers, unavailable);
+        }
+        const rss = await (await fetch(publicOrigin + '/history.rss')).text();
+        assert.equal(rss, await (await fetch(publicOrigin + '/feed.rss')).text(), 'the old RSS address serves the native RSS feed');
+        assert.match(rss, /<rss\b/);
+        for (const incident of parsed(files, 'incidents.json')) assert.ok(rss.includes(incident.name), 'the old RSS reader retains imported incident history');
+        t.diagnostic('PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted');
+        t.diagnostic('PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable');
       }
       const incidents = (await api('/api/app/incidents')).body.incidents;
       for (const row of sourceHistory(source, files)) {
