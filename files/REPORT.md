@@ -39,12 +39,12 @@ Screen registration: `tests/e2e/publishing-browser.test.mjs` — `INCIDENT-001 I
 
 | Rubric item | Clause sentence or inherited duty | Proof and result |
 | --- | --- | --- |
-| R1 | Point 1: committed recipients by channel | `tests/e2e/helpers/update-reach-flow.mjs:57` and `:77` — Native creation, confirmation and paused publication retain the exact intended recipient identities; complete and update-filtered reach reads match literal counts. PASS locally. |
-| R2 | Point 1: delivered and bounced counts by channel | `tests/e2e/helpers/update-reach-flow.mjs:43` and `:128` — Real provider acceptance plus signed delivered and hard-bounce receipts restore the ten-email and two-webhook baseline; the receiver acknowledges the exact webhook delivery. PASS locally. |
-| R3 | Point 1: suppressed counts by channel | `tests/e2e/helpers/update-reach-flow.mjs:138` and `:159` — Both recipients unsubscribe after commitment and before dispatch. Each retained delivery becomes suppressed and neither destination sees another request. PASS locally. |
-| R4 | Point 1: failed counts by channel | `tests/e2e/helpers/update-reach-flow.mjs:17`, `:152` and `:166` — Permanent email 400 and repeated webhook 400 become the exact failed deliveries through unchanged retry machinery. PASS locally. |
-| R5 | Point 1: displayed counts | `tests/e2e/publishing-browser.test.mjs:561`, loading `tests/e2e/helpers/update-reach-browser-flow.mjs:34` — Existing Reach panel reconciles every displayed value for each of the three update identities at 1440, with actual same-screen captures at 1440 and 390. PASS locally. |
-| R6 | Point 2: incident totals deduplicate recipients across updates and match delivery facts | `tests/e2e/helpers/update-reach-flow.mjs:98`, `:172` and `:183` — Exact whole-incident totals, 27 email sends for ten selected and nine reached identities, five webhook sends for two selected and two reached identities; complete stored delivery readbacks and replay invariance. PASS locally. |
+| R1 | Point 1: committed recipients by channel | `tests/e2e/helpers/update-reach-flow.mjs:57` and `:77` — Native creation, confirmation and paused publication retain the exact intended recipient identities; complete and update-filtered reach reads match literal counts. PASS locally.  Verify event=push, run=43198230462, conclusion=success on the exact candidate. |
+| R2 | Point 1: delivered and bounced counts by channel | `tests/e2e/helpers/update-reach-flow.mjs:43` and `:128` — Real provider acceptance plus signed delivered and hard-bounce receipts restore the ten-email and two-webhook baseline; the receiver acknowledges the exact webhook delivery. PASS locally.  Verify event=push, run=43198230462, conclusion=success on the exact candidate. |
+| R3 | Point 1: suppressed counts by channel | `tests/e2e/helpers/update-reach-flow.mjs:138` and `:159` — Both recipients unsubscribe after commitment and before dispatch. Each retained delivery becomes suppressed and neither destination sees another request. PASS locally.  Verify event=push, run=43198230462, conclusion=success on the exact candidate. |
+| R4 | Point 1: failed counts by channel | `tests/e2e/helpers/update-reach-flow.mjs:17`, `:152` and `:166` — Permanent email 400 and repeated webhook 400 become the exact failed deliveries through unchanged retry machinery. PASS locally.  Verify event=push, run=43198230462, conclusion=success on the exact candidate. |
+| R5 | Point 1: displayed counts | `tests/e2e/publishing-browser.test.mjs:561`, loading `tests/e2e/helpers/update-reach-browser-flow.mjs:34` — Existing Reach panel reconciles every displayed value for each of the three update identities at 1440, with actual same-screen captures at 1440 and 390. PASS locally.  Verify event=push, run=43198230462, conclusion=success on the exact candidate. |
+| R6 | Point 2: incident totals deduplicate recipients across updates and match delivery facts | `tests/e2e/helpers/update-reach-flow.mjs:98`, `:172` and `:183` — Exact whole-incident totals, 27 email sends for ten selected and nine reached identities, five webhook sends for two selected and two reached identities; complete stored delivery readbacks and replay invariance. PASS locally.  Verify event=push, run=43198230462, conclusion=success on the exact candidate. |
 | R7 | Point 3: displayed baseline figures match CSV | HELD, not claimed: complete incident CSV field and channel parity belongs to HIST-005 under this lease. |
 | R8 | BASE-MAIL-001 citation | `CONTRACT.md:2055` — Citation remains in the receiving clause. Real serializers and authenticated synthetic receipts exercise native acceptance and delivery distinction; live provider qualification is not claimed. INSPECTED for inheritance; native boundary proof passes. |
 
@@ -56,9 +56,9 @@ A full DONE is not claimed; the scoped progress remains PARTIAL.
 
 | Rider | Result | Evidence or retained boundary |
 | --- | --- | --- |
-| 1 | PASS locally for points 1 and 2; point 3 HELD | R1 to R6 native and existing-screen journeys perform all leased outcomes. Exact-SHA Verify remains a landing gate. |
+| 1 | PASS locally for points 1 and 2; point 3 HELD | R1 to R6 native and existing-screen journeys perform all leased outcomes. Exact-SHA push Verify 43198230462 completed success; point 3 remains held. |
 | 2 | PASS | Populated recipient and delivery sets, independent literal expectations, native signed receipts, both suppression channels, permanent rejection and unchanged identity sets. |
-| 3 | PENDING independent CI | Both registrations are in the routine push Verify plan. The exact candidate's run is reported honestly. |
+| 3 | PASS | Both registrations run in push Verify 43198230462, completed success on ba40ca5fdd232e8286aba0be8dba448cb07f85f2. |
 | 4 | PASS locally | Final scoped proof reruns on the committed candidate; production and UI source bytes are unchanged from the built main artifact. |
 | 5 | PASS, INSPECTED | NOTIFY-015 explicitly cites BASE-MAIL-001; no inherited duty was added or moved. |
 | 6 | PASS mechanical; status updates reserved for lander | Contract write and check pass. Generated views are restored from main and excluded from product commits. No status or gap cell is edited. |
@@ -103,4 +103,10 @@ PROBE NOTIFY-015 1: ordinary native publication, signed receipts, queued unsubsc
 PROBE NOTIFY-015 2: three native updates and replayed dispatch -> 27 email sends, ten selected and nine reached identities; five webhook sends, two selected and two reached identities, three delivered, one suppressed and one failed.
 MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0.
 
-DONE-RIDERS rows 1 and 2 pass locally for scoped points, row 3 awaits exact-SHA CI, row 4 passes exact-candidate local proof, row 5 is inspected unchanged, rows 6 and 7 pass mechanical inspection, row 8 is inapplicable to this proof-only delta, rows 9 and 10 retain the provider and policy boundaries, and row 11 awaits guarded landing. The clause remains PARTIAL and no counts change.
+DONE-RIDERS rows 1 and 2 pass locally for scoped points, row 3 passes exact-SHA push Verify 43198230462 success, row 4 passes exact-candidate local proof, row 5 is inspected unchanged, rows 6 and 7 pass mechanical inspection, row 8 is inapplicable to this proof-only delta, rows 9 and 10 retain the provider and policy boundaries, and row 11 awaits guarded landing. The clause remains PARTIAL and no counts change.
+
+## Final exact-SHA CI receipt
+
+Push Verify 43198230462 completed success on ba40ca5fdd232e8286aba0be8dba448cb07f85f2: https://github.com/just-every/run-lamp/actions/runs/43198230462. The four retained polling receipts show the same full SHA throughout and the final completed/success response. Seven GitHub calls were used. Polls were at least 300 seconds apart; no dispatch or rerun was needed.
+
+The candidate is READY for the maintained Mac lander. NOTIFY-015 is still claimed PARTIAL points=1,2, with no status or count change. The publication scan and resulting main equality and Run site remain the lander's duties; the green candidate Verify is not a claim of landing. Draft PR 337 remains open. The scratch clone is removed after the final evidence transfer and remote-ref verification, as requested; the complete actual packet remains outside it.

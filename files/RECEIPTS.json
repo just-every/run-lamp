@@ -67,8 +67,22 @@
         "status": "in_progress"
       }
     ],
-    "github_calls_used": 3,
-    "poll_policy": "One exact-SHA discovery; no run re-polled within 300 seconds. No dispatch or rerun.",
+    "candidate_verify_final": {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "ba40ca5fdd232e8286aba0be8dba448cb07f85f2",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43198230462",
+      "id": 43198230462,
+      "status": "completed"
+    },
+    "github_calls_used": 7,
+    "poll_policy": "One exact-SHA discovery, then one read at each 300-second interval, stopping at completed success. No dispatch or rerun.",
+    "poll_receipts": [
+      "candidate-ci-result.json",
+      "candidate-ci-result-2.json",
+      "candidate-ci-result-3.json",
+      "candidate-ci-result-4.json"
+    ],
     "starting_main_run_site": 43083760843,
     "starting_main_verify": 43083760988
   },
@@ -81,7 +95,7 @@
     ],
     "status": "PARTIAL"
   },
-  "custody": "PUSHED; independent exact-SHA Verify, complete publication scan and landing remain with the maintained Mac lander",
+  "custody": "READY; exact-SHA push Verify completed success; complete publication scan, guarded landing and Run site remain with the maintained Mac lander",
   "generated_views_committed": false,
   "git": {
     "fetch_main": "current",
