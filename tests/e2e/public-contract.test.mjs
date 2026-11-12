@@ -619,6 +619,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         const document = await agePage.goto(j.publicOrigin);
         assert.equal(document.headers()['x-lamp-snapshot-generated-at'], retainedInstant);
         const age = agePage.locator('[data-generated-at] time');
+        assert.ok(await age.isVisible(), 'the initial relative age is visible to the reader');
         assert.equal(await age.innerText(), 'just now', 'the retained generation initially has a relative age below one minute');
         assert.equal(await age.getAttribute('datetime'), retainedInstant);
         const absoluteTitle = await age.getAttribute('title');
@@ -627,6 +628,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         await agePage.clock.runFor(30_000);
         await agePage.waitForFunction(() => document.querySelector('[data-generated-at] time')?.textContent === '1 minute ago');
         assert.equal(await age.innerText(), '1 minute ago', 'the open page visibly ages across the minute boundary without publication');
+        assert.ok(await age.isVisible(), 'the changed relative age stays visible to the reader');
         assert.equal(await age.getAttribute('datetime'), retainedInstant, 'aging does not replace the generation instant');
         assert.equal(await age.getAttribute('title'), absoluteTitle, 'aging retains the absolute tooltip');
         assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles');
