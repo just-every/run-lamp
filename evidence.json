@@ -1,0 +1,178 @@
+{
+  "files": [
+    {
+      "blob": "23669eb30cdc965539d857e6c472a5c6709de5ac",
+      "bytes": 2660,
+      "path": "PLAN.md",
+      "sha256": "02e655a597fa683af439a2c4bd885d2359c5375279afa962d8f18c9a3cbf421e"
+    },
+    {
+      "blob": "3aecf531e1ee3cd08a69b3be7929222781dcfe8b",
+      "bytes": 9053,
+      "path": "REPORT.md",
+      "sha256": "9c58534606ca1659b459ec015a076eff996f4b4dec54e55f491fb67eb6c51e79"
+    },
+    {
+      "blob": "4353faacf00dad66a1e03349aa35ee94fc95a9c7",
+      "bytes": 2259,
+      "path": "SOURCE-NOTES.md",
+      "sha256": "4878b7ef3ae1b897f4461bf6724f6b1177d91af8f846eb4f0d9f2b696a2cfaf3"
+    },
+    {
+      "blob": "0d969efb142061daa7400b8f2681123811500bf2",
+      "bytes": 1945,
+      "path": "api-calls.jsonl",
+      "sha256": "22b3b6d64762a60d602b3c698d6f479b0ade7ad3f51107347eb906280d23fa96"
+    },
+    {
+      "blob": "1a0105e3abf1a865ef7e8f899f72e3558e44ca57",
+      "bytes": 38421,
+      "path": "attempt-1-jobs.json",
+      "sha256": "4158fbcdfac69bd10eec8b06557b48033e77e8c8bd00aee70191664b23642342"
+    },
+    {
+      "blob": "338dd53949d5480db9329363af69d7c479eedcf2",
+      "bytes": 38421,
+      "path": "attempt-2-jobs.json",
+      "sha256": "a78ad218d78e8bf2cedf44eb0993cce8b5d12887214f1ed42bbc6dce02a17b45"
+    },
+    {
+      "blob": "976b1c1adc5c55f52fe2dc9e362216c913f396d5",
+      "bytes": 38421,
+      "path": "attempt-3-jobs.json",
+      "sha256": "63c1126b893f69a8ddda3b2d297dce6bfbae57d17878a5ce0e9c402b40f1d4ef"
+    },
+    {
+      "blob": "49f02f6a096499927b3a0f41667a7faf9ecc345d",
+      "bytes": 21,
+      "path": "attempt3-final-status-observed.utc",
+      "sha256": "905a3a66b78e649177d6c685bdd2990d1f5cc2ebc83c613aa52e8acc82275eef"
+    },
+    {
+      "blob": "b7721a07997d2a0ecc3f8b4f291e1abfb6c2a79b",
+      "bytes": 246,
+      "path": "attempt3-final-status.json",
+      "sha256": "668068ea8624ad3367c4b69b98f000cdd55f6af45acc6aebb973409e484b95fb"
+    },
+    {
+      "blob": "eaacc410ccc2c36a8cfd7668ba3660c188c3eecc",
+      "bytes": 21,
+      "path": "attempt3-jobs-observed.utc",
+      "sha256": "1706e57254b040b04da3c06b352183a916ff705e9f1f9a830501126b354fb64c"
+    },
+    {
+      "blob": "ac0d015bd143dd83e73341754676c7538206deb5",
+      "bytes": 21,
+      "path": "attempt3-status-observed.utc",
+      "sha256": "207f131e41340d65842eb5645879209bc4d4d914c142001398c7d133f1d79f11"
+    },
+    {
+      "blob": "f545c2fd56dac716f1347e09183404c871e832ac",
+      "bytes": 243,
+      "path": "attempt3-status.json",
+      "sha256": "680060c836091d92004369cff86fc49d047b189422366fc729221cd3ada8a714"
+    },
+    {
+      "blob": "cfe3682b682369e918202c8f7fc654e8d954f856",
+      "bytes": 278,
+      "path": "candidate-vs-main.txt",
+      "sha256": "60a70ffc093c65a17959dc98f7e6d0835ccd673bc709e8701e457f2c0e571ea8"
+    },
+    {
+      "blob": "14755ae624c967fef8b3dfb11968f5aef1f90c51",
+      "bytes": 21,
+      "path": "delivery-rerun-request.utc",
+      "sha256": "3b7d95a988ad68de165e74758106a3fdfddf50e44880467ef74a349fb7739f20"
+    },
+    {
+      "blob": "9e26dfeeb6e641a33dae4961196235bdb965b21b",
+      "bytes": 2,
+      "path": "delivery-rerun-response.json",
+      "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "blob": "7251ade89a2c4839d8376c62b15f483a353709de",
+      "bytes": 466,
+      "path": "exact-head-runs.json",
+      "sha256": "3491a77b36b24ba9a00262b432a3920d8f14d3682518335f55fe8d6c7f90476e"
+    },
+    {
+      "blob": "5ecb33fbbbaf2beb80c6f0b8821b4bb932c503f8",
+      "bytes": 21,
+      "path": "final-observed.utc",
+      "sha256": "9d3b41efa60eabde5a764e6a54556db6988ff8f3318460f52c8ee9964e81b34a"
+    },
+    {
+      "blob": "811f055eff10783da69f015badf7bf768d31e3e2",
+      "bytes": 21,
+      "path": "investigation-observed.utc",
+      "sha256": "229886e25aa94cde675ae847930e893fa65698c45a8538d3e91541aaffe31316"
+    },
+    {
+      "blob": "d61e6a8e749f3a3363a6a86997aa179601420ef5",
+      "bytes": 35215,
+      "path": "original-delivery-log.txt",
+      "sha256": "9bec17e71831bdaa8b7703088443b47d7e243bd579f893e907b5dc7361275638"
+    },
+    {
+      "blob": "2770781fbecc19097abb01cf584b86e8794bc675",
+      "bytes": 41,
+      "path": "prior-evidence-head.txt",
+      "sha256": "68c406d5fb688a3de712b6ac286341f3d68df50c2a223d89427ba3181111d851"
+    },
+    {
+      "blob": "36a277c372362089ccdb0b545e3166d3d6208859",
+      "bytes": 3702,
+      "path": "prior-evidence-manifest.json",
+      "sha256": "844a7fcd6284ec5844d6f59cab1f49e637dc7761e2e574bd3681cde142ab6bf0"
+    },
+    {
+      "blob": "137f406d052fb7ca444f9d5f0aa9068106fd6e30",
+      "bytes": 614,
+      "path": "prior-packet-verification.json",
+      "sha256": "b0faad0fcc028cd8587a5f757e5be381ed83662394a5d5289bcf9da46339cbfe"
+    },
+    {
+      "blob": "f9fd284be45b10cff2670374d495761de707b235",
+      "bytes": 2703,
+      "path": "prior-triage-api-calls.jsonl",
+      "sha256": "73dc13b9e9f43b8e10e0d27732016c9044d3f91a6c5ce1610388564fe92ea381"
+    },
+    {
+      "blob": "b90bdedacea36e1dd12df4dad56a332c66ff0036",
+      "bytes": 6174,
+      "path": "prior-triage-receipt.json",
+      "sha256": "e37903c8216caa41232860e19deb76720659f1e94f3f6befc7b6c228896c32fb"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "product-candidate-identities.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "product-status.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "69e72a66bf761301ba8bc7530bcafa9ce98c5de7",
+      "bytes": 2115,
+      "path": "source-comparison.json",
+      "sha256": "deba4dc70a7ad1e1cf9159e9d2672979ca32fa54a8ec8e2730373243b05f2497"
+    },
+    {
+      "blob": "03f964c94a2a23ca50c2992ce9f65a809019e8ff",
+      "bytes": 11106,
+      "path": "triage-receipt.json",
+      "sha256": "4f459cd31867a1079dc05ab76f3a5f965be952e56a0e70545c2ab79e2836b992"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-release-1-11-13-delivery-triage-1",
+  "product_head": "75da4a858c901d96d103648d78dfba38eeb650ab",
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-13-delivery-triage-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-13-delivery-triage-1"
+}

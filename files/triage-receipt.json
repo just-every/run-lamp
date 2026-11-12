@@ -1,0 +1,297 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-13-delivery-triage-1",
+  "repository": "just-every/run-lamp",
+  "candidate_head": "3da8bf2e469b229080489af89872f97fd23c76cf",
+  "candidate_run_branch": "cloud/sd-lamp-release-1-11-13-rebase-3da8bf2e469b229080489af89872f97fd23c76cf",
+  "release_task_branch": "cloud/sd-lamp-release-1-11-13",
+  "run_id": 43236095677,
+  "local_investigation_branch": "cloud/sd-lamp-release-1-11-13-delivery-triage-1",
+  "local_head": "75da4a858c901d96d103648d78dfba38eeb650ab",
+  "prior_delivery_retry": {
+    "used_before_this_task": false,
+    "evidence": "Attempts 1 and 2 have identical delivery timestamps 2026-11-12T14:21:19Z/2026-11-12T14:28:39Z and runner 1000314744; the prior Git packet records only a runtime job POST. New attempt-2 job id alone is not a new execution.",
+    "original_job_id": 131244441625,
+    "carried_job_id": 131259655150,
+    "prior_evidence_head": "12d3896b4fe3edbba8beaf30e8dfe27ac16eb09e"
+  },
+  "assertion": {
+    "test_file": "tests/e2e/channels-and-presets.test.mjs",
+    "test_line": 482,
+    "test_name": "AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence",
+    "helper_file": "tests/e2e/helpers/automation-rules-browser-flow.mjs",
+    "helper_line": 175,
+    "message": "the ended change is no longer offered for Undo",
+    "expected": 0,
+    "actual": 1,
+    "operator": "strictEqual",
+    "original_shard_pass": 7,
+    "original_shard_fail": 1,
+    "original_shard_tests": 8
+  },
+  "retry": {
+    "requests": 1,
+    "requested_job_id": 131259655150,
+    "request_utc": "2026-11-12T15:12:41Z",
+    "response": {},
+    "observed_attempt": 3,
+    "status": "completed",
+    "runtime_reruns": 0,
+    "successful_shard_reruns": 0,
+    "aggregate_rerun_requests": 0,
+    "whole_workflow_reruns": 0,
+    "workflow_dispatches": 0,
+    "conclusion": "success",
+    "retry_job_id": 131276328840,
+    "started_at": "2026-11-12T15:12:50Z",
+    "completed_at": "2026-11-12T15:21:07Z",
+    "runner_id": 1000314947,
+    "runner_name": "GitHub Actions 1000314947",
+    "delivery_retry_allowance_used": 1,
+    "delivery_retry_allowance_limit": 1
+  },
+  "counts_before": {
+    "successful_shards": 7,
+    "failed_shards": 1,
+    "total_shards": 8,
+    "failed_jobs_including_aggregate": 2,
+    "registered_cases": 86,
+    "assertion_scripts": 10,
+    "verification_inventory": 96
+  },
+  "limits": {
+    "gh_invocation_budget": 10,
+    "gh_invocations_so_far": 7,
+    "failed_job_log_archive_reads_this_task": 0,
+    "prior_log_reads_reused_from_packet": 1,
+    "local_test_runs": 0,
+    "baseline_runs": 0,
+    "full_suite_runs": 0,
+    "source_edits": 0,
+    "test_edits": 0,
+    "clause_status_changes": 0,
+    "product_commits": 0,
+    "product_pushes": 0,
+    "pr_created": false
+  },
+  "last_status": {
+    "conclusion": "success",
+    "head_sha": "3da8bf2e469b229080489af89872f97fd23c76cf",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43236095677",
+    "id": 43236095677,
+    "run_attempt": 3,
+    "status": "completed",
+    "updated_at": "2026-11-12T15:21:18Z"
+  },
+  "stamp_utc": "2026-11-12T15:23:31Z",
+  "final_run": {
+    "conclusion": "success",
+    "head_sha": "3da8bf2e469b229080489af89872f97fd23c76cf",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43236095677",
+    "id": 43236095677,
+    "run_attempt": 3,
+    "status": "completed",
+    "updated_at": "2026-11-12T15:21:18Z",
+    "delivery_job": {
+      "completed_at": "2026-11-12T15:21:07Z",
+      "conclusion": "success",
+      "head_sha": "3da8bf2e469b229080489af89872f97fd23c76cf",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43236095677/job/131276328840",
+      "id": 131276328840,
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "name": "shards (delivery)",
+      "run_attempt": 3,
+      "run_id": 43236095677,
+      "runner_group_name": "GitHub Actions",
+      "runner_id": 1000314947,
+      "runner_name": "GitHub Actions 1000314947",
+      "started_at": "2026-11-12T15:12:50Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-12T15:12:52Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "started_at": "2026-11-12T15:12:50Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:12:54Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "number": 2,
+          "started_at": "2026-11-12T15:12:52Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:00Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "number": 3,
+          "started_at": "2026-11-12T15:12:54Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:02Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "number": 4,
+          "started_at": "2026-11-12T15:13:00Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:06Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "number": 5,
+          "started_at": "2026-11-12T15:13:02Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:06Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "number": 6,
+          "started_at": "2026-11-12T15:13:06Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:06Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "number": 7,
+          "started_at": "2026-11-12T15:13:06Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:13Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "number": 8,
+          "started_at": "2026-11-12T15:13:06Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:16Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "number": 9,
+          "started_at": "2026-11-12T15:13:13Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:17Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "number": 10,
+          "started_at": "2026-11-12T15:13:16Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:13:17Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "number": 11,
+          "started_at": "2026-11-12T15:13:17Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:01Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "number": 12,
+          "started_at": "2026-11-12T15:13:17Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:02Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "number": 13,
+          "started_at": "2026-11-12T15:21:01Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:04Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "number": 14,
+          "started_at": "2026-11-12T15:21:02Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:04Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "number": 25,
+          "started_at": "2026-11-12T15:21:04Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "number": 26,
+          "started_at": "2026-11-12T15:21:04Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "number": 27,
+          "started_at": "2026-11-12T15:21:04Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:04Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "number": 28,
+          "started_at": "2026-11-12T15:21:04Z",
+          "status": "completed"
+        },
+        {
+          "completed_at": "2026-11-12T15:21:04Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "started_at": "2026-11-12T15:21:04Z",
+          "status": "completed"
+        }
+      ]
+    },
+    "carried_runtime_job_id": 131276331800,
+    "carried_runtime_started_at": "2026-11-12T14:46:07Z",
+    "carried_runtime_completed_at": "2026-11-12T14:51:22Z",
+    "aggregate_job_id": 131281652366,
+    "aggregate_conclusion": "success"
+  },
+  "counts_after": {
+    "successful_shards": 8,
+    "failed_shards": 0,
+    "total_shards": 8,
+    "failed_jobs_including_aggregate": 0,
+    "registered_cases": 86,
+    "assertion_scripts": 10,
+    "verification_inventory": 96,
+    "clause_status_changes": 0
+  },
+  "classification": {
+    "delivery": "intermittent assertion failure recovered by its sole retry on unchanged exact head",
+    "hypothesis": "success message may precede asynchronous list refresh; causality not proven",
+    "infrastructure_outage_proven": false,
+    "product_defect_proven": false,
+    "failure_on_main_proven": false
+  },
+  "main_reproduction": {
+    "required": false,
+    "reason": "delivery retry passed; conditional same-runner main comparison was not triggered",
+    "tests_run": 0
+  },
+  "next_action": "Done. sd may resume ordinary guarded release review using completed/success Verify 43236095677 attempt 3 on exact head 3da8bf2e469b229080489af89872f97fd23c76cf; other release/account/landing gates remain independent. fv receives recovered intermittent Undo-list assertion for follow-up. No writer round, test weakening, new Verify dispatch or landing-record modification is supported or performed.",
+  "terminal_product_claim": "No READY/PUSHED claim for the unchanged, unpushed investigation branch. Evidence-only publication is separate from the original candidate green CI result."
+}

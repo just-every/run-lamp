@@ -1,0 +1,195 @@
+shards (delivery)	Verify this product shard	﻿2026-11-12T14:21:46.4544203Z ##[group]Run # rer verify adds Base's hosted-output and hydration checks after the
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4544696Z [36;1m# rer verify adds Base's hosted-output and hydration checks after the[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4545089Z [36;1m# runtime shard has built and exercised the actual production Worker.[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4545422Z [36;1mif [ "$LAMP_VERIFY_SHARD" = runtime ]; then[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4545750Z [36;1m  pnpm verify 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4546046Z [36;1melse[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4546308Z [36;1m  pnpm run verify:app 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4546613Z [36;1mfi[0m
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4564131Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+[Execution environment preamble omitted from public evidence.]
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.4565994Z ##[endgroup]
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.6661647Z 
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.6662043Z > lamp@1.11.13 verify:app /home/runner/work/run-lamp/run-lamp
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.6662423Z > node scripts/verification/run.mjs
+shards (delivery)	Verify this product shard	2026-11-12T14:21:46.6662591Z 
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.3558134Z Verification plan: 8 test shards and one shared build, 34 routine test files, 86 registered cases (including release qualification) + 10 assertion scripts = 96 checks.
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.3614282Z 
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.3616470Z Verifying delivery: test:channels
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.5645873Z 
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.5646733Z > lamp@1.11.13 test:channels /home/runner/work/run-lamp/run-lamp
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.5647305Z > node --test --test-concurrency=1 tests/e2e/channels-and-presets.test.mjs
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.5647553Z 
+shards (delivery)	Verify this product shard	2026-11-12T14:21:47.5973932Z TAP version 13
+shards (delivery)	Verify this product shard	2026-11-12T14:21:48.7650189Z # (node:2564) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (delivery)	Verify this product shard	2026-11-12T14:21:48.7651665Z # (Use `node --trace-warnings ...` to show where the warning was created)
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3104756Z # Subtest: INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3110004Z ok 1 - INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3110997Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3111515Z   duration_ms: 138532.031599
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3111891Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3112270Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3113475Z # INTEG-002 browser 1440px: Settings connected an account, concealed the saved credential, saved post-by-default on/off; composer respected deselection and reset each new update to the owner default.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3116038Z # INTEG-002 browser: Settings, incident composer and maintenance scheduling at 1440 and 390 have no horizontal overflow or serious/critical accessibility findings; account removed through Settings. Screens retained under ./test-results/social; private sign-in links are never retained.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3118816Z # PROBE NOTIFY-012 atomic commit: POST /api/app/incidents/:id/publish with chat and a second-post storage fault -> 409; complete inventories stay at 1 update/2 posts, unchanged draft and receivers; retry commits exactly 1 update/2 following posts.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3120987Z # PROBE NOTIFY-012 original request replay: POST the captured body and If-Match revision, then two scheduled passes -> 409; all 2 update/4 post identities and 4 receiver requests unchanged.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3123656Z # PROBE NOTIFY-012 retroactive silence: POST a distinct saved draft with chat selected and the earlier publication timestamp -> 200, isRetroactive=true, 3 updates; complete 4-post inventory and 4 receiver requests unchanged.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3125616Z # SUB-014 SUB-015 synthetic Slack OAuth and Teams Workflows public subscriptions; no live provider call
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3126899Z # INTEG-002 acceptance 1: recorded X, Bluesky and Mastodon edges receive one bounded post per selected account; credentials stay sealed.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3129579Z # INTEG-002 x first post (279/280): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3133154Z # INTEG-002 bluesky first post (300/300): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking\\nhttps://status.example.test/incidents/INC-1"; postId=at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3135840Z # INTEG-002 mastodon first post (337/500): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking successful payments before recovery.\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3137816Z # INTEG-002 acceptance 2: the second update uses each network’s native reply field and replies to the first provider id.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3139506Z # INTEG-002 thread fields: X {"in_reply_to_tweet_id":"synthetic-lamp-post-1"}; Bluesky {"root":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"},"parent":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"}}; Mastodon in_reply_to_id=synthetic-lamp-post-1
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3141004Z # INTEG-002 acceptance 3: explicit deselection queues and posts nothing even with post by default on; retroactive updates and imports stay silent.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3142184Z # INTEG-002 acceptance 4: X 503 receives five retries, then a failed row and one operator alert; public artifacts, email and the other accounts continue.
+shards (delivery)	Verify this product shard	2026-11-12T14:24:07.3147684Z # INTEG-002 X 503 attempts=6; final={"id":"01M7829K5B8XE1ZP1J0Q4ZRTBA.01M7829GKEEYX3CQ2F1YG2FMPD","eventId":"01M7829K5B8XE1ZP1J0Q4ZRTBA","accountId":"01M7829GKEEYX3CQ2F1YG2FMPD","account":"Synthetic Lamp x","network":"x","reference":"INC-5","text":"Synthetic Lamp service status: Investigating: Synthetic social failure must not delay public status or subscriber email.\\nhttps://status.example.test/incidents/INC-5","queuedAt":"2026-11-12T14:23:55.079Z","outcomeAt":"2026-11-12T14:23:55.672Z","postId":null,"postCid":null,"attempts":6,"state":"failed","attemptLog":[{"number":1,"startedAt":1794493435268,"finishedAt":1794493435309,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":2,"startedAt":1794493435445,"finishedAt":1794493435450,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":3,"startedAt":1794493435504,"finishedAt":1794493435509,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":4,"startedAt":1794493435559,"finishedAt":1794493435564,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":5,"startedAt":1794493435613,"finishedAt":1794493435618,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":6,"startedAt":1794493435667,"finishedAt":1794493435672,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"}]}; NOTIFY-006 operator mail=1; page, Atom, email, Bluesky and Mastodon delivered before X exhaustion.
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8343102Z # Subtest: INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8344752Z ok 2 - INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8345401Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8345743Z   duration_ms: 108524.674531
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8346153Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8346472Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8347219Z # PROBE INTAKE-008 2 paired missing key: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8348132Z # PROBE INTAKE-008 2 paired wrong key: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8349024Z # PROBE INTAKE-008 2 paired missing timestamp: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8349988Z # PROBE INTAKE-008 2 paired future timestamp: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8351018Z # PROBE INTAKE-008 2 paired stale timestamp: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8354695Z # PROBE INTAKE-008 3 test: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8369298Z # PROBE INTAKE-008 3 drill: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8370939Z # PROBE INTAKE-008 3 unpicked monitor: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8392175Z # PROBE INTAKE-008 7 1440: Settings and private draft after reload -> exact Storefront mapping and US East vantage
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8393336Z # PROBE INTAKE-008 7 390: Settings and private draft after reload -> exact Storefront mapping and US East vantage
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8394620Z # PROBE INTAKE-008 1,4,6: no-secret pairing -> mapped private draft; recovery -> Resolved without publication; erased address -> 404 without resurrection
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8396013Z # PROBE INTAKE-006 3 datadog missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8397377Z # PROBE INTAKE-006 3 datadog wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8398784Z # PROBE INTAKE-006 3 datadog malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8400545Z # PROBE INTAKE-006 1 and 5 datadog: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 56 retained artifacts, generation and public response bytes; private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8402603Z # PROBE INTAKE-006 3 uptimerobot missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8404075Z # PROBE INTAKE-006 3 uptimerobot wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8405553Z # PROBE INTAKE-006 3 uptimerobot malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8407365Z # PROBE INTAKE-006 1 and 5 uptimerobot: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 60 retained artifacts, generation and public response bytes; private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8409451Z # PROBE INTAKE-006 3 betterstack missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8410890Z # PROBE INTAKE-006 3 betterstack wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8412768Z # PROBE INTAKE-006 3 betterstack malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8414534Z # PROBE INTAKE-006 1 and 5 betterstack: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 64 retained artifacts, generation and public response bytes; private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8416203Z # PROBE INTAKE-006 3 pingdom missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8417570Z # PROBE INTAKE-006 3 pingdom wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8418984Z # PROBE INTAKE-006 3 pingdom malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8420733Z # PROBE INTAKE-006 1 and 5 pingdom: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 68 retained artifacts, generation and public response bytes; private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8422738Z # PROBE INTAKE-007 1 datadog: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8424235Z # PROBE INTAKE-007 1 uptimerobot: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8425527Z # PROBE INTAKE-007 1 betterstack: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8426868Z # PROBE INTAKE-007 1 pingdom: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8428446Z # PROBE INTAKE-007 2 datadog: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8430199Z # PROBE INTAKE-007 2 uptimerobot: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8432143Z # PROBE INTAKE-007 2 betterstack: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8433858Z # PROBE INTAKE-007 2 pingdom: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8435542Z # PROBE INTAKE-001 acceptance 1: native public intake with controlled Worker time admits distinct signed payloads at -300000 and +300000 ms; -300001 and +300001 ms return 401.
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8437022Z # PROBE INTAKE-001 acceptance 2: native public intake with the configured bearer returns 202 and the matching persisted receipt and incident.
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8438859Z # PROBE INTAKE-001 acceptance 3: absent, malformed, stale and non-matching HMAC and bearer credentials return 401; complete ordered populated incident, draft, update, receipt and audit inventories stay identical after every refusal.
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8440558Z # PROBE INTAKE-008 2 uptime: missing timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8441891Z # PROBE INTAKE-008 2 uptime: future timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8443807Z # PROBE INTAKE-008 2 uptime: missing signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8444969Z # PROBE INTAKE-008 2 uptime: wrong signing key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8447851Z # PROBE INTAKE-008 2 uptime: body-only signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8449021Z # PROBE INTAKE-008 2 uptime: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8450319Z # PROBE INTAKE-008 2 uptime: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8451807Z # PROBE INTAKE-008 2 uptime: added whitespace: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8452941Z # PROBE INTAKE-008 2 uptime: changed JSON body: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8454128Z # PROBE INTAKE-008 2 uptime: changed timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8455279Z # PROBE INTAKE-008 2 uptime: stale timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8456419Z # PROBE INTAKE-008 2 x-lamp-timestamp: missing timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8457608Z # PROBE INTAKE-008 2 x-lamp-timestamp: future timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8458877Z # PROBE INTAKE-008 2 x-lamp-timestamp: missing signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8460152Z # PROBE INTAKE-008 2 x-lamp-timestamp: wrong signing key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8461645Z # PROBE INTAKE-008 2 x-lamp-timestamp: body-only signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8462872Z # PROBE INTAKE-008 2 x-lamp-timestamp: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8464267Z # PROBE INTAKE-008 2 x-lamp-timestamp: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8465639Z # PROBE INTAKE-008 2 x-lamp-timestamp: added whitespace: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8466921Z # PROBE INTAKE-008 2 x-lamp-timestamp: changed JSON body: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8468198Z # PROBE INTAKE-008 2 x-lamp-timestamp: changed timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8469633Z # PROBE INTAKE-008 2 x-lamp-timestamp: stale timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8470984Z # PROBE INTAKE-008 2 x-monitor-at: missing timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8472418Z # PROBE INTAKE-008 2 x-monitor-at: future timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8473684Z # PROBE INTAKE-008 2 x-monitor-at: missing signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8474935Z # PROBE INTAKE-008 2 x-monitor-at: wrong signing key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8476219Z # PROBE INTAKE-008 2 x-monitor-at: body-only signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8477965Z # PROBE INTAKE-008 2 x-monitor-at: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8479412Z # PROBE INTAKE-008 2 x-monitor-at: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8480891Z # PROBE INTAKE-008 2 x-monitor-at: added whitespace: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8482224Z # PROBE INTAKE-008 2 x-monitor-at: changed JSON body: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8483363Z # PROBE INTAKE-008 2 x-monitor-at: changed timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8484604Z # PROBE INTAKE-008 2 x-monitor-at: stale timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8485860Z # PROBE INTAKE-008 2 signed replay outside five minutes: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8487008Z # PROBE INTAKE-008 2 signed wrong key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8488148Z # PROBE INTAKE-008 2 signature without timestamp prefix: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8489287Z # PROBE INTAKE-008 4: signed default firing and exact replay -> same private draft and receipt; complete inventories unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8490601Z # PROBE INTAKE-008 5: native brief GET with earlier observation -> exact Confirmed failure time: 2026-11-12T14:24:10.469Z; both vantages and status category retained
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8492116Z # PROBE INTAKE-008 3 mappings: equal incident keys on checkout and payments -> isolated incidents with their exact saved components
+shards (delivery)	Verify this product shard	2026-11-12T14:25:55.8493404Z # PROBE INTAKE-008 6: signed published recovery -> evidence accepted; Investigating lifecycle and complete publication inventory unchanged
+shards (delivery)	Verify this product shard	2026-11-12T14:26:07.1598857Z # Subtest: INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request
+shards (delivery)	Verify this product shard	2026-11-12T14:26:07.1600250Z ok 3 - INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request
+shards (delivery)	Verify this product shard	2026-11-12T14:26:07.1600745Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:26:07.1600996Z   duration_ms: 11325.041751
+shards (delivery)	Verify this product shard	2026-11-12T14:26:07.1601434Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:26:07.1601703Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1270538Z # Subtest: AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1273842Z not ok 4 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1275710Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1276346Z   duration_ms: 138940.104783
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1276739Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1277364Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/channels-and-presets.test.mjs:482:1'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1278065Z   failureType: 'testCodeFailure'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1278421Z   error: |-
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1278779Z     the ended change is no longer offered for Undo
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1279157Z     
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1279407Z     1 !== 0
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1279644Z     
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1279888Z   code: 'ERR_ASSERTION'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1280199Z   name: 'AssertionError'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1280504Z   expected: 0
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1280774Z   actual: 1
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1281048Z   operator: 'strictEqual'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1281621Z   stack: |-
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1282438Z     automationRulesBrowserFlow (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/automation-rules-browser-flow.mjs:175:12)
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1284099Z     async TestContext.<anonymous> (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/channels-and-presets.test.mjs:491:3)
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1284972Z     async Test.run (node:internal/test_runner/test:1054:7)
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1285930Z     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1286445Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1287017Z # Subtest: Development ingress proofs are single-use and expire after five minutes
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1287830Z ok 5 - Development ingress proofs are single-use and expire after five minutes
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1288339Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1288627Z   duration_ms: 29.249695
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1288933Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:26.1289204Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:28:27.8999495Z # Subtest: Development ingress refuses a forgotten proof once a full nonce set evicts it
+shards (delivery)	Verify this product shard	2026-11-12T14:28:27.9012982Z ok 6 - Development ingress refuses a forgotten proof once a full nonce set evicts it
+shards (delivery)	Verify this product shard	2026-11-12T14:28:27.9013614Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:28:27.9013865Z   duration_ms: 1771.274727
+shards (delivery)	Verify this product shard	2026-11-12T14:28:27.9014184Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:27.9014439Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:28:29.6565961Z # Subtest: Development ingress keeps serving new proofs while its nonce set is full
+shards (delivery)	Verify this product shard	2026-11-12T14:28:29.6566932Z ok 7 - Development ingress keeps serving new proofs while its nonce set is full
+shards (delivery)	Verify this product shard	2026-11-12T14:28:29.6567282Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:28:29.6567470Z   duration_ms: 1756.62362
+shards (delivery)	Verify this product shard	2026-11-12T14:28:29.6567684Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:29.6567861Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:28:33.8642369Z # Subtest: Development ingress holds exactly 10,000 nonces however many proofs it has accepted
+shards (delivery)	Verify this product shard	2026-11-12T14:28:33.8644728Z ok 8 - Development ingress holds exactly 10,000 nonces however many proofs it has accepted
+shards (delivery)	Verify this product shard	2026-11-12T14:28:33.8645581Z   ---
+shards (delivery)	Verify this product shard	2026-11-12T14:28:33.8646011Z   duration_ms: 4191.777012
+shards (delivery)	Verify this product shard	2026-11-12T14:28:33.8646477Z   type: 'test'
+shards (delivery)	Verify this product shard	2026-11-12T14:28:33.8646847Z   ...
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4407041Z 1..8
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4407411Z # tests 8
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4422058Z # suites 0
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4422287Z # pass 7
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4422485Z # fail 1
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4422662Z # cancelled 0
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4422877Z # skipped 0
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4423105Z # todo 0
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4423320Z # duration_ms 406852.762072
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4561501Z  ELIFECYCLE  Command failed with exit code 1.
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.4937112Z  ELIFECYCLE  Command failed with exit code 1.
+shards (delivery)	Verify this product shard	2026-11-12T14:28:34.5103208Z ##[error]Process completed with exit code 1.

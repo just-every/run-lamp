@@ -1,0 +1,21 @@
+{
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-13-ci-triage-1",
+  "head": "12d3896b4fe3edbba8beaf30e8dfe27ac16eb09e",
+  "files": [
+    {
+      "path": "api-calls.jsonl",
+      "sha256": "73dc13b9e9f43b8e10e0d27732016c9044d3f91a6c5ce1610388564fe92ea381",
+      "verified": true
+    },
+    {
+      "path": "initial-delivery-log.txt",
+      "sha256": "9bec17e71831bdaa8b7703088443b47d7e243bd579f893e907b5dc7361275638",
+      "verified": true
+    },
+    {
+      "path": "triage-receipt.json",
+      "sha256": "e37903c8216caa41232860e19deb76720659f1e94f3f6befc7b6c228896c32fb",
+      "verified": true
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "candidate": "3da8bf2e469b229080489af89872f97fd23c76cf",
+  "main": "75da4a858c901d96d103648d78dfba38eeb650ab",
+  "files": [
+    {
+      "path": "tests/e2e/channels-and-presets.test.mjs",
+      "candidate_sha256": "fe2bf0653ce2989843cda60c77e85bef47b6f24b6319830c2255f77c740b6839",
+      "main_sha256": "fe2bf0653ce2989843cda60c77e85bef47b6f24b6319830c2255f77c740b6839",
+      "identical": true
+    },
+    {
+      "path": "tests/e2e/helpers/automation-rules-browser-flow.mjs",
+      "candidate_sha256": "bb741a141a1656d869188d08e48f0c9bacb4f69ab977f7500626e192de2959c4",
+      "main_sha256": "bb741a141a1656d869188d08e48f0c9bacb4f69ab977f7500626e192de2959c4",
+      "identical": true
+    },
+    {
+      "path": ".github/workflows/verify.yml",
+      "candidate_sha256": "bea76389abc32cdb75ab37b34b0a416556af827471dfa80fbb87cf4f92ff80ae",
+      "main_sha256": "bea76389abc32cdb75ab37b34b0a416556af827471dfa80fbb87cf4f92ff80ae",
+      "identical": true
+    },
+    {
+      "path": "scripts/verification/plan.mjs",
+      "candidate_sha256": "50a1195f05a1a17216dd9a5216af063710ec9407f9ae68ebef6c875f462893c1",
+      "main_sha256": "50a1195f05a1a17216dd9a5216af063710ec9407f9ae68ebef6c875f462893c1",
+      "identical": true
+    },
+    {
+      "path": "src/core/features/intake/ui/alert-rules.tsx",
+      "candidate_sha256": "3c2604057d39d4ec08827108694e60fdfb3192bb02aabceb4d07da3d8e2f9c5f",
+      "main_sha256": "3c2604057d39d4ec08827108694e60fdfb3192bb02aabceb4d07da3d8e2f9c5f",
+      "identical": true
+    },
+    {
+      "path": "src/core/app/client/ui/api.ts",
+      "candidate_sha256": "043f95959808e570132e6fc517c604ab938f93805b4fc1f4df76f3d2fa852e4c",
+      "main_sha256": "043f95959808e570132e6fc517c604ab938f93805b4fc1f4df76f3d2fa852e4c",
+      "identical": true
+    },
+    {
+      "path": "tests/dev-ingress/runtime.mjs",
+      "candidate_sha256": "5c334399de14ccea48be9bebb6b0201f6db5c515f725668d26d46879ed7c4744",
+      "main_sha256": "5c334399de14ccea48be9bebb6b0201f6db5c515f725668d26d46879ed7c4744",
+      "identical": true
+    }
+  ],
+  "note": "Source equality is not a same-runner main test result."
+}

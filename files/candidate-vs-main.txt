@@ -1,0 +1,11 @@
+M	CHANGELOG.md
+M	README.md
+M	RELEASE.json
+M	docs/accessibility/vpat.md
+M	package.json
+D	release-history/1.11.12.CONTRACT.md
+D	release-history/1.11.12.json
+M	seed.json
+M	sources.lock.json
+M	tests/e2e/helpers/uptime-correction-journey.mjs
+M	tests/e2e/publishing-contract.test.mjs
