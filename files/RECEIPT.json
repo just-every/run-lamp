@@ -1,4 +1,5 @@
 {
+  "blockers": [],
   "branch": "cloud/sd-lamp-audit-labels-1-pc1",
   "browser_proof": {
     "assertion_width": 1440,
@@ -16,12 +17,14 @@
     }
   },
   "ci": {
-    "head": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
-    "latest_observation": "2026-11-12T19:20:36+00:00",
+    "conclusion": null,
+    "head_sha": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43284812971",
+    "id": 43284812971,
+    "last_observed_at": "2026-11-12T19:35:39.591669+00:00",
     "receipt": "ci-receipt.json",
-    "run": 43284812971,
-    "status": "in_progress",
-    "url": "https://github.com/just-every/run-lamp/actions/runs/43284812971"
+    "rest_calls": 7,
+    "status": "in_progress"
   },
   "clause": {
     "after": "partial",
@@ -29,11 +32,18 @@
     "claimed_points": [],
     "id": "TEAM-007"
   },
-  "date": "2026-11-12T18:55:34.564038+00:00",
-  "github_budget_remaining": 2,
-  "github_invocations_so_far": 8,
+  "custody": "PUSHED",
+  "date": "2026-11-12T19:36:13.927947+00:00",
+  "github_budget_remaining": 0,
+  "github_invocations": 10,
   "head": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
   "identity_check": "identity-receipt.json",
+  "initial_evidence_publication": {
+    "head": "07753c00e3704f9e1e9c40d73804c9588ab546c2",
+    "receipt": "evidence-first-receipt.json",
+    "ref": "refs/heads/evidence/sd-lamp-audit-labels-1-pc1",
+    "repository": "just-every/run-lamp"
+  },
   "landing": "not performed",
   "local_checks": {
     "audit_labels": {
@@ -65,6 +75,18 @@
     }
   },
   "merged_main": "7bfb459185882497098b4fed00155f248874ce81",
+  "pending": [
+    "Exact-SHA Verify remains in_progress at the final allowed REST poll; READY is not claimed.",
+    "Fleet publication scan and landing remain independent fleet gates."
+  ],
+  "pr": {
+    "base_ref": "main",
+    "head_ref": "cloud/sd-lamp-audit-labels-1-pc1",
+    "head_sha": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
+    "html_url": "https://github.com/just-every/run-lamp/pull/348",
+    "number": 348,
+    "state": "open"
+  },
   "prior_ci": {
     "failed_assertion": "automationRulesBrowserFlow audit row locator expected raw rule id and lowercase updated",
     "failure_job": 131375479964,

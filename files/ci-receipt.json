@@ -1,5 +1,5 @@
 {
-  "gh_calls": 6,
+  "gh_calls": 7,
   "head": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
   "history": [
     {
@@ -73,6 +73,18 @@
         "status": "in_progress"
       },
       "time": "2026-11-12T19:20:36.346311+00:00"
+    },
+    {
+      "call": 7,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43284812971 --jq {status,conclusion,head_sha,html_url}",
+      "result": {
+        "conclusion": null,
+        "head_sha": "dd4c160e05eaae27198396cafc1c3ee8f7a16eb0",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43284812971",
+        "id": 43284812971,
+        "status": "in_progress"
+      },
+      "time": "2026-11-12T19:35:39.591669+00:00"
     }
   ],
   "repository": "just-every/run-lamp",
