@@ -40,9 +40,9 @@ export async function subscriberIdentityInventory(fixture) {
 
 /** Reuse the proven real Worker/auth/provider boundary from AUTO-003. Tests may
  * read migrated storage to prove a dry run wrote nothing; all mutations use HTTP. */
-export async function openSubscriberManagementFixture({ webhookReceiver, pageHost, extraBindings, providerEdge, workerEntry } = {}) {
+export async function openSubscriberManagementFixture({ webhookReceiver, pageHost, extraBindings, providerEdge, workerEntry, builtWorker } = {}) {
   const receiptKey = Buffer.from("synthetic-lamp-subscriber-receipts");
-  const fixture = await openFollowUpsRuntime({ resendWebhookSecret: `whsec_${receiptKey.toString("base64url")}`, webhookReceiver, pageHost, extraBindings, providerEdge, workerEntry });
+  const fixture = await openFollowUpsRuntime({ resendWebhookSecret: `whsec_${receiptKey.toString("base64url")}`, webhookReceiver, pageHost, extraBindings, providerEdge, workerEntry, builtWorker });
   const db = await fixture.runtime.getD1Database("DB");
   const createComponent = async (name, internal = false) => {
     const response = await fixture.post("/api/app/components", { groupId: null, name, description: "", internal, displayOrder: 1, note: "" });

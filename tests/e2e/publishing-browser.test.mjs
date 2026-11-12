@@ -1,3 +1,4 @@
+import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
 import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
 import { themeOwnerJourney } from "./helpers/theme-owner-journey.mjs";
 import { stripVTControlCharacters } from "node:util";
@@ -557,6 +558,7 @@ async function assertQueuedAutosaveDeadline({ page, api, openIncident, assertPri
 // concurrent edit, schedule a publication, communicate recovery, and report.
 test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
   await verifyCompiledEdits();
+  await updateReachBrowserFlow({ browser, diagnostic: message => t.diagnostic(message) });
   await suggestedUpdateFlow({ page, appUrl, api, screens: previewScreens,
     configureSuggestion: answer => { aiAnswer = answer; }, diagnostic: message => t.diagnostic(message) });
   await page.goto(`${appUrl}/app`); await operatorHydrated(page);
