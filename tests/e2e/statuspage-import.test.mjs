@@ -7,6 +7,7 @@ import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
 import { invitationFiles, importInvitationFlow, unsentExpiredImportFlow } from './helpers/import-invitation-flow.mjs';
+import { subscriberMoveInCapacityFlow } from './helpers/subscriber-limits-flow.mjs';
 import { historyCatchupFlow } from './helpers/history-catchup-flow.mjs';
 
 const fixtures = source => readdirSync(`tests/fixtures/${source}/small`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/small/${name}`, 'utf8') }));
@@ -21,6 +22,7 @@ function sourceHistory(source, files) {
 }
 
 test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes', { timeout: 600_000 }, async t => {
+  await subscriberMoveInCapacityFlow(t);
   const sourceFiles = fixtures('statuspage'), apiKey = 'synthetic-owner-import-key';
   const requests = [], invitationControl = { uncertainRecipient: null };
   let incidentSubscriberProbe = false;
