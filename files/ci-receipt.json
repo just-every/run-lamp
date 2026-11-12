@@ -1,0 +1,39 @@
+{
+  "repository": "just-every/run-lamp",
+  "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+  "calls": 3,
+  "observations": [
+    {
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "observed_at": "2026-11-12T17:23:14.918243+00:00"
+    },
+    {
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "observed_at": "2026-11-12T17:28:15.576094+00:00"
+    },
+    {
+      "id": 43268843208,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43268843208",
+      "observed_at": "2026-11-12T17:33:16.291865+00:00"
+    }
+  ],
+  "run_id": 43268843208,
+  "conclusion": null
+}

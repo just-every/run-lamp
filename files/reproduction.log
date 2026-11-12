@@ -1,0 +1,27 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+REPRO trip 10: resolved composer count=0
+REPRO trip 12: next empty draft still has correction message=1
+REPRO trip 11: correction stored=true public correction references=0 operator correction references=0
+✔ INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey (122648.958366ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+ℹ PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+ℹ PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+ℹ PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+ℹ PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+ℹ {"phase":"acknowledged","finalEdit":1794503285355,"refreshDelivered":1794503285404,"refreshReceived":1794503285413,"putDispatched":1794503285875,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794503285893,"putStatus":200,"finalEditPerformance":1710.5,"nativeAcknowledged":1794503285892,"nativeAcknowledgedPerformance":2247.5,"saved":1794503285907,"savedPerformance":2262.2999999999884,"elapsedToSaved":552,"deadlinePassed":true}
+ℹ {"finalEdit":1794503285355,"refreshDelivered":1794503285404,"refreshReceived":1794503285413,"putDispatched":1794503285875,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794503285893,"putStatus":200,"finalEditPerformance":1710.5,"nativeAcknowledged":1794503285892,"nativeAcknowledgedPerformance":2247.5,"saved":1794503285907,"savedPerformance":2262.2999999999884,"storedDraft":{"id":"01M78BP73HZ50WNPFS207XR0SZ","incidentId":"01M78BP4VWWNMWJ1S0HCP0Z8V9","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-12T17:08:03.580Z","updatedAt":"2026-11-12T17:08:05.888Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":552,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-14,"browserAckBeforeSavedMs":14.799999999988358}
+ℹ {"earlierPersisted":1794503289228,"finalEdit":1794503289269,"earlierAcknowledged":1794503290276,"latestAcknowledged":1794503290312,"finalEditPerformance":2112.5,"nativeAcknowledged":1794503290311,"nativeAcknowledgedPerformance":3155.100000000035,"saved":1794503290327,"savedPerformance":3170.7999999999884,"writes":[{"at":1794503289210,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794503290293,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1058,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-15,"browserAckBeforeSavedMs":15.699999999953434}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 124400.441283

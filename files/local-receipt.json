@@ -1,0 +1,140 @@
+{
+  "tag": "main-lamp-incident-corrections-1",
+  "repository": "just-every/run-lamp",
+  "baseline_head": "26cd67a3e41c0b12c7011348ae792e4007071bbc",
+  "integrated_main": "b2ba931",
+  "before": {
+    "checks": 99,
+    "registered_cases": 89,
+    "assertion_scripts": 10
+  },
+  "after": {
+    "checks": 99,
+    "registered_cases": 89,
+    "assertion_scripts": 10
+  },
+  "contract_judgments_changed": false,
+  "claims": {
+    "INCIDENT-004": {
+      "status": "PARTIAL",
+      "points": [
+        2,
+        3
+      ]
+    },
+    "INCIDENT-005": {
+      "status": "PARTIAL",
+      "points": [
+        1,
+        2
+      ]
+    }
+  },
+  "reproduction": {
+    "resolved_composer_count": 0,
+    "stored_correction_target": true,
+    "public_correction_references": 0,
+    "operator_correction_references": 0,
+    "stale_next_draft_correction_message_count": 1
+  },
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    }
+  ],
+  "final_browser_journey": {
+    "exit_code": 0,
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "duration_ms": 157064.224942,
+    "viewport": 1440,
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern='compiled visual edits and the operator publication journey' tests/e2e/publishing-browser.test.mjs"
+  },
+  "screenshots": [
+    {
+      "path": "screens/active-correction-operator-1440.png",
+      "bytes": 221606,
+      "sha256": "852bccdef5f45ec25b0af199bbe50285b4596a9ff7c42b665fd579da988fb5cb"
+    },
+    {
+      "path": "screens/active-correction-operator-390.png",
+      "bytes": 188348,
+      "sha256": "520819f133e0d10a6135776de357c9fe6525a8360d25e2f49c55a9b04154035a"
+    },
+    {
+      "path": "screens/active-correction-public-1440.png",
+      "bytes": 486787,
+      "sha256": "17a1868c438d07cccdaf08cb55444775785ecc920b5a5aef2680093dc65af319"
+    },
+    {
+      "path": "screens/active-correction-public-390.png",
+      "bytes": 363534,
+      "sha256": "472a53674e7515f7ed65a9e8aedec52f290475f62de060370628e8c8d5741767"
+    },
+    {
+      "path": "screens/corrections-permalink-1440.png",
+      "bytes": 461598,
+      "sha256": "6396db868d942146a25d3eadade38d8c9179598ebb9f13062e062e6b9d50ce24"
+    },
+    {
+      "path": "screens/corrections-permalink-390.png",
+      "bytes": 277456,
+      "sha256": "4816e4d846f0d75871b28346c0bb2fc6eb750b3d7fc4a119a213e104f1b81bd5"
+    },
+    {
+      "path": "screens/resolved-correction-operator-1440.png",
+      "bytes": 214276,
+      "sha256": "01a754fab6be77ef46264fcb3a10b078f9cc4861d4f398eb58b698e1fc93387f"
+    },
+    {
+      "path": "screens/resolved-correction-operator-390.png",
+      "bytes": 182447,
+      "sha256": "a2cb24993664462c2ffc50f480a4c4c2e3d905d4ffc5d6285fe86397b40fc6f7"
+    },
+    {
+      "path": "screens/resolved-correction-public-1440.png",
+      "bytes": 375128,
+      "sha256": "9761b531e664990aaf9ce89fc2847dde3aefeb5af1e8c8fc8d13c9d339074ef3"
+    },
+    {
+      "path": "screens/resolved-correction-public-390.png",
+      "bytes": 245797,
+      "sha256": "6acdf1e5094b043e13779ea8bff1a30ca8db3f2df857b1cf9a5ab435ceaee53e"
+    }
+  ],
+  "head_sha": "56dc48869caa37051e382e58e348842c41abc593",
+  "product_tree": "fa67589fed28148424a22ea155671ae58bc0e6cd",
+  "source_lock_check": {
+    "ok": true
+  },
+  "browser_review": {
+    "widths": [
+      1440,
+      390
+    ],
+    "screens": [
+      "resolved correction operator",
+      "resolved correction public page",
+      "active correction operator",
+      "active correction public page",
+      "incident permalink with resolution, reopening and both corrections"
+    ],
+    "result": "Reviewed: readable target references, retained originals, closed correction options on the next draft; no changed-screen issue observed."
+  }
+}

@@ -1,0 +1,45 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey (138444.183707ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+ℹ PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+ℹ PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+ℹ PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+ℹ PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+ℹ {"phase":"acknowledged","finalEdit":1794503898680,"refreshDelivered":1794503898736,"refreshReceived":1794503898746,"putDispatched":1794503899200,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794503899221,"putStatus":200,"finalEditPerformance":1729,"nativeAcknowledged":1794503899220,"nativeAcknowledgedPerformance":2269,"saved":1794503899237,"savedPerformance":2285.399999999907,"elapsedToSaved":557,"deadlinePassed":true}
+ℹ {"finalEdit":1794503898680,"refreshDelivered":1794503898736,"refreshReceived":1794503898746,"putDispatched":1794503899200,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794503899221,"putStatus":200,"finalEditPerformance":1729,"nativeAcknowledged":1794503899220,"nativeAcknowledgedPerformance":2269,"saved":1794503899237,"savedPerformance":2285.399999999907,"storedDraft":{"id":"01M78C8Y1XX9FNKSDKESQM3TRA","incidentId":"01M78C8VS1BFQRXVET7K5WW7QH","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-12T17:18:16.865Z","updatedAt":"2026-11-12T17:18:19.216Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":557,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-16,"browserAckBeforeSavedMs":16.399999999906868}
+ℹ {"earlierPersisted":1794503903405,"finalEdit":1794503903450,"earlierAcknowledged":1794503904506,"latestAcknowledged":1794503904556,"finalEditPerformance":2385.6999999999534,"nativeAcknowledged":1794503904556,"nativeAcknowledgedPerformance":3491.0999999999767,"saved":1794503904571,"savedPerformance":3506.4000000000233,"writes":[{"at":1794503903385,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794503904528,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1121,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-15,"browserAckBeforeSavedMs":15.300000000046566}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 140618.692555
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:560:1
+✖ INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey (138444.183707ms)
+  AssertionError [ERR_ASSERTION]: publication closes correction choices with the consumed draft
+  
+  1 !== 0
+  
+      at ordinaryNextDraft (file:///workspace/run-lamp/tests/e2e/helpers/incident-corrections-flow.mjs:42:12)
+      at async incidentCorrectionsFlow (file:///workspace/run-lamp/tests/e2e/helpers/incident-corrections-flow.mjs:97:5)
+      at async TestContext.<anonymous> (file:///workspace/run-lamp/tests/e2e/publishing-browser.test.mjs:855:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
