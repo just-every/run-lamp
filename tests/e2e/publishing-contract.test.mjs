@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { updateReachFlow } from './helpers/update-reach-flow.mjs';
 import { createHmac } from 'node:crypto';
 import { performance as clock } from 'node:perf_hooks';
 import { test } from 'node:test';
@@ -920,4 +921,8 @@ test('AGENT-005 HIST-002 — cited report reconciles the retained record, requir
     assert.ok(!publicHtml.includes(internalNote));
     t.diagnostic('PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes');
   } finally { await j.close(); }
+});
+
+test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
+  await updateReachFlow({ diagnostic: message => t.diagnostic(message) });
 });
