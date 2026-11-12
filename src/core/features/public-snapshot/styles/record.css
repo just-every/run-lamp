@@ -66,3 +66,6 @@
 .subscribe-channel > summary { min-height: 32px; color: var(--ink); font-weight: 600; cursor: pointer; }
 .subscribe-channel form { margin-top: 8px; }
 .subscribe-channel button { margin-top: 14px; }
+
+.update-correction { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+.update-correction a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }

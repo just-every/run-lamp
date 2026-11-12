@@ -1,5 +1,16 @@
 # DIVERGENCE.md
 
+## Resolved incident corrections and reopening — 12 November 2026
+
+Resolved incident records retain the same update composer, preview and publication
+options as active records. Operators can publish a correction while keeping the
+Resolved status, or explicitly choose Investigating to reopen. Each correction
+identifies its immutable original on the operator and public timelines and the
+permanent incident page. Publishing consumes correction feedback together with
+the draft, so it cannot label the next ordinary update. This supersedes the
+11 November presentation decision to hide the composer after resolution;
+publication immutability, lifecycle rules and ordering remain unchanged.
+
 ## Statuspage reader guidance — 12 November 2026
 
 The native Cutover report names the existing compatibility embed as served on

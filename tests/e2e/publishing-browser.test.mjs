@@ -1,3 +1,4 @@
+import { incidentCorrectionsFlow } from "./helpers/incident-corrections-flow.mjs";
 import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
 import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
 import { themeOwnerJourney } from "./helpers/theme-owner-journey.mjs";
@@ -556,7 +557,7 @@ async function assertQueuedAutosaveDeadline({ page, api, openIncident, assertPri
 }
 // One operator day: configure, draft, recover a failed save, resolve a
 // concurrent edit, schedule a publication, communicate recovery, and report.
-test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
+test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey', { timeout: 600_000 }, async t => {
   await verifyCompiledEdits();
   await updateReachBrowserFlow({ browser, diagnostic: message => t.diagnostic(message) });
   await suggestedUpdateFlow({ page, appUrl, api, screens: previewScreens,
@@ -850,6 +851,8 @@ test('INCIDENT-001 INCIDENT-004 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDA
     assert.ok(!(await publicReportPage.locator('body').textContent()).includes(note));
     await previewScreens(publicReportPage, 'report-published-public');
   } finally { await publicReportPage.close(); }
+
+  await incidentCorrectionsFlow({ page, browserContext, appUrl, pageUrl, api, incident });
 
   const destination = 'https://notify.example.test/journey-erasure';
   const subscriber = (await api('/api/app/subscribers/webhook', 'POST', { destination, contactEmail: 'private-reader@example.test', componentIds: [] })).subscriber;

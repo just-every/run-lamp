@@ -13,9 +13,10 @@ export async function publishedIncidentState({ page, composer, component, update
   await impact.getByRole('option', { name: 'From components (Critical)', exact: true }).waitFor({ state: 'attached' });
   assert.ok((await impact.innerText()).includes('Critical'), 'the impact panel retains the peak published component impact');
   if (resolved) {
-    assert.equal(await composer.publish.count(), 0, 'a resolved incident has no live publication action');
-    assert.equal(await page.locator('.impact-form').count(), 0, 'a resolved incident has no editable update composer');
-    assert.equal(await page.locator('.preview-panel').count(), 0, 'a resolved incident has no next-update preview');
+    assert.equal(await composer.publish.count(), 1, 'a resolved incident keeps its publication composer for corrections and reopening');
+    assert.equal(await composer.publish.isDisabled(), true, 'an empty resolved draft cannot publish');
+    assert.equal(await composer.impact.inputValue(), '', 'resolution consumes the previous customer message');
+    assert.equal(await page.locator('.preview-panel').count(), 1, 'a resolved incident keeps the update preview');
     await page.getByRole('button', { name: 'Post-incident report', exact: true }).waitFor();
   } else {
     assert.equal(await composer.audience.inputValue(), update.affectedAudience, 'the next draft carries the last published audience');
