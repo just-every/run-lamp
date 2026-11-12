@@ -1,0 +1,251 @@
+diff --git a/DIVERGENCE.md b/DIVERGENCE.md
+index 27139ed..955cc53 100644
+--- a/DIVERGENCE.md
++++ b/DIVERGENCE.md
+@@ -1,5 +1,13 @@
+ # DIVERGENCE.md
+ 
++## Statuspage reader guidance — 12 November 2026
++
++The native Cutover report names the existing compatibility embed as served on
++the moved hostname, including its required website allowlist. It keeps the
++unavailable maintenance, webhook and component automation boundaries explicit.
++The retained provider client and old embed tag are exercised after import;
++Cutover keeps its existing operating guidance and visual components.
++
+ ## Another tool's first alert — 11 November 2026
+ 
+ Another tool keeps its payload mappings visible and explains each field. Connecting
+diff --git a/sources.lock.json b/sources.lock.json
+index bed349e..8c2dd2b 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -544,7 +544,7 @@
+       "executable": false
+     },
+     "DIVERGENCE.md": {
+-      "sha256": "5cbae6c145439ade79f9c024c8f54d134cd321983379ed239f45da026a1b819e",
++      "sha256": "3f4ef5a5deb72ad710a7d44c646d3652bded613e9d749ec02523e1c479c24e07",
+       "executable": false
+     },
+     "docs/accessibility/vpat.md": {
+@@ -6128,7 +6128,7 @@
+       "executable": false
+     },
+     "src/core/features/statuspage-import/cutover.ts": {
+-      "sha256": "3c4bb3492d5a6e8ae9b9bba96b66d58fe4f728e7aad6207fa2d69add96a76a81",
++      "sha256": "1fbceb4cbf59f40f35747f475758a3ba3485ea5299e902407b43415c6b380404",
+       "executable": false
+     },
+     "src/core/features/statuspage-import/door-claim.ts": {
+@@ -7844,7 +7844,7 @@
+       "executable": false
+     },
+     "tests/e2e/cutover-browser.test.mjs": {
+-      "sha256": "14b76e23ae41aa979ea719e954c997eee1436001744ac8e98b971ecf8780f3dd",
++      "sha256": "4c4b25c00d48b61f16f9ee2f25f5f5c30458f984aee51ce199f7ebf974db4e6f",
+       "executable": false
+     },
+     "tests/e2e/delivery-contract.test.mjs": {
+@@ -8440,7 +8440,7 @@
+       "executable": false
+     },
+     "tests/e2e/statuspage-import.test.mjs": {
+-      "sha256": "feb11fda427d9fda0c5d8d5c5d64f23e39a218265c3e00d41a9166f7867c80a6",
++      "sha256": "ef867d30300f542fb671993416976e3bf44efacf426e61e856c3f76a4108303c",
+       "executable": false
+     },
+     "tests/e2e/subscriber-audit-helper.mjs": {
+diff --git a/src/core/features/statuspage-import/cutover.ts b/src/core/features/statuspage-import/cutover.ts
+index fe85495..a7e8759 100644
+--- a/src/core/features/statuspage-import/cutover.ts
++++ b/src/core/features/statuspage-import/cutover.ts
+@@ -16,7 +16,7 @@ export interface CutoverPreview {
+ export function sourceReaderGaps(namespace: string) {
+   if (namespace === 'sorry') return ["Sorry public JSON readers under /api/v1/ are not served by Lamp. Update them to /api/public/status. Sorry feeds are not a complete history export; use Lamp’s /feed.atom after moving."];
+   if (namespace === 'instatus') return ["Instatus public JSON /summary.json, /v3/summary.json and /v3/components.json are not served by Lamp. Update API readers to Lamp's native /api/public/status format."];
+-  return namespace === 'betterstack' ? ["Better Stack public JSON /index.json is not served by Lamp. Update JSON readers to /api/public/v1/. RSS /feed.rss is served."] : ["Statuspage /api/v2/ read endpoints, /history.rss and /history.atom are served. Per-window switches and Verifying are unavailable. Webhook body compatibility and component automation email addresses remain unavailable."];
++  return namespace === 'betterstack' ? ["Better Stack public JSON /index.json is not served by Lamp. Update JSON readers to /api/public/v1/. RSS /feed.rss is served."] : ["Statuspage /api/v2/ read endpoints, /history.rss and /history.atom are served. Existing /embed/script.js tags serve Lamp’s floating notice on the moved hostname; allow the embedding website in Settings. Per-window switches and Verifying are unavailable. Webhook body compatibility and component automation email addresses remain unavailable."];
+ }
+ export const pendingDeadline = (createdAt: string) => new Date(Date.parse(createdAt) + 72 * 60 * 60 * 1000).toISOString();
+ export function cutoverAddresses(records: PublicAddressCandidate[]) {
+diff --git a/tests/e2e/cutover-browser.test.mjs b/tests/e2e/cutover-browser.test.mjs
+index 9cb2d01..fbdeaec 100644
+--- a/tests/e2e/cutover-browser.test.mjs
++++ b/tests/e2e/cutover-browser.test.mjs
+@@ -1,5 +1,5 @@
+ import assert from 'node:assert/strict';
+-import { mkdir, readdir } from 'node:fs/promises';
++import { mkdir, readdir, readFile } from 'node:fs/promises';
+ import { join, resolve } from 'node:path';
+ import { test } from 'node:test';
+ import { chromium } from 'playwright';
+@@ -18,6 +18,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
+     await runtime.start(); await runtime.seedOperator();
+     browser = await chromium.launch({ executablePath: process.env.LAMP_CHROMIUM_PATH, headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+     const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
++    await context.grantPermissions(['local-network-access'], { origin });
+     await context.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
+     const entered = await signInAs({ origin, key: devKey });
+     await context.addCookies(entered.cookies.map(cookie => ({ ...cookie, url: origin })));
+@@ -36,6 +37,18 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
+       const response = await nativeRequest(path, { cookie: entered.header, ...(body === undefined ? {} : { method: 'POST', json: body }), headers });
+       return { status: response.status, body: await response.json() };
+     });
++    const assertStatuspageGuide = async () => {
++      const readers = page.getByRole('heading', { name: 'Feeds and other readers', exact: true }).locator('..');
++      const text = await readers.innerText();
++      for (const served of [/RSS is available at \/feed\.rss and \/history\.rss/, /\/history\.atom answers with Lamp’s Atom feed after import, also available at \/feed\.atom/, /Statuspage \/api\/v2\/ read endpoints.*are served/, /\/embed\/script\.js tags serve Lamp’s floating notice on the moved hostname/, /Allow the website that embeds it in Settings/]) assert.match(text, served);
++      for (const unavailable of [/Per-window switches and Verifying are unavailable/, /Webhook body compatibility and component automation email addresses remain unavailable/]) assert.match(text, unavailable);
++      const guide = page.getByRole('heading', { name: 'Operating Lamp after Statuspage', exact: true }).locator('..');
++      const notes = await guide.getByRole('listitem').allTextContents();
++      assert.equal(notes.length, 3);
++      assert.match(notes[0], /A published update is never edited in place.*correction update that names it.*publish it with no channels selected when nobody should be notified again.*Both updates stay on the timeline/);
++      assert.match(notes[1], /Component states change with each update.*set each affected component's state in the update you publish.*publishing applies the states and the update together/);
++      assert.match(notes[2], /Components set to show only while degraded keep that behaviour after import/);
++    };
+     const openWizard = async () => {
+       const hydrated = page.waitForResponse(response => response.url() === origin + '/api/app/statuspage-import/jobs' && response.request().method() === 'GET' && response.status() === 200);
+       await page.goto(origin + '/app/move-in'); await hydrated;
+@@ -45,7 +58,16 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
+       await openWizard();
+       await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source);
+       const directory = resolve('tests/fixtures', source, source === 'sorry' ? 'public' : 'small');
+-      const files = (await readdir(directory)).map(name => join(directory, name));
++      const files = await Promise.all((await readdir(directory)).map(async name => {
++        if (source !== 'statuspage') return join(directory, name);
++        const buffer = await readFile(join(directory, name));
++        if (name !== 'incidents.json') return { name, mimeType: 'application/json', buffer };
++        const incidents = JSON.parse(buffer.toString('utf8'));
++        // A real unresolved imported story makes an empty or hidden notice fail.
++        incidents[0].status = 'investigating'; incidents[0].resolved_at = null;
++        incidents[0].incident_updates = incidents[0].incident_updates.slice(0, 1);
++        return { name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(incidents)) };
++      }));
+       const review = async () => {
+         await page.getByLabel('Saved responses', { exact: true }).setInputFiles(files);
+         if (source === 'instatus') await page.getByLabel('Instatus page ID', { exact: true }).fill('synthpage01');
+@@ -63,6 +85,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
+       await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source); await review();
+       await page.getByRole('link', { name: 'Read the Cutover preview', exact: true }).click();
+       await page.getByRole('heading', { name: 'Old public addresses', exact: true }).waitFor();
++      if (source === 'statuspage') await assertStatuspageGuide();
+       assert.equal(await page.getByRole('button', { name: 'Send invitations', exact: true }).isDisabled(), true);
+       await openWizard(); await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source); await review();
+       await page.getByLabel('I reviewed what changes, is skipped or is refused.').check();
+@@ -102,6 +125,55 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
+       }
+       await page.goto(origin + `/app/cutover?job=${result.job.id}`);
+       await page.getByRole('heading', { name: 'Old public addresses', exact: true }).waitFor();
++      if (source === 'statuspage') {
++        await assertStatuspageGuide();
++        const settings = await (await nativeRequest('/api/app/page-settings', { cookie: entered.header })).json();
++        const current = settings.settings;
++        // A separate origin on the local public site keeps this browser request
++        // inside the dev gateway's same-site boundary, without a private key.
++        const website = new URL(publicOrigin); website.port = String(await reservePort());
++        const websiteOrigin = website.origin;
++        const allowed = await nativeRequest('/api/app/page-settings', { cookie: entered.header, method: 'PUT', json: {
++          pageName: current.pageName, tagline: current.tagline, accentColor: current.accentColor,
++          timezone: current.timezone, hostname: current.hostname, mailFromAddress: current.mailFromAddress,
++          footerCreditEnabled: current.footerCreditEnabled,
++          widgetAllowedOrigins: [websiteOrigin],
++        } });
++        assert.equal(allowed.status, 200, await allowed.text());
++        const imported = (await (await nativeRequest('/api/app/incidents', { cookie: entered.header })).json()).incidents.find(row => row.title === 'Elevated API errors');
++        assert.equal(imported.lifecycle, 'Investigating');
++        await context.grantPermissions(['local-network-access'], { origin: websiteOrigin });
++        const noticePage = await context.newPage();
++        try {
++          const errors = [];
++          noticePage.on('pageerror', error => errors.push(error.message));
++          noticePage.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
++          noticePage.on('requestfailed', request => errors.push(`${new URL(request.url()).pathname}: ${request.failure()?.errorText}`));
++          // The owner website supplies an old tag without Lamp variant options.
++          await noticePage.route(websiteOrigin + '/synthetic-lamp-embed', route => route.fulfill({ contentType: 'text/html', body: `<!doctype html><html lang="en"><title>Synthetic Lamp embedding website</title><body><main>Customer website</main><script src="${publicOrigin}/embed/script.js"></script></body></html>` }));
++          const scriptRead = noticePage.waitForResponse(publicOrigin + '/embed/script.js');
++          await noticePage.goto(websiteOrigin + '/synthetic-lamp-embed');
++          const scriptResponse = await scriptRead.catch(error => { throw new Error(`${error.message}; browser errors: ${JSON.stringify(errors)}`); });
++          assert.equal(scriptResponse.status(), 200);
++          const snapshot = await (await fetch(publicOrigin + '/api/public/status')).json();
++          assert.equal(snapshot.incident?.reference, imported.reference, 'the public generation contains the unresolved imported story');
++          assert.ok((await scriptResponse.text()).includes(websiteOrigin), 'the compatibility script carries the saved website allowlist');
++          assert.deepEqual(errors, [], 'the old tag executes without browser errors');
++          const notice = noticePage.getByRole('status');
++          await notice.waitFor({ state: 'visible' });
++          assert.equal(await notice.count(), 1, 'the old tag creates one visible notice');
++          assert.deepEqual(await notice.evaluate(element => ({ position: getComputedStyle(element).position, bottom: getComputedStyle(element).bottom, right: getComputedStyle(element).right })), { position: 'fixed', bottom: '16px', right: '16px' }, 'the compatibility tag selects the floating notice by default');
++          assert.equal(await notice.locator('strong').innerText(), 'Partially unavailable', 'the notice reflects the imported partial-outage claim');
++          const content = await notice.innerText();
++          for (const value of [imported.reference, 'Elevated API errors', 'Status: Investigating', 'We are investigating elevated error rates on the API.']) assert.ok(content.includes(value), `the old tag renders the imported incident content: ${value}`);
++          if (evidence) for (const width of [1440, 390]) {
++            await noticePage.setViewportSize({ width, height: 1000 });
++            await noticePage.screenshot({ path: join(evidence, `statuspage-old-embed-${width}.png`), fullPage: true });
++          }
++        } finally { await noticePage.close(); }
++        console.log('PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording');
++        console.log('PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible');
++      }
+       await page.getByLabel('Public address', { exact: true }).fill(publicOrigin);
+       await page.getByRole('button', { name: 'Use this address for checks' }).click();
+       const checks = page.getByRole('button', { name: 'Check opens', exact: true });
+diff --git a/tests/e2e/statuspage-import.test.mjs b/tests/e2e/statuspage-import.test.mjs
+index 38f09b8..4d95a9f 100644
+--- a/tests/e2e/statuspage-import.test.mjs
++++ b/tests/e2e/statuspage-import.test.mjs
+@@ -1,6 +1,7 @@
+ import assert from 'node:assert/strict';
+ import { readdirSync, readFileSync } from 'node:fs';
+ import { test } from 'node:test';
++import { chromium } from 'playwright';
+ import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+ import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
+ import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
+@@ -145,6 +146,47 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
+           assert.equal(rows.find(row => row.name === visible.name).only_show_if_degraded, false, 'the visible control explicitly exposes its compatible conditional flag');
+           assert.ok(!rows.some(row => row.name === conditional.name), 'a preserved true flag hides its Operational component');
+         }
++        // Execute the retained provider program unchanged. Only its network
++        // transport is bridged to this migrated Worker's public host.
++        const browser = await chromium.launch({ executablePath: process.env.LAMP_CHROMIUM_PATH, headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
++        try {
++          const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
++          const reads = [];
++          await context.route(`${publicOrigin}/**`, async route => {
++            if (new URL(route.request().url()).pathname === '/synthetic-lamp-client.js') return route.fulfill({ contentType: 'application/javascript', body: readFileSync('tests/fixtures/statuspage-public/se-v2.js', 'utf8') });
++            const response = await fetch(route.request().url());
++            reads.push(new URL(route.request().url()).pathname);
++            await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
++          });
++          const page = await context.newPage();
++          await page.goto(publicOrigin + '/');
++          await page.addScriptTag({ url: publicOrigin + '/synthetic-lamp-client.js' });
++          const summary = await page.evaluate(() => new Promise((resolve, reject) => {
++            const client = new StatusPage.page({ page: 'synthetic-lamp-1', test: true });
++            client.summary({ success: resolve, error: () => reject(new Error('Statuspage client could not read the moved summary')) });
++          }));
++          assert.ok(reads.includes('/api/v2/summary.json'), 'the unmodified client requests the moved summary endpoint');
++          assert.equal(summary.page.url, publicOrigin);
++          assert.deepEqual(summary.status, { indicator: 'none', description: 'All Systems Operational' });
++          assert.deepEqual(summary.components.filter(row => ['Public API', 'Dashboard'].includes(row.name)).map(row => ({ name: row.name, status: row.status, only_show_if_degraded: row.only_show_if_degraded })), [
++            { name: 'Dashboard', status: 'operational', only_show_if_degraded: false },
++          ], 'the retained client parses the imported visible component and omits the degraded-only Operational component');
++          assert.deepEqual(summary.incidents, [], 'resolved imported history is not presented as an unresolved incident');
++          assert.ok(Array.isArray(summary.scheduled_maintenances));
++          await context.close();
++        } finally { await browser.close(); }
++        for (const report of [review.report.cutover, result.report.cutover, (await moveIn.read(result.job.id)).body.report.cutover]) {
++          assert.deepEqual(report.feeds, ['/history.atom']);
++          const readers = report.readerGaps.join(' ');
++          for (const served of [/Statuspage \/api\/v2\/ read endpoints.*are served/, /\/history\.rss.*are served/, /\/history\.atom.*are served/, /\/embed\/script\.js tags serve Lamp’s floating notice on the moved hostname/]) assert.match(readers, served);
++          for (const unavailable of [/Per-window switches and Verifying are unavailable/, /Webhook body compatibility and component automation email addresses remain unavailable/]) assert.match(readers, unavailable);
++        }
++        const rss = await (await fetch(publicOrigin + '/history.rss')).text();
++        assert.equal(rss, await (await fetch(publicOrigin + '/feed.rss')).text(), 'the old RSS address serves the native RSS feed');
++        assert.match(rss, /<rss\b/);
++        for (const incident of parsed(files, 'incidents.json')) assert.ok(rss.includes(incident.name), 'the old RSS reader retains imported incident history');
++        t.diagnostic('PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted');
++        t.diagnostic('PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable');
+       }
+       const incidents = (await api('/api/app/incidents')).body.incidents;
+       for (const row of sourceHistory(source, files)) {

@@ -1,0 +1,42 @@
+{
+  "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "screens": [
+    {
+      "path": "screens/statuspage-cutover-1440.png",
+      "width": 1440,
+      "height": 2364,
+      "sha256": "774af5e8445bea1e16eb8e0f10dffa2a3a7ec46ae662b247ac0b6025e9123ff3",
+      "bytes": 363349,
+      "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12"
+    },
+    {
+      "path": "screens/statuspage-cutover-390.png",
+      "width": 390,
+      "height": 3636,
+      "sha256": "b9c288a7db2e0ec4d99720cc9bc218fc5ae5ffb6cfc530e88c838f8618eb193c",
+      "bytes": 297710,
+      "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12"
+    },
+    {
+      "path": "screens/statuspage-old-embed-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "9b1d5bb3ce593602f18a7c54eabff5519075b459a74df40fb9134fe8463229dc",
+      "bytes": 32991,
+      "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12"
+    },
+    {
+      "path": "screens/statuspage-old-embed-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "e9ecb4b353d588113362cf088ffc0ad56059784eb52e9085f40982f0e3314d05",
+      "bytes": 24591,
+      "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12"
+    }
+  ]
+}

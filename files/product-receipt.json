@@ -1,0 +1,50 @@
+{
+  "recorded_at": "2026-11-12T10:10:45.692666+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f119",
+  "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+  "origin_main": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b",
+  "remote_refs": {
+    "refs/heads/cloud/sd-lamp-c-f119": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+    "refs/heads/main": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b"
+  },
+  "main_equals_candidate": false,
+  "candidate_descends_from_origin_main": true,
+  "working_tree_clean": true,
+  "candidate_commits": [
+    "d6fe7db76f3dee298da44b412b085ee6d8401c12 Prove Statuspage readers and Cutover guidance after import"
+  ],
+  "changed_files": [
+    "DIVERGENCE.md",
+    "sources.lock.json",
+    "src/core/features/statuspage-import/cutover.ts",
+    "tests/e2e/cutover-browser.test.mjs",
+    "tests/e2e/statuspage-import.test.mjs"
+  ],
+  "contract_and_generated_views_changed": false,
+  "publication_scan": {
+    "status": "NOT RUN IN CLOUD",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "fleet guarded lander"
+  },
+  "run_site": {
+    "status": "PENDING LANDING",
+    "run_id": null
+  },
+  "base_main_ci": {
+    "head": "62e6a2c30f7f87ad29c5e9d3eec2e0946315cc6b",
+    "verify_run_id": 43083760988,
+    "verify_conclusion": "success",
+    "run_site_id": 43083760843,
+    "run_site_conclusion": "success"
+  },
+  "files": {
+    "DIVERGENCE.md": "3f4ef5a5deb72ad710a7d44c646d3652bded613e9d749ec02523e1c479c24e07",
+    "sources.lock.json": "eb3ba06f65f5ffb33f9d1b96353583bb63f5d41a22b39efbe2fb2785bc708f5e",
+    "src/core/features/statuspage-import/cutover.ts": "1fbceb4cbf59f40f35747f475758a3ba3485ea5299e902407b43415c6b380404",
+    "tests/e2e/cutover-browser.test.mjs": "4c4b25c00d48b61f16f9ee2f25f5f5c30458f984aee51ce199f7ebf974db4e6f",
+    "tests/e2e/statuspage-import.test.mjs": "ef867d30300f542fb671993416976e3bf44efacf426e61e856c3f76a4108303c"
+  }
+}

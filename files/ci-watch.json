@@ -1,0 +1,29 @@
+{
+  "last_discovery_at": "2026-11-12T10:09:48.349316+00:00",
+  "calls_used": 4,
+  "budget": 10,
+  "calls": [
+    {
+      "kind": "main runs discovery",
+      "count": 1
+    },
+    {
+      "kind": "exact-SHA runs discovery",
+      "count": 1,
+      "at": "2026-11-12T10:09:48.349316+00:00",
+      "run": 43197814784
+    },
+    {
+      "kind": "create draft review",
+      "count": 1,
+      "pr": 336
+    },
+    {
+      "kind": "exact-SHA push Verify status",
+      "count": 1,
+      "run": 43197814784,
+      "at": "2026-11-12T10:14:50.066664+00:00"
+    }
+  ],
+  "last_poll_at": "2026-11-12T10:14:50.066664+00:00"
+}

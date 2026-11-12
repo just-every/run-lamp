@@ -1,0 +1,62 @@
+{
+  "recorded_at": "2026-11-12T10:07:37.416526+00:00",
+  "commands": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "log": "views-write.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "views-check.log"
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0,
+      "log": "views-restore.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "inventory.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "log": "diff-check.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    }
+  ],
+  "migration_ledger": "not applicable; no migration changed",
+  "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+  "post_rebase_confirmation": {
+    "head": "d6fe7db76f3dee298da44b412b085ee6d8401c12",
+    "rebase": "Current branch cloud/sd-lamp-c-f119 is up to date.",
+    "views_write_exit": 0,
+    "views_check_exit": 0,
+    "views_restored": true,
+    "source_lock_exit": 0,
+    "source_check_exit": 0,
+    "git_diff_exit": 0
+  }
+}
