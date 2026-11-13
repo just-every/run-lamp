@@ -783,6 +783,13 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   assert.ok((await readIncident(id)).internalNotes.some(row => row.body === note));
   assert.equal((await (await fetch(`${pageUrl}/incidents/${incident.reference}`)).text()).includes(note), false);
 
+  await composer.impact.fill('Checkout capacity has improved, but requests remain slower than usual.');
+  await composer.nextUpdate.fill('2027-09-08T14:00');
+  await page.getByLabel(`${component.name} state with this update`, { exact: true }).selectOption('Degraded performance');
+  await saved();
+  await composer.publish.click();
+  await page.waitForFunction(() => document.querySelector('.composer-panel textarea')?.value === '');
+
   await composer.setStatus('Resolved');
   await composer.audience.fill('US customers paying by card.');
   await composer.impact.fill('Checkout authorizations are working normally.');
@@ -793,7 +800,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await composer.publish.click(); await page.getByText('Update published.', { exact: true }).waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
-  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, screens: previewScreens });
+  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimState: 'Degraded performance', screens: previewScreens });
   assert.deepEqual(incident.updates.find(row => row.id === first.id), first, 'later publications preserve the original update');
   await waitForPublicIncident(incident.reference, 'Checkout authorizations are working normally.');
   await page.goto(`${pageUrl}/incidents/${incident.reference}`);
@@ -870,7 +877,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
     await previewScreens(publicReportPage, 'report-published-public');
   } finally { await publicReportPage.close(); }
 
-  await incidentCorrectionsFlow({ page, browserContext, appUrl, pageUrl, api, incident });
+  await incidentCorrectionsFlow({ page, browserContext, appUrl, pageUrl, api, incident, component });
 
   const destination = 'https://notify.example.test/journey-erasure';
   const subscriber = (await api('/api/app/subscribers/webhook', 'POST', { destination, contactEmail: 'private-reader@example.test', componentIds: [] })).subscriber;

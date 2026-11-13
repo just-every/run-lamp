@@ -9,6 +9,17 @@ channel result to the subscribe choices. Before asking for a Teams URL, the form
 links a short guide on the public status host, adapted from the owner workflow
 instructions. Subscriber storage, consent, verification and delivery are unchanged.
 
+## Reopened incident transitions and report download names — 13 November 2026
+
+The first publication that reopens a resolved incident starts its component
+transition from the public state readers just saw. Resolution releases claims
+while retaining the old attachments; those retained claims must not become the
+reopening's previous state. Earlier publications remain immutable.
+
+Availability CSV and PDF downloads use short, file-safe component names, with
+numeric suffixes where names collide. Browser and direct downloads share the
+same filename. Report contents, periods and calculations remain unchanged.
+
 ## Connected-tool setup guidance — 12 November 2026
 
 Chat links and each Social accounts choice link to on-site owner guides. A new

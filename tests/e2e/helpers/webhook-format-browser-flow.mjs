@@ -8,7 +8,16 @@ import { openSubscriberManagementFixture } from './subscriber-management-fixture
 
 // The local public host serves the actual token-authorized management form.
 export async function webhookFormatBrowserFlow() {
-  const fixture = await openSubscriberManagementFixture({ pageHost: 'localhost' });
+  // This journey exercises preferences on each offered chat form. Configure
+  // Slack's app so its public form is available, as on a configured install.
+  const fixture = await openSubscriberManagementFixture({
+    pageHost: 'localhost',
+    extraBindings: {
+      SLACK_CLIENT_ID: 'synthetic-lamp-slack-client',
+      SLACK_CLIENT_SECRET: 'synthetic-lamp-slack-secret',
+      SLACK_SIGNING_SECRET: 'synthetic-lamp-slack-signing',
+    },
+  });
   const contact = 'synthetic-lamp-18001@example.test';
   const added = await fixture.post('/api/app/subscribers', { channel: 'webhook', destination: 'https://receiver.example.test/synthetic-lamp-18001', contactEmail: contact, componentIds: [], webhookFormat: 'statuspage' });
   assert.equal(added.status, 201, added.text);
