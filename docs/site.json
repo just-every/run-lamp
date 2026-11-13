@@ -117,10 +117,16 @@
           "summary": "Connect status readers, dashboards and your website to published snapshots."
         },
         {
+          "slug": "social-accounts",
+          "title": "Connect social accounts",
+          "source": "docs/social-accounts.md",
+          "summary": "Get the user token or app password for X, Bluesky or Mastodon."
+        },
+        {
           "slug": "chat-desk",
           "title": "Slack and Teams incident desk",
           "source": "docs/chat-desk.md",
-          "summary": "Link your chat identity and prepare signed incident commands."
+          "summary": "Install your own Slack or Teams app, then link your operator identity."
         }
       ]
     },
