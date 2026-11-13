@@ -1,10 +1,14 @@
+import { componentDownloadName } from "./filename";
 import { computeUptime } from "../public-snapshot/uptime";
 import { defaultPublicSnapshotPolicies, type PublicSnapshotPolicies } from "../public-snapshot/policies";
 import type { AvailabilityReportRepository } from "./repository";
 import { reportPeriod } from "./period";
 import type { AvailabilityReport, ClaimEvent } from "./types";
 
-export interface AvailabilityReportService { report(input: { component: string; month?: string; quarter?: string }): Promise<AvailabilityReport | null> }
+export interface AvailabilityReportService {
+  report(input: { component: string; month?: string; quarter?: string }): Promise<AvailabilityReport | null>;
+  downloadName(componentId: string): Promise<string>;
+}
 
 function claimOverlaps(events: ClaimEvent[], start: number, end: number): boolean {
   return events.some((event, index) => event.state !== null && Date.parse(event.changedAt) < end && (events[index + 1] ? Date.parse(events[index + 1]!.changedAt) : Infinity) > start);
@@ -12,6 +16,9 @@ function claimOverlaps(events: ClaimEvent[], start: number, end: number): boolea
 
 export function createAvailabilityReportService(repository: AvailabilityReportRepository, policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, now: () => string = () => new Date().toISOString()): AvailabilityReportService {
   return {
+    async downloadName(componentId) {
+      return componentDownloadName(componentId, await repository.listComponents());
+    },
     async report(input) {
       const generatedAt = now(), facts = await repository.read(input.component);
       if (!facts.component) return null;

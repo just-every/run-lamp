@@ -3,11 +3,17 @@ import { createDatabase } from "../../platform/db/client";
 import { components, componentStateHistory, componentStateCorrections, pageSettings } from "../../shared/schema";
 import type { AffectedRecord, AvailabilityFacts, ClaimEvent } from "./types";
 
-export interface AvailabilityReportRepository { read(componentId: string): Promise<AvailabilityFacts> }
+export interface AvailabilityReportRepository {
+  read(componentId: string): Promise<AvailabilityFacts>;
+  listComponents(): Promise<Array<{ id: string; name: string }>>;
+}
 
 export function createAvailabilityReportRepository(binding: D1Database): AvailabilityReportRepository {
   const db = createDatabase(binding);
   return {
+    async listComponents() {
+      return db.select({ id: components.id, name: components.name }).from(components).all();
+    },
     async read(componentId) {
       const [settings, component, history, corrections, events, incidents, maintenance] = await Promise.all([
         db.select({ timezone: pageSettings.timezone }).from(pageSettings).where(eq(pageSettings.id, "default")).get(),

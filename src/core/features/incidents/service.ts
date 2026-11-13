@@ -179,10 +179,14 @@ export function createIncidentsService(
     const claimEventCounts = isRetroactive ? await repository.claimEventCounts(components.flatMap(component => component.componentId ? [component.componentId] : [])) : undefined;
     const componentSnapshot: PublishedIncidentComponentChange[] = await Promise.all(components.map(async component => {
       const current = baselineComponents.find(row => row.id === component.id);
+      const metadata = component.componentId ? await componentsService.get(component.componentId) : null;
+      // Resolution releases the claim but retains its attachment for history.
+      // A reopening starts from what readers see now, not that retained claim.
       const previousState = isRetroactive && component.componentId
         ? await componentsService.incidentClaimStateAt(component.componentId, incidentId, publishedAt) ?? "Operational"
-        : current?.publishedAt ? current.state : "Operational";
-      const metadata = component.componentId ? await componentsService.get(component.componentId) : null;
+        : incident.lifecycle === "Resolved" && draft.lifecycle !== "Resolved"
+          ? metadata?.publicState ?? "Operational"
+          : current?.publishedAt ? current.state : "Operational";
       const desired = isRetroactive && current?.publishedAt && !stagedChanges.some(change => change.componentId === component.componentId) ? previousState : component.state;
       return { componentId: component.componentId, name: component.componentName, previousState, newState: draft.lifecycle === "Resolved" ? "Operational" : desired, internal: metadata?.internal ?? true };
     }));
@@ -295,7 +299,10 @@ export function createIncidentsService(
       const componentChanges = (await Promise.all(proposed.map(async component => {
         const current = attached.find(row => row.id === component.id);
         const metadata = component.componentId ? await componentsService.get(component.componentId) : null;
-        return componentChangeRecord(component, current?.publishedAt ? current.state : "Operational", input.lifecycle === "Resolved" ? "Operational" : component.state, metadata?.internal ?? true);
+        const previousState = incident.lifecycle === "Resolved" && input.lifecycle !== "Resolved"
+          ? metadata?.publicState ?? "Operational"
+          : current?.publishedAt ? current.state : "Operational";
+        return componentChangeRecord(component, previousState, input.lifecycle === "Resolved" ? "Operational" : component.state, metadata?.internal ?? true);
       }))).filter((change): change is PublishedIncidentComponentChange => change !== null);
       const nextUpdateDisplay = input.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(input.nextUpdateAt) : null;
       const renderInput = { incidentReference: incident.reference, incidentTitle: incident.title, ...input, componentChanges, nextUpdateDisplay };
