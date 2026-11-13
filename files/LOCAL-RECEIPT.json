@@ -1,0 +1,98 @@
+{
+  "date": "2026-11-13T16:38:24.283571+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-hosted-mail-sender-1",
+  "head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+  "base": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+  "pr": {
+    "base": "main",
+    "head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+    "html_url": "https://github.com/just-every/run-lamp/pull/356",
+    "number": 356
+  },
+  "checks": [
+    {
+      "command": "node --test --test-name-pattern=\"Managed sender readiness\" tests/e2e/rer-mail.test.mjs",
+      "tree": "main production source plus new regression",
+      "exit": 1,
+      "expected": true,
+      "result": "Reproduced failed instead of verified on configured managed relay with a recent cached failure",
+      "log": "regression-before.log"
+    },
+    {
+      "command": "cloud_run node --test tests/e2e/rer-mail.test.mjs",
+      "head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "log": "mail-tests.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "tree": "candidate source",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "cloud_run node <packet>/BROWSER-PROOF.mjs <packet>",
+      "head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+      "exit": 0,
+      "screenshots": 6,
+      "widths": [
+        1440,
+        390
+      ],
+      "receipt": "browser-receipt.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "result": "Regenerated last before commit"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "counts": {
+        "before": 100,
+        "after": 101,
+        "registeredBefore": 90,
+        "registeredAfter": 91,
+        "assertionScripts": 10,
+        "mailBefore": 1,
+        "mailAfter": 2
+      }
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "publication": {
+    "productPush": "succeeded on first attempt using cloud-push.py",
+    "productRef": "refs/heads/cloud/sd-lamp-hosted-mail-sender-1",
+    "identity": "All candidate authors and committers Run Edit Run fleet <fleet@runeditrun.com>; no trailers; hooks active",
+    "tree": "5 product/test/source-lock files only",
+    "basePublicationScan": "Not run in cloud by task contract; fleet Mac runs its own publication scan before landing"
+  },
+  "clauseChanges": [],
+  "claims": [],
+  "externalMailSent": 0,
+  "providerContact": false,
+  "deploymentPerformed": false,
+  "limitations": [
+    "Synthetic network-edge proof, not hosted acceptance or live relay credential validation",
+    "No deployment or landing"
+  ],
+  "ciReceipt": "ci-receipt.json",
+  "terminal": "READY"
+}

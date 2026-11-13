@@ -1,0 +1,15 @@
+{
+  "conclusion": "success",
+  "head_sha": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/43464235673",
+  "status": "completed",
+  "run_id": 43464235673,
+  "github_calls": 8,
+  "date": "2026-11-13T16:51:41.090809+00:00",
+  "workflow": "Verify",
+  "terminal": "READY",
+  "pollIntervalSeconds": 301,
+  "discoveredAt": "2026-11-13T16:36:03Z",
+  "apiBudget": 10,
+  "remainingCallsReservedForFailureDiagnostics": 2
+}

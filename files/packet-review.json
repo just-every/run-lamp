@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-13T16:51:41.125574+00:00",
+  "selectedDirectory": "packet",
+  "regularFilesOnly": true,
+  "credentialPatternHits": 0,
+  "environmentFilesSelected": false,
+  "privateGateMaterialSelected": false,
+  "notes": "Fixtures in BROWSER-PROOF.mjs contain only named synthetic values; opaque local sessions are ephemeral and never written to packet. Actual injected credential file and setup/session logs are excluded.",
+  "filesReviewed": 24,
+  "finalCiIncluded": true
+}

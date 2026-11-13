@@ -1,0 +1,20 @@
+CI watcher waiting; next eligible REST poll in 264 seconds
+CI watcher waiting; next eligible REST poll in 209 seconds
+CI watcher waiting; next eligible REST poll in 154 seconds
+CI watcher waiting; next eligible REST poll in 99 seconds
+CI watcher waiting; next eligible REST poll in 44 seconds
+GH_CALL=6 {"conclusion":null,"head_sha":"4b798a0f28b030af1121a8fc9d93427affcb8dfa","html_url":"https://github.com/just-every/run-lamp/actions/runs/43464235673","status":"in_progress"}
+CI watcher waiting; next eligible REST poll in 300 seconds
+CI watcher waiting; next eligible REST poll in 245 seconds
+CI watcher waiting; next eligible REST poll in 190 seconds
+CI watcher waiting; next eligible REST poll in 135 seconds
+CI watcher waiting; next eligible REST poll in 80 seconds
+CI watcher waiting; next eligible REST poll in 25 seconds
+GH_CALL=7 {"conclusion":null,"head_sha":"4b798a0f28b030af1121a8fc9d93427affcb8dfa","html_url":"https://github.com/just-every/run-lamp/actions/runs/43464235673","status":"in_progress"}
+CI watcher waiting; next eligible REST poll in 300 seconds
+CI watcher waiting; next eligible REST poll in 245 seconds
+CI watcher waiting; next eligible REST poll in 190 seconds
+CI watcher waiting; next eligible REST poll in 135 seconds
+CI watcher waiting; next eligible REST poll in 80 seconds
+CI watcher waiting; next eligible REST poll in 25 seconds
+GH_CALL=8 {"conclusion":"success","head_sha":"4b798a0f28b030af1121a8fc9d93427affcb8dfa","html_url":"https://github.com/just-every/run-lamp/actions/runs/43464235673","status":"completed"}

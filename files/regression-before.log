@@ -1,0 +1,34 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable (3680.065163ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5057.894998
+
+✖ failing tests:
+
+test at tests/e2e/rer-mail.test.mjs:239:1
+✖ Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable (3680.065163ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'failed'
+  - 'verified'
+  
+      at TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-hosted-mail-sender-1/run-lamp/tests/e2e/rer-mail.test.mjs:295:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'failed',
+    expected: 'verified',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

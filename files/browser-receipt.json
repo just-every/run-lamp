@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-13T16:39:57.943Z",
+  "productHead": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+  "proof": "Built production Worker; synthetic local auth and mail configuration; all external edges denied; no mail sent",
+  "rows": [
+    {
+      "provider": "rer",
+      "width": 1440,
+      "screen": "Settings notifications",
+      "senderText": "Sender authentication is managed by Run Edit Run; inbox delivery is not confirmed by this check.",
+      "file": "settings-rer-notifications-1440.png"
+    },
+    {
+      "provider": "rer",
+      "width": 1440,
+      "screen": "Settings page",
+      "file": "settings-rer-page-1440.png"
+    },
+    {
+      "provider": "rer",
+      "width": 390,
+      "screen": "Settings notifications",
+      "senderText": "Sender authentication is managed by Run Edit Run; inbox delivery is not confirmed by this check.",
+      "file": "settings-rer-notifications-390.png"
+    },
+    {
+      "provider": "rer",
+      "width": 390,
+      "screen": "Settings page",
+      "file": "settings-rer-page-390.png"
+    },
+    {
+      "provider": "resend",
+      "width": 1440,
+      "screen": "Settings notifications",
+      "senderText": "Mail is not configured. Ask your hosting administrator to set MAIL_PROVIDER_API_KEY and MAIL_FROM_ADDRESS in the private deployment inputs, then redeploy Lamp.",
+      "file": "settings-resend-notifications-1440.png"
+    },
+    {
+      "provider": "resend",
+      "width": 390,
+      "screen": "Settings notifications",
+      "senderText": "Mail is not configured. Ask your hosting administrator to set MAIL_PROVIDER_API_KEY and MAIL_FROM_ADDRESS in the private deployment inputs, then redeploy Lamp.",
+      "file": "settings-resend-notifications-390.png"
+    }
+  ]
+}

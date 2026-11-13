@@ -1,0 +1,154 @@
+{
+  "files": [
+    {
+      "blob": "8f2988c76de027c0c22a9380b02d5e335cbf1452",
+      "bytes": 7187,
+      "path": "BROWSER-PROOF.mjs",
+      "sha256": "e92ed854b5f7a8070a0aa2ca4aeb02b598e951e0c9ffe37b6565b494577882ae"
+    },
+    {
+      "blob": "2674a0aad7ad25cc0e2fb3a687848161cc44a961",
+      "bytes": 3057,
+      "path": "LOCAL-RECEIPT.json",
+      "sha256": "f16f5b51f92d01999310d5ed8cb777d6af56264c39092194e97d3749d4ec3eee"
+    },
+    {
+      "blob": "9ddd17a78240b11299f73d0aae52af543dcb1170",
+      "bytes": 1940,
+      "path": "PLAN.md",
+      "sha256": "c01b187c45eae75778058153cb3980c8698a29d1da55f05013067bc43847466d"
+    },
+    {
+      "blob": "6ca304053a79e04706b59cb86c6d51223df2f6b5",
+      "bytes": 9225,
+      "path": "REPORT.md",
+      "sha256": "5192fc4f6f58378dd70b2191746082f81b5591253931ab6422d713a96cdf67fd"
+    },
+    {
+      "blob": "2609ae78911cc6cb0e9e64940e9829a858a7caf1",
+      "bytes": 1736,
+      "path": "browser-receipt.json",
+      "sha256": "4fd76faa7e9c060b7339b7c3a2c93a9ccebfeec548faef32e503fab6a96d5732"
+    },
+    {
+      "blob": "19029e9f3aaa0aaea4e7d108f7c282dec5a235d6",
+      "bytes": 201,
+      "path": "browser.log",
+      "sha256": "53c0cd92634fea5c623adeb69968a7526f9fb4f752ed7d9fa5770bdddf45c94b"
+    },
+    {
+      "blob": "5ae28b43309ae203320e2cc413c63a6ae4487384",
+      "bytes": 19756,
+      "path": "build.log",
+      "sha256": "3e526529759452859a89985f38a05046705000045e959ddb5fc8ed436d597965"
+    },
+    {
+      "blob": "a9aac6dbc09688e541dcc9e024ffbf941222e28a",
+      "bytes": 224,
+      "path": "ci-discovery.json",
+      "sha256": "05684a9e642c5a6151a5c1a1a68bedd53d912693052a982e0c9da790d01211fd"
+    },
+    {
+      "blob": "113f8a51c4d3dbbdce3c4824c5497bf0f7b87f3d",
+      "bytes": 476,
+      "path": "ci-receipt.json",
+      "sha256": "9b6be13452af7073e17f7a3744b9713c5c833af78f288098c714e6d1557ed354"
+    },
+    {
+      "blob": "b51ff44205d25d9b2187d53ab0abed9ae0107dc2",
+      "bytes": 1552,
+      "path": "ci-watch.log",
+      "sha256": "72108c0ed502a824c68be5d2a3973c6216b15cd3dada52254adef016561893a2"
+    },
+    {
+      "blob": "c24bb0fa07dcc6e6dc43e52654846f59d09839bf",
+      "bytes": 371,
+      "path": "comparison-receipt.json",
+      "sha256": "b8e13603ea7ad21f8d0d22a8dae39c6e91e18a16f885d58d7bc1d81b717916b9"
+    },
+    {
+      "blob": "66f31e0265d58ab14c7ed15c01ebb3ff69995ebc",
+      "bytes": 776,
+      "path": "mail-tests.log",
+      "sha256": "b11abeaba08fd01d5a9474f876455cc777347e95c227067e53735f82506d2fdd"
+    },
+    {
+      "blob": "2dd2a8605e169b37fba553e655bf5ab0142581a8",
+      "bytes": 482,
+      "path": "packet-review.json",
+      "sha256": "6dcf50b3683405b70f85679e03b15a980d17c42eaee81b27ab9feffb9b68ed57"
+    },
+    {
+      "blob": "e1d110c5c3f7295993955299fce0f41fc2d235b9",
+      "bytes": 140,
+      "path": "pr-receipt.json",
+      "sha256": "e2582c0c1f37000370304cf14658b488d83e4799ac7449b419a35aa4ecf76fc4"
+    },
+    {
+      "blob": "e8318ebfdb3fc6de46edf64c562a1a8a43436ef9",
+      "bytes": 544,
+      "path": "product-custody.json",
+      "sha256": "1ab43dfb2f354e0116e79b7eef0cb101dac3c9363a708b992d1dc7fd6d7f1d93"
+    },
+    {
+      "blob": "7917fcacfbc4a18bef4bd1f25eb02ffaf9f84fa0",
+      "bytes": 266,
+      "path": "push-receipt.txt",
+      "sha256": "0017ec58847abfe2c242bc37f959ad88991e9f2113aac3c2a08b21d00cbaa9ab"
+    },
+    {
+      "blob": "928559eaa410c530e13369f6a8cb182714d596ec",
+      "bytes": 1303,
+      "path": "regression-before.log",
+      "sha256": "5121fab5b63ec099053dc85c878542323be5025da6b18af462a8c1364fa730ee"
+    },
+    {
+      "blob": "5e64721cb43bce53af668ca604f7a9edf11229c3",
+      "bytes": 102374,
+      "path": "settings-rer-notifications-1440.png",
+      "sha256": "d920b7a19e2de6ee48dae6130fcbe33a2a87eac2f829b4cfca6bea79290ba116"
+    },
+    {
+      "blob": "d76f587788ae34d817cc7ba1d99aca33a936a3ef",
+      "bytes": 46321,
+      "path": "settings-rer-notifications-390.png",
+      "sha256": "73de7c00ea2053f796e5bb4874d249a82bd954508f499484a34f47c7bb0c0723"
+    },
+    {
+      "blob": "4b8ffc6f422680e7ac068d8d30ef087ab1e0fefa",
+      "bytes": 138538,
+      "path": "settings-rer-page-1440.png",
+      "sha256": "432734909ae087f449a2310bbfe3c690e1ddb117bfb3738ce254bec99467ecd6"
+    },
+    {
+      "blob": "945b327aab96b21ed44f98b3ba36cd423ddb4dbc",
+      "bytes": 55148,
+      "path": "settings-rer-page-390.png",
+      "sha256": "d2c1af7342685facf61e0b9856db1125ee316d37eeb5cc933399302539b56218"
+    },
+    {
+      "blob": "11bb0b0a0634c7a9859741e0fd1e350baf7d06b2",
+      "bytes": 114998,
+      "path": "settings-resend-notifications-1440.png",
+      "sha256": "c6fd014b36f52be9a1ac98a6f89f490708fe677169febaa07c88ecb6db463f89"
+    },
+    {
+      "blob": "d74bfa5baa6b190c50dbceee62229c1b43e043a5",
+      "bytes": 50147,
+      "path": "settings-resend-notifications-390.png",
+      "sha256": "e99f1807db7377dff1d93ec9c737fafac169c0cbcf1473a67e2e8a5e0132273f"
+    },
+    {
+      "blob": "7b297391306993f1911f27b9db363d4a5751a905",
+      "bytes": 221,
+      "path": "typecheck.log",
+      "sha256": "9f50bbcc54499aea5dcf0b7d721821680aa1cf52aee33e524b29b0df64372844"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-hosted-mail-sender-1",
+  "product_head": "4b798a0f28b030af1121a8fc9d93427affcb8dfa",
+  "ref": "refs/heads/evidence/sd-lamp-hosted-mail-sender-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-hosted-mail-sender-1"
+}

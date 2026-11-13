@@ -1,0 +1,10 @@
+{
+  "happytohelp-deployment-environment": {
+    "readVia": "gh api contents at main, 2026-11-13 UTC",
+    "sha256": "fdf1deefa136afcfc7d37d48323a958ec6d9cae0452a4269dcd5a65d788f1f24"
+  },
+  "happytohelp-mail-deploy-policy": {
+    "readVia": "gh api contents at main, 2026-11-13 UTC",
+    "sha256": "f0d6068a9c7a4939dd37994aaa642552571002540f16f3dec227add60bc32a7b"
+  }
+}
