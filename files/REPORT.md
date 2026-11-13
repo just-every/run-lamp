@@ -29,7 +29,7 @@ The test inventory remains 90 registrations plus 10 assertion scripts = 100 chec
 
 ## Custody and limitations
 
-Product SHA: ecb56522a4a95ab8373551a5e7cde05f7148bb03. The fleet guard pushed it successfully on attempt 1. Exact-SHA push Verify: 43454772215, initially queued. PR and final CI conclusion pending. The fleet lander owns the publication scan and landing. Evidence publication is report transport only, separate from product readiness. No deployment or main push is performed here.
+Product SHA: ecb56522a4a95ab8373551a5e7cde05f7148bb03. The fleet guard pushed it successfully on attempt 1. Exact-SHA push Verify: 43454772215, completed/success on ecb56522a4a95ab8373551a5e7cde05f7148bb03. Run: https://github.com/just-every/run-lamp/actions/runs/43454772215. Contribution PR: https://github.com/just-every/run-lamp/pull/354 (open against main; head matches the candidate). The fleet lander owns the publication scan and landing. Evidence publication is report transport only, separate from product readiness. No deployment or main push is performed here.
 
 ## Builder claims
 
@@ -41,3 +41,9 @@ DEFAULT UPTIME-009: normalized component names use numeric suffixes when names c
 GAP UPTIME-009: this round proves the filename correction only; it makes no new full-clause availability-report claim.
 
 Browser proof was inspected at both widths: the changed timeline state transition is readable on operator and public screens, and the component History controls fit both widths. Earlier timeline wording remains visible as recorded.
+
+## Final result
+
+Both requested behaviors are fixed and locally proven. The exact-SHA Verify run completed successfully. The cloud product branch was pushed once, the PR remains open for the fleet lane, and main was not modified. There are no blockers. No full local rer verify was run; the branch workflow supplied the full wall. The fleet's independent publication scan and landing remain its own steps.
+
+The complete relevant packet is published separately through cloud_evidence.py on refs/heads/evidence/main-lamp-incident-reopen-1. The final message names its exact manifest commit. Browser, native API, typecheck, test-count, push, CI and PR receipts are included alongside the plan, report and six screenshots. Successful product and evidence transport are distinct claims.

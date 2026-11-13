@@ -1,0 +1,51 @@
+{
+  "calls": [
+    {
+      "utc": "2026-11-13T15:39:24.040000+00:00",
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs?head_sha=ecb56522a4a95ab8373551a5e7cde05f7148bb03&per_page=100"
+      ]
+    },
+    {
+      "utc": "2026-11-13T15:44:25.081058+00:00",
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43454772215",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "utc": "2026-11-13T15:49:26.122421+00:00",
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43454772215",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "utc": "2026-11-13T15:54:27.164232+00:00",
+      "args": [
+        "api",
+        "repos/just-every/run-lamp/actions/runs/43454772215",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ]
+    },
+    {
+      "utc": "2026-11-13T15:54:50.254647+00:00",
+      "args": [
+        "api",
+        "--method",
+        "POST",
+        "repos/just-every/run-lamp/pulls",
+        "--input",
+        "/tmp/lamp-pr-input.json",
+        "--jq",
+        "{number,html_url,head_sha:.head.sha,base:.base.ref,state,draft}"
+      ]
+    }
+  ]
+}

@@ -7,7 +7,22 @@
       "conclusion": null,
       "head_sha": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
       "html_url": "https://github.com/just-every/run-lamp/actions/runs/43454772215",
-      "status": "in_progress"
+      "status": "in_progress",
+      "observed_at": "2026-11-13T15:44:25.081058+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43454772215",
+      "status": "in_progress",
+      "observed_at": "2026-11-13T15:49:26.122421+00:00"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43454772215",
+      "status": "completed",
+      "observed_at": "2026-11-13T15:54:27.164232+00:00"
     }
   ]
 }
