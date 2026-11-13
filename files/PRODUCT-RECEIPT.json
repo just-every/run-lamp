@@ -28,14 +28,15 @@
       "status": "in_progress"
     }
   ],
-  "custody": "PUSHED; exact-SHA Verify pending",
+  "custody": "PUSHED branch=cloud/main-lamp-subscribe-channels-1 head=dc565f4d31f87885c7dce6b8d97d995b797a13cf",
   "ci_latest": {
     "conclusion": null,
     "head_sha": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
     "html_url": "https://github.com/just-every/run-lamp/actions/runs/43454446883",
     "status": "in_progress",
     "run_id": 43454446883,
-    "observed_at": 1794585781.0051413
+    "observed_at": 1794586082.0864465
   },
-  "github_calls": 7
+  "github_calls": 8,
+  "terminal_reason": "Exact-SHA Verify still in_progress after six permitted polls over thirty minutes; API budget running low (8 of 10 calls used). No green or landing claim."
 }

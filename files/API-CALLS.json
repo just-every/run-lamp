@@ -72,5 +72,15 @@
       "--jq",
       "{status,conclusion,head_sha,html_url}"
     ]
+  },
+  {
+    "call": 8,
+    "at": 1794586081.45899,
+    "arguments": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43454446883",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
   }
 ]

@@ -1,0 +1,33 @@
+{
+  "before": {
+    "published": {
+      "partial": 65,
+      "done": 42
+    },
+    "target": {
+      "partial": 59,
+      "missing": 51,
+      "done": 18
+    },
+    "push-further": {
+      "partial": 5,
+      "missing": 4
+    }
+  },
+  "after": {
+    "published": {
+      "partial": 65,
+      "done": 42
+    },
+    "target": {
+      "partial": 59,
+      "missing": 51,
+      "done": 18
+    },
+    "push-further": {
+      "partial": 5,
+      "missing": 4
+    }
+  },
+  "contractChanged": false
+}

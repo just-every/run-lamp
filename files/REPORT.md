@@ -63,6 +63,8 @@ The changed public screens have proof files at both required widths:
 
 The before and after counts are unchanged: 90 test registrations plus 10 assertion scripts, totaling 100. Existing journeys were extended; no registration was added. This remains within the seed cap.
 
+The contract also remains unchanged before/after: Published 42 done and 65 partial; Target 18 done, 59 partial and 51 missing; Push further 5 partial and 4 missing. These are retained source statuses, not new builder claims. `CLAUSE-COUNTS.json` records both sides.
+
 Clause statuses are unchanged. The public consent test proves its existing email acceptance points with a real Worker and synthetic mail edge. Channel availability and guide navigation extend the same journey but do not establish the complete SMS/Slack/Teams provider clauses.
 
 CLAIM SUB-001 PARTIAL points=1,2,3,4,5 tests=tests/e2e/delivery-contract.test.mjs#SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary
@@ -84,7 +86,7 @@ The original full plan is retained in `PLAN.md`.
 3. Implemented only public channel availability, explicit channel-result return actions, and a public Teams workflow guide. Did not change storage, consent, verification, delivery or Notifications settings.
 4. Extended the existing public consent journey. Its final run passed with scripting disabled; browser proof covers each changed state at 1440 and 390. Typecheck, production/docs build and documented source/contract checks passed; total checks remain 100 before and after.
 5. Fetched main and rebased before the first product commit; main was unchanged. Regenerated the source lock last, checked it, committed with fleet identity and active hooks, inspected all candidate identities/trailers and pushed the named branch once through the fleet guard. Opened the required PR. No generated contract views or fleet evidence were committed to the product branch.
-6. Wait for exact-SHA Verify at the allowed five-minute interval, then publish the complete explicitly selected non-secret packet to the separate evidence ref. Main, full publication scanning and landing remain fleet-owned.
+6. Polled exact-SHA Verify six times at intervals of at least 300 seconds; it remained in_progress. With eight of ten GitHub calls used, retain PUSHED custody for the fleet watcher. Published the complete explicitly selected non-secret packet to the separate evidence ref and updated it for this terminal observation. Main, full publication scanning and landing remain fleet-owned.
 
 ## Product provenance and CI
 
@@ -92,12 +94,12 @@ Product branch: cloud/main-lamp-subscribe-channels-1
 Product head: dc565f4d31f87885c7dce6b8d97d995b797a13cf
 PR: https://github.com/just-every/run-lamp/pull/353
 Verify run: 43454446883 — https://github.com/just-every/run-lamp/actions/runs/43454446883
-Exact-SHA Verify: pending; five allowed status polls have reported in_progress on the product head.
+Exact-SHA Verify: pending; six allowed status polls over thirty minutes reported in_progress on the product head. Last observation: 2026-11-13 16:08 UTC. Eight of ten GitHub calls are used; the low-budget terminal custody is PUSHED. No completed failure was available for job/log diagnosis.
 
 Product push succeeded on its first attempt. An independent `git ls-remote` check matched the branch to the full product head. `PRODUCT-RECEIPT.json` retains the actual product custody and PR/CI identities. GitHub API use is recorded in `API-CALLS.json`; one watcher polls at intervals of at least 300 seconds.
 
 ## Limits and handoff
 
-There are no known implementation blockers. Verify is still running after five permitted polls; product custody remains PUSHED, without a READY claim. Live SMS/Slack/Teams account qualification was outside this brief. The browser journeys use the real application, host dispatch, D1, snapshots and HTML forms, with synthetic network edges; they establish the scoped behavior and do not claim live provider delivery. No clause status changed and no DONE claim is made. Publication and landing are separate from product and evidence transport.
+There are no known implementation blockers. Verify is still running after six permitted polls; product custody remains PUSHED, without a READY claim. Live SMS/Slack/Teams account qualification was outside this brief. The browser journeys use the real application, host dispatch, D1, snapshots and HTML forms, with synthetic network edges; they establish the scoped behavior and do not claim live provider delivery. No clause status changed and no DONE claim is made. Publication and landing are separate from product and evidence transport.
 
 Evidence transport destination: refs/heads/evidence/main-lamp-subscribe-channels-1. The final EVIDENCE receipt identifies the exact report-only commit separately from product custody. The clone can be removed after successful evidence transfer; packet files remain outside it for the fleet.
