@@ -1,3 +1,4 @@
+import { openOperatorPage, waitForOperatorReady } from "./operator-ready.mjs";
 import {appOrigin} from './helpers/hosts.mjs';
 import { assertVisibleTime } from "../helpers/public-meaning.mjs";
 import assert from "node:assert/strict";
@@ -113,7 +114,7 @@ test("Fresh publication drafts and narrow operator navigation preserve deliberat
   await (async () => {
   const { component } = await operatorApi("/api/app/components", "POST", { groupId: null, name: "Operator journey API", description: "", internal: false, displayOrder: 5, note: "" });
   const { incident } = await operatorApi("/api/app/incidents", "POST", { title: "Operator journey", components: [{ componentId: component.id, state: "Major outage", relationship: "Primary" }] });
-  await page.goto(`${origin}/app/incidents/${incident.id}`);
+  await openOperatorPage(page, `${origin}/app/incidents/${incident.id}`);
   await audienceField(page).fill("API customers"); await impactField(page).fill("Requests are failing");
   await page.getByLabel("Next update date and time").fill("2027-10-10T15:00");
   await page.locator(".autosave-status.is-saved").waitFor();
@@ -153,7 +154,7 @@ test("Fresh publication drafts and narrow operator navigation preserve deliberat
   await page.locator(".autosave-status.is-saved").waitFor();
   const stale = await context.newPage();
   try {
-    await stale.goto(page.url()); await stale.locator(".autosave-status.is-saved").waitFor();
+    await openOperatorPage(stale, page.url()); await stale.locator(".autosave-status.is-saved").waitFor();
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 844 });
       const preview = page.getByRole("button", { name: "Preview", exact: true });
@@ -191,7 +192,7 @@ test("Fresh publication drafts and narrow operator navigation preserve deliberat
     await audienceField(page).fill("Next update audience");
     await page.locator(".autosave-status.is-saved").waitFor();
     assert.equal(await page.getByRole("button", { name: "Publish update", exact: true }).isEnabled(), false, "An acknowledged but incomplete draft stays private");
-    await page.reload(); await page.locator(".autosave-status.is-saved").waitFor();
+    await page.reload(); await waitForOperatorReady(page); await page.locator(".autosave-status.is-saved").waitFor();
     assert.equal(await audienceField(page).inputValue(), "Next update audience");
     await stale.getByText("Update templates", { exact: true }).first().click();
     await stale.getByLabel("Saved update template").selectOption({ label: "Operator journey template" });
@@ -210,7 +211,7 @@ test("Fresh publication drafts and narrow operator navigation preserve deliberat
     await audienceField(stale).fill("Stale published wording"); await stale.locator(".autosave-status.is-error").waitFor();
     assert.equal((await operatorApi(`/api/app/incidents/${incident.id}`)).incident.draft.affectedAudience, "Next update audience");
     assert.equal(await stale.getByRole("button", { name: "Publish update", exact: true }).isEnabled(), false);
-    await stale.reload(); await stale.locator(".autosave-status.is-saved").waitFor();
+    await stale.reload(); await waitForOperatorReady(stale); await stale.locator(".autosave-status.is-saved").waitFor();
     await audienceField(page).fill("Acknowledged newer bytes"); await page.locator(".autosave-status.is-saved").waitFor();
     await audienceField(stale).fill("Stale next draft"); await stale.locator(".autosave-status.is-error").waitFor();
     assert.equal((await operatorApi(`/api/app/incidents/${incident.id}`)).incident.draft.affectedAudience, "Acknowledged newer bytes");

@@ -1,3 +1,4 @@
+import { openOperatorPage, waitForOperatorReady } from "./operator-ready.mjs";
 import { requestHeaders } from "../helpers/request-headers.mjs";
 import { withDraftVersion } from "./draft-version-helper.mjs";
 import assert from "node:assert/strict";
@@ -182,9 +183,8 @@ test("compiled visual edits survive actual operator navigation and reload", asyn
   try {
     const paths = [...new Set(['/app','/app/components','/app/subscribers',...snapshot.edits.map(edit => edit.path)])];
     for (const path of paths) {
-      const sessionReady = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/session' && response.ok());
       await page.goto(appUrl + path, { waitUntil: 'networkidle' });
-      await sessionReady; // The shell requests its session from a post-hydration effect.
+      await waitForOperatorReady(page);
       await page.locator('.operator-navigation').waitFor();
       const expected = snapshot.edits.filter(edit => edit.target.navigation || edit.path === path);
       const check = async () => {
@@ -212,7 +212,7 @@ test("compiled visual edits survive actual operator navigation and reload", asyn
       assert.equal(await page.evaluate(() => performance.timeOrigin),stamp,'navigation remains within the running app');
       await page.locator(`.operator-navigation a[href="${path}"]`).count().then(async count => { if (count === 1) { await page.locator(`.operator-navigation a[href="${path}"]`).click(); await page.waitForURL(url => url.pathname === path); } else await page.goto(appUrl + path, { waitUntil: 'networkidle' }); });
       await check();
-      await page.reload(); await page.locator('.operator-navigation').waitFor(); await check();
+      await page.reload(); await waitForOperatorReady(page); await page.locator('.operator-navigation').waitFor(); await check();
     }
     if (process.env.RER_VISUAL_HEADING_PROBE === '1') assert.equal(await page.locator('[data-rer-editor]').count(),0,'compiled page edits work for a non-editor operator');
     assert.deepEqual(errors,[],'compiled edits retain a healthy application runtime');
@@ -221,7 +221,7 @@ test("compiled visual edits survive actual operator navigation and reload", asyn
 
 contract("INCIDENT-001", "an operator can start with an empty product, create a component and incident, preview, publish, resolve, and inspect the public record", async () => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${appUrl}/app/components`);
+  await openOperatorPage(page, `${appUrl}/app/components`);
   await page.getByText("No components are configured. Add the first component before creating an incident.").waitFor();
   await page.getByRole("button", { name: "Add component" }).click();
   await page.getByRole("heading", { name: "Add component" }).waitFor();
@@ -232,7 +232,7 @@ contract("INCIDENT-001", "an operator can start with an empty product, create a 
   await page.getByText("Journey API", { exact: true }).waitFor();
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto(`${appUrl}/app/incidents`);
+  await openOperatorPage(page, `${appUrl}/app/incidents`);
   await page.getByRole("heading", { name: "Record the situation before communicating it" }).waitFor();
   await page.getByLabel("Incident title").fill("Journey API request failures");
   await page.getByLabel("Affected component 1").selectOption({ label: "Journey API" });
@@ -279,7 +279,7 @@ contract("INCIDENT-004", "operator controls create internal notes, retroactive r
     const part = (kind) => parts.find(entry => entry.type === kind).value;
     return `${part("year")}-${part("month")}-${part("day")}T${part("hour")}:${part("minute")}`;
   }, offsetMs);
-  await page.goto(`${appUrl}/app/incidents`);
+  await openOperatorPage(page, `${appUrl}/app/incidents`);
   await page.getByRole("button", { name: "Create incident", exact: true }).click();
   await page.getByRole("heading", { name: "Record the situation before communicating it" }).waitFor();
   await page.getByLabel("Incident title").fill("Historical correction controls");
@@ -312,7 +312,7 @@ contract("INCIDENT-004", "operator controls create internal notes, retroactive r
   assert.equal(record.updates.length, 1);
   assert.equal(record.internalNotes[0].body, "PRIVATE-OPERATOR-CONTEXT");
 
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await page.getByRole("heading", { name: "Compose public update" }).waitFor();
   await saveAndConfirmDraft({ page, appFetch, incidentId, t,
     expected: { lifecycle: "Identified", affectedAudience: "Correction audience.", customerImpact: "", whatStillWorks: "", details: "", nextUpdateAt: null },
@@ -338,7 +338,7 @@ contract("INCIDENT-004", "operator controls create internal notes, retroactive r
 contract("UPDATE-005", "composer autosaves a changed draft in under two seconds and reloads the exact value", async () => {
   const incident = await createBrowserIncident();
   autosaveIncidentId = incident.id;
-  await page.goto(`${appUrl}/app/incidents/${incident.id}`);
+  await openOperatorPage(page, `${appUrl}/app/incidents/${incident.id}`);
   await page.getByRole("heading", { name: "Compose public update" }).waitFor();
   await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Browser contract customers.");
   await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("Requests can fail during this condition.");
@@ -348,7 +348,7 @@ contract("UPDATE-005", "composer autosaves a changed draft in under two seconds 
   await page.locator("label", { hasText: "Additional details" }).locator("textarea").fill(details);
   await page.getByText("Draft saved", { exact: true }).waitFor({ timeout: 2000 });
   assert.ok(Date.now() - changedAt < 2000, "the operator draft did not save within two seconds");
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await page.getByRole("heading", { name: "Compose public update" }).waitFor();
   await assert.equal(await page.locator("label", { hasText: "Additional details" }).locator("textarea").inputValue(), details);
   assert.equal(await page.getByLabel("Next update date and time").inputValue(), "2027-09-08T13:41", "the datetime control presents the saved instant in the operator's configured local time");
@@ -361,7 +361,7 @@ contract("UPDATE-005", "composer autosaves a changed draft in under two seconds 
 
 contract("UPDATE-006", "the composer schedules publication separately from its next-update commitment", async () => {
   const incident = await createBrowserIncident();
-  await page.goto(`${appUrl}/app/incidents/${incident.id}`);
+  await openOperatorPage(page, `${appUrl}/app/incidents/${incident.id}`);
   await page.getByRole("heading", { name: "Compose public update" }).waitFor();
   await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Scheduled browser customers.");
   await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("A scheduled update has a distinct publication time.");
@@ -375,13 +375,13 @@ contract("UPDATE-006", "the composer schedules publication separately from its n
 
 contract("DRAFT-002", "operators save and reload AI tone instructions while the UI honestly reports an unconfigured provider", async () => {
   const tone = "Lead with customer impact, use concise factual language, and name the next update commitment.";
-  await page.goto(`${appUrl}/app/settings`);
+  await openOperatorPage(page, `${appUrl}/app/settings`);
   await page.getByText("No provider configured", { exact: true }).waitFor();
   const toneField = page.getByLabel("Tone instructions");
   await toneField.fill(tone);
   await page.getByRole("button", { name: "Save settings" }).click();
   await page.getByText("Settings saved and the public snapshot was rebuilt.", { exact: true }).waitFor();
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await page.getByText("No provider configured", { exact: true }).waitFor();
   assert.equal(await page.getByLabel("Tone instructions").inputValue(), tone);
 });
@@ -389,7 +389,7 @@ contract("DRAFT-002", "operators save and reload AI tone instructions while the 
 contract("INTAKE-005", "operators configure a real authenticated source and inspect accepted and rejected redacted receipts", async () => {
   const signingSecret = "browser-alert-source-secret";
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${appUrl}/app/alerts`);
+  await openOperatorPage(page, `${appUrl}/app/alerts`);
   await page.getByRole("button", { name: "Add alert source" }).click();
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "the narrow source editor must not introduce horizontal page overflow");
   await page.getByLabel("Source name").fill("Browser alert source");
@@ -419,7 +419,7 @@ contract("INTAKE-005", "operators configure a real authenticated source and insp
   const rejected = await sendAlert({ event: { title: "Browser intake rejection", state: "firing" } });
   assert.equal(rejected.status, 400, await rejected.text());
 
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await page.locator(".alert-source-card").getByRole("heading", { name: "Browser alert source — primary", exact: true }).waitFor();
   await page.getByText("Accepted", { exact: true }).waitFor();
   await page.getByText("Rejected", { exact: true }).waitFor();
@@ -437,7 +437,7 @@ contract("DRAFT-003", "a configured but failing AI provider leaves the ordinary 
   fixtureConfig.write(configWithAiProvider);
   await startWorker(configPath);
   await openAuthenticatedPage(viewport);
-  await page.goto(`${appUrl}/app/incidents/${autosaveIncidentId}`);
+  await openOperatorPage(page, `${appUrl}/app/incidents/${autosaveIncidentId}`);
   await page.getByRole("button", { name: "Suggest update" }).waitFor();
   await page.getByRole("button", { name: "Suggest update" }).click();
   const aiStatus = page.locator(".ai-suggestion [role=status]");
@@ -466,7 +466,7 @@ contract("UPDATE-002", "composer publication controls remain visible and operabl
   try {
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 900 });
-      await page.goto(`${appUrl}/app/incidents/${incident.id}`);
+      await openOperatorPage(page, `${appUrl}/app/incidents/${incident.id}`);
       const controls = page.getByRole("region", { name: "Publication controls" });
       await controls.getByText("Schedule or backdate", { exact: true }).click();
       const timestamp = controls.getByLabel("Historical publication date and time");

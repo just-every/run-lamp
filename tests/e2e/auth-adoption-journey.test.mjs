@@ -1,3 +1,4 @@
+import { openOperatorPage } from "./operator-ready.mjs";
 import assert from 'node:assert/strict';
 import {execFileSync,spawn,spawnSync} from 'node:child_process';
 import {mkdtemp,rm,symlink,writeFile,readFile,mkdir,readdir} from 'node:fs/promises';
@@ -122,7 +123,7 @@ test('SETUP-002 Base setup/dev, one-click sign-in, invite, signout and prior-dat
     const discovery=await page.request.get(origin+'/.well-known/rer-dependencies');assert.equal(discovery.status(),200);assert.equal((await discovery.json()).dependencies.some(d=>d.interface==='oidc-provider@1'&&d.optional),true);
     if(!upgraded){
      await capture(page,'workspace-'+width);const landing=await context.newPage();await landing.setViewportSize({width,height:1000});await landing.goto(origin+'/');await capture(landing,'landing-'+width);await landing.close();
-     await page.goto(origin+'/app/settings');
+     await openOperatorPage(page, origin+'/app/settings');
      const operators=page.getByRole('region',{name:'Operators',exact:true});
      const pending=page.getByRole('region',{name:'Pending invitations'});
      const email=`invited-${width}@example.test`,cancelledEmail=`cancelled-${width}@example.test`;

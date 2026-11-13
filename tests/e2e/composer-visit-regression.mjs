@@ -13,7 +13,11 @@ async function holdResponse(page, endpoint, held, expectedStatus, times = 1) {
   held.push(release);
   // Installed until unrouteAll: removing a one-shot route can strand a paused request.
   let count = 0;
-  await page.route(`**${endpoint}`, async route => {
+  const incidentPath = /^\/api\/app\/incidents\/[^/]+$/.test(endpoint)
+    ? endpoint.replace("/api/app/", "/app/") : null;
+  await page.route(url => url.pathname === endpoint || Boolean(incidentPath
+    && url.pathname.startsWith("/_serverFn/")
+    && url.searchParams.get("payload")?.includes(incidentPath)), async route => {
     if (++count > times) return route.continue();
     try {
       const response = await route.fetch();
@@ -62,13 +66,16 @@ export async function assertComposerVisitIsolation({ page, api, openIncident, in
     await field.fill("A write from the previous visit");
     await waitForAutosave(oldSave.entered, "the previous visit write");
     assert.equal((await read(a.id)).draft.affectedAudience, "A write from the previous visit");
-    // Development mounts the visit twice; hold every read of B, not only the first.
+    // Page reads can arrive through Start's document loader or the native API.
+    // Hold the navigation without waiting for its delayed loader to finish.
     const loadingB = await holdResponse(page, `/api/app/incidents/${b.id}`, held, undefined, 2);
-    await traverse(2, b.id);
+    const nextVisit = traverse(2, b.id);
     await waitForAutosave(loadingB.entered, "the next incident read");
+    await field.waitFor({ state: "hidden" });
     assert.equal(await field.count(), 0, "B loading must not expose A's editable fields");
     assert.equal(await page.getByRole("button", { name: "Publish update", exact: true }).count(), 0);
     loadingB.release();
+    await nextVisit;
     await saved();
     assert.equal(await field.inputValue(), bDraft.affectedAudience);
     await field.fill("B independent saved edit");

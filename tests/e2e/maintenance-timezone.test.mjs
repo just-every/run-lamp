@@ -1,3 +1,4 @@
+import { openOperatorPage, waitForOperatorReady } from "./operator-ready.mjs";
 import {appOrigin} from './helpers/hosts.mjs';
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
@@ -62,7 +63,7 @@ test("Native maintenance editing preserves instants across configured zones and 
       await api("/api/app/page-settings", "PUT", { pageName, tagline, accentColor, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, timezone: scenario.zone });
       const { component } = await api("/api/app/components", "POST", { groupId: null, name: `Timezone ${scenario.start} ${scenario.zone}`, description: "", internal: false, displayOrder: 1, note: "" });
       const { maintenance } = await api("/api/app/maintenance", "POST", { title: "Timezone window", startsAt: scenario.start, endsAt: scenario.end, componentIds: [component.id] });
-      await page.goto(`${origin}/app/maintenance`);
+      await openOperatorPage(page, `${origin}/app/maintenance`);
       const row = page.locator(".maintenance-row").filter({ hasText: maintenance.reference });
       const start = row.getByLabel(`${maintenance.reference} start`, { exact: true });
       const end = row.getByLabel(`${maintenance.reference} end`, { exact: true });
@@ -78,7 +79,7 @@ test("Native maintenance editing preserves instants across configured zones and 
         const stored = (await api("/api/app/maintenance")).maintenance.find(item => item.id === maintenance.id);
         assert.equal(stored.startsAt, expectedStart);
         assert.equal(stored.endsAt, expectedEnd);
-        await page.reload();
+        await page.reload(); await waitForOperatorReady(page);
         await row.getByText("Change dates", { exact: true }).click();
         await start.waitFor();
       }
@@ -107,7 +108,7 @@ test("maintenance creation, correction and historical incident entry all use the
     const configure = timezone => api("/api/app/page-settings", "PUT", { pageName, tagline, accentColor, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, timezone });
     await configure("Australia/Brisbane");
     const { component } = await api("/api/app/components", "POST", { groupId: null, name: "Configured-zone service", description: "", internal: false, displayOrder: 200, note: "" });
-    await page.goto(`${origin}/app/maintenance`);
+    await openOperatorPage(page, `${origin}/app/maintenance`);
     const create = page.locator(".maintenance-schedule-card");
     await create.getByLabel("Title", { exact: true }).fill("Configured-zone window");
     await create.getByLabel("Configured-zone service", { exact: true }).check();
@@ -138,7 +139,7 @@ test("maintenance creation, correction and historical incident entry all use the
     await page.getByRole("button", { name: "Create incident draft", exact: true }).click();
     assert.equal((await (await opened).json()).incident.openedAt, "2020-07-14T23:00:00.000Z");
     await configure("America/New_York");
-    await page.goto(`${origin}/app/maintenance`);
+    await openOperatorPage(page, `${origin}/app/maintenance`);
     await create.getByLabel("Starts", { exact: true }).fill("2027-03-14T02:30");
     await create.getByLabel("Ends", { exact: true }).fill("2027-03-14T04:00");
     await create.getByRole("alert").waitFor();

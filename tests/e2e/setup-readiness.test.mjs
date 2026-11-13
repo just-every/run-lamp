@@ -1,3 +1,4 @@
+import { waitForOperatorReady } from "./operator-ready.mjs";
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { execFileSync, execFile, spawn } from 'node:child_process';
@@ -112,6 +113,7 @@ test('SETUP-001 local setup renders correctly at 1440 and 390 and leaves hosted 
     await inspect('fresh', { timezone: true, branding: false, component: false, sender: false });
     diagnostics.phase = 'settings-save';
     await page.locator('[data-setup-step="branding"] a').click();
+    await waitForOperatorReady(page);
     await page.getByLabel('Page name', { exact: true }).fill('Customer status');
     // The native label wraps a populated textarea; its text includes the
     // initial textarea contents. Select that label's actual editable control.

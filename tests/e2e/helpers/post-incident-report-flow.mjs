@@ -1,3 +1,4 @@
+import { openOperatorPage, waitForOperatorReady } from "../operator-ready.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
@@ -45,16 +46,16 @@ export async function postIncidentReportFlow({ page, appFetch, appUrl, pageUrl }
     }
   };
 
-  await page.goto(`${appUrl}/app/incidents/${incident.id}`);
+  await openOperatorPage(page, `${appUrl}/app/incidents/${incident.id}`);
   await editor.getByLabel("Summary", { exact: true }).waitFor();
   for (const [field, value] of Object.entries(report)) await editor.getByLabel(field, { exact: false }).fill(value);
   await save();
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await assertFields();
   report.cause += " The pool had not been resized after the latest traffic increase.";
   await editor.getByLabel("Cause").fill(report.cause);
   await save();
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await assertFields();
   await capture(editor, "draft");
 
@@ -65,7 +66,7 @@ export async function postIncidentReportFlow({ page, appFetch, appUrl, pageUrl }
   await editor.getByRole("button", { name: "Publish report", exact: true }).click();
   const published = await publishing;
   assert.equal(published.status(), 200, await published.text());
-  await page.reload();
+  await page.reload(); await waitForOperatorReady(page);
   await editor.getByText(/^Published /).waitFor();
   assert.equal(await editor.getByRole("button", { name: "Save report", exact: true }).count(), 0, "published reports are immutable");
   await capture(editor, "published-operator");
