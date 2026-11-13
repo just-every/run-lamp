@@ -1,0 +1,12 @@
+{
+  "release": "1.11.14",
+  "previousVersion": "1.11.13",
+  "rer": "0.2.108",
+  "migrationDelta": 0,
+  "contractStatusChanges": 0,
+  "notesMatchChangelog": true,
+  "retainedHistoryByteExact": true,
+  "contractAndGeneratedViewsUnchanged": true,
+  "packageLock": "absent in existing repository; not introduced",
+  "source": "v1.11.13..3b430ac6e0f2997fe85957f54fb1d03dc4506602"
+}

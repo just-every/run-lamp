@@ -1,0 +1,6 @@
+{
+  "title": "Prepare Lamp 1.11.14 release metadata",
+  "head": "cloud/sd-lamp-release-1-11-14",
+  "base": "main",
+  "body": "Prepares Lamp 1.11.14 from green main 3b430ac6e0f2997fe85957f54fb1d03dc4506602. Release notes describe the incident correction, readable record, notification provider and connected-tool guidance changes since v1.11.13. Retains the published predecessor metadata and exact contract snapshot, updates current version references, and regenerates the source lock.\n\nValidation: release schema/history validator, metadata consistency and retained-byte checks, source lock check, typecheck, and diff/scope checks passed. The rer pin remains 0.2.108; this metadata update adds no migrations or contract status changes. Full-history publication scanning, landing, tagging, signing and publication remain with the guarded fleet lane."
+}

@@ -1,0 +1,2 @@
+UTC=2026-11-13T04:18:36.132864+00:00 attempt=3/5 exit=1
+EVIDENCE_FAILED Git ls-remote failed exit=128

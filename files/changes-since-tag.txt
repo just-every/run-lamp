@@ -1,0 +1,22 @@
+3b430ac Guide owners through chat and social connections
+87907d8 Restore resolved incident updates and visible corrections
+b003332 Merge current main into subscriber capacity proof candidate
+dc7e020 Merge current main into subscriber capacity proof candidate
+535776d Find readable audit edits by rule, action and operator
+3ffdb06 Merge readable audit labels with current main [skip ci]
+ea67141 Merge current main for fresh HIST-001 verification
+2ce5da9 Merge current main into notification provider guidance candidate
+d251b52 Merge current main into attribution proof candidate
+7bfb459 Include the tracked subscriber label helper in the source lock
+76bb9a8 Merge remote-tracking branch 'origin/main' into cloud/main-lamp-readable-records-1
+016bb89 Keep removed subscribers anonymous and align report obligations
+b56e150 Report actual notification providers and link deployment setup
+4e97cd1 Show readable people, actions and subjects in the audit log
+f1d878b Verify fresh CSV reviews and reconciled pending capacity
+b2ba931 Restore subscriber import capacity proof
+26cd67a test: prove public generation age refreshes in place
+d1470ab test: save retained generation age lifecycle proof [skip ci]
+b955bb5 Prove attribution with independently admitted creators and actors
+f74465f test: isolate capacity groups within public request allowances
+0ab925d Prove acting operators across native attribution journeys
+f1aaea1 test: prove inactive subscriber capacity and full-channel invariance

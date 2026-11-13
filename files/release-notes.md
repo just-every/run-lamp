@@ -1,0 +1,9 @@
+**Resolved incidents can be corrected or reopened from their update composer.** Publish a correction while keeping the status Resolved, or choose Investigating to reopen. The operator timeline, public page and incident permalink identify a correction and link to its earlier publication; the original wording stays unchanged. After publication, the next draft starts as an ordinary update.
+
+- **The audit log shows readable people, actions and subjects.** Rows and filters name operators and actions, and subjects use incident titles, component names and rule names where available. Removed items and erased operators have plain labels.
+- **Removed subscribers have an anonymous label.** The subscriber directory, notification deliveries and subscription email history no longer display their internal identifiers as destinations.
+- **Notification settings explain the provider in use.** A local Lamp reports email as off; a configured hosted sender shows its actual primary provider. Email and SMS settings link to the deployment setup steps and name the private inputs they need.
+- **Chat and social connections have setup guides.** Chat links and Social accounts link to on-site instructions for Slack, Teams, X, Bluesky and Mastodon, including provider apps, permissions and credentials.
+- **Resolved incidents show report reminders when a report is owed.** The incident panel follows the same seven-day wait and publication or waiver rules as Reports; other resolved incidents offer an optional report.
+
+Upgrading from 1.11.13: back up data and your source changes first, update the checkout to `v1.11.14`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.

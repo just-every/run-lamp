@@ -1,0 +1,3 @@
+PASS: exactly 11 authorized metadata/history/source-lock paths.
+PASS: added diff contains no recognized credential-shaped values.
+Full-history publication scan remains the guarded Mac lander responsibility.

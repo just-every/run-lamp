@@ -1,0 +1,141 @@
+{
+  "tag": "sd-lamp-release-1-11-14",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-14",
+  "head": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "base": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+  "previousReleaseTag": "v1.11.13",
+  "previousReleaseCommit": "e82bc349b98af44c440efa2960927e327deda1a5",
+  "versionBefore": "1.11.13",
+  "versionAfter": "1.11.14",
+  "rerBefore": "0.2.108",
+  "rerAfter": "0.2.108",
+  "countsBefore": {
+    "coreDone": 60,
+    "corePartial": 129,
+    "coreMissing": 50,
+    "agentMissing": 5,
+    "total": 244
+  },
+  "countsAfter": {
+    "coreDone": 60,
+    "corePartial": 129,
+    "coreMissing": 50,
+    "agentMissing": 5,
+    "total": 244
+  },
+  "clauseStatusChanges": [],
+  "newMigrations": [],
+  "changedPaths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RUN-LOCALLY.md",
+    "docs/accessibility/vpat.md",
+    "docs/install.md",
+    "package.json",
+    "release-history/1.11.13.CONTRACT.md",
+    "release-history/1.11.13.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "checks": {
+    "frozenDependencies": "passed",
+    "releaseValidator": "passed",
+    "metadataConsistency": "passed",
+    "retainedReleaseHistory": "byte-identical to v1.11.13",
+    "typecheck": "passed",
+    "sourceLock": "regenerated last; check passed",
+    "diffCheck": "passed",
+    "scopeAndCredentialShape": "passed",
+    "candidateIdentitiesAndTrailers": "passed"
+  },
+  "localNode": "24.19.0",
+  "localPnpm": "10.12.4",
+  "ciNodePin": "22.20.0",
+  "localTests": "not run: metadata-only brief",
+  "browserProof": "not run: metadata-only brief",
+  "publicationScan": "guarded Mac lander; not invoked on cloud host",
+  "productPush": "succeeded on first guarded attempt",
+  "productPushLog": "product-push.log",
+  "utc": "2026-11-13T04:16:58.310116+00:00",
+  "ciStatus": "Unconfirmed after HTTP 401; last successful exact-SHA read was in_progress at 2026-11-13T04:10:26.453284+00:00",
+  "productDisposition": "PUSHED; no READY claim; release metadata candidate only",
+  "archiveHashes": {
+    "release-history/1.11.13.json": "478d7a8dce8e1a92933cda5adf28f22fc9ee7ccd0d0066b9c9d7e88edb492e0a",
+    "release-history/1.11.13.CONTRACT.md": "8b575f27ee607ce3f259e3ec0d733febbf5536d9906cb99a0d9a2ede09c5096f"
+  },
+  "pr": {
+    "base": "main",
+    "head": "733e2ce1e2fc618183a93632218bb86456a06a79",
+    "html_url": "https://github.com/just-every/run-lamp/pull/352",
+    "number": 352
+  },
+  "ci": {
+    "mainVerify": 43360630181,
+    "mainRunSite": 43360629999,
+    "candidateVerify": 43362078692,
+    "candidateVerifyUrl": "https://github.com/just-every/run-lamp/actions/runs/43362078692",
+    "candidateStatus": "in_progress",
+    "candidateConclusion": null,
+    "latestPoll": {
+      "conclusion": null,
+      "head_sha": "733e2ce1e2fc618183a93632218bb86456a06a79",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43362078692",
+      "status": "in_progress",
+      "run_id": 43362078692,
+      "observed_at": "2026-11-13T04:10:26.453284+00:00"
+    },
+    "latestSuccessfulPoll": {
+      "conclusion": null,
+      "head_sha": "733e2ce1e2fc618183a93632218bb86456a06a79",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43362078692",
+      "status": "in_progress",
+      "run_id": 43362078692,
+      "observed_at": "2026-11-13T04:10:26.453284+00:00"
+    },
+    "terminalRead": "unavailable: HTTP 401 before and after launcher refresh"
+  },
+  "githubApiCallsUsed": 10,
+  "productTree": "fd819d49ccd749ff4e460a3812bd630ca7f7954b",
+  "productWorkingTreeClean": true,
+  "productDiff": {
+    "files": 11,
+    "insertions": 3491,
+    "deletions": 20
+  },
+  "mainCiProof": {
+    "Verify": {
+      "run": 43360630181,
+      "sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "Run site": {
+      "run": 43360629999,
+      "sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  },
+  "environmentReconnect": "Checkout and packet survived the 04:10 UTC reconnect; prior watcher process did not. Verified it was absent before resuming the same run after the 300-second interval. No duplicate watcher or workflow rerun.",
+  "pending": [
+    "Exact-SHA Verify conclusion requires fleet readback; cloud API returned HTTP 401 and the ten-call API budget is exhausted."
+  ],
+  "localBlockers": [],
+  "transportBlockers": [
+    "GitHub Actions REST read returned HTTP 401 both before and after launcher refresh."
+  ],
+  "failingCommand": "gh api repos/just-every/run-lamp/actions/runs/43362078692 --jq {status,conclusion,head_sha,html_url} (invoked through injected-bundle wrapper)",
+  "rescueBundle": {
+    "path": "/home/agent/rer-consolidation/work/sd-lamp-release-1-11-14/sd-lamp-release-1-11-14-product.bundle",
+    "head": "733e2ce1e2fc618183a93632218bb86456a06a79",
+    "sha256": "28ba1dd55c17b4cc093bf8b75194264c74b7fbabd0f5b79985246322e3b75f08",
+    "verified": true,
+    "requiresCommit": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+    "scope": "origin/main..HEAD; candidate product commit and its complete metadata delta",
+    "note": "All-history bundle creation required unmaterialized promisor blobs and was rejected by Git authentication. The candidate-range bundle avoids that fetch and verifies against the retained base."
+  },
+  "cleanup": "Clone and dependencies retained while evidence transfer is rejected; actual packet and verified bundle are outside clone.",
+  "evidenceTransfer": "Authentication rejection; bounded five-attempt Git recovery in progress."
+}
