@@ -5,6 +5,8 @@ on:
     branches: ['**']
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: '37 3 * * *'
 
 permissions:
   contents: read
@@ -23,11 +25,27 @@ jobs:
     outputs:
       skip: ${{ steps.reuse.outputs.skip }}
       shards: ${{ steps.plan.outputs.shards }}
+      size_check: ${{ steps.size.outputs.run }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 2
           persist-credentials: false
+      - id: size
+        name: Select nightly and query or migration size checks
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$EVENT" = schedule ] || [ "$EVENT" = workflow_dispatch ]; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          elif ! git cat-file -e "${BEFORE:-HEAD^}^{commit}" 2>/dev/null; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          elif ! git diff --quiet "${BEFORE:-HEAD^}" HEAD -- size-check.json scripts/size-check/ migrations/ src/ modules/ .github/workflows/verify.yml package.json pnpm-lock.yaml; then
+            echo 'run=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run=false' >> "$GITHUB_OUTPUT"
+          fi
       - id: reuse
         name: Reuse only verified push evidence
         env:
@@ -179,9 +197,50 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  size-check:
+    needs: [plan, build]
+    if: needs.plan.outputs.skip != 'true' && needs.plan.outputs.size_check == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: package.json
+      - uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684
+        with:
+          path: ~/.local/share/pnpm/store
+          key: lamp-pnpm-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install pinned tools and dependencies
+        run: bash scripts/ci/bootstrap.sh
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: lamp-build-${{ github.run_id }}-${{ github.sha }}
+          path: ${{ runner.temp }}/lamp-build
+      - name: Restore the shared production Worker
+        run: tar -xzf "$RUNNER_TEMP/lamp-build/lamp-built-worker.tar.gz"
+      - name: Measure declared flows on small and large local D1
+        run: |
+          mkdir -p "$RUNNER_TEMP/lamp-size/statements"
+          start=$SECONDS
+          result=0
+          pnpm exec rer size --no-queue --json --write-statements "$RUNNER_TEMP/lamp-size/statements" > "$RUNNER_TEMP/lamp-size/result.jsonl" || result=$?
+          echo "size-check seconds=$((SECONDS - start)) exit=$result" >> "$GITHUB_STEP_SUMMARY"
+          exit "$result"
+      - name: Retain size measurements and statements for separate D1 confirmation
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: lamp-size-${{ github.run_id }}-${{ github.sha }}
+          path: ${{ runner.temp }}/lamp-size/
+          if-no-files-found: error
+          retention-days: 7
+
   # Preserve the stable required-check name while requiring every planned shard.
   verify:
-    needs: [plan, build, shards]
+    needs: [plan, build, shards, size-check]
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     steps:
@@ -203,10 +262,13 @@ jobs:
         if: ${{ always() && needs.plan.outputs.skip != 'true' }}
         env:
           SHARDS_RESULT: ${{ needs.shards.result }}
+          SIZE_RESULT: ${{ needs.size-check.result }}
+          SIZE_REQUESTED: ${{ needs.plan.outputs.size_check }}
           LAMP_VERIFICATION_DIRECTORY: ${{ runner.temp }}/lamp-verification/ci-shards
         run: |
           node scripts/verification/aggregate.mjs
           test "$SHARDS_RESULT" = success
+          if [ "$SIZE_REQUESTED" = true ]; then test "$SIZE_RESULT" = success; fi
       - name: Retain combined verification verdict
         if: ${{ always() && needs.plan.outputs.skip != 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
