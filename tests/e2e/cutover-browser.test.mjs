@@ -57,6 +57,27 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       const quiet = await notificationActivity(runtime);
       await openWizard();
       await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption(source);
+      if (source !== 'statuspage') {
+        // Provider-controlled names, addresses and IDs stay literal text, even
+        // when they contain executable markup or entity-encoded markup.
+        const hostile = '<img src=x onerror="window.importXss=true">&lt;svg onload="window.importXss=true"&gt;';
+        const pagesRoute = '**/api/app/statuspage-import/pages';
+        await context.route(pagesRoute, route => route.fulfill({ json: { pages: [{ id: hostile, name: hostile, address: 'javascript:alert(1)' }] } }));
+        await page.getByLabel(source === 'instatus' ? 'API key' : 'API token', { exact: true }).fill('synthetic-lamp-source-token');
+        await page.getByRole('button', { name: 'Find my pages', exact: true }).click();
+        const pages = page.getByRole('list', { name: 'Your status pages', exact: true });
+        await pages.waitFor();
+        assert.equal(await pages.locator('strong').textContent(), hostile);
+        assert.ok((await pages.innerText()).includes('javascript:alert(1)'));
+        assert.equal(await pages.locator('img, svg, script, a').count(), 0);
+        assert.equal(await page.evaluate(() => window.importXss), undefined);
+        await pages.getByRole('button', { name: 'Use this page', exact: true }).click();
+        assert.equal(await page.getByLabel(source === 'instatus' ? 'Instatus page ID' : source === 'sorry' ? 'Sorry page ID' : 'Better Stack page ID', { exact: true }).inputValue(), hostile);
+        if (source === 'betterstack') await capture('source-page-text');
+        await page.getByLabel(source === 'instatus' ? 'API key' : 'API token', { exact: true }).fill('');
+        await page.getByLabel(source === 'instatus' ? 'Instatus page ID' : source === 'sorry' ? 'Sorry page ID' : 'Better Stack page ID', { exact: true }).fill('');
+        await context.unroute(pagesRoute);
+      }
       const directory = resolve('tests/fixtures', source, source === 'sorry' ? 'public' : 'small');
       const files = await Promise.all((await readdir(directory)).map(async name => {
         if (source !== 'statuspage') return join(directory, name);
