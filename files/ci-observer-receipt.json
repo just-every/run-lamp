@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-13T23:50:59.585015+00:00",
+  "results": {
+    "lamp": {
+      "conclusion": null,
+      "head_sha": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43528288321",
+      "status": "in_progress"
+    },
+    "platform": {
+      "conclusion": null,
+      "head_sha": "53ebb90bf65669bb04cf47e10df94e35c5abe8db",
+      "html_url": "https://github.com/runeditrun/platform/actions/runs/43528225489",
+      "status": "in_progress"
+    }
+  },
+  "ghCalls": 10
+}

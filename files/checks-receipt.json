@@ -1,0 +1,58 @@
+{
+  "at": "2026-11-13T23:37:40.398213+00:00",
+  "platformHead": "53ebb90bf65669bb04cf47e10df94e35c5abe8db",
+  "checks": [
+    {
+      "check": "declaration validation",
+      "command": "node scripts/delivery/validate-seed-declaration.mjs <packet>/lamp-derived-deployment-spec.json",
+      "exit": 0
+    },
+    {
+      "check": "pinned integration integrity",
+      "command": "node scripts/projects/integrations.mjs check --id lamp",
+      "exit": 0
+    },
+    {
+      "check": "scoped existing pin admission",
+      "command": "pnpm exec tsx --test --test-name-pattern \"single-seed stage pins|pin exemption\" tests/operations-stage-controller.test.ts",
+      "exit": 0
+    },
+    {
+      "check": "existing one-click installation and pinned setup",
+      "command": "pnpm exec tsx --test tests/delivery-one-click-happytohelp.test.ts",
+      "exit": 0
+    },
+    {
+      "check": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "check": "source lock LAST write",
+      "command": "pnpm sources lock",
+      "exit": 0
+    },
+    {
+      "check": "source lock check",
+      "command": "pnpm sources check",
+      "exit": 0
+    },
+    {
+      "check": "actual runtime pin selection and prior-pin preservation",
+      "command": "pnpm exec tsx /tmp/lamp-runtime-proof.mts",
+      "exit": 0
+    },
+    {
+      "check": "ADDED diff and scope checks",
+      "command": "python3 /tmp/lamp-scope-proof.py",
+      "exit": 0
+    }
+  ],
+  "existingTestRegistrationsExecuted": 4,
+  "newTests": 0,
+  "deletedTests": 0,
+  "fullLocalSuite": false,
+  "browserScreens": "N/A: no UI change",
+  "externalProviderWrites": 0,
+  "installationExecution": false
+}

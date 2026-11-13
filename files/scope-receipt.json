@@ -1,0 +1,56 @@
+{
+  "at": "2026-11-13T23:35:03.433916+00:00",
+  "base": "86030a5c51a7774132693e8715da2a22e3676b56",
+  "paths": [
+    "docs/runbooks/tools/ops/targets.json",
+    "sources.lock.json",
+    "src/projects/builtin-plan-sources.json",
+    "wrangler.jsonc"
+  ],
+  "stage": {
+    "before": {
+      "repositoryId": "1412401337",
+      "commit": "733e2ce1e2fc618183a93632218bb86456a06a79",
+      "release": "v1.11.14"
+    },
+    "after": {
+      "repositoryId": "1412401337",
+      "commit": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+      "release": "v1.11.15"
+    }
+  },
+  "preserved": {
+    "offStageAndOffSeedSelectors": true,
+    "happyToHelp0425": true,
+    "stageRolloutIncludingPendingRollbackPinBase": true,
+    "workflowControllerCode": true,
+    "existingBuiltinReleases": true,
+    "adoptionAndRuntimeSourceCode": true,
+    "contractStatusGapEvidence": true,
+    "allOtherTrackedPaths": true
+  },
+  "counts": {
+    "lampReleaseRecordsBefore": 13,
+    "lampReleaseRecordsAfter": 14,
+    "releaseMigrationDelta": 0,
+    "runtimeMigrationsBefore": 77,
+    "runtimeMigrationsAfter": 77,
+    "testsAdded": 0,
+    "testsDeleted": 0,
+    "clausesChanged": 0
+  },
+  "targets": {
+    "path": "docs/runbooks/tools/ops/targets.json",
+    "beforeBlob": "2764d32107da793af25a1250fb3f59164de3e8b6",
+    "beforeSha256": "2a544297ef9c696402c805fa362603c3bf9636b66a65fb6f8190d984497d834c",
+    "beforeSize": 11366,
+    "candidateBlob": "90dd4a745548df8ca97eeafcd1bcd9a6bf9343a5",
+    "candidateSha256": "fa9e6d77b9859440853966ff17ad269e0692956c96e9337e555be53ac4dcead9",
+    "candidateSize": 11366
+  },
+  "credentialShape": {
+    "scope": "ADDED lines only; values never logged",
+    "added": 0,
+    "removedInformational": 0
+  }
+}

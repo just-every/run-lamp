@@ -1,0 +1,11 @@
+✔ single-seed stage pins carry mechanical inside proof and pin-exempt operator lines (4322.390976ms)
+✔ pin exemption keeps the gate for other bytes, seeds, environments, policy and held paths (4790.072695ms)
+✔ pin exemption requires signature, tagged declaration and newest exact-SHA tag Verify (6974.255927ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16896.571225

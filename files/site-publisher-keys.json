@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 2,
+  "environment": "production",
+  "serial": 5,
+  "legacyUnsigned": {},
+  "keys": [
+    {
+      "keyId": "rer-ed25519-5a42fb9c9c4f8acb2b32386e9e40461c",
+      "publicKey": "fAk19CnV93GIYhBeds95owtzCTQv5gJJkjZt3zOItt8=",
+      "publisher": "just-every",
+      "githubOwner": {
+        "login": "just-every",
+        "id": 213184375
+      },
+      "notBefore": "2026-10-15T23:02:44Z",
+      "notAfter": "2028-10-15T23:02:44Z",
+      "status": "active",
+      "enrolment": {
+        "payloadType": "application/vnd.runeditrun.key-enrolment.v1+json",
+        "payload": "eyJnaXRodWJPd25lciI6eyJpZCI6MjEzMTg0Mzc1LCJsb2dpbiI6Imp1c3QtZXZlcnkifSwiaXNzdWVkQXQiOiIyMDI2LTEwLTE1VDIzOjAyOjQ0WiIsImtleUlkIjoicmVyLWVkMjU1MTktNWE0MmZiOWM5YzRmOGFjYjJiMzIzODZlOWU0MDQ2MWMiLCJub3RBZnRlciI6IjIwMjgtMTAtMTVUMjM6MDI6NDRaIiwibm90QmVmb3JlIjoiMjAyNi0xMC0xNVQyMzowMjo0NFoiLCJwdWJsaWNLZXkiOiJmQWsxOUNuVjkzR0lZaEJlZHM5NW93dHpDVFF2NWdKSmtqWnQzek9JdHQ4PSIsInB1Ymxpc2hlciI6Imp1c3QtZXZlcnkiLCJzY2hlbWFWZXJzaW9uIjoxLCJ1bnNpZ25lZFRocm91Z2giOnsianVzdC1ldmVyeS9oYXBweXRvaGVscCI6IjAuNC4xIiwianVzdC1ldmVyeS9sYW1wIjoiMS40LjAifX0=",
+        "signatures": [
+          {
+            "keyid": "rer-ed25519-5a42fb9c9c4f8acb2b32386e9e40461c",
+            "sig": "M7F/taocdalfzjo2bkOjScYn6Ac1balngst6CyxKBztEjrR1hR0p/QzowIW6Q/qCo67v32DKnJyKhdFAe07TDw=="
+          }
+        ]
+      },
+      "review": "Enrolment reviewed 2026-10-16 (pr-site-publisher-lamp): GitHub owner just-every id 213184375 with admin on run-happytohelp and run-lamp; unsignedThrough keeps HappyToHelp 0.4.1 and Lamp 1.4.0",
+      "projects": [
+        "analytics/vane",
+        "documents/chest",
+        "gauge-local/edition",
+        "hiring/lodge",
+        "just-every/bifocal",
+        "just-every/cradle",
+        "just-every/dial",
+        "just-every/envelope",
+        "just-every/evidence",
+        "just-every/handset",
+        "just-every/happytohelp",
+        "just-every/inventory-pier",
+        "just-every/lamp",
+        "just-every/latchkey",
+        "just-every/mango",
+        "just-every/nook",
+        "just-every/orbit",
+        "just-every/pegboard",
+        "just-every/pencil",
+        "just-every/penny",
+        "just-every/porthole",
+        "just-every/run-auth",
+        "just-every/run-balm",
+        "just-every/run-barrow",
+        "just-every/run-blotter",
+        "just-every/run-buoy",
+        "just-every/run-cabin",
+        "just-every/run-coaster",
+        "just-every/run-coffer",
+        "just-every/run-crank",
+        "just-every/run-easel",
+        "just-every/run-gasket",
+        "just-every/run-glove",
+        "just-every/run-lanyard",
+        "just-every/run-larder",
+        "just-every/run-locket",
+        "just-every/run-mallet",
+        "just-every/run-nectar",
+        "just-every/run-oncall",
+        "just-every/run-pane",
+        "just-every/run-pantry",
+        "just-every/run-placemat",
+        "just-every/run-platter",
+        "just-every/run-plinth",
+        "just-every/run-purse",
+        "just-every/run-slate",
+        "just-every/run-stall",
+        "just-every/run-strap",
+        "just-every/run-terrace",
+        "just-every/spool",
+        "just-every/uptime-monitor",
+        "just-every/vector-projects",
+        "learning/beam",
+        "legal/satchel",
+        "people/willow",
+        "runeditrun/linen",
+        "signatures/inkwell"
+      ]
+    }
+  ]
+}

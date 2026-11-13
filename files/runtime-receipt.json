@@ -1,0 +1,14 @@
+{
+  "at": "2026-11-13T23:36:37.447Z",
+  "platformHead": "53ebb90bf65669bb04cf47e10df94e35c5abe8db",
+  "pin": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+  "selectedRuntimePin": true,
+  "migrations": 77,
+  "migrationSqlSha256": "eae1b3b2dfd374e0711123b49443393994317f7f54bde53f987fa2d8ebce5db8",
+  "allThirteenPriorPinsStillSelectable": true,
+  "defaultSourceRevision": "569e38fca9aa71bf97be233b730e52a7e4ac4f09",
+  "retainedReleaseRecords": 14,
+  "mechanicalBuiltinRepin": false,
+  "mechanicalAdmissionNote": "No pin exemption: tagged recipe is stale (68 including initializer), actual release compiler derives 77. Candidate retains the actual declaration, not the stale template. The normal lane gate is not waived.",
+  "installedProof": false
+}

@@ -1,0 +1,82 @@
+{
+  "at": "2026-11-13T23:31:34.621Z",
+  "repository": "just-every/run-lamp",
+  "tag": "v1.11.15",
+  "commit": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+  "subject": {
+    "repository": "https://github.com/just-every/run-lamp",
+    "tag": "v1.11.15",
+    "publicCommit": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+    "publicTree": "1e82bc9a9689482f4d613f52e9fab0facdbb4dee",
+    "tagObject": "6db107e62b0260abbaaf4312890c8038348c5630"
+  },
+  "release": {
+    "id": 444800991,
+    "assetId": 745403719,
+    "sha256": "e9081372615ae76b5c832d71c40bf15023d783369fd64e49b762f93b76fa6350",
+    "size": 3157,
+    "publishedAt": "2026-11-13T22:24:48Z"
+  },
+  "anchors": {
+    "repository": "runeditrun/site",
+    "path": "data/releases/publisher-keys.json",
+    "commit": "3ebd5388807258cd7ca5aa442c6a8df7bd4f7bce",
+    "blob": "980ab0619fcb329d238aff83df9809c1ab7e2c93",
+    "sha256": "ea7e47d58afc60f73f0cd25c8d17c4181084ef284375afe7a189f9bddedab7fe",
+    "serial": 5
+  },
+  "signature": {
+    "verdict": "VERIFIED",
+    "statementSha256": "2f3635be99df8bfaf9f366d9c4a83c0d45179ff303b2da69ddd012b42a39f104",
+    "keyId": "rer-ed25519-5a42fb9c9c4f8acb2b32386e9e40461c",
+    "publisher": "just-every",
+    "project": "just-every/lamp",
+    "version": "1.11.15"
+  },
+  "verify": {
+    "id": 43509588896,
+    "head_sha": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+    "head_branch": "main",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43509588896",
+    "event": "push",
+    "path": ".github/workflows/verify.yml",
+    "workflow_id": 379994148,
+    "run_attempt": 1
+  },
+  "releaseJourneys": {
+    "id": 43513194474,
+    "head_sha": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+    "head_branch": "v1.11.15",
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43513194474",
+    "event": "push",
+    "path": ".github/workflows/release.yml",
+    "workflow_id": 385990846,
+    "run_attempt": 1
+  },
+  "exactTagVerify": {
+    "status": "absent",
+    "count": 0,
+    "requiredBy": "scripts/ops/stage-controller/pin-release.mjs:newestTagVerify",
+    "pinExemption": "NOT PROVEN; no signature or CI fallback"
+  },
+  "declaration": {
+    "status": "derived-and-validated-separately",
+    "taggedDeploymentSpec": "absent-from-tagged-tree",
+    "recipeMigrations": 68,
+    "derivedMigrations": 77,
+    "existingSqlPoolByteEqual": true,
+    "releaseMigrationDelta": 0,
+    "sha256": "43a24004760d3ee408d90745e729246114875f8e205d7a48b16a4b6366f2998a",
+    "method": "Tagged scripts/delivery/base/spec.mjs deploymentSpec with tagged packaging specInputs, source Wrangler JSONC normalized and migration paths adjusted relative to temporary config. No build or install claimed."
+  },
+  "runtime": {
+    "builtVersion": "1.11.15",
+    "producer": "0.2.108",
+    "healthSchemaObservation": 1,
+    "installedProof": false
+  }
+}

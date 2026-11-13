@@ -1,0 +1,25 @@
+{
+  "at": "2026-11-13T23:46:01.177691+00:00",
+  "repositories": {
+    "runeditrun/platform": {
+      "candidateCommitsIncludingSideParents": [
+        "53ebb90bf65669bb04cf47e10df94e35c5abe8db"
+      ],
+      "formatOutput": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+      "identity": "fleet for all candidate author and committer fields",
+      "trailers": "absent"
+    },
+    "just-every/run-lamp": {
+      "candidateCommitsIncludingSideParents": [],
+      "formatOutput": "",
+      "identity": "fleet for all candidate author and committer fields",
+      "trailers": "absent"
+    },
+    "runeditrun/site": {
+      "candidateCommitsIncludingSideParents": [],
+      "formatOutput": "",
+      "identity": "fleet for all candidate author and committer fields",
+      "trailers": "absent"
+    }
+  }
+}

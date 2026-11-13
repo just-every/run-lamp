@@ -1,0 +1,21 @@
+{"event":"delivery.repository_copy_attempt","installationId":"11111111-1111-4111-8111-111111111111","outcome":"complete","copied":2320,"total":2320,"copiedBefore":0,"phase":"record","ms":{"prepare":507,"commit":3,"push":2938,"record":10},"pushes":1,"pushedBytes":293483}
+{"event":"delivery.repository_copy_attempt","installationId":"11111111-1111-4111-8111-111111111111","outcome":"complete","copied":4,"total":4,"copiedBefore":0,"phase":"record","ms":{"prepare":72,"commit":1,"push":74,"record":3},"pushes":1,"pushedBytes":839}
+{"event":"delivery.build_after_settings","installation_id":"11111111-1111-4111-8111-111111111111","status":202,"dispatched":true}
+{"event":"delivery.build_after_settings_failed","installation_id":"11111111-1111-4111-8111-111111111111","error_type":"Error"}
+{"event":"delivery.repository_copy_attempt","installationId":"11111111-1111-4111-8111-111111111111","outcome":"rate_limited","copied":0,"total":4,"retryAt":1794614658000,"counted":false,"copiedBefore":0,"phase":"push","ms":{"prepare":44,"commit":1,"push":10},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"11111111-1111-4111-8111-111111111111","outcome":"unavailable","copied":0,"total":4,"retryAt":1794612977333,"counted":false,"copiedBefore":0,"phase":"push","ms":{"prepare":39,"commit":0,"push":21},"pushes":0,"pushedBytes":0}
+{"event":"delivery.repository_copy_attempt","installationId":"11111111-1111-4111-8111-111111111111","outcome":"complete","copied":4,"total":4,"copiedBefore":0,"phase":"record","ms":{"prepare":34,"commit":0,"push":46,"record":3},"pushes":1,"pushedBytes":1076}
+✔ one-click installations copy accepted application source and configure its pinned plan (10695.662735ms)
+ℹ passed: one-click HappyToHelp copies pinned application and tests through its publisher, replacing seed CI and crons with RER delivery
+ℹ passed: a new Managed Lamp copies run-lamp through publisher installation 165289238 and sets up with Run Edit Run mail
+ℹ passed: GitHub rate limits and transient answers pause the copy until GitHub says, and the server-side copy resumes it
+ℹ passed: HappyToHelp plans accept resend, cloudflare and sendgrid and refuse other providers
+ℹ passed: HappyToHelp plans carry the effective recipe migrations with digests of their SQL
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13584.337451

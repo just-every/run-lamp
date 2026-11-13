@@ -1,0 +1,28 @@
+{
+  "at": "2026-11-13T23:41:42.904124+00:00",
+  "sourceLockOnlyTouchedFileDigestsChanged": true,
+  "sourceLockHead": "48e960d9f45b0f20ad3a189a9782a054d8d8d71458ec4171d47a3f49db206c65",
+  "repositories": {
+    "platform": {
+      "head": "53ebb90bf65669bb04cf47e10df94e35c5abe8db",
+      "branch": "cloud/pr-stage-lamp-11115-pin-1",
+      "base": "86030a5c51a7774132693e8715da2a22e3676b56",
+      "clean": true,
+      "productCommits": 1
+    },
+    "run-lamp": {
+      "head": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+      "branch": "cloud/pr-stage-lamp-11115-pin-1",
+      "base": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+      "clean": true,
+      "productCommits": 0
+    },
+    "site": {
+      "head": "3ebd5388807258cd7ca5aa442c6a8df7bd4f7bce",
+      "branch": "cloud/pr-stage-lamp-11115-pin-1",
+      "base": "3ebd5388807258cd7ca5aa442c6a8df7bd4f7bce",
+      "clean": true,
+      "productCommits": 0
+    }
+  }
+}

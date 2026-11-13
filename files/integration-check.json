@@ -1,0 +1,71 @@
+[
+  {
+    "id": "lamp",
+    "schema": 1,
+    "repository": "just-every/run-lamp",
+    "revision": "569e38fca9aa71bf97be233b730e52a7e4ac4f09",
+    "sourcePath": "management/integration",
+    "files": [
+      {
+        "path": "contract.ts",
+        "sourcePath": "management/integration/contract.ts",
+        "sha256": "9f8189b9701cdd47d52b6342f11ea706a70db1fc54aa8345108c90fa76f97f7b",
+        "size": 2768
+      },
+      {
+        "path": "index.ts",
+        "sourcePath": "management/integration/index.ts",
+        "sha256": "6dbe12752f2bd06c32bee260c6568bea9934b2ca1cb5a955c54352a634433403",
+        "size": 893
+      },
+      {
+        "path": "mail-config.ts",
+        "sourcePath": "management/integration/mail-config.ts",
+        "sha256": "ca986cd35ae7549510c73222d00b868d2d8489fd32ca01cf0ec279e9e52e5ccf",
+        "size": 1329
+      },
+      {
+        "path": "mail-dns.ts",
+        "sourcePath": "management/integration/mail-dns.ts",
+        "sha256": "1c3020b3c6e3262e2e3f305e1532c65e297bf09149af67e421a3d97a8d9688e5",
+        "size": 3092
+      },
+      {
+        "path": "plan.ts",
+        "sourcePath": "management/integration/plan.ts",
+        "sha256": "e89803fb51ef654b3384ed8971ed20c6d1b2670c5c94eb4a7cffff054130be23",
+        "size": 3897
+      },
+      {
+        "path": "profile.json",
+        "sourcePath": "management/integration/profile.json",
+        "sha256": "c3f45b99dcc317e3dfc3d634edc225e2ae4b551531c0805158296058176e6636",
+        "size": 941
+      },
+      {
+        "path": "recipe.json",
+        "sourcePath": "management/integration/recipe.json",
+        "sha256": "d400d76acc2f6d94649dfb2dfccc48839e5547b1e67eb6c0e7d3b26f2c473e03",
+        "size": 181505
+      },
+      {
+        "path": "revision.ts",
+        "sourcePath": "management/integration/revision.ts",
+        "sha256": "8c66a4b33ff6ea6190b7ccac170f51e39a952df1f46fe130b7bbc11c35b572fd",
+        "size": 1591
+      }
+    ],
+    "serviceOverrides": [
+      {
+        "path": "profile.json",
+        "sourceSha256": "695ab36e67ed5ef0971c3f8b1ceaf0e78eaefcc162ba51c5ec2c7c7d4978571f",
+        "reason": "Service source-copy and publisher identity use the owner/repository key just-every/run-lamp for the descriptor URL https://github.com/just-every/run-lamp; the adopted source revision remains 569e38fca9aa71bf97be233b730e52a7e4ac4f09."
+      },
+      {
+        "path": "recipe.json",
+        "sourceSha256": "f1552d11e6a9e999d896afbe80e21f067851d1b4b8c1a59af5476986ae6e6058",
+        "reason": "Regenerated with management/tooling/refresh-recipe.mjs at the same adopted revision 569e38fca9aa71bf97be233b730e52a7e4ac4f09; the published template omitted release migrations present in its pinned compiler."
+      }
+    ]
+  }
+]
