@@ -1,0 +1,8 @@
+{"status": "INCOMPLETE", "complete": false, "source": null, "guarantees": {"historyScanned": false, "visualRecognition": false, "environmentChecked": true}, "diagnostics": null}
+findings=1
+{"rule": "scan.history-incomplete", "path": ".", "commit": null, "commits": [null], "scope": "newly-public", "scopes": ["newly-public"], "reason": "missing blob 000330add8e1c046fc7ed2c2b6b1ae06b828dcc3 at scripts/test-owner-migrations.mjs: fetch the full history"}
+Traceback (most recent call last):
+  File "/tmp/lamp-publication-scan.py", line 32, in <module>
+    assert result.returncode == 0 and report['complete'] and report['status'] == 'PASS' and not report['findings'], 'Publication scan did not pass'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Publication scan did not pass

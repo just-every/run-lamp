@@ -1,0 +1,8 @@
+{"status": "INCOMPLETE", "complete": false, "source": null, "guarantees": {"historyScanned": false, "visualRecognition": false, "environmentChecked": false}, "diagnostics": [{"stage": "slot", "code": "process.signal", "signal": "SIGKILL"}, {"stage": "report", "code": "report.empty"}]}
+findings=1
+{"rule": "scan.deadline-exceeded", "path": ".", "commit": null, "scope": "newly-public"}
+Traceback (most recent call last):
+  File "/tmp/lamp-publication-scan.py", line 32, in <module>
+    assert result.returncode == 0 and report['complete'] and report['status'] == 'PASS' and not report['findings'], 'Publication scan did not pass'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Publication scan did not pass

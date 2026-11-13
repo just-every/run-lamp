@@ -1,0 +1,7 @@
+{
+  "repository": "just-every/run-lamp",
+  "command": "gh api repos/just-every/run-lamp/code-scanning/alerts?per_page=100",
+  "http_status": 403,
+  "message": "Resource not accessible by integration",
+  "effect": "Remote alert state unavailable; source investigation and regression tests remain available. No alert dismissal or state change attempted."
+}

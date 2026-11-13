@@ -1,0 +1,18 @@
+TAP version 13
+# PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording
+# PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible
+# Subtest: MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover
+ok 1 - MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover
+  ---
+  duration_ms: 93869.048874
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 94426.701344

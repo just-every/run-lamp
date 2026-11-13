@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "summary": "Replaced the SVG icon detector\u2019s exponential comment regex with bounded forward parsing; verified the current-main import helper already renders hostile provider values as literal React text and added regressions for both alerts.",
+  "tests": "PASS: public readSite security regression; existing Cutover browser journey at 1440 with 1440/390 proof; existing website onboarding journey; pinned-Node typecheck; verification plan/count; contract docs check; generated source lock/check. The old detector fails the new regression with ETIMEDOUT. Exact-SHA CI and publication custody are recorded separately.",
+  "security": true
+}

@@ -1,0 +1,8 @@
+{"status": "FAIL", "complete": true, "source": {"commit": "4271d1caa8f044a0265eb287c660e1777bd5b942", "tree": "8ba27b9145f499cff6aeba1ee29ac16c436a3c9d"}, "guarantees": {"historyScanned": true, "visualRecognition": false, "environmentChecked": true}, "diagnostics": null}
+findings=1
+{"rule": "destination.invalid", "path": "edition.json", "commit": "4271d1caa8f044a0265eb287c660e1777bd5b942", "commits": ["4271d1caa8f044a0265eb287c660e1777bd5b942"], "scope": "newly-public", "scopes": ["newly-public"]}
+Traceback (most recent call last):
+  File "/tmp/lamp-publication-scan.py", line 32, in <module>
+    assert result.returncode == 0 and report['complete'] and report['status'] == 'PASS' and not report['findings'], 'Publication scan did not pass'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Publication scan did not pass

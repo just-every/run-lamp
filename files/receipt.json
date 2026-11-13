@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "tag": "gr-mt-lamp-code-11",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-11",
+  "head": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "local_status": "pass",
+  "tests": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/site-reader-security.test.mjs",
+      "result": "pass",
+      "registered_tests": 1,
+      "log": "site-reader-test.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/cutover-browser.test.mjs",
+      "result": "pass",
+      "registered_tests": 1,
+      "log": "cutover-browser.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/website-onboarding.test.mjs",
+      "result": "pass",
+      "registered_tests": 1,
+      "log": "website-onboarding.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "pass",
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "result": "pass",
+      "log": "test-counts.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "pass",
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "result": "pass",
+      "log": "source-check.json"
+    }
+  ],
+  "counts": {
+    "before_cases": 91,
+    "after_cases": 92,
+    "assertion_scripts": 10,
+    "before_total": 101,
+    "after_total": 102
+  },
+  "alerts": {
+    "14": "no-change; current-main React text rendering verified",
+    "15": "fixed; bounded forward icon parser"
+  },
+  "clause_status_changes": [],
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "source": {
+      "commit": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+      "tree": "8ba27b9145f499cff6aeba1ee29ac16c436a3c9d"
+    },
+    "history_commits": 1116,
+    "duration_seconds": 304.424084
+  },
+  "push": {
+    "status": "pushed",
+    "branch": "cloud/gr-mt-lamp-code-11",
+    "head": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+    "attempts": 1
+  },
+  "pr": {
+    "base": "main",
+    "head": {
+      "ref": "cloud/gr-mt-lamp-code-11",
+      "sha": "4271d1caa8f044a0265eb287c660e1777bd5b942"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/361",
+    "number": 361,
+    "state": "open"
+  },
+  "ci": {
+    "status": "awaiting exact-SHA read",
+    "watcher": "single watcher; discovery after 600 seconds",
+    "head": "4271d1caa8f044a0265eb287c660e1777bd5b942"
+  },
+  "api_recovery": {
+    "code_scanning_attempts": 5,
+    "last_http_status": 403,
+    "direct_gh_calls_used": 9,
+    "direct_gh_call_budget": 10
+  },
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "/usr/bin/chromium",
+    "browser_assertion_width": 1440,
+    "browser_proof_widths": [
+      1440,
+      390
+    ]
+  }
+}

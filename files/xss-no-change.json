@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-lamp",
+  "main": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+  "candidate": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "alert": 14,
+  "status": "no-change",
+  "source_identical_to_main": true,
+  "source_html_sinks_found": 0,
+  "source_blob": "e6b059a1c7d2f9961d0e37ba746865a242dfaeae",
+  "browser_test": "tests/e2e/cutover-browser.test.mjs",
+  "provider_cases": [
+    "betterstack",
+    "instatus",
+    "sorry"
+  ],
+  "assertions": [
+    "exact literal page name",
+    "unsafe address is text, not a link",
+    "no inserted img/svg/script/link",
+    "no script side effect",
+    "selected ID preserved"
+  ]
+}

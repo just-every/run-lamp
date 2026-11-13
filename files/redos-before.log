@@ -1,0 +1,43 @@
+Expected regression failure against the unchanged origin/main icon detector.
+TAP version 13
+# Subtest: site reading bounds hostile icon prefixes and preserves supported image detection
+not ok 1 - site reading bounds hostile icon prefixes and preserves supported image detection
+  ---
+  duration_ms: 3005.084579
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/maint/gr-mt-lamp-code-11/repo/tests/e2e/site-reader-security.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: 'ifError got unwanted exception: spawnSync /home/agent/.rer/toolchain/node-22.20.0/node_modules/node/bin/node ETIMEDOUT'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual:
+  error: 'spawnSync /home/agent/.rer/toolchain/node-22.20.0/node_modules/node/bin/node ETIMEDOUT'
+  stack: |-
+    Object.spawnSync (node:internal/child_process:1120:20)
+    spawnSync (node:child_process:902:24)
+    TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/maint/gr-mt-lamp-code-11/repo/tests/e2e/site-reader-security.test.mjs:7:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  operator: 'ifError'
+  stack: |-
+    TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/maint/gr-mt-lamp-code-11/repo/tests/e2e/site-reader-security.test.mjs:36:10)
+    Object.spawnSync (node:internal/child_process:1120:20)
+    spawnSync (node:child_process:902:24)
+    TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/maint/gr-mt-lamp-code-11/repo/tests/e2e/site-reader-security.test.mjs:7:18)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3052.846041
