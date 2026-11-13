@@ -1,0 +1,20 @@
+commit 5dd84e13f6b0478edc2fc5e759d513f5eccf6d57
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Fri Nov 13 20:15:17 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Fri Nov 13 20:15:17 2026 +0000
+
+    Prepare Lamp 1.11.15 release metadata
+
+ CHANGELOG.md                        |   12 +
+ README.md                           |    8 +-
+ RELEASE.json                        |    8 +-
+ RUN-LOCALLY.md                      |    4 +-
+ docs/accessibility/vpat.md          |    4 +-
+ docs/install.md                     |    7 +-
+ package.json                        |    2 +-
+ release-history/1.11.14.CONTRACT.md | 3438 +++++++++++++++++++++++++++++++++++
+ release-history/1.11.14.json        |   11 +
+ seed.json                           |    2 +-
+ sources.lock.json                   |   24 +-
+ 11 files changed, 3497 insertions(+), 23 deletions(-)

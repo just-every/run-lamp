@@ -1,0 +1,60 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +182
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.12.4 → 12.18.0.   │
+   │   Changelog: https://pnpm.io/v/12.18.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+Progress: resolved 182, reused 0, downloaded 44, added 44
+Progress: resolved 182, reused 0, downloaded 95, added 95
+Progress: resolved 182, reused 0, downloaded 142, added 142
+Progress: resolved 182, reused 0, downloaded 181, added 181
+Progress: resolved 182, reused 0, downloaded 182, added 182, done
+.../node_modules/workerd postinstall$ node install.js
+.../esbuild@0.28.1/node_modules/esbuild postinstall$ node install.js
+.../esbuild@0.28.1/node_modules/esbuild postinstall: Done
+.../node_modules/workerd postinstall: Done
+
+dependencies:
++ @radix-ui/react-slot 1.3.3
++ @tanstack/react-router 1.170.41
++ @tanstack/react-start 1.168.60
++ class-variance-authority 0.7.1
++ clsx 2.1.1
++ css-tree 3.2.1
++ drizzle-orm 0.45.2
++ hono 4.13.7
++ parse5 8.0.1
++ react 19.2.8
++ react-dom 19.2.8
++ tailwind-merge 3.6.0
++ zod 4.5.4
+
+devDependencies:
++ @axe-core/playwright 4.12.1
++ @cloudflare/vite-plugin 1.54.5
++ @cloudflare/workers-types 5.20260908.1
++ @playwright/test 1.63.0
++ @runeditrun/rer 0.2.108
++ @tailwindcss/vite 4.3.3
++ @types/css-tree 3.2.0
++ @types/node 22.19.17
++ @types/react 19.2.18
++ @types/react-dom 19.2.7
++ @vitejs/plugin-react 6.1.1
++ ical.js 2.2.1
++ marked 18.0.14
++ playwright 1.63.0
++ tailwindcss 4.3.3
++ typescript 5.9.3
++ vite 8.2.2
++ wrangler 4.129.1
+
+Done in 5.1s using pnpm v10.12.4

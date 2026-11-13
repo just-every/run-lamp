@@ -1,0 +1,10 @@
+8d980ec Merge Settings version repair and share health schema proof
+b310b7c Report compiled version and observed migration inventory from health
+93b6dda Show the built Lamp version in Settings
+b29985f Merge current main preserving public subscription channel choices
+033fcc7 Merge current main into subscriber directory candidate
+d4b064c Merge main and configure Slack in public preference journey
+4b798a0 Fix managed relay sender authentication status
+5938ef9 Show subscriber components and clarify local import invitations
+ecb5652 Fix reopened incident baselines and component report filenames
+dc565f4 Offer configured public subscription channels and guide Teams setup

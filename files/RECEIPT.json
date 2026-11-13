@@ -1,0 +1,91 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-15",
+  "head": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+  "base": "8d980ecc58b7a683b942293033d42ed254af6ffb",
+  "observed_at": "2026-11-13T20:16:32.422420+00:00",
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-release-1-11-15",
+    "attempts": 1,
+    "result": "success"
+  },
+  "clean_checkout": true,
+  "metadata_paths": [
+    "CHANGELOG.md",
+    "README.md",
+    "RELEASE.json",
+    "RUN-LOCALLY.md",
+    "docs/accessibility/vpat.md",
+    "docs/install.md",
+    "package.json",
+    "release-history/1.11.14.CONTRACT.md",
+    "release-history/1.11.14.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "local_checks": [
+    {
+      "command": "node scripts/validate-release.mjs",
+      "result": "passed"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "passed",
+      "node": "24.19.0",
+      "pnpm": "10.12.4",
+      "note": "Provided toolchain setup permits a newer installed Node; exact Node 22.20.0 is used by CI."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "result": "passed",
+      "order": "last source mutation, after staging retained history"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --cached --check",
+      "result": "passed"
+    },
+    {
+      "command": "Compare CHANGELOG section and RELEASE.json publicReleaseNotes",
+      "result": "passed"
+    }
+  ],
+  "full_local_suite": "not run: metadata-only brief",
+  "browser_proof": "not applicable: metadata-only brief",
+  "publication_scan": "reserved for guarded Mac lander",
+  "clauses_changed": [],
+  "release_publication": "not performed: metadata candidate only",
+  "ci_observation": {
+    "conclusion": "success",
+    "head_sha": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43499858441",
+    "status": "completed",
+    "run_id": 43499858441,
+    "observed_at": "2026-11-13T20:31:00.142889+00:00",
+    "gh_calls_total": 7
+  },
+  "pull_request": {
+    "base": "main",
+    "head": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+    "html_url": "https://github.com/just-every/run-lamp/pull/360",
+    "number": 360
+  },
+  "candidate_status": "READY",
+  "pr_ci_observation": {
+    "conclusion": "success",
+    "head_sha": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43499912385",
+    "status": "completed",
+    "run_id": 43499912385
+  },
+  "github_task_calls": 8,
+  "blockers": [],
+  "completed_at": "2026-11-13T20:31:43.707427+00:00"
+}

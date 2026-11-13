@@ -1,0 +1,5 @@
+Prepare Lamp 1.11.15 from green main. The release notes cover the actual changes since v1.11.14: configured public subscription channels and Teams setup, reopened incident baselines and readable report filenames, subscriber component names and local import feedback, managed sender authentication status, and compiled version/schema reporting.
+
+Bump existing release references, retain the exact v1.11.14 release record and contract snapshot, and make README and installation release guidance evergreen. The rer pin stays at 0.2.108; this release adds no migrations. Product code, tests, current contract judgments and generated views are unchanged.
+
+Validation: release schema/history/migration validation, matching CHANGELOG/RELEASE public notes, typecheck, contract document check, regenerated source lock and its integrity check, and diff whitespace check all pass. No full local suite or new behavior tests for this metadata change. Exact-head Verify is required before landing; the guarded fleet owns publication scanning and landing. This PR does not tag or publish the release.

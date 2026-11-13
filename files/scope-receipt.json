@@ -1,0 +1,30 @@
+{
+  "base": "8d980ecc58b7a683b942293033d42ed254af6ffb",
+  "version_before": "1.11.14",
+  "version_after": "1.11.15",
+  "rer_before": "0.2.108",
+  "rer_after": "0.2.108",
+  "tests_added": 0,
+  "tests_removed": 0,
+  "contract_changes": 0,
+  "migration_changes_since_previous_release": 0,
+  "package_lock_present": false,
+  "unchanged_files": {
+    "CONTRACT.md": "8b575f27ee607ce3f259e3ec0d733febbf5536d9906cb99a0d9a2ede09c5096f",
+    "ACCEPTANCE.md": "51c66053f34d3f803ab56d6e9f92c72d5fe22692a370b26629fb3cafeb92a766",
+    "docs/CLAIMS.md": "81012202cbbe77ad65bc06cd01af763a8d34d20cc421071e7ec4e66ba43f21db"
+  },
+  "clause_status_counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "clause_status_counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "published_history_retained_exactly": true
+}
