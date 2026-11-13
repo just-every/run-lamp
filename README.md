@@ -84,14 +84,19 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 
 ## Source and tooling versions
 
+<!-- Release preparation: keep this section evergreen. Update the checkout's
+rer pin when it changes; do not add a prepared version, latest-release claim,
+or concrete release tag to the alternative below. -->
+
 The [Run page's](https://run-lamp.com/run) combined curl line above clones the
 default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
 development source and may hold changes not yet in a release; it pins
-`@runeditrun/rer` 0.2.108. This checkout prepares Lamp 1.11.14. The latest tagged release is `v1.11.13`, which pins
-`@runeditrun/rer` 0.2.108 too. To use that release instead, clone the tag and start it:
+`@runeditrun/rer` 0.2.108. To use a tagged release instead, choose a tag from
+[Releases](https://github.com/just-every/run-lamp/releases/latest), replace `TAG`
+below with that tag, and start it:
 
 ```sh
-git clone --branch v1.11.13 https://github.com/just-every/run-lamp.git lamp
+git clone --branch TAG https://github.com/just-every/run-lamp.git lamp
 cd lamp && rer dev
 ```
 
