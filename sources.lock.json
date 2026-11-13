@@ -4575,6 +4575,10 @@
       "sha256": "2b3f24f98d97516b0f72cc5bdd8fd3b9a568e02f330cb64947a2fa1e1a1b8cfc",
       "executable": false
     },
+    "tests/e2e/operator-ready.mjs": {
+      "sha256": "cfb2ae258418376b1f6020ac1bb7faa0a0e3c3a35bd36933f7776e0801ccf59f",
+      "executable": false
+    },
     "tests/e2e/owned-process-group.mjs": {
       "sha256": "993f19e3e2c73df598cb8b39a7c78bbb63314a2f943ee661c66d75fe873ffc67",
       "executable": false
