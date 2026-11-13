@@ -1,5 +1,14 @@
 # DIVERGENCE.md
 
+## Public subscription choices and Teams guidance — 13 November 2026
+
+The public subscribe area offers email and only the SMS, Slack and Teams channels
+whose installation inputs support sending. Configuring a channel restores its
+choice when the public snapshot is rebuilt. Visitors can return from a stale
+channel result to the subscribe choices. Before asking for a Teams URL, the form
+links a short guide on the public status host, adapted from the owner workflow
+instructions. Subscriber storage, consent, verification and delivery are unchanged.
+
 ## Connected-tool setup guidance — 12 November 2026
 
 Chat links and each Social accounts choice link to on-site owner guides. A new

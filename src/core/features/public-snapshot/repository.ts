@@ -42,6 +42,8 @@ export interface SnapshotRepository {
 export interface PublicSnapshotSource {
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
   smsEnabled?: boolean;
+  slackEnabled?: boolean;
+  teamsEnabled?: boolean;
   incidentIncludeReport?:boolean;
   /** Pre-launch: the page offers no way to subscribe and asks search engines to stay away. Set by the service from the owner setting. */
   prelaunch?: boolean;
@@ -83,7 +85,7 @@ export interface PublicSnapshotSource {
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
 }
 
-export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false): SnapshotRepository {
+export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false, chat: { slack: boolean; teams: boolean } = { slack: false, teams: false }): SnapshotRepository {
   const database = createDatabase(binding);
 
   return {
@@ -161,6 +163,8 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       return {
         websiteUrl: website?.url ?? null,
         smsEnabled,
+        slackEnabled: chat.slack,
+        teamsEnabled: chat.teams,
         incidentIncludeReport:(await createIncidentFollowSettingsRepository(binding).get()).includeReport,
         publicOrigin,
         publicApiIds, incidentImpacts: Object.fromEntries(incidentImpactRows.filter(row => row.impact !== null).map(row => [row.id, row.impact!])),

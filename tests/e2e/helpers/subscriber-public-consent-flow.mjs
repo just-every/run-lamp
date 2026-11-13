@@ -1,3 +1,4 @@
+import { subscriberChannelsFlow } from './subscriber-channels-flow.mjs';
 import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
 import { openSubscriberManagementFixture, eventuallySubscriber } from "./subscriber-management-fixture.mjs";
@@ -45,6 +46,7 @@ export async function subscriberPublicConsentFlow() {
   };
   const link = (mail, door) => mail.text.match(new RegExp(`https?:\\/\\/\\S+\\/${door}\\/\\S+`))[0];
   try {
+    await subscriberChannelsFlow();
     await clock(start);
     const first = await freshConfirmation(pendingAddress);
     const pending = (await fixture.list()).find(row => row.destination === pendingAddress);

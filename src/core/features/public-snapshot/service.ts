@@ -21,7 +21,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
 // The minute scheduler periodically rereads source data even without a mutation.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v21";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v22";
 
 interface SnapshotPointer {
   version: string;

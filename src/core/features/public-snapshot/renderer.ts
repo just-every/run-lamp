@@ -98,7 +98,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const maintenance: PublicMaintenance[] = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
     .filter((item) => attachedMaintenanceIds.has(item.id));
-  return { theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+  return { theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
@@ -164,15 +164,16 @@ function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
 }
 
 // Native disclosures keep all subscription choices usable without script (PAGE-002).
-function subscriptionMarkup(components: PublicComponent[]) {
+function subscriptionMarkup(model: PublicSnapshotModel) {
+  const components = model.visibleComponents;
   const choices = groupComponentsByHeading(components).flatMap(([, values]) => values).map((component) => `<label><input type="checkbox" name="componentId" value="${escapeHtml(component.id)}"> ${escapeHtml(component.name)}</label>`).join("");
   const picker = choices ? `<details class="subscribe-components"><summary>Choose components</summary><fieldset><legend>Send me updates only about</legend><p>Leave every box clear to follow every component, including ones added later.</p>${choices}</fieldset></details>` : "";
   const preferences = () => `<details class="subscribe-components"><summary>Choose updates</summary>${renderPreferenceFields()}</details>`;
   const email = `<form method="post" action="/subscribe"><label for="email">Email address</label><div class="subscribe-row"><input id="email" name="email" type="email" autocomplete="email" required><button type="submit">Subscribe</button></div>${picker}${preferences()}</form>`;
-  const slack = `<details class="subscribe-channel"><summary>Get updates in Slack</summary><form method="post" action="/subscribe/slack">${picker}${preferences()}<button type="submit">Get updates in Slack</button></form></details>`;
-  const sms = `<details class="subscribe-channel"><summary>Get updates by SMS</summary><form method="post" action="/subscribe/sms"><label for="sms-phone">Mobile number</label><input id="sms-phone" name="phone" type="tel" autocomplete="tel" placeholder="+12025550100" required>${picker}${preferences()}<button type="submit">Send opt-in text</button></form></details>`;
-  const teams = `<details class="subscribe-channel"><summary>Get updates in Teams</summary><form method="post" action="/subscribe/teams"><label for="teams-url">Teams Workflows webhook URL</label><input id="teams-url" name="url" type="url" autocomplete="off" required>${picker}${preferences()}<button type="submit">Send verification card</button></form></details>`;
-  return `<section id="subscribe" class="subscribe" aria-labelledby="subscribe-title"><div class="subscribe-copy"><h2 id="subscribe-title">Subscribe to status updates</h2><p>Choose email, SMS, Slack or Teams for future updates.</p></div><div class="subscribe-options">${email}${sms}${slack}${teams}</div></section>`;
+  const slack = model.slackEnabled ? `<details class="subscribe-channel"><summary>Get updates in Slack</summary><form method="post" action="/subscribe/slack">${picker}${preferences()}<button type="submit">Get updates in Slack</button></form></details>` : "";
+  const sms = model.smsEnabled ? `<details class="subscribe-channel"><summary>Get updates by SMS</summary><form method="post" action="/subscribe/sms"><label for="sms-phone">Mobile number</label><input id="sms-phone" name="phone" type="tel" autocomplete="tel" placeholder="+12025550100" required>${picker}${preferences()}<button type="submit">Send opt-in text</button></form></details>` : "";
+  const teams = model.teamsEnabled ? `<details class="subscribe-channel"><summary>Get updates in Teams</summary><form method="post" action="/subscribe/teams"><p><a href="/subscribe/teams/guide">Create a Teams Workflows webhook</a> before pasting its URL.</p><label for="teams-url">Teams Workflows webhook URL</label><input id="teams-url" name="url" type="url" autocomplete="off" required>${picker}${preferences()}<button type="submit">Send verification card</button></form></details>` : "";
+  return `<section id="subscribe" class="subscribe" aria-labelledby="subscribe-title"><div class="subscribe-copy"><h2 id="subscribe-title">Subscribe to status updates</h2><p>Choose how to receive future updates.</p></div><div class="subscribe-options">${email}${sms}${slack}${teams}</div></section>`;
 }
 
 function timelineEntry(kind: "incident" | "maintenance" | "resolved", body: string) {
@@ -223,7 +224,7 @@ function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSl
   const status = `<section class="status-banner ${stateClass(overall)}" aria-labelledby="overall-status"><div id="status-live" role="status" aria-live="polite" aria-atomic="true"><div class="status-summary">${publicIcon(statusIcon, "overall-status-icon")}<div><p class="eyebrow">Current status</p><h1 id="overall-status" data-overall>${escapeHtml(overall)}</h1></div></div><p class="status-live-update" data-newest-update>${escapeHtml(newest ? updateSummary(newest.incident, newest.update) : "There are no open incidents.")}</p></div><p class="status-generated" data-generated-at>Updated ${timestamp(generatedAt, settings.timezone)}.</p></section>`;
   const pageTitle = /\bstatus\s*$/i.test(settings.pageName.trim()) ? settings.pageName : `${settings.pageName} status`;
   const timeline = timelineMarkup(model, slots);
-  return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${model.prelaunch ? "" : subscriptionMarkup(model.visibleComponents)}`, model, slots, "root");
+  return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${model.prelaunch ? "" : subscriptionMarkup(model)}`, model, slots, "root");
 }
 
 function renderIncidentPage(incident: PublicIncident, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots) {

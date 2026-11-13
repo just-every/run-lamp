@@ -10,10 +10,27 @@ import type { TeamsSubscriptionsService } from "./teams-subscriptions";
 
 export function registerTeamsSubscriptionRoutes(app: Hono<AppEnv>, service: TeamsSubscriptionsService, subscribers: SubscribersService, limiter?: PublicWriteRateLimiter, prelaunch?: () => Promise<boolean>) {
   async function page(request: Request, name: string, title: string, body: string, status = 200) {
-    const response = new Response(renderSubscriberTokenPage(title, body, name, undefined, !await prelaunch?.()), { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "referrer-policy": "no-referrer", "x-robots-tag": "noindex" } });
+    const offered = !await prelaunch?.();
+    const content = `${body}${offered && !body.includes('href="/#subscribe"') ? '<p><a href="/#subscribe">Back to subscriptions</a></p>' : ""}`;
+    const response = new Response(renderSubscriberTokenPage(title, content, name, undefined, offered), { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "referrer-policy": "no-referrer", "x-robots-tag": "noindex" } });
     applyPublicIsolationHeaders(response.headers, new URL(request.url).origin);
     return response;
   }
+  app.get("/subscribe/teams/guide", async context => {
+    if (await prelaunch?.()) return page(context.req.raw, await subscribers.getPageName(), "Subscriptions not open yet", "<p>This status page has not launched.</p><p><a href=\"/\">See current status</a></p>", 503);
+    return page(context.req.raw, await subscribers.getPageName(), "Get Teams updates", `
+    <p>Create a workflow in the Teams channel where you want status updates. You need permission to add workflows there.</p>
+    <ol>
+      <li>In Teams, open <strong>Workflows</strong>, choose <strong>Send webhook alerts to a channel</strong>, select your team and channel, and save.</li>
+      <li>In <strong>When a Teams webhook request is received</strong>, set <strong>Who can trigger the flow?</strong> to <strong>Anyone</strong>. Lamp uses the private URL without a Microsoft sign-in.</li>
+      <li>Copy the webhook URL from the saved workflow's details. Keep the URL private, leave the workflow active, and add a co-owner so it keeps working if you leave.</li>
+      <li>Return to the <a href="/#subscribe">subscribe choices</a>, open Teams, paste the URL and send the verification card. Open that card in your channel and confirm the subscription to start receiving updates.</li>
+    </ol>
+    <p>If Workflows is unavailable, ask your Teams administrator to enable it. Use Workflows for new connections; Microsoft is retiring older incoming-webhook connectors.</p>
+    <p><a href="https://support.microsoft.com/en-gb/workflows/send-messages-in-teams-using-incoming-webhooks?nochrome=true" rel="noreferrer">Microsoft's workflow instructions</a></p>
+    <p><a href="/#subscribe">Back to subscriptions</a></p>
+  `);
+  });
   app.post("/subscribe/teams", async context => {
     const name = await subscribers.getPageName();
     const result = (title: string, body: string, status: number) => page(context.req.raw, name, title, body, status);

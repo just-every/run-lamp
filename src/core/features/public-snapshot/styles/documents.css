@@ -34,6 +34,8 @@
 .subscriber-document { border: 1px solid var(--line); border-radius: 20px; background: var(--card); box-shadow: var(--shadow-card); padding: 36px 40px; }
 .subscriber-document h1 { margin: 0 0 10px; font-size: 26px; line-height: 1.2; letter-spacing: -.02em; }
 .subscriber-document p { margin: 0 0 12px; color: var(--ink-2); }
+.subscriber-document ol { padding-left: 24px; }
+.subscriber-document li { margin-bottom: 12px; color: var(--ink-2); }
 .subscriber-document p:last-child { margin-bottom: 0; }
 .subscriber-document a { color: var(--ink); font-weight: 500; }
 .subscriber-document form { margin-top: 20px; }

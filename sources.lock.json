@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "20cd3ea3492328b1517f7641c2ede9badc34bb77300bd38f1c65cd287714b7f2",
+      "sha256": "4358cd6f864588be7c51a94f1b5d08ca86027703b769d745f91594e318b53ec5",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -4312,7 +4312,7 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "799746eed34e28594974be24815a3e1d0d3cd943735f36b71a6606d61f68a26a",
+      "sha256": "7b92bc4a2bfde9051be487378f92b75a90bcb491136be381d2cb2697a3f722e8",
       "executable": false
     },
     "src/core/app/types.ts": {
@@ -5792,7 +5792,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "add8fbdbdb8eb11e7f22df2fa9e5384fef1516d9861a7f5fae5cc8b443289a71",
+      "sha256": "bff5f4c35087d87426eae8b11e97e9f521cd3f11b84874e61fae38934d4802b8",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -5800,7 +5800,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/repository.ts": {
-      "sha256": "7bb7a46cc0fc0da19df0a7af55eb0f7b92f0725e13fee029b7ac44562f209230",
+      "sha256": "6b74aebf36e6db5146a6de9ad80715dfcc56b5e96aa8db18d93c202536a9b2c1",
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
@@ -5808,7 +5808,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "51d3947c5e7ca8584b75130961a7b315ac2c6dc435f0b790554f0619996e9fe8",
+      "sha256": "c3e71272053ac5a8514cab3e483b4a6c7bc9f3036cf3aa82dcb2fc30bf087741",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -5820,7 +5820,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/styles/documents.css": {
-      "sha256": "f252525de01b41c3c8dfa2f62b9b6df7ea3b751ca89fca6116fd78c29d4c4259",
+      "sha256": "03c92c799ca5b4f8db158f25d4740153c8a929fd943cd5d5727eb6853b0c76fc",
       "executable": false
     },
     "src/core/features/public-snapshot/styles/foundation.css": {
@@ -6512,11 +6512,11 @@
       "executable": false
     },
     "src/core/features/subscribers/slack-subscriptions.ts": {
-      "sha256": "6c78150966380e9a00b742fcbedeac6f1a11422e23a22e4c1c861a01d15da7b8",
+      "sha256": "e773be6bf705e725d5ce5789409a117730895fc3649bbc1302bc6e4a18e9d41f",
       "executable": false
     },
     "src/core/features/subscribers/teams-routes.ts": {
-      "sha256": "0ddb9e20327b3976390a7b4b79525fb7ffeb28d3c289601142edf2b29839c100",
+      "sha256": "ba04dec7f4a17daa2d6b485391a5d69d08b2dd2db3085843dbb357fac77cdd7f",
       "executable": false
     },
     "src/core/features/subscribers/teams-subscriptions.ts": {
@@ -8279,6 +8279,10 @@
       "sha256": "45a386a4bed79d7b69d5f45728e96d8fdc04b770c4b3c5c0e3ac71fe176e69e7",
       "executable": false
     },
+    "tests/e2e/helpers/subscriber-channels-flow.mjs": {
+      "sha256": "129c06520ff3a5b3167f9fe45b108353867a6e3b942fe4b7e7b3abd635d947a8",
+      "executable": false
+    },
     "tests/e2e/helpers/subscriber-components-flow.mjs": {
       "sha256": "1c7737a854387d792306918c0272443bdd58462dc5cc7e2711d1dcba33acf884",
       "executable": false
@@ -8320,7 +8324,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-public-consent-flow.mjs": {
-      "sha256": "00e34f320dc8b33ddcbdaf8cd7c7a476e0626a337426a55d1f42cef94f4817d4",
+      "sha256": "da3715503ceb57db16cdc50299079e120d94710ab4393b78731557bf4e8e8f49",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-queued-unsubscribe.mjs": {

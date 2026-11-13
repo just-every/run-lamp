@@ -84,6 +84,8 @@ export function createSlackSubscriptionsService(db: D1Database, options: {
   };
 }
 export function registerSlackSubscriptionRoutes(app:Hono<AppEnv>,service:ReturnType<typeof createSlackSubscriptionsService>,rateLimiter?:PublicWriteRateLimiter){
+  const resultPage = (title: string, body: string, pageName: string) => renderSubscriberTokenPage(title, `${body}<p><a href="/#subscribe">Back to subscriptions</a></p>`, pageName);
+
   const isolation:MiddlewareHandler<AppEnv>=async(c,next)=>{await next();applyPublicIsolationHeaders(c.res.headers,new URL(c.req.url).origin);c.res.headers.set("Cache-Control","no-store");c.res.headers.set("Referrer-Policy","no-referrer");};
   app.use("/subscribe/slack",isolation);app.use("/subscribe/slack/*",isolation);
   app.post("/subscribe/slack",async c=>{
@@ -98,14 +100,14 @@ export function registerSlackSubscriptionRoutes(app:Hono<AppEnv>,service:ReturnT
       // The public page permits only same-origin form actions. A local
       // continuation keeps that isolation intact; ordinary navigation to the
       // visitor-approved OAuth provider needs no form-action exception.
-      return html(renderSubscriberTokenPage("Continue to Slack",`<p>Choose your Slack workspace and channel to receive updates.</p><p><a href="${escapeHtml(started.url)}" rel="noreferrer">Continue to Slack</a></p>`,pageName));
-    }catch(error){if(error instanceof z.ZodError)return html(renderSubscriberTokenPage("Subscription unavailable","<p>Choose valid components and update preferences.</p>",pageName),400);if(error instanceof SubscriberLimitError)return html(renderSubscriberTokenPage("Subscriptions full",`<p>${error.message}</p><p><a href="/feed.atom">Atom feed</a> · <a href="/feed.rss">RSS feed</a></p>`,pageName),409);return html(renderSubscriberTokenPage("Slack unavailable","<p>Slack subscriptions are not configured for this page.</p>",pageName),503);}
+      return html(resultPage("Continue to Slack",`<p>Choose your Slack workspace and channel to receive updates.</p><p><a href="${escapeHtml(started.url)}" rel="noreferrer">Continue to Slack</a></p>`,pageName));
+    }catch(error){if(error instanceof z.ZodError)return html(resultPage("Subscription unavailable","<p>Choose valid components and update preferences.</p>",pageName),400);if(error instanceof SubscriberLimitError)return html(resultPage("Subscriptions full",`<p>${error.message}</p><p><a href="/feed.atom">Atom feed</a> · <a href="/feed.rss">RSS feed</a></p>`,pageName),409);return html(resultPage("Slack unavailable","<p>Slack subscriptions are not configured for this page.</p>",pageName),503);}
   });
   app.get("/subscribe/slack/callback",async c=>{
     const pageName=await service.pageName(),state=c.req.query("state")??"";
-    if(!state)return html(renderSubscriberTokenPage("Subscription unavailable","<p>The Slack installation request could not be verified.</p>",pageName),400);
-    try{const token=await service.callback(new URL(c.req.url).origin,c.req.query("code")??"",state);return html(renderSubscriberTokenPage("Slack subscription active",`<p>Your channel will receive the selected updates.</p><p><a href="/manage/${escapeHtml(token)}">Manage subscription</a></p>`,pageName),200);}
-    catch(error){if(error instanceof SubscriberLimitError)return html(renderSubscriberTokenPage("Subscriptions full",`<p>${error.message}</p><p><a href="/feed.atom">Atom feed</a> · <a href="/feed.rss">RSS feed</a></p>`,pageName),409);return html(renderSubscriberTokenPage("Subscription unavailable","<p>Slack did not confirm the installation. Start again from the subscribe form.</p>",pageName),400);}
+    if(!state)return html(resultPage("Subscription unavailable","<p>The Slack installation request could not be verified.</p>",pageName),400);
+    try{const token=await service.callback(new URL(c.req.url).origin,c.req.query("code")??"",state);return html(resultPage("Slack subscription active",`<p>Your channel will receive the selected updates.</p><p><a href="/manage/${escapeHtml(token)}">Manage subscription</a></p>`,pageName),200);}
+    catch(error){if(error instanceof SubscriberLimitError)return html(resultPage("Subscriptions full",`<p>${error.message}</p><p><a href="/feed.atom">Atom feed</a> · <a href="/feed.rss">RSS feed</a></p>`,pageName),409);return html(resultPage("Subscription unavailable","<p>Slack did not confirm the installation. Start again from the subscribe form.</p>",pageName),400);}
   });
   app.post("/subscribe/slack/events",async c=>{
     const raw=await c.req.text();if(new TextEncoder().encode(raw).length>64*1024)return c.text("Request too large.",413);
