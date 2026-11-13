@@ -4476,7 +4476,7 @@
       "executable": false
     },
     "tests/e2e/composer-visit-regression.mjs": {
-      "sha256": "8a6c0305941d3d5e24ba8b786ccb86db96bce52607c1546ba3252d61c007f304",
+      "sha256": "4e6065fdc27900881f9b4fff879a0b0cad63313cab45c2556abbf397cea59e93",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
@@ -4588,7 +4588,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "8c6dafd16c08ac796eb62318c0ddc43c0c1b9a95e2a357024b0040637b867647",
+      "sha256": "f7c68a8cd313281ae984c6bdb59a9f9c22ab1c3bcf2ff9ac26daf2faa955d32c",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -4652,7 +4652,7 @@
       "executable": false
     },
     "tests/e2e/start-runtime.test.mjs": {
-      "sha256": "c5c9165e6057743119fd3d79d50142244edfeb680da5c03246261f1e6149f68c",
+      "sha256": "542f63cf8dfc579add97d1781b52c6e2ad90be4c2f7bbdc439a63557011f4ff3",
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {

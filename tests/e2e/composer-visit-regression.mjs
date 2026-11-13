@@ -71,9 +71,14 @@ export async function assertComposerVisitIsolation({ page, api, openIncident, in
     const loadingB = await holdResponse(page, `/api/app/incidents/${b.id}`, held, undefined, 2);
     const nextVisit = traverse(2, b.id);
     await waitForAutosave(loadingB.entered, "the next incident read");
-    await field.waitFor({ state: "hidden" });
-    assert.equal(await field.count(), 0, "B loading must not expose A's editable fields");
-    assert.equal(await page.getByRole("button", { name: "Publish update", exact: true }).count(), 0);
+    // Start may already have B's own page snapshot from the earlier visit.
+    // A pending revalidation must show either no editor or B's exact bytes,
+    // never the draft belonging to A's outstanding save.
+    if (await field.count()) {
+      assert.equal(await field.inputValue(), bDraft.affectedAudience, "B loading must not expose A's editable fields");
+    } else {
+      assert.equal(await page.getByRole("button", { name: "Publish update", exact: true }).count(), 0);
+    }
     loadingB.release();
     await nextVisit;
     await saved();

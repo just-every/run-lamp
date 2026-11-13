@@ -76,7 +76,7 @@ async function sessionTransportPath(id) {
   // Use Start's own serializer dependency so this probe speaks the same GET
   // protocol as the generated client, including the operator page argument.
   const startRequire = createRequire(import.meta.resolve("@tanstack/react-start"));
-  const clientRequire = createRequire(startRequire.resolve("@tanstack/start-client-core"));
+  const clientRequire = createRequire(startRequire.resolve("@tanstack/start-client-core/package.json"));
   const { toJSONAsync } = clientRequire("seroval");
   const payload = JSON.stringify(await toJSONAsync({ data: { path: "/app" } }));
   return `/_serverFn/${id}?${new URLSearchParams({ payload })}`;
