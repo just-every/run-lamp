@@ -5,9 +5,10 @@ in your Cloudflare account. For the local path, run `curl -fsSL https://runeditr
 The [local guide](../RUN-LOCALLY.md) has the details. Local mail is silently
 suppressed and not retained; use a hosted installation to exercise real email delivery.
 
-That start line clones `main`, Lamp's development source, not a release tag. The latest release tag
-is `v1.11.13` (rer 0.2.108); see [source and tooling versions](../README.md#source-and-tooling-versions)
-to use it instead. `rer --version` names the `rer` you installed first and the
+That start line clones `main`, Lamp's development source, not a release tag. Choose a
+published tag from the [releases page](https://github.com/just-every/run-lamp/releases);
+see [source and tooling versions](../README.md#source-and-tooling-versions) to use
+that release instead. `rer --version` names the `rer` you installed first and the
 version the checkout pins second; inside the checkout, `rer` runs the pinned one.
 
 ## Prepare a hosted installation

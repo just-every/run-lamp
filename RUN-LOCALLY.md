@@ -29,8 +29,8 @@ remaining commands from the `run-lamp` folder.
 
 The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever
 rer you installed; `rer describe` reports the commands and tooling in use.
-The latest release tag, `v1.11.13`, pins rer 0.2.108; if you choose the tag, use
-that checkout's own instructions. See
+Choose a published tag from the [releases page](https://github.com/just-every/run-lamp/releases)
+and use that checkout's own instructions and pinned tooling. See
 [source and tooling versions](README.md#source-and-tooling-versions).
 rer selects the project's pinned Node 22.20.0 and pnpm 10.12.4, downloading its
 Node version when needed even if your shell has a newer Node.

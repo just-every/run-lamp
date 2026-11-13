@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.11.15
+
+**Public subscription choices now match the channels your Lamp can send through.** Email remains available, and SMS, Slack and Teams appear when configured. The Teams form links to instructions for creating a Workflows webhook before asking for its URL, and channel result pages offer a way back to subscriptions.
+
+- **Reopening an incident starts from the component state readers last saw.** Its preview and publication no longer use the incident's old, resolved component attachments as the previous state.
+- **Availability report downloads use readable component names.** CSV and PDF filenames use short, file-safe names, with numeric suffixes when names collide.
+- **The subscriber directory names selected components.** CSV invitation batches show their import time and remaining count. On a local Lamp, invitation feedback says no email was sent and links to Confirm locally in the Delivery log.
+- **Managed mail reports who handles sender authentication.** A configured Run Edit Run relay reports that the platform manages authentication, without claiming inbox delivery. An incomplete managed mail connection gives guidance for restoring it instead of asking for a direct-provider credential.
+- **Settings shows the built Lamp version.** The health response also includes `buildVersion` and a version 1 `schemaObservation` with the observed migration count and inventory digest, or a reason the inventory could not be read. This observation is separate from the installation's liveness result.
+
+Upgrading from 1.11.14: back up data and your source changes first, update the checkout to `v1.11.15`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.14
 
 **Resolved incidents can be corrected or reopened from their update composer.** Publish a correction while keeping the status Resolved, or choose Investigating to reopen. The operator timeline, public page and incident permalink identify a correction and link to its earlier publication; the original wording stays unchanged. After publication, the next draft starts as an ordinary update.
