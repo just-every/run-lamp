@@ -1,0 +1,57 @@
+{
+  "product_head": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "screens": [
+    {
+      "state": "subscribe-unconfigured",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "state": "subscribe-configured",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "state": "teams-form",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "state": "teams-guide",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "state": "slack-unavailable",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "state": "sms-unavailable",
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "state": "teams-unavailable",
+      "widths": [
+        1440,
+        390
+      ]
+    }
+  ],
+  "review": "All fourteen candidate images opened and inspected. Fields, guide and explicit return actions fit both widths. Existing visual style retained.",
+  "screenshots": "after/",
+  "assertion_width": 1440
+}

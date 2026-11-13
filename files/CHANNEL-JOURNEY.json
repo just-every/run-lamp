@@ -1,0 +1,62 @@
+{
+  "journey": "subscriberChannelsFlow",
+  "assertionsWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "measurements": [
+    {
+      "operation": "offered-channels",
+      "actions": [
+        "/subscribe",
+        "/subscribe/teams"
+      ]
+    },
+    {
+      "operation": "offered-channels",
+      "actions": [
+        "/subscribe",
+        "/subscribe/sms",
+        "/subscribe/teams"
+      ]
+    },
+    {
+      "operation": "offered-channels",
+      "actions": [
+        "/subscribe",
+        "/subscribe/slack",
+        "/subscribe/teams"
+      ]
+    },
+    {
+      "operation": "offered-channels",
+      "actions": [
+        "/subscribe",
+        "/subscribe/slack",
+        "/subscribe/sms",
+        "/subscribe/teams"
+      ]
+    },
+    {
+      "operation": "offered-channels",
+      "actions": [
+        "/subscribe"
+      ]
+    },
+    {
+      "operation": "offered-channels",
+      "actions": [
+        "/subscribe",
+        "/subscribe/teams"
+      ]
+    }
+  ],
+  "staleResultReturnLinks": [
+    "sms",
+    "slack",
+    "teams"
+  ],
+  "teamsGuideSameOrigin": true,
+  "scriptsDisabled": true
+}

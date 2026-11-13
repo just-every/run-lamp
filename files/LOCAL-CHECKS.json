@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "product_head": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "branch": "cloud/main-lamp-subscribe-channels-1",
+  "baseline_head": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "commands": [
+    {
+      "name": "setup",
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "name": "public-journey",
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-name-pattern='Generic public email consent' tests/e2e/delivery-contract.test.mjs",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "name": "production-build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "name": "contract-docs",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "inventory",
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0
+    },
+    {
+      "name": "source-lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "name": "source-check",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "name": "diff-check",
+      "command": "git diff --cached --check",
+      "exit": 0
+    }
+  ],
+  "test_count": {
+    "before": 100,
+    "after": 100,
+    "registrations": 90,
+    "assertion_scripts": 10
+  },
+  "contract_status_changes": [],
+  "provider_proof": "Synthetic network edges only; no live SMS, Slack or Teams proof requested",
+  "public_tree_hashes": {
+    "DIVERGENCE.md": "4358cd6f864588be7c51a94f1b5d08ca86027703b769d745f91594e318b53ec5",
+    "sources.lock.json": "244ee13fd9bf4ed794ca119e6d796e9628492566182f315672fd8524760311c9",
+    "src/core/app/services.ts": "7b92bc4a2bfde9051be487378f92b75a90bcb491136be381d2cb2697a3f722e8",
+    "src/core/features/public-snapshot/renderer.ts": "bff5f4c35087d87426eae8b11e97e9f521cd3f11b84874e61fae38934d4802b8",
+    "src/core/features/public-snapshot/repository.ts": "6b74aebf36e6db5146a6de9ad80715dfcc56b5e96aa8db18d93c202536a9b2c1",
+    "src/core/features/public-snapshot/service.ts": "c3e71272053ac5a8514cab3e483b4a6c7bc9f3036cf3aa82dcb2fc30bf087741",
+    "src/core/features/public-snapshot/styles/documents.css": "03c92c799ca5b4f8db158f25d4740153c8a929fd943cd5d5727eb6853b0c76fc",
+    "src/core/features/subscribers/slack-subscriptions.ts": "e773be6bf705e725d5ce5789409a117730895fc3649bbc1302bc6e4a18e9d41f",
+    "src/core/features/subscribers/teams-routes.ts": "ba04dec7f4a17daa2d6b485391a5d69d08b2dd2db3085843dbb357fac77cdd7f",
+    "tests/e2e/helpers/subscriber-channels-flow.mjs": "129c06520ff3a5b3167f9fe45b108353867a6e3b942fe4b7e7b3abd635d947a8",
+    "tests/e2e/helpers/subscriber-public-consent-flow.mjs": "da3715503ceb57db16cdc50299079e120d94710ab4393b78731557bf4e8e8f49"
+  }
+}

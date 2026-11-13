@@ -1,0 +1,41 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-subscribe-channels-1",
+  "head": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "remote_ref": "refs/heads/cloud/main-lamp-subscribe-channels-1",
+  "remote_head": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "push_command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-lamp-subscribe-channels-1",
+  "push_exit": 0,
+  "push_attempts": 1,
+  "identity_checked": "all origin/main..HEAD candidate commits including side parents",
+  "main_changed": false,
+  "force_push": false,
+  "pr": {
+    "base_ref": "main",
+    "head_ref": "cloud/main-lamp-subscribe-channels-1",
+    "head_sha": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+    "html_url": "https://github.com/just-every/run-lamp/pull/353",
+    "number": 353
+  },
+  "ci_discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43454446883",
+      "id": 43454446883,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "custody": "PUSHED; exact-SHA Verify pending",
+  "ci_latest": {
+    "conclusion": null,
+    "head_sha": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43454446883",
+    "status": "in_progress",
+    "run_id": 43454446883,
+    "observed_at": 1794585781.0051413
+  },
+  "github_calls": 7
+}

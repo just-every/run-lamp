@@ -1,0 +1,36 @@
+{
+  "head": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "widths": [
+    {
+      "width": 1440,
+      "offered": [
+        "/subscribe",
+        "/subscribe/sms",
+        "/subscribe/slack",
+        "/subscribe/teams"
+      ],
+      "teamsGuideLinks": 0
+    },
+    {
+      "width": 390,
+      "offered": [
+        "/subscribe",
+        "/subscribe/sms",
+        "/subscribe/slack",
+        "/subscribe/teams"
+      ],
+      "teamsGuideLinks": 0
+    }
+  ],
+  "sms": {
+    "title": "Subscription unavailable",
+    "message": "Subscription unavailable\n\nSMS sending is not configured. Ask the owner to configure Twilio.\n\nBack to subscriptions",
+    "returnLinks": 2
+  },
+  "slack": {
+    "title": "Slack unavailable",
+    "message": "Slack unavailable\n\nSlack subscriptions are not configured for this page.",
+    "returnLinks": 1,
+    "bodyLinks": 0
+  }
+}
