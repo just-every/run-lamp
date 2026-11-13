@@ -3,7 +3,7 @@
 VPAT® Version 2.5 Rev, Revised Section 508 Edition (April 2025).
 
 Product name: Lamp
-Product version: 1.11.13
+Product version: 1.11.14
 Evaluation date: 25 October 2026 (UTC; 2026-10-25)
 Report date: 25 October 2026
 
@@ -32,6 +32,8 @@ Edition note (11 November 2026): Version 1.11.11 shows readable dates on the Ove
 Edition note (11 November 2026): Version 1.11.12 adds a "Confirm locally" button and "no email was sent on this computer" wording to a local Lamp's Subscribers, Delivery log and public subscribe pages, and reads "Not sent locally" for held-back mail rows in the Delivery log; the deployed pages and forms are unchanged. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 Edition note (12 November 2026): Version 1.11.13 distinguishes preview copies in Overview, page review and Settings, including preview publication and save messages. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
+
+Edition note (13 November 2026): Version 1.11.14 restores the update composer for resolved incidents, labels corrections on operator and public timelines, makes audit and removed-subscriber labels readable, and adds notification and connected-tool setup guidance. The evaluation date, measured scope and limitations below remain those of the 1.11.0 evaluation; this edition claims no new accessibility evaluation.
 
 ## Product description
 
