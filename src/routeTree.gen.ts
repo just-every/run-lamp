@@ -20,12 +20,15 @@ import { Route as AppDeliveriesRouteImport } from './routes/app.deliveries'
 import { Route as AppIncidentsRouteImport } from './routes/app.incidents'
 import { Route as AppMaintenanceRouteImport } from './routes/app.maintenance'
 import { Route as AppMoveInRouteImport } from './routes/app.move-in'
+import { Route as AppPageRouteImport } from './routes/app.page'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppSubscribersRouteImport } from './routes/app.subscribers'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as DocsSplatRouteImport } from './routes/docs.$'
 import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as AppIncidentsIndexRouteImport } from './routes/app.incidents.index'
 import { Route as AppIncidentsIncidentIdRouteImport } from './routes/app.incidents.$incidentId'
+import { Route as AppIncidentsNewRouteImport } from './routes/app.incidents.new'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -82,6 +85,11 @@ const AppMoveInRoute = AppMoveInRouteImport.update({
   path: '/move-in',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPageRoute = AppPageRouteImport.update({
+  id: '/page',
+  path: '/page',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -95,6 +103,11 @@ const AppSubscribersRoute = AppSubscribersRouteImport.update({
 const DocsIndexRoute = DocsIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => DocsRoute,
 } as any)
 const DocsSlugRoute = DocsSlugRouteImport.update({
@@ -112,6 +125,11 @@ const AppIncidentsIncidentIdRoute = AppIncidentsIncidentIdRouteImport.update({
   path: '/$incidentId',
   getParentRoute: () => AppIncidentsRoute,
 } as any)
+const AppIncidentsNewRoute = AppIncidentsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AppIncidentsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
@@ -124,12 +142,15 @@ export interface FileRoutesByFullPath {
   '/app/incidents': typeof AppIncidentsRouteWithChildren
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/move-in': typeof AppMoveInRoute
+  '/app/page': typeof AppPageRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/subscribers': typeof AppSubscribersRoute
+  '/docs/$': typeof DocsSplatRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/app/': typeof AppIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/app/incidents/$incidentId': typeof AppIncidentsIncidentIdRoute
+  '/app/incidents/new': typeof AppIncidentsNewRoute
   '/app/incidents/': typeof AppIncidentsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -140,12 +161,15 @@ export interface FileRoutesByTo {
   '/app/deliveries': typeof AppDeliveriesRoute
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/move-in': typeof AppMoveInRoute
+  '/app/page': typeof AppPageRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/subscribers': typeof AppSubscribersRoute
+  '/docs/$': typeof DocsSplatRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/app': typeof AppIndexRoute
   '/docs': typeof DocsIndexRoute
   '/app/incidents/$incidentId': typeof AppIncidentsIncidentIdRoute
+  '/app/incidents/new': typeof AppIncidentsNewRoute
   '/app/incidents': typeof AppIncidentsIndexRoute
 }
 export interface FileRoutesById {
@@ -160,12 +184,15 @@ export interface FileRoutesById {
   '/app/incidents': typeof AppIncidentsRouteWithChildren
   '/app/maintenance': typeof AppMaintenanceRoute
   '/app/move-in': typeof AppMoveInRoute
+  '/app/page': typeof AppPageRoute
   '/app/settings': typeof AppSettingsRoute
   '/app/subscribers': typeof AppSubscribersRoute
+  '/docs/$': typeof DocsSplatRoute
   '/docs/$slug': typeof DocsSlugRoute
   '/app/': typeof AppIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/app/incidents/$incidentId': typeof AppIncidentsIncidentIdRoute
+  '/app/incidents/new': typeof AppIncidentsNewRoute
   '/app/incidents/': typeof AppIncidentsIndexRoute
 }
 export interface FileRouteTypes {
@@ -181,12 +208,15 @@ export interface FileRouteTypes {
     | '/app/incidents'
     | '/app/maintenance'
     | '/app/move-in'
+    | '/app/page'
     | '/app/settings'
     | '/app/subscribers'
+    | '/docs/$'
     | '/docs/$slug'
     | '/app/'
     | '/docs/'
     | '/app/incidents/$incidentId'
+    | '/app/incidents/new'
     | '/app/incidents/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -197,12 +227,15 @@ export interface FileRouteTypes {
     | '/app/deliveries'
     | '/app/maintenance'
     | '/app/move-in'
+    | '/app/page'
     | '/app/settings'
     | '/app/subscribers'
+    | '/docs/$'
     | '/docs/$slug'
     | '/app'
     | '/docs'
     | '/app/incidents/$incidentId'
+    | '/app/incidents/new'
     | '/app/incidents'
   id:
     | '__root__'
@@ -216,12 +249,15 @@ export interface FileRouteTypes {
     | '/app/incidents'
     | '/app/maintenance'
     | '/app/move-in'
+    | '/app/page'
     | '/app/settings'
     | '/app/subscribers'
+    | '/docs/$'
     | '/docs/$slug'
     | '/app/'
     | '/docs/'
     | '/app/incidents/$incidentId'
+    | '/app/incidents/new'
     | '/app/incidents/'
   fileRoutesById: FileRoutesById
 }
@@ -310,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMoveInRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/page': {
+      id: '/app/page'
+      path: '/page'
+      fullPath: '/app/page'
+      preLoaderRoute: typeof AppPageRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
@@ -329,6 +372,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/docs/'
       preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
       parentRoute: typeof DocsRoute
     }
     '/docs/$slug': {
@@ -352,16 +402,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIncidentsIncidentIdRouteImport
       parentRoute: typeof AppIncidentsRoute
     }
+    '/app/incidents/new': {
+      id: '/app/incidents/new'
+      path: '/new'
+      fullPath: '/app/incidents/new'
+      preLoaderRoute: typeof AppIncidentsNewRouteImport
+      parentRoute: typeof AppIncidentsRoute
+    }
   }
 }
 
 interface AppIncidentsRouteChildren {
   AppIncidentsIncidentIdRoute: typeof AppIncidentsIncidentIdRoute
+  AppIncidentsNewRoute: typeof AppIncidentsNewRoute
   AppIncidentsIndexRoute: typeof AppIncidentsIndexRoute
 }
 
 const AppIncidentsRouteChildren: AppIncidentsRouteChildren = {
   AppIncidentsIncidentIdRoute: AppIncidentsIncidentIdRoute,
+  AppIncidentsNewRoute: AppIncidentsNewRoute,
   AppIncidentsIndexRoute: AppIncidentsIndexRoute,
 }
 
@@ -377,6 +436,7 @@ interface AppRouteChildren {
   AppIncidentsRoute: typeof AppIncidentsRouteWithChildren
   AppMaintenanceRoute: typeof AppMaintenanceRoute
   AppMoveInRoute: typeof AppMoveInRoute
+  AppPageRoute: typeof AppPageRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSubscribersRoute: typeof AppSubscribersRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -390,6 +450,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIncidentsRoute: AppIncidentsRouteWithChildren,
   AppMaintenanceRoute: AppMaintenanceRoute,
   AppMoveInRoute: AppMoveInRoute,
+  AppPageRoute: AppPageRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSubscribersRoute: AppSubscribersRoute,
   AppIndexRoute: AppIndexRoute,
@@ -398,11 +459,13 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface DocsRouteChildren {
+  DocsSplatRoute: typeof DocsSplatRoute
   DocsSlugRoute: typeof DocsSlugRoute
   DocsIndexRoute: typeof DocsIndexRoute
 }
 
 const DocsRouteChildren: DocsRouteChildren = {
+  DocsSplatRoute: DocsSplatRoute,
   DocsSlugRoute: DocsSlugRoute,
   DocsIndexRoute: DocsIndexRoute,
 }

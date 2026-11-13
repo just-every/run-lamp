@@ -1,106 +1,158 @@
-import { execFileSync } from 'node:child_process';
-import { origin } from '../dev-ingress/runtime.mjs';
-import { devKey } from '../helpers/dev-key.mjs';
-import { signInAs } from '@runeditrun/rer/internal/modules/operator-auth/dev/sign-in-as.mjs';
-import { requestHeaders } from "../helpers/request-headers.mjs";
-import assert from "node:assert/strict";
-import { after, before } from "node:test";
+import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
+import { test } from 'node:test';
+import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+import { followUpsFlow } from './helpers/follow-ups-flow.mjs';
+import { trafficAlertsFlow } from './helpers/traffic-alerts-flow.mjs';
+import { reportRemindersFlow } from './helpers/report-reminders-flow.mjs';
+import { assertOneOperatorEmail, settleOperatorEmails } from './helpers/operator-email-proof.mjs';
 
-import { contract } from "../contract.mjs";
-import { withDraftVersion } from "./draft-version-helper.mjs";
-import { nativeRequest, openNativeRuntime, publicOrigin, operator } from "../dev-ingress/runtime.mjs";
-
-// Every request opens its own connection; Wrangler CLI work can outlast an idle keep-alive socket.
-const nativeFetch = globalThis.fetch;
-globalThis.fetch = (input, init) => { const request = new Request(input, init); request.headers.set("connection", "close"); return nativeFetch(request, { referrer: request.referrer, referrerPolicy: request.referrerPolicy }); };
-
-let cookie;
-let runtime;
-
-async function api(path, init = {}) {
-  init = await withDraftVersion(path, init, (readPath) => nativeRequest(readPath, { cookie }));
-  const response = await nativeRequest(path, { cookie, ...init, headers: requestHeaders(init.body ? { "Content-Type": "application/json" } : {}, init.headers) });
-  const text = await response.text();
-  return { status: response.status, body: text ? JSON.parse(text) : null, text };
-}
-const post = (path, json) => api(path, { method: "POST", body: JSON.stringify(json) });
-
-// The Worker's scheduled entry point, run as if at `time`: the controlled clock.
-async function trigger(time) {
-  const response = await fetch(`${publicOrigin.replace("localhost", "127.0.0.1")}/cdn-cgi/handler/scheduled?cron=${encodeURIComponent("* * * * *")}&time=${time}`);
-  assert.equal(response.status, 200, await response.text());
-}
-// Observe scheduled notification jobs; local mail is silently suppressed.
-async function envelopes() {
-  const output = execFileSync('pnpm', ['exec','wrangler','d1','execute','DB','--local','--config','wrangler.jsonc','--persist-to',runtime.state,'--json','--command',"SELECT payload_json FROM notification_outbox WHERE kind='operator-alert' AND completed_at IS NOT NULL"], {env:runtime.env,encoding:'utf8',stdio:['ignore','pipe','pipe']});
-  return JSON.parse(output)[0].results.flatMap(row => {const value=JSON.parse(row.payload_json);return value.recipients.map(to=>({message:{to,subject:value.title,text:value.text}}));});
-}
-async function reminders(reference) {
-  const rows = (await envelopes()).filter((row) => row.message.to === operator && row.message.subject.includes(reference));
-  return { dueSoon: rows.filter((row) => /update due at/i.test(row.message.subject)).length, overdue: rows.filter((row) => /overdue/i.test(row.message.subject)).length };
-}
-async function openIncident(title, nextUpdateAt) {
-  const component = (await post("/api/app/components", { groupId: null, name: title, description: "", internal: false, displayOrder: 0, note: "" })).body.component;
-  const incident = (await post("/api/app/incidents", { title, components: [{ componentId: component.id, state: "Partially unavailable", relationship: "Primary" }] })).body.incident;
-  await publishUpdate(incident.id, { lifecycle: "Identified", nextUpdateAt });
-  return incident;
-}
-async function publishUpdate(incidentId, overrides) {
-  const draft = { lifecycle: "Identified", affectedAudience: "Customers signing in.", customerImpact: "Sign-in is slow.", whatStillWorks: "", details: "", nextUpdateAt: null, ...overrides };
-  assert.equal((await api(`/api/app/incidents/${incidentId}/draft`, { method: "PUT", body: JSON.stringify(draft) })).status, 200);
-  const published = await post(`/api/app/incidents/${incidentId}/publish`, { channels: [] });
-  assert.equal(published.status, 200, published.text);
-}
-const minutes = (count) => count * 60_000;
-
-before(async () => {
-  runtime = await openNativeRuntime();
-  await runtime.start();
-  await runtime.seedOperator();
-  cookie = (await signInAs({origin,key:devKey})).header;
-  await fetch(`${publicOrigin}/`);
+const hour = 3600000;
+test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident', async t => {
+  const channelPosts = [];
+  const slack = 'https://hooks.slack.com/services/synthetic-lamp-promises/synthetic-lamp-owner/synthetic-lamp-key';
+  const j = await openStatusJourney({ providerEdge: async request => {
+    if (request.url === slack) { channelPosts.push(await request.json()); return new Response('ok'); }
+  } });
+  try {
+    const component = await j.component('Sign-in service');
+    await j.json('/api/app/channels', 'POST', { kind: 'slack', url: slack, name: 'Communication operators', componentIds: [component.id], operatorAlerts: true }, 201);
+    const owner = (await j.json('/api/app/session')).operator;
+    const replacementEmail = 'synthetic-lamp-replacement@example.test';
+    await j.json('/api/app/operators/invite', 'POST', { email: replacementEmail, displayName: 'Replacement communicator' }, 202);
+    await j.signIn(replacementEmail);
+    const replacement = (await j.json('/api/app/session')).operator;
+    await j.signIn();
+    const incident = await j.incident('Customer sign-in delays', [component]);
+    const endpoint = `/api/app/incidents/${incident.id}`;
+    const committed = Date.now() + hour;
+    await j.save(incident.id, { nextUpdateAt: new Date(committed).toISOString() }); await j.publish(incident.id);
+    assert.equal((await j.read(incident.id)).owner.id, owner.id);
+    await j.tick(committed - 5 * 60000); await j.tick(committed - 5 * 60000);
+    const dueMail = j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject));
+    assert.equal(dueMail.length, 1); assert.ok(dueMail[0].to.includes(owner.email));
+    t.diagnostic('PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner');
+    const prepared = (await j.read(incident.id)).draft;
+    assert.ok(prepared.agentPreparation);
+    assert.equal(prepared.nextUpdateAt, new Date(committed).toISOString());
+    await j.tick(committed - 5 * 60000);
+    assert.deepEqual((await j.read(incident.id)).draft, prepared, 'a repeated clock tick cannot overwrite the saved preparation');
+    for (const path of ['/', `/incidents/${incident.reference}`, '/feed.atom', '/api/public/status']) assert.ok(!(await j.publicText(path)).includes(prepared.details), path);
+    let revised = committed + hour;
+    await j.save(incident.id, { lifecycle: 'Monitoring', nextUpdateAt: new Date(revised).toISOString() }); await j.publish(incident.id);
+    await j.tick(committed + 60000);
+    assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /overdue/i.test(row.subject)).length, 0, 'publishing replaces the earlier commitment');
+    await j.signIn(replacementEmail);
+    await j.json(`${endpoint}/owner/take-over`, 'POST', {});
+    assert.equal((await j.read(incident.id)).owner.id, replacement.id);
+    // A saved commitment which has already passed exercises the live operator
+    // view as well as Cron's supplied event clock.
+    revised = Date.now() - 60000;
+    await j.save(incident.id, { lifecycle: 'Monitoring', nextUpdateAt: new Date(revised).toISOString() }); await j.publish(incident.id);
+    // A real operator draft wins over deterministic preparation at the deadline.
+    await j.save(incident.id, { lifecycle: 'Monitoring', customerImpact: 'Operator-reviewed recovery wording.', details: 'Keep this exact operator draft.', nextUpdateAt: new Date(revised).toISOString() });
+    const operatorDraft = (await j.read(incident.id)).draft;
+    await j.tick(revised - 5 * 60000); await j.tick(revised + 60000); await j.tick(revised + 2 * 60000);
+    assert.deepEqual((await j.read(incident.id)).draft, operatorDraft);
+    assert.equal((await j.read(incident.id)).overdue, true);
+    const overdueMail = j.messages.filter(row => row.subject.includes(incident.reference) && /overdue/i.test(row.subject));
+    assert.equal(overdueMail.length, 1); assert.ok(overdueMail[0].to.includes(replacementEmail));
+    t.diagnostic('PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner');
+    assert.ok(channelPosts.some(row => JSON.stringify(row).includes(incident.reference)));
+    await j.tick(revised + 20 * 60000); await j.tick(revised + 21 * 60000);
+    const escalated = j.messages.filter(row => row.subject.includes(incident.reference) && /communication escalation/i.test(row.subject));
+    assert.equal(escalated.length, 2);
+    assert.deepEqual(new Set(escalated.flatMap(row => row.to)), new Set([owner.email, replacementEmail]));
+    const publicPage = await j.publicText(`/incidents/${incident.reference}`);
+    assert.ok(publicPage.includes(new Date(revised).toISOString()));
+    for (const identity of [owner.displayName, replacement.displayName]) assert.ok(!publicPage.includes(identity));
+    assert.ok(!publicPage.includes(operatorDraft.details));
+    const audit = await j.json('/api/app/audit-log?action=communication-owner-changed&limit=100');
+    assert.ok(audit.entries.some(row => row.entityId === incident.id && row.actorId === replacement.id));
+    await j.save(incident.id, { lifecycle: 'Resolved', nextUpdateAt: null }); await j.publish(incident.id);
+    const count = j.messages.length;
+    await j.tick(revised + 2 * hour);
+    assert.equal(j.messages.length, count, 'resolution stops deadline mail');
+    await j.json(`${endpoint}/owner/take-over`, 'POST', {}, 409);
+    await j.visible(`/incidents/${incident.reference}`, 'Resolved');
+  } finally { await j.close(); }
 });
 
-after(async () => { await runtime?.close(); });
+test('AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery', followUpsFlow);
+test('NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private', async t => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/operator-email-worker.ts' });
+  try {
+    const owner = (await j.json('/api/app/session')).operator;
+    const colleague = 'synthetic-lamp-email-operator@example.test';
+    await j.json('/api/app/operators/invite', 'POST', { email: colleague, displayName: 'Review operator' }, 202);
+    await j.signIn(colleague); await j.signIn();
+    const operators = [owner.email, colleague];
+    const component = await j.component('Synthetic Lamp scheduled email API');
+    let clock = Date.now() + 1000;
+    const advance = async at => {
+      clock = at;
+      assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: clock }) })).status, 204);
+    };
+    await advance(clock);
+    const publishAt = new Date(clock + 60000).toISOString();
+    const held = [];
+    for (const title of ['Synthetic Lamp held API update', 'Synthetic Lamp held worker update']) {
+      const incident = await j.incident(title, [component]);
+      await j.save(incident.id, { nextUpdateAt: new Date(clock + hour).toISOString() });
+      await j.json(`/api/app/incidents/${incident.id}/draft/schedule`, 'POST', { publishAt, channels: ['email'] }, 202);
+      held.push({ incident, draft: (await j.read(incident.id)).draft });
+    }
+    await j.tick(clock);
+    for (const { incident } of held) assert.equal(j.messages.filter(message => /held.*review/i.test(message.subject) && message.text.includes(incident.id)).length, 0, 'no review-hold email before publication is due');
+    await advance(Date.parse(publishAt) + 1000);
+    await j.tick(clock);
+    await settleOperatorEmails(j);
+    for (const { incident } of held) assertOneOperatorEmail(j, operators, /held.*review/i, incident.id);
+    await j.tick(clock); await j.tick(clock);
+    await settleOperatorEmails(j);
+    for (const { incident, draft } of held) {
+      assertOneOperatorEmail(j, operators, /held.*review/i, incident.id);
+      const current = await j.read(incident.id);
+      assert.deepEqual(current.draft, draft, 'an unreviewed scheduled update stays the same saved draft');
+      assert.equal(current.updates.length, 0);
+      assert.ok(!(await j.publicText('/')).includes(incident.title));
+    }
+    t.diagnostic('PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator');
 
-contract("INCIDENT-010", "the scheduled trigger sends one due-soon email inside the lead and none once a newer update is published", async () => {
-  const committed = Date.now() + minutes(60);
-  const incident = await openIncident("Sign-in latency", new Date(committed).toISOString());
-  await trigger(committed - minutes(30));
-  assert.deepEqual(await reminders(incident.reference), { dueSoon: 0, overdue: 0 }, "nothing before the lead");
-  for (let run = 0; run < 3; run += 1) await trigger(committed - minutes(5));
-  assert.deepEqual(await reminders(incident.reference), { dueSoon: 1, overdue: 0 }, "exactly one due-soon email however many times the trigger runs");
-  const email = (await envelopes()).find((row) => row.message.subject.includes(incident.reference));
-  assert.match(email.message.text, new RegExp(`/app/incidents/${incident.id}`), "it links to the incident's composer");
-
-  // A newer update replaces the commitment: the old time passing sends nothing.
-  await publishUpdate(incident.id, { lifecycle: "Monitoring", nextUpdateAt: new Date(committed + minutes(120)).toISOString() });
-  await trigger(committed + minutes(1));
-  assert.deepEqual(await reminders(incident.reference), { dueSoon: 1, overdue: 0 });
-  // A resolved incident sends nothing at any time.
-  await publishUpdate(incident.id, { lifecycle: "Resolved" });
-  await trigger(committed + minutes(115));
-  await trigger(committed + minutes(125));
-  assert.deepEqual(await reminders(incident.reference), { dueSoon: 1, overdue: 0 });
+    const secret = 'synthetic-lamp-operator-email-source';
+    const source = (await j.json('/api/app/intake/sources', 'POST', {
+      name: 'Synthetic Lamp operator email monitor', credentialKind: 'hmac-sha256', signingSecret: secret,
+      deduplicationPath: '$.alert.id', titlePath: '$.alert.title', statePath: '$.alert.state', recoveredValue: 'recovered', componentId: component.id,
+    }, 201)).source;
+    const alert = async payload => {
+      const body = JSON.stringify(payload), at = new Date(clock).toISOString();
+      const response = await j.raw(new URL(`/api/intake/${source.id}`, j.publicOrigin).href, { method: 'POST', headers: {
+        'Content-Type': 'application/json', 'x-lamp-timestamp': at,
+        'x-lamp-signature': createHmac('sha256', secret).update(`${at}.${body}`).digest('base64url'),
+      }, body });
+      assert.equal(response.status, 202, await response.clone().text());
+      return response.json();
+    };
+    for (const id of ['synthetic-lamp-api-alert', 'synthetic-lamp-worker-alert']) {
+      const payload = { alert: { id, title: `PRIVATE ${id}`, state: 'firing' } };
+      const created = await alert(payload);
+      assert.ok(created.incidentId); assert.equal(created.replayed, false);
+      await j.tick(clock);
+      await settleOperatorEmails(j);
+      assertOneOperatorEmail(j, operators, /alert intake.*draft/i, created.incidentId);
+      const replay = await alert(payload);
+      assert.equal(replay.incidentId, created.incidentId); assert.equal(replay.replayed, true);
+      const repeated = await alert({ alert: { ...payload.alert, title: `PRIVATE repeated ${id}` } });
+      assert.equal(repeated.incidentId, created.incidentId); assert.equal(repeated.replayed, false);
+      await j.tick(clock); await j.tick(clock);
+      await settleOperatorEmails(j);
+      assertOneOperatorEmail(j, operators, /alert intake.*draft/i, created.incidentId);
+      const draft = await j.read(created.incidentId);
+      assert.ok(draft.draft); assert.equal(draft.updates.length, 0);
+      assert.ok(!(await j.publicText('/')).includes(draft.title));
+    }
+    t.diagnostic('PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident');
+  } finally { await j.close(); }
 });
-
-contract("INCIDENT-010", "an incident inside the lead shows as due to operators and never on the public page", async () => {
-  const committed = new Date(Date.now() + minutes(5)).toISOString();
-  const incident = await openIncident("Upload delays", committed);
-  const listed = (await api("/api/app/incidents")).body.incidents.find((row) => row.id === incident.id);
-  assert.equal(listed.updateDue, true);
-  assert.equal(listed.updateDueAt, committed);
-  assert.equal((await api("/api/app/overview")).body.overview.activeIncidents.find((row) => row.id === incident.id).updateDue, true);
-  const page = await (await fetch(`${publicOrigin}/incidents/${incident.reference}`)).text();
-  assert.match(page, /Upload delays/);
-  assert.doesNotMatch(page, /\b(overdue|update due)\b/i);
-});
-
-contract("NOTIFY-006", "an overdue commitment sends one operator email from the scheduled trigger with no operator page open", async () => {
-  const committed = Date.now() + minutes(30);
-  const incident = await openIncident("Search errors", new Date(committed).toISOString());
-  await trigger(committed + minutes(1));
-  await trigger(committed + minutes(2));
-  await trigger(committed + minutes(30));
-  assert.deepEqual(await reminders(incident.reference), { dueSoon: 0, overdue: 1 });
-});
+test('HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions', async t => trafficAlertsFlow(t));
+test('AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders', reportRemindersFlow);

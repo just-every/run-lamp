@@ -11,9 +11,9 @@ keeping the opaque audit attribution.
 
 ## Terminal entry for the hosted owner
 
-With `@runeditrun/rer` 0.2.22, the hosted owner can enter without receiving email.
+With the checkout's pinned `@runeditrun/rer` (0.2.76), the hosted owner can enter without receiving email.
 From the checkout that deployed Lamp, use the same Cloudflare account, deployment
-environment and [private input file](deploy.md#save-private-deployment-inputs):
+environment and [private input file](deploy.md#step-1-make-a-private-input-file):
 
 ```sh
 rer signin --environment production --env-file "$HOME/.config/lamp/production.env"
@@ -33,10 +33,156 @@ resource prefix, `lamp-<environment>`. If you set `LAMP_RESOURCE_PREFIX` to anot
 value, use the compatibility command in the
 [technical sign-in reference](../OPERATIONS.md#shared-operator-authentication)
 with that installation's generated configuration instead. Hosted Lamp still
-requires a mail provider and authenticated sender.
+requires working mail. Managed hosting includes it without an owner provider
+account or mail key: RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`,
+`MAIL_RELAY_URL` and private `MAIL_API_KEY`. Free and Assisted hosting retain
+your own Resend or SendGrid account with `MAIL_FROM_ADDRESS`,
+`MAIL_DKIM_SELECTOR` and `MAIL_PROVIDER_API_KEY`.
 
 ## Optional single sign-on
 
-An owner can link and enable OpenID Connect through Auth, Google, Microsoft or
-Okta. It is off until the owner configures it. Email sign-in links remain
-available. SCIM and role synchronization are not supported.
+Single sign-on lets an already invited operator use a supported identity
+provider. Linking a provider does not invite people or give them Lamp access.
+Email sign-in stays available. SCIM and role synchronization are not supported.
+
+### Set up Google or Okta in Lamp
+
+Google and Okta are set up in the app, with no file to edit and no redeploy.
+Only the owner can do it, with fresh email confirmation.
+
+1. In the provider, create the application. For Google, create an OAuth client
+   ID for a web application in Google Cloud. For Okta, create an OIDC web app,
+   keep **Client authentication** as **Client secret** and assign the people who
+   will use Lamp.
+2. Open **Settings → Team → Sign-in**. If it shows **Confirm my identity**, choose
+   it, open the emailed link in the same browser, then return to the tab.
+3. Choose **Set up Google** or **Set up Okta**. Copy the redirect URI Lamp shows
+   into the provider. Paste the client ID and secret (and, for Okta, your Okta
+   domain such as `acme.okta.com`) and choose **Save**. Lamp checks that the
+   provider answers and pins it. The row then reads **Saved, not tested**.
+4. For Okta, list each person: choose them beside their Okta user ID, which you
+   find in Okta under **Directory → People** and which starts with `00u`. Okta
+   signs in only the people listed. Each ID and each person can be listed once.
+5. Turn on **Let invited people sign in with Google or Okta**, then choose **Test
+   sign-in**. The provider's real flow runs and you return to the pane with one
+   plain result. **Working** appears only after the provider accepted Lamp's
+   client secret. An account that is not invited, or an Okta user who is not
+   listed, still proves the credentials: it reads *Google accepted Lamp, but that
+   account isn't invited here*.
+
+Lamp keeps the client secret sealed in its own database and never shows it again,
+exports it or returns it in a page. **Replace secret** and a changed client ID or
+domain pin the provider again, so people signed in with it sign in again.
+**Disconnect** signs them out, lifts any sign-in rule for an email domain that named
+the provider, and deletes the registration; email sign-in links keep working. A
+backup omits the secret: after a restore the row reads **Needs its client secret**
+and is not offered until you paste it again. Managed hosting has no outbound
+connection yet, so Settings says so and Save is refused there.
+
+Microsoft Entra and Run Edit Run Auth are still set up on the identity settings
+page (`/auth/settings/identity`, linked at the foot of the Sign-in pane) and as
+described below. Microsoft Entra cannot be finished from that page: Lamp links each Microsoft
+person by the subject Microsoft issues to the app, which the Entra admin center
+does not show. Use the steps below only if your identity administrator can give you
+each operator's subject.
+
+### Register Google, Microsoft or Okta in the deploy file
+
+The deploy-file path below still works for Microsoft and for anyone who prefers
+it. A provider set in the deploy file **wins per ID**: Settings then shows it as set
+in your deploy settings, reads its state and offers only the redirect URI and
+**Test sign-in**; Save is refused for that ID until you remove it from the file.
+
+The person deploying Lamp needs permission to create an application in the
+identity provider and change Lamp's private deployment inputs.
+
+1. Register a confidential **Web application** in the provider's admin console.
+   Use its authorization-code flow with the `openid email` scopes. Create a
+   client secret and retain the client ID. These are application credentials,
+   different from an operator's password.
+2. Register the exact callback address on Lamp's **operator** host. For the IDs
+   below, use `https://ops.example.com/auth/oidc/google/callback`,
+   `https://ops.example.com/auth/oidc/microsoft/callback` or
+   `https://ops.example.com/auth/oidc/okta/callback`. Replace `ops.example.com`
+   with your actual operator hostname. Use the same provider ID in the JSON.
+3. Prepare the corresponding provider entry below. For Microsoft and Okta, ask
+   the identity administrator for the operator's exact OIDC **subject** (`sub`)
+   for this application. Add it to `subjectEmails`, mapped to that person's
+   already invited Lamp email. Do not substitute the display name or assume a
+   directory object ID is the application's subject.
+
+| Provider | Registration and values |
+| --- | --- |
+| Google | In [Google Auth Platform → Clients](https://developers.google.com/identity/protocols/oauth2/web-server#create-authorization-credentials), create a Web application client and its authorized redirect URI. Configure its audience and test users as needed. Lamp trusts a verified Gmail address or a verified Workspace address with a matching hosted-domain (`hd`) claim; other addresses need an explicit `subjectEmails` map. |
+| Microsoft | In [Microsoft Entra → App registrations](https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app), register for your single tenant, add the Web redirect URI, then create a client secret under Certificates & secrets. Use the application/client ID, secret **value** and Directory/tenant ID. Lamp requires that specific tenant, not `common`, `organizations` or `consumers`, and an explicit subject map. |
+| Okta | In [Okta Admin → Applications → Create App Integration](https://developer.okta.com/docs/guides/implement-grant-type/authcode/main/), select OIDC and Web Application, set the sign-in redirect URI and assign the operators. Use the exact issuer shown by its authorization server (including any path), client ID and secret. Set client authentication to match `client_secret_basic`; an explicit subject map is required. |
+
+Use one or more entries in a single JSON array. These examples contain
+placeholders, not usable credentials:
+
+```json
+[
+  {"id":"google","preset":"google","clientId":"your-google-client-id","tokenAuthMethod":"client_secret_post","clientSecret":"your-google-client-secret"},
+  {"id":"microsoft","preset":"microsoft","tenant":"your-tenant-id","clientId":"your-application-id","tokenAuthMethod":"client_secret_post","clientSecret":"your-client-secret-value","subjectEmails":{"exact-operator-subject":"operator@example.com"}},
+  {"id":"okta","preset":"okta","issuer":"https://your-org.okta.com","clientId":"your-client-id","tokenAuthMethod":"client_secret_basic","clientSecret":"your-client-secret","subjectEmails":{"exact-operator-subject":"operator@example.com"}}
+]
+```
+
+### Configure Lamp and check sign-in
+
+1. Put the selected JSON array on **one line** as `AUTH_PROVIDERS=[...]` in your
+   existing [private deployment input file](deploy.md#step-1-make-a-private-input-file).
+   Include only the providers you registered; replace every placeholder. The
+   array contains client secrets and must stay outside Git and shared logs.
+2. Add `OIDC_TRANSACTION_SECRET` to the same file: a separate random value of at
+   least 32 characters, different from `SESSION_SECRET`. To append one without
+   printing it, run this once before that key exists in the file:
+
+```sh
+printf 'OIDC_TRANSACTION_SECRET=%s\n' "$(od -An -vtx1 -N32 /dev/urandom | tr -d ' \n')" >> "$HOME/.config/lamp/production.env"
+```
+
+3. Stop any local development or preview server, then validate and redeploy:
+
+```sh
+rer deploy --dry-run --environment production --env-file "$HOME/.config/lamp/production.env"
+rer deploy --environment production --env-file "$HOME/.config/lamp/production.env"
+```
+
+   A redeploy keeps the `OIDC_TRANSACTION_SECRET` the Worker already holds, so
+   sign-ins in progress survive it. A page first deployed by Lamp 1.6.0 or
+   earlier holds it empty, and the deploy says it kept it. The first time you add
+   it to the file on such a page, deploy with
+   `--rotate-secret OIDC_TRANSACTION_SECRET` so the Worker takes your value.
+
+4. As the setup owner, open **Settings → Team → Sign-in**.
+   Turn on **Let invited people sign in with Google or Okta**. This permits the configured
+   providers; the checkbox alone does not establish a connection.
+5. Keep your current owner session open. In a separate private browser window,
+   open Lamp's sign-in page and choose the provider. Complete sign-in as an
+   invited operator. A real sign-in that reaches the operator app checks the
+   registration, callback, credentials, provider response and Lamp membership.
+   A saved setting or discovered provider alone does not check all of these.
+
+If the provider is missing or sign-in fails, check that the deployed values
+contain the registered ID, callback, client secret and correct issuer/tenant.
+For Microsoft and Okta also check the exact subject map and active invitation.
+Use email sign-in while correcting the configuration. Previously linked
+providers keep their pinned registration when configuration changes: an owner
+must approve a re-link; see the [technical provider controls](../OPERATIONS.md#identity-provider-configuration).
+
+### Connect a Run Edit Run Auth installation
+
+`IDENTITY_PROVIDER` is for an installed Auth provider that supports RER's
+`oidc-provider@1` link protocol. It is not a place to paste a Google, Microsoft
+or Okta sign-in URL. The deployer sets it to the Auth installation's HTTPS
+origin and redeploys. The Lamp owner then confirms their identity by email and
+approves that exact Auth origin locally; the Auth owner separately approves
+Lamp's exact operator origin and callback addresses. The completed link creates
+its client registration and server key automatically. No manual client secret
+is needed for this path.
+
+The checkbox cannot perform that link. Give the [Auth linking procedure](../OPERATIONS.md#identity-provider-configuration)
+to the person operating the two installations, then enable provider sign-in and
+check a real invited-operator sign-in as above. A restored installation needs
+fresh link approval and starts with provider sign-in disabled.

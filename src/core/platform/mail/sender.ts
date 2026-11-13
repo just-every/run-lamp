@@ -4,6 +4,7 @@ export interface MailMessage {
   subject: string;
   text: string;
   html?: string;
+  replyTo?: string;
   headers: Record<string, string>;
   /** Stable per recipient/event value. Adapters must enforce idempotence, using provider support or a durable send ledger. */
   idempotencyKey: string;
@@ -42,7 +43,7 @@ export function isMailPreparationError(error: unknown): error is MailPreparation
 export class MailUnavailableError extends MailPreparationError {
   constructor() {
     super(undefined);
-    this.message = "mail.sender.v1 requires MAIL_PROVIDER_API_KEY and MAIL_FROM_ADDRESS.";
+    this.message = "Mail is not configured. Managed mail requires MAIL_FROM, MAIL_RELAY_URL and MAIL_API_KEY; direct providers require MAIL_FROM_ADDRESS and MAIL_PROVIDER_API_KEY.";
     this.name = "MailUnavailableError";
   }
 }

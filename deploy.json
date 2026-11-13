@@ -54,6 +54,15 @@
       "environment": "SESSION_SECRET"
     },
     {
+      "binding": "INSTALLATION_KEY",
+      "environment": "INSTALLATION_KEY"
+    },
+    {
+      "binding": "INSTALLATION_KEY_PREVIOUS",
+      "environment": "INSTALLATION_KEY_PREVIOUS",
+      "optional": true
+    },
+    {
       "binding": "MAIL_PROVIDER_API_KEY",
       "environment": "MAIL_PROVIDER_API_KEY"
     },
@@ -80,10 +89,35 @@
     {
       "binding": "OIDC_TRANSACTION_SECRET",
       "environment": "OIDC_TRANSACTION_SECRET"
+    },
+    {
+      "binding": "MAIL_API_KEY",
+      "environment": "MAIL_API_KEY"
+    },
+    {
+      "binding": "TWILIO_ACCOUNT_SID",
+      "environment": "TWILIO_ACCOUNT_SID"
+    },
+    {
+      "binding": "TWILIO_AUTH_TOKEN",
+      "environment": "TWILIO_AUTH_TOKEN"
+    },
+    {
+      "binding": "TWILIO_FROM_NUMBER",
+      "environment": "TWILIO_FROM_NUMBER"
+    },
+    {
+      "binding": "TWILIO_MESSAGING_SERVICE",
+      "environment": "TWILIO_MESSAGING_SERVICE"
     }
   ],
   "crons": [
     "* * * * *"
   ],
-  "originVar": "LAMP_LOCAL_ORIGIN"
+  "originVar": "LAMP_LOCAL_ORIGIN",
+  "deployGuide": "https://run-lamp.com/docs/deploy",
+  "publicSettings": [
+    "LAMP_APP_HOST",
+    "LAMP_PAGE_HOST"
+  ]
 }

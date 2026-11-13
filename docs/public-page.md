@@ -6,7 +6,7 @@ choose how customers recognize the page and where its widget may run.
 
 ## Set branding and widget access
 
-In **Settings**, edit the page name, tagline, hostname, accent colour, time zone
+In **Settings**, edit the page name, tagline, hostname, accent color, time zone
 and footer credit. Upload a logo or remove it; Lamp serves the logo from its own
 origin and generates the status favicon and social image. List the full origins
 where you embed the widget. The widget refuses requests from other host origins.
@@ -17,10 +17,19 @@ overall status and unresolved incident information from the public snapshot.
 ## Read history and uptime
 
 History lists resolved incidents and completed maintenance for the previous
-12 months. The public page shows a 90-day uptime window for each visible
+12 months and links to earlier populated months. Each `/history/YYYY-MM` page
+links to adjacent months with records and to permanent incident pages, including
+imported history. These pages work without JavaScript and remain available from
+the published snapshot when the database is unavailable.
+
+The public page shows a 90-day uptime window for each visible
 component. It counts Major outage and Partially unavailable as full downtime,
 Degraded performance as half downtime, and Under maintenance as no downtime.
 Lamp computes this from component state history, and the page states the method.
 
 The public page, feed and widget show published information. Internal components
 and incident notes are not included in those public surfaces.
+
+## Accessibility evaluation
+
+Read the [Accessibility Conformance Report (VPAT)](accessibility/vpat.md) for the current release, measured surfaces and evaluation limits. It is also served on the operator app host at `/docs/accessibility/vpat`, without sign-in. This report does not claim conformance for private pages, email clients or surfaces that have not been evaluated.

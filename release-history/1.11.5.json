@@ -1,0 +1,11 @@
+{
+  "version": "1.11.5",
+  "previousVersion": "1.11.4",
+  "date": "2026-11-09",
+  "publicReleaseNotes": "**More reliable builds for a new Managed Lamp.** A Managed Lamp installation created from this version builds its preview and updates more reliably. If the build record is briefly unavailable, the build now retries once instead of failing the first time.\n\n- **Imports finish without waiting for the public page to rebuild.** Applying or undoing an import can return its saved result while Lamp refreshes the public page in the background. If that refresh fails, Lamp keeps it pending for a scheduled retry. Repeating an unchanged Business dry run also reuses its saved review.\n\nUpgrading from 1.11.4: back up data and your source changes first, update the checkout to `v1.11.5`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.",
+  "contractChanges": {},
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "From v1.11.4: back up data and owner source first, update the checkout to v1.11.5, run pnpm install --frozen-lockfile (the checkout keeps @runeditrun/rer 0.2.98) and rer deploy with the same environment and input file. This version adds no migrations. Earlier installations first honor the retained release-history records through 1.11.4, including INSTALLATION_KEY provisioning and backup custody. Preserve all published release records, immutable contract snapshots and applied migration history. New Managed installations use the retrying trusted build; existing installations retain the workflow ref selected when they were created. Preserve import review, approval, revocation and native owner authority boundaries, and durable snapshot work after import apply or undo. Run the existing verifier and release validator before adopting."
+}

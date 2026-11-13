@@ -1,13 +1,14 @@
 import { d1StreamOriginSchema } from './stream-origin.ts';
+import { d1ReversalPolicyConversionSchema } from './reversal-conversion-schema.ts';
 import { d1PreparationSchema } from './preparation-schema.ts';
 import { d1PreparationStepsSchema } from './preparation-steps-schema.ts';
 import { stageNativeTransaction } from './native-staging.ts';
 import type { NativeStagingScope } from './native-staging-context.ts';
 import { d1NativeStagingSchema } from './native-staging-schema.ts';
-import { d1CustodyStateSchema } from './custody-state-schema.ts';
+import { d1CustodyStateSchema, d1CustodyStateReplaceSchema } from './custody-state-schema.ts';
 import { d1ReversalFenceSchema } from './reversal-fence-schema.ts';
 import { batchBytes } from './transport.ts';
-import { D1RequestLimitError, packGuards, remaining } from './budget.ts';
+import { batchExecutions, D1RequestLimitError, packGuards, remaining } from './budget.ts';
 import { d1ErasureSchema } from './erasure-schema.ts';
 import { d1RetirementSchema } from './retirement-schema.ts';
 import { d1ErasureProgressSchema } from './erasure-progress-schema.ts';
@@ -56,7 +57,10 @@ export async function initializeD1ImportStorage(database: D1Database): Promise<v
   await database.batch(d1PreparationSchema.map(sql => database.prepare(sql)));
   await database.batch(d1PreparationStepsSchema.map(sql => database.prepare(sql)));
   await database.batch(d1RetirementSchema.map(sql => database.prepare(sql)));
+  await database.batch(d1CustodyStateReplaceSchema.map(sql => database.prepare(sql)));
   await database.batch(d1ErasureProgressSchema.map(sql => database.prepare(sql)));
+  const conversionInstalled = columns.results.some(c => c.name === 'reversal_conversion_hash');
+  await database.batch(d1ReversalPolicyConversionSchema.slice(conversionInstalled ? 1 : 0).map(sql => database.prepare(sql)));
 }
 export const sql = (sql: string, ...params: any[]): D1Sql => ({ sql, params });
 export const prepare = (db: D1Database, query: D1Sql): D1Statement => db.prepare(query.sql).bind(...(query.params ?? []));
@@ -87,15 +91,15 @@ export function atomicStatements(context: Parameters<typeof authority>[0] & Pick
   return [...packGuards([authority(context, action), ...statements, authority(context, action), sql('DELETE FROM ik_d1_assertions')]),...(context.maxBatchBytes===undefined?[]:[finalAuthority(context,action)])];
 }
 export async function atomic(context: D1ImportContext, action: ImportAction, statements: D1Sql[], returnReads = 0, scope?: NativeStagingScope): Promise<void> {
-  const {packed,post}=atomicPreparation(context,action,statements,scope);
-  if (packed.length + returnReads > remaining(context)) throw new D1RequestLimitError();
+  const {packed,post,count}=atomicPreparation(context,action,statements,scope,returnReads);
+  if (count > remaining(context)) throw new D1RequestLimitError();
   if (!withinBatchBytes(context, packed)) {
     if (!scope) throw new Error('IMPORT_D1_TRANSPORT_LIMIT');
     await stageNativeTransaction(context, action, statements, {...scope,postGuards:post}, returnReads); return;
   }
   await context.storage.database.batch(packed.map(s => prepare(context.storage.database, s)));
 }
-function postConditions(context:Pick<D1ImportContext,'maxBatchBytes'>,statements:D1Sql[],scope?:NativeStagingScope,action:ImportAction='read'):D1Sql[]{
+export function postConditions(context:Pick<D1ImportContext,'maxBatchBytes'>,statements:D1Sql[],scope?:NativeStagingScope,action:ImportAction='read'):D1Sql[]{
   const stream = scope ? [...jobLayoutGuards(scope.job), ...streamBoundary(scope.job.id, action)] : [];
   if(context.maxBatchBytes===undefined)return [...stream,...statements.flatMap(statement=>statement.finalChecks??[])];
   const readOnly=statements.every(s=>guardPredicate(s));
@@ -119,10 +123,16 @@ export const fitsBatch = (context:D1ImportContext,action:ImportAction,statements
 export function preparedAtomic(context:Parameters<typeof authority>[0]&Pick<D1ImportContext,'maxBatchBytes'>,action:ImportAction,statements:D1Sql[],scope?:NativeStagingScope):D1Sql[]{
   return atomicPreparation(context,action,statements,scope).packed;
 }
-function atomicPreparation(context:Parameters<typeof authority>[0]&Pick<D1ImportContext,'maxBatchBytes'>,action:ImportAction,statements:D1Sql[],scope?:NativeStagingScope){
+/** The statements one atomic() request spends: the packed writes and guards,
+ * authority, post-conditions with the scope's guards, final authority and the
+ * return reads. Planners size a batch with this same count before sending it. */
+export const atomicCount = (context:Parameters<typeof authority>[0]&Pick<D1ImportContext,'maxBatchBytes'>,action:ImportAction,statements:D1Sql[],returnReads:number,scope?:NativeStagingScope):number => atomicPreparation(context,action,statements,scope,returnReads).count;
+function atomicPreparation(context:Parameters<typeof authority>[0]&Pick<D1ImportContext,'maxBatchBytes'>,action:ImportAction,statements:D1Sql[],scope?:NativeStagingScope,returnReads=0){
   const post=postConditions(context,statements,scope,action);
-  return {post,packed:[...atomicStatements(context,action,statements),...readonlyChecks(post),...(post.length?[finalAuthority(context,action)]:[])]};
+  const packed=[...atomicStatements(context,action,statements),...readonlyChecks(post),...(post.length?[finalAuthority(context,action)]:[])];
+  return {post,packed,count:batchExecutions(context as D1ImportContext,packed.length)+returnReads};
 }
+export { atomicPrefix } from './atomic-prefix.ts';
 /** SELECT-only fence: inspect every packed scalar before publishing snapshots.
  * Mutations continue to use atomic() and SQL CHECK rollback, never this path. */
 export async function readAtomic(context: D1ImportContext, guards: D1Sql[], scope?: NativeStagingScope, action: ImportAction = 'read'): Promise<void> {
@@ -135,7 +145,7 @@ export async function readAtomic(context: D1ImportContext, guards: D1Sql[], scop
     await readBoundedGuards(context, checks, scope, Math.min(limit,2*1024*1024), action);
     return;
   }
-  if (packed.length > remaining(context)) throw new D1RequestLimitError();
+  if (batchExecutions(context, packed.length) > remaining(context)) throw new D1RequestLimitError();
   const results = await context.storage.database.batch(packed.map(s => prepare(context.storage.database, s)));
   checkBatchResults(results, packed.length, 'IMPORT_ATOMIC_GUARD');
   for (const result of results) {

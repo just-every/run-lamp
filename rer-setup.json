@@ -18,7 +18,12 @@
     {
       "id": "mail",
       "label": "Online mail settings",
-      "help": "For Online hosting, use Edit to enter your verified sender, DKIM selector and provider key before Start. Local sign-in is one click and requires no mail."
+      "help": "For Online hosting, configure a mail provider before Start. Run Edit Run supplies managed mail settings; ordinary providers use your verified sender and provider key. Local sign-in is one click and requires no mail."
+    },
+    {
+      "id": "sms",
+      "label": "Optional SMS settings",
+      "help": "Connect your registered Twilio sender to enable SMS subscriptions; local trials need no SMS account."
     }
   ],
   "fields": [
@@ -99,10 +104,14 @@
       "name": "MAIL_PROVIDER",
       "label": "Online mail provider",
       "kind": "select",
-      "required": false,
+      "required": true,
       "default": "sendgrid",
       "group": "mail",
       "options": [
+        {
+          "value": "rer",
+          "label": "Run Edit Run"
+        },
         {
           "value": "sendgrid",
           "label": "SendGrid"
@@ -114,11 +123,87 @@
       ]
     },
     {
+      "name": "MAIL_FROM",
+      "label": "Managed sender address",
+      "kind": "email",
+      "required": false,
+      "group": "mail",
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "rer"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "MAIL_RELAY_URL",
+      "label": "Managed mail relay URL",
+      "kind": "url",
+      "required": false,
+      "group": "mail",
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "rer"
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "MAIL_API_KEY",
+      "label": "Managed mail API key",
+      "kind": "secret",
+      "required": false,
+      "group": "mail",
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "rer"
+          },
+          "required": true
+        }
+      ],
+      "input": "entered",
+      "ownerVisible": true
+    },
+    {
       "name": "MAIL_FROM_ADDRESS",
       "label": "Verified sender address",
       "kind": "email",
       "required": false,
-      "group": "mail"
+      "group": "mail",
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "resend"
+          }
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "sendgrid"
+          }
+        }
+      ]
     },
     {
       "name": "MAIL_DKIM_SELECTOR",
@@ -126,7 +211,21 @@
       "kind": "text",
       "required": false,
       "group": "mail",
-      "help": "Online only. The sender domain must already publish SPF, DKIM and DMARC."
+      "help": "Online only. The sender domain must already publish SPF, DKIM and DMARC.",
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "resend"
+          }
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "sendgrid"
+          }
+        }
+      ]
     },
     {
       "name": "MAIL_PROVIDER_API_KEY",
@@ -136,19 +235,27 @@
       "required": false,
       "ownerVisible": true,
       "group": "mail",
-      "when": {
-        "field": "MAIL_PROVIDER",
-        "nonEmpty": true
-      },
       "presentations": [
         {
           "when": {
-            "field": "MAIL_FROM_ADDRESS",
-            "nonEmpty": true
+            "field": "MAIL_PROVIDER",
+            "equals": "resend"
           },
-          "help": "Online only. Enter the key for this provider and sender. It remains private and is sent only through the native deployment command."
+          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command."
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "sendgrid"
+          },
+          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command."
         }
-      ]
+      ],
+      "when": {
+        "field": "MAIL_FROM_ADDRESS",
+        "nonEmpty": true
+      },
+      "help": "Online only. Enter the private key for your selected mail provider and verified sender."
     },
     {
       "name": "SETUP_TOKEN",
@@ -187,12 +294,91 @@
       "generate": "hex"
     },
     {
+      "name": "INSTALLATION_KEY",
+      "label": "Installation encryption key",
+      "kind": "secret",
+      "input": "managed",
+      "required": true,
+      "ownerVisible": false,
+      "generate": "hex"
+    },
+    {
       "name": "IDENTITY_PROVIDER",
       "label": "Identity provider",
       "kind": "url",
       "required": false,
       "default": "",
       "help": "Optional Auth install. Leave empty to use email links."
+    },
+    {
+      "name": "AI_PROVIDER_API_KEY",
+      "label": "AI provider API key",
+      "help": "Optional private key for the AI provider configured in Hosting & connections.",
+      "kind": "secret",
+      "input": "managed",
+      "required": false,
+      "ownerVisible": false
+    },
+    {
+      "name": "RER_MAIL_RELAY_SECRET",
+      "label": "Managed mail relay secret",
+      "help": "Optional private signing secret supplied for the Run Edit Run mail relay.",
+      "kind": "secret",
+      "input": "managed",
+      "required": false,
+      "ownerVisible": false
+    },
+    {
+      "name": "AUTH_PROVIDERS",
+      "label": "Sign-in provider configuration",
+      "help": "Optional private provider configuration for operator single sign-on.",
+      "kind": "secret",
+      "input": "managed",
+      "required": false,
+      "ownerVisible": false
+    },
+    {
+      "name": "OIDC_TRANSACTION_SECRET",
+      "label": "Sign-in transaction secret",
+      "help": "Optional private secret protecting single sign-on transactions when an identity provider is connected.",
+      "kind": "secret",
+      "input": "managed",
+      "required": false,
+      "ownerVisible": false
+    },
+    {
+      "name": "TWILIO_ACCOUNT_SID",
+      "label": "Twilio account ID",
+      "kind": "text",
+      "required": false,
+      "group": "sms",
+      "help": "Account identifier for your registered Twilio sender."
+    },
+    {
+      "name": "TWILIO_AUTH_TOKEN",
+      "label": "Twilio authentication token",
+      "kind": "secret",
+      "required": false,
+      "group": "sms",
+      "help": "Authenticates outbound SMS and verifies signed replies and delivery callbacks.",
+      "input": "entered",
+      "ownerVisible": true
+    },
+    {
+      "name": "TWILIO_FROM_NUMBER",
+      "label": "Twilio sending number",
+      "kind": "text",
+      "required": false,
+      "group": "sms",
+      "help": "Registered E.164 sending number, used without a Messaging Service."
+    },
+    {
+      "name": "TWILIO_MESSAGING_SERVICE",
+      "label": "Twilio Messaging Service",
+      "kind": "text",
+      "required": false,
+      "group": "sms",
+      "help": "Optional Messaging Service identifier used instead of the sending number."
     }
   ],
   "steps": [

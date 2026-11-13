@@ -5,6 +5,7 @@ import { basename, join, resolve } from "node:path";
 import { parseArgs } from "./ops-config.mjs";
 import { openArchivePlatform } from "./archive-runtime.mjs";
 import { ownerMigrationFiles } from "./owner-migrations.mjs";
+import { assertPlatformLedger, platformLedger, platformLedgerRows } from "./platform-ledger.mjs";
 
 function digest(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -26,7 +27,7 @@ async function listAll(bucket) {
 }
 
 async function tableNames(database) {
-  const result = await database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations', 'lamp_ext_migrations') ORDER BY name").all();
+  const result = await database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations', 'lamp_ext_migrations', ?) ORDER BY name").bind(platformLedger).all();
   return result.results.map((row) => String(row.name));
 }
 
@@ -44,6 +45,8 @@ async function main() {
   const archive = await openArchivePlatform(flags);
   const { platform } = archive;
   try {
+    const ledger = await platformLedgerRows(platform.env.DB);
+    if (ledger) await assertPlatformLedger(ledger);
     const tables = await tableNames(platform.env.DB);
     const entities = [];
     // D1 batch executes these reads in one transaction, so related records
@@ -55,7 +58,7 @@ async function main() {
     }));
     const snapshot = tables.length ? await platform.env.DB.batch(tables.map((name, index) => platform.env.DB.prepare(`SELECT * FROM ${quotedIdentifier(name)} ORDER BY ${ordering[index]}`))) : [];
     for (const [index, name] of tables.entries()) {
-      entities.push({ name, dependsOn: await dependencies(platform.env.DB, name), rows: snapshot[index].results });
+      entities.push({ name, dependsOn: await dependencies(platform.env.DB, name), rows: snapshot[index].results.map(row => name === "public_metrics" ? { ...row, sealed_credentials: null, pull_lease_until: null, pull_after: 0 } : name === "alert_sources" && "responder_sealed_credentials" in row ? { ...row, responder_sealed_credentials: null } : name === "sign_in_providers" ? { ...row, sealed_secret: null } : row) });
     }
     const entitiesPath = join(output, "entities.json");
     const entitiesBytes = Buffer.from(`${JSON.stringify({ version: 1, tables: entities }, null, 2)}\n`);

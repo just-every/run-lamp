@@ -5,6 +5,8 @@ export function legacyApiFixtureSql() {
   return `
 INSERT INTO operators (id,email,display_name,is_setup_operator,deactivated_at,created_at,updated_at) VALUES
   ('01J00000000000000000000001','operator@example.test','Contract Operator',1,NULL,'${createdAt}','${createdAt}');
+-- Migration 0019 gives an installation with a setup operator its owner claim, and this data arrives after the migrations.
+INSERT INTO oa_bootstrap (singleton,claim_id,claimed_at) VALUES (1,'01J00000000000000000000001',${Date.parse(createdAt)}) ON CONFLICT DO NOTHING;
 INSERT INTO page_settings (id,page_name,tagline,accent_color,timezone,hostname,footer_credit_enabled,logo_key,logo_content_type,widget_allowed_origins,mail_from_address,ai_tone_instructions,feed_id,created_at,updated_at) VALUES
   ('default','Atlas Cloud Status','Current availability and incident communications for Atlas Cloud.','#16794C','America/Los_Angeles','status.atlascloud.example',1,NULL,NULL,'[]','lamp@localhost.invalid','','legacy-api-feed-identity','${createdAt}','${createdAt}');
 INSERT INTO component_groups (id,name,display_order,created_at,updated_at) VALUES
@@ -39,7 +41,7 @@ INSERT INTO incident_updates (id,incident_id,lifecycle,affected_audience,custome
 INSERT INTO incident_drafts (id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,author_operator_id,created_at,updated_at) VALUES
   ('01J00000000000000000000024','01J00000000000000000000020','Monitoring','Customers using the Public API in us-east-1 and eu-west-1.','API responses are improving, but some requests can still fail.','Dashboard viewing, user management, and data exports continue to work.','We are continuing to monitor the mitigation before resolving this incident.','2026-09-08T03:00:00.000Z','01J00000000000000000000001','${createdAt}','${createdAt}');
 INSERT INTO maintenance (id,reference,title,state,starts_at,ends_at,completed_at,created_by_operator_id,created_at,updated_at) VALUES
-  ('01J00000000000000000000030','SCH-144','Database maintenance','Scheduled','2026-09-09T06:00:00.000Z','2026-09-09T07:00:00.000Z',NULL,'01J00000000000000000000001','${createdAt}','${createdAt}');
+  ('01J00000000000000000000030','SCH-144','Database maintenance','Scheduled','2030-09-09T06:00:00.000Z','2030-09-09T07:00:00.000Z',NULL,'01J00000000000000000000001','${createdAt}','${createdAt}');
 INSERT INTO maintenance_components (id,maintenance_id,component_id,component_name,state,created_at,updated_at) VALUES
   ('01J00000000000000000000031','01J00000000000000000000030','01J00000000000000000000014','Database','Under maintenance','${createdAt}','${createdAt}');
 INSERT INTO subscribers (id,channel,destination,contact_email,state,selection_mode,token_hash,deactivation_reason,deactivated_at,created_at,updated_at) VALUES

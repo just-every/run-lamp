@@ -1,3 +1,13 @@
+/** Browser comparison is restricted to the JSON values carried by a setup manifest. */
+function isDeepStrictEqual(left, right) {
+  if (Object.is(left, right)) return true;
+  if (!left || !right || typeof left !== 'object' || typeof right !== 'object'
+    || Array.isArray(left) !== Array.isArray(right)) return false;
+  const names = Object.keys(left);
+  return names.length === Object.keys(right).length
+    && names.every(name => Object.hasOwn(right, name) && isDeepStrictEqual(left[name], right[name]));
+}
+
 // Validates data against the subset of JSON Schema 2020-12 the seed schemas use.
 //
 // `checkSchema` walks a whole schema — every subschema, including branches no
@@ -13,8 +23,8 @@
 const SUPPORTED = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'enum', 'const', 'required', 'properties', 'additionalProperties',
-  'propertyNames', 'items', 'minItems', 'minLength', 'pattern', 'format',
-  'allOf', 'if', 'then'
+  'propertyNames', 'items', 'minItems', 'maxItems', 'minLength', 'pattern', 'format',
+  'allOf', 'if', 'then', 'not', 'uniqueItems'
 ]);
 
 // The supported keywords whose value holds subschemas, and how they hold them:
@@ -27,7 +37,8 @@ const SUBSCHEMAS = {
   items: 'schema',
   allOf: 'list',
   if: 'schema',
-  then: 'schema'
+  then: 'schema',
+  not: 'schema'
 };
 
 const SUPPORTED_FORMATS = new Set(['date']);
@@ -128,6 +139,9 @@ export function validate(schema, data, { root = schema, path = '$', label = '' }
   if (Object.hasOwn(schema, 'const') && data !== schema.const) {
     fail(`expected ${JSON.stringify(schema.const)}`);
   }
+  if (schema.not && validate(schema.not, data, { root, path }).length === 0) {
+    fail('must not match excluded schema');
+  }
 
   if (actual === 'string') {
     if (schema.minLength !== undefined && data.length < schema.minLength) fail(`must not be empty`);
@@ -165,8 +179,14 @@ export function validate(schema, data, { root = schema, path = '$', label = '' }
   }
 
   if (actual === 'array') {
+    if (schema.uniqueItems === true && data.some((item, index) => data.slice(0, index).some((previous) => isDeepStrictEqual(item, previous)))) {
+      fail('items must be unique');
+    }
     if (schema.minItems !== undefined && data.length < schema.minItems) {
       fail(`needs at least ${schema.minItems} item(s)`);
+    }
+    if (schema.maxItems !== undefined && data.length > schema.maxItems) {
+      fail(`needs at most ${schema.maxItems} item(s)`);
     }
     if (schema.items) {
       data.forEach((item, index) => {

@@ -2,10 +2,14 @@ import { aliasArtifactKey, isImportAliasPath, isLampPermalink } from "../statusp
 import { isSorryHistoryMonthPath } from "../statuspage-import/public-paths.mjs";
 import type { Context, Hono } from "hono";
 
+import { createTrafficStorage } from "../traffic-alerts/storage";
+import type { TrafficSurface } from "../traffic-alerts/surfaces";
 import type { AppEnv } from "../../app/types";
 import { escapeHtml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
+import { nativeApiArtifact } from "./native-api";
+import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
 
 // Stable public URLs are selectors, not immutable artifacts. Revalidate the
 // generation on every reuse; downstream stale-while-revalidate can otherwise
@@ -57,6 +61,7 @@ async function labelledStaleResponse(cached: Response, artifact: string) {
   const headers = new Headers(cached.headers);
   headers.set("Cache-Control", CACHE_CONTROL);
   headers.set("X-Lamp-Snapshot-State", "stale");
+  headers.set("X-Lamp-Snapshot-Retained", "true");
   headers.delete("ETag");
   headers.set("Warning", '110 - "Response is stale"');
   const contentType = headers.get("Content-Type") ?? "";
@@ -68,11 +73,15 @@ async function labelledStaleResponse(cached: Response, artifact: string) {
     const body = (await cached.clone().text()).replace(/<title>([^<]*)<\/title>/, `<title>$1</title><subtitle>Last known state — content generated at ${headers.get("X-Lamp-Snapshot-Generated-At") ?? "unknown"}; current state could not be verified.</subtitle>`);
     return new Response(body, { status: cached.status, headers });
   }
+  if (contentType.includes("rss+xml")) {
+    const body = (await cached.clone().text()).replace(/<description>[^<]*<\/description>/, `<description>Last known state — content generated at ${headers.get("X-Lamp-Snapshot-Generated-At") ?? "unknown"}; current state could not be verified.</description>`);
+    return new Response(body, { status: cached.status, headers });
+  }
   if (artifact === "status.json" && contentType.includes("application/json")) {
     const payload = JSON.parse(await cached.clone().text()) as Record<string, unknown>;
     return new Response(JSON.stringify({ ...payload, snapshotState: "stale" }), { status: cached.status, headers });
   }
-  if (artifact === "widget.js" && contentType.includes("javascript")) {
+  if ((artifact === "widget.js" || artifact === "embed/script.js") && contentType.includes("javascript")) {
     const body = `${await cached.clone().text()};(()=>{const n=document.currentScript?.nextElementSibling;if(n?.getAttribute('role')==='status'){const l=document.createElement('span');l.textContent=${JSON.stringify(` · Last known state — generated at ${headers.get('X-Lamp-Snapshot-Generated-At') ?? 'unknown'}`)};n.append(l)}})();`;
     return new Response(body, { status: cached.status, headers });
   }
@@ -91,20 +100,38 @@ function installedSignInUrl(context: Context<AppEnv>) {
 function installedSignIn(response: Response, context: Context<AppEnv>) {
   if (!response.headers.get("Content-Type")?.includes("text/html")) return response;
   const target = installedSignInUrl(context);
+  const operatorLink = `<a data-lamp-signin href="${escapeHtml(target)}">Sign in</a>`;
   let signInSeen = false;
   return new HTMLRewriter()
-    .on("nav.status-utilities", {
+    .on("body", {
       element(element) {
-        // Archived generations predate the marker. Wait until the navigation
-        // ends so a link already present in newer or cached HTML is reused.
         element.onEndTag((endTag) => {
           if (signInSeen) return;
-          endTag.before(`<a data-lamp-signin href="${escapeHtml(target)}">Sign in</a>`, { html: true });
+          endTag.before(`<footer>${operatorLink}</footer>`, { html: true });
           signInSeen = true;
         });
       },
     })
-    .on("a[data-lamp-signin]", {
+    .on("nav.status-utilities a", {
+      element(element) {
+        if (element.hasAttribute("data-lamp-signin") || element.getAttribute("href") === "/signin" || element.getAttribute("href") === target) element.remove();
+      },
+    })
+    .on("footer", {
+      element(element) {
+        // Archived generations predate the footer link. Reuse a marked link
+        // when present, or add the operator entry after the customer resources.
+        element.onEndTag((endTag) => {
+          if (signInSeen) return;
+          endTag.before(` ${operatorLink}`, { html: true });
+          signInSeen = true;
+        });
+      },
+    })
+    .on("footer a[data-lamp-vpat]", {
+      element(element) { element.setAttribute("href", new URL("/docs/accessibility/vpat", target).href); },
+    })
+    .on("footer a[data-lamp-signin]", {
       element(element) {
         if (signInSeen) return void element.remove();
         element.setAttribute("href", target);
@@ -136,13 +163,31 @@ function currentMaintenanceOverruns(response: Response, now: number) {
 }
 
 export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService) {
-  const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => async (context: Context<AppEnv>) => {
+  // While the page is pre-launch every answer from the page host asks search engines to stay away.
+  const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
+    return async (context: Context<AppEnv>) => {
+      // The artifact read already carries the generation's pre-launch flag, so a served page reads the pointer once;
+      // only an answer that never reached a stored artifact asks the service again.
+      const seen: { prelaunch?: boolean } = {};
+      const response = await answerArtifact(artifact, download, missingArtifact, seen)(context);
+      if (seen.prelaunch ?? await service.prelaunch()) response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+      return response;
+    };
+  };
+  const answerArtifact = (artifact: (context: Context<AppEnv>) => string, download: boolean, missingArtifact: string | undefined, seen: { prelaunch?: boolean }) => async (context: Context<AppEnv>): Promise<Response> => {
+    // Only the fixed surface crosses this boundary: never the request, path,
+    // query, cookie, address or user agent. Counting cannot delay public bytes.
+    const key = artifact(context);
+    const surface: TrafficSurface = key === 'page.html' ? 'page' : key.startsWith('history/') || key === 'history.html' || key.startsWith('aliases/') ? 'history' : key.startsWith('incidents/') ? 'incident' : key.startsWith('maintenance/') || key === 'maintenance.ics' ? 'maintenance' : key.startsWith('feed.') || key.startsWith('history.') ? 'feed' : key === 'widget.js' || key === 'embed/script.js' ? 'widget' : key === 'status.json' ? 'status' : key.startsWith('assets/') ? 'asset' : key.startsWith('badge.') ? 'badge' : key.startsWith('components/') ? 'component' : 'public-api';
+    context.executionCtx.waitUntil(createTrafficStorage(context.env.SNAPSHOTS).increment(surface, Date.now()));
     const cache = await caches.open("lamp-public-snapshot-fallback").catch(() => null);
     const cacheUrl = new URL(context.req.url);
     cacheUrl.search = ""; // Public artifacts do not vary by query parameters.
+    if (cacheUrl.pathname.startsWith("/api/public/v1/")) cacheUrl.searchParams.set("artifact", artifact(context));
     const cacheRequest = new Request(cacheUrl, { method: "GET" });
     try {
       const object = await service.readArtifact(artifact(context));
+      if (object) seen.prelaunch = object.prelaunch;
       if (object) {
         const redirect = object.contentType === "application/vnd.lamp.redirect+json" ? JSON.parse(new TextDecoder().decode(object.bytes)).target : null;
         const path = new URL(context.req.url).pathname;
@@ -157,11 +202,11 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
         const servedAt = Date.now();
         // HTML also varies with its serving-time action and full installed URL.
         // Version that transformation so an old validator cannot retain a
-        // header without Sign in after an upgrade of the same stored artifact.
+        // header sign-in link after an upgrade of the same stored artifact.
         const html = object.contentType.includes("text/html") ? new TextDecoder().decode(object.bytes) : "";
         const overrunState = object.contentType.includes("text/html") ? maintenanceOverrunState(html, servedAt) : "";
         const representation = object.contentType.includes("text/html")
-          ? `installed-signin-v1:${installedSignInUrl(context)}${overrunState.includes("1") ? `:maintenance-overrun-v1:${overrunState}` : ""}`
+          ? `installed-signin-footer-v3:${installedSignInUrl(context)}${overrunState.includes("1") ? `:maintenance-overrun-v1:${overrunState}` : ""}`
           : context.env?.LAMP_APP_HOST ?? "";
         const etag = `W/"${encodeURIComponent(object.version)}/${encodeURIComponent(artifact(context))}/${encodeURIComponent(representation)}"`;
         response.headers.set("ETag", etag);
@@ -181,6 +226,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
       if (missingArtifact) {
         const notFound = await service.readArtifact(missingArtifact);
         if (notFound) {
+          seen.prelaunch = notFound.prelaunch;
           const response = installedSignIn(publicResponse(notFound.bytes, notFound.contentType, context.req.url, 404), context);
           response.headers.set("X-Lamp-Snapshot-Generated-At", notFound.generatedAt);
           if (notFound.retainedReady) response.headers.set("X-Lamp-Snapshot-Retained", "true");
@@ -201,8 +247,17 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
     }
   };
 
+  // Today's answer for this path is the Worker's plain 404; only a pre-launch page has a robots.txt.
+  app.get("/robots.txt", async context => {
+    const object = await service.readArtifact(PRELAUNCH_ROBOTS_KEY).catch(() => null);
+    if (!object?.prelaunch) return new Response("Not found.", { status: 404 });
+    const response = publicResponse(object.bytes, object.contentType, context.req.url);
+    response.headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+    return response;
+  });
   app.get("*", async (context, next) => {
     const path = new URL(context.req.url).pathname;
+    if (["/history.atom", "/history.rss"].includes(path)) return next();
     if (!isImportAliasPath(path)) return next();
     // Every valid Sorry month shares the retained collection redirect. Its
     // absence after undo yields 404, even for a month never previously visited.
@@ -210,14 +265,35 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   });
   app.get("/maintenance/:reference", serve((context) => `maintenance/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
   app.get("/", serve(() => "page.html"));
+  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? `history/${context.req.param("month")}.html` : "history/invalid.html", false, "not-found.html"));
   app.get("/history", serve(() => "history.html"));
   app.get("/incidents/:reference", serve((context) => `incidents/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
+  app.get("/maintenance.ics", serve(() => "maintenance.ics"));
   app.get("/feed.atom", serve(() => "feed.atom"));
+  app.get("/feed.rss", serve(() => "feed.rss"));
+  app.get("/history.atom", serve(() => "history.atom"));
+  app.get("/history.rss", serve(() => "history.rss"));
+  app.get("/badge.svg", serve(() => "badge.svg"));
+  app.get("/badge.json", serve(() => "badge.json"));
+  for (const resource of ["feed.atom", "feed.rss", "badge.svg", "uptime.svg"]) {
+    app.get(`/components/:slug/${resource}`, serve(context => `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
+  }
+  app.get("/api/v2/*", serve(context => new URL(context.req.url).pathname.slice(1)));
+  for (const path of ["/api/public/v1", "/api/public/v1/", "/api/public/v1/summary.json"]) app.get(path, serve(() => "api/public/v1/summary.json"));
+  app.get("/api/public/v1/*", serve(context => nativeApiArtifact(new URL(context.req.url).pathname, context.req.query("cursor"))));
   app.get("/widget.js", serve(() => "widget.js"));
+  app.get("/embed/script.js", serve(() => "embed/script.js"));
   app.get("/assets/status-page.css", serve(() => "assets/status-page.css"));
   app.get("/assets/status-page.js", serve(() => "assets/status-page.js"));
+  // A chosen built-in template's own stylesheet and script; the default page never loads them.
+  app.get("/assets/template.css", serve(() => "assets/template.css"));
+  app.get("/assets/template.js", serve(() => "assets/template.js"));
+  app.get("/assets/theme-font", serve(() => "assets/theme-font", true));
+  app.get("/assets/theme-header", serve(() => "assets/theme-header", true));
   app.get("/assets/logo", serve(() => "assets/logo", true));
   app.get("/assets/favicon.svg", serve(() => "assets/favicon.svg"));
+  app.get("/assets/mark.svg", serve(() => "assets/mark.svg"));
   app.get("/assets/og.svg", serve(() => "assets/og.svg"));
+  app.get("/api/public/dependencies", serve(() => "api/public/dependencies"));
   app.get("/api/public/status", serve(() => "status.json"));
 }

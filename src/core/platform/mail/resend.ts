@@ -29,7 +29,7 @@ export class ResendMailSender implements MailSender {
       const request = new Request("https://api.resend.com/emails", {
         method: "POST", signal: controller.signal,
         headers: { Authorization: `Bearer ${this.configuration.apiKey}`, "Content-Type": "application/json", "User-Agent": "lamp-mail-sender/1.0", "Idempotency-Key": message.idempotencyKey },
-        body: JSON.stringify({ from: message.from, to: [message.to], subject: message.subject, text: message.text, ...(message.html ? { html: message.html } : {}), headers: message.headers }),
+        body: JSON.stringify({ from: message.from, to: [message.to], subject: message.subject, text: message.text, ...(message.replyTo ? { reply_to: message.replyTo } : {}), ...(message.html ? { html: message.html } : {}), headers: message.headers }),
       });
       timeout = setTimeout(() => controller.abort(), 20_000);
       submitted = true;
@@ -45,6 +45,7 @@ export class ResendMailSender implements MailSender {
       const error = new Error(result.message ?? result.name ?? `Resend rejected mail with ${response.status}.`);
       // Resend treats an idempotency key with a changed payload as a permanent
       // 409. Only an in-flight request bearing the same key is retryable.
+      (error as Error & { failoverSafe?: boolean }).failoverSafe = response.status === 408 || response.status === 429 || response.status >= 500;
       (error as Error & { retryable?: boolean }).retryable = response.status === 408 || response.status === 429 || response.status >= 500 || result.name === "concurrent_idempotent_requests";
       throw error;
     }

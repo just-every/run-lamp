@@ -1,0 +1,11 @@
+# Link a self-hosted Lamp to Business
+
+In Business Set up, prepare Lamp's intended HTTPS app address first. The address can be prepared before Lamp is reachable. Business supplies the normal `rer-answers.json` and a separate `rer-business-trust.env`. Keep the answers manifest-shaped; keep your existing private deployment inputs separately. Save the trust file as an owned 0600 file, then use the displayed ordinary setup and `rer deploy --env-file rer-business-trust.env` commands.
+
+The host validator and generated Worker variables carry the public issuer, installation ID, exact canonical app origin and public ES256 keys. A supplied app origin must match the generated app origin. Private JWKs and incomplete trust are refused. Business assigns `RER_IMPORT_DOOR=on`; standalone installations leave it unconfigured. The public file contains no signing key, setup token or session/provider secret.
+
+Bootstrap the first native owner normally, or sign in as the existing owner. Configuration cannot transfer ownership. A missing import settings row can heal through the existing first-claim/sign-in path; an existing disabled choice, permanent settings key and revoked signing kids survive. Then use Business Claim's Verify owner action.
+
+`POST /api/rer/owner-claim-status` is an app-host-only, read-only door. Its empty JSON body and short-lived RER read grant use the distinct `owner-claim-status` action. It checks configured owner trust, the permanent key's revocation list, native bootstrap and the configured active native Owner. A bootstrap marker, configuration or signed-claim ledger alone is insufficient. Successful responses contain only version, installation, origin, expected email, request challenge, native owner identity, import readiness and actually available runtime deployment facts. Missing runtime facts remain null. Responses are no-store; repeated reads do not consume grant nonces or mutate setup, ownership, settings or imports.
+
+A verified Business self-host release proves observed ownership at that destination, not provider publication or deployed-source identity. Business's existing preview, approval, import and reconciliation doors continue to enforce their action and fingerprint boundaries. Existing Lamp records, owner identities and import history remain in Lamp.

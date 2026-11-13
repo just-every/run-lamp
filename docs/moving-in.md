@@ -3,6 +3,8 @@
 Lamp can bring components, incident history, scheduled maintenance and eligible
 email subscribers into your page.
 
+After building the candidate, `pnpm sorry:receipt --capture /unchanged/capture --key-file /private/test.pem --out /new/output` (reading the request metadata from `/unchanged/capture.metadata.json`) verifies a public capture in a disposable test installation and signs its receipt; reviewed receipts live in `docs/receipts/` and their public keys belong only in the consumer's test trust store.
+
 ## Common workflow
 
 1. Sign in and open **Settings → Move in** (`/app/move-in`). Choose the matching
@@ -25,7 +27,8 @@ email subscribers into your page.
    sends mail. It sends one invitation to each eligible pending email subscriber;
    repeat for any remaining batch before the confirmation deadline.
    For Sorry, complete the hostname switch and observation window first; its
-   imported subscriber candidates are held until that readiness check.
+   imported subscriber candidates are held until that readiness check, for at
+   most 30 days.
 7. Point a hostname you control to Lamp using [the custom-domain guide](domains.md),
    or keep the deployment's default public address. Select that public origin in
    Cutover. Selecting it records your choice; it does not check DNS.
@@ -36,11 +39,79 @@ email subscribers into your page.
 9. Keep the old page available through the pending subscribers' confirmation
    deadlines. Update old links, feeds, widgets and API readers before retiring it.
 
+Move in, `rer` and Business imports share one import door. **Run dry run**
+uploads the saved responses, unchanged, as one JSON envelope (`source`, `files`
+and the form's `pageId`, `publicAccessAcknowledged` and `publicUrl`) to the
+door's owner surface, `/api/operator/import/*`, as the signed-in owner, and
+shows the door's plan; a key or public page is first read into saved responses
+(`POST /api/app/statuspage-import/fetch`, which writes nothing). **Import**
+applies exactly the fingerprint you reviewed, in bounded steps. A later import
+of the same source is that import's catch-up (see below), and selecting the same
+files again reads as already imported. A new dry run replaces one you did not
+import. Importing again a source whose import you undid uploads it afresh,
+apart from records that undo kept because you changed them in Lamp (see
+[Repeat, undo and full-install restore](#repeat-undo-and-full-install-restore)).
+A dry run plans the page as it is at that moment and imports for 30 minutes;
+after that **Import** answers "This dry run has expired. Run the dry run again."
+and changes nothing. **Your imports** lists your imports ("approved by") and Business imports
+("approved via Business by") together; undo the newest import of a source first.
+Imports made before the door keep their own read, Continue and Undo.
+
+## From setup, without a key
+
+When setup finds the Statuspage, Instatus or Better Stack page your site links to
+(or one at `status.<your domain>` that names your site), **Bring its incident history too** reads that
+page's public feeds once more, keyless, and imports them through the same door:
+Statuspage's `/api/v2/summary.json` and `/api/v2/incidents.json` (its 50 newest
+incidents), Instatus's `/summary.json`, `/v2/components.json` and `/history.atom`,
+and Better Stack's `/index.json` and `/feed`. The envelope's `files` are those
+responses, and `components` lists the components you kept at setup, by the page's
+own IDs, with your names. Only resolved incidents come, each update at its original
+time; nothing still open on the page, no maintenance and no subscribers. Component
+states come only where the feeds state them (Statuspage updates, and the reports a
+Better Stack page still shows); any other incident is history that names the
+components it lists, without changing their history. An incident about components
+you left out stays out. **Your imports** lists the import, and Undo removes it.
+A full Move in of the same page later, with its key or saved responses, is that
+import's catch-up (see below): the history it brought is replaced in place unless
+you changed it in Lamp, nothing it holds is imported again, and what setup did not
+bring (maintenance, subscribers, the components you left out) is added without
+notifying anyone.
+
+Deleting a subscriber, and the expiry of an unconfirmed or held one, also erases
+that address from import custody: its imported record becomes an erased entry,
+and the door's retained uploads and plan snapshots, which hold whole exports, are
+withdrawn. Earlier imports still undo. An export that still holds an erased
+subscriber is refused (`source_erased`); remove that subscriber from it first.
+
 Cutover lists the first 25 public addresses. A live check covers only the rows
 shown there; it does not validate the rest of the total automatically. A hostname
 switch affects the address you control. It does not transfer or control a
 provider-owned shortlink host, so keep its redirect active or update links that
 still use that host.
+
+## What saved API responses means
+
+These are `.json` files containing the records your old provider returned when
+its API was asked for components, incidents or subscribers. They are not
+screenshots, CSV exports or a browser's saved public web page. Upload the files
+unchanged and together; Lamp reads them without using an API key. Instatus also
+needs the page ID so it can select the right page from those files.
+
+If you have no such files, use the source account/API option in Move in, or ask
+the person managing your old status page to capture them using the provider
+instructions below. **Download these saved responses** after a dry run also gives you
+files you can use for a later saved-response import. Keep them private: subscriber
+files can contain personal information. Do not put them in Git.
+
+The filename lists below are for the person collecting those responses.
+A provider may return a long list in several **pages**. Save every page in order:
+the first has the base filename, the second adds `-2`, the third `-3`, and so on.
+For example, a list requested in groups of 100 is complete only when a response
+has fewer than 100 records, including an empty response. Include that final
+response too; do not rename or edit records inside the files. A missing file or
+page can leave history or subscribers out, so resolve dry-run refusals before
+importing.
 
 ## What carries over
 
@@ -76,7 +147,9 @@ For Statuspage, Better Stack and Instatus, the confirmation deadline is
 **72 hours from the import review time**, even if you have not sent the
 invitation yet. Sending later leaves only the time remaining. Sorry candidates
 are held without a confirmation deadline until released after cutover; their
-72-hour clock starts at release. Expired pending subscriptions cannot be
+72-hour clock starts at release. Candidates not released **30 days after the
+import review time** are deleted with their addresses, as an undo would remove
+them; Cutover shows the date as **Release by**. Expired pending subscriptions cannot be
 invited; the expiry job deletes their unconfirmed addresses. Cutover shows
 eligible, already-claimed and expired counts.
 
@@ -90,12 +163,18 @@ stops working when that host is removed.
 ## Repeat, undo and full-install restore
 
 Repeating an identical import while its prior job is present is an idempotent
-no-op. After a successful undo, the source can be imported again. **Undo** under
+no-op. After a successful undo, the source can be imported again. A record the
+undo kept because you changed it stays as you left it: a dry run that names it is
+refused and names it, so leave it out of the saved responses to import the rest.
+**Undo** under
 **Your imports** is conditional: it removes rows created by that import only
 when their expected values are still present. Rows changed since import and
 confirmed subscribers stay, with their reason shown. Aliases stay for surviving
 imported incidents or maintenance and are removed when the imported target is
 removed. Undo sends no mail.
+
+Moving from another Lamp page? Download your page data from **Settings → Export and restore** there and
+restore the file on the new page; see [Backups and recovery](backups-and-recovery.md#export-your-page-data-from-the-app).
 
 Undo applies to one move-in job; it is not a full installation restore. To
 restore a complete Lamp installation from an archive, follow [Backups and
@@ -107,12 +186,27 @@ empty-destination requirements.
 Choose **Statuspage**. In that account, open the avatar menu and choose **API
 info**; enter the displayed **page ID** and **API key**. Lamp makes bounded `GET`
 requests to `https://api.statuspage.io` and uses the key only in those requests.
-The API calls read components, component groups, incidents, scheduled incidents
-and subscribers. The key is not saved. See the [official API reference](https://developer.statuspage.io/).
+The API calls first read the page and page-access groups, then components, component groups, incidents, scheduled incidents,
+subscribers and incident templates. For each unresolved incident, it also reads
+`/v1/pages/{page_id}/incidents/{incident_id}/subscribers`. The key is not saved. See the [official API reference](https://developer.statuspage.io/).
 
-For saved responses, upload the unchanged JSON arrays named:
+For saved responses, include the unchanged object from `GET /v1/pages/{page_id}` as
+`page.json` and the unchanged array from `GET /v1/pages/{page_id}/page_access_groups`
+as `page-access-groups.json`. Also upload the unchanged JSON arrays named:
 `component-groups.json`, `components.json`, `incidents.json`,
-`incidents-scheduled.json` and `subscribers.json`. Include later pages as
+`incidents-scheduled.json`, `subscribers.json` and `incident-templates.json`.
+For an unresolved incident, also include its unchanged incident-subscriber array
+as `incident-subscribers-<incident_id>.json`. Lamp imports supported email
+followers as distinct pending subscriptions to that incident, even when the
+address already holds a page subscription. Resolved incidents, quarantined
+addresses and unsupported channels are named and skipped. Import sends nothing;
+the owner must send invitations, and each recipient must confirm in Lamp. A
+public follow form cannot bypass that invitation action.
+
+An optional `incident-template-groups.json` array of group IDs and names supplies
+template folder names; embedded template groups also supply names. The documented
+management API exposes no group-list read. Without a group name, its source ID
+is retained as the folder and the dry run names that change. Include later pages as
 `<resource>-2.json`, `<resource>-3.json` and so on. The incidents and scheduled
 incidents collections may both contain a maintenance; duplicates are carried
 once. Statuspage maintenance windows carry over, but their update messages do
@@ -133,12 +227,38 @@ hand-picked all-state export, so do not upload one. Non-email and quarantined
 rows are skipped. Eligible email rows become pending and need the Lamp
 invitation and confirmation described above.
 
-The import does not read the source page's visibility settings. Check that the
-page is intended to become publicly readable before moving it; Lamp's public
-page does not preserve member-login or IP restrictions. The import also omits
-post-mortem text, templates and unsupported subscriber channels. Components
-marked `only_show_if_degraded` are shown normally in Lamp; the dry run names
-that change. The source's `showcase` flag does not set a Lamp visibility rule.
+The reader refuses team-member-only pages, IP restrictions and nonempty page-access
+groups. Missing or unreadable visibility also refuses the import with a plain
+notice. Lamp cannot yet preserve private or audience access; no such source is
+imported into its public page. Unsupported subscriber
+channels do not move. Components marked `only_show_if_degraded` retain their
+conditional visibility in Lamp. The source's `showcase` flag does not set a Lamp
+visibility rule.
+
+Postmortems with a valid `postmortem_published_at` become published incident
+reports at that original time. Bodies with no publication time stay private,
+visible only to operators. The report keeps the full body in Summary; the other
+report fields are empty. Markdown and HTML become plain text, keeping paragraphs,
+headings, list items, link labels and URLs. Images become text naming the image
+and source URL; Lamp never fetches or embeds them. Invalid report bodies or
+publication times refuse that report without rejecting an otherwise valid incident.
+The dry run counts published, kept-private and refused postmortems separately.
+Import sends no postmortem notifications, even when the source requested them.
+
+Incident templates retain their name, title, lifecycle, affected components and
+states, folder and notification default. Their first body paragraph becomes
+Customer impact and the rest becomes Details; Who is affected names their
+components. Oversized wording is retained in full and the dry run names each
+field to shorten. Open the imported template in the composer, shorten and save
+those fields before applying it. An absent next-update offset stays unset for
+the operator to choose. Applying a template fills a private draft and publishes
+nothing. The source incident's recorded impact is preserved independently of
+component claims and uptime history.
+
+Reports belong to their imported incident for repeat and undo. Undo removes an
+unchanged report with its incident and removes unchanged templates and their
+component selections. An edited or added report retains its incident; an edited
+template retains its components. Repeating the import duplicates neither.
 
 This reader maps the source `/incidents/<id>` path for each imported incident or
 maintenance, along with any supplied `shortlink` path. If a source shortlink is
@@ -148,11 +268,28 @@ that source-owned host; Lamp can serve `/abc` on your moved hostname only when
 that path was supplied and accepted. Keep the original redirect or update the
 consumer's link.
 
-The source's `/history.atom` path reaches Lamp's Atom feed. `/history.rss`
-returns 404; change RSS readers to `/feed.atom`. Readers using the source JSON
-API under `/api/v2/` receive 404 and must use Lamp's native
-`/api/public/status` format. The source's provider widget is not served by
-Lamp; replace it with `/widget.js` and allow its origin in Settings.
+The source's `/history.atom` and `/history.rss` paths reach Lamp's feeds.
+Statuspage JSON readers use `/api/v2/` on the moved hostname. The old
+`/embed/script.js` path serves Lamp's floating notice; allow the embedding
+origin in Settings. [Public resources](public-resources.md) documents the
+read APIs, native pagination and remaining maintenance compatibility gaps.
+
+Statuspage-format webhook bodies and per-component automation email addresses
+are not available yet, and Cutover says so. Until they are, keep webhook
+receivers and email-wired monitors pointed at Statuspage, or move them to Lamp's
+signed webhooks and [alert intake](alerts-from-monitoring-tools.md).
+
+### Operating Lamp after Statuspage
+
+Cutover lists how running Lamp differs from running Statuspage:
+
+- A published update is never edited in place. Fix a mistake with a correction
+  update that names it, and publish it with no channels selected when nobody
+  should be notified again. Both updates stay on the timeline.
+- Component states change with each update: set each affected component's state
+  in the update you publish, and publishing applies the states and the update
+  together.
+- Components set to show only while degraded keep that behavior after import.
 
 ## Sorry
 
@@ -161,6 +298,8 @@ the unchanged JSON files from the local capture below. For an authenticated read
 with a hidden prompt or private key file. Lamp uses the key for GET requests only
 and never stores it. Only move material intended to be public and unrestricted.
 Source visibility, audience rules and private-page access do not transfer.
+
+Sorry shows a parent row once, as its children's group, so a page of 16 component rows arrives as 14 components + 2 groups; the dry run and the receipt state that count, name the rows shown as groups, and warn only about rows that are genuinely not carried.
 
 ### Capture an authenticated export locally
 
@@ -200,7 +339,7 @@ without an enabled email channel are skipped with a reason. Other channel
 values are omitted from every retained record. For a response containing
 these values, Lamp retains only its
 unchanged-byte hash and size, without original-response custody; sanitized
-bytes are never labelled as an original. The local capture files remain
+bytes are never labeled as an original. The local capture files remain
 unchanged and can contain channel credentials, so keep them private. Captured files
 may contain email addresses: keep them private, outside Git, and remove them
 when no longer needed. Capture sends no mail and imports nothing. A failed
@@ -234,10 +373,11 @@ and full update history. A status overview or the first notice page alone is
 incomplete. Pagination stays on the selected HTTPS origin and collection.
 Public capture uses `sorry-status.json` instead of `sorry-page.json`, numbered
 collection files such as `sorry-notices-2.json`, and the same detail filenames.
-Public JSON provides no subscribers. For a bounded read-only sample, the preview
-door accepts `previewNoticeLimit` (1–10): it still reads every collection page,
-names uncaptured notice details as refused, and never permits that incomplete
-capture to apply. Omit the limit for a complete move. See the [public Status API](https://status.sorryapp.com/api).
+Public JSON provides no subscribers. Every notice's detail is read; a capture
+missing one is refused. The capture records its requests in
+`sorry-public.metadata.json` beside the folder (`<out>.metadata.json`), not
+inside it, so in Move in you can select every `.json` file in the folder at once.
+See the [public Status API](https://status.sorryapp.com/api).
 
 Sorry documents no native RSS/Atom feed. If the source HTML advertises an
 alternate feed, discover its actual `rel="alternate"` link; a feed is a
@@ -249,7 +389,7 @@ with `/api/public/status`. See Sorry's [feed and notification comparison](https:
 ### Review history, then release subscribers after cutover
 
 The dry run reports native mappings, unsupported records and any changes to
-source meaning. Cancelled maintenance remains cancelled and never acquires
+source meaning. Canceled maintenance remains canceled and never acquires
 a maintenance claim. General notices become resolved informational incidents,
 including notices without affected components. In particular, authenticated update text may not include a
 lifecycle state for each update; any lifecycle projection is disclosed as a
@@ -271,7 +411,9 @@ dry run, and their values are not retained. Rows without an enabled email
 channel are skipped with a reason. Component preferences must resolve and are
 never broadened. Import holds Sorry candidates inactive, without sending mail
 or starting the confirmation deadline. They receive no ordinary notifications
-while held. Other provider confirmation deadlines are unchanged.
+while held. If you neither release them nor undo the import, they are deleted
+with their addresses 30 days after the import review time, so an abandoned move
+keeps no one's address. Other provider confirmation deadlines are unchanged.
 
 Switch the intended hostname using [the custom-domain guide](domains.md), check
 that Lamp serves it, and finish the observation window you chose for the move.
@@ -292,8 +434,18 @@ each dry run before importing.
 
 ## Better Stack
 
-Choose **Better Stack**. Enter the status page ID and **API token**, or upload
-saved original JSON response envelopes. Lamp reads from
+Choose **Better Stack**. In Better Stack, open **API tokens → Team-based tokens**,
+select the team that owns the page, then create or copy an **Uptime API token**
+from that team's Uptime section. The [API token settings](https://betterstack.com/settings/api-tokens/0)
+and [official token guide](https://betterstack.com/docs/uptime/api/getting-started-with-uptime-api/)
+show the account controls.
+
+Paste the token into Move in and choose **Find my pages**. Lamp lists the
+status pages that token can read, with each page's name, address and ID; choose
+**Use this page** beside yours to fill the page ID. (Lamp reads that list from
+Better Stack's [List status pages](https://betterstack.com/docs/uptime/api/list-all-existing-status-pages/)
+API.) The page ID is not a monitor ID or the public hostname.
+Enter that page ID and **API token**, or upload the saved original JSON files. Lamp reads from
 `https://incidents.betterstack.com/api/v2` using Bearer authentication and `GET`
 only; the token is not saved, redirects are refused, and requests stay within
 the selected page and report. See the [official status-page API reference](https://betterstack.com/docs/uptime/api/list-all-existing-status-pages/).
@@ -358,8 +510,15 @@ record.
 
 ## Instatus
 
-Choose **Instatus**. Enter the page ID for saved files or an API read. For an API
-read, also enter the **API key**. Lamp uses fixed-origin `GET` requests to
+Choose **Instatus**. In your [Instatus dashboard](https://dashboard.instatus.com),
+right-click the project name at the top left and choose **Copy Project ID**;
+that value is the **page ID** Lamp asks for. Or paste your API key into Move in
+and choose **Find my pages**, then **Use this page** beside yours. Open **User settings → Developer
+settings** (or [Developer settings](https://dashboard.instatus.com/developer))
+to copy your **API key**. See the [official API help](https://instatus.com/help/api).
+
+Enter the page ID for saved files or an API read. For an API read, also enter
+the **API key**. Lamp uses fixed-origin `GET` requests to
 `https://api.instatus.com`; it does not save the key or forward it through a
 redirect. It selects the requested page from `/v2/pages`, then reads components,
 incidents with embedded updates, maintenance lists and each maintenance's
@@ -384,12 +543,11 @@ establish affected components. The optional
 `instatus-summary.json` can preserve exact public links supplied for a record;
 it is not a complete history export. The API help uses v2 component and
 maintenance lists while the official OpenAPI attaches their schemas to v1
-reads; deployed account parity has not been verified. Fixture families remain
-synthetic-only.
+reads; check your dry run for missing or refused records before importing.
 
 The saved pages response cannot establish public access or the absence of
 audience rules. Lamp asks you to confirm that the page and supplied history are
-published and unrestricted; this is your acknowledgement, not provider
+published and unrestricted; this is your acknowledgment, not provider
 evidence. Known private, allow-listed, audience-scoped or secure-link pages are
 refused, and known unpublished records are not made public. Audience groups are
 access controls, not display groups. Visual parent components and their
@@ -419,7 +577,115 @@ The optional summary file preserves exact supplied public URLs from
 to management records by source ID. A summary is not complete history. Old URLs
 missing from it are unavailable; Lamp never guesses a path or host. Supplied
 incident and maintenance paths redirect to surviving Lamp records. The source's
-`/history.atom` path reaches Lamp's Atom feed; `/history.rss`, `/summary.json`,
-`/v3/summary.json` and `/v3/components.json` are unsupported. Update readers to
-`/feed.atom` or Lamp's native `/api/public/status` format. The source hostname
+`/history.atom` and `/history.rss` paths reach Lamp's feeds. `/summary.json`,
+`/v3/summary.json` and `/v3/components.json` are unsupported. Update JSON readers
+to Lamp's native `/api/public/v1/` format. The source hostname
 remains outside Lamp's control.
+
+## Business import door (opt-in)
+
+An installation with RER's owner-claim trust configured can enable **Allow
+Business imports** in Settings → Export and restore. It starts off; uploads and every other
+`/api/rer/import/` route return 404 until enabled. When RER sets the app up for a
+Business plan, it also sets `RER_IMPORT_DOOR=on`, and the owner's first claim turns
+the door on (Lamp still claims its owner with the setup token there). The owner can
+turn it off and on again in the same settings row; a later claim or sign-in never
+reopens a door the owner turned off. `rer deploy` never sets the variable, so a
+self-hosted Lamp's door stays off until its owner turns it on. The trusted grant key selector
+in that same settings row permanently revokes a key immediately. Re-enabling the
+door does not restore a revoked key; provisioning must rotate to a new key id.
+The door uses the same installation id, issuer, app origin, configured owner email
+and ES256 public keys as owner-claim. It never accepts an operator cookie as an
+import grant.
+
+Business uploads the same UTF-8 JSON envelope as Move in: `source`
+(`statuspage`, `betterstack`, `instatus` or `sorry`), `files` (the unchanged
+saved responses as `{name,text}`), and the same optional `pageId`,
+`publicAccessAcknowledged` and `publicUrl` fields as Lamp's move-in form. The
+grant namespace equals `source`. The saved responses must fit Lamp's 8 MiB /
+5,000 record limits; the envelope, which carries them as JSON text, may take
+16 MiB. Upload chunks, per-action
+grants, plan fingerprints, reconciliation and bounded undo follow the
+[Base door protocol](../modules/import-kit/src/door/README.md). Original bytes
+stay in this installation.
+
+Lamp's door accepts the four sources Move in offers, `statuspage`,
+`betterstack`, `instatus` and `sorry`, one namespace each, on one server-owned
+allow-list shared with the owner's Move in: a grant for any other answers 403
+`unknown_import_source` (Move in answers 400) before anything is stored. An
+apply that fails ends that plan, which says why in **Your imports**; plan the
+upload again and approve its new fingerprint. A plan applies within 30 minutes
+of its dry run, as Move in's does: after that its apply, and a plan of the same
+upload, answer 409 "This dry run has expired. Run the dry run again." (the plan
+refusal names the expired `planId`) and store nothing; undo that plan, then plan
+the upload again. A request too large for one
+request's D1 reads answers 413 `import_door_too_large` and writes nothing.
+
+The door calls Lamp's existing readers, native mapping and target adapter. A
+plan makes no native changes. Applying requires the exact reviewed fingerprint
+in both the signed approval and request body. **Your imports** shows the
+Business owner, approval time and fingerprint alongside the ordinary Undo and
+Cutover links. Owners can undo their imports even after disabling the door or
+revoking its grant key; snapshots must be undone newest first.
+
+A later upload to the same namespace is a catch-up. Records whose saved
+responses did not change stay as they are, including the subscribers and
+templates that namespace already brought in. A changed record is replaced in
+place, keeping its id, public reference and display order, unless you edited it
+in Lamp: then it is kept and listed as a conflict. Each catch-up also replaces
+the namespace's source record, which names the saved responses and review time
+it came from. Under a standing (bounded) Business approval, a catch-up is
+admitted only when it adds or replaces unedited records and changes under 5% of
+the previous snapshot; anything else needs a separate owner review.
+
+When a move is done, Business keeps the old tool's final export with the door's
+`archive` action (in this installation's database, as `business-archive/<tool>/<time>`)
+and proves it restores with `restore-check`, which reads the archive with the same
+readers and writes nothing to the page. Both are grant only, and an erasure
+withdraws the archive's bytes as it does the door's other content.
+
+While Business moves a page to Lamp it checks the move with one signed read,
+`POST /api/rer/cutover-status`, on the same trust: an RER grant of action
+`cutover-status` under the owner-claim keys, refused 403 for a revoked key,
+another action, installation or owner, or an expired grant, 401 without a grant,
+405 for anything but POST, and 404 when RER's trust is not configured. It reads
+and changes nothing else. Given `{since}` (an ISO time) it answers counts and ids
+only: the old addresses Cutover lists (their total and up to 25 `{path, target}`
+pairs), how many components, incidents and maintenance windows Lamp holds,
+subscribers held for cutover and pending, invitations sent since, incidents,
+maintenance and subscribers created in Lamp since (imported records excluded), and
+each alert source's id, kind and receipts since. It never returns a name, title,
+address or secret.
+
+For a public Sorry page, Business can also have Lamp read the page for it:
+`POST /api/rer/source-capture`, on the same trust and only while Business imports
+are on. It takes an RER grant of action `source-capture` under the owner-claim
+keys (401 without a grant, 403 for a revoked key, another action, installation or
+owner, or an expired grant, 405 for anything but POST, 404 when RER's trust is not
+configured and 404 `import_door_off` while Business imports are off) and
+`{"source":"sorry","publicUrl":"https://<host>","maxBytes":<1 to 16777216>}`, at
+most 4 KiB. Lamp reads the page keylessly, as **Run dry run** on a public page
+does: four fixed GET paths on that origin, no credential, no redirect followed, at
+most 120 s and `maxBytes` of responses. It checks the answer with its own Sorry
+reader, then answers the bundle the door's `uploads` and `plan` take
+(`source`, `publicUrl`, `publicAccessAcknowledged: true`, `files`). A refusal is
+`{"error":<code>}` alone: `source_restricted` (409, a private, password, SSO,
+unpublished or audience-scoped page), `source_invalid` (422), `source_unreachable`
+(502), `capture_too_large` (413), `capture_timeout` (504) or `invalid_capture`
+(400). It never writes: no record, upload, plan, nonce or setting changes, and
+nothing is logged about the page. The dry run and your review still come before
+any import. Managed hosting answers it: this keyless read is the one outbound
+read it makes, with Move in's.
+
+Saved text carries over byte for byte, including U+0000, emoji, combining marks
+and right-to-left text; half of a surrogate pair with no partner reads as U+FFFD
+(�). A field Lamp shortens is cut between characters, never inside one.
+For reconcile, catch-up and undo, Lamp reads its imported records with one
+query per table, not one per record.
+
+Subscribers from every source arriving through Business are held without
+invitations until cutover. In Cutover, select the configured live public hostname
+and explicitly confirm that it is live and the watch window has closed before
+**Send invitations**. That separate owner action starts the existing 72-hour
+confirmation window. Unreleased held subscribers expire after 30 days. Undo
+cannot recall an invitation already sent. Imported history never queues notices.

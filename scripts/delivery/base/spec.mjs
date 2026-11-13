@@ -4,9 +4,11 @@ import {createHash} from 'node:crypto';
 import {array, object, keys, string, strings, bindingPattern, wranglerBindings, validateEmailSending, validateDurableMigrations} from './bindings.mjs';
 import {sourcePath, decodeUtf8, collectMigrations} from './migrations.mjs';
 import {validateDeclarations} from './declarations.mjs';
-import {validateMailSpec} from './mail.mjs';
+import {validateMailSpec, validateMailSenders} from './mail.mjs';
+import {validateNativeExport} from './native-export.mjs';
+import {seedSignIn} from './sign-in.mjs';
 const reserved = new Set(['ASSETS','RER_RELEASE_DIGEST','RER_PREVIEW_TOKEN','RER_VERSION_METADATA','RER_INSTALLATION_ID','RER_MANAGEMENT_ORIGIN']);
-const specKeys = ['schema','resources','migrations','compatibilityDate','compatibilityFlags','durableObjects','durableObjectMigrations','publicVariables','secretNames','optionalSecretNames','schedules','queueConsumers','healthPath','recovery','emailSending','providerEffects','surfaces','initialSetup','mail'];
+const specKeys = ['schema','resources','migrations','compatibilityDate','compatibilityFlags','durableObjects','durableObjectMigrations','publicVariables','secretNames','optionalSecretNames','schedules','queueConsumers','healthPath','recovery','emailSending','providerEffects','surfaces','initialSetup','mail','nativeExport'];
 /** Validate the exact producer contract without implying service acceptance or provider consent. */
 export function validateCandidateSpec(spec) {
   keys(spec, specKeys, 'candidate specification');
@@ -64,6 +66,7 @@ export function validateCandidateSpec(spec) {
     if (typeof item.sql !== 'string' || Buffer.byteLength(item.sql) > 10 * 1024 * 1024 || item.name === 'setup-initial-owner.sql' || /\brer_migrations\b/i.test(item.sql)) throw Error('Candidate cannot replace owner initialization or migration authority');
     if (typeof item.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(item.sha256) || createHash('sha256').update(item.sql).digest('hex') !== item.sha256) throw Error('Invalid migration byte digest');
   }
+  if (spec.nativeExport !== undefined) validateNativeExport(spec.nativeExport, spec);
   strings(spec.schedules, 'schedules');
   for (const cron of spec.schedules) if (cron.length > 128 || cron.trim().split(/\s+/).length !== 5) throw Error('Invalid candidate schedule');
   const consumers = new Set();
@@ -116,7 +119,8 @@ function parseWranglerJson(text) {
 }
 /** Options are explicit packaging policy; callers may derive them from their own manifest adapter. */
 export async function deploymentSpec(root, options = {}) {
-  keys(options, ['publicVariableNames','secretNames','optionalSecretNames','extraMigrationDirectories','migrationPrefix','healthPath','recovery','wranglerFile','providerEffects','surfaces','initialSetup','mail'], 'deployment options');
+  keys(options, ['publicVariableNames','secretNames','optionalSecretNames','extraMigrationDirectories','migrationPrefix','healthPath','recovery','wranglerFile','providerEffects','surfaces','initialSetup','mail','nativeExport'], 'deployment options');
+  validateDeclarations(options);
   const {publicVariableNames = [], secretNames = [], optionalSecretNames = [], extraMigrationDirectories = [], migrationPrefix = '', healthPath = '/health', recovery, wranglerFile = 'dist/server/wrangler.json'} = options;
   strings(publicVariableNames, 'publicVariableNames', bindingPattern);
   strings(secretNames, 'secretNames', bindingPattern); strings(optionalSecretNames, 'optionalSecretNames', bindingPattern);
@@ -138,8 +142,17 @@ export async function deploymentSpec(root, options = {}) {
     if (typeof value !== 'string') throw Error(`Public variable must be a string: ${name}`);
     Object.defineProperty(publicVariables, name, {value, enumerable:true, writable:true, configurable:true});
   }
+  const deployPath = await sourcePath(root, 'deploy.json', {optional:true});
+  if (deployPath) {
+    const declaration = JSON.parse(decodeUtf8(await readFile(deployPath), 'deploy declaration'));
+    validateMailSenders([
+      {source:'deploy.json vars.MAIL_FROM', value:declaration.vars?.MAIL_FROM},
+      {source:`${wranglerFile} vars.MAIL_FROM`, value:publicVariables.MAIL_FROM},
+    ]);
+  }
   const triggers = config.triggers === undefined ? {} : keys(config.triggers, ['crons'], 'triggers');
   const spec = {schema:1,resources:bindings.resources,migrations,compatibilityDate:config.compatibility_date,compatibilityFlags:config.compatibility_flags === undefined ? [] : config.compatibility_flags,durableObjects:bindings.durableObjects,durableObjectMigrations:bindings.durableObjectMigrations,publicVariables,secretNames:[...secretNames],optionalSecretNames:[...optionalSecretNames],schedules:triggers.crons === undefined ? [] : triggers.crons,queueConsumers:bindings.queueConsumers,healthPath,recovery,...(bindings.emailSending ? {emailSending:bindings.emailSending} : {})};
-  for (const field of ['providerEffects','surfaces','initialSetup','mail']) if (options[field] !== undefined) spec[field] = structuredClone(options[field]);
+  for (const field of ['providerEffects','surfaces','initialSetup','mail','nativeExport']) if (options[field] !== undefined) spec[field] = structuredClone(options[field]);
+  await seedSignIn(root, spec);
   return validateCandidateSpec(spec);
 }

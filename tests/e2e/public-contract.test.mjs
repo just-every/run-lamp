@@ -1,782 +1,1007 @@
-import { publicFreshnessFlow } from "./helpers/public-freshness-flow.mjs";
-import { requestHeaders } from "../helpers/request-headers.mjs";
-import { assertResolvedDuration, assertVisibleTime } from "../helpers/public-meaning.mjs";
-import { withDraftVersion } from "./draft-version-helper.mjs";
-import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
-import { after, before, test } from "node:test";
-import { gzipSync } from "node:zlib";
-import { chromium } from "playwright";
-import { createServer as createViteServer } from "vite";
+import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintenanceActor } from './helpers/operator-attribution.mjs';
+import assert from 'node:assert/strict';
+import { mkdir, readFile } from 'node:fs/promises';
+import { gzipSync } from 'node:zlib';
+import { test } from 'node:test';
+import { chromium } from 'playwright';
+import AxeBuilder from '@axe-core/playwright';
+import { parse } from 'parse5';
+import { openStatusJourney, eventually, wording } from './helpers/status-journey.mjs';
+import { literalLinkFields } from './helpers/update-link-evidence.mjs';
+import { assertUpdateLinkSurfaces, assertUpdateLinkScreens } from './helpers/update-link-surfaces.mjs';
+import { assertVisibleTime } from '../helpers/public-meaning.mjs';
+import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
+import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
+import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
+import { publicHistoryFlow } from './helpers/public-history-flow.mjs';
+import { publicIsolationFlow } from './helpers/public-isolation-flow.mjs';
+import { conditionalComponentFlow } from './helpers/conditional-component-flow.mjs';
+import { snapshotReleaseRebuildFlow } from './helpers/snapshot-release-rebuild-flow.mjs';
+import { uptimeCorrectionJourney } from './helpers/uptime-correction-journey.mjs';
+import { widgetInstallations, installWidget, openWidgetHost } from './helpers/widget-privacy-flow.mjs';
 
-import { insertRealOperatorSession } from "./real-session-helper.mjs";
-// Wrangler CLI work between requests can outlast an idle keep-alive socket; every request opens its own connection.
-import { fixtureFetch as fetch } from "../public-snapshots/fixture-fetch.mjs";
-import { appOrigin, pageOrigin } from "./helpers/hosts.mjs";
-import { reservePort, waitForWorker } from "./worker-startup.mjs";
-import { sessionCookieName } from "../helpers/session-cookie.mjs";
+test('HIST-008 — reviewed imported history stays completely browsable without scripts', { timeout: 120_000 }, browsableHistoryFlow);
 
-let appUrl = "";
-let pageUrl = "";
-let testPort;
-let server;
-let sessionId;
-let rendererVite;
-let computeUptime;
-let uptimeMarkup;
-let renderPublicSnapshot;
-let testStatePath;
-let testViteCachePath;
-let workerOutput = "";
+test('PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch', { timeout: 240_000 }, snapshotReleaseRebuildFlow);
 
-async function appFetch(path, init = {}) {
-  init = await withDraftVersion(path, init, appFetch);
-  return fetch(`${appUrl}${path}`, {
-    ...init,
-    headers: requestHeaders({ Cookie: `${sessionCookieName(appUrl)}=${sessionId}`, "Content-Type": "application/json" }, init.headers),
-  });
+test('UPTIME-003 — newly observed services report only their recorded coverage', shortHistoryFlow);
+test('HIST-001 — completed native records retain their month, window, components and complete publication inventory', publicHistoryFlow);
+
+function descendants(node) {
+  return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
 }
-
-async function currentSettings() {
-  const response = await appFetch("/api/app/page-settings");
-  assert.equal(response.status, 200);
-  return (await response.json()).settings;
+function nodeText(node) {
+  return node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(nodeText).join('');
 }
-
-async function updateSettings(patch) {
-  const current = await currentSettings();
-  const response = await appFetch("/api/app/page-settings", { method: "PUT", body: JSON.stringify({
-    pageName: current.pageName,
-    tagline: current.tagline,
-    accentColor: current.accentColor,
-    timezone: current.timezone,
-    hostname: current.hostname,
-    footerCreditEnabled: current.footerCreditEnabled,
-    widgetAllowedOrigins: current.widgetAllowedOrigins,
-    mailFromAddress: current.mailFromAddress,
-    ...patch,
-  }) });
-  assert.equal(response.status, 200);
-  return (await response.json()).settings;
+function hasClass(node, name) {
+  return node.attrs?.some(attr => attr.name === 'class' && attr.value.split(' ').includes(name));
 }
+const statedMethod = [
+  'Operational counts as 0 downtime minutes',
+  'Under maintenance counts as 0 downtime minutes',
+  'Degraded performance counts as 0.5 downtime minutes',
+  'Partially unavailable counts as 1 downtime minute',
+  'Major outage counts as 1 downtime minute',
+  'Uptime uses a 90-day window',
+];
 
-async function uploadTestLogo() {
-  const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR42mP8z8BQDwAF/gL+3N9nPwAAAABJRU5ErkJggg==", "base64");
-  const form = new FormData();
-  form.set("logo", new Blob([png], { type: "image/png" }), "lamp.png");
-  const uploaded = await fetch(`${appUrl}/api/app/page-settings/logo`, { method: "POST", body: form, headers: { Origin: appUrl, Cookie: `${sessionCookieName(appUrl)}=${sessionId}`, Accept: "application/json" } });
-  assert.equal(uploaded.status, 200);
-}
-
-function executeLocalSql(statement) {
-  execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", "wrangler.jsonc", "--persist-to", testStatePath, "--command", statement], { cwd: process.cwd(), stdio: "pipe" });
-}
-
-function queryLocalSql(statement) {
-  const output = execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", "wrangler.jsonc", "--persist-to", testStatePath, "--command", statement, "--json"], { cwd: process.cwd(), encoding: "utf8" });
-  return JSON.parse(output)[0]?.results ?? [];
-}
-
-function r2Object(key, input, contentType) {
-  const action = input === undefined ? "get" : "put";
-  const args = ["exec", "wrangler", "r2", "object", action, `lamp-local-snapshots/${key}`, "--local", "--persist-to", testStatePath, "--pipe"];
-  if (input !== undefined && contentType) args.push("--content-type", contentType);
-  return execFileSync("pnpm", args, { cwd: process.cwd(), encoding: "utf8", input });
-}
-
-function rendererSource(claims = []) {
-  return {
-    settings: { id: "default", pageName: "Renderer policy", tagline: "Renderer policy probe", accentColor: "#16794C", timezone: "UTC", hostname: "renderer.example.test", footerCreditEnabled: true, logoKey: null, logoContentType: null, widgetAllowedOrigins: "[]", mailFromAddress: "lamp@renderer.example.test", aiToneInstructions: "", feedId: "renderer-policy-feed", createdAt: "2026-09-08T00:00:00.000Z", updatedAt: "2026-09-08T00:00:00.000Z" },
-    components: [{ id: "renderer-policy-component", name: "Web application", description: "", note: "", groupId: null, groupName: null, groupOrder: null, displayOrder: 1 }],
-    claims,
-    history: [],
-    corrections: [],
-    incidents: [],
-    incidentComponents: [],
-    updates: [],
-    maintenance: [],
-    maintenanceComponents: [],
-    reports: [],
-    maintenanceNotices: [],
-  };
-}
-
-async function svgPixels(path, width, height, points) {
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const page = await browser.newPage();
-    await page.goto(`${pageUrl}/`);
-    return await page.evaluate(async ({ url, width: canvasWidth, height: canvasHeight, points: samplePoints }) => {
-      const image = new Image();
-      image.src = url;
-      await image.decode();
-      const canvas = document.createElement("canvas");
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      canvas.getContext("2d").drawImage(image, 0, 0, canvasWidth, canvasHeight);
-      return samplePoints.map(({ x, y }) => [...canvas.getContext("2d").getImageData(x, y, 1, 1).data]);
-    }, { url: `${pageUrl}${path}`, width, height, points });
-  } finally {
-    await browser.close();
-  }
-}
-
-before(async () => {
-  rendererVite = await createViteServer({ configFile: false, appType: "custom", server: { middlewareMode: true, hmr: false } });
-  ({ computeUptime, uptimeMarkup } = await rendererVite.ssrLoadModule("/src/core/features/public-snapshot/uptime.ts"));
-  ({ renderPublicSnapshot } = await rendererVite.ssrLoadModule("/src/core/features/public-snapshot/renderer.ts"));
-  testStatePath = await mkdtemp(join(tmpdir(), "lamp-public-d1-"));
-  testViteCachePath = await mkdtemp(join(tmpdir(), "lamp-public-vite-"));
-  testPort = await reservePort({ label: "public contract Worker" });
-  // Native sign-in renders its email form only when mail is configured. This
-  // presentation-only fixture never submits it or publishes to recipients.
-  appUrl = appOrigin(testPort, { MAIL_PROVIDER_API_KEY: "test-only-signin-presentation-no-delivery" });
-  pageUrl = pageOrigin(testPort);
-  execFileSync("pnpm", ["run", "migrate:local"], { cwd: process.cwd(), stdio: "pipe", env: { ...process.env, LAMP_WORKERS_STATE_PATH: testStatePath } });
-  sessionId = await insertRealOperatorSession({ persistTo: testStatePath, pageSettings: false });
-  executeLocalSql(`INSERT INTO page_settings (id,page_name,tagline,accent_color,timezone,hostname,footer_credit_enabled,logo_key,logo_content_type,widget_allowed_origins,mail_from_address,ai_tone_instructions,feed_id,created_at,updated_at) VALUES ('default','Atlas Cloud Status','Current availability and incident communications for Atlas Cloud.','#16794C','America/Los_Angeles','status.atlascloud.example',1,NULL,NULL,'[]','lamp@localhost.invalid','','test-feed-identity-00000000000001','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'); INSERT INTO component_groups (id,name,display_order,created_at,updated_at) VALUES ('01J00000000000000000000002','Core services',1,'2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'),('01J00000000000000000000003','Capacity test services',2,'2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'); INSERT INTO components (id,group_id,name,description,internal,display_order,note,created_at,updated_at) VALUES ('01J00000000000000000000010','01J00000000000000000000002','Web application','Customer-facing web service.',0,1,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'),('01J00000000000000000000020','01J00000000000000000000002','API gateway','Customer API edge.',0,2,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'),('01J00000000000000000000021','01J00000000000000000000002','Customer portal','Customer portal.',0,3,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'),('01J00000000000000000000022','01J00000000000000000000002','Background jobs','Asynchronous job execution.',0,4,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'),('01J00000000000000000000023','01J00000000000000000000002','Account services','Account management.',0,5,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'),('01J00000000000000000000024','01J00000000000000000000002','Data export','Customer data export.',0,6,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'); INSERT INTO component_standing_claims (id,component_id,state,operator_id,created_at,updated_at) VALUES ('01J00000000000000000000011','01J00000000000000000000010','Operational','01J00000000000000000000001','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'); INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES ('01J00000000000000000000012','01J00000000000000000000010','Operational','Operational','standing-claim','01J00000000000000000000011','01J00000000000000000000001','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z')`);
-  r2Object("snapshots/test-fixture/page.html", "<!doctype html><html><head><title>Atlas Cloud Status</title></head><body><main>Atlas Cloud Status</main></body></html>", "text/html; charset=utf-8");
-  r2Object("snapshots/current.json", JSON.stringify({ version: "test-fixture", generatedAt: "2026-09-08T00:00:00.000Z", generation: 0, sourceRevision: 0 }));
-  server = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(testPort), "--strictPort"], {
-    cwd: process.cwd(),
-    stdio: "pipe",
-    detached: true,
-    // appOrigin supplies an isolated config with the same D1/R2 bindings.
-    env: { ...process.env, LAMP_DISABLE_INSPECTOR: "true", LAMP_WORKERS_STATE_PATH: testStatePath, LAMP_VITE_CACHE_DIR: testViteCachePath },
-  });
-  server.stdout.on("data", (chunk) => { workerOutput += String(chunk); });
-  server.stderr.on("data", (chunk) => { workerOutput += String(chunk); });
-  await waitForWorker({
-    child: server,
-    output: () => workerOutput,
-    label: "public contract Worker",
-    probe: async ({ signal }) => {
-      const response = await fetch(`${pageUrl}/`, { signal });
-      const text = await response.text();
-      const ready = response.status === 200 && /Atlas Cloud Status/.test(text);
-      return { status: ready ? 200 : response.status === 200 ? 503 : response.status, text: () => text };
-    },
-  });
-  sessionId = await insertRealOperatorSession({ persistTo: testStatePath });
-});
-
-after(async () => {
-  if (server?.pid && server.exitCode === null) {
-    const stopped = new Promise((resolve) => server.once("exit", resolve));
-    try { process.kill(-server.pid, "SIGTERM"); } catch { /* process already ended */ }
-    await stopped;
-  }
-  await rendererVite?.close();
-  await Promise.all([rm(testStatePath, { recursive: true, force: true }), rm(testViteCachePath, { recursive: true, force: true })]);
-});
-
-test("PAGE-007 COMP-002 PAGE-002 — Public generation refresh, ordering and script-free status", async t => {
-  t.diagnostic("PAGE-007 warmed browser and proxy follow publication generations and retain origin outages");
-  await (async (t) => {
-  await publicFreshnessFlow({ appFetch, appUrl, pageUrl, diagnostic: text => t.diagnostic(text) });
-})(t);
-  t.diagnostic("COMP-002 — operator component ordering and internal visibility rebuild the public snapshot");
-  await (async () => {
-  const groupResponse = await appFetch("/api/app/component-groups", { method: "POST", body: JSON.stringify({ name: "First ordered group", displayOrder: 0 }) });
-  assert.equal(groupResponse.status, 201);
-  const group = (await groupResponse.json()).group;
-  const first = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({
-    groupId: group.id, name: "First in group", description: "Display order one.", internal: false, displayOrder: 1, note: "",
-  }) });
-  const second = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({
-    groupId: group.id, name: "Second in group", description: "Display order two.", internal: false, displayOrder: 2, note: "",
-  }) });
-  assert.equal(first.status, 201);
-  assert.equal(second.status, 201);
-  const created = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({
-    groupId: "01J00000000000000000000002", name: "Private edge probe", description: "Must never be public.", internal: true, displayOrder: 99, note: "",
-  }) });
-  assert.equal(created.status, 201);
-  const privateComponent = (await created.json()).component;
-  const page = await (await fetch(`${pageUrl}/`)).text();
-  assert.doesNotMatch(page, /Private edge probe/);
-  assert.ok(page.indexOf("<h3>First ordered group</h3>") < page.indexOf("<h3>Core services</h3>"), "group display order controls public group order");
-  assert.ok(page.indexOf("First in group") < page.indexOf("Second in group"), "component display order controls public component order");
-  assert.equal((await appFetch(`/api/app/components/${privateComponent.id}`, { method: "DELETE" })).status, 204);
-  assert.equal((await appFetch(`/api/app/components/${(await first.json()).component.id}`, { method: "DELETE" })).status, 204);
-  assert.equal((await appFetch(`/api/app/components/${(await second.json()).component.id}`, { method: "DELETE" })).status, 204);
-  assert.equal((await appFetch(`/api/app/component-groups/${group.id}`, { method: "DELETE" })).status, 204);
-})(t);
-  t.diagnostic("component group order swaps an occupied persisted position without a constraint failure");
-  await (async () => {
-  const coreServices = "01J00000000000000000000002";
-  const moved = await appFetch(`/api/app/component-groups/${coreServices}`, { method: "PUT", body: JSON.stringify({ name: "Core services", displayOrder: 2 }) });
-  assert.equal(moved.status, 204);
-  const afterMove = await (await appFetch("/api/app/components")).json();
-  assert.deepEqual(afterMove.groups.slice(0, 2).map((group) => [group.name, group.displayOrder]), [["Capacity test services", 1], ["Core services", 2]]);
-
-  const restored = await appFetch(`/api/app/component-groups/${coreServices}`, { method: "PUT", body: JSON.stringify({ name: "Core services", displayOrder: 1 }) });
-  assert.equal(restored.status, 204);
-  const afterRestore = await (await appFetch("/api/app/components")).json();
-  assert.deepEqual(afterRestore.groups.slice(0, 2).map((group) => [group.name, group.displayOrder]), [["Core services", 1], ["Capacity test services", 2]]);
-})(t);
-  t.diagnostic("PAGE-002 — the initial HTML contains status content, timestamps, and a working plain form");
-  await (async () => {
-  const response = await fetch(`${pageUrl}/`);
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  assert.match(html, /<h1 id="overall-status" data-overall>Operational<\/h1>/);
-  assert.match(html, /<h4>Web application<\/h4>/);
-  assert.match(html, /<time datetime="[^"]+" data-local-time>/);
-  assert.match(html, /<form method="post" action="\/subscribe">/);
-  assert.match(html, /<input id="email" name="email" type="email"/);
-})(t);
-  t.diagnostic("public root keeps current incident and planned maintenance facts in the timeline without duplicate summary cards");
-  await (() => {
-  const source = rendererSource([{ componentId: "renderer-policy-component", state: "Degraded performance" }]);
-  source.incidents = [{ id: "timeline-incident", reference: "INC-710", title: "Timeline incident", lifecycle: "Investigating", openedAt: "2026-09-08T00:00:00.000Z", resolvedAt: null }];
-  source.incidentComponents = [{ id: "timeline-incident-component", incidentId: "timeline-incident", componentId: "renderer-policy-component", componentName: "Web application", state: "Degraded performance", relationship: "Primary", publishedAt: "2026-09-08T00:00:00.000Z" }];
-  source.updates = [{ id: "timeline-update", incidentId: "timeline-incident", lifecycle: "Identified", affectedAudience: "Timeline readers", customerImpact: "Requests are delayed.", whatStillWorks: "The dashboard remains available.", details: "The team is investigating.", nextUpdateAt: "2026-09-08T01:00:00.000Z", publishedAt: "2026-09-08T00:00:00.000Z" }];
-  source.maintenance = [{ id: "timeline-maintenance", reference: "SCH-710", title: "Timeline maintenance", state: "Scheduled", startsAt: "2026-09-09T00:00:00.000Z", endsAt: "2026-09-09T01:00:00.000Z", completedAt: null }];
-  source.maintenanceComponents = [{ id: "timeline-maintenance-component", maintenanceId: "timeline-maintenance", componentId: "renderer-policy-component", componentName: "Web application", state: "Under maintenance" }];
-  source.maintenanceNotices = [{ id: "timeline-notice", maintenanceId: "timeline-maintenance", kind: "scheduled", body: "Timeline maintenance is scheduled.", publishedAt: "2026-09-08T00:00:00.000Z" }];
-
-  const page = renderPublicSnapshot(source, "2026-09-08T00:00:00.000Z").artifacts.find((artifact) => artifact.key === "page.html")?.body ?? "";
-  assert.doesNotMatch(page, /class="service-details"/, "the removed top summary row cannot return as hidden duplicate markup");
-  assert.equal([...page.matchAll(/<article class="component">/g)].length, 1, "the public component row appears once");
-  // Read complete divs from the real renderer output, including all nested divs.
-  function divMarkup(html, className) {
-    const start = html.indexOf(`<div class="${className}">`);
-    assert.ok(start >= 0, `rendered ${className} div exists`);
-    const tags = /<\/?div\b[^>]*>/g;
-    tags.lastIndex = start;
-    let depth = 0;
-    for (let tag; (tag = tags.exec(html));) {
-      depth += tag[0].startsWith('</') ? -1 : 1;
-      if (depth === 0) return html.slice(start, tags.lastIndex);
-    }
-    assert.fail(`rendered ${className} div is complete`);
-  }
-  const ungrouped = divMarkup(page, "component-group");
-  assert.doesNotMatch(ungrouped, /<h[1-3]\b/);
-  assert.doesNotMatch(page, /class="status-overview-service"/, "the status banner does not duplicate component cards");
-  assert.match(page, /class="status-utilities"/, "the retained history, subscription, and Atom controls have a compact utility nav");
-  assert.match(page, /class="history-timeline"/, "the chronology remains on the public root");
-  for (const fact of ["Current incident", "Timeline incident", "INC-710", "Timeline readers", "Requests are delayed.", "The dashboard remains available.", "The team is investigating.", "2026-09-08T01:00:00.000Z", "Planned maintenance", "Timeline maintenance", "SCH-710", "Timeline maintenance is scheduled."]) assert.match(page, new RegExp(fact), `${fact} remains in the timeline`);
-})(t);
-});
-
-
-
-
-
-
-
-
-
-test("COMP-001 COMP-004 COMP-005 COMP-007 PAGE-004 — Component states, private components, bounded notes and deletion", async t => {
-  t.diagnostic("COMP-001 — the public component state order is complete and deterministic");
-  await (async () => {
-  const { COMPONENT_STATES, mostSevereState } = await rendererVite.ssrLoadModule("/src/core/shared/domain.ts");
-  assert.deepEqual(COMPONENT_STATES, ["Operational", "Degraded performance", "Partially unavailable", "Major outage", "Under maintenance"]);
-  assert.equal(mostSevereState(["Operational", "Under maintenance", "Degraded performance"]), "Degraded performance");
-  assert.equal(mostSevereState(["Partially unavailable", "Major outage"]), "Major outage");
-})(t);
-  t.diagnostic("COMP-004 — an exact 250-character state note is public and a longer note is rejected");
-  await (async () => {
-  const note = "N".repeat(250);
-  const created = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({ groupId: "01J00000000000000000000002", name: "Note limit probe", description: "", internal: false, displayOrder: 90, note }) });
-  assert.equal(created.status, 201);
-  const component = (await created.json()).component;
-  assert.match(await (await fetch(`${pageUrl}/`)).text(), new RegExp(note));
-  const tooLong = await appFetch(`/api/app/components/${component.id}`, { method: "PUT", body: JSON.stringify({ groupId: "01J00000000000000000000002", name: "Note limit probe", description: "", internal: false, displayOrder: 90, note: `${note}X` }) });
-  assert.equal(tooLong.status, 400);
-  assert.equal((await appFetch(`/api/app/components/${component.id}`, { method: "DELETE" })).status, 204);
-})(t);
-  t.diagnostic("COMP-005 — an internal component leaks through none of the public snapshot artifacts");
-  await (async () => {
-  const created = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({ groupId: "01J00000000000000000000002", name: "Private artifact probe", description: "", internal: true, displayOrder: 91, note: "not public" }) });
-  assert.equal(created.status, 201);
-  const component = (await created.json()).component;
-  const [page, feed, widget] = await Promise.all([fetch(`${pageUrl}/`), fetch(`${pageUrl}/feed.atom`), fetch(`${pageUrl}/widget.js`)]);
-  for (const artifact of await Promise.all([page.text(), feed.text(), widget.text()])) assert.doesNotMatch(artifact, /Private artifact probe|not public/);
-  assert.equal((await appFetch(`/api/app/components/${component.id}`, { method: "DELETE" })).status, 204);
-})(t);
-  t.diagnostic("COMP-007 — deleting a component removes its uptime but preserves its name in published history");
-  await (async () => {
-  const created = await appFetch("/api/app/components", { method: "POST", body: JSON.stringify({ groupId: "01J00000000000000000000002", name: "Deletion retention probe", description: "", internal: false, displayOrder: 92, note: "" }) });
-  assert.equal(created.status, 201);
-  const component = (await created.json()).component;
-  executeLocalSql(`INSERT INTO incidents (id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at) VALUES ('component-delete-incident','INC-7711','Deletion retention incident','Resolved','2026-09-01T00:00:00.000Z','2026-09-01T01:00:00.000Z','01J00000000000000000000001','2026-09-01T00:00:00.000Z','2026-09-01T01:00:00.000Z'); INSERT INTO incident_components (id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES ('component-delete-link','component-delete-incident','${component.id}','Deletion retention probe','Major outage','Primary','2026-09-01T01:00:00.000Z','2026-09-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'); INSERT INTO incident_updates (id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) VALUES ('component-delete-update','component-delete-incident','Resolved','Readers','Recovered','','','2026-09-01T01:00:00.000Z','2026-09-01T01:00:00.000Z','01J00000000000000000000001','2026-09-01T01:00:00.000Z','2026-09-01T01:00:00.000Z')`);
-  assert.equal((await appFetch(`/api/app/components/${component.id}`, { method: "DELETE" })).status, 204);
-  const history = await (await fetch(`${pageUrl}/history`)).text();
-  assert.match(history, /Deletion retention probe/);
-  assert.equal(queryLocalSql(`SELECT component_id AS componentId FROM incident_components WHERE id = 'component-delete-link'`)[0]?.componentId, null);
-  assert.deepEqual(queryLocalSql(`SELECT id FROM component_state_history WHERE component_id = '${component.id}'`), []);
-})(t);
-  t.diagnostic("PAGE-004 — the overall rollup policy cannot redefine an individual component state");
-  await (async () => {
-  const policies = {
-    pageStatusRollup: () => "Operational",
-    uptimeDowntimeWeight: (state) => state === "Major outage" ? 1 : state === "Degraded performance" ? 0.5 : 0,
-  };
-  const rendered = renderPublicSnapshot(rendererSource([{ componentId: "renderer-policy-component", state: "Major outage" }]), "2026-09-08T01:00:00.000Z", policies);
-  const page = rendered.artifacts.find((artifact) => artifact.key === "page.html")?.body ?? "";
-  assert.match(page, /<h1 id="overall-status" data-overall>Operational<\/h1>/, "the configured rollup applies only to the overall label");
-  assert.match(page, /<h4>Web application<\/h4>[\s\S]*?<strong>Major outage<\/strong>/, "the component remains derived by COMP-006 severity");
-})(t);
-});
-
-
-
-
-
-
-
-
-
-test("UPTIME-005 UPTIME-004 COMP-003 UPTIME-001 UPTIME-002 UPTIME-003 — Audited uptime corrections, history, weighting and coverage", async t => {
-  t.diagnostic("UPTIME-005 — the stated uptime method is rendered from the selected downtime policy");
-  await (async () => {
-  const rendered = renderPublicSnapshot(rendererSource(), "2026-09-08T01:00:00.000Z", {
-    pageStatusRollup: (states) => states[0] ?? "Operational",
-    uptimeDowntimeWeight: (state) => state === "Under maintenance" ? 0.25 : 0,
-  });
-  const page = rendered.artifacts.find((artifact) => artifact.key === "page.html")?.body ?? "";
-  assert.match(page, /Major outage counts as 0 downtime minutes/);
-  assert.match(page, /Under maintenance counts as 0\.25 downtime minutes/);
-  assert.doesNotMatch(page, /counts as half/, "default copy must not contradict a buyer policy override");
-})(t);
-  t.diagnostic("UPTIME-004 — a reasoned closed correction is append-only, audited, and rebuilds the figure");
-  await (async () => {
-  const end = new Date(Date.now() - 60 * 60 * 1000);
-  const start = new Date(end.getTime() - 2 * 60 * 60 * 1000);
-  const corrected = await appFetch("/api/app/components/01J00000000000000000000010/history-corrections", { method: "POST", body: JSON.stringify({
-    state: "Major outage", startsAt: start.toISOString(), endsAt: end.toISOString(), reason: "Verified edge logs showed a short outage.",
-  }) });
-  assert.equal(corrected.status, 204);
-  const missingReason = await appFetch("/api/app/components/01J00000000000000000000010/history-corrections", { method: "POST", body: JSON.stringify({ state: "Major outage", startsAt: start.toISOString(), endsAt: end.toISOString(), reason: "" }) });
-  assert.equal(missingReason.status, 400);
-  const corrections = queryLocalSql(`SELECT state, starts_at AS startsAt, ends_at AS endsAt, reason, operator_id AS operatorId FROM component_state_corrections WHERE component_id = '01J00000000000000000000010' ORDER BY created_at DESC LIMIT 1`);
-  assert.deepEqual(corrections, [{ state: "Major outage", startsAt: start.toISOString(), endsAt: end.toISOString(), reason: "Verified edge logs showed a short outage.", operatorId: "01J00000000000000000000001" }]);
-  const history = queryLocalSql(`SELECT id, cause_type AS causeType, changed_at AS changedAt FROM component_state_history WHERE component_id = '01J00000000000000000000010' ORDER BY changed_at`);
-  assert.ok(history.some((entry) => entry.id === "01J00000000000000000000012"), "the prior immutable state history remains");
-  assert.ok(history.some((entry) => entry.causeType === "correction" && entry.changedAt === start.toISOString()), "the correction appends its own state-history fact");
-  const audit = queryLocalSql(`SELECT action, operator_id AS operatorId, reason, payload_json AS payloadJson FROM audit_entries WHERE entity_type = 'component-state-history' ORDER BY created_at DESC LIMIT 1`)[0];
-  assert.equal(audit.action, "corrected");
-  assert.equal(audit.operatorId, "01J00000000000000000000001");
-  assert.equal(audit.reason, "Verified edge logs showed a short outage.");
-  assert.deepEqual(JSON.parse(audit.payloadJson), { componentId: "01J00000000000000000000010", state: "Major outage", startsAt: start.toISOString(), endsAt: end.toISOString(), reason: "Verified edge logs showed a short outage." });
-  const page = await (await fetch(`${pageUrl}/`)).text();
-  assert.match(page, /90-day record/);
-  const generatedAt = /Snapshot generated <time datetime="([^"]+)"/.exec(page)?.[1];
-  assert.ok(generatedAt);
-  const coverageStart = Math.min(new Date("2026-09-08T00:00:00.000Z").getTime(), start.getTime());
-  const coverageMinutes = (new Date(generatedAt).getTime() - coverageStart) / 60_000;
-  const expected = (Math.floor((100 - ((end.getTime() - start.getTime()) / 60_000) / coverageMinutes * 100) * 100) / 100).toFixed(2);
-  assert.match(page, new RegExp(`<span class="uptime-number">${expected}%`), "the rebuilt public page shows the weighted correction in its numeric uptime");
-})(t);
-  t.diagnostic("UPTIME-004 — the trailing window includes its first partial day, weights downtime, handles DST, and labels short coverage");
-  await (() => {
-  const policies = { uptimeDowntimeWeight: (state) => state === "Major outage" ? 1 : state === "Degraded performance" ? 0.5 : 0 };
-  const componentId = "uptime-window-component";
-  const now = Date.parse("2026-11-02T20:00:00.000Z");
-  const windowStart = now - 90 * 86_400_000;
-  const source = {
-    history: [
-      { componentId, causeType: "standing-claim", changedAt: new Date(windowStart).toISOString(), createdAt: new Date(windowStart).toISOString(), newState: "Operational" },
-    ],
-    corrections: [
-      { componentId, state: "Degraded performance", startsAt: "2026-11-01T08:30:00.000Z", endsAt: "2026-11-01T09:30:00.000Z", createdAt: "2026-11-01T10:00:00.000Z" },
-    ],
-  };
-  const uptime = computeUptime(source, componentId, now, "America/Los_Angeles", policies);
-  assert.equal(uptime.coverageDays, 90);
-  assert.equal(uptime.percentage, "99.97%");
-  assert.equal(uptime.marks.find((mark) => mark.day === "2026-11-01")?.downtimeMinutes, 30, "the 25-hour DST day receives weighted downtime by elapsed minutes");
-  const shortSource = { history: [{ componentId, causeType: "standing-claim", changedAt: new Date(now - 2 * 60 * 60_000).toISOString(), createdAt: new Date(now - 2 * 60 * 60_000).toISOString(), newState: "Operational" }], corrections: [] };
-  const short = computeUptime(shortSource, componentId, now, "UTC", policies);
-  assert.equal(short.coverageDays, 0);
-  const shortMarkup = uptimeMarkup({ name: "API", uptime: short }, "UTC", new Date(now).toISOString());
-  assert.equal(shortMarkup.match(/<time datetime="([^"]+)" data-local-time>/)?.[1], shortSource.history[0].changedAt);
-  assert.doesNotMatch(shortMarkup, /%/);
-  const newborn = computeUptime({ history: [{ ...shortSource.history[0], changedAt: new Date(now).toISOString() }], corrections: [] }, componentId, now, "UTC", policies);
-  assert.equal(newborn.percentage, null, "zero elapsed time has no measured percentage");
-  assert.equal(newborn.trackingSince, new Date(now).toISOString());
-  const newbornMarkup = uptimeMarkup({ name: "New service", uptime: newborn }, "UTC", new Date(now).toISOString());
-  assert.equal(newbornMarkup.match(/<time datetime="([^"]+)" data-local-time>/)?.[1], newborn.trackingSince);
-  assert.doesNotMatch(newbornMarkup, /%/);
-  const firstPartial = { history: [{ componentId, causeType: "standing-claim", changedAt: new Date(windowStart).toISOString(), createdAt: new Date(windowStart).toISOString(), newState: "Major outage" }, { componentId, causeType: "standing-claim", changedAt: new Date(windowStart + 60 * 60_000).toISOString(), createdAt: new Date(windowStart + 60 * 60_000).toISOString(), newState: "Operational" }], corrections: [] };
-  const firstDay = computeUptime(firstPartial, componentId, now, "UTC", policies);
-  assert.equal(firstDay.percentage, "99.95%", "the first hour of the exact trailing window is not discarded");
-})(t);
-  t.diagnostic("COMP-003 — a state correction retains the original history fact and appends attributable state history");
-  await (() => {
-  const history = queryLocalSql("SELECT previous_state AS previousState, new_state AS newState, cause_type AS causeType, operator_id AS operatorId FROM component_state_history WHERE component_id = '01J00000000000000000000010' ORDER BY created_at");
-  assert.ok(history.some((entry) => entry.previousState === "Operational" && entry.newState === "Operational" && entry.causeType === "standing-claim"));
-  assert.ok(history.some((entry) => entry.newState === "Major outage" && entry.causeType === "correction" && entry.operatorId === "01J00000000000000000000001"));
-})(t);
-  t.diagnostic("UPTIME-001 — a one-minute outage in the exact ninety-day window rounds down below 100 percent");
-  await (() => {
-  const now = Date.parse("2026-09-08T12:00:00.000Z");
-  const componentId = "uptime-definition";
-  const source = { history: [
-    { componentId, causeType: "standing-claim", changedAt: new Date(now - 90 * 86_400_000).toISOString(), createdAt: "2026-01-01T00:00:00.000Z", newState: "Operational" },
-    { componentId, causeType: "standing-claim", changedAt: new Date(now - 60_000).toISOString(), createdAt: "2026-01-01T00:00:00.000Z", newState: "Major outage" },
-  ], corrections: [] };
-  assert.equal(computeUptime(source, componentId, now, "UTC", { uptimeDowntimeWeight: (state) => state === "Major outage" ? 1 : 0 }).percentage, "99.99%");
-})(t);
-  t.diagnostic("UPTIME-002 — the configured state weights charge partial degradation and exclude maintenance");
-  await (() => {
-  const now = Date.parse("2026-09-08T12:00:00.000Z");
-  const componentId = "uptime-weights";
-  const start = now - 90 * 86_400_000;
-  const policy = { uptimeDowntimeWeight: (state) => state === "Major outage" || state === "Partially unavailable" ? 1 : state === "Degraded performance" ? 0.5 : 0 };
-  const degraded = computeUptime({ history: [{ componentId, causeType: "standing-claim", changedAt: new Date(start).toISOString(), createdAt: new Date(start).toISOString(), newState: "Operational" }, { componentId, causeType: "standing-claim", changedAt: new Date(now - 2 * 60_000).toISOString(), createdAt: new Date(now).toISOString(), newState: "Degraded performance" }], corrections: [] }, componentId, now, "UTC", policy);
-  const maintenance = computeUptime({ history: [{ componentId, causeType: "standing-claim", changedAt: new Date(start).toISOString(), createdAt: new Date(start).toISOString(), newState: "Operational" }, { componentId, causeType: "standing-claim", changedAt: new Date(now - 60 * 60_000).toISOString(), createdAt: new Date(now).toISOString(), newState: "Under maintenance" }], corrections: [] }, componentId, now, "UTC", policy);
-  assert.equal(degraded.percentage, "99.99%");
-  assert.equal(maintenance.percentage, "100.00%");
-})(t);
-  t.diagnostic("UPTIME-003 — short history reports whole covered days rather than inventing a ninety-day record");
-  await (() => {
-  const now = Date.parse("2026-09-08T12:00:00.000Z");
-  const componentId = "uptime-short";
-  const uptime = computeUptime({ history: [{ componentId, causeType: "standing-claim", changedAt: new Date(now - 49 * 60 * 60_000).toISOString(), createdAt: new Date(now).toISOString(), newState: "Operational" }], corrections: [] }, componentId, now, "UTC", { uptimeDowntimeWeight: () => 0 });
-  assert.equal(uptime.coverageDays, 2);
-  assert.match(uptimeMarkup({ name: "Short history", uptime }, "UTC", new Date(now).toISOString()), /over 2 whole days/);
-})(t);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-test("PAGE-012 UPTIME-006 SUB-003 — Branding, daily coverage and pending subscription expiry", async t => {
-  t.diagnostic("PAGE-012 — the footer credit setting controls its content");
-  await (async () => {
-  await updateSettings({ footerCreditEnabled: true });
-  const enabled = await (await fetch(`${pageUrl}/`)).text();
-  assert.match(enabled, /<footer>\S[\s\S]*?<\/footer>/);
-  assert.doesNotMatch(enabled, /runeditrun\.com/);
-  await updateSettings({ footerCreditEnabled: false });
-  const disabled = await (await fetch(`${pageUrl}/`)).text();
-  assert.match(disabled, /<footer>\s*<\/footer>/);
-  await updateSettings({ footerCreditEnabled: true });
-})(t);
-  t.diagnostic("UPTIME-006 — daily marks distinguish no data from a day with zero or weighted downtime");
-  await (() => {
-  const now = Date.parse("2026-09-08T12:00:00.000Z");
-  const componentId = "uptime-marks";
-  const historyStart = now - 2 * 86_400_000;
-  const uptime = computeUptime({ history: [
-    { componentId, causeType: "standing-claim", changedAt: new Date(historyStart).toISOString(), createdAt: new Date(historyStart).toISOString(), newState: "Operational" },
-    { componentId, causeType: "standing-claim", changedAt: new Date(historyStart + 60 * 60_000).toISOString(), createdAt: new Date(historyStart).toISOString(), newState: "Major outage" },
-    { componentId, causeType: "standing-claim", changedAt: new Date(historyStart + 2 * 60 * 60_000).toISOString(), createdAt: new Date(historyStart).toISOString(), newState: "Operational" },
-  ], corrections: [] }, componentId, now, "UTC", { uptimeDowntimeWeight: (state) => state === "Major outage" ? 1 : 0 });
-  assert.ok(uptime.marks.some((mark) => mark.downtimeMinutes === null));
-  assert.ok(uptime.marks.some((mark) => mark.downtimeMinutes === 0));
-  assert.ok(uptime.marks.some((mark) => mark.downtimeMinutes === 60));
-  assert.match(uptimeMarkup({ name: "Daily record", uptime }, "UTC", new Date(now).toISOString()), /no data/);
-})(t);
-  t.diagnostic("SUB-003 — the Worker scheduled runtime expires a 72-hour pending subscriber without a further subscription");
-  await (async () => {
-  executeLocalSql(`INSERT INTO subscribers (id,channel,destination,contact_email,state,selection_mode,token_hash,created_at,updated_at) VALUES ('scheduled-expired-subscriber','email','scheduled-expired@example.test',NULL,'pending','all','scheduled-expired-token','2026-08-01T00:00:00.000Z','2026-08-01T00:00:00.000Z')`);
-  let scheduled;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      scheduled = await fetch(`${pageUrl}/cdn-cgi/local/scheduled`);
-      if (scheduled.status === 200) break;
-    } catch {
-      // Miniflare can reset its local scheduled-event socket while a snapshot
-      // rebuild starts. The durable scheduled operation itself is retried.
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-  assert.equal(scheduled?.status, 200);
-  for (let attempt = 0; attempt < 20 && queryLocalSql("SELECT id FROM subscribers WHERE id = 'scheduled-expired-subscriber'").length; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 100));
-  assert.deepEqual(queryLocalSql("SELECT id FROM subscribers WHERE id = 'scheduled-expired-subscriber'"), []);
-})(t);
-});
-
-
-
-
-
-test("PAGE-012 PAGE-011 — Uploaded branding artwork and allow-listed widget", async t => {
-  t.diagnostic("PAGE-012 — a real logo upload, favicon, Open Graph image, and allow-listed widget are snapshot artifacts");
-  await (async () => {
-  await uploadTestLogo();
-  await updateSettings({ widgetAllowedOrigins: [pageUrl] });
-  const [page, logo, favicon, og, widget] = await Promise.all([
-    fetch(`${pageUrl}/`), fetch(`${pageUrl}/assets/logo`), fetch(`${pageUrl}/assets/favicon.svg`), fetch(`${pageUrl}/assets/og.svg`), fetch(`${pageUrl}/widget.js`),
-  ]);
-  assert.equal(logo.headers.get("content-type"), "image/png");
-  assert.equal(logo.headers.get("content-disposition"), "attachment");
-  const pageHtml = await page.text();
-  assert.match(pageHtml, /rel="icon" href="\/assets\/favicon\.svg"/);
-  assert.match(pageHtml, /<img class="brand-logo" src="\/assets\/favicon\.svg" alt="">/, "the configured logo is visible beside the page title through the same snapshot favicon artifact");
-  assert.doesNotMatch(pageHtml, /&lt;time datetime=/, "shared update output must contain plain display text, never escaped markup");
-  assert.match(await favicon.text(), /<circle/);
-  const ogSvg = await og.text();
-  assert.match(ogSvg, /<image href="data:image\/png;base64,iVBORw0KGgo/, "Open Graph artwork embeds the stored logo with the generated status marker");
-  assert.doesNotMatch(ogSvg, /\/assets\/logo/, "Open Graph artwork is a self-contained asset");
-  assert.match(await widget.text(), /a\.indexOf\(window\.location\.origin\)/);
-  assert.doesNotMatch(await (await fetch(`${pageUrl}/`)).text(), /href="https:\/\/runeditrun\.com"/);
-})(t);
-  t.diagnostic("PAGE-012 — Chromium renders both the configured logo and the status marker in favicon and Open Graph artwork");
-  await (async () => {
-  const [[faviconLogo, faviconStatus], [ogLogo, ogStatus]] = await Promise.all([
-    svgPixels("/assets/favicon.svg", 128, 128, [{ x: 12, y: 110 }, { x: 101, y: 27 }]),
-    svgPixels("/assets/og.svg", 1200, 630, [{ x: 100, y: 100 }, { x: 1090, y: 110 }]),
-  ]);
-  for (const pixel of [faviconLogo, ogLogo]) assert.ok(pixel[0] > 180 && pixel[1] < 140 && pixel[2] < 140, `expected configured red logo pixel, got ${pixel}`);
-  for (const pixel of [faviconStatus, ogStatus]) assert.ok(pixel[1] > pixel[0] && pixel[1] > pixel[2], `expected operational green status marker, got ${pixel}`);
-})(t);
-  t.diagnostic("PAGE-011 — the widget is compact, same-origin, and fails closed for unlisted embedding origins");
-  await (async () => {
-  const widget = await (await fetch(`${pageUrl}/widget.js`)).text();
-  assert.ok(gzipSync(Buffer.from(widget)).byteLength <= 10 * 1024);
-  assert.doesNotMatch(widget, /fetch\(|XMLHttpRequest|importScripts|\.src\s*=/, "the snapshot widget contains no remote dependency");
-  const browser = await chromium.launch({ headless: true });
-  try {
-    const allowed = await browser.newPage();
-    await allowed.goto(`${pageUrl}/`);
-    await allowed.evaluate((url) => new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = url;
-      script.onload = resolve;
-      script.onerror = reject;
-      document.body.append(script);
-    }), `${pageUrl}/widget.js`);
-    await allowed.locator("section[role=status]").waitFor();
-    const denied = await browser.newPage();
-    await denied.setContent(`<script src="${pageUrl}/widget.js"></script>`);
-    await denied.waitForTimeout(50);
-    assert.equal(await denied.locator("section[role=status]").count(), 0);
-  } finally {
-    await browser.close();
-  }
-})(t);
-});
-
-
-
-
-
-test("PAGE-013 PAGE-014 PAGE-008 PAGE-009 PAGE-003 — Public isolation, live timezone refresh and initial asset budget", async t => {
-  t.diagnostic("PAGE-013 — every public snapshot response carries the restrictive same-origin security headers");
-  await (async () => {
-  const origin = new URL(pageUrl).origin;
-  for (const path of ["/", "/history", "/feed.atom", "/widget.js", "/api/public/status", "/assets/status-page.css", "/assets/logo", "/assets/favicon.svg", "/assets/og.svg"]) {
-    const response = await fetch(`${pageUrl}${path}`);
+// A single isolated component keeps a published incident's contribution separate
+// from standing claims, corrections and the other journey's capacity fixtures.
+async function statedUptimeMethodJourney() {
+  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  let browser;
+  const start = Date.UTC(2030, 0, 15, 12);
+  const minute = 60_000;
+  const iso = at => new Date(at).toISOString();
+  const advance = async at => assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: at }) })).status, 204);
+  const snapshotAt = (path, at) => eventually(async () => {
+    const response = await j.publicResponse(path);
     assert.equal(response.status, 200, path);
-    assert.equal(response.headers.get("content-security-policy"), `default-src ${origin}; script-src ${origin}; style-src ${origin}; font-src 'self' data:; img-src ${origin}; connect-src ${origin}; form-action ${origin}; base-uri ${origin}; frame-ancestors 'none'; object-src 'none'`);
-    assert.equal(response.headers.get("x-content-type-options"), "nosniff");
-    assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin");
-  }
-})(t);
-  t.diagnostic("PAGE-014 — browser polling updates status in place without changing the configured timezone");
-  await (async () => {
-  const browser = await chromium.launch({ headless: true });
+    return { generatedAt: response.headers.get('x-lamp-snapshot-generated-at'), text: await response.text() };
+  }, result => result.generatedAt === iso(at), `${path} reflects the controlled publication instant`);
   try {
-    const context = await browser.newContext({ timezoneId: "America/New_York" });
+    await advance(start);
+    await j.signIn(undefined, { fresh: true });
+    const component = await j.component('Synthetic Lamp publication uptime');
+    assert.equal(component.createdAt, iso(start));
+    await advance(start + 60 * minute);
+    const savedSettings = (await j.json('/api/app/page-settings')).settings;
+    const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, savedSettings[key]]));
+    await j.json('/api/app/page-settings', 'PUT', { ...settings, pageName: 'Synthetic Lamp uptime method' });
+    const before = JSON.parse((await snapshotAt('/api/public/v1/components', start + 60 * minute)).text).data;
+    assert.deepEqual(before.map(row => [row.id, row.state, row.uptime.percentage, row.uptime.coverageMinutes]), [[component.id, 'Operational', '100.00%', 60]]);
+
+    const incident = await j.incident('Synthetic Lamp timed publication', [component]);
+    await j.save(incident.id, { nextUpdateAt: iso(start + 120 * minute) });
+    const published = (await j.publish(incident.id)).update;
+    assert.equal(published.publishedAt, iso(start + 60 * minute));
+    const active = await j.read(incident.id);
+    assert.deepEqual(active.components.map(row => [row.componentId, row.state]), [[component.id, 'Major outage']]);
+    await j.visible('/', incident.title);
+    const during = JSON.parse(await j.publicText('/api/public/v1/components')).data;
+    assert.equal(during.find(row => row.id === component.id).state, 'Major outage');
+
+    await advance(start + 90 * minute);
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'Synthetic Lamp requests have recovered.', nextUpdateAt: null });
+    const resolved = (await j.publish(incident.id)).update;
+    assert.equal(resolved.publishedAt, iso(start + 90 * minute));
+    assert.equal((await j.read(incident.id)).resolvedAt, iso(start + 90 * minute));
+    const after = JSON.parse((await snapshotAt('/api/public/v1/components', start + 90 * minute)).text).data;
+    assert.equal(after.length, 1);
+    assert.equal(after[0].id, component.id);
+    assert.equal(after[0].state, 'Operational');
+    // Sixty healthy minutes, then thirty published outage minutes: 60 of 90
+    // available minutes, rounded down. No production arithmetic is imported.
+    assert.equal(after[0].uptime.coverageMinutes, 90);
+    assert.equal(after[0].uptime.percentage, '66.66%');
+    assert.ok(parseFloat(after[0].uptime.percentage) < parseFloat(before[0].uptime.percentage));
+    assert.equal(after[0].uptime.marks.reduce((sum, mark) => sum + (mark.downtimeMinutes ?? 0), 0), 30);
+    const history = (await j.json(`/api/app/components/${component.id}/history`)).history;
+    for (const [at, state] of [[start + 60 * minute, 'Major outage'], [start + 90 * minute, 'Operational']]) {
+      assert.ok(history.some(row => row.causeId === incident.id && row.changedAt === iso(at) && row.newState === state));
+    }
+
+    const html = (await snapshotAt('/', start + 90 * minute)).text;
+    const nodes = descendants(parse(html));
+    const section = nodes.find(node => hasClass(node, 'component-health'));
+    assert.ok(section, 'initial HTML places the method beside the component figures');
+    const componentRows = descendants(section).filter(node => node.tagName === 'article' && hasClass(node, 'component')
+      && descendants(node).some(child => child.tagName === 'h4' && nodeText(child) === component.name));
+    assert.equal(componentRows.length, 1);
+    const figure = descendants(componentRows[0]).find(node => hasClass(node, 'uptime-number'));
+    assert.equal(nodeText(figure), '66.66% over 1 hour 30 minutes', 'the associated initial-HTML figure agrees with the public collection');
+    const method = descendants(section).find(node => hasClass(node, 'availability-method'));
+    assert.ok(method, 'the method is present before scripting runs');
+    const methodText = nodeText(method);
+    for (const expected of statedMethod) assert.ok(methodText.includes(expected), `initial HTML explains ${expected}`);
+
+    browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
     const page = await context.newPage();
-    await page.clock.install({ time: new Date("2026-09-08T12:00:00.000Z") });
-    let polls = 0;
-    await page.route("**/api/public/status", async (route) => {
-      polls += 1;
-      await route.fulfill({ contentType: "application/json", body: JSON.stringify({ version: 1, generatedAt: "2026-09-08T12:00:30.000Z", overall: "Major outage", incident: { reference: "INC-123", title: "Live update", lifecycle: "Investigating", publishedAt: "2026-09-08T12:00:30.000Z", summary: "INC-123 · Investigating · Fresh customer update.", message: "Fresh customer update." } }) });
-    });
-    await page.goto(`${pageUrl}/`);
-    const timezoneLabel = page.locator("[data-timezone-label]");
-    const initialTimezoneLabel = await timezoneLabel.textContent();
-    assert.ok(initialTimezoneLabel.trim());
-    assert.equal(await timezoneLabel.getAttribute("data-timezone"), "America/Los_Angeles");
-    await page.clock.fastForward(30_000);
-    await page.waitForFunction(() => document.querySelector("[data-overall]")?.textContent === "Major outage");
-    assert.equal(polls, 1, "the script polls once at its 30-second cadence");
-    const live = page.locator("#status-live");
-    assert.equal(await live.getAttribute("aria-live"), "polite");
-    assert.equal(await live.getAttribute("aria-atomic"), "true");
-    assert.match(await live.innerText(), /Major outage[\s\S]*Fresh customer update/);
-    assert.equal(await timezoneLabel.textContent(), initialTimezoneLabel);
-    assert.equal(await timezoneLabel.getAttribute("data-timezone"), "America/Los_Angeles");
-    assert.equal(await page.locator("[data-generated-at] time").getAttribute("datetime"), "2026-09-08T12:00:30.000Z");
-    assertVisibleTime(await page.locator("[data-generated-at] time").textContent(), "2026-09-08T12:00:30.000Z", "America/Los_Angeles");
-    await context.close();
-  } finally {
-    await browser.close();
-  }
-})(t);
-  t.diagnostic("PAGE-008 — repeated public snapshot reads are never rate limited");
-  await (async () => {
-  const responses = await Promise.all(Array.from({ length: 128 }, () => fetch(`${pageUrl}/api/public/status`)));
-  assert.ok(responses.every((response) => response.status === 200));
-  assert.ok(responses.every((response) => response.status !== 429));
-})(t);
-  t.diagnostic("PAGE-009 — every public timestamp keeps the configured timezone with browser JavaScript enabled");
-  await (async () => {
-  await updateSettings({ timezone: "America/Los_Angeles" });
-  const created = await appFetch("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: "Timestamp metadata probe", components: [{ componentId: "01J00000000000000000000010", state: "Degraded performance", relationship: "Primary" }] }) });
-  assert.equal(created.status, 201);
-  const incident = (await created.json()).incident;
-  const nextUpdateAt = new Date(Date.now() + 60 * 60_000).toISOString();
-  const drafted = await appFetch(`/api/app/incidents/${incident.id}/draft`, { method: "PUT", body: JSON.stringify({ lifecycle: "Investigating", affectedAudience: "Timestamp readers", customerImpact: "Requests may be delayed.", whatStillWorks: "The status page remains available.", details: "This update verifies timestamp semantics.", nextUpdateAt }) });
-  assert.equal(drafted.status, 200);
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}/publish`, { method: "POST", body: JSON.stringify({ channels: [] }) })).status, 200);
-  // Publication commits before its snapshot job; PAGE-007 permits up to 10s.
-  let html = "";
-  const deadline = performance.now() + 10_000;
-  do {
-    html = await (await fetch(`${pageUrl}/`)).text();
-    if (html.includes(`datetime="${nextUpdateAt}"`)) break;
-    await new Promise(resolve => setTimeout(resolve, 100));
-  } while (performance.now() < deadline);
-  const initialTimes = [...html.matchAll(/<time datetime="([^" ]+)"[^>]*data-local-time[^>]*>([^<]+)<\/time>/g)];
-  assert.ok(initialTimes.length > 0 && initialTimes.some(([, instant]) => instant === nextUpdateAt), "initial HTML includes the committed next update");
-  for (const [, instant, visible] of initialTimes) assertVisibleTime(visible, instant, "America/Los_Angeles");
-  assert.match(html, /data-timezone-label data-timezone="America\/Los_Angeles">[^<]+/);
-  const browser = await chromium.launch({ headless: true });
+    await page.goto(j.publicOrigin);
+    const visibleComponent = page.locator('article.component').filter({ has: page.getByRole('heading', { name: component.name, exact: true }) });
+    assert.equal(await visibleComponent.locator('.uptime-number').innerText(), '66.66% over 1 hour 30 minutes');
+    await page.getByText('How availability is calculated', { exact: true }).click();
+    assert.equal(await page.locator('.availability-method p').innerText(), nodeText(descendants(method).find(node => node.tagName === 'p')));
+    if (process.env.LAMP_SCREENSHOTS) {
+      await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-stated-uptime-method.png`, fullPage: true });
+      }
+    }
+
+    // Every other built-in layout an owner publishes from Settings states the same method beside its figures.
+    // Regions map needs public components in two regions: the component gains one and a second joins another.
+    await j.json(`/api/app/components/${component.id}`, 'PUT', { name: component.name, groupId: null, description: '', region: 'North America', internal: false, displayOrder: 0, note: '' });
+    await j.component('Synthetic Lamp second region', { region: 'Europe', displayOrder: 1 });
+    const layouts = { calm: ['calm-components', 'calm-row'], uptime: ['up-heatmap', 'hm-label'], regions: ['rg-components', 'rg-row'] };
+    const stated = {};
+    for (const [template, [sectionClass, rowClass]] of Object.entries(layouts)) {
+      await j.json('/api/app/page-settings', 'PUT', { ...settings, pageName: 'Synthetic Lamp uptime method', template });
+      const layoutHtml = await eventually(() => j.publicText('/'), body => body.includes(`data-template="${template}"`), `${template} layout reaches the public root`);
+      const layoutSection = descendants(parse(layoutHtml)).find(node => hasClass(node, sectionClass));
+      const layoutText = layoutSection ? nodeText(layoutSection) : '';
+      const row = layoutSection && descendants(layoutSection).find(node => hasClass(node, rowClass) && nodeText(node).includes(component.name));
+      stated[template] = { figure: row && nodeText(row).match(/\d+\.\d{2}%/)?.[0], method: statedMethod.filter(statement => layoutText.includes(statement)) };
+    }
+    assert.deepEqual(stated, Object.fromEntries(Object.keys(layouts).map(template => [template, { figure: '66.66%', method: statedMethod }])), 'each built-in layout states every weight and the window beside the component figure');
+  } finally { await browser?.close(); await j.close(); }
+}
+
+// Keep the same installed nodes across native publication and real HTTP polls.
+async function widgetVariantsJourney() {
+  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  let browser;
+  const now = Date.UTC(2032, 3, 12, 12);
+  let clock = now;
+  const advance = async () => assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: clock += 60000 }) })).status, 204);
   try {
-    const context = await browser.newContext({ timezoneId: "America/New_York" });
-    const page = await context.newPage();
-    await page.goto(`${pageUrl}/`, { waitUntil: "networkidle" });
-    const nextUpdate = page.locator(".update dt", { hasText: "Next update by" }).locator("xpath=following-sibling::dd[1]/time[@data-local-time]").first();
-    const instant = await nextUpdate.getAttribute("datetime");
-    const visible = await nextUpdate.textContent();
-    assert.equal(instant, nextUpdateAt, "scripted next update retains its committed instant");
-    assertVisibleTime(visible, instant, "America/Los_Angeles");
-    assert.equal(await page.locator("[data-timezone-label]").getAttribute("data-timezone"), "America/Los_Angeles");
-    assert.ok((await page.locator("[data-timezone-label]").textContent()).trim());
-    await context.close();
-  } finally {
-    await browser.close();
-  }
-})(t);
-  t.diagnostic("PAGE-003 — the complete component-limit snapshot remains within the gzip budget");
-  await (async () => {
-  executeLocalSql(`WITH RECURSIVE n(value) AS (SELECT 1 UNION ALL SELECT value + 1 FROM n WHERE value < 194) INSERT INTO components (id, group_id, name, description, internal, display_order, note, created_at, updated_at) SELECT 'bulk-' || value, '01J00000000000000000000003', 'Bulk component ' || printf('%03d', value), substr('Maximum valid description for capacity measurement. ' || printf('%03d', value) || ' ..................................................................................................................................................................................................................................................', 1, 280), 0, 1000 + value, substr('Maximum valid public state note for component ' || printf('%03d', value) || ' ..................................................................................................................................................................................................................................................', 1, 250), '2026-06-10T00:00:00.000Z', '2026-06-10T00:00:00.000Z' FROM n; WITH RECURSIVE n(component) AS (SELECT 1 UNION ALL SELECT component + 1 FROM n WHERE component < 194), d(day) AS (SELECT 0 UNION ALL SELECT day + 1 FROM d WHERE day < 89) INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) SELECT 'bulk-history-' || component || '-' || day, 'bulk-' || component, 'Operational', 'Operational', 'standing-claim', NULL, '01J00000000000000000000001', strftime('%Y-%m-%dT%H:%M:%fZ','now','-' || (90 - day) || ' days'), '2026-06-10T00:00:00.000Z', '2026-06-10T00:00:00.000Z' FROM n CROSS JOIN d`);
-  await updateSettings({ tagline: "Status record at the component capacity limit." });
-  const response = await fetch(`${pageUrl}/`);
-  assert.equal(response.status, 200);
-  const html = await response.text();
-  const gzipBytes = gzipSync(Buffer.from(html)).byteLength;
-  assert.ok(gzipBytes <= 50 * 1024, `PAGE-003 gzip budget exceeded at 200 populated components: ${gzipBytes} bytes`);
-  assert.match(html, /Maximum valid public state note for component 001/, "the capacity fixture includes a visible 250-character note");
-  const marksPerComponent = [...html.matchAll(/class="uptime-mark /g)].length / 200;
-  assert.ok(marksPerComponent >= 90 && marksPerComponent <= 91, "daily marks cover the exact trailing 90-day interval, including its partial boundary day");
-})(t);
-  t.diagnostic("PAGE-003 — Chromium renders the public page in its bundled face within the four-request initial asset budget");
-  await (async () => {
-  await uploadTestLogo();
-  const settings = await currentSettings();
-  await updateSettings({ tagline: settings.tagline });
-  const browser = await chromium.launch({ headless: true });
+    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) })).status, 204);
+    await j.signIn(undefined, { fresh: true });
+    const settings = (await j.json('/api/app/page-settings')).settings;
+    await j.json('/api/app/page-settings', 'PUT', {
+      ...Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'footerCreditEnabled', 'mailFromAddress', 'aiToneInstructions'].map(key => [key, settings[key]])),
+      widgetAllowedOrigins: [j.publicOrigin],
+    });
+    const component = await j.component('Synthetic Lamp embed service');
+    const snapshot = (overall, incident, maintenance) => eventually(async () => (await j.publicResponse('/api/public/status')).json(),
+      data => data.overall === overall && data.incident?.reference === incident && data.maintenance?.state === maintenance,
+      `embed snapshot becomes ${overall} with incident ${incident} and maintenance ${maintenance}`);
+    await snapshot('Operational', undefined, undefined);
+    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await openWidgetHost(context, j.publicOrigin);
+    const servedScripts = async () => {
+      for (const installation of widgetInstallations) {
+        const response = await j.publicResponse(installation.path);
+        assert.equal(response.status, 200);
+        const source = await response.text();
+        assert.ok(Buffer.byteLength(source) <= 10 * 1024, `${installation.id} served script stays within ten KiB`);
+        assert.ok(gzipSync(Buffer.from(source)).byteLength <= 10 * 1024, `${installation.id} served script stays within ten KiB gzipped`);
+      }
+    };
+    await servedScripts();
+    const installed = [];
+    for (const installation of widgetInstallations) {
+      for (const hide of [false, true]) installed.push({ installation, hide, root: await installWidget(page, j.publicOrigin, installation, hide) });
+    }
+    assert.equal(await page.locator('section[role=status]').count(), 8);
+    const reconcile = async (expected, active) => {
+      for (const { installation, hide, root } of installed) {
+        const floating = Boolean(installation.position);
+        assert.equal(await root.locator('strong').textContent(), expected.overall, `${installation.id} exact snapshot state`);
+        assert.equal(await root.evaluate(node => getComputedStyle(node).display), (floating && !active) || (hide && expected.overall === 'Operational') ? 'none' : installation.display, `${installation.id} operational and event visibility`);
+        const style = await root.evaluate(node => {
+          const css = getComputedStyle(node);
+          return { color: css.color, background: css.backgroundColor, position: css.position, top: css.top, bottom: css.bottom, left: css.left, right: css.right, display: css.display, padding: css.padding, border: css.borderWidth };
+        });
+        assert.equal(style.color, 'rgb(18, 52, 86)', `${installation.id} configured foreground`);
+        assert.equal(style.background, 'rgb(228, 239, 250)', `${installation.id} configured background`);
+        if (floating) {
+          assert.equal(style.position, 'fixed', `${installation.id} is a floating notice`);
+          const expectedEdges = installation.position === 'top-left' ? ['16px', 'auto', '16px', 'auto'] : ['auto', '16px', 'auto', '16px'];
+          const selected = installation.position === 'top-left' ? [style.top, style.left] : [style.bottom, style.right];
+          assert.deepEqual(selected, ['16px', '16px'], `${installation.id} exact computed selected corner`);
+          assert.deepEqual(await root.evaluate(node => [node.style.top, node.style.bottom, node.style.left, node.style.right]), expectedEdges.map(value => value === 'auto' ? '' : value), `${installation.id} sets only the selected edges`);
+        } else {
+          assert.equal(style.position, 'static', `${installation.id} remains in document flow`);
+          if (installation.variant === 'dot') {
+            assert.equal(style.padding, '4px 0px');
+            assert.equal(style.border, '0px');
+          } else assert.equal(style.padding, '14px 16px');
+        }
+        const detail = root.locator('span').last();
+        const message = installation.variant === 'dot' ? '' : expected.incident ? expected.incident.message.replace(/\n\n+/g, '\n')
+          : expected.maintenance ? `${expected.maintenance.reference}: ${expected.maintenance.title}\n${expected.maintenance.state}` : '';
+        assert.equal(await detail.textContent(), message, `${installation.id} reconciles the same snapshot content`);
+        assert.equal(await detail.evaluate(node => getComputedStyle(node).color), 'rgb(18, 52, 86)');
+        const dotColor = expected.overall === 'Operational' ? 'rgb(25, 134, 90)' : expected.overall === 'Under maintenance' ? 'rgb(79, 111, 168)' : expected.overall === 'Degraded performance' ? 'rgb(201, 138, 18)' : 'rgb(180, 68, 50)';
+        assert.equal(await root.locator('span').first().evaluate(node => getComputedStyle(node).backgroundColor), dotColor, `${installation.id} exact dot state`);
+      }
+    };
+    const poll = async expected => {
+      const replies = [];
+      const capture = response => { if (new URL(response.url()).pathname === '/api/public/status') replies.push(response); };
+      page.on('response', capture);
+      try {
+        await page.clock.fastForward(30000);
+        await eventually(() => replies.length, count => count === installed.length, 'every installed variant receives an actual polling response');
+        for (const response of replies) { assert.equal(response.status(), 200); assert.deepEqual(await response.json(), expected); }
+        await page.waitForFunction(overall => [...document.querySelectorAll('section[role=status] strong')].every(node => node.textContent === overall), expected.overall);
+      } finally { page.off('response', capture); }
+    };
+    const screen = async name => {
+      if (!process.env.LAMP_WIDGET_SCREENSHOTS) return;
+      await mkdir(process.env.LAMP_WIDGET_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_WIDGET_SCREENSHOTS}/widget-${name}-${width}.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    };
+    await reconcile(await snapshot('Operational', undefined, undefined), false);
+    await screen('initial-hidden');
+    await advance();
+    await j.json(`/api/app/components/${component.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
+    let expected = await snapshot('Degraded performance', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    await j.json(`/api/app/components/${component.id}/standing-claim`, 'PUT', { state: 'Operational' });
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    const maintenance = (await j.json('/api/app/maintenance', 'POST', {
+      title: 'Synthetic Lamp embed maintenance', affectedAudience: 'Service customers', customerImpact: 'Routine maintenance.',
+      startsAt: new Date(now + 3600000).toISOString(), endsAt: new Date(now + 7200000).toISOString(),
+      componentIds: [component.id], autoStart: false, autoComplete: false,
+    }, 201)).maintenance;
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    await j.json(`/api/app/maintenance/${maintenance.id}/start`, 'POST', {});
+    expected = await snapshot('Under maintenance', undefined, 'In progress');
+    assert.equal(expected.incident, null, 'maintenance is the only active event');
+    assert.deepEqual(expected.maintenance, { reference: maintenance.reference, title: maintenance.title, state: 'In progress' });
+    await poll(expected); await reconcile(expected, true); await screen('maintenance');
+    console.log('PROBE PAGE-019 1: native maintenance without an incident -> both floating installations visible; inactive and operational controls hide every configured variant');
+    await advance();
+    await j.json(`/api/app/maintenance/${maintenance.id}/complete`, 'POST', {});
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    const incident = await j.incident('Synthetic Lamp embed publication', [component]);
+    await j.save(incident.id, { affectedAudience: 'Synthetic Lamp embed customers', customerImpact: 'Synthetic Lamp requests are unavailable.', whatStillWorks: 'Saved results remain readable.', details: 'Responders are repairing the gateway.', nextUpdateAt: new Date(now + 3600000).toISOString() });
+    expected = await snapshot('Operational', undefined, undefined);
+    await poll(expected); await reconcile(expected, false);
+    await advance();
+    const publication = (await j.publish(incident.id)).update;
+    expected = await snapshot('Major outage', incident.reference, undefined);
+    assert.equal(expected.incident.publishedAt, publication.publishedAt);
+    assert.equal(expected.incident.title, 'Synthetic Lamp embed publication');
+    assert.ok(expected.incident.message.includes('Synthetic Lamp requests are unavailable.'));
+    await poll(expected); await reconcile(expected, true); await servedScripts(); await screen('published');
+    console.log('PROBE PAGE-019 2: four served installations and populated script artifacts -> exact shared snapshot, raw and gzip size within ten KiB');
+    console.log('PROBE PAGE-019 4: native publication and polling -> floating notices appear with exact selected corners and computed colors');
+    await advance();
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'Synthetic Lamp requests have recovered.', nextUpdateAt: null });
+    await j.publish(incident.id);
+    assert.equal((await j.read(incident.id)).lifecycle, 'Resolved');
+    expected = await snapshot('Operational', undefined, undefined);
+    assert.equal(expected.incident, null); assert.equal(expected.maintenance, null);
+    await poll(expected); await reconcile(expected, false);
+    for (const { installation, root } of installed.filter(row => row.installation.position)) {
+      assert.equal(await root.isVisible(), false, `${installation.id} positively disappears after native resolution and polling`);
+      assert.equal(await root.count(), 1, 'the original installed node remains attached');
+    }
+    await screen('resolved');
+    console.log('PROBE PAGE-019 4: native resolution followed by eight actual HTTP polls -> original floating nodes remain attached and are positively hidden');
+  } finally { await browser?.close(); await j.close(); }
+}
+
+// One catalogue-to-customer journey: no renderer or uptime helper is imported.
+test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
+  await widgetVariantsJourney();
+  await statedUptimeMethodJourney();
+  await conditionalComponentFlow();
+  await uptimeCorrectionJourney();
+  const j = await openStatusJourney({ pageHost: 'localhost' });
+  let browser;
   try {
-    const page = await browser.newPage();
-    const paths = new Set();
-    const thirdPartyRequests = new Set();
-    page.on("request", (request) => {
-      const url = new URL(request.url());
-      if (request.resourceType() === "document" || !["http:", "https:"].includes(url.protocol)) return;
-      if (url.origin === new URL(pageUrl).origin) paths.add(url.pathname);
-      else thirdPartyRequests.add(url.href);
+    const settings = (await j.json('/api/app/page-settings')).settings;
+    await j.json('/api/app/page-settings', 'PUT', {
+      mailFromAddress: settings.mailFromAddress, pageName: 'Customer service status', tagline: 'Current service facts', accentColor: '#16794C',
+      timezone: 'America/Los_Angeles', hostname: 'localhost', footerCreditEnabled: false,
+      widgetAllowedOrigins: [j.publicOrigin],
     });
-    await page.goto(`${pageUrl}/`, { waitUntil: "networkidle" });
-    const fonts = await page.evaluate(async () => {
-      await document.fonts.ready;
-      const firstFamily = (element) => getComputedStyle(element).fontFamily.split(",")[0].trim().replace(/^["']|["']$/g, "");
-      const loaded = [...document.fonts].filter((face) => face.status === "loaded").map((face) => face.family.replace(/^["']|["']$/g, ""));
-      return { brand: firstFamily(document.querySelector(".brand")), body: firstFamily(document.body), loaded };
+    const firstGroup = (await j.json('/api/app/component-groups', 'POST', { name: 'Customer services', displayOrder: 0 }, 201)).group;
+    const secondGroup = (await j.json('/api/app/component-groups', 'POST', { name: 'Platform services', displayOrder: 1 }, 201)).group;
+    const main = await j.component('Public API', { groupId: firstGroup.id, note: 'Requests remain safe to retry.', displayOrder: 0 });
+    const other = (await j.json('/api/app/components', 'POST', {
+      name: 'Dashboard', groupId: firstGroup.id, description: '', internal: false, displayOrder: 1, onlyShowIfDegraded: true,
+    }, 201)).component;
+    assert.equal(other.note, '', 'omitting the note at creation returns an empty note');
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === other.id).note, '', 'the empty default persists through an independent native read');
+    const noteInput = { name: main.name, groupId: firstGroup.id, description: '', internal: false, displayOrder: 0 };
+    const beforeInvalidNotes = await j.json('/api/app/components');
+    await j.json('/api/app/components', 'POST', { ...noteInput, name: 'synthetic-lamp-overlength', note: 'n'.repeat(251) }, 400);
+    await j.json(`/api/app/components/${main.id}`, 'PUT', { ...noteInput, note: 'n'.repeat(251) }, 400);
+    await j.json(`/api/app/components/${main.id}`, 'PUT', noteInput, 400);
+    assert.deepEqual(await j.json('/api/app/components'), beforeInvalidNotes, 'invalid notes and omitted edit notes leave the catalogue unchanged');
+    const boundaryNote = '<state>&' + 'n'.repeat(242);
+    const updated = (await j.json(`/api/app/components/${main.id}`, 'PUT', { ...noteInput, note: boundaryNote })).component;
+    assert.equal(updated.note, boundaryNote);
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).note, boundaryNote);
+    const boundaryHtml = await j.visible('/', boundaryNote);
+    assert.ok(boundaryHtml.includes(`<p class="component-note">&lt;state&gt;&amp;${'n'.repeat(242)}</p>`), 'the full 250-character note is displayed as plain text beside the state');
+    const cleared = (await j.json(`/api/app/components/${main.id}`, 'PUT', { ...noteInput, note: '' })).component;
+    assert.equal(cleared.note, '', 'an explicit empty note still clears an existing note');
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).note, '');
+    await j.json(`/api/app/components/${main.id}`, 'PUT', { ...noteInput, note: main.note });
+    const hidden = await j.component('PRIVATE database replica', { groupId: secondGroup.id, note: 'PRIVATE topology' });
+    // First observe the same component publicly, so exclusion cannot pass on
+    // an empty catalogue or a resource that never existed.
+    await j.json(`/api/app/components/${hidden.id}/standing-claim`, 'PUT', { state: 'Major outage' });
+    const exposed = await j.visible('/', hidden.name);
+    assert.match(exposed, /id="overall-status"[^>]*>Major outage<\/h1>/);
+    assert.ok(exposed.includes(hidden.note));
+    const exposedComponent = (await (await j.publicResponse('/api/public/v1/components')).json()).data.find(row => row.id === hidden.id);
+    assert.equal(exposedComponent.state, 'Major outage');
+    assert.ok(exposedComponent.uptime.marks.some(mark => mark.downtimeMinutes > 0));
+    for (const resource of ['feed.atom', 'feed.rss', 'badge.svg', 'uptime.svg']) {
+      assert.equal((await j.publicResponse(`/components/${hidden.id.toLowerCase()}/${resource}`)).status, 200, resource);
+    }
+    await j.json(`/api/app/components/${hidden.id}`, 'PUT', {
+      name: hidden.name, groupId: secondGroup.id, description: '', note: hidden.note, internal: true,
     });
-    assert.ok(fonts.loaded.includes(fonts.body), `the public copy renders in a face the page loaded itself, not a system substitute: ${JSON.stringify(fonts)}`);
-    assert.equal(fonts.brand, fonts.body, "the business name uses the same bundled public face");
-    assert.ok(paths.size <= 4, `initial public page made ${paths.size} same-origin subresource requests: ${[...paths].join(", ")}`);
-    for (const path of paths) assert.ok(["/assets/favicon.svg", "/assets/status-page.css", "/assets/status-page.js"].includes(path), `unexpected initial public dependency ${path}`);
-    assert.deepEqual([...thirdPartyRequests], [], `public initial page made third-party requests: ${[...thirdPartyRequests].join(", ")}`);
-  } finally {
-    await browser.close();
-  }
-})(t);
+    const privateCatalogue = (await j.json('/api/app/components')).components;
+    assert.equal(privateCatalogue.find(row => row.id === main.id).publicState, 'Operational');
+    assert.equal(privateCatalogue.find(row => row.id === hidden.id).publicState, 'Major outage');
+    assert.deepEqual(privateCatalogue.filter(row => row.publicState !== 'Operational').map(row => row.id), [hidden.id]);
+    const limits = JSON.parse(await readFile('seed.json', 'utf8')).limits;
+    const beforeCatalogue = await j.json('/api/app/components/bulk');
+    const catalogue = { ...beforeCatalogue.catalogue, components: [...beforeCatalogue.catalogue.components] };
+    for (let index = catalogue.components.length; index < limits.components.value; index++) {
+      catalogue.components.push({ id: String(index).padStart(26, '0'), name: `Service ${index}`, groupId: secondGroup.id, description: '', internal: false, displayOrder: index, note: '', onlyShowIfDegraded: false, uptimeStartDate: null });
+    }
+    const review = await j.json('/api/app/components/bulk/preview', 'POST', { catalogue, revision: beforeCatalogue.revision });
+    await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: review.catalogue, revision: review.revision, reviewToken: review.reviewToken });
+    await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: review.catalogue, revision: review.revision, reviewToken: review.reviewToken }, 409);
+    let html = await j.visible('/', 'Customer service status');
+    assert.ok(html.indexOf(firstGroup.name) < html.indexOf(secondGroup.name));
+    assert.ok(!html.includes(other.name), 'a healthy conditional component stays out of the public catalogue');
+    assert.ok(html.includes(main.note));
+    assert.ok(!html.includes(hidden.name) && !html.includes('PRIVATE topology'));
+    assert.match(html, /id="overall-status"[^>]*>Operational<\/h1>/, 'the only severe claim is internal');
+    assert.equal((await (await j.publicResponse('/api/public/status')).json()).overall, 'Operational');
+    assert.equal((await (await j.publicResponse('/badge.json')).json()).message, 'Operational');
+    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Operational<\/text>/);
+    const published = [], cursors = new Set();
+    let cursor;
+    do {
+      const path = `/api/public/v1/components${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`;
+      const body = await (await j.publicResponse(path)).json();
+      for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!JSON.stringify(body).includes(value), path);
+      published.push(...body.data);
+      cursor = body.nextCursor;
+      if (cursor) { assert.ok(!cursors.has(cursor), 'public pagination advances'); cursors.add(cursor); }
+    } while (cursor);
+    assert.ok(cursors.size > 0, 'internal exclusion is checked beyond the first public page');
+    const expectedPublicIds = catalogue.components.filter(row => !row.internal && !row.onlyShowIfDegraded).map(row => row.id).sort();
+    assert.deepEqual(published.map(row => row.id).sort(), expectedPublicIds, 'every public component and uptime record appears exactly once');
+    for (const row of published) {
+      assert.equal(row.state, 'Operational');
+      assert.equal(row.uptime.percentage, '100.00%', 'internal downtime never enters a visible uptime figure');
+      assert.ok(row.uptime.marks.every(mark => mark.downtimeMinutes === null || mark.downtimeMinutes === 0));
+      const uptimeBadge = await j.publicText(`/components/${row.slug}/uptime.svg`);
+      assert.match(uptimeBadge, /id="value"[^>]*>100\.00%<\/text>/);
+      for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!uptimeBadge.includes(value));
+    }
+    for (const path of ['/api/v2/components.json', '/api/v2/summary.json']) {
+      const body = await (await j.publicResponse(path)).json();
+      assert.deepEqual(body.components.filter(row => !row.group).map(row => row.name).sort(), published.map(row => row.name).sort(), path);
+      for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!JSON.stringify(body).includes(value), path);
+    }
+    for (const path of ['/', '/feed.atom', '/feed.rss', '/widget.js', '/embed/script.js']) {
+      const body = await j.publicText(path);
+      for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!body.includes(value), `${path} excludes internal identity, note and uptime`);
+    }
+    for (const resource of ['feed.atom', 'feed.rss', 'badge.svg', 'uptime.svg']) {
+      const response = await j.publicResponse(`/components/${hidden.id.toLowerCase()}/${resource}`);
+      assert.equal(response.status, 404, `a previously public internal ${resource} is unavailable`);
+      const body = await response.text();
+      for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!body.includes(value));
+    }
+    assert.ok(html.includes('<form method="post" action="/subscribe">'));
+    assert.ok(html.includes('data-local-time'));
+    assert.ok(gzipSync(Buffer.from(html)).byteLength <= limits.snapshotMaxBytesGzipped.value, 'the declared catalogue remains usable at its public HTML budget');
+    const ownAssets = [...html.matchAll(/<(?:script|link)\b[^>]+(?:src|href)="([^"]+)"/g)].map(match => match[1]);
+    assert.ok(ownAssets.every(path => path.startsWith('/')));
+    const initial = await j.publicResponse('/');
+    const validator = initial.headers.get('etag');
+    assert.ok(validator);
+    assert.equal((await j.raw(new URL('/', j.publicOrigin).href, { headers: { 'If-None-Match': validator } })).status, 304);
+    await initial.arrayBuffer();
+    const requests = await Promise.all(Array.from({ length: limits.publicPageRequestsPerSecond.value }, () => fetch(j.publicOrigin + '/')));
+    for (const response of requests) { assert.equal(response.status, 200); await response.arrayBuffer(); }
+    for (const path of ['/', '/history', '/feed.atom', '/feed.rss', '/widget.js', '/api/public/status', '/badge.svg']) {
+      const response = await j.publicResponse(path);
+      assert.equal(response.status, 200, path);
+      const csp = response.headers.get('content-security-policy');
+      for (const directive of ['default-src', 'script-src', 'style-src', 'img-src', 'connect-src', 'form-action', 'base-uri']) assert.ok(csp.includes(`${directive} ${j.publicOrigin}`), path);
+      assert.equal(csp, `default-src ${j.publicOrigin}; script-src ${j.publicOrigin}; style-src ${j.publicOrigin}; font-src 'self' data:; img-src ${j.publicOrigin}; connect-src ${j.publicOrigin}; form-action ${j.publicOrigin}; base-uri ${j.publicOrigin}; frame-ancestors 'none'; object-src 'none'`, `${path}: the complete policy permits only the documented sources`);
+      assert.ok(csp.includes("frame-ancestors 'none'"));
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+      assert.equal(response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+      await response.arrayBuffer();
+    }
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR42mP8z8BQDwAF/gL+3N9nPwAAAABJRU5ErkJggg==', 'base64');
+    const logo = new FormData(); logo.set('logo', new Blob([png], { type: 'image/png' }), 'company.png');
+    // Serialize multipart at the HTTP boundary: Node's FormData and workerd's
+    // FormData are different realms when dispatching directly into Miniflare.
+    const multipart = new Request(j.appOrigin + '/api/app/page-settings/logo', { method: 'POST', body: logo });
+    const upload = await j.request('/api/app/page-settings/logo', { method: 'POST', headers: { 'Content-Type': multipart.headers.get('Content-Type') }, body: await multipart.arrayBuffer() });
+    assert.equal(upload.status, 200, await upload.clone().text());
+    const originalLogo = await j.publicResponse('/assets/logo');
+    assert.equal(originalLogo.status, 200);
+    assert.deepEqual(Buffer.from(await originalLogo.arrayBuffer()), png);
+    for (const path of ['/assets/favicon.svg', '/assets/og.svg']) { const response = await j.publicResponse(path); assert.equal(response.status, 200); assert.ok((await response.text()).includes('data:image/png')); }
+
+    await publicCapacityJourney(j, limits);
+    // The maximum catalogue was read and load-checked above. Keep the public
+    // customer journey representative instead of rebuilding that capacity load
+    // after every unrelated operator edit.
+    const populatedCatalogue = await j.json('/api/app/components/bulk');
+    const customerCatalogue = { ...populatedCatalogue.catalogue, components: populatedCatalogue.catalogue.components.filter(row => [main.id, other.id, hidden.id].includes(row.id)) };
+    const customerReview = await j.json('/api/app/components/bulk/preview', 'POST', { catalogue: customerCatalogue, revision: populatedCatalogue.revision });
+    await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: customerReview.catalogue, revision: customerReview.revision, reviewToken: customerReview.reviewToken });
+
+    // Read component aggregation itself, independently of the page-wide rollup.
+    await admitAttributionOperator(j, 'component-creator');
+    const claimsComponent = await j.component('Synthetic claim service');
+    const standingPath = `/api/app/components/${claimsComponent.id}/standing-claim`;
+    const originalStateHistory = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+    const { creator: componentCreator, actor: stateActor, email: stateActorEmail } = await admitAttributionOperator(j, 'state-actor');
+    assert.equal(originalStateHistory[0].operatorId, componentCreator.id);
+    const assertComponentState = async (expected, description) => {
+      assert.equal((await j.json('/api/app/components')).components.find(row => row.id === claimsComponent.id).publicState, expected, `${description}: operator state`);
+      const published = await eventually(async () => (await (await j.publicResponse('/api/public/v1/components')).json()).data.find(row => row.id === claimsComponent.id), row => row?.state === expected, `${description}: public component state`);
+      assert.equal(published.state, expected, `${description}: public state`);
+    };
+    const invalidState = await j.json(standingPath, 'PUT', { state: 'Unavailable' }, 400);
+    assert.deepEqual(invalidState.issues.find(issue => issue.path[0] === 'state').values, [
+      'Operational', 'Degraded performance', 'Partially unavailable', 'Major outage', 'Under maintenance',
+    ], 'the native door accepts exactly the contractual state vocabulary');
+    await assertComponentState('Operational', 'refusing an unknown state leaves the component unchanged');
+    for (const state of ['Operational', 'Degraded performance', 'Partially unavailable', 'Major outage', 'Under maintenance']) {
+      const beforeState = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+      const requestedAt = Date.now();
+      await j.json(standingPath, 'PUT', { state });
+      const respondedAt = Date.now();
+      const history = (await j.json(`/api/app/components/${claimsComponent.id}/history`)).history;
+      const appended = history.filter(row => !beforeState.some(prior => prior.id === row.id));
+      assert.equal(appended.length, state === 'Operational' ? 0 : 1);
+      for (const row of appended) {
+        assert.equal(row.previousState, beforeState[0].newState);
+        assert.equal(row.newState, state);
+        assert.equal(row.causeType, 'standing-claim');
+        assert.equal(row.causeId, null);
+        assert.ok(Date.parse(row.changedAt) >= requestedAt && Date.parse(row.changedAt) <= respondedAt);
+        assert.equal(row.operatorId, stateActor.id, 'state history records the actor rather than the creator');
+        assert.equal((await j.db.prepare('SELECT operator_id FROM component_state_history WHERE id = ?').bind(row.id).first()).operator_id, stateActor.id);
+      }
+      assert.deepEqual(history.filter(row => !appended.some(added => added.id === row.id)), beforeState, 'a new actor retains every earlier history value');
+      const claim = await j.db.prepare('SELECT * FROM component_standing_claims WHERE component_id = ?').bind(claimsComponent.id).first();
+      assert.equal(claim.operator_id, stateActor.id);
+      assert.equal(claim.state, state);
+      await assertComponentState(state, `standing claim ${state}`);
+    }
+    await j.json(standingPath, 'PUT', { state: 'Operational' });
+    const firstClaim = await j.incident('First competing service incident', [claimsComponent]);
+    const secondClaim = await j.incident('Second competing service incident', [claimsComponent]);
+    for (const [higher, lower, expected] of [
+      ['Major outage', 'Partially unavailable', 'Major outage'],
+      ['Partially unavailable', 'Degraded performance', 'Partially unavailable'],
+      ['Degraded performance', 'Operational', 'Degraded performance'],
+    ]) {
+      // Reverse both the incident identities holding the claims and write order.
+      // The lower claim is published last, so latest-write selection also fails.
+      for (const assignments of [
+        [[firstClaim, higher], [secondClaim, lower]],
+        [[secondClaim, higher], [firstClaim, lower]],
+      ]) {
+        for (const [claim, state] of assignments) {
+          await j.save(claim.id, { componentChanges: [{ componentId: claimsComponent.id, state }] });
+          await j.publish(claim.id);
+        }
+        await assertComponentState(expected, `${higher} outranks ${lower}, ${assignments[0][0].title} holds the higher claim`);
+      }
+    }
+    for (const claim of [firstClaim, secondClaim]) {
+      await j.save(claim.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+      await j.publish(claim.id);
+    }
+    await assertComponentState('Operational', 'resolved incident claims leave the standing Operational claim');
+    await j.signIn(componentCreator.email);
+    const window = (await j.json('/api/app/maintenance', 'POST', {
+      title: 'Synthetic claim service maintenance', affectedAudience: 'Service customers', customerImpact: 'Routine service maintenance.',
+      startsAt: new Date(Date.now() + 3600000).toISOString(), endsAt: new Date(Date.now() + 7200000).toISOString(),
+      componentIds: [claimsComponent.id], autoStart: false, autoComplete: false,
+    }, 201)).maintenance;
+    assert.equal(window.createdByOperatorId, componentCreator.id);
+    await j.signIn(stateActorEmail);
+    const beforeManualStart = await actorAudits(j, 'maintenance', window.id, 'notice-published');
+    await j.json(`/api/app/maintenance/${window.id}/start`, 'POST', {});
+    await assertMaintenanceActor(j, window.id, 'started', stateActor, beforeManualStart);
+    await assertComponentState('Under maintenance', 'maintenance outranks an earlier standing Operational claim');
+    await j.json(standingPath, 'PUT', { state: 'Operational' });
+    await assertComponentState('Under maintenance', 'maintenance outranks a later standing Operational claim');
+    await j.json(standingPath, 'PUT', { state: 'Degraded performance' });
+    await assertComponentState('Degraded performance', 'standing degradation outranks active maintenance');
+    await j.json(standingPath, 'PUT', { state: 'Under maintenance' });
+    await j.save(firstClaim.id, { componentChanges: [{ componentId: claimsComponent.id, state: 'Degraded performance' }] });
+    await j.publish(firstClaim.id);
+    await assertComponentState('Degraded performance', 'incident degradation outranks standing and active maintenance');
+    await j.json(standingPath, 'PUT', { state: 'Under maintenance' });
+    await assertComponentState('Degraded performance', 'a later maintenance claim cannot hide incident degradation');
+    await j.save(firstClaim.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await j.publish(firstClaim.id);
+    await j.json(standingPath, 'PUT', { state: 'Operational' });
+    await assertComponentState('Under maintenance', 'resolving degradation retains active maintenance');
+    const beforeManualComplete = await actorAudits(j, 'maintenance', window.id, 'notice-published');
+    await j.json(`/api/app/maintenance/${window.id}/complete`, 'POST', {});
+    await assertMaintenanceActor(j, window.id, 'completed', stateActor, beforeManualComplete);
+    await eventually(() => j.json('/api/app/components'), body => body.components.find(row => row.id === claimsComponent.id).publicState === 'Operational', 'completion releases the maintenance claim');
+    await assertComponentState('Operational', 'completion restores the standing Operational state');
+    const beforeRelease = await actorAudits(j, 'component-standing-claim', claimsComponent.id, 'deleted');
+    await j.json(standingPath, 'PUT', { state: null });
+    await assertActorAudit(j, 'component-standing-claim', claimsComponent.id, 'deleted', stateActor, beforeRelease);
+    assert.equal(await j.db.prepare('SELECT * FROM component_standing_claims WHERE component_id = ?').bind(claimsComponent.id).first(), null);
+    await j.signIn();
+    await j.json(`/api/app/components/${claimsComponent.id}`, 'DELETE', undefined, 204);
+
+    browser = await chromium.launch({ ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), headless: true, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    const scripted = await browser.newContext({ viewport: { width: 1440, height: 1000 }, timezoneId: 'America/New_York' });
+    const page = await scripted.newPage();
+    await page.clock.install();
+    await page.clock.pauseAt(new Date());
+    await page.goto(j.publicOrigin);
+    assert.equal(await page.locator('#overall-status').innerText(), 'Operational');
+    assert.equal(await page.getByText(hidden.name, { exact: true }).count(), 0);
+    assert.equal(await page.locator('.uptime').count(), 1, 'only the visible healthy component has uptime on the representative page');
+    if (process.env.LAMP_SCREENSHOTS) {
+      await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-internal-component-exclusion.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+
+    // Competing standing claims exercise the supplied page rollup through the
+    // operator API and the same snapshot a customer reads. An internal outage
+    // must not outweigh a visible service, even when every public service recovers.
+    await j.json(`/api/app/components/${hidden.id}/standing-claim`, 'PUT', { state: 'Major outage' });
+    const rollupCases = [
+      ['Operational', 'Under maintenance', 'Under maintenance'],
+      ['Under maintenance', 'Degraded performance', 'Degraded performance'],
+      ['Degraded performance', 'Partially unavailable', 'Partially unavailable'],
+      ['Partially unavailable', 'Major outage', 'Major outage'],
+      ['Operational', 'Operational', 'Operational'],
+    ];
+    for (const ordered of [[main, other], [other, main]]) {
+      for (const [displayOrder, component] of ordered.entries()) {
+        await j.json(`/api/app/components/${component.id}`, 'PUT', {
+          name: component.name, groupId: component.groupId, description: component.description,
+          internal: component.internal, note: component.note, onlyShowIfDegraded: component.onlyShowIfDegraded, displayOrder,
+        });
+      }
+      for (const [mainState, otherState, expected] of rollupCases) {
+        await j.json(`/api/app/components/${main.id}/standing-claim`, 'PUT', { state: mainState });
+        await j.json(`/api/app/components/${other.id}/standing-claim`, 'PUT', { state: otherState });
+        const status = await eventually(async () => (await j.publicResponse('/api/public/status')).json(), value => value.overall === expected, `${expected} reaches the public rollup`);
+        assert.equal(status.overall, expected);
+        assert.equal(status.incident, null, 'standing claims determine the rollup without an incident');
+        const visible = (await (await j.publicResponse('/api/public/v1/components')).json()).data;
+        assert.ok(!visible.some(component => component.id === hidden.id), 'the internal severe component is absent');
+        assert.deepEqual(visible.map(component => component.id), ordered.filter(component => component.id !== other.id || otherState !== 'Operational').map(component => component.id));
+        assert.equal(visible.find(component => component.id === main.id).state, mainState);
+        if (otherState !== 'Operational') assert.equal(visible.find(component => component.id === other.id).state, otherState);
+        await page.reload();
+        assert.equal(await page.locator('#overall-status').count(), 1);
+        assert.equal(await page.locator('#overall-status').innerText(), expected);
+        assert.ok(await page.locator('#overall-status').evaluate(label => Boolean(label.closest('[aria-labelledby="overall-status"]'))), 'the single label remains in the top status section');
+        assert.ok(!(await page.locator('body').innerText()).includes(hidden.name));
+        if (process.env.LAMP_PAGE004_SCREENSHOTS && ordered[0].id === other.id && expected === 'Partially unavailable') {
+          await mkdir(process.env.LAMP_PAGE004_SCREENSHOTS, { recursive: true });
+          for (const width of [1440, 390]) {
+            await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+            await page.screenshot({ path: `${process.env.LAMP_PAGE004_SCREENSHOTS}/page-004-${width}.png`, fullPage: true });
+          }
+          await page.setViewportSize({ width: 1440, height: 1000 });
+        }
+      }
+    }
+    // Return the catalogue to its original order before the existing incident,
+    // recovery, uptime, subscription and retained-history journey continues.
+    await j.json(`/api/app/components/${main.id}/move`, 'POST', { direction: 'up', expectedIds: [other.id, main.id], groupId: firstGroup.id });
+    await j.json(`/api/app/components/${hidden.id}/standing-claim`, 'PUT', { state: 'Operational' });
+    const live = page.locator('#status-live');
+    assert.equal(await live.getAttribute('role'), 'status');
+    assert.equal(await live.getAttribute('aria-live'), 'polite');
+    assert.equal(await live.getAttribute('aria-atomic'), 'true');
+    const liveNode = await live.elementHandle();
+    const zoneLabel = await page.locator('[data-timezone-label]').innerText();
+    const generation = page.locator('[data-generated-at] time');
+    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    // Age one retained publication without any operator write. The browser's
+    // own zone differs from Settings, so the tooltip must keep the page zone.
+    const retainedDocument = await j.publicResponse('/');
+    const retainedInstant = retainedDocument.headers.get('x-lamp-snapshot-generated-at');
+    assert.ok(retainedInstant);
+    const initialTimes = descendants(parse(await retainedDocument.text())).filter(node => node.tagName === 'time'
+      && node.parentNode?.attrs?.some(attr => attr.name === 'data-generated-at'));
+    assert.equal(initialTimes.length, 1);
+    assert.equal(initialTimes[0].attrs.find(attr => attr.name === 'datetime').value, retainedInstant);
+    assertVisibleTime(nodeText(initialTimes[0]), retainedInstant, 'America/Los_Angeles');
+    const ageContext = await browser.newContext({ timezoneId: 'America/New_York' });
+    const agePage = await ageContext.newPage();
+    try {
+      const initialClock = new Date(Date.parse(retainedInstant) + 59_000);
+      await agePage.clock.install({ time: initialClock });
+      await agePage.clock.pauseAt(initialClock);
+      for (const width of [1440, 390]) {
+        await agePage.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await agePage.clock.setSystemTime(initialClock);
+        const document = await agePage.goto(j.publicOrigin);
+        assert.equal(document.headers()['x-lamp-snapshot-generated-at'], retainedInstant);
+        const age = agePage.locator('[data-generated-at] time');
+        assert.ok(await age.isVisible(), 'the initial relative age is visible to the reader');
+        assert.equal(await age.innerText(), 'just now', 'the retained generation initially has a relative age below one minute');
+        assert.equal(await age.getAttribute('datetime'), retainedInstant);
+        const absoluteTitle = await age.getAttribute('title');
+        assertVisibleTime(absoluteTitle, retainedInstant, 'America/Los_Angeles');
+        const documentNode = await agePage.locator('html').elementHandle();
+        await agePage.clock.runFor(30_000);
+        await agePage.waitForFunction(() => document.querySelector('[data-generated-at] time')?.textContent === '1 minute ago');
+        assert.equal(await age.innerText(), '1 minute ago', 'the open page visibly ages across the minute boundary without publication');
+        assert.ok(await age.isVisible(), 'the changed relative age stays visible to the reader');
+        assert.equal(await age.getAttribute('datetime'), retainedInstant, 'aging does not replace the generation instant');
+        assert.equal(await age.getAttribute('title'), absoluteTitle, 'aging retains the absolute tooltip');
+        assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles');
+        assert.ok(await documentNode.evaluate(node => node === document.documentElement), 'the document stays open while its label ages');
+        assert.equal((await (await j.publicResponse('/api/public/status')).json()).generatedAt, retainedInstant, 'no new generation was published');
+        console.info('PAGE-009 generation age at ' + width + ': just now -> 1 minute ago; instant=' + retainedInstant + '; tooltip=' + absoluteTitle);
+        if (process.env.LAMP_SCREENSHOTS) {
+          await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+          await agePage.screenshot({ path: process.env.LAMP_SCREENSHOTS + '/' + width + '-generation-age.png' });
+        }
+      }
+    } finally { await ageContext.close(); }
+    await j.json(`/api/app/components/${other.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
+    const incident = await j.incident('Synthetic Lamp API outage under investigation', [main, hidden]);
+    const widgetWording = literalLinkFields({
+      affectedAudience: 'Synthetic Lamp customers submitting API requests. ' + wording.affectedAudience,
+      customerImpact: 'New API requests cannot complete during this outage. ' + wording.customerImpact,
+      whatStillWorks: 'Previously saved results remain available in the dashboard. ' + wording.whatStillWorks,
+      details: 'Responders have isolated the failing API gateway. ' + wording.details,
+    });
+    const widgetCommitment = '2031-02-10T19:47:00.000Z';
+    await j.save(incident.id, { ...widgetWording, nextUpdateAt: widgetCommitment });
+    const linkedUpdate = (await j.publish(incident.id)).update;
+    assert.equal(linkedUpdate.nextUpdateAt, widgetCommitment);
+    await j.visible('/', incident.title);
+    const refreshMaintenance = (await j.json('/api/app/maintenance', 'POST', {
+      title: 'Customer dashboard upgrade', affectedAudience: 'Dashboard users', customerImpact: 'Dashboard access may pause.',
+      startsAt: new Date(Date.now() - 60_000).toISOString(), endsAt: new Date(Date.now() + 3600_000).toISOString(),
+      componentIds: [other.id], autoStart: false, autoComplete: false,
+    }, 201)).maintenance;
+    await j.json(`/api/app/maintenance/${refreshMaintenance.id}/start`, 'POST', {});
+    const firstStatus = await eventually(async () => (await j.publicResponse('/api/public/status')).json(),
+      status => status.maintenance?.reference === refreshMaintenance.reference, 'in-progress maintenance reaches the refresh response');
+    const fields = value => Object.keys(value).sort();
+    assert.deepEqual(fields(firstStatus), ['generatedAt', 'incident', 'maintenance', 'overall', 'version']);
+    assert.deepEqual(fields(firstStatus.maintenance), ['reference', 'state', 'title']);
+    assert.deepEqual(firstStatus.maintenance, { reference: refreshMaintenance.reference, title: 'Customer dashboard upgrade', state: 'In progress' });
+    assert.deepEqual(fields(firstStatus.incident), ['impact', 'lifecycle', 'message', 'publishedAt', 'reference', 'summary', 'title']);
+    const publishedUpdate = (await j.read(incident.id)).updates[0];
+    assert.equal(firstStatus.version, 1);
+    assert.equal(firstStatus.overall, 'Major outage');
+    assert.equal(firstStatus.incident.reference, incident.reference);
+    assert.equal(firstStatus.incident.title, incident.title);
+    assert.equal(firstStatus.incident.lifecycle, 'Identified');
+    assert.equal(firstStatus.incident.impact, 'critical');
+    assert.equal(firstStatus.incident.publishedAt, publishedUpdate.publishedAt);
+    assert.match(firstStatus.incident.summary, /^Identified · /);
+    assert.ok(firstStatus.incident.message.includes(publishedUpdate.customerImpact));
+    assert.ok((await j.publicText('/')).includes(other.name), 'a degraded conditional component becomes public');
+    const badge = await (await j.publicResponse('/badge.json')).json();
+    assert.ok(JSON.stringify(badge).includes('Major outage'));
+    assert.ok((await j.publicText('/badge.svg')).includes('Major outage'));
+    let refreshRequests = 0, documentNavigations = 0;
+    page.on('request', request => { if (new URL(request.url()).pathname === '/api/public/status') refreshRequests++; });
+    page.on('framenavigated', frame => { if (frame === page.mainFrame()) documentNavigations++; });
+    await page.clock.runFor(29_999);
+    assert.equal(refreshRequests, 0, 'there is no poll before the thirty-second interval');
+    const polled = page.waitForResponse(response => response.url().endsWith('/api/public/status') && response.status() === 200);
+    await page.clock.runFor(1);
+    const refreshed = await (await polled).json();
+    assert.equal(refreshed.incident.reference, incident.reference);
+    await page.waitForFunction(summary => document.querySelector('#status-live').textContent.includes(summary), refreshed.incident.summary);
+    assert.equal(await page.locator('[data-newest-update]').innerText(), refreshed.incident.summary);
+    assert.equal(refreshRequests, 1);
+    assert.equal(documentNavigations, 0, 'the public story updates in place');
+    assert.ok(await liveNode.evaluate(node => node === document.querySelector('#status-live')), 'the assistive live region remains the same node');
+    assert.equal(await page.locator('[data-timezone-label]').innerText(), zoneLabel);
+    assert.equal(await page.locator('[data-timezone-label]').getAttribute('data-timezone'), 'America/Los_Angeles');
+    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    assert.ok((await page.locator('#status-live').innerText()).includes('Major outage'));
+    // Later widget and accessibility checks use ordinary browser timers.
+    await page.clock.resume();
+    if (process.env.LAMP_SCREENSHOTS) {
+      await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-scripted-refresh.png` });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).publicState, 'Major outage');
+    assert.ok(firstStatus.generatedAt);
+    await assertUpdateLinkSurfaces(j, incident, main, linkedUpdate);
+    await assertUpdateLinkScreens(page, j, incident, linkedUpdate);
+    const permalink = await j.publicText(`/incidents/${incident.reference}`);
+    assert.ok(permalink.includes(incident.title) && permalink.includes(main.name));
+    assert.match(permalink, /Get updates on this incident/);
+    assert.match(permalink, /action="\/subscribe\/incident"/);
+    assert.ok(permalink.includes(`name="incidentId" value="${incident.id}"`));
+    assert.ok(gzipSync(Buffer.from(permalink)).byteLength <= limits.snapshotMaxBytesGzipped.value, 'SUB-019 retains the initial incident document gzip budget');
+    const staticContext = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
+    try {
+      const staticPage = await staticContext.newPage();
+      assert.equal((await staticPage.goto(j.publicOrigin + '/incidents/' + incident.reference)).status(), 200);
+      const form = staticPage.locator('form[action="/subscribe/incident"]').first();
+      assert.equal(await form.getAttribute('method'), 'post');
+      assert.equal(await form.getByLabel('Email address', { exact: true }).count(), 1, 'SUB-019 is usable in the initial document without script');
+      assert.ok(await staticPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'the script-free incident form fits its public document');
+    } finally { await staticContext.close(); }
+    assert.ok(!permalink.includes(hidden.name));
+    await j.json(`/api/app/maintenance/${refreshMaintenance.id}/complete`, 'POST', {});
+    const feedBefore = await j.publicText('/feed.atom');
+    assert.ok(feedBefore.includes(incident.reference));
+    for (const path of ['/', '/feed.atom', '/widget.js']) {
+      const body = await j.publicText(path);
+      assert.ok(body.includes(incident.reference), `${path} contains the published incident control`);
+      for (const value of [hidden.id, hidden.name, hidden.note]) assert.ok(!body.includes(value), `${path} retains internal exclusion with a populated story`);
+    }
+    const firstIds = [...feedBefore.matchAll(/<id>([^<]+)<\/id>/g)].map(match => match[1]);
+
+    // Install the banner while the published incident is still unresolved.
+    assert.equal((await j.read(incident.id)).lifecycle, 'Identified', 'the native incident remains unresolved when the widget is installed');
+    const widgetSource = await j.publicText('/widget.js');
+    assert.ok(gzipSync(Buffer.from(widgetSource)).byteLength <= 10 * 1024, 'the populated widget is at most ten KiB gzipped');
+    const loadWidget = async target => target.evaluate(url => new Promise((resolve, reject) => {
+      const script = document.createElement('script'); script.src = url; script.onload = resolve; script.onerror = reject; document.body.append(script);
+    }), j.publicOrigin + '/widget.js');
+    await page.reload();
+    await loadWidget(page); await page.locator('section[role=status]').waitFor();
+    const banner = page.locator('section[role=status]');
+    assert.equal(await banner.count(), 1, 'one script tag installs one banner');
+    assert.equal(await banner.locator('strong').innerText(), 'Major outage', 'the banner shows the exact aggregate state');
+    const bannerMessage = await banner.locator('span').last().innerText();
+    assert.ok(bannerMessage.includes(incident.reference), 'the banner identifies the unresolved incident');
+    assert.ok(bannerMessage.includes('Synthetic Lamp API outage under investigation'), 'the banner retains its submitted title');
+    for (const value of Object.values(widgetWording)) assert.ok(bannerMessage.includes(value), `the banner retains submitted wording: ${value}`);
+    assert.equal(firstStatus.incident.reference, incident.reference);
+    assert.equal(firstStatus.incident.publishedAt, linkedUpdate.publishedAt, 'the installed wording is associated with the committed publication');
+    const updateLabels = ['Who is affected', 'Customer impact', 'What still works', 'Next update by', 'Additional details'];
+    const bannerFields = text => text.split('\n').filter(line => updateLabels.some(label => line.startsWith(`${label}:`)));
+    assert.ok(bannerMessage.split('\n').includes('Status: Identified'));
+    assert.deepEqual(bannerFields(bannerMessage), [
+      `Who is affected: ${widgetWording.affectedAudience}`, `Customer impact: ${widgetWording.customerImpact}`,
+      `What still works: ${widgetWording.whatStillWorks}`, 'Next update by: Feb 10, 2031, 11:47 UTC-08:00',
+      `Additional details: ${widgetWording.details}`,
+    ], 'the installed widget retains the complete populated wording and independently expected configured-zone commitment');
+    const captureUpdate = async name => {
+      if (!process.env.LAMP_UPDATE002_SCREENSHOTS) return;
+      await mkdir(process.env.LAMP_UPDATE002_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_UPDATE002_SCREENSHOTS}/${name}-${width}.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    };
+    await captureUpdate('populated');
+    const denied = await scripted.newPage(); await denied.setContent('<main>Unlisted embedding site</main>'); await loadWidget(denied);
+    assert.equal(await denied.locator('section[role=status]').count(), 0); await denied.close();
+    const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
+    assert.deepEqual(audit.violations.filter(item => ['serious', 'critical'].includes(item.impact)), []);
+
+    const blankWording = {
+      affectedAudience: 'Customers retrying queued API operations.',
+      customerImpact: 'API retries remain paused while responders verify recovery.',
+      whatStillWorks: '', details: '', nextUpdateAt: '2031-02-10T20:48:00.000Z',
+    };
+    await j.save(incident.id, blankWording);
+    const blankPublication = (await j.publish(incident.id)).update;
+    await j.visible('/', blankWording.customerImpact);
+    const blankStatus = await (await j.publicResponse('/api/public/status')).json();
+    assert.equal(blankStatus.incident.publishedAt, blankPublication.publishedAt);
+    assert.equal(blankPublication.whatStillWorks, ''); assert.equal(blankPublication.details, '');
+    assert.equal(blankPublication.nextUpdateAt, blankWording.nextUpdateAt);
+    await page.clock.fastForward(30000);
+    await page.waitForFunction(text => document.querySelector('section[role=status] span:last-child').textContent.includes(text), blankWording.customerImpact);
+    assert.deepEqual(bannerFields(await banner.locator('span').last().innerText()), [
+      `Who is affected: ${blankWording.affectedAudience}`, `Customer impact: ${blankWording.customerImpact}`,
+      'Next update by: Feb 10, 2031, 12:48 UTC-08:00',
+    ], 'the same installed widget replaces the prior publication and omits both absent optional fields');
+    await page.reload(); await loadWidget(page);
+    await captureUpdate('blank-optional');
+
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'API requests are working again.', whatStillWorks: '', details: '', nextUpdateAt: null });
+    const resolvedPublication = (await j.publish(incident.id)).update;
+    assert.equal(resolvedPublication.nextUpdateAt, null);
+    await j.visible('/history', incident.title);
+    await eventually(async () => (await j.publicResponse('/api/public/status')).json(), status => status.incident === null, 'resolved publication clears the widget incident');
+    await page.clock.fastForward(30000);
+    await page.waitForFunction(() => document.querySelector('section[role=status] span:last-child').textContent === '');
+    assert.equal(await banner.locator('span').last().innerText(), '', 'the installed widget carries no stale wording or commitment after resolution');
+    await page.reload(); await loadWidget(page);
+    assert.equal(await banner.locator('span').last().innerText(), '', 'a fresh widget also omits the resolved commitment');
+    await captureUpdate('resolved');
+    await assertUpdateLinkSurfaces(j, incident, main, linkedUpdate, { history: true });
+    await assertUpdateLinkScreens(page, j, incident, linkedUpdate, { history: true });
+    const feedAfter = await j.publicText('/feed.atom');
+    for (const id of firstIds) assert.ok(feedAfter.includes(id), 'earlier public feed identifiers survive a later update');
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === main.id).publicState, 'Operational');
+    assert.equal((await (await j.publicResponse('/api/public/status')).json()).overall, 'Degraded performance', 'resolving an incident retains another component\'s standing claim');
+    await j.json(`/api/app/components/${other.id}/standing-claim`, 'PUT', { state: 'Operational' });
+    await eventually(() => j.publicText('/'), body => !body.includes(other.name), 'recovery hides the conditional component again');
+
+    // A closed correction is an operator business operation. Its reported
+    // downtime, original facts and audit attribution agree through public APIs.
+    const originalHistory = (await j.json(`/api/app/components/${main.id}/history`)).history;
+    const endsAt = new Date(Date.now() - 3600000).toISOString();
+    const startsAt = new Date(Date.parse(endsAt) - 7200000).toISOString();
+    const correction = { state: 'Degraded performance', startsAt, endsAt, reason: 'Verified customer request logs' };
+    await j.json(`/api/app/components/${main.id}/history-corrections`, 'POST', { ...correction, reason: '' }, 400);
+    await j.json(`/api/app/components/${main.id}/history-corrections`, 'POST', correction, 204);
+    const history = await j.json(`/api/app/components/${main.id}/history`);
+    for (const row of originalHistory) assert.ok(history.history.some(entry => entry.id === row.id));
+    assert.ok(history.corrections.some(row => row.reason === correction.reason));
+    const monthParts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles', year: 'numeric', month: '2-digit',
+    }).formatToParts(new Date(startsAt));
+    const month = `${monthParts.find(part => part.type === 'year').value}-${monthParts.find(part => part.type === 'month').value}`;
+    const report = await j.json(`/api/app/availability-report?component=${main.id}&month=${month}&format=json`);
+    assert.ok(Number(report.downtimeMinutes) >= 60, 'partial degradation is charged rather than rounded away');
+    assert.ok(parseFloat(report.uptime) < 100);
+    assert.ok(report.method.includes('Degraded performance') && report.method.includes('Under maintenance'));
+    const publicComponents = (await (await j.publicResponse('/api/public/v1/components')).json()).data;
+    const publishedMain = publicComponents.find(row => row.id === main.id);
+    assert.ok(parseFloat(publishedMain.uptime.percentage) < 100);
+    assert.ok(publishedMain.uptime.marks.some(mark => mark.downtimeMinutes === null));
+    assert.ok(publishedMain.uptime.marks.some(mark => mark.downtimeMinutes > 0));
+    assert.ok(publishedMain.uptime.coverageMinutes < 86400, 'a new component does not invent a full historical reporting window');
+    for (const path of ['/api/v2/summary.json', '/api/v2/components.json', '/api/v2/incidents.json', '/api/v2/scheduled-maintenances.json', '/api/public/v1/incidents', '/history.rss', '/history.atom', `/components/${publishedMain.slug}/feed.atom`, `/components/${publishedMain.slug}/feed.rss`]) assert.equal((await j.publicResponse(path)).status, 200, path);
+
+    await page.reload();
+    const noScript = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
+    const plain = await noScript.newPage();
+    let plainPolls = 0, plainNavigations = 0;
+    plain.on('request', request => { if (new URL(request.url()).pathname === '/api/public/status') plainPolls++; });
+    plain.on('framenavigated', frame => { if (frame === plain.mainFrame()) plainNavigations++; });
+    const initialDocument = await plain.goto(j.publicOrigin);
+    const initialGeneration = initialDocument.headers()['x-lamp-snapshot-generated-at'];
+    assert.ok(initialGeneration);
+    const plainGeneration = plain.locator('[data-generated-at] time');
+    assert.equal(await plainGeneration.getAttribute('datetime'), initialGeneration);
+    const absoluteGeneration = await plainGeneration.innerText();
+    assertVisibleTime(absoluteGeneration, initialGeneration, 'America/Los_Angeles');
+    assert.ok((await plain.locator('body').innerText()).includes(main.name));
+    const initialContent = await plain.content();
+    const initialDocumentNode = await plain.locator('html').elementHandle();
+    const navigationCount = plainNavigations;
+    const changed = await j.incident('Fresh public content stays off the script-free document', [main]);
+    await j.save(changed.id, { customerImpact: 'Requests are unavailable during the new investigation.' });
+    await j.publish(changed.id);
+    await j.visible('/', changed.title);
+    const changedStatus = await (await j.publicResponse('/api/public/status')).json();
+    assert.notEqual(changedStatus.generatedAt, initialGeneration);
+    assert.equal(changedStatus.incident.reference, changed.reference);
+    assert.equal(changedStatus.overall, 'Major outage');
+    // Real elapsed browser time also catches an HTML Refresh header or meta tag;
+    // advancing a script clock alone cannot prove absence of document refresh.
+    const observationStarted = performance.now();
+    await plain.waitForTimeout(61_000);
+    assert.ok(performance.now() - observationStarted > 60_000);
+    assert.equal(plainPolls, 0, 'script-disabled content never polls for public status');
+    assert.equal(plainNavigations, navigationCount, 'script-disabled content never navigates automatically');
+    assert.ok(await initialDocumentNode.evaluate(node => node === document.documentElement));
+    assert.equal(await plain.content(), initialContent, 'the complete initial document remains unchanged after a new publication and two refresh intervals');
+    assert.equal(await plainGeneration.getAttribute('datetime'), initialGeneration);
+    assert.equal(await plainGeneration.innerText(), absoluteGeneration);
+    assertVisibleTime(await plainGeneration.innerText(), initialGeneration, 'America/Los_Angeles');
+    if (process.env.LAMP_SCREENSHOTS) {
+      await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+      for (const width of [1440, 390]) {
+        await plain.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await plain.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-script-disabled-refresh.png` });
+      }
+    }
+    await plain.locator('input[name=email]').fill('public-reader@example.test');
+    await Promise.all([plain.waitForNavigation(), plain.locator('form[action="/subscribe"] button[type=submit]').click()]);
+    await eventually(() => j.messages.find(message => message.to.includes('public-reader@example.test')), Boolean, 'plain form sends subscriber confirmation');
+    await publicIsolationFlow(j, browser);
+    const maintenance = (await j.json('/api/app/maintenance', 'POST', {
+      title: 'Customer API capacity work', affectedAudience: 'Customers using the public API',
+      customerImpact: 'Requests may pause during the capacity work.', componentIds: [main.id],
+      startsAt: new Date(Date.now() + 3600000).toISOString(), endsAt: new Date(Date.now() + 7200000).toISOString(),
+      autoStart: false, autoComplete: false,
+    }, 201)).maintenance;
+    const maintenancePath = `/maintenance/${maintenance.reference}`;
+    const publishedMaintenance = await j.visible(maintenancePath, maintenance.customerImpact);
+    assert.ok(publishedMaintenance.includes(`Affects ${main.name}`));
+    const savedMaintenance = (await j.json('/api/app/maintenance')).maintenance.find(row => row.id === maintenance.id);
+    assert.ok(savedMaintenance.notices.some(row => row.kind === 'scheduled'));
+    const beforeDelete = await j.publicText('/history'); assert.ok(beforeDelete.includes(main.name));
+    const warmedPage = await j.publicResponse('/');
+    const beforeVersion = warmedPage.headers.get('x-lamp-snapshot-version');
+    assert.ok(beforeVersion);
+    assert.match(await warmedPage.text(), /aria-label="[^"]*uptime record for Public API"/);
+    const componentPaths = ['feed.atom', 'feed.rss', 'badge.svg', 'uptime.svg'].map(resource => `/components/${publishedMain.slug}/${resource}`);
+    for (const path of componentPaths) {
+      const response = await j.publicResponse(path);
+      assert.equal(response.status, 200, `prewarm ${path}`);
+      await response.arrayBuffer();
+    }
+    await page.reload();
+    assert.ok((await page.locator('.component-health').innerText()).includes(main.name));
+    const beforeComponents = (await (await j.publicResponse('/api/public/v1/components')).json()).data;
+    assert.deepEqual(beforeComponents.map(row => row.id), [main.id]);
+    assert.ok(beforeComponents[0].uptime.marks.some(mark => mark.downtimeMinutes > 0));
+    await j.json(`/api/app/components/${main.id}`, 'DELETE', undefined, 204);
+    const deletedAt = performance.now(), deadline = deletedAt + 10000;
+    let removed;
+    do {
+      const root = await j.publicResponse('/');
+      const body = await root.text();
+      const components = (await (await j.publicResponse('/api/public/v1/components')).json()).data;
+      const statuses = [];
+      for (const path of componentPaths) {
+        const response = await j.publicResponse(path);
+        statuses.push(response.status); await response.arrayBuffer();
+      }
+      if (root.status === 200 && root.headers.get('x-lamp-snapshot-state') !== 'stale'
+        && root.headers.get('x-lamp-snapshot-version') !== beforeVersion
+        && !body.includes('class="component-health"') && components.length === 0 && statuses.every(status => status === 404)) {
+        removed = { body, components, statuses }; break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 50));
+    } while (performance.now() < deadline);
+    const disappearanceMs = performance.now() - deletedAt;
+    assert.ok(removed && disappearanceMs <= 10000, `all prewarmed public state and uptime disappear within ten seconds (${disappearanceMs.toFixed(1)} ms)`);
+    console.info(`COMP-007 public disappearance: ${disappearanceMs.toFixed(1)} ms`);
+    await page.reload();
+    assert.equal(await page.locator('.component-health, .uptime').count(), 0);
+    if (process.env.LAMP_SCREENSHOTS) {
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-deleted-component-history.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+    const afterDelete = await j.visible('/history', incident.title);
+    assert.ok(afterDelete.includes(main.name), 'published history retains the name of a deleted component');
+    assert.ok((await j.publicText(`/incidents/${incident.reference}`)).includes(`Affecting ${main.name}`));
+    const retainedMaintenance = await j.publicText(maintenancePath);
+    assert.ok(retainedMaintenance.includes(`Affects ${main.name}`), 'published maintenance retains the independently captured component name');
+    assert.ok(retainedMaintenance.includes(maintenance.customerImpact));
+    assert.deepEqual((await j.json('/api/app/maintenance')).maintenance.find(row => row.id === maintenance.id).notices, savedMaintenance.notices, 'deletion preserves every published maintenance update');
+    const remaining = (await (await j.publicResponse('/api/public/v1/components')).json()).data;
+    assert.ok(!remaining.some(row => row.id === main.id));
+  } finally { await browser?.close(); await j.close(); }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-test("HIST-001 PAGE-010 PAGE-006 — Stable feed history and corrupt-pointer recovery", async t => {
-  t.diagnostic("HIST-001 — published incident and maintenance notice history stays grouped and Atom-complete for twelve months");
-  await (async () => {
-  executeLocalSql(`INSERT INTO incidents (id, reference, title, lifecycle, opened_at, resolved_at, created_by_operator_id, created_at, updated_at) VALUES ('01J00000000000000000000900','INC-9000','Resolved history incident','Resolved','2026-09-01T00:00:00.000Z','2026-09-01T01:00:00.000Z','01J00000000000000000000001','2026-09-01T00:00:00.000Z','2026-09-01T01:00:00.000Z'); INSERT INTO incident_components (id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES ('01J00000000000000000000901','01J00000000000000000000900','01J00000000000000000000010','Web application','Major outage','Primary','2026-09-01T01:00:00.000Z','2026-09-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'); INSERT INTO incident_updates (id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) VALUES ('01J00000000000000000000902','01J00000000000000000000900','Resolved','All readers','The service recovered.','','','2026-09-01T01:00:00.000Z','2026-09-01T01:00:00.000Z','01J00000000000000000000001','2026-09-01T01:00:00.000Z','2026-09-01T01:00:00.000Z'); INSERT INTO maintenance (id,reference,title,state,starts_at,ends_at,completed_at,created_by_operator_id,created_at,updated_at) VALUES ('01J00000000000000000000910','SCH-9000','Completed history maintenance','Completed','2026-09-02T00:00:00.000Z','2026-09-02T01:00:00.000Z','2026-09-02T01:00:00.000Z','01J00000000000000000000001','2026-09-02T00:00:00.000Z','2026-09-02T01:00:00.000Z'); INSERT INTO maintenance_components (id,maintenance_id,component_id,component_name,state,created_at,updated_at) VALUES ('01J00000000000000000000911','01J00000000000000000000910','01J00000000000000000000010','Web application','Under maintenance','2026-09-02T00:00:00.000Z','2026-09-02T00:00:00.000Z'); INSERT INTO maintenance_notices (id,maintenance_id,kind,body,published_at,author_operator_id,created_at,updated_at) VALUES ('01J00000000000000000000912','01J00000000000000000000910','completed','Maintenance completed.','2026-09-02T01:00:00.000Z','01J00000000000000000000001','2026-09-02T01:00:00.000Z','2026-09-02T01:00:00.000Z')`);
-  executeLocalSql(`INSERT INTO components (id,group_id,name,description,internal,display_order,note,created_at,updated_at) VALUES ('history-internal','01J00000000000000000000002','Private history component','',1,99,'','2026-09-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'); INSERT INTO incident_components (id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES ('history-internal-link','01J00000000000000000000900','history-internal','Private history component','Major outage','Dependent','2026-09-01T01:00:00.000Z','2026-09-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'),('history-deleted-link','01J00000000000000000000900',NULL,'Retired payment rail','Major outage','Dependent','2026-09-01T01:00:00.000Z','2026-09-01T00:00:00.000Z','2026-09-01T00:00:00.000Z'); INSERT INTO maintenance_notices (id,maintenance_id,kind,body,published_at,author_operator_id,created_at,updated_at) VALUES ('history-notice-scheduled','01J00000000000000000000910','scheduled','Maintenance scheduled.','2026-09-02T02:00:00.000Z','01J00000000000000000000001','2026-09-02T02:00:00.000Z','2026-09-02T02:00:00.000Z'),('history-notice-rescheduled','01J00000000000000000000910','rescheduled','Maintenance rescheduled.','2026-09-02T03:00:00.000Z','01J00000000000000000000001','2026-09-02T03:00:00.000Z','2026-09-02T03:00:00.000Z'),('history-notice-reminder','01J00000000000000000000910','reminder','Maintenance reminder.','2026-09-02T04:00:00.000Z','01J00000000000000000000001','2026-09-02T04:00:00.000Z','2026-09-02T04:00:00.000Z'),('history-notice-started','01J00000000000000000000910','started','Maintenance started.' || char(1) || 'safe text','2026-09-02T05:00:00.000Z','01J00000000000000000000001','2026-09-02T05:00:00.000Z','2026-09-02T05:00:00.000Z'),('history-notice-cancelled','01J00000000000000000000910','cancelled','Maintenance cancelled.','2026-09-02T07:00:00.000Z','01J00000000000000000000001','2026-09-02T07:00:00.000Z','2026-09-02T07:00:00.000Z'); INSERT INTO incidents (id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at) VALUES ('history-outside-window','INC-9001','Outside twelve-month history','Resolved','2025-08-01T00:00:00.000Z','2025-08-01T01:00:00.000Z','01J00000000000000000000001','2025-08-01T00:00:00.000Z','2025-08-01T01:00:00.000Z'); INSERT INTO incident_components (id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES ('history-outside-link','history-outside-window','01J00000000000000000000010','Web application','Major outage','Primary','2025-08-01T01:00:00.000Z','2025-08-01T00:00:00.000Z','2025-08-01T00:00:00.000Z'); INSERT INTO incident_updates (id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) VALUES ('history-outside-update','history-outside-window','Resolved','All readers','Old update.','','','2025-08-01T01:00:00.000Z','2025-08-01T01:00:00.000Z','01J00000000000000000000001','2025-08-01T01:00:00.000Z','2025-08-01T01:00:00.000Z')`);
-  await updateSettings({ pageName: "Atlas Cloud History" });
-  const [history, atom] = await Promise.all([fetch(`${pageUrl}/history`), fetch(`${pageUrl}/feed.atom`)]);
-  const historyText = await history.text();
-  const atomText = await atom.text();
-  const permalink = await (await fetch(`${pageUrl}/incidents/INC-9000`)).text();
-  assert.equal([...permalink.matchAll(/datetime="2026-09-01T01:00:00\.000Z"/g)].length, 1, "the resolution instant appears once on its permanent page");
-  assert.match(permalink, /<time datetime="2026-09-01T01:00:00\.000Z" data-local-time>/);
-  assertResolvedDuration(permalink, "2026-09-01T00:00:00.000Z", "2026-09-01T01:00:00.000Z");
-  assert.match(historyText, /Resolved history incident/);
-  assert.match(historyText, /Completed history maintenance/);
-  assert.match(historyText, /Retired payment rail/, "published history retains a deleted component name");
-  assert.doesNotMatch(historyText, /Private history component/, "internal components do not leak through retained incident history");
-  assert.doesNotMatch(historyText, /Outside twelve-month history/, "history excludes records older than twelve months");
-  assert.match(atomText, /urn:lamp:test-feed-identity-00000000000001:event:update-01J00000000000000000000902/);
-  assert.match(atomText, /urn:lamp:test-feed-identity-00000000000001:event:maintenance-notice-01J00000000000000000000912/);
-  for (const noticeId of ["history-notice-scheduled", "history-notice-rescheduled", "history-notice-reminder", "history-notice-started", "history-notice-cancelled"]) assert.match(atomText, new RegExp(`maintenance-notice-${noticeId}`));
-  assert.doesNotMatch(atomText, /history-outside-update/, "Atom excludes updates older than twelve months");
-  assert.ok(atomText.indexOf("maintenance-notice-history-notice-cancelled") < atomText.indexOf("maintenance-notice-history-notice-started"), "Atom entries are newest first");
-  assert.doesNotMatch(atomText, /\u0001/, "invalid XML controls are never emitted");
-  execFileSync("xmllint", ["--noout", "-"], { input: atomText });
-  assert.match(atomText, /<author><name>Atlas Cloud History<\/name><\/author>/);
-  assert.match(atomText, /<feed xmlns="http:\/\/www\.w3\.org\/2005\/Atom">/);
-})(t);
-  t.diagnostic("PAGE-010 — an Atom feed keeps its deployment identity and event IDs when the editable hostname changes");
-  await (async () => {
-  const before = await (await fetch(`${pageUrl}/feed.atom`)).text();
-  await updateSettings({ hostname: "status-renamed.atlascloud.example" });
-  const after = await (await fetch(`${pageUrl}/feed.atom`)).text();
-  const feedId = /<feed[^>]*><id>([^<]+)<\/id>/.exec(before)?.[1];
-  const changedFeedId = /<feed[^>]*><id>([^<]+)<\/id>/.exec(after)?.[1];
-  const entryId = /<entry><id>([^<]+)<\/id>/.exec(before)?.[1];
-  const changedEntryId = /<entry><id>([^<]+)<\/id>/.exec(after)?.[1];
-  assert.equal(feedId, "urn:lamp:test-feed-identity-00000000000001");
-  assert.equal(changedFeedId, feedId);
-  assert.equal(changedEntryId, entryId);
-  assert.match(after, /<link href="https:\/\/status-renamed\.atlascloud\.example\/feed\.atom" rel="self"\/>/);
-})(t);
-  t.diagnostic("PAGE-006 — a corrupt R2 pointer serves the retained last-known snapshot with an explicit stale label");
-  await (async () => {
-  const pointer = r2Object("snapshots/current.json");
-  assert.match(pointer, /"version"/);
-  await (await fetch(`${pageUrl}/`)).text();
-  try {
-    r2Object("snapshots/current.json", "not-json");
-    const response = await fetch(`${pageUrl}/`);
-    assert.equal(response.status, 200);
-    assert.equal(response.headers.get("x-lamp-snapshot-state"), "stale");
-    assert.equal(response.headers.get("warning"), '110 - "Response is stale"');
-    const staleBody = await response.text();
-    assert.match(staleBody, /Last known state/);
-    const generatedAt = response.headers.get("x-lamp-snapshot-generated-at");
-    assert.ok(generatedAt && Number.isFinite(Date.parse(generatedAt)));
-    assert.ok(staleBody.includes(generatedAt), "retained content must visibly identify its generation instant");
-  } finally {
-    r2Object("snapshots/current.json", pointer);
-  }
-})(t);
+test('DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control', { timeout: 180_000 }, async () => {
+  await (await import('./helpers/vendor-dependencies-flow.mjs')).vendorDependenciesFlow();
 });

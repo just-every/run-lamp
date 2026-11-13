@@ -6,6 +6,8 @@ import { proofHeader, proofPayload } from './protocol.mjs';
 export function createDevelopmentAuthenticator(secret: string) {
   const used = new Map<string, number>();
   const maxAge = 5 * 60_000;
+  // Proofs issued at or before this instant can no longer be shown unused: their nonces were forgotten (below).
+  let floor = 0;
   const key = crypto.subtle.importKey('raw', Uint8Array.from(secret.match(/../g)!, byte => parseInt(byte, 16)), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
   return async (request: Request): Promise<Request | null> => {
     const proof = request.headers.get(proofHeader);
@@ -21,7 +23,14 @@ export function createDevelopmentAuthenticator(secret: string) {
     // Verification yields. Consume after it so simultaneous replays cannot both
     // pass; expired proofs also cannot regain validity after their entry is pruned.
     for (const [value, expires] of used) if (expires < now) used.delete(value);
-    if (used.has(nonce) || used.size >= 10_000) return null;
+    if (used.has(nonce) || Number(issued) <= floor) return null;
+    // At most 10,000 consumed nonces are held. A full set forgets its oldest and raises the floor to that proof's
+    // issue time, so a forgotten proof still cannot be replayed while new requests keep being served.
+    if (used.size >= 10_000) {
+      const [oldest, expires] = used.entries().next().value!;
+      used.delete(oldest);
+      floor = Math.max(floor, expires - maxAge);
+    }
     used.set(nonce, Number(issued) + maxAge);
     const headers = new Headers(request.headers);
     headers.delete(proofHeader);

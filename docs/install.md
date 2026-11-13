@@ -1,34 +1,52 @@
 # Install Lamp
 
-Lamp uses the checkout's pinned `@runeditrun/rer` 0.2.22 and can run locally or
-in your Cloudflare account. For the local path, follow
-[Run it locally](../RUN-LOCALLY.md): `rer dev` installs dependencies,
-sets up the first owner and starts Lamp. Local mail is silently suppressed and
-not retained. The local guide explains the `/__dev/outbox` compatibility notice;
-use a hosted installation to exercise real email delivery.
+Lamp uses the checkout's pinned `@runeditrun/rer` 0.2.108 and can run locally or
+in your Cloudflare account. For the local path, run `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`, which installs rer, clones Lamp into `run-lamp`, installs dependencies, sets up the first owner and starts it. Git is required; rer brings Node and pnpm. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-lamp` does the same. To start it again later, run the same line from the same folder, or `cd run-lamp && rer dev` (after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found`; `"$HOME/.local/bin/rer" cli path` shows the line for your shell).
+The [local guide](../RUN-LOCALLY.md) has the details. Local mail is silently
+suppressed and not retained; use a hosted installation to exercise real email delivery.
+
+That start line clones `main`, Lamp's development source, not a release tag. The latest release tag
+is `v1.11.13` (rer 0.2.108); see [source and tooling versions](../README.md#source-and-tooling-versions)
+to use it instead. `rer --version` names the `rer` you installed first and the
+version the checkout pins second; inside the checkout, `rer` runs the pinned one.
 
 ## Prepare a hosted installation
 
-Hosted Lamp requires a Resend or SendGrid account, its API key and an authenticated
-sender. Mail is required for operator sign-in and subscriber messages. There is
-no hosted mode without a mail provider; terminal recovery links do not replace
-this requirement.
+- **Free:** you run Lamp's open source yourself in your own Cloudflare account,
+  with no Run Edit Run charge. The commands in this guide are this path.
+- **Assisted:** Run Edit Run installs and maintains Lamp for you, while it stays
+  in your own Cloudflare account and GitHub repository (early access).
+- **Managed:** Run Edit Run hosts and runs Lamp for you (waitlist only).
+
+Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
+
+
+Managed hosting includes mail without a provider account or mail key from you.
+RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and private
+`MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
+authenticated sender and key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and
+`MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail for operator
+sign-in and subscriber messages; terminal recovery links do not replace it.
 
 Choose two distinct hostnames for the public status page and operator app. Use
 custom domains in your Cloudflare account, or use that account's existing
 `workers.dev` subdomain. Both hostname inputs are required in either mode.
 
-Follow [Deploy to Cloudflare](deploy.md) for the complete private-input file and
-commands. The [deployment reference](deployment-reference.md) distinguishes values
+Follow [Deploy to Cloudflare](deploy.md), one guided page, for the private input
+file, each input in the order the dry run asks for it, and the commands. The [deployment reference](deployment-reference.md) distinguishes values
 you supply from generated secrets and shows how to find the `workers.dev` hosts.
 
 ## Authenticate the sender
 
+For Free, Assisted and native deployment, prepare your own sender as follows.
+Managed hosting supplies the sender and relay credential automatically.
+
 `MAIL_PROVIDER` selects `resend` (the native command's default) or `sendgrid`.
 Set it explicitly to match your key. Authenticate the domain of
-`MAIL_FROM_ADDRESS` in that provider, then copy its DNS records to your DNS host.
-Set `MAIL_DKIM_SELECTOR` to the provider's selector, such as `s1` for SendGrid
-when its domain-authentication settings use `s1` and `s2`.
+`MAIL_FROM_ADDRESS` in that provider and copy its DNS records to your DNS host:
+[step 6 of Deploy to Cloudflare](deploy.md#step-6-mail) walks through it at
+SendGrid and Resend. Set `MAIL_DKIM_SELECTOR` to the provider's selector, such
+as `s1` for SendGrid when its domain-authentication settings use `s1` and `s2`.
 
 Before provisioning, Lamp requires a reachable DKIM key at
 `<selector>._domainkey.<From-domain>` (a provider CNAME is supported) and a DMARC
@@ -40,6 +58,6 @@ The DNS check does not send mail or prove delivery, alignment in a sent message,
 or DKIM header coverage. After deployment, verify a received message and the
 [provider receipt configuration](../OPERATIONS.md#owner-inputs).
 
-For SendGrid, the key used by **Check mail sender** also needs authenticated-domain
+For SendGrid, the key Lamp uses to check your sender also needs authenticated-domain
 read permission (`whitelabel.read`). Lamp searches all matching domain pages and
 shows the provider's outstanding DNS records when authentication is incomplete.

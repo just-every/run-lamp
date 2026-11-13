@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
+import { moveInDoor } from "../helpers/import-notifications.mjs";
 import {
   bindings,
   client,
@@ -14,7 +15,7 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
   const c = client(mf, data.cookie);
   assert.deepEqual(
     (await c.api("/api/app/session")).operator,
-    data.owner,
+    { ...data.owner, role: "owner" },
     "existing native owner session and setup authority survive",
   );
   assert.equal(
@@ -52,8 +53,12 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
     before.tables.notification_outbox,
     "completed outbox commands never replay",
   );
+  // 0026 added message_key; retained sends keep every original value.
+  const ledgerColumns = new Set(before.tables.mail_send_ledger.flatMap((row) => Object.keys(row)));
   assert.deepEqual(
-    afterStartup.tables.mail_send_ledger,
+    afterStartup.tables.mail_send_ledger.map((row) =>
+      Object.fromEntries(Object.entries(row).filter(([column]) => ledgerColumns.has(column))),
+    ),
     before.tables.mail_send_ledger,
     "uncertain provider sends remain retained",
   );
@@ -152,6 +157,9 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
     }),
   });
   assert.equal(alert.status, 202, await alert.clone().text());
+  // Deliver the alert's operator email before the import's mail baseline;
+  // any operator write may dispatch it.
+  await settle(mf);
   // Exercise the new historical-maintenance storage through the real importer.
   const importFiles = await Promise.all(
     (await readdir(join(current, "tests/fixtures/betterstack/small")))
@@ -169,20 +177,17 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
     publicAccessAcknowledged: true,
     files: importFiles,
   };
-  const review = await c.api("/api/app/statuspage-import/preview", input);
-  const mailBeforeImport = mail.length;
-  let moved = await c.api("/api/app/statuspage-import/apply", {
-    ...input,
-    asOf: review.report.asOf,
-    fingerprint: review.report.fingerprint,
-    acknowledged: true,
+  // The upgraded Move in runs every import through the import door.
+  const moveIn = moveInDoor(async (path, json, headers) => {
+    const response = await c.request(path, { method: json === undefined ? "GET" : "POST", json, headers });
+    return { status: response.status, body: await response.json() };
   });
-  for (let i = 0; i < 80 && moved.job.state === "applying"; i++)
-    moved = await c.api(
-      `/api/app/statuspage-import/jobs/${moved.job.id}/resume`,
-      {},
-    );
-  assert.equal(moved.job.state, "completed");
+  const review = await moveIn.preview(input);
+  assert.equal(review.status, 200, JSON.stringify(review.body));
+  const mailBeforeImport = mail.length;
+  const moved = await moveIn.apply(review.body);
+  assert.equal(moved.status, 200, JSON.stringify(moved.body));
+  assert.equal(moved.body.job.state, "completed");
   const nativeDb = await mf.getD1Database("DB");
   const importedHistory = (
     await nativeDb
@@ -203,7 +208,7 @@ export async function upgradedJourneys(mf, data, before, current, mail) {
   await signIn(c, mail);
   assert.deepEqual(
     (await c.api("/api/app/session")).operator,
-    data.owner,
+    { ...data.owner, role: "owner" },
     "fresh sign-in resolves the same owner identity",
   );
   const next = (

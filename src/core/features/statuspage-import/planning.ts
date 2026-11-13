@@ -4,9 +4,16 @@ import { canonicalJson, planD1Import, sha256, type D1ImportContext, type ImportP
 import type { Json } from "../../../../modules/import-kit/src/types.ts";
 import { mapSource, type Accounting, type EntityKind, type Snapshot } from "./rows";
 import { entityTables } from "./rows";
+import { moveInPlan } from './door-plan';
 import { namespace, type ReadSource } from "./source";
+import { isIntentionalParentGroup, sorryRowReconciliation, type RowReconciliation } from "./reconciliation";
 
 const json = (value: unknown) => JSON.parse(JSON.stringify(value)) as Json;
+/** Every source string well formed: a lone surrogate in an export reads as U+FFFD,
+ * as D1 stores and returns it, instead of reaching native rows as invalid UTF-8. */
+const wellFormed = <T>(value: T): T => typeof value === "string" ? value.toWellFormed() as T
+  : Array.isArray(value) ? value.map(wellFormed) as T
+  : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, item]) => [key, wellFormed(item)])) as T : value;
 
 export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: D1ImportContext, operatorId: string, asOf: string): Promise<ImportPlan> {
   const namespace = read.namespace ?? "statuspage";
@@ -19,7 +26,7 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
       addresses.set(path, identity);
     }
   }
-  const mapped = mapSource(read.data, snapshot, operatorId, asOf, namespace);
+  const mapped = mapSource(wellFormed(read.data), snapshot, operatorId, asOf, namespace);
   for (const item of read.accounting ?? []) {
     const entry = mapped.find(row => row.kind === item.kind && row.sourceId === item.sourceId);
     if (entry) {
@@ -41,33 +48,48 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
   }
   // The review instant and the source's file identities, so a report can be rebuilt from the plan alone.
   const identity = sha256(canonicalJson(read.artifacts.map((artifact) => ({ name: artifact.name, sha256: artifact.sha256 })).sort((a, b) => a.name.localeCompare(b.name))));
-  const metadata = json({ raw: { asOf, ...(read.sourceInfo ? { sourceInfo: read.sourceInfo } : {}) }, accounting: [] });
+  const metadata = json({ raw: { asOf, subscriberCapacity:{overLimit:mapped.some(row=>row.subscriberCapacity?.overLimit),summaries:mapped.flatMap(row=>row.subscriberCapacity?.summaries ?? [])}, ...(read.sourceInfo ? { sourceInfo: read.sourceInfo } : {}) }, accounting: [] });
   records.push({ namespace, kind: "metadata", sourceId: identity, payload: metadata, payloadHash: sha256(canonicalJson(metadata)), artifactHash: read.artifacts[0].sha256, location: { artifact: read.artifacts[0].name } });
   return planD1Import({ records, artifacts: read.artifacts, diagnostics: [] }, {
     version: "1",
     map: (source) => {
       const accounting = (source.payload as unknown as { accounting: Accounting[] }).accounting;
       const effect = effects.get(`${source.kind}:${source.sourceId}`);
-      const rejected = accounting.find((item) => item.outcome === "rejected");
+      const rejected = accounting.find((item) => item.outcome === "rejected" && item.kind === source.kind);
       return {
         effects: effect ? [effect] : [],
-        unmapped: accounting.filter((item) => item.outcome === "skipped" || item.outcome === "changed").map((item) => ({ field: item.kind, reason: item.reason })),
+        // A Sorry parent shown once as its children's group is the deliberate mapping, explained by the report's reconciliation; it is not unmapped.
+        unmapped: accounting.filter((item) => (item.outcome === "skipped" || item.outcome === "changed") && !isIntentionalParentGroup(item)).map((item) => ({ field: item.kind, reason: item.reason })),
         ...(rejected ? { rejection: rejected.reason } : {}),
       };
     },
   }, context);
 }
 
-export type Counts = Record<EntityKind, { read: number; imported: number; changed: number; skipped: number; rejected: number }>;
-export interface MoveInReport { state: string; asOf: string; fingerprint: string; counts: Counts; items: Accounting[]; cutover: CutoverPreview; unavailableAddresses: string[] }
+export type CountKind = EntityKind | "postmortem";
+export type Counts = Record<CountKind, { read: number; imported: number; changed: number; skipped: number; rejected: number; "kept-private": number }>;
+export interface MoveInReport { limits:string[]; state: string; asOf: string; fingerprint: string; counts: Counts; items: Accounting[]; /** How source rows arrive as native records (Sorry parents shown as groups). */ reconciliation?: RowReconciliation; cutover: CutoverPreview; unavailableAddresses: string[] }
 
 /** The dry-run report, rebuilt from the reviewed plan so a saved job reports exactly what it applied. */
 export function reportFromPlan(plan: ImportPlan, state = "dry run"): MoveInReport {
+  plan = moveInPlan(plan);
   const items = plan.entries.flatMap((entry) => entry.erased ? [] : ((entry.source.payload as { accounting?: Accounting[] }).accounting ?? []));
-  const counts = Object.fromEntries((Object.keys(entityTables) as EntityKind[]).map((kind) => [kind, { read: 0, imported: 0, changed: 0, skipped: 0, rejected: 0 }])) as Counts;
-  for (const item of items) { counts[item.kind as EntityKind].read += 1; counts[item.kind as EntityKind][item.outcome] += 1; }
-  const metadata = plan.entries.find((entry) => entry.source.kind === "metadata")?.source.payload as { raw?: { asOf?: string } } | undefined;
+  const kinds = Object.keys(entityTables).filter(kind => kind !== "template" || plan.namespace === "statuspage" || items.some(item => item.kind === kind));
+  if (plan.namespace === "statuspage" || items.some(item => item.kind === "postmortem")) kinds.push("postmortem");
+  const counts = Object.fromEntries((kinds as CountKind[]).map((kind) => [kind, { read: 0, imported: 0, changed: 0, skipped: 0, rejected: 0, "kept-private": 0 }])) as Counts;
+  for (const item of items) { counts[item.kind as CountKind].read += 1; counts[item.kind as CountKind][item.outcome] += 1; }
+  // Sorry parents become groups only. Count the native records the import
+  // creates, including transformed records; Changed still discloses mappings.
+  if (plan.namespace === "sorry") {
+    for (const count of Object.values(counts)) count.imported = 0;
+    for (const entry of plan.entries.filter(entry => !entry.erased)) for (const effect of entry.effects) {
+      if (effect.targetKind in counts) counts[effect.targetKind as CountKind].imported += 1;
+    }
+  }
+  const metadata = plan.entries.find((entry) => entry.source.kind === "metadata")?.source.payload as { raw?: { asOf?: string; subscriberCapacity?: { summaries: string[] } } } | undefined;
   const candidates = plan.entries.filter((entry) => !entry.erased && ["incident", "maintenance"].includes(entry.source.kind)).flatMap((entry) => entry.effects.map((effect) => ({ namespace: entry.source.namespace, sourceId: entry.source.sourceId, targetId: effect.targetId, targetKind: effect.targetKind, target: `${effect.targetKind}:${effect.targetId}`, publicAddresses: (entry.source.payload as { publicAddresses?: string[] }).publicAddresses, shortlink: (entry.source.payload as { raw?: { shortlink?: unknown } }).raw?.shortlink })));
   const { unavailable: unavailableAddresses } = resolvePublicAddresses(candidates);
-  return { cutover: cutoverFromPlan(plan, metadata?.raw?.asOf ?? ""), unavailableAddresses, state, asOf: metadata?.raw?.asOf ?? "", fingerprint: plan.fingerprint, counts, items };
+  const limits=metadata?.raw?.subscriberCapacity?.summaries ?? [];
+  const reconciliation = sorryRowReconciliation(plan);
+  return { limits, cutover: cutoverFromPlan(plan, metadata?.raw?.asOf ?? ""), unavailableAddresses, state, asOf: metadata?.raw?.asOf ?? "", fingerprint: plan.fingerprint, counts, items, ...(reconciliation ? { reconciliation } : {}) };
 }

@@ -14,10 +14,48 @@ import { tmpdir } from "node:os";
 import { client, inventory, run, runtime, settle } from "./runtime.mjs";
 import { populate } from "./populate.mjs";
 import { upgradedJourneys } from "./journeys.mjs";
+import { readReleaseHistory } from "../../scripts/release-metadata.mjs";
 
 const root = process.cwd();
 const release = JSON.parse(await readFile(join(root, "RELEASE.json"), "utf8"));
-const previous = process.env.LAMP_UPGRADE_FROM ?? `v${release.previousVersion}`;
+// The declared chain can retain a release that was recorded but never tagged.
+// Upgrade from the newest predecessor in that chain published as a release tag.
+async function newestTaggedPredecessor() {
+  const schema = JSON.parse(
+    await readFile(join(root, "schema/RELEASE.schema.json"), "utf8"),
+  );
+  const history = await readReleaseHistory(
+    release,
+    schema,
+    join(root, "release-history"),
+  );
+  const untagged = [];
+  for (const { release: record } of history.reverse()) {
+    const tag = `v${record.version}`;
+    const published = await run(root, "git", [
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      `refs/tags/${tag}^{commit}`,
+    ]).then(
+      () => true,
+      () => false,
+    );
+    if (published) {
+      if (untagged.length)
+        console.log(
+          `Upgrading from ${tag}: ${untagged.join(", ")} in the declared chain has no release tag.`,
+        );
+      return tag;
+    }
+    untagged.push(record.version);
+  }
+  throw new Error(
+    `No predecessor of ${release.version} in the declared chain has a release tag; fetch release tags first.`,
+  );
+}
+const previous =
+  process.env.LAMP_UPGRADE_FROM ?? (await newestTaggedPredecessor());
 const evidence = process.env.LAMP_UPGRADE_EVIDENCE
   ? resolve(process.env.LAMP_UPGRADE_EVIDENCE)
   : null;
@@ -221,13 +259,33 @@ test(
       await migrate(current, state);
       mf = await runtime(current, state, mail);
       const migrated = await inventory(mf);
+      // A migration may add columns; existing rows keep every original value
+      // and carry each added column's declared default (null when it has
+      // none), so no migration writes data into existing records.
+      const migratedDb = await mf.getD1Database("DB");
+      const addedDefault = async (table, column) => {
+        const { dflt_value: declared } = await migratedDb
+          .prepare("SELECT dflt_value FROM pragma_table_info(?) WHERE name = ?")
+          .bind(table, column)
+          .first();
+        // ADD COLUMN accepts only constant defaults, so SQLite evaluates it alone.
+        return declared === null ? null : (await migratedDb.prepare(`SELECT ${declared} AS value`).first()).value;
+      };
       for (const [name, rows] of Object.entries(before.tables))
-        if (name !== "d1_migrations")
+        if (name !== "d1_migrations") {
+          const original = new Set(rows.flatMap((row) => Object.keys(row)));
           assert.deepEqual(
-            migrated.tables[name],
+            migrated.tables[name]?.map((row) =>
+              Object.fromEntries(Object.entries(row).filter(([column]) => original.has(column))),
+            ),
             rows,
             `migration preserves existing ${name} records`,
           );
+          for (const row of migrated.tables[name] ?? [])
+            for (const [column, value] of Object.entries(row))
+              if (!original.has(column))
+                assert.equal(value, await addedDefault(name, column), `migration leaves added ${name}.${column} at its declared default on existing records`);
+        }
       assert.deepEqual(
         migrated.objects,
         before.objects,
@@ -273,7 +331,10 @@ test(
           `restore retains ${key}`,
         );
       const rc = client(mf, c.cookie);
-      assert.deepEqual((await rc.api("/api/app/session")).operator, data.owner);
+      assert.deepEqual((await rc.api("/api/app/session")).operator, {
+        ...data.owner,
+        role: "owner",
+      });
       assert.equal(
         (await rc.public(`/incidents/${published.reference}`)).status,
         200,

@@ -9,17 +9,22 @@ export interface HostDispatchBindings {
 const pageExactPaths = new Set([
   "/history",
   "/feed.atom",
+  "/maintenance.ics",
+  "/feed.rss", "/history.atom", "/history.rss", "/badge.svg", "/badge.json", "/embed/script.js", "/api/public/v1",
   "/widget.js",
   "/api/public/status",
+  "/api/public/dependencies",
+  "/api/public/sms/inbound",
+  "/api/public/sms/status",
   "/subscribe",
   "/unsubscribe",
 ]);
-const pagePathPrefixes = ["/incidents/", "/maintenance/", "/assets/", "/manage/", "/unsubscribe/", "/confirm-subscription/", "/api/intake/"];
+const pagePathPrefixes = ["/subscribe/", "/history/", "/incidents/", "/maintenance/", "/components/", "/api/v2/", "/api/public/v1/", "/assets/", "/manage/", "/unsubscribe/", "/confirm-subscription/", "/api/intake/"];
 // `/lamp` is the landing page's former address; server.ts redirects it to `/` for one release.
 // `/docs` and `/docs/` are the product's own docs, public and on the app host only: the page host's paths are the status
 // snapshot's. `/setup/state` and `/brand/` serve the Lobby, the app host's home page.
-const appExactPaths = new Set(["/setup/status", "/setup/state", "/setup", "/health", "/signin", "/lamp", "/docs", "/app", "/api/app", "/rer-theme.css"]);
-const appPathPrefixes = ["/auth/", "/docs/", "/.well-known/rer-", "/app/", "/app-assets/", "/brand/", "/api/app/", "/_serverFn/"];
+const appExactPaths = new Set(["/setup/status", "/setup/state", "/setup", "/health", "/signin", "/lamp", "/docs", "/app", "/api/app", "/api/rer/cutover-status", "/api/rer/owner-claim-status", "/api/rer/source-capture", "/rer-theme.css", "/api/chat/slack", "/api/chat/teams"]);
+const appPathPrefixes = ["/auth/", "/docs/", "/.well-known/rer-", "/app/", "/app-assets/", "/brand/", "/api/app/", "/api/v1/", "/v1/pages/", "/api/rer/import/", "/api/operator/import/", "/_serverFn/"];
 // Vite and TanStack Start request these modules only from `vite dev`. They are
 // never enabled by the emitted Worker, which continues to expose only the
 // declared app paths above. `/package.json` is the module the landing page reads
@@ -69,6 +74,11 @@ export function createHostDispatch(bindings: HostDispatchBindings) {
         if (requestHost === appHost) return "app";
         return null;
       }
+      // Both hosts have a robots.txt: the page host's is the snapshot's, the app host's exists only while pre-launch is on.
+      if (pathname === "/robots.txt") return requestHost === pageHost ? "page" : requestHost === appHost ? "app" : null;
+      // The page host answers the same /health as the app host: it is one Worker, and the answer holds no
+      // secret (ok, the last check time, and the deployment's source, fingerprint and version ids).
+      if (pathname === "/health" && requestHost === pageHost) return "page";
       if (matches(pathname, pageExactPaths, pagePathPrefixes)) {
         return requestHost === pageHost ? "page" : null;
       }

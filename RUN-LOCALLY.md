@@ -1,9 +1,39 @@
 # Run it locally
 
-Use `rer` from the project root. The checkout pins `@runeditrun/rer` 0.2.22;
-`rer describe` reports the commands and tooling in use. Lamp runs on
-your computer without a Cloudflare account or mail credentials; development mail
-is silently suppressed.
+Lamp runs on your computer without a Cloudflare account or mail credentials;
+development mail is silently suppressed. Start it with the same line as the
+[Run page](https://run-lamp.com/run):
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
+```
+
+Git is required; the installer brings Node when needed and rer brings pnpm.
+This clones `main` (development source, not a release tag) into `run-lamp` and
+starts it. Already have Node 22 or later? Use this alternative:
+
+```sh
+npx -y @runeditrun/rer dev just-every/run-lamp
+```
+
+After the curl install, if `~/.local/bin` is missing from your PATH, run the
+installer's Bash line once to make the command available now and in future
+terminals:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
+```
+
+For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. Run the
+remaining commands from the `run-lamp` folder.
+
+The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever
+rer you installed; `rer describe` reports the commands and tooling in use.
+The latest release tag, `v1.11.13`, pins rer 0.2.108; if you choose the tag, use
+that checkout's own instructions. See
+[source and tooling versions](README.md#source-and-tooling-versions).
+rer selects the project's pinned Node 22.20.0 and pnpm 10.12.4, downloading its
+Node version when needed even if your shell has a newer Node.
 
 ## Start Lamp
 
@@ -16,19 +46,18 @@ owner automatically. When ready, it prints `RER_READY` with the app address and
 `RER_OPEN` with your private one-click owner entry link. Open the `RER_OPEN`
 link to work as the owner; no email is needed. Keep that link private.
 
-Local mail is not sent or retained. In ordinary development,
-after opening the local owner entry address, `GET /__dev/outbox` on the local
-app host returns HTTP 200 with a plain-text
-suppression notice. It is a compatibility address, with no inbox or captured
-messages. Test emailed sign-in and subscriber delivery on a hosted installation
+Local mail is not sent or retained, and there is no local inbox. Test emailed sign-in and subscriber delivery on a hosted installation
 with its real mail provider and mailbox.
 
 The local addresses serve three different purposes:
 
-- `RER_READY` names the operator app on `127.0.0.1`. Use `RER_OPEN` to sign in.
+- `RER_READY` names the operator app on the selected hostname (`127.0.0.1` by
+  default). Use `RER_OPEN` to sign in.
 - For the business's public status page, use `localhost` with the same app port.
   For example, if `RER_READY` is `http://127.0.0.1:8899`, open
   `http://localhost:8899/` for the public page.
+  With `rer dev --host localhost --port 8899`, the app uses `localhost` and
+  the public page uses `http://status.localhost:8899/`. Lamp prints both addresses.
 - `RER_SITE` names a separate preview of Lamp's static run site: the product
   homepage and Run page. It uses the first free port above the app's port.
   It does not show the business's live public status page. Use the exact
@@ -72,8 +101,14 @@ rer setup
 rer dev
 ```
 
-These `rer export` and `rer import` commands move a local installation. They do
-not back up or restore a deployed Cloudflare installation; see [Backups and
+A backup from an earlier Lamp restores the same way, including one made before
+Lamp 1.8.0: the restore adds the audit entry migration 0033 writes for each
+earlier component state change, as updating that installation in place would.
+
+These `rer export` and `rer import` commands move a local installation. To back
+up the Cloudflare installation this checkout deployed as `production`, run
+`rer export --target remote --output exports/hosted`; it writes Lamp's hosted
+archive folder, which `node scripts/import.mjs` restores. See [Backups and
 recovery](docs/backups-and-recovery.md) and the technical [Cloudflare archive
 reference](OPERATIONS.md#portable-backups-and-restore).
 

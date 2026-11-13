@@ -1,12 +1,31 @@
 import {array, bindingPattern, keys, string, strings} from './bindings.mjs';
 
 const pathPattern = /^\/[A-Za-z0-9/_.~-]*$/;
+const signInPath = value => typeof value === 'string' && /^\/(?!\/)[a-zA-Z0-9/_-]*$/.test(value);
+const validSignIn = value => value && typeof value === 'object' && !Array.isArray(value)
+  && Object.keys(value).every(key => ['path','loginHint','ownerSignIn'].includes(key))
+  && signInPath(value.path)
+  && typeof value.loginHint === 'boolean'
+  && (value.ownerSignIn === undefined || signInPath(value.ownerSignIn));
 const status = (value, label) => {
   if (!Number.isInteger(value) || value < 100 || value > 599) throw Error(`Invalid ${label}`);
 };
 
+/**
+ * The secret names a seed declares as its outbound mail credentials, `mail.credentialSecretNames`:
+ * optional, a non-empty list of binding names, no duplicates, never values. Whether each is a secret
+ * the deployment declares is checked where the deployment's secrets are known (`rer deploy`).
+ */
+export function mailCredentialSecretNames(mail) {
+  if (mail?.credentialSecretNames === undefined) return [];
+  const names = strings(mail.credentialSecretNames, 'mail credentialSecretNames', bindingPattern);
+  if (!names.length) throw Error('Invalid mail credentialSecretNames: name at least one secret or remove the list');
+  return names;
+}
+
 /** Preserve source-owned preview and setup declarations, without authorizing effects. */
 export function validateDeclarations(spec) {
+  mailCredentialSecretNames(spec.mail);
   if (spec.providerEffects !== undefined) {
     if (strings(spec.providerEffects, 'providerEffects', /^[a-z][a-z0-9-]{0,63}$/).length > 32) throw Error('Too many provider effects');
   }
@@ -15,8 +34,9 @@ export function validateDeclarations(spec) {
     if (!spec.surfaces.app) throw Error('Surfaces require an app');
     const origins = new Map();
     for (const [name, surface] of Object.entries(spec.surfaces)) {
-      keys(surface, ['path','hostnameVariable','originVariable','readiness'], 'surface');
+      keys(surface, ['path','hostnameVariable','originVariable','readiness','signIn'], 'surface');
       string(surface.path, 'surface path', pathPattern);
+      if (surface.signIn !== undefined && (name !== 'app' || !validSignIn(surface.signIn))) throw Error('Invalid project sign-in declaration');
       if (surface.hostnameVariable !== undefined && surface.originVariable !== undefined) throw Error('Surface must choose one address variable');
       for (const field of ['hostnameVariable','originVariable']) if (surface[field] !== undefined) string(surface[field], field, bindingPattern);
       if (surface.originVariable !== undefined) {

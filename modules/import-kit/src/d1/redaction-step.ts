@@ -1,12 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import type { D1FieldRedaction, D1ImportContext, D1RetirementProgress, D1Sql } from './types.ts';
 import { packGuards, remaining, D1RequestLimitError } from './budget.ts';
-import { authority, finalAuthority, readonlyChecks, prepare, sql } from './database.ts';
+import { authority, finalAuthority, guard, readonlyChecks, prepare, sql } from './database.ts';
+import type { SourceRecord } from '../types.ts';
 import { targetErasure } from './erasure.ts';
 import { exactRows } from './sets.ts';
+import { batchRows } from './read-results.ts';
+import { batchBytes } from './transport.ts';
+import { RPC_LIMIT } from '../../../d1-transport/index.mjs';
 import type { EntryRange } from './field-redaction.ts';
 import { addMatches, revisionsAfter, STEP_JOBS, writeProgress, type JobRevision, type RedactionPage, type RedactionProgress } from './retirement-steps.ts';
-import { tallyJournal, tallyBefore, tallyStores } from './retirement-tally.ts';
+import { tallyJournal, tallyBefore, tallyStores, tallyWithdraw } from './retirement-tally.ts';
 
 /** Statements one request may run (D1's per-invocation limit, as budget.ts counts it). */
 const BUDGET = 1000;
@@ -17,32 +21,39 @@ export interface Overflow { cost?: number }
 /** The statements a batch needed that the request no longer had. Nothing was written. */
 export const overflow = (needed: number): D1RequestLimitError => Object.assign(new D1RequestLimitError(), { needed });
 
+/** A door lineage the steps sever as they read their jobs: copies `select`
+ * matches are bound to `target` (the erased target's digest), under the
+ * lineage's `fence`, so the final step reads none of the jobs they cleaned. */
+export interface LineageSever { target: string; select: (record: SourceRecord) => boolean; fence: D1Sql[] }
+
 /** Resumable redaction in bounded steps. A step takes as many pending jobs as fit
  * one request (at least one, at most STEP_JOBS); a job that does not fit alone is
  * redacted in pages of its entries. A step that does not fit writes nothing: the
  * next is sized from what it would have cost and tried in the same request while
  * that request still has room, otherwise in the next one, so every committed
- * step stays inside the limit and the erasure reaches its final step. */
-export async function redactionSteps(fields: readonly D1FieldRedaction[], context: D1ImportContext, fence: D1Sql[], progress: RedactionProgress, pending: JobRevision[], failed?: Overflow): Promise<D1RetirementProgress> {
-  let { span, page } = progress, unsized = failed;
+ * step stays inside the limit and the erasure reaches its final step. With
+ * `sever`, each step also severs the door lineage's copies in the jobs it reads. */
+export async function redactionSteps(fields: readonly D1FieldRedaction[], context: D1ImportContext, fence: D1Sql[], progress: RedactionProgress, pending: JobRevision[], failed?: Overflow, sever?: LineageSever): Promise<D1RetirementProgress> {
+  let { span, page } = progress, unsized = failed, attempts = failed ? 1 : 0;
   for (;;) {
     let job = page && pending.find(item => item.id === page!.job);
     // A job changed since its last page starts again from its first entry; one no longer pending is done.
     if (page && (!job || job.revision !== page.revision)) page = job ? { ...page, from: 0, revision: job.revision } : undefined;
     if (unsized) {
-      const next = smaller(span, page, pending, unsized.cost);
+      const next = smaller(span, page, pending, unsized.cost, attempts === 1);
       ({ span, page } = next); job = page && pending.find(item => item.id === page!.job);
       // Try it now only while this request has room for it; otherwise commit nothing and let the next request take it.
-      if (unsized.cost === undefined || unsized.cost * next.fraction > remaining(context)) {
+      if (next.defer || unsized.cost === undefined || unsized.cost * next.fraction > remaining(context)) {
         return { phase: 'redacting', continuation: writeProgress({ ...progress, span, page }), jobsRedacted: 0, jobsPending: pending.length, fieldMatches: progress.matched };
       }
     }
     const jobs = job ? [job] : pending.slice(0, span), range = page && job ? { from: page.from, to: Math.min(page.from + page.count, job.total) } : undefined;
     const start = remaining(context);
     let done: Awaited<ReturnType<typeof redactionStep>>;
-    try { done = await redactionStep(fields, context, fence, progress, jobs, range); }
+    try { done = await redactionStep(fields, context, fence, progress, jobs, range, sever); }
     catch (error) {
       if (!(error instanceof D1RequestLimitError)) throw error;
+      attempts++;
       const needed = (error as { needed?: number }).needed;
       unsized = { cost: needed === undefined ? undefined : start - remaining(context) + needed };
       continue;
@@ -62,30 +73,40 @@ export async function redactionSteps(fields: readonly D1FieldRedaction[], contex
 
 /** The next, strictly smaller step after one cost `cost` statements: in proportion,
  * with headroom, or half when its reads alone ran out. Fewer jobs first, then
- * pages of one job's entries; `fraction` is its expected share of that cost. */
-function smaller(span: number, page: RedactionPage | undefined, pending: JobRevision[], cost: number | undefined): { span: number; page?: RedactionPage; fraction: number } {
+ * pages of one job's entries; `fraction` is its expected share of that cost.
+ * When one entry is already the step and that attempt was `first` in its request,
+ * nothing fits and the step is refused. A request that earlier attempts had spent
+ * defers the same step instead (`defer`): a fresh request has its whole budget. */
+function smaller(span: number, page: RedactionPage | undefined, pending: JobRevision[], cost: number | undefined, first: boolean): { span: number; page?: RedactionPage; fraction: number; defer?: boolean } {
   const size = (current: number) => Math.min(current - 1, cost === undefined ? Math.floor(current / 2) : Math.floor(current * BUDGET * 0.7 / cost));
   if (page) {
     const count = size(page.count);
-    if (count < 1) throw new D1RequestLimitError(); // One entry alone is more than a request.
+    if (count < 1) {
+      if (!first) return { span, page, fraction: 1, defer: true };
+      throw new D1RequestLimitError(); // One entry alone is more than a request.
+    }
     return { span, page: { ...page, count }, fraction: count / page.count };
   }
   const jobs = Math.min(span, pending.length);
   if (jobs > 1) { const fewer = Math.max(1, size(jobs)); return { span: fewer, fraction: fewer / jobs }; }
   const [job] = pending, count = size(job.total);
-  if (count < 1) throw new D1RequestLimitError();
+  if (count < 1) {
+    if (!first) return { span, fraction: 1, defer: true };
+    throw new D1RequestLimitError();
+  }
   return { span: 1, page: { job: job.id, from: 0, count, revision: job.revision }, fraction: count / job.total };
 }
 
 /** One bounded step of a resumable redaction: read `jobs`' custody (with `range`,
  * one job's page of entries), and in one batch with the restore checkpoint and a
- * journal row rewrite the jobs holding a selected value together with the native
- * rows they own. Jobs found free of the values are fenced at the revision read
- * before their plans. The caller's native statements wait for the final step,
- * which also proves no other row holds one. */
-async function redactionStep(fields: readonly D1FieldRedaction[], context: D1ImportContext, fence: D1Sql[], progress: RedactionProgress, jobs: JobRevision[], range?: EntryRange) {
+ * journal row rewrite the jobs holding a selected value (or, with `sever`, a
+ * lineage copy) together with the native rows they own. Jobs found free of both
+ * are fenced at the revision read before their plans. The caller's native
+ * statements wait for the final step, which also proves no other row holds one. */
+async function redactionStep(fields: readonly D1FieldRedaction[], context: D1ImportContext, fence: D1Sql[], progress: RedactionProgress, jobs: JobRevision[], range?: EntryRange, sever?: LineageSever) {
   const db = context.storage.database, destination = context.destination;
-  const erasure = await targetErasure(undefined, context, { fields }, new Set(), { selection: { jobs: jobs.map(job => job.id), clean: new Map(), complete: false, ...range ? { range } : {} }, owned: true });
+  const erasure = await targetErasure(undefined, context, { fields, ...sever ? { source: sever.select } : {} }, new Set(),
+    { selection: { jobs: jobs.map(job => job.id), clean: new Map(), complete: false, ...range ? { range } : {} }, owned: true, ...sever ? { sever: sever.target } : {} });
   const holding = new Set(erasure.jobs), free = jobs.filter(job => !holding.has(job.id) && job.revision !== null);
   const clean = new Map(progress.clean), matched = addMatches(progress.matched, erasure.fieldMatches), revisions = new Map(jobs.map(job => [job.id, job.revision]));
   // A page leaves its job pending until its last page.
@@ -96,14 +117,16 @@ async function redactionStep(fields: readonly D1FieldRedaction[], context: D1Imp
     const recordedAt = new Date().toISOString(), touched = { destination, jobs: [...holding].sort(), streams: [] as string[] };
     touched.streams = (await db.prepare('SELECT DISTINCT stream_id AS id FROM ik_d1_stream_pages WHERE job_id IN (SELECT value FROM json_each(?))').bind(JSON.stringify(touched.jobs)).all<{ id: string }>()).results.map(row => row.id).sort();
     const stores = await tallyStores(db);
-    const prefix = packGuards([authority(context, 'erase'), ...tallyBefore(stores, receiptId, touched), ...erasure.before,
-      ...exactRows('ik_d1_custody_states', ['job_id', 'revision'], free.map(job => ({ job_id: job.id, revision: job.revision })))]);
-    const suffix = [...packGuards([...erasure.after, ...tallyJournal(stores, receiptId, touched, { recordedAt, recordsErased: 0, jobsRetired: 0, streamsRetired: 0 }, true),
+    const prefix = packGuards([authority(context, 'erase'), ...tallyBefore(stores, receiptId, touched), ...tallyWithdraw(stores, touched), ...erasure.before,
+      ...exactRows('ik_d1_custody_states', ['job_id', 'revision'], free.map(job => ({ job_id: job.id, revision: job.revision }))), ...sever?.fence.map(guard) ?? []]);
+    const suffix = [...packGuards([...erasure.after, ...tallyJournal(stores, receiptId, touched, { recordedAt, recordsErased: erasure.decisions.length, jobsRetired: 0, streamsRetired: 0 }, true),
       authority(context, 'erase'), sql('DELETE FROM ik_d1_assertions')]), ...readonlyChecks(erasure.final), revisionsAfter(touched.jobs), finalAuthority(context, 'erase')];
-    const needed = prefix.length + fence.length + suffix.length;
+    const needed = prefix.length + fence.length + suffix.length, batch = [...prefix, ...fence, ...suffix];
     if (needed > remaining(context)) throw overflow(needed);
-    const results = await db.batch([...prefix, ...fence, ...suffix].map(statement => prepare(db, statement)));
-    for (const row of (results[results.length - 2] as { results: { job_id: string; revision: number }[] }).results) {
+    // The batch must also fit one D1 RPC: a step too large in bytes is sized down like one too large in statements.
+    if (batchBytes(batch) > RPC_LIMIT) throw new D1RequestLimitError();
+    const results = await db.batch(batch.map(statement => prepare(db, statement)));
+    for (const row of batchRows(results[results.length - 2]) as { job_id: string; revision: number }[]) {
       revisions.set(row.job_id, row.revision);
       if (!range) clean.set(row.job_id, row.revision);
     }

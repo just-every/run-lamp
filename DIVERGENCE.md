@@ -1,6 +1,69 @@
 # DIVERGENCE.md
 
+## Connected-tool setup guidance — 12 November 2026
+
+Chat links and each Social accounts choice link to on-site owner guides. A new
+self-hosted owner needs the provider app, installation settings and credential
+steps before creating a link code or connecting an account. Detailed guidance
+stays in docs; connecting, linking and posting behavior stays as implemented.
+
+## Resolved incident corrections and reopening — 12 November 2026
+
+Resolved incident records retain the same update composer, preview and publication
+options as active records. Operators can publish a correction while keeping the
+Resolved status, or explicitly choose Investigating to reopen. Each correction
+identifies its immutable original on the operator and public timelines and the
+permanent incident page. Publishing consumes correction feedback together with
+the draft, so it cannot label the next ordinary update. This supersedes the
+11 November presentation decision to hide the composer after resolution;
+publication immutability, lifecycle rules and ordering remain unchanged.
+Publishing closes the consumed correction chooser while keeping other open
+update panels available to review the next draft’s choices.
+
+## Notification provider guidance — 12 November 2026
+
+Settings → Notifications reports the composed sender's actual configuration and
+local suppression, so a fresh local install reads as email off. Email and SMS
+name their private deployment inputs and link to the on-site setup steps.
+Configured hosted senders retain their primary provider name. Sending, retries,
+failover and local suppression retain their existing behavior.
+
+## Readable removed records and report obligations — 12 November 2026
+
+Removed subscribers appear under a plain anonymous label in the directory,
+notification deliveries and subscription email history. Erasure keeps its
+existing behavior; no destination or contact detail is restored for display.
+The resolved incident panel uses the same replaceable report-due policy result
+as Reports, including the seven-day wait, publication and waiver exclusions.
+Other resolved incidents offer an optional report without an owed reminder.
+
+## Statuspage reader guidance — 12 November 2026
+
+The native Cutover report names the existing compatibility embed as served on
+the moved hostname, including its required website allowlist. It keeps the
+unavailable maintenance, webhook and component automation boundaries explicit.
+The retained provider client and old embed tag are exercised after import;
+Cutover keeps its existing operating guidance and visual components.
+
+## Another tool's first alert — 11 November 2026
+
+Another tool keeps its payload mappings visible and explains each field. Connecting
+with a Bearer token, or replacing that token, shows a copyable first request using
+the installation's returned address and saved mappings. The token is shown only
+once, with the path to make a replacement. This preserves the private draft and
+operator publication behavior of monitoring alerts.
+
 Where this product did not fit the planted documents, what it needed instead, and why. Input to the later pass that decides what the shared docs missed. This historical record predates the edition-authoring conversion; the unified `AGENTS.md` now governs every author and fork.
+
+## Incident publication feedback — 11 November 2026
+
+The incident composer explains every disabled publication action beside its button.
+Each later update keeps the previous published audience as editable text, while
+starting a fresh customer message and next-update commitment. This is the requested
+exception to UPDATE-005 acceptance 3's empty next-update draft: audience continuity
+does not revive the prior published message. Publication refreshes the Brief and
+Impact in the current visit, and a published resolution leaves the timeline and
+existing incident actions in place of the update form.
 
 ## 1 — BASE-ACCESS-003 rate-limits the surface that must never be rate limited
 
@@ -94,7 +157,9 @@ The composer keeps the customer-facing fields and publish action primary, omits
 obvious field explanations and the implementation banner, and offers email
 preview and schedule/backdate controls through named disclosures. A configured
 historical timestamp remains exposed and the action says “Publish historical
-update”; clearing optional timing restores current-time publication. Channel
+update”; clearing optional timing restores current-time publication. (The
+composer layout was replaced on 22 October 2026; see “Incident page in one
+screen”.) Channel
 selection, autosave failure/retry, review, privacy and historical-notification
 rules are unchanged. Successful publication refreshes the operator lifecycle and
 timeline and opens a fresh empty draft for the next update (UPDATE-005 amendment). Maintenance date editing opens on demand, with explicit
@@ -972,18 +1037,13 @@ same-incident immutable correction target retain their existing meaning. A write
 already committed to the original draft remains valid even when its delivered
 completion no longer owns the current interface.
 
-- Local mail is stored by Base's D1 development outbox (`modules/mail/src/development`), but
-  `/__dev/outbox` keeps Lamp's own viewer page. Base's viewer opens a captured link with
-  `rel=noreferrer`; Lamp's app host and page host are distinct local sites, and the development
-  gates admit a navigation between them only with the other surface's origin as the referrer.
-  Base's viewer would therefore strand subscriber links opened from the app host's outbox.
-
-- The setup checklist checks the public page and its subscribe form by fetching the page host's `/`
+- Lamp's own live check reads the public page and its subscribe form by fetching the page host's `/`
   from the Worker. Locally the page host is another loopback name on the same port, so workerd sends
   that as a real subrequest stamped `CF-Worker`. The raw development ingress admits `CF-Worker` only
   once, alone among `cf-*` headers, and only on a GET or HEAD with no `Origin` or `Sec-Fetch-*`
-  header: a request any local process could already send without it. The checklist derives the page
-  origin from the operator's request (the page host on the same scheme and port), as Settings does.
+  header: a request any local process could already send without it. An operator request derives the page
+  origin from itself (the page host on the same scheme and port), as Settings does; Cron uses the
+  deployment's.
 
 ## Seed command contract 1 (rer CLI)
 
@@ -1001,8 +1061,8 @@ Lamp runs the Base rer CLI (`scripts/base-cli/`, thin `scripts/rer.mjs`) with th
   transfer needs an HTTP portability endpoint Lamp does not serve.
 - The development ingress accepts the CLI proxy's public port (from `RER_DEV_ORIGIN`) in the Host
   header; the proxy forwards the browser's Host to the internal listener unchanged.
-- First-run setup at `/setup` confirms the page name, tagline, time zone and colour (SETUP-002);
-  the eight-step setup checklist (SETUP-001) stays on Overview.
+- First-run setup at `/setup` reads the owner's website and confirms what it found (SETUP-002);
+  Overview shows one live line (SETUP-001).
 
 ## Slack and Teams channels on a Worker — 11 October 2026
 
@@ -1308,9 +1368,8 @@ consumers, object bytes and recorded data resources. Removal reads back absence
 before deleting its local records. Older installations without creation history
 retain the explicit manual retirement procedure.
 
-Ordinary development keeps `/__dev/outbox` as a 200 diagnostic explaining silent
-mail suppression. It stores and displays no mail, adds no injected viewer or bar,
-and is unavailable in demo and production.
+Ordinary development has no local outbox address: mail is silently suppressed,
+nothing is stored or displayed, and no viewer or bar is injected.
 
 ## Release readiness
 
@@ -1360,3 +1419,360 @@ values do not enter custody. Other credential-bearing responses are refused.
 While Sorry is retained, its history collection and month URLs redirect to
 Lamp's history at `/history/` in the same snapshot; complete undo restores
 Lamp's ordinary `/history` document.
+
+## Operator page responsiveness (owner, 16 October 2026)
+
+The signed-in workspace must open its main pages and primary actions in under one second on a normal hosted deployment. Keep its existing appearance, copy and flows. Read current records for each visit and preserve explicit mutation refreshes; speed must not come from serving stale data or deferring required work behind a loading state.
+
+## Maintenance mail without waiting for Cron — 17 October 2026
+
+A new hosted installation must send committed maintenance notices even while
+Cloudflare has not yet started its first Cron run. An operator write sends the mail it
+committed right after it responds, as incident publication does. While Cron has
+recorded no run for three minutes (its `scheduler` readiness evidence), other
+requests (public page, operator app, health) run due maintenance transitions and
+pending mail, at most every 20 seconds per isolate. Once Cron runs, it alone does
+the time-based work. Every path
+keeps the existing guarded transitions, one notice per kind, and outbox and
+delivery claims, so MAINT-005 and NOTIFY-005 hold and no subscriber receives a
+notice twice. Delivery rows and CSV name the maintenance reference, title and
+notice kind.
+
+Setup pages (AI assistance, identity provider settings, Move in, Slack and
+Teams) give their steps, links, text to copy and a check on the page. On
+Managed hosting, which relays mail but has no outbound relay for other
+integrations yet, AI assistance and Slack and Teams say so in one line and
+accept no settings that could not send.
+
+## Page data restore keeps double opt-in — 17 October 2026
+
+A page data restore must never turn addresses into active subscribers without
+the double opt-in every other import enforces (MOVE-002, NOTIFY-008). An export
+carries an integrity value keyed by the exporting installation's
+`SUBSCRIBER_TOKEN_SECRET`; the key never leaves it. Email subscribers keep the
+state the file gives them only when the restoring installation recomputes that
+value with its own secret: an unchanged file from the same installation, or from
+a recovery given its signing secrets. Every other file (edited, from another
+installation, or from Lamp 1.7.0 or earlier) restores its subscribed and pending
+email subscribers held. Held subscribers receive nothing until the owner sends
+each one confirmation, which starts SUB-003's 72-hour window, and are deleted
+30 days after the restore otherwise. The rule is the same hosted and on Managed
+hosting. The restore's empty-page check runs inside its one transaction, and a
+refused restore removes the logo it stored.
+
+## Business adoption — 18 October 2026
+
+The owner requested Base's optional Business import door, disabled by default,
+with a single settings row and permanent grant-key revocation. Door plans reuse
+Lamp's Statuspage and Sorry move-in readers, mapper and native target adapter;
+both hold subscribers until a separate live-hostname/watch-window approval.
+Local imports retain their existing behavior. Business approval metadata appears
+in the existing owner-bound history and undo flow.
+
+Since rer 0.2.61 the door is Base's integrated door, refreshed with
+`refresh-base`/`record-base` and recorded in `base-copies.json`. Until rer 0.2.71
+two adapted files (`types.ts`, `authority.ts`) were local source whose one change
+passed a `reversalPolicy` into each door job. Since rer 0.2.71 (Base #298) the
+whole door directory is one verbatim recorded copy with no local divergence: Lamp
+passes Base's `reversalPolicy: 'preserve-conflicts'` option to both mounts, so
+Business imports still undo as every Lamp import does, preserving the records the
+owner changed. Migration 0041 applies Base's archive migration for the door's
+`archive` and `restore-check` actions.
+Base's server-side source resolver admits the four sources Move in offers
+(`statuspage`, `betterstack`, `instatus`, `sorry`); a plan request prepares the
+named upload with Lamp's existing readers, native planner and target adapter
+before the door reads it. Migrations 0037-0039 apply Base's
+custody REPLACE triggers and the door's apply-failure and scope migrations; the
+existing Sorry integration case also runs Base's public door conformance.
+
+## One import path — 19 October 2026
+
+The owner's 17 October decision: one way to import. Move in's screen keeps its
+look, copy and steps but runs on the door's owner-session mount
+(`createImportOperatorHandler` at `/api/operator/import/*`, Base ADOPTING steps 3
+and 5) with the same allow-list and door key as the Business grant mount. The
+old preview and apply routes are deleted; jobs they created keep their read,
+resume and undo routes, and history lists every door import with them. Door
+imports run as the installation's configured owner, so the owner's imports and
+Business's share one lineage, history and undo; each request is still bound to
+the signing-in owner's session. Lamp-specific behavior around the door: a key
+or public page is read into saved responses first; a new dry run discards an
+earlier unstarted one; an undone source plans afresh from the same bytes, as
+the door does since rer 0.2.71 (earlier clients' `attempt` field is accepted and
+unused); owner imports keep each source's subscriber policy, while Business holds
+subscribers until cutover. Subscriber deletion and expiry erase the subscriber
+from import custody through the kit (Base ADOPTING step 6); the kit requires an
+erased target to be gone, so Lamp's target adapter treats the anonymised record
+an operator deletion keeps (`deleted:<id>`) as no import target.
+
+Business catch-ups replace source-owned records under the reviewed native
+revision and can undo back to that revision, while preserving incoming native
+references. Door uploads, plans, grants, approvals and lineage are installation
+custody: local exports exclude every `ik_door_*` table alongside import-kit jobs.
+
+## Managed preview owner entry (18 October 2026)
+
+Managed previews declare `/auth/owner-signin` as their owner entry so RER can bind the preview's single-use owner grant there. A missing, used or expired grant redirects to Lamp's sign-in page with a notice; an unavailable auth service does the same. Successful grant consumption retains Base's native session and single-use checks.
+
+## Local hostname selection (18 October 2026)
+
+Local setup, development and preview keep the operator surface on rer's selected
+origin. The public status page keeps a separate hostname on the same port:
+localhost beside the default 127.0.0.1 app, or status.localhost beside a localhost
+app. Selecting localhost must complete
+owner setup and health readiness without provider credentials.
+
+## Configured sign-in choices and channel checks — 18 October 2026
+
+ACCESS-001's enabled, configured providers remain available beside the local
+one-click owner entry. Native provider forms retain their same-origin Origin
+and allow the provider authorization redirect under CSP. With no enabled
+provider, owner entry stays unchanged. Base's shared development and one-click
+sign-in renderers offer these choices from rer 0.2.69; Lamp carries no rer patch.
+
+A Slack channel test succeeds only on Slack's exact `ok` acknowledgement;
+HTTP success with another body reports the provider's refusal text. Teams keeps
+its HTTP acknowledgement semantics.
+
+## Phone incident desk — 18 October 2026
+
+Operators must be able to carry an alert through publication and resolution on a phone, including a recovered draft after reload. Receipt actions stay visible in a stacked phone layout, and operator controls use at least 44 px touch targets without changing the desktop layout. The same journey covers native sign-in, component claims and maintenance scheduling.
+
+## Notification email branding — 18 October 2026
+
+Owners can brand subscriber notification subjects and wording and reuse the
+uploaded page logo without making unsubscribe, management or List headers
+editable. Preview and delivery share the same branding renderer, and a frozen
+retry retains the original identity and wording. Managed mail owns From and does
+not accept Reply-To: Settings states that boundary and refuses unsupported
+identity changes, including a page-data restore that would introduce them.
+
+The package pin moves to rer 0.2.55 with the existing configured-provider
+sign-in patch retained. Its native owner and provider flows remain available.
+
+## Operator audit visibility — 18 October 2026
+
+Settings exposes retained audit records with actor, action and UTC-date filters and matching CSV. Names are resolved from the current identity so erased operators show an opaque anonymised reference. Component state changes are audited in their history transaction; maintenance scheduling and reminder notices also record attribution. The released equal-operator policy remains in force until TEAM-004; TEAM-007 stays partial for that gate and its unbuilt event families.
+
+## Subscriber reporting — 18 October 2026
+
+Subscriber reports count current records separately from daily growth in pending-plus-active inventory. Anonymous database triggers observe inserts, transitions, channel moves, expiry, erasure and undo in the same transactions as those changes. Existing records establish an inventory baseline; observation begins with the first subscriber change or report read, keeping an empty installation’s migration seeds deterministic for native restore. Creation timestamps cannot reconstruct earlier growth. Technical archive restore retains these facts, or starts a fresh explicit baseline for older archives. Audience and language reporting remain unbuilt and HIST-007 remains partial.
+
+## Grouped monitoring alerts — 18 October 2026
+
+Alertmanager and Grafana contact points can map each alert's exact labels to several components while retaining one private incident per open source group. Per-alert fingerprints retain partial recovery evidence; only a completely recovered, never-published draft closes automatically. Existing source credentials and single-component presets retain their behavior. Native technical archives carry grouped mappings and member state.
+
+The package pin moves to rer 0.2.57 with the configured-provider sign-in patch retained.
+
+## Documented grouped webhook versions — 18 October 2026
+
+Each grouped preset accepts its documented source format: Alertmanager version 4 and Grafana version 1. Missing, numeric, cross-source and unknown versions are refused with an operator-readable reason. Grafana's title names the private draft; its message and other source context stay in the retained private receipt. Neither becomes a public update without operator publication. The unmodified Grafana documentation example exercises the same grouped incident, notice, mapping, deduplication and recovery path as Alertmanager.
+
+## Setup and Move-in polish — 20 October 2026
+
+Owner L10 keeps the existing look while making setup honest and resumable. Website
+navigation supplies components only when at least two plausible services remain;
+audience, account, documentation and marketing links are omitted. A failed read
+uses the valid public domain for its default name and offers a retry. The signed-in
+owner's browser retains the read and edits until they open Lamp, with publishing
+and subscribe-form progress shown during that action.
+
+The detected status page stays with the website record. Move-in selects a provider
+only from public provider evidence and fills a page ID from Statuspage's public
+summary or Better Stack's public page JSON. This reads migration metadata only: the existing reviewed import and
+invitation steps remain in force.
+
+## Public page clarity — owner L10, 20 October 2026
+
+Keep the approved public appearance. Customer pages share Status, History and
+Subscribe navigation; operator sign-in and feeds belong in the footer. Show
+one update time and one history-start note, readable component states and
+coverage, without internal incident references or duplicate impact labels.
+Uptime bars distinguish degraded/partial service (amber) from major outage
+(red), based on the worst state during that day, including corrections.
+Page marks show the business artwork cleanly; the favicon keeps its status dot.
+The footer links to the business website already read during setup. Development
+subscription mail remains silently suppressed, with the normal confirmation page.
+
+For PAGE-009, the owner's S4 replaces the generation time's visible clock with
+a relative label while script runs. Its absolute tooltip keeps the configured
+timezone and UTC offset, its datetime keeps the ISO instant, and the initial
+HTML remains absolute for readers without script. Incident and maintenance
+timestamps keep their existing display. The existing PAGE-014/PAGE-009 browser
+journey checks the relative label and the absolute tooltip together.
+
+For UPTIME-003, first-day coverage uses elapsed hours and minutes instead of
+zero whole days or a repeated tracking date. Zero elapsed time still says
+No data. Coverage from one whole day onward keeps its whole-day label. The
+existing uptime correction/coverage journey checks these first-day labels.
+
+## Overview and navigation — owner L10, 20 October 2026
+
+Keep the existing operator appearance. On phones, one compact menu exposes every
+section and the live page. Overview gives empty incident and maintenance cards
+a direct create action. A month without incidents shows a short empty state;
+delivery details stay folded until requested. Initial HTML uses the same month,
+font and link arrows as the hydrated page. Sign out and CSV work immediately.
+Background reads update the current view without closing its menu or disclosures.
+
+## Settings polish — owner L10, 20 October 2026
+
+Settings keeps an owner's unsaved edits across its tabs and warns before leaving
+without saving. Fields become interactive only when their handlers are ready.
+Saving publishes the changes; the wording must make that explicit. All tabs are
+visible on a phone, setup help opens the app's documentation, and embed choices
+preview the actual published status. Ask for identity confirmation only when an
+access change requires it, and keep the last owner’s access protected. The
+existing typography, colours and surfaces stay as they are.
+
+## Lamp L10 follow-up and L17 names (owner, 20 October 2026)
+
+Operator screens use the owner's words, including folded reports and history controls. Development and demo mail stays silent and shows the same accepted-send success as a real send; stored outcomes and real delivery behavior stay intact. Website component suggestions prefer supported product navigation, strip decorative badges and descriptions, exclude account/community/company navigation, and retain the eight-name cap.
+
+
+## Built-in public page templates — owner L9, 20 October 2026
+
+The original public page remains the default, and its shared stylesheet and script
+stay byte for byte as they were: a chosen template publishes its own
+`assets/template.css` and `assets/template.js`, which only its page links. Settings
+can publish Calm headline, Uptime-history-led, or Regions map, each laid out after
+the owner's L9 study drawing, with the business's own name, accent and mark and the
+same public facts. The saved template and why it is showing stay visible in
+Settings. Regions map needs public components in at least two regions (an optional
+component region); with fewer, the public page quietly shows Calm headline and only
+Settings explains why. Regions without a known map position stay filterable and are
+listed as not on the map. Built-in choices do not require AI. Generated house style
+is a later feature and is not offered as an implemented option.
+
+## Managed sender status — 21 October 2026
+
+The RunEditRun relay owns sender identity and exposes mail submission, with no
+provider domain-verification read capability. Overview describes configured
+Managed mail neutrally instead of warning about an unsupported check. Missing
+configuration and direct-provider check failures retain their warnings. This
+Overview presentation makes no verification or subscriber-delivery claim.
+
+## Settings publish as they change — 22 October 2026 (owner L8/L15)
+
+Settings text saves after a short pause; selections and toggles publish immediately. Writes are serialized and never replace an editable draft with an earlier response. A failed save keeps the entered value and offers a retry. Sender email and allowed widget websites publish only after their inline Confirm. Embed tag choices are retained across reload and portable exports. Add channel, Invite operator, uploads, imports and erasure remain explicit actions.
+
+Leaving Settings or signing out waits for pending edits to save; a refused save keeps the owner on Settings with its reason and Retry. Reloading or closing sends pending edits as the page unloads, past any unanswered write, as keepalive requests within the browser's 64 KiB allowance; ordinary writes and Retry are plain requests. Save status and refusal reasons stay pinned in view while editing.
+
+## Incident page in one screen — owner L12, 22 October 2026
+
+The owner found the incident page one 2,500 px screen asking for everything at once.
+A new incident is now one screen (`/app/incidents/new`, shown in place of an empty
+list): what is happening (title and impact), who is affected (component chips with
+the claimed state, and the audience), the next-update time and Publish, beside the
+renderer's preview with a Page and Email switch. Publish creates the incident with
+that update as its saved draft and publishes it; a refused publication leaves the
+saved draft on the incident page with the reason and with the notification and
+timing choices the operator made (as does Save as private draft). A scheduled update
+opens the incident page as the server holds it, with its time and channels, so moving
+only the time keeps who is notified. Whatever the new screen reports on arrival
+(published, scheduled, refused or saved) shows once: a reload or a return to the page
+does not replay it. Any draft edit clears a stored schedule, and the page then says so instead of
+still claiming the update is scheduled. Everything else is under More
+options (starting status, what still works, details, opening time, channels,
+schedule or backdate, relationships, templates, Save as private draft). An open
+incident keeps the same plate: status choice, the same fields, the preview, the
+timeline, reach only once the provider accepted or delivered a send, the brief closed to one line unless
+alerts brought facts, and notes, review, correction, public impact and deletion under
+Private actions. The design was chosen from four 12ui options by a fresh Opus pass
+(evidence/uip-lamp-l12-incident). UPDATE-001, -004, -005 (autosave of an existing
+incident's draft, an empty draft after publication), -006, -007, -009, NOTIFY-007,
+INCIDENT-001, -009 and DRAFT-004 are unchanged; the preview of an incident not yet
+created uses the same renderer with the next reference.
+
+## Alerts connect one tool at a time — 23 October 2026 (owner L13)
+
+Alerts opens on a "Connect a tool" picker. Choosing a tool opens only its form, which says in one line what the tool does and asks only for what that tool needs; Lamp makes every key it can and shows it once. A connected tool is one row (name, state, Edit and Remove) with its form closed. Its choices save as they change, with Settings' quiet Saved state pinned in view while any row is edited; a pasted secret or a new key takes its own button. Closing the form, opening another, leaving Alerts (a link or Back) and signing out wait for the choices to save through the same leave guard as Settings: a refused save keeps the owner on the open form with the typed value, its reason and Retry brought into view, and leaving it behind afterwards takes one confirm. Reloading or closing the tab with a write pending or refused warns first. A screen keeps showing its data while a new visit reads it again, so a held form is never remounted underneath the owner (U9). On Alerts and Settings alike, a move that stays on the screen (its own link, a Settings tab, Back or Forward between tabs) reads nothing again, and a read for another screen that fails, offline for one, keeps the open page in place of the router's error page, with the typed value, its reason and Retry. Recent alerts appear only once something has arrived. Uptime makes each destination's signing secret itself and offers no key-authenticated read of its monitors, so Lamp pairs it without either: the address Lamp makes carries Lamp's key, Uptime's X-Lamp-Timestamp still bounds replays to five minutes, and the owner picks a component for each monitor by the name Uptime's own events carry. An event from a monitor not yet picked is refused and recorded. Sources saved with Uptime's signing secret keep HMAC verification.
+
+## Subscriber and component delivery archive continuity — 24 October 2026
+
+The unlanded 0056–0058 migrations preserve every table and row represented by
+older technical backups. Chat subscriptions retain the original webhook
+transport row, with an explicit chat kind and subscriber-owned encrypted
+destination; they never claim an operator author. One subscriber-directory
+projection supplies logical channels and channel-specific default preferences.
+Explicit preferences stay authoritative. Owner channels and subscriber channels
+share dispatch queries while retaining their distinct ownership constraints.
+
+Component-only notifications use an additive delivery/attempt partition rather
+than relaxing the incident-or-maintenance invariant on existing deliveries. One
+dispatcher, receipt query and failure policy spans both partitions. Existing
+subscription identifiers, tokens, consent, delivery outcomes, frozen envelopes
+and provider callback mappings retain their original storage. Erasure scrubs
+both delivery partitions. The pinned restore bridge continues to enforce
+archive identity, migration history, schema compatibility and empty-target
+requirements; it needs no new capability for this schema.
+
+## Public footer operator entry — 28 October 2026
+
+The public page keeps its operator sign-in entry usable beside the customer resource links, including when the optional credit is hidden. The entry has a full touch target rather than relying on surrounding whitespace; the public customer journey retains its WCAG 2.2 accessibility check.
+
+## Lamp's sections follow the owner's jobs; configuration under Settings — owner L19
+
+The owner approved L19 option C on 23 October 2026. On the incident page and New incident, a round + ("Update
+options") at the left of the Publish row replaces More options: What still works and Details (and a new incident's
+Opened at) join the fields under "Who's affected?"; Notify, Schedule, Backdate, Relationship and the two template
+entries each open one panel under the Publish row; Mark draft reviewed acts at once and Publish as a correction first
+asks which update. New incident keeps its starting status pills in that menu and adds Save as private draft. Above
+620 px the + opens a menu; at 620 px and under a bottom sheet. Every panel and field stays mounted while closed, so a
+refused publication still keeps every choice, and the hint beside Publish says what the options changed. Under the
+timeline, one list of named rows replaces Private actions and the blocks under the page: Brief, Reach (once something
+was sent), Notes, Impact, the post-incident report once Resolved (with its waiver), the communication owner, the
+incident's subscribers (a row once someone follows it), extension rows, then Delete incident. This replaces where the
+L12 record put these controls; UPDATE-001, -004, -005, -006, -007, -009, NOTIFY-007, INCIDENT-001, -009, DRAFT-001
+and DRAFT-004 are unchanged.
+
+## Google and Okta sign-in are set up in Settings › Sign-in — owner L14, 1 November 2026
+
+The owner asked that provider setup stop being a developer runbook outside the app (stop rer, edit `.dev.vars`,
+paste JSON). The owner sets Google and Okta up in Settings › Team › Sign-in, which extends the L19 design that
+reserved that pane: the client ID and secret go into fields, Lamp stores them, and they work on the next request. A
+Test sign-in runs the provider's real flow and reports a truthful result; Working comes only from Base reporting
+a healthy pin after a verified exchange. Lamp keeps each registration in its own D1 with the client secret sealed
+(AES-GCM from `WEBHOOK_SIGNING_SECRET`, bound to the provider), never shows it again, and writes it as NULL in every
+archive, so a restore asks for it again. It is not deploy-secret authority: the Worker holds none (only the owner's
+`rer deploy --set-secret` and RER's delivery service do), so the app cannot write the deploy file or redeploy, and the
+deploy-file `AUTH_PROVIDERS` path stays and wins per ID. Every change needs the current owner and fresh email proof.
+Okta signs in only the people paired explicitly by Okta user ID, never by a reported email. Microsoft Entra and Run
+Edit Run Auth stay on `/auth/settings/identity`; Managed hosting has no outbound connection, so Save is refused there.
+ACCESS-002 and PORT-001 are unchanged; `tests/auth-adoption/sign-in-providers.test.mjs` exercises them for Google and Okta.
+
+## Move-in history and Sorry parent mapping — 4 November 2026
+
+Settings → Move in lists imports across all providers, including Business
+approvals, so changing the selected provider cannot hide the undo path. Audit
+entries record the native write instant separately from retained source history
+and name the component. Both import doors mirror their retained approval after applying a batch, through
+the existing writer rather than a custody trigger, preserving older backup restores.
+Sorry parents map only to groups; references to a parent resolve to that group's
+descendant components. Sorry's Imported counts describe native records, including
+transformed records; Changed still discloses transformations. Platform source
+record totals include internal metadata and are not Lamp's per-kind inventory.
+
+## The public page is rebuilt when the deployed release changes — 11 November 2026
+
+The stored public page records the running release that built it (`RER_RELEASE_DIGEST`, else the Worker version id). `/health`, once per Worker isolate, rebuilds a page built by another release, by another `PUBLIC_SNAPSHOT_RENDERER_VERSION`, or with work still pending, so a code change shows on a preview that already holds a page without a hand-bumped version. A rebuild that fails never fails `/health`; its work stays pending for the next try. A new generation is always reserved above the bucket pointer's and the retained replica's, so a database that was reset still advances the page. The page content, privacy and Pre-launch behaviour (SUB-024) are unchanged. `tests/e2e/public-contract.test.mjs` exercises it.
+
+## Try subscriber notifications on one computer — 11 November 2026
+
+The local owner can confirm a pending email subscription in Subscribers → Delivery
+log while development mail is suppressed. It uses the ordinary signed confirmation
+and event path and keeps the original three-day expiry. Local public forms and
+subscription/notification records say that no email was sent; local operator
+invitations use the API's suppressed result. The owner action is absent in
+production and demos. Hosted subscriber consent and mail sending remain unchanged.
+
+## Readable Overview dates and precise scheduling guidance — 11 November 2026
+
+Overview shows publication and page/form check times in the configured page zone,
+using the same readable absolute format as other operator records, including the
+initial HTML. Maintenance shows the end-after-start hint only when both times
+can be compared; incomplete inputs and daylight-saving errors keep their own
+validation, and valid windows clear the ordering hint. Subscriber reporting uses
+singular for one current subscriber and plural for every other total. These are
+presentation corrections; existing publication, maintenance and reporting
+requirements remain unchanged.

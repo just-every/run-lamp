@@ -24,13 +24,15 @@ export interface ComponentsService {
   get(componentId: string): Promise<ComponentView | null>;
   create(input: ComponentInput, operatorId: string): Promise<ComponentView>;
   update(componentId: string, input: ComponentUpdateInput): Promise<ComponentView | null>;
-  remove(componentId: string): Promise<boolean>;
+  remove(componentId: string, operatorId: string): Promise<boolean>;
   createGroup(input: ComponentGroupInput): Promise<{ id: string; name: string; displayOrder: number }>;
   updateGroup(groupId: string, input: ComponentGroupUpdateInput): Promise<boolean>;
-  removeGroup(groupId: string): Promise<boolean>;
+  removeGroup(groupId: string, operatorId: string): Promise<boolean>;
   setStandingClaim(componentId: string, state: ComponentState | null, operatorId: string): Promise<ComponentView | null>;
   correctHistory(componentId: string, input: ComponentHistoryCorrectionInput, operatorId: string): Promise<void>;
   canReconstructHistoricalState(componentId: string, instant: string): Promise<boolean>;
+  incidentClaimStateAt(componentId: string, incidentId: string, instant: string): Promise<ComponentState | null>;
+  announceCommittedTransitions(componentIds: string[], incidentId: string, changedAt: string, createdAt: string): Promise<void>;
   prepareHistoricalStateTransitions(input: { componentId: string; cause: StateClaimCause; claimEvent: ComponentClaimEventInput }): Promise<ComponentStateHistoryInput[]>;
   recomputePublicState(componentId: string, cause: StateClaimCause, changedAt?: string): Promise<ComponentState>;
 }
@@ -76,7 +78,20 @@ export function createComponentsService(
       await onPublicDataChanged();
     },
     async list() {
-      return Promise.all((await repository.listComponents()).map((component) => toView(repository, component)));
+      const [components, claims] = await Promise.all([repository.listComponents(), repository.listCurrentClaims()]);
+      const claimsByComponent = new Map<string, ComponentState[]>();
+      const standingClaims = new Map<string, ComponentState>();
+      for (const claim of claims) {
+        const states = claimsByComponent.get(claim.componentId) ?? [];
+        states.push(claim.state);
+        claimsByComponent.set(claim.componentId, states);
+        if (claim.causeType === "standing-claim") standingClaims.set(claim.componentId, claim.state);
+      }
+      return components.map((component) => ({
+        ...component,
+        publicState: mostSevereState(claimsByComponent.get(component.id) ?? []),
+        standingClaimState: standingClaims.get(component.id) ?? null,
+      }));
     },
     async listGroups() {
       return repository.listGroups();
@@ -115,8 +130,8 @@ export function createComponentsService(
       const component = await repository.findComponent(componentId);
       return component ? toView(repository, { ...component, groupName: null }) : null;
     },
-    async remove(componentId) {
-      const removed = await repository.deleteComponent(componentId);
+    async remove(componentId, operatorId) {
+      const removed = await repository.deleteComponent(componentId, operatorId);
       if (removed) await onPublicDataChanged();
       return removed;
     },
@@ -132,8 +147,8 @@ export function createComponentsService(
       if (updated) await onPublicDataChanged();
       return updated;
     },
-    async removeGroup(groupId) {
-      const removed = await repository.deleteGroup(groupId);
+    async removeGroup(groupId, operatorId) {
+      const removed = await repository.deleteGroup(groupId, operatorId);
       if (removed) await onPublicDataChanged();
       return removed;
     },
@@ -197,6 +212,17 @@ export function createComponentsService(
     },
     async canReconstructHistoricalState(componentId, instant) {
       return !(await repository.hasUnprovenClaimHistorySince(componentId, instant));
+    },
+    async incidentClaimStateAt(componentId, incidentId, instant) {
+      return (await repository.listClaimEventsAt(componentId, instant)).find(event => event.causeType === "incident" && event.causeId === incidentId)?.state ?? null;
+    },
+    async announceCommittedTransitions(componentIds, incidentId, changedAt, createdAt) {
+      for (const componentId of componentIds) {
+        const entries = await repository.listHistory(componentId);
+        for (const entry of entries.filter(row => row.causeType === "incident" && row.causeId === incidentId && row.changedAt === changedAt && row.createdAt === createdAt)) {
+          await events.componentStatusChanged({ componentId, previousState: entry.previousState, state: entry.newState, changedAt, cause: "incident" });
+        }
+      }
     },
     async prepareHistoricalStateTransitions({ componentId, cause, claimEvent }) {
       const startsAt = claimEvent.changedAt;

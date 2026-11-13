@@ -1,1174 +1,1139 @@
+import assert from 'node:assert/strict';
+import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
+import { updateReachFlow } from './helpers/update-reach-flow.mjs';
+import { createHmac } from 'node:crypto';
+import { performance as clock } from 'node:perf_hooks';
 import { test } from 'node:test';
-import { requestHeaders } from "../helpers/request-headers.mjs";
-import { withDraftVersion } from "./draft-version-helper.mjs";
-import assert from "node:assert/strict";
-import { createHmac } from "node:crypto";
-import { execFileSync, spawn } from "node:child_process";
-import { rmSync } from "node:fs";
-import { DatabaseSync } from "node:sqlite";
-import { fileURLToPath } from "node:url";
-import { after, before } from "node:test";
-import { createServer as createViteServer } from "vite";
+import { parse, parseFragment } from 'parse5';
+import { maintenanceIdentityFlow, assertSeparateRecords } from './helpers/maintenance-identity-flow.mjs';
+import { chatDeskNativeFlow } from '../chat-desk/flow.mjs';
+import { literalLinkFields } from './helpers/update-link-evidence.mjs';
+import { assertUpdateLinkSurfaces } from './helpers/update-link-surfaces.mjs';
+import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';
+import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
+import { assertHistoryRecord } from './helpers/history-assertions.mjs';
+import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
+import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
+import { recordClosedOutage, rootFigures } from './helpers/uptime-correction-journey.mjs';
 
-import { insertRealOperatorSession } from "./real-session-helper.mjs";
-import { appOrigin, pageOrigin } from "./helpers/hosts.mjs";
-import { reservePort, waitForWorker } from "./worker-startup.mjs";
-import { assertDraftMetadataIsolation } from "./draft-metadata-regression.mjs";
-import { sessionCookieName } from "../helpers/session-cookie.mjs";
-
-let appUrl = "";
-let pageUrl = "";
-let testPort;
-const testStatePath = fileURLToPath(new URL("./.wrangler/publishing-state", import.meta.url));
-process.env.MINIFLARE_CACHE_DIR = `${testStatePath}/miniflare-cache`;
-const testViteCachePath = fileURLToPath(new URL("./.vite/publishing-contract", import.meta.url));
-let server;
-let sessionId;
-let serverOutput = "";
-let degradedHourMinutes;
-let pageTimezone;
-
-async function appFetch(path, init = {}) {
-  init = await withDraftVersion(path, init, appFetch);
-  return fetch(`${appUrl}${path}`, { ...init, headers: requestHeaders({ Connection: "close", Cookie: `${sessionCookieName(appUrl)}=${sessionId}`, "Content-Type": "application/json" }, init.headers) });
+function descendants(node) {
+  return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
+}
+function nodeText(node) {
+  return node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(nodeText).join('');
+}
+function publicUpdate(html, details) {
+  const updates = descendants(parse(html)).filter(node => node.tagName === 'article'
+    && node.attrs.some(attr => attr.name === 'class' && attr.value.split(' ').includes('update'))
+    && nodeText(node).includes(details));
+  assert.equal(updates.length, 1, `one public update contains ${details}`);
+  return updates[0];
+}
+// Brisbane has a fixed ten-hour offset. Compute the expected calendar date
+// independently of Lamp's formatter, including a possible UTC date rollover.
+function brisbaneTime(instant) {
+  const local = new Date(Date.parse(instant) + 10 * 3600_000);
+  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][local.getUTCMonth()];
+  return `${month} ${local.getUTCDate()}, ${local.getUTCFullYear()}, ${local.toISOString().slice(11, 16)} UTC+10:00`;
+}
+function brisbaneMonth(instant) {
+  return new Date(Date.parse(instant) + 10 * 3600_000).toISOString().slice(0, 7);
 }
 
-async function responseBody(response) {
-  const body = await response.text();
-  throw new Error(`${response.status} ${response.statusText}: ${body}`);
-}
-
-async function expectStatus(response, status) {
-  if (response.status !== status) await responseBody(response);
-  return response;
-}
-
-function draftFor(overrides = {}) {
-  return { ...validDraft, nextUpdateAt: new Date(Date.now() + 60 * 60_000).toISOString(), ...overrides };
-}
-
-async function createIncident(title, options = {}) {
-  const response = await appFetch("/api/app/incidents", {
-    method: "POST",
-    body: JSON.stringify({
-      title,
-      components: [{ componentId: "01J00000000000000000000011", state: "Major outage", relationship: "Primary" }],
-      ...options,
-    }),
-  });
-  await expectStatus(response, 201);
-  return (await response.json()).incident;
-}
-
-async function createIsolatedComponent(name) {
-  const response = await appFetch("/api/app/components", {
-    method: "POST",
-    body: JSON.stringify({ groupId: null, name, description: "A component isolated to one contract assertion.", internal: false, displayOrder: 1000, note: "" }),
-  });
-  await expectStatus(response, 201);
-  return (await response.json()).component;
-}
-
-async function saveDraft(incidentId, overrides = {}) {
-  return expectStatus(await appFetch(`/api/app/incidents/${incidentId}/draft`, {
-    method: "PUT",
-    body: JSON.stringify(draftFor(overrides)),
-  }), 200);
-}
-
-async function publish(incidentId, options = {}) {
-  return appFetch(`/api/app/incidents/${incidentId}/publish`, {
-    method: "POST",
-    body: JSON.stringify({ channels: [], ...options }),
-  });
-}
-
-async function incidentView(incidentId) {
-  const response = await expectStatus(await appFetch(`/api/app/incidents/${incidentId}`), 200);
-  return (await response.json()).incident;
-}
-
-async function eventually(read, predicate, description) {
-  for (let attempt = 0; attempt < 80; attempt += 1) {
-    const value = await read();
-    if (predicate(value)) return value;
-    await new Promise((resolve) => setTimeout(resolve, 100));
+function assertPublicationPage(html, publication, expectedFields, surface) {
+  const update = publicUpdate(html, publication.customerImpact);
+  const heading = update.childNodes.find(node => node.tagName === 'div');
+  assert.equal(nodeText(heading.childNodes.find(node => node.tagName === 'strong')), publication.lifecycle, surface);
+  assert.equal(descendants(heading).find(node => node.tagName === 'time').attrs.find(attr => attr.name === 'datetime').value, publication.publishedAt, surface);
+  const fields = descendants(update).filter(node => node.tagName === 'div' && node.childNodes.some(child => child.tagName === 'dt'));
+  assert.deepEqual(fields.map(field => [nodeText(field.childNodes.find(node => node.tagName === 'dt')), nodeText(field.childNodes.find(node => node.tagName === 'dd'))])
+    .filter(([label]) => label !== 'Component state'), expectedFields, `${surface}: the complete wording belongs to this publication`);
+  if (publication.nextUpdateAt) {
+    const commitment = fields.find(field => nodeText(field.childNodes.find(node => node.tagName === 'dt')) === 'Next update by');
+    assert.equal(descendants(commitment).find(node => node.tagName === 'time').attrs.find(attr => attr.name === 'datetime').value, publication.nextUpdateAt, `${surface}: exact commitment instant`);
   }
-  throw new Error(`Timed out waiting for ${description}. Worker output:\n${serverOutput}`);
 }
 
-function localWallClockInstant(daysAgo, hour, minute, timezone, now = Date.now()) {
-  const calendar = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" });
-  const todayParts = calendar.formatToParts(new Date(now));
-  const value = (parts, kind) => Number(parts.find((entry) => entry.type === kind)?.value);
-  const today = new Date(Date.UTC(value(todayParts, "year"), value(todayParts, "month") - 1, value(todayParts, "day") - daysAgo));
-  const wanted = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate(), hour, minute);
-  const wallClock = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" });
-  let candidate = wanted;
-  for (let attempt = 0; attempt < 4; attempt += 1) {
-    const parts = wallClock.formatToParts(new Date(candidate));
-    const represented = Date.UTC(value(parts, "year"), value(parts, "month") - 1, value(parts, "day"), value(parts, "hour"), value(parts, "minute"), value(parts, "second"));
-    const adjusted = candidate + wanted - represented;
-    if (adjusted === candidate) return new Date(candidate).toISOString();
-    candidate = adjusted;
-  }
-  throw new Error(`could not resolve ${timezone} local wall clock time`);
+function atomPublication(xml, publication) {
+  const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map(match => match[1])
+    .filter(entry => entry.includes(`:event:update-${publication.id}</id>`));
+  assert.equal(entries.length, 1, 'one Atom entry has this committed publication identity');
+  assert.equal(entries[0].match(/<updated>([^<]+)<\/updated>/)[1], publication.publishedAt);
+  const encoded = entries[0].match(/<content type="html">([^<]*)<\/content>/)[1];
+  return nodeText(parse(nodeText(parse(encoded))));
 }
 
-function localDateKey(timestamp, timezone) {
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(timestamp));
-  const value = (kind) => parts.find((entry) => entry.type === kind)?.value;
-  return `${value("year")}-${value("month")}-${value("day")}`;
+function assertPublicationText(text, incident, publication, expectedFields, surface) {
+  const paragraphs = text.split('\n\n');
+  assert.ok(paragraphs.includes(`${incident.reference}: ${incident.title}`), `${surface}: incident identity`);
+  assert.ok(paragraphs.includes(`Status: ${publication.lifecycle}`), `${surface}: publication lifecycle`);
+  const labels = ['Who is affected', 'Customer impact', 'What still works', 'Next update by', 'Additional details'];
+  assert.deepEqual(paragraphs.filter(paragraph => labels.some(label => paragraph.startsWith(`${label}:`))),
+    expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
 }
 
-// Anchor at the preceding local half-day so the one/two-hour fixture fits one
-// date while the two-day coverage assertion still covers at least 48 hours.
-function historicalIntervalStart(daysAgo, timezone, now = Date.now()) {
-  const anchor = now - daysAgo * 24 * 60 * 60_000;
-  const hour = Number(new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "2-digit", hourCycle: "h23" }).format(new Date(anchor)));
-  return localWallClockInstant(0, hour < 12 ? 0 : 12, 0, timezone, anchor);
-}
-
-// The retained 1440-minute assertion requires an actual 24-hour calendar day.
-// Search only this small historical fixture window; never change the expectation.
-function fullDayFixture(timezone, now = Date.now()) {
-  for (let daysAgo = 3; daysAgo <= 9; daysAgo += 1) {
-    const start = localWallClockInstant(daysAgo, 0, 0, timezone, now);
-    const end = localWallClockInstant(daysAgo - 1, 0, 0, timezone, now);
-    if (Date.parse(end) - Date.parse(start) === 24 * 60 * 60_000) return { daysAgo, date: localDateKey(start, timezone) };
-  }
-  throw new Error(`No 24-hour day in the ${timezone} fixture window`);
-}
-
-function componentDowntimeMark(name, day, minutes) {
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`<article class="component"><div class="component-name"><h4>${escapedName}</h4>(?:(?!</article>)[\\s\\S])*?aria-label="${day}: ${minutes} weighted downtime minutes"(?:(?!</article>)[\\s\\S])*?</article>`);
-}
-
-async function publicArtifact(path, expected, description) {
-  return eventually(
-    async () => {
-      const response = await fetch(`${pageUrl}${path}`);
-      return { response, text: await response.text() };
-    },
-    ({ response, text }) => response.status === 200 && (expected instanceof RegExp ? expected.test(text) : text.includes(expected)),
-    description,
-  );
-}
-
-async function signedIntake(sourceId, secret, payload) {
-  const body = JSON.stringify(payload);
-  const timestamp = new Date().toISOString();
-  const signature = createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("base64url");
-  return fetch(`${pageUrl}/api/intake/${sourceId}`, { method: "POST", headers: { "Content-Type": "application/json", "x-lamp-timestamp": timestamp, "x-lamp-signature": signature }, body });
-}
-
-async function createIntakeSource(name, overrides = {}) {
-  const response = await appFetch("/api/app/intake/sources", { method: "POST", body: JSON.stringify({ name, credentialKind: "hmac-sha256", signingSecret: "contract-intake-secret", deduplicationPath: "$.alert.id", titlePath: "$.alert.title", statePath: "$.alert.state", recoveredValue: "recovered", ...overrides }) });
-  await expectStatus(response, 201);
-  return (await response.json()).source;
-}
-
-async function loadIncidentsServiceFactory() {
-  const vite = await createIsolatedViteServer();
+test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
+  const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
+  const linkedWording = literalLinkFields(wording);
+  const reviewer = ['synthetic-lamp-reviewer', 'example.test'].join('@');
+  let authorEmail;
+  const owner = () => j.signIn(authorEmail);
+  let creator, publisher;
+  const review = async id => {
+    await j.signIn(reviewer);
+    publisher = (await j.json('/api/app/session')).operator;
+    await j.json(`/api/app/incidents/${id}/draft/review`, 'POST', {});
+  };
+  const saveReviewed = async (id, patch) => { await owner(); await j.save(id, patch); await review(id); };
   try {
-    return (await vite.ssrLoadModule("/src/core/features/incidents/service.ts")).createIncidentsService;
-  } finally {
-    await vite.close();
-  }
-}
+    const admittedAuthor = await admitAttributionOperator(j, 'publication-author');
+    creator = admittedAuthor.actor;
+    authorEmail = admittedAuthor.email;
+    const savedSettings = (await j.json('/api/app/page-settings')).settings;
+    const settings = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'template', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, savedSettings[key]]));
+    await j.json('/api/app/page-settings', 'PUT', { ...settings, timezone: ['Australia', 'Brisbane'].join('/') });
+    assert.equal((await j.raw('/api/app/components')).status, 401);
+    assert.equal((await j.raw(new URL('/api/app/components', j.publicOrigin).href)).status, 404);
+    await j.json('/api/app/operators/invite', 'POST', { email: reviewer, displayName: 'Incident reviewer' }, 202);
+    const component = await j.component('Payments API');
+    const hidden = await j.component('PRIVATE internal queue', { internal: true });
+    const template = (await j.json('/api/app/incident-templates', 'POST', {
+      name: 'Customer API recovery', ...linkedWording, nextUpdateOffsetMinutes: 60,
+      components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }],
+    }, 201)).template;
+    const incident = await j.incident('Payment requests delayed', [component, hidden]);
+    assert.equal(incident.createdByOperatorId, creator.id);
+    const endpoint = `/api/app/incidents/${incident.id}`;
+    const publishedUpdates = async () => (await j.db.prepare('SELECT * FROM incident_updates WHERE incident_id = ? ORDER BY published_at, created_at, id').bind(incident.id).all()).results;
+    assert.equal(incident.lifecycle, 'Investigating');
+    assert.equal((await j.read(incident.id)).lifecycle, 'Investigating');
+    assert.ok(incident.reference);
+    await j.json(`${endpoint}/internal-notes`, 'POST', { body: 'PRIVATE investigation note' }, 201);
+    await j.publish(incident.id, {}, 400);
+    await j.json(`${endpoint}/templates/${template.id}/apply`, 'POST', {});
+    const privateDraft = (await j.read(incident.id)).draft;
+    assert.equal(privateDraft.authorOperatorId, creator.id);
+    assert.equal(privateDraft.customerImpact, linkedWording.customerImpact);
+    for (const path of ['/', '/history', '/feed.atom', '/api/public/status']) {
+      const body = await j.publicText(path);
+      assert.ok(!body.includes(incident.title) && !body.includes('PRIVATE investigation note'));
+    }
+    await j.json(`${endpoint}/draft/review`, 'POST', {}, 409);
+    await j.publish(incident.id, {}, 409);
+    const preview = await j.json(`${endpoint}/draft/preview`, 'POST', { ...linkedWording, nextUpdateAt: privateDraft.nextUpdateAt });
+    assert.ok(JSON.stringify(preview.preview).includes(wording.customerImpact));
+    await review(incident.id);
+    const subscriber = 'reviewed-publication-reader@example.test';
+    const subscription = await j.raw(new URL('/subscribe', j.publicOrigin).href, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: subscriber, componentId: component.id }) });
+    assert.equal(subscription.status, 202);
+    const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber)), Boolean, 'subscriber confirmation mail');
+    assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
+    assert.notEqual(publisher.id, creator.id, 'the reviewer publishes another operator’s draft');
+    const first = (await j.publish(incident.id, { channels: ['email'] })).update;
+    await assertPublicationActor(j, incident.id, first, publisher);
+    assert.equal((await j.read(incident.id)).createdByOperatorId, creator.id, 'publishing preserves the independently admitted creator');
+    await j.tick(Date.now());
+    const reached = await eventually(() => j.json(`${endpoint}/reach?updateId=${first.id}`), body => body.updates[0].channels.some(row => row.channel === 'email' && row.providerAccepted === 1), 'the frozen publication reaches its committed subscriber');
+    assert.equal(reached.updates[0].channels.find(row => row.channel === 'email').committed, 1);
+    const customerMail = j.messages.find(mail => mail.to.includes(subscriber) && !mail.text.includes('/confirm-subscription/'));
+    for (const value of Object.values(linkedWording).filter(value => value !== 'Identified')) assert.ok(customerMail.text.includes(value));
+    assert.equal(customerMail.subject, preview.preview.email.subject, 'notification subject matches the preview');
+    assert.equal(customerMail.text.split('\n\nManage this subscription:')[0], preview.preview.email.plainText, 'the complete customer message matches the preview before personal subscription links');
+    await j.visible(`/incidents/${incident.reference}`, wording.customerImpact);
+    for (const path of ['/', `/incidents/${incident.reference}`, '/feed.atom', '/widget.js']) {
+      const body = await j.publicText(path);
+      assert.ok(body.includes(incident.title), path);
+      if (path !== '/feed.atom') assert.ok(visibleText(body).includes(wording.customerImpact), path);
+      assert.ok(!body.includes('PRIVATE investigation note') && !body.includes(hidden.name), path);
+    }
+    await assertUpdateLinkSurfaces(j, incident, component, first);
+    const populatedFields = [
+      ['Who is affected', linkedWording.affectedAudience], ['Customer impact', linkedWording.customerImpact],
+      ['What still works', linkedWording.whatStillWorks], ['Next update by', brisbaneTime(privateDraft.nextUpdateAt)],
+      ['Additional details', linkedWording.details],
+    ];
+    assert.equal(first.nextUpdateAt, privateDraft.nextUpdateAt);
+    assert.deepEqual((await j.read(incident.id)).updates.find(update => update.id === first.id), first);
+    for (const path of ['/', `/incidents/${incident.reference}`]) {
+      assertPublicationPage(await j.publicText(path), first, populatedFields, path);
+    }
+    assertPublicationText(atomPublication(await j.publicText('/feed.atom'), first), incident, first, populatedFields, 'populated Atom');
+    assertPublicationText(customerMail.text, incident, first, populatedFields, 'actual populated email');
+    for (const value of Object.values(linkedWording).filter(value => value !== 'Identified')) {
+      assert.ok(preview.preview.public.fields.some(field => field.value === value));
+      assert.ok(preview.preview.email.plainText.includes(value));
+    }
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Major outage');
 
-async function loadMaintenanceRepositoryFactory() {
-  const vite = await createIsolatedViteServer();
-  try {
-    return (await vite.ssrLoadModule("/src/core/features/maintenance/repository.ts")).createMaintenanceRepository;
-  } finally {
-    await vite.close();
-  }
-}
+    const identified = await j.read(incident.id);
+    assert.equal(first.lifecycle, 'Identified');
+    assert.equal(identified.lifecycle, 'Identified');
+    assert.deepEqual(identified.updates, [first]);
+    const identifiedUpdates = await publishedUpdates();
+    assert.equal(identifiedUpdates.length, 1);
 
-function createTransactionalD1Fixture(database) {
-  const statement = (sql, values = []) => ({
-    bind: (...nextValues) => statement(sql, nextValues),
-    run: async () => {
-      const result = database.prepare(sql).run(...values);
-      return { meta: { changes: Number(result.changes) } };
-    },
-  });
-  return {
-    prepare: (sql) => statement(sql),
-    batch: async (statements) => {
-      database.exec("BEGIN");
-      try {
-        const results = [];
-        for (const item of statements) results.push(await item.run());
-        database.exec("COMMIT");
-        return results;
-      } catch (cause) {
-        database.exec("ROLLBACK");
-        throw cause;
+    await owner();
+    const originalRecovery = { lifecycle: 'Monitoring', customerImpact: 'Payments are recovering.', details: 'The original recovery estimate is based on the first restored payment queue.' };
+    await j.save(incident.id, { ...originalRecovery, componentChanges: [
+      { componentId: component.id, state: 'Degraded performance' },
+      { componentId: hidden.id, state: 'Degraded performance' },
+    ] });
+    const savedMonitoring = await j.read(incident.id);
+    assert.equal(savedMonitoring.draft.lifecycle, 'Monitoring');
+    assert.equal(savedMonitoring.lifecycle, 'Identified');
+    assert.deepEqual(savedMonitoring.updates, identified.updates);
+    assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+
+    for (const lifecycle of [['Identified', 'Monitoring'], 'Identified, Monitoring']) {
+      const refused = await j.json(`${endpoint}/draft`, 'PUT', { ...wording, lifecycle }, 400);
+      assert.equal(refused.error, 'Invalid incident draft.');
+      assert.deepEqual(await j.read(incident.id), savedMonitoring, 'multiple lifecycle choices leave the incident and saved draft unchanged');
+      assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+    }
+
+    await review(incident.id);
+    const reviewedMonitoring = await j.read(incident.id);
+    assert.equal(reviewedMonitoring.draft.lifecycle, 'Monitoring');
+    assert.ok(reviewedMonitoring.draft.reviewedAt);
+    assert.equal(reviewedMonitoring.lifecycle, 'Identified');
+    assert.deepEqual(reviewedMonitoring.updates, identified.updates);
+    assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+    const monitoring = (await j.publish(incident.id)).update;
+    assert.equal(monitoring.lifecycle, 'Monitoring');
+    const publishedMonitoring = await j.read(incident.id);
+    assert.equal(publishedMonitoring.lifecycle, 'Monitoring');
+    assert.equal(publishedMonitoring.draft, null);
+    assert.deepEqual(publishedMonitoring.updates.find(row => row.id === monitoring.id), monitoring);
+    assert.deepEqual(publishedMonitoring.updates.find(row => row.id === first.id), first);
+    const monitoringUpdates = await publishedUpdates();
+    assert.equal(monitoringUpdates.length, identifiedUpdates.length + 1);
+    assert.deepEqual(monitoringUpdates.filter(row => row.id !== monitoring.id), identifiedUpdates);
+    assert.equal(monitoringUpdates.find(row => row.id === monitoring.id).lifecycle, 'Monitoring');
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Degraded performance');
+    assert.equal((await j.read(incident.id)).impact, 'Major outage');
+    const impact = (await j.json(`${endpoint}/impact`, 'PUT', { impactOverride: 'minor' })).impact;
+    assert.equal(impact.effectiveImpact, 'minor');
+    const publicIncident = (await (await j.publicResponse('/api/v2/incidents.json')).json()).incidents.find(row => row.shortlink.endsWith(incident.reference));
+    assert.equal(publicIncident.impact, 'minor');
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Degraded performance');
+    await j.json(`${endpoint}/impact`, 'PUT', { impactOverride: null });
+    const oldVersion = `${privateDraft.id}:0`;
+    const stale = await j.api(`${endpoint}/publish`, { method: 'POST', headers: { 'If-Match': oldVersion }, body: JSON.stringify({ channels: [] }) });
+    assert.equal(stale.status, 409);
+
+    await owner();
+    const originalUpdates = (await j.read(incident.id)).updates;
+    const storedUpdates = async () => (await j.db.prepare('SELECT * FROM incident_updates WHERE incident_id = ? ORDER BY id').bind(incident.id).all()).results;
+    const originalRows = await storedUpdates();
+    assert.deepEqual(originalUpdates.map(update => update.id), [monitoring.id, first.id]);
+    assert.deepEqual(originalRows.map(row => row.id).sort(), [first.id, monitoring.id].sort());
+    for (const method of ['PUT', 'DELETE']) {
+      const refused = await j.request(`${endpoint}/updates/${monitoring.id}`, {
+        method, body: JSON.stringify({ ...wording, customerImpact: 'An unsafe rewrite must never replace the published recovery update.', nextUpdateAt: monitoring.nextUpdateAt }),
+      });
+      assert.equal(refused.status, 404, `${method} cannot mutate a published update`);
+      assert.deepEqual((await j.read(incident.id)).updates, originalUpdates, `${method} preserves every complete original update`);
+      assert.deepEqual(await storedUpdates(), originalRows, `${method} leaves all persisted publication fields unchanged`);
+    }
+    const correctedRecovery = { lifecycle: 'Monitoring', customerImpact: 'Payment retries are recovering more slowly than the first estimate.', details: 'Corrected recovery wording: the remaining payment queue is still draining.' };
+    await j.save(incident.id, { ...correctedRecovery, nextUpdateAt: new Date(Date.now() - 60000).toISOString() });
+    const committedTime = (await j.read(incident.id)).draft.nextUpdateAt;
+    assert.ok(committedTime, 'the saved draft has a next-update commitment');
+    await j.json(`${endpoint}/draft/correction`, 'POST', { updateId: monitoring.id });
+    assert.equal((await j.read(incident.id)).draft.authorOperatorId, creator.id);
+    await review(incident.id);
+    assert.notEqual(publisher.id, creator.id, 'the correction publisher differs from its draft author');
+    const corrected = (await j.publish(incident.id)).update;
+    await assertPublicationActor(j, incident.id, corrected, publisher);
+    assert.equal((await j.read(incident.id)).createdByOperatorId, creator.id, 'a correction preserves the independently admitted creator');
+    assert.equal(corrected.nextUpdateAt, committedTime, 'publication keeps the saved commitment');
+    assert.equal(corrected.correctsUpdateId, monitoring.id);
+    const correctedView = await j.read(incident.id);
+    const savedCorrection = correctedView.updates.find(row => row.id === corrected.id);
+    assert.equal(savedCorrection.correctsUpdateId, monitoring.id, 'the independently read publication identifies the original update');
+    assert.equal(savedCorrection.customerImpact, correctedRecovery.customerImpact);
+    assert.equal(savedCorrection.details, correctedRecovery.details);
+    assert.deepEqual(correctedView.updates.find(row => row.id === first.id), first);
+    assert.deepEqual(correctedView.updates.find(row => row.id === monitoring.id), monitoring);
+    assert.deepEqual((await storedUpdates()).filter(row => row.id !== corrected.id), originalRows, 'a correction adds a publication without rewriting any original field');
+    assert.notEqual(corrected.id, monitoring.id);
+    assert.ok(Date.parse(corrected.publishedAt) > Date.parse(monitoring.publishedAt));
+    assert.ok(Date.parse(monitoring.publishedAt) > Date.parse(first.publishedAt));
+    const timeline = await j.visible(`/incidents/${incident.reference}`, correctedRecovery.details);
+    const matchingDescendants = (node, predicate) => (node.childNodes ?? []).flatMap(child => [...(predicate(child) ? [child] : []), ...matchingDescendants(child, predicate)]);
+    const publishedAttribute = (node, name) => node.attrs?.find(attr => attr.name === name)?.value;
+    const publishedText = node => node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(publishedText).join('');
+    const publishedArticles = matchingDescendants(parseFragment(timeline), node => node.tagName === 'article' && publishedAttribute(node, 'class') === 'update');
+    const publicUpdates = publishedArticles.map(article => {
+      const head = matchingDescendants(article, node => publishedAttribute(node, 'class') === 'update-head')[0];
+      const fields = Object.fromEntries(matchingDescendants(article, node => node.tagName === 'div').filter(node => node.childNodes?.some(child => child.tagName === 'dt')).map(node => [publishedText(node.childNodes.find(child => child.tagName === 'dt')), publishedText(node.childNodes.find(child => child.tagName === 'dd'))]));
+      return { lifecycle: publishedText(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: publishedAttribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Customer impact'], details: fields['Additional details'] };
+    });
+    assert.deepEqual(publicUpdates, [
+      { ...correctedRecovery, publishedAt: corrected.publishedAt },
+      { ...originalRecovery, publishedAt: monitoring.publishedAt },
+      { lifecycle: linkedWording.lifecycle, customerImpact: linkedWording.customerImpact, details: linkedWording.details, publishedAt: first.publishedAt },
+    ], 'the public timeline associates each complete original and correction with its exact publication instant, newest first');
+    assert.equal(correctedView.overdue, true);
+    assert.ok(!(await j.publicText(`/incidents/${incident.reference}`)).includes('overdue'));
+    for (const path of ['/', `/incidents/${incident.reference}`]) {
+      const html = await j.visible(path, corrected.details);
+      const update = publicUpdate(html, corrected.details);
+      const fields = descendants(update).filter(node => node.tagName === 'div'
+        && node.childNodes.some(child => child.tagName === 'dt' && nodeText(child) === 'Next update by'));
+      assert.equal(fields.length, 1, `${path}: the overdue update retains its labeled commitment`);
+      const value = fields[0].childNodes.find(node => node.tagName === 'dd');
+      const times = descendants(value).filter(node => node.tagName === 'time');
+      assert.equal(times.length, 1, `${path}: the commitment has one semantic timestamp`);
+      assert.equal(times[0].attrs.find(attr => attr.name === 'datetime')?.value, committedTime, `${path}: the committed instant is unchanged`);
+      assert.equal(nodeText(value), brisbaneTime(committedTime), `${path}: the commitment stays in the configured zone`);
+      assert.doesNotMatch(nodeText(parse(html)), /overdue/i, `${path}: no public overdue label`);
+    }
+
+    const blankWording = {
+      affectedAudience: 'Customers waiting for a second payment attempt.',
+      customerImpact: 'Second payment attempts remain queued for review.',
+      lifecycle: 'Monitoring', whatStillWorks: '', details: '', nextUpdateAt: new Date(Date.now() + 7200_000).toISOString(),
+    };
+    await saveReviewed(incident.id, blankWording);
+    const blank = (await j.publish(incident.id, { channels: ['email'] })).update;
+    const blankFields = [
+      ['Who is affected', blankWording.affectedAudience], ['Customer impact', blankWording.customerImpact],
+      ['Next update by', brisbaneTime(blankWording.nextUpdateAt)],
+    ];
+    assert.equal(blank.whatStillWorks, ''); assert.equal(blank.details, '');
+    assert.equal(blank.nextUpdateAt, blankWording.nextUpdateAt);
+    for (const path of ['/', `/incidents/${incident.reference}`]) {
+      assertPublicationPage(await j.visible(path, blankWording.customerImpact), blank, blankFields, path);
+    }
+    assertPublicationText(atomPublication(await j.publicText('/feed.atom'), blank), incident, blank, blankFields, 'blank-optional Atom');
+    await j.tick(Date.now());
+    const blankMail = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber) && mail.text.includes(blankWording.customerImpact)), Boolean, 'blank-optional publication reaches the subscriber');
+    assertPublicationText(blankMail.text, incident, blank, blankFields, 'actual blank-optional email');
+
+    await saveReviewed(incident.id, { lifecycle: 'Resolved', customerImpact: 'Payment processing has recovered.', whatStillWorks: '', details: '', nextUpdateAt: null });
+    const resolution = (await j.publish(incident.id, { channels: ['email'] })).update;
+    assert.equal(resolution.lifecycle, 'Resolved');
+    const resolvedFields = [['Who is affected', wording.affectedAudience], ['Customer impact', 'Payment processing has recovered.']];
+    assert.equal(resolution.nextUpdateAt, null);
+    assertPublicationPage(await j.visible(`/incidents/${incident.reference}`, resolution.customerImpact), resolution, resolvedFields, 'resolved permalink');
+    const resolvedRoot = descendants(parse(await j.visible('/', resolution.customerImpact))).filter(node => node.tagName === 'article'
+      && node.attrs.some(attr => attr.name === 'class' && attr.value.split(' ').includes('resolved-incident'))
+      && nodeText(node).includes(incident.title));
+    assert.equal(resolvedRoot.length, 1, 'the root shows this resolved incident');
+    assert.ok(nodeText(resolvedRoot[0]).includes('Payment processing has recovered.'));
+    for (const label of ['What still works', 'Additional details', 'Next update by']) {
+      assert.ok(!nodeText(resolvedRoot[0]).includes(label), `resolved root omits ${label}`);
+    }
+    assertPublicationText(atomPublication(await j.publicText('/feed.atom'), resolution), incident, resolution, resolvedFields, 'resolved Atom');
+    await j.tick(Date.now());
+    const resolvedMail = await eventually(() => j.messages.find(mail => mail.to.includes(subscriber) && mail.text.includes('Payment processing has recovered.')), Boolean, 'resolved publication reaches the subscriber');
+    assertPublicationText(resolvedMail.text, incident, resolution, resolvedFields, 'actual resolved email');
+    const resolved = await j.read(incident.id);
+    assert.equal(resolved.lifecycle, 'Resolved');
+    assert.deepEqual(resolved.updates.find(row => row.id === resolution.id), resolution);
+    assert.equal(resolved.impact, 'Major outage', 'resolution retains the greatest published component impact');
+    assert.equal(resolved.effectiveImpact, 'critical');
+    assert.equal(typeof resolved.resolvedAt, 'string');
+    assert.equal((await j.read(incident.id)).draft, null);
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Operational');
+    await j.visible('/history', incident.title);
+    await assertUpdateLinkSurfaces(j, incident, component, first, { history: true });
+    const reportPath = `${endpoint}/report`;
+    const generated = (await j.json(`${reportPath}/draft`, 'POST', {})).report;
+    assert.equal(generated.publishedAt, null);
+    assert.ok(!JSON.stringify(generated).includes('PRIVATE investigation note'));
+    await j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 400);
+    const report = { summary: 'Payment incident reviewed', timeline: generated.timeline, cause: 'A connection pool was exhausted.', remediation: 'We increased capacity and added alerting.' };
+    await j.json(reportPath, 'PUT', report);
+    await j.json(`${reportPath}/publish`, 'POST', { channels: [] });
+    await j.visible(`/incidents/${incident.reference}`, report.cause);
+    await j.json(reportPath, 'PUT', { ...report, cause: 'Changed later' }, 409);
+    await j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 409);
+    assert.ok(!(await j.json('/api/app/reports/owing')).incidentIds.includes(incident.id));
+
+    await saveReviewed(incident.id, { lifecycle: 'Investigating', customerImpact: 'Payments need another investigation.' });
+    const reopening = (await j.publish(incident.id)).update;
+    const reopened = await j.read(incident.id);
+    assert.equal(reopened.lifecycle, 'Investigating');
+    assert.deepEqual(reopened.updates.find(row => row.id === resolution.id), resolution);
+    assert.deepEqual(reopened.updates.find(row => row.id === reopening.id), reopening);
+    assert.notEqual(reopening.id, resolution.id);
+    assert.notEqual(reopening.publishedAt, resolution.publishedAt);
+    const reopenedTimeline = await j.visible(`/incidents/${incident.reference}`, 'Payments need another investigation.');
+    const timelineDescendants = node => [node, ...(node.childNodes ?? []).flatMap(timelineDescendants)];
+    const text = node => timelineDescendants(node).filter(child => child.nodeName === '#text').map(child => child.value).join('');
+    const attribute = (node, name) => node.attrs?.find(attr => attr.name === name)?.value;
+    const articles = timelineDescendants(parse(reopenedTimeline)).filter(node => node.tagName === 'article' && attribute(node, 'class')?.split(' ').includes('update'));
+    for (const [update, lifecycle, customerImpact] of [
+      [resolution, 'Resolved', 'Payment processing has recovered.'],
+      [reopening, 'Investigating', 'Payments need another investigation.'],
+    ]) {
+      const matching = articles.filter(article => timelineDescendants(article).some(node => node.tagName === 'dd' && text(node) === customerImpact));
+      assert.equal(matching.length, 1, `${lifecycle} wording remains in its own public update article after reopening`);
+      const header = timelineDescendants(matching[0]).find(node => attribute(node, 'class') === 'update-head');
+      assert.ok(header, `${lifecycle} has its public publication header`);
+      assert.equal(text(header.childNodes.find(node => node.tagName === 'strong')), lifecycle);
+      const published = timelineDescendants(header).filter(node => node.tagName === 'time');
+      assert.equal(published.length, 1, `${lifecycle} has one associated publication time`);
+      assert.equal(attribute(published[0], 'datetime'), update.publishedAt, `${lifecycle} retains its exact publication instant`);
+    }
+    await saveReviewed(incident.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await owner();
+    const scheduleAt = Date.now() + 10000;
+    await j.json(`${endpoint}/draft/schedule`, 'POST', { publishAt: new Date(scheduleAt).toISOString(), channels: [] }, 202);
+    await j.tick(scheduleAt - 1000);
+    assert.equal((await j.read(incident.id)).lifecycle, 'Investigating');
+    await new Promise(resolve => setTimeout(resolve, Math.max(0, scheduleAt - Date.now()) + 100));
+    await j.tick(scheduleAt + 1000);
+    await eventually(() => j.read(incident.id), row => row.lifecycle === 'Resolved', 'scheduled reviewed publication');
+    assert.equal((await j.read(incident.id)).updates.filter(row => row.lifecycle === 'Resolved').length, 2);
+    await j.tick(scheduleAt + 2000);
+    assert.equal((await j.read(incident.id)).updates.filter(row => row.lifecycle === 'Resolved').length, 2);
+
+    // Backdate a complete incident through the same HTTP door, with an active
+    // incident on the component: replay must preserve the current claim.
+    const live = await j.incident('Current payment investigation', [component]);
+    await saveReviewed(live.id, {}); await j.publish(live.id);
+    const start = '2024-06-15T13:04:05.000Z';
+    const end = new Date(Date.parse(start) + 3600000).toISOString();
+    const historical = await j.incident('Historical payment degradation', [component], { openedAt: start });
+    const originalDetails = 'Historical investigation from the original service log.';
+    const resolutionDetails = 'Historical recovery from the original service log.';
+    await saveReviewed(historical.id, { lifecycle: 'Investigating', details: originalDetails });
+    const original = (await j.publish(historical.id, { publishedAt: start, channels: ['email'] })).update;
+    await saveReviewed(historical.id, { lifecycle: 'Resolved', details: resolutionDetails, nextUpdateAt: null });
+    const historicalResolution = (await j.publish(historical.id, { publishedAt: end, channels: ['email'] })).update;
+    assert.equal(original.publishedAt, start);
+    assert.equal(historicalResolution.publishedAt, end);
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Major outage');
+    const month = start.slice(0, 7);
+    const availability = await j.json(`/api/app/availability-report?component=${component.id}&month=${month}&format=json`);
+    assert.ok(availability.incidents.some(row => row.id === historical.id));
+    assert.ok(Number(availability.downtimeMinutes) > 0);
+    await j.visible(`/history/${start.slice(0, 7)}`, historical.title);
+    const retainedHistorical = await j.read(historical.id);
+    assert.deepEqual(retainedHistorical.updates.map(update => update.id).sort(), [original.id, historicalResolution.id].sort());
+    assertHistoryRecord(await j.publicText(`/history/${start.slice(0, 7)}`), {
+      href: `/incidents/${historical.reference}`, title: historical.title, state: 'Resolved', startsAt: start, endsAt: end,
+      duration: '1h 0m', components: [component.name], updates: [original, historicalResolution],
+    });
+    for (const path of [`/incidents/${historical.reference}`, `/history/${start.slice(0, 7)}`]) {
+      const html = await j.visible(path, resolutionDetails);
+      for (const [details, lifecycle, instant, display] of [
+        [originalDetails, 'Investigating', start, 'Jun 15, 2024, 23:04 UTC+10:00'],
+        [resolutionDetails, 'Resolved', end, 'Jun 16, 2024, 00:04 UTC+10:00'],
+      ]) {
+        const update = publicUpdate(html, details);
+        const heading = update.childNodes.find(node => node.tagName === 'div' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'update-head'));
+        assert.equal(nodeText(heading.childNodes.find(node => node.tagName === 'strong')), lifecycle, `${path}: the original publication belongs to its lifecycle`);
+        const times = descendants(heading).filter(node => node.tagName === 'time');
+        assert.equal(times.length, 1, `${path}: one publication time belongs to this update`);
+        assert.equal(times[0].attrs.find(attr => attr.name === 'datetime')?.value, instant, `${path}: the original publication instant`);
+        assert.equal(nodeText(times[0]), display, `${path}: the original time in the configured zone`);
       }
-    },
-  };
-}
-
-async function loadPublicSnapshotServiceFactory() {
-  const vite = await createIsolatedViteServer();
-  try {
-    return (await vite.ssrLoadModule("/src/core/features/public-snapshot/service.ts")).createPublicSnapshotService;
-  } finally {
-    await vite.close();
-  }
-}
-
-async function reserveViteHmrPort() {
-  return reservePort({ label: "Vite HMR" });
-}
-
-async function reserveTestPort() {
-  return reserveViteHmrPort();
-}
-
-async function createIsolatedViteServer() {
-  const hmrPort = await reserveViteHmrPort();
-  return createViteServer({ configFile: false, cacheDir: `${testViteCachePath}/isolated-loader`, appType: "custom", server: { middlewareMode: true, hmr: { port: hmrPort } } });
-}
-
-function executeFixtureSql(statement) {
-  execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", "wrangler.jsonc", "--persist-to", testStatePath, "--command", statement], { cwd: process.cwd(), stdio: "pipe" });
-}
-
-function queryD1Sql(persistTo, statement) {
-  const output = execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", "wrangler.jsonc", "--persist-to", persistTo, "--command", statement, "--json"], { cwd: process.cwd(), encoding: "utf8" });
-  const [result] = JSON.parse(output);
-  if (!result?.success) throw new Error(`Local D1 query failed: ${statement}`);
-  return result.results;
-}
-
-function r2Object(key, input) {
-  const action = input === undefined ? "get" : "put";
-  return execFileSync("pnpm", ["exec", "wrangler", "r2", "object", action, `lamp-local-snapshots/${key}`, "--local", "--persist-to", testStatePath, "--pipe"], { cwd: process.cwd(), encoding: "utf8", input });
-}
-
-before(async () => {
-  testPort = await reserveTestPort();
-  appUrl = appOrigin(testPort);
-  pageUrl = pageOrigin(testPort);
-  rmSync(testStatePath, { recursive: true, force: true });
-  rmSync(testViteCachePath, { recursive: true, force: true });
-  execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", "wrangler.jsonc", "--persist-to", testStatePath], { cwd: process.cwd(), stdio: "pipe" });
-  // Configure this fixture before the Worker builds its initial public snapshot.
-  sessionId = await insertRealOperatorSession({ persistTo: testStatePath });
-  server = spawn("pnpm", ["exec", "vite", "--configLoader", "native", "--host", "0.0.0.0", "--port", String(testPort), "--strictPort"], { cwd: process.cwd(), stdio: "pipe", detached: true, env: { ...process.env, LAMP_WORKERS_STATE_PATH: testStatePath, LAMP_VITE_CACHE_DIR: testViteCachePath, LAMP_DISABLE_INSPECTOR: "true" } });
-  server.stdout.on("data", (chunk) => { serverOutput += chunk; });
-  server.stderr.on("data", (chunk) => { serverOutput += chunk; });
-  await waitForWorker({ origin: appUrl, child: server, output: () => `${serverOutput}\nState: ${testStatePath}`, label: "Publishing-contract Worker" });
-  const policyLoader = await createIsolatedViteServer();
-  try {
-    const { createServerExtensionMount } = await policyLoader.ssrLoadModule("/src/core/app/extensions/server.ts");
-    degradedHourMinutes = 60 * createServerExtensionMount().publicSnapshotPolicies.uptimeDowntimeWeight("Degraded performance");
-  } finally { await policyLoader.close(); }
-  const identity = await (await fetch(`${pageUrl}/`)).text();
-  assert.match(identity, /id="overall-status" data-overall/, "test listener did not serve Lamp's public snapshot");
-  assert.match(identity, /data-generated-at/, "public snapshot must expose its generation time independently of owner branding");
-  pageTimezone = (await (await appFetch("/api/app/page-settings")).json()).settings.timezone;
-  executeFixtureSql(`INSERT INTO components (id,group_id,name,description,internal,display_order,note,created_at,updated_at) VALUES ('01J00000000000000000000011',NULL,'Contract API','A test-owned public component.',0,1,'','2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z'); INSERT INTO subscribers (id,channel,destination,contact_email,state,selection_mode,token_hash,deactivation_reason,deactivated_at,created_at,updated_at) VALUES ('01J00000000000000000000070','email','contract-subscriber@example.test',NULL,'active','all','contract-token-hash',NULL,NULL,'2026-09-08T00:00:00.000Z','2026-09-08T00:00:00.000Z')`);
-});
-after(async () => {
-  if (server && !server.killed) {
-    const stopped = new Promise((resolve) => server.once("exit", resolve));
-    try {
-      process.kill(-server.pid, "SIGTERM");
-      await stopped;
-    } catch (cause) {
-      if (cause?.code !== "ESRCH") throw cause;
     }
-  }
-  rmSync(testStatePath, { recursive: true, force: true });
-  rmSync(testViteCachePath, { recursive: true, force: true });
-});
-
-const validDraft = {
-  lifecycle: "Identified", affectedAudience: "API customers.", customerImpact: "Some requests can fail.", whatStillWorks: "The dashboard remains available.", details: "Engineers are mitigating the condition.", nextUpdateAt: "2026-09-08T04:00:00.000Z",
-};
-
-test("UPDATE-001 UPDATE-008 UPDATE-002 UPDATE-003 — Validated publication, shared rendering and resolution", async t => {
-  t.diagnostic("UPDATE-001 — invalid required publication fields return 400 and leave the draft unpublished");
-  await (async () => {
-  const created = await appFetch("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: "Publication transaction test", components: [{ componentId: "01J00000000000000000000011", state: "Major outage", relationship: "Primary" }] }) });
-  assert.equal(created.status, 201);
-  const incident = (await created.json()).incident;
-  const rejected = await appFetch(`/api/app/incidents/${incident.id}/publish`, { method: "POST", body: JSON.stringify({ channels: ["email"] }) });
-  assert.equal(rejected.status, 400);
-  const before = (await (await appFetch(`/api/app/incidents/${incident.id}`)).json()).incident;
-  assert.equal(before.updates.length, 0);
-  assert.equal((await (await appFetch(`/api/app/deliveries?incidentUpdateId=${before.draft.id}`)).json()).deliveries.length, 0);
-
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}/draft`, { method: "PUT", body: JSON.stringify(draftFor()) })).status, 200);
-  const published = await appFetch(`/api/app/incidents/${incident.id}/publish`, { method: "POST", body: JSON.stringify({ channels: ["email"] }) });
-  if (published.status !== 200) throw new Error(await published.text());
-  const update = (await published.json()).update;
-  const deliveries = (await (await appFetch(`/api/app/deliveries?incidentUpdateId=${update.id}`)).json()).deliveries;
-  assert.equal(deliveries.length, 1);
-  assert.equal(deliveries[0].channel, "email");
-  const replay = await appFetch(`/api/app/incidents/${incident.id}/publish`, { method: "POST", body: JSON.stringify({ channels: ["email"] }) });
-  assert.equal(replay.status, 409);
-  assert.equal((await (await appFetch(`/api/app/incidents/${incident.id}`)).json()).incident.updates.length, 1);
-})(t);
-  t.diagnostic("UPDATE-008 — a repeated publish cannot create a second immutable update or recipient record");
-  await (async () => {
-  const incident = await createIncident("Recipient snapshot retry");
-  await saveDraft(incident.id);
-  const first = await publish(incident.id, { channels: ["email"] });
-  await expectStatus(first, 200);
-  const update = (await first.json()).update;
-  const replay = await publish(incident.id, { channels: ["email"] });
-  assert.equal(replay.status, 409);
-  const deliveries = (await (await appFetch(`/api/app/deliveries?incidentUpdateId=${update.id}`)).json()).deliveries;
-  assert.equal(deliveries.length, 1);
-  assert.equal((await incidentView(incident.id)).updates.length, 1);
-})(t);
-  t.diagnostic("UPDATE-002 — preview, public page, Atom feed, and widget retain every populated update field");
-  await (async () => {
-  const incident = await createIncident("Shared update renderer");
-  const draft = draftFor({ affectedAudience: "Regional API customers.", customerImpact: "Regional writes can be delayed.", whatStillWorks: "Reads remain available.", details: "A connection limit is being raised." });
-  const preview = await appFetch(`/api/app/incidents/${incident.id}/draft/preview`, { method: "POST", body: JSON.stringify(draft) });
-  await expectStatus(preview, 200);
-  const rendered = (await preview.json()).preview;
-  assert.equal(rendered.public.fields.some((field) => field.label === "Who is affected" && field.value === "Regional API customers."), true);
-  const nextUpdate = rendered.public.fields.find((field) => field.label === "Next update by");
-  assert.match(nextUpdate?.value ?? "", /UTC[+-]\d{2}:\d{2}/, "preview uses the same configured timezone and offset as the shared public/email renderer");
-  assert.notEqual(nextUpdate?.value, draft.nextUpdateAt, "preview must not expose the raw ISO instant shown only in storage");
-  assert.match(rendered.email.plainText, /A connection limit is being raised/);
-  await saveDraft(incident.id, draft);
-  await expectStatus(await publish(incident.id), 200);
-  const publicationStarted = performance.now();
-  for (const path of [`/incidents/${incident.reference}`, "/feed.atom", "/widget.js"]) {
-    const { text: body } = await publicArtifact(path, /Regional API customers/, `published update fields on ${path}`);
-    assert.ok(body.includes(incident.reference), "public fields must belong to the just-published incident");
-    assert.match(body, /Regional API customers/);
-    assert.match(body, /Regional writes can be delayed/);
-    assert.match(body, /Reads remain available/);
-    assert.match(body, /connection limit is being raised/i);
-  }
-  assert.ok(performance.now() - publicationStarted < 10_000, "all public surfaces must reflect publication within PAGE-007's ten-second window");
-})(t);
-  t.diagnostic("UPDATE-003 — a resolved publication records the end time and returns the component to its derived public state");
-  await (async () => {
-  const component = await createIsolatedComponent("Resolution component rollup");
-  const incident = await createIncident("Resolution component rollup", { components: [{ componentId: component.id, state: "Major outage", relationship: "Primary" }] });
-  await saveDraft(incident.id, { lifecycle: "Resolved" });
-  await expectStatus(await publish(incident.id), 200);
-  const resolved = await incidentView(incident.id);
-  assert.equal(resolved.lifecycle, "Resolved");
-  assert.equal(typeof resolved.resolvedAt, "string");
-  const components = (await (await appFetch("/api/app/components")).json()).components;
-  assert.equal(components.find((item) => item.id === component.id).publicState, "Operational");
-})(t);
-});
-
-
-
-
-
-
-
-test("UPDATE-005 UPDATE-006 UPDATE-007 — Private drafts, scheduled publication and independent review", async t => {
-  t.diagnostic("UPDATE-005 — a private saved draft survives an operator reload without appearing in the public snapshot");
-  await (async () => {
-  const incident = await createIncident("Private draft persistence");
-  const secret = "synthetic-UNPUBLISHED-DRAFT-TEXT";
-  await saveDraft(incident.id, { details: secret });
-  const restored = await incidentView(incident.id);
-  assert.equal(restored.draft.details, secret);
-  for (const path of ["/", "/history", "/feed.atom", "/widget.js"]) {
-    assert.doesNotMatch(await (await fetch(`${pageUrl}${path}`)).text(), new RegExp(secret));
-  }
-})(t);
-  t.diagnostic("UPDATE-006 — a future scheduled draft remains private until the scheduled Worker run publishes it");
-  await (async () => {
-  const incident = await createIncident("Scheduled update privacy");
-  const details = "SCHEDULED-UPDATE-PUBLIC-AFTER-RUN";
-  await saveDraft(incident.id, { details });
-  const pastRequest = await appFetch(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", body: JSON.stringify({ publishAt: new Date(Date.now() - 1000).toISOString(), channels: [] }) });
-  await expectStatus(pastRequest, 409);
-  assert.match((await pastRequest.json()).error, /must be in the future/);
-  // Keep the fixture future-dated through real request and D1 latency.
-  const publishAt = new Date(Date.now() + 5000).toISOString();
-  await expectStatus(await appFetch(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", body: JSON.stringify({ publishAt, channels: [] }) }), 202);
-  assert.doesNotMatch(await (await fetch(`${pageUrl}/`)).text(), new RegExp(details));
-  assert.ok(Date.now() < Date.parse(publishAt), "early cron runs before the committed publication time");
-  await expectStatus(await fetch(`${pageUrl}/cdn-cgi/local/scheduled`), 200);
-  assert.equal((await incidentView(incident.id)).updates.length, 0);
-  assert.doesNotMatch(await (await fetch(`${pageUrl}/`)).text(), new RegExp(details));
-  await new Promise((resolve) => setTimeout(resolve, Math.max(0, Date.parse(publishAt) - Date.now()) + 100));
-  await expectStatus(await fetch(`${pageUrl}/cdn-cgi/local/scheduled`), 200);
-  await publicArtifact(`/incidents/${incident.reference}`, details, "scheduled publication");
-})(t);
-  t.diagnostic("UPDATE-007 — the update review policy can hold publication until a different operator has reviewed the draft");
-  await (async () => {
-  const createIncidentsService = await loadIncidentsServiceFactory();
-  const incident = { id: "incident-1", reference: "INC-1", title: "Review policy incident", lifecycle: "Investigating", openedAt: new Date().toISOString(), resolvedAt: null, createdByOperatorId: "author", deletedAt: null, deletionReason: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
-  const draft = { id: "draft-1", incidentId: incident.id, lifecycle: "Identified", affectedAudience: "API customers.", customerImpact: "Requests can fail.", whatStillWorks: "Reads work.", details: "Mitigation is underway.", nextUpdateAt: new Date(Date.now() + 60 * 60_000).toISOString(), authorOperatorId: "author", createdAt: incident.createdAt, updatedAt: incident.updatedAt, scheduledPublishAt: null, scheduledChannels: [], reviewedByOperatorId: null, reviewedAt: null, correctsUpdateId: null };
-  const components = [{ id: "claim-1", incidentId: incident.id, componentId: "component-1", componentName: "API", state: "Major outage", relationship: "Primary", publishedAt: null, createdAt: incident.createdAt, updatedAt: incident.updatedAt }];
-  let published = null;
-  const repository = {
-    findIncident: async () => incident,
-    findPublishingDraft: async () => draft,
-    listComponents: async () => components,
-    findPeakImpact: async () => null,
-    hasRetroactiveUpdate: async () => false,
-    publishDraft: async (record) => { published = record; },
-    listUpdates: async () => published ? [published] : [],
-  };
-  const service = createIncidentsService(repository, {}, async () => {}, { forIncidentUpdate: async () => [] }, { requiresReview: () => true }, async () => {});
-  await assert.rejects(() => service.publish(incident.id, "author", { channels: [], expectedVersion: `${draft.id}:0` }), /requires review/);
-  assert.equal(published, null);
-  draft.reviewedAt = new Date().toISOString();
-  draft.reviewedByOperatorId = "reviewer";
-  const update = await service.publish(incident.id, "author", { channels: [], expectedVersion: `${draft.id}:0` });
-  assert.equal(update?.incidentId, incident.id);
-  assert.equal(update?.lifecycle, "Identified");
-})(t);
-});
-
-
-
-
-
-test("PAGE-006 UPDATE-009 — Snapshot outage and private template application", async t => {
-  t.diagnostic("PAGE-006 — a warmed snapshot remains available and visibly stale when R2 pointer reads fail");
-  await (async () => {
-  const pointer = r2Object("snapshots/current.json");
-  assert.match(pointer, /"version"/);
-  const warm = await fetch(`${pageUrl}/`);
-  await expectStatus(warm, 200);
-  const validator = warm.headers.get("etag");
-  try {
-    r2Object("snapshots/current.json", "not-json");
-    const stale = await fetch(`${pageUrl}/`, { headers: validator ? { "If-None-Match": validator } : {} });
-    assert.equal(stale.status, 200);
-    assert.equal(stale.headers.get("x-lamp-snapshot-state"), "stale");
-    assert.equal(stale.headers.get("etag"), null, "an unverified generation never validates cached current-state bytes");
-    const staleBody = await stale.text();
-    assert.match(staleBody, /Last known state/);
-    const generatedAt = stale.headers.get("x-lamp-snapshot-generated-at");
-    assert.ok(generatedAt && Number.isFinite(Date.parse(generatedAt)), "stale content must retain a valid generation instant");
-    assert.ok(staleBody.includes(generatedAt), "the visible stale warning must identify its generation instant");
-  } finally {
-    r2Object("snapshots/current.json", pointer);
-  }
-})(t);
-  t.diagnostic("UPDATE-009 — applying a saved template fills a draft and component claims without publishing");
-  await (async () => {
-  const template = await appFetch("/api/app/incident-templates", { method: "POST", body: JSON.stringify({ name: "Template contract", lifecycle: "Monitoring", affectedAudience: "Template audience.", customerImpact: "Template impact.", whatStillWorks: "Template works.", details: "TEMPLATE-PRIVATE-DETAIL", nextUpdateOffsetMinutes: 60, components: [{ componentId: "01J00000000000000000000011", state: "Partially unavailable", relationship: "Primary" }] }) });
-  await expectStatus(template, 201);
-  const incident = await createIncident("Template application");
-  await expectStatus(await appFetch(`/api/app/incidents/${incident.id}/templates/${(await template.json()).template.id}/apply`, { method: "POST" }), 200);
-  const restored = await incidentView(incident.id);
-  assert.equal(restored.draft.lifecycle, "Monitoring");
-  assert.equal(restored.draft.details, "TEMPLATE-PRIVATE-DETAIL");
-  assert.equal(restored.updates.length, 0);
-  assert.doesNotMatch(await (await fetch(`${pageUrl}/`)).text(), /TEMPLATE-PRIVATE-DETAIL/);
-})(t);
-});
-
-
-
-test("INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 — Incident lifecycle, immutable correction, reasoned deletion and historical replay", async t => {
-  t.diagnostic("INCIDENT-001 — an incident begins Investigating and each published update makes its selected lifecycle public");
-  await (async () => {
-  const incident = await createIncident("Lifecycle publication");
-  assert.equal(incident.lifecycle, "Investigating");
-  await saveDraft(incident.id, { lifecycle: "Identified", customerImpact: "A bounded customer impact." });
-  await expectStatus(await publish(incident.id), 200);
-  assert.equal((await incidentView(incident.id)).lifecycle, "Identified");
-  await publicArtifact(`/incidents/${incident.reference}`, "Identified", "identified incident page");
-  await saveDraft(incident.id, { lifecycle: "Resolved", customerImpact: "The customer impact is over." });
-  await expectStatus(await publish(incident.id), 200);
-  const resolved = await incidentView(incident.id);
-  assert.equal(resolved.lifecycle, "Resolved");
-  assert.equal(typeof resolved.resolvedAt, "string");
-})(t);
-  t.diagnostic("INCIDENT-002 — the incident impact retains the most severe component state it ever claimed");
-  await (async () => {
-  const incident = await createIncident("Peak impact retention");
-  await saveDraft(incident.id, { lifecycle: "Resolved" });
-  await expectStatus(await publish(incident.id), 200);
-  const resolved = await incidentView(incident.id);
-  assert.equal(resolved.impact, "Major outage");
-  assert.equal(resolved.components[0].state, "Major outage");
-})(t);
-  t.diagnostic("INCIDENT-003 — incidents receive a stable numeric reference and public URL");
-  await (async () => {
-  const first = await createIncident("Stable incident reference");
-  const second = await createIncident("Different incident reference");
-  assert.match(first.reference, /^INC-\d+$/);
-  assert.notEqual(first.reference, second.reference);
-  await saveDraft(first.id);
-  await expectStatus(await publish(first.id), 200);
-  await publicArtifact(`/incidents/${first.reference}`, first.reference, "incident public URL");
-})(t);
-  t.diagnostic("INCIDENT-004 — a correction publishes an immutable update linked to the correction target");
-  await (async () => {
-  const incident = await createIncident("Correction chain");
-  await saveDraft(incident.id, { details: "Initial customer wording." });
-  const original = await incidentView(incident.id);
-  const consumedVersion = `${original.draft.id}:${original.updates.length}`;
-  const first = await publish(incident.id);
-  await expectStatus(first, 200);
-  const initialUpdate = (await first.json()).update;
-  await saveDraft(incident.id, { details: "Corrected customer wording." });
-  const reviewed = await assertDraftMetadataIsolation({ baseUrl: appUrl, appFetch, incidentView, executeFixtureSql, incidentId: incident.id, consumedVersion, targetUpdateId: initialUpdate.id });
-  await expectStatus(await appFetch(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", body: JSON.stringify({ updateId: initialUpdate.id }) }), 200);
-  const marked = await incidentView(incident.id);
-  assert.deepEqual(marked.draft, { ...reviewed.draft, correctsUpdateId: initialUpdate.id, updatedAt: marked.draft.updatedAt });
-  assert.ok(Number.isFinite(Date.parse(marked.draft.updatedAt)));
-  assert.deepEqual(marked.updates, reviewed.updates);
-  const correction = await publish(incident.id);
-  await expectStatus(correction, 200);
-  const correctedUpdate = (await correction.json()).update;
-  assert.equal(correctedUpdate.correctsUpdateId, initialUpdate.id);
-  const updates = await incidentView(incident.id);
-  assert.equal(updates.updates.length, 2);
-  assert.equal(updates.updates.find((update) => update.id === initialUpdate.id).details, "Initial customer wording.");
-})(t);
-  t.diagnostic("INCIDENT-005 — a later published update can reopen a resolved incident while retaining both immutable updates");
-  await (async () => {
-  const incident = await createIncident("Resolution lifecycle update");
-  await saveDraft(incident.id, { lifecycle: "Resolved" });
-  await expectStatus(await publish(incident.id), 200);
-  await saveDraft(incident.id, { lifecycle: "Investigating" });
-  await expectStatus(await publish(incident.id), 200);
-  const view = await incidentView(incident.id);
-  assert.equal(view.lifecycle, "Investigating");
-  assert.equal(view.updates.length, 2);
-  assert.equal(view.updates.some((update) => update.lifecycle === "Investigating"), true);
-  assert.equal(view.updates.some((update) => update.lifecycle === "Resolved"), true);
-})(t);
-  t.diagnostic("INCIDENT-006 — an overdue next-update commitment is visible to operators and never appears as public incident copy");
-  await (async () => {
-  const incident = await createIncident("Expired commitment");
-  await saveDraft(incident.id, { nextUpdateAt: new Date(Date.now() - 60_000).toISOString() });
-  await expectStatus(await publish(incident.id), 200);
-  assert.equal((await incidentView(incident.id)).overdue, true);
-  const publicPage = await publicArtifact(`/incidents/${incident.reference}`, incident.reference, "overdue incident public page");
-  assert.doesNotMatch(publicPage.text, /\boverdue\b/i);
-})(t);
-  t.diagnostic("INCIDENT-007 — deletion requires a reason and removes an incident from public history and the Atom feed");
-  await (async () => {
-  const incident = await createIncident("Audited deletion");
-  await saveDraft(incident.id, { lifecycle: "Resolved" });
-  await expectStatus(await publish(incident.id), 200);
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}`, { method: "DELETE", body: JSON.stringify({}) })).status, 400);
-  await expectStatus(await appFetch(`/api/app/incidents/${incident.id}`, { method: "DELETE", body: JSON.stringify({ reason: "Duplicate operator report" }) }), 200);
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}`)).status, 404);
-  await eventually(
-    async () => ({ page: await (await fetch(`${pageUrl}/history`)).text(), feed: await (await fetch(`${pageUrl}/feed.atom`)).text() }),
-    ({ page, feed }) => !page.includes(incident.reference) && !feed.includes(incident.reference),
-    "deleted incident removal from public artifacts",
-  );
-})(t);
-  t.diagnostic("INCIDENT-008 — an internal note is excluded from every public artifact");
-  await (async () => {
-  const incident = await createIncident("Internal note isolation");
-  const note = "PRIVATE-INCIDENT-NOTE-DO-NOT-RENDER";
-  await expectStatus(await appFetch(`/api/app/incidents/${incident.id}/internal-notes`, { method: "POST", body: JSON.stringify({ body: note }) }), 201);
-  await saveDraft(incident.id);
-  await expectStatus(await publish(incident.id), 200);
-  for (const path of ["/", `/incidents/${incident.reference}`, "/feed.atom", "/widget.js"]) {
-    const response = await fetch(`${pageUrl}${path}`);
-    await expectStatus(response, 200);
-    assert.doesNotMatch(await response.text(), new RegExp(note));
-  }
-})(t);
-  t.diagnostic("INCIDENT-007 — deleting an incident releases its source claim before a later retroactive replay");
-  await (async () => {
-  const component = await createIsolatedComponent("Deleted incident claim release component");
-  const deleted = await createIncident("Deleted incident source claim", { components: [{ componentId: component.id, state: "Major outage", relationship: "Primary" }] });
-  await saveDraft(deleted.id, { lifecycle: "Investigating" });
-  await expectStatus(await publish(deleted.id), 200);
-  assert.equal((await (await appFetch("/api/app/components")).json()).components.find((entry) => entry.id === component.id)?.publicState, "Major outage");
-
-  await expectStatus(await appFetch(`/api/app/incidents/${deleted.id}`, { method: "DELETE", body: JSON.stringify({ reason: "Regression cleanup" }) }), 200);
-  const release = await eventually(
-    async () => queryD1Sql(testStatePath, `SELECT changed_at AS changedAt FROM component_claim_events WHERE component_id = '${component.id}' AND cause_type = 'incident' AND cause_id = '${deleted.id}' AND state IS NULL ORDER BY changed_at DESC, created_at DESC, id DESC LIMIT 1`)[0] ?? null,
-    Boolean,
-    "deleted incident source release",
-  );
-  await eventually(
-    async () => (await (await appFetch("/api/app/components")).json()).components.find((entry) => entry.id === component.id),
-    (entry) => entry?.publicState === "Operational",
-    "deleted incident present-state release",
-  );
-
-  const retroactiveStart = historicalIntervalStart(2, pageTimezone);
-  const retroactiveEnd = new Date(Date.parse(retroactiveStart) + 60 * 60_000).toISOString();
-  const retroactive = await createIncident("Later replay after deleted source", { openedAt: retroactiveStart, components: [{ componentId: component.id, state: "Degraded performance", relationship: "Primary" }] });
-  await saveDraft(retroactive.id, { lifecycle: "Investigating", nextUpdateAt: retroactiveEnd });
-  await expectStatus(await publish(retroactive.id, { publishedAt: retroactiveStart }), 200);
-  await saveDraft(retroactive.id, { lifecycle: "Resolved", nextUpdateAt: retroactiveEnd });
-  await expectStatus(await publish(retroactive.id, { publishedAt: retroactiveEnd }), 200);
-
-  await eventually(
-    async () => queryD1Sql(testStatePath, `SELECT new_state AS newState FROM component_state_history WHERE component_id = '${component.id}' AND changed_at = '${release.changedAt}' ORDER BY changed_at ASC, created_at ASC, id ASC`),
-    (rows) => rows.at(-1)?.newState === "Operational",
-    "deleted source remains released after a retroactive replay",
-  );
-  assert.equal((await (await appFetch("/api/app/components")).json()).components.find((entry) => entry.id === component.id)?.publicState, "Operational");
-  const dateParts = new Intl.DateTimeFormat("en-CA", { timeZone: pageTimezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(retroactiveStart));
-  const part = (kind) => dateParts.find((entry) => entry.type === kind)?.value;
-  await publicArtifact("/", `${part("year")}-${part("month")}-${part("day")}: ${degradedHourMinutes} weighted downtime minutes`, "retroactive uptime after deleted claim release");
-})(t);
-  t.diagnostic("INCIDENT-009 — retroactive updates reconstruct historical component state without disturbing a current same-component claim");
-  await (async () => {
-  const component = await createIsolatedComponent("Retroactive overlap component");
-  const initialHistory = await appFetch(`/api/app/components/${component.id}/history`);
-  await expectStatus(initialHistory, 200);
-  assert.deepEqual((await initialHistory.json()).history.map((entry) => ({ previousState: entry.previousState, newState: entry.newState, causeType: entry.causeType })), [{ previousState: "Operational", newState: "Operational", causeType: "standing-claim" }]);
-  assert.equal(queryD1Sql(testStatePath, `SELECT COUNT(*) AS count FROM component_claim_events WHERE component_id = '${component.id}' AND cause_type = 'standing-claim' AND cause_id IS NULL AND state = 'Operational'`)[0]?.count, 1);
-  await publicArtifact("/", new RegExp(`<h4>${component.name}</h4>[\\s\\S]*?Tracking since <time datetime="[^"]+" data-local-time>`), "healthy component initial tracking time");
-  const historicalStart = historicalIntervalStart(2, pageTimezone);
-  const historicalEnd = new Date(Date.parse(historicalStart) + 60 * 60_000).toISOString();
-  const current = await createIncident("Current same-component outage", { components: [{ componentId: component.id, state: "Major outage", relationship: "Primary" }] });
-  await saveDraft(current.id, { lifecycle: "Identified" });
-  await expectStatus(await publish(current.id), 200);
-  const maintenanceCreated = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Current maintenance provenance", startsAt: new Date(Date.now() - 60_000).toISOString(), endsAt: new Date(Date.now() + 60 * 60_000).toISOString(), componentIds: [component.id] }) });
-  await expectStatus(maintenanceCreated, 201);
-  const maintenance = (await maintenanceCreated.json()).maintenance;
-  await expectStatus(await fetch(`${pageUrl}/cdn-cgi/local/scheduled`), 200);
-  await eventually(async () => (await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === maintenance.id), (record) => record?.state === "In progress", "current maintenance start");
-  assert.equal(queryD1Sql(testStatePath, `SELECT COUNT(*) AS count FROM component_claim_events WHERE component_id = '${component.id}' AND cause_type = 'maintenance' AND cause_id = '${maintenance.id}' AND state = 'Under maintenance'`)[0]?.count, 1);
-
-  const incident = await createIncident("Retroactive degraded interval", { openedAt: historicalStart, components: [{ componentId: component.id, state: "Degraded performance", relationship: "Primary" }] });
-  await saveDraft(incident.id, { lifecycle: "Investigating", nextUpdateAt: historicalEnd });
-  const investigatingPublication = await publish(incident.id, { channels: ["email"], publishedAt: historicalStart });
-  await expectStatus(investigatingPublication, 200);
-  const investigating = (await investigatingPublication.json()).update;
-  assert.equal(investigating.publishedAt, historicalStart);
-  assert.equal(investigating.isRetroactive, true);
-
-  await saveDraft(incident.id, { lifecycle: "Resolved", nextUpdateAt: historicalEnd });
-  const resolvedPublication = await publish(incident.id, { channels: ["email"], publishedAt: historicalEnd });
-  await expectStatus(resolvedPublication, 200);
-  const resolved = (await resolvedPublication.json()).update;
-  assert.equal(resolved.publishedAt, historicalEnd);
-  for (const update of [investigating, resolved]) {
-    const deliveries = (await (await appFetch(`/api/app/deliveries?incidentUpdateId=${update.id}`)).json()).deliveries;
-    assert.equal(deliveries.length, 0);
-  }
-
-  const componentHistory = await eventually(
-    async () => (await (await appFetch(`/api/app/components/${component.id}/history`)).json()).history,
-    (history) => history.some((entry) => entry.changedAt === historicalStart && entry.previousState === "Operational" && entry.newState === "Degraded performance")
-      && history.some((entry) => entry.changedAt === historicalEnd && entry.previousState === "Degraded performance" && entry.newState === "Operational"),
-    "retroactive component-state reconstruction",
-  );
-  assert.equal(componentHistory.filter((entry) => entry.changedAt === historicalStart || entry.changedAt === historicalEnd).length, 2);
-  const components = (await (await appFetch("/api/app/components")).json()).components;
-  assert.equal(components.find((entry) => entry.id === component.id)?.publicState, "Major outage");
-
-  const historicDay = new Intl.DateTimeFormat("en-CA", { timeZone: pageTimezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(historicalStart));
-  const part = (kind) => historicDay.find((entry) => entry.type === kind)?.value;
-  const day = `${part("year")}-${part("month")}-${part("day")}`;
-  const snapshot = await publicArtifact("/", `${day}: ${degradedHourMinutes} weighted downtime minutes`, "retroactive uptime mark");
-  assert.match(snapshot.text, /over 2 whole days/);
-  const history = await publicArtifact("/history", incident.reference, "retroactive incident history");
-  assert.match(history.text, new RegExp(historicalStart));
-  assert.match(history.text, new RegExp(historicalEnd));
-
-  await saveDraft(incident.id, { lifecycle: "Monitoring" });
-  const laterPublication = await publish(incident.id, { channels: ["email"] });
-  await expectStatus(laterPublication, 200);
-  const later = (await laterPublication.json()).update;
-  assert.equal(later.isRetroactive, false);
-  assert.equal((await (await appFetch(`/api/app/deliveries?incidentUpdateId=${later.id}`)).json()).deliveries.length, 0, "a retroactive incident never delivers a later update");
-
-  const projectionComponent = await createIsolatedComponent("Retroactive boundary replay component");
-  const projectionStart = historicalIntervalStart(5, pageTimezone);
-  const projectionBaseStart = projectionStart;
-  const projectionBoundary = new Date(Date.parse(projectionStart) + 60 * 60_000).toISOString();
-  const projectionEnd = new Date(Date.parse(projectionStart) + 120 * 60_000).toISOString();
-  executeFixtureSql(`INSERT INTO component_claim_events (id,component_id,cause_type,cause_id,state,changed_at,created_at,updated_at) VALUES ('01J00000000000000000000981','${projectionComponent.id}','incident','fixture-base','Degraded performance','${projectionBaseStart}','${projectionBaseStart}','${projectionBaseStart}')`);
-  executeFixtureSql(`INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES ('01J00000000000000000000982','${projectionComponent.id}','Operational','Degraded performance','incident','fixture-base','01J00000000000000000000001','${projectionBaseStart}','${projectionBaseStart}','${projectionBaseStart}')`);
-  executeFixtureSql(`INSERT INTO component_claim_events (id,component_id,cause_type,cause_id,state,changed_at,created_at,updated_at) VALUES ('01J00000000000000000000983','${projectionComponent.id}','incident','fixture-base',NULL,'${projectionBoundary}','${projectionBoundary}','${projectionBoundary}')`);
-  executeFixtureSql(`INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES ('01J00000000000000000000984','${projectionComponent.id}','Degraded performance','Operational','incident','fixture-base','01J00000000000000000000001','${projectionBoundary}','${projectionBoundary}','${projectionBoundary}')`);
-  const projection = await createIncident("Retroactive major interval across a historical boundary", { openedAt: projectionStart, components: [{ componentId: projectionComponent.id, state: "Major outage", relationship: "Primary" }] });
-  await saveDraft(projection.id, { lifecycle: "Investigating", nextUpdateAt: projectionEnd });
-  await expectStatus(await publish(projection.id, { publishedAt: projectionStart }), 200);
-  await saveDraft(projection.id, { lifecycle: "Resolved", nextUpdateAt: projectionEnd });
-  await expectStatus(await publish(projection.id, { publishedAt: projectionEnd }), 200);
-  const boundaryRows = queryD1Sql(testStatePath, `SELECT previous_state AS previousState,new_state AS newState FROM component_state_history WHERE component_id = '${projectionComponent.id}' AND changed_at = '${projectionBoundary}' ORDER BY changed_at ASC,created_at ASC,id ASC`);
-  assert.deepEqual(boundaryRows.at(-1), { previousState: "Major outage", newState: "Major outage" });
-  const projectionDay = new Intl.DateTimeFormat("en-CA", { timeZone: pageTimezone, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(projectionStart));
-  const projectionPart = (kind) => projectionDay.find((entry) => entry.type === kind)?.value;
-  const projectionDate = `${projectionPart("year")}-${projectionPart("month")}-${projectionPart("day")}`;
-  await publicArtifact("/", `${projectionDate}: 120 weighted downtime minutes`, "retroactive boundary replay uptime");
-
-  const chronologicalComponent = await createIsolatedComponent("Retroactive arrival ordering component");
-  const chronologyNow = Date.now();
-  const fullDay = fullDayFixture(pageTimezone, chronologyNow);
-  const chronologicalLaterPublication = localWallClockInstant(fullDay.daysAgo + 1, 12, 0, pageTimezone, chronologyNow);
-  const chronologicalEarlierPublication = localWallClockInstant(fullDay.daysAgo + 2, 12, 0, pageTimezone, chronologyNow);
-  const chronological = await createIncident("A current update survives a later-arriving historical update", { openedAt: chronologicalEarlierPublication, components: [{ componentId: chronologicalComponent.id, state: "Major outage", relationship: "Primary" }] });
-  await saveDraft(chronological.id, { lifecycle: "Investigating" });
-  const currentPublication = await publish(chronological.id, { publishedAt: chronologicalLaterPublication });
-  await expectStatus(currentPublication, 200);
-  const currentUpdate = (await currentPublication.json()).update;
-  await saveDraft(chronological.id, { lifecycle: "Resolved", nextUpdateAt: chronologicalEarlierPublication });
-  const historicalPublication = await publish(chronological.id, { publishedAt: chronologicalEarlierPublication });
-  await expectStatus(historicalPublication, 200);
-  assert.equal((await historicalPublication.json()).update.isRetroactive, true);
-  const chronologicalView = await incidentView(chronological.id);
-  assert.equal(chronologicalView.lifecycle, "Investigating");
-  assert.equal(chronologicalView.resolvedAt, null);
-  assert.equal(chronologicalView.updates[0]?.id, currentUpdate.id);
-  assert.equal((await (await appFetch("/api/app/components")).json()).components.find((entry) => entry.id === chronologicalComponent.id)?.publicState, "Major outage");
-  const chronologicalHistory = await eventually(
-    async () => (await (await appFetch(`/api/app/components/${chronologicalComponent.id}/history`)).json()).history,
-    (history) => history.some((entry) => entry.changedAt === chronologicalLaterPublication && entry.newState === "Major outage"),
-    "newer same-incident state boundary",
-  );
-  assert.equal(chronologicalHistory.filter((entry) => entry.changedAt === chronologicalLaterPublication).at(-1)?.newState, "Major outage");
-  const uninterruptedDate = fullDay.date;
-  await publicArtifact("/", `${uninterruptedDate}: 1440 weighted downtime minutes`, "same-incident replay preserves uptime after the newer boundary");
-
-  const splitComponent = await createIsolatedComponent("Cross-midnight split component");
-  const splitStart = localWallClockInstant(8, 23, 30, pageTimezone);
-  const splitEnd = new Date(Date.parse(splitStart) + 60 * 60_000).toISOString();
-  const splitIncident = await createIncident("Degraded interval crosses local midnight", { openedAt: splitStart, components: [{ componentId: splitComponent.id, state: "Degraded performance", relationship: "Primary" }] });
-  await saveDraft(splitIncident.id, { lifecycle: "Investigating", nextUpdateAt: splitEnd });
-  await expectStatus(await publish(splitIncident.id, { publishedAt: splitStart }), 200);
-  await saveDraft(splitIncident.id, { lifecycle: "Resolved", nextUpdateAt: splitEnd });
-  await expectStatus(await publish(splitIncident.id, { publishedAt: splitEnd }), 200);
-  const splitStartDate = localDateKey(splitStart, pageTimezone);
-  const splitEndDate = localDateKey(splitEnd, pageTimezone);
-  assert.notEqual(splitStartDate, splitEndDate, "fixture interval crosses the page timezone's local midnight");
-  const expectedSplitMark = (day) => componentDowntimeMark(splitComponent.name, day, 15);
-  await publicArtifact("/", expectedSplitMark(splitStartDate), "first half of cross-midnight weighted uptime");
-  await publicArtifact("/", expectedSplitMark(splitEndDate), "second half of cross-midnight weighted uptime");
-
-  const opaqueComponent = await createIsolatedComponent("Opaque legacy state component");
-  executeFixtureSql(`INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES ('01J00000000000000000000991','${opaqueComponent.id}','Operational','Partially unavailable','standing-claim',NULL,'01J00000000000000000000001','${historicalStart}','${historicalStart}','${historicalStart}')`);
-  const opaqueIncident = await createIncident("Opaque historical claim", { openedAt: historicalStart, components: [{ componentId: opaqueComponent.id, state: "Degraded performance", relationship: "Primary" }] });
-  await saveDraft(opaqueIncident.id, { lifecycle: "Investigating", nextUpdateAt: historicalEnd });
-  const rejected = await publish(opaqueIncident.id, { publishedAt: historicalStart });
-  assert.equal(rejected.status, 409);
-  assert.match((await rejected.json()).error, /claim provenance/);
-  assert.equal((await incidentView(opaqueIncident.id)).updates.length, 0);
-})(t);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-test("INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 — Authenticated monitor intake remains private and deduplicated", async t => {
-  t.diagnostic("INTAKE-001 — only a current raw-body HMAC is accepted for an alert source");
-  await (async () => {
-  const source = await appFetch("/api/app/intake/sources", { method: "POST", body: JSON.stringify({ name: "Contract source", credentialKind: "hmac-sha256", signingSecret: "contract-secret", deduplicationPath: "$.alert.id", titlePath: "$.alert.title", statePath: "$.alert.state", recoveredValue: "recovered" }) });
-  assert.equal(source.status, 201);
-  const sourceId = (await source.json()).source.id;
-  const rejected = await fetch(`${pageUrl}/api/intake/${sourceId}`, { method: "POST", headers: { "Content-Type": "application/json", "x-lamp-timestamp": new Date().toISOString(), "x-lamp-signature": "not-a-valid-signature" }, body: JSON.stringify({ alert: { id: "rejected", title: "Rejected", state: "firing" } }) });
-  assert.equal(rejected.status, 401);
-  const post = async (payload) => {
-    const body = JSON.stringify(payload); const timestamp = new Date().toISOString();
-    const signature = createHmac("sha256", "contract-secret").update(`${timestamp}.${body}`).digest("base64url");
-    return fetch(`${pageUrl}/api/intake/${sourceId}`, { method: "POST", headers: { "Content-Type": "application/json", "x-lamp-timestamp": timestamp, "x-lamp-signature": signature }, body });
-  };
-  const firing = { alert: { id: "dedup-1", title: "Database alert", state: "firing" } };
-  const first = await post(firing); assert.equal(first.status, 202); const accepted = await first.json();
-  const replay = await post(firing); assert.equal(replay.status, 202); assert.equal((await replay.json()).incidentId, accepted.incidentId);
-  const recovered = await post({ alert: { id: "dedup-1", title: "Database alert", state: "recovered" } }); assert.equal(recovered.status, 202);
-  const incident = (await (await appFetch(`/api/app/incidents/${accepted.incidentId}`)).json()).incident;
-  assert.equal(incident.lifecycle, "Investigating");
-  assert.equal(incident.updates.length, 0);
-})(t);
-  t.diagnostic("INTAKE-002 — a valid alert creates only a private draft incident");
-  await (async () => {
-  const source = await createIntakeSource("Private alert source");
-  const before = await (await fetch(`${pageUrl}/`)).text();
-  const accepted = await signedIntake(source.id, "contract-intake-secret", { alert: { id: "private-alert", title: "PRIVATE-ALERT-NARRATIVE", state: "firing" } });
-  await expectStatus(accepted, 202);
-  const result = await accepted.json();
-  const incident = await incidentView(result.incidentId);
-  assert.equal(incident.updates.length, 0);
-  assert.doesNotMatch(await (await fetch(`${pageUrl}/`)).text(), /PRIVATE-ALERT-NARRATIVE/);
-  assert.equal(before.includes("PRIVATE-ALERT-NARRATIVE"), false);
-})(t);
-  t.diagnostic("INTAKE-003 — different alert deliveries with one unresolved key attach to exactly one draft incident");
-  await (async () => {
-  const source = await createIntakeSource("Deduplication source");
-  const first = await signedIntake(source.id, "contract-intake-secret", { alert: { id: "same-key", title: "First title", state: "firing" } });
-  await expectStatus(first, 202);
-  const firstBody = await first.json();
-  const second = await signedIntake(source.id, "contract-intake-secret", { alert: { id: "same-key", title: "Changed title", state: "firing" } });
-  await expectStatus(second, 202);
-  const secondBody = await second.json();
-  assert.equal(secondBody.incidentId, firstBody.incidentId);
-  assert.equal(secondBody.replayed, false);
-})(t);
-  t.diagnostic("INTAKE-004 — a recovery records receipt state without resolving or publishing its draft incident");
-  await (async () => {
-  const source = await createIntakeSource("Recovery source");
-  const firing = await signedIntake(source.id, "contract-intake-secret", { alert: { id: "recover-key", title: "Recovery alert", state: "firing" } });
-  await expectStatus(firing, 202);
-  const incidentId = (await firing.json()).incidentId;
-  const recovered = await signedIntake(source.id, "contract-intake-secret", { alert: { id: "recover-key", title: "Recovery alert", state: "recovered" } });
-  await expectStatus(recovered, 202);
-  const incident = await incidentView(incidentId);
-  assert.equal(incident.lifecycle, "Investigating");
-  assert.equal(incident.updates.length, 0);
-})(t);
-  t.diagnostic("INTAKE-005 — a payload missing the configured deduplication value is recorded as an invalid alert");
-  await (async () => {
-  const source = await createIntakeSource("Invalid mapping source", { deduplicationPath: "$.alert.requiredKey" });
-  const response = await signedIntake(source.id, "contract-intake-secret", { alert: { title: "No key", state: "firing" } });
-  await expectStatus(response, 400);
-  const result = await response.json();
-  assert.equal(result.incidentId, null);
-  const replay = await signedIntake(source.id, "contract-intake-secret", { alert: { title: "No key", state: "firing" } });
-  await expectStatus(replay, 400);
-  assert.equal((await replay.json()).replayed, true);
-})(t);
-});
-
-
-
-
-
-
-
-
-
-test("MAINT-002 MAINT-001 MAINT-003 MAINT-004 MAINT-005 MAINT-006 — Scheduled maintenance transitions, notices, extension and cancellation", async t => {
-  t.diagnostic("MAINT-002 — the Worker scheduled event starts and completes a recorded maintenance without an operator mutation");
-  await (async () => {
-  const componentId = "01J00000000000000000000011";
-  const end = new Date(Date.now() - 1_000).toISOString();
-  const start = new Date(Date.now() - 2_000).toISOString();
-  const created = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Automatic transition test", startsAt: start, endsAt: end, componentIds: [componentId] }) });
-  if (created.status !== 201) throw new Error(await created.text());
-  const maintenance = (await created.json()).maintenance;
-
-  assert.equal((await fetch(`${pageUrl}/cdn-cgi/local/scheduled`)).status, 200);
-  const eventually = async (predicate) => {
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      const records = (await (await appFetch("/api/app/maintenance")).json()).maintenance;
-      const record = records.find((item) => item.id === maintenance.id);
-      if (predicate(record)) return record;
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    const history = (await j.json(`/api/app/components/${component.id}/history`)).history;
+    for (const [instant, state] of [[start, 'Major outage'], [end, 'Operational']]) {
+      assert.ok(history.some(row => row.causeId === historical.id && row.changedAt === instant && row.newState === state), 'the original claim transition enters component history');
     }
-    return null;
-  };
-  assert.equal((await eventually((record) => record?.state === "In progress"))?.state, "In progress");
-  assert.equal((await fetch(`${pageUrl}/cdn-cgi/local/scheduled`)).status, 200);
-  assert.equal((await eventually((record) => record?.state === "Completed"))?.state, "Completed");
-})(t);
-  t.diagnostic("MAINT-001 — scheduled maintenance has its own SCH reference and operator list");
-  await (async () => {
-  const created = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Distinct maintenance", startsAt: new Date(Date.now() + 2 * 60 * 60_000).toISOString(), endsAt: new Date(Date.now() + 3 * 60 * 60_000).toISOString(), componentIds: ["01J00000000000000000000011"] }) });
-  await expectStatus(created, 201);
-  const maintenance = (await created.json()).maintenance;
-  assert.match(maintenance.reference, /^SCH-\d+$/);
-  assert.equal((await (await appFetch("/api/app/maintenance")).json()).maintenance.some((record) => record.id === maintenance.id), true);
-})(t);
-  t.diagnostic("MAINT-003 — maintenance claims Under maintenance only while its recorded window is in progress");
-  await (async () => {
-  const component = await createIsolatedComponent("Maintenance component claim");
-  const created = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Maintenance component claim", startsAt: new Date(Date.now() - 60_000).toISOString(), endsAt: new Date(Date.now() + 60 * 60_000).toISOString(), componentIds: [component.id] }) });
-  await expectStatus(created, 201);
-  const maintenance = (await created.json()).maintenance;
-  assert.equal((await (await appFetch("/api/app/components")).json()).components.find((item) => item.id === component.id).publicState, "Operational");
-  await expectStatus(await fetch(`${pageUrl}/cdn-cgi/local/scheduled`), 200);
-  await eventually(async () => (await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === maintenance.id), (record) => record?.state === "In progress", "maintenance start");
-  assert.equal((await (await appFetch("/api/app/components")).json()).components.find((item) => item.id === component.id).publicState, "Under maintenance");
-  await expectStatus(await appFetch(`/api/app/maintenance/${maintenance.id}/complete`, { method: "POST" }), 200);
-  await eventually(async () => (await (await appFetch("/api/app/components")).json()).components.find((item) => item.id === component.id), (item) => item?.publicState === "Operational", "manual maintenance completion");
-  assert.equal(queryD1Sql(testStatePath, `SELECT COUNT(*) AS count FROM component_claim_events WHERE component_id = '${component.id}' AND cause_type = 'maintenance' AND cause_id = '${maintenance.id}' AND state IS NULL`)[0]?.count, 1);
-  assert.equal(queryD1Sql(testStatePath, `SELECT COUNT(*) AS count FROM maintenance_notices WHERE maintenance_id = '${maintenance.id}' AND kind = 'completed'`)[0]?.count, 1);
-  const secondCompletion = await appFetch(`/api/app/maintenance/${maintenance.id}/complete`, { method: "POST" });
-  await expectStatus(secondCompletion, 409);
-  assert.equal(queryD1Sql(testStatePath, `SELECT COUNT(*) AS count FROM component_claim_events WHERE component_id = '${component.id}' AND cause_type = 'maintenance' AND cause_id = '${maintenance.id}' AND state IS NULL`)[0]?.count, 1);
-  assert.equal(queryD1Sql(testStatePath, `SELECT COUNT(*) AS count FROM maintenance_notices WHERE maintenance_id = '${maintenance.id}' AND kind = 'completed'`)[0]?.count, 1);
-})(t);
-  t.diagnostic("MAINT-003 — a stale maintenance transition cannot reuse an earlier notice guard");
-  await (async () => {
-  const createMaintenanceRepository = await loadMaintenanceRepositoryFactory();
-  const database = new DatabaseSync(":memory:");
-  database.exec(`
-    CREATE TABLE maintenance (id TEXT PRIMARY KEY, state TEXT NOT NULL, starts_at TEXT NOT NULL, ends_at TEXT NOT NULL, completed_at TEXT, updated_at TEXT NOT NULL);
-    CREATE TABLE maintenance_notices (id TEXT PRIMARY KEY, maintenance_id TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL, published_at TEXT NOT NULL, author_operator_id TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-    CREATE TABLE audit_entries (id TEXT PRIMARY KEY, entity_type TEXT NOT NULL, entity_id TEXT NOT NULL, action TEXT NOT NULL, operator_id TEXT, reason TEXT, payload_json TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-    INSERT INTO maintenance (id, state, starts_at, ends_at, completed_at, updated_at) VALUES ('maintenance-guard', 'Scheduled', '2026-09-08T00:00:00.000Z', '2026-09-08T00:30:00.000Z', NULL, '2026-09-08T00:00:00.000Z');
-  `);
-  const repository = createMaintenanceRepository(createTransactionalD1Fixture(database));
-  const notice = { id: "notice-guard", maintenanceId: "maintenance-guard", kind: "started", body: "Started.", publishedAt: "2026-09-08T00:00:01.000Z", authorOperatorId: null, createdAt: "2026-09-08T00:00:01.000Z", updatedAt: "2026-09-08T00:00:01.000Z" };
-  const dueWindow = { startsAt: "2026-09-08T00:00:00.000Z", endsAt: "2026-09-08T00:30:00.000Z" };
-  assert.equal(await repository.transitionWithNotice("maintenance-guard", "Scheduled", "In progress", null, notice.publishedAt, notice, [], dueWindow), true);
-  assert.equal(await repository.transitionWithNotice("maintenance-guard", "Scheduled", "In progress", null, notice.publishedAt, notice, [], dueWindow), false, "the same notice cannot be authorized by its earlier guard");
-  const losingNotice = { ...notice, id: "notice-losing", createdAt: "2026-09-08T00:00:02.000Z", updatedAt: "2026-09-08T00:00:02.000Z" };
-  assert.equal(await repository.transitionWithNotice("maintenance-guard", "Scheduled", "In progress", null, losingNotice.publishedAt, losingNotice, [], dueWindow), false, "a concurrent loser with a fresh notice cannot write a source event");
-  database.prepare("UPDATE maintenance SET ends_at = ? WHERE id = ?").run("2026-09-08T01:00:00.000Z", "maintenance-guard");
-  const staleCompletion = { ...notice, id: "notice-stale-completion", kind: "completed", publishedAt: "2026-09-08T00:00:03.000Z", createdAt: "2026-09-08T00:00:03.000Z", updatedAt: "2026-09-08T00:00:03.000Z" };
-  assert.equal(await repository.transitionWithNotice("maintenance-guard", "In progress", "Completed", staleCompletion.publishedAt, staleCompletion.publishedAt, staleCompletion, [], dueWindow), false, "a due transition cannot complete a window extended after it was read");
-  assert.equal(database.prepare("SELECT COUNT(*) AS count FROM maintenance_notices").get().count, 1);
-  assert.equal(database.prepare("SELECT COUNT(*) AS count FROM audit_entries").get().count, 1);
-  database.close();
-})(t);
-  t.diagnostic("MAINT-004 — an overrun is public after its recorded end, and operators can extend or complete it");
-  await (async () => {
-  const created = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Manual overrun completion", startsAt: new Date(Date.now() + 2 * 60 * 60_000).toISOString(), endsAt: new Date(Date.now() + 3 * 60 * 60_000).toISOString(), componentIds: ["01J00000000000000000000011"] }) });
-  await expectStatus(created, 201);
-  const maintenance = (await created.json()).maintenance;
-  executeFixtureSql(`UPDATE maintenance SET state = 'In progress', starts_at = '${new Date(Date.now() - 60 * 60_000).toISOString()}', ends_at = '${new Date(Date.now() - 16 * 60_000).toISOString()}' WHERE id = '${maintenance.id}'`);
-  const overrunning = (await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === maintenance.id);
-  assert.equal(overrunning.overrunning, true);
-  await expectStatus(await appFetch(`/api/app/maintenance/${maintenance.id}/complete`, { method: "POST" }), 200);
-  assert.equal((await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === maintenance.id).state, "Completed");
+    await saveReviewed(historical.id, { lifecycle: 'Monitoring', details: 'Current correction of the historical record.' });
+    await j.publish(historical.id, { channels: ['email'] });
+    await j.tick(Date.now());
+    const historicalReach = await j.json(`/api/app/incidents/${historical.id}/reach`);
+    assert.equal(historicalReach.updates.length, 3);
+    assert.ok(historicalReach.updates.every(update => update.channels.every(channel => channel.committed === 0)), 'historical and later current-time updates create no subscriber delivery');
+    assert.ok(!j.messages.some(mail => mail.text.includes(historical.title)), 'no historical incident notification reaches the provider');
+    // The report month follows the page's fixed Brisbane offset.
+    const performanceMonth = brisbaneMonth((await j.read(incident.id)).openedAt);
+    const performance = await j.json(`/api/app/communication-performance?month=${performanceMonth}`);
+    assert.ok(performance.incidents.some(row => row.incidentId === incident.id));
+    assert.ok(performance.summary.commitments.evaluated > 0);
+    const performanceCsv = await j.request(`/api/app/communication-performance?month=${performanceMonth}&format=csv`);
+    assert.equal(performanceCsv.status, 200); assert.ok((await performanceCsv.text()).includes(incident.reference));
+    for (const format of ['csv', 'pdf']) {
+      const response = await j.request(`/api/app/availability-report?component=${component.id}&month=${month}&format=${format}`);
+      assert.equal(response.status, 200); assert.ok((await response.arrayBuffer()).byteLength);
+    }
+    const reach = await j.json(`/api/app/incidents/${incident.id}/reach`);
+    assert.ok(reach.incident);
 
-  const originalStart = new Date(Date.now() - 60 * 60_000).toISOString();
-  const nearThresholdEnd = new Date(Date.now() - 14 * 60_000 - 40_000).toISOString();
-  const extensionResponse = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Manual overrun extension", startsAt: originalStart, endsAt: nearThresholdEnd, componentIds: ["01J00000000000000000000011"] }) });
-  await expectStatus(extensionResponse, 201);
-  const extension = (await extensionResponse.json()).maintenance;
-  const thresholdAt = Date.parse(nearThresholdEnd) + 15 * 60_000;
-  await expectStatus(await fetch(`${pageUrl}/cdn-cgi/local/scheduled?cron=*+*+*+*+*`), 200);
-  const started = (await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === extension.id);
-  assert.equal(started.state, "In progress");
-  assert.equal(started.startsAt, extension.startsAt);
-  assert.equal(started.endsAt, nearThresholdEnd);
-  const beforeOverrun = await publicArtifact("/", `data-maintenance-state="In progress" data-maintenance-ends-at="${nearThresholdEnd}"`, "the started maintenance snapshot before the 15-minute overrun boundary");
-  const generatedAt = Date.parse(beforeOverrun.response.headers.get("x-lamp-snapshot-generated-at"));
-  assert.ok(generatedAt < thresholdAt, "the public artifact was generated before its overrun boundary");
-  assert.doesNotMatch(beforeOverrun.text, /Running longer than planned/);
-  const priorValidator = beforeOverrun.response.headers.get("etag");
-  await new Promise((resolve) => setTimeout(resolve, Math.max(0, thresholdAt - Date.now()) + 100));
+    // Exercise both active and resolved public records. History intentionally
+    // lists resolved incidents; the root and Atom include both lifecycles.
+    const unresolved = await j.incident('synthetic-lamp-7 unresolved deletion', [component]);
+    await saveReviewed(unresolved.id, {}); await j.publish(unresolved.id);
+    const retained = await j.incident('synthetic-lamp-8 retained recovery', [component]);
+    await saveReviewed(retained.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await j.publish(retained.id);
+    const surfaces = ['/', '/history', '/feed.atom'];
+    const readSurfaces = () => Promise.all(surfaces.map(path => j.publicText(path)));
+    const controlsVisible = bodies => bodies.every((body, index) => body.includes(retained.title)
+      && (surfaces[index] === '/history' || body.includes(live.title)));
+    const removed = [];
+    for (const [target, actor, reason] of [
+      [unresolved, reviewer, 'Synthetic active incident withdrawn after review'],
+      [incident, undefined, 'Duplicate incident replaced after review'],
+    ]) {
+      const targetPath = `/api/app/incidents/${target.id}`;
+      const applicable = target === unresolved ? ['/', '/feed.atom'] : surfaces;
+      const before = await eventually(readSurfaces, bodies => controlsVisible(bodies)
+        && applicable.every(path => bodies[surfaces.indexOf(path)].includes(target.title)),
+      'target and unaffected controls are published before deletion');
+      if (target === unresolved) assert.ok(!before[1].includes(target.title), 'active incidents do not enter resolved history');
+      await j.signIn(actor);
+      const operator = (await j.json('/api/app/session')).operator;
+      const unchanged = await j.read(target.id);
+      await j.json(targetPath, 'DELETE', {}, 400);
+      await j.json(targetPath, 'DELETE', { reason: '   ' }, 400);
+      assert.deepEqual(await j.read(target.id), unchanged, 'reasonless deletion changes nothing');
+      assert.ok(!(await j.json('/api/app/audit-log?action=deleted&limit=100')).entries
+        .some(row => row.entityType === 'incident' && row.entityId === target.id), 'refusal creates no deletion audit');
+      const refused = await readSurfaces();
+      assert.ok(controlsVisible(refused));
+      for (const path of applicable) assert.ok(refused[surfaces.indexOf(path)].includes(target.title), `${path}: refused deletion keeps the published incident`);
 
-  const agedPageResponse = await fetch(`${pageUrl}/`, { headers: priorValidator ? { "If-None-Match": priorValidator } : {} });
-  assert.equal(agedPageResponse.status, 200, "the changed serving-time representation must not reuse the earlier validator");
-  assert.notEqual(agedPageResponse.headers.get("etag"), priorValidator);
-  const agedPage = await agedPageResponse.text();
-  assert.match(agedPage, /Running longer than planned/);
-  assert.ok(agedPage.includes(`data-maintenance-ends-at="${nearThresholdEnd}"`), "the public page keeps the recorded end beside the overrun message");
-  const agedPermalink = await (await fetch(`${pageUrl}/maintenance/${extension.reference}`)).text();
-  assert.match(agedPermalink, /Running longer than planned/);
-  assert.ok(agedPermalink.includes(`data-maintenance-ends-at="${nearThresholdEnd}"`), "the permanent page keeps the recorded end beside the overrun message");
-  assert.equal((await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === extension.id).overrunning, true);
+      // One elapsed-time budget covers the native DELETE and reconciliation of
+      // every surface, rather than resetting a timeout for each individual read.
+      const started = clock.now();
+      const requestedAt = Date.now();
+      assert.equal((await j.json(targetPath, 'DELETE', { reason })).deleted, true);
+      const respondedAt = Date.now();
+      removed.push(target);
+      let bodies;
+      do {
+        bodies = await readSurfaces();
+        assert.ok(controlsVisible(bodies), 'deletion retains unrelated active and resolved public records');
+        if (bodies.every(body => removed.every(row => !body.includes(row.title)))) break;
+        await new Promise(resolve => setTimeout(resolve, 50));
+      } while (clock.now() - started < 10_000);
+      assert.ok(clock.now() - started <= 10_000, 'all public removals complete within one ten-second deadline from the request');
+      for (const [index, path] of surfaces.entries()) {
+        for (const row of removed) assert.ok(!bodies[index].includes(row.title), `${path}: deleted incident is absent`);
+      }
+      await j.json(targetPath, 'GET', undefined, 404);
+      assert.ok(!(await j.json('/api/app/incidents')).incidents.some(row => row.id === target.id));
 
-  const laterEnd = new Date(Date.now() + 60 * 60_000).toISOString();
-  await expectStatus(await appFetch(`/api/app/maintenance/${extension.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: originalStart, endsAt: "not-a-date" }) }), 400);
-  await expectStatus(await appFetch(`/api/app/maintenance/${extension.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: new Date(Date.parse(originalStart) + 60_000).toISOString(), endsAt: laterEnd }) }), 409);
-  await expectStatus(await appFetch(`/api/app/maintenance/${extension.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: originalStart, endsAt: new Date(Date.parse(nearThresholdEnd) - 60_000).toISOString() }) }), 409);
-  const extendedResponse = await appFetch(`/api/app/maintenance/${extension.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: originalStart, endsAt: laterEnd }) });
-  await expectStatus(extendedResponse, 200);
-  const extended = (await extendedResponse.json()).maintenance;
-  assert.equal(extended.startsAt, originalStart);
-  assert.equal(extended.endsAt, laterEnd);
-  assert.equal(extended.overrunning, false);
-  const extensionNotice = extended.notices.find((notice) => notice.kind === "rescheduled");
-  assert.ok(extensionNotice, "extending the window publishes a rescheduled notice");
-  const extensionAudit = queryD1Sql(testStatePath, `SELECT operator_id AS operatorId, created_at AS createdAt FROM audit_entries WHERE entity_type = 'maintenance' AND entity_id = '${extension.id}' AND action = 'notice-published' AND operator_id = '${maintenance.createdByOperatorId}'`);
-  assert.equal(extensionAudit.length, 1);
-  assert.equal(extensionAudit[0].operatorId, maintenance.createdByOperatorId);
-  assert.equal(extensionAudit[0].createdAt, extensionNotice.createdAt);
-  const updatedPage = await publicArtifact("/", `data-maintenance-ends-at="${laterEnd}"`, "the extended maintenance snapshot");
-  assert.doesNotMatch(updatedPage.text, /Running longer than planned/);
-  const updatedPermalink = await publicArtifact(`/maintenance/${extension.reference}`, `data-maintenance-ends-at="${laterEnd}"`, "the extended maintenance permalink");
-  assert.doesNotMatch(updatedPermalink.text, /Running longer than planned/);
+      const audit = (await j.json('/api/app/audit-log?action=deleted&limit=100')).entries
+        .filter(row => row.entityType === 'incident' && row.entityId === target.id);
+      assert.equal(audit.length, 1, 'one deletion audit is independently readable');
+      assert.equal(audit[0].actorId, operator.id, 'audit identifies the exact requesting operator');
+      assert.equal(audit[0].reason, reason);
+      const deletedAt = Date.parse(audit[0].createdAt);
+      assert.ok(Number.isFinite(deletedAt) && deletedAt >= requestedAt && deletedAt <= respondedAt,
+        'deletion audit time falls inside the native DELETE request');
+      const persisted = await j.db.prepare('SELECT deleted_at AS deletedAt, deletion_reason AS deletionReason FROM incidents WHERE id = ?').bind(target.id).first();
+      assert.equal(persisted.deletedAt, audit[0].createdAt, 'persisted deletion and audit share the exact instant');
+      assert.equal(persisted.deletionReason, reason);
+    }
 
-  await expectStatus(await appFetch(`/api/app/maintenance/${extension.id}/complete`, { method: "POST" }), 200);
-  const completedPermalink = await publicArtifact(`/maintenance/${extension.reference}`, "Completed", "the completed maintenance permalink");
-  assert.doesNotMatch(completedPermalink.text, /Running longer than planned/);
-  await expectStatus(await appFetch(`/api/app/maintenance/${extension.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: originalStart, endsAt: new Date(Date.now() + 2 * 60 * 60_000).toISOString() }) }), 409);
-
-  const cancelledResponse = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Cancelled maintenance window", startsAt: new Date(Date.now() + 6 * 60 * 60_000).toISOString(), endsAt: new Date(Date.now() + 7 * 60 * 60_000).toISOString(), componentIds: ["01J00000000000000000000011"] }) });
-  await expectStatus(cancelledResponse, 201);
-  const cancelled = (await cancelledResponse.json()).maintenance;
-  await expectStatus(await appFetch(`/api/app/maintenance/${cancelled.id}/cancel`, { method: "POST" }), 200);
-  await expectStatus(await appFetch(`/api/app/maintenance/${cancelled.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: cancelled.startsAt, endsAt: new Date(Date.parse(cancelled.endsAt) + 60_000).toISOString() }) }), 409);
-})(t);
-  t.diagnostic("MAINT-005 — scheduled, reminder, start, and completion notices are immutable maintenance events");
-  await (async () => {
-  const created = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Reminder lifecycle", startsAt: new Date(Date.now() + 23 * 60 * 60_000).toISOString(), endsAt: new Date(Date.now() + 24 * 60 * 60_000).toISOString(), componentIds: ["01J00000000000000000000011"] }) });
-  await expectStatus(created, 201);
-  const maintenance = (await created.json()).maintenance;
-  assert.equal(maintenance.notices.some((notice) => notice.kind === "scheduled"), true);
-  await expectStatus(await fetch(`${pageUrl}/cdn-cgi/local/scheduled`), 200);
-  const withReminder = (await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === maintenance.id);
-  assert.equal(withReminder.notices.some((notice) => notice.kind === "reminder"), true);
-})(t);
-  t.diagnostic("MAINT-006 — rescheduling and cancellation create notices and retain a cancelled maintenance record");
-  await (async () => {
-  const created = await appFetch("/api/app/maintenance", { method: "POST", body: JSON.stringify({ title: "Reschedule and cancel", startsAt: new Date(Date.now() + 3 * 60 * 60_000).toISOString(), endsAt: new Date(Date.now() + 4 * 60 * 60_000).toISOString(), componentIds: ["01J00000000000000000000011"] }) });
-  await expectStatus(created, 201);
-  const maintenance = (await created.json()).maintenance;
-  await expectStatus(await appFetch(`/api/app/maintenance/${maintenance.id}/window`, { method: "PUT", body: JSON.stringify({ startsAt: new Date(Date.now() + 5 * 60 * 60_000).toISOString(), endsAt: new Date(Date.now() + 6 * 60 * 60_000).toISOString() }) }), 200);
-  await expectStatus(await appFetch(`/api/app/maintenance/${maintenance.id}/cancel`, { method: "POST" }), 200);
-  const cancelled = (await (await appFetch("/api/app/maintenance")).json()).maintenance.find((record) => record.id === maintenance.id);
-  assert.equal(cancelled.state, "Cancelled");
-  assert.equal(cancelled.notices.some((notice) => notice.kind === "rescheduled"), true);
-  assert.equal(cancelled.notices.some((notice) => notice.kind === "cancelled"), true);
-})(t);
+    // A never-published incident has no historical peak to retain after its
+    // sole component is detached. A complete reviewed draft still needs an
+    // affected component before it may become public.
+    await owner();
+    const unclaimed = await j.incident('Unpublished incident with no affected component', [component]);
+    await j.json(`/api/app/incidents/${unclaimed.id}/components/${component.id}`, 'DELETE');
+    const detached = await j.read(unclaimed.id);
+    assert.deepEqual(detached.components, []);
+    assert.equal(detached.impact, null);
+    assert.equal(detached.effectiveImpact, 'none');
+    await saveReviewed(unclaimed.id, { customerImpact: 'A complete draft must not publish without an affected component.' });
+    const prepared = await j.read(unclaimed.id);
+    assert.ok(prepared.draft);
+    assert.deepEqual(prepared.components, []);
+    assert.deepEqual(prepared.updates, []);
+    const publications = async () => (await j.db.prepare('SELECT * FROM incident_updates ORDER BY id').all()).results;
+    const beforePublications = await publications();
+    assert.ok(beforePublications.length > 0, 'the unchanged-publication control contains the earlier committed updates');
+    const publicPaths = ['/', '/history', '/feed.atom', '/api/public/status'];
+    const beforePublic = await Promise.all(publicPaths.map(path => j.publicText(path)));
+    const refusal = await j.publish(unclaimed.id, {}, 400);
+    assert.equal(refusal.error, 'Attach at least one component before publishing.');
+    assert.deepEqual(await j.read(unclaimed.id), prepared, 'refusal leaves the reviewed draft and unpublished incident unchanged');
+    assert.deepEqual(await publications(), beforePublications, 'refusal adds no publication and changes no earlier publication');
+    assert.deepEqual(await Promise.all(publicPaths.map(path => j.publicText(path))), beforePublic, 'refusal leaves every checked public surface unchanged');
+    for (const body of beforePublic) assert.ok(!body.includes(unclaimed.title));
+  } finally { await j.close(); }
+  await reportPublicationFlow();
 });
 
+const impactClock = '2040-04-02T12:00:00.000Z';
+const impactChoices = ['none', 'minor', 'major', 'critical'];
+const impactChanges = impactChoices.flatMap(choice => [choice, null]);
 
+async function impactIncident(j, state = 'Partially unavailable', component) {
+  component ??= await j.component('synthetic-lamp-impact-1');
+  const incident = await j.incident('synthetic-lamp-impact-2', [component], {
+    components: [{ componentId: component.id, state, relationship: 'Primary' }],
+  });
+  await j.save(incident.id, { nextUpdateAt: '2040-04-02T13:00:00.000Z' });
+  await j.publish(incident.id);
+  return { incident, component, endpoint: `/api/app/incidents/${incident.id}/impact` };
+}
 
+async function publicImpact(j, incident, expected) {
+  const rows = await eventually(
+    async () => (await (await j.publicResponse('/api/public/v1/incidents')).json()).data,
+    rows => rows.find(row => row.id === incident.id)?.effectiveImpact === expected,
+    'the new impact reaches this incident in the retained public generation',
+  );
+  return rows.find(row => row.id === incident.id);
+}
 
-
-
-
-
-
-
-
-
-
-test("DRAFT-003 HIST-002 HIST-003 — Unavailable AI and post-incident reporting", async t => {
-  t.diagnostic("DRAFT-003 — without a provider the suggestion route is unavailable while normal publication remains available");
-  await (async () => {
-  const status = await appFetch("/api/app/ai/status");
-  await expectStatus(status, 200);
-  assert.equal((await status.json()).configured, false);
-  const incident = await createIncident("No provider publication");
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}/ai-suggestion`, { method: "POST" })).status, 404);
-  await saveDraft(incident.id);
-  await expectStatus(await publish(incident.id), 200);
-})(t);
-  t.diagnostic("HIST-002 — a resolved incident publishes one immutable report with its selected recipient channel");
-  await (async () => {
-  const componentId = "01J00000000000000000000011";
-  const created = await appFetch("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: "Report contract incident", components: [{ componentId, state: "Major outage", relationship: "Primary" }] }) });
-  assert.equal(created.status, 201);
-  const incident = (await created.json()).incident;
-  const resolvedDraft = { ...validDraft, lifecycle: "Resolved", nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() };
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}/draft`, { method: "PUT", body: JSON.stringify(resolvedDraft) })).status, 200);
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}/publish`, { method: "POST", body: JSON.stringify({ channels: [] }) })).status, 200);
-  const report = { summary: "A database timeout interrupted requests.", timeline: "We detected, mitigated, and verified recovery.", cause: "A connection pool was exhausted.", remediation: "We raised the pool limit and added alerting." };
-  assert.equal((await appFetch(`/api/app/incidents/${incident.id}/report`, { method: "PUT", body: JSON.stringify(report) })).status, 200);
-  const published = await appFetch(`/api/app/incidents/${incident.id}/report/publish`, { method: "POST", body: JSON.stringify({ channels: ["email"] }) });
-  if (published.status !== 200) throw new Error(await published.text());
-  const visible = await appFetch(`/api/app/incidents/${incident.id}/report`);
-  assert.equal((await visible.json()).report.publishedAt !== null, true);
-  const publicReport = await fetch(`${pageUrl}/incidents/${incident.reference}`);
-  assert.equal(publicReport.status, 200);
-  assert.match(await publicReport.text(), /connection pool was exhausted/i);
-
-  const owingCreated = await appFetch("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: "Past major incident", openedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(), components: [{ componentId, state: "Major outage", relationship: "Primary" }] }) });
-  assert.equal(owingCreated.status, 201);
-  const owingIncident = (await owingCreated.json()).incident;
-  const past = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
-  assert.equal((await appFetch(`/api/app/incidents/${owingIncident.id}/draft`, { method: "PUT", body: JSON.stringify({ ...resolvedDraft, nextUpdateAt: past }) })).status, 200);
-  assert.equal((await appFetch(`/api/app/incidents/${owingIncident.id}/publish`, { method: "POST", body: JSON.stringify({ channels: [], publishedAt: past }) })).status, 200);
-  const owing = await appFetch("/api/app/reports/owing");
-  assert.equal((await owing.json()).incidentIds.includes(incident.id), false);
-  assert.equal((await (await appFetch("/api/app/reports/owing")).json()).incidentIds.includes(owingIncident.id), true);
-})(t);
-  t.diagnostic("HIST-003 — a major incident remains report-due after seven days even if its current component claim is later lowered");
-  await (async () => {
-  const componentId = (await createIsolatedComponent("Historical major report component")).id;
-  const incident = await createIncident("Historical major report due", { openedAt: new Date(Date.now() - 9 * 24 * 60 * 60_000).toISOString(), components: [{ componentId, state: "Major outage", relationship: "Primary" }] });
-  const publishedAt = new Date(Date.now() - 8 * 24 * 60 * 60_000).toISOString();
-  await saveDraft(incident.id, { lifecycle: "Resolved", nextUpdateAt: publishedAt });
-  await expectStatus(await publish(incident.id, { publishedAt }), 200);
-  executeFixtureSql(`UPDATE incident_components SET state = 'Operational' WHERE incident_id = '${incident.id}'`);
-  const owing = await appFetch("/api/app/reports/owing");
-  await expectStatus(owing, 200);
-  assert.equal((await owing.json()).incidentIds.includes(incident.id), true);
-})(t);
+test('INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    await j.signIn(undefined, { fresh: true });
+    // Independently specified severity controls cover both sides of derived
+    // impact, including every explicit choice and the explicit clear action.
+    for (const [state, derivedImpact] of [
+      ['Operational', 'none'], ['Degraded performance', 'minor'],
+      ['Partially unavailable', 'major'], ['Major outage', 'critical'],
+    ]) {
+      const { incident, endpoint } = await impactIncident(j, state);
+      const initial = (await j.json(endpoint)).impact;
+      assert.equal(initial.derivedImpact, derivedImpact);
+      assert.equal(initial.impactOverride, null);
+      assert.equal(initial.effectiveImpact, derivedImpact);
+      assert.deepEqual(initial.history, []);
+      for (const choice of impactChanges) {
+        const expected = choice ?? derivedImpact;
+        const saved = (await j.json(endpoint, 'PUT', { impactOverride: choice })).impact;
+        assert.equal(saved.impactOverride, choice);
+        assert.equal(saved.derivedImpact, derivedImpact);
+        assert.equal(saved.effectiveImpact, expected);
+        const read = (await j.json(endpoint)).impact;
+        assert.deepEqual(read, saved, 'independent native read retains the exact choice or clear');
+        const publicRow = await publicImpact(j, incident, expected);
+        assert.equal(publicRow.impactOverride, choice);
+        assert.equal(publicRow.derivedImpact, derivedImpact);
+        assert.equal(publicRow.impact, expected);
+      }
+      const before = await j.json(endpoint);
+      await j.json(endpoint, 'PUT', { impactOverride: 'unsupported' }, 400);
+      assert.deepEqual(await j.json(endpoint), before, 'an unsupported choice changes nothing');
+    }
+  } finally { await j.close(); }
 });
 
+test('INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const owner = (await j.json('/api/app/session')).operator;
+    const colleagueEmail = owner.email.replace(/^[^@]+/, 'synthetic-lamp-impact-3');
+    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator' }, 202);
+    await j.signIn(colleagueEmail);
+    const colleague = (await j.json('/api/app/session')).operator;
+    assert.notEqual(colleague.id, owner.id);
+    const { incident, endpoint } = await impactIncident(j);
+    const historyPath = `${endpoint}/history`;
+    const expected = [];
+    assert.deepEqual((await j.json(historyPath)).history, []);
+    const auditRows = async () => (await j.db.prepare("SELECT * FROM audit_entries WHERE action = 'impact-changed' AND entity_id = ? ORDER BY created_at DESC, id DESC").bind(incident.id).all()).results;
+    assert.deepEqual(await auditRows(), []);
+    let previousOverride = null;
+    for (const [index, choice] of impactChanges.entries()) {
+      const actor = index % 2 ? owner : colleague;
+      await j.signIn(index % 2 ? owner.email : colleagueEmail);
+      const createdAt = new Date(Date.parse(impactClock) + (index + 1) * 1000).toISOString();
+      await j.json('/test/clock', 'PUT', { now: Date.parse(createdAt) }, 204);
+      const before = await j.json(historyPath);
+      const beforeAudits = await auditRows();
+      const saved = (await j.json(endpoint, 'PUT', { impactOverride: choice })).impact;
+      const after = (await j.json(historyPath)).history;
+      assert.equal(after.length, before.history.length + 1);
+      assert.ok(after[0].id && !expected.some(row => row.id === after[0].id));
+      expected.unshift({ id: after[0].id, operatorId: actor.id, operatorName: actor.displayName, previousOverride, impactOverride: choice, createdAt });
+      assert.deepEqual(after, expected, 'complete private history names this actor and both values without rewriting older events');
+      assert.deepEqual(after.slice(1), before.history);
+      assert.deepEqual(saved.history, expected);
+      assert.deepEqual((await j.json(endpoint)).impact.history, expected);
+      const audits = await auditRows();
+      assert.equal(audits.length, beforeAudits.length + 1);
+      assert.deepEqual(audits.slice(1), beforeAudits, 'prior durable audit values remain intact');
+      assert.equal(audits[0].id, after[0].id);
+      assert.equal(audits[0].operator_id, actor.id);
+      assert.equal(audits[0].created_at, createdAt);
+      assert.deepEqual(JSON.parse(audits[0].payload_json), { previousOverride, impactOverride: choice });
+      const listed = (await j.json(`/api/app/audit-log?action=impact-changed&actorId=${actor.id}&limit=100`)).entries;
+      const entry = listed.find(row => row.id === after[0].id);
+      assert.ok(entry, 'the change is searchable through the actual operator audit door');
+      assert.equal(entry.actorId, actor.id);
+      assert.equal(entry.createdAt, createdAt);
+      // A retried choice is not a second change and cannot fabricate history.
+      await j.json(endpoint, 'PUT', { impactOverride: choice });
+      assert.deepEqual((await j.json(historyPath)).history, expected);
+      assert.deepEqual(await auditRows(), audits);
+      previousOverride = choice;
+    }
+    const before = await j.json(endpoint);
+    const anonymous = await j.raw(endpoint, { method: 'PUT', headers: { Origin: j.appOrigin, 'Content-Type': 'application/json' }, body: JSON.stringify({ impactOverride: 'critical' }) });
+    assert.equal(anonymous.status, 401);
+    assert.equal((await j.raw(historyPath)).status, 401, 'history is private');
+    assert.equal((await j.raw(new URL(historyPath, j.publicOrigin).href)).status, 404, 'the public host has no private timeline door');
+    assert.deepEqual(await j.json(endpoint), before);
+    for (const path of ['/', '/history', `/incidents/${incident.reference}`, '/api/public/v1/incidents']) {
+      const body = await j.publicText(path);
+      for (const actor of [owner, colleague]) {
+        assert.ok(!body.includes(actor.id) && !body.includes(actor.email) && !body.includes(actor.displayName), 'impact history never exposes its operators publicly');
+      }
+      for (const row of expected) assert.ok(!body.includes(row.id), 'private change identities do not appear publicly');
+    }
+  } finally { await j.close(); }
+});
 
+test('INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    await j.json('/test/clock', 'PUT', { now: Date.parse('2040-01-01T00:00:00.000Z') }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const target = await j.component('synthetic-lamp-impact-uptime-1');
+    const control = await j.component('synthetic-lamp-impact-uptime-2');
+    await recordClosedOutage(j, target, { startsAt: '2040-03-31T23:00:00.000Z', endsAt: '2040-04-01T01:00:00.000Z' });
+    await j.json('/test/clock', 'PUT', { now: Date.parse(impactClock) }, 204);
+    const { incident, endpoint } = await impactIncident(j, 'Partially unavailable', target);
+    await publicImpact(j, incident, 'major');
+    const figures = async () => ({
+      components: await j.json('/api/app/components'),
+      histories: await Promise.all([target, control].map(component => j.json(`/api/app/components/${component.id}/history`))),
+      claims: (await j.read(incident.id)).components,
+      publicComponents: (await (await j.publicResponse('/api/public/v1/components')).json()).data,
+      overall: (await (await j.publicResponse('/api/public/status')).json()).overall,
+      status: await (await j.publicResponse('/api/v2/status.json')).json(),
+      badges: await Promise.all([target, control].map(component => j.publicText(`/components/${component.id.toLowerCase()}/uptime.svg`))),
+      reports: await Promise.all([target, control].flatMap(component => ['month=2040-03', 'month=2040-04', 'quarter=2040-Q1', 'quarter=2040-Q2'].map(period => j.json(`/api/app/availability-report?component=${component.id}&${period}&format=json`)))),
+    });
+    const baseline = await figures();
+    assert.equal(baseline.overall, 'Partially unavailable');
+    assert.deepEqual(baseline.components.components.map(row => [row.id, row.publicState]).sort(), [[target.id, 'Partially unavailable'], [control.id, 'Operational']].sort());
+    const targetUptime = baseline.publicComponents.find(row => row.id === target.id).uptime;
+    const controlUptime = baseline.publicComponents.find(row => row.id === control.id).uptime;
+    assert.equal(targetUptime.percentage, '99.90%');
+    assert.equal(targetUptime.coverageMinutes, 90 * 1440);
+    assert.equal(controlUptime.percentage, '100.00%');
+    for (const day of ['2040-03-31', '2040-04-01']) {
+      const mark = targetUptime.marks.find(row => row.day === day);
+      assert.equal(mark.downtimeMinutes, 60);
+      assert.equal(mark.worstDowntimeState, 'Major outage');
+      assert.equal(controlUptime.marks.find(row => row.day === day).downtimeMinutes, 0);
+    }
+    for (const report of baseline.reports.slice(0, 4)) assert.equal(report.downtimeMinutes, '60.00');
+    rootFigures(await j.publicText('/'), 'default', target, control, '99.90%', 60, 'Major outage');
+    for (const choice of impactChanges) {
+      await j.json(endpoint, 'PUT', { impactOverride: choice });
+      const selected = await publicImpact(j, incident, choice ?? 'major');
+      assert.equal(selected.impactOverride, choice, 'read the new generation before comparing its figures');
+      assert.deepEqual(await figures(), baseline, `choosing ${choice ?? 'derived'} changes no complete state, claim, history, daily record, current figure, badge or report`);
+      rootFigures(await j.publicText('/'), 'default', target, control, '99.90%', 60, 'Major outage');
+    }
+  } finally { await j.close(); }
+});
 
+test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    const component = await j.component('Scheduled database service');
+    const operatorComponent = await j.component('Database console');
+    const incidentComponent = await j.component('Database replication');
+    await j.json(`/api/app/components/${operatorComponent.id}/standing-claim`, 'PUT', { state: 'Degraded performance' });
+    const incident = await j.incident('Database replication unavailable', [incidentComponent]);
+    await j.save(incident.id);
+    await j.publish(incident.id);
+    const publishedIncident = await j.read(incident.id);
+    const standingClaims = async () => (await j.db.prepare('SELECT * FROM component_standing_claims ORDER BY component_id, id').all()).results;
+    const incidentClaims = async () => (await j.db.prepare('SELECT * FROM incident_components WHERE incident_id = ? ORDER BY component_id, id').bind(incident.id).all()).results;
+    const retainedStanding = await standingClaims();
+    const retainedIncident = await incidentClaims();
+    assert.equal(retainedStanding.length, 1);
+    assert.equal(retainedStanding[0].component_id, operatorComponent.id);
+    assert.equal(retainedStanding[0].state, 'Degraded performance');
+    assert.equal(retainedIncident.length, 1);
+    assert.equal(retainedIncident[0].component_id, incidentComponent.id);
+    assert.equal(retainedIncident[0].incident_id, incident.id);
+    assert.equal(retainedIncident[0].state, 'Major outage');
+    assert.ok(retainedIncident[0].published_at);
+    await assertEmptyCalendar(j);
+    const now = Date.now();
+    const startsAt = new Date(now + 3600000).toISOString();
+    const endsAt = new Date(now + 7200000).toISOString();
+    const input = { title: 'Database capacity upgrade ;,\\\n' + 'é'.repeat(70), affectedAudience: 'Customers using the database', customerImpact: 'Writes may pause during the upgrade.', startsAt, endsAt, componentIds: [component.id, operatorComponent.id, incidentComponent.id], autoStart: true, autoComplete: false };
+    await admitAttributionOperator(j, 'maintenance-creator');
+    const maintenance = (await j.json('/api/app/maintenance', 'POST', input, 201)).maintenance;
+    const { creator: scheduler, actor: maintainer } = await admitAttributionOperator(j, 'maintenance-actor');
+    assert.equal(maintenance.createdByOperatorId, scheduler.id);
+    assert.equal(maintenance.notices.find(row => row.kind === 'scheduled').authorOperatorId, scheduler.id);
+    const endpoint = `/api/app/maintenance/${maintenance.id}`;
+    const list = async () => (await j.json('/api/app/maintenance')).maintenance.find(row => row.id === maintenance.id);
+    const attachments = async () => (await j.db.prepare('SELECT * FROM maintenance_components WHERE maintenance_id = ? ORDER BY component_id').bind(maintenance.id).all()).results;
+    const retainedAttachments = await attachments();
+    assert.deepEqual(retainedAttachments.map(row => [row.component_id, row.state]),
+      [...input.componentIds].sort().map(id => [id, 'Under maintenance']));
+    let statusIncident = incident;
+    const reconcileClaims = async (phase, controlState, active) => {
+      assert.equal((await list()).state, phase);
+      assert.deepEqual(await standingClaims(), retainedStanding, `${phase}: the exact standing claim survives`);
+      assert.deepEqual(await incidentClaims(), retainedIncident, `${phase}: the exact published incident claim survives`);
+      const currentIncident = await j.read(incident.id);
+      assert.equal(currentIncident.lifecycle, 'Identified');
+      assert.deepEqual(currentIncident.components, publishedIncident.components, `${phase}: native incident attachments are unchanged`);
+      assert.deepEqual(await attachments(), retainedAttachments, `${phase}: every maintenance attachment is retained`);
+      const activeClaims = (await j.db.prepare(`SELECT attached.* FROM maintenance_components AS attached
+        JOIN maintenance AS window ON window.id = attached.maintenance_id
+        WHERE window.id = ? AND window.state = 'In progress' ORDER BY attached.component_id`).bind(maintenance.id).all()).results;
+      assert.deepEqual(activeClaims, active ? retainedAttachments : [], `${phase}: only an in-progress window contributes maintenance claims`);
+      const expected = [[component.id, controlState], [operatorComponent.id, 'Degraded performance'], [incidentComponent.id, 'Major outage']];
+      const operatorRows = (await j.json('/api/app/components')).components;
+      assert.deepEqual(expected.map(([id]) => [id, operatorRows.find(row => row.id === id)?.publicState]), expected, `${phase}: operator aggregates`);
+      assert.equal(operatorRows.find(row => row.id === operatorComponent.id).standingClaimState, 'Degraded performance');
+      const publicRows = await eventually(async () => (await (await j.publicResponse('/api/public/v1/components')).json()).data,
+        rows => expected.every(([id, state]) => rows.find(row => row.id === id)?.state === state), `${phase}: public aggregates`);
+      assert.deepEqual(expected.map(([id]) => [id, publicRows.find(row => row.id === id)?.state]), expected);
+      const status = await eventually(async () => (await (await j.publicResponse('/api/public/status')).json()),
+        row => active ? row.maintenance?.reference === maintenance.reference : row.maintenance === null, `${phase}: public maintenance state`);
+      assert.equal(status.overall, 'Major outage');
+      assert.equal(status.incident.reference, statusIncident.reference);
+    };
+    await reconcileClaims('Scheduled', 'Operational', false);
+    assert.ok(maintenance.reference);
+    const separateIncident = await maintenanceIdentityFlow(j, component, maintenance, input, { attached: [component, operatorComponent, incidentComponent], priorIncidents: 1 });
+    statusIncident = separateIncident;
+    const uid = `lamp-maintenance-${maintenance.id}@lamp`;
+    const readCalendar = async () => {
+      const response = await j.publicResponse('/maintenance.ics');
+      assert.equal(response.status, 200);
+      assert.match(response.headers.get('content-type'), /^text\/calendar/);
+      const body = await response.text(), events = validateMaintenanceCalendar(body);
+      return { body, events, event: events.find(event => event.getFirstPropertyValue('uid') === uid) };
+    };
+    let calendar = await eventually(readCalendar, value => Boolean(value.event), 'scheduled calendar event');
+    assert.equal(calendar.event.getFirstPropertyValue('summary'), input.title);
+    assert.equal(calendar.event.getFirstPropertyValue('status'), 'CONFIRMED');
+    assert.equal(calendar.event.getFirstPropertyValue('sequence'), 0);
+    assert.equal(calendar.event.getFirstPropertyValue('dtstart').toJSDate().getTime(), Math.floor(Date.parse(startsAt) / 1000) * 1000);
+    assert.ok(!(await j.json('/api/app/incidents')).incidents.some(row => row.id === maintenance.id));
+    await j.visible(`/maintenance/${maintenance.reference}`, input.customerImpact);
+    await j.tick(now + 1000); await j.tick(now + 1000);
+    assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 1);
+    const actualStart = new Date(now - 7200000).toISOString();
+    const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
+    let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
+    await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd });
+    await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
+    await j.tick(Date.now());
+    assert.equal((await list()).state, 'In progress');
+    await reconcileClaims('In progress', 'Under maintenance', true);
+    const sharedStatus = await eventually(async () => (await (await j.publicResponse('/api/public/status')).json()), value => value.maintenance?.reference === maintenance.reference, 'active shared status');
+    assert.equal(sharedStatus.incident.reference, separateIncident.reference);
+    assert.equal(sharedStatus.maintenance.reference, maintenance.reference);
+    assert.equal((await list()).overrunning, false, 'an unfinished window has no overrun label before fifteen minutes');
+    calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 1, 'rescheduled calendar event');
+    assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
+    assert.equal(calendar.event.getFirstPropertyValue('dtstart').toJSDate().getTime(), Math.floor(Date.parse(actualStart) / 1000) * 1000);
+    assert.equal(calendar.event.getFirstPropertyValue('dtend').toJSDate().getTime(), Math.floor(Date.parse(elapsedEnd) / 1000) * 1000);
+    // Public HTML localizes the human date; its semantic time attributes
+    // carry the exact owner-selected window for browsers and calendar readers.
+    const publicWindow = ends => eventually(() => j.publicText(`/maintenance/${maintenance.reference}`), html => html.includes(`data-maintenance-ends-at="${ends}"`) && html.includes(`<time datetime="${actualStart}"`), 'public maintenance window');
+    const beforeOverrun = await publicWindow(elapsedEnd);
+    assert.ok(!beforeOverrun.includes('Running longer than planned'));
+    const initialPage = await j.publicResponse('/');
+    const oldValidator = initialPage.headers.get('etag');
+    assert.ok(Date.parse(initialPage.headers.get('x-lamp-snapshot-generated-at')) < Date.parse(elapsedEnd) + 15 * 60000);
+    assert.ok(!(await initialPage.text()).includes('Running longer than planned'));
+    await new Promise(resolve => setTimeout(resolve, Math.max(0, Date.parse(elapsedEnd) + 15 * 60000 - Date.now()) + 100));
+    const aged = await j.raw(j.publicOrigin + '/', { headers: { 'If-None-Match': oldValidator } });
+    assert.equal(aged.status, 200);
+    assert.notEqual(aged.headers.get('etag'), oldValidator);
+    for (const html of [await aged.text(), await j.publicText(`/maintenance/${maintenance.reference}`)]) {
+      assert.ok(html.includes('Running longer than planned'));
+      assert.ok(html.includes(`data-maintenance-ends-at="${elapsedEnd}"`), 'the overrun keeps its original end beside the warning');
+    }
+    assert.equal((await list()).overrunning, true);
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Under maintenance');
+    await j.tick(now + 3 * 3600000);
+    assert.equal((await list()).state, 'In progress', 'an unchecked automatic completion never ends the window');
+    await reconcileClaims('In progress', 'Under maintenance', true);
+    const later = new Date(now + 4 * 3600000).toISOString();
+    priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
+    await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: later });
+    await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
+    assert.equal((await list()).startsAt, actualStart);
+    assert.equal((await list()).endsAt, later);
+    assert.equal((await list()).overrunning, false);
+    await reconcileClaims('In progress', 'Under maintenance', true);
+    assert.ok(!(await publicWindow(later)).includes('Running longer than planned'));
+    const extendedPage = await eventually(() => j.publicText('/'), html => html.includes(`data-maintenance-ends-at="${later}"`), 'extended public window');
+    assert.ok(!extendedPage.includes('Running longer than planned'));
+    calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 2, 'extended calendar event');
+    assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
+    priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
+    await j.json(`${endpoint}/complete`, 'POST', {});
+    await assertMaintenanceActor(j, maintenance.id, 'completed', maintainer, priorNotices);
+    assert.equal((await list()).createdByOperatorId, scheduler.id, 'a change never replaces the creator');
+    await j.json(`${endpoint}/complete`, 'POST', {}, 409);
+    const completed = await eventually(list, row => row.state === 'Completed', 'manual completion');
+    await reconcileClaims('Completed', 'Operational', false);
+    assert.ok(completed.notices.some(row => row.kind === 'started'));
+    assert.equal(completed.notices.filter(row => row.kind === 'completed').length, 1);
+    assert.ok(!(await j.visible(`/maintenance/${maintenance.reference}`, 'Completed')).includes('Running longer than planned'));
+    await eventually(readCalendar, value => !value.event, 'completed window leaves the calendar');
+    assert.ok(completed.notices.some(row => row.kind === 'rescheduled'));
+    assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Operational');
+    await j.save(separateIncident.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await j.publish(separateIncident.id);
+    const sharedHistory = await j.visible('/history', input.title.trim());
+    assertSeparateRecords(sharedHistory, separateIncident, maintenance, 'history-item');
+    const feed = await j.visible('/feed.atom', input.customerImpact);
+    assert.ok(feed.includes(maintenance.reference));
+    await j.signIn(scheduler.email);
+    const cancelled = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Cancelled upgrade' }, 201)).maintenance;
+    assert.equal(cancelled.createdByOperatorId, scheduler.id);
+    await j.signIn(['synthetic-lamp-maintenance-actor', 'example.test'].join('@'));
+    const beforeCancellationEdits = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
+    await j.json(`/api/app/maintenance/${cancelled.id}/window`, 'PUT', { startsAt: new Date(now + 5 * 3600000).toISOString(), endsAt: new Date(now + 6 * 3600000).toISOString() });
+    await assertMaintenanceActor(j, cancelled.id, 'rescheduled', maintainer, beforeCancellationEdits);
+    const beforeCancel = await actorAudits(j, 'maintenance', cancelled.id, 'notice-published');
+    await j.json(`/api/app/maintenance/${cancelled.id}/cancel`, 'POST', {});
+    await assertMaintenanceActor(j, cancelled.id, 'cancelled', maintainer, beforeCancel);
+    await j.signIn();
+    assert.equal((await j.json('/api/app/maintenance')).maintenance.find(row => row.id === cancelled.id).state, 'Cancelled');
+    await eventually(readCalendar, value => value.events.some(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${cancelled.id}@lamp` && event.getFirstPropertyValue('status') === 'CANCELLED'), 'cancelled calendar event');
+    const internal = await j.component('Internal database topology', { internal: true });
+    const hidden = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Internal-only upgrade', componentIds: [internal.id] }, 201)).maintenance;
+    const barrier = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Public calendar generation barrier', componentIds: [component.id, internal.id] }, 201)).maintenance;
+    calendar = await eventually(readCalendar, value => value.body.includes(barrier.id), 'later public calendar generation');
+    for (const privateValue of [hidden.id, hidden.title, internal.id, internal.name]) assert.ok(!calendar.body.includes(privateValue), 'a later calendar generation excludes internal-only windows and component details');
+    // A second window keeps automatic completion on and proves both scheduled
+    // transitions, rather than treating manual completion as a Cron result.
+    const automatic = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Automatic maintenance', startsAt: new Date(now - 7200000).toISOString(), endsAt: new Date(now - 3600000).toISOString(), autoComplete: true }, 201)).maintenance;
+    await j.tick(Date.now()); await j.tick(Date.now());
+    assert.equal((await j.json('/api/app/maintenance')).maintenance.find(row => row.id === automatic.id).state, 'Completed');
 
+    // A future window proves both deadlines without backdating the record or
+    // asking an operator to start or complete it. Move Date as well as Cron's
+    // event time so the real maintenance scheduler observes each boundary.
+    const boundedStart = Date.now() + 10 * 60000;
+    const boundedEnd = boundedStart + 20 * 60000;
+    const bounded = (await j.json('/api/app/maintenance', 'POST', {
+      ...input, title: 'Future automatic database maintenance',
+      startsAt: new Date(boundedStart).toISOString(), endsAt: new Date(boundedEnd).toISOString(), autoComplete: true,
+    }, 201)).maintenance;
+    const readBounded = async () => (await j.json('/api/app/maintenance')).maintenance.find(row => row.id === bounded.id);
+    const advanceAndTick = async at => {
+      assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: at }) })).status, 204);
+      await j.tick(at);
+    };
+    await advanceAndTick(boundedStart - 1);
+    const beforeStart = await readBounded();
+    assert.equal(beforeStart.state, 'Scheduled', 'automatic maintenance cannot start before its window');
+    assert.equal(beforeStart.completedAt, null);
+    assert.deepEqual(beforeStart.notices.filter(row => ['started', 'completed'].includes(row.kind)), []);
+    await j.visible(`/maintenance/${bounded.reference}`, 'Scheduled');
 
-test("PAGE-005 — Snapshot recovery retains complete immutable generations", async t => {
-  t.diagnostic("PAGE-005 — a failed snapshot build labels the last artifact stale and a later cron reconciles both source and bookkeeping failures");
-  await (async () => {
-  const createPublicSnapshotService = await loadPublicSnapshotServiceFactory();
-  const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
-  let eTag = 0;
-  const objects = new Map();
-  const put = (key, bytes, contentType) => objects.set(key, { bytes, contentType, eTag: String(++eTag) });
-  put("snapshots/prior/page.html", encoder.encode("<main>Prior snapshot</main>").buffer, "text/html; charset=utf-8");
-  put("snapshots/current.json", encoder.encode(JSON.stringify({ version: "prior", generatedAt: "2026-09-08T00:00:00.000Z", generation: 1, sourceRevision: 0 })).buffer, "application/json");
-  const blobs = {
-    getText: async (key) => {
-      const object = objects.get(key);
-      return object ? { text: decoder.decode(object.bytes), contentType: object.contentType, eTag: object.eTag } : null;
-    },
-    getBytes: async (key) => {
-      const object = objects.get(key);
-      return object ? { bytes: object.bytes, contentType: object.contentType, eTag: object.eTag } : null;
-    },
-    putText: async (key, text, contentType) => put(key, encoder.encode(text).buffer, contentType),
-    putBytes: async (key, bytes, contentType) => put(key, bytes, contentType),
-    putTextConditionally: async (key, text, contentType) => { put(key, encoder.encode(text).buffer, contentType); return true; },
-  };
-  const source = {
-    settings: { id: "default", pageName: "Lamp test", tagline: "Snapshot contract", accentColor: "#16794C", timezone: "UTC", hostname: "status.example.test", footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: "[]", mailFromAddress: "lamp@example.test", aiToneInstructions: "", feedId: "feed-test", createdAt: "2026-09-08T00:00:00.000Z", updatedAt: "2026-09-08T00:00:00.000Z" },
-    components: [], claims: [], history: [], corrections: [], incidents: [], incidentComponents: [], updates: [], maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [],
-  };
-  const work = { requestedRevision: 1, completedRevision: 0 };
-  let generation = 1;
-  let sourceAvailable = false;
-  let d1Available = true;
-  const repository = {
-    load: async () => sourceAvailable ? source : null,
-    startBuild: async () => {}, finishBuild: async () => {}, latestBuild: async () => null,
-    reserveGeneration: async () => ++generation,
-    requestWork: async () => ++work.requestedRevision,
-    currentWork: async () => { if (!d1Available) throw new Error("D1 temporarily unavailable"); return { ...work }; },
-    completeWork: async (revision) => { work.completedRevision = Math.max(work.completedRevision, revision); },
-    markInterruptedBuilds: async () => {},
-    claimPendingWork: async () => work.requestedRevision > work.completedRevision,
-    releaseWorkLease: async () => {},
-  };
-  const snapshots = createPublicSnapshotService(repository, blobs);
-  await assert.rejects(() => snapshots.rebuild(), /Public snapshot build failed/);
-  assert.equal((await snapshots.readArtifact("page.html"))?.stale, true);
-  sourceAvailable = true;
-  assert.equal(await snapshots.retryPendingBuild(), true);
-  assert.equal((await snapshots.readArtifact("page.html"))?.stale, false);
+    const startDeadline = boundedStart + 240000;
+    await advanceAndTick(startDeadline);
+    const started = await readBounded();
+    assert.equal(started.state, 'In progress', 'automatic start meets the 240-second deadline');
+    const startedNotices = started.notices.filter(row => row.kind === 'started');
+    assert.equal(startedNotices.length, 1);
+    assert.equal(startedNotices[0].authorOperatorId, null);
+    assert.equal(startedNotices[0].publishedAt, new Date(startDeadline).toISOString());
+    assert.equal(started.notices.filter(row => row.kind === 'completed').length, 0);
+    await j.visible(`/maintenance/${bounded.reference}`, 'In progress');
+    await j.tick(startDeadline);
+    assert.deepEqual(await readBounded(), started, 'a repeated start tick adds no notice or transition');
 
-  // A D1 bookkeeping fault with no new source change still marks the old
-  // pointer stale. Once D1 recovers, retry creates a real durable revision
-  // instead of leaving a synthetic marker forever.
-  d1Available = false;
-  await assert.rejects(() => snapshots.rebuild(), /D1 temporarily unavailable/);
-  assert.equal((await snapshots.readArtifact("page.html"))?.stale, true);
-  d1Available = true;
-  assert.equal(await snapshots.retryPendingBuild(), true);
-  assert.equal(work.completedRevision, work.requestedRevision);
-  assert.equal((await snapshots.readArtifact("page.html"))?.stale, false);
-})(t);
-  t.diagnostic("PAGE-005 — a complete immutable R2 snapshot has every artifact and remains public without D1");
-  await (async () => {
-  const before = JSON.parse(r2Object("snapshots/current.json"));
-  for (const key of ["page.html", "history.html", "feed.atom", "widget.js", "status.json", "assets/status-page.css", "assets/status-page.js", "assets/favicon.svg", "assets/og.svg"]) {
-    assert.notEqual(r2Object(`snapshots/${before.version}/${key}`), "", `snapshot artifact ${key} is present before a rebuild failure`);
-  }
-  // Public routes read the immutable R2 pointer/artifacts only. Destroying
-  // the test database after a complete build cannot alter their response.
-  executeFixtureSql("DROP TABLE page_settings");
-  for (const path of ["/", "/history", "/feed.atom", "/widget.js", "/api/public/status"]) {
-    const response = await eventually(async () => { try { return await fetch(`${pageUrl}${path}?snapshot-only`); } catch { return null; } }, (candidate) => candidate?.status === 200, `${path} from R2 after D1 removal`);
-    assert.equal(response.status, 200, `${path} remains available from R2 without D1`);
-  }
-})(t);
+    await advanceAndTick(boundedEnd - 1);
+    const beforeEnd = await readBounded();
+    assert.equal(beforeEnd.state, 'In progress', 'automatic completion cannot precede the window end');
+    assert.equal(beforeEnd.completedAt, null);
+    assert.deepEqual(beforeEnd.notices, started.notices);
+
+    const completionDeadline = boundedEnd + 240000;
+    await advanceAndTick(completionDeadline);
+    const finished = await readBounded();
+    assert.equal(finished.state, 'Completed', 'automatic completion meets the 240-second deadline');
+    assert.equal(finished.completedAt, new Date(completionDeadline).toISOString());
+    assert.deepEqual(finished.notices.filter(row => row.kind === 'started'), startedNotices);
+    const completedNotices = finished.notices.filter(row => row.kind === 'completed');
+    assert.equal(completedNotices.length, 1);
+    assert.equal(completedNotices[0].authorOperatorId, null);
+    assert.equal(completedNotices[0].publishedAt, new Date(completionDeadline).toISOString());
+    await j.visible(`/maintenance/${bounded.reference}`, 'Completed');
+    await j.tick(completionDeadline);
+    await advanceAndTick(completionDeadline + 60000);
+    assert.deepEqual(await readBounded(), finished, 'repeated completion ticks retain exactly one notice for each transition');
+  } finally { await j.close(); }
+});
+
+test('UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence', scheduledUpdateFlow);
+test('INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams', chatDeskNativeFlow);
+
+test('AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text', async t => {
+  const j = await openStatusJourney();
+  try {
+    const component = await j.component('Synthetic Lamp report service');
+    const secret = 'synthetic-lamp-report-1';
+    const source = (await j.json('/api/app/intake/sources', 'POST', {
+      name: 'Synthetic Lamp responders', preset: 'pagerduty', credentialKind: 'hmac-sha256', signingSecret: secret,
+      labelMatchers: [{ componentId: component.id, labels: { service_id: 'synthetic-lamp-service-1' } }],
+    }, 201)).source;
+    const events = ['triggered', 'acknowledged', 'escalated', 'resolved'].map((action, index) => ({ event: {
+      id: `synthetic-lamp-event-${index}`, event_type: `incident.${action}`,
+      occurred_at: `2026-10-20T01:0${index}:00.000Z`, agent: { summary: `Synthetic Lamp responder ${index}` },
+      data: { id: 'synthetic-lamp-incident-1', title: `Report evidence ${action}\ncontinued source detail`, service: { id: 'synthetic-lamp-service-1' } },
+    } }));
+    const send = async payload => {
+      const body = JSON.stringify(payload);
+      const response = await j.raw(source.endpointUrl, { method: 'POST', headers: {
+        'Content-Type': 'application/json', 'X-PagerDuty-Signature': `v1=${createHmac('sha256', secret).update(body).digest('hex')}`,
+      }, body });
+      assert.equal(response.status, 202, await response.clone().text());
+      return response.json();
+    };
+    const firstReceipt = await send(events[0]);
+    const id = firstReceipt.incidentId;
+    const initial = await j.read(id);
+    const openedAt = initial.openedAt;
+    const endpoint = `/api/app/incidents/${id}`;
+    const reportPath = `${endpoint}/report`;
+    await j.json(`${reportPath}/draft`, 'POST', {}, 409);
+    const internalNote = 'PRIVATE report investigation must never become a source';
+    await j.json(`${endpoint}/internal-notes`, 'POST', { body: internalNote }, 201);
+    const publications = [];
+    const publish = async (lifecycle, customerImpact) => {
+      const fields = { lifecycle, affectedAudience: 'Customers of the report service.', customerImpact,
+        whatStillWorks: 'Saved receipts remain readable.', details: `Reviewed ${lifecycle} customer facts.`,
+        nextUpdateAt: lifecycle === 'Resolved' ? null : new Date(Date.now() + 3600_000).toISOString() };
+      await j.save(id, fields);
+      const update = (await j.publish(id, lifecycle === 'Resolved' ? { overrideReason: 'Operator verified service recovery independently.' } : {})).update;
+      for (const [key, value] of Object.entries(fields)) assert.equal(update[key], value);
+      publications.push(update);
+      return update;
+    };
+    await publish('Identified', 'Report service requests fail.');
+    const receiptIds = [firstReceipt.receiptId];
+    for (const event of events.slice(1)) {
+      const accepted = await send(event);
+      assert.equal(accepted.incidentId, id);
+      receiptIds.push(accepted.receiptId);
+    }
+    await publish('Monitoring', 'Report service requests are recovering.');
+    const resolution = await publish('Resolved', 'Report service requests work again.');
+    const brief = (await j.json(`${endpoint}/brief`)).brief;
+    assert.equal(brief.incident.openedAt, openedAt, 'opening is retained independently of the report generator');
+    const receipts = (await j.json('/api/app/intake/receipts?limit=250')).receipts.filter(row => row.incidentId === id);
+    assert.deepEqual(receipts.map(row => row.id).sort(), receiptIds.toSorted());
+    assert.equal(brief.whatWeKnow.alerts.length, events.length);
+    assert.equal(brief.whatWeKnow.updates.length, publications.length);
+    const publicBeforeDraft = await j.visible(`/incidents/${initial.reference}`, resolution.customerImpact);
+    const generated = await j.json(`${reportPath}/draft`, 'POST', {});
+    const report = generated.report;
+    const persisted = async () => j.db.prepare('SELECT * FROM incident_reports WHERE incident_id = ?').bind(id).first();
+    assert.deepEqual((await j.json(reportPath)).report, report);
+    assert.equal(report.publishedAt, null);
+    assert.ok(report.summary.includes(`Recorded incident window: ${openedAt} to published resolution ${resolution.publishedAt}`));
+    assert.match(report.summary, /not a measurement of customer downtime/);
+    const lines = report.timeline.split('\n');
+    const refs = lines.map(line => {
+      const citations = [...line.matchAll(/\[([^\]\r\n]+)\]/g)].map(match => match[1]);
+      assert.equal(citations.length, 1, 'each timeline line has exactly one real citation');
+      return citations[0];
+    });
+    const facts = [...brief.whatWeKnow.alerts, ...brief.whatWeKnow.updates];
+    assert.equal(lines.length, events.length + publications.length);
+    assert.deepEqual(refs.toSorted(), facts.map(row => row.ref).toSorted(), 'every available alert and published update is cited exactly once');
+    assert.deepEqual(generated.review.evidenceRefs.toSorted(), refs.toSorted());
+    const eventTimes = [];
+    for (const payload of events) {
+      const fact = brief.whatWeKnow.alerts.find(row => row.payload.event.id === payload.event.id);
+      assert.ok(fact, 'the native brief retains each submitted responder event');
+      const receipt = receipts.find(row => row.id === receiptIds[events.indexOf(payload)]);
+      assert.equal(fact.receivedAt, receipt.receivedAt);
+      const line = lines[refs.indexOf(fact.ref)];
+      assert.ok(line.startsWith(`${receipt.receivedAt} — `));
+      for (const text of [source.name, payload.event.data.title.replace(/\s+/g, ' '), payload.event.agent.summary,
+        payload.event.occurred_at, payload.event.event_type.slice('incident.'.length), payload.event.event_type === 'incident.resolved' ? 'recovered' : 'firing']) assert.ok(line.includes(text), `responder line retains ${text}`);
+      eventTimes.push(receipt.receivedAt);
+    }
+    for (const update of publications) {
+      const fact = brief.whatWeKnow.updates.find(row => row.publishedAt === update.publishedAt && row.customerImpact === update.customerImpact);
+      assert.ok(fact, 'the brief retains each independently captured publication');
+      const line = lines[refs.indexOf(fact.ref)];
+      assert.ok(line.startsWith(`${update.publishedAt} — `));
+      for (const field of ['lifecycle', 'affectedAudience', 'customerImpact', 'whatStillWorks', 'details']) assert.ok(line.includes(update[field]));
+      eventTimes.push(update.publishedAt);
+    }
+    assert.deepEqual(lines.map(line => line.split(' — ')[0]), eventTimes.toSorted(), 'all source lines follow their recorded times');
+    assert.ok(!JSON.stringify(generated).includes(internalNote));
+    for (const field of ['cause', 'remediation']) {
+      assert.equal(report[field], '');
+      assert.equal(generated.review[field].required, true);
+      assert.ok(generated.review[field].prompt.trim());
+    }
+    t.diagnostic('PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent');
+    const complete = { summary: report.summary, timeline: report.timeline, cause: 'The operator confirmed an exhausted worker pool.', remediation: 'The operator restored capacity and added saturation alerts.' };
+    const unchangedDraft = await persisted();
+    await j.json(`${reportPath}/draft`, 'POST', {}, 409);
+    assert.deepEqual(await persisted(), unchangedDraft, 'drafting never replaces an existing report');
+    const invalid = [
+      { cause: '', remediation: complete.remediation },
+      { cause: generated.review.cause.prompt, remediation: complete.remediation },
+      { cause: complete.cause, remediation: '' },
+      { cause: complete.cause, remediation: generated.review.remediation.prompt },
+    ];
+    for (const fields of invalid) {
+      await j.json(reportPath, 'PUT', { ...complete, ...fields });
+      const before = await persisted();
+      const resource = (await j.json(reportPath)).report;
+      const refusal = await j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 400);
+      assert.ok(refusal.error);
+      assert.deepEqual(await persisted(), before, 'refused publication changes no persisted report field');
+      assert.deepEqual((await j.json(reportPath)).report, resource);
+      assert.equal(await j.publicText(`/incidents/${initial.reference}`), publicBeforeDraft, 'saved and refused reports leave the complete public record unchanged');
+    }
+    t.diagnostic('PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records');
+    await j.json(reportPath, 'PUT', complete);
+    const saved = (await j.json(reportPath)).report;
+    await j.json(`${reportPath}/draft`, 'POST', {}, 409);
+    assert.deepEqual((await j.json(reportPath)).report, saved);
+    assert.equal(await j.publicText(`/incidents/${initial.reference}`), publicBeforeDraft);
+    // A manually authored report is also protected, without any generated draft.
+    const manualIncident = await j.incident('Synthetic Lamp operator report', [component]);
+    await j.save(manualIncident.id, { lifecycle: 'Resolved', nextUpdateAt: null });
+    await j.publish(manualIncident.id);
+    const manualPath = `/api/app/incidents/${manualIncident.id}/report`;
+    await j.json(manualPath, 'PUT', { ...complete, summary: 'An existing operator-authored report.' });
+    const manualBefore = (await j.json(manualPath)).report;
+    await j.json(`${manualPath}/draft`, 'POST', {}, 409);
+    assert.deepEqual((await j.json(manualPath)).report, manualBefore);
+    t.diagnostic('PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report');
+    const published = (await j.json(`${reportPath}/publish`, 'POST', { channels: [] })).report;
+    for (const [field, value] of Object.entries(complete)) assert.equal(published[field], value);
+    const publicHtml = await j.visible(`/incidents/${initial.reference}`, complete.cause);
+    const sections = descendants(parse(publicHtml)).filter(node => node.tagName === 'section' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'report'));
+    assert.equal(sections.length, 1);
+    const rendered = node => node.nodeName === '#text' ? node.value : node.tagName === 'br' ? '\n' : (node.childNodes ?? []).map(rendered).join('');
+    const fields = descendants(sections[0]).filter(node => node.tagName === 'div' && node.childNodes.some(child => child.tagName === 'dt'));
+    assert.deepEqual(fields.map(node => ({ label: nodeText(node.childNodes.find(child => child.tagName === 'dt')), value: rendered(node.childNodes.find(child => child.tagName === 'dd')) })),
+      Object.entries(complete).map(([field, value]) => ({ label: field[0].toUpperCase() + field.slice(1), value })));
+    const publishedRow = await persisted();
+    for (const action of [
+      () => j.json(reportPath, 'PUT', { summary: 'Changed summary', timeline: 'Changed timeline', cause: 'Changed cause', remediation: 'Changed remediation' }, 409),
+      () => j.json(`${reportPath}/draft`, 'POST', {}, 409),
+      () => j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 409),
+    ]) {
+      await action();
+      assert.deepEqual(await persisted(), publishedRow, 'all published report fields and provenance remain immutable');
+      assert.deepEqual((await j.json(reportPath)).report, published);
+      assert.equal(await j.publicText(`/incidents/${initial.reference}`), publicHtml, 'refused edits preserve the exact public report');
+    }
+    assert.ok(!publicHtml.includes(internalNote));
+    t.diagnostic('PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes');
+  } finally { await j.close(); }
+});
+
+test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
+  await updateReachFlow({ diagnostic: message => t.diagnostic(message) });
 });

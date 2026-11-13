@@ -1,27 +1,94 @@
+import { createOperatorRolesRepository } from '../../features/operators/roles.repository';
 import { AuthError, createAuthHandler, createSignInHandler, securityHeaders } from '@runeditrun/rer/modules/operator-auth';
 import { createDependencies } from '@runeditrun/rer/modules/dependencies';
 import { createIdpOwnerClaimHandler, createOwnerClaimHandler } from '@runeditrun/rer/modules/owner-claim';
 import { authConfig } from './config';
+import { identitySettingsPage } from './identity-settings-page';
+import { ownerClaimConfig } from './claim';
+import { openDoorAtFirstClaim } from '../../features/statuspage-import/door-claim';
 import type { AppBindings } from '../../app/types';
 import type { AppServices } from '../../app/services';
 export async function authResponse(request:Request,env:AppBindings,services:AppServices):Promise<Response> {
+  const response = await authResponseInternal(request,env,services);
+  if (response.status === 403) {
+    const session = await services.auth().getSession(request);
+    if (session) await createOperatorRolesRepository(env.DB).denied(session.operator.id,request.method,new URL(request.url).pathname);
+  }
+  return response;
+}
+async function authResponseInternal(request:Request,env:AppBindings,services:AppServices):Promise<Response> {
   try {
-    const auth=services.auth(),config=authConfig(env);
+    // Google and Okta set up in Settings are composed in before Base builds its providers.
+    const stored=await services.signIn.composed(),auth=await services.signInAuth(request),config=authConfig(env,stored),url=new URL(request.url);
+    const signedIn = await signedInOwnerRedirect(request, auth);
+    if (signedIn) return signedIn;
     // A host-configured key set selects native signed claims. Claims never choose their own authority.
-    if (env.RER_OWNER_CLAIM_PUBLIC_KEYS) {
-      const signed = await createOwnerClaimHandler({ db: env.DB, authConfig: config,
+    // The signed claim exists only on its own route, and only while the platform still holds SETUP_TOKEN. The trust stays bound after the
+    // claim (the import door reads it), but the platform then retires the token: every other route must not build the handler.
+    const trust = url.pathname === '/auth/owner-claim' ? ownerClaimConfig(env) : null;
+    let response = !trust ? null : !env.SETUP_TOKEN ? Response.json({ error: 'claim_unavailable' }, { status: 409, headers: securityHeaders() })
+      : await createOwnerClaimHandler({ db: env.DB, authConfig: config,
         clientIp: () => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '',
-        issuer: env.RER_OWNER_CLAIM_ISSUER ?? '', installationId: env.RER_OWNER_CLAIM_INSTALLATION_ID ?? '',
-        appOrigin: config.origin, expectedEmail: config.OWNER_EMAIL,
-        publicKeys: JSON.parse(env.RER_OWNER_CLAIM_PUBLIC_KEYS),
+        ...trust,
       })(request);
-      if (signed) return signed;
+    if (!response) {
+      const claim=createIdpOwnerClaimHandler({db:env.DB,authConfig:config,clientIp:()=>config.local?'loopback':request.headers.get('CF-Connecting-IP')??''});
+      const dependency=await createDependencies({db:env.DB,INSTALLATION_KEY:config.INSTALLATION_KEY,INSTALLATION_KEY_PREVIOUS:config.INSTALLATION_KEY_PREVIOUS,origin:config.origin,name:'Lamp',provider:env.IDENTITY_PROVIDER,local:config.local,auth,
+        claimOwner:token=>claim(new Request(config.origin+'/auth/owner-claim',{method:'POST',headers:{Host:new URL(config.origin).host,Origin:config.origin,'Content-Type':'application/json'},body:JSON.stringify({token})}))}).handle(request);
+      response = dependency ?? await claim(request) ?? await createSignInHandler(auth,{
+        setup:async()=> env.SETUP_TOKEN&&!await services.operators.initialized()?{instructions:'Use the setup token from your installation to claim the first owner.'}:null,
+      })(request) ?? await createAuthHandler(auth)(request) ?? new Response('Not found',{status:404});
     }
-    const claim=createIdpOwnerClaimHandler({db:env.DB,authConfig:config,clientIp:()=>config.local?'loopback':request.headers.get('CF-Connecting-IP')??''});
-    const dependency=await createDependencies({db:env.DB,origin:config.origin,name:'Lamp',provider:env.IDENTITY_PROVIDER,local:config.local,auth,
-      claimOwner:token=>claim(new Request(config.origin+'/auth/owner-claim',{method:'POST',headers:{Host:new URL(config.origin).host,Origin:config.origin,'Content-Type':'application/json'},body:JSON.stringify({token})}))}).handle(request);
-    return dependency ?? await claim(request) ?? await createSignInHandler(auth,{
-      setup:async()=> env.SETUP_TOKEN&&!await services.operators.initialized()?{instructions:'Use the setup token from your installation to claim the first owner.'}:null,
-    })(request) ?? await createAuthHandler(auth)(request) ?? new Response('Not found',{status:404});
-  } catch(error) {return Response.json({error:error instanceof AuthError?error.code:'auth_unavailable'},{status:error instanceof AuthError?error.status:503,headers:securityHeaders()});}
+    // A claim's answer (the first claim, or already claimed) and every sign-in
+    // that starts a session open a Business-provisioned install's door when no
+    // owner choice is recorded yet. The claim already committed, so a failure
+    // here is healed by the owner's next claim answer or sign-in.
+    if (env.RER_IMPORT_DOOR === 'on' && (['/auth/bootstrap', '/auth/owner-claim'].includes(url.pathname) || response.headers.has('Set-Cookie'))) {
+      await openDoorAtFirstClaim(env).catch(error => console.error('Lamp could not open the Business import door at the owner claim.', error));
+    }
+    if (url.pathname === '/auth/settings/identity' && request.method === 'POST'
+      && (request.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase() === 'application/x-www-form-urlencoded'
+      && response.status === 303 && response.headers.get('location') === '/auth/settings/identity') {
+      const headers = new Headers(response.headers);
+      headers.set('Location', '/auth/settings/identity?saved=1');
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    }
+    if (url.pathname === '/auth/owner-signin' && response.status >= 400) return ownerSignInRefused(response);
+    const test = await testFailureOnPane(request, response, auth, config.origin);
+    if (test) return test;
+    return request.method === 'GET' && url.pathname === '/auth/settings/identity'
+      ? await identitySettingsPage(response, { origin: config.origin, providers: config.providers, identityProvider: env.IDENTITY_PROVIDER || undefined, local: Boolean(import.meta.env?.DEV), saved: url.searchParams.get('saved') === '1' })
+      : response;
+  } catch(error) {
+    const response=Response.json({error:error instanceof AuthError?error.code:'auth_unavailable'},{status:error instanceof AuthError?error.status:503,headers:securityHeaders()});
+    return new URL(request.url).pathname === '/auth/owner-signin' ? ownerSignInRefused(response) : response;
+  }
+}
+
+// The owner's Test sign-in on Settings › Sign-in: a refusal Base sends to /signin?notice=… (which a signed-in person
+// never sees) comes back to the pane instead, with its code. Every other header, the cookies included, stays.
+async function testFailureOnPane(request:Request,response:Response,auth:Awaited<ReturnType<AppServices['signInAuth']>>,origin:string):Promise<Response|null> {
+  const test=/^\/auth\/oidc\/(google|okta)\/(start|callback)$/.exec(new URL(request.url).pathname);
+  const location=response.headers.get('location');
+  if (!test||response.status!==303||!location?.startsWith('/signin?notice=')) return null;
+  if (!await auth.identitySettings(request).then(()=>true,()=>false)) return null;
+  const notice=new URL(location,origin).searchParams.get('notice')??'';
+  const headers=new Headers(response.headers);
+  headers.set('Location',`/app/settings?test=${test[1]}&result=${/^[a-z_]+$/.test(notice)?notice:'oidc_unavailable'}#sign-in`);
+  return new Response(response.body,{status:303,statusText:response.statusText,headers});
+}
+
+// A missing, used or expired owner grant sends the person to /signin; the grant route never shows them raw JSON.
+async function ownerSignInRefused(response:Response):Promise<Response> {
+  const body=(response.headers.get('content-type')??'').includes('json')?await response.json().catch(()=>null) as {error?:unknown}|null:null;
+  const notice=typeof body?.error==='string'&&/^[a-z_]+$/.test(body.error)?body.error:'invalid_or_expired';
+  return new Response(null,{status:303,headers:{...securityHeaders(),Location:`/signin?notice=${notice}`}});
+}
+
+export async function signedInOwnerRedirect(request: Request, auth: ReturnType<AppServices['auth']>): Promise<Response | null> {
+  if (new URL(request.url).pathname !== '/signin' || !['GET', 'HEAD'].includes(request.method)) return null;
+  const session = await auth.getSession(request);
+  return session
+    ? new Response(null, { status: 303, headers: { ...securityHeaders(), Location: '/app' } })
+    : null;
 }

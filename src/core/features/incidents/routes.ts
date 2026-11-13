@@ -1,23 +1,27 @@
+import { templateSchema, templateUpdateSchema } from "./template-schema";
 import type { Context, Hono } from "hono";
 import { z } from "zod";
 
 import type { AppEnv } from "../../app/types";
+import { INCIDENT_CLAIM_STATES } from "../../shared/incident-component-changes";
 import { COMPONENT_STATES, INCIDENT_LIFECYCLES } from "../../shared/domain";
 import { ulidSchema } from "../../shared/ids";
-import { incidentDraftSchema } from "../../shared/schemas";
+import { incidentDraftSchema, incidentFirstUpdateSchema } from "../../shared/schemas";
 import { InvalidIncidentUpdateError, type IncidentsService } from "./service";
+import { RecoveryCheckError } from "../brief/recovery-check";
+import { draftFromIncident } from "./draft";
 
 const incidentQuerySchema = z.object({ lifecycle: z.enum(INCIDENT_LIFECYCLES).optional() }).strict();
-const publishSchema = z.object({ channels: z.array(z.enum(["email", "webhook", "chat"])).max(3).transform((channels) => [...new Set(channels)]), publishedAt: z.iso.datetime().optional() }).strict();
-const scheduleSchema = z.object({ publishAt: z.iso.datetime(), channels: z.array(z.enum(["email", "webhook", "chat"])).max(3).transform((channels) => [...new Set(channels)]) }).strict();
+const publishSchema = z.object({ channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]), publishedAt: z.iso.datetime().optional(), componentStates: z.record(ulidSchema, z.enum(INCIDENT_CLAIM_STATES)).optional(), overrideReason: z.string().trim().max(1_000).optional() }).strict();
+const scheduleSchema = z.object({ publishAt: z.iso.datetime(), channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]) }).strict();
 const deleteSchema = z.object({ reason: z.string().trim().min(1).max(1_000) }).strict();
 const attachedComponentSchema = z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict();
 const componentChangeSchema = z.discriminatedUnion("action", [
   attachedComponentSchema.extend({ action: z.literal("attach") }).strict(),
   z.object({ action: z.literal("detach"), componentId: ulidSchema }).strict(),
 ]);
-const createIncidentSchema = z.object({ title: z.string().trim().min(1).max(250), openedAt: z.iso.datetime().optional(), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict()).min(1).max(100) }).strict();
-const templateSchema = z.object({ name: z.string().trim().min(1).max(120), lifecycle: z.enum(INCIDENT_LIFECYCLES), affectedAudience: z.string().trim().min(1).max(250), customerImpact: z.string().trim().min(1).max(250), whatStillWorks: z.string().max(250), details: z.string().max(500), nextUpdateOffsetMinutes: z.number().int().min(1).max(10_080), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict()).min(1).max(100) }).strict();
+const createIncidentSchema = z.object({ title: z.string().trim().min(1).max(250), openedAt: z.iso.datetime().optional(), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict()).min(1).max(100), update: incidentFirstUpdateSchema.optional() }).strict();
+const newIncidentPreviewSchema = z.object({ title: z.string().trim().max(250), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(INCIDENT_CLAIM_STATES) }).strict()).max(100), update: incidentFirstUpdateSchema }).strict();
 const correctionSchema = z.object({ updateId: ulidSchema }).strict();
 const internalNoteSchema = z.object({ body: z.string().trim().min(1).max(5_000) }).strict();
 
@@ -25,7 +29,13 @@ function incidentIdFrom(context: Context<AppEnv>) {
   return ulidSchema.safeParse(context.req.param("incidentId"));
 }
 
-export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsService, options: { hasChatChannels?: () => Promise<boolean> } = {}) {
+export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsService, options: { hasChatChannels?: () => Promise<boolean>; wordingChecks?: () => Promise<{ blockedTerms: string[]; friendlyLength: number }> } = {}) {
+  app.get("/api/app/incidents/:incidentId/recovery-check", async (context) => {
+    const incidentId = incidentIdFrom(context);
+    if (!incidentId.success) return context.json({ error: "Invalid incident identifier." }, 400);
+    const recovery = await service.recoveryCheck(incidentId.data);
+    return recovery ? context.json({ recovery }) : context.json({ error: "Incident not found." }, 404);
+  });
   app.get("/api/app/incident-templates", async (context) => context.json({ templates: await service.listTemplates() }));
   app.post("/api/app/incident-templates", async (context) => {
     const input = templateSchema.safeParse(await context.req.json().catch(() => null));
@@ -33,12 +43,46 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
     try { return context.json({ template: await service.saveTemplate(input.data, context.get("operator").id) }, 201); }
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Template could not be saved." }, 409); }
   });
+  app.put("/api/app/incident-templates/:templateId", async (context) => {
+    const templateId = ulidSchema.safeParse(context.req.param("templateId"));
+    const input = templateUpdateSchema.safeParse(await context.req.json().catch(() => null));
+    if (!templateId.success || !input.success) return context.json({ error: "Valid template fields within their limits are required.", ...(!input.success ? { issues: input.error.issues } : {}) }, 400);
+    try {
+      const template = await service.updateTemplate(templateId.data, input.data, context.get("operator").id);
+      return template ? context.json({ template }) : context.json({ error: "Template not found." }, 404);
+    } catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Template could not be updated." }, 409); }
+  });
   app.post("/api/app/incidents", async (context) => {
     const input = createIncidentSchema.safeParse(await context.req.json().catch(() => null));
     if (!input.success) return context.json({ error: "An incident title and one or more affected components are required." }, 400);
     try { return context.json({ incident: await service.create(input.data, context.get("operator").id) }, 201); }
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Incident could not be created." }, 409); }
   });
+  app.post("/api/app/incidents/preview", async (context) => {
+    const input = newIncidentPreviewSchema.safeParse(await context.req.json().catch(() => null));
+    if (!input.success) return context.json({ error: "Invalid new incident.", issues: input.error.issues }, 400);
+    try { return context.json({ preview: await service.previewNew(input.data) }); }
+    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "The new incident could not be previewed." }, 409); }
+  });
+  app.get("/api/app/incidents/:incidentId/owner/operators", async (context) => {
+    const id = incidentIdFrom(context);
+    if (!id.success) return context.json({ error: "Invalid incident identifier." }, 400);
+    if (!(await service.get(id.data))) return context.json({ error: "Incident not found." }, 404);
+    return context.json({ operators: await service.communicationOwners.activeOperators() });
+  });
+  for (const method of ["take-over", "reassign"] as const) {
+    app.on(method === "take-over" ? "POST" : "PUT", `/api/app/incidents/:incidentId/owner${method === "take-over" ? "/take-over" : ""}`, async (context) => {
+      const id = incidentIdFrom(context);
+      const actor = context.get("operator").id;
+      const input = method === "take-over" ? { success: true as const, data: { operatorId: actor } } : z.object({ operatorId: z.union([z.uuid(), ulidSchema]) }).strict().safeParse(await context.req.json().catch(() => null));
+      if (!id.success || !input.success) return context.json({ error: "Choose an active operator." }, 400);
+      const result = await service.communicationOwners.assign(id.data, input.data.operatorId, actor);
+      if (result === "resolved") return context.json({ error: "A resolved incident cannot change communication owner." }, 409);
+      if (result !== "ok") return context.json({ error: result === "missing" ? "Incident not found." : "Active operator not found." }, 404);
+      return context.json(await service.communicationOwners.get(id.data));
+    });
+  }
+
   app.get("/api/app/incidents", async (context) => {
     const parsed = incidentQuerySchema.safeParse(context.req.query());
     if (!parsed.success) return context.json({ error: "Invalid incident query.", issues: parsed.error.issues }, 400);
@@ -50,7 +94,13 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
     const incidentId = incidentIdFrom(context);
     if (!incidentId.success) return context.json({ error: "Invalid incident identifier.", issues: incidentId.error.issues }, 400);
     const incident = await service.get(incidentId.data);
-    return incident ? context.json({ incident, hasChatChannels: options.hasChatChannels ? await options.hasChatChannels() : false }) : context.json({ error: "Incident not found." }, 404);
+    if (!incident) return context.json({ error: "Incident not found." }, 404);
+    const [hasChatChannels, rendering, wordingChecks] = await Promise.all([
+      options.hasChatChannels ? options.hasChatChannels() : false,
+      service.preview(incident.id, draftFromIncident(incident)).then(preview => ({ preview, previewError: null as string | null })).catch(cause => ({ preview: null, previewError: cause instanceof Error ? cause.message : "The draft could not be previewed." })),
+      options.wordingChecks?.(),
+    ]);
+    return context.json({ incident, hasChatChannels, ...rendering, wordingChecks });
   });
 
   app.post("/api/app/incidents/:incidentId/components/preview", async (context) => {
@@ -106,8 +156,10 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
     if (!incidentId.success) return context.json({ error: "Invalid incident identifier.", issues: incidentId.error.issues }, 400);
     const parsed = incidentDraftSchema.safeParse(await context.req.json().catch(() => null));
     if (!parsed.success) return context.json({ error: "Invalid incident draft.", issues: parsed.error.issues }, 400);
-    const preview = await service.preview(incidentId.data, parsed.data);
-    return preview ? context.json({ preview }) : context.json({ error: "Incident not found." }, 404);
+    try {
+      const preview = await service.preview(incidentId.data, parsed.data);
+      return preview ? context.json({ preview }) : context.json({ error: "Incident not found." }, 404);
+    } catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Component changes could not be previewed." }, 409); }
   });
 
   app.post("/api/app/incidents/:incidentId/publish", async (context) => {
@@ -117,7 +169,10 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
       const update = await service.publish(incidentId.data, context.get("operator").id, { ...parsed.data, expectedVersion: context.req.header("If-Match")! });
       if (update) context.executionCtx.waitUntil(service.finishPublication(update));
       return update ? context.json({ update }) : context.json({ error: "A saved draft is required." }, 409);
-    } catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "The update could not be published." }, cause instanceof InvalidIncidentUpdateError ? 400 : 409); }
+    } catch (cause) {
+      if (cause instanceof RecoveryCheckError) return context.json({ error: cause.message, recovery: cause.recovery }, 409);
+      return context.json({ error: cause instanceof Error ? cause.message : "The update could not be published." }, cause instanceof InvalidIncidentUpdateError ? 400 : 409);
+    }
   });
 
   app.post("/api/app/incidents/:incidentId/draft/schedule", async (context) => {
@@ -149,7 +204,13 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
   app.post("/api/app/incidents/:incidentId/templates/:templateId/apply", async (context) => {
     const incidentId = incidentIdFrom(context); const templateId = ulidSchema.safeParse(context.req.param("templateId"));
     if (!incidentId.success || !templateId.success) return context.json({ error: "Invalid incident or template identifier." }, 400);
-    try { const draft = await service.applyTemplate(incidentId.data, templateId.data, context.get("operator").id, context.req.header("If-Match")!); return draft ? context.json({ draft }) : context.json({ error: "Incident or template not found." }, 404); }
+    try {
+      const applied = await service.applyTemplate(incidentId.data, templateId.data, context.get("operator").id, context.req.header("If-Match")!);
+      if (!applied) return context.json({ error: "Incident or template not found." }, 404);
+      const channels = applied.template.shouldSendNotifications === null ? undefined : applied.template.shouldSendNotifications
+        ? ["email", "webhook", ...(await options.hasChatChannels?.() ? ["chat"] : [])] : [];
+      return context.json({ ...applied, ...(channels === undefined ? {} : { channels }) });
+    }
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Template could not be applied." }, 409); }
   });
 

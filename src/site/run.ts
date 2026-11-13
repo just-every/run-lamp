@@ -1,14 +1,14 @@
 import { checkRunData, type RunData } from '../base/run-site';
+import { runPricing } from '../base/run-pricing';
 
-// Every string and command of the run site's /run page (Base's runPageHtml). The clone names its folder so step 2's
-// `cd lamp` is the folder it makes.
+// Every string and command of the run site's /run page (Base's runPageHtml). Step 2 runs the clone line through the
+// installed rer (`rer dev just-every/run-lamp`), which makes the folder its restart note's `cd run-lamp` names.
 export const run: RunData = checkRunData({
   name: 'Lamp',
   repository: 'https://github.com/just-every/run-lamp',
-  clone: 'git clone https://github.com/just-every/run-lamp.git lamp',
-  folder: 'lamp',
-  requirements: 'Needs Node 22 or later and pnpm 10.12.4, on macOS, Linux or Windows with WSL2.',
+  clone: 'npx -y @runeditrun/rer dev just-every/run-lamp',
   licence: 'MIT',
   docs: true,
-  hosted: [],
+  paths: { product: null },
+  pricing: runPricing,
 });

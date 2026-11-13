@@ -7,6 +7,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { archiveOutputGuard } from "@runeditrun/rer/archive-output";
 import { developmentIngress } from "./scripts/dev-ingress/plugin.mjs";
+import { localSecretsStayLocal } from "./scripts/local-secret-files.mjs";
 import { docsSite } from "./src/site/docs/build/plugin.ts";
 
 const persistStatePath = process.env.RER_STATE_DIR ?? process.env.LAMP_WORKERS_STATE_PATH ?? ".wrangler/state";
@@ -20,6 +21,26 @@ export default defineConfig(({ command, isPreview }) => {
     // Parallel Workers previews must never rebuild each other's optimized
     // dependency graph. Test and browser runners set a private directory.
     cacheDir,
+    environments: {
+      client: {
+        build: {
+          rolldownOptions: {
+            output: {
+              // Tiny shared runtime chunks otherwise create many cold asset
+              // requests, followed by an extension request after hydration.
+              // Keep the shared runtime together; leaf pages stay split.
+              codeSplitting: {
+                groups: [{
+                  name: "operator-runtime",
+                  test: id => /\/node_modules\/(?:@tanstack\/|react(?:-dom)?\/|scheduler\/)/.test(id)
+                    || /\/src\/(?:core\/app\/client\/|editor\/|ext\/index\.client\.tsx)/.test(id),
+                }],
+              },
+            },
+          },
+        },
+      },
+    },
     server: {
       fs: {
         strict: true,
@@ -42,8 +63,8 @@ export default defineConfig(({ command, isPreview }) => {
         // This emulator-only bucket is not SNAPSHOTS and never enters an export
         // or emitted Worker config. Preview executes the production artifact.
         config: (config) => {
-          // Loopback stand-ins for api.statuspage.io and for Slack and Teams, for local journeys only.
-          const standIns = Object.fromEntries(["LAMP_DEV_STATUSPAGE_ORIGIN", "LAMP_DEV_CHANNEL_RECEIVER"].flatMap((name) => command === "serve" && !isPreview && process.env[name]?.startsWith("http://127.0.0.1:") ? [[name, process.env[name]]] : []));
+          // Loopback stand-ins for api.statuspage.io, Slack and Teams, and the owner's website, for local journeys only.
+          const standIns = Object.fromEntries(["LAMP_DEV_STATUSPAGE_ORIGIN", "LAMP_DEV_CHANNEL_RECEIVER", "LAMP_DEV_SITE_ORIGIN"].flatMap((name) => command === "serve" && !isPreview && process.env[name]?.startsWith("http://127.0.0.1:") ? [[name, process.env[name]]] : []));
           const localVar = (name: string) => process.env[name] ? { [name]: process.env[name]! } : {};
           const devAuth = local ? { main: fileURLToPath(new URL('./src/server.dev.ts', import.meta.url)), vars: {
             ...config.vars, ...localVar('RER_DEMO'), ...localVar('RER_DEMO_EXPIRES'),
@@ -59,6 +80,7 @@ export default defineConfig(({ command, isPreview }) => {
         // migration command and the Worker use one local D1 database.
         persistState: { path: persistStatePath },
       }),
+      localSecretsStayLocal(),
       tanstackStart({ prerender: { enabled: false } }),
       react(),
       tailwindcss(),

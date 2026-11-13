@@ -9,10 +9,16 @@ export interface AppBindings {
   EFFECTS_PAUSED?: string;
   RER_DEMO?: string;
   RER_DEMO_EXPIRES?: string;
+  /** The declared owner-entry path, supplied by RER only on preview Workers. */
+  RER_PREVIEW_OWNER_SIGNIN?: string;
   OWNER_EMAIL?: string;
   RER_OWNER_CLAIM_PUBLIC_KEYS?: string;
   RER_OWNER_CLAIM_ISSUER?: string;
   RER_OWNER_CLAIM_INSTALLATION_ID?: string;
+  /** The app origin RER's door trust names; absent means Lamp's own origin. */
+  RER_OWNER_CLAIM_APP_ORIGIN?: string;
+  /** `on` only on installs RER provisions for a Business plan: the first owner claim opens the import door. */
+  RER_IMPORT_DOOR?: string;
   SETUP_TOKEN?: string;
   SESSION_SECRET?: string;
   SETUP_OPERATOR_EMAIL?: string;
@@ -39,13 +45,35 @@ export interface AppBindings {
   RER_DEPLOY_SOURCE?: string;
   RER_DEPLOY_FINGERPRINT?: string;
   RER_VERSION?: { id: string };
+  /** Set by RER's delivery: the digest of the release this Worker runs, and its uploaded version. */
+  RER_RELEASE_DIGEST?: string;
+  RER_VERSION_METADATA?: { id: string };
   LAMP_PAGE_HOST: string;
   LAMP_APP_HOST: string;
   MAIL_FROM_ADDRESS: string;
   MAIL_PROVIDER_API_KEY?: string;
-  MAIL_PROVIDER?: "resend" | "sendgrid";
+  MAIL_PROVIDER?: "rer" | "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
+  MAIL_SECONDARY_PROVIDER?: "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
+  MAIL_SECONDARY_API_KEY?: string;
+  SES_REGION?: string;
+  SES_CONFIGURATION_SET?: string;
+  POSTMARK_ACCOUNT_API_KEY?: string;
+  SES_EVENT_TOPIC_ARN?: string;
+  POSTMARK_WEBHOOK_SECRET?: string;
+  MAILGUN_REGION?: "us" | "eu";
+  MAILGUN_WEBHOOK_SIGNING_KEY?: string;
+  MAIL_FROM?: string;
+  MAIL_RELAY_URL?: string;
+  MAIL_API_KEY?: string;
   SENDGRID_WEBHOOK_PUBLIC_KEY?: string;
   RER_MAIL_RELAY_SECRET?: string;
+  TWILIO_ACCOUNT_SID?: string;
+  TWILIO_AUTH_TOKEN?: string;
+  TWILIO_FROM_NUMBER?: string;
+  TWILIO_MESSAGING_SERVICE?: string;
+  SLACK_CLIENT_ID?: string;
+  SLACK_CLIENT_SECRET?: string;
+  SLACK_SIGNING_SECRET?: string;
   SUBSCRIBER_TOKEN_SECRET?: string;
   WEBHOOK_SIGNING_SECRET?: string;
   RESEND_WEBHOOK_SECRET?: string;
@@ -54,8 +82,11 @@ export interface AppBindings {
   AI_PROVIDER_MODEL?: string;
   /** Local Vite development only: a loopback stand-in for api.statuspage.io. */
   LAMP_DEV_STATUSPAGE_ORIGIN?: string;
+  /** Local Vite development only: a loopback stand-in for the internet when Lamp reads the owner's website. */
+  LAMP_DEV_SITE_ORIGIN?: string;
   /** Local Vite development only: a loopback receiver standing in for Slack and Teams. */
   LAMP_DEV_CHANNEL_RECEIVER?: string;
+  LAMP_DEV_SOCIAL_RECEIVER?: string;
 }
 
 export interface AppVariables {

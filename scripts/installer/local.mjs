@@ -1,5 +1,6 @@
+import {mkdirSync,readFileSync,renameSync,writeFileSync} from 'node:fs';
 import {access,readFile} from 'node:fs/promises';
-import {join} from 'node:path';
+import {dirname,join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {parseEnv} from 'node:util';
 import {localInstaller} from '@runeditrun/rer/local-installer';
@@ -7,10 +8,12 @@ import {readSettings} from '@runeditrun/rer/adapter-settings';
 import {writePrivateFile} from '@runeditrun/rer/internal/onboarding/private-files.mjs';
 import {commandAdapter as createCommandAdapter} from '@runeditrun/rer/adapter';
 import {localPortability} from '@runeditrun/rer/portability';
+import {coreMigrationPrefix,pageInitializer} from '../platform-ledger.mjs';
 import {nativeOwner} from './bootstrap.mjs';
 import {localSignIn} from './signin.mjs';
 import {lampDeploy} from './deploy.mjs';
 import {validateAnswers} from './validation.mjs';
+import {localHosts} from './local-hosts.mjs';
 import * as model from './ui/seed.mjs';
 
 const exists=path=>access(path).then(()=>true,()=>false);
@@ -29,8 +32,14 @@ const environment=(context,extra={})=>({...process.env,...context.env,...context
 const listen=context=>String(context.runtimePort??(new URL(context.origin).port||80));
 // dev:app applies new migrations, serves Vite and opens the page host once so
 // notification links know the page origin.
-const vite=context=>['node',['scripts/dev.mjs','--port',listen(context)],{env:environment(context)}];
-const preview=context=>[process.execPath,[fileURLToPath(new URL(import.meta.resolve('@runeditrun/rer/production-runtime')))],{env:{...environment(context),RER_RUNTIME_PORT:listen(context),RER_RUNTIME_HOST:context.runtimePort?'127.0.0.1':new URL(context.origin).hostname.replace(/^\[|\]$/g,''),RER_ORIGIN_KEY:'LAMP_LOCAL_ORIGIN',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false'}}];
+const vite=async context=>{
+ await localHosts(context);
+ return ['node',['scripts/dev.mjs','--port',listen(context)],{env:environment(context)}];
+};
+const preview=async context=>{
+ await localHosts(context);
+ return [process.execPath,[fileURLToPath(new URL(import.meta.resolve('@runeditrun/rer/production-runtime')))],{env:{...environment(context),RER_RUNTIME_PORT:listen(context),RER_RUNTIME_HOST:context.runtimePort?'127.0.0.1':new URL(context.origin).hostname.replace(/^\[|\]$/g,''),RER_ORIGIN_KEY:'LAMP_LOCAL_ORIGIN',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false'}}];
+};
 
 export const adapter=localInstaller({
  node:'22.20.0',features:{...model.features,hosting:false},
@@ -56,19 +65,13 @@ export const adapter=localInstaller({
  start:preview,owner:nativeOwner,signIn:localSignIn,
 });
 
-// Base import-kit custody holds source copies and replay authority: resume and
-// undo of a move-in stay on the installation that ran it.
-const importCustody=['sorry_import_releases','ik_batches','ik_d1_assertions','ik_d1_creation_plans','ik_d1_custody_revisions','ik_d1_custody_states','ik_d1_entries','ik_d1_erased_sources','ik_d1_erased_targets','ik_d1_erasure_journal','ik_d1_erasure_progress','ik_d1_erasure_tally','ik_d1_history','ik_d1_indexed_jobs','ik_d1_native_staging','ik_d1_native_staging_index','ik_d1_native_staging_values','ik_d1_original_chunks','ik_d1_plan_chunks','ik_d1_plan_index','ik_d1_preparation_receipts','ik_d1_preparation_steps','ik_d1_publication_fences','ik_d1_retirements','ik_d1_reversal_fences','ik_d1_reversal_reports','ik_d1_staging','ik_d1_staging_chunks','ik_d1_staging_headers','ik_d1_staging_index','ik_d1_staging_originals','ik_d1_staging_pages','ik_d1_stream_origins','ik_d1_stream_pages','ik_d1_stream_revisions','ik_d1_stream_sources','ik_d1_streams','ik_jobs','ik_original_sets','ik_originals','ik_provenance','ik_sources','ik_stages','ik_targets'];
-
-// Durable Base identity and consumed-claim state must travel with Lamp's product
-// attribution. Base excludes oa_/oc_ by default; keep only durable authority,
-// never sessions, links, credentials or pending setup/dependency approvals.
-// Base still forces restored provider links to re-link and sign-in to remain off.
-const operatorContinuity=['oa_operators','oa_bootstrap','oa_external_identities','oa_invitation_cancellations','oa_domain_rules','oa_auth_settings','oa_auth_audit','oa_identity_providers','oa_logout_events','oc_owner_claims','oc_idp_grants'];
-
-// This is the archive format's product identity, not the repository identifier.
-// Keep it stable so exports made before the repository rename still restore.
-const transfer=localPortability({database:'DB',buckets:{SNAPSHOTS:'SNAPSHOTS'},policy:{product:'just-every/lamp',buckets:{SNAPSHOTS:{}},replaceableTables:['public_snapshot_work','snapshot_build_control','reference_counters'],includeTables:operatorContinuity,excludeTables:['oa_sessions','oa_tokens','oa_step_up_challenges','oa_credentials','oa_dev_credentials',...importCustody],requiredConfiguration:['SETUP_TOKEN','SESSION_SECRET','SUBSCRIBER_TOKEN_SECRET','WEBHOOK_SIGNING_SECRET']},transient:['move-in import custody (resume and undo stay on the original installation)','operator sessions and one-use sign-in links','queued job deliveries in flight','public snapshot cache (rebuilt from D1 and R2)']});
+// This is the archive format's product identity, not the repository identifier
+// (scripts/installer/archive-policy.mjs keeps it stable for earlier exports).
+// rer export --target remote runs Lamp's hosted archive tool for the deployed
+// install (rer adds --remote --environment production --out FILE).
+// A RER Managed destination keeps Platform's ledger: core-<file> by hash, plus the
+// per-installation page initializer, which seeds data and has no schema file.
+const transfer={hostedExport:['node','scripts/export.mjs'],...localPortability({database:'DB',platformMigrations:{prefix:coreMigrationPrefix,dataOnly:[pageInitializer]},buckets:{SNAPSHOTS:'SNAPSHOTS'},policyModule:new URL('./archive-policy.mjs',import.meta.url),transient:['move-in import custody (resume and undo stay on the original installation)','operator sessions and one-use sign-in links','queued job deliveries in flight','public snapshot cache (rebuilt from D1 and R2)']})};
 
 // Declare installed documents explicitly: the Lobby at / does not link to all
 // docs. Read the publishing manifest so new pages enter hydration checks too.
@@ -77,9 +80,40 @@ const docs=JSON.parse(await readFile(new URL('../../docs/site.json',import.meta.
 export const commandAdapter=createCommandAdapter(adapter,{
  product:model.product.name,dev:vite,preview,
  publicPages:['/','/docs',...docs.sections.flatMap(section=>section.pages.map(page=>`/docs/${page.slug}`))],
- devIdentity:{entry:'src/server.dev.ts',output:['dist'],emailLinkTest:'tests/e2e/auth-adoption-journey.test.mjs'},verify:['pnpm',['run','verify:app']],deploy:lampDeploy(adapter),deployDeclaration:process.argv.includes('--demo')?'deploy.json':'hosted-check.json',
+ devIdentity:{entry:'src/server.dev.ts',output:['dist'],emailLinkTest:'tests/e2e/auth-adoption-journey.test.mjs'},verify:['pnpm',['run','verify:app']],deploy:lampDeploy(adapter),
  portability:transfer,generatedOutputs:['src/routeTree.gen.ts'],
  site:{entry:'src/site/pages.tsx',output:'dist/site',declaration:'deploy-site.json',config:'vite.site.config.ts'},
  setup:{manifestFile:'rer-setup.json'},browserModule:'scripts/installer/ui/seed.mjs',
  input:{names:{email:'SETUP_OPERATOR_EMAIL',name:'OWNER_DISPLAY_NAME'},defaults:async()=>({target:'local',OWNER_DISPLAY_NAME:'Owner',LAMP_PAGE_NAME:'Status',LAMP_PAGE_TAGLINE:'Current service status',LAMP_PAGE_TIMEZONE:'UTC'})},
+});
+
+// rer's installation key rotation (and retired-key reopen) re-keys the Worker its deploy
+// kit names lamp-<environment>. An environment deployed under a custom
+// LAMP_RESOURCE_PREFIX records another Worker, and the kit refuses that only after rer
+// saved the new key pair, which leaves every later deploy refused. There rer reads the
+// declaration without INSTALLATION_KEY_PREVIOUS and refuses the change before it saves
+// anything; the derived copy lives with Lamp's ignored deployment records.
+const root=fileURLToPath(new URL('../../',import.meta.url));
+function environmentDeclaration(file){
+ const at=process.argv.indexOf('--environment'),environment=at<0?'production':process.argv[at+1]??'';
+ if(!/^[a-z][a-z0-9-]{0,39}$/.test(environment))return file;
+ let worker;
+ try{({worker}=JSON.parse(readFileSync(join(root,'.rer','deploy',`${environment}.json`),'utf8')));}catch{return file;}
+ if(typeof worker!=='string'||worker===`lamp-${environment}`)return file;
+ const declaration=JSON.parse(readFileSync(join(root,file),'utf8'));
+ declaration.secrets=declaration.secrets.filter(item=>item.binding!=='INSTALLATION_KEY_PREVIOUS');
+ declaration.$comment=`Rewritten from ${file} by scripts/installer/local.mjs for environment ${environment}, whose Worker is ${worker}: without INSTALLATION_KEY_PREVIOUS, so rer refuses to rotate its installation key. Edit ${file}, not this copy.`;
+ const derived=join('.seed','deployment',`${environment}.${file}`),path=join(root,derived),temporary=`${path}.${process.pid}.tmp`;
+ mkdirSync(dirname(path),{recursive:true});
+ writeFileSync(temporary,JSON.stringify(declaration,null,2)+'\n');
+ renameSync(temporary,path);
+ return derived;
+}
+
+// Read after rer applies --env-file: each provider keeps its actual credential
+// mapping for the shared production-auth preflight and hosted-output checks.
+Object.defineProperty(commandAdapter, 'deployDeclaration', {
+ enumerable: true,
+ get: () => process.argv.includes('--demo') ? 'deploy.json'
+  : environmentDeclaration(process.env.MAIL_PROVIDER?.trim() === 'rer' ? 'hosted-check-managed.json' : 'hosted-check.json'),
 });

@@ -36,6 +36,38 @@ business. The operator app manages components, incidents, maintenance and
 subscriber communication; its separate page host serves customer-facing status
 information.
 
+## Run it locally
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
+```
+
+That one line gets Lamp, brings Node and pnpm, installs everything, makes you the
+owner and prints a link that opens Lamp signed in. Git is required. See the
+[Run page](https://run-lamp.com/run) for the same launch and hosting options.
+
+Already have Node 22 or later? Use this alternative:
+
+```sh
+npx -y @runeditrun/rer dev just-every/run-lamp
+```
+
+After the curl install, if `~/.local/bin` is missing from your PATH, run the
+installer's Bash line once to make the command available now and in future
+terminals:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
+```
+
+For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. To start
+Lamp again later:
+
+```sh
+cd run-lamp
+rer dev
+```
+
 ## Owner guides
 
 The app host serves Lamp's public documentation at `/docs`. Start with the
@@ -45,21 +77,62 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 - [First-run setup](docs/first-run.md), [components and groups](docs/components-and-groups.md),
   [incidents and updates](docs/incidents-and-updates.md), and [maintenance](docs/maintenance.md).
 - [Public page](docs/public-page.md), [subscribers and notifications](docs/subscribers-and-notifications.md),
-  [monitoring alerts](docs/alerts-from-monitoring-tools.md), and [operators](docs/operators-and-sign-in.md).
+  [monitoring alerts](docs/alerts-from-monitoring-tools.md), [AI assistance](docs/ai-assistance.md),
+  and [operators](docs/operators-and-sign-in.md).
 - [Domains](docs/domains.md), [move-in](docs/moving-in.md),
   [backups and recovery](docs/backups-and-recovery.md), and [updating](docs/updating.md).
 
+## Source and tooling versions
+
+The [Run page's](https://run-lamp.com/run) combined curl line above clones the
+default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
+development source and may hold changes not yet in a release; it pins
+`@runeditrun/rer` 0.2.108. This checkout prepares Lamp 1.11.14. The latest tagged release is `v1.11.13`, which pins
+`@runeditrun/rer` 0.2.108 too. To use that release instead, clone the tag and start it:
+
+```sh
+git clone --branch v1.11.13 https://github.com/just-every/run-lamp.git lamp
+cd lamp && rer dev
+```
+
+Then follow the documentation inside that checkout, which matches its tools.
+
+`rer --version` prints the `rer` you installed on its first line and the version
+this checkout pins on its second. Inside the checkout every `rer` command runs the
+pinned version once the checkout's dependencies are installed (`rer dev` and
+`rer install` install them); the installed `rer` only starts it.
+
+Node 22.20.0 and pnpm 10.12.4 are pinned. `rer` downloads and uses that Node
+version when your shell has a different one, and says so when it starts. Every
+command in the guides runs through `rer`, except
+[removing a deployment](docs/deploy.md#remove-an-installation) and
+[backing up or restoring a hosted one](docs/backups-and-recovery.md#back-up-a-hosted-installation),
+which need Node 22 or later on your PATH (no global pnpm).
+
 ## Deploy and verify
 
-Hosted Lamp needs a Resend or SendGrid account, an authenticated sender and its
-API key. There is no hosted mode without mail. Save the required inputs in a
-private file outside the checkout, owned by you with mode `0600`; follow the
-[complete input-file example](docs/deploy.md#save-private-deployment-inputs).
+- **Free:** you run Lamp's open source yourself in your own Cloudflare account,
+  with no Run Edit Run charge. The commands in this guide are this path.
+- **Assisted:** Run Edit Run installs and maintains Lamp for you, while it stays
+  in your own Cloudflare account and GitHub repository (early access).
+- **Managed:** Run Edit Run hosts and runs Lamp for you (waitlist only).
+
+Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
+
+Managed hosting includes mail: you need no provider account or mail key. RER
+fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and the private
+`MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
+authenticated sender and API key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`
+and `MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail.
+[Deploy to Cloudflare](docs/deploy.md) is one guided page: it explains each input
+in the order the dry run asks for it, including how to authenticate a sending
+domain at SendGrid or Resend, and keeps them in a private
+[input file](docs/deploy.md#step-1-make-a-private-input-file).
 You can also export the input names in the calling shell. The
 [input reference](docs/deployment-reference.md) distinguishes required owner
 values from secrets that `rer` generates on a first deploy.
 
-Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.22. Before a
+Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.108. Before a
 command that builds or verifies the checkout,
 stop a running development server with `rer dev --stop` or a production preview
 with `rer preview --stop`.
@@ -73,11 +146,8 @@ The dry run validates and compiles locally without contacting Cloudflare. A
 deployment validates owner inputs, provisions or reuses resources, applies
 migrations, builds and uploads the Worker with secrets, and checks application health.
 Run `rer verify` separately for the full source and browser checks; deployment does
-not run the verifier. Follow the [deployment guide](docs/install.md)
-for sender preparation and the [domain steps](docs/domains.md) before routing
-visitors. For `workers.dev`, follow the
-[hostname lookup and examples](docs/deployment-reference.md#find-your-workersdev-hostnames);
-both host inputs remain required. Use the same environment on later deploys.
+not run the verifier. The deploy ends by naming the sign-in address (your
+`LAMP_APP_HOST`). Use the same environment on later deploys.
 For terminal entry to the hosted owner account, use
 `rer signin --environment production --env-file "$HOME/.config/lamp/production.env"`
 from the deploying checkout with the default `lamp-<environment>` resource prefix.

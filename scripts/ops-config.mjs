@@ -27,6 +27,27 @@ function hostname(value, name) {
   return normalized;
 }
 
+// The opt-in page host route: the page host is a Worker route on a provider zone in the deploy account,
+// reached through a Cloudflare for SaaS custom hostname, instead of a Custom Domain on its own zone.
+function pageHostRoute(env, hosting, pageHost) {
+  const zoneInput = optional(env.LAMP_PAGE_HOST_ROUTE_ZONE);
+  const targetInput = optional(env.LAMP_PAGE_HOST_TARGET);
+  if (zoneInput === undefined && targetInput === undefined) return undefined;
+  if (zoneInput === undefined || targetInput === undefined) throw new Error("LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET must be set together.");
+  if (hosting === "workers-dev") throw new Error("LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET cannot be used with LAMP_HOSTING=workers-dev.");
+  const bare = (value, name) => {
+    if (value !== value.toLowerCase() || !value.includes(".") || !hostnamePattern.test(value)) throw new Error(`${name} must be a bare lowercase hostname without a protocol, port, or path.`);
+    return value;
+  };
+  const zone = bare(zoneInput, "LAMP_PAGE_HOST_ROUTE_ZONE");
+  const target = bare(targetInput, "LAMP_PAGE_HOST_TARGET");
+  const within = (name) => name === zone || name.endsWith(`.${zone}`);
+  if (!within(target)) throw new Error(`LAMP_PAGE_HOST_TARGET must be ${zone} or a name under it.`);
+  if (pageHost === target) throw new Error("LAMP_PAGE_HOST must differ from LAMP_PAGE_HOST_TARGET.");
+  if (within(pageHost)) throw new Error(`LAMP_PAGE_HOST is ${zone} or a name under it: leave LAMP_PAGE_HOST_ROUTE_ZONE and LAMP_PAGE_HOST_TARGET unset so Cloudflare attaches it as a custom domain.`);
+  return { zone, target };
+}
+
 function email(value, name) {
   const normalized = value.trim().toLowerCase();
   if (!emailPattern.test(normalized)) throw new Error(`${name} must be a valid email address.`);
@@ -81,6 +102,13 @@ function optionalSecret(value, name) {
   return value ? secret(value, name) : undefined;
 }
 
+// Base seals the dependency signing keys at rest under this key and accepts only
+// its generated form, 64 lowercase hex characters; there is no default.
+function installationKey(value) {
+  if (!/^[a-f0-9]{64}$/.test(value)) throw new Error("INSTALLATION_KEY must be the generated 64-character lowercase hex installation key; rer deploy generates and keeps it.");
+  return value;
+}
+
 function tomlString(value) {
   return JSON.stringify(value);
 }
@@ -102,12 +130,20 @@ export function parseArgs(argv) {
   return flags;
 }
 
-export function deploymentConfig(env = process.env, environment = "production") {
+export function mailEnvironmentNames(env = process.env) {
+  return env.MAIL_PROVIDER?.trim() === "rer"
+    ? ["MAIL_PROVIDER", "MAIL_FROM", "MAIL_RELAY_URL", "MAIL_API_KEY"]
+    : ["MAIL_FROM_ADDRESS", "MAIL_DKIM_SELECTOR", "MAIL_PROVIDER_API_KEY"];
+}
+
+// Provisioning alone never claims an owner, so it can run without the setup token.
+export function deploymentConfig(env = process.env, environment = "production", { claimsOwner = true } = {}) {
   if (!environmentPattern.test(environment)) throw new Error("Deployment environment must contain lowercase letters, digits, and hyphens.");
   const pageHost = hostname(required(env, "LAMP_PAGE_HOST"), "LAMP_PAGE_HOST");
   const appHost = hostname(required(env, "LAMP_APP_HOST"), "LAMP_APP_HOST");
   const hosting = optional(env.LAMP_HOSTING) ?? "custom-domain";
   if (!["custom-domain", "workers-dev"].includes(hosting)) throw new Error("LAMP_HOSTING must be custom-domain or workers-dev.");
+  const route = pageHostRoute(env, hosting, pageHost);
   const resourcePrefix = optional(env.LAMP_RESOURCE_PREFIX);
   if (resourcePrefix && !/^[a-z0-9](?:[a-z0-9-]{0,45}[a-z0-9])?$/.test(resourcePrefix)) throw new Error("LAMP_RESOURCE_PREFIX must be a lowercase resource name of at most 47 characters.");
   if (hosting === "workers-dev") {
@@ -115,7 +151,7 @@ export function deploymentConfig(env = process.env, environment = "production") 
     const suffix = appHost.slice(names.worker.length + 1);
     if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.workers\.dev$/.test(suffix)
       || appHost !== `${names.worker}.${suffix}` || pageHost !== `${names.publicWorker}.${suffix}`) {
-      throw new Error("workers-dev hosts must match the generated Worker names under the same account workers.dev subdomain. See OPERATIONS.md.");
+      throw new Error("workers-dev hosts must be lamp-<environment> and lamp-<environment>-page under your account's workers.dev subdomain. See docs/deploy.md, step 3.");
     }
   } else if (pageHost.endsWith(".workers.dev") || appHost.endsWith(".workers.dev")) throw new Error("Use LAMP_HOSTING=workers-dev for workers.dev hostnames.");
   if (pageHost === appHost) throw new Error("LAMP_PAGE_HOST and LAMP_APP_HOST must be distinct for a deployment.");
@@ -123,12 +159,22 @@ export function deploymentConfig(env = process.env, environment = "production") 
   const pageTagline = text(env.LAMP_PAGE_TAGLINE, "LAMP_PAGE_TAGLINE", 280);
   const pageTimezone = timezone(env.LAMP_PAGE_TIMEZONE);
   const pageAccentColor = accentColor(env.LAMP_ACCENT_COLOR);
-  const mailFromAddress = email(required(env, "MAIL_FROM_ADDRESS"), "MAIL_FROM_ADDRESS");
   const setupOperatorEmail = email(required(env, "SETUP_OPERATOR_EMAIL"), "SETUP_OPERATOR_EMAIL");
-  validateOwnerClaim(env, `https://${appHost}`, setupOperatorEmail);
+  const ownerClaim = validateOwnerClaim(env, `https://${appHost}`, setupOperatorEmail);
+  const importDoor = optional(env.RER_IMPORT_DOOR);
+  if (importDoor !== undefined && !['on','off'].includes(importDoor)) throw new Error('RER_IMPORT_DOOR must be on or off.');
+  if (importDoor === 'on' && !ownerClaim) throw new Error('RER_IMPORT_DOOR=on requires app-bound owner claim trust.');
   const setupOperatorDisplayName = env.OWNER_DISPLAY_NAME === undefined ? "Owner" : text(env.OWNER_DISPLAY_NAME, "OWNER_DISPLAY_NAME", 120);
   const mailProvider = optional(env.MAIL_PROVIDER) ?? "resend";
-  if (!["resend", "sendgrid"].includes(mailProvider)) throw new Error("MAIL_PROVIDER must be resend or sendgrid.");
+  if (!["rer", "resend", "sendgrid", "mailgun", "ses", "postmark"].includes(mailProvider)) throw new Error("MAIL_PROVIDER must be rer, resend, sendgrid, mailgun, ses or postmark.");
+  const senderName = mailProvider === "rer" ? "MAIL_FROM" : "MAIL_FROM_ADDRESS";
+  const mailFromAddress = email(required(env, senderName), senderName);
+  const mailRelayUrl = mailProvider === "rer" ? httpsUrl(required(env, "MAIL_RELAY_URL"), "MAIL_RELAY_URL") : undefined;
+  if (mailRelayUrl) {
+    const url = new URL(mailRelayUrl);
+    if (url.username || url.password || url.search || url.hash) throw new Error("MAIL_RELAY_URL must not contain credentials, a query or a fragment.");
+  }
+  const mailApiKey = mailProvider === "rer" ? secret(required(env, "MAIL_API_KEY"), "MAIL_API_KEY") : undefined;
   const sendGridWebhookPublicKey = optional(env.SENDGRID_WEBHOOK_PUBLIC_KEY);
   if (sendGridWebhookPublicKey && !/^[A-Za-z0-9+/]+={0,2}$/.test(sendGridWebhookPublicKey)) throw new Error("SENDGRID_WEBHOOK_PUBLIC_KEY must be a base64 encoded public key.");
   if (sendGridWebhookPublicKey) {
@@ -137,11 +183,27 @@ export function deploymentConfig(env = process.env, environment = "production") 
       if (key.asymmetricKeyDetails?.namedCurve !== "prime256v1") throw new Error();
     } catch { throw new Error("SENDGRID_WEBHOOK_PUBLIC_KEY must be a base64 P-256 SPKI public key."); }
   }
-  const mailProviderApiKey = secret(required(env, "MAIL_PROVIDER_API_KEY"), "MAIL_PROVIDER_API_KEY");
+  const mailProviderApiKey = mailProvider === "rer" ? undefined : secret(required(env, "MAIL_PROVIDER_API_KEY"), "MAIL_PROVIDER_API_KEY");
   const subscriberTokenSecret = secret(required(env, "SUBSCRIBER_TOKEN_SECRET"), "SUBSCRIBER_TOKEN_SECRET");
   const webhookSigningSecret = secret(required(env, "WEBHOOK_SIGNING_SECRET"), "WEBHOOK_SIGNING_SECRET");
-  const mailDkimSelector = required(env, "MAIL_DKIM_SELECTOR").toLowerCase();
-  if (!/^[a-z0-9][a-z0-9-]{0,62}$/.test(mailDkimSelector)) throw new Error("MAIL_DKIM_SELECTOR must be a DNS label.");
+  const mailDkimSelector = mailProvider === "rer" ? undefined : required(env, "MAIL_DKIM_SELECTOR").toLowerCase();
+  if (mailDkimSelector !== undefined && !/^[a-z0-9][a-z0-9-]{0,62}$/.test(mailDkimSelector)) throw new Error("MAIL_DKIM_SELECTOR must be a DNS label.");
+  const mailSecondaryProvider = optional(env.MAIL_SECONDARY_PROVIDER);
+  if (mailSecondaryProvider && (!['resend','sendgrid','mailgun','ses','postmark'].includes(mailSecondaryProvider) || mailSecondaryProvider === mailProvider || mailProvider === 'rer')) throw new Error('MAIL_SECONDARY_PROVIDER must name a different direct provider.');
+  const mailSecondaryApiKey = optionalSecret(optional(env.MAIL_SECONDARY_API_KEY), 'MAIL_SECONDARY_API_KEY');
+  if (Boolean(mailSecondaryProvider) !== Boolean(mailSecondaryApiKey)) throw new Error('MAIL_SECONDARY_PROVIDER and MAIL_SECONDARY_API_KEY must be configured together.');
+  const sesSelected=[mailProvider,mailSecondaryProvider].includes('ses');
+  const sesRegion=sesSelected?required(env,'SES_REGION'):optional(env.SES_REGION);
+  const sesConfigurationSet=sesSelected?required(env,'SES_CONFIGURATION_SET'):optional(env.SES_CONFIGURATION_SET);
+  const sesEventTopicArn=sesSelected?required(env,'SES_EVENT_TOPIC_ARN'):optional(env.SES_EVENT_TOPIC_ARN);
+  if(sesRegion&&!/^[a-z]{2}(?:-gov)?-[a-z]+-\d$/.test(sesRegion))throw new Error('SES_REGION must be an AWS region.');
+  if(sesConfigurationSet&&!/^[A-Za-z0-9_-]{1,64}$/.test(sesConfigurationSet))throw new Error('SES_CONFIGURATION_SET is invalid.');
+  if(sesEventTopicArn&&!/^arn:aws:sns:[a-z0-9-]+:\d{12}:[A-Za-z0-9_-]+$/.test(sesEventTopicArn))throw new Error('SES_EVENT_TOPIC_ARN must be an SNS topic ARN.');
+  const postmarkWebhookSecret=optionalSecret(optional(env.POSTMARK_WEBHOOK_SECRET),'POSTMARK_WEBHOOK_SECRET');
+  const postmarkAccountApiKey=optionalSecret(optional(env.POSTMARK_ACCOUNT_API_KEY),'POSTMARK_ACCOUNT_API_KEY');
+  const mailgunRegion = optional(env.MAILGUN_REGION);
+  if (mailgunRegion && !['us','eu'].includes(mailgunRegion)) throw new Error('MAILGUN_REGION must be us or eu.');
+  const mailgunWebhookSigningKey = optionalSecret(optional(env.MAILGUN_WEBHOOK_SIGNING_KEY), 'MAILGUN_WEBHOOK_SIGNING_KEY');
   const resendWebhookSecret = optionalSecret(optional(env.RESEND_WEBHOOK_SECRET), "RESEND_WEBHOOK_SECRET");
   const aiProviderUrl = optional(env.AI_PROVIDER_URL);
   const aiProviderApiKey = optional(env.AI_PROVIDER_API_KEY);
@@ -149,10 +211,12 @@ export function deploymentConfig(env = process.env, environment = "production") 
   if (Boolean(aiProviderUrl) !== Boolean(aiProviderApiKey) || Boolean(aiProviderUrl) !== Boolean(aiProviderModel)) throw new Error("AI_PROVIDER_URL, AI_PROVIDER_API_KEY, and AI_PROVIDER_MODEL must be configured together or all omitted.");
   return {
     environment,
+    ownerClaim, importDoor,
     hosting,
     resourcePrefix,
     accountId: optional(env.CLOUDFLARE_ACCOUNT_ID),
     pageHost,
+    pageHostRoute: route,
     appHost,
     pageName,
     pageTagline,
@@ -161,15 +225,23 @@ export function deploymentConfig(env = process.env, environment = "production") 
     mailFromAddress,
     setupOperatorEmail,
     sessionSecret: secret(required(env,"SESSION_SECRET"),"SESSION_SECRET"),
-    setupToken: secret(required(env,"SETUP_TOKEN"),"SETUP_TOKEN"),
+    installationKey: installationKey(required(env,"INSTALLATION_KEY")),
+    setupToken: claimsOwner ? secret(required(env,"SETUP_TOKEN"),"SETUP_TOKEN") : optionalSecret(optional(env.SETUP_TOKEN),"SETUP_TOKEN"),
     setupOperatorDisplayName,
     mailProviderApiKey,
+    mailSecondaryProvider,mailSecondaryApiKey,mailgunRegion,mailgunWebhookSigningKey,sesRegion,sesConfigurationSet,sesEventTopicArn,postmarkWebhookSecret,postmarkAccountApiKey,
+    mailApiKey,
+    mailRelayUrl,
     mailProvider,
     sendGridWebhookPublicKey,
     subscriberTokenSecret,
     webhookSigningSecret,
     mailDkimSelector,
     resendWebhookSecret,
+    twilioAccountSid:optional(env.TWILIO_ACCOUNT_SID),
+    twilioAuthToken:optional(env.TWILIO_AUTH_TOKEN),
+    twilioFromNumber:optional(env.TWILIO_FROM_NUMBER),
+    twilioMessagingService:optional(env.TWILIO_MESSAGING_SERVICE),
     relaySecret: optionalSecret(optional(env.RER_MAIL_RELAY_SECRET), "RER_MAIL_RELAY_SECRET"),
     identityProvider:env.IDENTITY_PROVIDER?new URL(httpsUrl(env.IDENTITY_PROVIDER,'IDENTITY_PROVIDER')).origin:undefined,
     authProviders:authProviders(env.AUTH_PROVIDERS),
@@ -186,9 +258,17 @@ export function resourceNames(environment, resourcePrefix) {
 }
 
 export function renderWranglerToml(config, resources) {
-  const hosting = config.hosting === "workers-dev" ? "workers_dev = true\n" : `workers_dev = false\nroutes = [\n  { pattern = ${tomlString(config.pageHost)}, custom_domain = true },\n  { pattern = ${tomlString(config.appHost)}, custom_domain = true }\n]\n`;
+  const pageRoute = config.pageHostRoute ? `{ pattern = ${tomlString(`${config.pageHost}/*`)}, zone_name = ${tomlString(config.pageHostRoute.zone)} }` : `{ pattern = ${tomlString(config.pageHost)}, custom_domain = true }`;
+  const hosting = config.hosting === "workers-dev" ? "workers_dev = true\n" : `workers_dev = false\nroutes = [\n  ${pageRoute},\n  { pattern = ${tomlString(config.appHost)}, custom_domain = true }\n]\n`;
+  const trustVars = config.ownerClaim ? Object.entries({
+    RER_OWNER_CLAIM_ISSUER: config.ownerClaim.issuer,
+    RER_OWNER_CLAIM_INSTALLATION_ID: config.ownerClaim.installationId,
+    RER_OWNER_CLAIM_APP_ORIGIN: config.ownerClaim.appOrigin,
+    RER_OWNER_CLAIM_PUBLIC_KEYS: JSON.stringify(config.ownerClaim.publicKeys),
+  }).map(([name,value]) => `${name} = ${tomlString(value)}\n`).join('') : '';
+  const doorVar = config.importDoor ? `RER_IMPORT_DOOR = ${tomlString(config.importDoor)}\n` : '';
   const aiVars = config.aiProviderUrl ? `AI_PROVIDER_URL = ${tomlString(config.aiProviderUrl)}\nAI_PROVIDER_MODEL = ${tomlString(config.aiProviderModel)}\n` : "";
-  return `# Generated by pnpm setup. Do not edit: source values live outside the repository.\nname = ${tomlString(resources.worker)}\nmain = "src/server.ts"\ncompatibility_date = "2026-09-08"\ncompatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]\n${hosting}${config.accountId ? `account_id = ${tomlString(config.accountId)}\n` : ""}\n[triggers]\ncrons = ["* * * * *"]\n\n[assets]\nbinding = "ASSETS"\nrun_worker_first = true\n\n[version_metadata]\nbinding = "RER_VERSION"\n\n[vars]\nLAMP_PAGE_HOST = ${tomlString(config.pageHost)}\nLAMP_APP_HOST = ${tomlString(config.appHost)}\nSETUP_OPERATOR_EMAIL = ${tomlString(config.setupOperatorEmail)}\nAUTH_ORIGIN = ${tomlString(`https://${config.appHost}`)}\nMAIL_FROM_ADDRESS = ${tomlString(config.mailFromAddress)}\nMAIL_PROVIDER = ${tomlString(config.mailProvider)}\n${config.sendGridWebhookPublicKey ? `SENDGRID_WEBHOOK_PUBLIC_KEY = ${tomlString(config.sendGridWebhookPublicKey)}\n` : ""}${config.identityProvider ? `IDENTITY_PROVIDER = ${tomlString(config.identityProvider)}\n` : ""}${aiVars}\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = ${tomlString(resources.database)}\ndatabase_id = ${tomlString(resources.databaseId)}\nmigrations_dir = "migrations/core"\n\n[[r2_buckets]]\nbinding = "SNAPSHOTS"\nbucket_name = ${tomlString(resources.bucket)}\n\n[[queues.producers]]\nbinding = "JOBS"\nqueue = ${tomlString(resources.queue)}\n\n[[queues.consumers]]\nqueue = ${tomlString(resources.queue)}\nmax_batch_size = 10\nmax_batch_timeout = 5\nmax_retries = 5\n\n[[durable_objects.bindings]]\nname = "SNAPSHOT_CACHE"\nclass_name = "SnapshotCache"\n\n[[migrations]]\ntag = "snapshot-cache-v1"\nnew_sqlite_classes = ["SnapshotCache"]\n`;
+  return `# Generated by pnpm setup. Do not edit: source values live outside the repository.\nname = ${tomlString(resources.worker)}\nmain = "src/server.ts"\ncompatibility_date = "2026-09-08"\ncompatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]\n${hosting}${config.accountId ? `account_id = ${tomlString(config.accountId)}\n` : ""}\n[triggers]\ncrons = ["* * * * *"]\n\n[assets]\nbinding = "ASSETS"\nrun_worker_first = true\n\n[version_metadata]\nbinding = "RER_VERSION"\n\n[vars]\nLAMP_PAGE_HOST = ${tomlString(config.pageHost)}\nLAMP_APP_HOST = ${tomlString(config.appHost)}\nSETUP_OPERATOR_EMAIL = ${tomlString(config.setupOperatorEmail)}\nAUTH_ORIGIN = ${tomlString(`https://${config.appHost}`)}\nMAIL_FROM_ADDRESS = ${tomlString(config.mailFromAddress)}\nMAIL_PROVIDER = ${tomlString(config.mailProvider)}\n${config.mailSecondaryProvider ? `MAIL_SECONDARY_PROVIDER = ${tomlString(config.mailSecondaryProvider)}\n` : ""}${config.mailgunRegion ? `MAILGUN_REGION = ${tomlString(config.mailgunRegion)}\n` : ""}${config.sesRegion ? `SES_REGION = ${tomlString(config.sesRegion)}\nSES_CONFIGURATION_SET = ${tomlString(config.sesConfigurationSet)}\nSES_EVENT_TOPIC_ARN = ${tomlString(config.sesEventTopicArn)}\n` : ""}${config.mailProvider === "rer" ? `MAIL_FROM = ${tomlString(config.mailFromAddress)}\nMAIL_RELAY_URL = ${tomlString(config.mailRelayUrl)}\n` : ""}${config.sendGridWebhookPublicKey ? `SENDGRID_WEBHOOK_PUBLIC_KEY = ${tomlString(config.sendGridWebhookPublicKey)}\n` : ""}${config.identityProvider ? `IDENTITY_PROVIDER = ${tomlString(config.identityProvider)}\n` : ""}${trustVars}${doorVar}${aiVars}\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = ${tomlString(resources.database)}\ndatabase_id = ${tomlString(resources.databaseId)}\nmigrations_dir = "migrations/core"\n\n[[r2_buckets]]\nbinding = "SNAPSHOTS"\nbucket_name = ${tomlString(resources.bucket)}\n\n[[queues.producers]]\nbinding = "JOBS"\nqueue = ${tomlString(resources.queue)}\n\n[[queues.consumers]]\nqueue = ${tomlString(resources.queue)}\nmax_batch_size = 10\nmax_batch_timeout = 5\nmax_retries = 5\n\n[[durable_objects.bindings]]\nname = "SNAPSHOT_CACHE"\nclass_name = "SnapshotCache"\n\n[[migrations]]\ntag = "snapshot-cache-v1"\nnew_sqlite_classes = ["SnapshotCache"]\n`;
 }
 
 export function renderRemoteArchiveWranglerToml(input) {
@@ -201,7 +281,7 @@ export function renderRemoteArchiveWranglerToml(input) {
   if (!/^[a-f0-9-]{36}$/i.test(databaseId ?? "")) throw new Error("The deployment record does not contain a valid D1 database ID for remote archive operations.");
   if (!database || !bucket) throw new Error("The deployment record is missing the D1 database or R2 bucket required for remote archive operations.");
   if (!migrationsDir || !isAbsolute(migrationsDir)) throw new Error("Remote archive configuration requires an absolute migrations/core path.");
-  return `# Temporary remote-binding proxy generated by pnpm export/import.\n# It is never deployed and exists only while the archive command runs.\nname = "lamp-archive-proxy"\ncompatibility_date = "2026-08-31"\naccount_id = ${tomlString(accountId)}\n\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = ${tomlString(database)}\ndatabase_id = ${tomlString(databaseId)}\nmigrations_dir = ${tomlString(migrationsDir)}\nremote = true\n\n[[r2_buckets]]\nbinding = "SNAPSHOTS"\nbucket_name = ${tomlString(bucket)}\nremote = true\n`;
+  return `# Temporary remote-binding proxy generated by scripts/export.mjs or scripts/import.mjs.\n# It is never deployed and exists only while the archive command runs.\nname = "lamp-archive-proxy"\ncompatibility_date = "2026-08-31"\naccount_id = ${tomlString(accountId)}\n\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = ${tomlString(database)}\ndatabase_id = ${tomlString(databaseId)}\nmigrations_dir = ${tomlString(migrationsDir)}\nremote = true\n\n[[r2_buckets]]\nbinding = "SNAPSHOTS"\nbucket_name = ${tomlString(bucket)}\nremote = true\n`;
 }
 
 export async function writeDeploymentRecord(path, record) {
@@ -245,4 +325,10 @@ export function setupPageSettingsStatement(config, now = new Date().toISOString(
   const condition = ownerJustCreated ? "changes() = 1" : "NOT EXISTS (SELECT 1 FROM page_settings WHERE id = 'default')";
   const conflict = ownerJustCreated ? " ON CONFLICT(id) DO UPDATE SET page_name=excluded.page_name,tagline=excluded.tagline,accent_color=excluded.accent_color,timezone=excluded.timezone,hostname=excluded.hostname,mail_from_address=excluded.mail_from_address,feed_id=CASE WHEN page_settings.feed_id = 'pending-feed-identity' OR page_settings.feed_id = '' THEN excluded.feed_id ELSE page_settings.feed_id END,updated_at=excluded.updated_at" : "";
   return `INSERT INTO page_settings (id, page_name, tagline, accent_color, timezone, hostname, feed_id, footer_credit_enabled, widget_allowed_origins, mail_from_address, created_at, updated_at) SELECT 'default', ${sqlLiteral(config.pageName)}, ${sqlLiteral(config.pageTagline)}, ${sqlLiteral(config.pageAccentColor)}, ${sqlLiteral(config.pageTimezone)}, ${sqlLiteral(config.pageHost)}, lower(hex(randomblob(16))), 1, '[]', ${sqlLiteral(config.mailFromAddress)}, ${sqlLiteral(now)}, ${sqlLiteral(now)} WHERE ${condition}${conflict};`;
+}
+
+// The stored page hostname follows LAMP_PAGE_HOST on every deploy. Only the hostname (and, when it changes, the
+// updated_at stamp) is written: a first setup or a new owner already stored it through setupPageSettingsStatement.
+export function pageHostBindingStatement(config, now = new Date().toISOString()) {
+  return `UPDATE page_settings SET hostname = ${sqlLiteral(config.pageHost)}, updated_at = ${sqlLiteral(now)} WHERE id = 'default' AND hostname <> ${sqlLiteral(config.pageHost)};`;
 }

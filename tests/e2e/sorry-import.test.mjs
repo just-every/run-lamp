@@ -1,113 +1,308 @@
 import assert from 'node:assert/strict';
+import { createHash, generateKeyPairSync, randomUUID, sign } from 'node:crypto';
+import { inflateRawSync } from 'node:zlib';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { nativeRequest, openNativeRuntime, origin, publicOrigin } from '../dev-ingress/runtime.mjs';
-import { signInAs } from '@runeditrun/rer/internal/modules/operator-auth/dev/sign-in-as.mjs';
-import { devKey } from '../helpers/dev-key.mjs';
-import { notificationActivity, assertNoNewNotifications } from '../helpers/import-notifications.mjs';
-import { load } from '../operator-readiness/runtime.mjs';
+import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+import { sorryReceiptFlow } from './helpers/sorry-receipt-flow.mjs';
+import { sorryCaptureFlow } from './helpers/sorry-capture-flow.mjs';
+import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 
-const endpoint = '/api/app/statuspage-import';
-const fixture = family => readdirSync(`tests/fixtures/sorry/${family}`).map(name => ({ name, text: readFileSync(`tests/fixtures/sorry/${family}/${name}`, 'utf8') }));
-const source = { source: 'sorry', publicAccessAcknowledged: true, pageId: 'synthpage01' };
+const fixture = (source, family) => readdirSync(`tests/fixtures/${source}/${family}`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/${family}/${name}`, 'utf8') }));
+const json64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+// Erasure is observable through the route and retained archive. Inspect custody
+// only to prove that no alternate compressed/upload copy keeps the erased address.
+async function custodyHolds(runtime, value) {
+  const db = runtime.db;
+  const forms = text => [text, ...(/^[A-Za-z0-9+/]+=*$/.test(text) ? [Buffer.from(text, 'base64').toString('utf8')] : []), ...(text.includes('"d1Plan":2') ? [inflateRawSync(Buffer.from(JSON.parse(text).data, 'base64')).toString('utf8')] : [])];
+  for (const { name } of (await db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'ik\\_%' ESCAPE '\\'").all()).results) {
+    const rows = (await db.prepare(`SELECT * FROM "${name}"`).all()).results;
+    if (rows.some(row => Object.values(row).some(cell => typeof cell === 'string' && forms(cell).some(text => text.toLowerCase().includes(value))))) return true;
+  }
+  return false;
+}
 
-test('MOVE-001 MOVE-002 MOVE-004 MOVE-005 MOVE-006 Sorry previews without writes, applies and undoes history, redirects old notices and holds invitations until cutover', { timeout: 600000 }, async () => {
-  const runtime = await openNativeRuntime();
+test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow', { timeout: 600_000 }, async t => {
+  const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
+  const kid = 'synthetic-business', installationId = randomUUID(), issuer = 'https://business.example.test';
+  const trust = { RER_OWNER_CLAIM_PUBLIC_KEYS: JSON.stringify({ [kid]: publicKey.export({ format: 'jwk' }) }), RER_OWNER_CLAIM_ISSUER: issuer, RER_OWNER_CLAIM_INSTALLATION_ID: installationId };
+  const work = { prepares: 0, builds: 0, finished: 0 };
+  let rebuildHeld, releaseRebuild, failBuild = false;
+  const runtime = await openStatusJourney({ extraBindings: { ...trust, LAMP_TEST_IMPORT_WORK: 'https://import-work.example.test' }, providerEdge: async request => {
+    const url = new URL(request.url);
+    if (url.hostname !== 'import-work.example.test') return;
+    if (url.pathname === '/prepare') work.prepares++;
+    if (url.pathname === '/finished') work.finished++;
+    if (url.pathname === '/rebuild') { work.builds++; await rebuildHeld; if (failBuild) { failBuild = false; return new Response(null, { status: 500 }); } }
+    return new Response(null, { status: 204 });
+  } });
+  const origin = runtime.appOrigin, publicOrigin = runtime.publicOrigin, operator = 'synthetic-lamp-owner@example.test';
+  const fetch = (input, init) => runtime.raw(input, init);
+  const nativeRequest = (path, { json, ...init } = {}) => runtime.raw(path, { ...init, ...(json === undefined ? {} : { body: JSON.stringify(json), headers: { 'Content-Type': 'application/json', ...init.headers } }) });
   try {
-    await runtime.start(); await runtime.seedOperator();
-    const cookie = (await signInAs({ origin, key: devKey })).header;
-    const call = async (path, body) => {
-      const response = await nativeRequest(path, { cookie, ...(body ? { method: 'POST', json: body } : {}) });
+    const owner = async (path, body, method = body === undefined ? 'GET' : 'POST', headers) => {
+      const response = await runtime.request(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }), headers });
+      return { status: response.status, body: response.status === 204 ? null : await response.json() };
+    };
+    const grant = (action, namespace, extra = {}) => {
+      const iat = Math.floor(Date.now() / 1000);
+      const input = `${json64({ alg: 'ES256', typ: 'rer-import-grant+jwt', kid })}.${json64({ v: 1, iss: issuer, aud: origin, installationId, email: operator, jti: randomUUID(), iat, exp: iat + 300, action, ...(namespace ? { namespace, maxBytes: 8 * 1024 * 1024, maxChunks: 128, maxRecords: 5000 } : {}), ...extra })}`;
+      return `${input}.${sign('sha256', Buffer.from(input), { key: privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
+    };
+    const door = async (action, source, body, approval = {}) => {
+      const response = await nativeRequest(`/api/rer/import/${action}`, { method: 'POST', json: body, headers: { Authorization: `Bearer ${grant(action, source, approval)}` } });
       return { status: response.status, body: await response.json() };
     };
-    const counts = async () => {
-      const rows = await Promise.all(['/api/app/components', '/api/app/incidents', '/api/app/maintenance', '/api/app/subscribers'].map(path => call(path)));
-      return [rows[0].body.components.length, rows[0].body.groups.length, rows[1].body.incidents.length, rows[2].body.maintenance.length, rows[3].body.subscribers.length];
+    const importWork = async () => ({ ...work });
+    const beforeRebuild = async (action, operation) => {
+      await eventually(importWork, work => work.builds === work.finished, 'earlier import builds settle');
+      const before = await importWork();
+      rebuildHeld = new Promise(resolve => { releaseRebuild = resolve; });
+      let pending, answered;
+      await t.test(`${action} answers before rebuilding the public page`, async () => {
+        try {
+          pending = operation();
+          answered = await Promise.race([pending.then(() => true), new Promise(resolve => setTimeout(() => resolve(false), 10_000))]);
+          assert.equal(answered, true, `${action} answers while its public snapshot rebuild is held`);
+          const during = await eventually(importWork, work => work.builds > before.builds, `${action} schedules a rebuild`);
+          assert.equal(during.finished, before.finished, `${action} answers before the rebuild finishes`);
+        } finally { failBuild = answered === true; releaseRebuild(); rebuildHeld = undefined; await pending; }
+      });
+      await eventually(importWork, work => work.builds === work.finished, 'failed background rebuild settles');
+      await runtime.tick(Date.now());
+      if (answered) t.diagnostic(`PROBE move-in deadline: ${action} answered with the rebuild held; injected background failure recovered through native scheduled retry`);
     };
-    const read = files => call(`${endpoint}/preview`, { ...source, files });
+    const snapshot = async () => {
+      const rows = await Promise.all(['/api/app/components', '/api/app/incidents', '/api/app/maintenance', '/api/app/subscribers'].map(path => owner(path)));
+      return { components: rows[0].body.components, incidents: rows[1].body.incidents, maintenance: rows[2].body.maintenance, subscribers: rows[3].body.subscribers };
+    };
+    const cutover = async () => {
+      const response = await nativeRequest('/api/rer/cutover-status', { method: 'POST', json: { since: new Date(0).toISOString() }, headers: { Authorization: `Bearer ${grant('cutover-status')}` } });
+      assert.equal(response.status, 200, await response.clone().text()); return response.json();
+    };
+    const moveIn = moveInDoor((path, body, headers) => owner(path, body, undefined, headers));
+    const source = { source: 'sorry', pageId: 'synthpage01', publicAccessAcknowledged: true };
+    const preview = async files => { const result = await moveIn.preview({ ...source, files }); assert.equal(result.status, 200, JSON.stringify(result.body)); return result.body; };
     const apply = async files => {
-      const preview = await read(files); assert.equal(preview.status, 200, JSON.stringify(preview.body));
-      let result = await call(`${endpoint}/apply`, { ...source, files, asOf: preview.body.report.asOf, fingerprint: preview.body.report.fingerprint, acknowledged: true });
-      while (result.body.job?.state === 'applying') result = await call(`${endpoint}/jobs/${result.body.job.id}/resume`, {});
-      assert.equal(result.status, 200, JSON.stringify(result.body)); assert.equal(result.body.job.state, 'completed');
-      return result.body;
+      const review = await preview(files), result = await moveIn.apply(review);
+      assert.equal(result.status, 200, JSON.stringify(result.body)); assert.equal(result.body.job.state, 'completed'); return result.body;
     };
-    const undo = async id => {
-      let result;
-      do { result = await call(`${endpoint}/jobs/${id}/undo`, {}); assert.equal(result.status, 200, JSON.stringify(result.body)); } while (result.body.job.state === 'undoing');
-      assert.equal(result.body.job.state, 'undone'); return result.body;
+    const undo = async imported => { const result = await moveIn.undo(imported.door); assert.equal(result.status, 200, JSON.stringify(result.body)); assert.equal(result.body.job.state, 'undone'); return result.body; };
+    const repeat = async (files, imported) => {
+      const aliases = await publicAliasInventory(runtime), records = await importedRecordInventory(runtime), notifications = await notificationInventory(runtime);
+      const reviewed = await preview(files);
+      assert.equal(reviewed.report.state, 'already imported');
+      const result = await moveIn.apply(reviewed);
+      assert.equal(result.status, 200, JSON.stringify(result.body));
+      assert.equal(result.body.job.id, imported.job.id);
+      assert.deepEqual(await importedRecordInventory(runtime), records, 'Sorry repeat preserves complete records and children');
+      assert.deepEqual(await publicAliasInventory(runtime), aliases, 'Sorry repeat preserves the complete public alias inventory and redirects');
+      assert.deepEqual(await notificationInventory(runtime), notifications, 'Sorry repeat preserves all notification work and captured transports');
+      await runtime.tick(Date.now());
+      assert.deepEqual(await notificationInventory(runtime), notifications, 'Sorry repeat remains silent through native scheduled processing');
+      assert.deepEqual(await importedRecordInventory(runtime), records);
+      t.diagnostic('PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory');
     };
-    const initial = await counts(), notifications = await notificationActivity(runtime), files = fixture('public');
-    const guest = await nativeRequest(`${endpoint}/preview`, { method: 'POST', json: { ...source, files } }); assert.equal(guest.status, 401);
-    const preview = await read(files); assert.equal(preview.status, 200, JSON.stringify(preview.body));
-    for (const [kind, amount] of Object.entries({ component: 2, group: 1, incident: 1, maintenance: 1, subscriber: 0 })) assert.equal(preview.body.report.counts[kind].read, amount);
-    assert.deepEqual(await counts(), initial); await assertNoNewNotifications(runtime, notifications);
-    assert.equal((await read(files.filter(file => file.name !== 'sorry-notice-100.json'))).status, 400, 'incomplete detail cannot be applied');
-    assert.equal((await read([...files, ...fixture('authenticated').filter(file => file.name.includes('subscribers'))])).status, 400, 'public captures cannot contain subscribers');
-    const altered = files.map(file => file.name.includes('components') ? { ...file, text: file.text.replace('Billing API', 'Changed billing API') } : file);
-    assert.equal((await call(`${endpoint}/apply`, { ...source, files: altered, asOf: preview.body.report.asOf, fingerprint: preview.body.report.fingerprint, acknowledged: true })).status, 409);
-    const imported = await apply(files);
-    assert.deepEqual(await counts(), [2, 1, 1, 1, 0]);
-    const incident = (await call('/api/app/incidents')).body.incidents[0];
-    assert.deepEqual(incident.updates.map(row => row.publishedAt).sort(), ['2025-04-02T10:00:00.000Z', '2025-04-02T10:30:00.000Z']);
-    const maintenance = (await call('/api/app/maintenance')).body.maintenance[0];
-    assert.equal(maintenance.state, 'Completed'); assert.equal(maintenance.notices.length, 0);
-    await assertNoNewNotifications(runtime, notifications);
+    await sorryReceiptFlow(async files => {
+      const reviewed = await moveIn.preview({ ...source, files });
+      assert.equal(reviewed.status, 200, `every .json file of a fresh capture folder is accepted: ${JSON.stringify(reviewed.body)}`);
+    });
+    const initial = await snapshot(), quiet = await notificationActivity(runtime);
+    const publicFiles = fixture('sorry', 'public');
+    await preview(publicFiles); assert.deepEqual(await snapshot(), initial, 'public saved-response review writes nothing');
+    assert.equal((await moveIn.preview({ ...source, files: publicFiles.filter(file => file.name !== 'sorry-notice-100.json') })).status, 400, 'incomplete source history is refused');
+    const publicImport = await apply(publicFiles);
+    const verification = await owner(`/api/app/statuspage-import/jobs/${publicImport.job.id}/verification`);
+    assert.equal(verification.status, 200);
+    assert.equal(verification.body.unexplainedDifferences, 0);
+    assert.deepEqual(verification.body.manifests.rows.source, verification.body.manifests.rows.target);
+    assert.deepEqual(verification.body.manifests.provenance.source, verification.body.manifests.provenance.target);
+    assert.equal((await nativeRequest(`/api/app/statuspage-import/jobs/${publicImport.job.id}/verification`)).status, 401, 'receipt evidence requires the current owner session');
+    const publicIncident = (await snapshot()).incidents[0];
+    const sourceNotice = JSON.parse(publicFiles.find(file => file.name === 'sorry-notice-100.json').text).notice;
+    assert.deepEqual(publicIncident.updates.map(row => Date.parse(row.publishedAt)).sort(), sourceNotice.updates.map(row => Date.parse(row.created_at)).sort());
     for (const path of ['/notices/100', '/notices/synthetic-delayed-invoice-processing']) {
       const response = await fetch(publicOrigin + path, { redirect: 'manual' }); assert.equal(response.status, 301);
-      assert.equal(response.headers.get('location'), `/incidents/${incident.reference}`);
+      assert.equal(response.headers.get('location'), `/incidents/${publicIncident.reference}`);
       assert.equal((await fetch(publicOrigin + response.headers.get('location'))).status, 200);
     }
-    for (const path of ['/notices', '/history', '/history/2026/october', '/history/2025/april']) {
-      const history = await fetch(publicOrigin + path, { redirect: 'manual' }); assert.equal(history.status, 301);
-      assert.equal(history.headers.get('location'), '/history/');
-      assert.ok(history.headers.get('x-lamp-snapshot-version'));
-      assert.equal((await fetch(publicOrigin + history.headers.get('location'))).status, 200);
-    }
-    assert.equal((await fetch(`${publicOrigin}/history/2026/not-a-month`, { redirect: 'manual' })).status, 404);
-    assert.equal((await apply(files)).job.id, imported.job.id);
-    await undo(imported.job.id); assert.deepEqual(await counts(), initial);
-    assert.equal((await fetch(`${publicOrigin}/notices/100`, { redirect: 'manual' })).status, 404);
-    assert.equal((await fetch(`${publicOrigin}/history/2026/october`, { redirect: 'manual' })).status, 404);
-    assert.equal((await fetch(`${publicOrigin}/history`, { redirect: 'manual' })).status, 200);
-    const { fetchSorryResponses } = await load('src/core/features/statuspage-import/sorry/fetch.ts');
-    const { readSorryResponses } = await load('src/core/features/statuspage-import/sorry/read.ts');
-    const saved = fixture('authenticated'), apiKey = 'synthetic-sorry-api-key';
-    const fetcher = async (url, init) => {
-      assert.equal(url.origin, 'https://api.sorryapp.com'); assert.equal(init.method, 'GET');
-      assert.equal(init.redirect, 'manual'); assert.equal(init.headers.Authorization, `Bearer ${apiKey}`);
-      const resource = url.pathname.replace('/v1/pages/synthpage01', '').replace(/^\//, '');
-      const name = resource.startsWith('notices/') ? `sorry-notice-${resource.split('/')[1]}.json` : `sorry-${resource || 'page'}.json`;
-      const file = saved.find(file => file.name === name); assert.ok(file, 'API requests only documented source resources');
-      return new Response(file.text, { headers: { 'content-type': 'application/json' } });
+    const history = await fetch(publicOrigin + '/history/2025/april', { redirect: 'manual' }); assert.equal(history.status, 301); assert.equal(history.headers.get('location'), '/history/');
+    assert.equal((await apply(publicFiles)).job.id, publicImport.job.id);
+    await repeat(publicFiles, publicImport);
+    await undo(publicImport); assert.deepEqual(await snapshot(), initial);
+    assert.equal((await fetch(publicOrigin + '/notices/100', { redirect: 'manual' })).status, 404);
+    const authenticatedFiles = fixture('sorry', 'authenticated');
+    const held = await apply(authenticatedFiles), moved = await snapshot();
+    assert.ok(moved.subscribers.length && moved.subscribers.every(row => row.state === 'deactivated'), 'source subscribers stay held until the owner approves cutover');
+    assert.ok(moved.maintenance.every(row => row.notices.length === 0), 'old maintenance sends no new notice');
+    const status = await cutover();
+    assert.equal(status.subscribers.held, moved.subscribers.length);
+    assert.deepEqual(status.old_addresses.sample, held.report.cutover.rows.map(({ path, target }) => ({ path, target })).sort((a, b) => a.path.localeCompare(b.path)));
+    assert.ok(!JSON.stringify(status).includes(moved.subscribers[0].destination), 'Business cutover status reveals counts, never destinations');
+    await assertNoNewNotifications(runtime, quiet);
+    await repeat(authenticatedFiles, held);
+    assert.equal((await owner(`/api/app/statuspage-import/jobs/${held.job.id}/send-invitations`, {})).status, 409);
+    assert.equal((await door('uploads', 'sorry', {})).status, 404, 'the Business door requires owner opt-in');
+    assert.equal((await owner('/api/app/import-door/settings', { enabled: true }, 'PUT')).status, 200);
+    const upload = async (namespace, files, name) => {
+      const bytes = Buffer.from(JSON.stringify({ source: namespace, files, ...(namespace === 'sorry' ? { pageId: source.pageId, publicAccessAcknowledged: true } : {}) }));
+      let uploadId;
+      for (let offset = 0, index = 0; offset < bytes.length; offset += 65536, index++) {
+        const chunk = bytes.subarray(offset, offset + 65536);
+        const result = await door('uploads', namespace, { ...(uploadId ? { uploadId } : {}), name, bundleSha256: hash(bytes), totalBytes: bytes.length, totalChunks: Math.ceil(bytes.length / 65536), index, chunkSha256: hash(chunk), base64: chunk.toString('base64') });
+        assert.equal(result.status, 200, JSON.stringify(result.body)); uploadId = result.body.uploadId;
+      }
+      return uploadId;
     };
-    const authFiles = await fetchSorryResponses({ pageId: source.pageId, apiKey, fetcher });
-    const parsed = await readSorryResponses(authFiles, source);
-    const channels = JSON.parse(saved.find(file => file.name === 'sorry-subscribers.json').text).response;
-    const retainedInput = JSON.stringify(parsed);
-    for (const row of channels) for (const field of ['phone_number', 'slack_webhook_url', 'microsoft_teams_url']) if (row[field]) assert.ok(!retainedInput.includes(row[field]), 'channel value must not enter retained records or original bytes');
-    assert.notEqual(parsed.artifacts.find(row => row.name === 'sorry-subscribers.json').original?.status, 'available');
-    for (const [field, value] of [['google_chat_space', 'https://chat.googleapis.com/v1/spaces/synthetic?key=synthetic'], ['legacy_slack_oauth_token', 'synthetic-legacy-slack']]) {
-      const files = authFiles.map(file => file.name !== 'sorry-subscribers.json' ? file : { ...file, text: JSON.stringify({ response: [{ ...channels[0], [field]: value }], count: 1 }) });
-      const read = await readSorryResponses(files, source);
-      assert.equal(read.data.subscribers.length, 1); assert.ok(!JSON.stringify(read).includes(value));
-    }
-    const credential = authFiles.map(file => file.name !== 'sorry-page.json' ? file : { ...file, text: file.text.replace('"response": {', '"response": {"api_key":"must-be-refused",') });
-    assert.equal((await read(credential)).status, 400, 'other credential-bearing responses still fail closed');
-    const held = await apply(authFiles);
-    assert.equal((await call('/api/app/maintenance')).body.maintenance.find(row => row.title === 'Cancelled database maintenance').state, 'Cancelled');
-    assert.equal((await call('/api/app/incidents')).body.incidents.find(row => row.title === 'Billing support hours').lifecycle, 'Resolved');
-    assert.equal(held.report.counts.subscriber.imported + held.report.counts.subscriber.changed, 1); assert.equal(held.report.counts.subscriber.skipped, 3);
-    for (const name of ['Slack', 'Microsoft Teams']) assert.ok(held.report.items.some(row => row.kind === 'subscriber' && row.outcome === 'skipped' && row.reason.includes(name)));
-    assert.equal(held.report.cutover.invitations.deadline, null); assert.equal(held.invites.remaining, 1);
-    const subscriber = (await call('/api/app/subscribers')).body.subscribers.find(row => row.destination === 'reader@example.invalid'); assert.equal(subscriber.state, 'deactivated');
-    await assertNoNewNotifications(runtime, notifications);
-    assert.equal((await call(`${endpoint}/jobs/${held.job.id}/send-invitations`, {})).status, 409);
-    assert.equal((await call(`${endpoint}/jobs/${held.job.id}/send-invitations`, { liveOrigin: 'https://wrong.example.invalid', hostnameLive: true, watchWindowClosed: true })).status, 409);
-    const sent = await call(`${endpoint}/jobs/${held.job.id}/send-invitations`, { liveOrigin: publicOrigin, hostnameLive: true, watchWindowClosed: true });
-    assert.equal(sent.status, 200, JSON.stringify(sent.body)); assert.equal(sent.body.report.cutover.invitations.claimed, 1);
-    const repeated = await call(`${endpoint}/jobs/${held.job.id}/send-invitations`, { liveOrigin: publicOrigin, hostnameLive: true, watchWindowClosed: true }); assert.equal(repeated.body.invites.sent, 0);
-    const retained = await undo(held.job.id);
-    assert.ok(retained.undo.dispositions.some(row => row.targetKind === 'subscriber' && row.disposition === 'retained'), 'release changes the held row, so undo cannot claim to retract its invitation');
+    const saved = await upload('sorry', authenticatedFiles, 'sorry-final.json');
+    const archive = await door('archive', 'sorry', { uploadId: saved, tool: 'sorry', takenAt: new Date().toISOString() }); assert.equal(archive.status, 200, JSON.stringify(archive.body));
+    const restored = await door('restore-check', 'sorry', { archiveId: archive.body.archiveId }); assert.equal(restored.status, 200, JSON.stringify(restored.body));
+    assert.deepEqual(restored.body.counts, archive.body.counts); assert.deepEqual(restored.body.rejected, []);
+    assert.deepEqual(await snapshot(), moved, 'archive restore-check never writes native records');
+    const released = await owner(`/api/app/statuspage-import/jobs/${held.job.id}/send-invitations`, { liveOrigin: publicOrigin, hostnameLive: true, watchWindowClosed: true });
+    assert.equal(released.status, 200, JSON.stringify(released.body));
+    assert.equal((await owner(`/api/app/statuspage-import/jobs/${held.job.id}/send-invitations`, { liveOrigin: publicOrigin, hostnameLive: true, watchWindowClosed: true })).body.invites.sent, 0);
+    const subscriber = moved.subscribers[0]; assert.ok(await custodyHolds(runtime, subscriber.destination));
+    assert.equal((await owner(`/api/app/subscribers/${subscriber.id}`, undefined, 'DELETE')).status, 204);
+    assert.equal(await custodyHolds(runtime, subscriber.destination), false);
+    const erasedArchive = await door('restore-check', 'sorry', { archiveId: archive.body.archiveId }); assert.equal(erasedArchive.status, 410);
+    await undo(held);
+
+    // A retained Business approval can catch up a large source within its scope.
+    // The whole reviewed source is compared through native routes after each step.
+    const files = fixture('statuspage', 'small');
+    const incidentFile = files.find(file => file.name === 'incidents.json');
+    const seed = JSON.parse(incidentFile.text)[0];
+    const incidents = Array.from({ length: 60 }, (_, index) => {
+      const id = `business${index}`;
+      return { ...structuredClone(seed), id, shortlink: `https://stspg.io/${id}`, name: `Business history ${index}`, incident_updates: seed.incident_updates.map((row, ordinal) => ({ ...row, id: `${id}u${ordinal}`, incident_id: id })) };
+    });
+    incidentFile.text = JSON.stringify(incidents);
+    const baseline = await snapshot();
+    const plan = async (exportFiles, extra = {}) => door('plan', 'statuspage', { uploadId: await upload('statuspage', exportFiles, 'statuspage-history.json'), ...(extra.catchup ? { catchup: true } : {}) }, extra);
+    const run = async (action, planned, approval = {}) => {
+      let result;
+      for (let batch = 0; batch < 100; batch++) {
+        result = await door(action, 'statuspage', { planId: planned.planId, ...(action === 'apply' ? { reviewedFingerprint: planned.fingerprint } : {}) }, approval);
+        assert.equal(result.status, 200, JSON.stringify(result.body));
+        if (['completed', 'undone'].includes(result.body.job?.state)) return result.body;
+      }
+      assert.fail(`${action} did not finish`);
+    };
+    const preparing = (await importWork()).prepares;
+    const reviewed = await plan(files); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+    const prepared = (await importWork()).prepares;
+    assert.equal(prepared, preparing + 1, 'the first Business plan prepares its bundle once');
+    const repeated = await plan(files);
+    assert.equal(reviewed.body.created, true, 'the first plan request creates the plan');
+    assert.equal(repeated.body.created, false, 'an unchanged upload creates no second plan');
+    assert.deepEqual({ ...repeated, body: { ...repeated.body, created: true } }, reviewed, 'an unchanged upload returns its complete retained plan');
+    await t.test('unchanged Business plan skips preparation', () => assert.equal(work.prepares, prepared, 'a second unchanged Business plan does not prepare again'));
+    t.diagnostic(`PROBE move-in deadline: first/unchanged Business plans prepare ${prepared - preparing}/${work.prepares - prepared} times`);
+    assert.deepEqual(await snapshot(), baseline, 'Business planning writes nothing native');
+    const approval = { fingerprint: reviewed.body.fingerprint, approvalRecordId: randomUUID(), approvedAt: new Date().toISOString() };
+    assert.equal((await door('apply', 'statuspage', { planId: reviewed.body.planId, reviewedFingerprint: 'unreviewed' }, approval)).status, 403);
+    const firstBusiness = await run('apply', reviewed.body, approval);
+    const businessJob = (await owner('/api/app/statuspage-import/jobs')).body.jobs.find(row => row.id === firstBusiness.job.id);
+    assert.equal(businessJob.approver, operator); assert.equal(businessJob.approvedAt, approval.approvedAt);
+    assert.match(businessJob.approvalCaption, /approved via Business/);
+    assert.ok(businessJob.planId && businessJob.fingerprint, 'Business import history carries the owner undo action');
+    assert.ok((await owner('/api/app/audit-log?action=import-approved')).body.entries.some(row => row.entityId === reviewed.body.planId && Date.parse(row.createdAt) >= Date.parse(approval.approvedAt)));
+    const imported = await snapshot(), original = imported.incidents.find(row => row.title === incidents[1].name);
+    assert.equal(imported.incidents.length, baseline.incidents.length + incidents.length);
+    assert.ok(imported.subscribers.every(row => row.state === 'deactivated'), 'Business never activates subscribers on import');
+    assert.equal((await door('reconcile', 'statuspage', { planId: reviewed.body.planId })).body.ok, true);
+    const changedFiles = structuredClone(files), changedRows = structuredClone(incidents);
+    changedRows[1].name += ' corrected at source';
+    const addition = structuredClone(incidents[0]); addition.id = 'business-added'; addition.name = 'New source incident'; addition.shortlink = 'https://stspg.io/business-added';
+    addition.incident_updates = addition.incident_updates.map((row, ordinal) => ({ ...row, id: `${addition.id}u${ordinal}`, incident_id: addition.id })); changedRows.push(addition);
+    changedFiles.find(file => file.name === 'incidents.json').text = JSON.stringify(changedRows);
+    const standing = { catchup: 'bounded', approvalRecordId: randomUUID(), approvedAt: new Date().toISOString() };
+    const beforeChanged = (await importWork()).prepares;
+    const caught = await plan(changedFiles, standing); assert.equal(caught.status, 200, JSON.stringify(caught.body));
+    assert.equal((await importWork()).prepares, beforeChanged + 1, 'changed upload bytes prepare a fresh plan');
+    t.diagnostic(`PROBE move-in deadline: changed Business bundle prepares ${work.prepares - beforeChanged} time`);
+    assert.deepEqual(await snapshot(), imported, 'catch-up review writes nothing');
+    await beforeRebuild('apply', () => run('apply', caught.body, { ...standing, fingerprint: caught.body.fingerprint }));
+    await eventually(() => runtime.publicText(`/incidents/${original.reference}`), html => html.includes(changedRows[1].name), 'the changed public incident converges after apply');
+    const updated = await snapshot();
+    assert.ok(updated.incidents.some(row => row.id === original.id && row.reference === original.reference && row.title === changedRows[1].name));
+    assert.equal(updated.incidents.filter(row => row.title === addition.name).length, 1);
+    assert.equal((await door('reconcile', 'statuspage', { planId: caught.body.planId })).body.ok, true);
+    assert.equal((await door('undo', 'statuspage', { planId: reviewed.body.planId })).status, 409, 'undo begins with the newest catch-up');
+    await beforeRebuild('undo', () => run('undo', caught.body));
+    await eventually(() => runtime.publicText(`/incidents/${original.reference}`), html => html.includes(incidents[1].name) && !html.includes(changedRows[1].name), 'the original public incident converges after undo');
+    assert.deepEqual(await snapshot(), imported, 'catch-up undo restores the original native documents');
+    const over = structuredClone(changedFiles), overRows = JSON.parse(over.find(file => file.name === 'incidents.json').text);
+    for (const row of overRows.slice(2, 6)) row.name += ' additional source edit';
+    over.find(file => file.name === 'incidents.json').text = JSON.stringify(overRows);
+    assert.equal((await plan(over, standing)).status, 409, 'larger changes need a new proposal');
+    assert.equal((await owner(`/api/app/incidents/${original.id}`, { reason: 'Owner edit after import' }, 'DELETE')).status, 200);
+    const editedEvidence = await owner(`/api/app/statuspage-import/jobs/${firstBusiness.job.id}/verification`);
+    assert.equal(editedEvidence.status, 200);
+    assert.ok(editedEvidence.body.unexplainedDifferences > 0, 'receipt evidence detects a native record removed through its real owner door');
+    assert.equal((await plan(changedFiles, standing)).status, 409, 'standing approval cannot replace an owner edit');
+    await run('undo', reviewed.body);
+    const token = grant('uploads', 'statuspage');
+    assert.equal((await owner('/api/app/import-door/settings', { enabled: true, revokedKids: [kid] }, 'PUT')).status, 200);
+    const revoked = await nativeRequest('/api/rer/import/uploads', { method: 'POST', json: {}, headers: { Authorization: `Bearer ${token}` } }); assert.equal(revoked.status, 403);
+    assert.equal((await owner('/api/app/import-door/settings', { enabled: false }, 'PUT')).status, 200);
+    assert.equal((await door('uploads', 'statuspage', {})).status, 404, 'owner disable removes the Business import door');
+    const revokedRead = await nativeRequest('/api/rer/cutover-status', { method: 'POST', json: { since: new Date(0).toISOString() }, headers: { Authorization: `Bearer ${grant('cutover-status')}` } });
+    assert.equal(revokedRead.status, 403, 'revoked Business authority cannot read cutover state');
   } finally { await runtime.close(); }
+});
+
+test('MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers', { timeout: 300_000 }, async () => {
+  const fixtureFiles = ['sorry-status.json', 'sorry-components.json', 'sorry-notices.json', 'sorry-notice-100.json', 'sorry-notice-101.json'];
+  const flow = await sorryCaptureFlow();
+  const { runtime, seen } = flow;
+  try {
+    await flow.refused('no bearer', 401, 'grant_required', () => flow.capture({}, null));
+    await flow.refused('another action', 403, 'invalid_grant', () => flow.capture({}, flow.grant('cutover-status')));
+    await flow.refused('imports off', 404, 'import_door_off', () => flow.capture());
+    await flow.refused('a GET', 405, 'method_not_allowed', () => runtime.raw('/api/rer/source-capture'));
+    assert.deepEqual(seen, [], 'the refusals never reach Sorry');
+    await flow.setImports(true);
+    await flow.refused('a body that is not a bare Sorry origin', 400, 'invalid_capture', () => flow.capture({ publicUrl: `${flow.origin}/status` }));
+    await flow.refused('maxBytes of zero', 400, 'invalid_capture', () => flow.capture({ maxBytes: 0 }));
+    await flow.refused('over maxBytes', 413, 'capture_too_large', () => flow.capture({ maxBytes: 1000 }));
+    flow.mode = 'private'; await flow.refused('a private page', 409, 'source_restricted', () => flow.capture());
+    flow.mode = 'redirect'; await flow.refused('a redirect', 422, 'source_invalid', () => flow.capture());
+    flow.mode = 'down'; await flow.refused('an unreachable page', 502, 'source_unreachable', () => flow.capture());
+    assert.ok(!seen.some(request => request.origin !== flow.origin), 'no redirect was followed');
+    seen.length = 0; flow.mode = 'ok';
+
+    const before = await flow.rows();
+    const response = await flow.capture();
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal(response.headers.get('content-type'), 'application/json');
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    const text = await response.text(), bundle = JSON.parse(text);
+    assert.deepEqual(Object.keys(bundle), ['source', 'publicUrl', 'publicAccessAcknowledged', 'files']);
+    assert.deepEqual([bundle.source, bundle.publicUrl, bundle.publicAccessAcknowledged], ['sorry', flow.origin, true]);
+    assert.deepEqual(bundle.files.map(file => file.name).sort(), [...fixtureFiles].sort());
+    assert.ok(bundle.files.every(file => file.text === flow.page(file.name)), 'the bytes are Sorry\'s own');
+    assert.ok(seen.length === fixtureFiles.length && seen.every(request => request.method === 'GET' && request.origin === flow.origin && !request.authorization && !request.search), 'fixed-path GETs on the selected origin, without credentials');
+    assert.deepEqual(await flow.rows(), before, 'a capture writes nothing');
+
+    // The door plans exactly what Move in would plan from the same page.
+    const reference = await flow.door('plan', { uploadId: await flow.upload(Buffer.from(JSON.stringify({ source: 'sorry', publicUrl: flow.origin, publicAccessAcknowledged: true, files: fixtureFiles.map(name => ({ name, text: flow.page(name) })) }))) });
+    assert.equal(reference.status, 200, JSON.stringify(reference.body));
+    assert.equal((await flow.door('undo', { planId: reference.body.planId })).status, 200);
+    const planned = await flow.door('plan', { uploadId: await flow.upload(Buffer.from(text)) });
+    assert.equal(planned.status, 200, JSON.stringify(planned.body));
+    assert.deepEqual(planned.body.rejected, []);
+    assert.deepEqual(planned.body.counts, reference.body.counts, 'the same source records as the fixture page');
+  } finally { await runtime.close(); }
+
+  // Managed hosting reads it too: this keyless public read is not the outbound connection Managed lacks.
+  const managed = await sorryCaptureFlow({ extraBindings: { MAIL_PROVIDER: 'rer', MAIL_FROM: 'synthetic-lamp-sender@example.test', MAIL_API_KEY: 'synthetic-lamp-managed-1', MAIL_RELAY_URL: 'https://relay.example.test/api/managed-mail/send' } });
+  try {
+    await managed.setImports(true);
+    const response = await managed.capture();
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal((await response.json()).files.length, fixtureFiles.length);
+  } finally { await managed.runtime.close(); }
 });

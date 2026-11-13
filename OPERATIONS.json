@@ -28,7 +28,7 @@
         "rer",
         "dev"
       ],
-      "effects": "Serves Lamp locally with Base keyed owner dev identity and captured mail for native email-link testing.",
+      "effects": "Serves Lamp locally with Base keyed owner dev identity and silently suppressed mail.",
       "inputs": [
         "package.json",
         "scripts/installer/local.mjs"
@@ -94,7 +94,7 @@
         "rer",
         "export"
       ],
-      "effects": "Writes the local D1 data and R2 snapshots to a new owner-only archive with an integrity receipt. export:cloudflare covers a deployed installation.",
+      "effects": "Writes the local D1 data and R2 snapshots to a new owner-only archive with an integrity receipt. node scripts/export.mjs --remote covers a deployed installation.",
       "inputs": [
         "package.json",
         "scripts/installer/local.mjs"
@@ -105,7 +105,7 @@
         "rer",
         "import"
       ],
-      "effects": "Restores a verified archive into an empty local installation after --yes. import:cloudflare covers a deployed installation.",
+      "effects": "Restores a verified archive into an empty local installation after --yes. node scripts/setup.mjs --restore-from covers a deployed installation.",
       "inputs": [
         "package.json",
         "scripts/installer/local.mjs"
@@ -165,12 +165,9 @@
     "LAMP_PAGE_TAGLINE",
     "LAMP_PAGE_TIMEZONE",
     "LAMP_ACCENT_COLOR",
-    "MAIL_FROM_ADDRESS",
     "SETUP_OPERATOR_EMAIL",
-    "MAIL_PROVIDER_API_KEY",
     "SUBSCRIBER_TOKEN_SECRET",
     "WEBHOOK_SIGNING_SECRET",
-    "MAIL_DKIM_SELECTOR",
     "SETUP_TOKEN",
     "SESSION_SECRET"
   ],
@@ -185,7 +182,7 @@
   ],
   "health": {
     "path": "/health",
-    "semantics": "App-host dependency health; local input checks never assert deployed health."
+    "semantics": "Dependency health, answered on the app host and the page host; local input checks never assert deployed health."
   },
   "acceptance": {
     "document": "ACCEPTANCE.md"
@@ -224,20 +221,17 @@
     }
   ],
   "environmentSources": {
-    "CLOUDFLARE_ACCOUNT_ID": "Cloudflare account overview",
-    "CLOUDFLARE_API_TOKEN": "Cloudflare account API token settings",
-    "LAMP_PAGE_HOST": "Your Cloudflare managed public status hostname",
-    "LAMP_APP_HOST": "Your Cloudflare managed operator hostname",
-    "LAMP_PAGE_NAME": "Your business status page name",
-    "LAMP_PAGE_TAGLINE": "Your public status page description",
-    "LAMP_PAGE_TIMEZONE": "Your status page IANA time zone",
-    "LAMP_ACCENT_COLOR": "Your six digit hexadecimal brand colour",
-    "MAIL_FROM_ADDRESS": "Verified sender address in your chosen mail provider",
-    "SETUP_OPERATOR_EMAIL": "Your first operator email address",
-    "MAIL_PROVIDER_API_KEY": "Your selected mail provider API key settings",
+    "CLOUDFLARE_ACCOUNT_ID": "Deploy guide step 2: the Account ID shown in Workers and Pages in the Cloudflare dashboard",
+    "CLOUDFLARE_API_TOKEN": "Deploy guide step 2: an API token with Workers Scripts, D1, Workers R2 Storage and Queues set to Edit",
+    "LAMP_PAGE_HOST": "Deploy guide step 3: the address your customers read your status page at",
+    "LAMP_APP_HOST": "Deploy guide step 3: the address you and your team sign in at",
+    "LAMP_PAGE_NAME": "Deploy guide step 4: your status page name",
+    "LAMP_PAGE_TAGLINE": "Deploy guide step 4: one sentence shown under the page name",
+    "LAMP_PAGE_TIMEZONE": "Deploy guide step 4: the time zone your page shows times in, such as Europe/London",
+    "LAMP_ACCENT_COLOR": "Deploy guide step 4: your brand colour as # and six hex digits",
+    "SETUP_OPERATOR_EMAIL": "Deploy guide step 5: your own email address; you become the page owner",
     "SUBSCRIBER_TOKEN_SECRET": "Generate a private random subscriber signing value",
     "WEBHOOK_SIGNING_SECRET": "Generate a private random webhook signing value",
-    "MAIL_DKIM_SELECTOR": "Your mail provider domain DNS settings",
     "SETUP_TOKEN": "Generate a private random one-time setup value",
     "SESSION_SECRET": "Generate and preserve a private random session signing value"
   },

@@ -1,6 +1,10 @@
+import { componentNotificationStatements } from "../deliveries/component-notifications.repository";
+import { currentStateHistoryStatement } from "./state-history-repository";
+import { deletionAudit } from "./deletion-audit";
 import { and, desc, eq, isNull, lte, ne, sql } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
+import { createUlid } from "../../shared/ids";
 import {
   componentGroups,
   componentClaimEvents,
@@ -13,13 +17,14 @@ import {
   maintenance,
   maintenanceComponents,
 } from "../../shared/schema";
-import { COMPONENT_STATE_SEVERITY, type ComponentState } from "../../shared/domain";
+import type { ComponentState } from "../../shared/domain";
 import type { ComponentGroupUpdateInput, ComponentUpdateInput } from "../../shared/schemas";
 
 export type StoredComponent = typeof components.$inferSelect;
+export type CurrentComponentClaim = { componentId: string; state: ComponentState; causeType: "standing-claim" | "incident" | "maintenance" | "vendor" };
 export type StateClaimCause = { type: "standing-claim" | "incident" | "maintenance" | "correction"; id: string | null; operatorId: string | null };
 export type StoredComponentGroup = typeof componentGroups.$inferSelect;
-export type ComponentHistoryEntry = Pick<typeof componentStateHistory.$inferSelect, "id" | "previousState" | "newState" | "causeType" | "causeId" | "operatorId" | "changedAt" | "createdAt">;
+export type ComponentHistoryEntry = Pick<typeof componentStateHistory.$inferSelect, "id" | "previousState" | "newState" | "causeType" | "causeId" | "operatorId" | "changedAt" | "createdAt" | "sourceName" | "sourceUrl">;
 export type ComponentHistoryCorrection = Pick<typeof componentStateCorrections.$inferSelect, "id" | "historyId" | "state" | "startsAt" | "endsAt" | "reason" | "operatorId" | "createdAt">;
 export type ComponentClaimEvent = Pick<typeof componentClaimEvents.$inferSelect, "id" | "componentId" | "causeType" | "causeId" | "state" | "changedAt" | "createdAt">;
 export type ComponentClaimEventInput = typeof componentClaimEvents.$inferInsert;
@@ -27,6 +32,7 @@ export type ComponentStateHistoryInput = { id: string; componentId: string; prev
 
 export interface ComponentRepository {
   listComponents(): Promise<Array<StoredComponent & { groupName: string | null }>>;
+  listCurrentClaims(): Promise<CurrentComponentClaim[]>;
   reorder(kind: "components" | "groups", expectedIds: string[], orderedIds: string[], groupId: string | null): Promise<void>;
   listGroups(): Promise<StoredComponentGroup[]>;
   findComponent(componentId: string): Promise<StoredComponent | null>;
@@ -47,10 +53,10 @@ export interface ComponentRepository {
   replaceStandingClaim(input: { id: string; componentId: string; state: ComponentState | null; operatorId: string; createdAt: string; updatedAt: string; event: ComponentClaimEventInput }): Promise<void>;
   insertGroup(input: typeof componentGroups.$inferInsert): Promise<void>;
   updateGroup(groupId: string, input: ComponentGroupUpdateInput & { updatedAt: string }): Promise<boolean>;
-  deleteGroup(groupId: string): Promise<boolean>;
+  deleteGroup(groupId: string, operatorId: string): Promise<boolean>;
   insertComponent(input: typeof components.$inferInsert, initialState: { event: ComponentClaimEventInput; history: ComponentStateHistoryInput }): Promise<void>;
   updateComponent(componentId: string, input: ComponentUpdateInput & { updatedAt: string }): Promise<boolean>;
-  deleteComponent(componentId: string): Promise<boolean>;
+  deleteComponent(componentId: string, operatorId: string): Promise<boolean>;
 }
 
 export function createComponentRepository(binding: D1Database): ComponentRepository {
@@ -64,7 +70,10 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
           groupId: components.groupId,
           name: components.name,
           description: components.description,
+          region: components.region,
           internal: components.internal,
+          onlyShowIfDegraded: components.onlyShowIfDegraded,
+          uptimeStartDate: components.uptimeStartDate,
           displayOrder: components.displayOrder,
           note: components.note,
           createdAt: components.createdAt,
@@ -75,6 +84,25 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         .leftJoin(componentGroups, eq(components.groupId, componentGroups.id))
         .orderBy(componentGroups.displayOrder, components.displayOrder, components.id)
         .all();
+    },
+    async listCurrentClaims() {
+      const result = await binding.prepare(`
+        SELECT component_id AS componentId, state, 'standing-claim' AS causeType
+        FROM component_standing_claims
+        UNION ALL SELECT component_id AS componentId,state,'vendor' AS causeType FROM vendor_dependencies WHERE state IS NOT NULL
+        UNION ALL
+        SELECT attached.component_id AS componentId, attached.state, 'incident' AS causeType
+        FROM incident_components AS attached
+        JOIN incidents AS incident ON incident.id = attached.incident_id
+        WHERE attached.component_id IS NOT NULL AND attached.published_at IS NOT NULL
+          AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'
+        UNION ALL
+        SELECT attached.component_id AS componentId, attached.state, 'maintenance' AS causeType
+        FROM maintenance_components AS attached
+        JOIN maintenance AS window ON window.id = attached.maintenance_id
+        WHERE attached.component_id IS NOT NULL AND window.state = 'In progress'
+      `).all<CurrentComponentClaim>();
+      return result.results;
     },
     async reorder(kind, expectedIds, orderedIds, groupId) {
       const table = kind === "groups" ? "component_groups" : "components";
@@ -128,7 +156,8 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
           .all(),
       ]);
 
-      return [...standing, ...incident, ...scheduledMaintenance].map((claim) => claim.state);
+      const vendor = await binding.prepare("SELECT state FROM vendor_dependencies WHERE component_id=? AND state IS NOT NULL").bind(componentId).all<{state:ComponentState}>();
+      return [...standing, ...incident, ...scheduledMaintenance, ...vendor.results].map((claim) => claim.state);
     },
     async listClaimEventsAt(componentId, instant) {
       const events = await binding.prepare(`
@@ -155,6 +184,8 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       return database
         .select({
           id: componentStateHistory.id,
+          sourceName: componentStateHistory.sourceName,
+          sourceUrl: componentStateHistory.sourceUrl,
           previousState: componentStateHistory.previousState,
           newState: componentStateHistory.newState,
           causeType: componentStateHistory.causeType,
@@ -244,26 +275,11 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       });
     },
     async appendCurrentStateHistory(input) {
-      // Read every live claim and the latest aggregate in the same statement
-      // that appends history. A delayed recomputation must not persist an
-      // aggregate derived before a competing attach, release or transition.
-      return binding.prepare(`WITH claims(state) AS (
-        SELECT state FROM component_standing_claims WHERE component_id = ?
-        UNION ALL SELECT attached.state FROM incident_components attached JOIN incidents incident ON incident.id = attached.incident_id
-          WHERE attached.component_id = ? AND attached.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'
-        UNION ALL SELECT attached.state FROM maintenance_components attached JOIN maintenance window ON window.id = attached.maintenance_id
-          WHERE attached.component_id = ? AND window.state = 'In progress'
-      ), current AS (
-        SELECT value AS state FROM json_each(?) WHERE value = 'Operational' OR value IN (SELECT state FROM claims) ORDER BY key LIMIT 1
-      ), previous AS (
-        SELECT new_state AS state FROM component_state_history WHERE component_id = ? ORDER BY changed_at DESC,created_at DESC,id DESC LIMIT 1
-      ) INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at)
-        SELECT ?,?,COALESCE((SELECT state FROM previous),'Operational'),current.state,?,?,?,?,?,? FROM current
-        WHERE (SELECT state FROM previous) IS NOT current.state AND EXISTS (SELECT 1 FROM components WHERE id = ?)
-        RETURNING previous_state AS previousState,new_state AS newState`)
-        .bind(input.componentId,input.componentId,input.componentId,JSON.stringify(COMPONENT_STATE_SEVERITY),input.componentId,
-          input.id,input.componentId,input.cause.type,input.cause.id,input.cause.operatorId,input.changedAt,input.createdAt,input.updatedAt,input.componentId)
-        .first<{ previousState: ComponentState; newState: ComponentState }>();
+      const [history] = await binding.batch<{ previousState: ComponentState; newState: ComponentState }>([
+        currentStateHistoryStatement(binding, input),
+        ...componentNotificationStatements(binding, input.id, input.createdAt),
+      ]);
+      return history.results[0] ?? null;
     },
     async findStateAt(componentId, instant) {
       const state = await database
@@ -278,6 +294,8 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       return database
         .select({
           id: componentStateHistory.id,
+          sourceName: componentStateHistory.sourceName,
+          sourceUrl: componentStateHistory.sourceUrl,
           previousState: componentStateHistory.previousState,
           newState: componentStateHistory.newState,
           causeType: componentStateHistory.causeType,
@@ -316,13 +334,19 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         .bind(input.id, input.historyId, input.operatorId, input.reason, input.payloadJson, input.createdAt, input.updatedAt).run();
     },
     async replaceStandingClaim(input) {
+      const audit = input.state === null
+        ? binding.prepare(`INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, payload_json, created_at, updated_at)
+            SELECT ?, 'component-standing-claim', component_id, 'deleted', ?, json_object('state', state), ?, ?
+            FROM component_standing_claims WHERE component_id = ?`)
+          .bind(createUlid(), input.operatorId, input.updatedAt, input.updatedAt, input.componentId)
+        : null;
       const claim = input.state
         ? binding.prepare(`INSERT INTO component_standing_claims (id, component_id, state, operator_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(component_id) DO UPDATE SET state = excluded.state, operator_id = excluded.operator_id, updated_at = excluded.updated_at`)
           .bind(input.id, input.componentId, input.state, input.operatorId, input.createdAt, input.updatedAt)
         : binding.prepare(`DELETE FROM component_standing_claims WHERE component_id = ?`).bind(input.componentId);
       const event = binding.prepare(`INSERT INTO component_claim_events (id, component_id, cause_type, cause_id, state, changed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
         .bind(input.event.id, input.event.componentId, input.event.causeType, input.event.causeId, input.event.state, input.event.changedAt, input.event.createdAt, input.event.updatedAt);
-      await binding.batch([claim, event]);
+      await binding.batch([...(audit ? [audit] : []), claim, event]);
     },
     async insertGroup(input) {
       await database.insert(componentGroups).values(input);
@@ -354,14 +378,17 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       ]);
       return true;
     },
-    async deleteGroup(groupId) {
-      const result = await database.delete(componentGroups).where(eq(componentGroups.id, groupId)).returning({ id: componentGroups.id });
-      return result.length > 0;
+    async deleteGroup(groupId, operatorId) {
+      const [, deleted] = await binding.batch<{ id: string }>([
+        deletionAudit(binding, "component-group", groupId, operatorId, new Date().toISOString()),
+        binding.prepare("DELETE FROM component_groups WHERE id = ? RETURNING id").bind(groupId),
+      ]);
+      return deleted.results.length > 0;
     },
     async insertComponent(input, initialState) {
       await binding.batch([
-        binding.prepare(`INSERT INTO components (id,group_id,name,description,internal,display_order,note,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)`)
-          .bind(input.id, input.groupId, input.name, input.description, input.internal ? 1 : 0, input.displayOrder, input.note, input.createdAt, input.updatedAt),
+        binding.prepare(`INSERT INTO components (id,group_id,name,description,region,internal,only_show_if_degraded,uptime_start_date,display_order,note,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+          .bind(input.id, input.groupId, input.name, input.description, input.region ?? null, input.internal ? 1 : 0, input.onlyShowIfDegraded ? 1 : 0, input.uptimeStartDate ?? null, input.displayOrder, input.note, input.createdAt, input.updatedAt),
         binding.prepare(`INSERT INTO component_claim_events (id,component_id,cause_type,cause_id,state,changed_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)`)
           .bind(initialState.event.id, initialState.event.componentId, initialState.event.causeType, initialState.event.causeId, initialState.event.state, initialState.event.changedAt, initialState.event.createdAt, initialState.event.updatedAt),
         binding.prepare(`INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)`)
@@ -374,9 +401,12 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       const result = await database.update(components).set(input).where(eq(components.id, componentId)).returning({ id: components.id });
       return result.length > 0;
     },
-    async deleteComponent(componentId) {
-      const result = await database.delete(components).where(eq(components.id, componentId)).returning({ id: components.id });
-      return result.length > 0;
+    async deleteComponent(componentId, operatorId) {
+      const [, deleted] = await binding.batch<{ id: string }>([
+        deletionAudit(binding, "component", componentId, operatorId, new Date().toISOString()),
+        binding.prepare("DELETE FROM components WHERE id = ? RETURNING id").bind(componentId),
+      ]);
+      return deleted.results.length > 0;
     },
   };
 }

@@ -1,95 +1,97 @@
-import { useEffect, useState, type FormEvent } from "react";
-import { Link, getRouteApi } from "@tanstack/react-router";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { DependencySettings } from "../../dependencies/ui/dependency-settings";
+import { getRouteApi } from "@tanstack/react-router";
 
-import type { PageSettingsInput } from "../../../shared/schemas";
 import type { PageSettingsService } from "../service";
-import { ClientExtensionSlot } from "../../../app/client/extensions";
-import { appApi, useAppData } from "../../../app/client/ui/api";
-import { Button } from "../../../app/client/ui/button";
-import { Icon } from "../../../app/client/ui/icon";
-import { LoadingState } from "../../../app/client/ui/states";
-import { ErrorState } from "../../../app/client/ui/lit-states";
-import { ChannelsCard } from "../../channels/ui/channels-card";
+import type { OverviewService } from "../../overview/service";
+import { AuditLog } from "../../audit-log/ui/audit-log";
+import { YourPageFacts } from "../../overview/ui/your-page";
 import { OperatorsPanel } from "../../operators/ui/operators-panel";
-import { ReadinessSettings } from "../../overview/ui/readiness-settings";
-import { AiAssistanceCard } from "./ai-assistance-card";
+import { useAppData } from "../../../app/client/ui/api";
+import { useLeaveGuard } from "../../../app/client/ui/leave-guard";
+import { FormError, LoadingState } from "../../../app/client/ui/states";
+import { ErrorState } from "../../../app/client/ui/lit-states";
+import { type AiStatus } from "./ai-assistance-card";
+import { settingsLabel, usePaneLeaveGuard, useSettingsTab, type SettingsTab } from "./settings-tabs";
+import { PublicResources } from "./public-resources";
+import { PageSettingsTab } from "./page-settings-tab";
+import { LookSettingsTab } from "./look-settings-tab";
+import { NotificationSettingsTab } from "./notification-settings-tab";
+import type { TrafficSavePhase } from "./traffic-alert-settings";
+import { WritingSettingsTab } from "./writing-settings-tab";
+import { TemplatesSettingsTab } from "./templates-settings-tab";
+import { ConnectedToolsTab } from "./connected-tools-tab";
+import { ReportsSettingsTab } from "./reports-settings-tab";
+import { ExportSettingsTab } from "./export-settings-tab";
+import { SettingsSaveState } from "./settings-save-state";
+import { useSettingsAutosave } from "./use-settings-autosave";
 
 const operatorRoute = getRouteApi("/app");
-
+// Sign-in is one pane among many; its modules load only when it is opened, so no other Settings pane pays for them.
+const SignInPane = lazy(() => import("../../sign-in-providers/ui/sign-in-pane").then(module => ({ default: module.SignInPane })));
 type SettingsResponse = { settings: Awaited<ReturnType<PageSettingsService["get"]>> };
-type AiStatusResponse = { configured: boolean };
-type SettingsForm = Required<PageSettingsInput>;
+type OverviewResponse = { overview: Awaited<ReturnType<OverviewService["get"]>> };
 
-function toSettingsForm(settings: NonNullable<SettingsResponse["settings"]>): SettingsForm {
-  return {
-    pageName: settings.pageName,
-    tagline: settings.tagline,
-    accentColor: settings.accentColor,
-    timezone: settings.timezone,
-    hostname: settings.hostname,
-    footerCreditEnabled: settings.footerCreditEnabled,
-    widgetAllowedOrigins: settings.widgetAllowedOrigins,
-    mailFromAddress: settings.mailFromAddress,
-    aiToneInstructions: settings.aiToneInstructions,
-  };
-}
+// Panes of page settings that save as they change, laid out as one form.
+const FORMS = new Set<SettingsTab>(["page", "look", "notifications", "writing", "templates", "embeds"]);
+// The one save note sits under the title of every pane that saves. Connected tools' forms show their own.
+const SAVES = new Set<SettingsTab>([...FORMS, "operators"]);
+// A pane's title says what it is; a line under it only where it adds something.
+const LINES: Partial<Record<SettingsTab, string>> = {
+  tools: "Alerts from your tools open private drafts. Nothing is public until you publish, or a rule you saved does.",
+  "sign-in": "Invited people can sign in with Google or Okta. Email sign-in links keep working.",
+};
 
 export function SettingsPage() {
   const { data, error, loading } = useAppData<SettingsResponse>("/api/app/page-settings");
+  const overview = useAppData<OverviewResponse>("/api/app/overview");
   const publicOrigin = operatorRoute.useLoaderData().publicPageOrigin;
-  const aiStatus = useAppData<AiStatusResponse>("/api/app/ai/status");
-  const [settings, setSettings] = useState<SettingsForm | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [logo, setLogo] = useState<File | null>(null);
-  useEffect(() => {
-    if (data?.settings && !settings) setSettings(toSettingsForm(data.settings));
-  }, [data, settings]);
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState onRetry={() => window.location.reload()}>{error}</ErrorState>;
-  if (!settings) return null;
+  const aiStatus = useAppData<AiStatus>("/api/app/ai/status");
+  const tab = useSettingsTab();
+  const autosave = useSettingsAutosave(data?.settings ?? undefined, () => {
+    window.dispatchEvent(new Event("lamp:page-settings-changed"));
+    overview.refresh();
+  });
+  const { settings, saved, update } = autosave;
+  const [brandBusy, setBrandBusy] = useState(false);
+  const [brandStatus, setBrandStatus] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
+  const [trafficPhase, setTrafficPhase] = useState<TrafficSavePhase>("saved");
+  // The pane's one save note reads "Saved · live" only once every write on it has landed.
+  const phases = tab === "notifications" ? [autosave.phase, trafficPhase] : [autosave.phase];
+  const phase = (["error", "saving", "waiting"] as const).find(candidate => phases.includes(candidate)) ?? "saved";
+  // Leaving Settings, another pane or signing out waits for pending edits to save; a refused save keeps the owner here with its reason and Retry.
+  useLeaveGuard(autosave.leave, autosave.unsaved);
+  usePaneLeaveGuard();
+  if (loading && !data) return <LoadingState />;
+  if (error && !settings) return <ErrorState onRetry={() => window.location.reload()}>{error}</ErrorState>;
+  if (!settings || !saved) return null;
 
-  const update = <K extends keyof SettingsForm>(field: K, value: SettingsForm[K]) => setSettings((current) => current ? { ...current, [field]: value } : current);
-  async function save(event: FormEvent) {
-    event.preventDefault(); setSaving(true); setStatus(null);
-    try {
-      await appApi<SettingsResponse>("/api/app/page-settings", { method: "PUT", body: JSON.stringify(settings) });
-      window.dispatchEvent(new Event("lamp:page-settings-changed"));
-      setStatus("Settings saved and the public snapshot was rebuilt.");
-    } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : "Settings could not be saved.");
-    } finally { setSaving(false); }
-  }
+  const live = overview.data?.overview.live ?? null;
+  const components = (overview.data?.overview.components ?? []).filter(component => !component.internal).map(component => ({ id: component.id, name: component.name, state: component.publicState }));
+  const markSrc = saved.logoKey ? `/api/app/page-settings/brand/logo?v=${encodeURIComponent(saved.updatedAt)}` : `/api/app/page-settings/brand/mark?v=${encodeURIComponent(saved.updatedAt)}`;
 
-  async function uploadLogo() {
-    if (!logo) return;
-    setSaving(true); setStatus(null);
-    try {
-      const form = new FormData();
-      form.set("logo", logo);
-      const response = await fetch("/api/app/page-settings/logo", { method: "POST", body: form, headers: { Accept: "application/json" } });
-      const body = await response.json() as SettingsResponse & { error?: string };
-      if (!response.ok || !body.settings) throw new Error(body.error ?? "The logo could not be saved.");
-      setSettings(toSettingsForm(body.settings));
-      setLogo(null);
-      setStatus("Logo saved and the public snapshot was rebuilt.");
-    } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : "The logo could not be saved.");
-    } finally { setSaving(false); }
-  }
-
-  async function removeLogo() {
-    setSaving(true); setStatus(null);
-    try {
-      const body = await appApi<SettingsResponse>("/api/app/page-settings/logo", { method: "DELETE" });
-      if (!body.settings) throw new Error("The logo could not be removed.");
-      setSettings(toSettingsForm(body.settings));
-      setLogo(null);
-      setStatus("Logo removed and the public snapshot was rebuilt.");
-    } catch (cause) {
-      setStatus(cause instanceof Error ? cause.message : "The logo could not be removed.");
-    } finally { setSaving(false); }
-  }
-
-  return <div className="page-stack"><section className="page-title-row"><div><p className="eyebrow">Public page configuration</p><h1>Settings</h1><p>Set how customers recognize and read your status page.</p><a className="quiet-link" href={publicOrigin} target="_blank" rel="noopener">Open the public status page <Icon name="external" width={15} height={15} /></a></div></section><form className="settings-form" onSubmit={save}><div className="settings-workspace"><section className="data-card settings-card"><div className="settings-grid"><label className="form-label">Page name<input required maxLength={120} value={settings.pageName} onChange={(event) => update("pageName", event.target.value)} /></label><label className="form-label">Host name<input required maxLength={253} value={settings.hostname} onChange={(event) => update("hostname", event.target.value)} /></label><label className="form-label full-width">Tagline<textarea required maxLength={280} value={settings.tagline} onChange={(event) => update("tagline", event.target.value)} /></label><label className="form-label">Accent colour<span className="colour-field"><span className="colour-swatch" style={{ background: settings.accentColor }} aria-hidden="true" /><input required pattern="#[0-9A-Fa-f]{6}" value={settings.accentColor} onChange={(event) => update("accentColor", event.target.value)} /></span></label><label className="form-label">Timezone<input required maxLength={100} value={settings.timezone} onChange={(event) => update("timezone", event.target.value)} /></label><label className="form-label">From email<input required type="email" value={settings.mailFromAddress} onChange={(event) => update("mailFromAddress", event.target.value)} /><small>Notification email is sent only from this configured address.</small></label><label className="form-label full-width">Widget host origins<textarea value={settings.widgetAllowedOrigins.join("\n")} placeholder="https://app.example.com" onChange={(event) => update("widgetAllowedOrigins", event.target.value.split("\n").map((value) => value.trim()).filter(Boolean))} /><small>One full origin per line. The widget refuses every other host.</small></label><label className="checkbox-label full-width"><input type="checkbox" checked={settings.footerCreditEnabled} onChange={(event) => update("footerCreditEnabled", event.target.checked)} />Show the Powered by Lamp footer credit</label></div></section><aside className="settings-sidecar"><AiAssistanceCard toneInstructions={settings.aiToneInstructions} configured={aiStatus.data?.configured ?? null} loading={aiStatus.loading} error={aiStatus.error} onToneInstructionsChange={(value) => update("aiToneInstructions", value)} /><section className="data-card intake-link-card"><p className="card-kicker">Inbound alerts</p><h2>Alert sources</h2><p>Configure a signed HMAC or bearer-token source, its JSON paths, and receipt visibility in the operator workspace.</p><Link className="text-link" to="/app/alerts">Manage alert sources <Icon name="arrow" width={16} height={16} /></Link></section><section className="data-card intake-link-card"><p className="card-kicker">Moving here</p><h2>Move in</h2><p>Bring components, incident history, maintenance and subscribers, with a dry run first and undo after.</p><Link className="text-link" to="/app/move-in">Start a move-in <Icon name="arrow" width={16} height={16} /></Link><a className="text-link" href="/app/cutover">Cutover preview</a></section></aside></div>{status && <p className="save-message" role="status">{status}</p>}<div className="form-actions"><Button disabled={saving}>{saving ? "Saving…" : "Save settings"}</Button></div></form><section className="data-card branding-card"><div><p className="card-kicker">Brand mark</p><h2>Logo, favicon, and social image</h2><p>The original PNG, JPEG, or WebP logo remains in private deployment storage. The snapshot serves it from this origin and generates a status-marked favicon and Open Graph image.</p></div><label className="form-label">Logo file<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setLogo(event.target.files?.[0] ?? null)} /></label><div className="form-actions"><Button variant="secondary" type="button" onClick={removeLogo} disabled={saving}>Remove logo</Button><Button type="button" onClick={uploadLogo} disabled={saving || !logo}>{saving ? "Saving…" : "Upload logo"}</Button></div></section><ChannelsCard /><ReadinessSettings /><OperatorsPanel /><ClientExtensionSlot id="settings.sections.v1" context={{}} /></div>;
+  return <div className="page-stack settings-page" inert={!ready}>
+    <section className="page-title-row"><div><h1>{settingsLabel(tab)}</h1>{LINES[tab] && <p>{LINES[tab]}</p>}</div></section>
+    {SAVES.has(tab) && <SettingsSaveState phase={phase} error={autosave.error} retry={autosave.retry} preview={live?.preview} />}
+    <div className={FORMS.has(tab) ? "settings-form page-stack" : "page-stack"}>
+      {tab === "page" && <>
+        {live ? <YourPageFacts live={live} pageName={saved.pageName} accentColor={saved.accentColor} components={components} /> : overview.error ? <FormError>{overview.error}</FormError> : null}
+        <PageSettingsTab settings={settings} live={live} markSrc={markSrc} update={update} />
+      </>}
+      {tab === "look" && <LookSettingsTab settings={settings} saved={saved} components={components} update={update} adoptSaved={autosave.adoptSaved} busy={brandBusy} setBusy={setBrandBusy} status={brandStatus} setStatus={setBrandStatus} />}
+      {tab === "notifications" && <NotificationSettingsTab settings={settings} live={live} identityEditable={saved.mailIdentityEditable} update={update} needsConfirm={autosave.pending("mailFromAddress")} confirm={() => autosave.confirm("mailFromAddress")} onTrafficPhase={setTrafficPhase} />}
+      {tab === "writing" && <WritingSettingsTab settings={settings} aiStatus={aiStatus} update={update} />}
+      {tab === "templates" && <TemplatesSettingsTab />}
+      {tab === "tools" && <ConnectedToolsTab />}
+      {tab === "dependencies" && <DependencySettings />}
+      {tab === "embeds" && <PublicResources publicOrigin={publicOrigin} allowedOrigins={settings.widgetAllowedOrigins} onOriginsChange={value => update("widgetAllowedOrigins", value)} appearance={settings.widgetAppearance} onAppearanceChange={(value, immediate) => update("widgetAppearance", value, immediate)} needsConfirm={autosave.pending("widgetAllowedOrigins")} onConfirm={() => autosave.confirm("widgetAllowedOrigins")} />}
+      {tab === "operators" && <OperatorsPanel />}
+      {tab === "sign-in" && <Suspense fallback={<LoadingState>Loading sign-in…</LoadingState>}><SignInPane /></Suspense>}
+      {tab === "reports" && <ReportsSettingsTab />}
+      {tab === "export" && <ExportSettingsTab />}
+      {tab === "audit" && <AuditLog />}
+    </div>
+  </div>;
 }

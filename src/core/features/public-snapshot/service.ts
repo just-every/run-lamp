@@ -1,12 +1,16 @@
+import { themeAssetArtifacts } from "./theme-rendering";
 import type { RetainedSnapshotCache } from "../../platform/blobs/retained";
 import { encodeRetainedBundle, readRetainedArtifact } from "../../platform/blobs/retained-bundle";
 import { createUlid, nowIso } from "../../shared/ids";
 import type { BlobObject, BlobStore } from "../../platform/blobs/store";
 import type { LampServerSlots } from "../../api/extensions";
+import type { AppBindings } from "../../app/types";
 
 import { readGenerationArtifact } from "./generation-cache";
 import { renderPublicSnapshot } from "./renderer";
 import type { SnapshotRepository } from "./repository";
+import { PRELAUNCH_ROBOTS_KEY } from "../prelaunch/policy";
+import { readPrelaunch } from "../prelaunch/store";
 import { defaultPublicSnapshotPolicies, type PublicSnapshotPolicies } from "./policies";
 import { defaultPublicSnapshotEvents, type PublicSnapshotEvents } from "./events";
 
@@ -14,8 +18,10 @@ const CURRENT_POINTER_KEY = "snapshots/current.json";
 const STALE_MARKER_KEY = "snapshots/stale.json";
 const STALE_BUILD_MS = 5 * 60_000;
 const RETRY_LEASE_MS = 2 * 60_000;
+// The minute scheduler periodically rereads source data even without a mutation.
+const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v10";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v21";
 
 interface SnapshotPointer {
   version: string;
@@ -23,6 +29,10 @@ interface SnapshotPointer {
   generation: number;
   sourceRevision: number;
   rendererVersion: string | null;
+  /** The running release (RER_RELEASE_DIGEST, else the Worker version id) that built this generation; null before it was recorded or where the host names none. */
+  releaseIdentity: string | null;
+  /** This generation was built with pre-launch on. Pointers written before the setting read false. */
+  prelaunch: boolean;
 }
 
 interface SnapshotStaleMarker {
@@ -43,9 +53,20 @@ function logoDataUrl(logo: { bytes: ArrayBuffer; contentType: string }) {
 export interface PublicSnapshotService {
   rebuild(force?: boolean): Promise<void>;
   hasCurrentSnapshot(): Promise<boolean>;
-  readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean } | null>;
+  readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean; prelaunch: boolean } | null>;
+  /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
+  prelaunch(): Promise<boolean>;
   latestBuild(): ReturnType<SnapshotRepository["latestBuild"]>;
+  /** When the page customers see now was published; null before the first snapshot. */
+  publishedAt(): Promise<string | null>;
   retryPendingBuild(): Promise<boolean>;
+  /** Whether the stored page was built by other code than the running release, by another renderer version, or has work still pending. Reads the pointer and the work row only. */
+  needsRebuild(): Promise<boolean>;
+}
+
+/** The release this Worker is running: the delivery digest, else the uploaded Worker version. Null where the host names neither (local development). */
+export function runningReleaseIdentity(bindings: Pick<AppBindings, "RER_RELEASE_DIGEST" | "RER_VERSION_METADATA" | "RER_VERSION">): string | null {
+  return bindings.RER_RELEASE_DIGEST || bindings.RER_VERSION_METADATA?.id || bindings.RER_VERSION?.id || null;
 }
 
 function parsePointer(object: BlobObject): SnapshotPointer {
@@ -59,6 +80,8 @@ function parsePointer(object: BlobObject): SnapshotPointer {
     // Older deployments did not persist a renderer identity. Unknown values
     // are treated as stale so the scheduler can publish a known version.
     rendererVersion: typeof parsed.rendererVersion === "string" && parsed.rendererVersion.length > 0 ? parsed.rendererVersion : null,
+    releaseIdentity: typeof parsed.releaseIdentity === "string" && parsed.releaseIdentity.length > 0 ? parsed.releaseIdentity : null,
+    prelaunch: parsed.prelaunch === true,
   };
 }
 
@@ -73,8 +96,20 @@ export function createPublicSnapshotService(
   events: PublicSnapshotEvents = defaultPublicSnapshotEvents,
   slots: LampServerSlots = {},
   retained?: RetainedSnapshotCache,
+  releaseIdentity: string | null = null,
 ): PublicSnapshotService {
   let rebuildTail: Promise<void> = Promise.resolve();
+
+  /** A stored page built by another release is rebuilt: the hand-bumped renderer version cannot name every code change. */
+  function releaseNeedsRebuild(pointer: SnapshotPointer | null) {
+    return pointer !== null && releaseIdentity !== null && pointer.releaseIdentity !== releaseIdentity;
+  }
+
+  /** An artifact from a retained bundle; the bundle holds a robots.txt only when it was built pre-launch. */
+  function retainedArtifact(bundle: string, key: string) {
+    const artifact = readRetainedArtifact(bundle, key);
+    return artifact ? { ...artifact, prelaunch: Boolean(readRetainedArtifact(bundle, PRELAUNCH_ROBOTS_KEY)) } : null;
+  }
 
   async function readPointer(): Promise<SnapshotPointer | null> {
     const object = await blobs.getText(CURRENT_POINTER_KEY);
@@ -135,7 +170,11 @@ export function createPublicSnapshotService(
     let attempts = 0;
     let lastError: unknown;
     try {
-      const generation = await repository.reserveGeneration(timestamp);
+      // The bucket pointer and the retained replica outlive the database (a reset or a
+      // previous preview's database restarts the counter): both refuse a generation that
+      // is not above their own, so the new one is reserved above whichever is higher.
+      const stored = Math.max((await readPointer())?.generation ?? 0, (await retained?.generation()) ?? 0);
+      const generation = await repository.reserveGeneration(timestamp, stored);
       await repository.startBuild({
         id: buildId,
         status: "building",
@@ -156,7 +195,13 @@ export function createPublicSnapshotService(
         const logoContentType = logo?.contentType ?? source.settings.logoContentType;
         if (logo && !logoContentType) throw new Error("Configured logo content type is missing.");
         const version = createUlid();
+        source.prelaunch = await readPrelaunch(blobs);
         const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null }, slots);
+        rendered.artifacts.push(...await themeAssetArtifacts(source.settings.themeAssets, blobs));
+        const uploadedFont = rendered.artifacts.find(artifact => artifact.key === "assets/theme-font");
+        if (uploadedFont) for (const artifact of rendered.artifacts.filter(artifact => artifact.contentType.startsWith("text/css"))) {
+          artifact.body = artifact.body.replaceAll('url("/assets/theme-font")', `url("data:font/woff2;base64,${uploadedFont.body}")`);
+        }
         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
         return { version, rendered, bundle, logo, logoContentType };
       }
@@ -167,7 +212,9 @@ export function createPublicSnapshotService(
         // Retry storage/replica/pointer delivery with identical generation bytes.
         prepared ??= await prepare();
         const { version, rendered, bundle, logo, logoContentType } = prepared;
-        await Promise.all(rendered.artifacts.map((artifact) => blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
+        await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
+          ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
+          : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
         if (logo) {
           await blobs.putBytes(`snapshots/${version}/assets/logo`, logo.bytes, logoContentType ?? "application/octet-stream");
         }
@@ -180,7 +227,7 @@ export function createPublicSnapshotService(
         if (retained) await retained.write(bundle);
         const replicaGeneration = retained ? await retained.generation() : generation;
         const advanced = replicaGeneration === generation
-          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION })
+          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
           : false;
         const finishedAt = nowIso();
         await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
@@ -241,12 +288,18 @@ export function createPublicSnapshotService(
       }
       return Boolean(await retained?.read());
     },
+    async needsRebuild() {
+      const work = await repository.currentWork();
+      if (work.completedRevision < work.requestedRevision) return true;
+      const pointer = await readPointer();
+      return rendererNeedsRebuild(pointer) || releaseNeedsRebuild(pointer);
+    },
     async readArtifact(key) {
       try {
         const pointer = await readPointer();
         if (!pointer) {
           const bundle = await retained?.read();
-          return bundle ? readRetainedArtifact(bundle, key) : null;
+          return bundle ? retainedArtifact(bundle, key) : null;
         }
         const object = await readGenerationArtifact(blobs, pointer.version, key);
         if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
@@ -269,14 +322,27 @@ export function createPublicSnapshotService(
           retainedReady,
           generatedAt: pointer.generatedAt,
           stale: Boolean(marker && marker.marker.revision > pointer.sourceRevision),
+          prelaunch: pointer.prelaunch,
         } : null;
       } catch (cause) {
         const bundle = await retained?.read();
         if (!bundle) throw cause;
-        return readRetainedArtifact(bundle, key);
+        return retainedArtifact(bundle, key);
       }
     },
+    async prelaunch() {
+      try {
+        const pointer = await readPointer();
+        if (pointer) return pointer.prelaunch;
+        const bundle = await retained?.read();
+        return Boolean(bundle && readRetainedArtifact(bundle, PRELAUNCH_ROBOTS_KEY));
+      } catch { return false; }
+    },
     latestBuild: () => repository.latestBuild(),
+    async publishedAt() {
+      try { return (await readPointer())?.generatedAt ?? null; }
+      catch { return null; /* An unreadable pointer reads as not yet published. */ }
+    },
     async retryPendingBuild() {
       try {
         const now = new Date();
@@ -291,7 +357,8 @@ export function createPublicSnapshotService(
             const archived = await blobs.getText(`snapshots/${pointer.version}/retained.json`);
             if (archived) { await retained!.write(archived.text); return true; }
           }
-          if (!missingReplica && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer)) return false;
+          const refreshDue = pointer && now.getTime() - Date.parse(pointer.generatedAt) >= SNAPSHOT_REFRESH_MS;
+          if (!missingReplica && !refreshDue && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer) && !releaseNeedsRebuild(pointer)) return false;
           await repository.requestWork(nowText);
           work = await repository.currentWork();
         }

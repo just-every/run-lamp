@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Run with pinned Node: node --experimental-strip-types scripts/sorry-capture.mjs.
 import { constants } from "node:fs";
+import { createHash } from "node:crypto";
 import { lstat, mkdir, open, realpath, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +18,8 @@ No token argument or environment variable is accepted. The token file must be a
 regular file owned by you, with no group/other permissions. --out must be a new
 directory outside this checkout. Public mode accepts an HTTPS origin only and
 does not read a key. Capture performs GET requests only; redirects are refused.
+Public mode also writes <out>.metadata.json beside the folder, so every file in
+the folder can be selected in Move in.
 `;
 
 class CaptureError extends Error {}
@@ -56,10 +59,16 @@ async function destination(path) {
   const checkout = await realpath(fileURLToPath(new URL("..", import.meta.url)));
   const within = relative(checkout, canonical);
   if (within === "" || (within !== ".." && !within.startsWith(`..${sep}`) && !isAbsolute(within))) fail("Save capture data outside this checkout.");
-  try { await lstat(canonical); fail("The destination already exists; choose a new directory."); }
-  catch (error) { if (error.code !== "ENOENT") throw error; }
+  for (const taken of [canonical, metadataPath(canonical)]) {
+    try { await lstat(taken); fail("The destination already exists; choose a new directory."); }
+    catch (error) { if (error.code !== "ENOENT") throw error; }
+  }
   return canonical;
 }
+
+// Public captures record their request metadata beside the folder, never inside
+// it, so every file in the folder is one Move in accepts.
+const metadataPath = (directory) => `${directory}.metadata.json`;
 
 function validToken(value) {
   const token = value.trim();
@@ -117,7 +126,7 @@ async function hiddenToken() {
   return validToken(token);
 }
 
-async function persist(path, files, token) {
+async function persist(path, files, token, metadata) {
   if (!files.length || files.length > 200) fail("Capture returned an invalid number of files.");
   let bytes = 0;
   const names = new Set();
@@ -137,8 +146,12 @@ async function persist(path, files, token) {
   await mkdir(path, { mode: 0o700 });
   try {
     for (const file of files) await writeFile(resolve(path, file.name), file.text, { flag: "wx", mode: 0o600 });
+    if (metadata) await writeFile(metadataPath(path), JSON.stringify({ ...metadata,
+      files: files.map(file => ({ name: file.name, sha256: createHash('sha256').update(file.text).digest('hex'), size: Buffer.byteLength(file.text) })),
+    }, null, 2) + "\n", { flag: "wx", mode: 0o600 });
   } catch {
     await rm(path, { recursive: true, force: true }).catch(() => {});
+    await rm(metadataPath(path), { force: true }).catch(() => {});
     fail("Capture could not be saved; inspect the destination before trying again.");
   }
 }
@@ -152,17 +165,38 @@ async function main() {
   const { fetchSorryResponses, fetchSorryPublicResponses } = await import("../src/core/features/statuspage-import/sorry/fetch.ts");
   // One request at a time, comfortably below Sorry's documented 10 requests/s.
   let previous = 0;
+  const started = Date.now(), requests = [];
   const fetcher = async (...request) => {
     await delay(Math.max(0, previous + 125 - Date.now()));
     previous = Date.now();
-    return fetch(...request);
+    const url = new URL(request[0]);
+    const entry = { method: 'GET', path: url.pathname + url.search };
+    requests.push(entry);
+    try {
+      const response = await fetch(...request);
+      entry.status = response.status;
+      return response;
+    } catch {
+      entry.networkError = true;
+      throw new Error('Sorry network request failed.');
+    }
   };
-  const files = args["--public-url"]
-    ? await fetchSorryPublicResponses({ publicUrl: args["--public-url"], fetcher })
-    : await fetchSorryResponses({ pageId: args["--page-id"], apiKey: token, fetcher });
-  await persist(out, files, token);
+  let files;
+  try {
+    files = args["--public-url"]
+      ? await fetchSorryPublicResponses({ publicUrl: args["--public-url"], fetcher })
+      : await fetchSorryResponses({ pageId: args["--page-id"], apiKey: token, fetcher });
+  } catch (error) {
+    if (args['--public-url']) process.stderr.write(`Public capture requests=${requests.length} elapsedMs=${Date.now() - started} lastStatus=${requests.at(-1)?.status ?? 'network-error'}\n`);
+    throw error;
+  }
+  await persist(out, files, token, args['--public-url'] ? {
+    schemaVersion: 1, mode: 'public', origin: args['--public-url'], capturedAt: new Date(started).toISOString(),
+    format: 'sorry-public-v1-saved-responses', requests, elapsedMs: Date.now() - started,
+  } : undefined);
   token = undefined;
   process.stdout.write(`Saved ${files.length} unchanged Sorry response files. No import or mail was sent.\n`);
+  if (args['--public-url']) process.stdout.write(`Public capture requests=${requests.length} elapsedMs=${Date.now() - started}\n`);
 }
 
 main().catch((error) => {

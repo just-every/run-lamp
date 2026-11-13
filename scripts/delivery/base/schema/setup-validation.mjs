@@ -1,10 +1,16 @@
 import { dependencyErrors } from './dependencies.mjs';
 export { validateDependencyGraph } from './dependencies.mjs';
 import {checkSchema, validate} from './json-schema.mjs';
+import {businessFieldInputError} from './business-field-inputs.mjs';
 
 export const SETUP_SCHEMA_ID = 'urn:rer:setup:1';
 
 const PUBLIC_KINDS = new Set(['text', 'email', 'url', 'select', 'colour', 'timezone']);
+
+/** Effective audience of a validated public field, including its group default. */
+export function setupFieldAudience(field, groups) {
+  return field.audience ?? groups.find(group => group.id === field.group)?.audience ?? 'owner';
+}
 
 /** Match a validated condition against raw public input; whitespace is a value. */
 export function setupConditionMatches(condition, values) {
@@ -28,7 +34,7 @@ export function validateSetupValue(field, value) {
       if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.href.includes('?') || url.href.includes('#')) throw Error();
     } catch { throw Error(`Invalid URL for ${field.name}`); }
   }
-  if (field.kind === 'colour' && !/^#[a-f\d]{6}$/i.test(value)) throw Error(`Invalid colour for ${field.name}`);
+  if (field.kind === 'colour' && !/^#[a-f\d]{6}$/i.test(value)) throw Error(`Invalid color for ${field.name}`);
   if (field.kind === 'timezone') {
     try { new Intl.DateTimeFormat('en', {timeZone: value}); }
     catch { throw Error(`Invalid timezone for ${field.name}`); }
@@ -98,12 +104,31 @@ function rejectDuplicateObjectKeys(text) {
   visit();
 }
 
+// Run before grammar diagnostics too, so off-list names receive a useful next step.
+function businessFieldErrors(data) {
+  const errors = [], claims = new Map();
+  for (const [index, field] of (Array.isArray(data?.fields) ? data.fields : []).entries()) {
+    if (!field || typeof field.name !== 'string' || !Object.hasOwn(field, 'businessField')) continue;
+    const path = `$.fields[${index}].businessField`;
+    const refusal = businessFieldInputError(field);
+    if (refusal) errors.push(`${path}: ${refusal}`);
+    if (typeof field.businessField !== 'string') continue;
+    const previous = claims.get(field.businessField);
+    if (previous !== undefined) errors.push(`${path}: ${previous} and ${field.name} both claim Business field ${field.businessField}; each Business field needs a single input`);
+    else claims.set(field.businessField, field.name);
+  }
+  return errors;
+}
+
 /** Semantic checks that cannot be expressed in the portable JSON Schema subset. */
 export function setupManifestSemanticErrors(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)
     || !Array.isArray(data.fields) || !Array.isArray(data.groups) || !Array.isArray(data.steps)) return [];
-  const errors = dependencyErrors(data);
+  const errors = [...dependencyErrors(data), ...businessFieldErrors(data)];
   const fail = (path, message) => errors.push(`${path}: ${message}`);
+  if (Array.isArray(data.business?.values) && !data.business.values.includes('display_name')) {
+    fail('$.business.values', 'Business settings adoption must include display_name');
+  }
   const groups = new Map();
   for (const [index, group] of data.groups.entries()) {
     if (!group || typeof group !== 'object' || typeof group.id !== 'string') continue;
@@ -131,6 +156,7 @@ export function setupManifestSemanticErrors(data) {
     if (field.group !== undefined && !groups.has(field.group)) fail(`${path}.group`, 'group must reference a declared group');
 
     if (isSecret) {
+      if (Object.hasOwn(field, 'audience')) fail(`${path}.audience`, `${field.name}: secret fields cannot declare audience`);
       for (const name of ['default', 'prefill', 'options', 'runtimeEditable']) {
         if (Object.hasOwn(field, name)) fail(`${path}.${name}`, 'secret fields cannot declare public input metadata');
       }
@@ -144,6 +170,9 @@ export function setupManifestSemanticErrors(data) {
         fail(`${path}.ownerVisible`, 'only generated or explicitly entered secret values may be shown to the owner');
       }
     } else {
+      if (field.audience === 'owner' && groups.get(field.group)?.audience === 'developer') {
+        fail(`${path}.audience`, `${field.name} cannot declare owner audience inside developer group ${field.group}`);
+      }
       for (const name of ['generate', 'ownerVisible', 'input']) {
         if (Object.hasOwn(field, name)) fail(`${path}.${name}`, 'public fields cannot declare secret metadata');
       }
@@ -320,6 +349,11 @@ export function validateSetupManifest(schema, data) {
   if (schema?.$id !== SETUP_SCHEMA_ID) throw new Error('Expected setup schema version 1');
   checkSchema(schema);
   const errors = validate(schema, data);
-  if (errors.length) return errors;
+  if (errors.length) return [...businessFieldErrors(data), ...errors.map(error => {
+    const match = error.match(/^(\$\.(fields|groups)\[(\d+)\]\.audience):/);
+    if (!match) return error;
+    const item = data[match[2]][Number(match[3])];
+    return `${match[1]}: ${item.name ?? item.id} audience must be "owner" or "developer"`;
+  })];
   return setupManifestSemanticErrors(data);
 }

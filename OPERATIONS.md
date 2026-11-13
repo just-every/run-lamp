@@ -1,20 +1,29 @@
 # Lamp operations
 
+Mail dispatch is a required Worker loop. Lamp's configuration module validates
+its conditional RER, SendGrid or Resend credentials before deployment; the
+Managed relay capability and assigned fields are declared in the generated
+deployment specification. Rer 0.2.29's generic mail-loop schema lists only direct
+providers, so it does not describe Lamp's relay transport.
+
 Lamp uses distinct public page and operator application hosts. Each has its own
 home page: the page host's `/` is the company's public status page, and the app
 host's `/` is the Lamp landing page beside sign-in and the operator app. Its deployment
 commands provision a real D1 database, R2 bucket and Queue by environment name,
 apply migrations, initialize the first operator and page settings, build the
 Worker and publish the emitted artifact. `rer deploy` runs all of these;
-`pnpm run setup:cloudflare` runs the provisioning alone. (`pnpm run setup` is the
-local first-owner setup.)
+`node scripts/setup.mjs --environment <name> --env-file <file>` runs the
+provisioning alone. Setup reads the applied migrations back from D1 and fails, naming any shipped migration that is missing, instead of reporting success; run it again to apply the rest. (`rer setup` is the local first-owner setup.)
 
 Owner task guides are published at `/docs` on the app host. Use
 [`RUN-LOCALLY.md`](RUN-LOCALLY.md) for local launch, export, reset and restore;
 it is the canonical local command sequence. This file remains the technical
 reference for deployment inputs and Cloudflare archive operations. The
-`export:cloudflare` and `import:cloudflare` scripts below are remote archive
-tools, not `rer` verbs; `rer export` and `rer import` operate on local state.
+`scripts/export.mjs` and `scripts/import.mjs` commands below are remote archive
+tools run with Node 22 or later. `rer export` and `rer import` operate on local
+state, except `rer export --target remote --output DIR`, which runs
+`node scripts/export.mjs --remote --environment production --out DIR` for the
+installation this checkout deployed as `production`.
 
 ## Owner inputs
 
@@ -25,8 +34,22 @@ Account Worker access alone can upload the artifact but cannot attach its hosts.
 For workers.dev hosting, custom-domain zone permissions are not needed; the token
 must be able to read the account's Workers subdomain.
 
-Hosted Lamp requires a mail provider and authenticated sender, including when
-using terminal recovery links. Supply the Cloudflare credentials, both hostnames,
+- **Free:** you run Lamp's open source yourself in your own Cloudflare account,
+  with no Run Edit Run charge. The commands in this guide are this path.
+- **Assisted:** Run Edit Run installs and maintains Lamp for you, while it stays
+  in your own Cloudflare account and GitHub repository (early access).
+- **Managed:** Run Edit Run hosts and runs Lamp for you (waitlist only).
+
+Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
+
+Hosted Lamp requires working mail, including when using terminal recovery links.
+Managed hosting includes it without a provider account or mail key from the owner:
+RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and the
+private installation credential `MAIL_API_KEY`. These values are runtime bindings;
+provider credentials never enter the application build.
+
+Free and Assisted hosting retain your own Resend or SendGrid configuration. For
+native deployment, supply the Cloudflare credentials, both hostnames,
 page branding, first operator email, `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and
 `MAIL_PROVIDER_API_KEY`. The complete [input reference](docs/deployment-reference.md#inputs-you-supply-and-values-rer-generates)
 distinguishes owner-supplied values from generated runtime secrets and uses the
@@ -35,16 +58,28 @@ same names as the CLI. The required-input source of truth is
 
 Store inputs in an owned `0600` file outside the repository and pass it to every
 `rer deploy` invocation with `--env-file`, or export the same names in the calling
-shell. The [deployment guide](docs/deploy.md#save-private-deployment-inputs) gives
+shell. The [deployment guide](docs/deploy.md#step-1-make-a-private-input-file) gives
 file creation, contents and secret-generation commands. File values override the
 environment; this is a plain `KEY=VALUE` file, not a shell script.
 
 `rer deploy` generates `SETUP_TOKEN`, `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET`
 and `WEBHOOK_SIGNING_SECRET` when absent. These are required runtime bindings,
-not mandatory manual inputs for a first deploy. The native pipeline uploads the
-values for that run: for repeatable redeploys and recovery, supply and keep your
-original secrets in the private file. Each must contain at least 32 characters.
-Keep the original session, subscriber and webhook secrets on restore. Direct
+not mandatory manual inputs for a first deploy. rer keeps the values it generates
+in `.rer/deploy/<environment>.secrets.env` (private, ignored by Git) and reuses
+them on the next deploy; to deploy from another checkout, copy that file there or
+keep the values in your private input file, or rer stops before uploading. A redeploy never replaces a live secret: each Worker
+keeps the `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET`, `WEBHOOK_SIGNING_SECRET`
+and `OIDC_TRANSACTION_SECRET` it already holds, whatever value the run supplies,
+and the deploy names the ones it kept. Values reach only a Worker without them:
+a first deploy, or a restore into a new installation. To replace one on purpose,
+run `rer deploy … --rotate-secret NAME` for a secret rer generates and you have
+not put in the file, or put the new value in the file and add
+`LAMP_REPLACE_SECRETS=NAME` (comma-separated) for that one deploy. Replacing
+`SESSION_SECRET` signs every operator out, and replacing `SUBSCRIBER_TOKEN_SECRET`
+ends every emailed subscriber link. Each must contain at least 32 characters.
+For recovery, supply and keep your original secrets in the private file: a
+restore into a new installation needs the original session, subscriber and
+webhook secrets. Direct
 `setup:cloudflare` and `deploy:cloudflare` scripts require those values exported;
 they do not generate them or read `--env-file` themselves.
 
@@ -52,9 +87,9 @@ Optionally set `OWNER_DISPLAY_NAME` to the first owner's name (1–120 character
 It is used only when setup creates the first operator; existing owners keep their
 name and access. Without it, the native command uses `Owner`.
 
-`MAIL_PROVIDER` selects `resend` (default, preserving existing deployments) or
-`sendgrid`. Both use `MAIL_PROVIDER_API_KEY`; map an existing provider-specific
-credential into that environment variable without writing it into source.
+For Free, Assisted and native deployment, `MAIL_PROVIDER` selects `resend`
+(default, preserving existing deployments) or `sendgrid`. Both use
+`MAIL_PROVIDER_API_KEY`; map an existing provider-specific credential into that environment variable without writing it into source.
 Likewise map the verified sender address into `MAIL_FROM_ADDRESS`. The sender
 domain must publish a DMARC policy at `_dmarc.<From-domain>` and a reachable
 DKIM key at `<selector>._domainkey.<From-domain>`; provider CNAMEs are supported.
@@ -120,8 +155,14 @@ address. See [Cloudflare's custom-domain documentation](https://developers.cloud
    `https://<LAMP_APP_HOST>/health`. Verify the public page and operator sign-in on
    their respective hostnames before routing customers to the new setup.
 
-DNS hosted by another provider is unsupported. The registrar can remain elsewhere,
-but it must delegate the domain to the active Cloudflare zone before setup.
+A page host whose DNS is hosted elsewhere, or in another Cloudflare account, cannot be a custom
+domain. Serve it through Cloudflare for SaaS instead: make it a custom hostname on a provider zone in the
+deploy account and set `LAMP_PAGE_HOST_ROUTE_ZONE` and `LAMP_PAGE_HOST_TARGET`, which attach it as a Worker
+route on that zone. The deploy completes while the page host's DNS still points at its old service, logs
+`does not point at <target> yet: skipped`, and checks the page once the DNS record is switched. The steps
+are in `docs/domains.md` ("A page host whose DNS is in another Cloudflare account or elsewhere"). The app host
+and any other hostname still need DNS in an active Cloudflare zone in the deploy account; the registrar can
+remain elsewhere.
 
 ## Deployment and checks
 
@@ -211,11 +252,34 @@ point-in-time backup while data is changing. A failed export leaves no completed
 manifest; use a new empty output directory for the next attempt. Archive files
 are private because they include subscriber data, sessions and frozen mail.
 
+A database Run Edit Run Managed installed carries Platform's own migration
+ledger, `rer_migrations`. It is installation history, not owner data: export
+and import refuse unless it lists exactly this revision's migration files with
+their hashes (plus the installation's page initializer), the archive never
+carries it, and restore never writes it. Import restores in place into a new
+Managed installation whose owner has not signed in and whose tables match the
+archive; Platform has already applied the migrations. Any other table,
+including another `rer_` name, still stops the restore.
+
+A local backup (`rer export`) restores into a database Run Edit Run Managed
+installed with `rer import`, too. rer places it by Platform's ledger: each
+`core-` file by its hash, and the page initializer `setup-initial-page.sql`,
+which Lamp declares as data only (`scripts/installer/local.mjs`). It never
+writes that ledger, and the archive's page settings replace the row the
+initializer wrote. Every other table must be empty.
+
 ```sh
-pnpm run export:cloudflare -- --remote --environment production --out /private/backups/lamp-first
-pnpm run export:cloudflare -- --persist-to /private/local-state --out /private/backups/lamp-local
-pnpm run import:cloudflare -- --from /private/backups/lamp-local --persist-to /private/empty-state
+node scripts/export.mjs --remote --environment production --env-file "$HOME/.config/lamp/production.env" --out /private/backups/lamp-first
+node scripts/export.mjs --persist-to /private/local-state --out /private/backups/lamp-local
+node scripts/import.mjs --from /private/backups/lamp-local --persist-to /private/empty-state
 ```
+
+They need only Node 22 or later and the checkout's installed dependencies
+(`rer install`), not a global pnpm. A remote archive reads `CLOUDFLARE_ACCOUNT_ID`
+and `CLOUDFLARE_API_TOKEN` from `--env-file` (or the exported shell values) and
+the D1 and R2 names from `.seed/deployment/<environment>.json` in the deploying
+checkout. The app's **Settings → Export page data** file is separate: it holds
+the owner's page data, not this full archive ([Backups and recovery](docs/backups-and-recovery.md)).
 
 Keep the owner's exact source revision alongside the backup. Import checks the
 archive checksums and core/owner migration hashes before any destination mutation.
@@ -239,17 +303,21 @@ successful responses in its local edge cache for the one-hour outage window and
 marks that response as last known state when snapshot storage reads fail. A cold
 edge cache with inaccessible storage cannot recover bytes it has never seen;
 retain the original data and verify the tested deployment's warmed-cache path.
-`/health` checks D1, R2 and Queue reachability separately and must return503 during
-a dependency failure. A successful public response is not a healthy-backend proof.
-For managed installations (`RER_INSTALLATION_ID`), `/health` also completes pending
-public snapshot work before reporting readiness, including the initial migrated
+`/health` checks D1, R2 and Queue reachability separately and returns503 naming
+the failed dependency. A good result is recorded and answers later probes without
+storage calls; once it is 30 seconds old a probe refreshes it in the background,
+and after 10 minutes a probe checks every dependency itself. A failure is never
+recorded, so every probe after a failed refresh checks again until it passes: a
+dependency failure shows within one 30-second refresh period. A successful public
+response is not a healthy-backend proof. `/health` also publishes a configured
+page's first snapshot before reporting readiness, including the initial migrated
 state in previews where cron is disabled. A failed snapshot build returns 503.
 This readiness step does not dispatch scheduled incidents, maintenance or mail.
 A Cloudflare-wide outage needs separately operated hosting; this release does not
 provision an independent standby or make that deployment claim.
 
 For a remote restore, choose a new environment name and replacement host inputs,
-then run `pnpm run setup:cloudflare -- --environment recovery --restore-from /private/backups/lamp-first`.
+then run `node scripts/setup.mjs --environment recovery --env-file /private/recovery.env --restore-from /private/backups/lamp-first`.
 This provisions an empty target and imports before initialization; it never
 publishes a Worker. Inspect the restored archive and record equivalence before
 `rer deploy --environment recovery`. Keep original host routing active
@@ -357,18 +425,22 @@ local verification.
 
 The independent candidate declares distinct app/public surfaces. The broker must
 support that declarative interface and native pending setup readiness; an older
-single-gateway broker is incompatible. Use `/signin` for app readiness. On an
-empty owner database `/setup/status` returns409 and the public root correctly
-returns503 because no snapshot exists. The approved plan permits that public503
-only during explicit pending setup. Once initialized, status returns200 and
+single-gateway broker is incompatible. Use `/signin` for app readiness. Until the
+owner claims the installation, `/setup/status` returns409 and the public root
+returns503, the declared `pendingSetupStatuses`: with the body of the page the
+deployment published from its stored settings, or a short not-set-up notice when
+none exists. The approved plan permits that public503 only during explicit pending setup. Once initialized, status returns200 and
 public readiness must be200; inconsistent settings or dependency failures fail.
 The public host cannot reach setup, sessions, operator APIs or operator assets.
 
 Supply independent `SETUP_TOKEN` and `SESSION_SECRET` (at least 32 random characters each),
-`MAIL_PROVIDER_API_KEY`, `SUBSCRIBER_TOKEN_SECRET` and `WEBHOOK_SIGNING_SECRET`
-through the broker's separate runtime secret channel. Configure a real
-`MAIL_FROM_ADDRESS`, the chosen mail provider, and signed receipt verification as
-above. The candidate receives none of these secrets while building. Native
+`SUBSCRIBER_TOKEN_SECRET` and `WEBHOOK_SIGNING_SECRET` through the broker's separate
+runtime secret channel. Managed hosting fills and hides `MAIL_PROVIDER=rer`,
+`MAIL_FROM`, `MAIL_RELAY_URL` and private `MAIL_API_KEY`; no provider account or mail
+key is needed from the owner. Free and Assisted hosting instead use
+`MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and private `MAIL_PROVIDER_API_KEY` for
+the selected Resend or SendGrid account, with receipt verification as above.
+The candidate receives none of these secrets while building. Native
 `POST /auth/bootstrap` claims the configured `SETUP_OPERATOR_EMAIL` with JSON `token` (the `SETUP_TOKEN`) and `displayName`. Base issues the owner's session and refuses repeated or racing claims. The installer then applies product page settings. Keep the installer-managed `SETUP_TOKEN` for subsequent setup/deploy commands; the durable Base claim prevents reuse against an initialized store. Keep `SESSION_SECRET` stable. Subsequent sign-in uses Base email links and a confirmation POST.
 
 Core migration bytes and broker identities `core-<filename>` and owner migration
@@ -401,7 +473,7 @@ export LAMP_APP_HOST=my-status.my-account.workers.dev
 export LAMP_PAGE_HOST=my-status-page.my-account.workers.dev
 ```
 
-Then follow [the deploy commands](docs/deploy.md#validate-and-deploy) with the same
+Then follow [the deploy commands](docs/deploy.md#step-7-check-then-deploy) with the same
 environment and inputs. If using `--env-file`, update the hostname values in that
 file too; they override these exports. The app Worker is named exactly the prefix; the public Worker adds `-page`. D1 adds `-db`, R2 adds `-files`, and the queue adds `-jobs`. The generated config records the supplied account ID. Deployment records preserve actual resource names for archive and sign-in commands.
 
@@ -409,33 +481,33 @@ Both Workers serve the same compiled source and retain the configured host check
 
 This mode is supported by native `rer deploy`. The independent delivery artifact contract describes one Worker; it does not package this two-Worker topology.
 
+With a custom `LAMP_RESOURCE_PREFIX`, rer refuses `rer deploy --rotate-secret INSTALLATION_KEY` before it changes the key, its private custody or the Worker: the pinned rer rotates the installation key only on the Worker it names `lamp-<environment>`, and a rotation it could not finish there would stop every later deploy.
+
 ### Local operational inspection
 
 Local dev signs the owner in with one click and silently suppresses mail.
 Demos mock sends to people and third parties while public reads run for real.
 Neither mode retains mail or serves a captured-mail viewer.
 
-In ordinary development, `GET /__dev/outbox` returns HTTP 200 with a plain-text
-notice that local mail is suppressed and no messages are retained. It provides
-the compatibility path, not a mail viewer. The notice is excluded from demos
-and production. Exercise emailed sign-in and subscriber messages through a
+Exercise emailed sign-in and subscriber messages through a
 hosted installation's actual provider and recipient mailbox.
 
 `node scripts/operations.mjs check` prints the required inputs and their sources,
 plus a plain next step. Version 2 of `OPERATIONS.json` describes the real native
-mail dispatch and scheduled-update loops. Lamp's chosen provider consumes
-`MAIL_PROVIDER_API_KEY`; this check never sends mail, queries provider credentials
+mail dispatch and scheduled-update loops. Resend and SendGrid consume
+`MAIL_PROVIDER_API_KEY`; Managed mail uses the private `MAIL_API_KEY` relay
+credential. This check never sends mail, queries provider credentials
 or establishes hosted health.
 
 ## Independent external heartbeat
 
 Set `LAMP_HEARTBEAT_URL` to the public HTTPS ping URL of the owner's chosen external heartbeat service. It is off when omitted. Keep this capability URL secret. `LAMP_HEARTBEAT_INTERVAL_MINUTES` defaults to 5. Configure the service's expected interval and grace period to match; the service sends the alarm when pings stop. Choose the receiving mailbox and phone on infrastructure independent of this hosting provider.
 
-The minute cron sends an empty GET only on the heartbeat interval grid, after scheduled work completes and `/health` verifies D1, R2 and Queue. Failed dependencies and the hosting-move `EFFECTS_PAUSED=1` hold stop pings. No subscriber, incident, page, visitor or owner data travels. A successful ping establishes the service acknowledged that ping; it does not prove human receipt. This watch does not provide standby hosting.
+The minute cron sends an empty GET only on the heartbeat interval grid, after scheduled work completes and a live check (never `/health`'s recorded result) verifies D1, R2 and Queue. Failed dependencies and the hosting-move `EFFECTS_PAUSED=1` hold stop pings. No subscriber, incident, page, visitor or owner data travels. A successful ping establishes the service acknowledged that ping; it does not prove human receipt. This watch does not provide standby hosting.
 
 ## Shared operator authentication
 
-The checkout pins `@runeditrun/rer` 0.2.22. For hosted owner entry without email,
+The checkout pins `@runeditrun/rer` 0.2.76. For hosted owner entry without email,
 run this from the deploying checkout using the original account and environment:
 
 ```sh
@@ -449,7 +521,7 @@ does not save it, and sends no mail. Open it privately within 15 minutes. The
 grant is single-use and its use is audited. Retain the deploying checkout and its
 deployment records. An older installation needs additive migration
 `0023_owner_signin.sql` applied by redeployment before this command can issue a
-grant. `rer signin` 0.2.22 targets the default `lamp-<environment>` prefix; for a
+grant. The pinned `rer signin` targets the default `lamp-<environment>` prefix; for a
 custom `LAMP_RESOURCE_PREFIX`, use the compatibility command below with that
 installation's generated configuration.
 Hosted mail remains mandatory for normal email sign-in and subscriber messages.
@@ -469,7 +541,11 @@ exact HTTPS operator origin. Capture stdout privately. This command uses Base's
 creates no session until the confirmation POST. Prefer `rer signin` for hosted
 owner entry.
 
-Optional Auth installs link through the declared `oidc-provider@1` dependency (`IDENTITY_PROVIDER`). Base settings at `/auth/settings/identity` control admission. A link alone does not enable sign-in on existing installations. Google, Microsoft and Okta may also be configured with Base `AUTH_PROVIDERS` JSON and an independent `OIDC_TRANSACTION_SECRET`; use Base's included identity/oidc documentation for issuer, key and explicit subject association requirements. SCIM and role synchronization remain unsupported. No live identity provider has been exercised by the local adoption checks.
+Optional provider setup is documented step by step under [Single sign-on](docs/operators-and-sign-in.md#optional-single-sign-on)
+and the [technical identity configuration](#identity-provider-configuration) below.
+SCIM and role synchronization remain unsupported. A saved setting, discovery
+response or local protocol check does not establish a working live identity
+provider; verify an invited operator's real sign-in on the installation.
 
 Apply migration 0020 after 0019 before starting the refreshed runtime. It adds
 setup-link session provenance and exact approval attempts. Pending provider-link
@@ -482,3 +558,131 @@ After restore, sign in with a fresh email link. Old sessions, pending email link
 and provider-link approvals do not travel; provider links require fresh approval
 and sign-in is disabled until the owner enables it. Subscriber capabilities and
 product attribution retain their authority.
+
+## AI provider configuration
+
+The [AI assistance guide](docs/ai-assistance.md) covers account setup, private
+inputs, deploy commands and a real suggestion check. Native deployment accepts
+`AI_PROVIDER_URL`, `AI_PROVIDER_MODEL` and private `AI_PROVIDER_API_KEY` only as a
+complete set. The URL is the full HTTPS Chat Completions endpoint, not a base
+URL: Lamp posts to it unchanged with Bearer authentication, the configured
+model and `response_format: {"type":"json_object"}`. Select a model supporting
+that format. The native deployment writes URL/model as Worker variables and
+uploads the API key as a Worker secret; a dry run does not call the AI provider.
+
+For local development, stop `rer dev`, add all three values to private
+`.dev.vars` and restart. For a native hosted installation, add all three to the
+existing private input file and use the same `rer deploy --environment` and
+`--env-file` as the original installation. Removing all three and redeploying
+clears the known optional API-key binding. Do not configure them alongside a
+custom `ai.provider.v1` adapter; the runtime refuses that conflict. Tone
+instructions are page settings and do not provision a provider. A configured
+status checks presence of values; a real requested suggestion checks transport
+and model access. Provider charges and data handling belong to the chosen
+provider. DRAFT-002 limits the request to the incident brief, excluding internal
+notes and components.
+
+## Identity provider configuration
+
+### Google and Okta set up in Settings
+
+The owner sets up Google and Okta in **Settings → Team → Sign-in**; see the
+[steps](docs/operators-and-sign-in.md#set-up-google-or-okta-in-lamp). Lamp stores
+each registration in its own D1 (`sign_in_providers`, with Okta's `sign_in_people`
+pairings of Okta user ID to operator). The client secret is sealed with AES-GCM,
+keyed from `WEBHOOK_SIGNING_SECRET` and bound to `sign-in:<provider>`, and is never
+returned by an API, page or audit row. On every auth request Lamp composes the
+usable stored registrations into Base's providers before Base is built, so a
+change is live on the next request. A row with no secret, a ciphertext the current
+key cannot open (after a key change that dropped the old one) or values Base would
+refuse is skipped, and `/signin` and email links keep working. Keep the previous
+`WEBHOOK_SIGNING_SECRET` as a later entry when rotating, as for channels.
+
+A deploy-file `AUTH_PROVIDERS` entry with the same ID wins; Settings shows it as
+set in deploy settings and refuses Save for it. Every change needs the current
+owner and a fresh email confirmation. Save re-pins the provider through Base's
+relink, and **Working** comes only from Base reporting a healthy pin after a
+verified exchange. Archives (`rer export`, the technical archive) carry the rows
+and People but write the sealed secret as NULL; after a restore the row reads
+**Needs its client secret** and is not offered until the owner pastes it again.
+Managed hosting (`MAIL_PROVIDER=rer`) has no outbound connection for sign-in
+providers, so the pane says so and Save is refused. It makes one kind of outbound
+read: a keyless public status-page read, for Move in and for Business imports
+(`POST /api/rer/source-capture`), which sign-in never uses. Microsoft Entra and Run Edit Run Auth stay on
+`/auth/settings/identity`.
+
+### Direct Google, Microsoft and Okta registration in the deploy file
+
+Follow the [owner registration and configuration steps](docs/operators-and-sign-in.md#optional-single-sign-on).
+`AUTH_PROVIDERS` is a JSON array uploaded as a Worker secret, alongside a separate
+`OIDC_TRANSACTION_SECRET` of at least 32 characters. Preserve that secret across
+ordinary deploys. Each provider entry has `id`, `preset`, `clientId` and client
+authentication matching its registration: `client_secret_post` or
+`client_secret_basic` plus `clientSecret`, or `private_key_jwt` plus a private
+JWK in `privateKey` (with `kid`, the private parameters and a supported key
+algorithm). Keep private keys and secrets out of source and logs.
+
+Register `https://<LAMP_APP_HOST>/auth/oidc/<id>/callback` exactly. Google fixes
+its issuer; Microsoft requires an exact `tenant`; Okta requires its exact HTTPS
+`issuer`. Microsoft and Okta require a server-configured `subjectEmails` map
+from each application's exact upstream `sub` to an existing invited operator's
+email. Provider email alone is insufficient for these presets.
+
+On first use, discovery pins the provider's issuer, client ID and endpoints.
+Changing configuration records a pending re-link and keeps the previous pin.
+For a change or a provider explicitly unlinked earlier, sign in as the setup
+owner, choose **Confirm my identity** on **Settings → Team → Sign-in**, complete the
+emailed confirmation in that browser, then use the authenticated public API:
+
+- `GET /auth/providers` lists provider pins and pending re-links.
+- `POST /auth/providers/relink` with JSON `{"provider":"google"}` approves and
+  pins the currently configured Google registration (use its configured ID).
+- `POST /auth/providers/unlink` with the same JSON ends that provider link and
+  revokes its sessions. Re-linking requires fresh owner approval.
+
+Make these requests from the signed-in operator origin with its session cookie,
+exact matching `Origin` header and `Content-Type: application/json`. They are
+administrator API operations, not controls supplied by the identity checkbox.
+Keep an email session available while checking the next real provider sign-in.
+
+### Link an installed Auth provider
+
+Set `IDENTITY_PROVIDER` to the Auth installation's exact HTTPS origin in the
+private input file and redeploy. The provider must serve RER's dependency-link
+metadata and advertise `oidc-provider@1.0.0` or newer in OIDC discovery. An
+arbitrary OIDC issuer URL does not implement this protocol.
+
+1. Claim Lamp's native owner first. Sign in as that owner, use **Confirm my
+   identity** in Settings and complete the emailed confirmation.
+2. On Lamp's signed-in operator origin, make the authenticated JSON request
+   `POST /auth/dependencies/relink` with
+   `{"interface":"oidc-provider@1","issuer":"https://auth.example.com"}`,
+   replacing the issuer. This opens Lamp's ten-minute approval for that exact
+   origin; a response of `{"pending":true}` is not a completed link.
+3. Have the Auth owner approve this Lamp operator origin and the three exact
+   addresses `https://<LAMP_APP_HOST>/.well-known/rer-link/callback`,
+   `https://<LAMP_APP_HOST>/auth/oidc/auth/callback` and
+   `https://<LAMP_APP_HOST>/auth/oidc/auth/logout`. Complete Auth's provider-owned
+   link flow within Lamp's approval window. Auth calls back to Lamp, which
+   generates its private key and retains the accepted registration. Do not put
+   a hand-written Auth entry into `AUTH_PROVIDERS` for this linked-provider path.
+4. Read `GET /auth/dependencies/status` and require the matching issuer and
+   `oidc-provider@1` entry with `linked:true`. Then enable provider sign-in at
+   `/auth/settings/identity` and check an invited operator's real Auth sign-in.
+
+For an unattended provider initiation, Auth can issue a one-use approval JSON
+file for those exact addresses. Keep it untracked, owned by you and mode `0600`,
+and set `RER_LINK_TOKEN_FILE` to its path when continuing `rer setup` or
+`rer deploy`. The CLI validates and consumes it; it deletes the file only after
+checking Lamp's accepted link. It does not replace the current owner's fresh
+Lamp-side approval on an existing installation. Use the provider's actual
+approval flow to obtain the file; do not invent a token or registration.
+
+Disabling provider sign-in revokes provider sessions; enabling it does not
+restore them. Existing and restored installations need explicit enablement;
+restored links also require fresh approval. Native email access and application
+invitations remain authoritative throughout.
+
+## Business self-host trust
+
+[Link a self-hosted Lamp to Business](docs/business-self-host.md) documents the ordinary setup/deploy trust file, native-owner verification door and existing-owner recovery. Standalone configuration leaves Business trust and its import door unconfigured.

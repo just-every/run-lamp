@@ -10,6 +10,12 @@
           "summary": "What Lamp covers and links to the owner tasks."
         },
         {
+          "slug": "getting-started",
+          "title": "Getting started",
+          "source": "docs/getting-started.md",
+          "summary": "Start Lamp on your own computer with one line."
+        },
+        {
           "slug": "install",
           "title": "Install Lamp",
           "source": "docs/install.md",
@@ -87,6 +93,12 @@
           "summary": "Connect a monitor preset and review its draft incident."
         },
         {
+          "slug": "ai-assistance",
+          "title": "AI draft assistance",
+          "source": "docs/ai-assistance.md",
+          "summary": "Connect an AI provider, save tone instructions and check a real draft suggestion."
+        },
+        {
           "slug": "operators-and-sign-in",
           "title": "Operators and sign-in",
           "source": "docs/operators-and-sign-in.md",
@@ -94,9 +106,27 @@
         },
         {
           "slug": "moving-in",
-          "title": "Move in from Statuspage",
+          "title": "Move in from another status page",
           "source": "docs/moving-in.md",
-          "summary": "Preview a move, import supported records, send invitations and review cutover."
+          "summary": "Move supported records from Statuspage, Better Stack, Instatus or Sorry and review cutover."
+        },
+        {
+          "slug": "public-resources",
+          "title": "Feeds, APIs, badges and embeds",
+          "source": "docs/public-resources.md",
+          "summary": "Connect status readers, dashboards and your website to published snapshots."
+        },
+        {
+          "slug": "social-accounts",
+          "title": "Connect social accounts",
+          "source": "docs/social-accounts.md",
+          "summary": "Get the user token or app password for X, Bluesky or Mastodon."
+        },
+        {
+          "slug": "chat-desk",
+          "title": "Slack and Teams incident desk",
+          "source": "docs/chat-desk.md",
+          "summary": "Install your own Slack or Teams app, then link your operator identity."
         }
       ]
     },
@@ -125,6 +155,66 @@
           "title": "Changelog",
           "source": "CHANGELOG.md",
           "summary": "Read what changed in Lamp releases and their upgrade notes."
+        },
+        {
+          "slug": "accessibility/vpat",
+          "title": "Accessibility (VPAT)",
+          "source": "docs/accessibility/vpat.md",
+          "summary": "Measured accessibility coverage and remaining evaluation limits for this release."
+        },
+        {
+          "slug": "contract-rulings",
+          "title": "Contract rulings",
+          "source": "RULINGS.md",
+          "summary": "Decisions that shape Lamp\u2019s contract and their rationale."
+        },
+        {
+          "slug": "contract-evidence",
+          "title": "Carried contract evidence",
+          "source": "docs/contract/DONE-AUDIT.md",
+          "summary": "Assertion-level evidence for the contract points carried through its rewrite."
+        },
+        {
+          "slug": "release-verification",
+          "title": "Release verification obligations",
+          "source": "docs/verify.md",
+          "summary": "Retained installation and release verification obligations."
+        },
+        {
+          "slug": "contract/publishing-details",
+          "title": "Publishing Details",
+          "source": "docs/contract/publishing-details.md",
+          "summary": "Contract capability details and retained proof boundaries."
+        },
+        {
+          "slug": "contract/intake-details",
+          "title": "Intake Details",
+          "source": "docs/contract/intake-details.md",
+          "summary": "Contract capability details and retained proof boundaries."
+        },
+        {
+          "slug": "contract/document-workflow",
+          "title": "Document Workflow",
+          "source": "docs/contract/document-workflow.md",
+          "summary": "Contract capability details and retained proof boundaries."
+        },
+        {
+          "slug": "contract/public-details",
+          "title": "Public Details",
+          "source": "docs/contract/public-details.md",
+          "summary": "Contract capability details and retained proof boundaries."
+        },
+        {
+          "slug": "contract/delivery-details",
+          "title": "Delivery Details",
+          "source": "docs/contract/delivery-details.md",
+          "summary": "Contract capability details and retained proof boundaries."
+        },
+        {
+          "slug": "contract/operations-details",
+          "title": "Operations Details",
+          "source": "docs/contract/operations-details.md",
+          "summary": "Contract capability details and retained proof boundaries."
         }
       ]
     }

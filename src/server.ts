@@ -2,7 +2,6 @@
 import { withDemo } from '@runeditrun/rer/modules/demo';
 import { seedDemo } from './demo';
 export { SnapshotCache } from "./core/platform/blobs/snapshot-cache";
-import { createSetupRepository } from "./core/features/setup/repository";
 import { devGate } from "@runeditrun/rer/modules/operator-auth";
 import { authConfig, authOrigin } from "./core/platform/auth/config";
 import { authResponse } from "./core/platform/auth/http";
@@ -12,17 +11,27 @@ import { installedHomeResponse } from "./installed-home";
 import { createHostDispatch, isDevelopmentAppPath, type LampSurface } from "./core/app/host-dispatch";
 import { createApp } from "./core/app/server";
 import { prepareAppMailBindings } from "./core/app/mail";
+import { withOperatorRequest } from "./core/platform/operator-request.server";
 import { admitsDevelopmentRequest } from "./core/platform/development/access";
 import type { AppBindings } from "./core/app/types";
 import { ensureDevelopmentSnapshot, runQueue, runScheduled } from "./core/app/worker-lifecycle";
+import { queueDueWork } from "./core/app/request-work";
+import { appHostRobots, noindexAppDocument } from "./core/features/prelaunch/app-host";
 
 function isHonoRequest(surface: LampSurface, request: Request, pathname: string) {
   if (surface === "page") return true;
   return pathname === "/setup/status"
     || (pathname === "/setup" && request.method !== "GET" && request.method !== "HEAD")
     || pathname === "/health"
+    || pathname === "/api/chat/slack" || pathname === "/api/chat/teams"
     || pathname === "/api/app"
     || pathname.startsWith("/api/app/")
+    || pathname.startsWith("/api/v1/")
+    || pathname.startsWith('/api/rer/import/')
+    || pathname === '/api/rer/cutover-status'
+    || pathname === '/api/rer/owner-claim-status'
+    || pathname === '/api/rer/source-capture'
+    || pathname.startsWith('/api/operator/import/')
 ;
 }
 
@@ -56,10 +65,10 @@ async function operatorDocumentPreflight(request: Request, runtime: ReturnType<t
   if (operator) {
     // Until first-run setup is stored, every app document sends the owner to /setup.
     const pathname = new URL(request.url).pathname;
-    const complete = await runtime.services.overview.setup.firstRunComplete();
+    const complete = await runtime.services.overview.live.firstRunComplete();
     if (!complete && pathname !== "/setup") return Response.redirect(new URL("/setup", request.url), 302);
     if (complete && pathname === "/setup") return Response.redirect(new URL("/app", request.url), 302);
-    return null;
+    return { session: operator };
   }
 
   const requested = new URL(request.url);
@@ -83,13 +92,6 @@ export default withDemo({
       const gate = devGate({key:bindings.RER_DEV_KEY,origin:config.origin,local:config.local!});
       const exchange = await gate?.exchange(request);
       if (exchange) return exchange;
-      // Keep the documented local diagnostic address usable before migrations.
-      // Ordinary dev suppresses mail; this is an explanation, not a mail viewer.
-      if (bindings.RER_DEMO !== '1' && await gate?.admits(request) && admitsDevelopmentRequest(bindings, request)
-        && new URL(request.url).pathname === '/__dev/outbox' && ['GET', 'HEAD'].includes(request.method)) {
-        return new Response(request.method === 'HEAD' ? null : 'Local mail is suppressed. No messages are sent or stored. Use a hosted installation and its Deliveries page to check real mail.\n',
-          { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
-      }
     }
     const url = new URL(request.url);
     const surface = createHostDispatch(bindings).surfaceFor(request, { allowDevelopmentAssets: import.meta.env.DEV });
@@ -104,7 +106,8 @@ export default withDemo({
       if (secure) return secure;
       // The app host's / is the shared Lobby; /setup/state says whether the owner has claimed this installation.
       const home = await installedHomeResponse(request, bindings);
-      if (home) return home;
+      if (home) return noindexAppDocument(request, bindings, home);
+      if (url.pathname === "/robots.txt") return appHostRobots(request, bindings);
     }
 
     const runtime = createApp(await prepareAppMailBindings(bindings, request), request);
@@ -112,33 +115,30 @@ export default withDemo({
       return authResponse(request, bindings, runtime.services);
     }
     await ensureDevelopmentSnapshot(runtime);
-    // Every hosted deployment must publish its initial state before traffic
-    // arrives, even before Cloudflare starts Cron. This runs no mail work.
-    if (url.pathname === "/health") {
-      try {
-        if (!await runtime.services.publicSnapshots.hasCurrentSnapshot()
-          && await createSetupRepository(bindings.DB).pageConfigured()) await runtime.services.publicSnapshots.retryPendingBuild();
-      } catch {
-        return Response.json({ status: "unavailable", reason: "Public snapshot readiness failed." }, { status: 503 });
-      }
-    }
 
-    if (isHonoRequest(surface, request, url.pathname)) return runtime.app.fetch(request, bindings, executionContext);
+    if (isHonoRequest(surface, request, url.pathname)) {
+      const response = await runtime.app.fetch(request, bindings, executionContext);
+      queueDueWork(runtime, bindings, executionContext, request, response);
+      return response;
+    }
+    let session;
     if (isOperatorDocument(request, url.pathname)) {
       const rejected = await operatorDocumentPreflight(request, runtime);
-      if (rejected) return rejected;
+      if (rejected instanceof Response) return rejected;
+      session = rejected.session;
     }
     if (isStartRequest(surface, request, url.pathname)) {
-      const response = await start.fetch(request);
+      const response = await withOperatorRequest({ runtime, session }, () => start.fetch(request));
+      queueDueWork(runtime, bindings, executionContext, request, response);
       // Proxies must preserve the HTML React hydrates, including docs addresses.
       // Keep Start's existing cache policy and leave server-function data alone.
-      if (!response.headers.get("content-type")?.includes("text/html")) return response;
+      if (!response.headers.get("content-type")?.includes("text/html")) return noindexAppDocument(request, bindings, response);
       const headers = new Headers(response.headers);
       const cacheControl = headers.get("Cache-Control");
       if (!/(^|[\s,])no-transform($|[\s,])/i.test(cacheControl ?? "")) {
         headers.set("Cache-Control", cacheControl ? `${cacheControl}, no-transform` : "no-transform");
       }
-      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+      return noindexAppDocument(request, bindings, new Response(response.body, { status: response.status, statusText: response.statusText, headers }));
     }
     return new Response("Not found.", { status: 404 });
   },

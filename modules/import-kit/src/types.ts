@@ -5,17 +5,23 @@ export interface Diagnostic { severity: 'warning' | 'error'; code: string; messa
 export interface SourceRecord { namespace: string; kind: string; sourceId: string; payload: Json; payloadHash: string; artifactHash: string; location: SourceLocation }
 /** Exact input bytes, never reserialized JSON. Omission is legacy metadata-only input. */
 export type OriginalErasurePolicy = 'withdraw-affected-artifacts' | 'withdraw-all-job-artifacts';
-export type UnavailableOriginal = { status: 'unavailable'; reason: 'not-supplied' } | { status: 'unavailable'; reason: 'unavailable-after-erasure'; policy: OriginalErasurePolicy };
+export type UnavailableOriginal = { status: 'unavailable'; reason: 'not-supplied' } | { status: 'unavailable'; reason: 'credentials-removed' } | { status: 'unavailable'; reason: 'unavailable-after-erasure'; policy: OriginalErasurePolicy };
 export type ArtifactOriginal = { status: 'available'; base64: string } | UnavailableOriginal;
 export interface SourceArtifact { name: string; sha256: string; size: number; original?: ArtifactOriginal }
 /** Durable, job-bound custody readback. No reference/URL can claim byte retention. */
 export interface RetainedOriginal { jobId: string; kind: 'artifact' | 'attachment'; key: string; name: string; sha256: string; size: number; original: { status: 'retained'; base64: string } | UnavailableOriginal }
 /** Exact noncredential pagination query key; strict credential policy when omitted. */
 export type PaginationCursorPolicy = 'page-token-v1';
-export interface SourceBundle { paginationCursorPolicy?: PaginationCursorPolicy; records: SourceRecord[]; artifacts: SourceArtifact[]; diagnostics: Diagnostic[] }
+/** The door's sanitized form is the original custody, never the user's raw file. */
+export interface IntakeCustody { sanitized: true; allowlistSha256: string; inputFormat: 'csv' | 'ndjson' | 'json'; custodyFormat: 'ndjson' }
+export interface SourceBundle { intake?: IntakeCustody; paginationCursorPolicy?: PaginationCursorPolicy; records: SourceRecord[]; artifacts: SourceArtifact[]; diagnostics: Diagnostic[] }
 export interface ReaderLimits { maxBytes?: number; maxRecords?: number; maxRecordBytes?: number }
 export interface ParsedRecord { kind: string; sourceId: string; payload: Json; pointer?: string }
-export interface FileSourceInput { paginationCursorPolicy?: PaginationCursorPolicy; namespace: string; name: string; bytes: Uint8Array | AsyncIterable<Uint8Array>; format: 'json' | 'ndjson'; parse: (value: Json, index: number) => ParsedRecord | ParsedRecord[] }
+/** 'refuse' (the default) rejects a source holding a credential value; 'remove'
+ * drops each plain credential value, keeps the record, reports it per record as
+ * a CREDENTIAL_REMOVED diagnostic and withholds the original bytes. */
+export type SourceCredentialPolicy = 'refuse' | 'remove';
+export interface FileSourceInput { paginationCursorPolicy?: PaginationCursorPolicy; credentials?: SourceCredentialPolicy; namespace: string; name: string; bytes: Uint8Array | AsyncIterable<Uint8Array>; format: 'json' | 'ndjson'; parse: (value: Json, index: number) => ParsedRecord | ParsedRecord[] }
 /** Object keys are decoded strings; array indices are numbers. */
 export type JsonPathSegment = string | number;
 export interface ApiPageContext { readonly numericLexemes: Readonly<Record<string, string>> }

@@ -1,6 +1,8 @@
 import { createOperatorAuth, createAuthHandler } from '@runeditrun/rer/modules/operator-auth';
 export const secret='test-only-operator-session-secret-aaaaaaaaaaaaaaaa';
 export const setupToken='test-only-setup-token-bbbbbbbbbbbbbbbbbbbbbbbbb';
+// Synthetic 64-hex INSTALLATION_KEY values in the only format Base accepts; no installation holds them.
+export const installationKey='feedface'.repeat(8),otherInstallationKey='deadbeef'.repeat(8);
 export function authFixture(db,{origin='https://app.example.test',owner='owner@example.test',review}={}) {
  const messages=[];
  const auth=createOperatorAuth({db,config:{origin,local:origin.startsWith('http:'),OWNER_EMAIL:owner,SESSION_SECRET:secret,SETUP_TOKEN:setupToken,MAIL_FROM:'lamp@example.test',linkSeconds:1200,...(review?{review}:{}),branding:{productName:'Lamp'}},clientIp:()=> 'test-network-edge',mailSender:{async send(message){messages.push(message);return {status:'accepted',provider:'test-network-edge',providerMessageId:null};}}});

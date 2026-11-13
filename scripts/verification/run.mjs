@@ -5,6 +5,10 @@ import { verificationPlan, shardNames } from './plan.mjs';
 import { checkVerificationPlan } from './check-plan.mjs';
 
 checkVerificationPlan();
+if (!process.env.LAMP_VERIFY_SHARD || process.env.LAMP_VERIFY_SHARD === 'build') {
+  const { execFileSync } = await import('node:child_process');
+  execFileSync(process.execPath, ['src/base/contract-docs.mjs', 'check'], { stdio: 'inherit' });
+}
 
 const requested = process.argv[2] ?? process.env.LAMP_VERIFY_SHARD;
 if (process.argv.length > 3 || (requested && !shardNames.includes(requested))) throw Error(`Usage: node scripts/verification/run.mjs [${shardNames.join('|')}]`);
@@ -13,7 +17,7 @@ const directory = process.env.LAMP_VERIFICATION_DIRECTORY ?? '.seed/installer/ve
 await mkdir(directory, { recursive: true });
 let failed = false;
 for (const shard of selected) {
-  const record = { shard, commit: process.env.GITHUB_SHA ?? null, success: false, steps: [] };
+  const record = { shard, commit: process.env.GITHUB_SHA ?? null, runId: process.env.GITHUB_RUN_ID ?? null, runAttempt: Number(process.env.GITHUB_RUN_ATTEMPT ?? 0), success: false, steps: [] };
   const path = join(directory, `${shard}.json`);
   await writeFile(path, `${JSON.stringify(record, null, 2)}\n`);
   // Continue after a failed gate so the first run retains every independent result.
