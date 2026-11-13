@@ -352,8 +352,12 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await j.json(`${reportPath}/publish`, 'POST', { channels: [] }, 409);
     assert.ok(!(await j.json('/api/app/reports/owing')).incidentIds.includes(incident.id));
 
-    await saveReviewed(incident.id, { lifecycle: 'Investigating', customerImpact: 'Payments need another investigation.' });
+    await saveReviewed(incident.id, { lifecycle: 'Investigating', customerImpact: 'Payments need another investigation.', componentChanges: [{ componentId: component.id, state: 'Partially unavailable' }] });
+    const reopenPreview = (await j.json(endpoint)).preview;
+    assert.ok(JSON.stringify(reopenPreview).includes(`${component.name}: Operational → Partially unavailable`), 'reopening preview uses the recovered public state');
     const reopening = (await j.publish(incident.id)).update;
+    const reopenedComponent = reopening.componentChanges.find(change => change.componentId === component.id);
+    assert.deepEqual([reopenedComponent?.previousState, reopenedComponent?.newState], ['Operational', 'Partially unavailable']);
     const reopened = await j.read(incident.id);
     assert.equal(reopened.lifecycle, 'Investigating');
     assert.deepEqual(reopened.updates.find(row => row.id === resolution.id), resolution);
