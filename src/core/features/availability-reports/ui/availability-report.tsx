@@ -24,8 +24,10 @@ export function AvailabilityReport({ component }: { component: { id: string } })
         const body = await response.json().catch(() => null) as { error?: string } | null;
         throw new Error(body?.error ?? `Availability report returned ${response.status}.`);
       }
+      const filename = response.headers.get("Content-Disposition")?.match(/filename="([a-z0-9.-]+)"/i)?.[1];
+      if (!filename) throw new Error("The availability report did not include a download name.");
       const url = URL.createObjectURL(await response.blob()), link = document.createElement("a");
-      link.href = url; link.download = `availability-${component.id}-${period}.${format}`;
+      link.href = url; link.download = filename;
       document.body.appendChild(link); link.click(); link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The availability report could not be downloaded."); }

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 
 // Stay on the incident after publication: a navigation would hide stale panel reads.
-export async function publishedIncidentState({ page, composer, component, update, resolved = false, screens }) {
+export async function publishedIncidentState({ page, composer, component, update, resolved = false, claimState = 'Major outage', screens }) {
   await composer.row('Brief');
   await composer.row('Impact');
   const brief = page.getByRole('region', { name: 'Brief', exact: true });
   await brief.locator('.brief-list summary').filter({ hasText: `${update.lifecycle} update published` }).waitFor();
   await brief.locator('.brief-list > li').filter({ hasText: component.name }).waitFor();
-  assert.ok((await brief.innerText()).includes('Major outage'), 'the brief shows the incident claim, retained in resolved history');
+  assert.ok((await brief.innerText()).includes(claimState), 'the brief shows the incident claim, retained in resolved history');
   assert.equal(await brief.locator('.brief-questions').getByText(/never been published|None is attached/).count(), 0, 'publication answers the draft-only questions');
   const impact = page.getByRole('region', { name: 'Impact', exact: true });
   await impact.getByRole('option', { name: 'From components (Critical)', exact: true }).waitFor({ state: 'attached' });

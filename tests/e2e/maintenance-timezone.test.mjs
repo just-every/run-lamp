@@ -119,6 +119,7 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await page.locator(".component-row").filter({ hasText: "Configured-zone service" }).getByRole("button", { name: "Configured-zone service" }).click();
     const drawer = page.getByRole("dialog", { name: "Configured-zone service", exact: true });
     await drawer.getByRole("button", { name: "History", exact: true }).click();
+    await (await import('./helpers/availability-download-flow.mjs')).availabilityDownloadFlow({ page, drawer, component, api, context, origin });
     await drawer.getByText("Correct a past period", { exact: true }).click();
     assert.match(await drawer.innerText(), /Australia\/Brisbane/);
     await drawer.getByLabel("Starts at", { exact: true }).fill("2020-07-15T09:00");

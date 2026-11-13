@@ -6,13 +6,13 @@ import { operatorHydrated } from './operator-hydrated.mjs';
 
 // Continue the existing incident journey through its operator and public doors.
 // Assertions run at 1440; the same changed screens are captured once at both widths.
-export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pageUrl, api, incident }) {
+export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pageUrl, api, incident, component }) {
   const path = `/api/app/incidents/${incident.id}`;
   const composer = incidentComposer(page);
   const read = async () => (await api(path)).incident;
   const saved = () => page.locator('.autosave-status.is-saved').waitFor();
   const capture = async (surface, name) => {
-    if (!process.env.LAMP_INCIDENT_SCREENSHOTS) return;
+    if (!process.env.LAMP_INCIDENT_SCREENSHOTS || !name.startsWith('reopened-')) return;
     await mkdir(process.env.LAMP_INCIDENT_SCREENSHOTS, { recursive: true });
     for (const width of [1440, 390]) {
       await surface.setViewportSize({ width, height: 1000 });
@@ -102,15 +102,29 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
 
     await composer.setStatus('Investigating');
     await composer.impact.fill('Harbour Cart checkout is failing again; investigation has reopened.');
+    await page.getByLabel(`${component.name} state with this update`, { exact: true }).selectOption('Partially unavailable');
     await composer.nextUpdate.fill('2027-09-08T15:00');
     await saved();
     assert.equal((await read()).draft.correctsUpdateId, null, 'the next saved draft is ordinary');
+    assert.equal((await api('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Operational', 'readers see recovery before reopening');
+    const preview = (await api(path)).preview;
+    assert.ok(JSON.stringify(preview).includes(`${component.name}: Operational → Partially unavailable`), 'the reopen preview uses the same recovered baseline');
+    const priorUpdates = (await read()).updates;
     const reopened = await publish();
     const reopening = reopened.updates[0];
+    const change = reopening.componentChanges.find(row => row.componentId === component.id);
+    assert.deepEqual([change?.previousState, change?.newState], ['Operational', 'Partially unavailable'], 'reopening starts from the state readers last saw');
+    for (const original of priorUpdates) assert.deepEqual(reopened.updates.find(update => update.id === original.id), original, 'reopening preserves all earlier publications');
     assert.equal(reopened.lifecycle, 'Investigating', 'publishing through the resolved composer reopens the incident');
     assert.equal(reopening.correctsUpdateId, null, 'the next ordinary publication does not inherit correction mode');
     await publicCorrection(reopened, resolvedCorrection, resolution);
     await publicPage.goto(`${pageUrl}/incidents/${incident.reference}`);
+    for (const [surface, selector] of [[page, `.timeline [data-update-id="${reopening.id}"]`], [publicPage, `article.update[data-update-id="${reopening.id}"]`]]) {
+      const text = await surface.locator(selector).innerText();
+      assert.ok(text.includes(`${component.name}: Operational → Partially unavailable`), 'operator and public reopening timelines use the recovered baseline');
+    }
+    await capture(page, 'reopened-operator');
+    await capture(publicPage, 'reopened-public');
     const publicIds = await publicPage.locator('article.update').evaluateAll(entries => entries.map(entry => entry.dataset.updateId));
     assert.ok(publicIds.indexOf(reopening.id) < publicIds.indexOf(resolution.id), 'reopening and resolution remain in publication order');
     for (const update of [resolution, reopening]) {

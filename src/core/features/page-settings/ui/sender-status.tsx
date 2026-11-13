@@ -6,7 +6,7 @@ export function SenderStatusLine({ sender }: { sender: SenderStatus | null }) {
   const relativeTime = useRelativeTime();
   if (!sender) return null;
   if (sender.state === "local") return null;
-  if (sender.state === "verified") return <p className="sender-status is-ok"><span className="live-dot" />Sender verified by your mail provider{sender.checkedAt ? `, checked ${relativeTime(sender.checkedAt)}` : ""}.</p>;
+  if (sender.state === "verified") return <p className="sender-status is-ok"><span className="live-dot" />{sender.message ?? `Sender verified by your mail provider${sender.checkedAt ? `, checked ${relativeTime(sender.checkedAt)}` : ""}.`}</p>;
   if (sender.state === "failed") return <p className="sender-status is-failing" role="status"><span className="live-dot" />{sender.message}</p>;
   return <p className="sender-status">Lamp checks this sender with your mail provider after you confirm.</p>;
 }

@@ -21,17 +21,15 @@ export function registerAvailabilityReportRoutes(app: Hono<AppEnv>, service: Ava
     context.header("Cache-Control", "no-store");
     const report = await service.report(query.data);
     if (!report) return context.json({ error: "Component not found." }, 404);
-    const filename = `availability-${report.component.id.replace(/[^a-zA-Z0-9_-]/g, "_")}-${report.period}`;
+    if (query.data.format === "json") return context.json(report);
+    const filename = `availability-${await service.downloadName(report.component.id)}-${report.period}`;
     if (query.data.format === "pdf") {
       context.header("Content-Type", "application/pdf");
       context.header("Content-Disposition", `attachment; filename="${filename}.pdf"`);
       return context.body(availabilityPdf(report).buffer);
     }
-    if (query.data.format !== "json") {
-      context.header("Content-Type", "text/csv; charset=utf-8");
-      context.header("Content-Disposition", `attachment; filename="${filename}.csv"`);
-      return context.body(availabilityCsv(report));
-    }
-    return context.json(report);
+    context.header("Content-Type", "text/csv; charset=utf-8");
+    context.header("Content-Disposition", `attachment; filename="${filename}.csv"`);
+    return context.body(availabilityCsv(report));
   });
 }
