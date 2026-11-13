@@ -1,0 +1,20 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for getByRole('region', { name: 'Subscribe to status updates', exact: true }).locator('form[action="/subscribe/slack"]').locator('..').locator(':scope > summary')[22m
+
+    at webhookFormatBrowserFlow (/workspace/run-lamp/tests/e2e/helpers/webhook-before.mjs:35:93)
+    at async file:///tmp/lamp-reproduce.mjs:2:1 {
+  log: [
+    `  - waiting for getByRole('region', { name: 'Subscribe to status updates', exact: true }).locator('form[action="/subscribe/slack"]').locator('..').locator(':scope > summary')`
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v22.20.0

@@ -1,0 +1,125 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-subscribe-channels-1-pc1",
+  "head": "d4b064c5c996520b2e82e6c1da9e2f7adf5c0596",
+  "preserved_published_head": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "merged_main": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+  "pr": "https://github.com/just-every/run-lamp/pull/357",
+  "push": {
+    "status": "success",
+    "attempt": 1,
+    "guard": "cloud-push.py",
+    "default_branch_pushed": false
+  },
+  "local_tests": {
+    "command": "node --test --test-concurrency=1 --test-name-pattern='^SUB-019 SUB-001|^SUB-001 \u2014 Generic' tests/e2e/delivery-contract.test.mjs",
+    "node": "22.20.0",
+    "passed": 2,
+    "failed": 0,
+    "duration_ms": 289435.996299
+  },
+  "focused_flows": [
+    "webhookFormatBrowserFlow",
+    "subscriberPublicConsentFlow",
+    "subscriberChannelsFlow"
+  ],
+  "checks": {
+    "typecheck": "passed",
+    "source_lock": "passed",
+    "contract_docs": "passed",
+    "inventory": "passed",
+    "diff_check": "passed"
+  },
+  "inventory": {
+    "before": {
+      "registered": 90,
+      "assertion_scripts": 10,
+      "total": 100
+    },
+    "after": {
+      "registered": 90,
+      "assertion_scripts": 10,
+      "total": 100
+    },
+    "cap": 200
+  },
+  "contract": {
+    "changed": false,
+    "total": 244,
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "assertions_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "screenshots": [
+    {
+      "path": "screens/slack-unavailable-1440.png",
+      "sha256": "e2c66d55942d91849010c5cf96d9cd3e90a54f58b86b25c5143ce0d5b9f6ce0d"
+    },
+    {
+      "path": "screens/slack-unavailable-390.png",
+      "sha256": "b9c3a1ffdb90cbe01a5a48b3f886515a21b31b0b483745be6f63b56e18ccedde"
+    },
+    {
+      "path": "screens/sms-unavailable-1440.png",
+      "sha256": "825178048ca986fc4d2a7dfb3c93e761dec49a28429be0f22884869640ecb5da"
+    },
+    {
+      "path": "screens/sms-unavailable-390.png",
+      "sha256": "058b0e17a3b48c999e16f43b0118fa9d414a2e7ba9073795f6453b64868150a6"
+    },
+    {
+      "path": "screens/subscribe-configured-1440.png",
+      "sha256": "4859f7be610fef79a677a1b701a61c60cf7b87aa7265b7fe99343a79b21bac5d"
+    },
+    {
+      "path": "screens/subscribe-configured-390.png",
+      "sha256": "523eaf200c103e7b1475d73b8714fd492140e40c5a081b2c2831c5ff75ddb201"
+    },
+    {
+      "path": "screens/subscribe-unconfigured-1440.png",
+      "sha256": "6c211da0e425bfe709dd1f8c9237e7e97220c506006b8c901f70b3c2b5c2cf0e"
+    },
+    {
+      "path": "screens/subscribe-unconfigured-390.png",
+      "sha256": "58e3ae6247dc65c9cb6bbe7af5832e2c4d81f4eee622513b05258ced4ff1aebd"
+    },
+    {
+      "path": "screens/teams-form-1440.png",
+      "sha256": "1f46936450e8aeb6110e7338052a9095a43e92762058e654e933b0a000042b6c"
+    },
+    {
+      "path": "screens/teams-form-390.png",
+      "sha256": "43c09537f3d923291ff2a84f46586bfa7a8626540ff9b748c04faff550ce4fbc"
+    },
+    {
+      "path": "screens/teams-guide-1440.png",
+      "sha256": "8be165260706477e48830cc87f093557f7c6bdec838900110a050117812db5a5"
+    },
+    {
+      "path": "screens/teams-guide-390.png",
+      "sha256": "e359341da220719a4fb81609eb1617892659394ac5236a67ba489e4db64e4403"
+    },
+    {
+      "path": "screens/teams-unavailable-1440.png",
+      "sha256": "0572fa824073e29357e1ff15a6be4bf00d2d3c2a2b92aeecf4df94be253042e3"
+    },
+    {
+      "path": "screens/teams-unavailable-390.png",
+      "sha256": "4943bf95d296efe250d642e82df05a16336860e72a4b267dee09ff949d968d98"
+    }
+  ],
+  "proof_tree_matches_product": true,
+  "credentials_in_packet": false,
+  "ci": {
+    "push_verify_run_id": 43469532402,
+    "pr_verify_run_id": 43469556131,
+    "status": "pending"
+  },
+  "github_calls_used": 6,
+  "github_call_budget": 10
+}

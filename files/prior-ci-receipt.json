@@ -1,0 +1,26 @@
+{
+  "repository": "just-every/run-lamp",
+  "run_id": 43454550530,
+  "head_sha": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "status": "completed",
+  "conclusion": "failure",
+  "failed_job": {
+    "id": 132000650170,
+    "name": "shards (public)",
+    "step": "Verify this product shard"
+  },
+  "dependent_job": {
+    "id": 132010458368,
+    "name": "verify"
+  },
+  "log_command": "gh run view 43454550530 --repo just-every/run-lamp --job 132000650170 --log-failed",
+  "log_read_count": 1,
+  "actual_failure_excerpt": [
+    "2026-11-13T16:10:00.5186869Z not ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure",
+    "2026-11-13T16:10:00.5189413Z   duration_ms: 286805.326193",
+    "2026-11-13T16:10:00.5192067Z     locator.click: Timeout 30000ms exceeded.",
+    "2026-11-13T16:10:00.5193443Z       - waiting for getByRole('region', { name: 'Subscribe to status updates', exact: true }).locator('form[action=\"/subscribe/slack\"]').locator('..').locator(':scope > summary')",
+    "2026-11-13T16:10:00.5196389Z     webhookFormatBrowserFlow (/home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/webhook-format-browser-flow.mjs:35:93)",
+    "2026-11-13T16:10:00.5197636Z     async statuspageWebhookFlow (/home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/statuspage-webhook-flow.mjs:15:3)"
+  ]
+}

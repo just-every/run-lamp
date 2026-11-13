@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "tag": "main-lamp-subscribe-channels-1-pc1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-subscribe-channels-1-pc1",
+  "head": "d4b064c5c996520b2e82e6c1da9e2f7adf5c0596",
+  "preserved_start": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+  "merged_main": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+  "pr": "https://github.com/just-every/run-lamp/pull/357",
+  "product_push": "success",
+  "product_push_attempts": 1,
+  "verify": {
+    "run_id": 43469532402,
+    "conclusion": "success",
+    "head_sha": "d4b064c5c996520b2e82e6c1da9e2f7adf5c0596",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43469532402",
+    "status": "completed",
+    "observed_at": "2026-11-13T17:32:10.649226+00:00"
+  },
+  "readiness": "READY",
+  "blockers": [],
+  "local_registered_tests": {
+    "passed": 2,
+    "failed": 0
+  },
+  "checks_before": 100,
+  "checks_after": 100,
+  "clause_status_changes": [],
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "github_command_calls": 8,
+  "publication_scan": "Fleet Mac landing gate; not available in this cloud",
+  "landing": "Not performed; fleet owns main and final publication scan",
+  "created_at": "2026-11-13T17:32:51.047210+00:00"
+}

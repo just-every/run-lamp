@@ -1,0 +1,19 @@
+{
+  "range": "origin/main..HEAD",
+  "all_parents": true,
+  "commits": [
+    {
+      "sha": "d4b064c5c996520b2e82e6c1da9e2f7adf5c0596",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": ""
+    },
+    {
+      "sha": "dc565f4d31f87885c7dce6b8d97d995b797a13cf",
+      "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+      "trailers": ""
+    }
+  ],
+  "passed": true
+}
