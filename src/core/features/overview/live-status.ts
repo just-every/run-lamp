@@ -1,6 +1,6 @@
 import type { PageSettingsService } from '../page-settings';
 import type { OverviewRepository } from './repository';
-import { checkSender, senderEvidenceKey, type SenderCheckOptions } from './sender-check';
+import { checkSender, senderEvidenceKey, MANAGED_SENDER_NOTICE, type SenderCheckOptions } from './sender-check';
 
 /** One check Lamp ran on its own. reason is a short sentence with the one thing to do; null when it passed. */
 export interface LiveCheck { ok: boolean; checkedAt: string; reason: string | null }
@@ -94,7 +94,9 @@ export function createLiveStatusService(repository: OverviewRepository, settings
     const key = await senderEvidenceKey(value.mailFromAddress, options.sender);
     const evidence = await repository.evidence();
     const verified = evidence.find(row => row.step === 'sender' && row.evidence_key === key);
-    if (verified) return { state: 'verified', message: null, checkedAt: verified.checked_at };
+    if (verified) return { state: 'verified',
+      message: options.sender.provider === 'rer' ? MANAGED_SENDER_NOTICE : null,
+      checkedAt: verified.checked_at };
     const failed = evidence.find(row => row.step === SENDER_FAILED_STEP && row.evidence_key.startsWith(`${key}\n`));
     return failed ? { state: 'failed', message: failed.evidence_key.slice(key.length + 1), checkedAt: failed.checked_at } : { state: 'unchecked', message: null, checkedAt: null };
   }

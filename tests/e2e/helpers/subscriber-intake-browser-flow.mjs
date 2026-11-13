@@ -115,6 +115,9 @@ export async function subscriberIntakeBrowserFlow(t) {
       assert.equal(row.addedBy.displayName, 'Synthetic Lamp owner');
       const visible = page.getByRole('region', { name: 'Subscriber records', exact: true }).getByRole('row').filter({ hasText: destination });
       await expect(visible).toContainText('pending'); await expect(visible).toContainText('Added by Synthetic Lamp owner');
+      const selection = visible.locator('[data-label="Selection"]');
+      for (const component of selected) await expect(selection).toContainText(component.name);
+      for (const component of components.filter(component => !selected.includes(component))) await expect(selection).not.toContainText(component.name);
       if (channel === 'webhook') await expect(visible).toContainText(contact);
       const sent = messages.slice(start); assert.equal(sent.length, 1); assert.deepEqual(sent[0].to, [contact]);
       const confirmation = sent[0].text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0];
@@ -149,14 +152,22 @@ export async function subscriberIntakeBrowserFlow(t) {
     await screens('subscriber-import-pending');
     for (const batch of batches) {
       await select.selectOption(batch.id);
+      const label = await select.locator('option:checked').innerText();
+      assert.ok(!label.includes(batch.id) && !label.includes(batch.id.slice(-6)), 'batch labels hide internal identifiers');
+      assert.match(label, /CSV/i, 'the batch names its import source');
+      assert.ok(label.includes(String(batch.recipients.length)) && /\d{4}/.test(label), 'the batch label retains its import time and remaining count');
       await expect(imports).toContainText(`${batch.recipients.length} invitation${batch.recipients.length === 1 ? "" : "s"} remaining.`);
       const start = messages.length;
       const sent = page.waitForResponse(response => response.url().endsWith(`/${batch.id}/send-invitations`) && response.request().method() === 'POST');
       await imports.getByRole('button', { name: 'Send invitations', exact: true }).click();
-      assert.equal((await sent).status(), 200);
+      const sentResponse = await sent;
+      assert.equal(sentResponse.status(), 200);
+      await expect(imports.getByRole('status')).toContainText(/invitations? sent/i);
+      await expect(imports.getByRole('status')).not.toContainText(/No email was sent|Confirm locally/i);
       await expect(imports).toContainText('0 invitations remaining.');
       await expect(imports.getByRole('button', { name: 'Send invitations', exact: true })).toBeDisabled();
       assert.deepEqual(messages.slice(start).flatMap(message => message.to).sort(), [...batch.recipients].sort(), 'only the explicitly selected batch receives invitations');
+      await screens(`subscriber-import-sent-${batch.recipients.length}`);
       await page.reload(); await operatorHydrated(page);
       await select.selectOption(batch.id);
       await expect(imports.getByRole('button', { name: 'Send invitations', exact: true })).toBeDisabled();

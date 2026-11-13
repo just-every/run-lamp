@@ -54,15 +54,18 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     await screens('local-notification-settings');
     await providerSettingsGuideFlow(page);
     await api('/api/app/prelaunch', { enabled: false }, 'PATCH');
+    const { component } = await api('/api/app/components', { groupId: null, name: 'Synthetic Lamp local payments', description: '', internal: false, displayOrder: 1, note: '' });
+    const { component: orders } = await api('/api/app/components', { groupId: null, name: 'Synthetic Lamp local orders', description: '', internal: false, displayOrder: 2, note: '' });
     await page.goto(publicOrigin + '/');
     const form = page.locator('form[action="/subscribe"]');
     await form.locator('input[name="email"]').fill(pageEmail);
+    await form.locator('summary').first().click();
+    await form.getByLabel(component.name, { exact: true }).check();
     await form.locator('button[type="submit"]').click();
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Local subscription');
     await expect(page.locator('main')).toContainText(/No email was sent on this computer/);
     await expect(page.locator('main')).not.toContainText(/We sent|Check your inbox|SendGrid/);
     await screens('local-page-subscription');
-    const { component } = await api('/api/app/components', { groupId: null, name: 'Synthetic Lamp local payments', description: '', internal: false, displayOrder: 1, note: '' });
     const { incident } = await api('/api/app/incidents', { title: 'Synthetic Lamp local payment delays', components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
     await publish(incident, 'Payment requests are delayed.', []);
     await expect.poll(async () => { const response = await context.request.get(`${publicOrigin}/incidents/${incident.reference}`); return response.ok() && (await response.text()).includes('Payment requests are delayed.'); }, { timeout: 30000 }).toBe(true);
@@ -127,6 +130,7 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const add = page.getByRole('region', { name: 'Add subscriber', exact: true });
     const addedEmail = 'synthetic-lamp-local-added@example.test';
     await add.getByLabel('Email address', { exact: true }).fill(addedEmail);
+    await add.getByRole('checkbox', { name: orders.name, exact: true }).check();
     await add.getByRole('button', { name: 'Add subscriber', exact: true }).click();
     await expect(add.getByRole('status')).toContainText(/No email was sent on this computer/);
     await screens('local-add-subscriber');
@@ -134,6 +138,52 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const added = page.getByRole('region', { name: 'Subscription emails', exact: true }).getByRole('row').filter({ hasText: addedEmail });
     await added.getByRole('button', { name: 'Confirm locally', exact: true }).click();
     await expect(added).toContainText('active subscriber');
+
+    await page.goto(origin + '/app/subscribers'); await operatorHydrated(page);
+    const selectedRows = page.getByRole('region', { name: 'Subscriber records', exact: true });
+    for (const [email, followed, excluded] of [[pageEmail, component, orders], [addedEmail, orders, component]]) {
+      const selection = selectedRows.getByRole('row').filter({ hasText: email }).locator('[data-label="Selection"]');
+      await expect(selection).toContainText(followed.name);
+      await expect(selection).not.toContainText(excluded.name);
+    }
+    await screens('local-subscriber-component-names');
+
+    // The CSV's ordinary review, apply and invite buttons use the real silent
+    // local transport. The invitation result must describe that same outcome.
+    const imports = page.getByRole('region', { name: 'Import and export subscribers', exact: true });
+    const importedEmails = ['synthetic-lamp-local-import-1@example.test', 'synthetic-lamp-local-import-2@example.test'];
+    await imports.getByLabel('CSV contents', { exact: true }).fill(['email', ...importedEmails].join('\n'));
+    await imports.getByRole('button', { name: 'Dry run CSV', exact: true }).click();
+    await expect(imports.getByRole('button', { name: 'Create pending subscriptions', exact: true })).toBeEnabled();
+    const applied = page.waitForResponse(response => response.url().endsWith('/api/app/subscribers/import/apply') && response.request().method() === 'POST');
+    await imports.getByRole('button', { name: 'Create pending subscriptions', exact: true }).click();
+    const applyResponse = await applied;
+    assert.equal(applyResponse.status(), 200);
+    const batch = await applyResponse.json();
+    const picker = imports.getByLabel('Import batch');
+    await expect(picker).toHaveValue(batch.batchId);
+    const label = await picker.locator('option:checked').innerText();
+    assert.ok(!label.includes(batch.batchId) && !label.includes(batch.batchId.slice(-6)), 'the batch label exposes no internal identifier');
+    assert.match(label, /CSV/i);
+    assert.ok(label.includes(String(importedEmails.length)) && /\d{4}/.test(label), 'the batch retains its remaining count and import time');
+    for (const email of importedEmails) await expect(selectedRows.getByRole('row').filter({ hasText: email }).locator('[data-label="Selection"]')).toContainText(/All components/i);
+    const invited = page.waitForResponse(response => response.url().endsWith(`/${batch.batchId}/send-invitations`) && response.request().method() === 'POST');
+    await imports.getByRole('button', { name: 'Send invitations', exact: true }).click();
+    const inviteResponse = await invited;
+    assert.equal(inviteResponse.status(), 200);
+    await expect(imports.getByRole('status')).toContainText(/No email was sent/i);
+    await expect(imports.getByRole('status')).not.toContainText(/\b\d+ invitations? sent/i);
+    await expect(imports.getByRole('button', { name: 'Send invitations', exact: true })).toBeDisabled();
+    await imports.scrollIntoViewIfNeeded(); await screens('local-import-invitation-result');
+    await imports.getByRole('link', { name: /Confirm locally.*Delivery log/i }).click();
+    await operatorHydrated(page);
+    for (const email of importedEmails) {
+      const row = page.getByRole('region', { name: 'Subscription emails', exact: true }).getByRole('row').filter({ hasText: email });
+      await expect(row).toContainText('Not sent locally');
+      await expect(row).toContainText('pending subscriber');
+      await row.getByRole('button', { name: 'Confirm locally', exact: true }).click();
+      await expect(row).toContainText('active subscriber');
+    }
 
     // Remove through the desk, then inspect both anonymous histories. Erasure
     // must not replace a personal address with an internal identifier on screen.

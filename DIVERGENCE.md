@@ -9,6 +9,15 @@ channel result to the subscribe choices. Before asking for a Teams URL, the form
 links a short guide on the public status host, adapted from the owner workflow
 instructions. Subscriber storage, consent, verification and delivery are unchanged.
 
+## Subscriber directory and local import feedback — 13 November 2026
+
+The owner directory names each selected component; all-components subscriptions
+keep that scope label. CSV invitation batches show their source, import time and
+remaining count without an internal identifier. Local invitation feedback states
+that no email was sent and links to Confirm locally in the Delivery log. Import
+writes, consent, invitation claims and configured mail delivery keep their existing
+behavior.
+
 ## Reopened incident transitions and report download names — 13 November 2026
 
 The first publication that reopens a resolved incident starts its component

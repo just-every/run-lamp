@@ -48,7 +48,7 @@ export function SubscribersPage() {
             <td role="cell" data-label="Destination" className="subscriber-destination"><strong>{subscriberDestinationLabel(subscriber.destination, subscriber.channel)}</strong>{subscriber.contactEmail && <small>Contact {subscriber.contactEmail}</small>}<ClientExtensionSlot id="subscriber.detail.after.v1" context={{ subscriber: { id: subscriber.id, channel: subscriber.channel, state: subscriber.state, destination: subscriber.destination } }} /></td>
             <td role="cell" data-label="Channel"><div>{subscriber.channel}<WebhookFormatLabel channel={subscriber.channel} format={subscriber.webhookFormat} /></div></td>
             <td role="cell" data-label="State"><div><span className={`state-pill state-${subscriber.state}`}>{subscriber.state}</span>{subscriber.deactivationReason && <small>{subscriber.deactivationReason}{subscriber.deactivatedAt ? ` · ${formatOperatorTime(subscriber.deactivatedAt)}` : ""}</small>}</div></td>
-            <td role="cell" data-label="Selection">{subscriber.incident ? <a href={`/app/incidents/${subscriber.incident.id}`}>Following {subscriber.incident.reference}</a> : subscriber.selectionMode === "all" ? "All components" : `${subscriber.componentSelections.length} selected component${subscriber.componentSelections.length === 1 ? "" : "s"}`}</td>
+            <td role="cell" data-label="Selection">{subscriber.incident ? <a href={`/app/incidents/${subscriber.incident.id}`}>Following {subscriber.incident.reference}</a> : subscriber.selectionMode === "all" ? "All components" : subscriber.componentSelections.map(component => component.name ?? "Unavailable component").join(", ")}</td>
             <td role="cell" data-label="Joined"><div>{formatOperatorTime(subscriber.createdAt)}{subscriber.addedBy ? <small>Added by {subscriber.addedBy.displayName}</small> : null}</div></td>
             <td role="cell" className="subscriber-actions">{subscriber.deactivationReason !== "deleted by operator" && <Button type="button" variant="secondary" className="table-action" disabled={saving} onClick={() => removeSubscriber(subscriber.id, subscriber.destination)}>Remove</Button>}</td>
           </tr>)}</tbody>
@@ -58,6 +58,6 @@ export function SubscribersPage() {
     </section>
     <section className="limit-note"><Icon name="warning" width={17} height={17} />Every subscriber is available through these pages. Removing a subscriber deletes their destination and keeps only non-identifying delivery history.</section>
     <section className="data-card"><h2>Email unsubscribe requests</h2><p>Monitor your From mailbox. When someone emails an unsubscribe request, find their destination above and choose Remove. One-click unsubscribe from a notification is processed automatically.</p><p><a href="/docs/subscribers-and-notifications#process-email-unsubscribe-requests">Unsubscribe guide</a></p></section>
-    <SubscriberImportExport onChanged={refresh} />
+    <SubscriberImportExport onChanged={refresh} localMail={data.localMail} />
   </div>;
 }

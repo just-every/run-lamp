@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import { generateKeyPairSync, sign, createHmac } from 'node:crypto';
+import { generateKeyPairSync, sign, createHmac, createHash, randomBytes } from 'node:crypto';
 import { test } from 'node:test';
 import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { unstable_splitSqlQuery } from 'wrangler';
+import { hashToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
 import { withDraftVersion } from './draft-version-helper.mjs';
 
 const require = createRequire(import.meta.url), workerRequire = createRequire(require.resolve('wrangler'));
@@ -15,16 +16,20 @@ const appOrigin = 'https://app.example.test', pageOrigin = 'https://status.examp
 const receiptKey = Buffer.from('synthetic-lamp-provider-receipt-secret');
 const owner = 'owner@example.test', reader = 'reader@example.test', pending = 'pending@example.test';
 
-// Each row is the same business journey through a supported transport. Only
-// provider responses are synthetic; app routes, migrations and Cron are real.
-test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async () => {
-  const built = await build({ entryPoints: ['tests/e2e/rer-mail.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false,
+async function buildMailWorker() {
+  return build({ entryPoints: ['tests/e2e/rer-mail.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false,
     external: ['cloudflare:workers', 'node:*'], define: { 'import.meta.env.DEV': 'false' },
     plugins: [{ name: 'renderer-assets', setup(builder) {
       builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: 'asset' }));
       builder.onLoad({ filter: /.*/, namespace: 'asset' }, async args => ({ contents: `export default ${JSON.stringify(await readFile(args.path, 'utf8'))}`, loader: 'js' }));
     } }],
   });
+}
+
+// Each row is the same business journey through a supported transport. Only
+// provider responses are synthetic; app routes, migrations and Cron are real.
+test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async () => {
+  const built = await buildMailWorker();
   for (const provider of ['rer', 'resend', 'sendgrid']) {
     const state = await mkdtemp(join(tmpdir(), `lamp-mail-${provider}-`));
     const submissions = [];
@@ -226,5 +231,92 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       await tick();
       assert.ok(!(await (await call('/api/app/subscribers')).json()).subscribers.some(row => row.id === remaining.id), 'Cron expires unconfirmed personal data');
     } finally { await runtime?.dispose(); await rm(state, { recursive: true, force: true }); }
+  }
+});
+
+// One sender-readiness behaviour across managed and owner-supplied mail.
+// Only transport replies and initial installation/session state are fixtures.
+test('Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable', { timeout: 120_000 }, async () => {
+  const built = await buildMailWorker();
+  const secret = 'synthetic-lamp-session-secret-aaaaaaaaaaaa';
+  const session = randomBytes(32).toString('base64url');
+  const sessionHash = await hashToken(secret, 'session', session);
+  for (const configuration of [
+    { provider: 'rer', ready: true },
+    { provider: 'rer', ready: false },
+    { provider: 'resend', ready: false },
+  ]) {
+    const { provider, ready } = configuration;
+    const state = await mkdtemp(join(tmpdir(), 'synthetic-lamp-sender-'));
+    const submissions = [];
+    const runtime = new Miniflare(convertV4MiniflareOptions({
+      name: 'synthetic-lamp-sender', modules: true, script: built.outputFiles[0].text,
+      port: 0, inspectorPort: 0, compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'],
+      bindings: { LAMP_PAGE_HOST: 'status.example.test', LAMP_APP_HOST: 'app.example.test', AUTH_ORIGIN: appOrigin,
+        SETUP_OPERATOR_EMAIL: owner, SESSION_SECRET: secret, MAIL_PROVIDER: provider,
+        SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-secret-bbbbbbbb',
+        MAIL_FROM_ADDRESS: 'status@example.test', MAIL_FROM: 'status@example.test',
+        ...(ready ? { MAIL_API_KEY: 'synthetic-lamp-managed-key' } : {}),
+        MAIL_RELAY_URL: 'https://relay.example.test/api/managed-mail/send' },
+      d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'],
+      durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } },
+      queueProducers: { JOBS: 'synthetic-lamp-sender-jobs' }, resourcePersistencePath: join(state, 'storage'),
+      outboundService: async request => {
+        assert.equal(request.url, 'https://relay.example.test/api/managed-mail/send', 'readiness never requests a platform provider account');
+        assert.equal(request.method, 'POST');
+        submissions.push(await request.json());
+        return Response.json({ messageId: '<synthetic-lamp-sender-1@relay.example.test>' }, { status: 202 });
+      },
+    }));
+    try {
+      const db = await runtime.getD1Database('DB');
+      const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
+      for (const name of (await readdir('migrations/core')).filter(n => n.endsWith('.sql')).sort()) await execute(await readFile(join('migrations/core', name), 'utf8'));
+      const now = Date.now();
+      await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000001','${owner}','Owner','owner','active',${now});
+        INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000001',${now});
+        INSERT INTO oa_tokens(id,token_hash,kind,operator_id,operator_version,return_to,created_at,expires_at,consumed_at) SELECT 'synthetic-lamp-proof-1','synthetic-lamp-proof-hash-1','magic',id,version,'/app',${now},${now+1200000},${now} FROM oa_operators;
+        INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,source_token_id,created_at,expires_at) SELECT 'synthetic-lamp-session-1','${sessionHash}',id,version,'native','synthetic-lamp-proof-1',${now},${now+86400000} FROM oa_operators;
+        INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp sender','Updates','#16794C','UTC','status.example.test','synthetic-lamp-sender-1','status@example.test','2026-10-01','2026-10-01');
+        INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01');`);
+      if (provider === 'rer') {
+        // Reproduce the recent failure a pre-fix installation already cached.
+        const oldKey = createHash('sha256').update(JSON.stringify(['status@example.test', 'rer', ''])).digest('base64url');
+        await db.prepare('INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES(?,?,?)')
+          .bind('sender-failed', oldKey + '\nThis sender needs a supported provider credential for the verification check.', new Date().toISOString()).run();
+      }
+      const live = async () => {
+        const response = await runtime.dispatchFetch(appOrigin + '/api/app/overview/live', { headers: { Host: 'app.example.test', Cookie: '__Host-operator_session=' + session } });
+        assert.equal(response.status, 200);
+        return (await response.json()).live;
+      };
+      const before = await live();
+      assert.equal(before.senderVerificationManaged, ready);
+      assert.equal(before.sender.state, ready ? 'verified' : 'failed');
+      assert.ok(before.sender.checkedAt);
+      assert.equal(submissions.length, 0, 'the sender check sends no mail');
+      if (ready) {
+        assert.match(before.sender.message, /managed by Run Edit Run/i);
+        assert.match(before.sender.message, /inbox delivery is not confirmed/i);
+      } else {
+        assert.match(before.sender.message, /hosting administrator/i);
+        assert.match(before.sender.message, /redeploy Lamp/i);
+        assert.match(before.sender.message, provider === 'rer' ? /managed mail connection/i : /MAIL_PROVIDER_API_KEY/);
+      }
+      const response = await runtime.dispatchFetch(pageOrigin + '/subscribe', { method: 'POST',
+        headers: { Host: 'status.example.test', Origin: pageOrigin, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ email: reader }) });
+      if (ready) {
+        assert.equal(response.status, 202, await response.clone().text());
+        assert.equal(submissions.length, 1, 'the public subscriber door can submit via the managed relay');
+        assert.equal(submissions[0].to, reader);
+        assert.ok(submissions[0].text.includes('/confirm-subscription/'));
+      } else {
+        assert.ok(response.status >= 400, 'an incomplete sender cannot send subscriber mail');
+        assert.equal(submissions.length, 0);
+      }
+      const after = await live();
+      assert.deepEqual(after.sender, before.sender, 'the current sender evidence remains stable on the next read');
+    } finally { await runtime.dispose(); await rm(state, { recursive: true, force: true }); }
   }
 });
