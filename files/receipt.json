@@ -85,14 +85,25 @@
     "state": "open"
   },
   "ci": {
-    "status": "awaiting exact-SHA read",
-    "watcher": "single watcher; discovery after 600 seconds",
-    "head": "4271d1caa8f044a0265eb287c660e1777bd5b942"
+    "repository": "just-every/run-lamp",
+    "head": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+    "status": "in_progress",
+    "conclusion": null,
+    "run_id": 43528397305,
+    "checks": [
+      {
+        "at": "2026-11-13T23:46:56.163397+00:00",
+        "status": "in_progress",
+        "conclusion": null
+      }
+    ],
+    "watcher_calls": 1,
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43528397305"
   },
   "api_recovery": {
     "code_scanning_attempts": 5,
     "last_http_status": 403,
-    "direct_gh_calls_used": 9,
+    "direct_gh_calls_used": 10,
     "direct_gh_call_budget": 10
   },
   "toolchain": {
@@ -104,5 +115,11 @@
       1440,
       390
     ]
-  }
+  },
+  "custody": "PUSHED",
+  "blockers": [],
+  "limitations": [
+    "Exact-SHA Verify is still running; the ten direct-call GitHub budget is exhausted.",
+    "Code-scanning alert state could not be read: five refreshed-credential attempts returned HTTP 403."
+  ]
 }

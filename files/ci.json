@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "status": "in_progress",
+  "conclusion": null,
+  "run_id": 43528397305,
+  "checks": [
+    {
+      "at": "2026-11-13T23:46:56.163397+00:00",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "watcher_calls": 1,
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/43528397305"
+}

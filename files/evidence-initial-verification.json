@@ -1,0 +1,10 @@
+{
+  "repository": "just-every/run-lamp",
+  "ref": "refs/heads/evidence/gr-mt-lamp-code-11",
+  "head": "7d5d6640066fc946341907c308da46be86a9ad15",
+  "status": "restored",
+  "manifest_sha256": "b3795c4a756d6e29585c2eb127fcc0582cdc0fadc53898e4309bc4895abfba79",
+  "product_head": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "product_branch": "cloud/gr-mt-lamp-code-11",
+  "verified_files": 30
+}

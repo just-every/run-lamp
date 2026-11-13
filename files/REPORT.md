@@ -61,10 +61,16 @@ The hydrated full-history scan exceeded its default 300-second deadline. It was 
 
 The first completed scan was COMPLETE/FAIL solely because the caller supplied a repository slug to a parameter requiring its HTTPS GitHub URL. The unchanged committed identity manifests agree with the corrected URL; the scanner’s own destination validator passes. The full scan was rerun with that corrected invocation. The failed invocation report is retained; the product identity was not changed to satisfy tooling.
 
-## Terminal custody (publication stage)
+## Final custody
 
-Exact-tree scan: COMPLETE/PASS, zero findings, commit `4271d1caa8f044a0265eb287c660e1777bd5b942`, tree `8ba27b9145f499cff6aeba1ee29ac16c436a3c9d`. The selected-and-public-base scan inspected 1116 commits, 8504 blobs and all committed messages/tag messages in that scope. The repository contains 2,373 commits across all refs; the public-base scanner selects its documented scope.
+PUSHED: `cloud/gr-mt-lamp-code-11` at `4271d1caa8f044a0265eb287c660e1777bd5b942`.
 
-The guarded product push succeeded on its first attempt. PR: https://github.com/just-every/run-lamp/pull/361. No main push or landing occurred. Exact-SHA Verify is pending the single delayed discovery read.
+- Publication: COMPLETE/PASS with zero findings on that exact commit and tree `8ba27b9145f499cff6aeba1ee29ac16c436a3c9d`. The selected-and-public-base scan inspected 1,116 commits, 8,504 blobs, 1,116 commit messages and 27 tag messages. Its final duration was about five minutes. The checkout has 2,373 commits across all refs; the public-base scanner selects its documented scope.
+- Product push: the cloud guard succeeded on its first attempt. All outgoing author/committer identities are fleet identities, with no trailers. No main push, force push, landing or deployment occurred.
+- PR: https://github.com/just-every/run-lamp/pull/361, open for the lane.
+- Exact-SHA Verify: run **43528397305**, https://github.com/just-every/run-lamp/actions/runs/43528397305. At 2026-11-13T23:46:56Z its status was **in_progress**, conclusion null, and its head exactly matched the pushed commit. This is pending proof, not a green claim. No READY line is claimed.
+- API custody: all five code-scanning requests returned HTTP 403 after the required refreshed-credential backoff. Eight direct calls covered source/tool discovery and that recovery; PR creation was the ninth. The single Verify discovery read, delayed ten minutes after publication, used the tenth. The stated budget is exhausted; no further polling or workflow rerun was attempted.
+- Local result: done; all touched checks pass. The fleet can continue watching the existing Verify run and apply its independent publication and landing gates. No product defect or red workflow is currently observed; pending Verify is the remaining acceptance limitation.
+- Clause status changes: none. Before/after test counts: 101 -> 102 (91 -> 92 registered cases plus 10 assertion scripts).
 
-All five code-scanning metadata requests returned HTTP 403 after the required refreshed-credential backoff. Eight direct API calls covered source/tool discovery and that recovery; PR creation was the ninth. The remaining tenth call is reserved for an exact-SHA Verify read after ten minutes so the workflow has time to finish.
+The initial 30-file report packet was independently fetched at `7d5d6640066fc946341907c308da46be86a9ad15`; its manifest and every file hash verified. The final packet adds the actual CI receipt and supersedes that report head without changing the product branch. All test-owned browsers and Workers are stopped. Complete plan: PLAN.md; machine-readable local outcome: result.json; final publication/PR/CI custody: receipt.json.
