@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "20cd3ea3492328b1517f7641c2ede9badc34bb77300bd38f1c65cd287714b7f2",
+      "sha256": "cac4b48025e8e80fbaf4e38e9cb18efae6d2eda663f295f4727b5b039b24608e",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -6500,7 +6500,7 @@
       "executable": false
     },
     "src/core/features/subscribers/repository.ts": {
-      "sha256": "0b0473d6faec4a801fafdb66a1845ff986dcbe3349506c15c05565e22115b91f",
+      "sha256": "64aed370b33ae6dd7c7bf5587b0ab1a84c7f090a61a4b6aba47e466784f996f5",
       "executable": false
     },
     "src/core/features/subscribers/routes.ts": {
@@ -6544,7 +6544,7 @@
       "executable": false
     },
     "src/core/features/subscribers/ui/subscriber-import-export.tsx": {
-      "sha256": "17d46dbc536ac447f58056675328c4dc73606d4d930b1e95f870a17101dc5d21",
+      "sha256": "5385f9bf971b0ca332f3ce8b14b57713ac8d50352c5fce36343ee726a93db26c",
       "executable": false
     },
     "src/core/features/subscribers/ui/subscriber-selection.tsx": {
@@ -6552,7 +6552,7 @@
       "executable": false
     },
     "src/core/features/subscribers/ui/subscribers-page.tsx": {
-      "sha256": "b5dbc4f532009c4b7474522ee928872237cb56bad955a322a680c309c528577b",
+      "sha256": "29ddbca999e4e71a4593da2daed7324225560cc15f07da6b0252f6070b441a72",
       "executable": false
     },
     "src/core/features/subscribers/ui/subscribers-views.tsx": {
@@ -8076,7 +8076,7 @@
       "executable": false
     },
     "tests/e2e/helpers/local-subscribers-flow.mjs": {
-      "sha256": "b0c9fc6f38645b38e3eebf3d4e0811b68a1502b0c9af2aeab244696fae596762",
+      "sha256": "3dae101d22a827956e1a67158729242895539a1266c8beb80bac78c80bf4080c",
       "executable": false
     },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
@@ -8300,7 +8300,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
-      "sha256": "6c1609165731e291012bd16b25ba9b5d9ab4afa2d5dd4b42e87b22b1153e3da4",
+      "sha256": "9640f43b0f56fdee010c67916fd016fc5e66d6868d68756b48e495d515afe0a9",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-limits-flow.mjs": {

@@ -2,7 +2,7 @@ import type { SubscriberWriteAuthority } from "./incident-authority";
 import { createIncidentSubscriptionLifecycleRepository } from "./incident-lifecycle.repository";
 import { createIncidentSubscriptionRepository } from "./incident.repository";
 import { createSubscriberPreferencesRepository } from "./preferences.repository";
-import { and, asc, eq, gt, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, getTableColumns, gt, isNull, sql } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
 import { componentGroups, components, subscriberComponents, subscribers, subscriberDirectory } from "../../shared/schema";
@@ -19,7 +19,7 @@ import { SubscriberLimitError } from "./limits";
 import { createWebhookFormatRepository } from "./webhook-format.repository";
 
 export type StoredSubscriber = typeof subscribers.$inferSelect;
-export type StoredSubscriberComponent = typeof subscriberComponents.$inferSelect;
+export type StoredSubscriberComponent = typeof subscriberComponents.$inferSelect & { name: string | null };
 export type StoredSubscriberToken = typeof subscriberTokens.$inferSelect;
 export type SubscriptionMailKind = "confirmation" | "already-subscribed" | "subscribed";
 
@@ -66,7 +66,10 @@ export function createSubscriberRepository(binding: D1Database): SubscriberRepos
       return database.select().from(subscriberDirectory).orderBy(asc(subscriberDirectory.createdAt)).limit(limit).offset(offset).all();
     },
     async listComponents(subscriberId) {
-      return database.select().from(subscriberComponents).where(eq(subscriberComponents.subscriberId, subscriberId)).all();
+      return database.select({ ...getTableColumns(subscriberComponents), name: components.name })
+        .from(subscriberComponents)
+        .leftJoin(components, eq(subscriberComponents.componentId, components.id))
+        .where(eq(subscriberComponents.subscriberId, subscriberId)).all();
     },
     async listVisibleComponents() {
       const rows = await database.select({ id: components.id, name: components.name, groupName: componentGroups.name, groupOrder: componentGroups.displayOrder, displayOrder: components.displayOrder })

@@ -1,5 +1,14 @@
 # DIVERGENCE.md
 
+## Subscriber directory and local import feedback — 13 November 2026
+
+The owner directory names each selected component; all-components subscriptions
+keep that scope label. CSV invitation batches show their source, import time and
+remaining count without an internal identifier. Local invitation feedback states
+that no email was sent and links to Confirm locally in the Delivery log. Import
+writes, consent, invitation claims and configured mail delivery keep their existing
+behavior.
+
 ## Connected-tool setup guidance — 12 November 2026
 
 Chat links and each Social accounts choice link to on-site owner guides. A new
