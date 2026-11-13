@@ -4,6 +4,7 @@ import { seedDemo } from './demo';
 export { SnapshotCache } from "./core/platform/blobs/snapshot-cache";
 import { devGate } from "@runeditrun/rer/modules/operator-auth";
 import { authConfig, authOrigin } from "./core/platform/auth/config";
+import { createLampBusinessSettings, isBusinessSettingsPath } from "./core/platform/auth/business-settings";
 import { authResponse } from "./core/platform/auth/http";
 import start from "@tanstack/react-start/server-entry";
 
@@ -96,6 +97,12 @@ export default withDemo({
     const url = new URL(request.url);
     const surface = createHostDispatch(bindings).surfaceFor(request, { allowDevelopmentAssets: import.meta.env.DEV });
     if (!surface) return new Response("Not found.", { status: 404 });
+    // Base authenticates this sessionless door with the signed document, before
+    // native sessions, setup redirects or Start dispatch can intercept it.
+    if (surface === "app" && isBusinessSettingsPath(url.pathname)) {
+      const response = await createLampBusinessSettings(bindings).handle(request);
+      if (response) return response;
+    }
     // The landing page's former address; old links follow it to the app host's home page for one release.
     if (surface === "app" && url.pathname === "/lamp") return Response.redirect(new URL(`/${url.search}`, url), 301);
     // The generated deployment's ASSETS binding owns emitted client files. In

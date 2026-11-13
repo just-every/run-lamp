@@ -21,6 +21,9 @@ const operatorContinuity=['oa_operators','oa_bootstrap','oa_external_identities'
 // sms_reporting_daily exports anonymous daily joined/left totals.
 // None stores provider credentials. Subscriber erasure removes consent/reply
 // data and provider identity before these records can enter a later archive.
+// Business settings, owner overrides, logo bytes, revision/stop fences, audit
+// and value-free retirement records are durable product data. Both archive
+// paths inventory bs_* through the default table policy; trust stays in configuration.
 export default {
   // The archive format's product identity, not the repository identifier: keep it
   // stable so exports made before the repository rename still restore.

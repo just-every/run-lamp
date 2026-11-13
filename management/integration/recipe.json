@@ -424,6 +424,84 @@
     },
     {
       "binding": "DB",
+      "name": "core-0069_incident_management_consent.sql",
+      "sha256": "efd2461dbab869a49f3877a685991b857df9f70b3c75b0d47a517f9287af2d94",
+      "sql": "-- Existing credentials retain their scopes. Subscriber writes require explicit consent.\nALTER TABLE management_tokens ADD COLUMN subscriber_write_scope INTEGER NOT NULL DEFAULT 0 CHECK(subscriber_write_scope IN (0,1));\nALTER TABLE statuspage_import_invites ADD COLUMN confirmation_address_hash TEXT;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0070_incident_subscriber_read_scope.sql",
+      "sha256": "e96edf128fad3e8becf1ac540f1071a2afe39223aa64a807e682852e11b466a6",
+      "sql": "-- Existing public-data readers gain no access to private subscriber destinations.\nALTER TABLE management_tokens ADD COLUMN subscriber_read_scope INTEGER NOT NULL DEFAULT 0 CHECK(subscriber_read_scope IN (0,1));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0071_page_theme.sql",
+      "sha256": "bcb6e0522d3b35b7bd905fad04c00eaeb0c62cc79816d9a512cb2c5b9306f469",
+      "sql": "ALTER TABLE page_settings ADD COLUMN theme TEXT NOT NULL DEFAULT '{}';\nALTER TABLE page_settings ADD COLUMN theme_assets TEXT NOT NULL DEFAULT '{}';\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0072_alert_rules.sql",
+      "sha256": "481a8bd9cf9b48ab800eb8cda1649a7c16550392017a3754c6c2829658091c77",
+      "sql": "-- AUTO-001: owner-approved component/source rules and their durable executions.\nALTER TABLE incident_templates ADD COLUMN channels_json TEXT NOT NULL DEFAULT '[]';\nALTER TABLE incident_templates ADD COLUMN resolved_update_json TEXT;\nALTER TABLE incident_updates ADD COLUMN automation_attribution TEXT;\nALTER TABLE incident_updates ADD COLUMN automation_receipt_id TEXT;\nCREATE TABLE alert_rules (\n  id TEXT PRIMARY KEY NOT NULL,\n  source_id TEXT NOT NULL REFERENCES alert_sources(id) ON DELETE CASCADE,\n  component_id TEXT NOT NULL REFERENCES components(id) ON DELETE CASCADE,\n  name TEXT NOT NULL,\n  mode TEXT NOT NULL CHECK(mode IN ('draft','claim','claim-and-publish')),\n  state TEXT NOT NULL CHECK(state IN ('Operational','Degraded performance','Partially unavailable','Major outage','Under maintenance')),\n  template_id TEXT REFERENCES incident_templates(id) ON DELETE SET NULL,\n  approved_by_operator_id TEXT NOT NULL REFERENCES operators(id) ON DELETE RESTRICT,\n  degradation_reason TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL,\n  UNIQUE(source_id,component_id)\n);\nCREATE TABLE alert_rule_runs (\n  id TEXT PRIMARY KEY NOT NULL,\n  rule_id TEXT REFERENCES alert_rules(id) ON DELETE SET NULL,\n  source_incident_id TEXT NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,\n  incident_id TEXT NOT NULL UNIQUE REFERENCES incidents(id) ON DELETE CASCADE,\n  mode TEXT NOT NULL CHECK(mode IN ('claim','claim-and-publish')),\n  firing_update_id TEXT REFERENCES incident_updates(id) ON DELETE SET NULL,\n  recovery_update_id TEXT REFERENCES incident_updates(id) ON DELETE SET NULL,\n  released_at TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\nCREATE UNIQUE INDEX alert_rule_active_run ON alert_rule_runs(rule_id,source_incident_id) WHERE released_at IS NULL;\nCREATE TABLE alert_rule_evidence (\n  rule_id TEXT NOT NULL REFERENCES alert_rules(id) ON DELETE CASCADE,\n  source_incident_id TEXT NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,\n  fingerprint TEXT NOT NULL,\n  firing INTEGER NOT NULL CHECK(firing IN (0,1)),\n  receipt_id TEXT NOT NULL REFERENCES alert_receipts(id) ON DELETE CASCADE,\n  received_at TEXT NOT NULL,\n  PRIMARY KEY(rule_id,source_incident_id,fingerprint)\n);\n-- Source/component erasure cascades rules. Their independent claims must end too.\nCREATE TRIGGER alert_rules_release_before_delete BEFORE DELETE ON alert_rules BEGIN\n  INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)\n    VALUES(lower(hex(randomblob(16))),'alert-rule',OLD.id,'deleted',OLD.approved_by_operator_id,'{}',strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now'));\n  INSERT INTO component_claim_events(id,component_id,cause_type,cause_id,state,changed_at,created_at,updated_at)\n    SELECT lower(hex(randomblob(16))),OLD.component_id,'incident',incident_id,NULL,\n      strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')\n    FROM alert_rule_runs WHERE rule_id=OLD.id AND released_at IS NULL;\n  UPDATE incident_components SET state='Operational',updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE incident_id IN (SELECT incident_id FROM alert_rule_runs WHERE rule_id=OLD.id AND released_at IS NULL);\n  UPDATE incidents SET lifecycle=CASE WHEN EXISTS(SELECT 1 FROM incident_updates WHERE incident_id=incidents.id) THEN lifecycle ELSE 'Resolved' END,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')\n    WHERE id IN (SELECT incident_id FROM alert_rule_runs WHERE rule_id=OLD.id AND released_at IS NULL);\n  UPDATE alert_rule_runs SET released_at=strftime('%Y-%m-%dT%H:%M:%fZ','now'),updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE rule_id=OLD.id AND released_at IS NULL;\nEND;\n\n-- Receipt admission and retry intent commit together. The ordinary synchronous\n-- path meets the 30-second claim promise; Cron recovers interrupted work.\nCREATE TABLE alert_rule_work (\n  receipt_id TEXT PRIMARY KEY NOT NULL REFERENCES alert_receipts(id) ON DELETE CASCADE,\n  source_version TEXT NOT NULL,\n  completed_at TEXT,\n  attempts INTEGER NOT NULL DEFAULT 0,\n  next_attempt_at INTEGER NOT NULL DEFAULT 0,\n  last_error TEXT\n);\nCREATE TRIGGER alert_rules_receipt_work AFTER INSERT ON alert_receipts\nWHEN NEW.state<>'invalid' AND EXISTS(SELECT 1 FROM alert_rules WHERE source_id=NEW.source_id AND mode<>'draft') BEGIN\n  INSERT INTO alert_rule_work(receipt_id,source_version)\n    SELECT NEW.id,updated_at FROM alert_sources WHERE id=NEW.source_id;\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0073_operator_roles.sql",
+      "sha256": "93b5fd9533f6635fd792b6f7a17b04b96c527df23fe258086d1c8870f3699cc8",
+      "sql": "-- Lamp refines Base's member authority without changing Base's account schema.\n-- Existing Owners and Admins retain their authority; an unclassified member is\n-- a Viewer. The role repository invalidates sessions in its audited transaction.\nCREATE TABLE operator_roles (\n  operator_id TEXT PRIMARY KEY REFERENCES oa_operators(id),\n  role TEXT NOT NULL CHECK(role IN ('communicator','responder','viewer'))\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0074_alert_rule_guards.sql",
+      "sha256": "25cb2974a048b5e9919e19bb41382a86acca420b2338c508e1e1e4181e9bdf45",
+      "sql": "-- Each rule owns its firing delay and recovery hold. Immediate rules remain\n-- available explicitly; new rules use the conservative flap guard defaults.\nALTER TABLE alert_rules ADD COLUMN firing_delay_seconds INTEGER NOT NULL DEFAULT 120 CHECK(firing_delay_seconds BETWEEN 0 AND 86400);\nALTER TABLE alert_rules ADD COLUMN recovery_hold_seconds INTEGER NOT NULL DEFAULT 300 CHECK(recovery_hold_seconds BETWEEN 0 AND 86400);\nALTER TABLE alert_rule_runs ADD COLUMN undone_at TEXT;\nALTER TABLE alert_rule_runs ADD COLUMN undone_by_operator_id TEXT REFERENCES operators(id) ON DELETE SET NULL;\nCREATE TABLE alert_rule_windows (\n  rule_id TEXT NOT NULL REFERENCES alert_rules(id) ON DELETE CASCADE,\n  source_incident_id TEXT NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,\n  receipt_id TEXT NOT NULL REFERENCES alert_receipts(id) ON DELETE CASCADE,\n  firing INTEGER NOT NULL CHECK(firing IN (0,1)),\n  changed_at TEXT NOT NULL,\n  due_at INTEGER NOT NULL,\n  completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN (0,1)),\n  PRIMARY KEY(rule_id,source_incident_id)\n);\nCREATE INDEX alert_rule_windows_due ON alert_rule_windows(completed,due_at);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0075_sign_in_providers.sql",
+      "sha256": "ae626e309e2961b7251cae222b90848f451784db165c5e305bd9aabe2866f29c",
+      "sql": "-- L14: the owner sets up Google and Okta sign-in in Settings. Lamp keeps each\n-- registration here; the client secret is sealed (AES-GCM, bound to\n-- sign-in:<provider>) and never leaves in an archive, so a restore asks for it\n-- again. Okta signs in only the people paired here, by their Okta user ID.\nCREATE TABLE sign_in_providers (\n  provider_id TEXT PRIMARY KEY CHECK (provider_id IN ('google','okta')),\n  client_id TEXT NOT NULL,\n  issuer TEXT,\n  sealed_secret TEXT,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\nCREATE TABLE sign_in_people (\n  provider_id TEXT NOT NULL REFERENCES sign_in_providers(provider_id),\n  subject TEXT NOT NULL,\n  operator_id TEXT NOT NULL REFERENCES oa_operators(id),\n  created_at TEXT NOT NULL,\n  PRIMARY KEY (provider_id, subject),\n  UNIQUE (provider_id, operator_id)\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0076_dependency_keys_sealed.sql",
+      "sha256": "9c8fa5f94c48a230f326cd4d666cbc2bd1e7d5a18327b89e65b339ac6a533d9a",
+      "sql": "ALTER TABLE rer_dependency_installation ADD COLUMN keys_sealed INTEGER NOT NULL DEFAULT 0 CHECK(keys_sealed IN (0,1));\n-- Nonsecret version history lets restored rows name an unavailable retired key\n-- without confusing ciphertext tampering or a wrong current secret with restore.\nALTER TABLE rer_dependency_installation ADD COLUMN key_ids TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(key_ids) AND json_type(key_ids)='array');\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0077_import_audit.sql",
+      "sha256": "b0c25aff0858e7e9fbf0dfbdf01b239e0d8a1e84870d5aa92f990b2246eff7f0",
+      "sql": "-- Source history keeps its original times. Audit records when Lamp writes it,\n-- inside that same transaction, even when the plan was reviewed minutes earlier.\nDROP TRIGGER component_state_audit;\nCREATE TRIGGER component_state_audit AFTER INSERT ON component_state_history BEGIN\n  INSERT OR IGNORE INTO audit_entries(id, entity_type, entity_id, action, operator_id, payload_json, created_at, updated_at)\n  VALUES ('state-history/' || NEW.id || CASE WHEN EXISTS(SELECT 1 FROM audit_entries WHERE id='state-history/' || NEW.id) THEN '/' || lower(hex(randomblob(16))) ELSE '' END, 'component', NEW.component_id, 'state-changed', NEW.operator_id,\n    json_object('previousState', NEW.previous_state, 'newState', NEW.new_state, 'causeType', NEW.cause_type, 'causeId', NEW.cause_id,\n      'recordName', (SELECT name FROM components WHERE id=NEW.component_id)),\n    strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'));\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0078_vendor_dependencies.sql",
+      "sha256": "904ed2911e133c1f9fb05fb8dfbac8e50c36ca44c64214d6f885b81f987c7ab4",
+      "sql": "CREATE TABLE vendor_dependencies (\n  id TEXT PRIMARY KEY NOT NULL,\n  component_id TEXT NOT NULL UNIQUE REFERENCES components(id) ON DELETE CASCADE,\n  catalog_id TEXT,\n  name TEXT NOT NULL,\n  vendor_name TEXT NOT NULL,\n  source_url TEXT NOT NULL,\n  status_page_url TEXT NOT NULL,\n  format TEXT NOT NULL,\n  options_json TEXT NOT NULL DEFAULT '{}',\n  mode TEXT NOT NULL DEFAULT 'show' CHECK(mode IN ('show','draft','rollup')),\n  dependent_components_json TEXT NOT NULL DEFAULT '[]',\n  template_id TEXT REFERENCES incident_templates(id) ON DELETE SET NULL,\n  created_by_operator_id TEXT REFERENCES operators(id) ON DELETE SET NULL,\n  state TEXT,\n  source_state TEXT,\n  summary TEXT,\n  incident_key TEXT,\n  incident_id TEXT REFERENCES incidents(id) ON DELETE SET NULL,\n  failures INTEGER NOT NULL DEFAULT 0,\n  unavailable_at TEXT,\n  last_read_at INTEGER,\n  version INTEGER NOT NULL DEFAULT 1,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\nCREATE TABLE vendor_source_reads (source_url TEXT PRIMARY KEY NOT NULL,read_after INTEGER NOT NULL DEFAULT 0);\nCREATE TABLE vendor_evidence (\n  id TEXT PRIMARY KEY NOT NULL,\n  dependency_id TEXT REFERENCES vendor_dependencies(id) ON DELETE SET NULL,\n  component_id TEXT REFERENCES components(id) ON DELETE SET NULL,\n  incident_id TEXT REFERENCES incidents(id) ON DELETE SET NULL,\n  source TEXT NOT NULL,\n  source_url TEXT NOT NULL,\n  state TEXT NOT NULL,\n  source_state TEXT NOT NULL,\n  summary TEXT NOT NULL,\n  observed_at TEXT NOT NULL\n);\nALTER TABLE component_state_history ADD COLUMN source_name TEXT;\nALTER TABLE component_state_history ADD COLUMN source_url TEXT;\nCREATE TRIGGER vendor_dependency_snapshot_insert AFTER INSERT ON vendor_dependencies BEGIN\n  UPDATE public_snapshot_work SET requested_revision=requested_revision+1 WHERE id='default';\nEND;\nCREATE TRIGGER vendor_dependency_snapshot_update AFTER UPDATE ON vendor_dependencies BEGIN\n  UPDATE public_snapshot_work SET requested_revision=requested_revision+1 WHERE id='default';\nEND;\nCREATE TRIGGER vendor_dependency_snapshot_delete AFTER DELETE ON vendor_dependencies BEGIN\n  UPDATE public_snapshot_work SET requested_revision=requested_revision+1 WHERE id='default';\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0079_business_settings.sql",
+      "sha256": "a16f736a781aa3fe02a2e090c993f8c360c904f9fb6d86126acdab6e1f24e773",
+      "sql": "CREATE TABLE bs_settings (\n  singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n  rev INTEGER NOT NULL DEFAULT 0,\n  document TEXT,\n  applied_at TEXT,\n  stopped INTEGER NOT NULL DEFAULT 0 CHECK(stopped IN(0,1)),\n  token TEXT NOT NULL DEFAULT ''\n);\nCREATE TABLE bs_overrides (\n  field TEXT PRIMARY KEY CHECK(field IN('display_name','owner_name','brand_color','logo','timezone')),\n  value TEXT NOT NULL,\n  actor TEXT NOT NULL,\n  changed_at TEXT NOT NULL\n);\nCREATE TABLE bs_logo (\n  singleton INTEGER PRIMARY KEY CHECK(singleton=1),\n  sha256 TEXT NOT NULL,\n  type TEXT NOT NULL,\n  bytes BLOB NOT NULL\n);\nCREATE TABLE bs_team (\n  email TEXT PRIMARY KEY,\n  operator_id TEXT,\n  invite INTEGER NOT NULL,\n  state TEXT NOT NULL CHECK(state IN('invited','active','inactive','conflict'))\n);\nCREATE TABLE bs_audit (\n  id INTEGER PRIMARY KEY,\n  actor TEXT NOT NULL,\n  action TEXT NOT NULL,\n  field TEXT,\n  changed_at TEXT NOT NULL\n);\n-- An INSERT of NULL fails the transaction if a concurrent write invalidated its fence.\nCREATE TABLE bs_assert (value INTEGER NOT NULL);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0080_business_people.sql",
+      "sha256": "51aa39622d866b987d71b6e37c9a8300e7f24c54a55611edaab669ed051b01cd",
+      "sql": "ALTER TABLE bs_settings ADD COLUMN owner_id TEXT CHECK(owner_id IS NULL OR owner_id <> '');\nALTER TABLE bs_team ADD COLUMN business_id TEXT CHECK(business_id IS NULL OR business_id <> '');\nALTER TABLE bs_team ADD COLUMN business_role TEXT CHECK(business_role IS NULL OR business_role IN('admin','member'));\nCREATE UNIQUE INDEX bs_team_business_id ON bs_team(business_id) WHERE business_id IS NOT NULL;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "core-0081_business_retired.sql",
+      "sha256": "1bfc79bfe6432e03a4eba9843ab10fae6a501e7ac5b9fd98caf42054c9f36c0c",
+      "sql": "-- Value-free tombstones of people erased from the installation: domain-separated SHA-256 digests of the roster\n-- address and the Business member id, with the invite number they had. Never a name, address or id.\nCREATE TABLE bs_retired (\n  digest TEXT PRIMARY KEY,\n  invite INTEGER NOT NULL CHECK(invite >= 0),\n  erasure_id TEXT NOT NULL\n);\n"
+    },
+    {
+      "binding": "DB",
       "name": "setup-initial-page.sql",
       "sha256": "11f3684dd73e42d0d0b5764ba5e5810b3e756a4692850a3e6370298946b33287",
       "sql": "INSERT INTO page_settings (id, page_name, tagline, accent_color, timezone, hostname, feed_id, footer_credit_enabled, widget_allowed_origins, mail_from_address, created_at, updated_at) SELECT 'default', 'RER_RECIPE_NAME', 'RER_RECIPE_TAGLINE', '#112233', 'Australia/Brisbane', 'page.recipe.invalid', lower(hex(randomblob(16))), 1, '[]', 'mail@recipe.invalid', 'RER_RECIPE_TIMESTAMP', 'RER_RECIPE_TIMESTAMP' WHERE NOT EXISTS (SELECT 1 FROM page_settings WHERE id = 'default');"

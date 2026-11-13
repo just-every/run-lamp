@@ -1,4 +1,5 @@
 import { isImportAliasPath } from "../features/statuspage-import/public-addresses";
+import { isBusinessSettingsPath } from '../platform/auth/business-settings';
 export type LampSurface = "page" | "app";
 
 export interface HostDispatchBindings {
@@ -82,7 +83,7 @@ export function createHostDispatch(bindings: HostDispatchBindings) {
       if (matches(pathname, pageExactPaths, pagePathPrefixes)) {
         return requestHost === pageHost ? "page" : null;
       }
-      if (matches(pathname, appExactPaths, appPathPrefixes) || (allowDevelopmentAssets && isDevelopmentAppPath(pathname))) {
+      if (isBusinessSettingsPath(pathname) || matches(pathname, appExactPaths, appPathPrefixes) || (allowDevelopmentAssets && isDevelopmentAppPath(pathname))) {
         return requestHost === appHost ? "app" : null;
       }
       return requestHost === pageHost && (request.method === "GET" || request.method === "HEAD") && isImportAliasPath(pathname) ? "page" : null;

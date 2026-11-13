@@ -7,6 +7,7 @@ export interface OperatorIdentity {
 export interface AppBindings {
   /** Holds background delivery and channel sends in their durable outboxes during a move. */
   EFFECTS_PAUSED?: string;
+  RER_BUSINESS_TRUST?: string;
   RER_DEMO?: string;
   RER_DEMO_EXPIRES?: string;
   /** The declared owner-entry path, supplied by RER only on preview Workers. */

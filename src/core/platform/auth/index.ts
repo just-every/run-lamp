@@ -5,11 +5,12 @@ import { createOperatorRepository } from '../../features/operators/repository';
 import { createOperatorRolesRepository } from '../../features/operators/roles.repository';
 import { OPERATOR_ROLES, type OperatorRole } from '../../features/operators/permissions';
 import { authConfig } from './config';
+import { createLampBusinessSettings } from './business-settings';
 
 export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers']) {
   const repository = createOperatorRepository(env.DB);
   const config = authConfig(env, stored);
-  const auth = createOperatorAuth({ db: env.DB, config,
+  const auth = createOperatorAuth({ db: env.DB, config, businessSettings: createLampBusinessSettings(env),
     clientIp: request => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '',
     rolePolicy: async input => {
       if (input.actor.status !== 'active') return false;

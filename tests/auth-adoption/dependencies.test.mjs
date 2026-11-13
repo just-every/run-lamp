@@ -217,6 +217,8 @@ test('ACCESS-002 an installation linked before sealing keeps its provider key, s
     const installation = () => db.prepare('SELECT sector_id,keys_sealed,key_ids FROM rer_dependency_installation').first();
     const stored = async () => (await db.prepare("SELECT private_key FROM rer_dependency_keys WHERE interface='oidc-provider@1'").first()).private_key;
     assert.deepEqual(await installation(), { sector_id: 'synthetic-legacy-sector', keys_sealed: 0, key_ids: '[]' });
+    // Start today's Worker only after the ordinary upgrade has finished.
+    await migrate(db, name => name > '0076_\uffff');
     const { createApp } = await load('src/core/app/server.ts');
     const origin = 'https://app.example.test';
     const get = (path, key) => {

@@ -4919,6 +4919,79 @@
       "originFiles": [
         "foundation/runtime/run-data.d.mts"
       ]
+    },
+    {
+      "path": "modules/business-settings",
+      "originPath": "modules/business-settings",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": {
+        "modules/business-settings/ADOPTING.md": "3504517df0001e54533de4b59e4331dd0592796a0ab144f73acab3e06db64819",
+        "modules/business-settings/apply.ts": "d4ddd9bacb4dc2fc0d59ec036ec3aa12ed3a72be1bdc1fca788e4895e3888038",
+        "modules/business-settings/index.ts": "052375df7447f8d572b36e7aa6d3bd097760c76bd6284560e36d0768d907a6df",
+        "modules/business-settings/json.ts": "884dd25549f8d425e66b5d2e4d32952c5670104fe9e27a04def54394ed7cd5fd",
+        "modules/business-settings/logo.ts": "068b78c31efcd95452147f312a5a18bcc8ba99d88a952979d4e90b7c7b9d38b0",
+        "modules/business-settings/README.md": "a062355a9898261b68e40b35336311c87cfe2859c0d7bda2bd469e33102104ea",
+        "modules/business-settings/retire.ts": "a317be553c3df11a5515b1bf7ef69a5f4c73936816633dfd4c2ff6380a293bcd",
+        "modules/business-settings/role-domain.d.mts": "4e318e9b1b6fccb9eb7c17e7dbcbd1c3e0d51267dd9de3fbdf0531f48980f091",
+        "modules/business-settings/role-domain.mjs": "0ea6ac07a8b6c7197327cec34ab7b1b47a09996c3fd77ff175d0def6c06d1b71",
+        "modules/business-settings/schema/0001_business_settings.sql": "a16f736a781aa3fe02a2e090c993f8c360c904f9fb6d86126acdab6e1f24e773",
+        "modules/business-settings/schema/0002_business_people.sql": "51aa39622d866b987d71b6e37c9a8300e7f24c54a55611edaab669ed051b01cd",
+        "modules/business-settings/schema/0003_business_retired.sql": "1bfc79bfe6432e03a4eba9843ab10fae6a501e7ac5b9fd98caf42054c9f36c0c",
+        "modules/business-settings/store.ts": "3645f9e9f282f2aa5fc5f189188ddd7a139de6361ad1966bf50dfad83cee29d5",
+        "modules/business-settings/team.ts": "95ced6e343f16a4c92c8d26ada90c7d5790e86c4b82e87f978f4f8a4a33dfd06",
+        "modules/business-settings/types.ts": "3c07b2b0e1d4beb37d540551e829963de8eb19963bee30ecde676496ce2120a5",
+        "modules/business-settings/validation.ts": "610a85823641c2a7b87e7bad819ba2d13f309d3a4e3922d356c4be6a7b5cf8a8",
+        "modules/business-settings/verify.ts": "021a40087050c4ef1189f80052ef3274e4826be13f21d203021ed138267ad80f"
+      },
+      "modes": {
+        "modules/business-settings/ADOPTING.md": "100644",
+        "modules/business-settings/apply.ts": "100644",
+        "modules/business-settings/index.ts": "100644",
+        "modules/business-settings/json.ts": "100644",
+        "modules/business-settings/logo.ts": "100644",
+        "modules/business-settings/README.md": "100644",
+        "modules/business-settings/retire.ts": "100644",
+        "modules/business-settings/role-domain.d.mts": "100644",
+        "modules/business-settings/role-domain.mjs": "100644",
+        "modules/business-settings/schema/0001_business_settings.sql": "100644",
+        "modules/business-settings/schema/0002_business_people.sql": "100644",
+        "modules/business-settings/schema/0003_business_retired.sql": "100644",
+        "modules/business-settings/store.ts": "100644",
+        "modules/business-settings/team.ts": "100644",
+        "modules/business-settings/types.ts": "100644",
+        "modules/business-settings/validation.ts": "100644",
+        "modules/business-settings/verify.ts": "100644"
+      },
+      "originFiles": [
+        "modules/business-settings/ADOPTING.md",
+        "modules/business-settings/README.md",
+        "modules/business-settings/apply.ts",
+        "modules/business-settings/index.ts",
+        "modules/business-settings/json.ts",
+        "modules/business-settings/logo.ts",
+        "modules/business-settings/retire.ts",
+        "modules/business-settings/role-domain.d.mts",
+        "modules/business-settings/role-domain.mjs",
+        "modules/business-settings/schema/0001_business_settings.sql",
+        "modules/business-settings/schema/0002_business_people.sql",
+        "modules/business-settings/schema/0003_business_retired.sql",
+        "modules/business-settings/store.ts",
+        "modules/business-settings/team.ts",
+        "modules/business-settings/testing/fixtures/keys.json",
+        "modules/business-settings/testing/index.mjs",
+        "modules/business-settings/types.ts",
+        "modules/business-settings/validation.ts",
+        "modules/business-settings/verify.ts"
+      ],
+      "adapted": {
+        "modules/business-settings/index.ts": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf"
+      },
+      "acknowledged": {
+        "modules/business-settings/index.ts": {
+          "sha256": "34de5c432eb093875e6fd5b5ae345796865b4912a75a5784bba1ac74a989eeed",
+          "mode": "100644"
+        }
+      }
     }
   ],
   "ignore": []
