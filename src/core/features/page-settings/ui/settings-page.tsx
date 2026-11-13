@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { version } from "../../../../../package.json";
 import { DependencySettings } from "../../dependencies/ui/dependency-settings";
 import { getRouteApi } from "@tanstack/react-router";
 
@@ -73,7 +74,7 @@ export function SettingsPage() {
   const markSrc = saved.logoKey ? `/api/app/page-settings/brand/logo?v=${encodeURIComponent(saved.updatedAt)}` : `/api/app/page-settings/brand/mark?v=${encodeURIComponent(saved.updatedAt)}`;
 
   return <div className="page-stack settings-page" inert={!ready}>
-    <section className="page-title-row"><div><h1>{settingsLabel(tab)}</h1>{LINES[tab] && <p>{LINES[tab]}</p>}</div></section>
+    <section className="page-title-row"><div><h1>{settingsLabel(tab)}</h1>{tab === "page" && <p>Lamp version {version}</p>}{LINES[tab] && <p>{LINES[tab]}</p>}</div></section>
     {SAVES.has(tab) && <SettingsSaveState phase={phase} error={autosave.error} retry={autosave.retry} preview={live?.preview} />}
     <div className={FORMS.has(tab) ? "settings-form page-stack" : "page-stack"}>
       {tab === "page" && <>

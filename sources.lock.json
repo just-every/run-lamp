@@ -5504,7 +5504,7 @@
       "executable": false
     },
     "src/core/features/page-settings/routes.ts": {
-      "sha256": "73794e1cd0341b36e55fe361f8976dad568a3a036d6cdf63cc18f6e511ef0034",
+      "sha256": "4bbe7fffc7e84fef909d97f0b04854fc9ea6cbf723979cbc3dafee95f2b9c56b",
       "executable": false
     },
     "src/core/features/page-settings/service.ts": {
@@ -5604,7 +5604,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-page.tsx": {
-      "sha256": "49b4f707527c581de55b810606b98318ac8f950d39004661c569355b2c0c43eb",
+      "sha256": "fd70fd75dd013ebe381167a831de9ab885e27bb0bc885685da31d8d412d36f30",
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-save-state.tsx": {
@@ -9221,6 +9221,10 @@
     },
     "tests/fixtures/vendor-status/zoom.json": {
       "sha256": "397bc5c9872d22057bb7ad6a02f883b1ae8d465ad30c0ef50068d9066b9c09bf",
+      "executable": false
+    },
+    "tests/health-version.mjs": {
+      "sha256": "1c8e9e9117afe507466773059a0c1963bcd456ee1aed71dd22834a85a071c795",
       "executable": false
     },
     "tests/helpers/applied-styles.mjs": {
