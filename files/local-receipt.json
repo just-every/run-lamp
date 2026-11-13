@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-incident-reopen-1",
+  "head": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+  "recorded_at": "2026-11-13T15:40:01.083494+00:00",
+  "results": [
+    {
+      "command": "cloud_run env PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern='compiled visual edits|operator schedules' tests/e2e/publishing-browser.test.mjs tests/e2e/maintenance-timezone.test.mjs",
+      "exit_code": 1,
+      "publishing_journey": "passed",
+      "availability_journey": "test selector failed; superseded by availability-browser.log",
+      "log": "combined-browser-run.log"
+    },
+    {
+      "command": "cloud_run env PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-reporter=tap --test-name-pattern='operator schedules' tests/e2e/maintenance-timezone.test.mjs",
+      "exit_code": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "log": "availability-browser.log"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='reviewed incident from private template' tests/e2e/publishing-contract.test.mjs",
+      "exit_code": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "log": "incident-api.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit_code": 0,
+      "registrations": 90,
+      "assertion_scripts": 10,
+      "total": 100,
+      "cap": 200,
+      "log": "test-inventory.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 /tmp/check-fleet-commits.py",
+      "exit_code": 0,
+      "candidate_commits": 1,
+      "result": "All author/committer names and emails fleet; no trailers"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-lamp-incident-reopen-1",
+      "exit_code": 0,
+      "attempts": 1,
+      "log": "push.log"
+    }
+  ],
+  "test_counts": {
+    "before": 100,
+    "after": 100
+  },
+  "contract_counts": {
+    "before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "clause_status_changes": [],
+  "screenshots": [
+    {
+      "path": "availability-history-1440.png",
+      "sha256": "75c342fa9ad20973a9e3ca3031e63bc65d4190b51cedda1b1770a060abcd0a01"
+    },
+    {
+      "path": "availability-history-390.png",
+      "sha256": "81f29979c03063f18475ed01b2d478450daa0032d2416389f30d54350f1ec718"
+    },
+    {
+      "path": "reopened-operator-1440.png",
+      "sha256": "288e21511ea784c77657bee77860ee7bdc1a83d9cf7b089d63aad681500cb8f4"
+    },
+    {
+      "path": "reopened-operator-390.png",
+      "sha256": "e96a2bf264d07257b60f90ba2a06a235afe12f390137da31d43f8453b551a952"
+    },
+    {
+      "path": "reopened-public-1440.png",
+      "sha256": "5965a0e14cccce5a2f614b09b7ad76ff959380df83ca569482b97196d19d6503"
+    },
+    {
+      "path": "reopened-public-390.png",
+      "sha256": "99166b9a11df05a89bb2d20cf3e2f67c7aa13cde59fc12d869357e960fbe959b"
+    }
+  ],
+  "source_lock_check": "passed after staging new source and test helpers; no generator view changes",
+  "browser_proof_review": {
+    "viewports": [
+      1440,
+      390
+    ],
+    "screens": [
+      "Component History and availability download controls",
+      "Reopened incident operator timeline",
+      "Reopened incident public permalink timeline"
+    ],
+    "result": "all six screenshots inspected; transition readable at both widths; no clipping observed on changed controls"
+  },
+  "baseline_browser_harness_adjustments": [
+    "The reproduction now lowers the claim before resolution, so the original retained-claim assertion takes Degraded performance as its expected value. The assertion still checks the exact retained claim.",
+    "The added duplicate-component row selector matches its accessible name including current state; no product assertion was removed. The corrected journey passed."
+  ]
+}

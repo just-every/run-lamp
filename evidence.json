@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "blob": "00d17eb0902ac9dfcaf1bc5a5633a4a0913142ef",
+      "bytes": 1898,
+      "path": "PLAN.md",
+      "sha256": "76a574e64150bc09c5dca2a3cb6856dc803e7c6399d3d910bd85c50765d3d033"
+    },
+    {
+      "blob": "e212f71d00415e1707460a3aebdc56afc2b25627",
+      "bytes": 5502,
+      "path": "REPORT.md",
+      "sha256": "50419dfee3a1ae6e523dd2390675d34e6d44008319ed98de543260a664dc8c40"
+    },
+    {
+      "blob": "c69b66f207b0aab292af3f66de58e17b6d36c973",
+      "bytes": 1054,
+      "path": "availability-browser.log",
+      "sha256": "45ab7bd9eaf5763acc197663a7233fcf69cf6debc805d9b1886aba21408eaa20"
+    },
+    {
+      "blob": "c77d8d48a439207c83c4154148161f351d2002ba",
+      "bytes": 80666,
+      "path": "availability-history-1440.png",
+      "sha256": "75c342fa9ad20973a9e3ca3031e63bc65d4190b51cedda1b1770a060abcd0a01"
+    },
+    {
+      "blob": "5d8503141defa954fce0de1e81c641f5b5c86e41",
+      "bytes": 38407,
+      "path": "availability-history-390.png",
+      "sha256": "81f29979c03063f18475ed01b2d478450daa0032d2416389f30d54350f1ec718"
+    },
+    {
+      "blob": "0b295779b2f54ef5c602f33f73315b606517356f",
+      "bytes": 7236,
+      "path": "baseline-browser.log",
+      "sha256": "10fa907bad0349fab7bddd27678966af781213dfcf2274a07904d84f47f7c5a6"
+    },
+    {
+      "blob": "169c9065a7ff52d97300a8dd578fc6af7200fbae",
+      "bytes": 854,
+      "path": "before-receipt.json",
+      "sha256": "01b961a55af331e30faa66d483f53400f365137dddbdda74adc2d37b06b9c429"
+    },
+    {
+      "blob": "121babaada48f7b409ced643e1c8b6a85e95c44c",
+      "bytes": 12338,
+      "path": "ci-discovery.json",
+      "sha256": "71acaa42642989fc44caca89e7d71208bf52703499397f41f43de3770f2410a9"
+    },
+    {
+      "blob": "dfef891810626b1675a7b227c5282a5275bc08cf",
+      "bytes": 361,
+      "path": "ci-receipt.json",
+      "sha256": "fa96d07080dd1fbe9f61c970934ee5a16bd2d8e4f1f64189f130bf26ea64dc52"
+    },
+    {
+      "blob": "52e67ef1bfe28ffc110e21c90a0584bfd79cb2b2",
+      "bytes": 6380,
+      "path": "combined-browser-run.log",
+      "sha256": "ee25f77e7f3dd9d927954f9b848410e2000ee30d50642205cfa0d39a7d8c665e"
+    },
+    {
+      "blob": "13968748c1913ab2cc3dcf2ff51ae76ebd9bb2b7",
+      "bytes": 1194,
+      "path": "incident-api.log",
+      "sha256": "f21d893576f96f7dac2884fcc7f3ec5c9949684ac5a8025b3a054bf97744df53"
+    },
+    {
+      "blob": "e63b988281507b17a8a19e85a576c38825005bc5",
+      "bytes": 4414,
+      "path": "local-receipt.json",
+      "sha256": "f21cc16e4fafc8d5012ef5d30132bb11b272865bd0ecebb42746ba6935b85d04"
+    },
+    {
+      "blob": "84b2430f16e733d9604c5bb169e49f876c9a328b",
+      "bytes": 3072,
+      "path": "packet-review.json",
+      "sha256": "024c678b51bbf6171b196f5a2b012e79d442ee62f18c58f26de02ded0ed1badc"
+    },
+    {
+      "blob": "b6ab8219983ef0edea59dfd2ad60bd01a5fd5674",
+      "bytes": 950,
+      "path": "push.log",
+      "sha256": "4486c52dcf9f76cd1d8563141b7eff7abfbf4825147d67361412c995845e8feb"
+    },
+    {
+      "blob": "19d6df69191c91ab4aef65233dc2d7a02b638ebb",
+      "bytes": 225348,
+      "path": "reopened-operator-1440.png",
+      "sha256": "288e21511ea784c77657bee77860ee7bdc1a83d9cf7b089d63aad681500cb8f4"
+    },
+    {
+      "blob": "69f22b9f55b841e7126e41d6ca3ec176e10fd22c",
+      "bytes": 193000,
+      "path": "reopened-operator-390.png",
+      "sha256": "e96a2bf264d07257b60f90ba2a06a235afe12f390137da31d43f8453b551a952"
+    },
+    {
+      "blob": "700e6406cb4911745b346705d302e90061d7a992",
+      "bytes": 470280,
+      "path": "reopened-public-1440.png",
+      "sha256": "5965a0e14cccce5a2f614b09b7ad76ff959380df83ca569482b97196d19d6503"
+    },
+    {
+      "blob": "df1c5ac351ca172fbe424a8101b7a2a9cc597579",
+      "bytes": 285545,
+      "path": "reopened-public-390.png",
+      "sha256": "99166b9a11df05a89bb2d20cf3e2f67c7aa13cde59fc12d869357e960fbe959b"
+    },
+    {
+      "blob": "6a68e3aaaca45b6c0976cf5ccda93cf1ee041284",
+      "bytes": 169,
+      "path": "test-inventory.log",
+      "sha256": "0dd13eb51cfbe7acbd40c30e7eba66ad4d0b91f65d850cd94f6c2648f1b7cd3e"
+    },
+    {
+      "blob": "a11dbf277fd0476a747fb50c64fcea98c40bbb1a",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "8081cb7fe33b2ca960ff16753504805e8ee5385b2d80d49ddfe6ffeba34022b3"
+    }
+  ],
+  "product_branch": "cloud/main-lamp-incident-reopen-1",
+  "product_head": "ecb56522a4a95ab8373551a5e7cde05f7148bb03",
+  "ref": "refs/heads/evidence/main-lamp-incident-reopen-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "main-lamp-incident-reopen-1"
+}

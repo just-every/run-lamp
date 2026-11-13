@@ -1,0 +1,16 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-002 email: native saved-field readback, public permalink in 24.5 ms, committed=2, email=2, webhook=0
+PROBE HIST-002 webhook: native saved-field readback, public permalink in 26.1 ms, committed=2, email=0, webhook=2
+PROBE HIST-002 email-webhook: native saved-field readback, public permalink in 15.7 ms, committed=4, email=2, webhook=2
+PROBE HIST-002 silent: native saved-field readback, public permalink in 16.0 ms, committed=0, email=0, webhook=0
+✔ INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion (39699.659358ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41564.499226

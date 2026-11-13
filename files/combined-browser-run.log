@@ -1,0 +1,39 @@
+✖ MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard (97862.619847ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey (215556.381008ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+ℹ PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+ℹ PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+ℹ PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+ℹ PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+ℹ {"phase":"acknowledged","finalEdit":1794584196390,"refreshDelivered":1794584196459,"refreshReceived":1794584196469,"putDispatched":1794584196922,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794584196960,"putStatus":200,"finalEditPerformance":2748.1999999999534,"nativeAcknowledged":1794584196959,"nativeAcknowledgedPerformance":3317.399999999907,"saved":1794584196979,"savedPerformance":3337.5,"elapsedToSaved":589,"deadlinePassed":true}
+ℹ {"finalEdit":1794584196390,"refreshDelivered":1794584196459,"refreshReceived":1794584196469,"putDispatched":1794584196922,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794584196960,"putStatus":200,"finalEditPerformance":2748.1999999999534,"nativeAcknowledged":1794584196959,"nativeAcknowledgedPerformance":3317.399999999907,"saved":1794584196979,"savedPerformance":3337.5,"storedDraft":{"id":"01M7ARVDSN6N31WMKC3NRT7A6C","incidentId":"01M7ARVAGJH00EQ3BKJD35QGES","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-13T15:36:33.554Z","updatedAt":"2026-11-13T15:36:36.948Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":589,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-19,"browserAckBeforeSavedMs":20.100000000093132}
+ℹ {"earlierPersisted":1794584202166,"finalEdit":1794584202209,"earlierAcknowledged":1794584203228,"latestAcknowledged":1794584203288,"finalEditPerformance":2731.5,"nativeAcknowledged":1794584203287,"nativeAcknowledgedPerformance":3809.5999999999767,"saved":1794584203308,"savedPerformance":3830.29999999993,"writes":[{"at":1794584202138,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794584203248,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1099,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-20,"browserAckBeforeSavedMs":20.699999999953434}
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 317706.549248
+
+✖ failing tests:
+
+test at tests/e2e/maintenance-timezone.test.mjs:58:1
+✖ MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard (97862.619847ms)
+  locator.click: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('.component-row').filter({ hasText: 'Configured-zone service' }).last().getByRole('button', { name: 'Configured-zone service', exact: true })[22m
+  
+      at Module.availabilityDownloadFlow (/workspace/run-lamp/tests/e2e/helpers/availability-download-flow.mjs:13:146)
+      at async TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/maintenance-timezone.test.mjs:122:5) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('.component-row').filter({ hasText: 'Configured-zone service' }).last().getByRole('button', { name: 'Configured-zone service', exact: true })" ]
+  }

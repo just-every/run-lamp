@@ -1,0 +1,28 @@
+{
+  "stateBeforeReopen": "Operational",
+  "reopeningChanges": [
+    {
+      "componentId": "01M7ARGNRZRY4GJQ1DD1W9FYTD",
+      "name": "Checkout",
+      "previousState": "Degraded performance",
+      "newState": "Partially unavailable",
+      "internal": false
+    }
+  ],
+  "resolutionRetained": true,
+  "publicHasStaleBaseline": true,
+  "downloads": [
+    {
+      "format": "csv",
+      "status": 200,
+      "contentDisposition": "attachment; filename=\"availability-01M7ARGNRZRY4GJQ1DD1W9FYTD-2026-11.csv\""
+    },
+    {
+      "format": "pdf",
+      "status": 200,
+      "contentDisposition": "attachment; filename=\"availability-01M7ARGNRZRY4GJQ1DD1W9FYTD-2026-11.pdf\""
+    }
+  ],
+  "mainSha": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "command": "cloud_run node /tmp/lamp-reproduce.mjs (native operator API and retained public incident page)"
+}
