@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-11-13T17:50:45Z",
+  "head": "b51f9c5ac05153d731f6367cd59e2b8944b9246d",
+  "build": "PASS: npx -y @runeditrun/rer build via cloud_run",
+  "typecheck": "PASS: pnpm run typecheck",
+  "source_lock": "PASS: node scripts/edition-authoring/cli.mjs lock followed by check, after staging the new proof file",
+  "proof": "PASS: node tests/health-version.mjs <packet> via cloud_run, on clean committed head",
+  "proof_assertion_width": 1440,
+  "browser_capture_widths": [
+    1440,
+    390
+  ],
+  "syntax": "PASS: node --check tests/health-version.mjs",
+  "diff_whitespace": "PASS: git diff --check",
+  "routine_checks_before": 101,
+  "routine_checks_after": 101,
+  "registered_cases_before": 91,
+  "registered_cases_after": 91,
+  "assertion_scripts_before": 10,
+  "assertion_scripts_after": 10,
+  "task_proof": "One standalone public-door journey, not added to routine CI commands",
+  "contract_before": {
+    "clauses": 244,
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "contract_after": {
+    "clauses": 244,
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "clause_status_changes": [],
+  "installed_stage": "NOT RUN: no installation origin or owner session supplied",
+  "publication_scan": "NOT RUN in cloud; reserved to fleet Mac landing gate",
+  "deployment": "NOT RUN; out of scope"
+}

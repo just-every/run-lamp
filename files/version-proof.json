@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-11-13T17:48:05Z",
+  "sourceHead": "b51f9c5ac05153d731f6367cd59e2b8944b9246d",
+  "sourceFiles": {
+    "package.json": "80fe8581d521fe19ab5e9a92c4638b3f47b8ef79cb1358aa231e46390f71377a",
+    "src/core/features/page-settings/routes.ts": "4bbe7fffc7e84fef909d97f0b04854fc9ea6cbf723979cbc3dafee95f2b9c56b",
+    "src/core/features/page-settings/ui/settings-page.tsx": "fd70fd75dd013ebe381167a831de9ab885e27bb0bc885685da31d8d412d36f30"
+  },
+  "artifactManifestSha256": "1bef493ceabbdfaf0568129a1e3400925742354b144e4d08f1ab6995423d6f5a",
+  "packageVersion": "1.11.14",
+  "settingsVersion": "1.11.14",
+  "healthDeployment": {
+    "sourceSha": null,
+    "fingerprint": null,
+    "versionId": null
+  },
+  "runtime": "emitted production Worker, packaged by the real managed artifact producer, local Miniflare",
+  "result": "PASS",
+  "assertionWidth": 1440,
+  "screens": [
+    "settings-version-1440.png",
+    "settings-version-390.png"
+  ],
+  "installedStage": "NOT RUN: no installation origin or owner session provided"
+}

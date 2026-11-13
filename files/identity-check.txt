@@ -1,0 +1,9 @@
+Candidate b51f9c5ac05153d731f6367cd59e2b8944b9246d
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+
+b51f9c5ac05153d731f6367cd59e2b8944b9246d
+Show the built Lamp version in Settings
+
+All candidate authors/committers accepted; no trailers.

@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-11-13T18:04:49Z",
+  "head": "b51f9c5ac05153d731f6367cd59e2b8944b9246d",
+  "custody": "PUSHED",
+  "ready": false,
+  "poll_interval_seconds": 301,
+  "github_calls": 8,
+  "github_call_budget": 10,
+  "reason": "Both exact-SHA Verify runs remain in progress after three polls. Budget runs short; final reports PUSHED without a green claim. No failed run has been reported.",
+  "runs": [
+    {
+      "conclusion": null,
+      "head_sha": "b51f9c5ac05153d731f6367cd59e2b8944b9246d",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43476516891",
+      "status": "in_progress",
+      "id": 43476516891
+    },
+    {
+      "conclusion": null,
+      "head_sha": "b51f9c5ac05153d731f6367cd59e2b8944b9246d",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43476440293",
+      "status": "in_progress",
+      "id": 43476440293
+    }
+  ]
+}

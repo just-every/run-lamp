@@ -1,0 +1,45 @@
+[
+  {
+    "call": 1,
+    "action": "POST contribution PR",
+    "result": "created #358"
+  },
+  {
+    "call": 2,
+    "action": "Discover exact-SHA Verify runs",
+    "runs": [
+      43476516891,
+      43476440293
+    ]
+  },
+  {
+    "call": 3,
+    "action": "Poll Verify 43476516891",
+    "exit": 0
+  },
+  {
+    "call": 4,
+    "action": "Poll Verify 43476440293",
+    "exit": 0
+  },
+  {
+    "call": 5,
+    "action": "Poll Verify 43476516891",
+    "exit": 0
+  },
+  {
+    "call": 6,
+    "action": "Poll Verify 43476440293",
+    "exit": 0
+  },
+  {
+    "call": 7,
+    "action": "Poll Verify 43476516891",
+    "exit": 0
+  },
+  {
+    "call": 8,
+    "action": "Poll Verify 43476440293",
+    "exit": 0
+  }
+]

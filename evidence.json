@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "87d8392f5426b46876a05e1325040a6c2e7b9334",
+      "bytes": 2528,
+      "path": "DIAGNOSIS.md",
+      "sha256": "c6dfbcd730a1af95615b36468c03e6863c550493d580e49df7b93ff62c36a57f"
+    },
+    {
+      "blob": "3f3b48431fd6cf01904979e13a072733b561771e",
+      "bytes": 1979,
+      "path": "PLAN.md",
+      "sha256": "103f7a222cd6448ba6c302aff4a6a36a6bd2b615990aead36ee8228481e0a885"
+    },
+    {
+      "blob": "bdb2ad8dcc792586e9b4bfc0f2ab54253067038d",
+      "bytes": 8413,
+      "path": "REPORT.md",
+      "sha256": "008ea33ef8de0d74394625025cb8cbb08fb2c25c2c2c4e00c5da03d517ceb608"
+    },
+    {
+      "blob": "de0cd1e77e82e51339219b4722e0eab0f2715ef4",
+      "bytes": 454,
+      "path": "ci-discovery.json",
+      "sha256": "e378ef3e3a2cebc62f8130256c545948d76be8452baa20a47c8b6243c28bb8b3"
+    },
+    {
+      "blob": "a7a10f3dd4c498a4b9d7ba7e207b9459c945bd90",
+      "bytes": 892,
+      "path": "ci-receipt.json",
+      "sha256": "6e4068358efb52faa015899816dd682c33a471675270ee1e3bf3eea1e5a66097"
+    },
+    {
+      "blob": "c44a483e3e02b14a7440fe87e86c053621dae264",
+      "bytes": 212,
+      "path": "ci-run-43476440293.json",
+      "sha256": "4b80169a5237c3e8eda04e041014d5cef9419c09b008a1be1c07f4200b6c1968"
+    },
+    {
+      "blob": "80ac8f4ff494cc163845e425fa2661b418812005",
+      "bytes": 212,
+      "path": "ci-run-43476516891.json",
+      "sha256": "9360e132e9d94698a8faeceacdb02b78cdcf4eba9e548db635e6f5b97da1b6f9"
+    },
+    {
+      "blob": "866e97c097086dd28a6ed2b0e729e52e6da427d2",
+      "bytes": 620,
+      "path": "ci-state.json",
+      "sha256": "1b113ea7cf62803e4d3bf7a7653363de7b3fe7a989b870b5fdd6fe81b5cdcbef"
+    },
+    {
+      "blob": "4ba7bfd255dd6d31d9187cd43d382fca43563d0b",
+      "bytes": 1326,
+      "path": "ci-watch.log",
+      "sha256": "5e83368633fed17615514b620de97226d3c860e43d089022fa37241ee69f9f37"
+    },
+    {
+      "blob": "eadc5c00265481ac8e70c83f1d525c0987e6ee0f",
+      "bytes": 697,
+      "path": "github-calls.json",
+      "sha256": "65d9f086b28901ce15aa059c9eb8104a59d6859d84406a798b883dbefe08c827"
+    },
+    {
+      "blob": "a66c4d8837c5ffe277629684e923649839a36608",
+      "bytes": 275,
+      "path": "identity-check.txt",
+      "sha256": "306fd03183f9cd7c4b2fb73a7d3c7bd6017d6df3135e9f296ba7bc8b1e139464"
+    },
+    {
+      "blob": "ebcdcd5b2fb4431e453246863ab78a9f77e5caf7",
+      "bytes": 126,
+      "path": "pr-receipt.json",
+      "sha256": "76d3cc371d229e50f5d905fa99c52acdd4982fd0169f9541d6f6dadb81155999"
+    },
+    {
+      "blob": "0c5277b8b2cd9a8e7a917d54ad8f62e0fc063e00",
+      "bytes": 447,
+      "path": "push-receipt.json",
+      "sha256": "781e27e05c88adf6cb422302e3e5373e546b0d5b8c32c7fb18a340e43148f861"
+    },
+    {
+      "blob": "00a6f0275c3190cd2bf43f9f238951fd8a6e72f3",
+      "bytes": 86,
+      "path": "remote-refs.txt",
+      "sha256": "62d43a8961802ecde4c4f65ea5b4472b88727a545def1d3091b6fbc97b17dccd"
+    },
+    {
+      "blob": "c8b2598d740cafde013734bc27c74642f15df131",
+      "bytes": 154349,
+      "path": "settings-version-1440.png",
+      "sha256": "dae07a045bcb85183d09e825656a803d45bc4b6b108daf7e2d2590d0baeb7dbd"
+    },
+    {
+      "blob": "19c1932fe7f2f0bd15666c82a27c3e4da13d669e",
+      "bytes": 72225,
+      "path": "settings-version-390.png",
+      "sha256": "10f147ffbacd3d1545b35ee1f6890f489d6c81c81b9533f6d953dac32030e655"
+    },
+    {
+      "blob": "0660179c3c66693d08c5b11a5c2d7b2930147618",
+      "bytes": 1332,
+      "path": "validation-receipt.json",
+      "sha256": "d2806f1f873e51a551d2fdde890e9a4bc687c47686999795d647244209973aa6"
+    },
+    {
+      "blob": "57d95194ad13587ed25e994fa0e0fbfa97ebf6e8",
+      "bytes": 1034,
+      "path": "version-proof.json",
+      "sha256": "28b0da50dad46505320c1333c8a2b69e4fa573a5fbfe32d05b11bec016a127cf"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-installed-version-1",
+  "product_head": "b51f9c5ac05153d731f6367cd59e2b8944b9246d",
+  "ref": "refs/heads/evidence/sd-lamp-installed-version-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-installed-version-1"
+}

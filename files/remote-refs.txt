@@ -1,0 +1,1 @@
+b51f9c5ac05153d731f6367cd59e2b8944b9246d	refs/heads/cloud/sd-lamp-installed-version-1
