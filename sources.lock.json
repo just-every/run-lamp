@@ -5420,7 +5420,7 @@
       "executable": false
     },
     "src/core/features/overview/live-status.ts": {
-      "sha256": "32844e4788fbd0f4e35968004f3bd8e650391b5f55377131403c190600d2bb8c",
+      "sha256": "518d90e48e8ec6401682d1c94bae00ece76bd1a5266b47a507da75c660c532e9",
       "executable": false
     },
     "src/core/features/overview/repository.ts": {
@@ -5432,7 +5432,7 @@
       "executable": false
     },
     "src/core/features/overview/sender-check.ts": {
-      "sha256": "dbe080fe9f99a3f500f09cf24bb166507305e01aecb1261d837724bb442859e4",
+      "sha256": "ea0ba818a2bcccc2034f953ea194e99b3a8de3162f37f7ab2b3e6bf3ad8a930a",
       "executable": false
     },
     "src/core/features/overview/service.ts": {
@@ -5596,7 +5596,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/sender-status.tsx": {
-      "sha256": "95589e89bae2db8d6cfc94bf7b2e98e9db28be6a7e3875d73b96bef09ec4c932",
+      "sha256": "98b1b8a0a7ac181f7c5e0bf3724008fc4163232ed4cad3206ceb581217d14d2a",
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-form.ts": {
@@ -8468,7 +8468,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "c80dd99e2e0caf0d63965b7a90576d4926979d77ce4867ad14546b9fa69a6304",
+      "sha256": "6c978e5ef6d174892079a5719dca6ef264b8fd1f23b94ab5981df0dcf9bd995f",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

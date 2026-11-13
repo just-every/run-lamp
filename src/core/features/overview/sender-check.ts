@@ -15,8 +15,12 @@ export interface SenderCheckOptions {
   demo?: boolean;
 }
 export const LOCAL_SENDER_NOTICE = 'Local mail is suppressed; check the sender on a hosted installation.';
-export async function senderEvidenceKey(from: string, options: Pick<SenderCheckOptions, 'local' | 'provider' | 'apiKey' | 'mailgunRegion' | 'sesRegion' | 'postmarkAccountApiKey'>) {
+export async function senderEvidenceKey(from: string, options: Pick<SenderCheckOptions, 'local' | 'provider' | 'apiKey' | 'mailgunRegion' | 'sesRegion' | 'postmarkAccountApiKey'> & { mail?: Pick<MailSender, 'configured'> }) {
   const identity=[from,options.local?'local':options.provider,options.local?'':options.apiKey??''];
+  // Platform-owned sender authentication has no direct-provider read key.
+  // Include readiness and the trust boundary so old unsupported-check failures
+  // and evidence from an incomplete relay configuration are not reused.
+  if(!options.local&&options.provider==='rer')identity.push('platform-managed',String(options.mail?.configured === true));
   if(!options.local&&options.provider==='mailgun')identity.push(options.mailgunRegion??'us');
   if(!options.local&&options.provider==='ses')identity.push(options.sesRegion??'');
   if(!options.local&&options.provider==='postmark')identity.push(options.postmarkAccountApiKey??'');
@@ -56,8 +60,8 @@ function sendGridAuthenticationError(domain: string, matches: SendGridDomain[]):
   return `SendGrid has not verified ${domain} and returned no unverified DNS record with a complete type, host and value. Check the records shown in SendGrid; Lamp cannot name a missing record from this response. ${next}`;
 }
 
-/** Read provider authentication status, never infer verification from a saved
- * address. Local mode cannot verify a sender. */
+/** Direct providers supply authentication evidence. Managed mail uses the
+ * platform-assigned sender; a saved address alone is never sufficient. */
 export async function checkSender(from: string, _operatorEmail: string, options: SenderCheckOptions): Promise<string> {
   if (options.local) return LOCAL_SENDER_NOTICE;
   if (!options.demo) return verifyWithProvider(from, options);
@@ -65,11 +69,17 @@ export async function checkSender(from: string, _operatorEmail: string, options:
   return demoEffect(() => verifyWithProvider(from, options), () => SENDER_VERIFIED);
 }
 
+export const MANAGED_SENDER_NOTICE = 'Sender authentication is managed by Run Edit Run; inbox delivery is not confirmed by this check.';
 const SENDER_VERIFIED = 'Sender domain verified by your mail provider. This checks authentication, not inbox delivery.';
 
 async function verifyWithProvider(from: string, options: SenderCheckOptions): Promise<string> {
-  if (!options.mail.configured) throw new Error('Configure your mail sender before checking it.');
-  if (!options.apiKey || !['sendgrid', 'resend', 'mailgun', 'ses', 'postmark'].includes(options.provider)) throw new Error('This sender needs a supported provider credential for the verification check.');
+  if (!options.mail.configured) throw new Error(options.provider === 'rer'
+    ? 'Managed mail is not ready. Ask your hosting administrator to restore the assigned sender and managed mail connection, then redeploy Lamp.'
+    : 'Mail is not configured. Ask your hosting administrator to set MAIL_PROVIDER_API_KEY and MAIL_FROM_ADDRESS in the private deployment inputs, then redeploy Lamp.');
+  // The relay owns and verifies the assigned sender. Its installation credential
+  // permits submission, not reads of the platform's underlying provider account.
+  if (options.provider === 'rer') return MANAGED_SENDER_NOTICE;
+  if (!options.apiKey || !['sendgrid', 'resend', 'mailgun', 'ses', 'postmark'].includes(options.provider)) throw new Error('Ask your hosting administrator to connect a supported mail provider with a domain-read credential, then redeploy Lamp and check again.');
   if(options.provider==='postmark'&&!options.postmarkAccountApiKey)throw new Error('Connect a Postmark account key in hosting settings to check sender authentication; a sending server token cannot read domains.');
   const domain = from.split('@')[1]?.toLowerCase();
   const fetcher = options.fetcher ?? fetch;
