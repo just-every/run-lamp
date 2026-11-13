@@ -4804,7 +4804,7 @@
       "executable": false
     },
     "src/core/features/health/routes.ts": {
-      "sha256": "1048d60b198d887c7c1c476d00932e8ff6cdda2c79235e87e8ff5d0623e7dd2d",
+      "sha256": "e368f58b209c77edab7885e2fb6f3fed166f83fe0d00ca836ccba10d7e13dbcc",
       "executable": false
     },
     "src/core/features/health/service.ts": {
@@ -8492,7 +8492,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "3dc4f6cc2fca9a021cde024f13fb5dfd20b736de348496e3f2ac016eeae1aab3",
+      "sha256": "a08980c6d9c1def3750d6ae7c8a974a10b275a03aed800247a5727ac199a1d20",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
@@ -8508,7 +8508,7 @@
       "executable": false
     },
     "tests/e2e/start-runtime.test.mjs": {
-      "sha256": "46263332f5c2f8a67bba1c74bd4f7a33fbdb186051eeb10af9f43830256d90bd",
+      "sha256": "a816c2146eb128fbe27e0b8368bcb9f71c04d7525fa30dea6c61eb1776d194f4",
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {

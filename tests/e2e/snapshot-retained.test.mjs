@@ -1,3 +1,4 @@
+import { healthSchemaProof } from "../health-version.mjs";
 import { themeHeaderImage } from "./helpers/theme-fixture.mjs";
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
@@ -33,6 +34,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     j = await openStatusJourney({ providerEdge: edge }); await j.tick(Date.now());
     assert.equal(pings, 0, 'an unconfigured installation sends no heartbeat');
     await j.close(); j = await openStatusJourney({ providerEdge: edge, extraBindings: { LAMP_HEARTBEAT_URL: 'https://heartbeat.example.test/ping', LAMP_HEARTBEAT_INTERVAL_MINUTES: '1' } });
+    await healthSchemaProof(j);
     const component = await j.component('Customer API during dependency outage');
     const incident = await j.incident('Known API degradation', [component]);
     await j.save(incident.id); await j.publish(incident.id); await j.visible('/', incident.title);
@@ -202,7 +204,18 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       assert.equal(response.headers.get('set-cookie'), null);
       assert.deepEqual(Buffer.from(await response.arrayBuffer()), bytes, 'the cold retained snapshot preserves uploaded theme bytes');
     }
-    assert.equal((await read('/health?storage=down')).status, 503);
+    const failedHealth = await read('/health?storage=down');
+    assert.equal(failedHealth.status, 503);
+    assert.equal(failedHealth.headers.get('cache-control'), 'no-store');
+    const failedHealthBody = await failedHealth.json();
+    assert.equal(failedHealthBody.status, 'unavailable');
+    assert.equal(failedHealthBody.dependency, 'database', 'schema metadata preserves the failing dependency');
+    assert.equal(failedHealthBody.schemaObservation.state, 'unavailable');
+    assert.equal(failedHealthBody.schemaObservation.reason, 'db_missing', 'a missing DB binding is distinct from a missing ledger');
+    assert.equal(failedHealthBody.schemaObservation.completeCount, null);
+    assert.equal(failedHealthBody.schemaObservation.partialCount, null);
+    assert.equal(failedHealthBody.schemaObservation.inventorySha256, null);
+    assert.equal(failedHealthBody.deployment, undefined, 'failure never claims deployment success');
     const restored = await rebuild({ generation: 3 }); assert.equal(restored.failure, null); assert.equal(restored.completed, true);
     assert.notEqual(restored.pointer.version, generation.pointer.version);
     for (const [index, path] of paths.entries()) {

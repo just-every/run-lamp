@@ -418,6 +418,9 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   const appHealth = await request("/health", appHost);
   assert.equal(appHealth.status, 200);
   const appHealthBody = await appHealth.json();
+  assert.equal(appHealthBody.buildVersion, currentVersion, "the built health door reports its compiled package version");
+  assert.equal(appHealthBody.schemaObservation.state, "unavailable");
+  assert.equal(appHealthBody.schemaObservation.reason, "ledger_missing", "an owner-local install never invents a managed ledger");
 
   await rebuildPublicSnapshot();
   const browser = await browserNavigationProof();
@@ -433,6 +436,8 @@ test("DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono 
   assert.equal(pageHealth.status, 200, "the page host answers /health like the app host");
   const pageHealthBody = await pageHealth.json();
   assert.deepEqual(pageHealthBody.deployment, appHealthBody.deployment, "the page host reports the same deployment identity");
+  assert.equal(pageHealthBody.buildVersion, appHealthBody.buildVersion);
+  assert.equal(pageHealthBody.schemaObservation.reason, appHealthBody.schemaObservation.reason);
   assert.equal((await pageRequest("/health", { method: "POST" })).status, 404, "only the health read is shared");
   const mailEventsOnPageHost = await pageRequest("/api/intake/mail-events", { method: "POST", body: "[]" });
   assert.equal(mailEventsOnPageHost.status, 503, "the unconfigured mail receiver must not be shadowed by generic alert intake");
