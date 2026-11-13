@@ -61,7 +61,7 @@ No target clauses, CLAIM lines, status promotions or demotions apply to this rel
 - candidate-ci-discovery.json: actual exact-SHA Verify discovery.
 - validation-receipt.json: structured terminal provenance, counts and validation summary; will be finalized with the CI result.
 
-No local implementation blocker identified. Final CI readback is blocked by HTTP 401 from the injected bundle, including after launcher refresh; the ten-call API budget is exhausted. No READY or green candidate claim is made. Full-history publication scanning, landing, tags, signing and GitHub Release publication are outside this builder's authority and remain with the fleet. No release completion claim is made.
+No local implementation blocker identified. The last two CI readbacks returned HTTP 401, including after launcher refresh, and exhausted the ten-call API budget. Git evidence transport later recovered on attempt four; no further REST request is made. No READY or green candidate claim is made. Full-history publication scanning, landing, tags, signing and GitHub Release publication are outside this builder's authority and remain with the fleet. No release completion claim is made.
 
 ## Terminal CI custody
 
@@ -77,10 +77,18 @@ PUSHED branch=cloud/sd-lamp-release-1-11-14 head=733e2ce1e2fc618183a93632218bb86
 
 ## Recovery preservation
 
-Evidence Git transport is rejected at `git ls-remote` before a report-only commit or push can be made. Diagnostic: `Invalid username or token. Password authentication is not supported for Git operations.` Git supplies no HTTP status; the separate Actions REST read supplied HTTP 401. Recovery uses only the refreshed injected bundle, never an alternate credential. Five report-transfer attempts use 15, 45, 90 and 150 second backoffs.
+Evidence Git transport initially failed at `git ls-remote` before a report-only commit or push could be made; it recovered on attempt four. Diagnostic: `Invalid username or token. Password authentication is not supported for Git operations.` Git supplies no HTTP status; the separate Actions REST read supplied HTTP 401. Recovery uses only the refreshed injected bundle, never an alternate credential. The bounded recovery allows five attempts with 15, 45, 90 and 150 second backoffs; success on attempt four stopped it after the first three backoffs.
 
 Verified candidate-range bundle outside the product clone: /home/agent/rer-consolidation/work/sd-lamp-release-1-11-14/sd-lamp-release-1-11-14-product.bundle
 
 SHA-256: 28ba1dd55c17b4cc093bf8b75194264c74b7fbabd0f5b79985246322e3b75f08
 
 Product head: 733e2ce1e2fc618183a93632218bb86456a06a79. Required base commit: 3b430ac6e0f2997fe85957f54fb1d03dc4506602. `git bundle verify` passed. The complete metadata patch and actual reports are also retained outside the clone. All-history bundling needed an unavailable promisor blob and encountered the same authentication rejection; the candidate-range bundle is verified against the retained, already published base.
+
+## Evidence recovery result
+
+Evidence attempt four succeeded at 2026-11-13T04:20:09.958309+00:00 after the 15, 45 and 90 second backoffs. First packet: refs/heads/evidence/sd-lamp-release-1-11-14 at d1c495eafc6da31ec59a3ce4f577e8bb2139c3ae. The complete packet now includes the actual recovery receipt, attempt-four publication receipt and bundle verification files and is published as a normal descendant on the same evidence-only ref. The final message names its exact head. No product ref, checkout HEAD or index is changed by this transport.
+
+CI conclusion remains unconfirmed: the last successful read was in_progress, and two final HTTP 401 reads exhausted the ten-call REST budget before evidence Git transport recovered. Return PUSHED, never READY. The lane must read run 43362078692 on product SHA 733e2ce1e2fc618183a93632218bb86456a06a79.
+
+The packet and verified bundle are retained outside the clone. After final evidence hash readback, remove the disposable product clone and dependencies as the brief requires.

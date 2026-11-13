@@ -58,8 +58,8 @@
   "publicationScan": "guarded Mac lander; not invoked on cloud host",
   "productPush": "succeeded on first guarded attempt",
   "productPushLog": "product-push.log",
-  "utc": "2026-11-13T04:16:58.310116+00:00",
-  "ciStatus": "Unconfirmed after HTTP 401; last successful exact-SHA read was in_progress at 2026-11-13T04:10:26.453284+00:00",
+  "utc": "2026-11-13T04:20:45.701330+00:00",
+  "ciStatus": "Unconfirmed: the last two REST reads returned HTTP 401 and consumed the ten-call API budget; the last successful read was in_progress at 04:10:26 UTC. Git evidence transport subsequently recovered on attempt 4.",
   "productDisposition": "PUSHED; no READY claim; release metadata candidate only",
   "archiveHashes": {
     "release-history/1.11.13.json": "478d7a8dce8e1a92933cda5adf28f22fc9ee7ccd0d0066b9c9d7e88edb492e0a",
@@ -123,9 +123,7 @@
     "Exact-SHA Verify conclusion requires fleet readback; cloud API returned HTTP 401 and the ten-call API budget is exhausted."
   ],
   "localBlockers": [],
-  "transportBlockers": [
-    "GitHub Actions REST read returned HTTP 401 both before and after launcher refresh."
-  ],
+  "transportBlockers": [],
   "failingCommand": "gh api repos/just-every/run-lamp/actions/runs/43362078692 --jq {status,conclusion,head_sha,html_url} (invoked through injected-bundle wrapper)",
   "rescueBundle": {
     "path": "/home/agent/rer-consolidation/work/sd-lamp-release-1-11-14/sd-lamp-release-1-11-14-product.bundle",
@@ -136,6 +134,35 @@
     "scope": "origin/main..HEAD; candidate product commit and its complete metadata delta",
     "note": "All-history bundle creation required unmaterialized promisor blobs and was rejected by Git authentication. The candidate-range bundle avoids that fetch and verifies against the retained base."
   },
-  "cleanup": "Clone and dependencies retained while evidence transfer is rejected; actual packet and verified bundle are outside clone.",
-  "evidenceTransfer": "Authentication rejection; bounded five-attempt Git recovery in progress."
+  "cleanup": "Delete disposable clone and dependencies after final evidence publication/hash readback; retain packet and verified bundle outside clone.",
+  "evidenceTransfer": "Recovered on attempt 4; first packet published. Final complete packet publication and hash readback follow.",
+  "evidenceRecovery": {
+    "status": "published",
+    "attempts": [
+      {
+        "attempt": 1,
+        "exit": 1,
+        "diagnostic": "EVIDENCE_FAILED Git ls-remote failed exit=128",
+        "http": "unknown (Git did not supply HTTP status)"
+      },
+      {
+        "attempt": 2,
+        "exit": 1,
+        "diagnostic": "EVIDENCE_FAILED Git ls-remote failed exit=128",
+        "http": "unknown (Git did not supply HTTP status)"
+      },
+      {
+        "attempt": 3,
+        "exit": 1,
+        "diagnostic": "EVIDENCE_FAILED Git ls-remote failed exit=128",
+        "http": "unknown (Git did not supply HTTP status)"
+      },
+      {
+        "attempt": 4,
+        "exit": 0,
+        "diagnostic": "EVIDENCE repo=just-every/run-lamp ref=refs/heads/evidence/sd-lamp-release-1-11-14 head=d1c495eafc6da31ec59a3ce4f577e8bb2139c3ae\n{\"files\": [{\"blob\": \"ec5fe366d2ac624600586c76450db817bfeebaa9\", \"bytes\": 1210, \"path\": \"PLAN.md\", \"sha256\": \"cce2af25a4a1424c2ccd94a63351acaf8cd58a285f6fe94ec497bebf955fe3f1\"}, {\"blob\": \"f94807307af24fa7b4252cc5c9f8d613283678fe\", \"bytes\": 9224, \"path\": \"REPORT.md\", \"sha256\": \"98958ba8bc2a8ed7c0b1e30dfea5b0bea229d2687cad5e04df2a797c70b99fc1\"}, {\"blob\": \"377961bacb41e652a150f58bb3a277c24048ba4d\", \"bytes\": 31, \"path\": \"candidate-ci-auth-retry-error.txt\", \"sha256\": \"33b0294298d5029730486a8c9671a03841dcf76b0b8afc686b0279a10cb55722\"}, {\"blob\": \"4b63d0e6fe145fd7cad03c9a3e24e124ba2089da\", \"bytes\": 249, \"path\": \"candidate-ci-discovery.json\", \"sha256\": \"e3737012242d708c374d30d238c7841f214de37747d3751a8ba8949c6d6a5200\"}, {\"blob\": \"377961bacb41e652a150f58bb3a277c24048ba4d\", \"bytes\": 31, \"path\": \"candidate-ci-error-4.txt\", \"sha256\": \"33b0294298d5029730486a8c9671a03841dcf76b0b8afc686b0279a10cb55722\"}, {\"blob\": \"320271168151515ac42c9f4fdb5b853f9f85641f\", \"bytes\": 269, \"path\": \"candidate-ci-poll-1.json\", \"sha256\": \"1b468f6f14e3a1c32d132c7676d114d6f51243f5cfbc40d86d09385a9b115685\"}, {\"blob\": \"8e217046d5e1f71ab17bc89d55188f31060f1dc5\", \"bytes\": 269, \"path\": \"candidate-ci-poll-2.json\", \"sha256\": \"88cdb97ed4f6e7ec396e02cd920f98b4ac2bf2205af8ded49dac8be8e1638674\"}, {\"blob\": \"b3933620a0b2dc4a80ef21e36288dc9418349319\", \"bytes\": 269, \"path\": \"candidate-ci-poll-3.json\", \"sha256\": \"ff218548dab4412dada35305e2986def9c09dc2cb8ba57ff39335e720333ab76\"}, {\"blob\": \"cd3a9adaf8d3fc456e394064f150649ed0777d01\", \"bytes\": 1483, \"path\": \"changes-since-tag.txt\", \"sha256\": \"ad7cbb6ce121ee204ecc951337fe4dcaa4c17fb656063ecef3b9fc5b5a1fe6bf\"}, {\"blob\": \"55bfeff023c4ae17dc59e12f86f446b1960e6b53\", \"bytes\": 85, \"path\": \"commit-identities.txt\", \"sha256\": \"148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55\"}, {\"blob\": \"76baf234618eb29f4e0711eabdaa3079069adc1f\", \"bytes\": 2145, \"path\": \"dependency-install.log\", \"sha256\": \"f78bc339adb359585345d28f50c686271ce331d22b550f331184186554439897\"}, {\"blob\": \"9405b51df7d28987e55dad11adc07b991cd3d119\", \"bytes\": 46, \"path\": \"evidence-attempt-1.txt\", \"sha256\": \"aec533e61612ea449ce60f306967efc4235f26747d281ed43a303c4a20d7b963\"}, {\"blob\": \"3886768612c8142d4c6058b1edf3243667b46d12\", \"bytes\": 102, \"path\": \"evidence-attempt-2.txt\", \"sha256\": \"ccefc46237657d0fb3c3a248f2fdfab0893a2e2342d956f4e3d5dcf6f27e23fe\"}, {\"blob\": \"f698a6b8282894cea2432127869269cf6b23f09a\", \"bytes\": 102, \"path\": \"evidence-attempt-3.txt\", \"sha256\": \"19c0e4eb5fd6463b3949a2156ad47a51be524dfbb3f9d8cdd7c58d7f515fd148\"}, {\"blob\": \"cefd9f18c85bd9476da9691571b454e55a8c3eea\", \"bytes\": 1508, \"path\": \"main-ci.json\", \"sha256\": \"49d04fff1e6472eb16784dd065144914daa903fcc6670939fa572629f65bd869\"}, {\"blob\": \"0a4de1850350155106fdc18ace826e5b0867698b\", \"bytes\": 377, \"path\": \"metadata-checks.json\", \"sha256\": \"a276e8340b1eaf897e122caaf2e33128b19a3a5784fe8f6c311155810d5df8f2\"}, {\"blob\": \"95d01ddf89cae9d50ef342b6a7eac83b9b0fe8e7\", \"bytes\": 461215, \"path\": \"metadata.patch\", \"sha256\": \"6d1cddd6c41ed5c6f1c3c6cbbbf6660c159c1059bb1de37c0cb696b7716b57dd\"}, {\"blob\": \"d3a5081f6477af043a8b8face8c33c6f32801172\", \"bytes\": 23674, \"path\": \"open-prs-before.json\", \"sha256\": \"d09580427972accb585f3322991ad8b10ad8c93f5f3602d45d4ca7960474a042\"}, {\"blob\": \"fc4d76dea48593619410078a881f2ec7fccbdce3\", \"bytes\": 140, \"path\": \"pr-receipt.json\", \"sha256\": \"b2e7e7c2031ec4950fd5f60f5fdd198138cc06f9ec9d95c6a1b4408446d5b9ac\"}, {\"blob\": \"f552a051cb6c81cd2c3a50d30d8d190bec711890\", \"bytes\": 855, \"path\": \"pr-request.json\", \"sha256\": \"559bd718641e9c5e0c23228326614eb153f8647e1057c797f74d22b7e62a81c9\"}, {\"blob\": \"2b967b9d712fae12d3a85ed66fb60bd1b6b04a11\", \"bytes\": 285, \"path\": \"product-commit.txt\", \"sha256\": \"dfe1099c5c7a149a48df16e532d3a6806ef82a1e9401a5898dc1d4014aeafb1c\"}, {\"blob\": \"fd0c10586632ba8be6815785522b55dd3ed196f9\", \"bytes\": 250, \"path\": \"product-diff-stat.txt\", \"sha256\": \"f092f1d12385f2dd6db2a648c8f48b97fac34a58f0042face0f7a26e23e2a88d\"}, {\"blob\": \"22438b2f90d9649611d6fd25425e77c020b822b5\", \"bytes\": 934, \"path\": \"product-push.log\", \"sha256\": \"d665ab2f63c4051b4ae8186dcdee3d57291baff96f94cc8d466465310498a488\"}, {\"blob\": \"9b7e8b37cd599acc12c7eb8831c341b206de4f37\", \"bytes\": 1906, \"path\": \"release-notes.md\", \"sha256\": \"e00f299739ef2de44257eb2b469615fe771c9d5c770fb7ead6db1c3cfde68279\"}, {\"blob\": \"97e126e269e5d97273cde964743e1e365e10841b\", \"bytes\": 131, \"path\": \"release-validator.log\", \"sha256\": \"15f0d1cb92224d2730b0ce965db2fe22feac44f05965c20885fab44e1fadb403\"}, {\"blob\": \"95c7596fa7258856937c3f756ed95a2df403cb53\", \"bytes\": 1704, \"path\": \"releases-before.json\", \"sha256\": \"abd09fcf1d4af8554b2554d7ff04acf47f670ea6d304740858d82c77905241dd\"}, {\"blob\": \"275e4dddf3b17c8f2a0dfd8891006ad7bf067692\", \"bytes\": 207, \"path\": \"scope-check.txt\", \"sha256\": \"7456303e7e9c1dd44c470acf1c1a5988e1f88911e54ccaec28db5e80d6a1898a\"}, {\"blob\": \"2e7f6f3ed1abd8309152df2a5793a09ae5eb8ddc\", \"bytes\": 395189, \"path\": \"source-lock-check.json\", \"sha256\": \"06f8fef8c92139fb88785d5894ea9c82f2c22f9ad88adc0130bb90b325c26a8e\"}, {\"blob\": \"e92d18c924b298fae3c55a8c148143849f0fc614\", \"bytes\": 395175, \"path\": \"source-lock-write.json\", \"sha256\": \"75b62c78927b9a19760360786d158ccffc4f80a7df1bcb1504a46145e7f1a006\"}, {\"blob\": \"479ea84b5d7f504333ba9854274d8699e16380da\", \"bytes\": 216, \"path\": \"typecheck.log\", \"sha256\": \"3348d095f53779bd28c825e8f663482f67e4fe705f7ad610fd9adc31a45f8b43\"}, {\"blob\": \"6389bc34f96726c0e3963492d0033d950db1690a\", \"bytes\": 5611, \"path\": \"validation-receipt.json\", \"sha256\": \"7cdc002dcd217a1b8e91385908d84ab033c270e46bb3eedb62d7a12c89b34cd9\"}], \"head\": \"d1c495eafc6da31ec59a3ce4f577e8bb2139c3ae\", \"ref\": \"refs/heads/evidence/sd-lamp-release-1-11-14\", \"repository\": \"just-every/run-lamp\"}",
+        "http": "unknown (Git did not supply HTTP status)"
+      }
+    ]
+  }
 }

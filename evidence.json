@@ -7,10 +7,22 @@
       "sha256": "cce2af25a4a1424c2ccd94a63351acaf8cd58a285f6fe94ec497bebf955fe3f1"
     },
     {
-      "blob": "f94807307af24fa7b4252cc5c9f8d613283678fe",
-      "bytes": 9224,
+      "blob": "a8833b5b6365ef8a9ae020558196ee2abd66a623",
+      "bytes": 10435,
       "path": "REPORT.md",
-      "sha256": "98958ba8bc2a8ed7c0b1e30dfea5b0bea229d2687cad5e04df2a797c70b99fc1"
+      "sha256": "95361eb98b5baacb02985157b6a7e8f0dcacd56d92ee3e5bea7eb5dc45b7701c"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "bundle-create.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "c4f5131707e36762c40859aa0ec7f2547905f974",
+      "bytes": 240,
+      "path": "bundle-verify.log",
+      "sha256": "8244e6dcec3116ef43f1990e6af34f5f851cdb728caa247c6d3a63ed05791173"
     },
     {
       "blob": "377961bacb41e652a150f58bb3a277c24048ba4d",
@@ -85,6 +97,18 @@
       "sha256": "19c0e4eb5fd6463b3949a2156ad47a51be524dfbb3f9d8cdd7c58d7f515fd148"
     },
     {
+      "blob": "5bf397331645d79109ae5ff22d011367e2eb7546",
+      "bytes": 5857,
+      "path": "evidence-attempt-4.txt",
+      "sha256": "213115be7cf3b752d8926fb638b3a6c8f16f8d96189dc4003adec3b30d3ff017"
+    },
+    {
+      "blob": "52a1f1bbb2ae13216c4bd267e08fc1b795ba740f",
+      "bytes": 6956,
+      "path": "evidence-recovery.json",
+      "sha256": "41601ed3ebc83dfe54f1d75e35c283cf198439640e0f34d482203d6a62fdc3bb"
+    },
+    {
       "blob": "cefd9f18c85bd9476da9691571b454e55a8c3eea",
       "bytes": 1508,
       "path": "main-ci.json",
@@ -139,6 +163,12 @@
       "sha256": "d665ab2f63c4051b4ae8186dcdee3d57291baff96f94cc8d466465310498a488"
     },
     {
+      "blob": "7f9065e7a2105bc99aa52c577ffb5db20c32575c",
+      "bytes": 627,
+      "path": "recovery-bundle.json",
+      "sha256": "b2d631dac79cfff2594e33136cf8f0c316dd93410024955be6456cbc6698e76f"
+    },
+    {
       "blob": "9b7e8b37cd599acc12c7eb8831c341b206de4f37",
       "bytes": 1906,
       "path": "release-notes.md",
@@ -181,10 +211,10 @@
       "sha256": "3348d095f53779bd28c825e8f663482f67e4fe705f7ad610fd9adc31a45f8b43"
     },
     {
-      "blob": "6389bc34f96726c0e3963492d0033d950db1690a",
-      "bytes": 5611,
+      "blob": "052729584530c42dcd29d14abbaf8bca89c0ff83",
+      "bytes": 12705,
       "path": "validation-receipt.json",
-      "sha256": "7cdc002dcd217a1b8e91385908d84ab033c270e46bb3eedb62d7a12c89b34cd9"
+      "sha256": "89187d5dbf2199ae636e5d5d9c463cdfbce4ab71ad87e8166caa8ca528688aa4"
     }
   ],
   "product_branch": "cloud/sd-lamp-release-1-11-14",

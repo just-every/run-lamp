@@ -1,0 +1,9 @@
+{
+  "path": "/home/agent/rer-consolidation/work/sd-lamp-release-1-11-14/sd-lamp-release-1-11-14-product.bundle",
+  "head": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "sha256": "28ba1dd55c17b4cc093bf8b75194264c74b7fbabd0f5b79985246322e3b75f08",
+  "verified": true,
+  "requiresCommit": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+  "scope": "origin/main..HEAD; candidate product commit and its complete metadata delta",
+  "note": "All-history bundle creation required unmaterialized promisor blobs and was rejected by Git authentication. The candidate-range bundle avoids that fetch and verifies against the retained base."
+}
