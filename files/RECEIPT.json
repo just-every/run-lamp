@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-schema-observation-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-schema-observation-1",
+  "head": "066a09fdc8c27308cf941f02e5d1422e911b949c",
+  "recordedAt": "2026-11-13T19:07:07Z",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build (through cloud_run)",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "node tests/health-version.mjs (through cloud_run)",
+      "exit": 0,
+      "log": "health-built.log",
+      "purpose": "real managed artifact, preserved Settings/version proof and real-D1 schema observation on the final merged candidate"
+    },
+    {
+      "command": "node --test tests/e2e/snapshot-retained.test.mjs (through cloud_run)",
+      "exit": 0,
+      "log": "health-flow.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "counts.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "before": {
+      "cases": 91,
+      "assertionScripts": 10,
+      "total": 101
+    },
+    "after": {
+      "cases": 91,
+      "assertionScripts": 10,
+      "total": 101
+    }
+  },
+  "clauseStatusChanges": [],
+  "claim": "CLAIM BASE-OPS-001 PARTIAL points=none",
+  "uiChanged": false,
+  "providerOrInstalledAcceptance": false,
+  "publicationAttempts": [
+    {
+      "exit": 2,
+      "report": "publication-initial.json",
+      "reason": "scan.public-base-rejected"
+    },
+    {
+      "exit": 2,
+      "report": "publication-timeout.json",
+      "reason": "scan.deadline-exceeded",
+      "timeoutSeconds": 300
+    }
+  ],
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "report": "publication-b310b7c.json",
+    "source": {
+      "commit": "b310b7c75e5bea6b093f967dccbbb447887de5e1",
+      "tree": "36da00fd7d7345f542fdd2de8307d8f389bbd5ff"
+    },
+    "history": {
+      "commits": 1112,
+      "trees": 1095,
+      "blobs": 8481,
+      "commitMessages": 1112,
+      "tagMessages": 26,
+      "hydration": {
+        "missingBefore": 0,
+        "missingAfter": 0,
+        "fetches": 0,
+        "seconds": 0.067646
+      }
+    },
+    "head": "b310b7c75e5bea6b093f967dccbbb447887de5e1",
+    "candidateStatus": "not run: one additional GitHub request needs approval"
+  },
+  "productPush": {
+    "status": "fix_not_yet_pushed",
+    "previousHead": "b310b7c75e5bea6b093f967dccbbb447887de5e1",
+    "previousPushLog": "push.log"
+  },
+  "pullRequest": {
+    "url": "https://github.com/just-every/run-lamp/pull/359",
+    "number": 359,
+    "head": "b310b7c75e5bea6b093f967dccbbb447887de5e1"
+  },
+  "ci": {
+    "runId": 43487312050,
+    "status": "completed",
+    "conclusion": "failure",
+    "head": "b310b7c75e5bea6b093f967dccbbb447887de5e1",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/43487312050",
+    "failedBuildJob": 132099116533,
+    "cause": "source:check stale lock; new reader untracked during original lock generation",
+    "localFixVerified": true,
+    "logs": [
+      "ci-jobs.json",
+      "ci-build-failed.log",
+      "source-check-failed.log",
+      "source-check.log"
+    ],
+    "candidateCI": "not inspected: ten-call budget exhausted"
+  },
+  "githubCallsBeforeCIWait": 7,
+  "previousPushedHead": "b310b7c75e5bea6b093f967dccbbb447887de5e1",
+  "githubCallsUsed": 10,
+  "currentMainMerged": "93b6dda",
+  "recoveryBundle": {
+    "path": "/home/agent/rer-consolidation/work/push-rescue/cloud_sd-lamp-schema-observation-1-20261113T190707Z-066a09fdc8c2.bundle",
+    "head": "066a09fdc8c27308cf941f02e5d1422e911b949c",
+    "sha256": "0310b7572a201f0ebd4a1dffca661f93ccf846fa0e93b225ed6212b57f95aa4a",
+    "verified": true
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "blob": "c474ba3d5e12c0d005cec61b66abda8f2d6097d4",
+      "bytes": 29257,
+      "path": "CANDIDATE.patch",
+      "sha256": "96c542464fa21c02bdf88061d57dbcb638c090ff5f940c68917424d7ab01feb8"
+    },
+    {
+      "blob": "80372f13f78079a68e52828458303a21f3cdc09d",
+      "bytes": 1303,
+      "path": "PLAN.md",
+      "sha256": "1e0f900a4fadfb54f94775d0e562388c5ab313d10019c2703adb677ca8b3c103"
+    },
+    {
+      "blob": "5942ece58233fa518bf94bc5830ff6b7193afabc",
+      "bytes": 16825,
+      "path": "PR.json",
+      "sha256": "8168541c92d29a1864ca09303810fa58dbf0b0fbdbd0752e82c3d8784ac82d03"
+    },
+    {
+      "blob": "2177d969420b2b9f3636a0f827b8cf905a0fbdb6",
+      "bytes": 3892,
+      "path": "RECEIPT.json",
+      "sha256": "d5c99ff00b9e48b04cbaadcbb5ccf942e4cc9cd754558eea66d9ee053b937d7b"
+    },
+    {
+      "blob": "210643458be98608514609aa47f51c504e47d921",
+      "bytes": 7883,
+      "path": "REPORT.md",
+      "sha256": "08ca7068210c1622a36b51b60e310439f80023adf7bc961c40d6f088631254ba"
+    },
+    {
+      "blob": "8467c73522297ae506ba3c94be2090e01186ca3d",
+      "bytes": 20397,
+      "path": "build.log",
+      "sha256": "2271cf65031643c954eebbdb212e7124b4eea0aac50d349e316740267fbdf5af"
+    },
+    {
+      "blob": "58194327a855c2c1f9a08ef43928dd11dcda7677",
+      "bytes": 177,
+      "path": "ci-43487312050-1.json",
+      "sha256": "b55c03728c89828dfd614faedff68aecde4a2c6f964146e343a4caa478a39f34"
+    },
+    {
+      "blob": "e65116a15c03a40012fce06eb04731bf51078807",
+      "bytes": 202861,
+      "path": "ci-build-failed.log",
+      "sha256": "6419b056fd1317d80f62554325e500ab3193c98563a4fa56547413413cd0ea0f"
+    },
+    {
+      "blob": "79c29ee5829014410a3cad42cb46638439e630e2",
+      "bytes": 12825,
+      "path": "ci-discovery.json",
+      "sha256": "09826075e36647935e90e00e9a9dae7af312503dabcd83454f0a4e5ad73cbed8"
+    },
+    {
+      "blob": "298479671abd772c597440e573cb0d3a9eafdfc0",
+      "bytes": 8423,
+      "path": "ci-jobs.json",
+      "sha256": "9e8752558fe1078a65c2cfbaebe634c6a8ead1fb0f9b810fa9651da3c5ad145d"
+    },
+    {
+      "blob": "04941340f74eb7e060260584d82597aecd94ae33",
+      "bytes": 169,
+      "path": "counts.log",
+      "sha256": "72b1136620144578cea9e3882a0d39c0b9fc7574360abfc076a0349fa179753d"
+    },
+    {
+      "blob": "1282d1490f61c4e9561ca9c235db1548e707c7dc",
+      "bytes": 1012,
+      "path": "health-built.log",
+      "sha256": "3c6016713e317ca53c4a5b41c14ce09fb0d2b4e00ad837469b85a80bd500d8d1"
+    },
+    {
+      "blob": "f90972c0be1ec01b6d2ce1d51e5f860fff1b4dc1",
+      "bytes": 627,
+      "path": "health-flow.log",
+      "sha256": "b5dfe87bf63d24339cfcf0efcbfc7b00a0375b624693d8c442cf644d33fd2ee0"
+    },
+    {
+      "blob": "456c7584c79b74f5c544c76eb8b179f7a3dfd035",
+      "bytes": 731274,
+      "path": "publication-b310b7c.json",
+      "sha256": "1681618abef66be2bc147552c5b385a11dc9794634df2787ad78a7df13bdbbd0"
+    },
+    {
+      "blob": "fea2216b46e7fc2c97112e9ab1676801404a9926",
+      "bytes": 804,
+      "path": "publication-initial.json",
+      "sha256": "a77aa74e1da2d1e3f74055ce78539e8e3faf033f6751533be107431a5c5d913a"
+    },
+    {
+      "blob": "6e099658164128bb548129c97090926af9c7df94",
+      "bytes": 565,
+      "path": "publication-timeout.json",
+      "sha256": "871b3a5b521219e0ec1dd91f5489d3ff58ee9ebd79266d3800d4ad1701300946"
+    },
+    {
+      "blob": "49309d812198816c2f636bd6b7e8cfbb854650aa",
+      "bytes": 1039,
+      "path": "push.log",
+      "sha256": "788f3df2f333a5dc92cb9043b553f97b575168dd3c367e3148f413c30ae262a2"
+    },
+    {
+      "blob": "ebd06d98509b42eb2676d158bab33c31ec5b439f",
+      "bytes": 99,
+      "path": "source-check-failed.log",
+      "sha256": "094e687ba271a25c76bc1a88d6526a83f1456d524196bf79c77ef44db7884533"
+    },
+    {
+      "blob": "382e58342ef9441c03b296a5b50e766899c9644a",
+      "bytes": 396206,
+      "path": "source-check.log",
+      "sha256": "eda721e7a55e554349a43b6482406daa616fb0e4dd84638e05f32eef4bc32cc1"
+    },
+    {
+      "blob": "a11dbf277fd0476a747fb50c64fcea98c40bbb1a",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "8081cb7fe33b2ca960ff16753504805e8ee5385b2d80d49ddfe6ffeba34022b3"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-schema-observation-1",
+  "product_head": "066a09fdc8c27308cf941f02e5d1422e911b949c",
+  "ref": "refs/heads/evidence/sd-lamp-schema-observation-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-schema-observation-1"
+}
