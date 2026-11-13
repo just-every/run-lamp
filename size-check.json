@@ -1,0 +1,288 @@
+{
+  "schema": 1,
+  "about": "Synthetic Lamp translation of the published ChargeDesk count geometry, not a claim about a Lamp customer: 644 knowledge documents map to fixed monitored components and 644 alert_sources (monitor definitions); 9,000 recent chats map to 90/9,000 resolved incidents, each with three updates (270/27,000) and one component attachment; 161,893 conversations map to 1,619/161,893 accumulated component history transitions; 162,000 contacts map to 1,620/162,000 subscription records, only 1,000 active at either size (the rest deactivated), within Lamp's 25,000 active/pending cap. One future maintenance window exercises the scheduler's idle work. All contents synthetic. These are explicit domain analogies, not measured Lamp cardinalities; HH tables and source-block fanouts are not Lamp schema. Window/growth budgets retain the published 3.9M/10%+200 working line; per-flow ceilings fixed before measurement, no growth exemption.",
+  "database": "DB",
+  "budget": {
+    "windowRows": 3900000,
+    "growthPercent": 10,
+    "growthRows": 200,
+    "timeoutSeconds": 600
+  },
+  "personas": {
+    "owner": {
+      "kind": "owner"
+    },
+    "reader": {
+      "kind": "anonymous"
+    }
+  },
+  "shape": {
+    "tables": [
+      {
+        "table": "page_settings",
+        "rows": 1,
+        "values": {
+          "id": "'default'",
+          "page_name": "'Synthetic Lamp size check'",
+          "tagline": "'Synthetic verification only'",
+          "accent_color": "'#2563eb'",
+          "timezone": "'UTC'",
+          "hostname": "'status.rer-hosted-check.invalid'",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', :now / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', :now / 1000.0, 'unixepoch')"
+        }
+      },
+      {
+        "table": "components",
+        "rows": 644,
+        "values": {
+          "id": "printf('1%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "name": "printf('synthetic-lamp-%d', n)",
+          "description": "'Synthetic monitored service'",
+          "display_order": "n"
+        }
+      },
+      {
+        "table": "alert_sources",
+        "rows": 644,
+        "values": {
+          "id": "printf('3%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "name": "printf('synthetic-lamp-monitor-%d', n)",
+          "credential_kind": "'bearer-token'",
+          "bearer_token_hash": "printf('synthetic-lamp-hash-%d', n)",
+          "deduplication_path": "'id'",
+          "title_path": "'title'",
+          "state_path": "'state'",
+          "created_by_operator_id": "(SELECT id FROM operators WHERE email = :owner_email)"
+        }
+      },
+      {
+        "table": "incidents",
+        "rows": {
+          "small": 90,
+          "large": 9000
+        },
+        "values": {
+          "id": "printf('2%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "reference": "printf('INC-%06d', n)",
+          "title": "printf('synthetic-lamp-incident-%d', n)",
+          "lifecycle": "'Resolved'",
+          "opened_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "resolved_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "created_by_operator_id": "(SELECT id FROM operators WHERE email = :owner_email)"
+        }
+      },
+      {
+        "table": "incident_components",
+        "rows": {
+          "small": 90,
+          "large": 9000
+        },
+        "values": {
+          "id": "printf('4%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "incident_id": "printf('2%025d', n)",
+          "component_id": "printf('1%025d', (n - 1) % 644 + 1)",
+          "component_name": "printf('synthetic-lamp-%d', (n - 1) % 644 + 1)",
+          "state": "'Operational'",
+          "published_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')"
+        }
+      },
+      {
+        "table": "incident_updates",
+        "rows": {
+          "small": 270,
+          "large": 27000
+        },
+        "values": {
+          "id": "printf('5%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "incident_id": "printf('2%025d', p)",
+          "lifecycle": "CASE (n - 1) % 3 WHEN 0 THEN 'Investigating' WHEN 1 THEN 'Monitoring' ELSE 'Resolved' END",
+          "affected_audience": "'Synthetic readers'",
+          "customer_impact": "'Synthetic incident'",
+          "published_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "author_operator_id": "(SELECT id FROM operators WHERE email = :owner_email)"
+        },
+        "parent": {
+          "table": "incidents",
+          "per": 3
+        }
+      },
+      {
+        "table": "component_state_history",
+        "rows": {
+          "small": 1619,
+          "large": 161893
+        },
+        "values": {
+          "id": "printf('6%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "component_id": "printf('1%025d', (n - 1) % 644 + 1)",
+          "previous_state": "'Operational'",
+          "new_state": "'Operational'",
+          "cause_type": "'correction'",
+          "changed_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "operator_id": "(SELECT id FROM operators WHERE email = :owner_email)"
+        }
+      },
+      {
+        "table": "subscribers",
+        "rows": {
+          "small": 1620,
+          "large": 162000
+        },
+        "values": {
+          "id": "printf('7%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "channel": "'email'",
+          "destination": "printf('synthetic-lamp-%06d@example.test', n)",
+          "state": "CASE WHEN n <= 1000 THEN 'active' ELSE 'deactivated' END",
+          "token_hash": "printf('synthetic-lamp-token-hash-%06d', n)"
+        }
+      },
+      {
+        "table": "maintenance",
+        "rows": 1,
+        "values": {
+          "id": "printf('8%025d', n)",
+          "created_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "updated_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now - 3888000000 + n * 1000) / 1000.0, 'unixepoch')",
+          "reference": "'SCH-000001'",
+          "title": "'Synthetic future maintenance'",
+          "state": "'Scheduled'",
+          "starts_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now + 86400000) / 1000.0, 'unixepoch')",
+          "ends_at": "strftime('%Y-%m-%dT%H:%M:%fZ', (:now + 90000000) / 1000.0, 'unixepoch')",
+          "created_by_operator_id": "(SELECT id FROM operators WHERE email = :owner_email)"
+        }
+      }
+    ]
+  },
+  "flows": [
+    {
+      "name": "component-list",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/components"
+      },
+      "status": 200,
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "incident-list",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/incidents"
+      },
+      "status": 200,
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "incident-detail",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/incidents/20000000000000000000000001"
+      },
+      "status": 200,
+      "ceiling": 25000,
+      "callsInRow": 3
+    },
+    {
+      "name": "component-history",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/components/10000000000000000000000001/history"
+      },
+      "status": 200,
+      "ceiling": 6000,
+      "callsInRow": 3
+    },
+    {
+      "name": "subscriber-list",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/subscribers?limit=50&offset=0"
+      },
+      "status": 200,
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "monitor-list",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/intake/sources"
+      },
+      "status": 200,
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "maintenance-list",
+      "persona": "owner",
+      "request": {
+        "method": "GET",
+        "path": "/api/app/maintenance"
+      },
+      "status": 200,
+      "ceiling": 5000,
+      "callsInRow": 3
+    },
+    {
+      "name": "minute-tick",
+      "scheduled": "* * * * *",
+      "ceiling": 40000
+    },
+    {
+      "name": "public-summary",
+      "persona": "reader",
+      "request": {
+        "method": "GET",
+        "path": "//status.rer-hosted-check.invalid/api/public/status"
+      },
+      "status": 200,
+      "ceiling": 1000,
+      "callsInRow": 3
+    },
+    {
+      "name": "public-history",
+      "persona": "reader",
+      "request": {
+        "method": "GET",
+        "path": "//status.rer-hosted-check.invalid/history"
+      },
+      "status": 200,
+      "ceiling": 1000,
+      "callsInRow": 3
+    },
+    {
+      "name": "public-feed",
+      "persona": "reader",
+      "request": {
+        "method": "GET",
+        "path": "//status.rer-hosted-check.invalid/feed.atom"
+      },
+      "status": 200,
+      "ceiling": 1000,
+      "callsInRow": 3
+    }
+  ]
+}
