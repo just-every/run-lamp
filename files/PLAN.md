@@ -1,0 +1,10 @@
+# main-lamp-subscriber-details-1 plan
+
+1. Configure fleet identity, launcher credentials, Git guard, commit hooks and pinned toolchain; read repository requirements. Write only just-every/run-lamp and the named cloud branch.
+2. Reproduce trips 2, 3 and 4 on current main via local public subscription, Add subscriber, Delivery log confirmation, CSV review/apply and invitation action. Record actual observations and screenshots outside the product tree.
+3. Resolve subscriber component names in the repository read and show them in the directory. Keep all-components and incident scope labels.
+4. Replace the import option's internal suffix with CSV source wording and existing operator time/count. Use the existing local suppression mode already loaded by the Subscribers page for truthful feedback plus a Delivery log link. Preserve all writes, authority and transport semantics.
+5. Extend existing local subscriber and configured-mail browser journeys: selected and all-components directory rows, reviewed two-row import, identifier-free option label, suppression result, local confirmation and unchanged provider-on sending. Add no test registrations. Assert UI at 1440; capture the changed screens at 1440 and 390.
+6. Run touched journeys and typecheck, source lock generation/check, and inventory. Never run full local rer verify. Before first commit/push fetch/rebase main, preserving newer requirements/tests and regenerating the source lock last.
+7. Commit with fleet identity and active hooks; inspect every candidate identity, trailer and message, then push using the fleet guard immediately. Leave a PR for the lane as repository instructions require. Poll exact-SHA Verify through REST, at most one run read per 300 seconds, within ten GitHub calls.
+8. Save full non-secret results and receipts in this packet; publish explicit files solely to evidence/main-lamp-subscriber-details-1. Return exact product/evidence provenance, claims, counts and lane POST lines. Preserve unpublished work on any failure; remove a successfully published clone after evidence publication.

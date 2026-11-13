@@ -1,0 +1,131 @@
+{
+  "stage": "local checks passed; pushed; exact-SHA Verify in_progress",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock-generation.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock-check.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "result": "Contract prose: 0 errors, 0 warnings. Contract documents are current."
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "result": "8 test shards and one shared build; 34 routine test files; 90 registrations + 10 assertion scripts = 100 checks."
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 --test-name-pattern=\"Local owner confirms\" tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "log": "local-final.log",
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "log": "local-full-file.log",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "note": "Initial local run; final local invitation UI wiring was subsequently simplified and its affected test reran successfully."
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 --test-name-pattern=\"Subscriber consent\" tests/e2e/delivery-contract.test.mjs",
+      "exit": 0,
+      "log": "configured-final.log",
+      "tests": 1,
+      "pass": 1,
+      "fail": 0
+    }
+  ],
+  "test_count_before": 100,
+  "test_count_after": 100,
+  "cap": 200,
+  "new_registrations": 0,
+  "product_head": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+  "product_branch": "cloud/main-lamp-subscriber-details-1",
+  "pre_push": {
+    "main": "733e2ce1e2fc618183a93632218bb86456a06a79",
+    "fetch_rebase": "success; unpublished branch already current; autostash restored",
+    "source_lock": "regenerated last and check passed",
+    "identity": "All 1 candidate commits including side parents checked; fleet author and committer; no trailers; no skip-ci marker",
+    "push": "first attempt success through cloud-push.py"
+  },
+  "product_files": [
+    {
+      "path": "DIVERGENCE.md",
+      "sha256": "cac4b48025e8e80fbaf4e38e9cb18efae6d2eda663f295f4727b5b039b24608e"
+    },
+    {
+      "path": "sources.lock.json",
+      "sha256": "7e8f805c9c6f4d7da72e88a3ff541d148d7ffdbc5874ab769d9ff276df72db7d"
+    },
+    {
+      "path": "src/core/features/subscribers/repository.ts",
+      "sha256": "64aed370b33ae6dd7c7bf5587b0ab1a84c7f090a61a4b6aba47e466784f996f5"
+    },
+    {
+      "path": "src/core/features/subscribers/ui/subscriber-import-export.tsx",
+      "sha256": "5385f9bf971b0ca332f3ce8b14b57713ac8d50352c5fce36343ee726a93db26c"
+    },
+    {
+      "path": "src/core/features/subscribers/ui/subscribers-page.tsx",
+      "sha256": "29ddbca999e4e71a4593da2daed7324225560cc15f07da6b0252f6070b441a72"
+    },
+    {
+      "path": "tests/e2e/helpers/local-subscribers-flow.mjs",
+      "sha256": "3dae101d22a827956e1a67158729242895539a1266c8beb80bac78c80bf4080c"
+    },
+    {
+      "path": "tests/e2e/helpers/subscriber-intake-browser-flow.mjs",
+      "sha256": "9640f43b0f56fdee010c67916fd016fc5e66d6868d68756b48e495d515afe0a9"
+    }
+  ],
+  "contract_counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "contract_counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "verify": {
+    "conclusion": null,
+    "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953",
+    "id": 43455239953,
+    "status": "in_progress"
+  },
+  "pr": {
+    "head": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+    "html_url": "https://github.com/just-every/run-lamp/pull/355",
+    "number": 355
+  }
+}

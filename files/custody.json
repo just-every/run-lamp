@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-subscriber-details-1",
+  "head": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+  "base": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "product_push": "success; cloud-push.py first attempt",
+  "verify": {
+    "conclusion": null,
+    "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953",
+    "id": 43455239953,
+    "status": "in_progress"
+  },
+  "pr": {
+    "head": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+    "html_url": "https://github.com/just-every/run-lamp/pull/355",
+    "number": 355
+  },
+  "custody": "PUSHED",
+  "local_checks": "passed",
+  "publication_scan": "fleet lander responsibility; not run in cloud",
+  "contract_status_changes": [],
+  "test_count_before": 100,
+  "test_count_after": 100,
+  "cap": 200,
+  "finished_at": "2026-11-13T16:23:04.555138+00:00"
+}

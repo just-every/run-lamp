@@ -1,0 +1,18 @@
+{
+  "base": "733e2ce1e2fc618183a93632218bb86456a06a79",
+  "selections": [
+    "1 selected component",
+    "1 selected component",
+    "All components",
+    "All components"
+  ],
+  "batchLabel": "Nov 13, 2026, 15:30 UTC+00:00 · 21N9Y6 · 2 remaining",
+  "batchSuffixShown": true,
+  "sendResult": "2 invitations sent. 0 remaining. Previously sent invitations are not repeated.",
+  "actualMailOutcome": "Not sent locally",
+  "reproduced": [
+    2,
+    3,
+    4
+  ]
+}

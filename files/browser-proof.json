@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "product_head": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "files": [
+    {
+      "path": "before-subscribers-1440.png",
+      "bytes": 301636,
+      "sha256": "704e1ea25d58e64a2fe40f31a168e76a0611c7718be56b70278dc3f38590515f"
+    },
+    {
+      "path": "before-invitations-1440.png",
+      "bytes": 307960,
+      "sha256": "a08837a4431bc7d7cd7fb5de9776bcc835b23cce0159cc50e49ab1832aeee147"
+    },
+    {
+      "path": "local/local-subscriber-component-names-1440.png",
+      "bytes": 273993,
+      "sha256": "c02e6aa693df3ae395e34eadad015e736868165855690e3be9306581bffabb79"
+    },
+    {
+      "path": "local/local-import-invitation-result-1440.png",
+      "bytes": 352813,
+      "sha256": "13233e76fda25676059ba77f4e7ecdcd272d8c1332efc04b3af93cac9962006d"
+    },
+    {
+      "path": "configured/subscriber-import-pending-1440.png",
+      "bytes": 354762,
+      "sha256": "c78a6e821e877d0e4dc00e7b93382880cef7ac3ff724a8bce990b717e123fe3b"
+    },
+    {
+      "path": "configured/subscriber-import-sent-2-1440.png",
+      "bytes": 361197,
+      "sha256": "55aff1e167cd7f8b075026a86d41e103007d6719e690d1b048f2b87b37a12e3d"
+    },
+    {
+      "path": "configured/subscriber-import-sent-1-1440.png",
+      "bytes": 361097,
+      "sha256": "fef03f0cd45ddb507a38c2b9c792b324bb1e0db53e4ec328e8d5dedd0c108768"
+    },
+    {
+      "path": "before-invitations-390.png",
+      "bytes": 283732,
+      "sha256": "f562d83f4a6eb9fa298be55376321c4e710b51abb1eec3464885a7bdfff2cc83"
+    },
+    {
+      "path": "local/local-subscriber-component-names-390.png",
+      "bytes": 245940,
+      "sha256": "82dca578ef8b5fe26fb52080c62f1d5c8cf470659b60b1ac654c5d19b800c0a8"
+    },
+    {
+      "path": "local/local-import-invitation-result-390.png",
+      "bytes": 324956,
+      "sha256": "9311698357c2bced3eadaff87436270418c57a89330222ef27ca8a516e050ac3"
+    },
+    {
+      "path": "configured/subscriber-import-pending-390.png",
+      "bytes": 324470,
+      "sha256": "52a62085da1656bc9845d87e9dcab1b6f5021789c4f61faaa24b8bc924a32fd7"
+    },
+    {
+      "path": "configured/subscriber-import-sent-2-390.png",
+      "bytes": 330301,
+      "sha256": "f2c19987e5bc7c2c42439188232675b86d16dda8f2c729fbe19ec350a1cca016"
+    },
+    {
+      "path": "configured/subscriber-import-sent-1-390.png",
+      "bytes": 330392,
+      "sha256": "3250fcaaa2026b5dcb06bc03452fd25bdc84b72a45acdf362431f45573a1473c"
+    }
+  ],
+  "review": "Directory names, all-components label, plain CSV batch provenance and local/configured invitation feedback reviewed in the recorded desktop and phone screens."
+}

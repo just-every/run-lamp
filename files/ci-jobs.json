@@ -1,0 +1,132 @@
+{
+  "observed_at": 1794586651.11243,
+  "jobs": [
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131987507066",
+      "id": 131987507066,
+      "name": "plan",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131987609071",
+      "id": 131987609071,
+      "name": "build",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297867",
+      "id": 131988297867,
+      "name": "shards (imports)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297882",
+      "id": 131988297882,
+      "name": "shards (demo)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297884",
+      "id": 131988297884,
+      "name": "shards (ownership)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297895",
+      "id": 131988297895,
+      "name": "shards (delivery)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297949",
+      "id": 131988297949,
+      "name": "shards (portability)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": null,
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297951",
+      "id": 131988297951,
+      "name": "shards (composer)",
+      "status": "in_progress",
+      "steps": [
+        {
+          "conclusion": null,
+          "name": "Verify this product shard",
+          "status": "in_progress"
+        },
+        {
+          "conclusion": null,
+          "name": "Retain commit-bound shard completion",
+          "status": "pending"
+        },
+        {
+          "conclusion": null,
+          "name": "Retain actual verification logs and browser evidence",
+          "status": "pending"
+        },
+        {
+          "conclusion": null,
+          "name": "Post Cache Chromium and its system packages",
+          "status": "pending"
+        },
+        {
+          "conclusion": null,
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "status": "pending"
+        },
+        {
+          "conclusion": null,
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "pending"
+        },
+        {
+          "conclusion": null,
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988297984",
+      "id": 131988297984,
+      "name": "shards (runtime)",
+      "status": "completed",
+      "steps": []
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "5938ef9f62f149729e1a54695d5331f10ca0db0b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43455239953/job/131988298106",
+      "id": 131988298106,
+      "name": "shards (public)",
+      "status": "completed",
+      "steps": []
+    }
+  ],
+  "total_count": 10
+}

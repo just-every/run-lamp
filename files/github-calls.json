@@ -1,0 +1,106 @@
+[
+  {
+    "call": 1,
+    "time": 1794584545.8417246,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=5938ef9f62f149729e1a54695d5331f10ca0db0b&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | select(.name==\"Verify\" and .event==\"push\") | {id,status,conclusion,head_sha,html_url}]"
+    ]
+  },
+  {
+    "call": 2,
+    "time": 1794584846.5175009,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 3,
+    "time": 1794585147.138316,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 4,
+    "time": 1794585447.7013013,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 5,
+    "time": 1794585748.3841262,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 6,
+    "time": 1794586049.0085516,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 7,
+    "time": 1794586349.6543639,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 8,
+    "time": 1794586650.2218285,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953/jobs?per_page=100",
+      "--jq",
+      "{total_count,jobs:[.jobs[]|{id,name,status,conclusion,head_sha,html_url,steps:[.steps[]|select(.status!=\"completed\" or .conclusion==\"failure\")|{name,status,conclusion}]}]}"
+    ]
+  },
+  {
+    "call": 9,
+    "time": 1794586951.1592655,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43455239953",
+      "--jq",
+      "{id,status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 10,
+    "time": 1794586982.3333683,
+    "args": [
+      "api",
+      "--method",
+      "POST",
+      "repos/just-every/run-lamp/pulls",
+      "--input",
+      "/tmp/lamp-pr.json",
+      "--jq",
+      "{number,html_url,head:.head.sha}"
+    ]
+  }
+]

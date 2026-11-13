@@ -1,0 +1,39 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure (129268.010737ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132168.104362
+
+✖ failing tests:
+
+test at tests/e2e/delivery-contract.test.mjs:28:1
+✖ SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure (129268.010737ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   mailSuppressed: false,
+      remaining: 47,
+      sent: 50
+    }
+  
+      at subscriberHundredRowCsvFlow (file:///workspace/run-lamp/tests/e2e/helpers/subscriber-csv-flow.mjs:175:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async subscriberCsvFlow (file:///workspace/run-lamp/tests/e2e/helpers/subscriber-csv-flow.mjs:9:3)
+      at async TestContext.<anonymous> (file:///workspace/run-lamp/tests/e2e/delivery-contract.test.mjs:38:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { sent: 50, remaining: 47, mailSuppressed: false },
+    expected: { sent: 50, remaining: 47 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
