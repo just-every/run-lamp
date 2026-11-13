@@ -401,6 +401,8 @@
   ],
   "business": {
     "settings": 1,
-    "values": ["display_name"]
+    "values": [
+      "display_name"
+    ]
   }
 }
