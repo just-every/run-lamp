@@ -1,0 +1,11 @@
+{
+  "file": "ci-composer-failed.log",
+  "bytes": 39830,
+  "excluded_private_runtime_log": true,
+  "patterns_checked": {
+    "github_credential_prefix": 0,
+    "private_entry_fragment": 0,
+    "runtime_entry_url": 0
+  },
+  "note": "Retained completed composer failure log only; HTTP URL query strings/fragments removed before packet inclusion."
+}

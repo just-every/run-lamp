@@ -1,0 +1,70 @@
+{
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43352296174",
+      "status": "in_progress",
+      "run_id": 43352296174,
+      "observed_at": "2026-11-13T02:33:18.309581+00:00",
+      "github_call": 3
+    },
+    {
+      "conclusion": null,
+      "head_sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43352296174",
+      "status": "in_progress",
+      "run_id": 43352296174,
+      "observed_at": "2026-11-13T02:38:17.599280+00:00",
+      "github_call": 4
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43352296174",
+      "status": "completed",
+      "run_id": 43352296174,
+      "observed_at": "2026-11-13T02:43:17.550072+00:00",
+      "github_call": 5
+    },
+    {
+      "conclusion": null,
+      "head_sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43352296174",
+      "status": "in_progress",
+      "run_id": 43352296174,
+      "observed_at": "2026-11-13T02:49:29.593623+00:00",
+      "github_call": 9,
+      "after_failed_jobs_rerun": true
+    },
+    {
+      "conclusion": null,
+      "head_sha": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43352296174",
+      "status": "in_progress",
+      "run_id": 43352296174,
+      "observed_at": "2026-11-13T02:54:29.751432+00:00",
+      "github_call": 10,
+      "after_failed_jobs_rerun": true
+    }
+  ],
+  "calls_used": 10,
+  "prior_calls": [
+    "PR creation",
+    "exact-SHA run discovery"
+  ],
+  "diagnostic_calls": [
+    {
+      "call": 6,
+      "purpose": "completed run failed jobs"
+    },
+    {
+      "call": 7,
+      "purpose": "composer failed log read once"
+    },
+    {
+      "call": 8,
+      "purpose": "authorized failed-jobs rerun"
+    }
+  ]
+}

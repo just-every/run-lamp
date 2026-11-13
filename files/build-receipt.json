@@ -1,0 +1,8 @@
+{
+  "head": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+  "command": "cloud_run npx -y @runeditrun/rer preview --port 8787 --foreground",
+  "production_build_succeeded": true,
+  "runtime_ready": true,
+  "build_log": "preview-build.log",
+  "private_runtime_entries_excluded": true
+}

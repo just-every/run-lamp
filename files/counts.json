@@ -1,0 +1,21 @@
+{
+  "before": {
+    "partial": 129,
+    "done": 60,
+    "missing": 52
+  },
+  "after": {
+    "partial": 129,
+    "done": 60,
+    "missing": 52
+  },
+  "clauses": 241,
+  "clause_status_changes": 0,
+  "test_registrations_added": 0,
+  "test_registrations_removed": 0,
+  "docs_pages_before": 32,
+  "docs_pages_after": 33,
+  "files_changed": 8,
+  "insertions": 339,
+  "deletions": 21
+}

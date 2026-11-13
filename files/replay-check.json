@@ -1,0 +1,17 @@
+{
+  "base": "87907d8b20d3ae5e8d3f5505de60ffdf1ebb7ccd",
+  "replayed": "796e6766e7415a5db261b47acf453973bc397b7f",
+  "acceptance_files_identical": {
+    "CONTRACT.md": true,
+    "ACCEPTANCE.md": true,
+    "docs/CLAIMS.md": true
+  },
+  "guide_and_ui_files_identical_to_finished_commit": true,
+  "main_divergence_fully_preserved": true,
+  "guide_entry_count": 1,
+  "sec3_candidates": [],
+  "test_registrations_added": 0,
+  "test_registrations_removed": 0,
+  "clause_status_changes": 0,
+  "changed_files": 8
+}

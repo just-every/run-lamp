@@ -1,0 +1,52 @@
+{
+  "head": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "observations": [
+    {
+      "screen": "chat-links",
+      "minTextSize": 15,
+      "guideVisible": true,
+      "panelWidth": 1111,
+      "viewportWidth": 1440
+    },
+    {
+      "screen": "social-accounts",
+      "minTextSize": 13,
+      "guideVisible": true,
+      "panelWidth": 1111,
+      "viewportWidth": 1440
+    },
+    {
+      "screen": "chat-links",
+      "minTextSize": 15,
+      "guideVisible": true,
+      "panelWidth": 358,
+      "viewportWidth": 390
+    },
+    {
+      "screen": "social-accounts",
+      "minTextSize": 13,
+      "guideVisible": true,
+      "panelWidth": 358,
+      "viewportWidth": 390
+    }
+  ],
+  "providerLinks": [
+    "x",
+    "bluesky",
+    "mastodon"
+  ],
+  "docsIndexLinks": [
+    "chat-desk",
+    "social-accounts"
+  ],
+  "pageErrors": [],
+  "liveProviderConnectionTested": false,
+  "runtime": "rer preview production build",
+  "localSetup": "Skipped optional website reading and completed the native first-run form before opening Settings.",
+  "visualReview": "All four screenshots inspected; guide links visible, text at least 13px, single field borders, no clipping."
+}

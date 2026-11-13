@@ -1,0 +1,50 @@
+{
+  "head": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+  "checks": {
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    "docs": {
+      "command": "buildDocs(process.cwd())",
+      "exit": 0,
+      "receipt": "docs-check.json"
+    },
+    "contract_docs": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-docs-check.log"
+    },
+    "source_lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-lock-check.json"
+    },
+    "sec3": {
+      "command": "c1 item 3 grep on git diff --cached origin/main -U0",
+      "matches": 0,
+      "receipt": "sec3-candidates.txt"
+    },
+    "replay": {
+      "receipt": "replay-check.json"
+    },
+    "identity": {
+      "receipt": "identity-check.json"
+    },
+    "touched_tests": {
+      "files": [],
+      "added_registrations": 0,
+      "removed_registrations": 0
+    }
+  },
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0,
+    "note": "CLI completed owner and page setup and its production build. Private entry URLs and private settings are excluded."
+  },
+  "publication_scan": {
+    "status": "deferred_to_fleet_lander",
+    "note": "Brief directs the fleet to run the full scan; task checks added SEC-3 candidates only."
+  }
+}

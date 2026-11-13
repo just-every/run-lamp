@@ -1,0 +1,13 @@
+{
+  "preview_server_pid": 3639,
+  "signal": "SIGTERM",
+  "scope": "task checkout only",
+  "browser_contexts_closed": true,
+  "task_server_stop_requested": true,
+  "app_port_closed": true,
+  "dev_server_pid": 2304,
+  "dev_runtime_exited_before_forced_stop": true,
+  "preview_runtime_stopped": true,
+  "private_runtime_logs_removed": true,
+  "temporary_debug_images_removed": true
+}

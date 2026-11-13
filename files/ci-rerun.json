@@ -1,0 +1,15 @@
+{
+  "run_id": 43352296174,
+  "head": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+  "request": "POST repos/just-every/run-lamp/actions/runs/43352296174/rerun-failed-jobs",
+  "requested_at": "2026-11-13T02:44:29.985754+00:00",
+  "github_call": 8,
+  "failed_test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+  "failure": "Theme heading absent at tests/e2e/helpers/theme-browser-flow.mjs:197, visible assertion timed out after 5000ms",
+  "scope": "Theme test and Theme UI are unchanged by this guide replay; one failed-jobs rerun authorized by brief.",
+  "logs_read": {
+    "job": 131646502252,
+    "invocations": 1
+  },
+  "budget_remaining": 2
+}
