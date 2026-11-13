@@ -16,7 +16,7 @@ import { contract } from "../contract.mjs";
 import { insertRealOperatorSession } from "./real-session-helper.mjs";
 import { appOrigin, pageOrigin } from "./helpers/hosts.mjs";
 import { reservePort, waitForWorker } from "./worker-startup.mjs";
-import { saveAndConfirmDraft } from "./saved-draft-helper.mjs";
+import { configuredDateTimeInput, saveAndConfirmDraft } from "./saved-draft-helper.mjs";
 import { isolatedWranglerConfig } from "../helpers/wrangler-config.mjs";
 import { sessionCookieName } from "../helpers/session-cookie.mjs";
 import { postIncidentReportFlow } from "./helpers/post-incident-report-flow.mjs";
@@ -294,9 +294,10 @@ contract("INCIDENT-004", "operator controls create internal notes, retroactive r
   await page.getByLabel("Internal note").fill("PRIVATE-OPERATOR-CONTEXT");
   await page.getByRole("button", { name: "Save internal note" }).click();
   await page.getByText("Internal note saved.", { exact: true }).waitFor();
-  const nextUpdateLocal = await localInput(60 * 60_000);
+  const nextUpdateAt = new Date(Math.floor((Date.now() + 60 * 60_000) / 60_000) * 60_000).toISOString();
+  const nextUpdateLocal = configuredDateTimeInput(nextUpdateAt, "America/Los_Angeles");
   await saveAndConfirmDraft({ page, appFetch, incidentId, t,
-    expected: { lifecycle: "Investigating", affectedAudience: "Historical API customers.", customerImpact: "An earlier condition delayed requests.", whatStillWorks: "", details: "", nextUpdateAt: new Date(`${nextUpdateLocal}:00-07:00`).toISOString() },
+    expected: { lifecycle: "Investigating", affectedAudience: "Historical API customers.", customerImpact: "An earlier condition delayed requests.", whatStillWorks: "", details: "", nextUpdateAt },
     edit: async () => {
       await page.locator("label", { hasText: "Who is affected" }).locator("textarea").fill("Historical API customers.");
       await page.locator("label", { hasText: "What is the impact" }).locator("textarea").fill("An earlier condition delayed requests.");

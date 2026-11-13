@@ -1836,11 +1836,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "1e8f49693c4e3e7d43b044554863c67d2d82c02f71c11dd59638fb54d7b21e37",
+      "sha256": "fa93b8556d24e4b844615503da6231a20abb122932033ed28d6858d5f70d00f1",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "c736102e9780e13025bdf802dcb35e3acd3f28e58d8fe3c5d773b4f057106c74",
+      "sha256": "6b10e2a4017e0a0a048ace9f4b0b4724937d980841b23f69b15af0a0e0a29695",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -1968,7 +1968,7 @@
       "executable": false
     },
     "scripts/agent-bootstrap.sh": {
-      "sha256": "9078d16a6b78062930c19c1c289edcaee682b427111176cc5b36bd4414bf5511",
+      "sha256": "4c87716aa07c4b070447dfa4cac22a3ee4ae9d781380b68c525225d5c2d1c4e5",
       "executable": true
     },
     "scripts/archive-runtime.mjs": {
@@ -4584,7 +4584,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "725b704024d0145fa4c2a1b4acb7d7f4e5adbff65a5b71e62a28de2ddfd4b307",
+      "sha256": "c6d04ca357b720e4552219cd26c6d727aad62d07741f383ab9bc5830bf3522db",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
