@@ -5,7 +5,7 @@
   "tree": "653e43ad9836df151299a23291a8ef405d8c80e8",
   "product_tree_clean": true,
   "private_bundle_value_scan": "passed",
-  "reviewed_at": "2026-11-13T15:55:16.152919+00:00",
+  "reviewed_at": "2026-11-13T15:56:10.759907+00:00",
   "files": [
     {
       "path": "PLAN.md",
@@ -56,6 +56,11 @@
       "path": "combined-browser-run.log",
       "bytes": 6380,
       "sha256": "ee25f77e7f3dd9d927954f9b848410e2000ee30d50642205cfa0d39a7d8c665e"
+    },
+    {
+      "path": "evidence-validation-receipt.json",
+      "bytes": 4415,
+      "sha256": "e705a7f1fee8ccc08d653f7775722e8b52494867c310e4d929d34df739a72e5d"
     },
     {
       "path": "github-call-receipt.json",

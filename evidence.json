@@ -61,6 +61,12 @@
       "sha256": "ee25f77e7f3dd9d927954f9b848410e2000ee30d50642205cfa0d39a7d8c665e"
     },
     {
+      "blob": "4b312aa15e7a8c1647716abb6cfa776b7cb2604a",
+      "bytes": 4415,
+      "path": "evidence-validation-receipt.json",
+      "sha256": "e705a7f1fee8ccc08d653f7775722e8b52494867c310e4d929d34df739a72e5d"
+    },
+    {
       "blob": "ee1087d91633b6d10c8fc58801caf5bb5595721a",
       "bytes": 1238,
       "path": "github-call-receipt.json",
@@ -79,10 +85,10 @@
       "sha256": "f21cc16e4fafc8d5012ef5d30132bb11b272865bd0ecebb42746ba6935b85d04"
     },
     {
-      "blob": "d66e0e7ba38e6f03ef75a841de71d286d4248f40",
-      "bytes": 3582,
+      "blob": "c93c49d30bfd9274b9e212ac981cf8f28b45c63e",
+      "bytes": 3749,
       "path": "packet-review.json",
-      "sha256": "1c430e3dbe511808cac29712f5c8169145e03e4b385478f0745c3cf34411fab9"
+      "sha256": "6c8e19fcd65eec9867174b1d8167c4d22f65384d4beb207ca6ba65a39c3dff80"
     },
     {
       "blob": "71c12f4da99be6ccad24925d1f9ed3e4078d3915",
