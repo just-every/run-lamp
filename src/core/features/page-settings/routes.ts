@@ -1,6 +1,7 @@
 import { ThemeValidationError } from "./theme-safety";
 import type { ThemeAssetKind } from "./theme-assets";
 import type { Hono } from "hono";
+import { version } from "../../../../package.json";
 
 import type { AppEnv } from "../../app/types";
 import { pageSettingsSchema } from "../../shared/schemas";
@@ -27,7 +28,9 @@ export function registerPageSettingsRoutes(app: Hono<AppEnv>, service: PageSetti
 
   app.get("/api/app/page-settings", async (context) => {
     const settings = await service.get();
-    return settings ? context.json({ settings }) : context.json({ error: "Page settings are not configured." }, 404);
+    // Vite bundles the running seed's own package version into the Worker.
+    // This is a release label, separate from deployment bindings in /health.
+    return settings ? context.json({ settings, version }) : context.json({ error: "Page settings are not configured." }, 404);
   });
 
   app.put("/api/app/page-settings", async (context) => {

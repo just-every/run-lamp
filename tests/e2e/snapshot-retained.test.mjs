@@ -1,4 +1,4 @@
-import { healthSchemaProof } from "../health-version.mjs";
+import { healthSchemaProof } from "./helpers/health-schema-proof.mjs";
 import { themeHeaderImage } from "./helpers/theme-fixture.mjs";
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
