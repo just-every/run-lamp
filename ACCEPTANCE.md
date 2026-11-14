@@ -1413,7 +1413,7 @@ Core · published · **partial** · Cites BASE-INPUT-001
 
 **Acceptance.**
 1. Every operator document sends a signed-in owner with no saved first-run completion to setup; a signed-out setup visitor signs in and returns there.
-2. Lamp reads the public website once without running scripts, refusing private and loopback addresses at every redirect, and fills only observed page name, tagline, PNG mark, accent and navigation components, plus the browser time zone.
+2. Lamp reads the public website once without running scripts, refusing private and loopback addresses at every redirect, and fills only observed page name, tagline, PNG mark, accent and navigation components. First-run setup and website confirmation preserve any valid saved time zone; only an invalid saved zone adopts a valid browser time zone, or UTC when neither zone is valid.
 3. A linked Statuspage, Instatus or Better Stack page, or the site's status subdomain, supplies its own components and groups instead of navigation guesses, labeled with their source.
 4. Bring its incident history too starts unselected; when selected it imports only resolved incidents and their updates at original times, silently through Move in, without active incidents, maintenance or subscribers.
 5. A status feed with no components changes none; an unreadable site or omitted website leaves editable plain defaults with one calm explanation.
