@@ -2,7 +2,14 @@ import { incidentFollowSmsFlow } from './incident-follow-sms-flow.mjs';
 import { smsDeliveryReceiptsFlow } from './sms-delivery-receipts-flow.mjs';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { parse } from 'parse5';
 import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin, subscriberCsv, subscriberCsvRows } from './subscriber-management-fixture.mjs';
+
+// Read text and URL tokens as data; neither assertion sanitizes rendered output.
+const nodeText = node => node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(nodeText).join('');
+// These fixture messages put sentence-ending periods immediately after URLs.
+const smsUrls = text => text.split(/\s+/).filter(token => /^https?:\/\//.test(token))
+  .map(token => new URL(token.endsWith('.') ? token.slice(0, -1) : token));
 
 export const smsBindings = {
   TWILIO_ACCOUNT_SID: 'synthetic-lamp-1',
@@ -67,7 +74,7 @@ export async function smsSubscriberFlow() {
       const response = await raw(`${pageOrigin}/incidents/${incident.reference}`);
       assert.equal(response.status, 200);
       return response.text();
-    }, html => html.replace(/<[^>]*>/g, '').includes(impact), 'the exact incident update text is present on its permanent public page');
+    }, html => nodeText(parse(html)).includes(impact), 'the exact incident update text is present on its permanent public page');
     return { incident, update: result.body.update };
   };
   try {
@@ -136,9 +143,9 @@ export async function smsSubscriberFlow() {
     assert.equal((await inbound(phone, 'HELP')).status, 200);
     assert.equal(messagesFor(phone).length, beforeHelp + 1);
     assert.ok(messagesFor(phone).at(-1).Body.includes('Synthetic Lamp follow-ups'));
-    assert.ok(messagesFor(phone).at(-1).Body.includes('https://help.example.com'));
+    assert.ok(smsUrls(messagesFor(phone).at(-1).Body).some(url => url.href === new URL('https://help.example.com').href), 'HELP carries the exact support URL');
     const beforePublish = messagesFor(phone).length;
-    const first = await publish(component, 'See https://help.example.com/kb/123.');
+    const first = await publish(component, 'See https://help.example.com/kb/123. & <synthetic-lamp-310>');
     assert.equal(messagesFor(phone).length, beforePublish + 1, 'one active selected number receives one publish');
     assert.ok(messagesFor(phone).at(-1).Body.includes('See https://help.example.com/kb/123.'));
     assert.ok(messagesFor(phone).at(-1).Body.includes(`/incidents/${first.incident.reference}`), 'SMS always carries the permanent update link');
@@ -146,11 +153,15 @@ export async function smsSubscriberFlow() {
     const beforeOther = messagesFor(phone).length;
     await publish(other, 'synthetic-lamp-304');
     assert.equal(messagesFor(phone).length, beforeOther, 'component selection suppresses unrelated publication');
-    await publish(component, 'Synthetic long update. ' + 'x'.repeat(190), 'y'.repeat(160) + ' https://help.example.com/kb/123. ' + 'z'.repeat(240));
+    const long = await publish(component, 'Synthetic long update. ' + 'x'.repeat(190), 'y'.repeat(160) + ' https://help.example.com/kb/123. ' + 'z'.repeat(240));
     const shortened = messagesFor(phone).at(-1).Body;
     assert.ok(shortened.length <= 306, 'ASCII SMS is within two concatenated GSM segments');
-    assert.match(shortened, /https:\/\/status\.example\.test\/incidents\/\S+/);
-    assert.ok(!shortened.includes('https://help.example') || shortened.includes('https://help.example.com/kb/123.'), 'URL at truncation boundary is complete or absent');
+    const permanent = new URL(`/incidents/${long.incident.reference}`, pageOrigin).href;
+    const shortenedUrls = smsUrls(shortened);
+    assert.ok(shortenedUrls.some(url => url.href === permanent), 'short SMS retains the exact permanent incident URL');
+    for (const url of shortenedUrls.filter(url => url.href !== permanent)) {
+      assert.equal(url.href, 'https://help.example.com/kb/123', 'URL at truncation boundary is complete or absent');
+    }
     await publish(component, 'http://example.test javascript:alert(1) data:text/html,x');
     const literal = messagesFor(phone).at(-1).Body;
     for (const text of ['http://example.test', 'javascript:alert(1)', 'data:text/html,x']) assert.ok(literal.includes(text), 'non-HTTPS schemes stay literal');

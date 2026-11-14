@@ -152,14 +152,14 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
   app.get("/api/app/subscribers", async (context) => {
     const parsed = subscriberQuerySchema.safeParse(context.req.query());
     if (!parsed.success) return context.json({ error: "Invalid subscriber query.", issues: parsed.error.issues }, 400);
-    const rows = await service.list(parsed.data.limit + 1, parsed.data.offset);
+    const page = await service.listPage(parsed.data.limit, parsed.data.offset);
     return context.json({
-      subscribers: rows.slice(0, parsed.data.limit),
+      subscribers: page.subscribers,
       capacity: await service.getLimits(),
       localMail: options.localMail === true,
       limit: parsed.data.limit,
       offset: parsed.data.offset,
-      hasMore: rows.length > parsed.data.limit,
+      hasMore: page.hasMore,
     });
   });
   app.post("/api/app/subscribers/webhook", async (context) => {

@@ -36,3 +36,33 @@ test('site reading bounds hostile icon prefixes and preserves supported image de
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
+
+test('status feed reads remove tags reassembled by stripping while preserving message text', async () => {
+  const { readStatusFeeds } = await import('../../src/core/platform/status-feeds/index.ts');
+  const cases = [
+    ['<scr<script>ipt>Service restored</scr<script>ipt>', 'Service restored'],
+    ['<a<a<a> >>Service restored</a</a</a> >>', 'Service restored'],
+    ['<p>Service  restored<br />Next &amp; ready</p><p>All systems normal</p>', 'Service restored\nNext & ready\n\nAll systems normal'],
+    ['<b>Use &lt;region&gt; &amp; retry</b>', 'Use <region> & retry'],
+    ['<b title="latency < 1s">Service restored</b>', 'Service restored'],
+    ["<b title='2 > 1'>Service restored</b>", 'Service restored'],
+  ];
+  for (const [message, expected] of cases) {
+    const responses = {
+      '/summary.json': JSON.stringify({ page: { name: 'Synthetic Lamp', url: 'https://synthetic-lamp.example.com' } }),
+      '/v2/components.json': JSON.stringify({ components: [] }),
+      '/history.atom': `<feed><entry><id>Incident/synthetic-lamp-1</id><title>Recovered</title>
+        <published>2026-01-01T12:00:00Z</published><updated>2026-01-01T12:00:00Z</updated>
+        <content><![CDATA[<p><strong>Type:</strong> Incident</p>
+        <p><small>Jan 1, 12:00:00 GMT+0</small><br /><strong>Resolved</strong> - ${message}.</p>]]></content>
+        </entry></feed>`,
+    };
+    const read = await readStatusFeeds('https://synthetic-lamp.example.com', 'instatus', {
+      resolve: async () => ['8.8.8.8'],
+      fetch: async input => new Response(responses[new URL(input).pathname]),
+    });
+    assert.ok(read);
+    assert.equal(read.page.incidents.length, 1);
+    assert.equal(read.page.incidents[0].updates[0].body, `${expected}.`);
+  }
+});

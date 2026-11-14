@@ -42,7 +42,7 @@ export function registerPageSettingsRoutes(app: Hono<AppEnv>, service: PageSetti
       if (JSON.stringify(parsed.data.theme) !== JSON.stringify(current?.theme)) return context.json({ error: "Only a page owner or admin can change its theme." }, 403);
     }
     try {
-      const settings = await service.update(parsed.data);
+      const settings = await service.update(parsed.data, context.get("operator").id);
       return settings ? context.json({ settings }) : context.json({ error: "Page settings are not configured." }, 404);
     } catch (cause) {
       if (cause instanceof ThemeValidationError || cause instanceof UnsupportedMailIdentityError || cause instanceof UnavailablePageTemplateError) return context.json({ error: cause.message }, 400);

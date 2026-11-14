@@ -60,7 +60,7 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     await context.addCookies(entered.cookies.map(cookie => ({ ...cookie, url: origin })));
     const cookie = entered.cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
     // A browser whose zone does not resolve (Chromium reports "Etc/Unknown", which Intl refuses) still opens Lamp, even after
-    // a refused try left that name stored as the page's: the page takes UTC, and the next browser's own zone replaces it.
+    // a refused try left that name stored as the page's: the page takes UTC, and later confirmation keeps that valid zone.
     {
       const unknown = await browser.newContext({ timezoneId: 'Etc/Unknown' });
       await unknown.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
@@ -163,7 +163,7 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
 
     const api = async path => (await nativeRequest(path, { cookie })).json();
     const { settings } = await api('/api/app/page-settings');
-    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'America/New_York']);
+    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'UTC']);
     assert.ok(settings.logoKey, 'the mark became the page logo');
     const { components } = await api('/api/app/components');
     const byGroup = edited.map(([group, names]) => [group === 'Other services' ? null : group, names]);

@@ -33,7 +33,7 @@ export type PageSettingsView = Omit<StoredPageSettings, "theme" | "widgetAllowed
 export interface PageSettingsService {
   get(): Promise<PageSettingsView | null>;
   ensureInitial(settings: PageSettingsInput): Promise<void>;
-  update(settings: PageSettingsInput): Promise<PageSettingsView | null>;
+  update(settings: PageSettingsInput, operatorId: string): Promise<PageSettingsView | null>;
   uploadLogo(input: { bytes: ArrayBuffer; contentType: string }, operatorId: string): Promise<PageSettingsView | null>;
   uploadThemeAsset(kind: ThemeAssetKind, input: { bytes: ArrayBuffer; contentType: string }): Promise<PageSettingsView | null>;
   removeThemeAsset(kind: ThemeAssetKind): Promise<PageSettingsView | null>;
@@ -101,7 +101,7 @@ export function createPageSettingsService(
         updatedAt: timestamp,
       });
     },
-    async update(settings) {
+    async update(settings, operatorId) {
       const existing = await readRequired();
       const assets = JSON.parse(existing.themeAssets) as { header?: unknown; font?: unknown };
       const checkedTheme = settings.theme ? validatePageTheme(settings.theme, {
@@ -132,7 +132,7 @@ export function createPageSettingsService(
         wordingBlockedTerms: settings.wordingBlockedTerms ? JSON.stringify(settings.wordingBlockedTerms) : existing.wordingBlockedTerms,
         wordingFriendlyLength: settings.wordingFriendlyLength ?? existing.wordingFriendlyLength,
         updatedAt: nowIso(),
-      });
+      }, operatorId);
       const view = await rebuildAndRead();
       return view && checkedTheme ? { ...view, themeRemovals: checkedTheme.removals } : view;
     },
