@@ -1,0 +1,64 @@
+{
+  "builds": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "cwd": "/workspace/lamp-size-baseline",
+      "source_sha": "1516f70a710d21775b8498c0357ea26a76f164d1",
+      "exit_code": 0,
+      "log": "measurement-baseline-build.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "cwd": "/workspace/run-lamp",
+      "source_sha": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+      "exit_code": 0,
+      "log": "initial-product-cwd-build.log",
+      "note": "Initial candidate build ran in product checkout by mistake, no tracked edits; scratch size guard then refused missing build."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "cwd": "/workspace/lamp-size-candidate",
+      "source_sha": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+      "exit_code": 0,
+      "log": "measurement-candidate-build.log"
+    }
+  ],
+  "logs": [
+    {
+      "path": "measurement-baseline-build.log",
+      "bytes": 21183,
+      "sha256": "85625b37b3e2b2d77ac6628cf7f7ea0e48519f4c4a9bbaac485f1a41db3ef6fd"
+    },
+    {
+      "path": "initial-product-cwd-build.log",
+      "bytes": 19800,
+      "sha256": "b488a17bf671210a87bb3c4bc2821909564b0afc6db2d3f29898dd02f094db78"
+    },
+    {
+      "path": "measurement-candidate-build.log",
+      "bytes": 21144,
+      "sha256": "a16b6cbaa2c8daf8635c210b4f66fc5f9485a7ad6564a06e8ab6ea2789f02a11"
+    },
+    {
+      "path": "measurement-baseline-full-stderr.log",
+      "bytes": 149,
+      "sha256": "2f70732af4026c1bd8f0123dc4f146614d797e051cb0f1b125ae6f32d4e554d5"
+    },
+    {
+      "path": "measurement-candidate-full-stderr.log",
+      "bytes": 149,
+      "sha256": "1825d52a121e0a3e7eb8caf7ca6e1810cba57bb3be639b208d0f6929dffcfaa4"
+    },
+    {
+      "path": "measurement-baseline-diagnostic-stderr.log",
+      "bytes": 136,
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "path": "measurement-candidate-diagnostic-stderr.log",
+      "bytes": 136,
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    }
+  ],
+  "owned_scratch_worktrees_removed": true
+}

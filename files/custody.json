@@ -1,0 +1,35 @@
+{
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "base": "1516f70a710d21775b8498c0357ea26a76f164d1",
+  "shallow": "false",
+  "migration_name": "0080_incident_list_paging.sql",
+  "migration_sha256": "9d8f532665c8cc129b4a9306b07f28cbbb32c9532f67b97380d9abdf660cb023",
+  "contract_and_views": [
+    {
+      "path": "CONTRACT.md",
+      "changed": false
+    },
+    {
+      "path": "ACCEPTANCE.md",
+      "changed": false
+    },
+    {
+      "path": "docs/CLAIMS.md",
+      "changed": false
+    }
+  ],
+  "candidate_identities": "all fleet; no trailers",
+  "publication_scan": "reserved for fleet own machine per cloud instruction",
+  "independent_migration_gate": "required on final head; not claimed by builder",
+  "product_push": "product-push-receipt.json",
+  "first_save_head": "b5f574d7cf3954d492fe981f18e1f968e44ac5e9",
+  "candidate_head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "verify_run_id": 43549762749,
+  "final_tree": "clean",
+  "remaining_builder_blockers": [],
+  "verify_status": "completed",
+  "verify_conclusion": "success",
+  "pr_url": "https://github.com/just-every/run-lamp/pull/371",
+  "github_invocations": 6,
+  "builder_status": "READY"
+}

@@ -1,0 +1,180 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# (node:11481) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+ok 1 - INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+  ---
+  duration_ms: 245355.50062
+  type: 'test'
+  ...
+# INTEG-002 browser 1440px: Settings connected an account, concealed the saved credential, saved post-by-default on/off; composer respected deselection and reset each new update to the owner default.
+# INTEG-002 browser: Settings, incident composer and maintenance scheduling at 1440 and 390 have no horizontal overflow or serious/critical accessibility findings; account removed through Settings. Screens retained under ./test-results/social; private sign-in links are never retained.
+# PROBE NOTIFY-012 atomic commit: POST /api/app/incidents/:id/publish with chat and a second-post storage fault -> 409; complete inventories stay at 1 update/2 posts, unchanged draft and receivers; retry commits exactly 1 update/2 following posts.
+# PROBE NOTIFY-012 original request replay: POST the captured body and If-Match revision, then two scheduled passes -> 409; all 2 update/4 post identities and 4 receiver requests unchanged.
+# PROBE NOTIFY-012 retroactive silence: POST a distinct saved draft with chat selected and the earlier publication timestamp -> 200, isRetroactive=true, 3 updates; complete 4-post inventory and 4 receiver requests unchanged.
+# SUB-014 SUB-015 synthetic Slack OAuth and Teams Workflows public subscriptions; no live provider call
+# INTEG-002 acceptance 1: recorded X, Bluesky and Mastodon edges receive one bounded post per selected account; credentials stay sealed.
+# INTEG-002 x first post (279/280): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+# INTEG-002 bluesky first post (300/300): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking\\nhttps://status.example.test/incidents/INC-1"; postId=at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1
+# INTEG-002 mastodon first post (337/500): "Synthetic Lamp service status: Investigating: Customers cannot complete card payments while the payment processor is recovering. Existing subscriptions remain available and account data is safe. Our operators are restoring the affected service and checking successful payments before recovery.\\nhttps://status.example.test/incidents/INC-1"; postId=synthetic-lamp-post-1
+# INTEG-002 acceptance 2: the second update uses each network’s native reply field and replies to the first provider id.
+# INTEG-002 thread fields: X {"in_reply_to_tweet_id":"synthetic-lamp-post-1"}; Bluesky {"root":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"},"parent":{"uri":"at://did:plc:syntheticlamp1/app.bsky.feed.post/synthetic-lamp-post-1","cid":"synthetic-lamp-cid-1"}}; Mastodon in_reply_to_id=synthetic-lamp-post-1
+# INTEG-002 acceptance 3: explicit deselection queues and posts nothing even with post by default on; retroactive updates and imports stay silent.
+# INTEG-002 acceptance 4: X 503 receives five retries, then a failed row and one operator alert; public artifacts, email and the other accounts continue.
+# INTEG-002 X 503 attempts=6; final={"id":"01M7BZQ2DS4QNG9G4Y0X1ET42K.01M7BZPYSR5FMP92GWFJQ4YRPN","eventId":"01M7BZQ2DS4QNG9G4Y0X1ET42K","accountId":"01M7BZPYSR5FMP92GWFJQ4YRPN","account":"Synthetic Lamp x","network":"x","reference":"INC-5","text":"Synthetic Lamp service status: Investigating: Synthetic social failure must not delay public status or subscriber email.\\nhttps://status.example.test/incidents/INC-5","queuedAt":"2026-11-14T02:55:48.709Z","outcomeAt":"2026-11-14T02:55:50.151Z","postId":null,"postCid":null,"attempts":6,"state":"failed","attemptLog":[{"number":1,"startedAt":1794624949362,"finishedAt":1794624949470,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":2,"startedAt":1794624949677,"finishedAt":1794624949682,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":3,"startedAt":1794624949732,"finishedAt":1794624949737,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":4,"startedAt":1794624949830,"finishedAt":1794624949904,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":5,"startedAt":1794624949990,"finishedAt":1794624949996,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"},{"number":6,"startedAt":1794624950146,"finishedAt":1794624950151,"outcome":"{\\"kind\\":\\"retryable\\",\\"code\\":\\"social_provider_unavailable\\",\\"status\\":503}"}]}; NOTIFY-006 operator mail=1; page, Atom, email, Bluesky and Mastodon delivered before X exhaustion.
+# Subtest: INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings
+ok 2 - INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings
+  ---
+  duration_ms: 164849.886376
+  type: 'test'
+  ...
+# PROBE INTAKE-008 2 paired missing key: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+# PROBE INTAKE-008 2 paired wrong key: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+# PROBE INTAKE-008 2 paired missing timestamp: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+# PROBE INTAKE-008 2 paired future timestamp: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+# PROBE INTAKE-008 2 paired stale timestamp: intake POST -> 401; four complete inventories and 52 public artifacts unchanged
+# PROBE INTAKE-008 3 test: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+# PROBE INTAKE-008 3 drill: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+# PROBE INTAKE-008 3 unpicked monitor: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+# PROBE INTAKE-008 7 1440: Settings and private draft after reload -> exact Storefront mapping and US East vantage
+# PROBE INTAKE-008 7 390: Settings and private draft after reload -> exact Storefront mapping and US East vantage
+# PROBE INTAKE-008 1,4,6: no-secret pairing -> mapped private draft; recovery -> Resolved without publication; erased address -> 404 without resurrection
+# PROBE INTAKE-006 3 datadog missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 datadog wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 datadog malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 datadog: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 56 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-006 3 uptimerobot missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 uptimerobot wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 uptimerobot malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 uptimerobot: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 60 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-006 3 betterstack missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 betterstack wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 betterstack malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 betterstack: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 64 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-006 3 pingdom missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 pingdom wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 pingdom malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 pingdom: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 68 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-007 1 datadog: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 uptimerobot: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 betterstack: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 pingdom: authenticated recovery -> matching Resolved draft, zero updates, unchanged 68 public artifacts and private permalink 404
+# PROBE INTAKE-007 2 datadog: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 uptimerobot: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 betterstack: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 pingdom: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-001 acceptance 1: native public intake with controlled Worker time admits distinct signed payloads at -300000 and +300000 ms; -300001 and +300001 ms return 401.
+# PROBE INTAKE-001 acceptance 2: native public intake with the configured bearer returns 202 and the matching persisted receipt and incident.
+# PROBE INTAKE-001 acceptance 3: absent, malformed, stale and non-matching HMAC and bearer credentials return 401; complete ordered populated incident, draft, update, receipt and audit inventories stay identical after every refusal.
+# PROBE INTAKE-008 2 uptime: missing timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: future timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: missing signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: wrong signing key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: body-only signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: added whitespace: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: changed JSON body: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: changed timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: stale timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: missing timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: future timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: missing signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: wrong signing key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: body-only signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: added whitespace: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: changed JSON body: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: changed timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: stale timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: missing timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: future timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: missing signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: wrong signing key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: body-only signature: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: added whitespace: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: changed JSON body: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: changed timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: stale timestamp: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 signed replay outside five minutes: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 signed wrong key: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 2 signature without timestamp prefix: intake POST -> 401; four complete inventories and 80 public artifacts unchanged
+# PROBE INTAKE-008 4: signed default firing and exact replay -> same private draft and receipt; complete inventories unchanged
+# PROBE INTAKE-008 5: native brief GET with earlier observation -> exact Confirmed failure time: 2026-11-14T02:57:10.387Z; both vantages and status category retained
+# PROBE INTAKE-008 3 mappings: equal incident keys on checkout and payments -> isolated incidents with their exact saved components
+# PROBE INTAKE-008 6: signed published recovery -> evidence accepted; Investigating lifecycle and complete publication inventory unchanged
+# Subtest: INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request
+ok 3 - INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request
+  ---
+  duration_ms: 15781.956578
+  type: 'test'
+  ...
+# Subtest: AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+ok 4 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+  ---
+  duration_ms: 337673.463647
+  type: 'test'
+  ...
+# PagerDuty: start the real Worker and apply the prior schema.
+# PagerDuty: Worker ready.
+# PagerDuty: D1 binding ready.
+# PagerDuty: migration retained prior rows; authenticate the owner.
+# PagerDuty: map signed webhook evidence and publish responder notes.
+# PROBE INTAKE-009 4: exact captured signed delivery replay -> original incident and receipt identities; complete intake inventories and public bytes unchanged
+# PROBE INTAKE-009 3: signed exact and partial service matches -> all three exact components; ID-only and name-only controls exclude the compound component
+# PROBE INTAKE-009 6 private: receipt identity reads -> correct source, key, incident, recovered state and provider time; only matching private draft closes; all public bytes retained
+# PagerDuty: publish one note per update, including provider failure.
+# PROBE INTAKE-009 6 published: returned recovery receipt -> exact source, incident, state and provider time; Monitoring and complete published updates retained
+# PROBE INTAKE-009 7: fresh triggers, acknowledged and escalated events -> unchanged complete public inventory (46 artifacts), response bytes and generation; private permalinks 404
+# PagerDuty: export and restore without credentials.
+# PagerDuty workerd proof: signed mapping, private recovery, timed brief, one note per publication, visible HTTP 403, sealed custom authorship, owner-default reconnection, credential-free restore, and source erasure.
+# INTAKE-014 and INTAKE-011: bearer, alertId dedup, all component matchers, private notes/brief evidence, fixed vendor notes/close, unpublished recovery and New Relic workflow fixture passed.
+# AUTO-001 draft: no saved rule and an explicit draft rule preserve byte-identical retained public artifacts.
+# AUTO-001 validation: unauthenticated, malformed, unknown and incomplete-template rule requests change no product rows or public snapshot.
+# AUTO-001 claim: the saved named state reaches the public component in under 30 seconds, with no update or subscriber notification, and recovery releases it.
+# AUTO-001 measured claim to public state: 114.8ms.
+# AUTO-001 claim and publish: only saved operator text is published, using saved channel selection and one publication per firing/recovery despite redelivery and Queue retries.
+# AUTO-001 grouped alerts: two ruled fingerprints, a separately mapped unruled firing component, partial recovery, component recovery and repeated deliveries create exactly one update/email per phase.
+# AUTO-001 broken template: removing saved recovery wording degrades the rule visibly to draft without a claim, update or notification.
+# AUTO-001 audit: rule create, edit and delete appear with the saving owner and valid instants through TEAM-007's audit API.
+# AUTO-001 erasure: deleting a source releases its active rule claim with append-only history, no publication and a retained audit entry.
+# AUTO-001 durable work: a transaction rejection is visible, Cron resumes it without redelivery, and recovery before the first publication closes the private run without late text or duplicate notifications.
+# AUTO-002: controlled 60-second firing, three-minute firing, two-minute refire during five-minute hold, full recovery, silent claim, attributed claim and publication Undo, replay refusal and pending-source erasure pass.
+# UPTIME-008/INTAKE-011: next-snapshot pushes, four real provider adapters at fake edges, twenty-minute disconnected gap, verified Uptime timings and aggregate retention passed.
+# Subtest: Development ingress proofs are single-use and expire after five minutes
+ok 5 - Development ingress proofs are single-use and expire after five minutes
+  ---
+  duration_ms: 29.542315
+  type: 'test'
+  ...
+# Subtest: Development ingress refuses a forgotten proof once a full nonce set evicts it
+ok 6 - Development ingress refuses a forgotten proof once a full nonce set evicts it
+  ---
+  duration_ms: 3443.913183
+  type: 'test'
+  ...
+# Subtest: Development ingress keeps serving new proofs while its nonce set is full
+ok 7 - Development ingress keeps serving new proofs while its nonce set is full
+  ---
+  duration_ms: 3260.815767
+  type: 'test'
+  ...
+# Subtest: Development ingress holds exactly 10,000 nonces however many proofs it has accepted
+ok 8 - Development ingress holds exactly 10,000 nonces however many proofs it has accepted
+  ---
+  duration_ms: 7264.793701
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 780262.570258

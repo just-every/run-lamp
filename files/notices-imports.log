@@ -1,0 +1,321 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# (node:4081) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+not ok 1 - INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links
+  ---
+  duration_ms: 56122.791803
+  type: 'test'
+  location: '/workspace/run-lamp/tests/e2e/channels-and-presets.test.mjs:239:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    channelsBrowserFlow (/workspace/run-lamp/tests/e2e/helpers/channels-browser-flow.mjs:9:34)
+    TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/channels-and-presets.test.mjs:371:9)
+  ...
+# Subtest: INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings
+ok 2 - INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings
+  ---
+  duration_ms: 242905.248979
+  type: 'test'
+  ...
+# PROBE INTAKE-008 2 paired missing key: intake POST -> 401; four complete inventories and 47 public artifacts unchanged
+# PROBE INTAKE-008 2 paired wrong key: intake POST -> 401; four complete inventories and 47 public artifacts unchanged
+# PROBE INTAKE-008 2 paired missing timestamp: intake POST -> 401; four complete inventories and 47 public artifacts unchanged
+# PROBE INTAKE-008 2 paired future timestamp: intake POST -> 401; four complete inventories and 47 public artifacts unchanged
+# PROBE INTAKE-008 2 paired stale timestamp: intake POST -> 401; four complete inventories and 47 public artifacts unchanged
+# PROBE INTAKE-008 3 test: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+# PROBE INTAKE-008 3 drill: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+# PROBE INTAKE-008 3 unpicked monitor: paired intake POST -> 400, exact visible refusal reason, one receipt, no draft or publication
+# PROBE INTAKE-008 7 1440: Settings and private draft after reload -> exact Storefront mapping and US East vantage
+# PROBE INTAKE-008 7 390: Settings and private draft after reload -> exact Storefront mapping and US East vantage
+# PROBE INTAKE-008 1,4,6: no-secret pairing -> mapped private draft; recovery -> Resolved without publication; erased address -> 404 without resurrection
+# PROBE INTAKE-006 3 datadog missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 datadog wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 datadog malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 datadog: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 51 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-006 3 uptimerobot missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 uptimerobot wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 uptimerobot malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 uptimerobot: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 55 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-006 3 betterstack missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 betterstack wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 betterstack malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 betterstack: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 59 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-006 3 pingdom missing: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 pingdom wrong: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 3 pingdom malformed: POST preset firing -> 401; complete ordered incident, draft, update, receipt and audit inventories unchanged
+# PROBE INTAKE-006 1 and 5 pingdom: accepted fresh firing -> readable mapped Investigating draft, zero updates, unchanged 63 retained artifacts, generation and public response bytes; private permalink 404
+# PROBE INTAKE-007 1 datadog: authenticated recovery -> matching Resolved draft, zero updates, unchanged 63 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 uptimerobot: authenticated recovery -> matching Resolved draft, zero updates, unchanged 63 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 betterstack: authenticated recovery -> matching Resolved draft, zero updates, unchanged 63 public artifacts and private permalink 404
+# PROBE INTAKE-007 1 pingdom: authenticated recovery -> matching Resolved draft, zero updates, unchanged 63 public artifacts and private permalink 404
+# PROBE INTAKE-007 2 datadog: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 uptimerobot: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 betterstack: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-007 2 pingdom: receipt-specific native reads -> matching recovery and firing evidence, request-bounded instant, unchanged published lifecycle and complete updates
+# PROBE INTAKE-001 acceptance 1: native public intake with controlled Worker time admits distinct signed payloads at -300000 and +300000 ms; -300001 and +300001 ms return 401.
+# PROBE INTAKE-001 acceptance 2: native public intake with the configured bearer returns 202 and the matching persisted receipt and incident.
+# PROBE INTAKE-001 acceptance 3: absent, malformed, stale and non-matching HMAC and bearer credentials return 401; complete ordered populated incident, draft, update, receipt and audit inventories stay identical after every refusal.
+# PROBE INTAKE-008 2 uptime: missing timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: future timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: missing signature: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: wrong signing key: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: body-only signature: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: added whitespace: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: changed JSON body: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: changed timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 uptime: stale timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: missing timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: future timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: missing signature: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: wrong signing key: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: body-only signature: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: added whitespace: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: changed JSON body: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: changed timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-lamp-timestamp: stale timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: missing timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: future timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: missing signature: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: wrong signing key: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: body-only signature: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: prepended UTF-8 BOM: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: invalid UTF-8 replacing signed replacement character: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: added whitespace: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: changed JSON body: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: changed timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 x-monitor-at: stale timestamp: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 signed replay outside five minutes: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 signed wrong key: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 2 signature without timestamp prefix: intake POST -> 401; four complete inventories and 75 public artifacts unchanged
+# PROBE INTAKE-008 4: signed default firing and exact replay -> same private draft and receipt; complete inventories unchanged
+# PROBE INTAKE-008 5: native brief GET with earlier observation -> exact Confirmed failure time: 2026-11-14T02:49:24.616Z; both vantages and status category retained
+# PROBE INTAKE-008 3 mappings: equal incident keys on checkout and payments -> isolated incidents with their exact saved components
+# PROBE INTAKE-008 6: signed published recovery -> evidence accepted; Investigating lifecycle and complete publication inventory unchanged
+# Subtest: INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request
+not ok 3 - INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request
+  ---
+  duration_ms: 12.892119
+  type: 'test'
+  location: '/workspace/run-lamp/tests/e2e/channels-and-presets.test.mjs:478:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    anotherToolSetupJourney (/workspace/run-lamp/tests/e2e/helpers/another-tool-setup-journey.mjs:24:34)
+    TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/channels-and-presets.test.mjs:479:9)
+  ...
+# Subtest: AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+ok 4 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence
+  ---
+  duration_ms: 387046.489796
+  type: 'test'
+  ...
+# PagerDuty: start the real Worker and apply the prior schema.
+# PagerDuty: Worker ready.
+# PagerDuty: D1 binding ready.
+# PagerDuty: migration retained prior rows; authenticate the owner.
+# PagerDuty: map signed webhook evidence and publish responder notes.
+# PROBE INTAKE-009 4: exact captured signed delivery replay -> original incident and receipt identities; complete intake inventories and public bytes unchanged
+# PROBE INTAKE-009 3: signed exact and partial service matches -> all three exact components; ID-only and name-only controls exclude the compound component
+# PROBE INTAKE-009 6 private: receipt identity reads -> correct source, key, incident, recovered state and provider time; only matching private draft closes; all public bytes retained
+# PagerDuty: publish one note per update, including provider failure.
+# PROBE INTAKE-009 6 published: returned recovery receipt -> exact source, incident, state and provider time; Monitoring and complete published updates retained
+# PROBE INTAKE-009 7: fresh triggers, acknowledged and escalated events -> unchanged complete public inventory (46 artifacts), response bytes and generation; private permalinks 404
+# PagerDuty: export and restore without credentials.
+# PagerDuty workerd proof: signed mapping, private recovery, timed brief, one note per publication, visible HTTP 403, sealed custom authorship, owner-default reconnection, credential-free restore, and source erasure.
+# INTAKE-014 and INTAKE-011: bearer, alertId dedup, all component matchers, private notes/brief evidence, fixed vendor notes/close, unpublished recovery and New Relic workflow fixture passed.
+# AUTO-001 draft: no saved rule and an explicit draft rule preserve byte-identical retained public artifacts.
+# AUTO-001 validation: unauthenticated, malformed, unknown and incomplete-template rule requests change no product rows or public snapshot.
+# AUTO-001 claim: the saved named state reaches the public component in under 30 seconds, with no update or subscriber notification, and recovery releases it.
+# AUTO-001 measured claim to public state: 123.9ms.
+# AUTO-001 claim and publish: only saved operator text is published, using saved channel selection and one publication per firing/recovery despite redelivery and Queue retries.
+# AUTO-001 grouped alerts: two ruled fingerprints, a separately mapped unruled firing component, partial recovery, component recovery and repeated deliveries create exactly one update/email per phase.
+# AUTO-001 broken template: removing saved recovery wording degrades the rule visibly to draft without a claim, update or notification.
+# AUTO-001 audit: rule create, edit and delete appear with the saving owner and valid instants through TEAM-007's audit API.
+# AUTO-001 erasure: deleting a source releases its active rule claim with append-only history, no publication and a retained audit entry.
+# AUTO-001 durable work: a transaction rejection is visible, Cron resumes it without redelivery, and recovery before the first publication closes the private run without late text or duplicate notifications.
+# AUTO-002: controlled 60-second firing, three-minute firing, two-minute refire during five-minute hold, full recovery, silent claim, attributed claim and publication Undo, replay refusal and pending-source erasure pass.
+# UPTIME-008/INTAKE-011: next-snapshot pushes, four real provider adapters at fake edges, twenty-minute disconnected gap, verified Uptime timings and aggregate retention passed.
+# Subtest: Development ingress proofs are single-use and expire after five minutes
+ok 5 - Development ingress proofs are single-use and expire after five minutes
+  ---
+  duration_ms: 41.896408
+  type: 'test'
+  ...
+# Subtest: Development ingress refuses a forgotten proof once a full nonce set evicts it
+ok 6 - Development ingress refuses a forgotten proof once a full nonce set evicts it
+  ---
+  duration_ms: 3130.706342
+  type: 'test'
+  ...
+# Subtest: Development ingress keeps serving new proofs while its nonce set is full
+ok 7 - Development ingress keeps serving new proofs while its nonce set is full
+  ---
+  duration_ms: 3254.23712
+  type: 'test'
+  ...
+# Subtest: Development ingress holds exactly 10,000 nonces however many proofs it has accepted
+ok 8 - Development ingress holds exactly 10,000 nonces however many proofs it has accepted
+  ---
+  duration_ms: 7998.715379
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+    # Subtest: unchanged Business plan skips preparation
+    ok 1 - unchanged Business plan skips preparation
+      ---
+      duration_ms: 0.530965
+      type: 'test'
+      ...
+    # Subtest: apply answers before rebuilding the public page
+    ok 2 - apply answers before rebuilding the public page
+      ---
+      duration_ms: 1087.310288
+      type: 'test'
+      ...
+# Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+#     at runtime.services.publicSnapshots.rebuild (file:///workspace/run-lamp/script-0.mjs:94679:67)
+    # Subtest: undo answers before rebuilding the public page
+    ok 3 - undo answers before rebuilding the public page
+      ---
+      duration_ms: 233.559317
+      type: 'test'
+      ...
+# Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+#     at runtime.services.publicSnapshots.rebuild (file:///workspace/run-lamp/script-0.mjs:94679:67)
+    1..3
+ok 9 - MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+  ---
+  duration_ms: 33542.049736
+  type: 'test'
+  ...
+# PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+# PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+# PROBE move-in deadline: first/unchanged Business plans prepare 1/0 times
+# PROBE move-in deadline: changed Business bundle prepares 1 time
+# PROBE move-in deadline: apply answered with the rebuild held; injected background failure recovered through native scheduled retry
+# PROBE move-in deadline: undo answered with the rebuild held; injected background failure recovered through native scheduled retry
+# Subtest: MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers
+ok 10 - MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers
+  ---
+  duration_ms: 15444.413612
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+not ok 11 - SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+  ---
+  duration_ms: 55076.946023
+  type: 'test'
+  location: '/workspace/run-lamp/tests/e2e/statuspage-import.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/statuspage-import.test.mjs:154:40)
+  ...
+# PROBE SUB-023 1: owner Move in review with 300 email rows and 100 free slots -> exact email excess 200, first 100 fit, final 200 refused with over-limit reason
+# PROBE SUB-023 2: apply the over-limit reviewed plan -> 409, every application table and complete outbound inventory unchanged
+# PROBE SUB-023 4: remove email, freshly review and apply -> completed; group, component, complete incident history, report, maintenance and template graph reconciled; existing subscribers and outbound work unchanged
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+ok 12 - INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+  ---
+  duration_ms: 7583.994229
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner
+# PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner
+# Subtest: AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+ok 13 - AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+  ---
+  duration_ms: 8356.477797
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window
+# PROBE NOTIFY-006 acceptance-4 terminal notification failure: public email subscription and owner publication receive provider HTTP 400, repeated Queue delivery and Cron -> failed subscriber delivery and exactly one captured email per active operator for that delivery
+# Subtest: NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+ok 14 - NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+  ---
+  duration_ms: 5359.424121
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator
+# PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident
+# Subtest: HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+ok 15 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+  ---
+  duration_ms: 45681.642746
+  type: 'test'
+  ...
+# HIST-006 starting built Worker
+# HIST-006 built Worker ready
+# HIST-006 real Worker bindings ready
+# HIST-006 fixture schema migrated
+# HIST-006 native owner sign-in starting
+# HIST-006 native owner signed in
+# HIST-006 production fixture started
+# HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+# HIST-009 1440px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+# HIST-009 390px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+# HIST-006: 840 public page + 420 feed baseline requests; default 3×, owner threshold, 5× exactly-once episode, incident suppression, recovery refusal, identifier-free counters and database-free reads asserted
+# HIST-006 riders: unknown baselines not tracked, historical refusal with a retained draft, private attributed immediate override with no later authority, scheduled due-time hold with a retained draft, near-baseline scheduled success
+# Subtest: AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+ok 16 - AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+  ---
+  duration_ms: 17004.274027
+  type: 'test'
+  ...
+# HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+# HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+1..16
+# tests 19
+# suites 0
+# pass 16
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 895066.183005

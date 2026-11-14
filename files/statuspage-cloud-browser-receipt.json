@@ -1,0 +1,15 @@
+{
+  "name": "statuspage-cloud-browser",
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "tests/e2e/statuspage-import.test.mjs"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T03:01:39.038423+00:00",
+  "duration_seconds": 178.49,
+  "exit_code": 0,
+  "log": "statuspage-cloud-browser.log",
+  "log_sha256": "6ed17158c9143e12378ecf244413991fffb6327ad49f5d112ebf4cf0a3cbc5ee"
+}

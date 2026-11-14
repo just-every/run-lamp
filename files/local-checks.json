@@ -1,0 +1,232 @@
+[
+  {
+    "receipt": "candidate-build-receipt.json",
+    "name": "candidate-build",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:45:02.944985+00:00",
+    "duration_seconds": 9.09,
+    "exit_code": 0,
+    "log": "candidate-build.log",
+    "log_sha256": "ee671854d14d00005f4c57b1bd052f3fa316e3114cccfd68fa9a3e2685856913"
+  },
+  {
+    "receipt": "channels-cloud-browser-receipt.json",
+    "name": "channels-cloud-browser",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "tests/e2e/channels-and-presets.test.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:52:14.390722+00:00",
+    "duration_seconds": 780.57,
+    "exit_code": 0,
+    "log": "channels-cloud-browser.log",
+    "log_sha256": "cc714e2f460e8a6764430a622b8cbfde98caac42a7b3b45076ebf332597d3561"
+  },
+  {
+    "receipt": "final-metadata-receipt.json",
+    "name": "final-metadata",
+    "command": [
+      "bash",
+      "-c",
+      "pnpm run typecheck && node scripts/validate-release.mjs && node src/base/contract-docs.mjs check && node scripts/verification/check-plan.mjs && node scripts/edition-authoring/cli.mjs check > /tmp/lamp-source-check.log && git diff --check"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:47:33.771575+00:00",
+    "duration_seconds": 34.99,
+    "exit_code": 0,
+    "log": "final-metadata.log",
+    "log_sha256": "863d9f3c853b8d01bb7eab62061b6900d90ae1a8e8b84e3d9615ecc4f61d36ed"
+  },
+  {
+    "receipt": "final-tree-receipt.json",
+    "name": "final-tree",
+    "command": [
+      "bash",
+      "-c",
+      "git diff --exit-code && git diff --cached --exit-code && node scripts/edition-authoring/cli.mjs check > /tmp/lamp-final-source-check.log && git diff --check"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T03:05:11.949146+00:00",
+    "duration_seconds": 0.33,
+    "exit_code": 0,
+    "log": "final-tree.log",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "receipt": "incident-api-receipt.json",
+    "name": "incident-api",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-name-pattern=^INCIDENT-001 INCIDENT-002",
+      "tests/e2e/publishing-contract.test.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:47:00.824164+00:00",
+    "duration_seconds": 48.24,
+    "exit_code": 0,
+    "log": "incident-api.log",
+    "log_sha256": "8890a1f6d3abd83f9688b2374f95a3e9b533c57df29cbb9ec0fbcc6f0cda3dd3"
+  },
+  {
+    "receipt": "incident-browser-receipt.json",
+    "name": "incident-browser",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-name-pattern=compiled visual edits",
+      "tests/e2e/publishing-browser.test.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:47:49.204960+00:00",
+    "duration_seconds": 280.03,
+    "exit_code": 0,
+    "log": "incident-browser.log",
+    "log_sha256": "02a5f3ae00300faabbc104b7fe1d9d73565124f43fe64e8f4ae4307f5aa3a7cb"
+  },
+  {
+    "receipt": "initial-visual-edit-native-release-upgrade-receipt.json",
+    "name": "native-release-upgrade",
+    "command": [
+      "node",
+      "tests/release/verify.mjs",
+      "--from",
+      "v1.11.14",
+      "--evidence",
+      "/tmp/lamp-release-evidence"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:47:04.232305+00:00",
+    "duration_seconds": 284.78,
+    "exit_code": 0,
+    "log": "native-release-upgrade.log",
+    "log_sha256": "9a08a5335c0a66d12c29aff9ed2d0c0414f337fa72beb17d606ea8e12e9b10b2"
+  },
+  {
+    "receipt": "migration-probe-receipt.json",
+    "name": "migration-probe",
+    "command": [
+      "node",
+      "/tmp/lamp-migration-probe.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:50:17.453225+00:00",
+    "duration_seconds": 7.95,
+    "exit_code": 0,
+    "log": "migration-probe.log",
+    "log_sha256": "859ed5efc4bcad87525017e8f1716915031494d56c49d72b29027d8930c83cb0"
+  },
+  {
+    "receipt": "native-release-upgrade-receipt.json",
+    "name": "native-release-upgrade",
+    "command": [
+      "node",
+      "tests/release/verify.mjs",
+      "--from",
+      "v1.11.14",
+      "--evidence",
+      "/tmp/lamp-release-evidence-clean"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:52:48.428899+00:00",
+    "duration_seconds": 252.85,
+    "exit_code": 0,
+    "log": "native-release-upgrade.log",
+    "log_sha256": "ffd040d911c3cd0f731c7a9391a3972a390692ca8ec9f591947c912d12708a07"
+  },
+  {
+    "receipt": "notices-imports-receipt.json",
+    "name": "notices-imports",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "tests/e2e/update-reminders.test.mjs",
+      "tests/e2e/channels-and-presets.test.mjs",
+      "tests/e2e/sorry-import.test.mjs",
+      "tests/e2e/statuspage-import.test.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:46:32.516541+00:00",
+    "duration_seconds": 895.1,
+    "exit_code": 1,
+    "log": "notices-imports.log",
+    "log_sha256": "5858719adccd0448bb2935679e6fb514d3b3737ff9bd1b8da1091f70aa90c590"
+  },
+  {
+    "receipt": "product-push-receipt.json",
+    "name": "product-push",
+    "command": [
+      "python3",
+      "/home/agent/rer-consolidation/.tools/cloud-push.py",
+      "origin",
+      "cloud/sd-lamp-qgrowth-incidents-3"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T03:05:12.363414+00:00",
+    "duration_seconds": 2.81,
+    "exit_code": 0,
+    "log": "product-push.log",
+    "log_sha256": "e6bcedb7374caa5f990d0c0f9fdda2821ad789ee5dc75e500a84f2cd5227e231"
+  },
+  {
+    "receipt": "source-check-receipt.json",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "exit_code": 0,
+    "source_check_stdout_bytes": 397364,
+    "source_check_stdout_sha256": "373821158b942d462c10a507f9a1cae785979b71c2531f284f93781316168eb9",
+    "validated_in": "final-metadata-receipt.json"
+  },
+  {
+    "receipt": "statuspage-cloud-browser-receipt.json",
+    "name": "statuspage-cloud-browser",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "tests/e2e/statuspage-import.test.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T03:01:39.038423+00:00",
+    "duration_seconds": 178.49,
+    "exit_code": 0,
+    "log": "statuspage-cloud-browser.log",
+    "log_sha256": "6ed17158c9143e12378ecf244413991fffb6327ad49f5d112ebf4cf0a3cbc5ee"
+  },
+  {
+    "receipt": "upgrade-archives-receipt.json",
+    "name": "upgrade-archives",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "tests/auth-adoption/upgrade.test.mjs",
+      "tests/auth-adoption/setup-migrations.test.mjs",
+      "tests/auth-adoption/portability.test.mjs",
+      "tests/e2e/prior-backup.test.mjs",
+      "tests/e2e/export-import.test.mjs"
+    ],
+    "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+    "started_at": "2026-11-14T02:46:42.609283+00:00",
+    "duration_seconds": 482.57,
+    "exit_code": 0,
+    "log": "upgrade-archives.log",
+    "log_sha256": "73f96904df87a674cab59cba33448203be641bdf27673c5167c431f88e5e1448"
+  }
+]

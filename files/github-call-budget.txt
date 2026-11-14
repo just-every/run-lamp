@@ -1,0 +1,6 @@
+api repos/just-every/run-lamp/contents/files/REPORT.md?ref=evidence/sd-lamp-qgrowth-incidents-2 --jq .content
+api repos/just-every/run-lamp/actions/runs?head_sha=c65066509dc724bdd5e09c45f17f18d1758bc796&per_page=100 --jq {total_count,workflow_runs:[.workflow_runs[]|{id,name,event,status,conclusion,head_sha,html_url}]}
+api repos/just-every/run-lamp/actions/runs/43549762749 --jq {id,status,conclusion,head_sha,html_url}
+api repos/just-every/run-lamp/actions/runs/43549762749 --jq {id,status,conclusion,head_sha,html_url}
+api repos/just-every/run-lamp/actions/runs/43549762749 --jq {id,status,conclusion,head_sha,html_url}
+api --method POST repos/just-every/run-lamp/pulls --input /tmp/lamp-pr.json --jq {number,html_url,head:.head.sha,base:.base.ref}

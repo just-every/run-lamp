@@ -1,0 +1,15 @@
+{
+  "name": "candidate-build",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:45:02.944985+00:00",
+  "duration_seconds": 9.09,
+  "exit_code": 0,
+  "log": "candidate-build.log",
+  "log_sha256": "ee671854d14d00005f4c57b1bd052f3fa316e3114cccfd68fa9a3e2685856913"
+}

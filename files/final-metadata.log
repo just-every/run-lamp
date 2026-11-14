@@ -1,0 +1,9 @@
+
+> lamp@1.11.15 typecheck /workspace/run-lamp
+> tsc --noEmit
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.15.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Verification plan: 8 test shards and one shared build, 35 routine test files, 92 registered cases (including release qualification) + 10 assertion scripts = 102 checks.

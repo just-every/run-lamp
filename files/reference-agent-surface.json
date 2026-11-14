@@ -1,0 +1,14 @@
+{
+  "verification": {
+    "owner": {
+      "email": "synthetic-lamp-1@example.test",
+      "emailField": "SETUP_OPERATOR_EMAIL",
+      "bindings": {
+        "SESSION_SECRET": "sessionSecret"
+      }
+    },
+    "publicHosts": [
+      "LAMP_PAGE_HOST"
+    ]
+  }
+}

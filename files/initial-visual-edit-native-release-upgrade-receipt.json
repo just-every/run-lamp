@@ -1,0 +1,17 @@
+{
+  "name": "native-release-upgrade",
+  "command": [
+    "node",
+    "tests/release/verify.mjs",
+    "--from",
+    "v1.11.14",
+    "--evidence",
+    "/tmp/lamp-release-evidence"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:47:04.232305+00:00",
+  "duration_seconds": 284.78,
+  "exit_code": 0,
+  "log": "native-release-upgrade.log",
+  "log_sha256": "9a08a5335c0a66d12c29aff9ed2d0c0414f337fa72beb17d606ea8e12e9b10b2"
+}

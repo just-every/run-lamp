@@ -1,0 +1,19 @@
+{
+  "name": "upgrade-archives",
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "tests/auth-adoption/upgrade.test.mjs",
+    "tests/auth-adoption/setup-migrations.test.mjs",
+    "tests/auth-adoption/portability.test.mjs",
+    "tests/e2e/prior-backup.test.mjs",
+    "tests/e2e/export-import.test.mjs"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:46:42.609283+00:00",
+  "duration_seconds": 482.57,
+  "exit_code": 0,
+  "log": "upgrade-archives.log",
+  "log_sha256": "73f96904df87a674cab59cba33448203be641bdf27673c5167c431f88e5e1448"
+}

@@ -1,0 +1,32 @@
+{
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "contractBefore": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "contractAfter": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "contractStatusChanges": [],
+  "coreMigrations": {
+    "main": 77,
+    "candidate": 78,
+    "continuationBefore": 78,
+    "continuationAfter": 78
+  },
+  "testRegistrations": {
+    "before": 92,
+    "after": 92
+  },
+  "assertionScripts": {
+    "before": 10,
+    "after": 10
+  },
+  "totalChecks": {
+    "before": 102,
+    "after": 102
+  }
+}

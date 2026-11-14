@@ -1,0 +1,14 @@
+{
+  "name": "final-metadata",
+  "command": [
+    "bash",
+    "-c",
+    "pnpm run typecheck && node scripts/validate-release.mjs && node src/base/contract-docs.mjs check && node scripts/verification/check-plan.mjs && node scripts/edition-authoring/cli.mjs check > /tmp/lamp-source-check.log && git diff --check"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:47:33.771575+00:00",
+  "duration_seconds": 34.99,
+  "exit_code": 0,
+  "log": "final-metadata.log",
+  "log_sha256": "863d9f3c853b8d01bb7eab62061b6900d90ae1a8e8b84e3d9615ecc4f61d36ed"
+}

@@ -1,0 +1,151 @@
+{
+  "completed_utc": "2026-11-14T02:48:31.232661+00:00",
+  "baseline_sha": "1516f70a710d21775b8498c0357ea26a76f164d1",
+  "candidate_sha": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "diagnosticOnly": true,
+  "notFullFixtureAcceptance": true,
+  "harnessVersion": "0.2.115",
+  "limit_bytes": 209715200,
+  "results": [
+    {
+      "flow": "incident-list",
+      "baseline": {
+        "small": {
+          "rowsRead": 1805,
+          "status": 200,
+          "runs": 3,
+          "ms": 63.32103499999994
+        },
+        "large": {
+          "rowsRead": 180005,
+          "status": 200,
+          "runs": 3,
+          "ms": 775.065201999998
+        }
+      },
+      "candidate": {
+        "small": {
+          "rowsRead": 959,
+          "status": 200,
+          "runs": 3,
+          "ms": 80.68703700000151
+        },
+        "large": {
+          "rowsRead": 959,
+          "status": 200,
+          "runs": 3,
+          "ms": 64.20240900000135
+        }
+      }
+    },
+    {
+      "flow": "incident-detail",
+      "baseline": {
+        "small": {
+          "rowsRead": 1317,
+          "status": 200,
+          "runs": 3,
+          "ms": 48.796463000000585
+        },
+        "large": {
+          "rowsRead": 1343,
+          "status": 200,
+          "runs": 3,
+          "ms": 54.53402300000016
+        }
+      },
+      "candidate": {
+        "small": {
+          "rowsRead": 1317,
+          "status": 200,
+          "runs": 3,
+          "ms": 178.21119100000033
+        },
+        "large": {
+          "rowsRead": 1343,
+          "status": 200,
+          "runs": 3,
+          "ms": 84.17076799999995
+        }
+      }
+    }
+  ],
+  "full_fixture_guards": {
+    "baseline": {
+      "command": [
+        "node",
+        "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+        "size",
+        "--json",
+        "--write-statements",
+        "/tmp/lamp-size-baseline-guard-statements"
+      ],
+      "source_sha": "1516f70a710d21775b8498c0357ea26a76f164d1",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 211640320,
+      "peak_file_bytes": 211640320,
+      "peak_disposable_temp_bytes": 243326088,
+      "guard_breached": true,
+      "exit_code": 143,
+      "synthetic_only": true
+    },
+    "candidate": {
+      "command": [
+        "node",
+        "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+        "size",
+        "--json",
+        "--write-statements",
+        "/tmp/lamp-size-candidate-guard-statements"
+      ],
+      "source_sha": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 213938176,
+      "peak_file_bytes": 213938176,
+      "peak_disposable_temp_bytes": 245623944,
+      "guard_breached": true,
+      "exit_code": 143,
+      "synthetic_only": true
+    }
+  },
+  "diagnostic_guards": {
+    "baseline": {
+      "command": [
+        "node",
+        "/tmp/lamp-diagnostic.mjs"
+      ],
+      "source_sha": "1516f70a710d21775b8498c0357ea26a76f164d1",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 19410944,
+      "peak_file_bytes": 19410944,
+      "peak_disposable_temp_bytes": 26739344,
+      "guard_breached": false,
+      "exit_code": 0,
+      "synthetic_only": true
+    },
+    "candidate": {
+      "command": [
+        "node",
+        "/tmp/lamp-diagnostic.mjs"
+      ],
+      "source_sha": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 21708800,
+      "peak_file_bytes": 21708800,
+      "peak_disposable_temp_bytes": 30017760,
+      "guard_breached": false,
+      "exit_code": 0,
+      "synthetic_only": true
+    }
+  },
+  "notes": [
+    "Full unchanged declared fixtures stopped at strict 200 MiB logical SQLite guard; no full fixture acceptance claimed.",
+    "Query isolation omits unrelated subscribers and component_state_history populations only; original incident/component/monitor/maintenance expressions and 90/9000 incidents, 90/9000 attachments, 270/27000 updates retained.",
+    "Baseline initial Node24 measurements preserved under initial-node24-*; baseline diagnostic rerun and candidate measurements use pinned Node22.20.0.",
+    "Initial candidate size attempt refused missing scratch build before fixture creation; refusal preserved as initial-missing-build-*. Correct scratch build and guarded rerun followed."
+  ]
+}

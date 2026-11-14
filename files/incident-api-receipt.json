@@ -1,0 +1,16 @@
+{
+  "name": "incident-api",
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=^INCIDENT-001 INCIDENT-002",
+    "tests/e2e/publishing-contract.test.mjs"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:47:00.824164+00:00",
+  "duration_seconds": 48.24,
+  "exit_code": 0,
+  "log": "incident-api.log",
+  "log_sha256": "8890a1f6d3abd83f9688b2374f95a3e9b533c57df29cbb9ec0fbcc6f0cda3dd3"
+}

@@ -1,0 +1,2 @@
+{"version":1,"verb":"size","event":"error","code":"missing_input","message":"No production build at dist/server/wrangler.json. Run rer build, or point --migrations at a directory of D1 migrations.","exitCode":3}
+{"version":1,"verb":"size","event":"result","ok":false,"exitCode":3}

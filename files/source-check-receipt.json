@@ -1,0 +1,12 @@
+{
+  "command": [
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "check"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "exit_code": 0,
+  "source_check_stdout_bytes": 397364,
+  "source_check_stdout_sha256": "373821158b942d462c10a507f9a1cae785979b71c2531f284f93781316168eb9",
+  "validated_in": "final-metadata-receipt.json"
+}

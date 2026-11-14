@@ -1,0 +1,209 @@
+{
+  "diagnosticOnly": true,
+  "notFullFixtureAcceptance": true,
+  "omittedTables": [
+    "subscribers",
+    "component_state_history"
+  ],
+  "sourceSha": "1516f70a710d21775b8498c0357ea26a76f164d1",
+  "harnessVersion": "0.2.115",
+  "declarationSha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
+  "samples": {
+    "small": {
+      "tables": [
+        {
+          "table": "page_settings",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 12.271970000000692
+        },
+        {
+          "table": "components",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 13.732060999999703
+        },
+        {
+          "table": "alert_sources",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 16.694045999999616
+        },
+        {
+          "table": "incidents",
+          "declared": 90,
+          "before": 0,
+          "readBack": 90,
+          "total": 90,
+          "ms": 22.42592700000023
+        },
+        {
+          "table": "incident_components",
+          "declared": 90,
+          "before": 0,
+          "readBack": 90,
+          "total": 90,
+          "ms": 12.526420000000144
+        },
+        {
+          "table": "incident_updates",
+          "declared": 270,
+          "before": 0,
+          "readBack": 270,
+          "total": 270,
+          "ms": 13.927282999999989
+        },
+        {
+          "table": "maintenance",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 14.006421999999475
+        }
+      ],
+      "totalRows": 1923,
+      "phases": {
+        "serve": 4898.689077,
+        "owner": 50.08469100000002,
+        "generate": 105.44976000000042,
+        "after": 0,
+        "readback": 1013.4915650000003,
+        "personas": 0.3556909999997515,
+        "flows": 1752.2876300000007
+      },
+      "flows": [
+        {
+          "name": "incident-list",
+          "kind": "request",
+          "persona": "owner",
+          "label": "GET /api/app/incidents",
+          "runs": 3,
+          "status": 200,
+          "ms": 37.83596999999918,
+          "unsettled": false,
+          "rowsRead": 1805,
+          "rowsWritten": 0,
+          "statements": 11
+        },
+        {
+          "name": "incident-detail",
+          "kind": "request",
+          "persona": "owner",
+          "label": "GET /api/app/incidents/20000000000000000000000001",
+          "runs": 3,
+          "status": 200,
+          "ms": 26.61927299999934,
+          "unsettled": false,
+          "rowsRead": 1317,
+          "rowsWritten": 0,
+          "statements": 27
+        }
+      ]
+    },
+    "large": {
+      "tables": [
+        {
+          "table": "page_settings",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 12.2955579999998
+        },
+        {
+          "table": "components",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 14.678955999999744
+        },
+        {
+          "table": "alert_sources",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 22.743280999999115
+        },
+        {
+          "table": "incidents",
+          "declared": 9000,
+          "before": 0,
+          "readBack": 9000,
+          "total": 9000,
+          "ms": 75.40846800000145
+        },
+        {
+          "table": "incident_components",
+          "declared": 9000,
+          "before": 0,
+          "readBack": 9000,
+          "total": 9000,
+          "ms": 57.135795000000144
+        },
+        {
+          "table": "incident_updates",
+          "declared": 27000,
+          "before": 0,
+          "readBack": 27000,
+          "total": 27000,
+          "ms": 197.5917049999971
+        },
+        {
+          "table": "maintenance",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 12.787892999998803
+        }
+      ],
+      "totalRows": 55383,
+      "phases": {
+        "serve": 2725.3485390000005,
+        "owner": 33.56203999999889,
+        "generate": 392.4762989999999,
+        "after": 0,
+        "readback": 941.5913839999994,
+        "personas": 0.07030499999927997,
+        "flows": 3356.336932000002
+      },
+      "flows": [
+        {
+          "name": "incident-list",
+          "kind": "request",
+          "persona": "owner",
+          "label": "GET /api/app/incidents",
+          "runs": 3,
+          "status": 200,
+          "ms": 499.278225,
+          "unsettled": false,
+          "rowsRead": 180005,
+          "rowsWritten": 0,
+          "statements": 11
+        },
+        {
+          "name": "incident-detail",
+          "kind": "request",
+          "persona": "owner",
+          "label": "GET /api/app/incidents/20000000000000000000000001",
+          "runs": 3,
+          "status": 200,
+          "ms": 26.82596900000135,
+          "unsettled": false,
+          "rowsRead": 1343,
+          "rowsWritten": 0,
+          "statements": 27
+        }
+      ]
+    }
+  }
+}

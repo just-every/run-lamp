@@ -1,0 +1,42 @@
+{
+  "declaration_source": "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+  "declaration_branch": "cloud/sd-lamp-sizecheck-3",
+  "harness_version": "0.2.115",
+  "guard_limit_bytes": 209715200,
+  "guard_sampling_seconds": 0.5,
+  "files": [
+    {
+      "path": "reference-size-check.json",
+      "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59"
+    },
+    {
+      "path": "reference-agent-surface.json",
+      "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9"
+    },
+    {
+      "path": "size-guard.py",
+      "sha256": "546e6be15233dce2418df78687b796b2d608ea5c1f4d9a25d839dc3f709d5480"
+    },
+    {
+      "path": "incident-diagnostic-guard.py",
+      "sha256": "42123e471e07c17f141a13ca0868e696e2b75060337118c92de4606a190ac9e1"
+    },
+    {
+      "path": "incident-diagnostic.mjs",
+      "sha256": "18f32d9da585ab5d9b8ed886f0fc4090659d3e830954a9955a81c4b7af046c9c"
+    },
+    {
+      "path": "baseline-incident-diagnostic.mjs",
+      "sha256": "60ff8c59fbf9935d9325710f771e103bf68b2203fea6150a8b854401be0dcf82"
+    }
+  ],
+  "scope": "Declarations copied without edits to scratch only; diagnostic omits unrelated subscribers/component_state_history and is not full-fixture acceptance.",
+  "runtime": {
+    "baseline_full_guard": "Node 24.19.0 (VM default; original toolchain accepts newer than pin)",
+    "baseline_initial_diagnostic": "Node 24.19.0; retained under initial-node24-*",
+    "baseline_final_diagnostic": "Node 22.20.0, pnpm 10.12.4",
+    "candidate_full_guard_and_diagnostic": "Node 22.20.0, pnpm 10.12.4"
+  },
+  "baseline_scratch_removed": true,
+  "candidate_scratch_removed": true
+}

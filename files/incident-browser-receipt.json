@@ -1,0 +1,16 @@
+{
+  "name": "incident-browser",
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-name-pattern=compiled visual edits",
+    "tests/e2e/publishing-browser.test.mjs"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:47:49.204960+00:00",
+  "duration_seconds": 280.03,
+  "exit_code": 0,
+  "log": "incident-browser.log",
+  "log_sha256": "02a5f3ae00300faabbc104b7fe1d9d73565124f43fe64e8f4ae4307f5aa3a7cb"
+}

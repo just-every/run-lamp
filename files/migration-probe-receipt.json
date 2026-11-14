@@ -1,0 +1,13 @@
+{
+  "name": "migration-probe",
+  "command": [
+    "node",
+    "/tmp/lamp-migration-probe.mjs"
+  ],
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "started_at": "2026-11-14T02:50:17.453225+00:00",
+  "duration_seconds": 7.95,
+  "exit_code": 0,
+  "log": "migration-probe.log",
+  "log_sha256": "859ed5efc4bcad87525017e8f1716915031494d56c49d72b29027d8930c83cb0"
+}

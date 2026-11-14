@@ -1,0 +1,105 @@
+{
+  "head": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+  "parent_command": "notices-imports-receipt.json",
+  "parent_exit_code": 1,
+  "observed_subtests": [
+    {
+      "number": 1,
+      "passed": false,
+      "name": "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links"
+    },
+    {
+      "number": 2,
+      "passed": true,
+      "name": "INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 \u2014 Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings"
+    },
+    {
+      "number": 3,
+      "passed": false,
+      "name": "INTAKE-001 INTAKE-005 \u2014 Connect Another tool and send its copied sample request"
+    },
+    {
+      "number": 4,
+      "passed": true,
+      "name": "AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence"
+    },
+    {
+      "number": 5,
+      "passed": true,
+      "name": "Development ingress proofs are single-use and expire after five minutes"
+    },
+    {
+      "number": 6,
+      "passed": true,
+      "name": "Development ingress refuses a forgotten proof once a full nonce set evicts it"
+    },
+    {
+      "number": 7,
+      "passed": true,
+      "name": "Development ingress keeps serving new proofs while its nonce set is full"
+    },
+    {
+      "number": 8,
+      "passed": true,
+      "name": "Development ingress holds exactly 10,000 nonces however many proofs it has accepted"
+    },
+    {
+      "number": 9,
+      "passed": true,
+      "name": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 \u2014 Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow"
+    },
+    {
+      "number": 10,
+      "passed": true,
+      "name": "MOVE-001 \u2014 Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers"
+    },
+    {
+      "number": 11,
+      "passed": false,
+      "name": "SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 \u2014 owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes"
+    },
+    {
+      "number": 12,
+      "passed": true,
+      "name": "INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 \u2014 a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident"
+    },
+    {
+      "number": 13,
+      "passed": true,
+      "name": "AUTO-003 NOTIFY-006 \u2014 operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery"
+    },
+    {
+      "number": 14,
+      "passed": true,
+      "name": "NOTIFY-006 \u2014 repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private"
+    },
+    {
+      "number": 15,
+      "passed": true,
+      "name": "HIST-006 \u2014 independent public readership produces private traffic alerts and recoverable owner actions"
+    },
+    {
+      "number": 16,
+      "passed": true,
+      "name": "AUTO-004 HIST-003 \u2014 both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders"
+    }
+  ],
+  "environment_failures": [
+    {
+      "number": 1,
+      "passed": false,
+      "name": "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links"
+    },
+    {
+      "number": 3,
+      "passed": false,
+      "name": "INTAKE-001 INTAKE-005 \u2014 Connect Another tool and send its copied sample request"
+    },
+    {
+      "number": 11,
+      "passed": false,
+      "name": "SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 \u2014 owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes"
+    }
+  ],
+  "explanation": "Three failures were missing the bundled Playwright executable: two channel browser scenarios and one Statuspage browser scenario. The existing runtime notice and full Sorry import journeys passed. Channel and Statuspage files are rerun with the cloud Chromium adapter, without source or assertion changes."
+}
