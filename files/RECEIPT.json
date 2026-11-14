@@ -1,0 +1,86 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-import-component-names-1",
+  "head": "7dd366bb066ad4887a8e6e50f6c092695c5065db",
+  "base": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+  "local_checks": [
+    {
+      "command": "pnpm run typecheck",
+      "status": "passed",
+      "file": "typecheck.txt"
+    },
+    {
+      "command": "subscriberCsvFlow()",
+      "status": "passed",
+      "file": "csv-journey.txt"
+    },
+    {
+      "command": "subscriberHundredRowCsvFlow() with mixed names and identifiers",
+      "status": "passed",
+      "file": "hundred-row-journey.txt"
+    },
+    {
+      "command": "subscriberIntakeBrowserFlow()",
+      "status": "passed",
+      "file": "browser-journey.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "status": "passed",
+      "file": "source-lock-check.json"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "status": "passed",
+      "file": "contract-docs-check.txt"
+    }
+  ],
+  "checks_before": 103,
+  "checks_after": 103,
+  "registered_cases_before": 93,
+  "registered_cases_after": 93,
+  "assertion_scripts": 10,
+  "contract_status_changes": [],
+  "visual_widths": [
+    1440,
+    390
+  ],
+  "publication_scan": "not run in cloud; fleet owns publication scan and landing",
+  "full_local_verify": "not run per brief",
+  "node": "22.20.0",
+  "build": {
+    "command": "cloud_run npx -y @runeditrun/rer build",
+    "status": "passed",
+    "file": "build.txt"
+  },
+  "temporary_files_removed": true,
+  "working_tree_clean": true,
+  "product_push": {
+    "status": "success",
+    "attempts": 1,
+    "transport": "cloud-push.py",
+    "file": "product-push.txt"
+  },
+  "verify_run_id": 43646491387,
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "7dd366bb066ad4887a8e6e50f6c092695c5065db",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646491387",
+    "status": "completed",
+    "run_id": 43646491387,
+    "observed_at": 1794695321,
+    "api_calls_including_discovery": 5
+  },
+  "pull_request": {
+    "base_ref": "main",
+    "draft": false,
+    "head_ref": "cloud/main-lamp-import-component-names-1",
+    "head_sha": "7dd366bb066ad4887a8e6e50f6c092695c5065db",
+    "html_url": "https://github.com/just-every/run-lamp/pull/384",
+    "number": 384,
+    "state": "open"
+  },
+  "task_github_api_calls": 6,
+  "blockers": [],
+  "terminal_custody": "READY"
+}

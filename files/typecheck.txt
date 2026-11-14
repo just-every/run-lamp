@@ -1,0 +1,4 @@
+
+> lamp@1.11.16 typecheck /workspace/run-lamp
+> tsc --noEmit
+

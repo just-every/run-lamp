@@ -1,0 +1,325 @@
+diff --git a/DIVERGENCE.md b/DIVERGENCE.md
+index 812ee87..75ca8b5 100644
+--- a/DIVERGENCE.md
++++ b/DIVERGENCE.md
+@@ -1,5 +1,14 @@
+ # DIVERGENCE.md
+ 
++## Subscriber CSV component names — 14 November 2026
++
++Import and export accepts visible component names without regard to case or
++surrounding spaces, alongside existing component identifiers. Owners can find
++names and identifiers beside the CSV input. Unknown and ambiguous names refuse
++only their row and identify the value; other validation failures name their own
++cause. Resolved imports retain pending consent, explicit invitations, capacity
++review and the existing export.
++
+ ## Public subscription choices and Teams guidance — 13 November 2026
+ 
+ The public subscribe area offers email and only the SMS, Slack and Teams channels
+diff --git a/sources.lock.json b/sources.lock.json
+index 0f903d6..5b41a76 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -544,7 +544,7 @@
+       "executable": false
+     },
+     "DIVERGENCE.md": {
+-      "sha256": "b0659846d53caab21456c3d6470b20e09b1ca11abc29f53c03e266f0ac83394c",
++      "sha256": "8dfce1ad31e59f3fb0e7ec8e06d340bda6d1038fc9fbdfab4d8c83536bee843e",
+       "executable": false
+     },
+     "docs/accessibility/vpat.md": {
+@@ -6444,7 +6444,7 @@
+       "executable": false
+     },
+     "src/core/features/subscribers/csv.ts": {
+-      "sha256": "be41e03fb1d7be59d4491128112607f193de7f5c984dab1a73a361e7ecbebf42",
++      "sha256": "7c229b931c370e1e0b358dcdbcb6ba99b229915a9ce486898ddeb0f2802e23c3",
+       "executable": false
+     },
+     "src/core/features/subscribers/destination.ts": {
+@@ -6512,7 +6512,7 @@
+       "executable": false
+     },
+     "src/core/features/subscribers/intake.service.ts": {
+-      "sha256": "f44369073016a02068a55bfa04a7569c147e5c988c5863078f28625393004ef0",
++      "sha256": "36c0251fccc4f147f8722bd58c0db48cbd8da13d1985e37b89227249dd730851",
+       "executable": false
+     },
+     "src/core/features/subscribers/limits.repository.ts": {
+@@ -6580,7 +6580,7 @@
+       "executable": false
+     },
+     "src/core/features/subscribers/ui/subscriber-import-export.tsx": {
+-      "sha256": "5385f9bf971b0ca332f3ce8b14b57713ac8d50352c5fce36343ee726a93db26c",
++      "sha256": "e36b34abc0f7a010326dcceb776472ed092d4ca5752279408e36e758f9eec66e",
+       "executable": false
+     },
+     "src/core/features/subscribers/ui/subscriber-selection.tsx": {
+@@ -8336,7 +8336,7 @@
+       "executable": false
+     },
+     "tests/e2e/helpers/subscriber-csv-flow.mjs": {
+-      "sha256": "80c2cb7f650e3fc1ecd4be58b868f3f9c3dd0cf08f2e3941800010f2ce5cd193",
++      "sha256": "778d0a38694f44280a24954c55e11fc23349eda65ab0f70f588184fe2cd1e01f",
+       "executable": false
+     },
+     "tests/e2e/helpers/subscriber-directory-flow.mjs": {
+@@ -8352,7 +8352,7 @@
+       "executable": false
+     },
+     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
+-      "sha256": "9640f43b0f56fdee010c67916fd016fc5e66d6868d68756b48e495d515afe0a9",
++      "sha256": "f78d4a43aa9784e0c0676edd003298ceb4eb12e83accc5825f54b85e3ee2fc0a",
+       "executable": false
+     },
+     "tests/e2e/helpers/subscriber-limits-flow.mjs": {
+diff --git a/src/core/features/subscribers/csv.ts b/src/core/features/subscribers/csv.ts
+index 8bcb96d..b439b18 100644
+--- a/src/core/features/subscribers/csv.ts
++++ b/src/core/features/subscribers/csv.ts
+@@ -29,10 +29,16 @@ function records(csv:string):string[][] {
+   return rows;
+ }
+ 
+-export function parseSubscriberCsv(csv:string):{valid:IntakeRow[];decisions:IntakeDecision[]} {
++export function parseSubscriberCsv(csv:string,components:readonly {id:string;name:string}[]):{valid:IntakeRow[];decisions:IntakeDecision[]} {
+   const rows=records(csv),headers=rows.shift()?.map(value=>value.trim().toLowerCase().replaceAll(" ","_"))??[];
+   if(!headers.some(value=>["email","phone","webhook_url"].includes(value))||new Set(headers).size!==headers.length||headers.some(value=>!headersAllowed.has(value)))throw new SubscriberIntakeError("Use unique CSV headers: email, phone, webhook_url, contact_email, components, language, webhook_format.");
+   if(!rows.length)throw new SubscriberIntakeError("Choose a CSV containing subscriber rows.");
++  const identifiers=new Set(components.map(component=>component.id));
++  const names=new Map<string,string[]>();
++  for(const component of components) {
++    const name=component.name.trim().toLowerCase();
++    names.set(name,[...(names.get(name)??[]),component.id]);
++  }
+   const valid:IntakeRow[]=[],decisions:IntakeDecision[]=[],seen=new Set<string>();
+   rows.forEach((cells,index)=>{
+     const row=index+2;
+@@ -43,9 +49,32 @@ export function parseSubscriberCsv(csv:string):{valid:IntakeRow[];decisions:Inta
+     if([value.email,value.phone,value.webhook_url].filter(Boolean).length!==1){refuse("Choose exactly one email address, phone number or webhook URL.");return;}
+     if((value.email||value.phone)&&value.webhook_format){refuse("Webhook format applies only to webhook subscribers.");return;}
+     if(value.webhook_format&&!webhookFormatSchema.safeParse(value.webhook_format).success){refuse("Choose Lamp or Statuspage as the webhook format.");return;}
+-    const componentIds=value.components?value.components.split(/[;,]/u).map(id=>id.trim()).filter(Boolean):[];
++    const componentValues=value.components?value.components.split(/[;,]/u).map(value=>value.trim()).filter(Boolean):[];
++    const componentIds:string[]=[];
++    for(const component of componentValues) {
++      // Exact identifiers retain their existing meaning, even when a name resembles one.
++      if(identifiers.has(component)){componentIds.push(component);continue;}
++      const matches=names.get(component.toLowerCase())??[];
++      if(matches.length!==1) {
++        refuse(matches.length ? `Component "${component}" matches more than one component. Use its identifier.` : `Component "${component}" does not match a visible component.`);
++        return;
++      }
++      componentIds.push(matches[0]!);
++    }
+     const parsed=subscriberAddSchema.safeParse(value.phone?{channel:"sms",phone:value.phone,componentIds}:value.email?{channel:"email",email:value.email,componentIds}:{channel:"webhook",destination:value.webhook_url,contactEmail:value.contact_email??"",componentIds,...(value.webhook_format?{webhookFormat:value.webhook_format}:{})});
+-    if(!parsed.success){refuse("The destination, contact address or component identifiers are invalid.");return;}
++    if(!parsed.success){
++      const reasons=parsed.error.issues.map(issue=>{
++        switch(issue.path[0]) {
++          case "email": return "The email address is invalid.";
++          case "phone": return "The phone number is invalid. Use an international number starting with +.";
++          case "destination": return "The webhook URL is invalid. Use a public HTTPS URL without credentials or a port.";
++          case "contactEmail": return "The webhook contact email address is invalid.";
++          case "componentIds": return "Choose at most 200 component values.";
++          default: return "The subscriber row is invalid.";
++        }
++      });
++      refuse([...new Set(reasons)].join(" "));return;
++    }
+     const item=parsed.data,destination=item.channel==="email"?item.email:item.channel==="sms"?item.phone:item.destination;
+     if(seen.has(destination)){decisions.push({row,outcome:"skipped",reason:"This destination occurs earlier in the file."});return;}
+     seen.add(destination);
+diff --git a/src/core/features/subscribers/intake.service.ts b/src/core/features/subscribers/intake.service.ts
+index 50d0645..80497c2 100644
+--- a/src/core/features/subscribers/intake.service.ts
++++ b/src/core/features/subscribers/intake.service.ts
+@@ -21,8 +21,9 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
+   sendConfirmation:(id:string,origin:string,actor:string|null,ownerOnly:boolean,tokenId?:string|null)=>Promise<boolean>;
+ }) {
+   async function plan(csv:string) {
+-    const parsed=parseSubscriberCsv(csv);
+-    const [destinations,components]=await Promise.all([repository.intake.destinations(),repository.listVisibleComponents()]);
++    const components=await repository.listVisibleComponents();
++    const parsed=parseSubscriberCsv(csv,components);
++    const destinations=await repository.intake.destinations();
+     const visible=new Set(components.map(row=>row.id));
+     const accepted=[] as typeof parsed.valid;
+     for(const item of parsed.valid) {
+@@ -39,7 +40,7 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
+     for(const row of capacity.refused){const decision=parsed.decisions.find(item=>item.row===row.row)!;decision.outcome="refused";decision.reason="over the subscriber limit";}
+     const counts:IntakeCounts={created:0,skipped:0,refused:0};
+     for(const decision of parsed.decisions)counts[decision.outcome]++;
+-    const fingerprint=await hashOpaqueToken(JSON.stringify({csv,decisions:parsed.decisions,components:[...visible].sort(),limits:capacity.summaries}));
++    const fingerprint=await hashOpaqueToken(JSON.stringify({csv,decisions:parsed.decisions,components:[...visible].sort(),selections:parsed.valid.map(row=>({row:row.row,componentIds:row.componentIds})),limits:capacity.summaries}));
+     return {accepted:accepted.filter(row=>!capacity.refused.has(row)),preview:{fingerprint,counts,rows:parsed.decisions,limits:capacity.summaries} satisfies IntakePreview};
+   }
+   return {
+diff --git a/src/core/features/subscribers/ui/subscriber-import-export.tsx b/src/core/features/subscribers/ui/subscriber-import-export.tsx
+index c9f1f44..cdaf523 100644
+--- a/src/core/features/subscribers/ui/subscriber-import-export.tsx
++++ b/src/core/features/subscribers/ui/subscriber-import-export.tsx
+@@ -11,6 +11,7 @@ type AppliedBatch = { batchId: string; counts: Counts };
+ export function SubscriberImportExport({ onChanged, localMail }: { onChanged: () => void; localMail: boolean }) {
+   const [csv, setCsv] = useState("");
+   const [preview, setPreview] = useState<Preview | null>(null);
++  const components = useAppData<{ components: { id: string; name: string; internal: boolean }[] }>("/api/app/components");
+   const batches = useAppData<{ batches: Batch[] }>("/api/app/subscribers/import/batches");
+   const formatOperatorTime = useOperatorTime();
+   const [batchId, setBatchId] = useState<string | null>(null);
+@@ -46,11 +47,15 @@ export function SubscriberImportExport({ onChanged, localMail }: { onChanged: ()
+   return <section className="data-card" aria-label="Import and export subscribers">
+     <h2>Import and export</h2><p><a className="text-link" href="/api/app/subscribers.csv" download>Export subscribers as CSV</a></p>
+     <p>Review a CSV before creating pending subscriptions. Only an owner can send the imported subscribers their confirmation invitations.</p>
+-    <p>Columns: email, phone, webhook_url, contact_email, components, language. Separate component IDs with semicolons; leave components blank for all visible components. Language must be English (en). Phone rows are refused.</p>
++    <p>Columns: email, phone, webhook_url, contact_email, components, language. Use component names or IDs in components; leave it blank for all visible components. Language must be English (en). Phone rows are refused.</p>
+     <p>For webhook rows, optional webhook_format chooses lamp or statuspage. An omitted format uses Lamp.</p>
++    <p id="csv-component-help">Separate component names or IDs with semicolons. Names ignore letter case and surrounding spaces. For repeated names or names containing commas or semicolons, use IDs.</p>
++    {components.loading && !components.data ? <p role="status">Loading component names…</p> : null}
++    {components.error ? <FormError>{components.error}</FormError> : null}
++    {components.data ? <details><summary>Component names and IDs</summary><ul>{components.data.components.filter(component => !component.internal).map(component => <li key={component.id}>{component.name} — <code>{component.id}</code></li>)}</ul></details> : null}
+     <form className="incident-note-form" onSubmit={dryRun}>
+       <label className="form-label">CSV file<input type="file" accept=".csv,text/csv" disabled={pending} onChange={event => void selectFile(event.target.files?.[0])} /></label>
+-      <label className="form-label">CSV contents<textarea rows={6} required disabled={pending} value={csv} onChange={event => reset(event.target.value)} /></label>
++      <label className="form-label">CSV contents<textarea aria-describedby="csv-component-help" rows={6} required disabled={pending} value={csv} onChange={event => reset(event.target.value)} /></label>
+       <Button variant="secondary" type="submit" disabled={pending || !csv.trim()}>{pending ? "Working…" : "Dry run CSV"}</Button>
+     </form>
+     {preview ? <div><h3>Dry run</h3>{preview.limits.length ? <div role="status"><ul>{preview.limits.map(summary=><li key={summary}>{summary}</li>)}</ul><p>Remove excess rows and run a fresh dry run before applying.</p></div> : null}<p>{preview.counts.created} would be created; {preview.counts.skipped} skipped; {preview.counts.refused} refused.</p>
+diff --git a/tests/e2e/helpers/subscriber-csv-flow.mjs b/tests/e2e/helpers/subscriber-csv-flow.mjs
+index c77548b..a108f17 100644
+--- a/tests/e2e/helpers/subscriber-csv-flow.mjs
++++ b/tests/e2e/helpers/subscriber-csv-flow.mjs
+@@ -11,20 +11,51 @@ export async function subscriberCsvFlow() {
+   try {
+     const { api, post, list, messagesFor } = fixture;
+     const component = await fixture.createComponent('Imported API');
++    await fixture.createComponent('Payments');
++    await fixture.createComponent('PAYMENTS');
++    await fixture.createComponent('Private payments', true);
++    await fixture.createComponent(component.id); // A visible name never steals an exact identifier.
++    const rename = async (component, name) => {
++      const result = await api(`/api/app/components/${component.id}`, { method: 'PUT', body: JSON.stringify({ groupId: null, name, description: '', internal: false, note: '' }) });
++      assert.equal(result.status, 200, result.text);
++    };
++    // A name moving between existing components must not silently change a reviewed import.
++    const first = await fixture.createComponent('Review target');
++    const second = await fixture.createComponent('Review spare');
++    const reviewedCsv = subscriberCsv(['email', 'components'], [['synthetic-lamp-review@example.test', first.name]]);
++    const reviewed = await post('/api/app/subscribers/import/preview', { csv: reviewedCsv });
++    assert.equal(reviewed.status, 200, reviewed.text);
++    await rename(first, 'Review former target'); await rename(second, first.name);
++    const afterRename = await fixture.databaseState(), mailAfterRename = fixture.messages.length;
++    const stale = await post('/api/app/subscribers/import/apply', { csv: reviewedCsv, reviewedFingerprint: reviewed.body.fingerprint });
++    assert.equal(stale.status, 409, stale.text);
++    await fixture.assertUnchanged(afterRename);
++    assert.equal(fixture.messages.length, mailAfterRename);
+     const email = '+imported-reader@example.test', contact = 'hook-owner@example.test';
+     const destination = 'https://receiver.example.test/synthetic-lamp-1';
+     const csv = subscriberCsv(['email', 'webhook_url', 'contact_email', 'components'], [
+-      [email, '', '', component.id],
++      [email, '', '', `  ${component.name.toLowerCase()}  `],
+       ['', destination, contact, component.id],
+       ['invalid-address', '', '', component.id],
++      ['synthetic-lamp-unknown@example.test', '', '', 'Missing payments'],
++      ['synthetic-lamp-ambiguous@example.test', '', '', ' payments '],
++      ['synthetic-lamp-internal@example.test', '', '', 'Private payments'],
+       [email, '', '', component.id],
+     ]);
+     assert.equal((await fixture.raw('/api/app/subscribers/import/preview', { method: 'POST', body: JSON.stringify({ csv }) })).status, 401);
+     const before = await fixture.databaseState(), mailBefore = fixture.messages.length;
+     const preview = await post('/api/app/subscribers/import/preview', { csv });
+     assert.equal(preview.status, 200, preview.text);
+-    assert.deepEqual(preview.body.counts, { created: 2, refused: 1, skipped: 1 });
+-    assert.ok(preview.body.rows.find(row => row.outcome === 'refused').reason);
++    assert.deepEqual(preview.body.counts, { created: 2, refused: 4, skipped: 1 });
++    const reason = row => preview.body.rows.find(item => item.row === row).reason;
++    assert.match(reason(4), /email/i);
++    assert.doesNotMatch(reason(4), /component|contact|webhook/i);
++    assert.ok(reason(5).includes('Missing payments'));
++    assert.match(reason(5), /component/i);
++    assert.ok(reason(6).includes('payments'));
++    assert.match(reason(6), /more than one|ambiguous/i);
++    assert.ok(reason(7).includes('Private payments'));
++    assert.ok(preview.body.rows.slice(3, 6).every(row => row.outcome === 'refused'), 'unusable component values refuse only their own rows');
+     await fixture.assertUnchanged(before);
+     const changed = await post('/api/app/subscribers/import/apply', { csv: csv.replace(email, 'changed@example.test'), reviewedFingerprint: preview.body.fingerprint });
+     assert.equal(changed.status, 409, changed.text);
+@@ -34,7 +65,8 @@ export async function subscriberCsvFlow() {
+     assert.deepEqual(applied.body.counts, preview.body.counts);
+     const pending = await list();
+     assert.equal(pending.length, 2);
+-    assert.ok(pending.every(row => row.state === 'pending' && row.componentSelections.some(selection => selection.componentId === component.id)));
++    assert.ok(pending.every(row => row.state === 'pending' && row.selectionMode === 'selected'));
++    for (const row of pending) assert.deepEqual(row.componentSelections.map(selection => selection.componentId), [component.id], 'names and exact IDs both resolve to precisely the chosen component');
+     assert.equal(fixture.messages.length, mailBefore, 'review and apply never imply permission to send');
+     await fixture.publish(component, 'Published before imported readers consent');
+     assert.equal(fixture.messages.length, mailBefore, 'pending imported destinations receive no publication');
+@@ -128,7 +160,7 @@ export async function subscriberHundredRowCsvFlow() {
+         consent_at: '',
+       };
+     });
+-    const rows = expected.map(row => [row.channel === 'email' ? row.destination : '', row.channel === 'webhook' ? row.destination : '', row.contact_email, row.components]);
++    const rows = expected.map(row => [row.channel === 'email' ? row.destination : '', row.channel === 'webhook' ? row.destination : '', row.contact_email, row.components.replace(first.id, `  ${first.name.toUpperCase()}  `)]);
+     rows.push(['invalid-address', '', '', first.id], ['', 'http://127.0.0.1/synthetic-lamp-1', address('synthetic-lamp-csv-unsafe'), first.id], ['', 'https://receiver.example.test/synthetic-lamp-invalid', 'invalid-contact', first.id]);
+     const csv = subscriberCsv(['email', 'webhook_url', 'contact_email', 'components'], rows);
+     const before = await fixture.databaseState(), mailBefore = fixture.messages.length;
+@@ -137,6 +169,10 @@ export async function subscriberHundredRowCsvFlow() {
+     assert.deepEqual(preview.body.counts, { created: 97, skipped: 0, refused: 3 });
+     assert.deepEqual(preview.body.rows.map(row => ({ row: row.row, outcome: row.outcome })), Array.from({ length: 100 }, (_, index) => ({ row: index + 2, outcome: index < 97 ? 'created' : 'refused' })));
+     assert.ok(preview.body.rows.slice(97).every(row => typeof row.reason === 'string' && row.reason.length > 0), 'each malformed row has a reviewable refusal reason');
++    const [badEmail, badUrl, badContact] = preview.body.rows.slice(97).map(row => row.reason);
++    assert.match(badEmail, /email/i); assert.doesNotMatch(badEmail, /component|contact|webhook/i);
++    assert.match(badUrl, /webhook.*URL/i); assert.doesNotMatch(badUrl, /component|contact|email/i);
++    assert.match(badContact, /contact.*email/i); assert.doesNotMatch(badContact, /component|URL/i);
+     await fixture.assertUnchanged(before);
+     assert.equal(fixture.messages.length, mailBefore, 'the complete 100-row review sends nothing');
+     const changed = await post('/api/app/subscribers/import/apply', { csv: csv.replace(expected[0].destination, address('synthetic-lamp-csv-changed')), reviewedFingerprint: preview.body.fingerprint });
+diff --git a/tests/e2e/helpers/subscriber-intake-browser-flow.mjs b/tests/e2e/helpers/subscriber-intake-browser-flow.mjs
+index 5a6ed89..b7a047f 100644
+--- a/tests/e2e/helpers/subscriber-intake-browser-flow.mjs
++++ b/tests/e2e/helpers/subscriber-intake-browser-flow.mjs
+@@ -131,12 +131,26 @@ export async function subscriberIntakeBrowserFlow(t) {
+     for (const [index, count] of [[0, 2], [1, 1]]) {
+       const section = page.getByRole('region', { name: 'Import and export subscribers', exact: true });
+       const recipients = Array.from({ length: count }, (_, row) => address(`synthetic-lamp-browser-csv-${index}-${row}`));
+-      const csv = subscriberCsv(['email', 'components'], recipients.map(email => [email, components[0].id]));
++      const componentValue = index === 0 ? `  ${components[0].name.toUpperCase()}  ` : components[0].id;
++      const rows = recipients.map(email => [email, componentValue]);
++      const unknown = 'Missing browser component';
++      if (index === 0) rows.push([address('synthetic-lamp-browser-refused'), unknown]);
++      const csv = subscriberCsv(['email', 'components'], rows);
++      await section.getByText('Component names and IDs', { exact: true }).click();
++      await expect(section.getByRole('listitem').filter({ hasText: components[0].id })).toContainText(components[0].name);
++      await section.getByText('Component names and IDs', { exact: true }).click();
+       const before = messages.length;
+       await section.getByLabel('CSV file', { exact: true }).setInputFiles({ name: 'synthetic-lamp-subscribers.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
+       await expect(section.getByLabel('CSV contents')).toHaveValue(csv.replaceAll('\r\n', '\n'));
+       await section.getByRole('button', { name: 'Dry run CSV', exact: true }).click();
+-      await expect(section).toContainText(`${count} would be created; 0 skipped; 0 refused.`);
++      await expect(section).toContainText(`${count} would be created; 0 skipped; ${index === 0 ? 1 : 0} refused.`);
++      if (index === 0) {
++        await section.getByText('Row decisions', { exact: true }).click();
++        await expect(section.getByRole('listitem').filter({ hasText: unknown })).toContainText(/refused/i);
++        await section.getByText('Component names and IDs', { exact: true }).click();
++        await screens('subscriber-import-review');
++        await section.getByText('Component names and IDs', { exact: true }).click();
++      }
+       assert.equal(messages.length, before);
+       const applied = page.waitForResponse(response => response.url().endsWith('/api/app/subscribers/import/apply') && response.request().method() === 'POST');
+       await section.getByRole('button', { name: 'Create pending subscriptions', exact: true }).click();
+@@ -144,6 +158,13 @@ export async function subscriberIntakeBrowserFlow(t) {
+       const result = await response.json(); batches.push({ id: result.batchId, recipients });
+       await expect(section).toContainText(`${count} pending subscriptions created. No invitations have been sent.`);
+       assert.equal(messages.length, before, 'browser review and apply stay silent');
++      const stored = (await api('/api/app/subscribers?limit=100')).subscribers;
++      for (const recipient of recipients) {
++        const subscriber = stored.find(row => row.destination === recipient);
++        assert.ok(subscriber); assert.equal(subscriber.state, 'pending'); assert.equal(subscriber.selectionMode, 'selected');
++        assert.deepEqual(subscriber.componentSelections.map(item => item.componentId), [components[0].id], 'visible names and IDs preserve exactly the chosen component');
++      }
++      assert.ok(!stored.some(row => row.destination === address('synthetic-lamp-browser-refused')), 'a refused name creates no subscriber');
+     }
+     await page.reload(); await operatorHydrated(page);
+     const imports = page.getByRole('region', { name: 'Import and export subscribers', exact: true });
