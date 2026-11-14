@@ -1,5 +1,15 @@
 # DIVERGENCE.md
 
+## Audit subjects reflect current records — 14 November 2026
+
+Audit rows and their CSV export name surviving subjects from the current native
+records. Subscriber rows use the directory's destination labels, and reports
+identify their incident by reference and title. Erased subscribers and removed
+records retain anonymous audit history without restoring copied identifiers.
+Static settings, import batches and access events are named without implying
+that a record was removed. This changes presentation only: audit recording,
+admission, selection, pagination, erasure and retention are unchanged.
+
 ## Public subscription choices and Teams guidance — 13 November 2026
 
 The public subscribe area offers email and only the SMS, Slack and Teams channels
