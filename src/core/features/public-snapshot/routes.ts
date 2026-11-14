@@ -9,7 +9,7 @@ import { escapeHtml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
 import { nativeApiArtifact } from "./native-api";
-import { feedArchiveKey, historyArchiveKey } from "./archive";
+import { componentFeedArchiveKey, feedArchiveKey, historyArchiveKey } from "./archive";
 import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
 
 // Stable public URLs are selectors, not immutable artifacts. Revalidate the
@@ -277,7 +277,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   app.get("/badge.svg", serve(() => "badge.svg"));
   app.get("/badge.json", serve(() => "badge.json"));
   for (const resource of ["feed.atom", "feed.rss", "badge.svg", "uptime.svg"]) {
-    app.get(`/components/:slug/${resource}`, serve(context => `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
+    app.get(`/components/:slug/${resource}`, serve(context => resource === "feed.atom" || resource === "feed.rss" ? componentFeedArchiveKey(context.req.param("slug") ?? "", resource === "feed.atom" ? "atom" : "rss", context.req.query("cursor")) : `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
   }
   app.get("/api/v2/*", serve(context => new URL(context.req.url).pathname.slice(1)));
   for (const path of ["/api/public/v1", "/api/public/v1/", "/api/public/v1/summary.json"]) app.get(path, serve(() => "api/public/v1/summary.json"));

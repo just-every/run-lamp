@@ -286,10 +286,10 @@ export function renderArchiveArtifact(source: PublicSnapshotSource, key: string,
     case "history": case "month": return html(renderHistory(model, slots, source.archive.month));
     case "incident": return model.incidents[0] ? html(renderIncidentPage(model.incidents[0], model, slots)) : null;
     case "maintenance": return model.maintenance[0] ? html(pageShell(`${model.maintenance[0].title} · ${model.settings.pageName}`, maintenanceMarkup(model.maintenance[0], model.settings.timezone, generatedAt, true), model, slots, "other")) : null;
-    case "feed": return renderFeeds(model, source).find(artifact => artifact.key === (key.endsWith(".rss") ? "feed.rss" : "feed.atom")) ?? null;
+    case "feed": return renderFeeds(model, source).find(artifact => artifact.key === `${source.archive?.componentSlug ? `components/${source.archive.componentSlug}/` : ""}${key.endsWith(".rss") ? "feed.rss" : "feed.atom"}`) ?? null;
     case "api-incidents": case "api-maintenance": {
       const name = source.archive.kind === "api-incidents" ? "incidents" : "maintenance";
-      const artifact = renderPublicApi(model, source).find(artifact => artifact.key === `api/public/v1/${name}.json`);
+      const artifact = renderPublicApi(model, source).find(artifact => artifact.key === key);
       if (!artifact) return null;
       const payload = JSON.parse(artifact.body);
       return { ...artifact, key, body: JSON.stringify({ ...payload, nextCursor: source.archive.nextCursor }) };

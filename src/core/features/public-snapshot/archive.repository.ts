@@ -3,6 +3,8 @@ import { createDatabase } from "../../platform/db/client";
 import { components, incidentComponents, incidents, incidentUpdates, maintenance, maintenanceComponents } from "../../shared/schema";
 import type { PublicSnapshotSource } from "./repository";
 import { ARCHIVE_PAGE_SIZE, decodeArchiveCursor, encodeArchiveCursor, parseArchiveKey, type ArchiveCursor, type ArchivePage } from "./archive";
+import { mostSevereState } from "../../shared/domain";
+import { isPublicComponentShown } from "./component-visibility";
 import { DAY, localMidnight } from "./format";
 
 type RecordKey = { id: string; at: string; kind: "incident" | "maintenance" };
@@ -53,16 +55,21 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? page.at(-1)!.id : null;
     if (incident) incidentIds = page.map(row => row.id); else maintenanceIds = page.map(row => row.id);
   } else if (request.kind === "feed") {
-    if (!cursor || !["incident-update", "maintenance-notice"].includes(cursor.kind)) return null;
+    if (cursor && !["incident-update", "maintenance-notice"].includes(cursor.kind)) return null;
+    const component = request.componentSlug ? context.components.find(row => row.id.toLowerCase() === request.componentSlug) : undefined;
+    if (request.componentSlug && (!component || !isPublicComponentShown({ ...component, state: mostSevereState(context.claims.filter(claim => claim.componentId === component.id).map(claim => claim.state)) }))) return null;
     const since = new Date(Date.parse(generatedAt) - 365 * DAY).toISOString();
     const left: unknown[] = [since];
     const right: unknown[] = [since];
+    const componentIncident = component ? " AND EXISTS(SELECT 1 FROM incident_components ca WHERE ca.incident_id=i.id AND ca.component_id=? AND ca.published_at IS NOT NULL)" : "";
+    const componentMaintenance = component ? " AND EXISTS(SELECT 1 FROM maintenance_components ca WHERE ca.maintenance_id=m.id AND ca.component_id=?)" : "";
+    if (component) { left.push(component.id); right.push(component.id); }
     const incidentSeek = seek("u.published_at", "u.id", "incident-update", cursor, left);
     const maintenanceSeek = seek("n.published_at", "n.id", "maintenance-notice", cursor, right);
     left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
     const [updates, notices] = await Promise.all([
-      binding.prepare(`SELECT u.id,u.published_at AS at,u.incident_id AS recordId,'incident-update' AS kind FROM incident_updates u JOIN incidents i ON i.id=u.incident_id WHERE u.published_at>=? AND ${publicIncident}${incidentSeek} ORDER BY u.published_at DESC,u.id DESC LIMIT ?`).bind(...left).all<EventKey>(),
-      binding.prepare(`SELECT n.id,n.published_at AS at,n.maintenance_id AS recordId,'maintenance-notice' AS kind FROM maintenance_notices n JOIN maintenance m ON m.id=n.maintenance_id WHERE n.published_at>=? AND ${publicMaintenance}${maintenanceSeek} ORDER BY n.published_at DESC,n.id DESC LIMIT ?`).bind(...right).all<EventKey>(),
+      binding.prepare(`SELECT u.id,u.published_at AS at,u.incident_id AS recordId,'incident-update' AS kind FROM incident_updates u JOIN incidents i ON i.id=u.incident_id WHERE u.published_at>=? AND ${publicIncident}${componentIncident}${incidentSeek} ORDER BY u.published_at DESC,u.id DESC LIMIT ?`).bind(...left).all<EventKey>(),
+      binding.prepare(`SELECT n.id,n.published_at AS at,n.maintenance_id AS recordId,'maintenance-notice' AS kind FROM maintenance_notices n JOIN maintenance m ON m.id=n.maintenance_id WHERE n.published_at>=? AND ${publicMaintenance}${componentMaintenance}${maintenanceSeek} ORDER BY n.published_at DESC,n.id DESC LIMIT ?`).bind(...right).all<EventKey>(),
     ]);
     const rows = [...updates.results, ...notices.results].sort(compare);
     const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
@@ -105,6 +112,6 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     maintenanceIds.length && request.kind !== "feed" ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")}) ORDER BY published_at DESC,id`).bind(...maintenanceIds).all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>().then(rows => rows.results) : [],
     incidentIds.length ? binding.prepare(`SELECT id,peak_impact AS impact FROM incidents WHERE id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<{id: string;impact: PublicSnapshotSource["claims"][number]["state"] | null}>().then(rows => rows.results) : [],
   ]);
-  const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
+  const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
   return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates, maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
 }

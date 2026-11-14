@@ -39,7 +39,7 @@ export function publicFeedEntries(model: PublicSnapshotModel): FeedEntry[] {
       recordId: item.id,
     }))),
   ].filter((entry) => new Date(entry.publishedAt).getTime() >= new Date(model.generatedAt).getTime() - 365 * DAY)
-    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt) || right.id.localeCompare(left.id));
+    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt) || right.id.replace(/^(?:update-|maintenance-notice-)/, "").localeCompare(left.id.replace(/^(?:update-|maintenance-notice-)/, "")) || (right.recordKind === "incident" ? "incident-update" : "maintenance-notice").localeCompare(left.recordKind === "incident" ? "incident-update" : "maintenance-notice"));
 }
 
 function feedIdentity(model: PublicSnapshotModel) {
@@ -96,9 +96,15 @@ export function renderFeeds(model: PublicSnapshotModel, source: PublicSnapshotSo
     const incidents = new Set(source.incidentComponents.filter((claim) => claim.componentId === component.id).map((claim) => claim.incidentId));
     const maintenance = new Set(source.maintenanceComponents.filter((claim) => claim.componentId === component.id).map((claim) => claim.maintenanceId));
     const paths = publicComponentResources(component);
+    const componentEntries = allEntries.filter((entry) => entry.recordKind === "incident" ? incidents.has(entry.recordId) : maintenance.has(entry.recordId));
+    const componentPage = componentEntries.slice(0, ARCHIVE_PAGE_SIZE);
+    const tail = componentPage.at(-1);
+    const componentNext = source.archive?.componentSlug === componentSlug(component) ? source.archive.nextCursor : source.bounded || componentEntries.length > ARCHIVE_PAGE_SIZE
+      ? encodeArchiveCursor(tail ? { at: tail.publishedAt, id: tail.id.replace(/^(?:update-|maintenance-notice-)/, ""), kind: tail.recordKind === "incident" ? "incident-update" : "maintenance-notice" } : { at: model.generatedAt, id: "zzzz", kind: "maintenance-notice" }) : null;
     const feed: FeedDocument = {
       model,
-      entries: entries.filter((entry) => entry.recordKind === "incident" ? incidents.has(entry.recordId) : maintenance.has(entry.recordId)),
+      entries: componentPage,
+      nextCursor: componentNext,
       identity: `${identity}:component:${componentSlug(component)}`,
       title: `${model.settings.pageName} — ${component.name}`,
       atomPath: paths.atom,

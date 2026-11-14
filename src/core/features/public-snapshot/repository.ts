@@ -43,7 +43,7 @@ export interface SnapshotRepository {
 }
 
 export interface PublicSnapshotSource {
-  archive?: { kind: 'history' | 'month' | 'feed' | 'incident' | 'maintenance' | 'api-incidents' | 'api-maintenance'; cursor?: string; month?: string; nextCursor: string | null; pageSize: number };
+  archive?: import("./archive").ArchivePage;
   bounded?: boolean;
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
   smsEnabled?: boolean;
@@ -109,10 +109,10 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
 
       // The retained generation contains current work plus a recent window.
       // Older records use indexed, bounded archive pages; no records are removed.
-      const recentIncidents = sql`SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
-        UNION SELECT id FROM (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle = 'Resolved' ORDER BY resolved_at DESC, id DESC LIMIT 50)`;
-      const recentMaintenance = sql`SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
-        UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50)`;
+      const recentIncidents = sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
+        UNION SELECT id FROM (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle = 'Resolved' ORDER BY resolved_at DESC, id DESC LIMIT 50))`;
+      const recentMaintenance = sql`(SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
+        UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50))`;
       const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
       const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
         database
@@ -143,7 +143,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .select({ componentId: incidentComponents.componentId, state: incidentComponents.state })
           .from(incidentComponents)
           .innerJoin(incidents, eq(incidentComponents.incidentId, incidents.id))
-          .where(and(inArray(incidentComponents.incidentId, sql`SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'`), sql`incident_components.published_at IS NOT NULL`))
+          .where(and(inArray(incidentComponents.incidentId, sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved')`), sql`incident_components.published_at IS NOT NULL`))
           .all(),
         database
           .select({ componentId: maintenanceComponents.componentId, state: maintenanceComponents.state })

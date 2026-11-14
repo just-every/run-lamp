@@ -672,7 +672,7 @@
       "executable": false
     },
     "docs/public-page.md": {
-      "sha256": "36355b5f8224b1db7bfd17606c7bd27864dacc5fdc4a55471528468fd92a548d",
+      "sha256": "c2a64111e62908cbd527126012501823bed5811c3279ea51630787d77f295c8c",
       "executable": false
     },
     "docs/public-resources.md": {
@@ -4900,7 +4900,7 @@
       "executable": false
     },
     "src/core/features/incidents/reminders.ts": {
-      "sha256": "03e543cdfccc5dd8cb3d6e4b14354739b5c6724e196deb776da1b2abfce42d2f",
+      "sha256": "9fc2959b5265aa9f9ca2fd163e011c62a56854b01048c344257bfe01ac0ca4e2",
       "executable": false
     },
     "src/core/features/incidents/renderer.ts": {
@@ -5700,11 +5700,11 @@
       "executable": false
     },
     "src/core/features/public-snapshot/archive.repository.ts": {
-      "sha256": "379b69d15ff1c682e14f4191dfd46f97aee2fe8493f157018a7e495b5e6f9620",
+      "sha256": "084ef2dc1c877cb066ff63a65c263152a90f6219af0af778e8037eabb67b647c",
       "executable": false
     },
     "src/core/features/public-snapshot/archive.ts": {
-      "sha256": "246844a700c68f3be687abfb122763bf3efdfd031b555b5f77d309374b638967",
+      "sha256": "ffebff7fe99ffdf788f8bdd5921def8d55dc1c8124176ac26aba2da2a4e9e2a6",
       "executable": false
     },
     "src/core/features/public-snapshot/assets.ts": {
@@ -5740,7 +5740,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/feeds.ts": {
-      "sha256": "15390a28b05075c65f5f48073b0babdf23a085117ecd6cb3f19e9dd20c11ec5e",
+      "sha256": "36fcd9581151f5d0b57be4f915b4793b9159990611b58985e2201c1a78177c79",
       "executable": false
     },
     "src/core/features/public-snapshot/fonts/inter-latin.woff2": {
@@ -5804,7 +5804,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/public-api.ts": {
-      "sha256": "a8690ba4a15821317d04d7ae8b50778b5f1c4222b5b5f85e713499a49024fc38",
+      "sha256": "d947fbe68d474a2368f321af2f4d3fd5e5ee06edb5d61a1bced39601f7da9c7a",
       "executable": false
     },
     "src/core/features/public-snapshot/public-styles.ts": {
@@ -5820,7 +5820,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "0045fcbc1eb4ec375fd98eceeb59b19ba230b919dec4e84e137812729917d1a7",
+      "sha256": "11650b66a71c9eddfbfcff7a75e0b4d2fba30d47a71e17808efdb94bf5eb8461",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -5828,15 +5828,15 @@
       "executable": false
     },
     "src/core/features/public-snapshot/repository.ts": {
-      "sha256": "e0e54f90a2078d2da1cba154a032e7cfcf42fc413728d6cc9328b78d221650f9",
+      "sha256": "07e2618be63453209999740f588248729937fc4b4d12a36c284324c3160b5093",
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
-      "sha256": "62155d75a840ae1987c72cd9b668b3b49b188e9ef91134ee697bd3d435a2bf8e",
+      "sha256": "266a9cf8e99662bb21fde04c0b589edc4e8b9ee5cf6a4070a8094616cfd33093",
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "1294545a5d2a75f7d05df89cf00234c4393e255f51dda5dcd573c4cfde76737b",
+      "sha256": "24144ce5b2b635eff162843ab0016168f8843b18ef6710a50a126db615b9cedd",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -5900,7 +5900,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/templates/parts.ts": {
-      "sha256": "cf3997f724982afdab479abd1ae15a38161cba9ab5ad0c2a60ebbaa1d3ee4175",
+      "sha256": "10aac5261445f792ac3f7f42ae3b583eada3e43f1a9cba34eb4faf7b46bc23db",
       "executable": false
     },
     "src/core/features/public-snapshot/templates/places.ts": {
@@ -5976,7 +5976,7 @@
       "executable": false
     },
     "src/core/features/reports/repository.ts": {
-      "sha256": "207322b40913efd91b9b7bc798aff591ad0c25afb3daa9335c2c32727170c608",
+      "sha256": "2862544be0f3dabcbf556dce0bce2ee264001e9675bff290b0e4457ecb7bcfa5",
       "executable": false
     },
     "src/core/features/reports/routes.ts": {
@@ -8224,7 +8224,7 @@
       "executable": false
     },
     "tests/e2e/helpers/public-history-flow.mjs": {
-      "sha256": "dcb00082296e061cd352390ac0462a7afda1ea6959fc58d4bedf6ac837af90f2",
+      "sha256": "607d66ebfb3ea80b0f780154aca6c70e8e6bb9257ddb789c854d6316df114315",
       "executable": false
     },
     "tests/e2e/helpers/public-isolation-flow.mjs": {

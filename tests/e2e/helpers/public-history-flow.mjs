@@ -135,8 +135,14 @@ export async function publicHistoryFlow() {
     assert.ok(historyPages > 1, 'older history has its own bounded page');
     assert.equal(new Set(observed).size, observed.length, 'tied timestamps do not repeat records');
     assert.deepEqual(observed.sort(), expected.sort(), 'every historical record remains reachable exactly once');
-    assertHistoryRecord(await j.publicText(oldIncident.href), oldIncident);
-    assertHistoryRecord(await j.publicText(oldWindow.href), oldWindow);
+    for (const record of [oldIncident, oldWindow]) {
+      const permanent = await j.publicText(record.href);
+      assert.ok(permanent.includes(record.title));
+      for (const update of record.updates) {
+        assert.ok(permanent.includes(update.publishedAt));
+        for (const line of (update.details ?? update.body).split("\n").filter(Boolean)) assert.ok(permanent.includes(line));
+      }
+    }
     const native = [];
     let nativeCursor;
     for (let pages = 0; pages < 5; pages += 1) {
@@ -159,6 +165,18 @@ export async function publicHistoryFlow() {
     }
     assert.equal(new Set(events).size, events.length, 'feed pages do not duplicate equal-time events');
     for (const row of archived) assert.ok(events.some(id => id.endsWith(`:event:update-${row.id}-update`)), `${row.reference} is reachable through feed paging`);
+    let componentFeed = await j.publicText(`/components/${component.id.toLowerCase()}/feed.atom`);
+    const componentEvents = [];
+    for (let pages = 0; pages < 5; pages += 1) {
+      componentEvents.push(...[...componentFeed.matchAll(/<entry><id>([^<]+)<\/id>/g)].map(match => match[1]));
+      const next = /<link[^>]*href="([^"]+)"[^>]*rel="next"[^>]*\/>/.exec(componentFeed)?.[1] || /<link[^>]*rel="next"[^>]*href="([^"]+)"[^>]*\/>/.exec(componentFeed)?.[1];
+      if (!next) break;
+      assert.ok(next.includes(`/components/${component.id.toLowerCase()}/feed.atom?`), 'component paging keeps its component');
+      componentFeed = await j.publicText(next.replaceAll('&amp;', '&'));
+    }
+    assert.equal(new Set(componentEvents).size, componentEvents.length);
+    for (const row of archived) assert.ok(componentEvents.some(id => id.endsWith(`:event:update-${row.id}-update`)), `${row.reference} remains in its component feed`);
+    for (const update of december.updates) assert.ok(!componentEvents.some(id => id.endsWith(`:event:update-${update.id}`)), 'component archive excludes unrelated incidents');
     browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
     await page.goto(j.publicOrigin + '/history');

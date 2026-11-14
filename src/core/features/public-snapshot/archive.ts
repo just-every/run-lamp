@@ -6,6 +6,7 @@ export interface ArchivePage {
   month?: string;
   nextCursor: string | null;
   pageSize: number;
+  componentSlug?: string;
 }
 export const ARCHIVE_PAGE_SIZE = 50;
 export function encodeArchiveCursor(value: ArchiveCursor) {
@@ -19,8 +20,12 @@ export function decodeArchiveCursor(value: string): ArchiveCursor | null {
     return parsed;
   } catch { return null; }
 }
-export interface ArchiveRequest { kind: ArchivePage["kind"]; cursor?: string; month?: string; reference?: string; format?: "atom" | "rss" }
+export interface ArchiveRequest { kind: ArchivePage["kind"]; cursor?: string; month?: string; reference?: string; format?: "atom" | "rss"; componentSlug?: string }
 export function parseArchiveKey(key: string): ArchiveRequest | null {
+  let component = /^(?:archive\/components\/([A-Za-z0-9_-]{1,100})\/feed\/([A-Za-z0-9_-]{1,512})|components\/([A-Za-z0-9_-]{1,100})\/feed)\.(atom|rss)$/.exec(key);
+  if (component) return { kind: "feed", componentSlug: component[1] ?? component[3], cursor: component[2], format: component[4] as "atom" | "rss" };
+  const firstFeed = /^feed\.(atom|rss)$/.exec(key);
+  if (firstFeed) return { kind: "feed", format: firstFeed[1] as "atom" | "rss" };
   let match = /^archive\/history\/([A-Za-z0-9_-]{1,512})\.html$/.exec(key);
   if (match) return { kind: "history", cursor: match[1] };
   match = /^(?:archive\/month\/|history\/)(\d{4}-(?:0[1-9]|1[0-2]))(?:\/([A-Za-z0-9_-]{1,512}))?\.html$/.exec(key);
@@ -40,4 +45,9 @@ export function historyArchiveKey(month: string | undefined, cursor: string | un
 }
 export function feedArchiveKey(format: "atom" | "rss", cursor: string | undefined) {
   return cursor ? decodeArchiveCursor(cursor) ? `archive/feed/${cursor}.${format}` : "feed/invalid" : `feed.${format}`;
+}
+
+export function componentFeedArchiveKey(slug: string, format: "atom" | "rss", cursor: string | undefined) {
+  if (!/^[A-Za-z0-9_-]{1,100}$/.test(slug)) return "feed/invalid";
+  return cursor ? decodeArchiveCursor(cursor) ? `archive/components/${slug}/feed/${cursor}.${format}` : "feed/invalid" : `components/${slug}/feed.${format}`;
 }

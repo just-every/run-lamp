@@ -100,7 +100,7 @@ export function createReportRepository(binding: D1Database): ReportRepository {
       if (reminders?.defaultPolicy) {
         return (await binding.prepare(`SELECT incidents.id,incidents.reference,incidents.title,incidents.lifecycle,incidents.resolved_at AS resolvedAt,incidents.peak_impact AS impact,1 AS reminderEligible
           FROM incident_report_reminder_work work JOIN incidents ON incidents.id=work.incident_id
-          WHERE work.next_due_at<=? ORDER BY work.next_due_at,work.incident_id`).bind(reminders.now)
+          WHERE work.next_due_at<=? ORDER BY work.next_due_at,work.incident_id LIMIT 100`).bind(reminders.now)
           .all<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>()).results;
       }
       const eligible = reminders ? ` AND ${reportReminderEligibleSql("incidents")}` : "";

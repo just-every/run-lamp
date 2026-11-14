@@ -32,11 +32,12 @@ export function createUpdateReminders(binding: D1Database, policy: UpdateDuePoli
       // Publication and resolution maintain the derived work row atomically;
       // accumulated incident/update history is never revisited by Cron.
       const open = await binding.prepare(`WITH due AS (
-          SELECT incident_id FROM incident_update_reminder_work WHERE due_soon_sent=0 AND next_update_at>=? AND next_update_at<=?
-          UNION SELECT incident_id FROM incident_update_reminder_work WHERE overdue_sent=0 AND next_update_at<?
-          UNION SELECT incident_id FROM incident_update_reminder_work WHERE escalation_sent=0 AND next_update_at<=?
+          SELECT incident_id FROM (SELECT incident_id FROM incident_update_reminder_work WHERE due_soon_sent=0 AND next_update_at>=? AND next_update_at<=? ORDER BY next_update_at,incident_id LIMIT 100)
+          UNION SELECT incident_id FROM (SELECT incident_id FROM incident_update_reminder_work WHERE overdue_sent=0 AND next_update_at<? ORDER BY next_update_at,incident_id LIMIT 100)
+          UNION SELECT incident_id FROM (SELECT incident_id FROM incident_update_reminder_work WHERE escalation_sent=0 AND next_update_at<=? ORDER BY next_update_at,incident_id LIMIT 100)
         ) SELECT i.id AS incidentId,i.reference,i.title,w.update_id AS updateId,w.next_update_at AS nextUpdateAt
-        FROM due JOIN incident_update_reminder_work w ON w.incident_id=due.incident_id JOIN incidents i ON i.id=w.incident_id`)
+        FROM due JOIN incident_update_reminder_work w ON w.incident_id=due.incident_id JOIN incidents i ON i.id=w.incident_id
+        ORDER BY w.next_update_at,w.incident_id LIMIT 100`)
         .bind(now,new Date(instant+lead).toISOString(),now,new Date(instant-escalation).toISOString()).all<OpenCommitment>();
       const sent: UpdateReminderEvent[] = [];
       for (const commitment of open.results) {

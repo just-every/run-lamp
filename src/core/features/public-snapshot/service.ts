@@ -197,6 +197,23 @@ export function createPublicSnapshotService(
         const version = createUlid();
         source.prelaunch = await readPrelaunch(blobs);
         const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null }, slots);
+        // Feed event order is independent of incident resolution order. Read
+        // its first bounded page directly so later updates to older incidents
+        // cannot disappear behind the recent incident window.
+        const feedSource = await repository.loadArchive?.(source, "feed.atom", rendered.generatedAt);
+        if (feedSource) for (const format of ["atom", "rss"]) {
+          const artifact = renderArchiveArtifact(feedSource, `feed.${format}`, rendered.generatedAt, policies, slots);
+          if (artifact) for (const key of [`feed.${format}`, `history.${format}`]) {
+            const index = rendered.artifacts.findIndex(item => item.key === key);
+            if (index >= 0) rendered.artifacts[index] = { ...artifact, key };
+          }
+        }
+        for (const name of ["incidents", "maintenance"]) {
+          const key = `api/public/v1/${name}.json`;
+          const initial = await repository.loadArchive?.(source, key, rendered.generatedAt);
+          const artifact = initial ? renderArchiveArtifact(initial, key, rendered.generatedAt, policies, slots) : null;
+          if (artifact) rendered.artifacts.push(artifact);
+        }
         rendered.artifacts.push(...await themeAssetArtifacts(source.settings.themeAssets, blobs));
         const uploadedFont = rendered.artifacts.find(artifact => artifact.key === "assets/theme-font");
         if (uploadedFont) for (const artifact of rendered.artifacts.filter(artifact => artifact.contentType.startsWith("text/css"))) {
