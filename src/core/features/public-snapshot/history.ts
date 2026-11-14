@@ -1,28 +1,31 @@
+import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor, type ArchivePage } from "./archive";
 import type { PublicIncident, PublicMaintenance } from "./record-markup";
 import { noticeMarkup, recordHead, updateMarkup } from "./record-markup";
 import { DAY, durationText, escapeHtml, timestamp } from "./format";
 
 interface HistoryModel {
+  bounded?: boolean;
+  archive?: ArchivePage;
   incidents: PublicIncident[];
   maintenance: PublicMaintenance[];
   generatedAt: string;
   settings: { timezone: string };
 }
 
-interface HistoryRecord { timestamp: string; html: () => string }
+interface HistoryRecord { id: string; kind: "incident" | "maintenance"; timestamp: string; html: () => string }
 
 function historyRecords(model: HistoryModel): HistoryRecord[] {
   const timezone = model.settings.timezone;
   return [
     ...model.incidents.filter(incident => incident.lifecycle === "Resolved" && incident.resolvedAt).map(incident => ({
-      timestamp: incident.resolvedAt!,
+      id: incident.id, kind: "incident" as const, timestamp: incident.resolvedAt!,
       html: () => `<article class="history-item" data-incident-impact="${incident.effectiveImpact}">${recordHead("Incident", `<a href="/incidents/${encodeURIComponent(incident.reference)}">${escapeHtml(incident.title)}</a>`, "h3", incident.lifecycle)}<p class="incident-meta">Opened ${timestamp(incident.openedAt, timezone)} · Resolved ${timestamp(incident.resolvedAt!, timezone)} · ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt!))}${incident.components.length ? ` · affected ${escapeHtml(incident.components.join(", "))}` : ""}</p><div class="updates">${incident.updates.map(update => updateMarkup(incident, update, timezone)).join("")}</div></article>`,
     })),
     ...model.maintenance.filter(item => item.state === "Completed" || item.state === "Cancelled").map(item => ({
-      timestamp: item.completedAt ?? item.endsAt,
+      id: item.id, kind: "maintenance" as const, timestamp: item.completedAt ?? item.endsAt,
       html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: "Imported update" }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
     })),
-  ].sort((left, right) => right.timestamp.localeCompare(left.timestamp));
+  ].sort((left, right) => right.timestamp.localeCompare(left.timestamp) || right.id.localeCompare(left.id) || right.kind.localeCompare(left.kind));
 }
 
 function monthKey(value: string, timezone: string) {
@@ -43,7 +46,12 @@ export function renderHistoryContent(model: HistoryModel, selectedMonth?: string
   const records = historyRecords(model);
   const cutoff = Date.parse(model.generatedAt) - 365 * DAY;
   const months = [...new Set(records.map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
-  const shown = selectedMonth ? records.filter(record => monthKey(record.timestamp, model.settings.timezone) === selectedMonth) : records.filter(record => Date.parse(record.timestamp) >= cutoff);
+  const candidates = selectedMonth ? records.filter(record => monthKey(record.timestamp, model.settings.timezone) === selectedMonth) : model.archive ? records : records.filter(record => Date.parse(record.timestamp) >= cutoff);
+  const shown = candidates.slice(0, ARCHIVE_PAGE_SIZE);
+  const more = model.archive ? model.archive.nextCursor : candidates.length > ARCHIVE_PAGE_SIZE || (model.bounded && records.length >= ARCHIVE_PAGE_SIZE)
+    ? encodeArchiveCursor(shown.length ? { at: shown.at(-1)!.timestamp, id: shown.at(-1)!.id, kind: shown.at(-1)!.kind } : { at: new Date(cutoff).toISOString(), id: "zzzz", kind: "incident" }) : null;
+  const base = selectedMonth ? `/history/${selectedMonth}` : "/history";
+  const paging = `<nav class="not-found-links" aria-label="History pages"><span>Up to ${ARCHIVE_PAGE_SIZE} records per page.</span>${model.archive?.cursor ? '<a class="text-link" href="/history">Latest history</a>' : ""}${more ? `<a class="text-link" rel="next" href="${base}?cursor=${encodeURIComponent(more)}">Older history</a>` : ""}</nav>`;
   const groups = new Map<string, string[]>();
   for (const record of shown) {
     const key = monthKey(record.timestamp, model.settings.timezone);
@@ -56,5 +64,5 @@ export function renderHistoryContent(model: HistoryModel, selectedMonth?: string
   const older = [...new Set(records.filter(record => Date.parse(record.timestamp) < cutoff).map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
   const archive = !selectedMonth && older.length ? `<section class="history-month"><h2>Earlier history</h2><ul>${older.map(month => `<li><a class="text-link" href="/history/${month}">${escapeHtml(monthLabel(month))}</a></li>`).join("")}</ul></section>` : "";
   const introduction = selectedMonth ? `Past incidents and maintenance in ${monthLabel(selectedMonth)}.` : "Past incidents and maintenance (12 months).";
-  return `<section class="history"><header class="history-intro"><h1>${selectedMonth ? escapeHtml(monthLabel(selectedMonth)) : "History"}</h1><p>${escapeHtml(introduction)}</p></header>${navigation}${[...groups].map(([month, entries]) => `<section class="history-month"><h2>${escapeHtml(monthLabel(month))}</h2>${entries.join("")}</section>`).join("") || '<p class="empty-state">No past incidents or maintenance in the last 12 months.</p>'}${archive}${navigation}</section>`;
+  return `<section class="history"><header class="history-intro"><h1>${selectedMonth ? escapeHtml(monthLabel(selectedMonth)) : "History"}</h1><p>${escapeHtml(introduction)}</p></header>${navigation}${[...groups].map(([month, entries]) => `<section class="history-month"><h2>${escapeHtml(monthLabel(month))}</h2>${entries.join("")}</section>`).join("") || '<p class="empty-state">No past incidents or maintenance in the last 12 months.</p>'}${archive}${navigation}${paging}</section>`;
 }

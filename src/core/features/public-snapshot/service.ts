@@ -7,7 +7,7 @@ import type { LampServerSlots } from "../../api/extensions";
 import type { AppBindings } from "../../app/types";
 
 import { readGenerationArtifact } from "./generation-cache";
-import { renderPublicSnapshot } from "./renderer";
+import { renderArchiveArtifact, renderPublicSnapshot } from "./renderer";
 import type { SnapshotRepository } from "./repository";
 import { PRELAUNCH_ROBOTS_KEY } from "../prelaunch/policy";
 import { readPrelaunch } from "../prelaunch/store";
@@ -21,7 +21,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
 // The minute scheduler periodically rereads source data even without a mutation.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v22";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v23";
 
 interface SnapshotPointer {
   version: string;
@@ -203,7 +203,7 @@ export function createPublicSnapshotService(
           artifact.body = artifact.body.replaceAll('url("/assets/theme-font")', `url("data:font/woff2;base64,${uploadedFont.body}")`);
         }
         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
-        return { version, rendered, bundle, logo, logoContentType };
+        return { version, rendered, bundle, logo, logoContentType, source };
       }
       // Source/renderer failures need a later revision or repair. Retrying
       // them immediately reloads the same history three times. Only delivery
@@ -213,7 +213,10 @@ export function createPublicSnapshotService(
         attempts += 1;
         try {
         // Retry storage/replica/pointer delivery with identical generation bytes.
-        const { version, rendered, bundle, logo, logoContentType } = prepared;
+        const { version, rendered, bundle, logo, logoContentType, source } = prepared;
+        // Cold historical pages use this generation's public presentation data.
+        // They are independently cached, never added to its retained bundle.
+        await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify(source), "application/json");
         await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
           ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
           : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
@@ -303,7 +306,16 @@ export function createPublicSnapshotService(
           const bundle = await retained?.read();
           return bundle ? retainedArtifact(bundle, key) : null;
         }
-        const object = await readGenerationArtifact(blobs, pointer.version, key);
+        let object = await readGenerationArtifact(blobs, pointer.version, key);
+        if (!object && repository.loadArchive) {
+          const context = await blobs.getText(`snapshots/${pointer.version}/archive-context.json`);
+          const source = context ? await repository.loadArchive(JSON.parse(context.text), key, pointer.generatedAt) : null;
+          const artifact = source ? renderArchiveArtifact(source, key, pointer.generatedAt, policies, slots) : null;
+          if (artifact) {
+            await blobs.putText(`snapshots/${pointer.version}/${key}`, artifact.body, artifact.contentType);
+            object = { bytes: new TextEncoder().encode(artifact.body).buffer, contentType: artifact.contentType };
+          }
+        }
         if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
         const marker = await staleMarker();
         let retainedReady = false;

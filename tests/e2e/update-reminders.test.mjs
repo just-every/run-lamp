@@ -28,7 +28,9 @@ test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communicat
     const committed = Date.now() + hour;
     await j.save(incident.id, { nextUpdateAt: new Date(committed).toISOString() }); await j.publish(incident.id);
     assert.equal((await j.read(incident.id)).owner.id, owner.id);
-    await j.tick(committed - 5 * 60000); await j.tick(committed - 5 * 60000);
+    await j.tick(committed - 10 * 60000 - 1);
+    assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject)).length, 0, 'the indexed reminder work stays pending before the lead boundary');
+    await j.tick(committed - 10 * 60000); await j.tick(committed - 5 * 60000);
     const dueMail = j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject));
     assert.equal(dueMail.length, 1); assert.ok(dueMail[0].to.includes(owner.email));
     t.diagnostic('PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner');

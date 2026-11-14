@@ -98,7 +98,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const maintenance: PublicMaintenance[] = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
     .filter((item) => attachedMaintenanceIds.has(item.id));
-  return { theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
@@ -272,8 +272,28 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
     ...model.incidents.map((incident) => ({ key: `incidents/${encodeURIComponent(incident.reference)}.html`, body: renderIncidentPage(incident, model, slots), contentType: "text/html; charset=utf-8" })),
   ];
   artifacts.push(...model.maintenance.map((item) => ({ key: `maintenance/${encodeURIComponent(item.reference)}.html`, body: pageShell(`${item.title} · ${model.settings.pageName}`, `${maintenanceMarkup(item, model.settings.timezone, generatedAt, true)}`, model, slots, "other"), contentType: "text/html; charset=utf-8" })));
-  artifacts.push(...historyMonths(model).map(month => ({ key: `history/${month}.html`, body: renderHistory(model, slots, month), contentType: "text/html; charset=utf-8" })));
+  if (!source.bounded) artifacts.push(...historyMonths(model).map(month => ({ key: `history/${month}.html`, body: renderHistory(model, slots, month), contentType: "text/html; charset=utf-8" })));
   artifacts.push(...renderImportAliases(source, model.incidents, model.maintenance, renderHistory(model, slots)));
   artifacts.push(...templateArtifacts(model));
   return { generatedAt, artifacts };
+}
+
+/** Render one cold historical page using its generation's public presentation. */
+export function renderArchiveArtifact(source: PublicSnapshotSource, key: string, generatedAt: string, policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, slots: LampServerSlots = {}): SnapshotArtifact | null {
+  const model = toPublicModel(source, generatedAt, policies);
+  const html = (body: string): SnapshotArtifact => ({ key, body, contentType: "text/html; charset=utf-8" });
+  switch (source.archive?.kind) {
+    case "history": case "month": return html(renderHistory(model, slots, source.archive.month));
+    case "incident": return model.incidents[0] ? html(renderIncidentPage(model.incidents[0], model, slots)) : null;
+    case "maintenance": return model.maintenance[0] ? html(pageShell(`${model.maintenance[0].title} · ${model.settings.pageName}`, maintenanceMarkup(model.maintenance[0], model.settings.timezone, generatedAt, true), model, slots, "other")) : null;
+    case "feed": return renderFeeds(model, source).find(artifact => artifact.key === (key.endsWith(".rss") ? "feed.rss" : "feed.atom")) ?? null;
+    case "api-incidents": case "api-maintenance": {
+      const name = source.archive.kind === "api-incidents" ? "incidents" : "maintenance";
+      const artifact = renderPublicApi(model, source).find(artifact => artifact.key === `api/public/v1/${name}.json`);
+      if (!artifact) return null;
+      const payload = JSON.parse(artifact.body);
+      return { ...artifact, key, body: JSON.stringify({ ...payload, nextCursor: source.archive.nextCursor }) };
+    }
+    default: return null;
+  }
 }
