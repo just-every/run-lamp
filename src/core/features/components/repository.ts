@@ -30,9 +30,13 @@ export type ComponentClaimEvent = Pick<typeof componentClaimEvents.$inferSelect,
 export type ComponentClaimEventInput = typeof componentClaimEvents.$inferInsert;
 export type ComponentStateHistoryInput = { id: string; componentId: string; previousState: ComponentState; newState: ComponentState; cause: StateClaimCause; changedAt: string; createdAt: string; updatedAt: string };
 
+export type HistoryCursor = [changedAt: string, createdAt: string, id: string];
+export type CorrectionCursor = [createdAt: string, id: string];
+export type ComponentReadPage<T> = { limit: number; before: T | null };
+
 export interface ComponentRepository {
   listComponents(): Promise<Array<StoredComponent & { groupName: string | null }>>;
-  listCurrentClaims(): Promise<CurrentComponentClaim[]>;
+  listCurrentClaims(componentIds: string[]): Promise<CurrentComponentClaim[]>;
   reorder(kind: "components" | "groups", expectedIds: string[], orderedIds: string[], groupId: string | null): Promise<void>;
   listGroups(): Promise<StoredComponentGroup[]>;
   findComponent(componentId: string): Promise<StoredComponent | null>;
@@ -46,8 +50,8 @@ export interface ComponentRepository {
   appendStateHistory(input: ComponentStateHistoryInput): Promise<void>;
   appendCurrentStateHistory(input: Omit<ComponentStateHistoryInput, "previousState" | "newState">): Promise<{ previousState: ComponentState; newState: ComponentState } | null>;
   findStateAt(componentId: string, instant: string): Promise<ComponentState | null>;
-  listHistory(componentId: string): Promise<ComponentHistoryEntry[]>;
-  listCorrections(componentId: string): Promise<ComponentHistoryCorrection[]>;
+  listHistory(componentId: string, page?: ComponentReadPage<HistoryCursor>): Promise<ComponentHistoryEntry[]>;
+  listCorrections(componentId: string, page?: ComponentReadPage<CorrectionCursor>): Promise<ComponentHistoryCorrection[]>;
   appendCorrection(input: typeof componentStateCorrections.$inferInsert): Promise<void>;
   appendCorrectionAudit(input: { id: string; historyId: string; operatorId: string; reason: string; payloadJson: string; createdAt: string; updatedAt: string }): Promise<void>;
   replaceStandingClaim(input: { id: string; componentId: string; state: ComponentState | null; operatorId: string; createdAt: string; updatedAt: string; event: ComponentClaimEventInput }): Promise<void>;
@@ -85,23 +89,29 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         .orderBy(componentGroups.displayOrder, components.displayOrder, components.id)
         .all();
     },
-    async listCurrentClaims() {
+    async listCurrentClaims(componentIds) {
+      if (!componentIds.length) return [];
+      // Start with live parents through their existing lifecycle/state indexes.
+      // Resolved attachments must not be scanned to derive the current state.
+      const ids = JSON.stringify(componentIds);
       const result = await binding.prepare(`
         SELECT component_id AS componentId, state, 'standing-claim' AS causeType
-        FROM component_standing_claims
-        UNION ALL SELECT component_id AS componentId,state,'vendor' AS causeType FROM vendor_dependencies WHERE state IS NOT NULL
+        FROM component_standing_claims WHERE component_id IN (SELECT value FROM json_each(?))
+        UNION ALL
+        SELECT component_id AS componentId, state, 'vendor' AS causeType
+        FROM vendor_dependencies WHERE state IS NOT NULL AND component_id IN (SELECT value FROM json_each(?))
         UNION ALL
         SELECT attached.component_id AS componentId, attached.state, 'incident' AS causeType
-        FROM incident_components AS attached
-        JOIN incidents AS incident ON incident.id = attached.incident_id
-        WHERE attached.component_id IS NOT NULL AND attached.published_at IS NOT NULL
-          AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'
+        FROM incidents AS incident CROSS JOIN incident_components AS attached
+        ON attached.incident_id = incident.id
+        WHERE incident.lifecycle IN ('Investigating', 'Identified', 'Monitoring') AND incident.deleted_at IS NULL
+          AND attached.published_at IS NOT NULL AND attached.component_id IN (SELECT value FROM json_each(?))
         UNION ALL
         SELECT attached.component_id AS componentId, attached.state, 'maintenance' AS causeType
-        FROM maintenance_components AS attached
-        JOIN maintenance AS window ON window.id = attached.maintenance_id
-        WHERE attached.component_id IS NOT NULL AND window.state = 'In progress'
-      `).all<CurrentComponentClaim>();
+        FROM maintenance AS window CROSS JOIN maintenance_components AS attached
+        ON attached.maintenance_id = window.id
+        WHERE window.state = 'In progress' AND attached.component_id IN (SELECT value FROM json_each(?))
+      `).bind(ids, ids, ids, ids).all<CurrentComponentClaim>();
       return result.results;
     },
     async reorder(kind, expectedIds, orderedIds, groupId) {
@@ -290,7 +300,7 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         .get();
       return state?.state ?? null;
     },
-    async listHistory(componentId) {
+    async listHistory(componentId, page) {
       return database
         .select({
           id: componentStateHistory.id,
@@ -305,11 +315,14 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
           createdAt: componentStateHistory.createdAt,
         })
         .from(componentStateHistory)
-        .where(eq(componentStateHistory.componentId, componentId))
-        .orderBy(desc(componentStateHistory.changedAt), desc(componentStateHistory.createdAt))
+        .where(and(eq(componentStateHistory.componentId, componentId), page?.before
+          ? sql`(${componentStateHistory.changedAt}, ${componentStateHistory.createdAt}, ${componentStateHistory.id}) < (${page.before[0]}, ${page.before[1]}, ${page.before[2]})`
+          : undefined))
+        .orderBy(desc(componentStateHistory.changedAt), desc(componentStateHistory.createdAt), desc(componentStateHistory.id))
+        .limit(page ? page.limit + 1 : -1)
         .all();
     },
-    async listCorrections(componentId) {
+    async listCorrections(componentId, page) {
       return database
         .select({
           id: componentStateCorrections.id,
@@ -322,8 +335,11 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
           createdAt: componentStateCorrections.createdAt,
         })
         .from(componentStateCorrections)
-        .where(eq(componentStateCorrections.componentId, componentId))
-        .orderBy(desc(componentStateCorrections.createdAt))
+        .where(and(eq(componentStateCorrections.componentId, componentId), page?.before
+          ? sql`(${componentStateCorrections.createdAt}, ${componentStateCorrections.id}) < (${page.before[0]}, ${page.before[1]})`
+          : undefined))
+        .orderBy(desc(componentStateCorrections.createdAt), desc(componentStateCorrections.id))
+        .limit(page ? page.limit + 1 : -1)
         .all();
     },
     async appendCorrection(input) {

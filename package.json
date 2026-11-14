@@ -98,7 +98,7 @@
     "playwright": "1.63.0",
     "tailwindcss": "^4.3.3",
     "typescript": "5.9.3",
-    "vite": "8.2.2",
+    "vite": "8.2.4",
     "wrangler": "4.129.1"
   },
   "repository": {

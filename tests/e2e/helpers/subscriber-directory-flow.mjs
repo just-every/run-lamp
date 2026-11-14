@@ -27,7 +27,7 @@ export async function subscriberDirectoryFlow() {
       const { id } = response.body.subscriber;
       assert.ok(id && !expected.has(id), 'each native Add returns a distinct subscriber identity');
       expected.set(id, { channel, destination, contactEmail: channel === 'webhook' ? address : null,
-        state: 'pending', selectionMode: componentIds.length ? 'selected' : 'all',
+        createdAt: response.body.subscriber.createdAt, state: 'pending', selectionMode: componentIds.length ? 'selected' : 'all',
         componentIds: [...componentIds].sort(), deactivationReason: null, deactivatedAt: null });
       const messages = fixture.messagesFor(address);
       assert.equal(messages.length, 1);
@@ -51,18 +51,28 @@ export async function subscriberDirectoryFlow() {
       }
     }
 
-    async function reconcileDirectory() {
+    async function reconcileDirectory(limit = 100) {
       const actual = [];
-      for (let offset = 0; offset < expected.size; offset += 100) {
-        const response = await api(`/api/app/subscribers?limit=100&offset=${offset}`);
+      for (let offset = 0; offset < expected.size; offset += limit) {
+        const response = await api(`/api/app/subscribers?limit=${limit}&offset=${offset}`);
         assert.equal(response.status, 200, response.text);
-        assert.equal(response.body.limit, 100);
+        assert.equal(response.body.limit, limit);
         assert.equal(response.body.offset, offset);
-        assert.equal(response.body.hasMore, offset + 100 < expected.size);
-        assert.equal(response.body.subscribers.length, Math.min(100, expected.size - offset));
+        assert.equal(response.body.hasMore, offset + limit < expected.size);
+        assert.equal(response.body.subscribers.length, Math.min(limit, expected.size - offset));
+        const counted = [...expected.values()].filter(row => row.state !== 'deactivated');
+        for (const capacity of response.body.capacity) {
+          const count = capacity.channel === 'all' ? counted.length
+            : counted.filter(row => capacity.channel === 'slack-and-teams'
+              ? ['slack', 'teams'].includes(row.channel) : row.channel === capacity.channel).length;
+          assert.equal(capacity.count, count, `${capacity.channel}: capacity counts the whole eligible directory, not the page`);
+        }
         actual.push(...response.body.subscribers);
       }
       const ids = actual.map(row => row.id);
+      const ordered = [...expected].sort(([leftId, left], [rightId, right]) =>
+        left.createdAt.localeCompare(right.createdAt) || leftId.localeCompare(rightId)).map(([id]) => id);
+      assert.deepEqual(ids, ordered, 'oldest-first ordering with stable ties is independent of page size');
       assert.equal(new Set(ids).size, ids.length, 'no identity occurs on two operator pages');
       assert.deepEqual([...ids].sort(), [...expected.keys()].sort(), 'every created subscriber is reachable exactly once');
       for (const row of actual) {
@@ -80,7 +90,14 @@ export async function subscriberDirectoryFlow() {
       }
     }
     await reconcileDirectory();
-    await reconcileDirectory();
+    await reconcileDirectory(17);
+    const beyond = await api(`/api/app/subscribers?limit=17&offset=${expected.size}`);
+    assert.equal(beyond.status, 200, beyond.text);
+    assert.deepEqual(beyond.body.subscribers, [], 'a page beyond the directory is empty');
+    assert.equal(beyond.body.hasMore, false, 'the final page has no successor');
+    for (const query of ['limit=0', 'limit=101', 'offset=-1']) {
+      assert.equal((await api(`/api/app/subscribers?${query}`)).status, 400, 'invalid page bounds are refused');
+    }
 
     // Erasure is already checked across every retained table in subscriberAddFlow.
     // Also replay this directory's captured authority after the ordinary delete.

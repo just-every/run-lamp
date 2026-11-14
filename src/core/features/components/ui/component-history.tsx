@@ -15,7 +15,12 @@ import { AvailabilityReport } from "../../availability-reports/ui/availability-r
 export function ComponentHistory({ component, onSaved }: { component: ComponentView; onSaved: () => void }) {
   const formatOperatorTime = useOperatorTime();
   const timezone = usePageTimezone();
-  const { data, error, loading, refresh } = useAppData<ComponentHistoryView>(`/api/app/components/${component.id}/history`);
+  const [historyCursors, setHistoryCursors] = useState<string[]>([]);
+  const [correctionCursors, setCorrectionCursors] = useState<string[]>([]);
+  const query = new URLSearchParams();
+  if (historyCursors.length) query.set("cursor", historyCursors.at(-1)!);
+  if (correctionCursors.length) query.set("correctionsCursor", correctionCursors.at(-1)!);
+  const { data, error, loading, refresh } = useAppData<ComponentHistoryView>(`/api/app/components/${component.id}/history${query.size ? `?${query}` : ""}`);
   const [state, setState] = useState<ComponentState>("Operational");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
@@ -30,7 +35,7 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
     try {
       await appApi(`/api/app/components/${component.id}/history-corrections`, { method: "POST", body: JSON.stringify({ state, startsAt: fromPageDateTime(startsAt, timezone), endsAt: fromPageDateTime(endsAt, timezone), reason }) });
       setState("Operational"); setStartsAt(""); setEndsAt(""); setReason(""); setSaved(true);
-      refresh(); onSaved();
+      setHistoryCursors([]); setCorrectionCursors([]); refresh(); onSaved();
     } catch (cause) {
       setMutationError(cause instanceof Error ? cause.message : "The correction could not be saved.");
     } finally {
@@ -44,7 +49,17 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
     {error ? <FormError>{error}</FormError> : null}
     {loading && !data ? <LoadingState /> : data ? <>
       <section className="component-history" aria-label="Component state history" tabIndex={0}>{data.history.length ? data.history.map((entry) => <article key={entry.id}><strong>{entry.previousState} → {entry.newState}</strong><small>{entry.causeType === "standing-claim" ? "Operator status" : entry.causeType.replaceAll("-", " ")} · {formatOperatorTime(entry.changedAt)}</small></article>) : <p>No status changes yet.</p>}</section>
+      <div className="drawer-actions" aria-label="History pages">
+        <p>{data.history.length} changes on this page · Newest first</p>
+        {historyCursors.length > 0 && <Button variant="secondary" disabled={loading} onClick={() => setHistoryCursors(current => current.slice(0, -1))}>Newer changes</Button>}
+        {data.historyPage.nextCursor && <Button variant="secondary" disabled={loading} onClick={() => setHistoryCursors(current => [...current, data.historyPage.nextCursor!])}>Older changes</Button>}
+      </div>
       {data.corrections.length ? <section className="component-corrections" aria-label="Corrections"><h3>Corrections</h3>{data.corrections.map((correction) => <article key={correction.id}><strong>{correction.state}</strong><small>{formatOperatorTime(correction.startsAt)} to {formatOperatorTime(correction.endsAt)}</small><p>{correction.reason}</p></article>)}</section> : null}
+      {(correctionCursors.length > 0 || data.correctionsPage.nextCursor) && <div className="drawer-actions" aria-label="Correction pages">
+        <p>{data.corrections.length} corrections on this page · Newest first</p>
+        {correctionCursors.length > 0 && <Button variant="secondary" disabled={loading} onClick={() => setCorrectionCursors(current => current.slice(0, -1))}>Newer corrections</Button>}
+        {data.correctionsPage.nextCursor && <Button variant="secondary" disabled={loading} onClick={() => setCorrectionCursors(current => [...current, data.correctionsPage.nextCursor!])}>Older corrections</Button>}
+      </div>}
     </> : null}
     <AvailabilityReport component={component} />
     <details className="component-correction"><summary>Correct a past period</summary><form className="component-correction-form" onSubmit={correct} onChange={() => setSaved(false)}>

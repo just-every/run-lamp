@@ -36,6 +36,10 @@ export function queueDueWork(runtime: ReturnType<typeof createApp>, bindings: Ap
   // Public read requests must never query D1, including after the response.
   // Cron and operator requests retain the existing due-work recovery path.
   if ((request.method === 'GET' || request.method === 'HEAD') && createHostDispatch(bindings).surfaceFor(request) === 'page') return;
+  // Catalogue and history reads are observational, even while Cron is quiet.
+  // Their writes already dispatch committed notifications; Cron and the other
+  // request recovery doors retain due maintenance and pending delivery work.
+  if ((request.method === 'GET' || request.method === 'HEAD') && /^(?:\/api)?\/app\/components(?:\/|$)/.test(new URL(request.url).pathname)) return;
   const after = (work: Promise<void>) => context.waitUntil(work.catch((cause) => console.error("Lamp could not run due work after a request; Cron retries it.", cause)));
   if (request.method !== "GET" && request.method !== "HEAD" && response.ok && new URL(request.url).pathname.startsWith("/api/app/")) {
     after(dispatchMail(runtime.services, bindings));

@@ -1087,6 +1087,10 @@
       "sha256": "904ed2911e133c1f9fb05fb8dfbac8e50c36ca44c64214d6f885b81f987c7ab4",
       "executable": false
     },
+    "migrations/core/0079_subscriber_directory_order.sql": {
+      "sha256": "c17148f4bb9b6e47cc154948715141d10126c9b8ec7c1fcef56ddd7d103b3e92",
+      "executable": false
+    },
     "migrations/README.md": {
       "sha256": "8aa6d22bcfab1ec1d279f128961286b0654cbc3f7c327da1aeb535793dd874e9",
       "executable": false
@@ -2588,11 +2592,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "bd316897ea37d808b1fd285f7fc64c0f74590e868417fbc27ad5a0f45143f481",
+      "sha256": "c1c79e8a6c6134121d9d96acfde14cb3e9d8ca7b0195a83cd6ae2a13173ac97e",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "02cafa2fe0e0181c9d1a190fc9ee1c302243c8a171ca23d978a1d562e5efa10e",
+      "sha256": "b800be7aec65e8544741f4d57ba4cd854cef51aac8c33c3eef7c84c4ff46b4c1",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -2860,7 +2864,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "7645ad91ce437360799fc4741c3b46a95f94afac2d0561ac1c5599d1fd49c7ab",
+      "sha256": "dffadf2495a9952d3a66c64a549956933f1150e522889b9056a02b333e3971d2",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4320,7 +4324,7 @@
       "executable": false
     },
     "src/core/app/request-work.ts": {
-      "sha256": "6fc812b17ed26d8828ae70b3a114d4d5635d7f89327f8e0a214c990bb17f3b9a",
+      "sha256": "1d246455d0657bf8178e7259f3ca976f0c93073634743e7b0e8437dc53cacbed",
       "executable": false
     },
     "src/core/app/server.ts": {
@@ -4656,15 +4660,15 @@
       "executable": false
     },
     "src/core/features/components/repository.ts": {
-      "sha256": "3dea58cdf6120f8f711b79bda0bde85261a7ef7271848f47a4be467f679ea935",
+      "sha256": "e9d630d6885afc9380ef6c8233bb3b8393cb41f686c1cbd1e4e5535383791d06",
       "executable": false
     },
     "src/core/features/components/routes.ts": {
-      "sha256": "d8de9000bf922a599b1e3c85c51f6385d2e58c9b4d881a409146bc24ce764173",
+      "sha256": "79bd5932d7e258502bb00cf9fc9dc95f29ae2993b6dd62847159d113c1fb0bc3",
       "executable": false
     },
     "src/core/features/components/service.ts": {
-      "sha256": "0af05b11b9483cb76ce823fb562e618ea86917596183205588583bc744523fa6",
+      "sha256": "fba2025538662e5ea1ffc858d2b416246e47d8441ffb748df43927f947208b8f",
       "executable": false
     },
     "src/core/features/components/state-history-repository.ts": {
@@ -4688,7 +4692,7 @@
       "executable": false
     },
     "src/core/features/components/ui/component-history.tsx": {
-      "sha256": "a6d248231bfea7e8a326157b81f9219155efecf5d69afac426a2d23ce9f3752e",
+      "sha256": "2336b0e2dfed8bade40d13102f1b2fbc30669352854b8bf3e36028a30fde4ef5",
       "executable": false
     },
     "src/core/features/components/ui/component-list.tsx": {
@@ -6524,15 +6528,15 @@
       "executable": false
     },
     "src/core/features/subscribers/repository.ts": {
-      "sha256": "64aed370b33ae6dd7c7bf5587b0ab1a84c7f090a61a4b6aba47e466784f996f5",
+      "sha256": "58b93e1d851f050ac0e18f1bc63e4e563acc2018209540c36e96d763469627a0",
       "executable": false
     },
     "src/core/features/subscribers/routes.ts": {
-      "sha256": "695deccb00973a5b24ba632d05ea642cdd410e20924b36541e57bfe654b5cf3a",
+      "sha256": "5836a1ceea88bda35b51659bd0a34a07048cb67212711a153446fb6da8094608",
       "executable": false
     },
     "src/core/features/subscribers/service.ts": {
-      "sha256": "904c9ebf1dfbc4c6f80008053caf05e77cd357eadcbb4d39c55bf65392551597",
+      "sha256": "494456934b5d9262a8d136a321beb1516448ee18d1dd332ad813865e4bd2da98",
       "executable": false
     },
     "src/core/features/subscribers/slack-subscriptions.ts": {
@@ -6928,7 +6932,7 @@
       "executable": false
     },
     "src/core/platform/status-feeds/xml.ts": {
-      "sha256": "7f1b04b88ec68f1da8ca562d62c32d3e0e663a568edeaafd9ac7125d76ca73b7",
+      "sha256": "5365a8cbf3878f14cdd95d6bde0b0c9bcd96b71fe01230a2275c23d4cf37bb78",
       "executable": false
     },
     "src/core/shared/accent-ink.ts": {
@@ -7812,7 +7816,7 @@
       "executable": false
     },
     "tests/auth-adoption/setup-migrations.test.mjs": {
-      "sha256": "9a68dea57995dc2d2e31f5a311832a0ad3ec16b277f20f8ba62fa8ef474d8ffc",
+      "sha256": "495851ce96f75ab86139cc87185a4757c8256cb5fd0e4e20a0dd33eadec6e915",
       "executable": false
     },
     "tests/auth-adoption/sign-in-providers.test.mjs": {
@@ -7989,6 +7993,10 @@
     },
     "tests/e2e/helpers/component-notification-flow.mjs": {
       "sha256": "8edf31a7fd61f3e93f7dacb565a0234fd7681f785a88cf89676e00567cdb5335",
+      "executable": false
+    },
+    "tests/e2e/helpers/component-read-flow.mjs": {
+      "sha256": "ad26e6d4456d0d2ea6f4de47845235e1c2436bfbc7fee8acdd8c9978b86c7e53",
       "executable": false
     },
     "tests/e2e/helpers/conditional-component-flow.mjs": {
@@ -8324,7 +8332,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-directory-flow.mjs": {
-      "sha256": "d914cfd112454891dca5d14547427a5c0b8705e821744acefc5ae7c0300fed54",
+      "sha256": "956bac550da6ae8f7e6b10baa5bf00fe84ad951e8f709544d2e258488d2a68f6",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-expiry-flow.mjs": {
@@ -8476,7 +8484,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "9e6eaa8534007aac5dbe93b6f8ea2292803d74d98908bf9773e4a90ed91efe8c",
+      "sha256": "ca2d2d89a27358f3bca8013e5678d939700c72d56cb0db9b0e1806111f18ba98",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
@@ -8504,7 +8512,7 @@
       "executable": false
     },
     "tests/e2e/site-reader-security.test.mjs": {
-      "sha256": "fd1863fe9e4fbb124df89412292fa8dfd61a358fb6eaaedd0101cdb2190c3ca6",
+      "sha256": "2de59e13e10dd878e6126d81a1d80b5a08e26a4c072b80965015e2ad966a505d",
       "executable": false
     },
     "tests/e2e/slack-subscriptions-helper.mjs": {

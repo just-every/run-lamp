@@ -1,3 +1,4 @@
+import { componentReadFlow } from './helpers/component-read-flow.mjs';
 import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintenanceActor } from './helpers/operator-attribution.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
@@ -300,6 +301,7 @@ async function widgetVariantsJourney() {
 
 // One catalogue-to-customer journey: no renderer or uptime helper is imported.
 test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
+  await componentReadFlow();
   await widgetVariantsJourney();
   await statedUptimeMethodJourney();
   await conditionalComponentFlow();
