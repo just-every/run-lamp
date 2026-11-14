@@ -1,5 +1,14 @@
 # DIVERGENCE.md
 
+## Subscriber CSV component names — 14 November 2026
+
+Import and export accepts visible component names without regard to case or
+surrounding spaces, alongside existing component identifiers. Owners can find
+names and identifiers beside the CSV input. Unknown and ambiguous names refuse
+only their row and identify the value; other validation failures name their own
+cause. Resolved imports retain pending consent, explicit invitations, capacity
+review and the existing export.
+
 ## Public subscription choices and Teams guidance — 13 November 2026
 
 The public subscribe area offers email and only the SMS, Slack and Teams channels

@@ -11,20 +11,51 @@ export async function subscriberCsvFlow() {
   try {
     const { api, post, list, messagesFor } = fixture;
     const component = await fixture.createComponent('Imported API');
+    await fixture.createComponent('Payments');
+    await fixture.createComponent('PAYMENTS');
+    await fixture.createComponent('Private payments', true);
+    await fixture.createComponent(component.id); // A visible name never steals an exact identifier.
+    const rename = async (component, name) => {
+      const result = await api(`/api/app/components/${component.id}`, { method: 'PUT', body: JSON.stringify({ groupId: null, name, description: '', internal: false, note: '' }) });
+      assert.equal(result.status, 200, result.text);
+    };
+    // A name moving between existing components must not silently change a reviewed import.
+    const first = await fixture.createComponent('Review target');
+    const second = await fixture.createComponent('Review spare');
+    const reviewedCsv = subscriberCsv(['email', 'components'], [['synthetic-lamp-review@example.test', first.name]]);
+    const reviewed = await post('/api/app/subscribers/import/preview', { csv: reviewedCsv });
+    assert.equal(reviewed.status, 200, reviewed.text);
+    await rename(first, 'Review former target'); await rename(second, first.name);
+    const afterRename = await fixture.databaseState(), mailAfterRename = fixture.messages.length;
+    const stale = await post('/api/app/subscribers/import/apply', { csv: reviewedCsv, reviewedFingerprint: reviewed.body.fingerprint });
+    assert.equal(stale.status, 409, stale.text);
+    await fixture.assertUnchanged(afterRename);
+    assert.equal(fixture.messages.length, mailAfterRename);
     const email = '+imported-reader@example.test', contact = 'hook-owner@example.test';
     const destination = 'https://receiver.example.test/synthetic-lamp-1';
     const csv = subscriberCsv(['email', 'webhook_url', 'contact_email', 'components'], [
-      [email, '', '', component.id],
+      [email, '', '', `  ${component.name.toLowerCase()}  `],
       ['', destination, contact, component.id],
       ['invalid-address', '', '', component.id],
+      ['synthetic-lamp-unknown@example.test', '', '', 'Missing payments'],
+      ['synthetic-lamp-ambiguous@example.test', '', '', ' payments '],
+      ['synthetic-lamp-internal@example.test', '', '', 'Private payments'],
       [email, '', '', component.id],
     ]);
     assert.equal((await fixture.raw('/api/app/subscribers/import/preview', { method: 'POST', body: JSON.stringify({ csv }) })).status, 401);
     const before = await fixture.databaseState(), mailBefore = fixture.messages.length;
     const preview = await post('/api/app/subscribers/import/preview', { csv });
     assert.equal(preview.status, 200, preview.text);
-    assert.deepEqual(preview.body.counts, { created: 2, refused: 1, skipped: 1 });
-    assert.ok(preview.body.rows.find(row => row.outcome === 'refused').reason);
+    assert.deepEqual(preview.body.counts, { created: 2, refused: 4, skipped: 1 });
+    const reason = row => preview.body.rows.find(item => item.row === row).reason;
+    assert.match(reason(4), /email/i);
+    assert.doesNotMatch(reason(4), /component|contact|webhook/i);
+    assert.ok(reason(5).includes('Missing payments'));
+    assert.match(reason(5), /component/i);
+    assert.ok(reason(6).includes('payments'));
+    assert.match(reason(6), /more than one|ambiguous/i);
+    assert.ok(reason(7).includes('Private payments'));
+    assert.ok(preview.body.rows.slice(3, 6).every(row => row.outcome === 'refused'), 'unusable component values refuse only their own rows');
     await fixture.assertUnchanged(before);
     const changed = await post('/api/app/subscribers/import/apply', { csv: csv.replace(email, 'changed@example.test'), reviewedFingerprint: preview.body.fingerprint });
     assert.equal(changed.status, 409, changed.text);
@@ -34,7 +65,8 @@ export async function subscriberCsvFlow() {
     assert.deepEqual(applied.body.counts, preview.body.counts);
     const pending = await list();
     assert.equal(pending.length, 2);
-    assert.ok(pending.every(row => row.state === 'pending' && row.componentSelections.some(selection => selection.componentId === component.id)));
+    assert.ok(pending.every(row => row.state === 'pending' && row.selectionMode === 'selected'));
+    for (const row of pending) assert.deepEqual(row.componentSelections.map(selection => selection.componentId), [component.id], 'names and exact IDs both resolve to precisely the chosen component');
     assert.equal(fixture.messages.length, mailBefore, 'review and apply never imply permission to send');
     await fixture.publish(component, 'Published before imported readers consent');
     assert.equal(fixture.messages.length, mailBefore, 'pending imported destinations receive no publication');
@@ -128,7 +160,7 @@ export async function subscriberHundredRowCsvFlow() {
         consent_at: '',
       };
     });
-    const rows = expected.map(row => [row.channel === 'email' ? row.destination : '', row.channel === 'webhook' ? row.destination : '', row.contact_email, row.components]);
+    const rows = expected.map(row => [row.channel === 'email' ? row.destination : '', row.channel === 'webhook' ? row.destination : '', row.contact_email, row.components.replace(first.id, `  ${first.name.toUpperCase()}  `)]);
     rows.push(['invalid-address', '', '', first.id], ['', 'http://127.0.0.1/synthetic-lamp-1', address('synthetic-lamp-csv-unsafe'), first.id], ['', 'https://receiver.example.test/synthetic-lamp-invalid', 'invalid-contact', first.id]);
     const csv = subscriberCsv(['email', 'webhook_url', 'contact_email', 'components'], rows);
     const before = await fixture.databaseState(), mailBefore = fixture.messages.length;
@@ -137,6 +169,10 @@ export async function subscriberHundredRowCsvFlow() {
     assert.deepEqual(preview.body.counts, { created: 97, skipped: 0, refused: 3 });
     assert.deepEqual(preview.body.rows.map(row => ({ row: row.row, outcome: row.outcome })), Array.from({ length: 100 }, (_, index) => ({ row: index + 2, outcome: index < 97 ? 'created' : 'refused' })));
     assert.ok(preview.body.rows.slice(97).every(row => typeof row.reason === 'string' && row.reason.length > 0), 'each malformed row has a reviewable refusal reason');
+    const [badEmail, badUrl, badContact] = preview.body.rows.slice(97).map(row => row.reason);
+    assert.match(badEmail, /email/i); assert.doesNotMatch(badEmail, /component|contact|webhook/i);
+    assert.match(badUrl, /webhook.*URL/i); assert.doesNotMatch(badUrl, /component|contact|email/i);
+    assert.match(badContact, /contact.*email/i); assert.doesNotMatch(badContact, /component|URL/i);
     await fixture.assertUnchanged(before);
     assert.equal(fixture.messages.length, mailBefore, 'the complete 100-row review sends nothing');
     const changed = await post('/api/app/subscribers/import/apply', { csv: csv.replace(expected[0].destination, address('synthetic-lamp-csv-changed')), reviewedFingerprint: preview.body.fingerprint });

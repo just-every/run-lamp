@@ -21,8 +21,9 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
   sendConfirmation:(id:string,origin:string,actor:string|null,ownerOnly:boolean,tokenId?:string|null)=>Promise<boolean>;
 }) {
   async function plan(csv:string) {
-    const parsed=parseSubscriberCsv(csv);
-    const [destinations,components]=await Promise.all([repository.intake.destinations(),repository.listVisibleComponents()]);
+    const components=await repository.listVisibleComponents();
+    const parsed=parseSubscriberCsv(csv,components);
+    const destinations=await repository.intake.destinations();
     const visible=new Set(components.map(row=>row.id));
     const accepted=[] as typeof parsed.valid;
     for(const item of parsed.valid) {
@@ -39,7 +40,7 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
     for(const row of capacity.refused){const decision=parsed.decisions.find(item=>item.row===row.row)!;decision.outcome="refused";decision.reason="over the subscriber limit";}
     const counts:IntakeCounts={created:0,skipped:0,refused:0};
     for(const decision of parsed.decisions)counts[decision.outcome]++;
-    const fingerprint=await hashOpaqueToken(JSON.stringify({csv,decisions:parsed.decisions,components:[...visible].sort(),limits:capacity.summaries}));
+    const fingerprint=await hashOpaqueToken(JSON.stringify({csv,decisions:parsed.decisions,components:[...visible].sort(),selections:parsed.valid.map(row=>({row:row.row,componentIds:row.componentIds})),limits:capacity.summaries}));
     return {accepted:accepted.filter(row=>!capacity.refused.has(row)),preview:{fingerprint,counts,rows:parsed.decisions,limits:capacity.summaries} satisfies IntakePreview};
   }
   return {
