@@ -11,7 +11,7 @@ const HEADING = 'Subscribe to status updates';
  * identity, and "the earlier release's renderer" is its stored page.html. */
 /** Runs the deploys and returns what each left behind; the caller closes `j`. */
 export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {}) {
-  const j = await openStatusJourney({ extraBindings: { RER_RELEASE_DIGEST: 'release-1' } });
+  const j = await openStatusJourney({ extraBindings: { RER_RELEASE_DIGEST: 'release-1', LAMP_TEST_NAMED_ROWS: 'true' } });
   try {
     const bucket = () => j.runtime.getR2Bucket('SNAPSHOTS');
     const pointer = async () => JSON.parse(await (await (await bucket()).get('snapshots/current.json')).text());
@@ -36,14 +36,20 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     // A restored settings row may have the migration's placeholder rather
     // than a feed identity. Cron must recover it without a setup-page write.
     await j.db.prepare("UPDATE page_settings SET feed_id = 'pending-feed-identity'").run();
+    await j.component('Synthetic Lamp ungrouped recovery service');
+    await j.component('Synthetic Lamp second recovery service');
+    // The initial operator write repaired the identity; restore the schema
+    // placeholder so the scheduled door must independently recover it.
+    await j.db.prepare("UPDATE page_settings SET feed_id = 'pending-feed-identity'").run();
     await j.tick(Date.now());
     const recoveredIdentity = (await j.db.prepare("SELECT feed_id AS id FROM page_settings WHERE id='default'").first()).id;
     assert.ok(recoveredIdentity && recoveredIdentity !== 'pending-feed-identity', 'Cron persists a deployment feed identity');
-    for (const path of ['/api/public/status', '/history', '/feed.atom']) {
+    for (const path of ['/api/public/status', '/api/public/v1/components', '/history', '/feed.atom']) {
       const response = await j.publicResponse(path);
       assert.equal(response.status, 200, `Cron produces ${path} from the native settings row`);
       const body = await response.text();
       if (path === '/feed.atom') assert.ok(body.includes(`urn:lamp:${recoveredIdentity}`));
+      if (path === '/api/public/v1/components') assert.ok(body.includes('Synthetic Lamp ungrouped recovery service'), 'named-column metering preserves the public component');
     }
     // The repaired settings mutation is durable public work too. Let its
     // revision settle before checking the following idle tick.

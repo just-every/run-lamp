@@ -7,7 +7,7 @@ import { readImportedNamespaces, readImportedPublicRecords } from "../statuspage
 import type { ImportedPublicRecord } from "../statuspage-import/public-addresses";
 import { loadPublicApiIds } from "./api-identity-repository";
 import { createWebsiteRepository } from "../website/repository";
-import { and, asc, desc, eq, isNull, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, isNull, ne, or, sql } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
 import {
@@ -114,10 +114,10 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
             uptimeStartDate: components.uptimeStartDate,
             note: components.note,
             groupId: components.groupId,
-            groupName: componentGroups.name,
-            groupOrder: componentGroups.displayOrder,
-            groupCreatedAt: componentGroups.createdAt,
-            groupUpdatedAt: componentGroups.updatedAt,
+            groupName: sql<string | null>`${componentGroups.name}`.as("group_name"),
+            groupOrder: sql<number | null>`${componentGroups.displayOrder}`.as("group_order"),
+            groupCreatedAt: sql<string | null>`${componentGroups.createdAt}`.as("group_created_at"),
+            groupUpdatedAt: sql<string | null>`${componentGroups.updatedAt}`.as("group_updated_at"),
             displayOrder: components.displayOrder,
             createdAt: components.createdAt,
             updatedAt: components.updatedAt,
@@ -140,25 +140,25 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .innerJoin(maintenance, eq(maintenanceComponents.maintenanceId, maintenance.id))
           .where(eq(maintenance.state, "In progress"))
           .all(),
-        database.select().from(componentStateHistory).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
+        // Correction audit rows are not observations; computeUptime reads the
+        // independently stored correction intervals instead.
+        database.select().from(componentStateHistory).where(ne(componentStateHistory.causeType, "correction")).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
         database.select().from(componentStateCorrections).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
         database.select().from(incidents).where(isNull(incidents.deletedAt)).orderBy(desc(incidents.openedAt)).all(),
         database
-          .select()
+          .select(getTableColumns(incidentComponents))
           .from(incidentComponents)
           .leftJoin(components, eq(incidentComponents.componentId, components.id))
           .where(and(sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
-          .all()
-          .then((rows) => rows.map((row) => row.incident_components)),
+          .all(),
         database.select().from(incidentUpdates).orderBy(desc(incidentUpdates.publishedAt)).all(),
         database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all(),
         database
-          .select()
+          .select(getTableColumns(maintenanceComponents))
           .from(maintenanceComponents)
           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
           .where(or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false)))
-          .all()
-          .then((rows) => rows.map((row) => row.maintenance_components)),
+          .all(),
         binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
         readImportedPublicRecords(binding),
