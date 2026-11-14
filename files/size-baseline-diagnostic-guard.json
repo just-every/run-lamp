@@ -1,0 +1,15 @@
+{
+  "command": [
+    "node",
+    "/tmp/lamp-diagnostic-before.mjs"
+  ],
+  "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "limit_bytes": 209715200,
+  "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+  "peak_database_bytes": 19410944,
+  "peak_file_bytes": 19410944,
+  "peak_disposable_temp_bytes": 26739344,
+  "guard_breached": false,
+  "exit_code": 0,
+  "synthetic_only": true
+}

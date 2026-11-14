@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-qgrowth-incidents-2",
+  "observed_at": "2026-11-14T02:13:36.016533+00:00",
+  "diagnostic_only": true,
+  "full_fixture_completed": false,
+  "full_fixture_guard_unchanged": 209715200,
+  "query_diagnostic_omitted_populations": [
+    "subscribers",
+    "component_state_history"
+  ],
+  "geometry": {
+    "components": 644,
+    "monitors": 644,
+    "incidents": {
+      "small": 90,
+      "large": 9000
+    },
+    "incident_updates": {
+      "small": 270,
+      "large": 27000
+    },
+    "incident_components": {
+      "small": 90,
+      "large": 9000
+    },
+    "maintenance": 1
+  },
+  "requests_per_flow": 3,
+  "counts": {
+    "incident-list": {
+      "before": {
+        "small": {
+          "rows_read": 1805,
+          "status": 200
+        },
+        "large": {
+          "rows_read": 180005,
+          "status": 200
+        }
+      },
+      "after": {
+        "small": {
+          "rows_read": 959,
+          "status": 200
+        },
+        "large": {
+          "rows_read": 959,
+          "status": 200
+        }
+      }
+    },
+    "incident-detail": {
+      "before": {
+        "small": {
+          "rows_read": 1317,
+          "status": 200
+        },
+        "large": {
+          "rows_read": 1343,
+          "status": 200
+        }
+      },
+      "after": {
+        "small": {
+          "rows_read": 1317,
+          "status": 200
+        },
+        "large": {
+          "rows_read": 1343,
+          "status": 200
+        }
+      }
+    }
+  },
+  "guard_receipts": {
+    "before": {
+      "command": [
+        "node",
+        "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+        "size",
+        "--json",
+        "--write-statements",
+        "/tmp/lamp-size-before-guard-statements"
+      ],
+      "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 211640320,
+      "peak_file_bytes": 211640320,
+      "peak_disposable_temp_bytes": 243326088,
+      "guard_breached": true,
+      "exit_code": 143,
+      "synthetic_only": true
+    },
+    "candidate": {
+      "command": [
+        "node",
+        "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+        "size",
+        "--json",
+        "--write-statements",
+        "/tmp/lamp-size-candidate-guard-statements"
+      ],
+      "source_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 227864576,
+      "peak_file_bytes": 213938176,
+      "peak_disposable_temp_bytes": 245623944,
+      "guard_breached": true,
+      "exit_code": 143,
+      "synthetic_only": true
+    },
+    "baseline-diagnostic": {
+      "command": [
+        "node",
+        "/tmp/lamp-diagnostic-before.mjs"
+      ],
+      "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 19410944,
+      "peak_file_bytes": 19410944,
+      "peak_disposable_temp_bytes": 26739344,
+      "guard_breached": false,
+      "exit_code": 0,
+      "synthetic_only": true
+    },
+    "diagnostic": {
+      "command": [
+        "node",
+        "/tmp/lamp-diagnostic.mjs"
+      ],
+      "source_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 21708800,
+      "peak_file_bytes": 21708800,
+      "peak_disposable_temp_bytes": 30017760,
+      "guard_breached": false,
+      "exit_code": 0,
+      "synthetic_only": true
+    }
+  }
+}

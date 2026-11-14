@@ -1,0 +1,2 @@
+{"version":1,"verb":"size","event":"error","code":"cancelled","message":"Stopped by SIGTERM after owned children were stopped.","exitCode":143}
+{"version":1,"verb":"size","event":"result","ok":false,"exitCode":143}

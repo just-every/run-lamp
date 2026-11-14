@@ -1,0 +1,42 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials
+ok 1 - ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials
+  ---
+  duration_ms: 4046.508666
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 upgrade moves setup authority only with the setup operator who still exists
+    # Subtest: kept
+    ok 1 - kept
+      ---
+      duration_ms: 2362.623774
+      type: 'test'
+      ...
+    # Subtest: erased
+    ok 2 - erased
+      ---
+      duration_ms: 2128.260996
+      type: 'test'
+      ...
+    # Subtest: revoked
+    ok 3 - revoked
+      ---
+      duration_ms: 2112.481478
+      type: 'test'
+      ...
+    1..3
+ok 2 - ACCESS-002 upgrade moves setup authority only with the setup operator who still exists
+  ---
+  duration_ms: 6604.255192
+  type: 'test'
+  ...
+1..2
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11624.186297

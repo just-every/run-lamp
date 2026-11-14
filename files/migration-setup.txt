@@ -1,0 +1,18 @@
+TAP version 13
+# Subtest: Setup fails naming the missing migrations when the apply comes up short, then a rerun completes them
+ok 1 - Setup fails naming the missing migrations when the apply comes up short, then a rerun completes them
+  ---
+  duration_ms: 471.499531
+  type: 'test'
+  ...
+# PROBE: apply short -> setup fails naming 0061-0080 (exit 1)
+# PROBE: complete apply -> success message unchanged (exit 0)
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 530.355131

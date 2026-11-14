@@ -1,0 +1,432 @@
+{
+  "diagnosticOnly": true,
+  "sourceSha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+  "statements": [
+    {
+      "name": "incident-list #5",
+      "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where \"incidents\".\"deleted_at\" is null order by \"incidents\".\"opened_at\" desc, \"incidents\".\"id\" desc limit ?",
+      "params": [
+        51
+      ]
+    },
+    {
+      "name": "incident-list #6",
+      "sql": "SELECT lifecycle, total FROM incident_list_counts",
+      "params": []
+    },
+    {
+      "name": "incident-list #7",
+      "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) order by \"incident_updates\".\"published_at\" desc",
+      "params": [
+        "20000000000000000000009000",
+        "20000000000000000000008999",
+        "20000000000000000000008998",
+        "20000000000000000000008997",
+        "20000000000000000000008996",
+        "20000000000000000000008995",
+        "20000000000000000000008994",
+        "20000000000000000000008993",
+        "20000000000000000000008992",
+        "20000000000000000000008991",
+        "20000000000000000000008990",
+        "20000000000000000000008989",
+        "20000000000000000000008988",
+        "20000000000000000000008987",
+        "20000000000000000000008986",
+        "20000000000000000000008985",
+        "20000000000000000000008984",
+        "20000000000000000000008983",
+        "20000000000000000000008982",
+        "20000000000000000000008981",
+        "20000000000000000000008980",
+        "20000000000000000000008979",
+        "20000000000000000000008978",
+        "20000000000000000000008977",
+        "20000000000000000000008976",
+        "20000000000000000000008975",
+        "20000000000000000000008974",
+        "20000000000000000000008973",
+        "20000000000000000000008972",
+        "20000000000000000000008971",
+        "20000000000000000000008970",
+        "20000000000000000000008969",
+        "20000000000000000000008968",
+        "20000000000000000000008967",
+        "20000000000000000000008966",
+        "20000000000000000000008965",
+        "20000000000000000000008964",
+        "20000000000000000000008963",
+        "20000000000000000000008962",
+        "20000000000000000000008961",
+        "20000000000000000000008960",
+        "20000000000000000000008959",
+        "20000000000000000000008958",
+        "20000000000000000000008957",
+        "20000000000000000000008956",
+        "20000000000000000000008955",
+        "20000000000000000000008954",
+        "20000000000000000000008953",
+        "20000000000000000000008952",
+        "20000000000000000000008951"
+      ]
+    },
+    {
+      "name": "incident-list #8",
+      "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "params": [
+        "20000000000000000000009000",
+        "20000000000000000000008999",
+        "20000000000000000000008998",
+        "20000000000000000000008997",
+        "20000000000000000000008996",
+        "20000000000000000000008995",
+        "20000000000000000000008994",
+        "20000000000000000000008993",
+        "20000000000000000000008992",
+        "20000000000000000000008991",
+        "20000000000000000000008990",
+        "20000000000000000000008989",
+        "20000000000000000000008988",
+        "20000000000000000000008987",
+        "20000000000000000000008986",
+        "20000000000000000000008985",
+        "20000000000000000000008984",
+        "20000000000000000000008983",
+        "20000000000000000000008982",
+        "20000000000000000000008981",
+        "20000000000000000000008980",
+        "20000000000000000000008979",
+        "20000000000000000000008978",
+        "20000000000000000000008977",
+        "20000000000000000000008976",
+        "20000000000000000000008975",
+        "20000000000000000000008974",
+        "20000000000000000000008973",
+        "20000000000000000000008972",
+        "20000000000000000000008971",
+        "20000000000000000000008970",
+        "20000000000000000000008969",
+        "20000000000000000000008968",
+        "20000000000000000000008967",
+        "20000000000000000000008966",
+        "20000000000000000000008965",
+        "20000000000000000000008964",
+        "20000000000000000000008963",
+        "20000000000000000000008962",
+        "20000000000000000000008961",
+        "20000000000000000000008960",
+        "20000000000000000000008959",
+        "20000000000000000000008958",
+        "20000000000000000000008957",
+        "20000000000000000000008956",
+        "20000000000000000000008955",
+        "20000000000000000000008954",
+        "20000000000000000000008953",
+        "20000000000000000000008952",
+        "20000000000000000000008951"
+      ]
+    },
+    {
+      "name": "incident-list #9",
+      "sql": "select \"id\", \"incident_id\", \"body\", \"author_operator_id\", \"created_at\", \"updated_at\" from \"incident_internal_notes\" where \"incident_internal_notes\".\"incident_id\" in (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) order by \"incident_internal_notes\".\"created_at\" desc",
+      "params": [
+        "20000000000000000000009000",
+        "20000000000000000000008999",
+        "20000000000000000000008998",
+        "20000000000000000000008997",
+        "20000000000000000000008996",
+        "20000000000000000000008995",
+        "20000000000000000000008994",
+        "20000000000000000000008993",
+        "20000000000000000000008992",
+        "20000000000000000000008991",
+        "20000000000000000000008990",
+        "20000000000000000000008989",
+        "20000000000000000000008988",
+        "20000000000000000000008987",
+        "20000000000000000000008986",
+        "20000000000000000000008985",
+        "20000000000000000000008984",
+        "20000000000000000000008983",
+        "20000000000000000000008982",
+        "20000000000000000000008981",
+        "20000000000000000000008980",
+        "20000000000000000000008979",
+        "20000000000000000000008978",
+        "20000000000000000000008977",
+        "20000000000000000000008976",
+        "20000000000000000000008975",
+        "20000000000000000000008974",
+        "20000000000000000000008973",
+        "20000000000000000000008972",
+        "20000000000000000000008971",
+        "20000000000000000000008970",
+        "20000000000000000000008969",
+        "20000000000000000000008968",
+        "20000000000000000000008967",
+        "20000000000000000000008966",
+        "20000000000000000000008965",
+        "20000000000000000000008964",
+        "20000000000000000000008963",
+        "20000000000000000000008962",
+        "20000000000000000000008961",
+        "20000000000000000000008960",
+        "20000000000000000000008959",
+        "20000000000000000000008958",
+        "20000000000000000000008957",
+        "20000000000000000000008956",
+        "20000000000000000000008955",
+        "20000000000000000000008954",
+        "20000000000000000000008953",
+        "20000000000000000000008952",
+        "20000000000000000000008951"
+      ]
+    },
+    {
+      "name": "incident-list #10",
+      "sql": "SELECT d.id, d.incident_id AS incidentId, d.lifecycle, d.affected_audience AS affectedAudience, d.customer_impact AS customerImpact, d.what_still_works AS whatStillWorks, d.details, d.next_update_at AS nextUpdateAt, d.author_operator_id AS authorOperatorId, d.created_at AS createdAt, d.updated_at AS updatedAt, d.scheduled_publish_at AS scheduledPublishAt, d.scheduled_channels_json AS scheduledChannelsJson, d.reviewed_by_operator_id AS reviewedByOperatorId, d.reviewed_at AS reviewedAt, d.corrects_update_id AS correctsUpdateId, d.component_changes_json AS componentChangesJson,(SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=d.id AND active=1) AS agentPreparationJson FROM incident_drafts d JOIN incidents i ON i.id=d.incident_id WHERE i.id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "params": [
+        "20000000000000000000009000",
+        "20000000000000000000008999",
+        "20000000000000000000008998",
+        "20000000000000000000008997",
+        "20000000000000000000008996",
+        "20000000000000000000008995",
+        "20000000000000000000008994",
+        "20000000000000000000008993",
+        "20000000000000000000008992",
+        "20000000000000000000008991",
+        "20000000000000000000008990",
+        "20000000000000000000008989",
+        "20000000000000000000008988",
+        "20000000000000000000008987",
+        "20000000000000000000008986",
+        "20000000000000000000008985",
+        "20000000000000000000008984",
+        "20000000000000000000008983",
+        "20000000000000000000008982",
+        "20000000000000000000008981",
+        "20000000000000000000008980",
+        "20000000000000000000008979",
+        "20000000000000000000008978",
+        "20000000000000000000008977",
+        "20000000000000000000008976",
+        "20000000000000000000008975",
+        "20000000000000000000008974",
+        "20000000000000000000008973",
+        "20000000000000000000008972",
+        "20000000000000000000008971",
+        "20000000000000000000008970",
+        "20000000000000000000008969",
+        "20000000000000000000008968",
+        "20000000000000000000008967",
+        "20000000000000000000008966",
+        "20000000000000000000008965",
+        "20000000000000000000008964",
+        "20000000000000000000008963",
+        "20000000000000000000008962",
+        "20000000000000000000008961",
+        "20000000000000000000008960",
+        "20000000000000000000008959",
+        "20000000000000000000008958",
+        "20000000000000000000008957",
+        "20000000000000000000008956",
+        "20000000000000000000008955",
+        "20000000000000000000008954",
+        "20000000000000000000008953",
+        "20000000000000000000008952",
+        "20000000000000000000008951"
+      ]
+    },
+    {
+      "name": "incident-list #11",
+      "sql": "SELECT i.id, i.peak_impact AS peakImpact FROM incidents i WHERE i.id IN (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      "params": [
+        "20000000000000000000009000",
+        "20000000000000000000008999",
+        "20000000000000000000008998",
+        "20000000000000000000008997",
+        "20000000000000000000008996",
+        "20000000000000000000008995",
+        "20000000000000000000008994",
+        "20000000000000000000008993",
+        "20000000000000000000008992",
+        "20000000000000000000008991",
+        "20000000000000000000008990",
+        "20000000000000000000008989",
+        "20000000000000000000008988",
+        "20000000000000000000008987",
+        "20000000000000000000008986",
+        "20000000000000000000008985",
+        "20000000000000000000008984",
+        "20000000000000000000008983",
+        "20000000000000000000008982",
+        "20000000000000000000008981",
+        "20000000000000000000008980",
+        "20000000000000000000008979",
+        "20000000000000000000008978",
+        "20000000000000000000008977",
+        "20000000000000000000008976",
+        "20000000000000000000008975",
+        "20000000000000000000008974",
+        "20000000000000000000008973",
+        "20000000000000000000008972",
+        "20000000000000000000008971",
+        "20000000000000000000008970",
+        "20000000000000000000008969",
+        "20000000000000000000008968",
+        "20000000000000000000008967",
+        "20000000000000000000008966",
+        "20000000000000000000008965",
+        "20000000000000000000008964",
+        "20000000000000000000008963",
+        "20000000000000000000008962",
+        "20000000000000000000008961",
+        "20000000000000000000008960",
+        "20000000000000000000008959",
+        "20000000000000000000008958",
+        "20000000000000000000008957",
+        "20000000000000000000008956",
+        "20000000000000000000008955",
+        "20000000000000000000008954",
+        "20000000000000000000008953",
+        "20000000000000000000008952",
+        "20000000000000000000008951"
+      ]
+    },
+    {
+      "name": "incident-detail #5",
+      "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where (\"incidents\".\"id\" = ? and \"incidents\".\"deleted_at\" is null)",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #6",
+      "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" = ? order by \"incident_updates\".\"published_at\" desc",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #7",
+      "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" = ?",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #8",
+      "sql": "SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson, (SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=incident_drafts.id AND active=1) AS agentPreparationJson FROM incident_drafts WHERE incident_id = ?",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #9",
+      "sql": "select \"id\", \"incident_id\", \"body\", \"author_operator_id\", \"created_at\", \"updated_at\" from \"incident_internal_notes\" where \"incident_internal_notes\".\"incident_id\" = ? order by \"incident_internal_notes\".\"created_at\" desc",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #10",
+      "sql": "SELECT peak_impact AS peakImpact FROM incidents WHERE id = ?",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #12",
+      "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where (\"incidents\".\"id\" = ? and \"incidents\".\"deleted_at\" is null)",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #13",
+      "sql": "SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson, (SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=incident_drafts.id AND active=1) AS agentPreparationJson FROM incident_drafts WHERE incident_id = ?",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #14",
+      "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" = ?",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #15",
+      "sql": "SELECT d.id, d.kind, d.name, d.sealed_url AS sealedUrl, d.host, d.selection_mode AS selectionMode, d.created_at AS createdAt, COALESCE(o.operator_alerts,0) AS operatorAlerts, o.id IS NOT NULL AS operatorManaged FROM delivery_channel_destinations d LEFT JOIN channel_destinations o ON o.id=d.id WHERE d.removed_at IS NULL ORDER BY d.created_at, d.id",
+      "params": []
+    },
+    {
+      "name": "incident-detail #17",
+      "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+      "params": []
+    },
+    {
+      "name": "incident-detail #18",
+      "sql": "select \"id\", \"group_id\", \"name\", \"description\", \"region\", \"internal\", \"only_show_if_degraded\", \"uptime_start_date\", \"display_order\", \"note\", \"created_at\", \"updated_at\" from \"components\" where \"components\".\"id\" = ?",
+      "params": [
+        "10000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #19",
+      "sql": "SELECT destination_id AS destinationId, component_id AS componentId FROM channel_destination_components",
+      "params": []
+    },
+    {
+      "name": "incident-detail #20",
+      "sql": "select \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incident_components\".\"component_id\" = ? and \"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+      "params": [
+        "10000000000000000000000001",
+        "Resolved"
+      ]
+    },
+    {
+      "name": "incident-detail #21",
+      "sql": "select \"maintenance_components\".\"state\" from \"maintenance_components\" inner join \"maintenance\" on \"maintenance_components\".\"maintenance_id\" = \"maintenance\".\"id\" where (\"maintenance_components\".\"component_id\" = ? and \"maintenance\".\"state\" = ?)",
+      "params": [
+        "10000000000000000000000001",
+        "In progress"
+      ]
+    },
+    {
+      "name": "incident-detail #22",
+      "sql": "select \"state\" from \"component_standing_claims\" where \"component_standing_claims\".\"component_id\" = ?",
+      "params": [
+        "10000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #23",
+      "sql": "select \"state\" from \"component_standing_claims\" where \"component_standing_claims\".\"component_id\" = ?",
+      "params": [
+        "10000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #24",
+      "sql": "SELECT state FROM vendor_dependencies WHERE component_id=? AND state IS NOT NULL",
+      "params": [
+        "10000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #25",
+      "sql": "SELECT peak_impact AS peakImpact FROM incidents WHERE id = ?",
+      "params": [
+        "20000000000000000000000001"
+      ]
+    },
+    {
+      "name": "incident-detail #27",
+      "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+      "params": []
+    }
+  ]
+}

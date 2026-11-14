@@ -1,0 +1,29 @@
+{
+  "source_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+  "baseline_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "previous_sha": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+  "migration": {
+    "previous_filename": "0079_incident_list_paging.sql",
+    "filename": "0080_incident_list_paging.sql",
+    "byte_identical": true,
+    "sha256": "9d8f532665c8cc129b4a9306b07f28cbbb32c9532f67b97380d9abdf660cb023"
+  },
+  "product_delta_files": [
+    "RELEASE.json",
+    "migrations/core/0080_incident_list_paging.sql",
+    "sources.lock.json"
+  ],
+  "migration_inventory": {
+    "before": 77,
+    "after": 78
+  },
+  "contract_status_changes": [],
+  "publication_scan": {
+    "status": "FLEET_REQUIRED",
+    "reason": "Cloud task instructions reserve full publication scan for the fleet machine before landing.",
+    "full_history": true,
+    "public_base": "run-lamp#main",
+    "edition": "just-every/lamp",
+    "destination": "https://github.com/just-every/run-lamp"
+  }
+}

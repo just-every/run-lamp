@@ -1,0 +1,397 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-qgrowth-incidents-2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-incidents-2",
+  "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+  "base": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "previous_head": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+  "created_at": "2026-11-14T02:16:28.554497+00:00",
+  "pr": "https://github.com/just-every/run-lamp/pull/369",
+  "product_push": {
+    "status": "success",
+    "attempts": 1,
+    "receipt": "product-push.txt"
+  },
+  "local_checks": [
+    {
+      "name": "incident-api",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern=reviewed incident from",
+        "tests/e2e/publishing-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 28.201,
+      "log": "incident-api.txt",
+      "log_sha256": "a61a803a8eb4587f3066247822916b9b020d1f09fd812b94d8dacb6fec66fb06",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    },
+    {
+      "name": "migration-setup",
+      "command": [
+        "node",
+        "--test",
+        "tests/auth-adoption/setup-migrations.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 0.565,
+      "log": "migration-setup.txt",
+      "log_sha256": "1c600734b93c3842d1361e5a385c1068d9f416f3704f593ba7159fa948142d1c",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    },
+    {
+      "name": "forward-upgrade",
+      "command": [
+        "node",
+        "--test",
+        "tests/auth-adoption/upgrade.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 11.681,
+      "log": "forward-upgrade.txt",
+      "log_sha256": "ff4446cc10fa5dbb400a0e34728d372fcfcd31ab55e894ab4b47a5faf0114abf",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    },
+    {
+      "name": "technical-archive",
+      "command": [
+        "node",
+        "--test",
+        "tests/e2e/export-import.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 117.487,
+      "log": "technical-archive.txt",
+      "log_sha256": "4ea075f133eb182126fb2474880f399dea3396a19cd9863fcbd253ab435b3294",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    },
+    {
+      "name": "previous-archive",
+      "command": [
+        "node",
+        "--test",
+        "tests/e2e/prior-backup.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 47.005,
+      "log": "previous-archive.txt",
+      "log_sha256": "ec2429e5d1f230703996b6617d3aa81f587d4593e04ee253de1b5e64f2515526",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    },
+    {
+      "name": "native-archive",
+      "command": [
+        "node",
+        "--test",
+        "tests/auth-adoption/portability.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 141.2,
+      "log": "native-archive.txt",
+      "log_sha256": "ae27f187bc3571322c291b875c29dd8906bd6ceb3883ed12417b7b61899950ac",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    },
+    {
+      "name": "incident-browser",
+      "command": [
+        "node",
+        "--test",
+        "--test-name-pattern=compiled visual edits and the operator publication journey",
+        "tests/e2e/publishing-browser.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 165.086,
+      "log": "incident-browser.txt",
+      "log_sha256": "751e7787cc4ff21a0ab696744d5316e515a627555a676cdc90dd34766f3b9098",
+      "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+      "node": "v22.20.0"
+    }
+  ],
+  "final_local_checks": [
+    {
+      "name": "release-validation",
+      "command": [
+        "node",
+        "scripts/validate-release.mjs"
+      ],
+      "exit_code": 0,
+      "log": "release-validation.txt",
+      "log_sha256": "c3cb4c805be09c28d38be27a1a515bd67a6f2dbaf6eba5509f9188ccc0267af6"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "log": "typecheck.txt",
+      "log_sha256": "037dc92050ffe008761bf7e8723d00620be13adee62033c00aaa55cfc0e9377f"
+    },
+    {
+      "name": "contract-docs",
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "log": "contract-docs.txt",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "test-inventory",
+      "command": [
+        "node",
+        "scripts/verification/check-plan.mjs"
+      ],
+      "exit_code": 0,
+      "log": "test-inventory.txt",
+      "log_sha256": "d6759c1cb38d8e024efad0e100e7f087a87e7a946bf40249d8c489dbc717e43d"
+    },
+    {
+      "name": "source-lock",
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "check"
+      ],
+      "exit_code": 0,
+      "log": "source-lock.txt",
+      "log_sha256": "1d7036cdcc09a5365949bd7275d0a11de484ffe007d40190e1740b6a4f4c691c"
+    },
+    {
+      "name": "working-tree",
+      "command": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "exit_code": 0,
+      "log": "working-tree.txt",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "diff-check.txt",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "migration_probe": {
+    "command": [
+      "node",
+      "/tmp/lamp-migration-probe.mjs"
+    ],
+    "exit_code": 0,
+    "log": "migration-probe.txt",
+    "log_sha256": "859ed5efc4bcad87525017e8f1716915031494d56c49d72b29027d8930c83cb0",
+    "initial_fixture_error": "migration-probe-fixture-error.txt",
+    "correction": "Synthetic reference changed to a valid INC-number; product unchanged."
+  },
+  "migration": {
+    "previous_filename": "0079_incident_list_paging.sql",
+    "filename": "0080_incident_list_paging.sql",
+    "byte_identical": true,
+    "sha256": "9d8f532665c8cc129b4a9306b07f28cbbb32c9532f67b97380d9abdf660cb023"
+  },
+  "test_inventory": {
+    "before": {
+      "registrations": 92,
+      "assertion_scripts": 10,
+      "total": 102
+    },
+    "after": {
+      "registrations": 92,
+      "assertion_scripts": 10,
+      "total": 102
+    }
+  },
+  "migration_inventory": {
+    "main": 77,
+    "incidents_1": 78,
+    "candidate": 78,
+    "current_release_delta_before": 0,
+    "current_release_delta_after": 1
+  },
+  "contract_status_changes": [],
+  "ci": {
+    "run_id": 43544179464,
+    "conclusion": null,
+    "head_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43544179464",
+    "status": "in_progress"
+  },
+  "github_calls_used": 5,
+  "measurements": {
+    "schema": 1,
+    "tag": "sd-lamp-qgrowth-incidents-2",
+    "observed_at": "2026-11-14T02:13:36.016533+00:00",
+    "diagnostic_only": true,
+    "full_fixture_completed": false,
+    "full_fixture_guard_unchanged": 209715200,
+    "query_diagnostic_omitted_populations": [
+      "subscribers",
+      "component_state_history"
+    ],
+    "geometry": {
+      "components": 644,
+      "monitors": 644,
+      "incidents": {
+        "small": 90,
+        "large": 9000
+      },
+      "incident_updates": {
+        "small": 270,
+        "large": 27000
+      },
+      "incident_components": {
+        "small": 90,
+        "large": 9000
+      },
+      "maintenance": 1
+    },
+    "requests_per_flow": 3,
+    "counts": {
+      "incident-list": {
+        "before": {
+          "small": {
+            "rows_read": 1805,
+            "status": 200
+          },
+          "large": {
+            "rows_read": 180005,
+            "status": 200
+          }
+        },
+        "after": {
+          "small": {
+            "rows_read": 959,
+            "status": 200
+          },
+          "large": {
+            "rows_read": 959,
+            "status": 200
+          }
+        }
+      },
+      "incident-detail": {
+        "before": {
+          "small": {
+            "rows_read": 1317,
+            "status": 200
+          },
+          "large": {
+            "rows_read": 1343,
+            "status": 200
+          }
+        },
+        "after": {
+          "small": {
+            "rows_read": 1317,
+            "status": 200
+          },
+          "large": {
+            "rows_read": 1343,
+            "status": 200
+          }
+        }
+      }
+    },
+    "guard_receipts": {
+      "before": {
+        "command": [
+          "node",
+          "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+          "size",
+          "--json",
+          "--write-statements",
+          "/tmp/lamp-size-before-guard-statements"
+        ],
+        "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+        "limit_bytes": 209715200,
+        "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+        "peak_database_bytes": 211640320,
+        "peak_file_bytes": 211640320,
+        "peak_disposable_temp_bytes": 243326088,
+        "guard_breached": true,
+        "exit_code": 143,
+        "synthetic_only": true
+      },
+      "candidate": {
+        "command": [
+          "node",
+          "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+          "size",
+          "--json",
+          "--write-statements",
+          "/tmp/lamp-size-candidate-guard-statements"
+        ],
+        "source_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+        "limit_bytes": 209715200,
+        "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+        "peak_database_bytes": 227864576,
+        "peak_file_bytes": 213938176,
+        "peak_disposable_temp_bytes": 245623944,
+        "guard_breached": true,
+        "exit_code": 143,
+        "synthetic_only": true
+      },
+      "baseline-diagnostic": {
+        "command": [
+          "node",
+          "/tmp/lamp-diagnostic-before.mjs"
+        ],
+        "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+        "limit_bytes": 209715200,
+        "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+        "peak_database_bytes": 19410944,
+        "peak_file_bytes": 19410944,
+        "peak_disposable_temp_bytes": 26739344,
+        "guard_breached": false,
+        "exit_code": 0,
+        "synthetic_only": true
+      },
+      "diagnostic": {
+        "command": [
+          "node",
+          "/tmp/lamp-diagnostic.mjs"
+        ],
+        "source_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+        "limit_bytes": 209715200,
+        "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+        "peak_database_bytes": 21708800,
+        "peak_file_bytes": 21708800,
+        "peak_disposable_temp_bytes": 30017760,
+        "guard_breached": false,
+        "exit_code": 0,
+        "synthetic_only": true
+      }
+    }
+  },
+  "publication_scan": {
+    "status": "FLEET_REQUIRED",
+    "reason": "Cloud task instructions reserve full publication scan for the fleet machine before landing.",
+    "full_history": true,
+    "public_base": "run-lamp#main",
+    "edition": "just-every/lamp",
+    "destination": "https://github.com/just-every/run-lamp"
+  },
+  "independent_migration_gate": "FLEET_REQUIRED",
+  "full_fixture_limit": "Generation stopped by the unchanged strict 200 MiB guard on both main and candidate. Separate incident diagnostics are not full-fixture acceptance proof.",
+  "terminal_status": "PUSHED_PENDING_CI"
+}

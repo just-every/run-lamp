@@ -1,0 +1,77 @@
+[
+  {
+    "name": "release-validation",
+    "command": [
+      "node",
+      "scripts/validate-release.mjs"
+    ],
+    "exit_code": 0,
+    "log": "release-validation.txt",
+    "log_sha256": "c3cb4c805be09c28d38be27a1a515bd67a6f2dbaf6eba5509f9188ccc0267af6"
+  },
+  {
+    "name": "typecheck",
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "exit_code": 0,
+    "log": "typecheck.txt",
+    "log_sha256": "037dc92050ffe008761bf7e8723d00620be13adee62033c00aaa55cfc0e9377f"
+  },
+  {
+    "name": "contract-docs",
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "exit_code": 0,
+    "log": "contract-docs.txt",
+    "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+  },
+  {
+    "name": "test-inventory",
+    "command": [
+      "node",
+      "scripts/verification/check-plan.mjs"
+    ],
+    "exit_code": 0,
+    "log": "test-inventory.txt",
+    "log_sha256": "d6759c1cb38d8e024efad0e100e7f087a87e7a946bf40249d8c489dbc717e43d"
+  },
+  {
+    "name": "source-lock",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit_code": 0,
+    "log": "source-lock.txt",
+    "log_sha256": "1d7036cdcc09a5365949bd7275d0a11de484ffe007d40190e1740b6a4f4c691c"
+  },
+  {
+    "name": "working-tree",
+    "command": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "exit_code": 0,
+    "log": "working-tree.txt",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "log": "diff-check.txt",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

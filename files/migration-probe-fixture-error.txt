@@ -1,0 +1,18 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+node:internal/process/task_queues:105
+    runMicrotasks();
+    ^
+
+Error: D1_ERROR: CHECK constraint failed: reference GLOB 'INC-[0-9]*': SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_CHECK)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///tmp/lamp-migration-probe.mjs:14:2 {
+  [cause]: Error: CHECK constraint failed: reference GLOB 'INC-[0-9]*': SQLITE_CONSTRAINT (extended: SQLITE_CONSTRAINT_CHECK)
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)
+      at async cloudflare-internal:d1-api:478:19 {
+    [cause]: undefined
+  }
+}
+
+Node.js v22.20.0

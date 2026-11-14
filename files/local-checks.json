@@ -1,0 +1,102 @@
+[
+  {
+    "name": "incident-api",
+    "command": [
+      "node",
+      "--test",
+      "--test-name-pattern=reviewed incident from",
+      "tests/e2e/publishing-contract.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 28.201,
+    "log": "incident-api.txt",
+    "log_sha256": "a61a803a8eb4587f3066247822916b9b020d1f09fd812b94d8dacb6fec66fb06",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  },
+  {
+    "name": "migration-setup",
+    "command": [
+      "node",
+      "--test",
+      "tests/auth-adoption/setup-migrations.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 0.565,
+    "log": "migration-setup.txt",
+    "log_sha256": "1c600734b93c3842d1361e5a385c1068d9f416f3704f593ba7159fa948142d1c",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  },
+  {
+    "name": "forward-upgrade",
+    "command": [
+      "node",
+      "--test",
+      "tests/auth-adoption/upgrade.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 11.681,
+    "log": "forward-upgrade.txt",
+    "log_sha256": "ff4446cc10fa5dbb400a0e34728d372fcfcd31ab55e894ab4b47a5faf0114abf",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  },
+  {
+    "name": "technical-archive",
+    "command": [
+      "node",
+      "--test",
+      "tests/e2e/export-import.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 117.487,
+    "log": "technical-archive.txt",
+    "log_sha256": "4ea075f133eb182126fb2474880f399dea3396a19cd9863fcbd253ab435b3294",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  },
+  {
+    "name": "previous-archive",
+    "command": [
+      "node",
+      "--test",
+      "tests/e2e/prior-backup.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 47.005,
+    "log": "previous-archive.txt",
+    "log_sha256": "ec2429e5d1f230703996b6617d3aa81f587d4593e04ee253de1b5e64f2515526",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  },
+  {
+    "name": "native-archive",
+    "command": [
+      "node",
+      "--test",
+      "tests/auth-adoption/portability.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 141.2,
+    "log": "native-archive.txt",
+    "log_sha256": "ae27f187bc3571322c291b875c29dd8906bd6ceb3883ed12417b7b61899950ac",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  },
+  {
+    "name": "incident-browser",
+    "command": [
+      "node",
+      "--test",
+      "--test-name-pattern=compiled visual edits and the operator publication journey",
+      "tests/e2e/publishing-browser.test.mjs"
+    ],
+    "exit_code": 0,
+    "seconds": 165.086,
+    "log": "incident-browser.txt",
+    "log_sha256": "751e7787cc4ff21a0ab696744d5316e515a627555a676cdc90dd34766f3b9098",
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "node": "v22.20.0"
+  }
+]

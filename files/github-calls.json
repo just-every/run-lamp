@@ -1,0 +1,63 @@
+[
+  {
+    "call": 1,
+    "at": "2026-11-14T02:04:32.981062+00:00",
+    "epoch": 1794621872.9810753,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/pulls",
+      "--method",
+      "POST",
+      "--input",
+      "/tmp/lamp-pr.json"
+    ]
+  },
+  {
+    "call": 2,
+    "at": "2026-11-14T02:04:36.228809+00:00",
+    "epoch": 1794621876.228819,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs?head_sha=8ab15b4dc74832de43b662299e95a6de303d8aa3&per_page=100",
+      "--jq",
+      ".workflow_runs | map({id,name,event,status,conclusion,head_sha,html_url})"
+    ]
+  },
+  {
+    "call": 3,
+    "at": "2026-11-14T02:09:51.006873+00:00",
+    "epoch": 1794622191.0068831,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43544179464",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 4,
+    "at": "2026-11-14T02:13:01.672313+00:00",
+    "epoch": 1794622381.6723232,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/pulls/369",
+      "--method",
+      "PATCH",
+      "--input",
+      "/tmp/lamp-pr-update.json",
+      "--jq",
+      "{number,html_url,state,head:.head.sha,base:.base.ref,title,body}"
+    ]
+  },
+  {
+    "call": 5,
+    "at": "2026-11-14T02:15:29.897669+00:00",
+    "epoch": 1794622529.897681,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43544179464",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]
