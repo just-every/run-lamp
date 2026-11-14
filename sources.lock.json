@@ -524,7 +524,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8b575f27ee607ce3f259e3ec0d733febbf5536d9906cb99a0d9a2ede09c5096f",
+      "sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
       "executable": false
     },
     "DEMO.md": {
@@ -2860,7 +2860,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "dffadf2495a9952d3a66c64a549956933f1150e522889b9056a02b333e3971d2",
+      "sha256": "c1cb12a8087ce1678f18421bf2c14a366d26cf149568175f334465b8e10eba9c",
       "executable": false
     },
     "rer-packaging.json": {
@@ -5516,15 +5516,15 @@
       "executable": false
     },
     "src/core/features/page-settings/repository.ts": {
-      "sha256": "7ef566a20b1b0f539dd6f6e151a13c41ef07e7875a0531d2dc21df052d42a983",
+      "sha256": "c0528335c3046a120b05d5b228ff8c60dd453c317fd2666fc31cd2c88feec9b6",
       "executable": false
     },
     "src/core/features/page-settings/routes.ts": {
-      "sha256": "4bbe7fffc7e84fef909d97f0b04854fc9ea6cbf723979cbc3dafee95f2b9c56b",
+      "sha256": "51267852bf79d76192213c6103b7ad06a3b28425090b4093105a7fa564f2f908",
       "executable": false
     },
     "src/core/features/page-settings/service.ts": {
-      "sha256": "f5fe9af5d861b608eb05d968e1dd28f9fc696943d7fbde3e671f655365a69edb",
+      "sha256": "79cc549ca3bd108bea5801a40b69579b9ed942dbe4ef72d48457ed008e7b5538",
       "executable": false
     },
     "src/core/features/page-settings/theme-assets.ts": {
@@ -5748,7 +5748,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/format.ts": {
-      "sha256": "7396d15523982ee4efa9f8110f397b30a2abdcc5eabb33476c0f1ba806545a5f",
+      "sha256": "46ccee22b7dea11be37123fbcd553b1afa70e3160d4b3a9469d075fcaa603687",
       "executable": false
     },
     "src/core/features/public-snapshot/generation-cache.ts": {
@@ -6004,7 +6004,7 @@
       "executable": false
     },
     "src/core/features/setup/ui/first-run-page.tsx": {
-      "sha256": "8d7874621baa3698b151a6afc97df6777f647a793e9233c7e82d258fbcabc8d1",
+      "sha256": "e8896a6713fe7a4bc992ffa0aa9aeeaf5a1653cd4efa90b6eb8fbd69087f790a",
       "executable": false
     },
     "src/core/features/setup/ui/found-card.tsx": {
@@ -8560,7 +8560,7 @@
       "executable": false
     },
     "tests/e2e/website-onboarding.test.mjs": {
-      "sha256": "2bda6786d0288a5432e555c86bcb5e7a41897b5f7f06f438289055d98b12eaf7",
+      "sha256": "9687ec74336f4e8c4547264c8c4feb7c1ca691afc429c6155f5088e1155aaa29",
       "executable": false
     },
     "tests/e2e/worker-startup.mjs": {

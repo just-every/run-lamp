@@ -56,8 +56,8 @@ export function formatTime(value: string, timezone: string) {
 }
 
 export function timezoneLabel(timezone: string) {
-  const label = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "longGeneric" })
-    .formatToParts(new Date(0))
+  const label = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "long" })
+    .formatToParts(new Date())
     .find((part) => part.type === "timeZoneName")?.value;
   if (!label) throw new Error("A public timezone label is invalid.");
   return `${label} (${timezone})`;
