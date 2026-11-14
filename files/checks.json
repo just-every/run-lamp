@@ -1,0 +1,138 @@
+{
+  "tag": "gr-mt-lamp-code-14",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-14",
+  "head": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "command": "node --check tests/e2e/helpers/sms-subscriber-flow.mjs",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run timeout -k 5 120 env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy node /tmp/lamp-run-sms.mjs",
+      "exit": 0,
+      "description": "imports and invokes the existing smsSubscriberFlow, with diagnostic D1 open markers only; no application source altered by the runner"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "before": {
+      "registeredCases": 93,
+      "assertionScripts": 10,
+      "total": 103
+    },
+    "after": {
+      "registeredCases": 93,
+      "assertionScripts": 10,
+      "total": 103
+    },
+    "testRegistrationsAdded": 0,
+    "testRegistrationsRemoved": 0
+  },
+  "clausesChanged": [],
+  "alerts": [
+    {
+      "id": 18,
+      "status": "fixed",
+      "change": "Parse HTML with existing parse5 and read text nodes, rather than replacing tags with a regex. Escaped ampersand and angle-bracket incident wording now exercises this check."
+    },
+    {
+      "id": 19,
+      "status": "fixed",
+      "change": "Extract SMS URL tokens and compare parsed complete support URL identities, rather than accepting a host substring."
+    },
+    {
+      "id": 20,
+      "status": "fixed",
+      "change": "Compare the complete permanent incident URL and require every other shortened-message URL to equal the complete help URL; remove the partial-host substring test."
+    }
+  ],
+  "providerProof": "Real local Worker/D1/R2 and signed callbacks; synthetic Twilio HTTP-edge fake. No live Twilio or production exposure claim.",
+  "ci": {
+    "repository": "just-every/run-lamp",
+    "head_sha": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+    "calls": [
+      {
+        "endpoint": "repos/just-every/run-lamp/actions/runs?head_sha=189bfd82e39799b16fbabb4f8a48f65f3b5d22f0&per_page=100",
+        "monotonic_started": 1708.674336326,
+        "exit": 0,
+        "utc": "2026-11-14T14:26:37Z"
+      },
+      {
+        "endpoint": "repos/just-every/run-lamp/actions/runs?head_sha=189bfd82e39799b16fbabb4f8a48f65f3b5d22f0&per_page=100",
+        "monotonic_started": 2008.677029003,
+        "exit": 0,
+        "utc": "2026-11-14T14:31:37Z"
+      },
+      {
+        "endpoint": "repos/just-every/run-lamp/actions/runs/43604878280",
+        "monotonic_started": 2308.678610873,
+        "exit": 0,
+        "utc": "2026-11-14T14:36:37Z"
+      },
+      {
+        "endpoint": "repos/just-every/run-lamp/actions/runs/43604878280",
+        "monotonic_started": 2608.679599807,
+        "exit": 0,
+        "utc": "2026-11-14T14:41:37Z"
+      }
+    ],
+    "status": "in_progress",
+    "run_id": 43604878280,
+    "conclusion": null,
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43604878280"
+  },
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "commit": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+    "tree": "25aeb97d4bd932802aa9ca5fb0d0aa8856ddf60d"
+  },
+  "tree": "25aeb97d4bd932802aa9ca5fb0d0aa8856ddf60d",
+  "sourceLockCheck": true,
+  "workingTreeClean": true,
+  "bundle": {
+    "path": "/home/agent/rer-consolidation/work/push-rescue/cloud_gr-mt-lamp-code-14-20261114T141403Z-189bfd82e397.bundle",
+    "head": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+    "sha256": "7e3fcab1abcc2d00882dd82ff47d6d7594c1c9e79e3157083fde3a7b85f7ae06",
+    "verified": true,
+    "bytes": 112443922
+  },
+  "productPush": {
+    "status": "pushed",
+    "attempts": 1,
+    "branch": "cloud/gr-mt-lamp-code-14",
+    "head": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0"
+  },
+  "pr": "https://github.com/just-every/run-lamp/pull/377",
+  "terminalCustody": "PUSHED",
+  "blockers": [],
+  "pending": [
+    "Exact-SHA Verify is still running; watcher budget reached, so custody is PUSHED. This is not a product blocker."
+  ],
+  "githubCalls": {
+    "explicitReleaseAssetCalls": 3,
+    "prCreationCalls": 1,
+    "ciWatcherCalls": 4,
+    "prCiCalls": 0,
+    "note": "The maintained publication scanner performs its own required reference-visibility resolution; watcher calls are spaced at least 300 seconds apart."
+  }
+}

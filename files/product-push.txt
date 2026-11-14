@@ -1,0 +1,15 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/gr-mt-lamp-code-14
+PUSH_CREDENTIAL sha256_16=8addacf6ac95b0bc bundle_file_age_seconds=1666 token_issue_age=unknown
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/just-every/run-lamp.git
+*	HEAD:refs/heads/cloud/gr-mt-lamp-code-14	[new branch]
+Done
+remote: 
+remote: Create a pull request for 'cloud/gr-mt-lamp-code-14' on GitHub by visiting:        
+remote:      https://github.com/just-every/run-lamp/pull/new/cloud/gr-mt-lamp-code-14        
+remote: 
+remote: GitHub found 23 vulnerabilities on just-every/run-lamp's default branch (8 high, 13 moderate, 2 low). To find out more, visit:        
+remote:      https://github.com/just-every/run-lamp/security/dependabot        
+remote: 
+PUSH_OK branch=cloud/gr-mt-lamp-code-14

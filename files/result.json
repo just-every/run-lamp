@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+  "summary": "Corrected all three reported SMS test-helper expressions: parse HTML text with parse5, compare complete parsed support and permanent incident URLs, and exercise escaped incident wording without changing production behavior or clause statuses.",
+  "tests": "Node 22.20.0 / pnpm 10.12.4: smsSubscriberFlow (including incident-follow SMS and delivery-receipt flows), pnpm typecheck, helper syntax, source-lock check and git diff --check passed. Publication COMPLETE/PASS with zero findings. Exact-SHA push Verify 43604878280 still in progress; no green claim. 93 registered cases + 10 assertion scripts unchanged.",
+  "security": true
+}
