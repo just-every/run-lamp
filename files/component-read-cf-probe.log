@@ -1,0 +1,9 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Component read: opening emitted Worker
+Debugger listening on ws://127.0.0.1:9229/56307237-ed8a-4c0e-84c9-7293d5f4239c
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger ending on ws://127.0.0.1:9229/56307237-ed8a-4c0e-84c9-7293d5f4239c
+For help, see: https://nodejs.org/en/docs/inspector

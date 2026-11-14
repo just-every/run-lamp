@@ -1,0 +1,216 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Lamp build:workflow [003531b1f66d]
+Checking pinned pnpm
+10.12.4
+Building your application
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.15 build:app [REDACTED]
+> node scripts/build.mjs
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+vite v8.2.2 building client environment for production...
+transforming...
+[plugin tanstack-start-core::server-fn:client] [REDACTED]/src/core/app/loaders.ts:27:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:client] [REDACTED]/src/site/docs/body.ts:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+✓ 550 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                                        0.02 kB
+dist/client/app-assets/lamp-badge-DIkgGAxu.svg                   0.29 kB │ gzip:   0.19 kB
+dist/client/app-assets/lamp-badge-16-dJ5R_YkC.png                0.43 kB
+dist/client/app-assets/lamp-badge-icon-saRGOymC.svg              0.60 kB │ gzip:   0.28 kB
+dist/client/app-assets/grain-CRrFAgVd.svg                        0.62 kB │ gzip:   0.33 kB
+dist/client/app-assets/lamp-badge-32-wv7CD4nG.png                0.83 kB
+dist/client/app-assets/lamp-badge-touch-CBjYEgUH.png             3.51 kB
+dist/client/app-assets/lamp-off-720-BqTRFQSu.avif               11.51 kB
+dist/client/app-assets/bulb-glow-720-fswawJfh.avif              12.73 kB
+dist/client/app-assets/lamp-on-720-_hQ3xdmq.avif                14.32 kB
+dist/client/app-assets/lamp-off-1200-C0JK4fHi.avif              19.08 kB
+dist/client/app-assets/lamp-off-720-CADQxApg.webp               20.66 kB
+dist/client/app-assets/bulb-glow-1200-BVjWKVCJ.avif             23.20 kB
+dist/client/app-assets/lamp-on-1200-CtpNOQtN.avif               23.37 kB
+dist/client/app-assets/lamp-on-720-OAGA45Ob.webp                23.74 kB
+dist/client/app-assets/lamp-off-1200-yUlTvulk.webp              40.95 kB
+dist/client/app-assets/bulb-glow-720-DTDXje5w.webp              45.52 kB
+dist/client/app-assets/lamp-on-1200-u5q1Gbet.webp               46.24 kB
+dist/client/app-assets/inter-latin-Dx4kXJAl.woff2               48.25 kB
+dist/client/app-assets/bulb-glow-1200-BWyNPU2y.webp             97.92 kB
+dist/client/app-assets/fonts-BhyjwMBU.css                        0.33 kB │ gzip:   0.24 kB
+dist/client/app-assets/app-CpCg4Oqd.css                          0.48 kB │ gzip:   0.21 kB
+dist/client/app-assets/performance-CvMbzayb.css                  1.86 kB │ gzip:   0.66 kB
+dist/client/app-assets/DocsNav-qUwKP4pS.css                     20.58 kB │ gzip:   4.68 kB
+dist/client/app-assets/operator-runtime-LWqpfDB9.css            94.52 kB │ gzip:  18.31 kB
+dist/client/app-assets/app.incidents-CsZCJPSN.js                 0.08 kB │ gzip:   0.09 kB
+dist/client/app-assets/docs-CsZCJPSN.js                          0.08 kB │ gzip:   0.09 kB
+dist/client/app-assets/package-Bx5nKot9.js                       0.09 kB │ gzip:   0.10 kB
+dist/client/app-assets/incident-component-changes-CxqP57kR.js    0.09 kB │ gzip:   0.10 kB
+dist/client/app-assets/app-lx-cVhVf.js                           0.16 kB │ gzip:   0.15 kB
+dist/client/app-assets/app.incidents.new-Bu_8FQd4.js             0.18 kB │ gzip:   0.17 kB
+dist/client/app-assets/docs._slug-VdV1G3CM.js                    0.20 kB │ gzip:   0.18 kB
+dist/client/app-assets/docs._-DCd6qc1w.js                        0.20 kB │ gzip:   0.18 kB
+dist/client/app-assets/cutover-draft-B7R4iewQ.js                 0.24 kB │ gzip:   0.17 kB
+dist/client/app-assets/domain-DkT8C6F1.js                        0.46 kB │ gzip:   0.28 kB
+dist/client/app-assets/docs-DrTxDMqK.js                          0.67 kB │ gzip:   0.36 kB
+dist/client/app-assets/rolldown-runtime-hePW80VL.js              0.71 kB │ gzip:   0.42 kB
+dist/client/app-assets/update-due-notice-_nkP9Dk_.js             0.95 kB │ gzip:   0.52 kB
+dist/client/app-assets/index-CCsPlWr-.js                         0.97 kB │ gzip:   0.65 kB
+dist/client/app-assets/docs.index-B2L0iLjP.js                    1.10 kB │ gzip:   0.44 kB
+dist/client/app-assets/door-client-ea-0TdZL.js                   1.20 kB │ gzip:   0.74 kB
+dist/client/app-assets/page-preview-DwcJI5Vb.js                  2.45 kB │ gzip:   1.01 kB
+dist/client/app-assets/app.incidents.index-Dmf5znkw.js           3.00 kB │ gzip:   1.12 kB
+dist/client/app-assets/DocsArticle-C_CQfmgF.js                   3.38 kB │ gzip:   1.23 kB
+dist/client/app-assets/DocsNav-ChPv_DQ4.js                       4.19 kB │ gzip:   1.30 kB
+dist/client/app-assets/performance-D1OP8HWl.js                   4.46 kB │ gzip:   1.66 kB
+dist/client/app-assets/use-source-autosave-BuQglyZg.js           5.02 kB │ gzip:   1.95 kB
+dist/client/app-assets/presets-BSLrrsgM.js                       5.25 kB │ gzip:   2.19 kB
+dist/client/app-assets/app.index-D3-k0cOG.js                     9.07 kB │ gzip:   2.97 kB
+dist/client/app-assets/new-incident-page-BkXAEdhV.js            11.17 kB │ gzip:   3.89 kB
+dist/client/app-assets/app.maintenance-hIXtOOs-.js              11.28 kB │ gzip:   3.01 kB
+dist/client/app-assets/app.cutover-DmBSKbOo.js                  11.72 kB │ gzip:   4.24 kB
+dist/client/app-assets/setup-D6fXKRl4.js                        14.68 kB │ gzip:   4.82 kB
+dist/client/app-assets/sign-in-pane-B71XDvuL.js                 15.68 kB │ gzip:   5.10 kB
+dist/client/app-assets/app.move-in-DCj7AKVr.js                  18.93 kB │ gzip:   5.49 kB
+dist/client/app-assets/publish-options-CtamGu90.js              22.14 kB │ gzip:   7.52 kB
+dist/client/app-assets/app.subscribers-DcfMJLxO.js              24.66 kB │ gzip:   6.93 kB
+dist/client/app-assets/app.components-G9RyOqxW.js               34.49 kB │ gzip:   8.91 kB
+dist/client/app-assets/app.incidents._incidentId-CiwXLpii.js    54.65 kB │ gzip:  16.49 kB
+dist/client/app-assets/schemas-DCT-nbZy.js                      86.44 kB │ gzip:  23.87 kB
+dist/client/app-assets/app.settings-CBpTpu7-.js                177.19 kB │ gzip:  44.75 kB
+dist/client/app-assets/operator-runtime-CD-gNhC7.js            400.51 kB │ gzip: 130.29 kB
+
+✓ built in 1.31s
+vite v8.2.2 building ssr environment for production...
+transforming...
+[plugin tanstack-start-core::server-fn:ssr] [REDACTED]/src/core/app/loaders.ts?tss-serverfn-split:27:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] [REDACTED]/src/site/docs/body.ts?tss-serverfn-split:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] [REDACTED]/src/site/docs/body.ts:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] [REDACTED]/src/core/app/loaders.ts:27:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+✓ 1588 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/server/app-assets/lamp-badge-DIkgGAxu.svg                                0.29 kB │ gzip:     0.19 kB
+dist/server/app-assets/lamp-badge-16-dJ5R_YkC.png                             0.43 kB
+dist/server/app-assets/lamp-badge-icon-saRGOymC.svg                           0.60 kB │ gzip:     0.28 kB
+dist/server/app-assets/grain-CRrFAgVd.svg                                     0.62 kB │ gzip:     0.33 kB
+dist/server/app-assets/lamp-badge-32-wv7CD4nG.png                             0.83 kB
+dist/server/wrangler.json                                                     2.03 kB │ gzip:     0.98 kB
+dist/server/app-assets/lamp-badge-touch-CBjYEgUH.png                          3.51 kB
+dist/server/app-assets/lamp-off-720-BqTRFQSu.avif                            11.51 kB
+dist/server/app-assets/bulb-glow-720-fswawJfh.avif                           12.73 kB
+dist/server/app-assets/lamp-on-720-_hQ3xdmq.avif                             14.32 kB
+dist/server/app-assets/lamp-off-1200-C0JK4fHi.avif                           19.08 kB
+dist/server/app-assets/lamp-off-720-CADQxApg.webp                            20.66 kB
+dist/server/app-assets/bulb-glow-1200-BVjWKVCJ.avif                          23.20 kB
+dist/server/app-assets/lamp-on-1200-CtpNOQtN.avif                            23.37 kB
+dist/server/app-assets/lamp-on-720-OAGA45Ob.webp                             23.74 kB
+dist/server/.vite/manifest.json                                              31.71 kB │ gzip:     4.29 kB
+dist/server/app-assets/lamp-off-1200-yUlTvulk.webp                           40.95 kB
+dist/server/app-assets/bulb-glow-720-DTDXje5w.webp                           45.52 kB
+dist/server/app-assets/lamp-on-1200-u5q1Gbet.webp                            46.24 kB
+dist/server/app-assets/inter-latin-Dx4kXJAl.woff2                            48.25 kB
+dist/server/app-assets/bulb-glow-1200-BWyNPU2y.webp                          97.92 kB
+dist/server/app-assets/fonts-BhyjwMBU.css                                     0.33 kB │ gzip:     0.24 kB
+dist/server/app-assets/app-CpCg4Oqd.css                                       0.48 kB │ gzip:     0.21 kB
+dist/server/app-assets/lit-states-OIF8zF0b.css                                1.62 kB │ gzip:     0.62 kB
+dist/server/app-assets/performance-CvMbzayb.css                               1.86 kB │ gzip:     0.66 kB
+dist/server/app-assets/DocsNav-qUwKP4pS.css                                  20.58 kB │ gzip:     4.68 kB
+dist/server/app-assets/router-BsRzzjXZ.css                                   92.90 kB │ gzip:    17.76 kB
+dist/server/app-assets/badge-BGx2UbIh.js                                      0.13 kB │ gzip:     0.12 kB
+dist/server/app-assets/bindings.server-Cftjx4Db.js                            0.17 kB │ gzip:     0.14 kB
+dist/server/app-assets/docs-A79Ih9bl.js                                       0.18 kB │ gzip:     0.15 kB
+dist/server/app-assets/app.incidents-vOvk03ar.js                              0.19 kB │ gzip:     0.15 kB
+dist/server/app-assets/held-sorry-CkG3y6e0.js                                 0.19 kB │ gzip:     0.16 kB
+dist/server/app-assets/package-BvTd9Z97.js                                    0.19 kB │ gzip:     0.16 kB
+dist/server/app-assets/empty-plugin-adapters-rx1oPjS-.js                      0.29 kB │ gzip:     0.19 kB
+dist/server/app-assets/start-DtXySZb-.js                                      0.29 kB │ gzip:     0.21 kB
+dist/server/app-assets/inter-latin-CSroAmTI.js                                0.34 kB │ gzip:     0.20 kB
+dist/server/app-assets/body-20kjdW-R.js                                       0.38 kB │ gzip:     0.27 kB
+dist/server/app-assets/createServerRpc-98XMCRLT.js                            0.46 kB │ gzip:     0.30 kB
+dist/server/app-assets/docs._-CNbFqPc0.js                                     0.48 kB │ gzip:     0.29 kB
+dist/server/app-assets/docs._slug-Db1FhkDC.js                                 0.49 kB │ gzip:     0.29 kB
+dist/server/app-assets/app.incidents.new-D5d9Zcik.js                          0.53 kB │ gzip:     0.30 kB
+dist/server/app-assets/public-origin-DsO7EJ-x.js                              0.53 kB │ gzip:     0.32 kB
+dist/server/app-assets/cutover-draft-DTKJTmPk.js                              0.55 kB │ gzip:     0.32 kB
+dist/server/app-assets/utils-vIo5o7IS.js                                      0.59 kB │ gzip:     0.37 kB
+dist/server/app-assets/createSsrRpc-FRlJ2tiL.js                               0.67 kB │ gzip:     0.40 kB
+dist/server/app-assets/VisualEditBoundary-z9pImQEZ.js                         0.81 kB │ gzip:     0.44 kB
+dist/server/app-assets/body-BSXnTmbD.js                                       0.81 kB │ gzip:     0.47 kB
+dist/server/app-assets/domain-B7v_qPoN.js                                     0.85 kB │ gzip:     0.42 kB
+dist/server/app-assets/app-head-OLBu_GyC.js                                   0.93 kB │ gzip:     0.54 kB
+dist/server/app-assets/__23tanstack-start-server-fn-resolver-exotXg4h.js      0.96 kB │ gzip:     0.50 kB
+dist/server/app-assets/useRouterState-BHEQVcuk.js                             1.08 kB │ gzip:     0.58 kB
+dist/server/app-assets/pagination-BH6z0OTb.js                                 1.17 kB │ gzip:     0.52 kB
+dist/server/app-assets/useNavigate-0uqje9Ge.js                                1.19 kB │ gzip:     0.65 kB
+dist/server/app-assets/root-Degqiioy.js                                       1.21 kB │ gzip:     0.58 kB
+dist/server/app-assets/opaque-tokens-QW90qhqC.js                              1.25 kB │ gzip:     0.61 kB
+dist/server/app-assets/ClientOnly-C_A2_-Os.js                                 1.37 kB │ gzip:     0.68 kB
+dist/server/app-assets/useMatch-BM0e4WWq.js                                   1.49 kB │ gzip:     0.71 kB
+dist/server/app-assets/extensions-wincTnOg.js                                 1.55 kB │ gzip:     0.65 kB
+dist/server/app-assets/docs-xh6gpiVa.js                                       1.58 kB │ gzip:     0.60 kB
+dist/server/app-assets/month-QNzw0JLq.js                                      1.71 kB │ gzip:     0.76 kB
+dist/server/app-assets/redirect-bRoF60d_.js                                   1.76 kB │ gzip:     0.86 kB
+dist/server/app-assets/accent-ink-BD7iXk4V.js                                 1.90 kB │ gzip:     0.84 kB
+dist/server/app-assets/preferences--6jf0VW1.js                                2.04 kB │ gzip:     0.85 kB
+dist/server/app-assets/update-due-notice-s74NmUjU.js                          2.26 kB │ gzip:     0.94 kB
+dist/server/app-assets/lazyRouteComponent-Da4h8yL6.js                         2.49 kB │ gzip:     1.06 kB
+dist/server/app-assets/door-client-bSe7e4u4.js                                2.51 kB │ gzip:     1.25 kB
+dist/server/app-assets/docs.index-Cai70LoL.js                                 2.63 kB │ gzip:     0.84 kB
+dist/server/app-assets/format-BW0KB5tS.js                                     4.18 kB │ gzip:     1.45 kB
+dist/server/app-assets/loaders-CjC-3Jp0.js                                    4.75 kB │ gzip:     1.87 kB
+dist/server/app-assets/path-BoIoeO6_.js                                       4.88 kB │ gzip:     1.88 kB
+dist/server/app-assets/settings-tabs-BRZ7-Nzv.js                              4.94 kB │ gzip:     1.86 kB
+dist/server/app-assets/incident-component-changes-DhqzxtgM.js                 4.99 kB │ gzip:     1.84 kB
+dist/server/app-assets/lit-states-B-bJRYLQ.js                                 5.65 kB │ gzip:     1.34 kB
+dist/server/app-assets/link-Ct7r9n2r.js                                       6.18 kB │ gzip:     2.31 kB
+dist/server/app-assets/_tanstack-start-manifest_v-CP89zMF6.js                 6.19 kB │ gzip:     1.23 kB
+dist/server/app-assets/app.incidents.index-DEUcKtIl.js                        6.47 kB │ gzip:     1.69 kB
+dist/server/app-assets/mark-image-D4PMFBmx.js                                 6.53 kB │ gzip:     2.20 kB
+dist/server/app-assets/react-dom-tCMAo9HP.js                                  6.65 kB │ gzip:     1.96 kB
+dist/server/app-assets/DocsArticle-B_LgXcv_.js                                7.66 kB │ gzip:     2.16 kB
+dist/server/app-assets/useSelector-CBzNH9RO.js                                7.97 kB │ gzip:     2.19 kB
+dist/server/app-assets/states-DUpvwCTf.js                                     8.38 kB │ gzip:     3.27 kB
+dist/server/app-assets/invariant-CIjuCL-B.js                                  8.46 kB │ gzip:     3.54 kB
+dist/server/app-assets/performance-C_yLv5Hy.js                                8.78 kB │ gzip:     2.33 kB
+dist/server/app-assets/DocsNav-CxwkPw4w.js                                    9.34 kB │ gzip:     2.29 kB
+dist/server/app-assets/pages-EJg45NZe.js                                     10.95 kB │ gzip:     3.06 kB
+dist/server/app-assets/effects-2scgDlfO.js                                   11.24 kB │ gzip:     4.12 kB
+dist/server/app-assets/labels-BmBq805N.js                                    11.35 kB │ gzip:     4.16 kB
+dist/server/app-assets/use-source-autosave-DL0lxFNJ.js                       11.68 kB │ gzip:     3.45 kB
+dist/server/app-assets/Match-gDQBRItX.js                                     11.82 kB │ gzip:     3.07 kB
+dist/server/app-assets/route-DpWXZ2qO.js                                     12.42 kB │ gzip:     2.79 kB
+dist/server/app-assets/createServerFn-CQb56UZX.js                            12.47 kB │ gzip:     3.65 kB
+dist/server/app-assets/esm-DhTGoMSs.js                                       12.56 kB │ gzip:     3.73 kB
+dist/server/app-assets/app-JQcn6axL.js                                       13.69 kB │ gzip:     3.84 kB
+dist/server/app-assets/live-edit-runtime-CiYnunoh.js                         15.07 kB │ gzip:     4.65 kB
+dist/server/app-assets/draft-DENoevCg.js                                     17.13 kB │ gzip:     6.20 kB
+dist/server/app-assets/jsx-runtime-XFamSIwK.js                               18.55 kB │ gzip:     4.99 kB
+dist/server/app-assets/app.index-DR-3nUsD.js                                 18.61 kB │ gzip:     4.20 kB
+dist/server/app-assets/app.cutover-GAAHLf5s.js                               20.53 kB │ gzip:     5.38 kB
+dist/server/app-assets/presets-BYOKAxEE.js                                   20.89 kB │ gzip:     6.63 kB
+dist/server/app-assets/new-incident-page-DDZOPyIT.js                         22.26 kB │ gzip:     5.45 kB
+dist/server/app-assets/app.maintenance-C_UG6TTR.js                           24.17 kB │ gzip:     4.51 kB
+dist/server/app-assets/setup-GYbid0Oz.js                                     28.69 kB │ gzip:     7.43 kB
+dist/server/app-assets/sign-in-pane-BHWknTOu.js                              29.28 kB │ gzip:     7.30 kB
+dist/server/app-assets/app.move-in-Cp0002Db.js                               34.93 kB │ gzip:     7.17 kB
+dist/server/app-assets/publish-options-Bcd5nPvt.js                           41.29 kB │ gzip:    10.36 kB
+dist/server/app-assets/router-CeuwvLGH.js                                    45.68 kB │ gzip:    12.56 kB
+dist/server/app-assets/app.subscribers-CTUTN5E8.js                           47.81 kB │ gzip:     9.33 kB
+dist/server/app-assets/app.components-Duu0xd1N.js                            71.29 kB │ gzip:    13.56 kB
+dist/server/app-assets/button-CEh5tO5w.js                                    99.14 kB │ gzip:    18.99 kB
+dist/server/app-assets/app.incidents._incidentId-CGQEto3I.js                101.59 kB │ gzip:    21.70 kB
+dist/server/app-assets/manifest-K-uYQ3xM.js                                 107.53 kB │ gzip:    25.95 kB
+dist/server/app-assets/mail-DzQH-ywF.js                                     113.29 kB │ gzip:    27.89 kB
+dist/server/app-assets/schemas-Bv2TzxzA.js                                  175.57 kB │ gzip:    37.91 kB
+dist/server/app-assets/app.settings-Rl2LqcHl.js                             325.37 kB │ gzip:    59.75 kB
+dist/server/app-assets/undo-snapshot-BwVqqhob.js                            436.25 kB │ gzip:   110.60 kB
+dist/server/app-assets/bodies-BgtITdml.js                                 1,634.67 kB │ gzip:   306.08 kB
+dist/server/index.js                                                      4,042.66 kB │ gzip: 1,017.19 kB
+
+[INEFFECTIVE_DYNAMIC_IMPORT] ../../../../.npm/_npx/ff6f39e38c236493/node_modules/@runeditrun/rer/modules/demo/index.mjs is dynamically imported by src/core/app/mail.ts, src/core/features/overview/sender-check.ts, src/core/platform/ai/demo.ts but also statically imported by src/server.ts, dynamic import will not move module into another chunk.
+
+✓ built in 1.71s
+Your application is built
+build: complete (exit 0)

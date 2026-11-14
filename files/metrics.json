@@ -1,0 +1,244 @@
+{
+  "before": {
+    "component-list": {
+      "small": 4121,
+      "large": 182321,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 177,321 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 178,200 rows from small to large; allowed 10% of small + 200 = 612"
+        }
+      ]
+    },
+    "incident-list": {
+      "small": 1805,
+      "large": 180005,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 175,005 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 178,200 rows from small to large; allowed 10% of small + 200 = 380"
+        }
+      ]
+    },
+    "incident-detail": {
+      "small": 1317,
+      "large": 1343,
+      "ok": true,
+      "failures": []
+    },
+    "component-history": {
+      "small": 13,
+      "large": 511,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "growth",
+          "message": "grew 498 rows from small to large; allowed 10% of small + 200 = 201"
+        }
+      ]
+    },
+    "subscriber-list": {
+      "small": 4299,
+      "large": 325059,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 320,059 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 320,760 rows from small to large; allowed 10% of small + 200 = 629"
+        }
+      ]
+    },
+    "monitor-list": {
+      "small": 653,
+      "large": 653,
+      "ok": true,
+      "failures": []
+    },
+    "maintenance-list": {
+      "small": 13,
+      "large": 13,
+      "ok": true,
+      "failures": []
+    },
+    "minute-tick": {
+      "small": 24219,
+      "large": 1671933,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "the scheduled handler failed: Native scheduled preparation failed (exception); fixture values are not logged. at small and large"
+        },
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 40,000 at large by 1,631,933"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 1,647,714 rows from small to large; allowed 10% of small + 200 = 2,621"
+        }
+      ]
+    },
+    "public-summary": {
+      "small": 0,
+      "large": 0,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ]
+    },
+    "public-history": {
+      "small": 0,
+      "large": 0,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ]
+    },
+    "public-feed": {
+      "small": 0,
+      "large": 0,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ]
+    }
+  },
+  "after": {
+    "component-list": {
+      "small": 3873,
+      "large": 3873,
+      "ok": true,
+      "failures": []
+    },
+    "incident-list": {
+      "small": 4450,
+      "large": 343030,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 338,030 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 338,580 rows from small to large; allowed 10% of small + 200 = 645"
+        }
+      ]
+    },
+    "incident-detail": {
+      "small": 1317,
+      "large": 1343,
+      "ok": true,
+      "failures": []
+    },
+    "component-history": {
+      "small": 13,
+      "large": 110,
+      "ok": true,
+      "failures": []
+    },
+    "subscriber-list": {
+      "small": 4299,
+      "large": 325059,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 320,059 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 320,760 rows from small to large; allowed 10% of small + 200 = 629"
+        }
+      ]
+    },
+    "monitor-list": {
+      "small": 653,
+      "large": 653,
+      "ok": true,
+      "failures": []
+    },
+    "maintenance-list": {
+      "small": 13,
+      "large": 13,
+      "ok": true,
+      "failures": []
+    },
+    "minute-tick": {
+      "small": 24219,
+      "large": 1671933,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "the scheduled handler failed: Native scheduled preparation failed (exception); fixture values are not logged. at small and large"
+        },
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 40,000 at large by 1,631,933"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 1,647,714 rows from small to large; allowed 10% of small + 200 = 2,621"
+        }
+      ]
+    },
+    "public-summary": {
+      "small": 0,
+      "large": 0,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ]
+    },
+    "public-history": {
+      "small": 0,
+      "large": 0,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ]
+    },
+    "public-feed": {
+      "small": 0,
+      "large": 0,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ]
+    }
+  }
+}

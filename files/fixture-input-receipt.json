@@ -1,0 +1,15 @@
+{
+  "size-check.json": {
+    "bytes": 10488,
+    "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59"
+  },
+  "agent-surface.json": {
+    "bytes": 262,
+    "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9"
+  },
+  "guard": {
+    "limitBytes": 209715200,
+    "scope": "synthetic declaration input, not SQLite/WAL size",
+    "pass": true
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "assertion_scripts": 10,
+  "base": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "branch": "cloud/sd-lamp-qgrowth-components-1",
+  "browser_proof_files": [
+    {
+      "path": "component-history-1440.png",
+      "sha256": "7ce64bef0d73a9f3b5f8803f438425e69b8bc18d06c0e83208dead3d9838d28a"
+    },
+    {
+      "path": "component-history-390.png",
+      "sha256": "537ea38fd566ebd6cdf78c3406e8feee4f4f2afe998ea5736382e1f58e5a2187"
+    }
+  ],
+  "browser_proof_head": "1516f70a710d21775b8498c0357ea26a76f164d1",
+  "browser_proof_widths": [
+    1440,
+    390
+  ],
+  "candidate_browser_node": "22.20.0",
+  "clause_changes": [],
+  "clause_counts_after": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "clause_counts_before": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129
+  },
+  "code_measurement_identity": [
+    {
+      "path": "src/core/app/request-work.ts",
+      "scratch_matches_candidate": true,
+      "sha256": "1d246455d0657bf8178e7259f3ca976f0c93073634743e7b0e8437dc53cacbed"
+    },
+    {
+      "path": "src/core/features/components/repository.ts",
+      "scratch_matches_candidate": true,
+      "sha256": "e9d630d6885afc9380ef6c8233bb3b8393cb41f686c1cbd1e4e5535383791d06"
+    },
+    {
+      "path": "src/core/features/components/service.ts",
+      "scratch_matches_candidate": true,
+      "sha256": "fba2025538662e5ea1ffc858d2b416246e47d8441ffb748df43927f947208b8f"
+    },
+    {
+      "path": "src/core/features/components/routes.ts",
+      "scratch_matches_candidate": true,
+      "sha256": "79bd5932d7e258502bb00cf9fc9dc95f29ae2993b6dd62847159d113c1fb0bc3"
+    },
+    {
+      "path": "src/core/features/components/ui/component-history.tsx",
+      "scratch_matches_candidate": true,
+      "sha256": "2336b0e2dfed8bade40d13102f1b2fbc30669352854b8bf3e36028a30fde4ef5"
+    }
+  ],
+  "gate_required": false,
+  "github_api_calls_before_watcher": 2,
+  "head": "1516f70a710d21775b8498c0357ea26a76f164d1",
+  "local_checks": {
+    "candidate_emitted_worker_flow": "pass",
+    "candidate_rebuild": "pass",
+    "componentReadFlow": "pass",
+    "contract_docs": "pass",
+    "emitted_statements_large": "pass",
+    "emitted_statements_small": "pass",
+    "notification_tests": {
+      "failed": 0,
+      "passed": 7,
+      "registered": 7
+    },
+    "production_build": "pass",
+    "source_lock": "pass",
+    "targeted_size_flows": "pass",
+    "typecheck": "pass",
+    "whole_size_command": "failure on unrelated ordinary flows"
+  },
+  "migration_added": false,
+  "ordinary_size_flows_after_passed": 5,
+  "ordinary_size_flows_before_passed": 3,
+  "pr": "https://github.com/just-every/run-lamp/pull/367",
+  "product_push": "success",
+  "publication_scan": {
+    "fleet_gate_required": true,
+    "rule": "scan.gitleaks-unavailable",
+    "status": "INCOMPLETE"
+  },
+  "registered_tests_after": 92,
+  "registered_tests_before": 92,
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "targeted_size_flows_after_passed": 2,
+  "targeted_size_flows_before_passed": 0,
+  "timestamp": "2026-11-14T01:49:49.020305+00:00",
+  "unchanged_files": {
+    "ACCEPTANCE.md": true,
+    "CONTRACT.md": true,
+    "docs/CLAIMS.md": true,
+    "package.json": true,
+    "pnpm-lock.yaml": true
+  },
+  "verify_run": 43542499477,
+  "verify_status": "pending"
+}

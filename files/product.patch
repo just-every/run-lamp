@@ -1,0 +1,446 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 49bd294..caa257d 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -4312,7 +4312,7 @@
+       "executable": false
+     },
+     "src/core/app/request-work.ts": {
+-      "sha256": "6fc812b17ed26d8828ae70b3a114d4d5635d7f89327f8e0a214c990bb17f3b9a",
++      "sha256": "1d246455d0657bf8178e7259f3ca976f0c93073634743e7b0e8437dc53cacbed",
+       "executable": false
+     },
+     "src/core/app/server.ts": {
+@@ -4648,15 +4648,15 @@
+       "executable": false
+     },
+     "src/core/features/components/repository.ts": {
+-      "sha256": "3dea58cdf6120f8f711b79bda0bde85261a7ef7271848f47a4be467f679ea935",
++      "sha256": "e9d630d6885afc9380ef6c8233bb3b8393cb41f686c1cbd1e4e5535383791d06",
+       "executable": false
+     },
+     "src/core/features/components/routes.ts": {
+-      "sha256": "d8de9000bf922a599b1e3c85c51f6385d2e58c9b4d881a409146bc24ce764173",
++      "sha256": "79bd5932d7e258502bb00cf9fc9dc95f29ae2993b6dd62847159d113c1fb0bc3",
+       "executable": false
+     },
+     "src/core/features/components/service.ts": {
+-      "sha256": "0af05b11b9483cb76ce823fb562e618ea86917596183205588583bc744523fa6",
++      "sha256": "fba2025538662e5ea1ffc858d2b416246e47d8441ffb748df43927f947208b8f",
+       "executable": false
+     },
+     "src/core/features/components/state-history-repository.ts": {
+@@ -4680,7 +4680,7 @@
+       "executable": false
+     },
+     "src/core/features/components/ui/component-history.tsx": {
+-      "sha256": "a6d248231bfea7e8a326157b81f9219155efecf5d69afac426a2d23ce9f3752e",
++      "sha256": "2336b0e2dfed8bade40d13102f1b2fbc30669352854b8bf3e36028a30fde4ef5",
+       "executable": false
+     },
+     "src/core/features/components/ui/component-list.tsx": {
+@@ -7983,6 +7983,10 @@
+       "sha256": "8edf31a7fd61f3e93f7dacb565a0234fd7681f785a88cf89676e00567cdb5335",
+       "executable": false
+     },
++    "tests/e2e/helpers/component-read-flow.mjs": {
++      "sha256": "ad26e6d4456d0d2ea6f4de47845235e1c2436bfbc7fee8acdd8c9978b86c7e53",
++      "executable": false
++    },
+     "tests/e2e/helpers/conditional-component-flow.mjs": {
+       "sha256": "78e8cb2d336aa7891bd76059b8fbeb6055a165d8c111f58065048612302f8ec8",
+       "executable": false
+@@ -8468,7 +8472,7 @@
+       "executable": false
+     },
+     "tests/e2e/public-contract.test.mjs": {
+-      "sha256": "9e6eaa8534007aac5dbe93b6f8ea2292803d74d98908bf9773e4a90ed91efe8c",
++      "sha256": "ca2d2d89a27358f3bca8013e5678d939700c72d56cb0db9b0e1806111f18ba98",
+       "executable": false
+     },
+     "tests/e2e/publishing-browser.test.mjs": {
+diff --git a/src/core/app/request-work.ts b/src/core/app/request-work.ts
+index 2a70dbb..1fdb3e4 100644
+--- a/src/core/app/request-work.ts
++++ b/src/core/app/request-work.ts
+@@ -36,6 +36,10 @@ export function queueDueWork(runtime: ReturnType<typeof createApp>, bindings: Ap
+   // Public read requests must never query D1, including after the response.
+   // Cron and operator requests retain the existing due-work recovery path.
+   if ((request.method === 'GET' || request.method === 'HEAD') && createHostDispatch(bindings).surfaceFor(request) === 'page') return;
++  // Catalogue and history reads are observational, even while Cron is quiet.
++  // Their writes already dispatch committed notifications; Cron and the other
++  // request recovery doors retain due maintenance and pending delivery work.
++  if ((request.method === 'GET' || request.method === 'HEAD') && /^(?:\/api)?\/app\/components(?:\/|$)/.test(new URL(request.url).pathname)) return;
+   const after = (work: Promise<void>) => context.waitUntil(work.catch((cause) => console.error("Lamp could not run due work after a request; Cron retries it.", cause)));
+   if (request.method !== "GET" && request.method !== "HEAD" && response.ok && new URL(request.url).pathname.startsWith("/api/app/")) {
+     after(dispatchMail(runtime.services, bindings));
+diff --git a/src/core/features/components/repository.ts b/src/core/features/components/repository.ts
+index 12fd295..c22fe18 100644
+--- a/src/core/features/components/repository.ts
++++ b/src/core/features/components/repository.ts
+@@ -30,9 +30,13 @@ export type ComponentClaimEvent = Pick<typeof componentClaimEvents.$inferSelect,
+ export type ComponentClaimEventInput = typeof componentClaimEvents.$inferInsert;
+ export type ComponentStateHistoryInput = { id: string; componentId: string; previousState: ComponentState; newState: ComponentState; cause: StateClaimCause; changedAt: string; createdAt: string; updatedAt: string };
+ 
++export type HistoryCursor = [changedAt: string, createdAt: string, id: string];
++export type CorrectionCursor = [createdAt: string, id: string];
++export type ComponentReadPage<T> = { limit: number; before: T | null };
++
+ export interface ComponentRepository {
+   listComponents(): Promise<Array<StoredComponent & { groupName: string | null }>>;
+-  listCurrentClaims(): Promise<CurrentComponentClaim[]>;
++  listCurrentClaims(componentIds: string[]): Promise<CurrentComponentClaim[]>;
+   reorder(kind: "components" | "groups", expectedIds: string[], orderedIds: string[], groupId: string | null): Promise<void>;
+   listGroups(): Promise<StoredComponentGroup[]>;
+   findComponent(componentId: string): Promise<StoredComponent | null>;
+@@ -46,8 +50,8 @@ export interface ComponentRepository {
+   appendStateHistory(input: ComponentStateHistoryInput): Promise<void>;
+   appendCurrentStateHistory(input: Omit<ComponentStateHistoryInput, "previousState" | "newState">): Promise<{ previousState: ComponentState; newState: ComponentState } | null>;
+   findStateAt(componentId: string, instant: string): Promise<ComponentState | null>;
+-  listHistory(componentId: string): Promise<ComponentHistoryEntry[]>;
+-  listCorrections(componentId: string): Promise<ComponentHistoryCorrection[]>;
++  listHistory(componentId: string, page?: ComponentReadPage<HistoryCursor>): Promise<ComponentHistoryEntry[]>;
++  listCorrections(componentId: string, page?: ComponentReadPage<CorrectionCursor>): Promise<ComponentHistoryCorrection[]>;
+   appendCorrection(input: typeof componentStateCorrections.$inferInsert): Promise<void>;
+   appendCorrectionAudit(input: { id: string; historyId: string; operatorId: string; reason: string; payloadJson: string; createdAt: string; updatedAt: string }): Promise<void>;
+   replaceStandingClaim(input: { id: string; componentId: string; state: ComponentState | null; operatorId: string; createdAt: string; updatedAt: string; event: ComponentClaimEventInput }): Promise<void>;
+@@ -85,23 +89,29 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
+         .orderBy(componentGroups.displayOrder, components.displayOrder, components.id)
+         .all();
+     },
+-    async listCurrentClaims() {
++    async listCurrentClaims(componentIds) {
++      if (!componentIds.length) return [];
++      // Start with live parents through their existing lifecycle/state indexes.
++      // Resolved attachments must not be scanned to derive the current state.
++      const ids = JSON.stringify(componentIds);
+       const result = await binding.prepare(`
+         SELECT component_id AS componentId, state, 'standing-claim' AS causeType
+-        FROM component_standing_claims
+-        UNION ALL SELECT component_id AS componentId,state,'vendor' AS causeType FROM vendor_dependencies WHERE state IS NOT NULL
++        FROM component_standing_claims WHERE component_id IN (SELECT value FROM json_each(?))
++        UNION ALL
++        SELECT component_id AS componentId, state, 'vendor' AS causeType
++        FROM vendor_dependencies WHERE state IS NOT NULL AND component_id IN (SELECT value FROM json_each(?))
+         UNION ALL
+         SELECT attached.component_id AS componentId, attached.state, 'incident' AS causeType
+-        FROM incident_components AS attached
+-        JOIN incidents AS incident ON incident.id = attached.incident_id
+-        WHERE attached.component_id IS NOT NULL AND attached.published_at IS NOT NULL
+-          AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'
++        FROM incidents AS incident CROSS JOIN incident_components AS attached
++        ON attached.incident_id = incident.id
++        WHERE incident.lifecycle IN ('Investigating', 'Identified', 'Monitoring') AND incident.deleted_at IS NULL
++          AND attached.published_at IS NOT NULL AND attached.component_id IN (SELECT value FROM json_each(?))
+         UNION ALL
+         SELECT attached.component_id AS componentId, attached.state, 'maintenance' AS causeType
+-        FROM maintenance_components AS attached
+-        JOIN maintenance AS window ON window.id = attached.maintenance_id
+-        WHERE attached.component_id IS NOT NULL AND window.state = 'In progress'
+-      `).all<CurrentComponentClaim>();
++        FROM maintenance AS window CROSS JOIN maintenance_components AS attached
++        ON attached.maintenance_id = window.id
++        WHERE window.state = 'In progress' AND attached.component_id IN (SELECT value FROM json_each(?))
++      `).bind(ids, ids, ids, ids).all<CurrentComponentClaim>();
+       return result.results;
+     },
+     async reorder(kind, expectedIds, orderedIds, groupId) {
+@@ -290,7 +300,7 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
+         .get();
+       return state?.state ?? null;
+     },
+-    async listHistory(componentId) {
++    async listHistory(componentId, page) {
+       return database
+         .select({
+           id: componentStateHistory.id,
+@@ -305,11 +315,14 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
+           createdAt: componentStateHistory.createdAt,
+         })
+         .from(componentStateHistory)
+-        .where(eq(componentStateHistory.componentId, componentId))
+-        .orderBy(desc(componentStateHistory.changedAt), desc(componentStateHistory.createdAt))
++        .where(and(eq(componentStateHistory.componentId, componentId), page?.before
++          ? sql`(${componentStateHistory.changedAt}, ${componentStateHistory.createdAt}, ${componentStateHistory.id}) < (${page.before[0]}, ${page.before[1]}, ${page.before[2]})`
++          : undefined))
++        .orderBy(desc(componentStateHistory.changedAt), desc(componentStateHistory.createdAt), desc(componentStateHistory.id))
++        .limit(page ? page.limit + 1 : -1)
+         .all();
+     },
+-    async listCorrections(componentId) {
++    async listCorrections(componentId, page) {
+       return database
+         .select({
+           id: componentStateCorrections.id,
+@@ -322,8 +335,11 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
+           createdAt: componentStateCorrections.createdAt,
+         })
+         .from(componentStateCorrections)
+-        .where(eq(componentStateCorrections.componentId, componentId))
+-        .orderBy(desc(componentStateCorrections.createdAt))
++        .where(and(eq(componentStateCorrections.componentId, componentId), page?.before
++          ? sql`(${componentStateCorrections.createdAt}, ${componentStateCorrections.id}) < (${page.before[0]}, ${page.before[1]})`
++          : undefined))
++        .orderBy(desc(componentStateCorrections.createdAt), desc(componentStateCorrections.id))
++        .limit(page ? page.limit + 1 : -1)
+         .all();
+     },
+     async appendCorrection(input) {
+diff --git a/src/core/features/components/routes.ts b/src/core/features/components/routes.ts
+index dab2864..cafba54 100644
+--- a/src/core/features/components/routes.ts
++++ b/src/core/features/components/routes.ts
+@@ -6,6 +6,16 @@ import { componentGroupSchema, componentHistoryCorrectionSchema, componentCreate
+ import { ulidSchema } from "../../shared/ids";
+ import type { ComponentsService } from "./service";
+ 
++const cursor = <T extends z.ZodType>(schema: T) => z.string().transform((value, context) => {
++  try { return JSON.parse(value) as unknown; }
++  catch { context.addIssue({ code: "custom", message: "Invalid history cursor." }); return z.NEVER; }
++}).pipe(schema).nullable().default(null);
++const historyPageSchema = z.object({
++  limit: z.coerce.number().int().min(1).max(100).default(50),
++  cursor: cursor(z.tuple([z.iso.datetime(), z.iso.datetime(), ulidSchema])),
++  correctionsCursor: cursor(z.tuple([z.iso.datetime(), ulidSchema])),
++});
++
+ export function registerComponentRoutes(app: Hono<AppEnv>, service: ComponentsService) {
+   app.get("/api/app/components", async (context) => {
+     const [components, groups] = await Promise.all([service.list(), service.listGroups()]);
+@@ -28,7 +38,9 @@ export function registerComponentRoutes(app: Hono<AppEnv>, service: ComponentsSe
+   app.get("/api/app/components/:componentId/history", async (context) => {
+     const componentId = ulidSchema.safeParse(context.req.param("componentId"));
+     if (!componentId.success) return context.json({ error: "Invalid component identifier.", issues: componentId.error.issues }, 400);
+-    const history = await service.history(componentId.data);
++    const page = historyPageSchema.safeParse(context.req.query());
++    if (!page.success) return context.json({ error: "Invalid history page.", issues: page.error.issues }, 400);
++    const history = await service.history(componentId.data, { limit: page.data.limit, history: page.data.cursor, corrections: page.data.correctionsCursor });
+     return history ? context.json(history) : context.json({ error: "Component not found." }, 404);
+   });
+ 
+diff --git a/src/core/features/components/service.ts b/src/core/features/components/service.ts
+index 8a4bde6..5b850a7 100644
+--- a/src/core/features/components/service.ts
++++ b/src/core/features/components/service.ts
+@@ -2,7 +2,7 @@ import { mostSevereState, type ComponentState } from "../../shared/domain";
+ import { createUlid, nowIso } from "../../shared/ids";
+ import type { ComponentGroupInput, ComponentHistoryCorrectionInput, ComponentInput, ComponentUpdateInput, ComponentGroupUpdateInput } from "../../shared/schemas";
+ 
+-import type { ComponentClaimEventInput, ComponentHistoryCorrection, ComponentHistoryEntry, ComponentRepository, ComponentStateHistoryInput, StateClaimCause, StoredComponent, StoredComponentGroup } from "./repository";
++import type { HistoryCursor, CorrectionCursor, ComponentClaimEventInput, ComponentHistoryCorrection, ComponentHistoryEntry, ComponentRepository, ComponentStateHistoryInput, StateClaimCause, StoredComponent, StoredComponentGroup } from "./repository";
+ import { defaultComponentEvents, type ComponentEvents } from "./events";
+ 
+ export type ComponentView = StoredComponent & {
+@@ -14,13 +14,15 @@ export type ComponentView = StoredComponent & {
+ export type ComponentHistoryView = {
+   history: ComponentHistoryEntry[];
+   corrections: ComponentHistoryCorrection[];
++  historyPage: { limit: number; nextCursor: string | null };
++  correctionsPage: { limit: number; nextCursor: string | null };
+ };
+ 
+ export interface ComponentsService {
+   move(kind: "components" | "groups", id: string, direction: "up" | "down", expectedIds: string[], groupId: string | null): Promise<void>;
+   list(): Promise<ComponentView[]>;
+   listGroups(): Promise<StoredComponentGroup[]>;
+-  history(componentId: string): Promise<ComponentHistoryView | null>;
++  history(componentId: string, page?: { limit: number; history: HistoryCursor | null; corrections: CorrectionCursor | null }): Promise<ComponentHistoryView | null>;
+   get(componentId: string): Promise<ComponentView | null>;
+   create(input: ComponentInput, operatorId: string): Promise<ComponentView>;
+   update(componentId: string, input: ComponentUpdateInput): Promise<ComponentView | null>;
+@@ -78,7 +80,8 @@ export function createComponentsService(
+       await onPublicDataChanged();
+     },
+     async list() {
+-      const [components, claims] = await Promise.all([repository.listComponents(), repository.listCurrentClaims()]);
++      const components = await repository.listComponents();
++      const claims = await repository.listCurrentClaims(components.map(component => component.id));
+       const claimsByComponent = new Map<string, ComponentState[]>();
+       const standingClaims = new Map<string, ComponentState>();
+       for (const claim of claims) {
+@@ -96,10 +99,19 @@ export function createComponentsService(
+     async listGroups() {
+       return repository.listGroups();
+     },
+-    async history(componentId) {
++    async history(componentId, page = { limit: 50, history: null, corrections: null }) {
+       if (!await repository.findComponent(componentId)) return null;
+-      const [history, corrections] = await Promise.all([repository.listHistory(componentId), repository.listCorrections(componentId)]);
+-      return { history, corrections };
++      const [history, corrections] = await Promise.all([
++        repository.listHistory(componentId, { limit: page.limit, before: page.history }),
++        repository.listCorrections(componentId, { limit: page.limit, before: page.corrections }),
++      ]);
++      const entries = history.slice(0, page.limit), edits = corrections.slice(0, page.limit);
++      const lastEntry = entries.at(-1), lastEdit = edits.at(-1);
++      return {
++        history: entries, corrections: edits,
++        historyPage: { limit: page.limit, nextCursor: history.length > page.limit && lastEntry ? JSON.stringify([lastEntry.changedAt, lastEntry.createdAt, lastEntry.id]) : null },
++        correctionsPage: { limit: page.limit, nextCursor: corrections.length > page.limit && lastEdit ? JSON.stringify([lastEdit.createdAt, lastEdit.id]) : null },
++      };
+     },
+     async get(componentId) {
+       const component = await repository.findComponent(componentId);
+diff --git a/src/core/features/components/ui/component-history.tsx b/src/core/features/components/ui/component-history.tsx
+index 77580d4..8385182 100644
+--- a/src/core/features/components/ui/component-history.tsx
++++ b/src/core/features/components/ui/component-history.tsx
+@@ -15,7 +15,12 @@ import { AvailabilityReport } from "../../availability-reports/ui/availability-r
+ export function ComponentHistory({ component, onSaved }: { component: ComponentView; onSaved: () => void }) {
+   const formatOperatorTime = useOperatorTime();
+   const timezone = usePageTimezone();
+-  const { data, error, loading, refresh } = useAppData<ComponentHistoryView>(`/api/app/components/${component.id}/history`);
++  const [historyCursors, setHistoryCursors] = useState<string[]>([]);
++  const [correctionCursors, setCorrectionCursors] = useState<string[]>([]);
++  const query = new URLSearchParams();
++  if (historyCursors.length) query.set("cursor", historyCursors.at(-1)!);
++  if (correctionCursors.length) query.set("correctionsCursor", correctionCursors.at(-1)!);
++  const { data, error, loading, refresh } = useAppData<ComponentHistoryView>(`/api/app/components/${component.id}/history${query.size ? `?${query}` : ""}`);
+   const [state, setState] = useState<ComponentState>("Operational");
+   const [startsAt, setStartsAt] = useState("");
+   const [endsAt, setEndsAt] = useState("");
+@@ -30,7 +35,7 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
+     try {
+       await appApi(`/api/app/components/${component.id}/history-corrections`, { method: "POST", body: JSON.stringify({ state, startsAt: fromPageDateTime(startsAt, timezone), endsAt: fromPageDateTime(endsAt, timezone), reason }) });
+       setState("Operational"); setStartsAt(""); setEndsAt(""); setReason(""); setSaved(true);
+-      refresh(); onSaved();
++      setHistoryCursors([]); setCorrectionCursors([]); refresh(); onSaved();
+     } catch (cause) {
+       setMutationError(cause instanceof Error ? cause.message : "The correction could not be saved.");
+     } finally {
+@@ -44,7 +49,17 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
+     {error ? <FormError>{error}</FormError> : null}
+     {loading && !data ? <LoadingState /> : data ? <>
+       <section className="component-history" aria-label="Component state history" tabIndex={0}>{data.history.length ? data.history.map((entry) => <article key={entry.id}><strong>{entry.previousState} → {entry.newState}</strong><small>{entry.causeType === "standing-claim" ? "Operator status" : entry.causeType.replaceAll("-", " ")} · {formatOperatorTime(entry.changedAt)}</small></article>) : <p>No status changes yet.</p>}</section>
++      <div className="drawer-actions" aria-label="History pages">
++        <p>{data.history.length} changes on this page · Newest first</p>
++        {historyCursors.length > 0 && <Button variant="secondary" disabled={loading} onClick={() => setHistoryCursors(current => current.slice(0, -1))}>Newer changes</Button>}
++        {data.historyPage.nextCursor && <Button variant="secondary" disabled={loading} onClick={() => setHistoryCursors(current => [...current, data.historyPage.nextCursor!])}>Older changes</Button>}
++      </div>
+       {data.corrections.length ? <section className="component-corrections" aria-label="Corrections"><h3>Corrections</h3>{data.corrections.map((correction) => <article key={correction.id}><strong>{correction.state}</strong><small>{formatOperatorTime(correction.startsAt)} to {formatOperatorTime(correction.endsAt)}</small><p>{correction.reason}</p></article>)}</section> : null}
++      {(correctionCursors.length > 0 || data.correctionsPage.nextCursor) && <div className="drawer-actions" aria-label="Correction pages">
++        <p>{data.corrections.length} corrections on this page · Newest first</p>
++        {correctionCursors.length > 0 && <Button variant="secondary" disabled={loading} onClick={() => setCorrectionCursors(current => current.slice(0, -1))}>Newer corrections</Button>}
++        {data.correctionsPage.nextCursor && <Button variant="secondary" disabled={loading} onClick={() => setCorrectionCursors(current => [...current, data.correctionsPage.nextCursor!])}>Older corrections</Button>}
++      </div>}
+     </> : null}
+     <AvailabilityReport component={component} />
+     <details className="component-correction"><summary>Correct a past period</summary><form className="component-correction-form" onSubmit={correct} onChange={() => setSaved(false)}>
+diff --git a/tests/e2e/helpers/component-read-flow.mjs b/tests/e2e/helpers/component-read-flow.mjs
+new file mode 100644
+index 0000000..7c527e9
+--- /dev/null
++++ b/tests/e2e/helpers/component-read-flow.mjs
+@@ -0,0 +1,95 @@
++import assert from 'node:assert/strict';
++import { mkdir } from 'node:fs/promises';
++import { chromium } from 'playwright';
++import { openStatusJourney } from './status-journey.mjs';
++
++// Exercise the emitted Worker, including request recovery and the drawer. A
++// small requested page crosses ties without introducing another registration.
++export async function componentReadFlow() {
++  console.log('Component read: opening emitted Worker');
++  const j = await openStatusJourney({ pageHost: 'localhost', builtWorker: true });
++  let browser;
++  try {
++    console.log('Component read: owner signed in');
++    const component = await j.component('synthetic-lamp-paged-history');
++    const control = await j.component('synthetic-lamp-claim-control');
++    const now = Date.now();
++    await j.json('/test/clock', 'PUT', { now }, 204);
++
++    const startsAt = new Date(now - 3_600_000).toISOString(), endsAt = new Date(now - 1_800_000).toISOString();
++    // Native corrections share both timestamps, exercising the ID tiebreaker.
++    const reasons = [];
++    for (let index = 0; index < 54; index++) {
++      const reason = `synthetic-lamp-correction-${index}`;
++      await j.json(`/api/app/components/${component.id}/history-corrections`, 'POST', { state: 'Degraded performance', startsAt, endsAt, reason }, 204);
++      reasons.push(reason);
++    }
++    console.log('Component read: 54 native corrections committed');
++    const path = `/api/app/components/${component.id}/history`;
++    const first = await j.json(path);
++    assert.equal(first.history.length, 50);
++    assert.equal(first.corrections.length, 50);
++    const collect = async (field, pageField, query) => {
++      const entries = []; let cursor;
++      do {
++        const response = await j.json(`${path}?${new URLSearchParams({ limit: '7', ...(cursor ? { [query]: cursor } : {}) })}`);
++        assert.ok(response[field].length <= 7, 'the requested bound applies in SQL');
++        entries.push(...response[field]); cursor = response[pageField].nextCursor;
++      } while (cursor);
++      assert.equal(new Set(entries.map(row => row.id)).size, entries.length, 'cursor pages never repeat a tied entry');
++      return entries;
++    };
++    const history = await collect('history', 'historyPage', 'cursor');
++    const corrections = await collect('corrections', 'correctionsPage', 'correctionsCursor');
++    assert.equal(history.length, 55, 'all corrections and the original history remain reachable');
++    assert.deepEqual(corrections.map(row => row.reason).sort(), reasons.sort(), 'all correction reasons remain reachable');
++    const ordered = [...history].sort((a, b) => b.changedAt.localeCompare(a.changedAt) || b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
++    assert.deepEqual(history, ordered, 'newest first with stable ties across every page');
++    for (const query of ['limit=0', 'limit=101', 'cursor=invalid', 'correctionsCursor=%5B%5D']) await j.json(`${path}?${query}`, 'GET', undefined, 400);
++    await j.json(`/api/app/components/${control.id}/standing-claim`, 'PUT', { state: 'Major outage' });
++    const list = (await j.json('/api/app/components')).components;
++    assert.equal(list.find(row => row.id === control.id).publicState, 'Major outage');
++    assert.equal(list.find(row => row.id === component.id).publicState, 'Operational', 'historical corrections are not current claims');
++
++    // A newly restarted isolate has no read-recovery throttle to mask a bug.
++    await j.json('/api/app/maintenance', 'POST', { title: 'synthetic-lamp-read-recovery', affectedAudience: 'Synthetic readers', customerImpact: 'Synthetic maintenance', startsAt: new Date(now + 25 * 3_600_000).toISOString(), endsAt: new Date(now + 26 * 3_600_000).toISOString(), componentIds: [component.id], autoStart: false, autoComplete: false }, 201);
++    await j.runtime.getWorker();
++    await j.restart();
++    await j.json('/test/clock', 'PUT', { now: now + 2 * 3_600_000 }, 204);
++
++    await j.signIn(undefined, { fresh: true });
++    // Sign-in itself bypasses request due-work; neither read may publish notices.
++    const before = await (await j.db).prepare('SELECT COUNT(*) AS count FROM maintenance_notices').first();
++    await j.json('/api/app/components');
++    await j.json(path);
++    await j.runtime.getWorker();
++    const after = await (await j.db).prepare('SELECT COUNT(*) AS count FROM maintenance_notices').first();
++    assert.deepEqual(after, before, 'component reads do not publish a maintenance reminder');
++    await j.tick(now + 2 * 3_600_000);
++    assert.equal((await (await j.db).prepare("SELECT COUNT(*) AS count FROM maintenance_notices WHERE kind='reminder'").first()).count, 1, 'Cron still publishes the due reminder once');
++    await j.tick(now + 2 * 3_600_000);
++    assert.equal((await (await j.db).prepare("SELECT COUNT(*) AS count FROM maintenance_notices WHERE kind='reminder'").first()).count, 1, 'repeated Cron keeps notification idempotency');
++
++    console.log('Component read: native paging and Cron passed');
++    browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
++    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
++    await context.addCookies([{ name: j.cookie.split('=')[0], value: j.cookie.slice(j.cookie.indexOf('=') + 1), url: j.appOrigin }]);
++    const page = await context.newPage();
++    await page.goto(`${j.appOrigin}/app/components`);
++    await page.getByRole('button', { name: new RegExp(component.name) }).click();
++    await page.getByRole('button', { name: 'History', exact: true }).click();
++    await page.getByRole('button', { name: 'Older changes', exact: true }).click();
++    await page.getByText('5 changes on this page', { exact: false }).waitFor();
++    await page.getByRole('button', { name: 'Newer changes', exact: true }).click();
++    await page.getByText('50 changes on this page', { exact: false }).waitFor();
++    await page.getByRole('button', { name: 'Older corrections', exact: true }).click();
++    await page.getByText('4 corrections on this page', { exact: false }).waitFor();
++    await page.getByRole('button', { name: 'Newer corrections', exact: true }).click();
++    const proof = process.env.LAMP_COMPONENT_PROOF_DIR || '.tmp/component-read-proof';
++    await mkdir(proof, { recursive: true });
++    for (const width of [1440, 390]) {
++      await page.setViewportSize({ width, height: 1000 });
++      await page.screenshot({ path: `${proof}/component-history-${width}.png`, fullPage: true });
++    }
++  } finally { await browser?.close(); await j.close(); }
++}
+diff --git a/tests/e2e/public-contract.test.mjs b/tests/e2e/public-contract.test.mjs
+index 78fc088..da471c9 100644
+--- a/tests/e2e/public-contract.test.mjs
++++ b/tests/e2e/public-contract.test.mjs
+@@ -1,3 +1,4 @@
++import { componentReadFlow } from './helpers/component-read-flow.mjs';
+ import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintenanceActor } from './helpers/operator-attribution.mjs';
+ import assert from 'node:assert/strict';
+ import { mkdir, readFile } from 'node:fs/promises';
+@@ -300,6 +301,7 @@ async function widgetVariantsJourney() {
+ 
+ // One catalogue-to-customer journey: no renderer or uptime helper is imported.
+ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
++  await componentReadFlow();
+   await widgetVariantsJourney();
+   await statedUptimeMethodJourney();
+   await conditionalComponentFlow();
