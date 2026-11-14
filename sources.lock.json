@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "c2487c2eb40306f14eb56f61b24e16fb5dd65f1de8b7899becb8c105853e3563",
+      "sha256": "3444d697985b3480863b76be81ae06c594c41b477464c94b792852a7db20f3a1",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -8296,7 +8296,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sms-subscriber-flow.mjs": {
-      "sha256": "d9fbbe29c095246f24aef264e49bb50379a816b57ea70b61f8384ad196a8ca92",
+      "sha256": "bb6914739afe33bc7d5fae476c681dbe25efa3c0b86de140ecc8b4fd53652a89",
       "executable": false
     },
     "tests/e2e/helpers/snapshot-release-rebuild-flow.mjs": {
@@ -8344,7 +8344,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-add-flow.mjs": {
-      "sha256": "45a386a4bed79d7b69d5f45728e96d8fdc04b770c4b3c5c0e3ac71fe176e69e7",
+      "sha256": "d0d05abeaf3da01fa413c615c866eef57dff7c3f8fa72ea1ee924d3572f8ebd6",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-channels-flow.mjs": {
