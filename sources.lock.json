@@ -460,7 +460,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "04dfc75261170fb7d5c8ce4f8503306855d9474edfccc4cdf645faaa7a6f9058",
+      "sha256": "a4d22bbd8cde6385a532a70d5c0e2df15f66fa197cc87344315340ec7a069cc0",
       "executable": false
     },
     ".gitignore": {
@@ -477,6 +477,10 @@
     },
     "ACCEPTANCE.md": {
       "sha256": "51c66053f34d3f803ab56d6e9f92c72d5fe22692a370b26629fb3cafeb92a766",
+      "executable": false
+    },
+    "agent-surface.json": {
+      "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9",
       "executable": false
     },
     "AGENTS.md": {
@@ -2584,7 +2588,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "89636353bc3af140b51980c4322fcda0dbd82656cfaaf0e77db4e69c5f076ccb",
+      "sha256": "bd316897ea37d808b1fd285f7fc64c0f74590e868417fbc27ad5a0f45143f481",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -6872,7 +6876,7 @@
       "executable": false
     },
     "src/core/platform/site-reader/index.ts": {
-      "sha256": "deceecc23e2c1ad9f4ce19905f193faa6898ac509f2b46c9d89eae06c94f2d99",
+      "sha256": "2ce221f79c2adafbe7132dd5e82d28ec7a1bf196ec77cff74f33f5e992277142",
       "executable": false
     },
     "src/core/platform/site-reader/link-text.ts": {
@@ -6884,7 +6888,7 @@
       "executable": false
     },
     "src/core/platform/site-reader/README.md": {
-      "sha256": "3b3669cb5d47945c08e72cb92dbfd2e77474f13257bbf98482e981e62a7b1159",
+      "sha256": "187073daf2d7e839a5c5067a83069d5cf792319ce9134045479e71871e782f75",
       "executable": false
     },
     "src/core/platform/site-reader/text.ts": {
@@ -7892,7 +7896,7 @@
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
-      "sha256": "4c4b25c00d48b61f16f9ee2f25f5f5c30458f984aee51ce199f7ebf974db4e6f",
+      "sha256": "dc3ddf4bf51b2aa15d2bc7d1b55d5e858ed7b01721dd5c2241c3bcb9a3d01b3d",
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
@@ -8497,6 +8501,10 @@
     },
     "tests/e2e/rer-mail.worker.ts": {
       "sha256": "c3e1c41fca4c6b3044013b1d42a32b1edcf00cb47aba4efa9d5d072f6708f84f",
+      "executable": false
+    },
+    "tests/e2e/site-reader-security.test.mjs": {
+      "sha256": "fd1863fe9e4fbb124df89412292fa8dfd61a358fb6eaaedd0101cdb2190c3ca6",
       "executable": false
     },
     "tests/e2e/slack-subscriptions-helper.mjs": {

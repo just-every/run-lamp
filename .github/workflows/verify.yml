@@ -41,7 +41,7 @@ jobs:
             echo 'run=true' >> "$GITHUB_OUTPUT"
           elif ! git cat-file -e "${BEFORE:-HEAD^}^{commit}" 2>/dev/null; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
-          elif ! git diff --quiet "${BEFORE:-HEAD^}" HEAD -- size-check.json scripts/size-check/ migrations/ src/ modules/ .github/workflows/verify.yml package.json pnpm-lock.yaml; then
+          elif ! git diff --quiet "${BEFORE:-HEAD^}" HEAD -- agent-surface.json size-check.json scripts/size-check/ migrations/ src/ modules/ .github/workflows/verify.yml package.json pnpm-lock.yaml; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
           else
             echo 'run=false' >> "$GITHUB_OUTPUT"
@@ -224,6 +224,8 @@ jobs:
       - name: Measure declared flows on small and large local D1
         run: |
           mkdir -p "$RUNNER_TEMP/lamp-size/statements"
+          # Synthetic fixture inputs stay within the 200 MiB guard.
+          node --input-type=module -e 'import { statSync } from "node:fs"; if (statSync("size-check.json").size > 200 * 1024 * 1024) throw new Error("Synthetic size declaration exceeds 200 MiB");'
           start=$SECONDS
           result=0
           pnpm exec rer size --no-queue --json --write-statements "$RUNNER_TEMP/lamp-size/statements" > "$RUNNER_TEMP/lamp-size/result.jsonl" || result=$?

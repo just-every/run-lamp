@@ -79,8 +79,25 @@ function sniff(bytes: Uint8Array): string | null {
   if (String.fromCharCode(...head(4)) === "GIF8") return "image/gif";
   if (String.fromCharCode(...head(4)) === "RIFF" && String.fromCharCode(...bytes.subarray(8, 12)) === "WEBP") return "image/webp";
   if (head(4).join() === "0,0,1,0") return "image/x-icon";
-  const text = new TextDecoder().decode(bytes.subarray(0, 2048)).trimStart();
-  if (/^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*(<!doctype svg[^>]*>\s*)?<svg[\s>]/i.test(text)) return "image/svg+xml";
+  let text = new TextDecoder().decode(bytes.subarray(0, 2048)).trimStart();
+  // Consume each prefix once. Repeated comments in a single regex can revisit
+  // earlier closing markers exponentially when no SVG root follows them.
+  if (/^<\?xml/i.test(text)) {
+    const end = text.indexOf(">");
+    if (end < 0) return null;
+    text = text.slice(end + 1).trimStart();
+  }
+  while (text.startsWith("<!--")) {
+    const end = text.indexOf("-->", 4);
+    if (end < 0) return null;
+    text = text.slice(end + 3).trimStart();
+  }
+  if (/^<!doctype svg/i.test(text)) {
+    const end = text.indexOf(">");
+    if (end < 0) return null;
+    text = text.slice(end + 1).trimStart();
+  }
+  if (/^<svg[\s>]/i.test(text)) return "image/svg+xml";
   return null;
 }
 
