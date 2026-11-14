@@ -5816,7 +5816,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/repository.ts": {
-      "sha256": "6b74aebf36e6db5146a6de9ad80715dfcc56b5e96aa8db18d93c202536a9b2c1",
+      "sha256": "ccb8c89282c715adb83b5750107ff3d806e97d9d5d541961fefd0f6e6b97ccf2",
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
@@ -8256,7 +8256,7 @@
       "executable": false
     },
     "tests/e2e/helpers/snapshot-release-rebuild-flow.mjs": {
-      "sha256": "49eb95f31f374cb12e6a5d486ff5698f88cd1f8a860be2609a469019f3a7cc7a",
+      "sha256": "3a483695cf73c385e628a2291601e94e4880ea4a9b8b8d5a8a2b82c8a7a52dc5",
       "executable": false
     },
     "tests/e2e/helpers/social-browser-flow.mjs": {

@@ -33,6 +33,26 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
     };
     const facts = {};
 
+    // A restored settings row may have the migration's placeholder rather
+    // than a feed identity. Cron must recover it without a setup-page write.
+    await j.db.prepare("UPDATE page_settings SET feed_id = 'pending-feed-identity'").run();
+    await j.tick(Date.now());
+    const recoveredIdentity = (await j.db.prepare("SELECT feed_id AS id FROM page_settings WHERE id='default'").first()).id;
+    assert.ok(recoveredIdentity && recoveredIdentity !== 'pending-feed-identity', 'Cron persists a deployment feed identity');
+    for (const path of ['/api/public/status', '/history', '/feed.atom']) {
+      const response = await j.publicResponse(path);
+      assert.equal(response.status, 200, `Cron produces ${path} from the native settings row`);
+      const body = await response.text();
+      if (path === '/feed.atom') assert.ok(body.includes(`urn:lamp:${recoveredIdentity}`));
+    }
+    // The repaired settings mutation is durable public work too. Let its
+    // revision settle before checking the following idle tick.
+    await j.tick(Date.now());
+    const recoveredVersion = (await pointer()).version;
+    await j.tick(Date.now());
+    assert.equal((await pointer()).version, recoveredVersion, 'an idle tick retains the complete snapshot');
+    assert.equal((await j.db.prepare("SELECT feed_id AS id FROM page_settings WHERE id='default'").first()).id, recoveredIdentity, 'idle work never rotates the feed identity');
+
     // Three generations built the ordinary way, each by a real operator change.
     for (const name of ['Synthetic Lamp rebuild one', 'Synthetic Lamp rebuild two', 'Synthetic Lamp rebuild three']) await j.visible('/', (await j.component(name)).name);
     assert.equal(await health(), 200);

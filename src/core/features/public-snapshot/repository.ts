@@ -1,3 +1,4 @@
+import { createUlid } from "../../shared/ids";
 import { createDependencyRepository } from "../dependencies/repository";
 import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
 import { createMetricsRepository } from "../metrics/repository";
@@ -92,6 +93,15 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
     async load() {
       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
       if (!settings) return null;
+      // Settings restored or inserted after the feed-identity migration can
+      // still have its placeholder default. Persist one identity before rendering;
+      // competing builders must use the same winner, including on retries.
+      if (!settings.feedId || settings.feedId === "pending-feed-identity") {
+        await binding.prepare("UPDATE page_settings SET feed_id = ? WHERE id = 'default' AND feed_id IN ('', 'pending-feed-identity')").bind(createUlid()).run();
+        const identity = await binding.prepare("SELECT feed_id AS feedId FROM page_settings WHERE id = 'default'").first<{ feedId: string }>();
+        if (!identity?.feedId || identity.feedId === "pending-feed-identity") throw new Error("Public feed identity could not be persisted.");
+        settings.feedId = identity.feedId;
+      }
 
       const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
         database
