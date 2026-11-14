@@ -1,0 +1,192 @@
+{
+  "tag": "sd-lamp-sizecheck-4-pc1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-sizecheck-4-pc1",
+  "head": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+  "utc": "2026-11-14T06:39:32Z",
+  "starting_head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+  "merged_main": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+  "rer": "0.2.116",
+  "base_revision": "c3532e238fe3e4b9d1bc70c957b775185c8207de",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0,
+    "local_only": true,
+    "raw_output": "Excluded: generated installation/session settings remain private outside the packet."
+  },
+  "checks": {
+    "frozen_install": 0,
+    "typecheck": 0,
+    "base_copies_offline": 0,
+    "source_check": 0,
+    "contract_docs_check": 0,
+    "merged_feed_tests": {
+      "exit": 0,
+      "passed": 2
+    },
+    "ordinary_size": {
+      "exit": 1,
+      "flows": 11,
+      "passed": 6,
+      "failed": [
+        "incident-list",
+        "minute-tick",
+        "public-summary",
+        "public-history",
+        "public-feed"
+      ]
+    },
+    "negative_control": {
+      "exit": 1,
+      "small_rows": 1620,
+      "large_rows": 162000,
+      "failures": [
+        "ceiling",
+        "growth"
+      ],
+      "measured_head": "97812189f9156d64b05cb8d5d21c30e4eb044864"
+    },
+    "statements_small": 0,
+    "statements_large": 0,
+    "build": 0,
+    "declared_CI_source_check": 0,
+    "declared_CI_source_copies": 0
+  },
+  "counts": {
+    "clauses_before": 244,
+    "clauses_after": 244,
+    "done_before": 60,
+    "done_after": 60,
+    "partial_before": 129,
+    "partial_after": 129,
+    "missing_before": 55,
+    "missing_after": 55,
+    "flows_before": 11,
+    "flows_after": 11,
+    "passing_flows_before": 6,
+    "passing_flows_after": 6,
+    "test_registrations_added_by_adoption": 0,
+    "test_registrations_imported_from_current_main": 1
+  },
+  "custody": {
+    "real_D1": "pending; executing session owns confirmation",
+    "production": "not run",
+    "scale_acceptance": false,
+    "landing": "not submitted",
+    "incident_tick_candidates": "not fetched/cherry-picked; no SQL or schema edits authored"
+  },
+  "vite": "8.2.4",
+  "measured_head": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+  "bundle": {
+    "path": "/home/agent/rer-consolidation/work/sd-lamp-sizecheck-4-pc1/product-97812189f915.bundle",
+    "sha256": "518675d0b48a7ab522a0aafeb220edd26e9f0aa39f58af8f8065e2086cee5c39",
+    "verified": true
+  },
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "report": "publish-check.json",
+    "source_head": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+    "source_tree": "50de611e626fb648ff59d6ef348cd497b839617f"
+  },
+  "product_push": {
+    "success": true,
+    "receipt": "push-receipt.log",
+    "utc": "2026-11-14T06:16:18Z"
+  },
+  "pull_request": {
+    "base": {
+      "ref": "main",
+      "sha": "bef5115afc3972d78962fbb899a2a32433f5f3a6"
+    },
+    "draft": true,
+    "head": {
+      "ref": "cloud/sd-lamp-sizecheck-4-pc1",
+      "sha": "97812189f9156d64b05cb8d5d21c30e4eb044864"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/375",
+    "number": 375,
+    "state": "open"
+  },
+  "ci": {
+    "repository": "just-every/run-lamp",
+    "head": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+    "observed_utc": "2026-11-14T06:37:49Z",
+    "status": "completed",
+    "run_id": 43565516754,
+    "url": "https://github.com/just-every/run-lamp/actions/runs/43565516754",
+    "conclusion": "failure",
+    "discovery_observations": [
+      {
+        "id": 43565565881,
+        "name": "Verify",
+        "event": "pull_request",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+        "head_branch": "cloud/sd-lamp-sizecheck-4-pc1",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565565881",
+        "created_at": "2026-11-14T06:16:58Z",
+        "updated_at": "2026-11-14T06:17:01Z"
+      },
+      {
+        "id": 43565516754,
+        "name": "Verify",
+        "event": "push",
+        "status": "in_progress",
+        "conclusion": null,
+        "head_sha": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+        "head_branch": "cloud/sd-lamp-sizecheck-4-pc1",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754",
+        "created_at": "2026-11-14T06:16:20Z",
+        "updated_at": "2026-11-14T06:17:42Z"
+      }
+    ],
+    "discovery_utc": "2026-11-14T06:27:45Z",
+    "github_calls_used": 10,
+    "github_calls_file": "GH-CALLS.json",
+    "failed_jobs": [
+      {
+        "completed_at": "2026-11-14T06:19:54Z",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Measure declared flows on small and large local D1"
+        ],
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754/job/132358717212",
+        "id": 132358717212,
+        "name": "size-check",
+        "started_at": "2026-11-14T06:17:41Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-14T06:26:33Z",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Verify this product shard"
+        ],
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754/job/132358717311",
+        "id": 132358717311,
+        "name": "shards (runtime)",
+        "started_at": "2026-11-14T06:17:41Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-14T06:32:48Z",
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require every planned command to succeed on this commit"
+        ],
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754/job/132362454087",
+        "id": 132362454087,
+        "name": "verify",
+        "started_at": "2026-11-14T06:32:38Z",
+        "status": "completed"
+      }
+    ],
+    "job_metadata_file": "CI-JOBS.json",
+    "current_head_archive_logs": "Not downloaded: ten-call budget exhausted; prior-head log files are explicitly historical."
+  },
+  "terminal_status": "BLOCKED",
+  "blocker": "Exact-SHA Verify failed in size-check, shards (runtime), verify. Exact-head local size check still fails five ordinary flows; product query/scheduler repairs are outside this adoption lease.",
+  "clauses_changed": []
+}

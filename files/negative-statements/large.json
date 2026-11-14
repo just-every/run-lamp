@@ -1,0 +1,10 @@
+{
+ "about": "rer size: every statement each flow ran at the large size, in order, with its parameters as bound.",
+ "statements": [
+  {
+   "name": "deliberately-unbounded #1",
+   "sql": "SELECT id FROM subscribers",
+   "params": []
+  }
+ ]
+}

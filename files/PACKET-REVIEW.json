@@ -1,0 +1,151 @@
+{
+  "utc": "2026-11-14T06:40:04Z",
+  "injected_value_matches": 0,
+  "gitleaks_findings": [
+    {
+      "file": "source-check.json",
+      "line": 74,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 114,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 142,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 170,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 204,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 340,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 368,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-check.json",
+      "line": 396,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 79,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 119,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 147,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 175,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 209,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 345,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 373,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "declared-source-check.log",
+      "line": 401,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 73,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 113,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 141,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 169,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 203,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 339,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 367,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    },
+    {
+      "file": "source-lock.json",
+      "line": 395,
+      "rule": "generic-api-key",
+      "classification": "Public content-addressed source baseline key (SHA-256), not authentication material."
+    }
+  ],
+  "selection": "Explicit regular non-secret report, receipt and measurement files; generated installation settings, private runtime output and symlinks excluded."
+}

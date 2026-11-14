@@ -1,0 +1,1 @@
+Disposable production-build mutation only; application source unchanged. Wrapper on /api/app/size-negative-control executes SELECT id FROM subscribers without a predicate or limit. Expected: 1620 vs 162000 rows, fail ceiling 5000 and growth 10%+200.

@@ -1,0 +1,5 @@
+M	package.json
+M	pnpm-lock.yaml
+M	sources.lock.json
+M	src/core/platform/status-feeds/xml.ts
+M	tests/e2e/site-reader-security.test.mjs

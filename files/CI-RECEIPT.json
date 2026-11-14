@@ -1,0 +1,78 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+  "observed_utc": "2026-11-14T06:37:49Z",
+  "status": "completed",
+  "run_id": 43565516754,
+  "url": "https://github.com/just-every/run-lamp/actions/runs/43565516754",
+  "conclusion": "failure",
+  "discovery_observations": [
+    {
+      "id": 43565565881,
+      "name": "Verify",
+      "event": "pull_request",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+      "head_branch": "cloud/sd-lamp-sizecheck-4-pc1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565565881",
+      "created_at": "2026-11-14T06:16:58Z",
+      "updated_at": "2026-11-14T06:17:01Z"
+    },
+    {
+      "id": 43565516754,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "97812189f9156d64b05cb8d5d21c30e4eb044864",
+      "head_branch": "cloud/sd-lamp-sizecheck-4-pc1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754",
+      "created_at": "2026-11-14T06:16:20Z",
+      "updated_at": "2026-11-14T06:17:42Z"
+    }
+  ],
+  "discovery_utc": "2026-11-14T06:27:45Z",
+  "github_calls_used": 10,
+  "github_calls_file": "GH-CALLS.json",
+  "failed_jobs": [
+    {
+      "completed_at": "2026-11-14T06:19:54Z",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Measure declared flows on small and large local D1"
+      ],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754/job/132358717212",
+      "id": 132358717212,
+      "name": "size-check",
+      "started_at": "2026-11-14T06:17:41Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-14T06:26:33Z",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Verify this product shard"
+      ],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754/job/132358717311",
+      "id": 132358717311,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-14T06:17:41Z",
+      "status": "completed"
+    },
+    {
+      "completed_at": "2026-11-14T06:32:48Z",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require every planned command to succeed on this commit"
+      ],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43565516754/job/132362454087",
+      "id": 132362454087,
+      "name": "verify",
+      "started_at": "2026-11-14T06:32:38Z",
+      "status": "completed"
+    }
+  ],
+  "job_metadata_file": "CI-JOBS.json",
+  "current_head_archive_logs": "Not downloaded: ten-call budget exhausted; prior-head log files are explicitly historical."
+}

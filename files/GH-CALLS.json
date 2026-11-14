@@ -1,0 +1,56 @@
+[
+  {
+    "call": 1,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43558458719/jobs",
+    "purpose": "Identify prior completed failed jobs"
+  },
+  {
+    "call": 2,
+    "command": "gh run view 43558458719 --repo just-every/run-lamp --job 132341292908 --log-failed",
+    "purpose": "Prior size job log, read once"
+  },
+  {
+    "call": 3,
+    "command": "gh run view 43558458719 --repo just-every/run-lamp --job 132341293126 --log-failed",
+    "purpose": "Prior runtime failed log, read once"
+  },
+  {
+    "call": 4,
+    "command": "gh api repos/gitleaks/gitleaks/releases/tags/v8.30.1",
+    "purpose": "Pinned scanner asset identity and digest"
+  },
+  {
+    "call": 5,
+    "command": "gh api repos/gitleaks/gitleaks/releases/assets/378332058 -H Accept:application/octet-stream",
+    "purpose": "Acquire pinned scanner binary; SHA-256 verified"
+  },
+  {
+    "call": 6,
+    "command": "gh api repos/just-every/run-lamp/pulls --input /tmp/lamp-size-pr.json",
+    "purpose": "Open required draft PR for named candidate branch"
+  },
+  {
+    "call": 7,
+    "command": "gh api repos/just-every/run-lamp/actions/runs?head_sha=97812189f9156d64b05cb8d5d21c30e4eb044864&per_page=100",
+    "purpose": "Exact-SHA Verify discovery",
+    "utc": "2026-11-14T06:27:45Z"
+  },
+  {
+    "call": 8,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43565516754 --jq {status,conclusion,head_sha,html_url}",
+    "purpose": "Exact-SHA Verify poll, spaced at least 300 seconds",
+    "utc": "2026-11-14T06:32:46Z"
+  },
+  {
+    "call": 9,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43565516754 --jq {status,conclusion,head_sha,html_url}",
+    "purpose": "Exact-SHA Verify poll, spaced at least 300 seconds",
+    "utc": "2026-11-14T06:37:48Z"
+  },
+  {
+    "call": 10,
+    "command": "gh api repos/just-every/run-lamp/actions/runs/43565516754/jobs",
+    "purpose": "Final completed-run failed-job diagnostic metadata; no further status polls",
+    "utc": "2026-11-14T06:38:18Z"
+  }
+]
