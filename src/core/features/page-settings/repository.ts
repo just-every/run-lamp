@@ -11,7 +11,7 @@ export interface PageSettingsRepository {
   /** The regions written on components the public page shows, each as stored. */
   visibleRegions(): Promise<string[]>;
   insertIfMissing(settings: typeof pageSettings.$inferInsert): Promise<void>;
-  update(settings: Pick<StoredPageSettings, "theme" | "pageName" | "tagline" | "accentColor" | "timezone" | "hostname" | "footerCreditEnabled" | "template" | "widgetAllowedOrigins" | "widgetAppearance" | "mailFromAddress" | "emailBranding" | "aiToneInstructions" | "wordingBlockedTerms" | "wordingFriendlyLength" | "updatedAt">): Promise<void>;
+  update(settings: Pick<StoredPageSettings, "theme" | "pageName" | "tagline" | "accentColor" | "timezone" | "hostname" | "footerCreditEnabled" | "template" | "widgetAllowedOrigins" | "widgetAppearance" | "mailFromAddress" | "emailBranding" | "aiToneInstructions" | "wordingBlockedTerms" | "wordingFriendlyLength" | "updatedAt">, operatorId: string): Promise<void>;
   updateThemeAssets(input: Pick<StoredPageSettings, "theme" | "themeAssets" | "updatedAt">): Promise<void>;
   updateLogo(input: Pick<StoredPageSettings, "logoKey" | "logoContentType" | "updatedAt">, operatorId: string): Promise<void>;
 }
@@ -42,8 +42,18 @@ export function createPageSettingsRepository(binding: D1Database): PageSettingsR
     async insertIfMissing(settings) {
       await database.insert(pageSettings).values(settings).onConflictDoNothing();
     },
-    async update(settings) {
-      await database.update(pageSettings).set(settings).where(eq(pageSettings.id, "default"));
+    async update(settings, operatorId) {
+      const update = database.update(pageSettings).set(settings).where(eq(pageSettings.id, "default")).toSQL();
+      // Read the previous zone and write its audit entry in the same transaction as the settings write.
+      await binding.batch([
+        binding.prepare(`INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, reason, payload_json, created_at, updated_at)
+          SELECT ?, 'page-settings', id, 'updated', ?,
+            CASE WHEN timezone <> ? THEN 'Time zone: ' || timezone || ' → ' || ? ELSE NULL END,
+            json_object('recordName', 'Page settings', 'previousTimezone', timezone, 'timezone', ?), ?, ?
+          FROM page_settings WHERE id = 'default'`)
+          .bind(createUlid(), operatorId, settings.timezone, settings.timezone, settings.timezone, settings.updatedAt, settings.updatedAt),
+        binding.prepare(update.sql).bind(...update.params),
+      ]);
     },
     async updateThemeAssets(input) {
       await database.update(pageSettings).set(input).where(eq(pageSettings.id, "default"));

@@ -3,7 +3,14 @@
   "previousVersion": "1.11.14",
   "date": "2026-11-13",
   "publicReleaseNotes": "**Public subscription choices now match the channels your Lamp can send through.** Email remains available, and SMS, Slack and Teams appear when configured. The Teams form links to instructions for creating a Workflows webhook before asking for its URL, and channel result pages offer a way back to subscriptions.\n\n- **Reopening an incident starts from the component state readers last saw.** Its preview and publication no longer use the incident's old, resolved component attachments as the previous state.\n- **Availability report downloads use readable component names.** CSV and PDF filenames use short, file-safe names, with numeric suffixes when names collide.\n- **The subscriber directory names selected components.** CSV invitation batches show their import time and remaining count. On a local Lamp, invitation feedback says no email was sent and links to Confirm locally in the Delivery log.\n- **Managed mail reports who handles sender authentication.** A configured Run Edit Run relay reports that the platform manages authentication, without claiming inbox delivery. An incomplete managed mail connection gives guidance for restoring it instead of asking for a direct-provider credential.\n- **Settings shows the built Lamp version.** The health response also includes `buildVersion` and a version 1 `schemaObservation` with the observed migration count and inventory digest, or a reason the inventory could not be read. This observation is separate from the installation's liveness result.\n\nUpgrading from 1.11.14: back up data and your source changes first, update the checkout to `v1.11.15`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.",
-  "contractChanges": {},
+  "contractChanges": {
+    "SETUP-002": {
+      "change": "changed",
+      "summary": "First-run setup preserves a valid saved time zone and uses the browser zone or UTC only to recover an invalid saved zone.",
+      "was": "First-run setup filled observed website details and the browser time zone, replacing the saved page time zone when the owner confirmed setup.",
+      "now": "First-run setup and website confirmation preserve any valid saved time zone. Only an invalid saved zone adopts a valid browser time zone, or UTC when neither zone is valid; website reading still fills only observed page name, tagline, PNG mark, accent and navigation components."
+    }
+  },
   "extensionPointChanges": [],
   "migrations": [
     {
