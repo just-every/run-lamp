@@ -24,9 +24,9 @@ CREATE TABLE incident_update_reminder_work (
   overdue_sent INTEGER NOT NULL DEFAULT 0,
   escalation_sent INTEGER NOT NULL DEFAULT 0
 );
-CREATE INDEX incident_reminder_soon_due ON incident_update_reminder_work(due_soon_sent,next_update_at);
-CREATE INDEX incident_reminder_overdue ON incident_update_reminder_work(overdue_sent,next_update_at);
-CREATE INDEX incident_reminder_escalation ON incident_update_reminder_work(escalation_sent,next_update_at);
+CREATE INDEX incident_reminder_soon_due ON incident_update_reminder_work(due_soon_sent,next_update_at,incident_id);
+CREATE INDEX incident_reminder_overdue ON incident_update_reminder_work(overdue_sent,next_update_at,incident_id);
+CREATE INDEX incident_reminder_escalation ON incident_update_reminder_work(escalation_sent,next_update_at,incident_id);
 
 CREATE VIEW incident_update_reminder_candidates AS
 SELECT i.id AS incident_id,u.id AS update_id,u.next_update_at,
@@ -165,3 +165,8 @@ CREATE INDEX IF NOT EXISTS maintenance_current_public_window
 CREATE INDEX IF NOT EXISTS incident_updates_public_feed_seek ON incident_updates(published_at DESC,id DESC,incident_id);
 CREATE INDEX IF NOT EXISTS maintenance_notices_public_feed_seek ON maintenance_notices(published_at DESC,id DESC,maintenance_id);
 CREATE INDEX IF NOT EXISTS incidents_public_archive_seek ON incidents(opened_at DESC,id DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS maintenance_public_archive_seek ON maintenance(starts_at,id);
+-- Subscriber directory's effective channel must be selected before state;
+-- otherwise a cold scheduled SMS preparation revisits every inactive email.
+CREATE INDEX IF NOT EXISTS subscribers_effective_channel_state_idx
+  ON subscribers(CASE WHEN sms_kind=1 THEN 'sms' ELSE COALESCE(chat_kind,channel) END,state,id);

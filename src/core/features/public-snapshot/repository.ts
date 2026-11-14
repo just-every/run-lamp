@@ -110,7 +110,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       // The retained generation contains current work plus a recent window.
       // Older records use indexed, bounded archive pages; no records are removed.
       const recentIncidents = sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
-        UNION SELECT id FROM (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle = 'Resolved' ORDER BY resolved_at DESC, id DESC LIMIT 50))`;
+        UNION SELECT id FROM (SELECT id FROM incidents INDEXED BY incidents_resolved_public_window WHERE deleted_at IS NULL AND lifecycle = 'Resolved' ORDER BY resolved_at DESC, id DESC LIMIT 50))`;
       const recentMaintenance = sql`(SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
         UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50))`;
       const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
@@ -172,7 +172,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
           .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
           .all(),
-        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved' UNION SELECT id FROM (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle='Resolved' ORDER BY resolved_at DESC,id DESC LIMIT 50)) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
+        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved' UNION SELECT id FROM (SELECT id FROM incidents INDEXED BY incidents_resolved_public_window WHERE deleted_at IS NULL AND lifecycle='Resolved' ORDER BY resolved_at DESC,id DESC LIMIT 50)) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled') UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50)) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
         readImportedPublicRecords(binding),
         readImportedNamespaces(binding),

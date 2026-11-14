@@ -61,7 +61,7 @@ interface PublicComponent {
   uptime: Uptime;
 }
 
-function toPublicModel(source: PublicSnapshotSource, generatedAt: string, policies: PublicSnapshotPolicies) {
+function toPublicModel(source: PublicSnapshotSource, generatedAt: string, policies: PublicSnapshotPolicies, includeUptime = true) {
   const theme = themeSchema.parse(JSON.parse(source.settings.theme ?? "{}"));
   const claims = new Map<string, ComponentState[]>();
   for (const claim of source.claims) claims.set(claim.componentId, [...(claims.get(claim.componentId) ?? []), claim.state]);
@@ -72,7 +72,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
     // deliberately only for the single overall page status.
     state: mostSevereState(claims.get(component.id) ?? []),
     hideUptime: theme.hiddenUptimeComponentIds.includes(component.id),
-    uptime: computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }),
+    uptime: includeUptime ? computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }) : { percentage: null, trackingSince: null, coverageDays: 0, coverageMinutes: 0, marks: [] },
   }));
   if (theme.historyDays !== REPORTING_DAYS) for (const component of components) component.uptime.marks = component.uptime.marks.slice(-theme.historyDays);
   const visibleComponents = components.filter(isPublicComponentShown);
@@ -280,7 +280,8 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
 
 /** Render one cold historical page using its generation's public presentation. */
 export function renderArchiveArtifact(source: PublicSnapshotSource, key: string, generatedAt: string, policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, slots: LampServerSlots = {}): SnapshotArtifact | null {
-  const model = toPublicModel(source, generatedAt, policies);
+  // Archive documents use component names and visibility, never uptime charts.
+  const model = toPublicModel(source, generatedAt, policies, false);
   const html = (body: string): SnapshotArtifact => ({ key, body, contentType: "text/html; charset=utf-8" });
   switch (source.archive?.kind) {
     case "history": case "month": return html(renderHistory(model, slots, source.archive.month));

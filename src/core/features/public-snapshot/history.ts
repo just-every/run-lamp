@@ -58,8 +58,8 @@ export function renderHistoryContent(model: HistoryModel, selectedMonth?: string
     groups.set(key, [...(groups.get(key) ?? []), record.html()]);
   }
   const index = selectedMonth ? months.indexOf(selectedMonth) : -1;
-  const previous = index >= 0 ? months[index + 1] : undefined;
-  const next = index > 0 ? months[index - 1] : undefined;
+  const previous = model.archive ? model.archive.previousMonth : index >= 0 ? months[index + 1] : undefined;
+  const next = model.archive ? model.archive.nextMonth : index > 0 ? months[index - 1] : undefined;
   const navigation = selectedMonth ? `<nav class="not-found-links" aria-label="History months">${previous ? `<a class="text-link" rel="prev" href="/history/${previous}">Previous month: ${escapeHtml(monthLabel(previous))}</a>` : ""}<a class="text-link" href="/history">Last 12 months</a>${next ? `<a class="text-link" rel="next" href="/history/${next}">Next month: ${escapeHtml(monthLabel(next))}</a>` : ""}</nav>` : "";
   const older = [...new Set(records.filter(record => Date.parse(record.timestamp) < cutoff).map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
   const archive = !selectedMonth && older.length ? `<section class="history-month"><h2>Earlier history</h2><ul>${older.map(month => `<li><a class="text-link" href="/history/${month}">${escapeHtml(monthLabel(month))}</a></li>`).join("")}</ul></section>` : "";

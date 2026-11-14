@@ -48,6 +48,10 @@ on subsequent pages. Native incident and maintenance JSON collections expose the
 same explicit page size and a `nextCursor` until the complete collection is read.
 Compatibility collection responses link to those full collections and history.
 
+Repeated HTML footers share one retained copy; each served document keeps the
+complete original footer and component resources. The retained bundle still has
+the same 25 MiB limit.
+
 Current status, summary and the first history and global feed pages remain
 snapshot reads. A cold older page uses indexed bounded reads and is cached with
 its generation outside the retained current bundle. Previously cached pages can

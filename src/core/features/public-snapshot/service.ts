@@ -233,7 +233,7 @@ export function createPublicSnapshotService(
         const { version, rendered, bundle, logo, logoContentType, source } = prepared;
         // Cold historical pages use this generation's public presentation data.
         // They are independently cached, never added to its retained bundle.
-        await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify(source), "application/json");
+        await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...source, history: [], corrections: [], metrics: [] }), "application/json");
         await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
           ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
           : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));

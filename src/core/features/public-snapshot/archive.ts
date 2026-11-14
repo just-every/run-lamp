@@ -7,6 +7,8 @@ export interface ArchivePage {
   nextCursor: string | null;
   pageSize: number;
   componentSlug?: string;
+  previousMonth?: string;
+  nextMonth?: string;
 }
 export const ARCHIVE_PAGE_SIZE = 50;
 export function encodeArchiveCursor(value: ArchiveCursor) {
