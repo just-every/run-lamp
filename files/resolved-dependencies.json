@@ -1,0 +1,274 @@
+[
+  {
+    "name": "lamp",
+    "version": "1.11.15",
+    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo",
+    "private": true,
+    "dependencies": {
+      "@tanstack/react-start": {
+        "from": "@tanstack/react-start",
+        "version": "1.168.60",
+        "resolved": "https://registry.npmjs.org/@tanstack/react-start/-/react-start-1.168.60.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+react-start@1.168.60_esbuild@0.28.1_react-dom@19.2.8_react@19.2.8__react@19.2_e2462652515b802b878bbd8c0e32d43b/node_modules/@tanstack/react-start",
+        "dependencies": {
+          "@tanstack/start-plugin-core": {
+            "from": "@tanstack/start-plugin-core",
+            "version": "1.171.49",
+            "resolved": "https://registry.npmjs.org/@tanstack/start-plugin-core/-/start-plugin-core-1.171.49.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+start-plugin-core@1.171.49_@tanstack+react-router@1.170.41_react-dom@19.2.8_r_9ae7fe42015a2332fe4ee67084536d8f/node_modules/@tanstack/start-plugin-core",
+            "dependencies": {
+              "@tanstack/router-generator": {
+                "from": "@tanstack/router-generator",
+                "version": "1.167.40",
+                "resolved": "https://registry.npmjs.org/@tanstack/router-generator/-/router-generator-1.167.40.tgz",
+                "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+router-generator@1.167.40/node_modules/@tanstack/router-generator",
+                "dependencies": {
+                  "zod": {
+                    "from": "zod",
+                    "version": "4.6.7",
+                    "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/zod@4.6.7/node_modules/zod"
+                  }
+                }
+              },
+              "@tanstack/router-plugin": {
+                "from": "@tanstack/router-plugin",
+                "version": "1.168.42",
+                "resolved": "https://registry.npmjs.org/@tanstack/router-plugin/-/router-plugin-1.168.42.tgz",
+                "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+router-plugin@1.168.42_@tanstack+react-router@1.170.41_react-dom@19.2.8_react_bea27f68ebd2e0cbf9dd1221e1854d07/node_modules/@tanstack/router-plugin",
+                "dependencies": {
+                  "@tanstack/router-generator": {
+                    "from": "@tanstack/router-generator",
+                    "version": "1.167.40",
+                    "resolved": "https://registry.npmjs.org/@tanstack/router-generator/-/router-generator-1.167.40.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+router-generator@1.167.40/node_modules/@tanstack/router-generator",
+                    "dependencies": {
+                      "zod": {
+                        "from": "zod",
+                        "version": "4.6.7",
+                        "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/zod@4.6.7/node_modules/zod"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "@tanstack/react-start-rsc": {
+            "from": "@tanstack/react-start-rsc",
+            "version": "0.1.59",
+            "resolved": "https://registry.npmjs.org/@tanstack/react-start-rsc/-/react-start-rsc-0.1.59.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+react-start-rsc@0.1.59_esbuild@0.28.1_react-dom@19.2.8_react@19.2.8__react@19_3f743869149d74a7244c6919922dad17/node_modules/@tanstack/react-start-rsc",
+            "dependencies": {
+              "@tanstack/start-plugin-core": {
+                "from": "@tanstack/start-plugin-core",
+                "version": "1.171.49",
+                "resolved": "https://registry.npmjs.org/@tanstack/start-plugin-core/-/start-plugin-core-1.171.49.tgz",
+                "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+start-plugin-core@1.171.49_@tanstack+react-router@1.170.41_react-dom@19.2.8_r_9ae7fe42015a2332fe4ee67084536d8f/node_modules/@tanstack/start-plugin-core",
+                "dependencies": {
+                  "zod": {
+                    "from": "zod",
+                    "version": "4.6.7",
+                    "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/zod@4.6.7/node_modules/zod"
+                  },
+                  "vite": {
+                    "from": "vite",
+                    "version": "8.2.4",
+                    "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+                  },
+                  "@tanstack/router-generator": {
+                    "from": "@tanstack/router-generator",
+                    "version": "1.167.40",
+                    "resolved": "https://registry.npmjs.org/@tanstack/router-generator/-/router-generator-1.167.40.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+router-generator@1.167.40/node_modules/@tanstack/router-generator",
+                    "dependencies": {
+                      "zod": {
+                        "from": "zod",
+                        "version": "4.6.7",
+                        "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/zod@4.6.7/node_modules/zod"
+                      }
+                    }
+                  },
+                  "vitefu": {
+                    "from": "vitefu",
+                    "version": "1.1.3",
+                    "resolved": "https://registry.npmjs.org/vitefu/-/vitefu-1.1.3.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vitefu@1.1.3_vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0_/node_modules/vitefu",
+                    "dependencies": {
+                      "vite": {
+                        "from": "vite",
+                        "version": "8.2.4",
+                        "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+                      }
+                    }
+                  },
+                  "@tanstack/router-plugin": {
+                    "from": "@tanstack/router-plugin",
+                    "version": "1.168.42",
+                    "resolved": "https://registry.npmjs.org/@tanstack/router-plugin/-/router-plugin-1.168.42.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+router-plugin@1.168.42_@tanstack+react-router@1.170.41_react-dom@19.2.8_react_bea27f68ebd2e0cbf9dd1221e1854d07/node_modules/@tanstack/router-plugin",
+                    "dependencies": {
+                      "zod": {
+                        "from": "zod",
+                        "version": "4.6.7",
+                        "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/zod@4.6.7/node_modules/zod"
+                      },
+                      "vite": {
+                        "from": "vite",
+                        "version": "8.2.4",
+                        "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+                      },
+                      "@tanstack/router-generator": {
+                        "from": "@tanstack/router-generator",
+                        "version": "1.167.40",
+                        "resolved": "https://registry.npmjs.org/@tanstack/router-generator/-/router-generator-1.167.40.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tanstack+router-generator@1.167.40/node_modules/@tanstack/router-generator",
+                        "dependencies": {
+                          "zod": {
+                            "from": "zod",
+                            "version": "4.6.7",
+                            "resolved": "https://registry.npmjs.org/zod/-/zod-4.6.7.tgz",
+                            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/zod@4.6.7/node_modules/zod"
+                          }
+                        }
+                      },
+                      "unplugin": {
+                        "from": "unplugin",
+                        "version": "3.3.0",
+                        "resolved": "https://registry.npmjs.org/unplugin/-/unplugin-3.3.0.tgz",
+                        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/unplugin@3.3.0_esbuild@0.28.1_rolldown@1.2.6_vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0_/node_modules/unplugin",
+                        "dependencies": {
+                          "vite": {
+                            "from": "vite",
+                            "version": "8.2.4",
+                            "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+                            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "devDependencies": {
+      "vite": {
+        "from": "vite",
+        "version": "8.2.4",
+        "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+      },
+      "@tailwindcss/vite": {
+        "from": "@tailwindcss/vite",
+        "version": "4.3.3",
+        "resolved": "https://registry.npmjs.org/@tailwindcss/vite/-/vite-4.3.3.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@tailwindcss+vite@4.3.3_vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0_/node_modules/@tailwindcss/vite",
+        "dependencies": {
+          "vite": {
+            "from": "vite",
+            "version": "8.2.4",
+            "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+          }
+        }
+      },
+      "@vitejs/plugin-react": {
+        "from": "@vitejs/plugin-react",
+        "version": "6.1.1",
+        "resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-6.1.1.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@vitejs+plugin-react@6.1.1_vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0_/node_modules/@vitejs/plugin-react",
+        "dependencies": {
+          "vite": {
+            "from": "vite",
+            "version": "8.2.4",
+            "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+          }
+        }
+      },
+      "wrangler": {
+        "from": "wrangler",
+        "version": "4.129.1",
+        "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.129.1.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/wrangler@4.129.1_@cloudflare+workers-types@5.20260908.1_@types+node@22.19.17/node_modules/wrangler",
+        "dependencies": {
+          "miniflare": {
+            "from": "miniflare",
+            "version": "5.20260907.0-alpha",
+            "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20260907.0-alpha.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare",
+            "dependencies": {
+              "undici": {
+                "from": "undici",
+                "version": "7.30.1",
+                "resolved": "https://registry.npmjs.org/undici/-/undici-7.30.1.tgz",
+                "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/undici@7.30.1/node_modules/undici"
+              }
+            }
+          }
+        }
+      },
+      "@cloudflare/vite-plugin": {
+        "from": "@cloudflare/vite-plugin",
+        "version": "1.54.5",
+        "resolved": "https://registry.npmjs.org/@cloudflare/vite-plugin/-/vite-plugin-1.54.5.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/@cloudflare+vite-plugin@1.54.5_@types+node@22.19.17_vite@8.2.4_@types+node@22.19.17_esb_f6f9ebbd91a4445cc323e60e081b17ee/node_modules/@cloudflare/vite-plugin",
+        "dependencies": {
+          "vite": {
+            "from": "vite",
+            "version": "8.2.4",
+            "resolved": "https://registry.npmjs.org/vite/-/vite-8.2.4.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/vite@8.2.4_@types+node@22.19.17_esbuild@0.28.1_jiti@2.7.0/node_modules/vite"
+          },
+          "miniflare": {
+            "from": "miniflare",
+            "version": "5.20260907.0-alpha",
+            "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20260907.0-alpha.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare",
+            "dependencies": {
+              "undici": {
+                "from": "undici",
+                "version": "7.30.1",
+                "resolved": "https://registry.npmjs.org/undici/-/undici-7.30.1.tgz",
+                "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/undici@7.30.1/node_modules/undici"
+              }
+            }
+          },
+          "wrangler": {
+            "from": "wrangler",
+            "version": "4.129.1",
+            "resolved": "https://registry.npmjs.org/wrangler/-/wrangler-4.129.1.tgz",
+            "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/wrangler@4.129.1_@cloudflare+workers-types@5.20260908.1_@types+node@22.19.17/node_modules/wrangler",
+            "dependencies": {
+              "miniflare": {
+                "from": "miniflare",
+                "version": "5.20260907.0-alpha",
+                "resolved": "https://registry.npmjs.org/miniflare/-/miniflare-5.20260907.0-alpha.tgz",
+                "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare",
+                "dependencies": {
+                  "undici": {
+                    "from": "undici",
+                    "version": "7.30.1",
+                    "resolved": "https://registry.npmjs.org/undici/-/undici-7.30.1.tgz",
+                    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-8/repo/node_modules/.pnpm/undici@7.30.1/node_modules/undici"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]

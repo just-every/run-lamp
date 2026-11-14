@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-dep-8",
+  "head": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+  "push": "succeeded",
+  "push_attempts": 1,
+  "pr": "https://github.com/just-every/run-lamp/pull/381",
+  "verify_run_id": 43614287002,
+  "verify_status": "in_progress",
+  "ready": false,
+  "terminal_custody": "PUSHED",
+  "verify_conclusion": null,
+  "github_api_budget_used": 10,
+  "blockers": [],
+  "pending": [
+    "Exact-SHA Verify completion and the Mac fleet independent landing gates."
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+  "observations": [
+    {
+      "at": "2026-11-14T16:12:13.967315+00:00",
+      "discovery": [
+        {
+          "id": 43614287002,
+          "name": "Verify",
+          "status": "in_progress",
+          "conclusion": null,
+          "head_sha": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+          "html_url": "https://github.com/just-every/run-lamp/actions/runs/43614287002"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-14T16:22:15.272383+00:00",
+      "id": 43614287002,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43614287002"
+    }
+  ],
+  "terminal_custody": "PUSHED",
+  "reason": "Exact-SHA Verify remains in_progress after 600 seconds; ten-call GitHub API budget exhausted. No green or READY claim.",
+  "watcher_stopped": true,
+  "github_calls_used": 10
+}

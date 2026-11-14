@@ -1,0 +1,7 @@
+{
+  "lock_command": "node scripts/edition-authoring/cli.mjs lock",
+  "check_command": "node scripts/edition-authoring/cli.mjs check",
+  "ok": true,
+  "locked_files": 2272,
+  "checked_files": 2272
+}

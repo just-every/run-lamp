@@ -1,0 +1,8 @@
+{
+  "path": "/home/agent/rer-consolidation/work/gr-mt-lamp-dep-8/candidate.bundle",
+  "head": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+  "sha256": "2eedf51a01c817764146745dfbff4762cd058d0cbe6bf8aaeb7448657ebfcc32",
+  "bytes": 115067462,
+  "verified": true,
+  "custody": "Local recovery data only; not proof of push, READY or landing."
+}

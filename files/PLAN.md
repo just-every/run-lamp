@@ -1,0 +1,8 @@
+# Plan: gr-mt-lamp-dep-8
+
+1. Refresh the authorized fleet launcher, configure bundle-only Git authentication, fleet identity, commit hooks and isolated full-history checkout of just-every/run-lamp on cloud/gr-mt-lamp-dep-8.
+2. Inspect repository instructions, package pins and resolved dependencies. Preserve already-patched Vite 8.2.4; raise the Zod constraint and existing Miniflare undici override to the supplied patched floors. Regenerate pnpm-lock.yaml with pnpm 10.12.4 without unrelated upgrades.
+3. Use pinned Node 22.20.0 and pnpm 10.12.4 for frozen install, non-interactive local setup, build and typecheck. Exercise existing public-door tests covering validation, Worker HTTP handling and the built Vite/Start application. Do not change UI, contracts or tests.
+4. Regenerate sources.lock.json last and check source integrity. Commit only manifest, dependency lock and source lock with fleet identity and no trailers. Scan the exact committed tree with Base's packaged publication scanner, and inspect every candidate commit's identities and trailers.
+5. Integrate updated main as permitted before first publication, push only cloud/gr-mt-lamp-dep-8 with the fleet guard, open the repository-required contribution PR, and inspect the exact-SHA Verify through bounded REST polling with a ten-call budget. Fix scoped failures when possible.
+6. Record actual command receipts, dependency before/after counts, clause status (unchanged), product provenance and any blocker. Publish explicitly selected non-secret files to evidence/gr-mt-lamp-dep-8 independently of product custody. Leave landing to the Mac fleet.

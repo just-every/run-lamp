@@ -1,0 +1,12 @@
+{
+  "candidate": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+  "product_tree": "758e6654ae44cdf0d1ed9826da501ced23b8b2b5",
+  "publication_tree": "758e6654ae44cdf0d1ed9826da501ced23b8b2b5",
+  "trees_identical": true,
+  "publication_checkout_clean": true,
+  "full_history": true,
+  "scanner_version": "@runeditrun/rer@0.2.108",
+  "gitleaks_version": "8.30.1",
+  "command": "node <pinned-rer>/scripts/publish-check.mjs --repo <clean-committed-checkout> --ref HEAD --public-base https://github.com/just-every/run-lamp.git#main --project just-every/lamp --repository https://github.com/just-every/run-lamp --timeout-seconds 1800",
+  "destination_preflight_exit": 0
+}

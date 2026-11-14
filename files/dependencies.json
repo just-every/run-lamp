@@ -1,0 +1,51 @@
+{
+  "repository": "just-every/run-lamp",
+  "base": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+  "packages": {
+    "undici": {
+      "before": [
+        "7.29.1"
+      ],
+      "after": [
+        "7.30.1"
+      ]
+    },
+    "zod": {
+      "before": [
+        "4.5.4"
+      ],
+      "after": [
+        "4.6.7"
+      ]
+    },
+    "vite": {
+      "before": [
+        "8.2.4"
+      ],
+      "after": [
+        "8.2.4"
+      ]
+    }
+  },
+  "before_vulnerable_package_versions": 2,
+  "after_vulnerable_package_versions": 0,
+  "listed_alerts": 8,
+  "listed_alerts_requiring_changes_on_current_main": 2,
+  "listed_alerts_already_patched_on_current_main": 6,
+  "no_unrelated_package_upgrades": true,
+  "node_for_validation": "22.20.0",
+  "package_manager": "pnpm@10.12.4",
+  "contract_edits": false,
+  "test_edits": false,
+  "contract_before": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "contract_after": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "product_head": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4"
+}

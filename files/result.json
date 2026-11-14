@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "a77fb8e35e0a7b9cf266d250c94372e30e640ae4",
+  "summary": "Raise Zod minimum to 4.6.6 (lock 4.6.7) and scoped undici override to 7.30.1; Vite already patched at 8.2.4; regenerate dependency and source locks only.",
+  "tests": "Node 22.20.0 / pnpm 10.12.4: frozen install, rer setup, production build, typecheck, 10 touched publishing/built-Worker tests, source check and contract-docs check pass. Publication and exact-SHA CI are separately recorded in the packet. Exact-SHA Verify run 43614287002 remains in_progress after ten minutes; API budget exhausted; product custody PUSHED, not READY.",
+  "security": true
+}

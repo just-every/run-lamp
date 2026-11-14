@@ -1,0 +1,13 @@
+{
+  "limit": 10,
+  "recorded_invocations": 10,
+  "includes": [
+    "Official Gitleaks release metadata and binary asset retrieval",
+    "Two scanner reference visibility queries",
+    "PR creation HTTP 503, authorized launcher recovery and no-duplicate lookup, successful PR creation",
+    "Exact-SHA Verify discovery and one status read 600 seconds later"
+  ],
+  "unrelated_repository_writes": 0,
+  "additional_ci_dispatches": 0,
+  "final_status": "in_progress; custody PUSHED"
+}
