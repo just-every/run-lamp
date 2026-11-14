@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { publicHistorySelectionFlow } from './public-history-selection-flow.mjs';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
@@ -6,6 +7,7 @@ import { openStatusJourney } from './status-journey.mjs';
 import { assertHistoryRecord, historyGroups, historyText, historyLinks } from './history-assertions.mjs';
 
 export async function publicHistoryFlow() {
+  await publicHistorySelectionFlow();
   const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   let browser;
   const clock = async instant => {
@@ -103,6 +105,80 @@ export async function publicHistoryFlow() {
     // month pages must present the same complete records as the index.
     const monthly = await j.publicText('/history/2030-02');
     for (const record of [february, maintenance]) assertHistoryRecord(monthly, record);
+    // A retained generation stays small when completed source history grows.
+    // Seed source records, never a snapshot: Cron must produce the public bytes.
+    const archived = Array.from({ length: 55 }, (_, index) => ({
+      id: `synthetic-history-${String(index).padStart(3, '0')}`,
+      reference: `INC-${9000 + index}`,
+      title: `Synthetic Lamp paged history ${index}`,
+      at: '2029-12-20T11:00:00.000Z',
+    }));
+    const original = (await j.db.prepare('SELECT id FROM incidents WHERE reference=?').bind(december.href.split('/').at(-1)).first()).id;
+    await j.db.batch(archived.flatMap(row => [
+      j.db.prepare("INSERT INTO incidents(id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at) SELECT ?,?,?,'Resolved',?,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(row.id, row.reference, row.title, row.at, row.at, row.at, row.at, original),
+      j.db.prepare("INSERT INTO incident_components(id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES(?,?,?,?,'Major outage','Primary',?,?,?)").bind(`${row.id}-component`, row.id, component.id, component.name, row.at, row.at, row.at),
+      j.db.prepare("INSERT INTO incident_updates(id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) SELECT ?,?,'Resolved','Synthetic archived customers','Synthetic archived impact','Read access remains available',?,NULL,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(`${row.id}-update`, row.id, row.title, row.at, row.at, row.at, original),
+    ]));
+    await j.tick(Date.parse('2030-01-31T14:25:00.000Z'));
+    const paged = await j.visible('/history', archived.at(-1).title);
+    assert.ok(paged.includes('50 records per page'), 'the public history states its page size');
+    const expected = [...archived.map(row => `/incidents/${row.reference}`), february.href, december.href, oldIncident.href, maintenance.href, oldWindow.href];
+    const observed = [];
+    let historyPage = paged;
+    let historyPages = 0;
+    for (;;) {
+      observed.push(...historyLinks(historyPage));
+      const next = /<a[^>]*rel="next"[^>]*href="([^"]*\?cursor=[^"]+)"[^>]*>Older history<\/a>/.exec(historyPage)?.[1];
+      historyPages += 1;
+      if (!next) break;
+      assert.ok(historyPages < 5, 'history cursors advance');
+      historyPage = await j.publicText(next.replaceAll('&amp;', '&'));
+    }
+    assert.ok(historyPages > 1, 'older history has its own bounded page');
+    assert.equal(new Set(observed).size, observed.length, 'tied timestamps do not repeat records');
+    assert.deepEqual(observed.sort(), expected.sort(), 'every historical record remains reachable exactly once');
+    for (const record of [oldIncident, oldWindow]) {
+      const permanent = await j.publicText(record.href);
+      assert.ok(permanent.includes(record.title));
+      for (const update of record.updates) {
+        assert.ok(permanent.includes(update.publishedAt));
+        for (const line of (update.details ?? update.body).split("\n").filter(Boolean)) assert.ok(permanent.includes(line));
+      }
+    }
+    const native = [];
+    let nativeCursor;
+    for (let pages = 0; pages < 5; pages += 1) {
+      const result = JSON.parse(await j.publicText(`/api/public/v1/incidents${nativeCursor ? `?cursor=${encodeURIComponent(nativeCursor)}` : ''}`));
+      assert.ok(result.data.length <= 50);
+      native.push(...result.data.map(row => row.reference));
+      nativeCursor = result.nextCursor;
+      if (!nativeCursor) break;
+    }
+    assert.equal(new Set(native).size, native.length);
+    assert.deepEqual(native.sort(), [...archived.map(row => row.reference), ...[february, december, oldIncident].map(row => row.href.split('/').at(-1)), active.reference].sort());
+    // A feed reader follows the advertised page relation without losing events.
+    let feedPage = await j.publicText('/feed.atom');
+    const events = [];
+    for (let pages = 0; pages < 5; pages += 1) {
+      events.push(...[...feedPage.matchAll(/<entry><id>([^<]+)<\/id>/g)].map(match => match[1]));
+      const next = /<link[^>]*href="([^"]+)"[^>]*rel="next"[^>]*\/>/.exec(feedPage)?.[1] || /<link[^>]*rel="next"[^>]*href="([^"]+)"[^>]*\/>/.exec(feedPage)?.[1];
+      if (!next) break;
+      feedPage = await j.publicText(next.replaceAll('&amp;', '&'));
+    }
+    assert.equal(new Set(events).size, events.length, 'feed pages do not duplicate equal-time events');
+    for (const row of archived) assert.ok(events.some(id => id.endsWith(`:event:update-${row.id}-update`)), `${row.reference} is reachable through feed paging`);
+    let componentFeed = await j.publicText(`/components/${component.id.toLowerCase()}/feed.atom`);
+    const componentEvents = [];
+    for (let pages = 0; pages < 5; pages += 1) {
+      componentEvents.push(...[...componentFeed.matchAll(/<entry><id>([^<]+)<\/id>/g)].map(match => match[1]));
+      const next = /<link[^>]*href="([^"]+)"[^>]*rel="next"[^>]*\/>/.exec(componentFeed)?.[1] || /<link[^>]*rel="next"[^>]*href="([^"]+)"[^>]*\/>/.exec(componentFeed)?.[1];
+      if (!next) break;
+      assert.ok(next.includes(`/components/${component.id.toLowerCase()}/feed.atom?`), 'component paging keeps its component');
+      componentFeed = await j.publicText(next.replaceAll('&amp;', '&'));
+    }
+    assert.equal(new Set(componentEvents).size, componentEvents.length);
+    for (const row of archived) assert.ok(componentEvents.some(id => id.endsWith(`:event:update-${row.id}-update`)), `${row.reference} remains in its component feed`);
+    for (const update of december.updates) assert.ok(!componentEvents.some(id => id.endsWith(`:event:update-${update.id}`)), 'component archive excludes unrelated incidents');
     browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
     const page = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
     await page.goto(j.publicOrigin + '/history');

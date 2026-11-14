@@ -2,7 +2,12 @@ import type { SnapshotArtifact } from "./renderer";
 
 /** Pagination is rendered before the generation advances. A cursor addresses
  * one immutable page, so public reads never query application data. */
-export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string): SnapshotArtifact[] {
+export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string, page?: { cursor?: string; nextCursor: string | null }): SnapshotArtifact[] {
+  if (page) return [{
+    key: `api/public/v1/${name}${page.cursor ? `/${encodeURIComponent(page.cursor)}` : ""}.json`,
+    contentType: "application/json; charset=utf-8",
+    body: JSON.stringify({ generatedAt, data: records.slice(0, 50), nextCursor: page.nextCursor }),
+  }];
   const artifacts: SnapshotArtifact[] = [];
   const size = 50;
   for (let offset = 0; offset < Math.max(records.length, 1); offset += size) {

@@ -154,11 +154,11 @@ export function records(model: PublicSnapshotModel) {
   const active = model.maintenance.filter((item) => item.state === "In progress").sort((left, right) => left.startsAt.localeCompare(right.startsAt));
   const upcoming = model.maintenance.filter((item) => item.state === "Scheduled" && Date.parse(item.startsAt) <= now + 14 * DAY).sort((left, right) => left.startsAt.localeCompare(right.startsAt));
   const resolved = model.incidents.filter((incident) => incident.lifecycle === "Resolved" && incident.resolvedAt && Date.parse(incident.resolvedAt) >= now - model.theme.historyDays * DAY).sort((left, right) => (right.resolvedAt ?? "").localeCompare(left.resolvedAt ?? ""));
-  return { historyDays: model.theme.historyDays, open, maintenance: [...active, ...upcoming], resolved: resolved.slice(0, 3), more: Math.max(0, resolved.length - 3) };
+  return { bounded: model.bounded, historyDays: model.theme.historyDays, open, maintenance: [...active, ...upcoming], resolved: resolved.slice(0, 3), more: Math.max(0, resolved.length - 3) };
 }
 
 export function quietLine(history: ReturnType<typeof records>, className: string) {
-  const text = history.more
+  const text = history.bounded ? "Recent incidents are shown here." : history.more
     ? `${history.more} more incident${history.more === 1 ? "" : "s"} in the last ${history.historyDays} days.`
     : history.resolved.length || history.open.length ? `No other incidents in the last ${history.historyDays} days.` : `No incidents in the last ${history.historyDays} days.`;
   return `<p class="${className}">${text} <a href="/history">Full history</a></p>`;
