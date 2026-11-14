@@ -1,0 +1,9 @@
+1	1	CONTRACT.md
+8	1	RELEASE.json
+8	8	sources.lock.json
+13	3	src/core/features/page-settings/repository.ts
+1	1	src/core/features/page-settings/routes.ts
+3	3	src/core/features/page-settings/service.ts
+2	2	src/core/features/public-snapshot/format.ts
+2	2	src/core/features/setup/ui/first-run-page.tsx
+2	2	tests/e2e/website-onboarding.test.mjs

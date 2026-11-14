@@ -1,0 +1,19 @@
+{
+  "changed_files": [
+    "CONTRACT.md",
+    "RELEASE.json",
+    "sources.lock.json",
+    "src/core/features/page-settings/repository.ts",
+    "src/core/features/page-settings/routes.ts",
+    "src/core/features/page-settings/service.ts",
+    "src/core/features/public-snapshot/format.ts",
+    "src/core/features/setup/ui/first-run-page.tsx",
+    "tests/e2e/website-onboarding.test.mjs"
+  ],
+  "source_identical_except_regenerated_lock": true,
+  "main_changed_only_lock_in_touched_files": [
+    "sources.lock.json"
+  ],
+  "release_other_fields_unchanged": true,
+  "generated_views_not_committed": true
+}

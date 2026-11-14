@@ -1,0 +1,67 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/pr-lamp-timezone-preserve-1-rb1",
+  "head": "d0eb2b0d36f34608042fca213c6bf9b6c4e87526",
+  "base": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+  "source_head": "a17c12a5c70a8c821f47424409a471ed2089c7ef",
+  "replayed_in_order": [
+    "bd1615809f016c3d29c0889a4efe77eadc9aaef0",
+    "a17c12a5c70a8c821f47424409a471ed2089c7ef"
+  ],
+  "commit_count": 1,
+  "merge_commit_count": 0,
+  "product_pushes": 1,
+  "remote_head_verified": "d0eb2b0d36f34608042fca213c6bf9b6c4e87526",
+  "clean_checkout": true,
+  "pr": "https://github.com/just-every/run-lamp/pull/379",
+  "ci": [
+    {
+      "id": 43609895492,
+      "name": "Verify",
+      "head_sha": "d0eb2b0d36f34608042fca213c6bf9b6c4e87526",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43609895492"
+    }
+  ],
+  "ci_waited": false,
+  "ci_note": "Specific replay brief explicitly says not to wait for Verify; lander reruns on its candidate. No claim of green CI.",
+  "checks": {
+    "frozen_dependency_install": "passed",
+    "release_validator": "passed",
+    "typecheck": "passed",
+    "generated_contract_check_before_restoration": "passed",
+    "source_lock_check": "passed",
+    "scope_audit": "passed",
+    "diff_check": "passed",
+    "identity_and_trailers": "fleet author and committer, no trailers",
+    "restored_contract_check": "expected ACCEPTANCE.md difference; generated views retained from main"
+  },
+  "counts_before_and_after": {
+    "Published": [
+      42,
+      65,
+      0,
+      107
+    ],
+    "Target and push further": [
+      18,
+      64,
+      55,
+      137
+    ],
+    "All": [
+      60,
+      129,
+      55,
+      244
+    ]
+  },
+  "clause_change": "SETUP-002 acceptance point 2 and RELEASE.json changed entry; no status/gap/evidence changes",
+  "blockers": [],
+  "recovery_bundle": {
+    "path": "/home/agent/rer-consolidation/work/pr-lamp-timezone-preserve-1-rb1/product-recovery.bundle",
+    "sha256": "32f85471404d0aa3239032b8b19c6d4792f0eaf77a0f4a24f9731b6f1fc4c337",
+    "verified": true
+  }
+}

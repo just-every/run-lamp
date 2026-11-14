@@ -1,0 +1,231 @@
+diff --git a/CONTRACT.md b/CONTRACT.md
+index 7e3aeee..a9cd9d5 100644
+--- a/CONTRACT.md
++++ b/CONTRACT.md
+@@ -1095,7 +1095,7 @@ The primary journey: An operator sets up the page and components, accepts eviden
+ 
+ **Acceptance.**
+ 1. Every operator document sends a signed-in owner with no saved first-run completion to setup; a signed-out setup visitor signs in and returns there.
+-2. Lamp reads the public website once without running scripts, refusing private and loopback addresses at every redirect, and fills only observed page name, tagline, PNG mark, accent and navigation components, plus the browser time zone.
++2. Lamp reads the public website once without running scripts, refusing private and loopback addresses at every redirect, and fills only observed page name, tagline, PNG mark, accent and navigation components. First-run setup and website confirmation preserve any valid saved time zone; only an invalid saved zone adopts a valid browser time zone, or UTC when neither zone is valid.
+ 3. A linked Statuspage, Instatus or Better Stack page, or the site's status subdomain, supplies its own components and groups instead of navigation guesses, labeled with their source.
+ 4. Bring its incident history too starts unselected; when selected it imports only resolved incidents and their updates at original times, silently through Move in, without active incidents, maintenance or subscribers.
+ 5. A status feed with no components changes none; an unreadable site or omitted website leaves editable plain defaults with one calm explanation.
+diff --git a/RELEASE.json b/RELEASE.json
+index e28b9f8..768af1f 100644
+--- a/RELEASE.json
++++ b/RELEASE.json
+@@ -3,7 +3,14 @@
+   "previousVersion": "1.11.14",
+   "date": "2026-11-13",
+   "publicReleaseNotes": "**Public subscription choices now match the channels your Lamp can send through.** Email remains available, and SMS, Slack and Teams appear when configured. The Teams form links to instructions for creating a Workflows webhook before asking for its URL, and channel result pages offer a way back to subscriptions.\n\n- **Reopening an incident starts from the component state readers last saw.** Its preview and publication no longer use the incident's old, resolved component attachments as the previous state.\n- **Availability report downloads use readable component names.** CSV and PDF filenames use short, file-safe names, with numeric suffixes when names collide.\n- **The subscriber directory names selected components.** CSV invitation batches show their import time and remaining count. On a local Lamp, invitation feedback says no email was sent and links to Confirm locally in the Delivery log.\n- **Managed mail reports who handles sender authentication.** A configured Run Edit Run relay reports that the platform manages authentication, without claiming inbox delivery. An incomplete managed mail connection gives guidance for restoring it instead of asking for a direct-provider credential.\n- **Settings shows the built Lamp version.** The health response also includes `buildVersion` and a version 1 `schemaObservation` with the observed migration count and inventory digest, or a reason the inventory could not be read. This observation is separate from the installation's liveness result.\n\nUpgrading from 1.11.14: back up data and your source changes first, update the checkout to `v1.11.15`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.",
+-  "contractChanges": {},
++  "contractChanges": {
++    "SETUP-002": {
++      "change": "changed",
++      "summary": "First-owner setup and website confirmation preserve any valid saved time zone; only an invalid saved zone adopts the browser zone or the existing UTC recovery.",
++      "was": "First-run setup: First-run setup begins with the owner's website and lets them edit what the site supplied before confirming the installed page. The original setup decisions are recorded in RULINGS.md. **Acceptance.** 1. Every operator document sends a signed-in owner with no saved first-run completion to setup; a signed-out setup visitor signs in and returns there. 2. Lamp reads the public website once without running scripts, refusing private and loopback addresses at every redirect, and fills only observed page name, tagline, PNG mark, accent and navigation components, plus the browser time zone. 3. A linked Statuspage, Instatus or Better Stack page, or the site's status subdomain, supplies its own components and groups instead of navigation guesses, labeled with their source. 4. Bring its incident history too starts unselected; when selected it imports only resolved incidents and their updates at original times, silently through Move in, without active incidents, maintenance or subscribers. 5. A status feed with no components changes none; an unreadable site or omitted website leaves editable plain defaults with one calm explanation. 6. Confirming stores the edited settings, PNG mark and components and durably marks setup complete; all remain editable in Settings. 7. After completion setup opens the app; migration marks installations with a pre-existing operator complete, and rerunning setup never clears that completion.",
++      "now": "First-run setup: First-run setup begins with the owner's website and lets them edit what the site supplied before confirming the installed page. The original setup decisions are recorded in RULINGS.md. **Acceptance.** 1. Every operator document sends a signed-in owner with no saved first-run completion to setup; a signed-out setup visitor signs in and returns there. 2. Lamp reads the public website once without running scripts, refusing private and loopback addresses at every redirect, and fills only observed page name, tagline, PNG mark, accent and navigation components. First-run setup and website confirmation preserve any valid saved time zone; only an invalid saved zone adopts a valid browser time zone, or UTC when neither zone is valid. 3. A linked Statuspage, Instatus or Better Stack page, or the site's status subdomain, supplies its own components and groups instead of navigation guesses, labeled with their source. 4. Bring its incident history too starts unselected; when selected it imports only resolved incidents and their updates at original times, silently through Move in, without active incidents, maintenance or subscribers. 5. A status feed with no components changes none; an unreadable site or omitted website leaves editable plain defaults with one calm explanation. 6. Confirming stores the edited settings, PNG mark and components and durably marks setup complete; all remain editable in Settings. 7. After completion setup opens the app; migration marks installations with a pre-existing operator complete, and rerunning setup never clears that completion."
++    }
++  },
+   "extensionPointChanges": [],
+   "migrations": [
+     {
+diff --git a/sources.lock.json b/sources.lock.json
+index fc51076..3214e7b 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -524,7 +524,7 @@
+       "executable": false
+     },
+     "CONTRACT.md": {
+-      "sha256": "8b575f27ee607ce3f259e3ec0d733febbf5536d9906cb99a0d9a2ede09c5096f",
++      "sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
+       "executable": false
+     },
+     "DEMO.md": {
+@@ -2860,7 +2860,7 @@
+       "executable": false
+     },
+     "RELEASE.json": {
+-      "sha256": "dffadf2495a9952d3a66c64a549956933f1150e522889b9056a02b333e3971d2",
++      "sha256": "20452536a534b46a330f2a710ded4872525efa9f2c23273aed7033de4a00c8ed",
+       "executable": false
+     },
+     "rer-packaging.json": {
+@@ -5516,15 +5516,15 @@
+       "executable": false
+     },
+     "src/core/features/page-settings/repository.ts": {
+-      "sha256": "7ef566a20b1b0f539dd6f6e151a13c41ef07e7875a0531d2dc21df052d42a983",
++      "sha256": "c0528335c3046a120b05d5b228ff8c60dd453c317fd2666fc31cd2c88feec9b6",
+       "executable": false
+     },
+     "src/core/features/page-settings/routes.ts": {
+-      "sha256": "4bbe7fffc7e84fef909d97f0b04854fc9ea6cbf723979cbc3dafee95f2b9c56b",
++      "sha256": "51267852bf79d76192213c6103b7ad06a3b28425090b4093105a7fa564f2f908",
+       "executable": false
+     },
+     "src/core/features/page-settings/service.ts": {
+-      "sha256": "f5fe9af5d861b608eb05d968e1dd28f9fc696943d7fbde3e671f655365a69edb",
++      "sha256": "79cc549ca3bd108bea5801a40b69579b9ed942dbe4ef72d48457ed008e7b5538",
+       "executable": false
+     },
+     "src/core/features/page-settings/theme-assets.ts": {
+@@ -5748,7 +5748,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/format.ts": {
+-      "sha256": "7396d15523982ee4efa9f8110f397b30a2abdcc5eabb33476c0f1ba806545a5f",
++      "sha256": "46ccee22b7dea11be37123fbcd553b1afa70e3160d4b3a9469d075fcaa603687",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/generation-cache.ts": {
+@@ -6004,7 +6004,7 @@
+       "executable": false
+     },
+     "src/core/features/setup/ui/first-run-page.tsx": {
+-      "sha256": "8d7874621baa3698b151a6afc97df6777f647a793e9233c7e82d258fbcabc8d1",
++      "sha256": "e8896a6713fe7a4bc992ffa0aa9aeeaf5a1653cd4efa90b6eb8fbd69087f790a",
+       "executable": false
+     },
+     "src/core/features/setup/ui/found-card.tsx": {
+@@ -8560,7 +8560,7 @@
+       "executable": false
+     },
+     "tests/e2e/website-onboarding.test.mjs": {
+-      "sha256": "2bda6786d0288a5432e555c86bcb5e7a41897b5f7f06f438289055d98b12eaf7",
++      "sha256": "9687ec74336f4e8c4547264c8c4feb7c1ca691afc429c6155f5088e1155aaa29",
+       "executable": false
+     },
+     "tests/e2e/worker-startup.mjs": {
+diff --git a/src/core/features/page-settings/repository.ts b/src/core/features/page-settings/repository.ts
+index adcbf07..4389212 100644
+--- a/src/core/features/page-settings/repository.ts
++++ b/src/core/features/page-settings/repository.ts
+@@ -11,7 +11,7 @@ export interface PageSettingsRepository {
+   /** The regions written on components the public page shows, each as stored. */
+   visibleRegions(): Promise<string[]>;
+   insertIfMissing(settings: typeof pageSettings.$inferInsert): Promise<void>;
+-  update(settings: Pick<StoredPageSettings, "theme" | "pageName" | "tagline" | "accentColor" | "timezone" | "hostname" | "footerCreditEnabled" | "template" | "widgetAllowedOrigins" | "widgetAppearance" | "mailFromAddress" | "emailBranding" | "aiToneInstructions" | "wordingBlockedTerms" | "wordingFriendlyLength" | "updatedAt">): Promise<void>;
++  update(settings: Pick<StoredPageSettings, "theme" | "pageName" | "tagline" | "accentColor" | "timezone" | "hostname" | "footerCreditEnabled" | "template" | "widgetAllowedOrigins" | "widgetAppearance" | "mailFromAddress" | "emailBranding" | "aiToneInstructions" | "wordingBlockedTerms" | "wordingFriendlyLength" | "updatedAt">, operatorId: string): Promise<void>;
+   updateThemeAssets(input: Pick<StoredPageSettings, "theme" | "themeAssets" | "updatedAt">): Promise<void>;
+   updateLogo(input: Pick<StoredPageSettings, "logoKey" | "logoContentType" | "updatedAt">, operatorId: string): Promise<void>;
+ }
+@@ -42,8 +42,18 @@ export function createPageSettingsRepository(binding: D1Database): PageSettingsR
+     async insertIfMissing(settings) {
+       await database.insert(pageSettings).values(settings).onConflictDoNothing();
+     },
+-    async update(settings) {
+-      await database.update(pageSettings).set(settings).where(eq(pageSettings.id, "default"));
++    async update(settings, operatorId) {
++      const update = database.update(pageSettings).set(settings).where(eq(pageSettings.id, "default")).toSQL();
++      // Read the previous zone and write its audit entry in the same transaction as the settings write.
++      await binding.batch([
++        binding.prepare(`INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, reason, payload_json, created_at, updated_at)
++          SELECT ?, 'page-settings', id, 'updated', ?,
++            CASE WHEN timezone <> ? THEN 'Time zone: ' || timezone || ' → ' || ? ELSE NULL END,
++            json_object('recordName', 'Page settings', 'previousTimezone', timezone, 'timezone', ?), ?, ?
++          FROM page_settings WHERE id = 'default'`)
++          .bind(createUlid(), operatorId, settings.timezone, settings.timezone, settings.timezone, settings.updatedAt, settings.updatedAt),
++        binding.prepare(update.sql).bind(...update.params),
++      ]);
+     },
+     async updateThemeAssets(input) {
+       await database.update(pageSettings).set(input).where(eq(pageSettings.id, "default"));
+diff --git a/src/core/features/page-settings/routes.ts b/src/core/features/page-settings/routes.ts
+index a3cc5d8..569f24e 100644
+--- a/src/core/features/page-settings/routes.ts
++++ b/src/core/features/page-settings/routes.ts
+@@ -42,7 +42,7 @@ export function registerPageSettingsRoutes(app: Hono<AppEnv>, service: PageSetti
+       if (JSON.stringify(parsed.data.theme) !== JSON.stringify(current?.theme)) return context.json({ error: "Only a page owner or admin can change its theme." }, 403);
+     }
+     try {
+-      const settings = await service.update(parsed.data);
++      const settings = await service.update(parsed.data, context.get("operator").id);
+       return settings ? context.json({ settings }) : context.json({ error: "Page settings are not configured." }, 404);
+     } catch (cause) {
+       if (cause instanceof ThemeValidationError || cause instanceof UnsupportedMailIdentityError || cause instanceof UnavailablePageTemplateError) return context.json({ error: cause.message }, 400);
+diff --git a/src/core/features/page-settings/service.ts b/src/core/features/page-settings/service.ts
+index a07004f..4b7f89e 100644
+--- a/src/core/features/page-settings/service.ts
++++ b/src/core/features/page-settings/service.ts
+@@ -33,7 +33,7 @@ export type PageSettingsView = Omit<StoredPageSettings, "theme" | "widgetAllowed
+ export interface PageSettingsService {
+   get(): Promise<PageSettingsView | null>;
+   ensureInitial(settings: PageSettingsInput): Promise<void>;
+-  update(settings: PageSettingsInput): Promise<PageSettingsView | null>;
++  update(settings: PageSettingsInput, operatorId: string): Promise<PageSettingsView | null>;
+   uploadLogo(input: { bytes: ArrayBuffer; contentType: string }, operatorId: string): Promise<PageSettingsView | null>;
+   uploadThemeAsset(kind: ThemeAssetKind, input: { bytes: ArrayBuffer; contentType: string }): Promise<PageSettingsView | null>;
+   removeThemeAsset(kind: ThemeAssetKind): Promise<PageSettingsView | null>;
+@@ -101,7 +101,7 @@ export function createPageSettingsService(
+         updatedAt: timestamp,
+       });
+     },
+-    async update(settings) {
++    async update(settings, operatorId) {
+       const existing = await readRequired();
+       const assets = JSON.parse(existing.themeAssets) as { header?: unknown; font?: unknown };
+       const checkedTheme = settings.theme ? validatePageTheme(settings.theme, {
+@@ -132,7 +132,7 @@ export function createPageSettingsService(
+         wordingBlockedTerms: settings.wordingBlockedTerms ? JSON.stringify(settings.wordingBlockedTerms) : existing.wordingBlockedTerms,
+         wordingFriendlyLength: settings.wordingFriendlyLength ?? existing.wordingFriendlyLength,
+         updatedAt: nowIso(),
+-      });
++      }, operatorId);
+       const view = await rebuildAndRead();
+       return view && checkedTheme ? { ...view, themeRemovals: checkedTheme.removals } : view;
+     },
+diff --git a/src/core/features/public-snapshot/format.ts b/src/core/features/public-snapshot/format.ts
+index 7d26ba5..0d1f8c0 100644
+--- a/src/core/features/public-snapshot/format.ts
++++ b/src/core/features/public-snapshot/format.ts
+@@ -56,8 +56,8 @@ export function formatTime(value: string, timezone: string) {
+ }
+ 
+ export function timezoneLabel(timezone: string) {
+-  const label = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "longGeneric" })
+-    .formatToParts(new Date(0))
++  const label = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "long" })
++    .formatToParts(new Date())
+     .find((part) => part.type === "timeZoneName")?.value;
+   if (!label) throw new Error("A public timezone label is invalid.");
+   return `${label} (${timezone})`;
+diff --git a/src/core/features/setup/ui/first-run-page.tsx b/src/core/features/setup/ui/first-run-page.tsx
+index f671163..fc4dec4 100644
+--- a/src/core/features/setup/ui/first-run-page.tsx
++++ b/src/core/features/setup/ui/first-run-page.tsx
+@@ -63,8 +63,8 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin:
+     setProgress("publishing"); setMessage(null);
+     try {
+       const { pageName, tagline, accentColor } = found;
+-      // Setup does not ask for the time zone: the page takes this browser's, and Settings → Page changes it.
+-      const timezone = acceptedZone(Intl.DateTimeFormat().resolvedOptions().timeZone, settings.timezone);
++      // Setup does not ask for the time zone. Keep the installed choice; only an invalid saved zone needs recovery.
++      const timezone = acceptedZone(settings.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+       const { hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, emailBranding, aiToneInstructions, wordingBlockedTerms, wordingFriendlyLength } = settings;
+       const next: Required<PageSettingsInput> = { theme: settings.theme, template: settings.template, widgetAppearance: settings.widgetAppearance, pageName: pageName.trim(), tagline: tagline.trim(), accentColor, timezone, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, emailBranding, aiToneInstructions, wordingBlockedTerms, wordingFriendlyLength };
+       await appApi<SettingsResponse>("/api/app/page-settings", { method: "PUT", body: JSON.stringify(next) });
+diff --git a/tests/e2e/website-onboarding.test.mjs b/tests/e2e/website-onboarding.test.mjs
+index 7913be7..cc1e6c0 100644
+--- a/tests/e2e/website-onboarding.test.mjs
++++ b/tests/e2e/website-onboarding.test.mjs
+@@ -60,7 +60,7 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
+     await context.addCookies(entered.cookies.map(cookie => ({ ...cookie, url: origin })));
+     const cookie = entered.cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
+     // A browser whose zone does not resolve (Chromium reports "Etc/Unknown", which Intl refuses) still opens Lamp, even after
+-    // a refused try left that name stored as the page's: the page takes UTC, and the next browser's own zone replaces it.
++    // a refused try left that name stored as the page's: the page takes UTC, and later confirmation keeps that valid zone.
+     {
+       const unknown = await browser.newContext({ timezoneId: 'Etc/Unknown' });
+       await unknown.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
+@@ -163,7 +163,7 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
+ 
+     const api = async path => (await nativeRequest(path, { cookie })).json();
+     const { settings } = await api('/api/app/page-settings');
+-    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'America/New_York']);
++    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'UTC']);
+     assert.ok(settings.logoKey, 'the mark became the page logo');
+     const { components } = await api('/api/app/components');
+     const byGroup = edited.map(([group, names]) => [group === 'Other services' ? null : group, names]);

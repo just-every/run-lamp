@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "1ad65656963e5e2adf7fa0ae6b056e78b2dad755",
+      "bytes": 2110,
+      "path": "RECEIPT.json",
+      "sha256": "83edbea9476bd8631f49231088ba327c34507a85e5ca34daa2f97024fec95982"
+    },
+    {
+      "blob": "a3087227832af0637ded2f6ab5aa1a5290f6f733",
+      "bytes": 4341,
+      "path": "REPORT.md",
+      "sha256": "dbba16412ff002040d5ebac83bb555a46eef440e69110f93e890ad5e8c1bdca7"
+    },
+    {
+      "blob": "24c10b9f88c3fd0399574688b6978d79ece23531",
+      "bytes": 13043,
+      "path": "ci-discovery.json",
+      "sha256": "85c687c93e5ea37a21a58e1848ca2976b931f4ee6a5a5f291da34374b4cd94b3"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-check-generated.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "f8fb7de399b357a41cd1de544d1d265113cf1483",
+      "bytes": 105,
+      "path": "contract-check-restored.log",
+      "sha256": "9cf3c390ca9f5f8c7bb13f4dd1f4058d66f2e74d194584038d85eaf0d4767d1e"
+    },
+    {
+      "blob": "d4d1e60ea7fdc565c576421664992b40e47a816e",
+      "bytes": 28,
+      "path": "contract-write.log",
+      "sha256": "df91012bf66fb476e9cd1a30c002829398beb55f869e07cc7be477197fa5a276"
+    },
+    {
+      "blob": "2809165aa9318de0a9cce0078e0bb0b4626513d9",
+      "bytes": 604,
+      "path": "diff-audit.json",
+      "sha256": "e28bb35f90e1959babed25628781e0a6e15647d3133f41ca179027d5e88c719b"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "identity-audit.log",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "5e155a9f4b9cfd16252b99423fdb98212a0a0143",
+      "bytes": 2145,
+      "path": "install.log",
+      "sha256": "58b3a267a483f8cc9db55e6f1a6b646ec0c839ca3801d2ad25ae0212dd626a19"
+    },
+    {
+      "blob": "6578983f9a0442de08945fce1aaaffb8fc57f580",
+      "bytes": 17227,
+      "path": "pr-receipt.json",
+      "sha256": "317af222943f8f4f813aa2bb24ec1b8e40b57d094affc2f2d30258fbb4738881"
+    },
+    {
+      "blob": "d20edd5c6a49457689a7051889ad67eb1d321123",
+      "bytes": 1260,
+      "path": "pr-request.json",
+      "sha256": "543f59370dc308fafdcf61aa22440da8167a3f4d05a285a3c049ea208f991b44"
+    },
+    {
+      "blob": "6d0fa606a7274ae820ba7654a2f0c09a793f1d23",
+      "bytes": 339,
+      "path": "product-diff-numstat.txt",
+      "sha256": "5d3b475d6b20706221569a186e9cef268dc93a8c7f9325579107fe3b66cab5f7"
+    },
+    {
+      "blob": "68894686c040a6e380eea53bff17e6486311d312",
+      "bytes": 20023,
+      "path": "product.patch",
+      "sha256": "219934afeeee8e7ac812feb1ebee5db34fc4553b7386c37d05045332aecc002d"
+    },
+    {
+      "blob": "05d3032ec09f76744ab8657d6f4ed5f1ea434465",
+      "bytes": 973,
+      "path": "push.log",
+      "sha256": "e722f5cbe30d30f1c073abe3dfc2c4f1daff18921119b1429f44dac7e2545f07"
+    },
+    {
+      "blob": "bf948f5f14f5eee262ac2fb2f87819cf540d6946",
+      "bytes": 397035,
+      "path": "source-check.log",
+      "sha256": "c880fe07c2fa12144c874ef2ac6efa41ca145d40b2188b8ea82a7e66f41a4211"
+    },
+    {
+      "blob": "dbda64b4aaf750e30d9a48970a4e030a32065d05",
+      "bytes": 397021,
+      "path": "source-lock.log",
+      "sha256": "f4c27b42c15775fabc989d1800e86f0aa8117fb12feabaada07663c8ed921e2b"
+    },
+    {
+      "blob": "ae1afcab8f48446309e9f95a695c5b18556bdad6",
+      "bytes": 224,
+      "path": "typecheck.log",
+      "sha256": "14f4ed2c1c0f76b0272323783c820ee81debb648c518698cf6232d74f57a0779"
+    },
+    {
+      "blob": "cb935c50ad0102aa81be94a7654a3cac95752dc5",
+      "bytes": 131,
+      "path": "validate-release.log",
+      "sha256": "c3cb4c805be09c28d38be27a1a515bd67a6f2dbaf6eba5509f9188ccc0267af6"
+    }
+  ],
+  "product_branch": "cloud/pr-lamp-timezone-preserve-1-rb1",
+  "product_head": "d0eb2b0d36f34608042fca213c6bf9b6c4e87526",
+  "ref": "refs/heads/evidence/pr-lamp-timezone-preserve-1-rb1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "pr-lamp-timezone-preserve-1-rb1"
+}

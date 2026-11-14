@@ -1,0 +1,6 @@
+{
+  "title": "Preserve configured timezone through first-owner setup",
+  "head": "cloud/pr-lamp-timezone-preserve-1-rb1",
+  "base": "main",
+  "body": "First-owner setup and website confirmation preserve a valid saved time zone, recovering from the browser zone or UTC only when needed. Settings writes retain the operator in the existing audit transaction, and timezone labels use the current daylight name.\n\nThis is a single ordinary commit replaying bd161580 and a17c12a5 onto main 189bfd82e39799b16fbabb4f8a48f65f3b5d22f0. It retains the SETUP-002 RELEASE.json change/summary/was/now entry and the authorized onboarding expectation. No conflicts occurred; current main changed only sources.lock.json among the touched files, and the regenerated lock preserves those changes.\n\nValidation: frozen dependency installation, release validator, TypeScript typecheck, generated contract check before restoring views, source-lock check, and diff scope/identity audit passed. ACCEPTANCE.md and docs/CLAIMS.md remain at main by fleet policy; the expected contract check difference in ACCEPTANCE.md is for the lander to regenerate. No version, date, migrations, clause status, gap or evidence changes. Per the replay brief, CI completion is left to the lander."
+}
