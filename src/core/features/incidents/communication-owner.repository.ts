@@ -8,8 +8,9 @@ export function createCommunicationOwnerRepository(db: D1Database) {
   const ownerJoin = `LEFT JOIN incident_communication_owners assignment ON assignment.incident_id=i.id
     LEFT JOIN oa_operators person ON person.id=COALESCE(assignment.operator_id,i.created_by_operator_id) AND person.status='active'`;
   return {
-    async list(): Promise<Map<string, CommunicationOwnership>> {
-      const rows = (await db.prepare(`SELECT i.id, i.lifecycle,person.id AS ownerId,person.display_name AS displayName FROM incidents i ${ownerJoin} WHERE i.deleted_at IS NULL`).all<{ id: string; lifecycle: string; ownerId: string | null; displayName: string | null }>()).results;
+    async list(incidentIds?: string[]): Promise<Map<string, CommunicationOwnership>> {
+      const scope = incidentIds ? `i.id IN (${incidentIds.map(() => "?").join(",") || "NULL"})` : "i.deleted_at IS NULL";
+      const rows = (await db.prepare(`SELECT i.id, i.lifecycle,person.id AS ownerId,person.display_name AS displayName FROM incidents i ${ownerJoin} WHERE ${scope}`).bind(...(incidentIds ?? [])).all<{ id: string; lifecycle: string; ownerId: string | null; displayName: string | null }>()).results;
       return new Map(rows.map(row => [row.id, { owner: row.ownerId ? { id: row.ownerId, displayName: row.displayName! } : null, unowned: row.lifecycle !== 'Resolved' && !row.ownerId }]));
     },
     async get(incidentId: string): Promise<CommunicationOwnership> {

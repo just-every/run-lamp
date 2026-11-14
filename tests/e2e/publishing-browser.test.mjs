@@ -895,6 +895,41 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
 
   if (process.env.LAMP_SCREENSHOTS) { await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true }); await page.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, '1440-operator-journey.png'), fullPage: true }); }
   await maintenanceBrowserFlow({ page, appUrl, pageUrl, api, screenshots: previewScreens });
+
+  // The existing incident journey also browses beyond the firstListPage visible page.
+  const tiedAt = new Date(Date.now() + 60_000).toISOString();
+  for (let index = 0; index < 51; index++) await api('/api/app/incidents', 'POST', {
+    title: `synthetic-lamp-page-${index}`, openedAt: tiedAt,
+    components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }],
+  });
+  const firstListPage = await api('/api/app/incidents?group=active&limit=50');
+  const next = await api(`/api/app/incidents?group=active&limit=50&cursor=${encodeURIComponent(firstListPage.nextCursor)}`);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`${appUrl}/app/incidents`); await operatorHydrated(page);
+  const activeSection = page.getByRole('region', { name: 'Active incidents', exact: true });
+  const activePages = activeSection.getByRole('navigation', { name: 'Active incidents pages' });
+  await activeSection.getByText(`${firstListPage.total} total`, { exact: true }).waitFor();
+  assert.deepEqual(await activeSection.locator('.record-ref').allTextContents(), firstListPage.incidents.map(row => row.reference));
+  assert.equal(await activePages.getByRole('button', { name: 'Previous Active incidents', exact: true }).isDisabled(), true);
+  await activePages.getByRole('button', { name: 'Next Active incidents', exact: true }).click();
+  await activeSection.locator('.record-ref').filter({ hasText: next.incidents[0].reference }).waitFor();
+  assert.deepEqual(await activeSection.locator('.record-ref').allTextContents(), next.incidents.map(row => row.reference));
+  assert.ok((await activePages.innerText()).includes(`51–${50 + next.incidents.length} of ${firstListPage.total}`));
+  await activePages.getByRole('button', { name: 'Previous Active incidents', exact: true }).click();
+  await activeSection.locator('.record-ref').filter({ hasText: firstListPage.incidents[0].reference }).waitFor();
+  assert.deepEqual(await activeSection.locator('.record-ref').allTextContents(), firstListPage.incidents.map(row => row.reference));
+  if (process.env.LAMP_INCIDENT_LIST_PROOF) {
+    await mkdir(process.env.LAMP_INCIDENT_LIST_PROOF, { recursive: true });
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.screenshot({ path: join(process.env.LAMP_INCIDENT_LIST_PROOF, `incidents-${width}.png`), fullPage: true });
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  await activeSection.locator('a.incident-list-row').first().click();
+  await page.waitForURL(`${appUrl}/app/incidents/${firstListPage.incidents[0].id}`);
+  await operatorHydrated(page);
+
 });
 
 test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async () => {
