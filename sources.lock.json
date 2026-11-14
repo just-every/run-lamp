@@ -6924,7 +6924,7 @@
       "executable": false
     },
     "src/core/platform/status-feeds/xml.ts": {
-      "sha256": "7f1b04b88ec68f1da8ca562d62c32d3e0e663a568edeaafd9ac7125d76ca73b7",
+      "sha256": "5365a8cbf3878f14cdd95d6bde0b0c9bcd96b71fe01230a2275c23d4cf37bb78",
       "executable": false
     },
     "src/core/shared/accent-ink.ts": {
@@ -8504,7 +8504,7 @@
       "executable": false
     },
     "tests/e2e/site-reader-security.test.mjs": {
-      "sha256": "fd1863fe9e4fbb124df89412292fa8dfd61a358fb6eaaedd0101cdb2190c3ca6",
+      "sha256": "2de59e13e10dd878e6126d81a1d80b5a08e26a4c072b80965015e2ad966a505d",
       "executable": false
     },
     "tests/e2e/slack-subscriptions-helper.mjs": {
