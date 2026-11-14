@@ -4316,7 +4316,7 @@
       "executable": false
     },
     "src/core/app/request-work.ts": {
-      "sha256": "6fc812b17ed26d8828ae70b3a114d4d5635d7f89327f8e0a214c990bb17f3b9a",
+      "sha256": "1d246455d0657bf8178e7259f3ca976f0c93073634743e7b0e8437dc53cacbed",
       "executable": false
     },
     "src/core/app/server.ts": {
@@ -4652,15 +4652,15 @@
       "executable": false
     },
     "src/core/features/components/repository.ts": {
-      "sha256": "3dea58cdf6120f8f711b79bda0bde85261a7ef7271848f47a4be467f679ea935",
+      "sha256": "e9d630d6885afc9380ef6c8233bb3b8393cb41f686c1cbd1e4e5535383791d06",
       "executable": false
     },
     "src/core/features/components/routes.ts": {
-      "sha256": "d8de9000bf922a599b1e3c85c51f6385d2e58c9b4d881a409146bc24ce764173",
+      "sha256": "79bd5932d7e258502bb00cf9fc9dc95f29ae2993b6dd62847159d113c1fb0bc3",
       "executable": false
     },
     "src/core/features/components/service.ts": {
-      "sha256": "0af05b11b9483cb76ce823fb562e618ea86917596183205588583bc744523fa6",
+      "sha256": "fba2025538662e5ea1ffc858d2b416246e47d8441ffb748df43927f947208b8f",
       "executable": false
     },
     "src/core/features/components/state-history-repository.ts": {
@@ -4684,7 +4684,7 @@
       "executable": false
     },
     "src/core/features/components/ui/component-history.tsx": {
-      "sha256": "a6d248231bfea7e8a326157b81f9219155efecf5d69afac426a2d23ce9f3752e",
+      "sha256": "2336b0e2dfed8bade40d13102f1b2fbc30669352854b8bf3e36028a30fde4ef5",
       "executable": false
     },
     "src/core/features/components/ui/component-list.tsx": {
@@ -7991,6 +7991,10 @@
       "sha256": "8edf31a7fd61f3e93f7dacb565a0234fd7681f785a88cf89676e00567cdb5335",
       "executable": false
     },
+    "tests/e2e/helpers/component-read-flow.mjs": {
+      "sha256": "ad26e6d4456d0d2ea6f4de47845235e1c2436bfbc7fee8acdd8c9978b86c7e53",
+      "executable": false
+    },
     "tests/e2e/helpers/conditional-component-flow.mjs": {
       "sha256": "78e8cb2d336aa7891bd76059b8fbeb6055a165d8c111f58065048612302f8ec8",
       "executable": false
@@ -8476,7 +8480,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "9e6eaa8534007aac5dbe93b6f8ea2292803d74d98908bf9773e4a90ed91efe8c",
+      "sha256": "ca2d2d89a27358f3bca8013e5678d939700c72d56cb0db9b0e1806111f18ba98",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {

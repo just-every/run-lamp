@@ -1,3 +1,4 @@
+import { incidentSnapshot } from '../helpers/incident-snapshot.mjs';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -58,8 +59,8 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     };
     const moveIn = moveInDoor(api);
     const counts = async () => {
-      const rows = await Promise.all(['/api/app/components', '/api/app/incidents', '/api/app/maintenance', '/api/app/subscribers?limit=100'].map(path => api(path)));
-      return { components: rows[0].body.components.length, groups: rows[0].body.groups.length, incidents: rows[1].body.incidents.length, maintenance: rows[2].body.maintenance.length, subscribers: rows[3].body.subscribers.length };
+      const rows = await Promise.all([api('/api/app/components'), incidentSnapshot(api), api('/api/app/maintenance'), api('/api/app/subscribers?limit=100')]);
+      return { components: rows[0].body.components.length, groups: rows[0].body.groups.length, incidents: rows[1].length, maintenance: rows[2].body.maintenance.length, subscribers: rows[3].body.subscribers.length };
     };
     const apply = async input => {
       const review = await moveIn.preview(input); assert.equal(review.status, 200, JSON.stringify(review.body));
@@ -190,7 +191,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         t.diagnostic('PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted');
         t.diagnostic('PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable');
       }
-      const incidents = (await api('/api/app/incidents')).body.incidents;
+      const incidents = await incidentSnapshot(api);
       for (const row of sourceHistory(source, files)) {
         const incident = incidents.find(candidate => candidate.title === row.title); assert.ok(incident, row.title);
         assert.deepEqual(incident.updates.map(update => Date.parse(update.publishedAt)).sort(), row.times.map(Date.parse).sort());
@@ -306,7 +307,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       const undone = await moveIn.undo(result.door); assert.equal(undone.status, 200, JSON.stringify(undone.body));
       assert.equal(undone.body.job.state, 'undone');
       assert.ok(undone.body.undo.dispositions.some(row => row.targetKind === 'incident' && row.disposition === 'retained' && row.reason));
-      const retained = (await api('/api/app/incidents')).body.incidents;
+      const retained = await incidentSnapshot(api);
       assert.ok(retained.some(row => row.id === edited.id && row.updates.some(update => update.customerImpact === 'Owner correction after import')));
       assert.equal(retained.length, before.incidents + 1, 'untouched source history is removed while the owner correction survives');
       await unsentExpiredImportFlow({ runtime, api, moveIn, source, files });
