@@ -1,0 +1,32 @@
+{
+  "version_before": "1.11.15",
+  "version_after": "1.11.16",
+  "base_sha": "fdd6f5a5cfda7478b14b21129d7d9a24c512ce19",
+  "changes": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.15.CONTRACT.md",
+    "release-history/1.11.15.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "new_release_migrations": [
+    "0079_subscriber_directory_order.sql",
+    "0080_incident_list_paging.sql"
+  ],
+  "new_release_migration_count": 2,
+  "previous_release_migration_count": 0,
+  "total_migrations": 79,
+  "contract_change_entries": 1,
+  "contract_status_changes": 0,
+  "product_files_changed": 0,
+  "test_files_changed": 0,
+  "package_lock_present": false,
+  "rer_pin_before": "0.2.108",
+  "rer_pin_after": "0.2.108",
+  "tagged_1_11_15_history_exact": true,
+  "notes_match_changelog": true,
+  "generated_views_untouched": true
+}

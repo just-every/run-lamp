@@ -1,0 +1,70 @@
+{
+  "timestamp_utc": "2026-11-14T17:29:42.396254+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-16",
+  "head": "454648ef9f86fed6695d12043fcf4014bc22d37c",
+  "checks": [
+    {
+      "command": "node scripts/validate-release.mjs",
+      "exit_code": 0,
+      "log": "release-validation.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0,
+      "log": "source-lock-write.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "source-lock-check.json"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0
+    }
+  ],
+  "toolchain": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "requested_node": "22.20.0",
+    "engine_warning": "The supplied cloud toolchain retains the newer VM Node; typecheck passed with an engine warning."
+  },
+  "tests_run": 0,
+  "full_verifier_run": false,
+  "browser_run": false,
+  "product_push": "success, first attempt",
+  "publication_scan": "Deferred to the guarded Mac lander, as instructed.",
+  "release_publication": "Not authorized in this metadata-only task.",
+  "remote_product_head_verified": "454648ef9f86fed6695d12043fcf4014bc22d37c",
+  "packet_review": "All regular files are explicit non-secret reports, public repository metadata or check receipts; no environment dumps, credentials, held-out gate material or symlinks.",
+  "github_api_calls_before_ci_polls": 5,
+  "github_api_budget": 10,
+  "ci_poll_minimum_seconds": 300,
+  "candidate_verify_run_id": 43621303281,
+  "main_verify_run_ids": [
+    43617813386,
+    43619892385
+  ],
+  "main_run_site_id": 43619892524,
+  "pr_number": 382,
+  "candidate_discovered_at_utc": "2026-11-14T17:28:57Z",
+  "github_api_calls_so_far": 7,
+  "latest_ci_observation": {
+    "conclusion": null,
+    "head_sha": "454648ef9f86fed6695d12043fcf4014bc22d37c",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43621303281",
+    "status": "in_progress"
+  },
+  "github_api_calls_used": 8,
+  "github_api_calls_remaining": 2,
+  "latest_ci_observed_at_utc": "2026-11-14T17:44:00.892623+00:00",
+  "product_terminal_status": "PUSHED",
+  "ready": false,
+  "ci_wait_note": "Three polls at 300-second intervals still show in_progress. Eight of the ten GitHub calls are used; the two-call remainder is short of a further poll plus failed-job discovery/log diagnosis. End with PUSHED under the brief budget rule; no READY or success claim."
+}

@@ -1,0 +1,14 @@
+fdd6f5a5cfda7478b14b21129d7d9a24c512ce19 Merge main into incident paging candidate, preserving release migrations
+ef1fe236498a869d795b32f1898160093c2afb83 Regenerate contract views from CONTRACT.md
+3de3712ea6362e9d1731cd1cc54dc994386d4fd8 Preserve configured timezone and record SETUP-002 release change
+189bfd82e39799b16fbabb4f8a48f65f3b5d22f0 Parse SMS flow HTML and compare complete URLs
+bef5115afc3972d78962fbb899a2a32433f5f3a6 Upgrade Vite to 8.2.4
+6a3fe92809524f6463f98454cd72af0cd8724100 Fix repeated tag sanitization in status feed text
+76748e97deb8a8c2001c7ce043cf48ff6396d80a Record subscriber directory index in migration inventory
+3235dd43145a36752c2f81a54f2ea503a8dda5c0 Bound subscriber directory reads to the displayed page
+c65066509dc724bdd5e09c45f17f18d1758bc796 Record sources for trigger-safe intake and complete incident snapshots
+b5f574d7cf3954d492fe981f18e1f968e44ac5e9 Preserve intake notices and complete import snapshots after paging [skip ci]
+8ab15b4dc74832de43b662299e95a6de303d8aa3 Record incident paging migration in release inventory
+1516f70a710d21775b8498c0357ea26a76f164d1 Bound component reads and keep notification work off their read path
+0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f Page incident lists before loading related records
+4271d1caa8f044a0265eb287c660e1777bd5b942 Bound SVG icon detection and verify import text safety

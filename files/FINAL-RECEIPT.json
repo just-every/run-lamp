@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-16",
+  "head": "454648ef9f86fed6695d12043fcf4014bc22d37c",
+  "pr_url": "https://github.com/just-every/run-lamp/pull/382",
+  "status": "PUSHED",
+  "ready": false,
+  "verify_run_id": 43621303281,
+  "verify_url": "https://github.com/just-every/run-lamp/actions/runs/43621303281",
+  "verify_status": "in_progress",
+  "verify_conclusion": null,
+  "ci_last_observed_at_utc": "2026-11-14T17:44:00.892623+00:00",
+  "github_calls_used": 8,
+  "github_budget": 10,
+  "local_touched_checks": "passed",
+  "blockers": [],
+  "pending": [
+    "Exact-SHA Verify final conclusion",
+    "Guarded Mac full-history publication scan and landing",
+    "Authorized producer/tag/signature and GitHub Release publication/readback"
+  ],
+  "timestamp_utc": "2026-11-14T17:44:56.182611+00:00"
+}

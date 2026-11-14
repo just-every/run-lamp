@@ -1,0 +1,9 @@
+ CHANGELOG.md                        |   11 +
+ RELEASE.json                        |   14 +-
+ docs/accessibility/vpat.md          |    2 +-
+ package.json                        |    2 +-
+ release-history/1.11.15.CONTRACT.md | 3438 +++++++++++++++++++++++++++++++++++
+ release-history/1.11.15.json        |   11 +
+ seed.json                           |    2 +-
+ sources.lock.json                   |   18 +-
+ 8 files changed, 3483 insertions(+), 15 deletions(-)
