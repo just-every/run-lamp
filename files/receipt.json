@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-qgrowth-tick-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-tick-1",
+  "head": "7d3c98681313082a83752abe8d1c4b6f4f7c92fb",
+  "base": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "productPushed": true,
+  "ready": false,
+  "gate": "required: additive migration 0079; fleet gate pending",
+  "measurement": {
+    "cli": "@runeditrun/rer@0.2.115",
+    "entrypoint": "published cli/main.mjs via /tmp/rer115.mjs",
+    "command": "CI=true node /tmp/rer115.mjs size --no-queue --json --write-statements <packet statements directory>",
+    "declarationBytes": 10488,
+    "declarationSha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
+    "guardBytes": 209715200,
+    "fixtures": "unchanged synthetic shape from origin/cloud/sd-lamp-sizecheck-3",
+    "queueConsumersMeasured": false,
+    "verdict": "fail: small retained bundle limit, large renderer heap exhaustion; all four flows remain red"
+  },
+  "publicationScan": "INCOMPLETE: scan.gitleaks-unavailable (8.30.1)",
+  "pr": {
+    "draft": true,
+    "head": "7d3c98681313082a83752abe8d1c4b6f4f7c92fb",
+    "html_url": "https://github.com/just-every/run-lamp/pull/365",
+    "number": 365
+  },
+  "githubCalls": 6,
+  "clauseStatusesChanged": [],
+  "contractCounts": {
+    "total": 244,
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "testRegistrationsAdded": 0,
+  "recordedAt": "2026-11-14T01:43:50.419256+00:00",
+  "forwardUpgrade": {
+    "status": "passed",
+    "head": "7d3c98681313082a83752abe8d1c4b6f4f7c92fb",
+    "addedMigrations": [
+      "0079_scheduled_work_indexes.sql"
+    ],
+    "provider": "synthetic Resend edge; no account or provider calls"
+  },
+  "testCounts": {
+    "registered": 92,
+    "assertionScripts": 10,
+    "total": 102
+  },
+  "localTools": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "productRer": "0.2.108",
+    "measurementRer": "0.2.115"
+  },
+  "ciDiscovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "7d3c98681313082a83752abe8d1c4b6f4f7c92fb",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43541473413",
+      "id": 43541473413,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "ciStatus": {
+    "conclusion": "failure",
+    "head_sha": "7d3c98681313082a83752abe8d1c4b6f4f7c92fb",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43541473413",
+    "status": "completed"
+  },
+  "blockedCause": "Unchanged size harness: small retained snapshot exceeds 25 MiB; large renderer exhausts heap; minute-tick remains over ceiling/growth and public-summary/history/feed return 503.",
+  "ciJobs": [
+    {
+      "conclusion": "success",
+      "id": 132282775022,
+      "name": "plan",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Reuse only verified push evidence"
+        },
+        {
+          "conclusion": "success",
+          "name": "Read the shared local and CI verification plan"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job"
+        }
+      ]
+    },
+    {
+      "conclusion": "failure",
+      "id": 132282822024,
+      "name": "build",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies"
+        },
+        {
+          "conclusion": "failure",
+          "name": "Build the production Worker once"
+        },
+        {
+          "conclusion": "success",
+          "name": "Retain commit-bound build completion"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job"
+        }
+      ]
+    },
+    {
+      "conclusion": "failure",
+      "id": 132283054986,
+      "name": "verify",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job"
+        },
+        {
+          "conclusion": "success",
+          "name": "Require a successful plan"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093"
+        },
+        {
+          "conclusion": "failure",
+          "name": "Require every planned command to succeed on this commit"
+        },
+        {
+          "conclusion": "success",
+          "name": "Retain combined verification verdict"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job"
+        }
+      ]
+    },
+    {
+      "conclusion": "skipped",
+      "id": 132283057219,
+      "name": "shards",
+      "status": "completed",
+      "steps": []
+    }
+  ],
+  "ciBlocker": "validate:release requires RELEASE.json.migrations to list 0079_scheduled_work_indexes.sql; brief explicitly forbids release changes, so release metadata was not edited.",
+  "archiveReads": [
+    {
+      "command": "gh run view 43541473413 --repo just-every/run-lamp --job 132282822024 --log-failed",
+      "exitCode": 0
+    },
+    {
+      "command": "gh run view 43541473413 --repo just-every/run-lamp --job 132283054986 --log-failed",
+      "exitCode": 0
+    }
+  ]
+}

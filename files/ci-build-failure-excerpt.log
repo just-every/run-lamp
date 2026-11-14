@@ -1,0 +1,16 @@
+build	Build the production Worker once	2026-11-14T01:35:59.8930552Z Verifying build: validate:release
+build	Build the production Worker once	2026-11-14T01:36:00.0509708Z 
+build	Build the production Worker once	2026-11-14T01:36:00.0510472Z > lamp@1.11.15 validate:release /home/runner/work/run-lamp/run-lamp
+build	Build the production Worker once	2026-11-14T01:36:00.0510792Z > node scripts/validate-release.mjs
+build	Build the production Worker once	2026-11-14T01:36:00.0510896Z 
+build	Build the production Worker once	2026-11-14T01:36:00.0939725Z Vendor catalog: 20 sources and 162 native state cases validated.
+build	Build the production Worker once	2026-11-14T01:36:00.1341847Z RELEASE.json migrations must exactly match newly introduced migrations/core in apply order.
+build	Build the production Worker once	2026-11-14T01:36:00.1342379Z + actual - expected
+build	Build the production Worker once	2026-11-14T01:36:00.1342493Z 
+build	Build the production Worker once	2026-11-14T01:36:00.1342557Z + []
+build	Build the production Worker once	2026-11-14T01:36:00.1342654Z - [
+build	Build the production Worker once	2026-11-14T01:36:00.1342819Z -   '0079_scheduled_work_indexes.sql'
+build	Build the production Worker once	2026-11-14T01:36:00.1342960Z - ]
+build	Build the production Worker once	2026-11-14T01:36:00.1343013Z 
+build	Build the production Worker once	2026-11-14T01:36:00.1482570Z  ELIFECYCLE  Command failed with exit code 1.
+build	Build the production Worker once	2026-11-14T01:36:00.2041915Z 

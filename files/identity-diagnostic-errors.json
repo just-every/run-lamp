@@ -1,0 +1,13 @@
+{
+  "errors": [
+    {
+      "message": "{\"name\":\"Error\",\"message\":\"Public snapshot build failed after 3 attempts: Cannot read properties of null (reading 'localeCompare')\"}"
+    }
+  ],
+  "builds": [
+    {
+      "status": "failed",
+      "error": "Public snapshot build failed after 3 attempts: Cannot read properties of null (reading 'localeCompare')"
+    }
+  ]
+}

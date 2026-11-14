@@ -1,0 +1,13 @@
+{
+  "errors": [
+    {
+      "message": "{\"name\":\"TypeError\",\"message\":\"Cannot read properties of null (reading 'localeCompare')\",\"stack\":\"TypeError: Cannot read properties of null (reading 'localeCompare')\\n    at compareComponentOrder (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/app-assets/accent-ink-BD7iXk4V.js:7:101)\\n    at Array.sort (<anonymous>)\\n    at sortComponentsByOrder (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/app-assets/accent-ink-BD7iXk4V.js:10:25)\\n    at groupComponentsByHeading (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/app-assets/accent-ink-BD7iXk4V.js:15:26)\\n    at componentHealthMarkup (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/index.js:73515:17)\\n    at renderPage (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/index.js:73582:60)\\n    at renderPublicSnapshot (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/index.js:73606:10)\\n    at prepare (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/index.js:73843:22)\\n    at async rebuildOne (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/index.js:73863:21)\\n    at async Object.retryPendingBuild (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-1/diagnostic/dist/server/index.js:74044:6)\"}"
+    }
+  ],
+  "builds": [
+    {
+      "status": "failed",
+      "error": "Cannot read properties of null (reading 'localeCompare')"
+    }
+  ]
+}

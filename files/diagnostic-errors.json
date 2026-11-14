@@ -1,0 +1,13 @@
+{
+  "errors": [
+    {
+      "message": "{\"name\":\"Error\",\"message\":\"Public snapshot build failed after 3 attempts: Lamp requires a persisted feed identity before rendering feeds.\"}"
+    }
+  ],
+  "builds": [
+    {
+      "status": "failed",
+      "error": "Public snapshot build failed after 3 attempts: Lamp requires a persisted feed identity before rendering feeds."
+    }
+  ]
+}

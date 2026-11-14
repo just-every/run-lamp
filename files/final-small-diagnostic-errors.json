@@ -1,0 +1,13 @@
+{
+  "errors": [
+    {
+      "message": "{\"name\":\"Error\",\"message\":\"Retained snapshot exceeds the 25 MiB retained bundle limit.\"}"
+    }
+  ],
+  "builds": [
+    {
+      "status": "failed",
+      "error": "Retained snapshot exceeds the 25 MiB retained bundle limit."
+    }
+  ]
+}
