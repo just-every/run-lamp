@@ -1,0 +1,16 @@
+{
+  "command": [
+    "node",
+    "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+    "size",
+    "--json",
+    "--write-statements",
+    "/tmp/lamp-size-before-guard-statements"
+  ],
+  "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "limit_bytes": 209715200,
+  "peak_disposable_temp_bytes": 213035624,
+  "guard_breached": true,
+  "exit_code": 143,
+  "synthetic_only": true
+}

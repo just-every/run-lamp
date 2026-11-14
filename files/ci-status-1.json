@@ -1,0 +1,9 @@
+{
+  "observed_at": "2026-11-14T01:41:21.621209+00:00",
+  "run_id": 43541517057,
+  "github_call": 3,
+  "conclusion": "failure",
+  "head_sha": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/43541517057",
+  "status": "completed"
+}

@@ -1,0 +1,18 @@
+{
+  "command": [
+    "node",
+    "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+    "size",
+    "--json",
+    "--write-statements",
+    "/tmp/lamp-size-candidate-guard-statements"
+  ],
+  "source_sha": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+  "limit_bytes": 209715200,
+  "guard_scope": "each native database/temp file (inherited RLIMIT_FSIZE)",
+  "peak_file_bytes": 209715200,
+  "peak_disposable_temp_bytes": 241400968,
+  "guard_breached": false,
+  "exit_code": 1,
+  "synthetic_only": true
+}

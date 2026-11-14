@@ -1,0 +1,40 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+before replay [
+  { lifecycle: 'Investigating', total: 3 },
+  { lifecycle: 'Resolved', total: 1 }
+]
+replay 1 [
+  { lifecycle: 'Investigating', total: 3 },
+  { lifecycle: 'Resolved', total: 1 }
+]
+replay 2 [
+  { lifecycle: 'Investigating', total: 3 },
+  { lifecycle: 'Resolved', total: 1 }
+]
+plan deleted_at IS NULL [
+  {
+    id: 5,
+    parent: 0,
+    notused: 194,
+    detail: 'SEARCH incidents USING INDEX incidents_list_opened_id_idx ((opened_at,id)<(?,?))'
+  }
+]
+plan deleted_at IS NULL AND lifecycle <> 'Resolved' [
+  {
+    id: 5,
+    parent: 0,
+    notused: 194,
+    detail: 'SEARCH incidents USING INDEX incidents_list_active_opened_id_idx ((opened_at,id)<(?,?))'
+  }
+]
+plan deleted_at IS NULL AND lifecycle = 'Resolved' [
+  {
+    id: 5,
+    parent: 0,
+    notused: 50,
+    detail: 'SEARCH incidents USING INDEX incidents_list_lifecycle_opened_id_idx (lifecycle=? AND (opened_at,id)<(?,?))'
+  }
+]
+PASS migration replay, creation, lifecycle change, soft deletion, physical deletion, exact counts and indexed keyset queries

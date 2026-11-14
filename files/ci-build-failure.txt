@@ -1,0 +1,17 @@
+Command: gh run view 43541517057 --repo just-every/run-lamp --job 132282942648 --log-failed
+Exit: 0
+
+build	Build the production Worker once	2026-11-14T01:36:36.0422765Z 
+build	Build the production Worker once	2026-11-14T01:36:36.0423622Z > lamp@1.11.15 validate:release /home/runner/work/run-lamp/run-lamp
+build	Build the production Worker once	2026-11-14T01:36:36.0424369Z > node scripts/validate-release.mjs
+build	Build the production Worker once	2026-11-14T01:36:36.0424686Z 
+build	Build the production Worker once	2026-11-14T01:36:36.1088807Z Vendor catalog: 20 sources and 162 native state cases validated.
+build	Build the production Worker once	2026-11-14T01:36:36.1710722Z RELEASE.json migrations must exactly match newly introduced migrations/core in apply order.
+build	Build the production Worker once	2026-11-14T01:36:36.1711312Z + actual - expected
+build	Build the production Worker once	2026-11-14T01:36:36.1711457Z 
+build	Build the production Worker once	2026-11-14T01:36:36.1711543Z + []
+build	Build the production Worker once	2026-11-14T01:36:36.1711718Z - [
+build	Build the production Worker once	2026-11-14T01:36:36.1711979Z -   '0079_incident_list_paging.sql'
+build	Build the production Worker once	2026-11-14T01:36:36.1712234Z - ]
+build	Build the production Worker once	2026-11-14T01:36:36.1712336Z 
+build	Build the production Worker once	2026-11-14T01:36:36.1894437Z  ELIFECYCLE  Command failed with exit code 1.

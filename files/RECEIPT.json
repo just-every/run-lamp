@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-qgrowth-incidents-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-incidents-1",
+  "head": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+  "base": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "pr": "https://github.com/just-every/run-lamp/pull/366",
+  "created_at": "2026-11-14T01:38:23.813588+00:00",
+  "checks": [
+    {
+      "name": "incident-api-journey",
+      "command": "node --test --test-name-pattern=\"reviewed incident from\" tests/e2e/publishing-contract.test.mjs",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "ee693836280a600e8aa0964cd1769f62f9513c85367350aa155f6d6cdc30c90e"
+    },
+    {
+      "name": "incident-browser-journey",
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-name-pattern=\"compiled visual edits and the operator publication journey\" tests/e2e/publishing-browser.test.mjs",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "fdfaac95ac7cdbe9f9659afd6892761a2990128b696f853c5647d579b6fcda94"
+    },
+    {
+      "name": "migration-setup-inventory",
+      "command": "node --test tests/auth-adoption/setup-migrations.test.mjs",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "26dcbfee2556a61214f3726591da5c97f52d30d4526aa47518704ce91e811d5b"
+    },
+    {
+      "name": "previous-release-archive",
+      "command": "Node 22.20.0: node --test tests/e2e/prior-backup.test.mjs",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "a5911f5fe106c1e923b2e475f8d8370306e44fb4e3508deabbf2b4204aa931f2"
+    },
+    {
+      "name": "typecheck",
+      "command": "Node 22.20.0: pnpm run typecheck",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "037dc92050ffe008761bf7e8723d00620be13adee62033c00aaa55cfc0e9377f"
+    },
+    {
+      "name": "source-lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "e924179b65384365cf6d9ae00ca467a2b0d2d8affddf1d547cbc07312dc822ad"
+    },
+    {
+      "name": "contract-documents",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "result": "PASS",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "identity-forward-upgrade",
+      "command": "node --test tests/auth-adoption/upgrade.test.mjs (in the migration-check invocation)",
+      "result": "PASS",
+      "details": "Both parent journeys and all three authority-preservation subcases passed."
+    },
+    {
+      "name": "technical-archive-restore",
+      "command": "node --test tests/e2e/export-import.test.mjs (in the migration-check invocation)",
+      "result": "PASS",
+      "duration_ms": 80134.101568,
+      "details": "Failed owner SQL rollback, repeated migration application, complete export/import/reexport comparison and restored trigger behavior."
+    },
+    {
+      "name": "migration-idempotency-and-index-plan",
+      "command": "node migration-probe.mjs (temporary local diagnostic, removed)",
+      "exit_code": 0,
+      "result": "PASS",
+      "details": "Fresh full migrations; exact counts across inserts, lifecycle changes, soft/physical deletion; migration 0079 replayed twice; all/global, active and resolved keyset plans use their indexes."
+    },
+    {
+      "name": "validate-release (CI)",
+      "result": "FAIL",
+      "command": "node scripts/validate-release.mjs",
+      "message": "RELEASE.json migrations must exactly match newly introduced migrations/core in apply order."
+    }
+  ],
+  "gate": "required (migration 0079); independent fleet landing gate pending",
+  "test_inventory": {
+    "before": {
+      "registrations": 92,
+      "assertion_scripts": 10,
+      "total": 102
+    },
+    "after": {
+      "registrations": 92,
+      "assertion_scripts": 10,
+      "total": 102
+    }
+  },
+  "initial_failures": [
+    {
+      "name": "setup migration inventory",
+      "cause": "Existing literal expected range ended at 0078.",
+      "resolution": "Derive the missing range from the shipped migration inventory; refusal and complete application assertions retained."
+    },
+    {
+      "name": "previous-release backup under VM Node 24",
+      "cause": "Native portability returned ERR_ASSERTION.",
+      "resolution": "Reran under repository pin Node 22.20.0; passed, then extended the existing archive journey to verify restored incident counts and passed again."
+    }
+  ],
+  "publication_scan": {
+    "status": "DEFERRED_TO_FLEET",
+    "reason": "Cloud brief states the Mac fleet runs the publication scan before landing.",
+    "full_history": true,
+    "public_base": "run-lamp#main",
+    "edition": "just-every/lamp",
+    "destination": "https://github.com/just-every/run-lamp"
+  },
+  "product_push": {
+    "result": "PUSHED",
+    "attempts": 1
+  },
+  "ci": {
+    "observed_at": "2026-11-14T01:41:21.621209+00:00",
+    "run_id": 43541517057,
+    "github_call": 3,
+    "conclusion": "failure",
+    "head_sha": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43541517057",
+    "status": "completed"
+  },
+  "github_calls_used": 8,
+  "terminal_status": "BLOCKED",
+  "blockers": [
+    {
+      "kind": "lease_vs_required_check",
+      "file": "RELEASE.json",
+      "message": "RELEASE.json migrations must exactly match newly introduced migrations/core in apply order.",
+      "required_inventory_entry": "0079_incident_list_paging.sql",
+      "reason": "Brief explicitly forbids release changes; release manifest and validators left unchanged.",
+      "run_id": 43541517057,
+      "failed_build_job": 132282942648,
+      "downstream_verify_job": 132283272164
+    },
+    {
+      "kind": "unchanged_fixture_exceeds_database_guard",
+      "base": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+      "limit_bytes": 209715200,
+      "observed_logical_database_bytes": 211640320,
+      "result": "Guard stopped the unchanged main fixture before large-size flow measurement; no fixture/ceiling changes made."
+    }
+  ],
+  "measurements": {
+    "initial_completed_runs": "Diagnostic only: no explicit 200 MiB database guard was active.",
+    "observed_incident_list": {
+      "before_small": 1805,
+      "before_large": 180005,
+      "after_small": 959,
+      "after_large": 959
+    },
+    "strict_guarded_proof": "NOT COMPLETE: unchanged main exceeds 200 MiB during fixture generation."
+  },
+  "measurement_guard": {
+    "before": {
+      "command": [
+        "node",
+        "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+        "size",
+        "--json",
+        "--write-statements",
+        "/tmp/lamp-size-before-guard-statements"
+      ],
+      "source_sha": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 211640320,
+      "peak_file_bytes": 211640320,
+      "peak_disposable_temp_bytes": 243326088,
+      "guard_breached": true,
+      "exit_code": 143,
+      "synthetic_only": true
+    },
+    "candidate": {
+      "command": [
+        "node",
+        "/tmp/rer-size-tool/node_modules/@runeditrun/rer/bin/rer.mjs",
+        "size",
+        "--json",
+        "--write-statements",
+        "/tmp/lamp-size-candidate-guard-statements"
+      ],
+      "source_sha": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+      "limit_bytes": 209715200,
+      "guard_scope": "each SQLite database logical page_count * page_size, including committed WAL pages; journals are not database size",
+      "peak_database_bytes": 227864576,
+      "peak_file_bytes": 227864576,
+      "peak_disposable_temp_bytes": 259550344,
+      "guard_breached": true,
+      "exit_code": 143,
+      "synthetic_only": true
+    }
+  }
+}

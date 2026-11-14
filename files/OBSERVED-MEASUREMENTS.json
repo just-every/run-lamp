@@ -1,0 +1,94 @@
+{
+  "provenance": "Actual observations from the completed initial published-rer commands; captured in REPORT.md before guarded retries. These initial runs did not enforce the required 200 MiB database guard and are diagnostic evidence only.",
+  "candidate": "0b9fce0bf4ad2f38b420494ad3a9fecbcbb0354f",
+  "flows": [
+    {
+      "flow": "component-list",
+      "before_small": 4121,
+      "before_large": 182321,
+      "after_small": 4121,
+      "after_large": 182321,
+      "verdict": "existing/out of scope failure"
+    },
+    {
+      "flow": "incident-list",
+      "before_small": 1805,
+      "before_large": 180005,
+      "after_small": 959,
+      "after_large": 959,
+      "verdict": "PASS"
+    },
+    {
+      "flow": "incident-detail",
+      "before_small": 1317,
+      "before_large": 1343,
+      "after_small": 1317,
+      "after_large": 1343,
+      "verdict": "PASS"
+    },
+    {
+      "flow": "component-history",
+      "before_small": 13,
+      "before_large": 511,
+      "after_small": 13,
+      "after_large": 511,
+      "verdict": "existing/out of scope failure"
+    },
+    {
+      "flow": "subscriber-list",
+      "before_small": 4299,
+      "before_large": 325059,
+      "after_small": 4299,
+      "after_large": 325059,
+      "verdict": "existing/out of scope failure"
+    },
+    {
+      "flow": "monitor-list",
+      "before_small": 653,
+      "before_large": 653,
+      "after_small": 653,
+      "after_large": 653,
+      "verdict": "PASS"
+    },
+    {
+      "flow": "maintenance-list",
+      "before_small": 13,
+      "before_large": 13,
+      "after_small": 13,
+      "after_large": 13,
+      "verdict": "PASS"
+    },
+    {
+      "flow": "minute-tick",
+      "before_small": 24219,
+      "before_large": 1671933,
+      "after_small": 23949,
+      "after_large": 1644933,
+      "verdict": "existing/out of scope failure"
+    },
+    {
+      "flow": "public-summary",
+      "before_small": 0,
+      "before_large": 0,
+      "after_small": 0,
+      "after_large": 0,
+      "verdict": "existing/out of scope failure"
+    },
+    {
+      "flow": "public-history",
+      "before_small": 0,
+      "before_large": 0,
+      "after_small": 0,
+      "after_large": 0,
+      "verdict": "existing/out of scope failure"
+    },
+    {
+      "flow": "public-feed",
+      "before_small": 0,
+      "before_large": 0,
+      "after_small": 0,
+      "after_large": 0,
+      "verdict": "existing/out of scope failure"
+    }
+  ]
+}
