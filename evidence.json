@@ -91,6 +91,12 @@
       "sha256": "8dc912d6422b1ba3aa734a7206fa76dda4813e927d0bd58ab2d9b0dda1c188e7"
     },
     {
+      "blob": "12ea411d069c39788efd99f9a0ef5b5426cbf5c0",
+      "bytes": 7275,
+      "path": "evidence-readback-receipt.json",
+      "sha256": "5048bd0ae0dcd8ab0a125e402f5eb84ee178a84ae704141927c22d24a83b7cb9"
+    },
+    {
       "blob": "6838ced1a309684d980137d58ac1042f053622c4",
       "bytes": 638583,
       "path": "incidents-1440.png",
