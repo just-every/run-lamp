@@ -1,0 +1,14 @@
+{
+  "result": "pass",
+  "head": "4767e8943a310ac825cf652e41bc47f397cc60eb",
+  "changedSincePrior": [
+    "RELEASE.json",
+    "sources.lock.json"
+  ],
+  "releaseChangedOnlyMigrationInventory": true,
+  "versionUnchanged": "1.11.15",
+  "subscriberProductTestsAndMigrationUnchanged": true,
+  "contractAndGeneratedViewsUnchanged": true,
+  "fullHistory": true,
+  "cleanWorktree": true
+}

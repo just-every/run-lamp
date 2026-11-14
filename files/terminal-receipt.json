@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-subscribers-2",
+  "head": "4767e8943a310ac825cf652e41bc47f397cc60eb",
+  "pullRequest": "https://github.com/just-every/run-lamp/pull/368",
+  "verifyRun": 43543599879,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "4767e8943a310ac825cf652e41bc47f397cc60eb",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43543599879",
+    "status": "completed",
+    "observedAt": "2026-11-14T02:13:07Z",
+    "runId": 43543599879
+  },
+  "githubCalls": 8,
+  "githubBudget": 10,
+  "completedAt": "2026-11-14T02:13:55Z",
+  "productPushed": true,
+  "productPushes": 1,
+  "contractStatusChanges": [],
+  "migrationGate": "required; fleet-owned",
+  "publicationScan": "cloud attempt INCOMPLETE; fleet complete scan required before landing",
+  "productBlockers": [],
+  "cleanup": "pushed clone removal follows successful evidence publication"
+}

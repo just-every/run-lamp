@@ -1,0 +1,10 @@
+{
+  "allCandidateCommits": [
+    "4767e8943a310ac825cf652e41bc47f397cc60eb",
+    "21500d4b8032db437098a7c1e8cd1b175cea144d"
+  ],
+  "includingSideParents": true,
+  "fleetAuthorsAndCommitters": true,
+  "trailers": "absent",
+  "result": "pass"
+}

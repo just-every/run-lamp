@@ -1,0 +1,16 @@
+{
+  "migration": "0079_subscriber_directory_order.sql",
+  "sha256": "c17148f4bb9b6e47cc154948715141d10126c9b8ec7c1fcef56ddd7d103b3e92",
+  "applications": 2,
+  "tablesCompared": 199,
+  "allTableValuesPreserved": true,
+  "explain": [
+    [
+      8,
+      0,
+      223,
+      "SCAN subscribers USING INDEX subscribers_directory_order_idx"
+    ]
+  ],
+  "result": "pass"
+}

@@ -1,0 +1,8 @@
+4767e8943a310ac825cf652e41bc47f397cc60eb
+Record subscriber directory index in migration inventory
+
+21500d4b8032db437098a7c1e8cd1b175cea144d
+Bound subscriber directory reads to the displayed page
+
+Index oldest-first directory pagination with stable id ties. Hydrate component and incident details only for displayed records, retaining aggregate channel capacity counts and visible offset pagination. Extend the native directory journey and remove the setup test’s fixed migration endpoint.
+

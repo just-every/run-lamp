@@ -1,0 +1,143 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-subscribers-2",
+  "head": "4767e8943a310ac825cf652e41bc47f397cc60eb",
+  "parentProduct": "21500d4b8032db437098a7c1e8cd1b175cea144d",
+  "main": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "commands": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "report": "Setup completed; private installation state and setup output excluded from publication."
+    },
+    {
+      "command": "node scripts/validate-release.mjs",
+      "exit": 0,
+      "receipt": "release-validation.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "receipt": "build.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/setup-migrations.test.mjs tests/auth-adoption/upgrade.test.mjs tests/e2e/export-import.test.mjs tests/e2e/prior-backup.test.mjs ../subscriber-target.test.mjs",
+      "exit": 0,
+      "cases": 9,
+      "passed": 9,
+      "failed": 0,
+      "receipt": "targeted-tests.log"
+    },
+    {
+      "command": "node --test --test-name-pattern='An installation restores and upgrades its data' tests/baseline/e2e-baseline/core-baseline.test.mjs",
+      "exit": 0,
+      "cases": 1,
+      "passed": 1,
+      "failed": 0,
+      "receipt": "baseline-upgrade-restore.log"
+    },
+    {
+      "command": "scratch sqlite3 additive/index replay probe",
+      "exit": 0,
+      "receipt": "index-upgrade-receipt.json"
+    },
+    {
+      "command": "published @runeditrun/rer@0.2.115 size --cwd ../size-scratch --no-queue --json --write-statements ../packet/size-statements",
+      "exit": 1,
+      "targetFlowPass": true,
+      "otherKnownFindingsRemain": true,
+      "receipt": "size-result.jsonl"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "receipt": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "receipt": "source-lock-write.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-lock-check.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/scripts/publish-check.mjs --repo . --ref HEAD --public-base https://github.com/just-every/run-lamp#main --project just-every/lamp --repository https://github.com/just-every/run-lamp",
+      "exit": 2,
+      "status": "INCOMPLETE",
+      "rule": "scan.gitleaks-unavailable",
+      "receipt": "publication-scan.json"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-qgrowth-subscribers-2",
+      "exit": 0,
+      "attempts": 1,
+      "receipt": "product-push.log"
+    }
+  ],
+  "initialScratchProbeCorrection": {
+    "firstExit": 1,
+    "error": "sqlite3.OperationalError: table subscribers has no column named confirmed_at",
+    "resolution": "Remove the unsupported synthetic-fixture field; replay the complete probe successfully. No product change."
+  },
+  "testRegistrationCount": {
+    "before": 102,
+    "after": 102,
+    "newRegistrations": 0,
+    "basis": "subscribers-1 recount: 92 registrations plus 10 executable assertion scripts; all existing test source bytes unchanged in this continuation."
+  },
+  "clauses": {
+    "before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "changed": []
+  },
+  "publication": {
+    "fleetCompleteScanRequired": true,
+    "independentMigrationGateRequired": true,
+    "noLandingReleaseTagOrDeploy": true
+  },
+  "terminal": {
+    "repository": "just-every/run-lamp",
+    "branch": "cloud/sd-lamp-qgrowth-subscribers-2",
+    "head": "4767e8943a310ac825cf652e41bc47f397cc60eb",
+    "pullRequest": "https://github.com/just-every/run-lamp/pull/368",
+    "verifyRun": 43543599879,
+    "verify": {
+      "conclusion": "success",
+      "head_sha": "4767e8943a310ac825cf652e41bc47f397cc60eb",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43543599879",
+      "status": "completed",
+      "observedAt": "2026-11-14T02:13:07Z",
+      "runId": 43543599879
+    },
+    "githubCalls": 8,
+    "githubBudget": 10,
+    "completedAt": "2026-11-14T02:13:55Z",
+    "productPushed": true,
+    "productPushes": 1,
+    "contractStatusChanges": [],
+    "migrationGate": "required; fleet-owned",
+    "publicationScan": "cloud attempt INCOMPLETE; fleet complete scan required before landing",
+    "productBlockers": [],
+    "cleanup": "pushed clone removal follows successful evidence publication"
+  }
+}

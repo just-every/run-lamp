@@ -1,0 +1,8 @@
+gh api repos/just-every/run-lamp/actions/runs/43540987750/jobs --jq .jobs[] | {id,name,conclusion}
+gh api repos/just-every/run-lamp/contents/files/REPORT.md?ref=evidence/sd-lamp-qgrowth-subscribers-1 --jq .content
+gh run view 43540987750 --repo just-every/run-lamp --job 132281289372 --log-failed
+gh api --method POST repos/just-every/run-lamp/pulls --input ../pr-input.json
+gh api repos/just-every/run-lamp/actions/runs?head_sha=4767e8943a310ac825cf652e41bc47f397cc60eb&per_page=100
+gh api repos/just-every/run-lamp/actions/runs/43543599879 --jq {status,conclusion,head_sha,html_url}
+gh api repos/just-every/run-lamp/actions/runs/43543599879 --jq {status,conclusion,head_sha,html_url}
+gh api repos/just-every/run-lamp/actions/runs/43543599879 --jq {status,conclusion,head_sha,html_url}
