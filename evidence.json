@@ -13,6 +13,12 @@
       "sha256": "61da16dd744fa5dd3a956abb61d9b7a645acc6f9a52b58305ded1e7d60b842fa"
     },
     {
+      "blob": "faaf0ba1998a31675d373b11a91432e12bdf49a0",
+      "bytes": 9463,
+      "path": "EVIDENCE-PUBLICATION.txt",
+      "sha256": "750ce809fdfb0f0d25d782b5feb62fc23d246b55916683753272120c3af4e18a"
+    },
+    {
       "blob": "8ada4b6cc77d2abba7b9316bafee86ecdcd21aac",
       "bytes": 439,
       "path": "GUARD-RECEIPT.json",
@@ -217,10 +223,10 @@
       "sha256": "d65b10c09e8f074babffa90961b0a6082100abb3c1a779feccad1f11795d941b"
     },
     {
-      "blob": "1eb66480fe7aaa72f585e7f7b12f9563c5a4c1c7",
-      "bytes": 7976,
+      "blob": "2e1fac46bcd46a880504926684337a05333f66ec",
+      "bytes": 8135,
       "path": "packet-safety.json",
-      "sha256": "7fb4ea9866d3f5ea95efedc08848e3b4940847d9620061118716b6ac3c4d27b2"
+      "sha256": "6608bfab8d0b27e64727e6de337e14ccbc116c02c3385e636b72de8f12a71b13"
     },
     {
       "blob": "29ba906f2b0b4ef2d68d0630eb5e2c286185310a",

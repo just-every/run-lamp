@@ -1,9 +1,14 @@
 {
-  "explicit_regular_files_checked": 50,
+  "explicit_regular_files_checked": 51,
   "injected_secret_matches": 0,
   "symlinks_selected": 0,
   "scope": "Explicit report/receipt/synthetic files only; not a full publication scan",
   "files": [
+    {
+      "path": "EVIDENCE-PUBLICATION.txt",
+      "bytes": 9463,
+      "sha256": "750ce809fdfb0f0d25d782b5feb62fc23d246b55916683753272120c3af4e18a"
+    },
     {
       "path": "REPORT.md",
       "bytes": 14646,
