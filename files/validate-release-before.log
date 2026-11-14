@@ -1,0 +1,13 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.15 validate:release /home/agent/rer-consolidation/work/sd-lamp-tz-release-fix-1/run-lamp
+> node scripts/validate-release.mjs
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+1.11.15 SETUP-002 changed meaning without a changed release entry.
++ actual - expected
+
++ undefined
+- 'changed'
+
+ ELIFECYCLE  Command failed with exit code 1.

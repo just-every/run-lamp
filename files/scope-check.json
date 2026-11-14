@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "base": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+  "source_candidate": "bd1615809f016c3d29c0889a4efe77eadc9aaef0",
+  "release_version_before": "1.11.15",
+  "release_version_after": "1.11.15",
+  "release_entry_added": "SETUP-002",
+  "contract_status_section_identical": true,
+  "generated_views_identical_to_main": true,
+  "migrations_identical_to_main": true,
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  }
+}

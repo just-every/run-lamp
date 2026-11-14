@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "range": "origin/main..HEAD",
+  "includes_all_side_parents": true,
+  "commits": [
+    {
+      "sha": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+      "author_name_allowed": true,
+      "author_email_allowed": true,
+      "committer_name_allowed": true,
+      "committer_email_allowed": true,
+      "trailers_allowed": true,
+      "openai_codex_coauthors": false
+    },
+    {
+      "sha": "bd1615809f016c3d29c0889a4efe77eadc9aaef0",
+      "author_name_allowed": true,
+      "author_email_allowed": true,
+      "committer_name_allowed": true,
+      "committer_email_allowed": true,
+      "trailers_allowed": true,
+      "openai_codex_coauthors": false
+    }
+  ]
+}

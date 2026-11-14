@@ -1,0 +1,196 @@
+{
+  "tag": "sd-lamp-tz-release-fix-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-tz-release-fix-1",
+  "base": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+  "merged_source": "bd1615809f016c3d29c0889a4efe77eadc9aaef0",
+  "checks": {
+    "setup": {
+      "exit": 0
+    },
+    "pnpm validate:release before": {
+      "exit": 1,
+      "reason": "1.11.15 SETUP-002 changed meaning without a changed release entry."
+    },
+    "pnpm validate:release after": {
+      "exit": 0
+    },
+    "pnpm typecheck": {
+      "exit": 0
+    },
+    "contract-docs write": {
+      "exit": 0
+    },
+    "pnpm check:contract-docs generated": {
+      "exit": 0
+    },
+    "pnpm check:contract-docs restored": {
+      "exit": 1,
+      "reason": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "expected_lander_exception": true
+    },
+    "website-onboarding": {
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "assertion_width": 1440,
+      "screenshot_widths": [
+        1440,
+        390
+      ],
+      "browser": "/usr/bin/chromium",
+      "no_sandbox": true
+    },
+    "source lock": {
+      "exit": 0
+    },
+    "pnpm source:check": {
+      "exit": 0
+    }
+  },
+  "clause": "SETUP-002",
+  "status_before": "partial",
+  "status_after": "partial",
+  "points": "none",
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "no_new_tests": true,
+  "generated_views_committed": false,
+  "ci_waited": false,
+  "ci_green_claimed": false,
+  "head": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+  "product_push": {
+    "attempts": 1,
+    "status": "success",
+    "log": "product-push.log"
+  },
+  "commit_parents": [
+    "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+    "bd1615809f016c3d29c0889a4efe77eadc9aaef0"
+  ],
+  "pr": {
+    "base": "main",
+    "head_sha": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+    "html_url": "https://github.com/just-every/run-lamp/pull/378",
+    "number": 378
+  },
+  "ci_discovery": {
+    "total_count": 3,
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "pull_request",
+        "head_sha": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43606947725",
+        "id": 43606947725,
+        "name": "Verify",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": null,
+        "event": "dynamic",
+        "head_sha": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43606945460",
+        "id": 43606945460,
+        "name": "PR #378",
+        "status": "in_progress"
+      },
+      {
+        "conclusion": "failure",
+        "event": "push",
+        "head_sha": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43606914437",
+        "id": 43606914437,
+        "name": "Verify",
+        "status": "completed"
+      }
+    ]
+  },
+  "ci_jobs": {
+    "jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 132483426435,
+        "name": "plan",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          {
+            "name": "Build the production Worker once",
+            "number": 6
+          },
+          {
+            "name": "Retain commit-bound build completion",
+            "number": 7
+          }
+        ],
+        "id": 132483467216,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          {
+            "name": "Require every planned command to succeed on this commit",
+            "number": 5
+          }
+        ],
+        "id": 132483549324,
+        "name": "verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "failed_steps": [],
+        "id": 132483549910,
+        "name": "shards",
+        "status": "completed"
+      }
+    ]
+  },
+  "github_calls": {
+    "used": 5,
+    "budget": 10,
+    "commands": [
+      "gh api repos/just-every/run-lamp/pulls (create)",
+      "gh api repos/just-every/run-lamp/actions/runs?head_sha=e052f51c3d775c535220d9291d94e3c7aefd7894&per_page=100",
+      "gh api repos/just-every/run-lamp/actions/runs/43606914437/jobs",
+      "gh run view 43606914437 --repo just-every/run-lamp --job 132483467216 --log-failed",
+      "gh run view 43606914437 --repo just-every/run-lamp --job 132483549324 --log-failed"
+    ],
+    "failed_job_log_calls": 2,
+    "polls": 0
+  },
+  "ci_exception": {
+    "run": 43606914437,
+    "head": "e052f51c3d775c535220d9291d94e3c7aefd7894",
+    "conclusion": "failure",
+    "root_cause": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+    "consequences": [
+      "Build exits before producing build.json",
+      "Build artifact upload has no file",
+      "Shards skipped after failed build",
+      "Aggregate verifier reports missing shard artifacts"
+    ],
+    "expected_lander_exception": true,
+    "green_workflow_claimed": false
+  },
+  "blockers": [],
+  "publication_audit": "passed for both merge and published side parent",
+  "product_tree_clean": true
+}
