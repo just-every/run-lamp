@@ -1,0 +1,360 @@
+{
+  "tag": "main-lamp-audit-record-labels-1",
+  "repository": "just-every/run-lamp",
+  "base_head": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+  "branch": "cloud/main-lamp-audit-record-labels-1",
+  "baseline_counts": {
+    "registered_cases": 93,
+    "assertion_scripts": 10,
+    "total": 103
+  },
+  "github_calls": 10,
+  "checks": [
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium LAMP_SCREENSHOTS=<packet>/after node --test --test-name-pattern='TEAM-007' tests/e2e/publishing-browser.test.mjs",
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "log": "audit-test.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-docs.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "test-count.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "final_counts": {
+    "registered_cases": 93,
+    "assertion_scripts": 10,
+    "total": 103
+  },
+  "contract_counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 52
+  },
+  "contract_counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 52
+  },
+  "clause_status": {
+    "TEAM-007": {
+      "before": "PARTIAL",
+      "after": "PARTIAL"
+    }
+  },
+  "reproduction": {
+    "base_head": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+    "exit": 1,
+    "expected_failure": "active subscriber subscription-mail entityName is Removed item",
+    "log": "reproduction.log"
+  },
+  "browser": {
+    "assertion_width": 1440,
+    "proof_widths": [
+      1440,
+      390
+    ],
+    "states": [
+      "live subjects",
+      "after erasure"
+    ],
+    "visually_reviewed": [
+      "before/1440-audit-record-labels.png",
+      "after/1440-audit-record-labels.png",
+      "after/390-audit-record-labels.png",
+      "after/1440-audit-after-erasure.png",
+      "after/390-audit-after-erasure.png"
+    ],
+    "final_candidate_screens_reviewed": [
+      1440,
+      390
+    ]
+  },
+  "rebase": {
+    "onto": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+    "result": "up to date; autostash applied without conflict"
+  },
+  "product_head": "ed52f740415afc4959285a72afb6d26d28c18edf",
+  "push": {
+    "exit": 0,
+    "attempts": 1,
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/main-lamp-audit-record-labels-1"
+  },
+  "ci_observations": [
+    {
+      "time": 1794693974.949141,
+      "runs": [
+        {
+          "id": 43646243127,
+          "name": "Verify",
+          "event": "push",
+          "head_sha": "577fa7ff9172b8921e6c4e2605ebb83f7b604d7c",
+          "status": "in_progress",
+          "conclusion": null,
+          "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127"
+        }
+      ]
+    },
+    {
+      "time": 1794694275.5300045,
+      "id": 43646243127,
+      "conclusion": null,
+      "head_sha": "577fa7ff9172b8921e6c4e2605ebb83f7b604d7c",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127",
+      "status": "in_progress"
+    },
+    {
+      "time": 1794694576.1021497,
+      "id": 43646243127,
+      "conclusion": null,
+      "head_sha": "577fa7ff9172b8921e6c4e2605ebb83f7b604d7c",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127",
+      "status": "in_progress"
+    },
+    {
+      "time": 1794694876.736085,
+      "id": 43646243127,
+      "conclusion": "failure",
+      "head_sha": "577fa7ff9172b8921e6c4e2605ebb83f7b604d7c",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127",
+      "status": "completed"
+    },
+    {
+      "time": 1794695631.710046,
+      "id": 43648707293,
+      "name": "Verify",
+      "event": "push",
+      "head_sha": "ed52f740415afc4959285a72afb6d26d28c18edf",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43648707293"
+    },
+    {
+      "time": 1794696532.3373227,
+      "id": 43648707293,
+      "conclusion": null,
+      "head_sha": "ed52f740415afc4959285a72afb6d26d28c18edf",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43648707293",
+      "status": "in_progress"
+    }
+  ],
+  "ci_discovery_note": "One preceding discovery used an incorrect SHA and returned no runs; it is included in the ten-call budget and supplied no evidence.",
+  "product_tree": "0e4e3911ad5ef542c1177d24657b5071eacf8da4",
+  "product_commit_files": [
+    "DIVERGENCE.md",
+    "sources.lock.json",
+    "src/core/features/audit-log/repository.ts",
+    "tests/e2e/helpers/audit-labels-flow.mjs",
+    "tests/e2e/publishing-browser.test.mjs"
+  ],
+  "identity_audit": {
+    "candidate_commits": 3,
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": [],
+    "pass": true
+  },
+  "claims": [
+    {
+      "clause": "TEAM-007",
+      "status": "PARTIAL",
+      "points": [
+        1,
+        2
+      ],
+      "test": "tests/e2e/publishing-browser.test.mjs#TEAM-007 \u2014 audit labels identify people and subjects while filters and CSV retain machine keys"
+    }
+  ],
+  "source_lock_check": {
+    "ok": true,
+    "log_sha256": "d99531b0cc77508810103b4fd7b06342f4ddfb51888addc470c6f5dbd58b6190"
+  },
+  "publication": {
+    "product_branch": "cloud/main-lamp-audit-record-labels-1",
+    "product_push_count": 2,
+    "evidence_ref": "refs/heads/evidence/main-lamp-audit-record-labels-1",
+    "full_publication_scan": "deferred to fleet Mac lander per cloud brief"
+  },
+  "ci_jobs": [
+    {
+      "id": 132604569362,
+      "name": "plan",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604569362",
+      "failed_steps": []
+    },
+    {
+      "id": 132604616507,
+      "name": "build",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604616507",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936155,
+      "name": "shards (delivery)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936155",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936164,
+      "name": "shards (imports)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936164",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936172,
+      "name": "shards (runtime)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936172",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936176,
+      "name": "shards (composer)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936176",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936186,
+      "name": "shards (ownership)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936186",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936203,
+      "name": "shards (portability)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936203",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936234,
+      "name": "shards (demo)",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936234",
+      "failed_steps": []
+    },
+    {
+      "id": 132604936244,
+      "name": "shards (public)",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132604936244",
+      "failed_steps": [
+        {
+          "name": "Verify this product shard",
+          "conclusion": "failure",
+          "number": 12
+        }
+      ]
+    },
+    {
+      "id": 132608604289,
+      "name": "verify",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43646243127/job/132608604289",
+      "failed_steps": [
+        {
+          "name": "Require every planned command to succeed on this commit",
+          "conclusion": "failure",
+          "number": 5
+        }
+      ]
+    }
+  ],
+  "first_verify": {
+    "id": 43646243127,
+    "head": "577fa7ff9172b8921e6c4e2605ebb83f7b604d7c",
+    "conclusion": "failure",
+    "failed_job": 132604936244,
+    "failed_step": "Verify this product shard",
+    "cause": "pre-existing response-level privacy assertion contradicts requested live destination naming",
+    "log_command": "gh run view 43646243127 --repo just-every/run-lamp --job 132604936244 --log-failed",
+    "log": "first-verify-failure.log",
+    "repair": "preserve no-copy guarantee by asserting persisted rows; assert live names and erased view/CSV separately"
+  },
+  "merged_main": "280a76e1d89edba472a118024d9e17134cf25aff",
+  "merge_commit": "090e85ed43f1d541f72826e8fc4749c0bd07f450",
+  "second_local_failure": {
+    "cause": "equivalent older SMS no-phone-in-live-response assertion",
+    "phase": "process had loaded the previous SMS helper before its repair",
+    "exit": 1
+  },
+  "first_product_head": "577fa7ff9172b8921e6c4e2605ebb83f7b604d7c",
+  "final_verify": {
+    "id": 43648707293,
+    "conclusion": null,
+    "head_sha": "ed52f740415afc4959285a72afb6d26d28c18edf",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43648707293",
+    "status": "in_progress"
+  },
+  "product_diff_files": [
+    "DIVERGENCE.md",
+    "sources.lock.json",
+    "src/core/features/audit-log/repository.ts",
+    "tests/e2e/helpers/audit-labels-flow.mjs",
+    "tests/e2e/helpers/sms-subscriber-flow.mjs",
+    "tests/e2e/helpers/subscriber-add-flow.mjs",
+    "tests/e2e/publishing-browser.test.mjs"
+  ],
+  "final_checks": {
+    "touched_journeys": {
+      "passed": 3,
+      "failed": 0,
+      "log": "final-touched-tests.log"
+    },
+    "typecheck": {
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    "contract_generator_write_check": {
+      "exit": 0,
+      "generated_views": "restored from origin/main"
+    },
+    "source_lock_check": {
+      "ok": true,
+      "regenerated_last": true
+    },
+    "test_budget": {
+      "cases": 93,
+      "scripts": 10,
+      "total": 103,
+      "cap": 200
+    }
+  },
+  "final_push": {
+    "head": "ed52f740415afc4959285a72afb6d26d28c18edf",
+    "exit": 0,
+    "attempts": 1,
+    "branch": "cloud/main-lamp-audit-record-labels-1"
+  },
+  "pull_request": {
+    "number": 385,
+    "url": "https://github.com/just-every/run-lamp/pull/385",
+    "head": "ed52f740415afc4959285a72afb6d26d28c18edf",
+    "base": "main",
+    "state": "open"
+  },
+  "terminal_product_status": "PUSHED",
+  "terminal_reason": "Exact-SHA Verify still in progress at final permitted REST observation; ten-call budget exhausted after required PR creation."
+}

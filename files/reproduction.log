@@ -1,0 +1,30 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (43864.552897ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 45779.028292
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:309:1
+✖ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (43864.552897ms)
+  AssertionError [ERR_ASSERTION]: live audit subject synthetic-lamp-audit-active@example.test: [{"action":"subscription-mail","entityName":"Removed item"}]
+      at Module.auditLabelsFlow (file:///home/agent/rer-consolidation/work/main-lamp-audit-record-labels-1/run-lamp/tests/e2e/helpers/audit-labels-flow.mjs:71:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/main-lamp-audit-record-labels-1/run-lamp/tests/e2e/publishing-browser.test.mjs:310:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

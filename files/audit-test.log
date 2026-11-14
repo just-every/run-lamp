@@ -1,0 +1,16 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (46067.458766ms)
+✔ TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities (15840.657567ms)
+ℹ PROBE INCIDENT-014 Slack Settings 1440: Create link code -> signed /api/chat/slack 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+ℹ PROBE INCIDENT-014 Teams Settings 1440: Create link code -> signed /api/chat/teams 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+ℹ PROBE INCIDENT-014 removal 1440: both Settings Remove chat link controls -> 204, native list and storage empty after reload; axe, overflow and hydration pass
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63920.461046

@@ -1,0 +1,129 @@
+shards (public)	Verify this product shard	2026-11-14T22:07:30.3597993Z Verification plan: 8 test shards and one shared build, 35 routine test files, 93 registered cases (including release qualification) + 10 assertion scripts = 103 checks.
+shards (public)	Verify this product shard	2026-11-14T22:07:30.3703371Z 
+shards (public)	Verify this product shard	2026-11-14T22:07:30.3705192Z Verifying public: test:delivery
+shards (public)	Verify this product shard	2026-11-14T22:07:30.6085977Z 
+shards (public)	Verify this product shard	2026-11-14T22:07:30.6087221Z > lamp@1.11.16 test:delivery /home/runner/work/run-lamp/run-lamp
+shards (public)	Verify this product shard	2026-11-14T22:07:30.6088721Z > node --test --test-concurrency=1 tests/e2e/delivery-contract.test.mjs
+shards (public)	Verify this product shard	2026-11-14T22:07:30.6089318Z 
+shards (public)	Verify this product shard	2026-11-14T22:07:30.6480564Z TAP version 13
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8688658Z # Subtest: SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8700236Z not ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8702341Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8702671Z   duration_ms: 74693.373924
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8703030Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8703654Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/delivery-contract.test.mjs:28:1'
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8704213Z   failureType: 'testCodeFailure'
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8704801Z   error: 'attributed subscriber audit entries do not copy the destination'
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8705294Z   code: 'ERR_ASSERTION'
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8705723Z   name: 'AssertionError'
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8706063Z   expected: true
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8706428Z   actual: false
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8706738Z   operator: '=='
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8707113Z   stack: |-
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8707731Z     subscriberAddFlow (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/subscriber-add-flow.mjs:93:12)
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8708846Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8709701Z     async TestContext.<anonymous> (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/delivery-contract.test.mjs:33:3)
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8710434Z     async Test.run (node:internal/test_runner/test:1054:7)
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8711046Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+shards (public)	Verify this product shard	2026-11-14T22:08:46.8711554Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:08:53.0007929Z # (node:2753) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+shards (public)	Verify this product shard	2026-11-14T22:08:53.0009815Z # (Use `node --trace-warnings ...` to show where the warning was created)
+shards (public)	Verify this product shard	2026-11-14T22:09:41.0991439Z # SUB-019: opening native Worker fixture
+shards (public)	Verify this product shard	2026-11-14T22:09:41.0995064Z # Subtest: NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+shards (public)	Verify this product shard	2026-11-14T22:09:41.1001543Z ok 2 - NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+shards (public)	Verify this product shard	2026-11-14T22:09:41.1003777Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:09:41.1006585Z   duration_ms: 54237.087533
+shards (public)	Verify this product shard	2026-11-14T22:09:41.1007826Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:09:41.1008689Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:09:41.1009694Z # NOTIFY-013 1440px default-off owner choice persists; real Resend acceptance names its provider in Deliveries
+shards (public)	Verify this product shard	2026-11-14T22:09:43.8417896Z # SUB-019: native Worker signed in
+shards (public)	Verify this product shard	2026-11-14T22:09:44.1429184Z # SUB-019: created INC-1
+shards (public)	Verify this product shard	2026-11-14T22:09:44.1662489Z # SUB-019: created INC-2
+shards (public)	Verify this product shard	2026-11-14T22:09:44.1951658Z # SUB-019: created INC-3
+shards (public)	Verify this product shard	2026-11-14T22:09:44.2192216Z # SUB-019: created INC-4
+shards (public)	Verify this product shard	2026-11-14T22:09:44.2424343Z # SUB-019: created INC-5
+shards (public)	Verify this product shard	2026-11-14T22:09:44.2660071Z # SUB-019: created INC-6
+shards (public)	Verify this product shard	2026-11-14T22:09:44.2900999Z # SUB-019: created INC-7
+shards (public)	Verify this product shard	2026-11-14T22:09:44.3168860Z # SUB-019: created INC-8
+shards (public)	Verify this product shard	2026-11-14T22:09:44.4596643Z # SUB-019: created INC-9
+shards (public)	Verify this product shard	2026-11-14T22:09:44.9750160Z # SUB-019: published and delivered INC-7 Identified: Synthetic Lamp INC-7 initial update.
+shards (public)	Verify this product shard	2026-11-14T22:09:45.2288590Z # SUB-019: published and delivered INC-8 Identified: Synthetic Lamp INC-8 initial update.
+shards (public)	Verify this product shard	2026-11-14T22:09:48.4632813Z # SUB-019: published and delivered INC-7 Identified: Synthetic Lamp INC-7 next update.
+shards (public)	Verify this product shard	2026-11-14T22:09:48.7322047Z # SUB-019: published and delivered INC-8 Identified: Synthetic Lamp INC-8 same-component update.
+shards (public)	Verify this product shard	2026-11-14T22:09:49.8199393Z # SUB-019: published and delivered INC-7 Resolved: Synthetic Lamp INC-7 delivered resolution.
+shards (public)	Verify this product shard	2026-11-14T22:09:50.1002668Z # SUB-019: published and delivered INC-7 Investigating: Synthetic Lamp INC-7 update after ending.
+shards (public)	Verify this product shard	2026-11-14T22:09:52.3454045Z # SUB-019: created INC-10
+shards (public)	Verify this product shard	2026-11-14T22:09:52.6211367Z # SUB-019: published and delivered INC-10 Identified: Synthetic Lamp report-follow initial publication.
+shards (public)	Verify this product shard	2026-11-14T22:09:53.0109104Z # SUB-019: published and delivered INC-10 Resolved: Synthetic Lamp report-follow first resolution.
+shards (public)	Verify this product shard	2026-11-14T22:09:53.4242401Z # SUB-019: published and delivered INC-10 Investigating: Synthetic Lamp report-follow reopened before ending.
+shards (public)	Verify this product shard	2026-11-14T22:09:53.7300574Z # SUB-019: published and delivered INC-10 Resolved: Synthetic Lamp report-follow final resolution.
+shards (public)	Verify this product shard	2026-11-14T22:09:54.2773169Z # SUB-019: published and delivered INC-10 Investigating: Synthetic Lamp update after report ending.
+shards (public)	Verify this product shard	2026-11-14T22:09:56.5528815Z # SUB-019: created INC-11
+shards (public)	Verify this product shard	2026-11-14T22:09:56.8147225Z # SUB-019: published and delivered INC-11 Identified: Synthetic Lamp deadline initial update.
+shards (public)	Verify this product shard	2026-11-14T22:09:57.2341486Z # SUB-019: published and delivered INC-11 Resolved: Synthetic Lamp deadline resolution.
+shards (public)	Verify this product shard	2026-11-14T22:09:59.9607130Z # SUB-019: published and delivered INC-11 Investigating: Synthetic Lamp deadline late reopening.
+shards (public)	Verify this product shard	2026-11-14T22:10:02.6319684Z # SUB-019: published and delivered INC-11 Identified: Synthetic Lamp update after token unsubscribe.
+shards (public)	Verify this product shard	2026-11-14T22:10:02.6323719Z # SUB-019: opening native Worker fixture
+shards (public)	Verify this product shard	2026-11-14T22:10:05.4766494Z # SUB-019: native Worker signed in
+shards (public)	Verify this product shard	2026-11-14T22:10:05.7940481Z # SUB-019: created INC-1
+shards (public)	Verify this product shard	2026-11-14T22:10:05.8192360Z # SUB-019: created INC-2
+shards (public)	Verify this product shard	2026-11-14T22:10:05.8459053Z # SUB-019: created INC-3
+shards (public)	Verify this product shard	2026-11-14T22:10:05.8704994Z # SUB-019: created INC-4
+shards (public)	Verify this product shard	2026-11-14T22:10:05.8946000Z # SUB-019: created INC-5
+shards (public)	Verify this product shard	2026-11-14T22:10:05.9203220Z # SUB-019: created INC-6
+shards (public)	Verify this product shard	2026-11-14T22:10:05.9452177Z # SUB-019: created INC-7
+shards (public)	Verify this product shard	2026-11-14T22:10:06.2199234Z # SUB-019: published and provider-accepted INC-7 Identified: Synthetic Lamp receiptless initial publication.
+shards (public)	Verify this product shard	2026-11-14T22:10:06.5844682Z # SUB-019: published and provider-accepted INC-7 Resolved: Synthetic Lamp receiptless resolution.
+shards (public)	Verify this product shard	2026-11-14T22:10:06.8480855Z # SUB-019: published and provider-accepted INC-7 Investigating: Synthetic Lamp receiptless reopening.
+shards (public)	Verify this product shard	2026-11-14T22:10:10.1099106Z # SUB-019: created INC-8
+shards (public)	Verify this product shard	2026-11-14T22:10:10.4005510Z # SUB-019: published and provider-accepted INC-8 Identified: Synthetic Lamp backstop initial publication.
+shards (public)	Verify this product shard	2026-11-14T22:10:11.1939521Z # SUB-019: published and provider-accepted INC-8 Investigating: Synthetic Lamp reopening after backstop.
+shards (public)	Verify this product shard	2026-11-14T22:10:12.5670610Z # SUB-019: published and delivered INC-7 Identified: Synthetic Lamp webhook before consent.
+shards (public)	Verify this product shard	2026-11-14T22:10:12.9122361Z # SUB-019: published and delivered INC-7 Identified: Synthetic Lamp webhook after consent.
+shards (public)	Verify this product shard	2026-11-14T22:10:15.4776296Z # SUB-019: published and delivered INC-7 Identified: Synthetic Lamp webhook after erasure.
+shards (public)	Verify this product shard	2026-11-14T22:10:18.3316533Z # SUB-019: published and delivered INC-7 Resolved: Synthetic Lamp shared-address incident resolution.
+shards (public)	Verify this product shard	2026-11-14T22:10:20.6281854Z # SUB-019: capacity setup from 0 to 25,000
+shards (public)	Verify this product shard	2026-11-14T22:10:55.7291911Z # SUB-019: capacity fixture is full
+shards (public)	Verify this product shard	2026-11-14T22:11:06.7077872Z # Subtest: Scoped incident subscriptions — native and Statuspage API consent, private reads and revoked writes
+shards (public)	Verify this product shard	2026-11-14T22:11:06.7081040Z ok 3 - Scoped incident subscriptions — native and Statuspage API consent, private reads and revoked writes
+shards (public)	Verify this product shard	2026-11-14T22:11:06.7082098Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:11:06.7082505Z   duration_ms: 85608.035002
+shards (public)	Verify this product shard	2026-11-14T22:11:06.7083064Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:11:06.7083472Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2158860Z # Subtest: NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2160655Z ok 4 - NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2161824Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2175212Z   duration_ms: 190508.316653
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2176367Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2176963Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:14:17.2179205Z # {"probe":"NOTIFY-002","recipients":1000,"persistedAcceptances":1000,"actualAcceptances":1000,"quotaPerSecond":10,"acknowledgementMs":100,"schedulerDelayMs":60000,"p95Ms":174015.653475,"lastAcceptanceMs":180091.72829500004,"duplicateRecipients":0}
+shards (public)	Verify this product shard	2026-11-14T22:14:35.4316512Z # Subtest: Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications
+shards (public)	Verify this product shard	2026-11-14T22:14:35.4318025Z ok 5 - Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications
+shards (public)	Verify this product shard	2026-11-14T22:14:35.4319081Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:14:35.4324508Z   duration_ms: 18215.357921
+shards (public)	Verify this product shard	2026-11-14T22:14:35.4325200Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:14:35.4325824Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:14:43.0894287Z # Subtest: SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search
+shards (public)	Verify this product shard	2026-11-14T22:14:43.0896286Z ok 6 - SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search
+shards (public)	Verify this product shard	2026-11-14T22:14:43.0897175Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:14:43.0897793Z   duration_ms: 7658.072785
+shards (public)	Verify this product shard	2026-11-14T22:14:43.0898341Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:14:43.0899778Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:15:02.2817041Z # Subtest: SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary
+shards (public)	Verify this product shard	2026-11-14T22:15:02.2819110Z ok 7 - SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary
+shards (public)	Verify this product shard	2026-11-14T22:15:02.2820099Z   ---
+shards (public)	Verify this product shard	2026-11-14T22:15:02.2820607Z   duration_ms: 19192.781948
+shards (public)	Verify this product shard	2026-11-14T22:15:02.2821008Z   type: 'test'
+shards (public)	Verify this product shard	2026-11-14T22:15:02.2821311Z   ...
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3411783Z 1..7
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3412357Z # tests 7
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3419789Z # suites 0
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3421547Z # pass 6
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3422474Z # fail 1
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3424007Z # cancelled 0
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3425376Z # skipped 0
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3426517Z # todo 0
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3427637Z # duration_ms 451704.995515
+shards (public)	Verify this product shard	2026-11-14T22:15:02.3643222Z  ELIFECYCLE  Command failed with exit code 1.
+shards (public)	Verify this product shard	2026-11-14T22:15:02.4082840Z  ELIFECYCLE  Command failed with exit code 1.
+shards (public)	Verify this product shard	2026-11-14T22:15:02.4234671Z ##[error]Process completed with exit code 1.

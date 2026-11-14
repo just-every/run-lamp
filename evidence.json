@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "blob": "de97f373f569bd938c1d4d0d469e8c73d8f41541",
+      "bytes": 2124,
+      "path": "PLAN.md",
+      "sha256": "ecf98b14fc776eb593ea326316f75e0c12332d9a68971371791390cbdba5e299"
+    },
+    {
+      "blob": "56d8a5d5bc66b23aeb6370e65b86d9891e971113",
+      "bytes": 9417,
+      "path": "REPORT.md",
+      "sha256": "0ae472aa2b848f5d6d839d7cdd4f90efa6e467964f8b9ef29a537c849ae69eef"
+    },
+    {
+      "blob": "13f80fd805aee62daa519d1e398c9526a2b7a925",
+      "bytes": 450230,
+      "path": "after/1440-audit-after-erasure.png",
+      "sha256": "32c92eebe572192afdfc3951dfc3f32d76e94581859656fdc06f13d6b158e87b"
+    },
+    {
+      "blob": "8e0a72a88d7f78f309651fcdcf4a98fa1f1c2229",
+      "bytes": 415218,
+      "path": "after/1440-audit-record-labels.png",
+      "sha256": "ee30200abcbf74ebdb1122994a5bb050b88a515b4848b581075d38e8c5712871"
+    },
+    {
+      "blob": "dbbffe4ea3c09d113d93f72963b3e2ec9e9aa189",
+      "bytes": 159112,
+      "path": "after/1440-operator-roles.png",
+      "sha256": "139066a048553b8cf67fd4bd8d2f0044d06a829a2881007e9f470d73b9b6bf22"
+    },
+    {
+      "blob": "7e277511a8701f94ed21daf1aabb591f1a8a37f8",
+      "bytes": 503560,
+      "path": "after/390-audit-after-erasure.png",
+      "sha256": "82b3a94ef86efc33eb8def6df50a733f433688be7af87369a1e793eb894ac8e5"
+    },
+    {
+      "blob": "005f248e7e20827a2d9bf2799032f8961822eb98",
+      "bytes": 449712,
+      "path": "after/390-audit-record-labels.png",
+      "sha256": "39281a23445a3d7781a4e7c4dff033e6edd939b1ac24340c3dee8d6b3790c1ed"
+    },
+    {
+      "blob": "f243198e7c7ebc0f3fdd07eac2959178f7b39e75",
+      "bytes": 121538,
+      "path": "after/390-operator-roles.png",
+      "sha256": "ff88821be030b7a7a4562741eb3534d9643e1cbe4d2eb31b7951ba3da13aea7f"
+    },
+    {
+      "blob": "987cbd81b2090c283b72ea00af09f38557154748",
+      "bytes": 1072,
+      "path": "audit-test.log",
+      "sha256": "d14aa8e91b322dab03691c1798f0342327451f35ea77b6c6da82aa0f4f248c4b"
+    },
+    {
+      "blob": "0ac099de2eba2138e72296fa665fddcc9f25f1ca",
+      "bytes": 270946,
+      "path": "before/1440-audit-record-labels.png",
+      "sha256": "abb724d77bc44e93e70885730a3e57d0f9cca9c1af93f8eae3d5044ea1e7e6a6"
+    },
+    {
+      "blob": "aeeffdcda71249787dacb7d6ab4d5d180a85f3db",
+      "bytes": 290485,
+      "path": "before/390-audit-record-labels.png",
+      "sha256": "8291a015518198d6302f368f14c305517aadf82c953ef8777f87d4b69f09f3e4"
+    },
+    {
+      "blob": "9ee8113d2d7468a0298e783cd34e51fef8a5b5c8",
+      "bytes": 847,
+      "path": "ci-status.log",
+      "sha256": "0a11946ffcce1575c93650ab5224d54964a0f532949ead121744411c32670e95"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-docs.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "13f985355eaaa976cd923ca1dd70f29c76434bb1",
+      "bytes": 1799,
+      "path": "final-touched-tests.log",
+      "sha256": "18e36b2b06c2b74ac5917e5328b0634b80f49812ca2676c2d4a846e4c64831c7"
+    },
+    {
+      "blob": "a26576e22c07c0fcaf02523cdd04a17e8a91e997",
+      "bytes": 16721,
+      "path": "first-verify-failure.log",
+      "sha256": "a2b8ef5a75ec02f212654f7d0e4b63b8c27fb675c63434469387baa55aea444c"
+    },
+    {
+      "blob": "528578a2abd706e135cc131c4c20e5d399ea14c6",
+      "bytes": 11167,
+      "path": "receipt.json",
+      "sha256": "897404324fea41ce050d88014db989c6e870d12ac449d0334a963c4e07b37e10"
+    },
+    {
+      "blob": "74d40a2fa2c5b18ef3b89a71350c3600d212173c",
+      "bytes": 1422,
+      "path": "reproduction.log",
+      "sha256": "252c401a99a6cb88b9431a8c27e0a40e76f9e0f3714c1d15926f0fd36ac4d893"
+    },
+    {
+      "blob": "c11ca7837172e04651fc16d675ab785682ae56c8",
+      "bytes": 169,
+      "path": "test-count.log",
+      "sha256": "4e2168429e685689dfa5c781a3ad306c773abc9694c32015967a920adfde8fd9"
+    },
+    {
+      "blob": "d1fe6ef425182510fe36420e04c1cbe7369719b6",
+      "bytes": 224,
+      "path": "typecheck.log",
+      "sha256": "40be8cfa78190725d352ec6ec546d0154cd1478946f780f4c0a4430d949024b1"
+    }
+  ],
+  "product_branch": "cloud/main-lamp-audit-record-labels-1",
+  "product_head": "ed52f740415afc4959285a72afb6d26d28c18edf",
+  "ref": "refs/heads/evidence/main-lamp-audit-record-labels-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "main-lamp-audit-record-labels-1"
+}
