@@ -476,7 +476,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "51c66053f34d3f803ab56d6e9f92c72d5fe22692a370b26629fb3cafeb92a766",
+      "sha256": "6a4adf8389417cb9bc6d25f015a18a57cb64253d6b436186a75c5823c27f8e45",
       "executable": false
     },
     "AGENTS.md": {
@@ -2860,7 +2860,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "20452536a534b46a330f2a710ded4872525efa9f2c23273aed7033de4a00c8ed",
+      "sha256": "c1cb12a8087ce1678f18421bf2c14a366d26cf149568175f334465b8e10eba9c",
       "executable": false
     },
     "rer-packaging.json": {
