@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "8839a28f0f2784a6b850a11fd07ce53aadb19577",
+      "bytes": 7412,
+      "path": "REPORT.md",
+      "sha256": "0bf412d66e195adde7c0d7338d2d2922126bc84bf6b39f8e68a4073200c1c14f"
+    },
+    {
+      "blob": "034763d2c7c2bb8dab08fd1ffd055ce3090e521f",
+      "bytes": 583,
+      "path": "alert-access.json",
+      "sha256": "7e3e42c0f5ac58d0f2f7203f4b1dfc9899e1e9770da2b131c4782fd5a99db2aa"
+    },
+    {
+      "blob": "bd30bf09287eae1c1db5b2c89e6b424a4db31058",
+      "bytes": 250,
+      "path": "bundle-receipt.json",
+      "sha256": "a7f0e8c12e87930ae7ba235b2a3a1c06a2418014b6941fece5363e17344fce29"
+    },
+    {
+      "blob": "1ffb1402a5cd58d340aa098d44b3bc55b32c4257",
+      "bytes": 907,
+      "path": "ci-runs.json",
+      "sha256": "a5eaeb34f6d9e453650c78e5ea063f99294be3c8374e13b6d01813cb51fa4f45"
+    },
+    {
+      "blob": "7ece6d420bc52eb6c1daa0e6995733706664bda8",
+      "bytes": 254,
+      "path": "feed-compatibility.json",
+      "sha256": "7ecfdbf902c6ed65e86389c7ad93e106e4f4f4f27e1c996fc8ae01f5b99be9d3"
+    },
+    {
+      "blob": "2cf63eade586a541966c14a93aa1bd6f10eca53d",
+      "bytes": 179,
+      "path": "identity-check.log",
+      "sha256": "17d356182af360b92acd856d3f74ace537ed9efbaeebbb4e22ed5a9d4add7de8"
+    },
+    {
+      "blob": "0e5714ffd37eb724eb602b1c1f3b2eba508af286",
+      "bytes": 1244,
+      "path": "local-receipt.json",
+      "sha256": "da5cb184986fb2dd0440eb5fb39a81d99fb3a0af3f24129aae57c5d738e2f104"
+    },
+    {
+      "blob": "6ce217d08f09e96f5bc24f4f824bc8294952733c",
+      "bytes": 181,
+      "path": "pr-receipt.json",
+      "sha256": "e33f28f2bce52b9136e50bf32d6d0c06a64b313a37ac41679fc78c76a3bf20a9"
+    },
+    {
+      "blob": "86b5ba9e56157d9e2605a551968c65728566adb4",
+      "bytes": 397,
+      "path": "product-push-receipt.json",
+      "sha256": "b480e948e5bae69b3c0c712f2ed24e442f5eec05f867738daf61c7a6f9befc9b"
+    },
+    {
+      "blob": "524636c99e9af86d94edad00ee3f7f61da28ace8",
+      "bytes": 279,
+      "path": "product-push.log",
+      "sha256": "97f297c94b77b6a192ad48eb64e05b65b7ea66d037ecc1f7ac58f075cc2bacb9"
+    },
+    {
+      "blob": "efd494d6958e692d5f7d6173aec4d42ebbb74be4",
+      "bytes": 582,
+      "path": "publication-receipt.json",
+      "sha256": "f749dbd2cbdfffb46afa1d82792380de315f77846cd213e7b70e67f637d4aa38"
+    },
+    {
+      "blob": "6e099658164128bb548129c97090926af9c7df94",
+      "bytes": 565,
+      "path": "publication-scan-initial.json",
+      "sha256": "871b3a5b521219e0ec1dd91f5489d3ff58ee9ebd79266d3800d4ad1701300946"
+    },
+    {
+      "blob": "4c10f106e9092e8b589f69414affc7a31123c2f7",
+      "bytes": 559,
+      "path": "publication-scan-superseded.json",
+      "sha256": "893390777dca36bb0dd6768e60c1ca6cae23d4b86aff412bc7041a15fd95f02e"
+    },
+    {
+      "blob": "1bc55c77908e5298e92a04d69ef3aafb9a318a42",
+      "bytes": 737370,
+      "path": "publication-scan.json",
+      "sha256": "43ab57be58c7981daa01e932f8652d3c8afde691fb09afc4c1210cd7030586da"
+    },
+    {
+      "blob": "ccfd74fd1e1f55413a308f565861bb7cd3fe184c",
+      "bytes": 742,
+      "path": "result.json",
+      "sha256": "89b0c97bac9eeaa37d1a0ec11073c66867cb30940ebd52aff537c801f6f266e9"
+    },
+    {
+      "blob": "6060d39d0720f99af69a73da328e70077075db2d",
+      "bytes": 663,
+      "path": "terminal-receipt.json",
+      "sha256": "6d728f5b5df149fb8a78769fe23211bc0bfd67f78b200e59a51696400ffdbb96"
+    },
+    {
+      "blob": "e6bb1bb3703e298d04d8be627f0840eb057f0552",
+      "bytes": 593,
+      "path": "touched-tests.log",
+      "sha256": "cebbc3eba18dfb324bf1124dee042fbab4bbba1069b8b3bbaedfd5f6ad3af22a"
+    },
+    {
+      "blob": "4335094cfe72e6643e5649317e7cc309ffeae57a",
+      "bytes": 107,
+      "path": "typecheck.log",
+      "sha256": "b0268709e1b14ff4cffb6899a5225f179dbf95c3b69f66ec0aee506149fccd62"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-lamp-code-13",
+  "product_head": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "ref": "refs/heads/evidence/gr-mt-lamp-code-13",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "gr-mt-lamp-code-13"
+}

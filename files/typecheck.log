@@ -1,0 +1,4 @@
+
+> lamp@1.11.15 typecheck /home/agent/rer-consolidation/work/maint/gr-mt-lamp-code-13/repo
+> tsc --noEmit
+

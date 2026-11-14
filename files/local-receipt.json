@@ -1,0 +1,51 @@
+{
+  "tag": "gr-mt-lamp-code-13",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-13",
+  "head": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "command": "node --experimental-strip-types --test --test-concurrency=1 tests/e2e/site-reader-security.test.mjs",
+      "exit": 0,
+      "tests": 2,
+      "pass": 2,
+      "fail": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "focused_registrations_before": 1,
+    "focused_registrations_after": 2,
+    "contract_status_changes": 0,
+    "clause_headings_before": 244,
+    "clause_headings_after": 244,
+    "contract_table_statuses_before": {
+      "partial": 129,
+      "done": 60,
+      "missing": 55
+    },
+    "contract_table_statuses_after": {
+      "partial": 129,
+      "done": 60,
+      "missing": 55
+    }
+  },
+  "alert_closure": "not verified; GitHub integration lacks code-scanning access (403)"
+}

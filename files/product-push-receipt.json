@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-13",
+  "head": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "pushed": true,
+  "attempts": 1,
+  "push_guard": "cloud-push.py",
+  "identity_check": "pass",
+  "trailers": "absent",
+  "publication_check": "COMPLETE/PASS",
+  "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/gr-mt-lamp-code-13"
+}

@@ -1,0 +1,7 @@
+{
+  "head": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "fixture": "tests/fixtures/status-feeds/instatus-zed/public-history.atom",
+  "entries": 16,
+  "status": "pass",
+  "message": "Plain text conversion unchanged for every captured Instatus entry."
+}

@@ -1,0 +1,22 @@
+TAP version 13
+# Subtest: site reading bounds hostile icon prefixes and preserves supported image detection
+ok 1 - site reading bounds hostile icon prefixes and preserves supported image detection
+  ---
+  duration_ms: 125.079775
+  type: 'test'
+  ...
+# Subtest: status feed reads remove tags reassembled by stripping while preserving message text
+ok 2 - status feed reads remove tags reassembled by stripping while preserving message text
+  ---
+  duration_ms: 89.011425
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 275.30533

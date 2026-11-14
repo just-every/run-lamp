@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "summary": "Fixed incomplete status-feed markup removal by repeatedly removing quote-aware innermost tags until stable; kept entity decoding and feed formatting. CodeQL alert status cannot be read by this integration (HTTP 403).",
+  "tests": "Node 22.20.0/pnpm 10.12.4: touched site-reader security tests 2/2 pass; pnpm typecheck pass; source-lock regeneration/check pass; retained feed compatibility 16/16 pass; exact-tree Base publication scan COMPLETE/PASS, 0 blocking findings. Exact-SHA Verify 43557108547 is still in progress at the ten-minute poll; product pushed, READY not claimed. PR https://github.com/just-every/run-lamp/pull/372",
+  "security": true
+}

@@ -1,0 +1,27 @@
+[
+  {
+    "attempt": 1,
+    "status": "denied",
+    "error": "Resource not accessible by integration (HTTP 403)"
+  },
+  {
+    "attempt": 2,
+    "status": "denied",
+    "error": "Resource not accessible by integration (HTTP 403)"
+  },
+  {
+    "attempt": 3,
+    "status": "denied",
+    "error": "Resource not accessible by integration (HTTP 403)"
+  },
+  {
+    "attempt": 4,
+    "status": "denied",
+    "error": "Resource not accessible by integration (HTTP 403)"
+  },
+  {
+    "attempt": 5,
+    "status": "denied",
+    "error": "Resource not accessible by integration (HTTP 403)"
+  }
+]

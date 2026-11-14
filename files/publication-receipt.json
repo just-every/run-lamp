@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "complete": true,
+  "source": {
+    "commit": "6a3fe92809524f6463f98454cd72af0cd8724100",
+    "tree": "9feaaf9fcd4f7e6d75a87f094d7f21a550467cff"
+  },
+  "findings": 0,
+  "preExisting": 50,
+  "warnings": 0,
+  "history": {
+    "commits": 1120,
+    "trees": 1103,
+    "blobs": 8524
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": false
+  },
+  "implementation": {
+    "version": "0.2.108",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  }
+}

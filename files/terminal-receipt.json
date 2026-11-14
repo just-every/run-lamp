@@ -1,0 +1,22 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-13",
+  "head": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "custody": "PUSHED",
+  "pr": "https://github.com/just-every/run-lamp/pull/372",
+  "ci_run_id": 43557108547,
+  "ci_status": "in_progress",
+  "ci_conclusion": null,
+  "ready": false,
+  "blockers": [],
+  "limitations": [
+    "Exact-SHA Verify remains in progress at the final scheduled poll; no success claim.",
+    "Alert 17 closure cannot be checked by this integration (HTTP 403)."
+  ],
+  "direct_github_calls": 10,
+  "direct_call_breakdown": {
+    "alert_access": 6,
+    "ci_discovery_and_polls": 3,
+    "create_pr": 1
+  }
+}
