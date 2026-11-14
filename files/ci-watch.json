@@ -1,0 +1,22 @@
+{
+  "api_calls": 10,
+  "last_discovery": 1794614048.56211,
+  "runs": [
+    {
+      "id": 43530416554,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "865854019e82c8ed9530d30aeedbfa76f8a0df9e",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43530416554"
+    }
+  ],
+  "last_poll": 1794615257.9087336,
+  "latest": {
+    "conclusion": "failure",
+    "head_sha": "865854019e82c8ed9530d30aeedbfa76f8a0df9e",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43530416554",
+    "status": "completed"
+  }
+}

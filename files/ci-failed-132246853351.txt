@@ -1,0 +1,261 @@
+shards (runtime)	Verify this product shard	﻿2026-11-13T23:55:23.9611415Z ##[group]Run # rer verify adds Base's hosted-output and hydration checks after the
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9612251Z [36;1m# rer verify adds Base's hosted-output and hydration checks after the[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9613152Z [36;1m# runtime shard has built and exercised the actual production Worker.[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9613594Z [36;1mif [ "$LAMP_VERIFY_SHARD" = runtime ]; then[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9614009Z [36;1m  pnpm verify 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9614392Z [36;1melse[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9614728Z [36;1m  pnpm run verify:app 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9615139Z [36;1mfi[0m
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9635480Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9635841Z env:
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9636056Z   PLAYWRIGHT_SKIP_BROWSER_GC: 1
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9636325Z   LAMP_VERIFY_SHARD: runtime
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9636732Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9637377Z   LAMP_BASELINE_REPORT: /home/runner/work/_temp/lamp-verification/baseline-report.json
+shards (runtime)	Verify this product shard	2026-11-13T23:55:23.9637827Z ##[endgroup]
+shards (runtime)	Verify this product shard	2026-11-13T23:55:24.2673582Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:24.2674616Z > lamp@1.11.15 verify /home/runner/work/run-lamp/run-lamp
+shards (runtime)	Verify this product shard	2026-11-13T23:55:24.2675138Z > rer verify
+shards (runtime)	Verify this product shard	2026-11-13T23:55:24.2675284Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:24.9855421Z Checking pinned pnpm
+shards (runtime)	Verify this product shard	2026-11-13T23:55:25.2509941Z 10.12.4
+shards (runtime)	Verify this product shard	2026-11-13T23:55:25.6010275Z Verifying application
+shards (runtime)	Verify this product shard	2026-11-13T23:55:25.8941415Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:25.8942500Z > lamp@1.11.15 verify:app [REDACTED]
+shards (runtime)	Verify this product shard	2026-11-13T23:55:25.8943206Z > node scripts/verification/run.mjs
+shards (runtime)	Verify this product shard	2026-11-13T23:55:25.8943477Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:26.8618336Z Verification plan: 8 test shards and one shared build, 34 routine test files, 91 registered cases (including release qualification) + 10 assertion scripts = 101 checks.
+shards (runtime)	Verify this product shard	2026-11-13T23:55:26.8698472Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:26.8699019Z Verifying runtime: test:runtime
+shards (runtime)	Verify this product shard	2026-11-13T23:55:27.1517034Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:27.1517908Z > lamp@1.11.15 test:runtime [REDACTED]
+shards (runtime)	Verify this product shard	2026-11-13T23:55:27.1519240Z > node --test --test-concurrency=1 tests/e2e/start-runtime.test.mjs tests/e2e/independent-release.test.mjs
+shards (runtime)	Verify this product shard	2026-11-13T23:55:27.1520112Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:55:27.1941416Z TAP version 13
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.2347638Z # {"label":"unclaimed published page","status":200,"generatedAt":"2026-11-13T23:55:36.471Z","retained":"true","state":null}
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.2520625Z # {"label":"past freshness bound, before scheduler","status":200,"generatedAt":"2026-11-13T23:55:36.471Z","retained":"true","state":null}
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.5684858Z # {"label":"past freshness bound, after scheduler","status":200,"generatedAt":"2026-11-14T00:01:36.471Z","retained":"true","state":null}
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.5915725Z # {"label":"primary snapshot unavailable","status":200,"generatedAt":"2026-11-14T00:01:36.471Z","retained":"true","state":"stale"}
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.6453078Z # Subtest: ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.6460851Z ok 1 - ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.6461593Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.6461844Z   duration_ms: 9376.906109
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.6462103Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:55:37.6462654Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:56:20.7533113Z # {"publicDocs":{"sections":4,"pages":33,"markdownGuidance":"matched"}}
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7184301Z # {"status":"passed","artifact":"dist/server/wrangler.json","browser":{"documents":1,"stableTimeOrigin":true},"publicSnapshotReadAfterD1Failure":true}
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7229269Z # Subtest: DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7231593Z ok 2 - DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7233600Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7234476Z   duration_ms: 50536.601959
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7235087Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.7235593Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8035705Z 1..2
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8040117Z # tests 2
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8040592Z # suites 0
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8041035Z # pass 2
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8041507Z # fail 0
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8041895Z # cancelled 0
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8042595Z # skipped 0
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8043030Z # todo 0
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8043476Z # duration_ms 61623.436333
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8198149Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:56:28.8198867Z Verifying runtime: test:publishing
+shards (runtime)	Verify this product shard	2026-11-13T23:56:29.1007228Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:56:29.1007882Z > lamp@1.11.15 test:publishing [REDACTED]
+shards (runtime)	Verify this product shard	2026-11-13T23:56:29.1009129Z > node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs tests/e2e/incident-brief.test.mjs tests/e2e/update-reminders.test.mjs
+shards (runtime)	Verify this product shard	2026-11-13T23:56:29.1010078Z 
+shards (runtime)	Verify this product shard	2026-11-13T23:56:29.1431912Z TAP version 13
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4916653Z # Subtest: INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4921518Z ok 1 - INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4924335Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4924764Z   duration_ms: 10302.82816
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4925212Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4925568Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4926866Z # PROBE DRAFT-004 acceptance 2: native component DELETE then incident and brief GET -> empty attachments and exact stable Q-components question
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4929915Z # PROBE DRAFT-001 2, 4 and 5: native suggestion with known, question and unknown citations plus provider lifecycle and time -> only known citations and text fields; complete saved incidents and eight settled public responses unchanged before and after explicit publication
+shards (runtime)	Verify this product shard	2026-11-13T23:56:40.4933083Z # PROBE DRAFT-004 acceptance 5: repeated native brief GETs before and after explicit suggestion -> provider counts stay 0, 1 and 2 across explicit suggestions; saved facts, references and questions reconcile
+shards (runtime)	Verify this product shard	2026-11-13T23:57:09.8228877Z # PROBE HIST-002 email: native saved-field readback, public permalink in 15.9 ms, committed=2, email=2, webhook=0
+shards (runtime)	Verify this product shard	2026-11-13T23:57:10.6597580Z # PROBE HIST-002 webhook: native saved-field readback, public permalink in 24.0 ms, committed=2, email=0, webhook=2
+shards (runtime)	Verify this product shard	2026-11-13T23:57:11.5249098Z # PROBE HIST-002 email-webhook: native saved-field readback, public permalink in 15.3 ms, committed=4, email=2, webhook=2
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.3756934Z # PROBE HIST-002 silent: native saved-field readback, public permalink in 12.7 ms, committed=0, email=0, webhook=0
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.4318201Z # Subtest: INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.4324081Z ok 2 - INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.4326212Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.4326629Z   duration_ms: 30426.864732
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.4327392Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:57:12.4327897Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:57:23.9734680Z # Subtest: INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components
+shards (runtime)	Verify this product shard	2026-11-13T23:57:23.9753307Z ok 3 - INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components
+shards (runtime)	Verify this product shard	2026-11-13T23:57:23.9768649Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:57:23.9769349Z   duration_ms: 11541.090041
+shards (runtime)	Verify this product shard	2026-11-13T23:57:23.9769983Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:57:23.9770354Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:57:29.6760132Z # Subtest: INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history
+shards (runtime)	Verify this product shard	2026-11-13T23:57:29.6763417Z ok 4 - INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history
+shards (runtime)	Verify this product shard	2026-11-13T23:57:29.6764730Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:57:29.6765443Z   duration_ms: 5703.178026
+shards (runtime)	Verify this product shard	2026-11-13T23:57:29.6766232Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:57:29.6766840Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:57:37.3425199Z # Subtest: INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime
+shards (runtime)	Verify this product shard	2026-11-13T23:57:37.3428125Z ok 5 - INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime
+shards (runtime)	Verify this product shard	2026-11-13T23:57:37.3429369Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:57:37.3429791Z   duration_ms: 7665.265292
+shards (runtime)	Verify this product shard	2026-11-13T23:57:37.3430287Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:57:37.3430676Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:58:27.4212693Z # Subtest: MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history
+shards (runtime)	Verify this product shard	2026-11-13T23:58:27.4215740Z ok 6 - MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history
+shards (runtime)	Verify this product shard	2026-11-13T23:58:27.4217031Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:58:27.4217577Z   duration_ms: 50079.25844
+shards (runtime)	Verify this product shard	2026-11-13T23:58:27.4218110Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:58:27.4218634Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8471176Z # Subtest: UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8474695Z ok 7 - UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8475980Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8476778Z   duration_ms: 9424.575626
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8477364Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8477861Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8479970Z # PROBE UPDATE-006 2: native schedule with confirmed email and webhook, repeated Cron through saved instant minus 1 ms -> unchanged draft, 38 populated public artifacts and generation, absent permalink, zero notification work and zero subscriber sends
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8483730Z # PROBE UPDATE-006 1: reviewed draft scheduled through native route, Worker Date and Cron advanced to saved instant plus 60000 ms -> exact saved update committed and read from public root and permalink after 60367 ms (deadline 240000 ms)
+shards (runtime)	Verify this product shard	2026-11-13T23:58:36.8486825Z # PROBE UPDATE-006 2 delivery control: after eligibility the exact committed recipient set receives one captured email and one acknowledged webhook; repeated Cron adds no update or send
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1551553Z # Subtest: INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1556477Z ok 8 - INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1557533Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1557896Z   duration_ms: 18309.157135
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1558330Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1558691Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1559765Z # INCIDENT-012 Slack: signed identity, private draft, shared preview, explicit attributed publication and state changes
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1562772Z # PROBE INCIDENT-012 points 2 and 3 Slack: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1567073Z # INCIDENT-012 Teams: signed identity, private draft, shared preview, explicit attributed publication and state changes
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1569409Z # PROBE INCIDENT-012 points 2 and 3 Teams: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1572869Z # PROBE INCIDENT-012 point 4 Slack: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+shards (runtime)	Verify this product shard	2026-11-13T23:58:55.1576353Z # PROBE INCIDENT-012 point 4 Teams: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2855146Z # Subtest: AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2860744Z ok 9 - AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2861834Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2862219Z   duration_ms: 5129.561633
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2862971Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2863367Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2865132Z # PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2868167Z # PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2870856Z # PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report
+shards (runtime)	Verify this product shard	2026-11-13T23:59:00.2873665Z # PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6904888Z # Subtest: NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6908465Z ok 10 - NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6910019Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6910651Z   duration_ms: 11406.014782
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6911396Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6912081Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6914876Z # PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6917951Z # PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+shards (runtime)	Verify this product shard	2026-11-13T23:59:11.6921072Z # PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9383618Z # Subtest: INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9387332Z ok 11 - INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9389257Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9389906Z   duration_ms: 7750.405553
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9390346Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9390706Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9394686Z # PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner
+shards (runtime)	Verify this product shard	2026-11-13T23:59:20.9396925Z # PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4452637Z # Subtest: AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4454962Z ok 12 - AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4455925Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4456377Z   duration_ms: 9505.186638
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4456849Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4457244Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4459127Z # PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window
+shards (runtime)	Verify this product shard	2026-11-13T23:59:30.4463018Z # PROBE NOTIFY-006 acceptance-4 terminal notification failure: public email subscription and owner publication receive provider HTTP 400, repeated Queue delivery and Cron -> failed subscriber delivery and exactly one captured email per active operator for that delivery
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0695613Z # Subtest: NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0702207Z ok 13 - NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0704065Z   ---
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0704495Z   duration_ms: 5624.9896
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0704935Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0705327Z   ...
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0707248Z # PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator
+shards (runtime)	Verify this product shard	2026-11-13T23:59:36.0710798Z # PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6925734Z # Subtest: HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6933708Z ok 14 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6934784Z   ---
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6935231Z   duration_ms: 43621.156817
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6935691Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6936075Z   ...
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6936529Z # HIST-006 starting built Worker
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6937037Z # HIST-006 built Worker ready
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6937616Z # HIST-006 real Worker bindings ready
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6938215Z # HIST-006 fixture schema migrated
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6938858Z # HIST-006 native owner sign-in starting
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6939456Z # HIST-006 native owner signed in
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6940014Z # HIST-006 production fixture started
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6940925Z # HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6942066Z # HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6943601Z # HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6953760Z # HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6962907Z # HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6964841Z # HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6966270Z # HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6968717Z # HIST-009 1440px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6971994Z # HIST-009 390px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6978043Z # HIST-006: 840 public page + 420 feed baseline requests; default 3×, owner threshold, 5× exactly-once episode, incident suppression, recovery refusal, identifier-free counters and database-free reads asserted
+shards (runtime)	Verify this product shard	2026-11-14T00:00:19.6981588Z # HIST-006 riders: unknown baselines not tracked, historical refusal with a retained draft, private attributed immediate override with no later authority, scheduled due-time hold with a retained draft, near-baseline scheduled success
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3463266Z # Subtest: AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3467058Z ok 15 - AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3468306Z   ---
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3468675Z   duration_ms: 19656.603579
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3469080Z   type: 'test'
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3469298Z   ...
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3470188Z # HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.3471566Z # HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4256758Z 1..15
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4273387Z # tests 15
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4273855Z # suites 0
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4274173Z # pass 15
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4274537Z # fail 0
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4274852Z # cancelled 0
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4275267Z # skipped 0
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4275622Z # todo 0
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.4276026Z # duration_ms 250296.781607
+shards (runtime)	Verify this product shard	2026-11-14T00:00:39.5201588Z Serving the production build as rer deploy hosts it
+shards (runtime)	Verify this product shard	2026-11-14T00:00:44.5976920Z Checking that page sections hydrate as separate units
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8296300Z Hydration check: 35 page(s), 309 load(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8298877Z   /: skipped, plain HTML: React does not hydrate this page and it loads no application script
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8300596Z   /docs: 10 load(s), 8 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8313168Z   /docs/overview: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8314181Z   /docs/getting-started: 8 load(s), 6 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8315063Z   /docs/install: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8315840Z   /docs/deploy: 11 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8316704Z   /docs/deployment-reference: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8319401Z   /docs/run-locally: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8323448Z   /docs/first-run: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8327050Z   /docs/domains: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8331718Z   /docs/components-and-groups: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8343721Z   /docs/incidents-and-updates: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8344453Z   /docs/maintenance: 8 load(s), 6 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8345056Z   /docs/public-page: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8345786Z   /docs/subscribers-and-notifications: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8346607Z   /docs/alerts-from-monitoring-tools: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8348946Z   /docs/ai-assistance: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8352961Z   /docs/operators-and-sign-in: 11 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8369673Z   /docs/moving-in: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8370407Z   /docs/public-resources: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8371111Z   /docs/social-accounts: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8371762Z   /docs/chat-desk: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8372694Z   /docs/backups-and-recovery: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8373377Z   /docs/updating: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8373971Z   /docs/changelog: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8374605Z   /docs/accessibility/vpat: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8375302Z   /docs/contract-rulings: 8 load(s), 6 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8399515Z   /docs/contract-evidence: 8 load(s), 6 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8401798Z   /docs/release-verification: 11 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8402924Z   /docs/contract/publishing-details: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8403652Z   /docs/contract/intake-details: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8404379Z   /docs/contract/document-workflow: 8 load(s), 6 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8405100Z   /docs/contract/public-details: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8405780Z   /docs/contract/delivery-details: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.8406521Z   /docs/contract/operations-details: 9 load(s), 7 section(s)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.9389272Z Agent door conformance: undeclared (no agent-surface.json).
+shards (runtime)	Verify this product shard	2026-11-14T00:02:10.9392161Z Checking statement size and growth with data
+shards (runtime)	Verify this product shard	2026-11-14T00:02:11.8028369Z Statement size: 502 view and trigger statements checked; largest 4 FROM items, depth 21.
+shards (runtime)	Verify this product shard	2026-11-14T00:02:11.8060070Z The declaration needs the owner (an owner persona or :owner_email) and this seed declares no way to create one: add an owner-claim step to rer-setup.json steps, or verification.owner to agent-surface.json.
+shards (runtime)	Verify this product shard	2026-11-14T00:02:11.8062038Z verify: failed (exit 1)
+shards (runtime)	Verify this product shard	2026-11-14T00:02:11.8814475Z  ELIFECYCLE  Command failed with exit code 1.
+shards (runtime)	Verify this product shard	2026-11-14T00:02:11.9217890Z ##[error]Process completed with exit code 1.

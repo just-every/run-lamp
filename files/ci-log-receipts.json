@@ -1,0 +1,23 @@
+[
+  {
+    "job": "size-check",
+    "job_id": 132246853145,
+    "command": "gh run view 43530416554 --repo just-every/run-lamp --job 132246853145 --log-failed",
+    "exit": 0,
+    "file": "ci-failed-132246853145.txt"
+  },
+  {
+    "job": "shards (runtime)",
+    "job_id": 132246853351,
+    "command": "gh run view 43530416554 --repo just-every/run-lamp --job 132246853351 --log-failed",
+    "exit": 0,
+    "file": "ci-failed-132246853351.txt"
+  },
+  {
+    "job": "verify",
+    "job_id": 132252901844,
+    "command": "gh run view 43530416554 --repo just-every/run-lamp --job 132252901844 --log-failed",
+    "exit": 0,
+    "file": "ci-failed-132252901844.txt"
+  }
+]

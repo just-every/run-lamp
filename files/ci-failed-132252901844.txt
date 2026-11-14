@@ -1,0 +1,14 @@
+verify	Require every planned command to succeed on this commit	﻿2026-11-14T00:10:30.0619692Z ##[group]Run node scripts/verification/aggregate.mjs
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0620054Z [36;1mnode scripts/verification/aggregate.mjs[0m
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0620496Z [36;1mtest "$SHARDS_RESULT" = success[0m
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0620857Z [36;1mif [ "$SIZE_REQUESTED" = true ]; then test "$SIZE_RESULT" = success; fi[0m
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0637803Z shell: /usr/bin/bash -e {0}
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0638020Z env:
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0638201Z   SHARDS_RESULT: failure
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0638407Z   SIZE_RESULT: failure
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0638610Z   SIZE_REQUESTED: true
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0638897Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.0639201Z ##[endgroup]
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.2056929Z The shard jobs did not all succeed.
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.2057949Z Verification: 9/9 shards completed successfully for this commit.
+verify	Require every planned command to succeed on this commit	2026-11-14T00:10:30.2115960Z ##[error]Process completed with exit code 1.

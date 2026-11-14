@@ -1,0 +1,4 @@
+FETCH_REFRESH exit=0
+From https://github.com/just-every/run-lamp
+ * branch            main       -> FETCH_HEAD
+

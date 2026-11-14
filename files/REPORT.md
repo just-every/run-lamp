@@ -13,7 +13,7 @@ For diagnosis only, a temporary untracked agent-surface.json supplied verificati
 
 ## Plan
 
-See PLAN.md for the full original plan. Completed: inspected main, AGENTS, CONTRACT, OPERATIONS, source/CI and published package help/validator; declared actual Lamp tables; built with public rer setup; ran supported local-D1 metering at both sizes; retained ordinary failures; ran the one-off negative control and emitted-statement checks; parsed workflow/typechecked/regenerated and checked the source lock; integrated current main; audited every candidate author/committer/trailer; pushed saves and final candidate, and opened the required draft PR. Exact-SHA CI and evidence transport receipts are recorded separately. The remaining owner/host verification support and ordinary-query fixes require a scoped follow-up, with no ceilings weakened.
+See PLAN.md for the full original plan. Completed: inspected main, AGENTS, CONTRACT, OPERATIONS, source/CI and published package help/validator; declared actual Lamp tables; built with public rer setup; ran supported local-D1 metering at both sizes; retained ordinary failures; ran the one-off negative control and emitted-statement checks; parsed workflow/typechecked/regenerated and checked the source lock; integrated current main; audited every candidate author/committer/trailer; pushed saves and final candidate, and opened the required draft PR. Exact-SHA CI completed red; CI-RECEIPT.json and the evidence transport receipt record their separate results. The remaining owner/host verification support and ordinary-query fixes require a scoped follow-up, with no ceilings weakened.
 
 ## Geometry and declared ceilings
 
@@ -21,7 +21,7 @@ The geometry is an explicit synthetic translation of public published ChargeDesk
 
 No measured document/source-block histogram was transplanted into Lamp. Fixed catalogue size and per-incident multiplicity are deliberate domain analogies; this fixture does not qualify monitor polling, live alert-provider throughput, due publication, or deployment capacity. Source histories span 45 days. Public status artifacts must be produced by Lamp itself; they were not fabricated as fixtures.
 
-Budgets were fixed before measurement: 3,900,000 rows per working 10-second window; growth ≤10% of small +200 rows; 600-second timeout; no growth exemption. Per-flow ceilings: lists 5,000, detail 25,000, component history 6,000, minute tick 40,000, public reads 1,000. Read flows request three calls in a row; rer sums their measured reads. These are declared working budgets, not a measured D1 service limit.
+Budgets were fixed before measurement: 3,900,000 rows per working 10-second window; growth ≤10% of small +200 rows; 600-second timeout; no growth exemption. Per-flow ceilings: lists 5,000, detail 25,000, component history 6,000, minute tick 40,000, public reads 1,000. Read flows declare callsInRow=3 as a window-budget reservation. The published runFlow implementation meters each request once (repeat is a separate cache-warming setting); these metrics are actual per-flow totals, including awaited background work, without manual multiplication. These are declared working budgets, not a measured D1 service limit.
 
 | Size | Explicit fixture rows | Rows including native/derived tables before flows | Generation | All measured phases |
 |---|---:|---:|---:|---:|
@@ -87,7 +87,7 @@ Inspect the full uncropped result and exact SQL/parameters in ordinary-size.json
 
 The new size job adds one dependency install/artifact download and zero Worker builds. Nightly runs reuse Verify’s single existing build and retain the existing eight test shards. Query/migration selection includes src/, modules/, migrations/, fixture/declaration/workflow and package/lock changes; an unavailable before-commit conservatively runs the gate. The dedicated CI job records elapsed seconds and exit status in its job summary even on failure.
 
-The full disposable small+large run measured 91.832 seconds of phases in this VM (29.931s small, 61.901s large); 5.612s was fixture generation. This is a local measurement, not a GitHub-hosted overhead receipt. rer 0.2.115 also runs the declared size check at the end of the existing runtime rer verify; that existing public verifier must be retained. Until native owner declaration support is supplied, both size entry points refuse before measuring. Actual CI jobs/timings are added to RECEIPT.json when available. No claim of ≤10-minute Verify or green CI is made.
+The full disposable small+large run measured 91.832 seconds of phases in this VM (29.931s small, 61.901s large); 5.612s was fixture generation. This is a local measurement, not a GitHub-hosted overhead receipt. rer 0.2.115 also runs the declared size check at the end of the existing runtime rer verify; that existing public verifier must be retained. Until native owner declaration support is supplied, both size entry points refuse before measuring. Actual CI jobs/timings are recorded in CI-RECEIPT.json and RECEIPT.json. No claim of ≤10-minute Verify or green CI is made.
 
 ## Before/after and handoff
 
@@ -95,7 +95,7 @@ Contract: 244 clauses both before and after, statuses unchanged (60 done /129 pa
 
 Builder blockers: (1) publish/adopt native owner + public-host verification support through the existing supported rer declaration path; (2) scope fixes for the measured ordinary flow growth and diagnose native snapshot/scheduled preparation at this geometry. Do not self-land this draft. The Mac lander still owns the complete publication scan and all landing gates; this shallow cloud builder did not claim a full-history publication scan.
 
-Single external provider handoff after the local support/query fixes: Strategy’s existing separately credentialed real-D1 statement runner must consume the emitted ordinary statement artifacts and matching fixture declaration, seed disposable synthetic data, and confirm execution/row-budget behavior on real D1. No real-D1 confirmation, production contact, private dataset, deployment, credential acquisition or new resource creation occurred here. Exact artifact identities are in STATEMENTS.json; packet receipts are separate from product acceptance.
+Single external provider handoff after the local support/query fixes: Strategy’s existing separately credentialed real-D1 statement runner must consume the emitted ordinary statement artifacts and matching fixture declaration, seed disposable synthetic data, and confirm those statements against real D1’s structural limits. Local row-read measurements and hosted capacity remain distinct evidence. No real-D1 confirmation, production contact, private dataset, deployment, credential acquisition or new resource creation occurred here. Exact artifact identities are in STATEMENTS.json; packet receipts are separate from product acceptance.
 
 ## Emitted statement identities
 
@@ -103,3 +103,26 @@ Single external provider handoff after the local support/query fixes: Strategy�
 - `ordinary-statements/large.json`: SHA-256 `00edd1e2ce10bb7fd7bbad4e76540c456446545e9e286424a825372bb2752a39`; 381 executions, 123 distinct SQL texts.
 - `negative-statements/small.json`: SHA-256 `09b2149d9ec177d1155cb8a4f19766faa2ffe9801985b5786265bbf81855c94f`; 1 executions, 1 distinct SQL texts.
 - `negative-statements/large.json`: SHA-256 `98e259095277cfd25fa06c2dad70c6b1c13f47446a98125a713b5ba1ed866275`; 1 executions, 1 distinct SQL texts.
+
+## Exact-SHA CI conclusion
+
+Verify run [43530416554](https://github.com/just-every/run-lamp/actions/runs/43530416554) completed **failure** on exact candidate `865854019e82c8ed9530d30aeedbfa76f8a0df9e`. Shared build and seven test shards succeeded. The runtime shard’s existing product journeys passed, then the new public size step refused the missing native owner declaration; its retained failed-job log prints the exact size_owner_missing message. The dedicated size job exited 1 at the same measurement entry point; its JSON output is retained by CI as lamp-size-43530416554-865854019e82c8ed9530d30aeedbfa76f8a0df9e. The final aggregate correctly refused SIZE_RESULT=failure and SHARDS_RESULT=failure. All three failed-job archives were read exactly once with the requested gh run view --job --log-failed command; every archive call succeeded. Total GitHub command budget: 10/10; no rerun or workflow dispatch.
+
+Measured CI cost on this failed qualification: added size job **26s** end-to-end, of which the measurement/refusal step was **3s**; **zero additional Worker builds**. This measures the refusal path, not successful small/large fixtures in GitHub Actions. The entire Verify job span was 1016s (16.93min), with 68.12 summed job-minutes. The existing composer shard was the longest; the size job ended before the test shards. Nightly wiring retains the entire existing Verify wall, so daily total cost includes that wall as well as this size job. The ≤10-minute Verify goal is not qualified by this candidate.
+
+| Job | Conclusion | Seconds |
+|---|---|---:|
+| plan (132246414628) | success | 9 |
+| build (132246486592) | success | 57 |
+| size-check (132246853145) | failure | 26 |
+| shards (imports) (132246853314) | success | 476 |
+| shards (demo) (132246853327) | success | 360 |
+| shards (public) (132246853329) | success | 569 |
+| shards (delivery) (132246853345) | success | 657 |
+| shards (runtime) (132246853351) | failure | 450 |
+| shards (ownership) (132246853380) | success | 288 |
+| shards (portability) (132246853389) | success | 252 |
+| shards (composer) (132246853400) | success | 935 |
+| verify (132252901844) | failure | 8 |
+
+Do not land this draft or describe it as READY. Product code was not changed to conceal the native-declaration or ordinary-flow failures.
