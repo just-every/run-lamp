@@ -205,12 +205,14 @@ export function createPublicSnapshotService(
         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
         return { version, rendered, bundle, logo, logoContentType };
       }
-      let prepared: Awaited<ReturnType<typeof prepare>> | null = null;
+      // Source/renderer failures need a later revision or repair. Retrying
+      // them immediately reloads the same history three times. Only delivery
+      // to storage/replica/pointer is retried with the prepared bytes below.
+      const prepared = await prepare();
       while (attempts < 3) {
         attempts += 1;
         try {
         // Retry storage/replica/pointer delivery with identical generation bytes.
-        prepared ??= await prepare();
         const { version, rendered, bundle, logo, logoContentType } = prepared;
         await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
           ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)

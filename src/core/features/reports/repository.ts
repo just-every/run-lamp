@@ -21,7 +21,7 @@ export interface ReportRepository {
   upsert(input: IncidentReportRow): Promise<void>;
   publish(incidentId: string, report: IncidentReportRow, publishedAt: string, operatorId: string, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
   listComponentIds(incidentId: string): Promise<string[]>;
-  listResolvedWithoutPublishedReport(): Promise<Array<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>>;
+  listResolvedWithoutPublishedReport(reminders?: { now: string; defaultPolicy: boolean }): Promise<Array<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>>;
   waiver(incidentId: string): Promise<{ reason: string; operatorId: string; createdAt: string } | null>;
   waive(incidentId: string, reason: string, operatorId: string, at: string): Promise<boolean>;
   reminderSent(incidentId: string, week: number): Promise<boolean>;
@@ -96,11 +96,13 @@ export function createReportRepository(binding: D1Database): ReportRepository {
     async reminderSent(incidentId, week) { return Boolean(await binding.prepare("SELECT 1 FROM report_reminders WHERE incident_id=? AND week=?").bind(incidentId,week).first()); },
     async recordReminder(incidentId, week, at) { await binding.prepare("INSERT OR IGNORE INTO report_reminders(incident_id,week,recorded_at) VALUES(?,?,?)").bind(incidentId,week,at).run(); },
     async listComponentIds(incidentId) { return (await binding.prepare(`SELECT component_id AS componentId FROM incident_components WHERE incident_id = ? AND component_id IS NOT NULL`).bind(incidentId).all<{ componentId: string }>()).results.map((row) => row.componentId); },
-    async listResolvedWithoutPublishedReport() {
+    async listResolvedWithoutPublishedReport(reminders) {
+      const due = reminders?.defaultPolicy ? " AND incidents.peak_impact IN ('Partially unavailable','Major outage') AND incidents.resolved_at <= ?" : "";
+      const eligible = reminders ? ` AND ${reportReminderEligibleSql("incidents")}` : "";
       const result = await binding.prepare(`SELECT incidents.id, incidents.reference, incidents.title, incidents.lifecycle, incidents.resolved_at AS resolvedAt, incidents.peak_impact AS impact,
         ${reportReminderEligibleSql("incidents")} AS reminderEligible
         FROM incidents LEFT JOIN incident_reports ON incident_reports.incident_id = incidents.id AND incident_reports.published_at IS NOT NULL
-        WHERE incidents.lifecycle = 'Resolved' AND incidents.deleted_at IS NULL AND incident_reports.id IS NULL AND NOT EXISTS(SELECT 1 FROM report_waivers WHERE incident_id=incidents.id)`).all<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>();
+        WHERE incidents.lifecycle = 'Resolved' AND incidents.deleted_at IS NULL AND incident_reports.id IS NULL AND NOT EXISTS(SELECT 1 FROM report_waivers WHERE incident_id=incidents.id)${due}${eligible}`).bind(...(reminders?.defaultPolicy ? [new Date(Date.parse(reminders.now) - 7 * 24 * 60 * 60_000).toISOString()] : [])).all<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>();
       return result.results;
     },
   };
