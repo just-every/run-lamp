@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.16
+
+**First-run setup keeps your saved time zone.** Reading your website and confirming setup preserve a valid saved zone. An invalid saved zone falls back to the browser's zone, or UTC if neither is valid. Page-settings saves also record the operator and the previous and new time zones in the audit log.
+
+- **Incident lists load one page at a time.** Active and resolved incidents have separate Previous and Next controls, 50 incidents per page and totals for each list. Imports and backups still include complete incident update histories.
+- **The subscriber directory reads the page you are viewing.** Its oldest-first order remains stable when subscribers share a join time. Component reads also avoid loading unrelated history, and reading components no longer starts pending notification work.
+- **Website and status-feed reading handle malformed markup more reliably.** Website icon detection processes leading SVG comments without repeatedly revisiting them, and feed text removes nested markup before displaying it as plain text.
+- **The build uses Vite 8.2.4.** The checkout keeps rer 0.2.108.
+
+Upgrading from 1.11.15: back up data and your source changes first, update the checkout to `v1.11.16`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies two migrations in order: `0079_subscriber_directory_order.sql` adds the subscriber directory order index; `0080_incident_list_paging.sql` adds incident-list indexes and backfills lifecycle totals maintained by database triggers. The migrations retain existing subscriber and incident records and incident update history. Keep the backup before deployment and check your installation's workflows after updating. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.15
 
 **Public subscription choices now match the channels your Lamp can send through.** Email remains available, and SMS, Slack and Teams appear when configured. The Teams form links to instructions for creating a Workflows webhook before asking for its URL, and channel result pages offer a way back to subscriptions.
