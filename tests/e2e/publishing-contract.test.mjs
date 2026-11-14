@@ -556,6 +556,47 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.deepEqual(await publications(), beforePublications, 'refusal adds no publication and changes no earlier publication');
     assert.deepEqual(await Promise.all(publicPaths.map(path => j.publicText(path))), beforePublic, 'refusal leaves every checked public surface unchanged');
     for (const body of beforePublic) assert.ok(!body.includes(unclaimed.title));
+
+    // Browse a tied-time archive through the operator door, retaining every
+    // record and its complete child history on the selected page/detail.
+    const countBefore = (await j.json('/api/app/incidents')).total;
+    const tiedAt = new Date(Date.now() + 60_000).toISOString();
+    const paged = [];
+    for (let index = 0; index < 53; index++) paged.push(await j.incident(`synthetic-lamp-page-${index}`, [component], { openedAt: tiedAt }));
+    const orderedIds = paged.map(row => row.id).sort().reverse();
+    const firstPage = await j.json('/api/app/incidents?limit=7');
+    assert.equal(firstPage.total, countBefore + paged.length);
+    assert.equal(firstPage.limit, 7);
+    assert.deepEqual(firstPage.incidents.map(row => row.id), orderedIds.slice(0, 7));
+    const collected = [];
+    let cursor;
+    do {
+      const page = await j.json(`/api/app/incidents?limit=7${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
+      collected.push(...page.incidents);
+      cursor = page.nextCursor;
+    } while (cursor);
+    assert.equal(collected.length, firstPage.total);
+    assert.equal(new Set(collected.map(row => row.id)).size, firstPage.total, 'no incident is repeated or lost across tied-time pages');
+    assert.deepEqual(collected.slice(0, paged.length).map(row => row.id), orderedIds);
+    const fullDetail = await j.read(retained.id);
+    assert.deepEqual(collected.find(row => row.id === retained.id), fullDetail, 'list page retains the full updates, components, notes, draft, ownership and due state');
+    const expectedCounts = (await j.db.prepare("SELECT lifecycle,count(*) AS total FROM incidents WHERE deleted_at IS NULL GROUP BY lifecycle").all()).results;
+    for (const row of expectedCounts) {
+      const filtered = await j.json(`/api/app/incidents?lifecycle=${row.lifecycle}&limit=3`);
+      assert.equal(filtered.total, row.total);
+      assert.ok(filtered.incidents.every(incident => incident.lifecycle === row.lifecycle));
+    }
+    const activePage = await j.json('/api/app/incidents?group=active&limit=3');
+    const resolvedPage = await j.json('/api/app/incidents?group=resolved&limit=3');
+    assert.equal(activePage.total + resolvedPage.total, firstPage.total);
+    assert.ok(activePage.incidents.every(row => row.lifecycle !== 'Resolved'));
+    assert.ok(resolvedPage.incidents.every(row => row.lifecycle === 'Resolved'));
+    const removedPageIncident = paged[0];
+    await j.json(`/api/app/incidents/${removedPageIncident.id}`, 'DELETE', { reason: 'synthetic-lamp-page-cleanup' });
+    const afterDelete = await j.json('/api/app/incidents?group=active&limit=3');
+    assert.equal(afterDelete.total, activePage.total - 1, 'deletion updates the full visible count immediately');
+    for (const query of ['limit=0', 'limit=101', 'limit=1.5', 'cursor=broken', 'group=unknown', 'group=active&lifecycle=Resolved']) await j.json(`/api/app/incidents?${query}`, 'GET', undefined, 400);
+
   } finally { await j.close(); }
   await reportPublicationFlow();
 });

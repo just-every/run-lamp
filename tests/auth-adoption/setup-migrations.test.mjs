@@ -48,11 +48,12 @@ test('Setup fails naming the missing migrations when the apply comes up short, t
     assert.notEqual(short.code, 0, short.output);
     assert.doesNotMatch(short.output, /migrations and page settings are initialized/);
     assert.match(short.output, new RegExp(`${cut} of ${shipped.length} migrations are applied`));
-    assert.match(short.output, /\(0061-0078\)/);
+    const missingRange = `${shipped[cut].slice(0, 4)}-${shipped.at(-1).slice(0, 4)}`;
+    assert.ok(short.output.includes(`(${missingRange})`), 'the reported range follows the actual migration inventory');
     for (const name of shipped.slice(cut)) assert.ok(short.output.includes(name), `names ${name}`);
     assert.equal(short.ledger.applied.length, cut);
     assert.deepEqual(short.ledger.executed, [], 'page settings are not written onto a half-migrated database');
-    t.diagnostic(`PROBE: apply short -> setup fails naming 0061-0078 (exit ${short.code})`);
+    t.diagnostic(`PROBE: apply short -> setup fails naming ${missingRange} (exit ${short.code})`);
 
     const complete = await setup(directory, edge, credentials);
     assert.equal(complete.code, 0, complete.output);
