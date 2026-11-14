@@ -1,3 +1,5 @@
+import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
+import { createUlid } from "../../shared/ids";
 import { createDependencyRepository } from "../dependencies/repository";
 import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
 import { createMetricsRepository } from "../metrics/repository";
@@ -6,7 +8,7 @@ import { readImportedNamespaces, readImportedPublicRecords } from "../statuspage
 import type { ImportedPublicRecord } from "../statuspage-import/public-addresses";
 import { loadPublicApiIds } from "./api-identity-repository";
 import { createWebsiteRepository } from "../website/repository";
-import { and, asc, desc, eq, isNull, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, isNull, ne, or, sql } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
 import {
@@ -26,6 +28,7 @@ import {
 
 export interface SnapshotRepository {
   load(): Promise<PublicSnapshotSource | null>;
+  loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null>;
   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
   latestBuild(): Promise<typeof snapshotBuilds.$inferSelect | null>;
@@ -40,6 +43,8 @@ export interface SnapshotRepository {
 }
 
 export interface PublicSnapshotSource {
+  archive?: import("./archive").ArchivePage;
+  bounded?: boolean;
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
   smsEnabled?: boolean;
   slackEnabled?: boolean;
@@ -92,7 +97,27 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
     async load() {
       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
       if (!settings) return null;
+      // Settings restored or inserted after the feed-identity migration can
+      // still have its placeholder default. Persist one identity before rendering;
+      // competing builders must use the same winner, including on retries.
+      if (!settings.feedId || settings.feedId === "pending-feed-identity") {
+        await binding.prepare("UPDATE page_settings SET feed_id = ? WHERE id = 'default' AND feed_id IN ('', 'pending-feed-identity')").bind(createUlid()).run();
+        const identity = await binding.prepare("SELECT feed_id AS feedId FROM page_settings WHERE id = 'default'").first<{ feedId: string }>();
+        if (!identity?.feedId || identity.feedId === "pending-feed-identity") throw new Error("Public feed identity could not be persisted.");
+        settings.feedId = identity.feedId;
+      }
 
+      // The retained generation contains current work plus a recent window.
+      // Older records use indexed, bounded archive pages; no records are removed.
+      // Apply the archive's public membership before the limit: private rows
+      // cannot consume a slot and suppress the Older history continuation.
+      const recentIncidentQuery = `SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
+        UNION SELECT id FROM (SELECT i.id FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle = 'Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident} ORDER BY i.resolved_at DESC, i.id DESC LIMIT 50)`;
+      const recentMaintenanceQuery = `SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
+        UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
+      const recentIncidents = sql.raw(`(${recentIncidentQuery})`);
+      const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
+      const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
       const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
         database
           .select({
@@ -104,10 +129,10 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
             uptimeStartDate: components.uptimeStartDate,
             note: components.note,
             groupId: components.groupId,
-            groupName: componentGroups.name,
-            groupOrder: componentGroups.displayOrder,
-            groupCreatedAt: componentGroups.createdAt,
-            groupUpdatedAt: componentGroups.updatedAt,
+            groupName: sql<string | null>`${componentGroups.name}`.as("group_name"),
+            groupOrder: sql<number | null>`${componentGroups.displayOrder}`.as("group_order"),
+            groupCreatedAt: sql<string | null>`${componentGroups.createdAt}`.as("group_created_at"),
+            groupUpdatedAt: sql<string | null>`${componentGroups.updatedAt}`.as("group_updated_at"),
             displayOrder: components.displayOrder,
             createdAt: components.createdAt,
             updatedAt: components.updatedAt,
@@ -122,7 +147,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .select({ componentId: incidentComponents.componentId, state: incidentComponents.state })
           .from(incidentComponents)
           .innerJoin(incidents, eq(incidentComponents.incidentId, incidents.id))
-          .where(and(isNull(incidents.deletedAt), ne(incidents.lifecycle, "Resolved"), sql`incident_components.published_at IS NOT NULL`))
+          .where(and(inArray(incidentComponents.incidentId, sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved')`), sql`incident_components.published_at IS NOT NULL`))
           .all(),
         database
           .select({ componentId: maintenanceComponents.componentId, state: maintenanceComponents.state })
@@ -130,37 +155,40 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .innerJoin(maintenance, eq(maintenanceComponents.maintenanceId, maintenance.id))
           .where(eq(maintenance.state, "In progress"))
           .all(),
-        database.select().from(componentStateHistory).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
-        database.select().from(componentStateCorrections).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
-        database.select().from(incidents).where(isNull(incidents.deletedAt)).orderBy(desc(incidents.openedAt)).all(),
+        // Correction audit rows are not observations; computeUptime reads the
+        // independently stored correction intervals instead.
+        database.select().from(componentStateHistory).where(and(ne(componentStateHistory.causeType, "correction"), sql`(${componentStateHistory.changedAt} >= ${cutoff} OR ${componentStateHistory.id} IN
+          (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' AND h.changed_at < ${cutoff} ORDER BY h.changed_at DESC,h.created_at DESC,h.id DESC LIMIT 1) FROM components c WHERE c.internal=0)
+          OR ${componentStateHistory.id} IN (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' ORDER BY h.changed_at,h.created_at,h.id LIMIT 1) FROM components c WHERE c.internal=0))`)).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
+        database.select().from(componentStateCorrections).where(sql`${componentStateCorrections.endsAt} >= ${cutoff}`).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
+        database.select().from(incidents).where(inArray(incidents.id, recentIncidents)).orderBy(desc(incidents.openedAt)).all(),
         database
-          .select()
+          .select(getTableColumns(incidentComponents))
           .from(incidentComponents)
           .leftJoin(components, eq(incidentComponents.componentId, components.id))
-          .where(and(sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
-          .all()
-          .then((rows) => rows.map((row) => row.incident_components)),
-        database.select().from(incidentUpdates).orderBy(desc(incidentUpdates.publishedAt)).all(),
-        database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all(),
+          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
+          .all(),
+        database.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, recentIncidents)).orderBy(desc(incidentUpdates.publishedAt)).all(),
+        database.select().from(maintenance).where(inArray(maintenance.id, recentMaintenance)).orderBy(asc(maintenance.startsAt)).all(),
         database
-          .select()
+          .select(getTableColumns(maintenanceComponents))
           .from(maintenanceComponents)
           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
-          .where(or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false)))
-          .all()
-          .then((rows) => rows.map((row) => row.maintenance_components)),
-        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
-        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
+          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
+          .all(),
+        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (${recentIncidentQuery}) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
+        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
         readImportedPublicRecords(binding),
         readImportedNamespaces(binding),
-        binding.prepare("SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates ORDER BY published_at DESC,id").all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
+        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
         loadPublicApiIds(binding),
-        binding.prepare("SELECT id,peak_impact AS impact FROM incidents WHERE deleted_at IS NULL").all<{ id: string; impact: typeof componentStandingClaims.$inferSelect.state | null }>().then(result => result.results),
+        database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
       ]);
 
       const website = await createWebsiteRepository(binding).get();
       const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
       return {
+        bounded: true,
         websiteUrl: website?.url ?? null,
         smsEnabled,
         slackEnabled: chat.slack,
@@ -185,6 +213,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         maintenanceNotices, importedMaintenanceUpdates, metrics: await createMetricsRepository(binding).publicSeries(),
       };
     },
+    loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, context, key, generatedAt),
     async startBuild(input) {
       await database.insert(snapshotBuilds).values(input);
     },

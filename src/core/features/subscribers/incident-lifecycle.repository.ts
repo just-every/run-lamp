@@ -3,7 +3,8 @@
 export function finishIncidentSubscriptionStatements(db: D1Database, now: string): D1PreparedStatement[] {
   return [
     db.prepare(`UPDATE subscribers SET state='deactivated',deactivation_reason='incident-follow-ended',deactivated_at=?,updated_at=?
-      WHERE state IN ('pending','active') AND id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)`).bind(now,now),
+      WHERE rowid IN (SELECT s.rowid FROM incident_subscriptions ended CROSS JOIN subscribers s
+        WHERE ended.ended_at IS NOT NULL AND s.id=ended.subscriber_id AND s.state IN ('pending','active'))`).bind(now,now),
     db.prepare(`UPDATE subscriber_tokens SET revoked_at=?,updated_at=? WHERE revoked_at IS NULL
       AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)`).bind(now,now),
     db.prepare(`UPDATE notification_deliveries SET outcome='suppressed',outcome_at=?,updated_at=? WHERE outcome='queued'

@@ -75,6 +75,9 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       updates: [{ id: 'outage-update', incidentId: 'incident', lifecycle: 'Identified', affectedAudience: 'API customers', customerImpact: 'Major outage affects customer requests.', whatStillWorks: 'Status information remains available.', details: 'The operator is restoring service.', nextUpdateAt: new Date(Date.parse(publishedAt) + 3600000).toISOString(), publishedAt }],
       maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [],
     };
+    // Repeated component resources make the full footer travel through the
+    // retained representation as well as each ordinary stored document.
+    for (let number = 2; number <= 6; number++) source.components.push({ id: `synthetic-lamp-retained-${number}`, name: `Synthetic retained service ${number}`, groupName: null, groupOrder: null, displayOrder: number, note: "" });
     // Seed populated, nonconsecutive archive months before the real rebuild.
     // Public reads below use a repository that throws on any access.
     const archived = [
@@ -180,6 +183,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       assert.ok(response.headers.get('x-lamp-snapshot-generated-at'));
       const text = await response.text();
       assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
+      if (path === '/') for (const component of source.components) assert.ok(text.includes(`/components/${component.id}/feed.atom`), 'storage failure preserves every component resource in the shared footer');
       // Badge protocols retain their consumer schema; every surface carries
       // the stale/generated-at HTTP headers checked above. Human and status
       // representations also expose staleness in their body.

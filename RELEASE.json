@@ -20,6 +20,10 @@
     {
       "id": "0080_incident_list_paging.sql",
       "buyerSteps": "Keep the pre-upgrade data and source backup. The same rer deploy applies this migration after 0079 before starting the updated Worker. Adds incident-list seek indexes and backfills lifecycle totals maintained by database triggers; incident records and complete update history are retained. No new account or credential is required."
+    },
+    {
+      "id": "0081_scheduled_work_indexes.sql",
+      "buyerSteps": "Apply the normal migrations to index due work and public history; existing records are retained."
     }
   ],
   "breaking": false,
