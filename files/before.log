@@ -1,0 +1,76 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PUBLIC_SELECTION records=49 unique=49 expected=50 pages=1 private_disclosures=0
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+AssertionError [ERR_ASSERTION]: all 50 public records remain reachable past the internal-only record
++ actual - expected
+... Skipped lines
+
+  [
+    '/incidents/INC-9500',
+    '/incidents/INC-9502',
+    '/incidents/INC-9503',
+    '/incidents/INC-9504',
+...
+    '/incidents/INC-9549',
+-   '/incidents/INC-9550'
+  ]
+
+    at Module.publicHistorySelectionFlow (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1/run-lamp/tests/e2e/helpers/public-history-selection-flow.mjs:70:12) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    '/incidents/INC-9500', '/incidents/INC-9502',
+    '/incidents/INC-9503', '/incidents/INC-9504',
+    '/incidents/INC-9505', '/incidents/INC-9506',
+    '/incidents/INC-9507', '/incidents/INC-9508',
+    '/incidents/INC-9509', '/incidents/INC-9510',
+    '/incidents/INC-9511', '/incidents/INC-9512',
+    '/incidents/INC-9513', '/incidents/INC-9514',
+    '/incidents/INC-9515', '/incidents/INC-9516',
+    '/incidents/INC-9517', '/incidents/INC-9518',
+    '/incidents/INC-9519', '/incidents/INC-9520',
+    '/incidents/INC-9521', '/incidents/INC-9522',
+    '/incidents/INC-9523', '/incidents/INC-9524',
+    '/incidents/INC-9525', '/incidents/INC-9526',
+    '/incidents/INC-9527', '/incidents/INC-9528',
+    '/incidents/INC-9529', '/incidents/INC-9530',
+    '/incidents/INC-9531', '/incidents/INC-9532',
+    '/incidents/INC-9533', '/incidents/INC-9534',
+    '/incidents/INC-9535', '/incidents/INC-9536',
+    '/incidents/INC-9537', '/incidents/INC-9538',
+    '/incidents/INC-9539', '/incidents/INC-9540',
+    '/incidents/INC-9541', '/incidents/INC-9542',
+    '/incidents/INC-9543', '/incidents/INC-9544',
+    '/incidents/INC-9545', '/incidents/INC-9546',
+    '/incidents/INC-9547', '/incidents/INC-9548',
+    '/incidents/INC-9549'
+  ],
+  expected: [
+    '/incidents/INC-9500', '/incidents/INC-9502', '/incidents/INC-9503',
+    '/incidents/INC-9504', '/incidents/INC-9505', '/incidents/INC-9506',
+    '/incidents/INC-9507', '/incidents/INC-9508', '/incidents/INC-9509',
+    '/incidents/INC-9510', '/incidents/INC-9511', '/incidents/INC-9512',
+    '/incidents/INC-9513', '/incidents/INC-9514', '/incidents/INC-9515',
+    '/incidents/INC-9516', '/incidents/INC-9517', '/incidents/INC-9518',
+    '/incidents/INC-9519', '/incidents/INC-9520', '/incidents/INC-9521',
+    '/incidents/INC-9522', '/incidents/INC-9523', '/incidents/INC-9524',
+    '/incidents/INC-9525', '/incidents/INC-9526', '/incidents/INC-9527',
+    '/incidents/INC-9528', '/incidents/INC-9529', '/incidents/INC-9530',
+    '/incidents/INC-9531', '/incidents/INC-9532', '/incidents/INC-9533',
+    '/incidents/INC-9534', '/incidents/INC-9535', '/incidents/INC-9536',
+    '/incidents/INC-9537', '/incidents/INC-9538', '/incidents/INC-9539',
+    '/incidents/INC-9540', '/incidents/INC-9541', '/incidents/INC-9542',
+    '/incidents/INC-9543', '/incidents/INC-9544', '/incidents/INC-9545',
+    '/incidents/INC-9546', '/incidents/INC-9547', '/incidents/INC-9548',
+    '/incidents/INC-9549', '/incidents/INC-9550'
+  ],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.20.0

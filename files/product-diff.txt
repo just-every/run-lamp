@@ -1,0 +1,188 @@
+diff --git a/RELEASE.json b/RELEASE.json
+index 1d7ca06..777c70e 100644
+--- a/RELEASE.json
++++ b/RELEASE.json
+@@ -6,6 +6,10 @@
+   "contractChanges": {},
+   "extensionPointChanges": [],
+   "migrations": [
++    {
++      "id": "0079_subscriber_directory_order.sql",
++      "buyerSteps": "Apply after 0078 through the ordinary migration runner before starting the updated Worker. Adds the subscriber directory order index; existing subscriber records, consent and delivery history remain unchanged. No account or credential is required."
++    },
+     {
+       "id": "0081_scheduled_work_indexes.sql",
+       "buyerSteps": "Apply the normal migrations to index due work and public history; existing records are retained."
+diff --git a/docs/public-page.md b/docs/public-page.md
+index 3c831ac..15c65cf 100644
+--- a/docs/public-page.md
++++ b/docs/public-page.md
+@@ -38,10 +38,11 @@ Read the [Accessibility Conformance Report (VPAT)](accessibility/vpat.md) for th
+ ## Older history
+ 
+ The retained current snapshot includes current incidents and maintenance, the latest
+-50 completed incidents and maintenance windows, and the last 90 days of component
++50 public completed incidents and maintenance windows, and the last 90 days of component
+ observations with the boundary facts needed for correct uptime. The history page
+ shows up to 50 completed records per page. Use **Older history**, a month link, or
+ an incident's permanent address to reach older records; nothing is deleted.
++Internal-only records do not consume those public history slots.
+ Atom and RSS publish up to 50 recent events with a `rel="next"` link for older
+ entries in their twelve-month window. Component feeds keep their component filter
+ on subsequent pages. Native incident and maintenance JSON collections expose the
+diff --git a/src/core/features/public-snapshot/archive.repository.ts b/src/core/features/public-snapshot/archive.repository.ts
+index e8da312..6e1ece0 100644
+--- a/src/core/features/public-snapshot/archive.repository.ts
++++ b/src/core/features/public-snapshot/archive.repository.ts
+@@ -11,8 +11,8 @@ type RecordKey = { id: string; at: string; kind: "incident" | "maintenance" };
+ type EventKey = { id: string; at: string; recordId: string; kind: "incident-update" | "maintenance-notice" };
+ // Only records with a published public attachment can enter the archive. Keep
+ // detached public names while excluding deleted, private and draft-only rows.
+-const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
+-const publicMaintenance = `EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
++export const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
++export const publicMaintenance = `EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
+ const compare = (a: { at: string; id: string; kind: string }, b: { at: string; id: string; kind: string }) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id) || b.kind.localeCompare(a.kind);
+ function seek(column: string, id: string, kind: string, cursor: ArchiveCursor | null, values: unknown[]) {
+   if (!cursor) return "";
+diff --git a/src/core/features/public-snapshot/repository.ts b/src/core/features/public-snapshot/repository.ts
+index 7720a2f..2920ba1 100644
+--- a/src/core/features/public-snapshot/repository.ts
++++ b/src/core/features/public-snapshot/repository.ts
+@@ -1,4 +1,4 @@
+-import { loadArchiveSource } from "./archive.repository";
++import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
+ import { createUlid } from "../../shared/ids";
+ import { createDependencyRepository } from "../dependencies/repository";
+ import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
+@@ -109,10 +109,14 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+ 
+       // The retained generation contains current work plus a recent window.
+       // Older records use indexed, bounded archive pages; no records are removed.
+-      const recentIncidents = sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
+-        UNION SELECT id FROM (SELECT id FROM incidents INDEXED BY incidents_resolved_public_window WHERE deleted_at IS NULL AND lifecycle = 'Resolved' ORDER BY resolved_at DESC, id DESC LIMIT 50))`;
+-      const recentMaintenance = sql`(SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
+-        UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50))`;
++      // Apply the archive's public membership before the limit: private rows
++      // cannot consume a slot and suppress the Older history continuation.
++      const recentIncidentQuery = `SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
++        UNION SELECT id FROM (SELECT i.id FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle = 'Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident} ORDER BY i.resolved_at DESC, i.id DESC LIMIT 50)`;
++      const recentMaintenanceQuery = `SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
++        UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
++      const recentIncidents = sql.raw(`(${recentIncidentQuery})`);
++      const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
+       const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
+       const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
+         database
+@@ -172,11 +176,11 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
+           .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
+           .all(),
+-        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved' UNION SELECT id FROM (SELECT id FROM incidents INDEXED BY incidents_resolved_public_window WHERE deleted_at IS NULL AND lifecycle='Resolved' ORDER BY resolved_at DESC,id DESC LIMIT 50)) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
+-        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled') UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50)) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
++        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (${recentIncidentQuery}) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
++        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
+         readImportedPublicRecords(binding),
+         readImportedNamespaces(binding),
+-        binding.prepare("SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled') UNION SELECT id FROM (SELECT id FROM maintenance WHERE state IN ('Completed','Cancelled') ORDER BY COALESCE(completed_at,ends_at) DESC,id DESC LIMIT 50)) ORDER BY published_at DESC,id").all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
++        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
+         loadPublicApiIds(binding),
+         database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
+       ]);
+diff --git a/tests/e2e/helpers/public-history-flow.mjs b/tests/e2e/helpers/public-history-flow.mjs
+index cc08277..ec2dac0 100644
+--- a/tests/e2e/helpers/public-history-flow.mjs
++++ b/tests/e2e/helpers/public-history-flow.mjs
+@@ -1,4 +1,5 @@
+ import assert from 'node:assert/strict';
++import { publicHistorySelectionFlow } from './public-history-selection-flow.mjs';
+ import { mkdir } from 'node:fs/promises';
+ import { join } from 'node:path';
+ import { chromium } from 'playwright';
+@@ -6,6 +7,7 @@ import { openStatusJourney } from './status-journey.mjs';
+ import { assertHistoryRecord, historyGroups, historyText, historyLinks } from './history-assertions.mjs';
+ 
+ export async function publicHistoryFlow() {
++  await publicHistorySelectionFlow();
+   const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+   let browser;
+   const clock = async instant => {
+diff --git a/tests/e2e/helpers/public-history-selection-flow.mjs b/tests/e2e/helpers/public-history-selection-flow.mjs
+new file mode 100644
+index 0000000..5c91c48
+--- /dev/null
++++ b/tests/e2e/helpers/public-history-selection-flow.mjs
+@@ -0,0 +1,73 @@
++import assert from 'node:assert/strict';
++import { mkdir } from 'node:fs/promises';
++import { join } from 'node:path';
++import { chromium } from 'playwright';
++import { openStatusJourney } from './status-journey.mjs';
++
++// Seed source history, then follow the actual script-free public documents.
++// An internal-only record inside the newest window must not hide public history.
++export async function publicHistorySelectionFlow() {
++  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
++  let browser;
++  try {
++    const now = Date.parse('2031-04-20T12:00:00.000Z');
++    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) })).status, 204);
++    await j.signIn(undefined, { fresh: true });
++    const publicComponent = await j.component('Synthetic Lamp public history service');
++    const privateComponent = await j.component('Synthetic Lamp private history service', { internal: true });
++    const original = await j.incident('Synthetic Lamp public history template', [publicComponent]);
++    await j.save(original.id, { lifecycle: 'Resolved', nextUpdateAt: null });
++    await j.publish(original.id);
++    const rows = Array.from({ length: 51 }, (_, index) => ({
++      id: `synthetic-selection-${String(index).padStart(3, '0')}`,
++      reference: `INC-${9500 + index}`,
++      title: index === 1 ? 'Synthetic Lamp private history title' : `Synthetic Lamp public history ${index}`,
++      details: index === 1 ? 'Synthetic Lamp private history update' : `Synthetic Lamp public update ${index}`,
++      component: index === 1 ? privateComponent : publicComponent,
++      at: new Date(now - (index + 1) * 60_000).toISOString(),
++      internal: index === 1,
++    }));
++    await j.db.batch(rows.flatMap(row => [
++      j.db.prepare("INSERT INTO incidents(id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at) SELECT ?,?,?,'Resolved',?,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(row.id, row.reference, row.title, row.at, row.at, row.at, row.at, original.id),
++      j.db.prepare("INSERT INTO incident_components(id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES(?,?,?,?,'Major outage','Primary',?,?,?)").bind(`${row.id}-component`, row.id, row.component.id, row.component.name, row.at, row.at, row.at),
++      j.db.prepare("INSERT INTO incident_updates(id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) SELECT ?,?,'Resolved','Synthetic history customers','Synthetic history impact','Read access remains available',?,NULL,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(`${row.id}-update`, row.id, row.details, row.at, row.at, row.at, original.id),
++    ]));
++    // Remove only the source template, leaving exactly the gate's 51 incidents.
++    await j.db.prepare('UPDATE incidents SET deleted_at=? WHERE id=?').bind(new Date(now).toISOString(), original.id).run();
++    const refreshedAt = now + 300_000;
++    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: refreshedAt }) })).status, 204);
++    await j.tick(refreshedAt);
++    await j.visible('/history', rows[0].title);
++    assert.equal((await j.db.prepare("SELECT COUNT(*) AS n FROM incidents WHERE deleted_at IS NULL AND lifecycle='Resolved'").first()).n, 51);
++    assert.equal((await j.db.prepare("SELECT COUNT(*) AS n FROM maintenance WHERE state IN ('Completed','Cancelled')").first()).n, 0);
++
++    browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
++    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
++    const page = await context.newPage();
++    const proof = process.env.LAMP_HISTORY_PROOF_DIRECTORY || './test-results/public-history';
++    await mkdir(proof, { recursive: true });
++    const expected = rows.filter(row => !row.internal).map(row => `/incidents/${row.reference}`).sort();
++    const observed = [], visited = new Set();
++    let next = '/history';
++    while (next) {
++      assert.ok(visited.size < 5 && !visited.has(next), 'Older history links advance without a loop');
++      visited.add(next);
++      assert.equal((await page.goto(new URL(next, j.publicOrigin).href)).status(), 200);
++      observed.push(...await page.locator('article.history-item h3 a').evaluateAll(links => links.map(link => link.getAttribute('href'))));
++      const content = await page.content();
++      for (const privateValue of [rows[1].title, rows[1].details, privateComponent.name, `/incidents/${rows[1].reference}`]) assert.ok(!content.includes(privateValue), 'no private history disclosure');
++      if (visited.size === 1) {
++        await page.screenshot({ path: join(proof, 'public-selection-1440.png'), fullPage: true });
++        await page.setViewportSize({ width: 390, height: 844 });
++        await page.screenshot({ path: join(proof, 'public-selection-390.png'), fullPage: true });
++        await page.setViewportSize({ width: 1440, height: 1000 });
++      }
++      const older = page.getByRole('navigation', { name: 'History pages', exact: true }).getByRole('link', { name: 'Older history', exact: true });
++      next = await older.count() ? await older.getAttribute('href') : null;
++    }
++    console.info(`PUBLIC_SELECTION records=${observed.length} unique=${new Set(observed).size} expected=${expected.length} pages=${visited.size} private_disclosures=0`);
++    assert.equal(new Set(observed).size, observed.length, 'public history records appear exactly once');
++    assert.deepEqual(observed.sort(), expected, 'all 50 public records remain reachable past the internal-only record');
++    assert.equal((await j.publicResponse(`/incidents/${rows[1].reference}`)).status, 404);
++  } finally { await browser?.close(); await j.close(); }
++}

@@ -1,0 +1,7 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "exit": 0,
+  "ok": true,
+  "head": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+  "at": "2026-11-14T09:40:19.331801+00:00"
+}

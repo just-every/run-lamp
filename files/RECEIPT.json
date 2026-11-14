@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-qgrowth-tick-2-fix1",
+  "repository": "just-every/run-lamp",
+  "at": "2026-11-14T09:59:56Z",
+  "branch": "cloud/sd-lamp-qgrowth-tick-2-fix1",
+  "head": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+  "parents": [
+    "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+    "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6"
+  ],
+  "productPush": {
+    "status": "pushed",
+    "attempts": 1,
+    "log": "push.log"
+  },
+  "before": {
+    "reachablePublic": 49,
+    "uniquePublic": 49,
+    "expectedPublic": 50,
+    "privateDisclosures": 0,
+    "pages": 1,
+    "result": "expected assertion failure",
+    "missingPermalink": "/incidents/INC-9550",
+    "log": "before.log"
+  },
+  "after": {
+    "reachablePublic": 50,
+    "uniquePublic": 50,
+    "expectedPublic": 50,
+    "privateDisclosures": 0,
+    "pages": 1,
+    "privatePermalinkHttpStatus": 404,
+    "log": "history-journeys.log"
+  },
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='HIST-001|HIST-008' tests/e2e/public-contract.test.mjs",
+      "exit": 0,
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0,
+      "log": "history-journeys.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "log": "snapshot-retained.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node scripts/validate-release.mjs",
+      "exit": 0,
+      "log": "release-validation.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "receipt": "source-check-receipt.json"
+    },
+    {
+      "command": "assertReleaseMigrationInventory",
+      "exit": 0,
+      "receipt": "migration-inventory.json"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-view-check.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "test-count.log"
+    }
+  ],
+  "registrationCounts": [
+    {
+      "ref": "origin/main",
+      "sha": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+      "registrations": 93,
+      "assertionScripts": 10,
+      "totalChecks": 103
+    },
+    {
+      "ref": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+      "sha": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+      "registrations": 92,
+      "assertionScripts": 10,
+      "totalChecks": 102
+    },
+    {
+      "ref": "HEAD",
+      "sha": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+      "registrations": 93,
+      "assertionScripts": 10,
+      "totalChecks": 103
+    }
+  ],
+  "identity": {
+    "candidateCommitsIncludingSideParents": 7,
+    "authors": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committers": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": "none",
+    "result": "passed"
+  },
+  "publication": {
+    "status": "INCOMPLETE",
+    "complete": false,
+    "reason": "scan.gitleaks-unavailable",
+    "exactHead": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+    "fullHistoryAvailable": true,
+    "publicBase": "https://github.com/just-every/run-lamp#main",
+    "project": "just-every/lamp",
+    "destination": "https://github.com/just-every/run-lamp",
+    "custody": "COMPLETE Mac publication scan pending before landing",
+    "actualReport": "publication-check.json"
+  },
+  "ci": {
+    "runId": 43581570724,
+    "head": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/43581570724",
+    "head_sha": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43581570724"
+  },
+  "clauseJudgmentsChanged": false,
+  "claim": {
+    "clause": "HIST-008",
+    "status": "PARTIAL",
+    "points": [
+      3
+    ]
+  },
+  "independentStageGate": "NOT RUN",
+  "productionAcceptance": "NOT RUN",
+  "outsideUserVisualReview": "owed",
+  "pullRequest": {
+    "head": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+    "html_url": "https://github.com/just-every/run-lamp/pull/376",
+    "number": 376
+  },
+  "terminalStatus": "READY",
+  "githubCalls": 7
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "path": "CONTRACT.md",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "8b575f27ee607ce3f259e3ec0d733febbf5536d9906cb99a0d9a2ede09c5096f"
+  },
+  {
+    "path": "ACCEPTANCE.md",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "51c66053f34d3f803ab56d6e9f92c72d5fe22692a370b26629fb3cafeb92a766"
+  },
+  {
+    "path": "docs/CLAIMS.md",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "81012202cbbe77ad65bc06cd01af763a8d34d20cc421071e7ec4e66ba43f21db"
+  },
+  {
+    "path": "package.json",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "fc2df4927ebc0309b9b96f0f8ce4b8431a4a8a666257f9c8e31ab2aae6dbb032"
+  },
+  {
+    "path": "pnpm-lock.yaml",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "99813c33ebc360da095fbdebac562b6d74121b027f0a01b46010fd58da05cb0a"
+  },
+  {
+    "path": "tests/auth-adoption/setup-migrations.test.mjs",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "495851ce96f75ab86139cc87185a4757c8256cb5fd0e4e20a0dd33eadec6e915"
+  },
+  {
+    "path": "migrations/core/0079_subscriber_directory_order.sql",
+    "reference": "origin/main",
+    "identical": true,
+    "sha256": "c17148f4bb9b6e47cc154948715141d10126c9b8ec7c1fcef56ddd7d103b3e92"
+  },
+  {
+    "path": "migrations/core/0081_scheduled_work_indexes.sql",
+    "reference": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+    "identical": true,
+    "sha256": "a51347b460ea983e43bf8ec5626dd16c99abe1e91c3e4b0a5d8ca5151bb18140"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "check": "assertReleaseMigrationInventory",
+  "result": "passed",
+  "files": 79,
+  "subscriber0079": true,
+  "tick0081": true,
+  "incident0080Reserved": true
+}

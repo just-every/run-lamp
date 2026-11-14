@@ -1,0 +1,23 @@
+[
+  {
+    "ref": "origin/main",
+    "sha": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+    "registrations": 93,
+    "assertionScripts": 10,
+    "totalChecks": 103
+  },
+  {
+    "ref": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+    "sha": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+    "registrations": 92,
+    "assertionScripts": 10,
+    "totalChecks": 102
+  },
+  {
+    "ref": "HEAD",
+    "sha": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+    "registrations": 93,
+    "assertionScripts": 10,
+    "totalChecks": 103
+  }
+]

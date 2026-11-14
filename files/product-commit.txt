@@ -1,0 +1,8 @@
+8bc4c80dfa69b4371c2d913f87227570df2007ed
+bef5115afc3972d78962fbb899a2a32433f5f3a6 9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+Preserve public history across private records and merge current main
+
+Continue frozen tick candidate 9fec60c with main subscriber migration 0079 and its metadata. Reuse archive membership before bounded recent-history selection so private records cannot consume a public slot. Retain additive tick migration 0081 and extend the existing native-history journey without another registration.
+

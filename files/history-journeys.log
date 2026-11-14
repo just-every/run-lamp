@@ -1,0 +1,28 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+# PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+# PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+# PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+# Subtest: HIST-008 — reviewed imported history stays completely browsable without scripts
+ok 1 - HIST-008 — reviewed imported history stays completely browsable without scripts
+  ---
+  duration_ms: 12244.389762
+  type: 'test'
+  ...
+# PUBLIC_SELECTION records=50 unique=50 expected=50 pages=1 private_disclosures=0
+# Subtest: HIST-001 — completed native records retain their month, window, components and complete publication inventory
+ok 2 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+  ---
+  duration_ms: 22079.714289
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 36211.986326
