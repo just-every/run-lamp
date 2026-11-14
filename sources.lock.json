@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "b0659846d53caab21456c3d6470b20e09b1ca11abc29f53c03e266f0ac83394c",
+      "sha256": "3444d697985b3480863b76be81ae06c594c41b477464c94b792852a7db20f3a1",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -4372,7 +4372,7 @@
       "executable": false
     },
     "src/core/features/audit-log/repository.ts": {
-      "sha256": "e67a503619790a9dd1e1abbf6df79e3328ad543dab2cb155532fb4c74350785f",
+      "sha256": "2555532af2eed52b54ddb77c6613fb67e44fd84f02605c5a6e1497148075c354",
       "executable": false
     },
     "src/core/features/audit-log/routes.ts": {
@@ -7964,7 +7964,7 @@
       "executable": false
     },
     "tests/e2e/helpers/audit-labels-flow.mjs": {
-      "sha256": "47551ac4abb7015c1d168ab0cd06db84105b5da24c61ef8320da873ae4249705",
+      "sha256": "dd84e01f9db13513437369e9c3292f28441c5c505147965ba53c49a95950a66f",
       "executable": false
     },
     "tests/e2e/helpers/automation-clock-worker.ts": {
@@ -8296,7 +8296,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sms-subscriber-flow.mjs": {
-      "sha256": "d9fbbe29c095246f24aef264e49bb50379a816b57ea70b61f8384ad196a8ca92",
+      "sha256": "bb6914739afe33bc7d5fae476c681dbe25efa3c0b86de140ecc8b4fd53652a89",
       "executable": false
     },
     "tests/e2e/helpers/snapshot-release-rebuild-flow.mjs": {
@@ -8344,7 +8344,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-add-flow.mjs": {
-      "sha256": "45a386a4bed79d7b69d5f45728e96d8fdc04b770c4b3c5c0e3ac71fe176e69e7",
+      "sha256": "d0d05abeaf3da01fa413c615c866eef57dff7c3f8fa72ea1ee924d3572f8ebd6",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-channels-flow.mjs": {
@@ -8516,7 +8516,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "6c9372e1f261e41b91779de1df830d5eb3ae805c87d29a03edc8fe95dbd59ff2",
+      "sha256": "38e3193117bebdafc5a83d49105da3cfcd2fa5d8d88cc4abc3eb71dafcc3cd59",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {

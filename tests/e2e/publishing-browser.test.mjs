@@ -307,7 +307,7 @@ async function assertAssistantDisclosure(id, t) {
 }
 
 test('TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys', { timeout: 180_000 }, async () => {
-  await (await import('./helpers/audit-labels-flow.mjs')).auditLabelsFlow({ page, appUrl, appFetch });
+  await (await import('./helpers/audit-labels-flow.mjs')).auditLabelsFlow({ page, appUrl, pageUrl, appFetch, screens: previewScreens });
 });
 
 test('TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities', { timeout: 300_000 }, async t => {
