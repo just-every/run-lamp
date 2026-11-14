@@ -1,0 +1,4 @@
+MANUAL_PROBE Sydney settings write status=200
+MANUAL_PROBE selected zone=Australia/Sydney
+MANUAL_PROBE public timezone label=Times shown in Australian Eastern Daylight Time (Australia/Sydney)
+BROWSER_PROOF settings/public captured at 1440 and 390; setup captured in existing onboarding journey

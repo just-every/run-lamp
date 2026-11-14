@@ -1,0 +1,232 @@
+{
+  "files": [
+    {
+      "blob": "131f06caa244bf9328f1971853748a0dee8474b1",
+      "bytes": 1302,
+      "path": "PACKET-SCAN.json",
+      "sha256": "1e403a650cbc9c00305dc47e364b9df29c387750d52cd8a6c399af6374acb04e"
+    },
+    {
+      "blob": "4e6b472c00f8cfe8a3e1cd47309e73637b81767d",
+      "bytes": 1591,
+      "path": "PLAN.md",
+      "sha256": "83a79add336d014df0c732a281903a81d8bb20d09cc2d225d2fe4607a550260b"
+    },
+    {
+      "blob": "264711160c0d57e27f172a0652c71bde716f4586",
+      "bytes": 5367,
+      "path": "RECEIPT.json",
+      "sha256": "802b7f2dd29fa3c6e2b722d4827caa1806713629f7da1e8aa1942b53699433de"
+    },
+    {
+      "blob": "13e6b8d6e5714536c2d4f4ff17c0ed44d47cd6de",
+      "bytes": 8007,
+      "path": "REPORT.md",
+      "sha256": "2de070ae1d1767cf228751b3f1b5696b83a04fc87a23a3dad5cb58efc6175e36"
+    },
+    {
+      "blob": "0d271827fa04476fff7569b79e4c58a836b77fcc",
+      "bytes": 1036,
+      "path": "browser-proof-first-attempt.log",
+      "sha256": "82bf46e5e33ac93ea067fd486fec36dbacbebf90fa5aadfe6d439010e947a787"
+    },
+    {
+      "blob": "60aea00f8bf018243989da98c221097a27898862",
+      "bytes": 1080,
+      "path": "browser-proof-fourth-attempt.log",
+      "sha256": "78f9ce6602b7257434208339ff491daa0fda6ac623217906236947d9a112861a"
+    },
+    {
+      "blob": "cf6cc69a3f34f612f60812c303e3572a3264654f",
+      "bytes": 2217,
+      "path": "browser-proof-harness.mjs",
+      "sha256": "3a1c670127e8d9c83a3a30943dd1bb956f808b945253f83039a1ae4b56b4d609"
+    },
+    {
+      "blob": "f29ea9e0403480867f395daced249b18214f9fc5",
+      "bytes": 1032,
+      "path": "browser-proof-second-attempt.log",
+      "sha256": "a911f35cc42dc718311f178a43a34214b33ebbc3f48630abf81b332bda041752"
+    },
+    {
+      "blob": "5612170aa665969d2472d037205fa6b033e23e15",
+      "bytes": 1034,
+      "path": "browser-proof-third-attempt.log",
+      "sha256": "8349538c04dc9cd016c811bf7600101b2d5506c2443f445ab5781791c95e6fe7"
+    },
+    {
+      "blob": "b21f22953ce3d8a3cebd8a003ae2c75ab450fcd6",
+      "bytes": 294,
+      "path": "browser-proof.log",
+      "sha256": "4b625dd2cb3230a11e5bc92324266875a505905311b5d61573544e08c5d85f3e"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "candidate-identity.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "3edfc6e561e6392de1b8b602a03e6701a0914fc7",
+      "bytes": 5437,
+      "path": "ci-build-failed.log",
+      "sha256": "46da17c12cb7951813ee28d69c542c1778e04cc4600f5e972b4a824745c4827c"
+    },
+    {
+      "blob": "2bf5b3ebdd7a2f069990a83ef2d50603c1871c8b",
+      "bytes": 712,
+      "path": "ci-discovery.json",
+      "sha256": "9ccd794cbc0668fcc13f6c0344398100529ce94de3eabbdfc7e1f86735dd7160"
+    },
+    {
+      "blob": "e60c409daa13e9ecb587161b58a07a6b94204a79",
+      "bytes": 2978,
+      "path": "ci-jobs.json",
+      "sha256": "9f5f7b7beac5df99b0f732a9dc9652ddce61be533d5b393917bacd755da99e95"
+    },
+    {
+      "blob": "daa15acbb7466e824f841d2cd069933fda509ae4",
+      "bytes": 2580,
+      "path": "ci-verify-failed.log",
+      "sha256": "59dbfcebd0cf8b8a373e65bdc6881c5cfe6465ab8e62a2010aaa1b14d1260998"
+    },
+    {
+      "blob": "152649986059261a9447c6d5e7b6a110e40fafa7",
+      "bytes": 273,
+      "path": "contract-check-generated.log",
+      "sha256": "d3d89448dc1841bccfe1fd08e242da016b4744ff07106fe5ae0963c628a493af"
+    },
+    {
+      "blob": "18250a52448056d34a4d9d6c8a18363ca4159213",
+      "bytes": 358,
+      "path": "contract-check-restored.log",
+      "sha256": "689868c64e18e72ecbe6eeed0bf9405d013d3e2b491fd262302d50ccaada25c5"
+    },
+    {
+      "blob": "d4d1e60ea7fdc565c576421664992b40e47a816e",
+      "bytes": 28,
+      "path": "contract-generate.log",
+      "sha256": "df91012bf66fb476e9cd1a30c002829398beb55f869e07cc7be477197fa5a276"
+    },
+    {
+      "blob": "40cc8b6489369b82fd1672e881d0eb7443ed51e1",
+      "bytes": 2941,
+      "path": "manual-browser-proof.mjs",
+      "sha256": "bab8ea10ece6c8554e8f48937810ccda5c321e5077e13b74f972a521cf633ef3"
+    },
+    {
+      "blob": "fe51488c7066f6687ef680d6bfaa4f7768ef205c",
+      "bytes": 3,
+      "path": "pr-discovery.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "blob": "de5ab1dcc6489875733326e0faac70a5773c5f30",
+      "bytes": 191,
+      "path": "pr.json",
+      "sha256": "584b707990359be3ba63bcf609fd12aee10f770b68ffe9e3d51107cee8952dcc"
+    },
+    {
+      "blob": "073b01a256ba8ec96a113d5a6bfd861e2e5e56fb",
+      "bytes": 17363,
+      "path": "product-diff.patch",
+      "sha256": "4c0c5006bc47e0fa9668af827567e7b099c3cec4c5b467b4ecd775e6242799a4"
+    },
+    {
+      "blob": "dc536da71829eeb1d8cd79e6278e8f3f46dfb3d7",
+      "bytes": 714,
+      "path": "product-provenance.json",
+      "sha256": "ce2cdeb3394526336814a9a0af37bcaeba7489ead3f8a793467e3ae31557622e"
+    },
+    {
+      "blob": "1ded9976aea8ab9c8e9ca67576a810722d14ff60",
+      "bytes": 938,
+      "path": "product-push.log",
+      "sha256": "ba8c060eb406d78cbebc0fa44e5891a5c6b2ca0b4ca40ce9a56e2b9af8170691"
+    },
+    {
+      "blob": "7bda562f7ffd401860a325dcca1416de55aef9ef",
+      "bytes": 167308,
+      "path": "public-1440.png",
+      "sha256": "0c2ed16ea0442bd1e889fa5c2df233dbd02a9357264017236a14d9ba692fddd0"
+    },
+    {
+      "blob": "fed4611e4b879e2ebca9ba42a09bd956136b7564",
+      "bytes": 91143,
+      "path": "public-390.png",
+      "sha256": "e74cfe5d55a16b482e813a784c29ddfc4d63f947bdde8b0be8f33b6b42629c47"
+    },
+    {
+      "blob": "15bf2c5005aed05dca26c28b490c0beaf7f24f7a",
+      "bytes": 638,
+      "path": "release-entry.json",
+      "sha256": "be9cf3fb9ceba2c72232f20da149dc106a0666cc25bafdfc67a0d24f6173f5aa"
+    },
+    {
+      "blob": "c9de6209edd5045b21a38662523903ae2e09e2a0",
+      "bytes": 693,
+      "path": "remote-release-check.txt",
+      "sha256": "45d385b60d195177368a0bafa6fb3270c91c9d81f86a86b90d75a5867b5f8477"
+    },
+    {
+      "blob": "a8f37789e92be9661ab11656219f21a4d60bcf3c",
+      "bytes": 156151,
+      "path": "settings-1440.png",
+      "sha256": "2bd994169b08d2d22d688091c315d7aa34166221c2b235df3d58bfb8e05d944b"
+    },
+    {
+      "blob": "8d0e9e046748e2fac4a3e28a58cda61dedf3f228",
+      "bytes": 110018,
+      "path": "settings-390.png",
+      "sha256": "9c9bec9957a589fc09358a69cda6c0adae04668783866d617eef58b9f6c29140"
+    },
+    {
+      "blob": "a1c85a120980b4463321c98ba699c2bad6a44cd0",
+      "bytes": 347247,
+      "path": "setup-1440.png",
+      "sha256": "a2beb37fcbafce1d888e3e89649e5705d2419494141b3267ffdbec543b70ef34"
+    },
+    {
+      "blob": "cd6c354078a8e9be787211cd8c9ea64b0d04d5f4",
+      "bytes": 222301,
+      "path": "setup-390.png",
+      "sha256": "3ffef6f0a696dbea9b71d69b13afb77254e32ff7717e818d298853b3df408b4c"
+    },
+    {
+      "blob": "2dbd96ee3ee4f680ba4bcf684137ffa2ae858d22",
+      "bytes": 397238,
+      "path": "source-check.log",
+      "sha256": "63f29e4ce263b905243ad8277c0f9d4cac274c8d59d697f8f231944d27a6a820"
+    },
+    {
+      "blob": "45d82d18d12985da4abd1a098f0a05f849170d84",
+      "bytes": 397021,
+      "path": "source-lock.log",
+      "sha256": "af4a11fd5f5edd4331fde8be55c4fc0a1e28aba77b21f51eb2d05f4429892f4f"
+    },
+    {
+      "blob": "246dda3859957f541cb9bb59df0ea28622c5b0a4",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "6f7b38da8b47f8ce2c26011faaa3c52f8e41e983aa3dfa9ffcee190e5f738cc6"
+    },
+    {
+      "blob": "973bd7c7080134007e8033841c57f19452c56dcc",
+      "bytes": 327,
+      "path": "validate-release.log",
+      "sha256": "0b2541a00541a238980bc7ccab7e56297e32caa87ff412d74e0f1ecb580420ac"
+    },
+    {
+      "blob": "00728c0ee66d2398f298127b3b3885038c3a06e4",
+      "bytes": 354,
+      "path": "website-onboarding-unmodified.log",
+      "sha256": "a6edbe47ac25a4575468a8e607459fdfc1f9b0db5907c1a5b0e3de9a6810e2da"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-tz-release-fix-2",
+  "product_head": "3de3712ea6362e9d1731cd1cc54dc994386d4fd8",
+  "ref": "refs/heads/evidence/sd-lamp-tz-release-fix-2",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-tz-release-fix-2"
+}

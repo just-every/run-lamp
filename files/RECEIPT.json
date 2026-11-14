@@ -1,0 +1,153 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-tz-release-fix-2",
+  "head": "3de3712ea6362e9d1731cd1cc54dc994386d4fd8",
+  "base": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+  "product_commit_count": 1,
+  "candidate_merge_commit_count": 0,
+  "product_push_count": 1,
+  "product_push_attempts": 1,
+  "pr": {
+    "base": "189bfd82e39799b16fbabb4f8a48f65f3b5d22f0",
+    "head": "3de3712ea6362e9d1731cd1cc54dc994386d4fd8",
+    "html_url": "https://github.com/just-every/run-lamp/pull/380",
+    "number": 380,
+    "state": "open"
+  },
+  "release_version": "1.11.15",
+  "release_entry_copy": "origin/cloud/sd-lamp-tz-release-fix-1:RELEASE.json contractChanges.SETUP-002",
+  "changed_clause": "SETUP-002 acceptance 2 meaning only",
+  "status_before": "partial",
+  "status_after": "partial",
+  "points": "none",
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "checks": [
+    {
+      "command": "pnpm validate:release",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm check:contract-docs (generated views)",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm check:contract-docs (views restored from origin/main)",
+      "exit_code": 1,
+      "expected_only_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test tests/e2e/website-onboarding.test.mjs",
+      "exit_code": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "identity_check": "Every candidate author and committer is Run Edit Run fleet <fleet@runeditrun.com>; no trailers; all side parents included in range scan.",
+  "generated_views_committed": false,
+  "new_tests": 0,
+  "migrations_changed": 0,
+  "toolchain": {
+    "shell_node": "24.19.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.108",
+    "browser": "/usr/bin/chromium --no-sandbox"
+  },
+  "full_verify_local": "Not run; brief specifies touched checks. Exact-SHA hosted Verify handled separately.",
+  "ci": {
+    "push_verify": {
+      "id": 43610230533,
+      "head_sha": "3de3712ea6362e9d1731cd1cc54dc994386d4fd8",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43610230533",
+      "root_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+      "downstream": "No build completion artifact; shard jobs skipped; aggregate fails with missing shard artifacts."
+    },
+    "pull_request_verify": {
+      "id": 43610301511,
+      "status_at_discovery": "queued",
+      "conclusion_at_discovery": null
+    },
+    "dynamic_pr_run": {
+      "id": 43610299663,
+      "status_at_discovery": "in_progress",
+      "conclusion_at_discovery": null
+    },
+    "readiness_exception": "Explicit cloud instructions count a Verify whose sole root failure is the generated contract view check as green for READY. No hosted product tests ran; lander must regenerate views and rerun Verify.",
+    "github_command_budget": {
+      "used": 6,
+      "maximum": 10,
+      "details": [
+        "PR discovery",
+        "PR create",
+        "exact-SHA workflow discovery",
+        "completed run jobs inspection",
+        "one failed build archive read",
+        "one failed verify archive read"
+      ]
+    },
+    "polling": "No repeated run polling; no CI wait."
+  },
+  "custody": "READY under explicit generated-contract-view exception; product pushed, PR open, not landed",
+  "browser_proof": {
+    "status": "complete",
+    "widths": [
+      1440,
+      390
+    ],
+    "screens": [
+      "setup",
+      "settings",
+      "public"
+    ],
+    "files": [
+      "setup-1440.png",
+      "setup-390.png",
+      "settings-1440.png",
+      "settings-390.png",
+      "public-1440.png",
+      "public-390.png"
+    ],
+    "method": "Setup captured using an external memory loader after the original 1440 assertion; settings and public captured in a separate manual ephemeral native-runtime fixture. No tracked test changes beyond replayed existing expectation.",
+    "manual_fixture_write_status": 200,
+    "selected_zone": "Australia/Sydney",
+    "public_label": "Times shown in Australian Eastern Daylight Time (Australia/Sydney)",
+    "manual_fixture_exit_code": 0,
+    "auxiliary_harness_failed_attempts": 4,
+    "auxiliary_failure_details": "Original product assertions completed before each added proof step failed: first navigation ERR_ABORTED, then three exact Time zone label locator timeouts (one after an incorrectly guessed subpath). Fourth auxiliary attempt also sent an extra-field fixture payload rejected by the strict settings schema with 400. Manual harness used the declared input fields and the select inside its label; it passed and captured the screens.",
+    "browsers_closed": true,
+    "owned_runtimes_stopped": true
+  }
+}

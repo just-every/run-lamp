@@ -1,0 +1,24 @@
+EXISTING_ASSERTIONS_COMPLETE
+MANUAL_PROBE Sydney settings write status=400
+✖ SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see (85154.640433ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85675.299972
+
+✖ failing tests:
+
+test at tests/contract.mjs:10:10
+✖ SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see (85154.640433ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for getByLabel('Time zone', { exact: true }) to be visible[22m
+  
+      at TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/website-onboarding.test.mjs:213:66) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByLabel('Time zone', { exact: true }) to be visible" ]
+  }

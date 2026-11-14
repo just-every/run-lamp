@@ -1,0 +1,8 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.15 check:contract-docs /workspace/run-lamp
+> node src/base/contract-docs.mjs check
+
+Contract prose: 0 errors, 0 warnings.
+ACCEPTANCE.md: generated content differs; run contract-docs write.
+ ELIFECYCLE  Command failed with exit code 1.
