@@ -1,0 +1,16 @@
+{
+  "limit_bytes": 209715200,
+  "scope": "explicit synthetic fixture input (not SQLite/WAL file growth)",
+  "input": "size-check.json",
+  "bytes": 10488,
+  "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
+  "within_limit": true,
+  "same_fixture_as_continuation": true,
+  "flow_count": 11,
+  "budget": {
+    "windowRows": 3900000,
+    "growthPercent": 10,
+    "growthRows": 200,
+    "timeoutSeconds": 600
+  }
+}

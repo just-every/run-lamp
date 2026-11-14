@@ -1,0 +1,903 @@
+{
+  "product_head": "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+  "merged_main": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "measured_tree_matches_committed_tree": true,
+  "exit_code": 1,
+  "ok": false,
+  "queue_consumers_measured": false,
+  "sizes": {
+    "small": {
+      "tables": [
+        {
+          "table": "page_settings",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 15
+        },
+        {
+          "table": "components",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 16
+        },
+        {
+          "table": "alert_sources",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 22
+        },
+        {
+          "table": "incidents",
+          "declared": 90,
+          "before": 0,
+          "readBack": 90,
+          "total": 90,
+          "ms": 15
+        },
+        {
+          "table": "incident_components",
+          "declared": 90,
+          "before": 0,
+          "readBack": 90,
+          "total": 90,
+          "ms": 17
+        },
+        {
+          "table": "incident_updates",
+          "declared": 270,
+          "before": 0,
+          "readBack": 270,
+          "total": 270,
+          "ms": 15
+        },
+        {
+          "table": "component_state_history",
+          "declared": 1619,
+          "before": 0,
+          "readBack": 1619,
+          "total": 1619,
+          "ms": 42
+        },
+        {
+          "table": "subscribers",
+          "declared": 1620,
+          "before": 0,
+          "readBack": 1620,
+          "total": 1620,
+          "ms": 71
+        },
+        {
+          "table": "maintenance",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 16
+        }
+      ],
+      "totalRows": 6782,
+      "phasesMs": {
+        "serve": 4895,
+        "owner": 58,
+        "generate": 230,
+        "after": 0,
+        "readback": 986,
+        "personas": 0,
+        "flows": 23136
+      },
+      "statements": 9
+    },
+    "large": {
+      "tables": [
+        {
+          "table": "page_settings",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 15
+        },
+        {
+          "table": "components",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 15
+        },
+        {
+          "table": "alert_sources",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 24
+        },
+        {
+          "table": "incidents",
+          "declared": 9000,
+          "before": 0,
+          "readBack": 9000,
+          "total": 9000,
+          "ms": 70
+        },
+        {
+          "table": "incident_components",
+          "declared": 9000,
+          "before": 0,
+          "readBack": 9000,
+          "total": 9000,
+          "ms": 53
+        },
+        {
+          "table": "incident_updates",
+          "declared": 27000,
+          "before": 0,
+          "readBack": 27000,
+          "total": 27000,
+          "ms": 192
+        },
+        {
+          "table": "component_state_history",
+          "declared": 161893,
+          "before": 0,
+          "readBack": 161893,
+          "total": 161893,
+          "ms": 3847
+        },
+        {
+          "table": "subscribers",
+          "declared": 162000,
+          "before": 0,
+          "readBack": 162000,
+          "total": 162000,
+          "ms": 1147
+        },
+        {
+          "table": "maintenance",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 13
+        }
+      ],
+      "totalRows": 541170,
+      "phasesMs": {
+        "serve": 3057,
+        "owner": 39,
+        "generate": 5375,
+        "after": 0,
+        "readback": 956,
+        "personas": 0,
+        "flows": 50651
+      },
+      "statements": 43
+    }
+  },
+  "flows": [
+    {
+      "name": "component-list",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/components",
+      "callsInRow": 3,
+      "ceiling": 5000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 177,321 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 178,200 rows from small to large; allowed 10% of small + 200 = 612"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 4121,
+        "rowsWritten": 18,
+        "statements": 28,
+        "status": 200,
+        "ms": 55,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "WITH follow_event AS (SELECT NULL AS incident_id,? AS event_at)\n          INSERT OR IGNORE INTO sms_deliveries(id,subscriber_id,event_id,kind,incident_update_id,maintenance_id,incident_report_id,outcome,queued_at,outcome_at)\n          SELECT ?||'.'||s.id,s.id,?,?,?,?,?,CASE WHEN s.state='active' THEN 'queued' ELSE 'suppressed' END,?,CASE WHEN s.state='active' THEN NULL ELSE ? END\n          FROM subscriber_directory s WHERE s.channel='sms' AND s.state IN ('active','deactivated') AND s.destination NOT LIKE 'deleted:%' AND ((NOT EXISTS(SELECT 1 FROM incident_subscriptions incident_follow WHERE incident_follow.subscriber_id=s.id) AND 1 AND (s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc WHERE sc.subscriber_id=s.id AND sc.component_id IN (NULL))) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (NULL) AND c.internal=0)\n            AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance') AND 1) OR (0))\n            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)",
+            "executions": 1,
+            "rowsRead": 1623,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\", \"component_groups\".\"name\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" order by \"component_groups\".\"display_order\", \"components\".\"display_order\", \"components\".\"id\"",
+            "executions": 1,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "INSERT OR IGNORE INTO channel_subscriber_events(id,subscriber_id,event_id,kind,queued_at)\n          SELECT ? || '.' || s.id,s.id,?,'maintenance',? FROM subscriber_directory s\n          WHERE s.channel IN ('slack','teams') AND s.state='active' AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance')\n            AND (s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc JOIN components c ON c.id=sc.component_id WHERE sc.subscriber_id=s.id AND sc.component_id IN (NULL) AND c.internal=0)) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (NULL) AND c.internal=0)\n            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)",
+            "executions": 1,
+            "rowsRead": 1001,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 182321,
+        "rowsWritten": 18,
+        "statements": 28,
+        "status": 200,
+        "ms": 48,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "WITH follow_event AS (SELECT NULL AS incident_id,? AS event_at)\n          INSERT OR IGNORE INTO sms_deliveries(id,subscriber_id,event_id,kind,incident_update_id,maintenance_id,incident_report_id,outcome,queued_at,outcome_at)\n          SELECT ?||'.'||s.id,s.id,?,?,?,?,?,CASE WHEN s.state='active' THEN 'queued' ELSE 'suppressed' END,?,CASE WHEN s.state='active' THEN NULL ELSE ? END\n          FROM subscriber_directory s WHERE s.channel='sms' AND s.state IN ('active','deactivated') AND s.destination NOT LIKE 'deleted:%' AND ((NOT EXISTS(SELECT 1 FROM incident_subscriptions incident_follow WHERE incident_follow.subscriber_id=s.id) AND 1 AND (s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc WHERE sc.subscriber_id=s.id AND sc.component_id IN (NULL))) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (NULL) AND c.internal=0)\n            AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance') AND 1) OR (0))\n            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)",
+            "executions": 1,
+            "rowsRead": 162003,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "\n        SELECT component_id AS componentId, state, 'standing-claim' AS causeType\n        FROM component_standing_claims\n        UNION ALL SELECT component_id AS componentId,state,'vendor' AS causeType FROM vendor_dependencies WHERE state IS NOT NULL\n        UNION ALL\n        SELECT attached.component_id AS componentId, attached.state, 'incident' AS causeType\n        FROM incident_components AS attached\n        JOIN incidents AS incident ON incident.id = attached.incident_id\n        WHERE attached.component_id IS NOT NULL AND attached.published_at IS NOT NULL\n          AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'\n        UNION ALL\n        SELECT attached.component_id AS componentId, attached.state, 'maintenance' AS causeType\n        FROM maintenance_components AS attached\n        JOIN maintenance AS window ON window.id = attached.maintenance_id\n        WHERE attached.component_id IS NOT NULL AND window.state = 'In progress'\n      ",
+            "executions": 1,
+            "rowsRead": 18002,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\", \"component_groups\".\"name\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" order by \"component_groups\".\"display_order\", \"components\".\"display_order\", \"components\".\"id\"",
+            "executions": 1,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "incident-list",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/incidents",
+      "callsInRow": 3,
+      "ceiling": 5000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 175,005 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 178,200 rows from small to large; allowed 10% of small + 200 = 380"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 1805,
+        "rowsWritten": 0,
+        "statements": 11,
+        "status": 200,
+        "ms": 29,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null) order by \"incident_updates\".\"published_at\" desc",
+            "executions": 1,
+            "rowsRead": 809,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null)",
+            "executions": 1,
+            "rowsRead": 359,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"incident_id\", \"body\", \"author_operator_id\", \"created_at\", \"updated_at\" from \"incident_internal_notes\" where \"incident_internal_notes\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null) order by \"incident_internal_notes\".\"created_at\" desc",
+            "executions": 1,
+            "rowsRead": 181,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 180005,
+        "rowsWritten": 0,
+        "statements": 11,
+        "status": 200,
+        "ms": 1075,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null) order by \"incident_updates\".\"published_at\" desc",
+            "executions": 1,
+            "rowsRead": 80999,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null)",
+            "executions": 1,
+            "rowsRead": 35999,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"incident_id\", \"body\", \"author_operator_id\", \"created_at\", \"updated_at\" from \"incident_internal_notes\" where \"incident_internal_notes\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null) order by \"incident_internal_notes\".\"created_at\" desc",
+            "executions": 1,
+            "rowsRead": 18001,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "incident-detail",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/incidents/20000000000000000000000001",
+      "callsInRow": 3,
+      "ceiling": 25000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 1317,
+        "rowsWritten": 0,
+        "statements": 27,
+        "status": 200,
+        "ms": 48,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+            "executions": 2,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" = ? order by \"incident_updates\".\"published_at\" desc",
+            "executions": 1,
+            "rowsRead": 4,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" = ?",
+            "executions": 2,
+            "rowsRead": 4,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 1343,
+        "rowsWritten": 0,
+        "statements": 27,
+        "status": 200,
+        "ms": 39,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+            "executions": 2,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incident_components\".\"component_id\" = ? and \"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+            "executions": 1,
+            "rowsRead": 29,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" = ? order by \"incident_updates\".\"published_at\" desc",
+            "executions": 1,
+            "rowsRead": 4,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "component-history",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/components/10000000000000000000000001/history",
+      "callsInRow": 3,
+      "ceiling": 6000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "growth",
+          "message": "grew 498 rows from small to large; allowed 10% of small + 200 = 201"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 13,
+        "rowsWritten": 0,
+        "statements": 7,
+        "status": 200,
+        "ms": 14,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"source_name\", \"source_url\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"changed_at\", \"created_at\" from \"component_state_history\" where \"component_state_history\".\"component_id\" = ? order by \"component_state_history\".\"changed_at\" desc, \"component_state_history\".\"created_at\" desc",
+            "executions": 1,
+            "rowsRead": 6,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+            "executions": 1,
+            "rowsRead": 1,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 511,
+        "rowsWritten": 0,
+        "statements": 7,
+        "status": 200,
+        "ms": 16,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"source_name\", \"source_url\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"changed_at\", \"created_at\" from \"component_state_history\" where \"component_state_history\".\"component_id\" = ? order by \"component_state_history\".\"changed_at\" desc, \"component_state_history\".\"created_at\" desc",
+            "executions": 1,
+            "rowsRead": 504,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+            "executions": 1,
+            "rowsRead": 1,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "subscriber-list",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/subscribers?limit=50&offset=0",
+      "callsInRow": 3,
+      "ceiling": 5000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 320,059 (3 calls in a row)"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 320,760 rows from small to large; allowed 10% of small + 200 = 629"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 4299,
+        "rowsWritten": 0,
+        "statements": 159,
+        "status": 200,
+        "ms": 139,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"channel\", \"event_kinds_json\", \"minimum_impact\", \"destination\", \"contact_email\", \"state\", \"selection_mode\", \"token_hash\", \"deactivation_reason\", \"deactivated_at\", \"created_at\", \"updated_at\" from \"subscriber_directory\" order by \"subscriber_directory\".\"created_at\" asc limit ?",
+            "executions": 1,
+            "rowsRead": 3240,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT COUNT(*) AS total,\n      COALESCE(SUM(channel='email'),0) AS email,COALESCE(SUM(channel='webhook'),0) AS webhook,\n      COALESCE(SUM(channel='slack'),0) AS slack,COALESCE(SUM(channel='teams'),0) AS teams,COALESCE(SUM(channel='sms'),0) AS sms\n      FROM subscriber_directory AS subscribers WHERE state IN ('pending','active')",
+            "executions": 1,
+            "rowsRead": 1003,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator \u00b7 ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+            "executions": 51,
+            "rowsRead": 51,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 325059,
+        "rowsWritten": 0,
+        "statements": 159,
+        "status": 200,
+        "ms": 141,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"channel\", \"event_kinds_json\", \"minimum_impact\", \"destination\", \"contact_email\", \"state\", \"selection_mode\", \"token_hash\", \"deactivation_reason\", \"deactivated_at\", \"created_at\", \"updated_at\" from \"subscriber_directory\" order by \"subscriber_directory\".\"created_at\" asc limit ?",
+            "executions": 1,
+            "rowsRead": 324000,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT COUNT(*) AS total,\n      COALESCE(SUM(channel='email'),0) AS email,COALESCE(SUM(channel='webhook'),0) AS webhook,\n      COALESCE(SUM(channel='slack'),0) AS slack,COALESCE(SUM(channel='teams'),0) AS teams,COALESCE(SUM(channel='sms'),0) AS sms\n      FROM subscriber_directory AS subscribers WHERE state IN ('pending','active')",
+            "executions": 1,
+            "rowsRead": 1003,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator \u00b7 ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+            "executions": 51,
+            "rowsRead": 51,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "monitor-list",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/intake/sources",
+      "callsInRow": 3,
+      "ceiling": 5000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 653,
+        "rowsWritten": 0,
+        "statements": 7,
+        "status": 200,
+        "ms": 33,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "SELECT id, name, credential_kind AS credentialKind, signing_secret AS signingSecret, responder_sealed_credentials AS responderSealedCredentials, responder_connected AS responderConnected, close_alert_on_resolve AS closeAlertOnResolve, bearer_token_hash AS bearerTokenHash, timestamp_header AS timestampHeader, signature_header AS signatureHeader, deduplication_path AS deduplicationPath, title_path AS titlePath, state_path AS statePath, recovered_value AS recoveredValue, COALESCE(vendor_preset,responder_preset,uptime_preset,grouped_preset,preset) AS preset, label_matchers_json AS labelMatchersJson, monitor_mappings_json AS monitorMappingsJson, component_id AS componentId, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM alert_sources ORDER BY name",
+            "executions": 1,
+            "rowsRead": 644,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT sourceId, monitorId, monitorName, MAX(receivedAt) AS lastSeenAt FROM (\n            SELECT r.source_id AS sourceId, r.received_at AS receivedAt,\n              CASE WHEN json_valid(r.payload_json) THEN json_extract(r.payload_json, '$.monitorId') END AS monitorId,\n              CASE WHEN json_valid(r.payload_json) THEN json_extract(r.payload_json, '$.monitorName') END AS monitorName\n            FROM alert_receipts r INNER JOIN alert_sources s ON s.id = r.source_id WHERE s.uptime_preset = 'uptime')\n          WHERE typeof(monitorId) = 'text' AND length(monitorId) BETWEEN 1 AND 200 AND monitorId = trim(monitorId) AND typeof(monitorName) = 'text' AND length(trim(monitorName)) > 0\n          GROUP BY sourceId, monitorId ORDER BY monitorName",
+            "executions": 1,
+            "rowsRead": 3,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 653,
+        "rowsWritten": 0,
+        "statements": 7,
+        "status": 200,
+        "ms": 24,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "SELECT id, name, credential_kind AS credentialKind, signing_secret AS signingSecret, responder_sealed_credentials AS responderSealedCredentials, responder_connected AS responderConnected, close_alert_on_resolve AS closeAlertOnResolve, bearer_token_hash AS bearerTokenHash, timestamp_header AS timestampHeader, signature_header AS signatureHeader, deduplication_path AS deduplicationPath, title_path AS titlePath, state_path AS statePath, recovered_value AS recoveredValue, COALESCE(vendor_preset,responder_preset,uptime_preset,grouped_preset,preset) AS preset, label_matchers_json AS labelMatchersJson, monitor_mappings_json AS monitorMappingsJson, component_id AS componentId, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM alert_sources ORDER BY name",
+            "executions": 1,
+            "rowsRead": 644,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT sourceId, monitorId, monitorName, MAX(receivedAt) AS lastSeenAt FROM (\n            SELECT r.source_id AS sourceId, r.received_at AS receivedAt,\n              CASE WHEN json_valid(r.payload_json) THEN json_extract(r.payload_json, '$.monitorId') END AS monitorId,\n              CASE WHEN json_valid(r.payload_json) THEN json_extract(r.payload_json, '$.monitorName') END AS monitorName\n            FROM alert_receipts r INNER JOIN alert_sources s ON s.id = r.source_id WHERE s.uptime_preset = 'uptime')\n          WHERE typeof(monitorId) = 'text' AND length(monitorId) BETWEEN 1 AND 200 AND monitorId = trim(monitorId) AND typeof(monitorName) = 'text' AND length(trim(monitorName)) > 0\n          GROUP BY sourceId, monitorId ORDER BY monitorName",
+            "executions": 1,
+            "rowsRead": 3,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "maintenance-list",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/maintenance",
+      "callsInRow": 3,
+      "ceiling": 5000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 13,
+        "rowsWritten": 0,
+        "statements": 10,
+        "status": 200,
+        "ms": 16,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"reference\", \"title\", \"affected_audience\", \"customer_impact\", \"state\", \"starts_at\", \"ends_at\", \"completed_at\", \"created_by_operator_id\", \"created_at\", \"updated_at\" from \"maintenance\" order by \"maintenance\".\"starts_at\" asc",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT id, maintenance_id AS maintenanceId, body, published_at AS publishedAt, source_states AS sourceStates FROM import_maintenance_updates ORDER BY maintenance_id, published_at DESC, id",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 13,
+        "rowsWritten": 0,
+        "statements": 10,
+        "status": 200,
+        "ms": 15,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"id\", \"reference\", \"title\", \"affected_audience\", \"customer_impact\", \"state\", \"starts_at\", \"ends_at\", \"completed_at\", \"created_by_operator_id\", \"created_at\", \"updated_at\" from \"maintenance\" order by \"maintenance\".\"starts_at\" asc",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT id, maintenance_id AS maintenanceId, body, published_at AS publishedAt, source_states AS sourceStates FROM import_maintenance_updates ORDER BY maintenance_id, published_at DESC, id",
+            "executions": 1,
+            "rowsRead": 2,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "minute-tick",
+      "persona": null,
+      "kind": "scheduled",
+      "label": "cron * * * * *",
+      "callsInRow": 1,
+      "ceiling": 40000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "the scheduled handler failed: Native scheduled preparation failed (exception); fixture values are not logged. at small and large"
+        },
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 40,000 at large by 1,631,933"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 1,647,714 rows from small to large; allowed 10% of small + 200 = 2,621"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 24219,
+        "rowsWritten": 13,
+        "statements": 132,
+        "status": null,
+        "ms": 19968,
+        "error": "Native scheduled preparation failed (exception); fixture values are not logged.",
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"source_name\", \"source_url\", \"id\", \"component_id\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"supersedes_history_id\", \"changed_at\", \"created_at\", \"updated_at\" from \"component_state_history\" order by \"component_state_history\".\"changed_at\" asc, \"component_state_history\".\"created_at\" asc",
+            "executions": 3,
+            "rowsRead": 9714,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\", \"component_groups\".\"display_order\", \"component_groups\".\"created_at\", \"component_groups\".\"updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+            "executions": 3,
+            "rowsRead": 3864,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id",
+            "executions": 3,
+            "rowsRead": 1935,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 1671933,
+        "rowsWritten": 13,
+        "statements": 132,
+        "status": null,
+        "ms": 46431,
+        "error": "Native scheduled preparation failed (exception); fixture values are not logged.",
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"source_name\", \"source_url\", \"id\", \"component_id\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"supersedes_history_id\", \"changed_at\", \"created_at\", \"updated_at\" from \"component_state_history\" order by \"component_state_history\".\"changed_at\" asc, \"component_state_history\".\"created_at\" asc",
+            "executions": 3,
+            "rowsRead": 971358,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" order by \"incident_updates\".\"published_at\" desc",
+            "executions": 3,
+            "rowsRead": 162000,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT id,destination FROM subscribers WHERE state='deactivated' AND deactivation_reason IN ('held for Sorry cutover','held for Business cutover') AND created_at < ?",
+            "executions": 1,
+            "rowsRead": 161000,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "public-summary",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/api/public/status",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 13,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 13,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      }
+    },
+    {
+      "name": "public-history",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/history",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 10,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 9,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      }
+    },
+    {
+      "name": "public-feed",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/feed.atom",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 9,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 15,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      }
+    }
+  ]
+}

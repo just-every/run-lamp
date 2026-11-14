@@ -1,0 +1,32 @@
+[
+  {
+    "job_id": 132266205778,
+    "name": "size-check",
+    "command": "gh run view 43536233833 --repo just-every/run-lamp --job 132266205778 --log-failed",
+    "exit_code": 0,
+    "path": "ci-failed-132266205778.txt",
+    "sha256": "afe58170a756d27027427811dd9bb38c075fbb38a9436aeca8cc0d6e2a9b42c0",
+    "bytes": 1887,
+    "observed_utc": "2026-11-14T01:00:24Z"
+  },
+  {
+    "job_id": 132266205836,
+    "name": "shards (runtime)",
+    "command": "gh run view 43536233833 --repo just-every/run-lamp --job 132266205836 --log-failed",
+    "exit_code": 0,
+    "path": "ci-failed-132266205836.txt",
+    "sha256": "75269acf3acadf81899a4bd28c7ee041102d75484c9ff60b0c6702c38e701ea6",
+    "bytes": 39460,
+    "observed_utc": "2026-11-14T01:00:26Z"
+  },
+  {
+    "job_id": 132270131784,
+    "name": "verify",
+    "command": "gh run view 43536233833 --repo just-every/run-lamp --job 132270131784 --log-failed",
+    "exit_code": 0,
+    "path": "ci-failed-132270131784.txt",
+    "sha256": "14c87a78d863065ba6b11ca3f00c0b2e17b24feb79c754b641a15bb2266f82e7",
+    "bytes": 1867,
+    "observed_utc": "2026-11-14T01:00:28Z"
+  }
+]

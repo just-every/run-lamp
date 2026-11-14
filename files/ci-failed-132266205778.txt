@@ -1,0 +1,12 @@
+size-check	Measure declared flows on small and large local D1	﻿2026-11-14T00:46:18.0418023Z ##[group]Run mkdir -p "$RUNNER_TEMP/lamp-size/statements"
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0418455Z [36;1mmkdir -p "$RUNNER_TEMP/lamp-size/statements"[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0418784Z [36;1m# Synthetic fixture inputs stay within the 200 MiB guard.[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0419426Z [36;1mnode --input-type=module -e 'import { statSync } from "node:fs"; if (statSync("size-check.json").size > 200 * 1024 * 1024) throw new Error("Synthetic size declaration exceeds 200 MiB");'[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0420009Z [36;1mstart=$SECONDS[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0420210Z [36;1mresult=0[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0420667Z [36;1mpnpm exec rer size --no-queue --json --write-statements "$RUNNER_TEMP/lamp-size/statements" > "$RUNNER_TEMP/lamp-size/result.jsonl" || result=$?[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0421274Z [36;1mecho "size-check seconds=$((SECONDS - start)) exit=$result" >> "$GITHUB_STEP_SUMMARY"[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0421619Z [36;1mexit "$result"[0m
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0438779Z shell: /usr/bin/bash -e {0}
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:46:18.0439001Z ##[endgroup]
+size-check	Measure declared flows on small and large local D1	2026-11-14T00:47:54.1700290Z ##[error]Process completed with exit code 1.

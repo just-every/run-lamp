@@ -1,0 +1,9 @@
+{
+  "command": "gh api repos/just-every/run-lamp/actions/artifacts/14089079976/zip",
+  "artifact_id": 14089079976,
+  "run_id": 43536233833,
+  "head_sha": "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+  "github_call": 10,
+  "exit_code": 1,
+  "transport_error": "Get \"https://productionresultssa12.blob.core.windows.net/actions-results/9dd7eee6-6731-8e46-95a7-39c4bc9e1ff5/workflow-job-run-9b19751f-cfb9-59fd-96d1-a1f86925bbac/artifacts/357048db3bf467382077417b3caa668bde64f87fe1b62af65b0e55f0040f1a6e.zip Forbidden\n"
+}

@@ -1,0 +1,3 @@
+CLAIM AGENT-008 PARTIAL points=none tests=size-check.json#component-list
+DEFAULT AGENT-008: verification.owner is only a synthetic native-bootstrap declaration; no MCP acceptance point is claimed.
+GAP AGENT-008: full scoped MCP tool/journey declaration and its acceptance proof remain outside this owner/public-host lease.

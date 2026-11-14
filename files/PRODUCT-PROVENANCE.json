@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-sizecheck-3",
+  "head": "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+  "tree": "43d962a13425d9881a2351071f57f93a8300ecce",
+  "parents": [
+    "865854019e82c8ed9530d30aeedbfa76f8a0df9e",
+    "4271d1caa8f044a0265eb287c660e1777bd5b942"
+  ],
+  "main_merged": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "full_history": true,
+  "checkout_clean": true,
+  "changed_from_merged_main": [
+    ".github/workflows/verify.yml",
+    "agent-surface.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "size-check.json",
+    "sources.lock.json"
+  ],
+  "author_committer_trailer_audit": "identity-audit.txt; all 3 candidate commits passed",
+  "product_push": "push-product.txt; one successful attempt",
+  "pr": "https://github.com/just-every/run-lamp/pull/363",
+  "stamp_utc": "2026-11-14T01:04:47Z"
+}

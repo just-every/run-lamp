@@ -1,0 +1,2 @@
+{"version":1,"verb":"size","event":"error","code":"missing_input","message":"Cannot read the statements file /home/agent/rer-consolidation/work/sd-lamp-sizecheck-3/packet/ordinary-statements/small.json: ENOENT.","exitCode":3}
+{"version":1,"verb":"size","event":"result","ok":false,"exitCode":3}

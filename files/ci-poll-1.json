@@ -1,0 +1,9 @@
+{
+  "conclusion": "failure",
+  "head_sha": "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/43536233833",
+  "status": "completed",
+  "observed_utc": "2026-11-14T00:59:45Z",
+  "run_id": 43536233833,
+  "github_call": 5
+}

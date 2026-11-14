@@ -1,0 +1,13 @@
+{
+  "clauses": 244,
+  "statuses": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "registeredCases": 92,
+  "assertionScripts": 10,
+  "ordinaryFlows": 11,
+  "contractUnchangedFromMain": true,
+  "testsUnchangedFromMain": true
+}

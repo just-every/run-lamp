@@ -1,0 +1,19 @@
+{
+  "real_d1_confirmation": "pending; separate strategy-owned synthetic D1 runner",
+  "artifacts": [
+    {
+      "path": "ordinary-statements/small.json",
+      "sha256": "d65b10c09e8f074babffa90961b0a6082100abb3c1a779feccad1f11795d941b",
+      "bytes": 170420,
+      "executions": 381,
+      "distinct_sql": 123
+    },
+    {
+      "path": "ordinary-statements/large.json",
+      "sha256": "b154f11ddaa16c45043fbdf536dc2b151ceae6dd97f8f68f86571b83763f83a8",
+      "bytes": 170420,
+      "executions": 381,
+      "distinct_sql": 123
+    }
+  ]
+}
