@@ -33,3 +33,27 @@ and incident notes are not included in those public surfaces.
 ## Accessibility evaluation
 
 Read the [Accessibility Conformance Report (VPAT)](accessibility/vpat.md) for the current release, measured surfaces and evaluation limits. It is also served on the operator app host at `/docs/accessibility/vpat`, without sign-in. This report does not claim conformance for private pages, email clients or surfaces that have not been evaluated.
+
+
+## Older history
+
+The retained current snapshot includes current incidents and maintenance, the latest
+50 completed incidents and maintenance windows, and the last 90 days of component
+observations with the boundary facts needed for correct uptime. The history page
+shows up to 50 completed records per page. Use **Older history**, a month link, or
+an incident's permanent address to reach older records; nothing is deleted.
+Atom and RSS publish up to 50 recent events with a `rel="next"` link for older
+entries in their twelve-month window. Component feeds keep their component filter
+on subsequent pages. Native incident and maintenance JSON collections expose the
+same explicit page size and a `nextCursor` until the complete collection is read.
+Compatibility collection responses link to those full collections and history.
+
+Repeated HTML footers share one retained copy; each served document keeps the
+complete original footer and component resources. The retained bundle still has
+the same 25 MiB limit.
+
+Current status, summary and the first history and global feed pages remain
+snapshot reads. A cold older page uses indexed bounded reads and is cached with
+its generation outside the retained current bundle. Previously cached pages can
+continue serving during an origin failure. No older page is silently folded into
+the current bundle as the installation's history grows.
