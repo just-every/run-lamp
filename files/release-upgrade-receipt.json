@@ -1,0 +1,17 @@
+{
+  "name": "native-release-forward-upgrade",
+  "command": [
+    "node",
+    "tests/release/verify.mjs",
+    "--from",
+    "v1.11.14",
+    "--evidence",
+    "/tmp/lamp-release-upgrade-receipts"
+  ],
+  "exit_code": 0,
+  "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+  "log": "release-upgrade.txt",
+  "log_sha256": "e66eb60d9c855ae40c01e135671449c2fb96521830d5a6bee7bff9415a92cc07",
+  "observed_at": "2026-11-14T02:22:30.936668+00:00",
+  "authority_archives_selected_for_public_evidence": false
+}

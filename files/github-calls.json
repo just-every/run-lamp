@@ -59,5 +59,72 @@
       "--jq",
       "{status,conclusion,head_sha,html_url}"
     ]
+  },
+  {
+    "call": 6,
+    "at": "2026-11-14T02:20:50.829861+00:00",
+    "epoch": 1794622850.8298712,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43544179464",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "call": 7,
+    "at": "2026-11-14T02:21:13.133803+00:00",
+    "epoch": 1794622873.1338158,
+    "args": [
+      "api",
+      "repos/just-every/run-lamp/actions/runs/43544179464/jobs?per_page=100",
+      "--jq",
+      ".jobs | map({id,name,status,conclusion,steps: [.steps[] | select(.conclusion == \"failure\") | {name,conclusion}]})"
+    ]
+  },
+  {
+    "call": 8,
+    "at": "2026-11-14T02:21:30.479861+00:00",
+    "epoch": 1794622890.4798727,
+    "args": [
+      "run",
+      "view",
+      "43544179464",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "132291806543",
+      "--log-failed"
+    ]
+  },
+  {
+    "call": 9,
+    "at": "2026-11-14T02:21:37.606911+00:00",
+    "epoch": 1794622897.6069202,
+    "args": [
+      "run",
+      "view",
+      "43544179464",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "132291806669",
+      "--log-failed"
+    ]
+  },
+  {
+    "call": 10,
+    "at": "2026-11-14T02:21:39.576285+00:00",
+    "epoch": 1794622899.5762956,
+    "args": [
+      "run",
+      "view",
+      "43544179464",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "132291806717",
+      "--log-failed"
+    ]
   }
 ]

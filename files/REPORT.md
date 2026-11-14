@@ -9,11 +9,11 @@ PR: https://github.com/just-every/run-lamp/pull/369
 
 ## Result
 
-The release inventory blocker from incidents-1 is repaired. Migration 0079 was renamed to the reserved 0080, with every SQL byte preserved, and RELEASE.json now records that migration with its buyer steps. The release validator passes. No version, release note, changelog, other release metadata, contract judgment or size-check adoption file changed.
+The release inventory blocker from incidents-1 is repaired. The candidate is BLOCKED on additional exact-SHA Verify failures outside this continuation’s explicit file lease; it is not READY. Migration 0079 was renamed to the reserved 0080, with every SQL byte preserved, and RELEASE.json now records that migration with its buyer steps. The release validator passes. No version, release note, changelog, other release metadata, contract judgment or size-check adoption file changed.
 
 The previous incident paging code and tests remain intact. Lists page parent records before reading children, retain stable opening-time/ID cursor order, filter before LIMIT, expose complete active/resolved totals and Previous/Next navigation, and retain every selected incident's full detail history. This continuation changes only RELEASE.json, the unreleased migration filename and sources.lock.json relative to incidents-1.
 
-Final CI status is recorded below and in RECEIPT.json.
+Final Verify conclusion: failure. Build and release inventory validation pass; runtime, delivery and imports fail. The final head remains safely pushed and PR #369 stays open.
 
 ## Plan and scope
 
@@ -35,6 +35,7 @@ All requested local checks pass on 8ab15b4dc74832de43b662299e95a6de303d8aa3 unde
 - Existing operator browser publication journey: incident paging next/previous and detail navigation at 1440, with candidate screenshots once at 1440 and 390 using /usr/bin/chromium and --no-sandbox.
 - Setup migration inventory: incomplete apply refuses with all missing names; retry completes the actual shipped inventory.
 - Identity forward upgrade: retained identities, audit history, subscriber authority and setup-authority cases.
+- Native emitted-Worker release upgrade from v1.11.14: populated in-place upgrade, retained owner authority/history and portable archive restore all pass; release-upgrade-receipt.json records the actual command and exit 0. The synthetic authority-bearing archives remain outside public evidence.
 - Technical archive restore: failed-upgrade rollback, repeated migrations, full export/import/reexport comparison and restored customization behavior.
 - Previous-release native archive restore: original rows and object bytes, preserved history/consent, exact incident counter reconstruction and valid foreign keys.
 - Current native archive round trip: whole-product restore without reviving temporary authority.
@@ -77,7 +78,15 @@ The complete candidate was committed with fleet author and committer identity an
 
 Verify run: https://github.com/just-every/run-lamp/actions/runs/43544179464
 Exact head: 8ab15b4dc74832de43b662299e95a6de303d8aa3
-Observed in progress on the exact candidate at the last permitted REST check (ci-status-2.json). Product status: PUSHED, CI pending. Five GitHub calls used so far, with discovery and per-run status observations separated by at least 300 seconds.
+Completed/failure on the exact candidate (ci-status-3.json). The build job 132291450203 passes, including release migration inventory validation. Composer, portability, ownership, public and demo also pass. Runtime 132291806543, delivery 132291806669 and imports 132291806717 fail, with aggregate verify 132295989464 failing downstream.
+
+Runtime fails NOTIFY-006 in tests/e2e/update-reminders.test.mjs:142: expected two captured operator emails after alert intake, observed zero. Delivery fails tests/e2e/helpers/grouped-alerts-flow.mjs:66: expected one grouped-draft operator notice, observed zero. The cause is confirmed independently: src/core/features/intake/repository.ts:207 treats only meta.changes === 1 as a created incident. With a normally preallocated incident reference, D1 reports one changed row before migration 0080 and two afterward, because its counter trigger writes another row. Intake therefore returns incidentCreated=false and suppresses the operator notice even though the draft exists. migration-meta-changes.txt records this exact 1 -> 2 result. The first probe fixture did not preallocate references, so its existing reference trigger produced 2 -> 3; that diagnostic fixture was corrected to match the actual allocation path, with both actual outputs retained. The SQL migration remains byte-identical as required.
+
+Imports fails tests/e2e/sorry-import.test.mjs:213: expected a 60-incident full snapshot, observed the first 50. Its snapshot helper at line 76 still reads only one default /api/app/incidents response. The follow-up must traverse every incident page while retaining the full-document equality, count, undo and erasure assertions; lowering the expected count would weaken the guarantee and was not done.
+
+The explicit continuation lease retains the incidents-1 product code, tests and migration as already pushed plus the RELEASE.json inventory entry for that migration only. The necessary intake repository edit and import-journey pagination adaptation are outside that declared delta. No unprovided ruling was assumed, no test was weakened, and no unrelated product files were edited. A follow-up needs to preserve exactly-once intake notice detection in the presence of trigger writes (prefer the actual inserted-row result over a total-change literal), adapt full-collection test reads to the cursor API, rerun the existing notification/import journeys and obtain a green exact-SHA Verify.
+
+Ten GitHub invocations were used. Run discovery and each status poll were separated by at least 300 seconds. After completion, failed-job metadata was read once and each of the three failed product jobs' logs was read once with gh run view --job --log-failed. No signed-URL blob retries or redundant aggregate log download occurred. All log archive reads succeeded. CI step environment blocks were omitted from the selected public log receipts. The PR body retains its earlier in-progress observation because the budget is exhausted; this final report and ci-status-3.json record the actual failure.
 
 The independent migration gate and full publication scan remain fleet responsibilities. The cloud task explicitly reserves the scan for its own machine. Required scan inputs are retained: full-history clone, public base run-lamp#main, edition just-every/lamp, destination https://github.com/just-every/run-lamp. No scan completion, independent migration-gate pass, acceptance promotion, landing or hosted deployment is claimed here.
 
@@ -86,3 +95,7 @@ Evidence publication is report-only and independent of product READY/PUSHED cust
 CLAIM INCIDENT-001 PARTIAL points=2 tests=tests/e2e/publishing-contract.test.mjs#INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
 DEFAULT INCIDENT-001: Retain incidents-1's 50 incidents per visible section, stable keyset navigation and complete selected-incident child history.
 GAP INCIDENT-001: Clause judgment remains partial. Full-fixture measurement stopped at the unchanged 200 MiB guard; isolated measurements are diagnostic. Independent migration gate, full publication scan and landing remain with the fleet.
+
+## Terminal status
+
+BLOCKED: exact-SHA Verify 43544179464 is red on the absent intake operator notices and the import journey’s first-page snapshot. Correcting these requires files beyond the explicit inventory-only continuation lease. Product 8ab15b4dc74832de43b662299e95a6de303d8aa3 and PR #369 remain preserved; the inventory entry, byte-identical migration rename, local proofs and diagnostic measurements are complete. No READY claim is made.

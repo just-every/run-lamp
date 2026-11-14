@@ -231,12 +231,38 @@
   "contract_status_changes": [],
   "ci": {
     "run_id": 43544179464,
-    "conclusion": null,
+    "conclusion": "failure",
     "head_sha": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
     "html_url": "https://github.com/just-every/run-lamp/actions/runs/43544179464",
-    "status": "in_progress"
+    "status": "completed",
+    "failed_jobs": [
+      {
+        "id": 132291806543,
+        "name": "runtime",
+        "log": "ci-failure-runtime.txt"
+      },
+      {
+        "id": 132291806669,
+        "name": "delivery",
+        "log": "ci-failure-delivery.txt"
+      },
+      {
+        "id": 132291806717,
+        "name": "imports",
+        "log": "ci-failure-imports.txt"
+      },
+      {
+        "id": 132295989464,
+        "name": "verify",
+        "reason": "downstream aggregate failure; no additional log download needed"
+      }
+    ],
+    "build_job": {
+      "id": 132291450203,
+      "conclusion": "success"
+    }
   },
-  "github_calls_used": 5,
+  "github_calls_used": 10,
   "measurements": {
     "schema": 1,
     "tag": "sd-lamp-qgrowth-incidents-2",
@@ -393,5 +419,52 @@
   },
   "independent_migration_gate": "FLEET_REQUIRED",
   "full_fixture_limit": "Generation stopped by the unchanged strict 200 MiB guard on both main and candidate. Separate incident diagnostics are not full-fixture acceptance proof.",
-  "terminal_status": "PUSHED_PENDING_CI"
+  "terminal_status": "BLOCKED",
+  "evidence_initial_readback": {
+    "status": "restored",
+    "head": "23dbdcbf1ad3e3d0fa67144ea18e5fa7938915b6",
+    "files": 60,
+    "receipt": "evidence-initial-readback.json"
+  },
+  "native_release_forward_upgrade": {
+    "name": "native-release-forward-upgrade",
+    "command": [
+      "node",
+      "tests/release/verify.mjs",
+      "--from",
+      "v1.11.14",
+      "--evidence",
+      "/tmp/lamp-release-upgrade-receipts"
+    ],
+    "exit_code": 0,
+    "head": "8ab15b4dc74832de43b662299e95a6de303d8aa3",
+    "log": "release-upgrade.txt",
+    "log_sha256": "e66eb60d9c855ae40c01e135671449c2fb96521830d5a6bee7bff9415a92cc07",
+    "observed_at": "2026-11-14T02:22:30.936668+00:00",
+    "authority_archives_selected_for_public_evidence": false
+  },
+  "blockers": [
+    {
+      "kind": "exact_sha_verify_red",
+      "cause": "Runtime and delivery operator alert notices are absent after incident creation, and imports snapshot expects all 60 incidents but now reads the first page of 50.",
+      "run_id": 43544179464
+    },
+    {
+      "kind": "lease_boundary",
+      "cause": "The lease retains incidents-1 product/test/migration as already pushed plus only this migration inventory entry. Repair requires src/core/features/intake/repository.ts and an import journey pagination adaptation beyond that explicit delta. No broader ruling was provided."
+    }
+  ],
+  "root_cause_probe": {
+    "command": [
+      "node",
+      "/tmp/lamp-meta-probe.mjs"
+    ],
+    "exit_code": 0,
+    "before_meta_changes": 1,
+    "after_meta_changes": 2,
+    "existing_predicate": "src/core/features/intake/repository.ts:207 compares meta.changes === 1",
+    "log": "migration-meta-changes.txt",
+    "result": "Incident count trigger adds one changed row; existing intake success detection becomes false and suppresses operator notices."
+  },
+  "pr_body_status_note": "PR body retains its earlier in-progress CI observation; all ten API invocations were used including exactly one failed-log read for each of three failed product jobs. Final CI status is failure in this receipt and report."
 }
