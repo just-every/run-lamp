@@ -460,7 +460,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "bea76389abc32cdb75ab37b34b0a416556af827471dfa80fbb87cf4f92ff80ae",
+      "sha256": "a4d22bbd8cde6385a532a70d5c0e2df15f66fa197cc87344315340ec7a069cc0",
       "executable": false
     },
     ".gitignore": {
@@ -477,6 +477,10 @@
     },
     "ACCEPTANCE.md": {
       "sha256": "51c66053f34d3f803ab56d6e9f92c72d5fe22692a370b26629fb3cafeb92a766",
+      "executable": false
+    },
+    "agent-surface.json": {
+      "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9",
       "executable": false
     },
     "AGENTS.md": {
@@ -2584,11 +2588,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "5a4fa5fb0ee77fab8517034254ad60082da618c0e729b65d4f67df8318609370",
+      "sha256": "bd316897ea37d808b1fd285f7fc64c0f74590e868417fbc27ad5a0f45143f481",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "9bcb80d7ce2f6bfdaa2fc47231e2446b702b825b391c70178290217f1a5b35a6",
+      "sha256": "02cafa2fe0e0181c9d1a190fc9ee1c302243c8a171ca23d978a1d562e5efa10e",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -3981,6 +3985,10 @@
     },
     "seed.json": {
       "sha256": "074cb758ae0a8d8f638090fc2106190c1fab4551322762c3a09eb4f5cdea603f",
+      "executable": false
+    },
+    "size-check.json": {
+      "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
       "executable": false
     },
     "src/base/actor.ts": {
