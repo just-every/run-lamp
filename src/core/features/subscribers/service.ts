@@ -36,6 +36,7 @@ export interface SubscribersService {
   /** Names of the visible components among these ids, in display order. */
   componentNames(componentIds: string[]): Promise<string[]>;
   list(limit?: number, offset?: number): Promise<SubscriberView[]>;
+  listPage(limit: number, offset: number): Promise<{ subscribers: SubscriberView[]; hasMore: boolean }>;
   requestEmailSubscription(email: string, origin: string, componentIds?: string[], preferences?: SubscriberPreferences): Promise<void>;
   confirm(token: string): Promise<boolean>;
   confirmLocally(subscriberId: string): Promise<boolean>;
@@ -180,6 +181,12 @@ export function createSubscribersService(
     async componentNames(componentIds) {
       const wanted = new Set(componentIds);
       return wanted.size ? (await repository.listVisibleComponents()).filter((component) => wanted.has(component.id)).map((component) => component.name) : [];
+    },
+    async listPage(limit, offset) {
+      const rows = await repository.listSubscribers(limit + 1, offset);
+      // The extra row answers Next; only displayed rows need selections and
+      // incident/operator details. Capacity remains a separate aggregate query.
+      return { subscribers: await Promise.all(rows.slice(0, limit).map(view)), hasMore: rows.length > limit };
     },
     async list(limit = 100, offset = 0) {
       return Promise.all((await repository.listSubscribers(limit, offset)).map(view));

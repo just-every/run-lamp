@@ -63,7 +63,7 @@ export function createSubscriberRepository(binding: D1Database): SubscriberRepos
     formats: createWebhookFormatRepository(binding),
     ...createSubscriberTransitions(binding),
     async listSubscribers(limit, offset = 0) {
-      return database.select().from(subscriberDirectory).orderBy(asc(subscriberDirectory.createdAt)).limit(limit).offset(offset).all();
+      return database.select().from(subscriberDirectory).orderBy(asc(subscriberDirectory.createdAt), asc(subscriberDirectory.id)).limit(limit).offset(offset).all();
     },
     async listComponents(subscriberId) {
       return database.select({ ...getTableColumns(subscriberComponents), name: components.name })
