@@ -63,8 +63,8 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
     setProgress("publishing"); setMessage(null);
     try {
       const { pageName, tagline, accentColor } = found;
-      // Setup does not ask for the time zone: the page takes this browser's, and Settings → Page changes it.
-      const timezone = acceptedZone(Intl.DateTimeFormat().resolvedOptions().timeZone, settings.timezone);
+      // Setup does not ask for the time zone. Keep the installed choice; only an invalid saved zone needs recovery.
+      const timezone = acceptedZone(settings.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
       const { hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, emailBranding, aiToneInstructions, wordingBlockedTerms, wordingFriendlyLength } = settings;
       const next: Required<PageSettingsInput> = { theme: settings.theme, template: settings.template, widgetAppearance: settings.widgetAppearance, pageName: pageName.trim(), tagline: tagline.trim(), accentColor, timezone, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, emailBranding, aiToneInstructions, wordingBlockedTerms, wordingFriendlyLength };
       await appApi<SettingsResponse>("/api/app/page-settings", { method: "PUT", body: JSON.stringify(next) });
