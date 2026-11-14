@@ -1,0 +1,17 @@
+{
+  "head": "21500d4b8032db437098a7c1e8cd1b175cea144d",
+  "diffSha256": "997c620d2d049835f454c3ed83cdcafb0e8655bcde4b7aad26db074527544d2f",
+  "files": [
+    "migrations/core/0079_subscriber_directory_order.sql",
+    "sources.lock.json",
+    "src/core/features/subscribers/repository.ts",
+    "src/core/features/subscribers/routes.ts",
+    "src/core/features/subscribers/service.ts",
+    "tests/auth-adoption/setup-migrations.test.mjs",
+    "tests/e2e/helpers/subscriber-directory-flow.mjs"
+  ],
+  "published": true,
+  "branch": "cloud/sd-lamp-qgrowth-subscribers-1",
+  "scopeException": "Only the existing setup-migration test was adjusted beyond subscriber tests; its pinned migration endpoint otherwise rejects the permitted index migration.",
+  "unresolved": "release inventory must list the new migration; release file edits forbidden by brief"
+}

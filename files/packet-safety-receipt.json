@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "checkedFiles": 46,
+  "injectedSecretByteMatches": 0,
+  "symlinks": 0,
+  "scope": "explicit packet regular files; no injected secret values logged or copied",
+  "allFilesSelectedExplicitly": true
+}

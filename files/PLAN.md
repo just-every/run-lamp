@@ -1,0 +1,9 @@
+# Subscriber-list repair plan
+
+1. Start from current main; preserve the standalone product scope, native subscriber list response, ordering, owner pagination, capacity and selection semantics.
+2. Copy only the size adoption's declarations to a disposable scratch clone. Keep all fixture/harness/receipt files out of the product tree. Measure the emitted Worker with published rer 0.2.115 and the unchanged synthetic geometry, ceilings and growth budget. Guard the declaration at 200 MiB.
+3. Inspect statement-level row reads. Bound the list's SQL work to its explicit page and load related selections only for page rows; retain aggregate capacity counts and all existing search/filter semantics. Add only an additive idempotent numbered index migration if necessary.
+4. Extend the existing subscriber directory public-door flow for page boundaries, complete stable ordering, selections and capacity. Keep the registered test count unchanged. Run touched flow and typecheck; if a migration is added, run migration ledger, archive/restore and forward-upgrade checks and report Gate required.
+5. Re-measure the unchanged scratch declaration after copying the final product source. Preserve full raw results and statement artifacts; unrelated size failures remain out of scope.
+6. Refresh current main before the first publication (merge after any published save), regenerate sources.lock.json last, check it, audit every candidate commit's identities and trailers, and run Base's full-history publication scan with the explicit project, destination URL and public base.
+7. Push only cloud/sd-lamp-qgrowth-subscribers-1 via the fleet guard, create a lane PR as required by the repository, and use bounded exact-SHA REST CI observation within ten GitHub calls. Publish this non-secret packet separately to evidence/sd-lamp-qgrowth-subscribers-1. Return PARTIAL claims and terminal product/evidence custody without changing contract judgments or landing.

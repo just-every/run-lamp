@@ -1,0 +1,11 @@
+✔ Setup fails naming the missing migrations when the apply comes up short, then a rerun completes them (810.608282ms)
+ℹ PROBE: apply short -> setup fails naming 0061-0079 (exit 1)
+ℹ PROBE: complete apply -> success message unchanged (exit 0)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 910.406009

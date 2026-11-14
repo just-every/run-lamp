@@ -1,0 +1,55 @@
+✖ Setup fails naming the missing migrations when the apply comes up short, then a rerun completes them (288.530734ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials (4235.304292ms)
+▶ ACCESS-002 upgrade moves setup authority only with the setup operator who still exists
+  ✔ kept (2247.935195ms)
+  ✔ erased (2203.258076ms)
+  ✔ revoked (2250.685204ms)
+✔ ACCESS-002 upgrade moves setup authority only with the setup operator who still exists (6702.89288ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ HIST-004 PORT-001 — owner SQL rolls back a failed upgrade, recovers once, and travels through a clean technical backup and restore (82561.304017ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m				You have defined bindings to the following internal Durable Objects:[0m
+
+  				- {"name":"SNAPSHOT_CACHE","class_name":"SnapshotCache"}
+  				These will not work in local development, but they should work in production.
+  
+  				If you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+  				For detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api#supported-bindings[0m
+
+
+A DurableObjectNamespace in the config referenced the class "SnapshotCache", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+✔ HIST-004 — a previous-release backup upgrades through rer import with its original history, consent and image bytes (57278.929387ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 153912.795866
+
+✖ failing tests:
+
+test at tests/auth-adoption/setup-migrations.test.mjs:36:1
+✖ Setup fails naming the missing migrations when the apply comes up short, then a rerun completes them (288.530734ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /\(0061-0078\)/. Input:
+  
+  'Setup stopped: 59 of 78 migrations are applied; 19 are missing (0061-0079): 0061_vendor_alert_presets.sql, 0062_public_metrics.sql, 0063_management_metric_tokens.sql, 0064_management_read_tokens.sql, 0065_sms_subscriptions.sql, 0066_social_accounts.sql, 0067_incident_subscriptions.sql, 0068_incident_report_deliveries.sql, 0069_incident_management_consent.sql, 0070_incident_subscriber_read_scope.sql, 0071_page_theme.sql, 0072_alert_rules.sql, 0073_operator_roles.sql, 0074_alert_rule_guards.sql, 0075_sign_in_providers.sql, 0076_dependency_keys_sealed.sql, 0077_import_audit.sql, 0078_vendor_dependencies.sql, 0079_subscriber_directory_order.sql. The install is left as it is; run setup again to apply them.\n'
+  
+      at TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/tests/auth-adoption/setup-migrations.test.mjs:51:12)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Setup stopped: 59 of 78 migrations are applied; 19 are missing (0061-0079): 0061_vendor_alert_presets.sql, 0062_public_metrics.sql, 0063_management_metric_tokens.sql, 0064_management_read_tokens.sql, 0065_sms_subscriptions.sql, 0066_social_accounts.sql, 0067_incident_subscriptions.sql, 0068_incident_report_deliveries.sql, 0069_incident_management_consent.sql, 0070_incident_subscriber_read_scope.sql, 0071_page_theme.sql, 0072_alert_rules.sql, 0073_operator_roles.sql, 0074_alert_rule_guards.sql, 0075_sign_in_providers.sql, 0076_dependency_keys_sealed.sql, 0077_import_audit.sql, 0078_vendor_dependencies.sql, 0079_subscriber_directory_order.sql. The install is left as it is; run setup again to apply them.\n',
+    expected: /\(0061-0078\)/,
+    operator: 'match',
+    diff: 'simple'
+  }

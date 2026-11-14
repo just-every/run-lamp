@@ -1,0 +1,71 @@
+{
+  "baselineMigrationRetry": {
+    "exit": 0,
+    "tests": 1,
+    "pass": 1,
+    "log": "migration-ledger-baseline-retry.log"
+  },
+  "setupMigrationRetry": {
+    "exit": 0,
+    "tests": 1,
+    "pass": 1,
+    "log": "setup-migrations-retry.log"
+  },
+  "upgradeArchiveInitial": {
+    "exit": 1,
+    "tests": 8,
+    "pass": 7,
+    "fail": 1,
+    "failure": "hard-coded last migration range; repaired in existing setup test",
+    "log": "migration-archive-upgrade.log"
+  },
+  "typecheck": {
+    "exit": 0,
+    "log": "typecheck.log"
+  },
+  "build": {
+    "exit": 0,
+    "log": "product-build.log"
+  },
+  "afterStatementChecks": {
+    "small": 0,
+    "large": 0,
+    "meaning": "local SQLite structural statements check, not real D1 confirmation"
+  },
+  "subscriberDirectory": {
+    "exit": 0,
+    "tests": 1,
+    "pass": 1,
+    "log": "subscriber-directory-test.log"
+  },
+  "indexUpgrade": {
+    "exit": 0,
+    "tests": 1,
+    "pass": 1,
+    "log": "index-upgrade.log",
+    "receipt": "index-upgrade-receipt.json"
+  },
+  "sourceLock": {
+    "exit": 0,
+    "log": "source-check.json"
+  },
+  "contractDocuments": {
+    "exit": 0,
+    "log": "contract-docs-check.log"
+  },
+  "initialInvocationIssues": [
+    {
+      "command": "ad hoc node --input-type=module invokes Miniflare fixture",
+      "outcome": "no progress; stopped own recorded processes; replayed with Node test harness successfully"
+    },
+    {
+      "command": "first targeted baseline invocation",
+      "outcome": "overlapped product rebuild; stale chunk startup failure; replayed after build successfully"
+    }
+  ],
+  "releaseMigrationInventory": {
+    "exit": 1,
+    "log": "release-migration-ledger-check.log",
+    "reason": "RELEASE.json migrations must exactly match newly introduced migrations/core in apply order; brief prohibits release changes"
+  }
+}

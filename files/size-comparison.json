@@ -1,0 +1,178 @@
+[
+  {
+    "flow": "component-list",
+    "beforeSmall": 4121,
+    "beforeLarge": 182321,
+    "afterSmall": 4121,
+    "afterLarge": 182321,
+    "afterOk": false,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "incident-list",
+    "beforeSmall": 1805,
+    "beforeLarge": 180005,
+    "afterSmall": 1805,
+    "afterLarge": 180005,
+    "afterOk": false,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "incident-detail",
+    "beforeSmall": 1317,
+    "beforeLarge": 1343,
+    "afterSmall": 1317,
+    "afterLarge": 1343,
+    "afterOk": true,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "component-history",
+    "beforeSmall": 13,
+    "beforeLarge": 511,
+    "afterSmall": 13,
+    "afterLarge": 511,
+    "afterOk": false,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "subscriber-list",
+    "beforeSmall": 4299,
+    "beforeLarge": 325059,
+    "afterSmall": 1109,
+    "afterLarge": 1109,
+    "afterOk": true,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "monitor-list",
+    "beforeSmall": 653,
+    "beforeLarge": 653,
+    "afterSmall": 653,
+    "afterLarge": 653,
+    "afterOk": true,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "maintenance-list",
+    "beforeSmall": 13,
+    "beforeLarge": 13,
+    "afterSmall": 13,
+    "afterLarge": 13,
+    "afterOk": true,
+    "beforeStatus": [
+      200,
+      200
+    ],
+    "afterStatus": [
+      200,
+      200
+    ]
+  },
+  {
+    "flow": "minute-tick",
+    "beforeSmall": 24219,
+    "beforeLarge": 1671933,
+    "afterSmall": 24219,
+    "afterLarge": 1671933,
+    "afterOk": false,
+    "beforeStatus": [
+      null,
+      null
+    ],
+    "afterStatus": [
+      null,
+      null
+    ]
+  },
+  {
+    "flow": "public-summary",
+    "beforeSmall": 0,
+    "beforeLarge": 0,
+    "afterSmall": 0,
+    "afterLarge": 0,
+    "afterOk": false,
+    "beforeStatus": [
+      503,
+      503
+    ],
+    "afterStatus": [
+      503,
+      503
+    ]
+  },
+  {
+    "flow": "public-history",
+    "beforeSmall": 0,
+    "beforeLarge": 0,
+    "afterSmall": 0,
+    "afterLarge": 0,
+    "afterOk": false,
+    "beforeStatus": [
+      503,
+      503
+    ],
+    "afterStatus": [
+      503,
+      503
+    ]
+  },
+  {
+    "flow": "public-feed",
+    "beforeSmall": 0,
+    "beforeLarge": 0,
+    "afterSmall": 0,
+    "afterLarge": 0,
+    "afterOk": false,
+    "beforeStatus": [
+      503,
+      503
+    ],
+    "afterStatus": [
+      503,
+      503
+    ]
+  }
+]

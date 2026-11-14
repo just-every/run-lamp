@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "migration": "0079_subscriber_directory_order.sql",
+  "appliedTwice": true,
+  "allStoredValuesPreserved": true,
+  "plan": [
+    {
+      "id": 12,
+      "parent": 0,
+      "notused": 211,
+      "detail": "SCAN s USING INDEX subscribers_directory_order_idx"
+    },
+    {
+      "id": 15,
+      "parent": 0,
+      "notused": 46,
+      "detail": "SEARCH f USING INDEX sqlite_autoindex_incident_subscriptions_1 (subscriber_id=?) LEFT-JOIN"
+    }
+  ],
+  "stableTieOffset": [
+    {
+      "id": "synthetic-lamp-2"
+    }
+  ]
+}

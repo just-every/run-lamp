@@ -1,0 +1,48 @@
+{
+  "productHead": "21500d4b8032db437098a7c1e8cd1b175cea144d",
+  "baselineHead": "4271d1caa8f044a0265eb287c660e1777bd5b942",
+  "runner": "@runeditrun/rer@0.2.115",
+  "fixtureGuardBytes": 209715200,
+  "files": [
+    {
+      "path": "src/core/features/subscribers/repository.ts",
+      "sha256": "58b93e1d851f050ac0e18f1bc63e4e563acc2018209540c36e96d763469627a0",
+      "sameInProductAndMeasuredScratch": true
+    },
+    {
+      "path": "src/core/features/subscribers/routes.ts",
+      "sha256": "5836a1ceea88bda35b51659bd0a34a07048cb67212711a153446fb6da8094608",
+      "sameInProductAndMeasuredScratch": true
+    },
+    {
+      "path": "src/core/features/subscribers/service.ts",
+      "sha256": "494456934b5d9262a8d136a321beb1516448ee18d1dd332ad813865e4bd2da98",
+      "sameInProductAndMeasuredScratch": true
+    },
+    {
+      "path": "migrations/core/0079_subscriber_directory_order.sql",
+      "sha256": "c17148f4bb9b6e47cc154948715141d10126c9b8ec7c1fcef56ddd7d103b3e92",
+      "sameInProductAndMeasuredScratch": true
+    },
+    {
+      "path": "size-check.json",
+      "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
+      "unchangedFromSizeAdoption": true,
+      "bytes": 10488
+    },
+    {
+      "path": "agent-surface.json",
+      "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9",
+      "unchangedFromSizeAdoption": true,
+      "bytes": 262
+    },
+    {
+      "path": "hosted-check.json",
+      "sha256": "c8ca8c78ebbcc755cfbfb6d3c2652004f208b72111a55e3dc6a272eaf83f9f34",
+      "unchangedFromSizeAdoption": true,
+      "bytes": 1772
+    }
+  ],
+  "gate": "required: additive index migration",
+  "providerD1Confirmation": "not run; separate qualification"
+}

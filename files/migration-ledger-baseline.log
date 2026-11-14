@@ -1,0 +1,311 @@
+✖ [baseline:BASE-SECRET-002] [baseline:BASE-DATA-001] [baseline:BASE-OPS-001] [baseline:BASE-OPS-002] [baseline:BASE-OPS-003] [baseline:BASE-OPS-004] [baseline:BASE-OPS-005] An installation restores and upgrades its data, exposes failed work and recovers without duplicate delivery (57778.837253ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 58319.967038
+
+✖ failing tests:
+
+test at tests/baseline/e2e-baseline/case.mjs:9:10
+✖ [baseline:BASE-SECRET-002] [baseline:BASE-DATA-001] [baseline:BASE-OPS-001] [baseline:BASE-OPS-002] [baseline:BASE-OPS-003] [baseline:BASE-OPS-004] [baseline:BASE-OPS-005] An installation restores and upgrades its data, exposes failed work and recovers without duplicate delivery (57778.837253ms)
+  Error: baseline Worker did not become ready within 30000ms (The operation was aborted due to timeout):
+  [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+  
+  
+  
+   ⛅️ wrangler 4.129.1 (update available 4.162.0)
+  ───────────────────────────────────────────────
+  
+  Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+  Using secrets defined in ../../../../../../tmp/lamp-baseline-d1-3uMgg7/.dev.vars
+  Your Worker has access to the following bindings:
+  Binding                                                                       Resource                  Mode
+  env.SNAPSHOT_CACHE (SnapshotCache)                                            Durable Object            local
+  env.JOBS (lamp-local-jobs)                                                    Queue                     local
+  env.DB (lamp-local)                                                           D1 Database               local
+  env.SNAPSHOTS (lamp-local-snapshots)                                          R2 Bucket                 local
+  env.ASSETS                                                                    Assets                    local
+  env.LAMP_PAGE_HOST ("localhost")                                              Environment Variable      local
+  env.LAMP_APP_HOST ("127.0.0.1")                                               Environment Variable      local
+  env.MAIL_FROM_ADDRESS ("lamp@localhost.invalid")                              Environment Variable      local
+  env.MAIL_PROVIDER ("")                                                        Environment Variable      local
+  env.MAIL_FROM ("")                                                            Environment Variable      local
+  env.MAIL_RELAY_URL ("")                                                       Environment Variable      local
+  env.AUTH_ORIGIN ("http://127.0.0.1:37795")                                    Environment Variable      local
+  env.AUTH_LOCAL ("true")                                                       Environment Variable      local
+  env.SESSION_SECRET ("test-only-operator-session-secret-aaa...")               Environment Variable      local
+  env.SETUP_OPERATOR_EMAIL ("operator@example.test")                            Environment Variable      local
+  env.SUBSCRIBER_TOKEN_SECRET ("(hidden)")                                      Environment Variable      local
+  
+  Wrangler detected this dev session is running in an AI agent.
+  The Local Explorer API is available at http://127.0.0.1:37795/cdn-cgi/local/explorer/api
+  Useful routes:
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api/local/workers - local Workers and bindings
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api/storage/kv/namespaces - KV namespaces
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api/d1/database - D1 databases
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api/r2/buckets - R2 buckets
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api/workers/durable_objects/namespaces - Durable Object namespaces
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api/workflows - Workflows
+    POST http://127.0.0.1:37795/cdn-cgi/local/explorer/api/local/observability/query - run a read-only SQL query (SELECT/WITH only) over captured request traces and console logs. Tables: spans, logs (read attributes via json(attributes)). Example:
+      curl -X POST http://127.0.0.1:37795/cdn-cgi/local/explorer/api/local/observability/query -H 'Content-Type: application/json' -d '{"sql":"SELECT service, name, outcome, duration_ms FROM spans WHERE parent_id IS NULL LIMIT 20"}'
+  If the routes above don't cover what you need, fetch the full OpenAPI schema (large - use only as a last resort):
+    GET http://127.0.0.1:37795/cdn-cgi/local/explorer/api - OpenAPI schema
+  [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mBuild failed with 35 errors:[0m
+  
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/jsx-runtime-zPeYIBpK.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:1:113:
+    [37m      1 │ ... require_jsx_runtime } from [32m"./app-assets/jsx-runtime-zPeYIBpK.js"[37m;
+            ╵                                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/effects-VYE1ptea.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:2:346:
+    [37m      2 │ ...bled, u as sessionCookie } from [32m"./app-assets/effects-VYE1ptea.js"[37m;
+            ╵                                    [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/schemas-BPHgj0et.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:3:308:
+    [37m      3 │ ... x as ZodError, y as url } from [32m"./app-assets/schemas-BPHgj0et.js"[37m;
+            ╵                                    [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/labels-COn1FwEl.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:4:655:
+    [37m      4 │ ...s TEMPLATE_WORDING_FIELDS } from [32m"./app-assets/labels-COn1FwEl.js"[37m;
+            ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/mail-gjSEW8AB.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:5:266:
+    [37m      5 │ ...u as isMailPreparationError } from [32m"./app-assets/mail-gjSEW8AB.js"[37m;
+            ╵                                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/opaque-tokens-QW90qhqC.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:6:102:
+    [37m      6 │ ... constantTimeEqual } from [32m"./app-assets/opaque-tokens-QW90qhqC.js"[37m;
+            ╵                              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/presets-BCE2Daoi.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:7:363:
+    [37m      7 │ ...so, y as isGroupedPreset } from [32m"./app-assets/presets-BCE2Daoi.js"[37m;
+            ╵                                    [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/domain-B7v_qPoN.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:8:165:
+    [37m      8 │ ...LS, t as COMPONENT_STATES } from [32m"./app-assets/domain-B7v_qPoN.js"[37m;
+            ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/preferences-DK2ok1RP.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:9:139:
+    [37m      9 │ ...s defaultPreferences } from [32m"./app-assets/preferences-DK2ok1RP.js"[37m;
+            ╵                                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/incident-component-changes-DhqzxtgM.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:10:177:
+    [37m      10 │ ...ATES } from [32m"./app-assets/incident-component-changes-DhqzxtgM.js"[37m;
+             ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/format-BW0KB5tS.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:11:208:
+    [37m      11 │ ...s DAY$3, u as stateClass } from [32m"./app-assets/format-BW0KB5tS.js"[37m;
+             ╵                                    [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/undo-snapshot-BUqB49ht.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:12:1562:
+    [37m      12 │ ...z as targetGuards } from [32m"./app-assets/undo-snapshot-BUqB49ht.js"[37m;
+             ╵                             [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/accent-ink-BD7iXk4V.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:13:91:
+    [37m      13 │ ...ng, t as accentInk$1 } from [32m"./app-assets/accent-ink-BD7iXk4V.js"[37m;
+             ╵                                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/draft-B4W2Hhrx.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:14:381:
+    [37m      14 │ ...f, y as draftFromIncident } from [32m"./app-assets/draft-B4W2Hhrx.js"[37m;
+             ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/month-QNzw0JLq.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:15:51:
+    [37m      15 │ ...Month, t as calendarMonth } from [32m"./app-assets/month-QNzw0JLq.js"[37m;
+             ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/public-origin-DsO7EJ-x.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:16:38:
+    [37m      16 │ ... publicPageOrigin } from [32m"./app-assets/public-origin-DsO7EJ-x.js"[37m;
+             ╵                             [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/package-BvTd9Z97.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:17:31:
+    [37m      17 │ import { n as version$1 } from [32m"./app-assets/package-BvTd9Z97.js"[37m;
+             ╵                                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/held-sorry-CkG3y6e0.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:18:34:
+    [37m      18 │ ... { t as heldDeadline } from [32m"./app-assets/held-sorry-CkG3y6e0.js"[37m;
+             ╵                                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/root-9EyTSWnO.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:19:50:
+    [37m      19 │ ...NotFound, t as rootRouteId } from [32m"./app-assets/root-9EyTSWnO.js"[37m;
+             ╵                                      [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/redirect-BDbpra0T.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:20:32:
+    [37m      20 │ import { t as isRedirect } from [32m"./app-assets/redirect-BDbpra0T.js"[37m;
+             ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/invariant-B8Adqqro.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:21:104:
+    [37m      21 │ ...tocol, t as invariant } from [32m"./app-assets/invariant-B8Adqqro.js"[37m;
+             ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/path-E273zKfp.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:22:7:
+    [37m      22 │ import [32m"./app-assets/path-E273zKfp.js"[37m;
+             ╵        [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/manifest-8yGZYr17.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:23:292:
+    [37m      23 │ ...solveManifestAssetLink } from [32m"./app-assets/manifest-8yGZYr17.js"[37m;
+             ╵                                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/esm-DtGsYRiG.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:24:41:
+    [37m      24 │ ... { n as createServerHistory } from [32m"./app-assets/esm-DtGsYRiG.js"[37m;
+             ╵                                       [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/utils-gBu8rjNy.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:25:37:
+    [37m      25 │ ...rt { n as useLayoutEffect } from [32m"./app-assets/utils-gBu8rjNy.js"[37m;
+             ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/Match-CZzGy0eu.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:26:67:
+    [37m      26 │ ...renderPending, t as Match } from [32m"./app-assets/Match-CZzGy0eu.js"[37m;
+             ╵                                     [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/useSelector-CVndwx7n.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:27:51:
+    [37m      27 │ ...ext, i as useRouter } from [32m"./app-assets/useSelector-CVndwx7n.js"[37m;
+             ╵                               [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/createServerFn-LbQwuMn2.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:28:374:
+    [37m      28 │ ...FRAMED_VERSIONED } from [32m"./app-assets/createServerFn-LbQwuMn2.js"[37m;
+             ╵                            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/react-dom-N3pJMQfH.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:29:39:
+    [37m      29 │ ... as require_react_dom } from [32m"./app-assets/react-dom-N3pJMQfH.js"[37m;
+             ╵                                 [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/__23tanstack-start-server-fn-resolver-D3kCS-ci.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:30:37:
+    [37m      30 │ ...Id } from [32m"./app-assets/__23tanstack-start-server-fn-resolver-D[37m...
+             ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/undo-snapshot-BUqB49ht.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:10643:42:
+    [37m      10643 │ ...it import([32m"./app-assets/undo-snapshot-BUqB49ht.js"[37m).then((n)...
+                ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/_tanstack-start-manifest_v-QUIr5j5z.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:93520:43:
+    [37m      93520 │ ...it import([32m"./app-assets/_tanstack-start-manifest_v-QUIr5j5z.[37m...
+                ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/router-l6cfv3xR.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:94706:9:
+    [37m      94706 │     import([32m"./app-assets/router-l6cfv3xR.js"[37m).then((n) => n.t),
+                ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/start-CGrMpfFZ.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:94707:9:
+    [37m      94707 │     import([32m"./app-assets/start-CGrMpfFZ.js"[37m),
+                ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+    [31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "./app-assets/empty-plugin-adapters-D_0twvAa.js"[0m
+    
+        ../../home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/dist/server/index.js:94708:9:
+    [37m      94708 │     import([32m"./app-assets/empty-plugin-adapters-D_0twvAa.js"[37m)
+                ╵            [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    
+    
+  
+  
+  
+      at waitForWorker (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/tests/e2e/worker-startup.mjs:63:9)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async createBaselineFixture (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/tests/baseline/e2e-baseline/fixture.mjs:116:5)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-subscribers-1/product/tests/baseline/e2e-baseline/core-baseline.test.mjs:17:13)
+      at async TestHook.run (node:internal/test_runner/test:1389:7)

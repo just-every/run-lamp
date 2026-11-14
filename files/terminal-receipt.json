@@ -1,0 +1,26 @@
+{
+  "timestamp": "2026-11-14T01:37:09.933055+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-subscribers-1",
+  "head": "21500d4b8032db437098a7c1e8cd1b175cea144d",
+  "workingTreeClean": true,
+  "productPush": "success, first attempt; product-push.log",
+  "pr": "https://github.com/just-every/run-lamp/pull/364",
+  "verifyRun": 43540987750,
+  "verifyStatus": "completed",
+  "gate": "required: index migration; pending fleet",
+  "publicationScan": "INCOMPLETE: scan.gitleaks-unavailable",
+  "claims": [
+    "SUB-011 PARTIAL points=1,3"
+  ],
+  "contractStatusChanges": [],
+  "verifyConclusion": "failure",
+  "githubCalls": 7,
+  "terminal": "BLOCKED",
+  "blocker": "release migration inventory entry required; release changes forbidden by brief",
+  "failedJobs": [
+    132281289372,
+    132281554700
+  ],
+  "evidencePublication": "Result reported separately by the terminal EVIDENCE line; report-only transport confers no product readiness."
+}
