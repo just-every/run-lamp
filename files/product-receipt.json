@@ -1,0 +1,31 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-tick-2-fix1-c1",
+  "head": "280a76e1d89edba472a118024d9e17134cf25aff",
+  "parent": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+  "ordinary_commits": 1,
+  "merge_commits": 0,
+  "push": "succeeded first attempt",
+  "push_command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-qgrowth-tick-2-fix1-c1",
+  "identity_audit": "all candidate author/committer fields fleet; no trailers; log covers every parent",
+  "product_files": 30,
+  "insertions": 929,
+  "deletions": 110,
+  "pr": {
+    "draft": true,
+    "head_sha": "280a76e1d89edba472a118024d9e17134cf25aff",
+    "html_url": "https://github.com/just-every/run-lamp/pull/383",
+    "number": 383
+  },
+  "migration_gate": "required independently before landing",
+  "published_history_rewritten": false,
+  "default_branch_written": false,
+  "custody": "PUSHED",
+  "verify_run_id": 43632972316,
+  "verify_last_observed_status": "in_progress",
+  "verify_last_observed_at": "2026-11-14T20:06:33Z",
+  "local_full_verifier_exit": 1,
+  "local_planned_commands": 24,
+  "local_passed_commands": 23,
+  "local_failure": "existing THEME-001 four-request assertion; same failure reproduced on unmodified main"
+}

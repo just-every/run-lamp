@@ -1,0 +1,18 @@
+Node v22.20.0 workerd 1.20260907.1
+workerd 2026-09-07
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at data:text/html,<title>Fleet runtime probe</title>
+Call log:
+[2m  - navigating to "data:text/html,<title>Fleet runtime probe</title>", waiting until "load"[22m
+
+    at /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/[eval1]:1:565 {
+  log: [
+    '  - navigating to "data:text/html,<title>Fleet runtime probe</title>", waiting until "load"'
+  ],
+  name: 'Error'
+}
+
+Node.js v22.20.0

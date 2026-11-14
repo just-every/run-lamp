@@ -1,0 +1,19 @@
+{
+  "counts": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "claims": [
+    {
+      "id": "INCIDENT-001",
+      "status": "partial"
+    },
+    {
+      "id": "NOTIFY-006",
+      "status": "partial"
+    }
+  ],
+  "changed": false
+}

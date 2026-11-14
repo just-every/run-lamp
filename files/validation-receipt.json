@@ -1,0 +1,251 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-tick-2-fix1-c1",
+  "head": "280a76e1d89edba472a118024d9e17134cf25aff",
+  "touched": {
+    "initial_tests": 13,
+    "initial_pass": 12,
+    "initial_fail": 1,
+    "retry_tests": 1,
+    "retry_pass": 1,
+    "initial_failure": "local ERR_ADDRESS_IN_USE",
+    "fresh_full_public_tests": 7,
+    "fresh_full_public_pass": 7
+  },
+  "required_checks": {
+    "contract_docs": 0,
+    "source_check": 0,
+    "validate_release": 0,
+    "migration_ledger": 0,
+    "typecheck": 0,
+    "carry_proof": 0
+  },
+  "full_verifier_exit": 1,
+  "baseline_theme_failure": {
+    "test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+    "candidate": "280a76e1d89edba472a118024d9e17134cf25aff",
+    "baseline": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+    "candidate_exit": 1,
+    "main_exit": 1,
+    "browser": "/usr/bin/chromium 154.0.8037.57",
+    "assertion": "default exceeds four-request budget with status-page.css, theme-header, mark.svg, status-page.js and favicon.svg",
+    "interpretation": "reproduces on unchanged main under same toolchain; not introduced by carry; product and assertion unchanged"
+  },
+  "shards": [
+    {
+      "shard": "build",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "check:contract-docs",
+          "exitCode": 0,
+          "durationMs": 642
+        },
+        {
+          "script": "source:copies",
+          "exitCode": 0,
+          "durationMs": 513
+        },
+        {
+          "script": "source:check",
+          "exitCode": 0,
+          "durationMs": 924
+        },
+        {
+          "script": "typecheck",
+          "exitCode": 0,
+          "durationMs": 17117
+        },
+        {
+          "script": "check:syntax",
+          "exitCode": 0,
+          "durationMs": 9166
+        },
+        {
+          "script": "validate:release",
+          "exitCode": 0,
+          "durationMs": 759
+        },
+        {
+          "script": "verify:visual:source",
+          "exitCode": 0,
+          "durationMs": 270
+        },
+        {
+          "script": "build:app",
+          "exitCode": 0,
+          "durationMs": 6256
+        },
+        {
+          "script": "build:site",
+          "exitCode": 0,
+          "durationMs": 3988
+        }
+      ]
+    },
+    {
+      "shard": "composer",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": false,
+      "steps": [
+        {
+          "script": "test:composer",
+          "exitCode": 1,
+          "durationMs": 494635
+        },
+        {
+          "script": "test:public",
+          "exitCode": 0,
+          "durationMs": 472245
+        }
+      ]
+    },
+    {
+      "shard": "delivery",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:channels",
+          "exitCode": 0,
+          "durationMs": 613926
+        }
+      ]
+    },
+    {
+      "shard": "demo",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:demo",
+          "exitCode": 0,
+          "durationMs": 152492
+        },
+        {
+          "script": "test:baseline",
+          "exitCode": 0,
+          "durationMs": 257627
+        }
+      ]
+    },
+    {
+      "shard": "imports",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:imports",
+          "exitCode": 0,
+          "durationMs": 320258
+        },
+        {
+          "script": "test:mail",
+          "exitCode": 0,
+          "durationMs": 23487
+        },
+        {
+          "script": "test:site",
+          "exitCode": 0,
+          "durationMs": 103082
+        }
+      ]
+    },
+    {
+      "shard": "ownership",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:ownership",
+          "exitCode": 0,
+          "durationMs": 141825
+        },
+        {
+          "script": "test:owner-claim",
+          "exitCode": 0,
+          "durationMs": 19969
+        },
+        {
+          "script": "test:owner-backup",
+          "exitCode": 0,
+          "durationMs": 82864
+        }
+      ]
+    },
+    {
+      "shard": "portability",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:portability",
+          "exitCode": 0,
+          "durationMs": 220152
+        }
+      ]
+    },
+    {
+      "shard": "public",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:delivery",
+          "exitCode": 0,
+          "durationMs": 658235
+        }
+      ]
+    },
+    {
+      "shard": "runtime",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:runtime",
+          "exitCode": 0,
+          "durationMs": 82419
+        },
+        {
+          "script": "test:publishing",
+          "exitCode": 0,
+          "durationMs": 226164
+        }
+      ]
+    }
+  ],
+  "ci": {
+    "id": 43632972316,
+    "name": "Verify",
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "280a76e1d89edba472a118024d9e17134cf25aff",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43632972316"
+  },
+  "logs": {
+    "file": "full-verify.log",
+    "auth_redactions": 0,
+    "sha256": "b65947f602944a21ff6cc38b7f35e9d5b53c3b9c7c88e38c3e19133e4730705c"
+  }
+}

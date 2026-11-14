@@ -1,0 +1,14 @@
+{
+  "shard": "delivery",
+  "commit": null,
+  "runId": null,
+  "runAttempt": 0,
+  "success": true,
+  "steps": [
+    {
+      "script": "test:channels",
+      "exitCode": 0,
+      "durationMs": 613926
+    }
+  ]
+}

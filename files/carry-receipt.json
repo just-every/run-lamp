@@ -1,0 +1,199 @@
+{
+  "base": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+  "candidate": "8bc4c80dfa69b4371c2d913f87227570df2007ed",
+  "main": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+  "candidate_changed_files": 30,
+  "main_gained_files": 34,
+  "overlapping_files": [
+    "RELEASE.json",
+    "sources.lock.json",
+    "tests/e2e/prior-backup.test.mjs"
+  ],
+  "exact_candidate_files": 27,
+  "preserved_other_main_files": 31,
+  "release": "all main metadata preserved; exact candidate 0081 entry appended",
+  "source_lock": "regenerated last; source:check passes separately",
+  "contract": "unchanged",
+  "generated_views": "unchanged from main",
+  "files": [
+    {
+      "path": "docs/public-page.md",
+      "disposition": "byte-identical to candidate",
+      "sha256": "ef1fb32f2f6c40d3e1a764c70ef56b0b7aa625337ab0e1b01541eac7f7e243bc"
+    },
+    {
+      "path": "migrations/core/0081_scheduled_work_indexes.sql",
+      "disposition": "byte-identical to candidate",
+      "sha256": "a51347b460ea983e43bf8ec5626dd16c99abe1e91c3e4b0a5d8ca5151bb18140"
+    },
+    {
+      "path": "src/core/features/channels/subscriber-events.repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "936574bc951acfdd2abcb7a9c333010d8704b1900b09fa372e3a8abe5b779bd1"
+    },
+    {
+      "path": "src/core/features/incidents/reminders.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "33b7e5bd7ea513efaa947694fd7f66da8824f3247c7e67e837162cd7fdd1233d"
+    },
+    {
+      "path": "src/core/features/public-snapshot/archive.repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "58370ab7ca0311bf2410c04f2a6014863617db516d62603807dfc2c905443ada"
+    },
+    {
+      "path": "src/core/features/public-snapshot/archive.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "ce31d859874a5fe1db6ddbd81740229312f1583e7321f3fdc6dd6b3cf914ce73"
+    },
+    {
+      "path": "src/core/features/public-snapshot/feeds.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "36fcd9581151f5d0b57be4f915b4793b9159990611b58985e2201c1a78177c79"
+    },
+    {
+      "path": "src/core/features/public-snapshot/history.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "9bbfbe8abe66cc9ef25d25b8236d214246b9443a7cfb246383dc182ed8266598"
+    },
+    {
+      "path": "src/core/features/public-snapshot/native-api.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "f716609442be464c1b4335dd8c5ee09ff1d33198b04bc1ced5ffae2793bba556"
+    },
+    {
+      "path": "src/core/features/public-snapshot/public-api.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "d947fbe68d474a2368f321af2f4d3fd5e5ee06edb5d61a1bced39601f7da9c7a"
+    },
+    {
+      "path": "src/core/features/public-snapshot/renderer.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "19cc2ef11016d5b53160b3b2470ec3ae6e45d89f52390deb121963c689933774"
+    },
+    {
+      "path": "src/core/features/public-snapshot/repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "b67b00616d376c8157f18bb478180049987f5672a44533b7f2d0ba851b93e998"
+    },
+    {
+      "path": "src/core/features/public-snapshot/routes.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "266a9cf8e99662bb21fde04c0b589edc4e8b9ee5cf6a4070a8094616cfd33093"
+    },
+    {
+      "path": "src/core/features/public-snapshot/service.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "cb9b6032f961d3b309c4a0e13bbf6b035f663d77143254e230ecccd699fc448b"
+    },
+    {
+      "path": "src/core/features/public-snapshot/templates/parts.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "10aac5261445f792ac3f7f42ae3b583eada3e43f1a9cba34eb4faf7b46bc23db"
+    },
+    {
+      "path": "src/core/features/reports/repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "d7110b9f7cb7f6c12f59fb5bc42100134b4ad19790ef1e286cd26eb5267778be"
+    },
+    {
+      "path": "src/core/features/reports/service.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "62cbda2abc6422f92638fab3347b7283ef51dcf9849ac44960f7b9a8ea756c49"
+    },
+    {
+      "path": "src/core/features/scheduled-work/repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "143deb338d517aeea0a2dacbed9eb82d72d6364c8b60bbb49690079a4b1071e8"
+    },
+    {
+      "path": "src/core/features/subscribers/incident-lifecycle.repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "715fea41b68a1d0fa81863f4ec7c2a64dad6645ba97767ed76cba24d74eb5dea"
+    },
+    {
+      "path": "src/core/features/subscribers/limits.repository.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "ffd5cf2fba262ab0a184516846a36035f3ba625d345f1d3d9000b5d63eae035c"
+    },
+    {
+      "path": "src/core/platform/blobs/retained-bundle.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "a6c5e3d49ace38dc6d9f55a15dff39da063a1317fab2cd807d028295d70c1066"
+    },
+    {
+      "path": "tests/e2e/helpers/public-history-flow.mjs",
+      "disposition": "byte-identical to candidate",
+      "sha256": "62e4cfee01bcc0ad3b391b8d7caec3d9b3edeedf28fa60f87b42b461b8a1b97b"
+    },
+    {
+      "path": "tests/e2e/helpers/public-history-selection-flow.mjs",
+      "disposition": "byte-identical to candidate",
+      "sha256": "ef38a10379465779461c45173cd7c8a7011ea227bb34dea98d417ef37cb61a93"
+    },
+    {
+      "path": "tests/e2e/helpers/snapshot-release-rebuild-flow.mjs",
+      "disposition": "byte-identical to candidate",
+      "sha256": "579258e365a0d9cc7306de1f25d2a6a3b62a4a2dedbe1ed685befb9830e59666"
+    },
+    {
+      "path": "tests/e2e/helpers/status-journey.worker.ts",
+      "disposition": "byte-identical to candidate",
+      "sha256": "105b07b59178ea29d800b3f49fc44ec3a5a19bd5d823a7506164549d1cfaa74c"
+    },
+    {
+      "path": "tests/e2e/prior-backup.test.mjs",
+      "disposition": "exact conflict-free three-way union with main",
+      "sha256": "99ae5488f1bb7a8430c10e2b96327b40f66ef8029b711e2997cd04822f0de851"
+    },
+    {
+      "path": "tests/e2e/snapshot-retained.test.mjs",
+      "disposition": "byte-identical to candidate",
+      "sha256": "d4df058d1d4ed8ec25aec35ea8a72996ecc77f5f4a36645f08a3d2080457cc3a"
+    },
+    {
+      "path": "tests/e2e/update-reminders.test.mjs",
+      "disposition": "byte-identical to candidate",
+      "sha256": "00810e3baca91aa1724f1c32fd262f83b7401f427fd44d1ff3fcf1d7a10ffeb8"
+    }
+  ],
+  "head": "280a76e1d89edba472a118024d9e17134cf25aff",
+  "candidate_to_carry_changed_paths": [
+    "ACCEPTANCE.md",
+    "CHANGELOG.md",
+    "CONTRACT.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "migrations/core/0080_incident_list_paging.sql",
+    "package.json",
+    "pnpm-lock.yaml",
+    "release-history/1.11.15.CONTRACT.md",
+    "release-history/1.11.15.json",
+    "seed.json",
+    "sources.lock.json",
+    "src/core/features/incidents/communication-owner.repository.ts",
+    "src/core/features/incidents/list-relations.ts",
+    "src/core/features/incidents/page-repository.ts",
+    "src/core/features/incidents/repository.ts",
+    "src/core/features/incidents/routes.ts",
+    "src/core/features/incidents/service.ts",
+    "src/core/features/incidents/ui/incidents-page.tsx",
+    "src/core/features/intake/repository.ts",
+    "src/core/features/page-settings/repository.ts",
+    "src/core/features/page-settings/routes.ts",
+    "src/core/features/page-settings/service.ts",
+    "src/core/features/public-snapshot/format.ts",
+    "src/core/features/setup/ui/first-run-page.tsx",
+    "tests/e2e/helpers/follow-ups-import.mjs",
+    "tests/e2e/helpers/sms-subscriber-flow.mjs",
+    "tests/e2e/prior-backup.test.mjs",
+    "tests/e2e/publishing-browser.test.mjs",
+    "tests/e2e/publishing-contract.test.mjs",
+    "tests/e2e/sorry-import.test.mjs",
+    "tests/e2e/statuspage-import.test.mjs",
+    "tests/e2e/website-onboarding.test.mjs",
+    "tests/helpers/incident-snapshot.mjs"
+  ],
+  "source_check": "passed after regeneration and again in full verifier build shard",
+  "contract_counts_file": "contract-counts.json"
+}

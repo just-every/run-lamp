@@ -1,0 +1,9 @@
+{
+  "id": 43632972316,
+  "name": "Verify",
+  "event": "push",
+  "status": "in_progress",
+  "conclusion": null,
+  "head_sha": "280a76e1d89edba472a118024d9e17134cf25aff",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/43632972316"
+}

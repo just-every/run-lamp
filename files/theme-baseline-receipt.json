@@ -1,0 +1,10 @@
+{
+  "test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+  "candidate": "280a76e1d89edba472a118024d9e17134cf25aff",
+  "baseline": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+  "candidate_exit": 1,
+  "main_exit": 1,
+  "browser": "/usr/bin/chromium 154.0.8037.57",
+  "assertion": "default exceeds four-request budget with status-page.css, theme-header, mark.svg, status-page.js and favicon.svg",
+  "interpretation": "reproduces on unchanged main under same toolchain; not introduced by carry; product and assertion unchanged"
+}

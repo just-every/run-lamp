@@ -1,0 +1,1813 @@
+diff --git a/RELEASE.json b/RELEASE.json
+index dba59fdd..96d28fd3 100644
+--- a/RELEASE.json
++++ b/RELEASE.json
+@@ -20,6 +20,10 @@
+     {
+       "id": "0080_incident_list_paging.sql",
+       "buyerSteps": "Keep the pre-upgrade data and source backup. The same rer deploy applies this migration after 0079 before starting the updated Worker. Adds incident-list seek indexes and backfills lifecycle totals maintained by database triggers; incident records and complete update history are retained. No new account or credential is required."
++    },
++    {
++      "id": "0081_scheduled_work_indexes.sql",
++      "buyerSteps": "Apply the normal migrations to index due work and public history; existing records are retained."
+     }
+   ],
+   "breaking": false,
+diff --git a/docs/public-page.md b/docs/public-page.md
+index 6430a3fd..15c65cf9 100644
+--- a/docs/public-page.md
++++ b/docs/public-page.md
+@@ -33,3 +33,28 @@ and incident notes are not included in those public surfaces.
+ ## Accessibility evaluation
+ 
+ Read the [Accessibility Conformance Report (VPAT)](accessibility/vpat.md) for the current release, measured surfaces and evaluation limits. It is also served on the operator app host at `/docs/accessibility/vpat`, without sign-in. This report does not claim conformance for private pages, email clients or surfaces that have not been evaluated.
++
++
++## Older history
++
++The retained current snapshot includes current incidents and maintenance, the latest
++50 public completed incidents and maintenance windows, and the last 90 days of component
++observations with the boundary facts needed for correct uptime. The history page
++shows up to 50 completed records per page. Use **Older history**, a month link, or
++an incident's permanent address to reach older records; nothing is deleted.
++Internal-only records do not consume those public history slots.
++Atom and RSS publish up to 50 recent events with a `rel="next"` link for older
++entries in their twelve-month window. Component feeds keep their component filter
++on subsequent pages. Native incident and maintenance JSON collections expose the
++same explicit page size and a `nextCursor` until the complete collection is read.
++Compatibility collection responses link to those full collections and history.
++
++Repeated HTML footers share one retained copy; each served document keeps the
++complete original footer and component resources. The retained bundle still has
++the same 25 MiB limit.
++
++Current status, summary and the first history and global feed pages remain
++snapshot reads. A cold older page uses indexed bounded reads and is cached with
++its generation outside the retained current bundle. Previously cached pages can
++continue serving during an origin failure. No older page is silently folded into
++the current bundle as the installation's history grows.
+diff --git a/migrations/core/0081_scheduled_work_indexes.sql b/migrations/core/0081_scheduled_work_indexes.sql
+new file mode 100644
+index 00000000..3cdb0cd9
+--- /dev/null
++++ b/migrations/core/0081_scheduled_work_indexes.sql
+@@ -0,0 +1,178 @@
++-- Cron must seek eligible work instead of revisiting accumulated subscriber
++-- and incident history. Additive indexes preserve the existing records/ledgers.
++CREATE INDEX IF NOT EXISTS subscribers_held_created_idx
++  ON subscribers(state, deactivation_reason, created_at);
++CREATE INDEX IF NOT EXISTS subscribers_held_deactivated_idx
++  ON subscribers(state, deactivation_reason, deactivated_at);
++CREATE INDEX IF NOT EXISTS component_history_observations_idx
++  ON component_state_history(changed_at, created_at) WHERE cause_type <> 'correction';
++CREATE INDEX IF NOT EXISTS incidents_active_work_idx
++  ON incidents(id) WHERE deleted_at IS NULL AND lifecycle <> 'Resolved';
++CREATE INDEX IF NOT EXISTS incidents_unresolved_work_idx
++  ON incidents(id) WHERE resolved_at IS NULL AND deleted_at IS NULL;
++CREATE INDEX IF NOT EXISTS incidents_report_due_idx
++  ON incidents(peak_impact, resolved_at, id) WHERE lifecycle = 'Resolved' AND deleted_at IS NULL;
++
++
++-- Derived current obligations keep each minute proportional to due work. The
++-- existing incident/update/report/reminder rows remain the authority and archive.
++CREATE TABLE incident_update_reminder_work (
++  incident_id TEXT PRIMARY KEY REFERENCES incidents(id) ON DELETE CASCADE,
++  update_id TEXT NOT NULL REFERENCES incident_updates(id) ON DELETE CASCADE,
++  next_update_at TEXT NOT NULL,
++  due_soon_sent INTEGER NOT NULL DEFAULT 0,
++  overdue_sent INTEGER NOT NULL DEFAULT 0,
++  escalation_sent INTEGER NOT NULL DEFAULT 0
++);
++CREATE INDEX incident_reminder_soon_due ON incident_update_reminder_work(due_soon_sent,next_update_at,incident_id);
++CREATE INDEX incident_reminder_overdue ON incident_update_reminder_work(overdue_sent,next_update_at,incident_id);
++CREATE INDEX incident_reminder_escalation ON incident_update_reminder_work(escalation_sent,next_update_at,incident_id);
++
++CREATE VIEW incident_update_reminder_candidates AS
++SELECT i.id AS incident_id,u.id AS update_id,u.next_update_at,
++  EXISTS(SELECT 1 FROM incident_update_reminders r WHERE r.update_id=u.id AND r.kind='due-soon') AS due_soon_sent,
++  EXISTS(SELECT 1 FROM incident_update_reminders r WHERE r.update_id=u.id AND r.kind='overdue') AS overdue_sent,
++  EXISTS(SELECT 1 FROM incident_update_escalations e WHERE e.update_id=u.id) AS escalation_sent
++FROM incidents i INDEXED BY incidents_active_work_idx JOIN incident_updates u ON u.id=(SELECT latest.id FROM incident_updates latest WHERE latest.incident_id=i.id ORDER BY latest.published_at DESC,latest.id DESC LIMIT 1)
++WHERE i.deleted_at IS NULL AND i.lifecycle<>'Resolved' AND u.lifecycle<>'Resolved' AND u.is_retroactive=0 AND u.next_update_at IS NOT NULL;
++
++CREATE TRIGGER incident_reminder_incident_insert AFTER INSERT ON incidents BEGIN
++  INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates WHERE incident_id=NEW.id;
++END;
++CREATE TRIGGER incident_reminder_incident_update AFTER UPDATE OF lifecycle,deleted_at ON incidents BEGIN
++  DELETE FROM incident_update_reminder_work WHERE incident_id=NEW.id;
++  INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates WHERE incident_id=NEW.id;
++END;
++CREATE TRIGGER incident_reminder_update_insert AFTER INSERT ON incident_updates BEGIN
++  DELETE FROM incident_update_reminder_work WHERE incident_id=NEW.incident_id;
++  INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates WHERE incident_id=NEW.incident_id;
++END;
++CREATE TRIGGER incident_reminder_update_change AFTER UPDATE OF incident_id,lifecycle,published_at,is_retroactive,next_update_at ON incident_updates BEGIN
++  DELETE FROM incident_update_reminder_work WHERE incident_id IN(OLD.incident_id,NEW.incident_id);
++  INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates WHERE incident_id IN(OLD.incident_id,NEW.incident_id);
++END;
++CREATE TRIGGER incident_reminder_update_delete AFTER DELETE ON incident_updates BEGIN
++  DELETE FROM incident_update_reminder_work WHERE incident_id=OLD.incident_id;
++  INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates WHERE incident_id=OLD.incident_id;
++END;
++CREATE TRIGGER incident_reminder_recorded AFTER INSERT ON incident_update_reminders BEGIN
++  UPDATE incident_update_reminder_work SET due_soon_sent=(due_soon_sent OR NEW.kind='due-soon'),
++    overdue_sent=(overdue_sent OR NEW.kind='overdue') WHERE update_id=NEW.update_id;
++END;
++CREATE TRIGGER incident_escalation_recorded AFTER INSERT ON incident_update_escalations BEGIN
++  UPDATE incident_update_reminder_work SET escalation_sent=1 WHERE update_id=NEW.update_id;
++END;
++
++CREATE TABLE incident_report_reminder_work (
++  incident_id TEXT PRIMARY KEY REFERENCES incidents(id) ON DELETE CASCADE,
++  next_due_at TEXT NOT NULL
++);
++CREATE INDEX incident_report_reminder_due ON incident_report_reminder_work(next_due_at,incident_id);
++CREATE VIEW incident_report_reminder_candidates AS
++SELECT i.id AS incident_id,strftime('%Y-%m-%dT%H:%M:%fZ',i.resolved_at,'+' || (7*(COALESCE((SELECT MAX(r.week) FROM report_reminders r WHERE r.incident_id=i.id),-1)+2)) || ' days') AS next_due_at
++FROM incidents i INDEXED BY incidents_report_due_idx WHERE i.lifecycle='Resolved' AND i.deleted_at IS NULL AND i.resolved_at IS NOT NULL
++  AND i.peak_impact IN('Partially unavailable','Major outage')
++  AND NOT EXISTS(SELECT 1 FROM incident_reports p WHERE p.incident_id=i.id AND p.published_at IS NOT NULL)
++  AND NOT EXISTS(SELECT 1 FROM report_waivers w WHERE w.incident_id=i.id)
++  AND (NOT EXISTS(SELECT 1 FROM statuspage_import_targets imported WHERE imported.kind='incident' AND imported.id=i.id)
++    OR EXISTS(SELECT 1 FROM incident_updates live WHERE live.incident_id=i.id AND live.is_retroactive=0));
++
++CREATE TRIGGER report_reminder_incident_insert AFTER INSERT ON incidents BEGIN
++  INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=NEW.id;
++END;
++CREATE TRIGGER report_reminder_incident_update AFTER UPDATE OF lifecycle,deleted_at,resolved_at,peak_impact ON incidents BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id=NEW.id;
++  INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=NEW.id;
++END;
++CREATE TRIGGER report_reminder_update_insert AFTER INSERT ON incident_updates BEGIN
++  INSERT OR REPLACE INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=NEW.incident_id;
++END;
++CREATE TRIGGER report_reminder_import_insert AFTER INSERT ON statuspage_import_targets WHEN NEW.kind='incident' BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id=NEW.id;
++  INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=NEW.id;
++END;
++CREATE TRIGGER report_reminder_import_delete AFTER DELETE ON statuspage_import_targets WHEN OLD.kind='incident' BEGIN
++  INSERT OR REPLACE INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=OLD.id;
++END;
++CREATE TRIGGER report_reminder_report_insert AFTER INSERT ON incident_reports WHEN NEW.published_at IS NOT NULL BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id=NEW.incident_id;
++END;
++CREATE TRIGGER report_reminder_report_update AFTER UPDATE OF published_at ON incident_reports BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id=NEW.incident_id;
++  INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=NEW.incident_id;
++END;
++CREATE TRIGGER report_reminder_waiver_insert AFTER INSERT ON report_waivers BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id=NEW.incident_id;
++END;
++CREATE TRIGGER report_reminder_recorded AFTER INSERT ON report_reminders BEGIN
++  UPDATE incident_report_reminder_work SET next_due_at=(SELECT strftime('%Y-%m-%dT%H:%M:%fZ',i.resolved_at,'+' || (7*(NEW.week+2)) || ' days') FROM incidents i WHERE i.id=NEW.incident_id)
++    WHERE incident_id=NEW.incident_id;
++END;
++
++-- Capacity alerts use exact counters, maintained in the subscriber mutation's
++-- transaction, instead of recounting the entire directory every minute.
++CREATE TABLE subscriber_limit_counts (
++  channel TEXT PRIMARY KEY CHECK(channel IN('email','webhook','slack','teams','sms')),
++  total INTEGER NOT NULL CHECK(total>=0)
++);
++INSERT INTO subscriber_limit_counts(channel,total)
++SELECT 'email',0 UNION ALL SELECT 'webhook',0 UNION ALL SELECT 'slack',0 UNION ALL SELECT 'teams',0 UNION ALL SELECT 'sms',0;
++UPDATE subscriber_limit_counts SET total=(SELECT COUNT(*) FROM subscribers s INDEXED BY subscribers_capacity_idx WHERE s.state IN('pending','active') AND (CASE WHEN s.sms_kind=1 THEN 'sms' ELSE COALESCE(s.chat_kind,s.channel) END)=subscriber_limit_counts.channel);
++-- Old native archives restore with application triggers dropped. Leave the
++-- derived baseline unset until its first product use can atomically rebuild it
++-- from the complete restored canonical records and reminder ledgers.
++CREATE TABLE scheduled_work_initialization (
++  id INTEGER PRIMARY KEY CHECK(id=1),
++  completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN(0,1))
++);
++INSERT INTO scheduled_work_initialization(id,completed) VALUES(1,0);
++CREATE TRIGGER subscriber_limit_count_insert AFTER INSERT ON subscribers WHEN NEW.state IN('pending','active') BEGIN
++  UPDATE subscriber_limit_counts SET total=total+1 WHERE channel=IIF(NEW.sms_kind=1,'sms',COALESCE(NEW.chat_kind,NEW.channel));
++END;
++CREATE TRIGGER subscriber_limit_count_delete AFTER DELETE ON subscribers WHEN OLD.state IN('pending','active') BEGIN
++  UPDATE subscriber_limit_counts SET total=total-1 WHERE channel=IIF(OLD.sms_kind=1,'sms',COALESCE(OLD.chat_kind,OLD.channel));
++END;
++CREATE TRIGGER subscriber_limit_count_update AFTER UPDATE OF state,channel,chat_kind,sms_kind ON subscribers BEGIN
++  UPDATE subscriber_limit_counts SET total=total-1 WHERE OLD.state IN('pending','active') AND channel=IIF(OLD.sms_kind=1,'sms',COALESCE(OLD.chat_kind,OLD.channel));
++  UPDATE subscriber_limit_counts SET total=total+1 WHERE NEW.state IN('pending','active') AND channel=IIF(NEW.sms_kind=1,'sms',COALESCE(NEW.chat_kind,NEW.channel));
++END;
++CREATE INDEX subscribers_pending_expiry_idx ON subscribers(created_at,id) WHERE state='pending';
++CREATE INDEX incident_subscriptions_resolution_due ON incident_subscriptions(include_report,resolution_at) WHERE ended_at IS NULL AND resolution_at IS NOT NULL;
++CREATE INDEX incident_drafts_publication_due ON incident_drafts(scheduled_publish_at) WHERE scheduled_publish_at IS NOT NULL;
++CREATE INDEX maintenance_end_due ON maintenance(ends_at) WHERE state='In progress';
++CREATE INDEX incident_subscriptions_ended_work ON incident_subscriptions(subscriber_id) WHERE ended_at IS NOT NULL;
++CREATE TRIGGER report_reminder_update_change AFTER UPDATE OF incident_id,is_retroactive ON incident_updates BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id IN(OLD.incident_id,NEW.incident_id);
++  INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id IN(OLD.incident_id,NEW.incident_id);
++END;
++CREATE TRIGGER report_reminder_update_delete AFTER DELETE ON incident_updates BEGIN
++  DELETE FROM incident_report_reminder_work WHERE incident_id=OLD.incident_id;
++  INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=OLD.incident_id;
++END;
++CREATE TRIGGER report_reminder_report_delete AFTER DELETE ON incident_reports BEGIN
++  INSERT OR REPLACE INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=OLD.incident_id;
++END;
++CREATE TRIGGER report_reminder_waiver_delete AFTER DELETE ON report_waivers BEGIN
++  INSERT OR REPLACE INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=OLD.incident_id;
++END;
++
++CREATE INDEX IF NOT EXISTS incidents_resolved_public_window
++  ON incidents(resolved_at DESC,id DESC) WHERE deleted_at IS NULL AND lifecycle='Resolved';
++CREATE INDEX IF NOT EXISTS component_history_component_window
++  ON component_state_history(component_id,changed_at,created_at,id) WHERE cause_type <> 'correction';
++CREATE INDEX IF NOT EXISTS component_corrections_window
++  ON component_state_corrections(ends_at);
++CREATE INDEX IF NOT EXISTS maintenance_completed_public_window
++  ON maintenance(COALESCE(completed_at,ends_at) DESC,id DESC) WHERE state IN ('Completed','Cancelled');
++CREATE INDEX IF NOT EXISTS maintenance_current_public_window
++  ON maintenance(id) WHERE state NOT IN ('Completed','Cancelled');
++
++
++CREATE INDEX IF NOT EXISTS incident_updates_public_feed_seek ON incident_updates(published_at DESC,id DESC,incident_id);
++CREATE INDEX IF NOT EXISTS maintenance_notices_public_feed_seek ON maintenance_notices(published_at DESC,id DESC,maintenance_id);
++CREATE INDEX IF NOT EXISTS incidents_public_archive_seek ON incidents(opened_at DESC,id DESC) WHERE deleted_at IS NULL;
++CREATE INDEX IF NOT EXISTS maintenance_public_archive_seek ON maintenance(starts_at,id);
++-- Subscriber directory's effective channel must be selected before state;
++-- otherwise a cold scheduled SMS preparation revisits every inactive email.
++CREATE INDEX IF NOT EXISTS subscribers_effective_channel_state_idx
++  ON subscribers(CASE WHEN sms_kind=1 THEN 'sms' ELSE COALESCE(chat_kind,channel) END,state,id);
+diff --git a/sources.lock.json b/sources.lock.json
+index 0f903d69..e82bcaa5 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -672,7 +672,7 @@
+       "executable": false
+     },
+     "docs/public-page.md": {
+-      "sha256": "36355b5f8224b1db7bfd17606c7bd27864dacc5fdc4a55471528468fd92a548d",
++      "sha256": "ef1fb32f2f6c40d3e1a764c70ef56b0b7aa625337ab0e1b01541eac7f7e243bc",
+       "executable": false
+     },
+     "docs/public-resources.md": {
+@@ -1091,6 +1091,10 @@
+       "sha256": "9d8f532665c8cc129b4a9306b07f28cbbb32c9532f67b97380d9abdf660cb023",
+       "executable": false
+     },
++    "migrations/core/0081_scheduled_work_indexes.sql": {
++      "sha256": "a51347b460ea983e43bf8ec5626dd16c99abe1e91c3e4b0a5d8ca5151bb18140",
++      "executable": false
++    },
+     "migrations/README.md": {
+       "sha256": "8aa6d22bcfab1ec1d279f128961286b0654cbc3f7c327da1aeb535793dd874e9",
+       "executable": false
+@@ -2872,7 +2876,7 @@
+       "executable": false
+     },
+     "RELEASE.json": {
+-      "sha256": "04362f888975d43ce66a373f07d3691a8b035b823f2929060e3d247300482f5a",
++      "sha256": "cadf7d92ad07664341ca2255d9f0458ffb4633aa080047bb06a96f699882fee3",
+       "executable": false
+     },
+     "rer-packaging.json": {
+@@ -4488,7 +4492,7 @@
+       "executable": false
+     },
+     "src/core/features/channels/subscriber-events.repository.ts": {
+-      "sha256": "f728b42f5b68c1172421ec5067a82ad91467ea6a5a9cb1d0fb96b332ee8a4aa1",
++      "sha256": "936574bc951acfdd2abcb7a9c333010d8704b1900b09fa372e3a8abe5b779bd1",
+       "executable": false
+     },
+     "src/core/features/channels/teams.ts": {
+@@ -4916,7 +4920,7 @@
+       "executable": false
+     },
+     "src/core/features/incidents/reminders.ts": {
+-      "sha256": "5cda734af1bf00e447325f957f455039000e5ba8d4064f5f7912b426b468dc77",
++      "sha256": "33b7e5bd7ea513efaa947694fd7f66da8824f3247c7e67e837162cd7fdd1233d",
+       "executable": false
+     },
+     "src/core/features/incidents/renderer.ts": {
+@@ -5715,6 +5719,14 @@
+       "sha256": "85830964236b84cff1277c2a3196367679c61df28f489b14532cafec2f2b67cd",
+       "executable": false
+     },
++    "src/core/features/public-snapshot/archive.repository.ts": {
++      "sha256": "58370ab7ca0311bf2410c04f2a6014863617db516d62603807dfc2c905443ada",
++      "executable": false
++    },
++    "src/core/features/public-snapshot/archive.ts": {
++      "sha256": "ce31d859874a5fe1db6ddbd81740229312f1583e7321f3fdc6dd6b3cf914ce73",
++      "executable": false
++    },
+     "src/core/features/public-snapshot/assets.ts": {
+       "sha256": "dbd38b082071fbf13f051fe3184c1a2589b5ff6cb8f0a57bb5393332018f4098",
+       "executable": false
+@@ -5748,7 +5760,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/feeds.ts": {
+-      "sha256": "7188c7a7850ef34285391b9a3c8bf5d4eb974ea1fed44081ecd26e9d300ea870",
++      "sha256": "36fcd9581151f5d0b57be4f915b4793b9159990611b58985e2201c1a78177c79",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/fonts/inter-latin.woff2": {
+@@ -5776,7 +5788,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/history.ts": {
+-      "sha256": "18dbee94eca62ecdf1b740eedb1bad9a2efe3296a6f28a7d512f8b7400f31602",
++      "sha256": "9bbfbe8abe66cc9ef25d25b8236d214246b9443a7cfb246383dc182ed8266598",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/icons.ts": {
+@@ -5800,7 +5812,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/native-api.ts": {
+-      "sha256": "2a4906a7f5b7bcd91aa8c28b71d7a82221e1910c73a6c8d0f73f0166b945d416",
++      "sha256": "f716609442be464c1b4335dd8c5ee09ff1d33198b04bc1ced5ffae2793bba556",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/page-chrome.ts": {
+@@ -5812,7 +5824,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/public-api.ts": {
+-      "sha256": "169bc1fb4d2d4f74139e3a37110491c367b7c72263d650dad85041e34c9c18a9",
++      "sha256": "d947fbe68d474a2368f321af2f4d3fd5e5ee06edb5d61a1bced39601f7da9c7a",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/public-styles.ts": {
+@@ -5828,7 +5840,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/renderer.ts": {
+-      "sha256": "bff5f4c35087d87426eae8b11e97e9f521cd3f11b84874e61fae38934d4802b8",
++      "sha256": "19cc2ef11016d5b53160b3b2470ec3ae6e45d89f52390deb121963c689933774",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/report-markup.ts": {
+@@ -5836,15 +5848,15 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/repository.ts": {
+-      "sha256": "6b74aebf36e6db5146a6de9ad80715dfcc56b5e96aa8db18d93c202536a9b2c1",
++      "sha256": "b67b00616d376c8157f18bb478180049987f5672a44533b7f2d0ba851b93e998",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/routes.ts": {
+-      "sha256": "7d7cb886c5933ec9cc0b6c1a4b8501f13b194c609d6b8e902bc57b461fbc3470",
++      "sha256": "266a9cf8e99662bb21fde04c0b589edc4e8b9ee5cf6a4070a8094616cfd33093",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/service.ts": {
+-      "sha256": "c3e71272053ac5a8514cab3e483b4a6c7bc9f3036cf3aa82dcb2fc30bf087741",
++      "sha256": "cb9b6032f961d3b309c4a0e13bbf6b035f663d77143254e230ecccd699fc448b",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/state-colors.json": {
+@@ -5908,7 +5920,7 @@
+       "executable": false
+     },
+     "src/core/features/public-snapshot/templates/parts.ts": {
+-      "sha256": "cf3997f724982afdab479abd1ae15a38161cba9ab5ad0c2a60ebbaa1d3ee4175",
++      "sha256": "10aac5261445f792ac3f7f42ae3b583eada3e43f1a9cba34eb4faf7b46bc23db",
+       "executable": false
+     },
+     "src/core/features/public-snapshot/templates/places.ts": {
+@@ -5984,7 +5996,7 @@
+       "executable": false
+     },
+     "src/core/features/reports/repository.ts": {
+-      "sha256": "72a51d8056b1a95c751aa3086729b2de2274a2980f9c932e2bf51f9c3a441285",
++      "sha256": "d7110b9f7cb7f6c12f59fb5bc42100134b4ad19790ef1e286cd26eb5267778be",
+       "executable": false
+     },
+     "src/core/features/reports/routes.ts": {
+@@ -5992,7 +6004,7 @@
+       "executable": false
+     },
+     "src/core/features/reports/service.ts": {
+-      "sha256": "82226075174d192bf97714639f63e88c7e20b757719b70a009a5aa274a2afe40",
++      "sha256": "62cbda2abc6422f92638fab3347b7283ef51dcf9849ac44960f7b9a8ea756c49",
+       "executable": false
+     },
+     "src/core/features/reports/ui/report-editor.tsx": {
+@@ -6003,6 +6015,10 @@
+       "sha256": "816e2e0a654b83abd4aa6f218812afaf47a4a262b59765d033e0ab2d33382135",
+       "executable": false
+     },
++    "src/core/features/scheduled-work/repository.ts": {
++      "sha256": "143deb338d517aeea0a2dacbed9eb82d72d6364c8b60bbb49690079a4b1071e8",
++      "executable": false
++    },
+     "src/core/features/setup/repository.ts": {
+       "sha256": "f6ce23ebbc7ee1566ffb5395e84ee72daec2b798b513fc94010b4a1fa8ced99f",
+       "executable": false
+@@ -6472,7 +6488,7 @@
+       "executable": false
+     },
+     "src/core/features/subscribers/incident-lifecycle.repository.ts": {
+-      "sha256": "50c6a7ea3722f6814c6179e8ced2097da9977fc0410b29f4e85545a38d18b23d",
++      "sha256": "715fea41b68a1d0fa81863f4ec7c2a64dad6645ba97767ed76cba24d74eb5dea",
+       "executable": false
+     },
+     "src/core/features/subscribers/incident-routes.ts": {
+@@ -6516,7 +6532,7 @@
+       "executable": false
+     },
+     "src/core/features/subscribers/limits.repository.ts": {
+-      "sha256": "10f75b3a18bf34eee33abe97ac46be23cf9a0e1f7efb321fc92391f0afa6a503",
++      "sha256": "ffd5cf2fba262ab0a184516846a36035f3ba625d345f1d3d9000b5d63eae035c",
+       "executable": false
+     },
+     "src/core/features/subscribers/limits.ts": {
+@@ -6720,7 +6736,7 @@
+       "executable": false
+     },
+     "src/core/platform/blobs/retained-bundle.ts": {
+-      "sha256": "d96e460abe5a619a422dd76948edae2d0176414c20d5c44226be6fa281fc63ce",
++      "sha256": "a6c5e3d49ace38dc6d9f55a15dff39da063a1317fab2cd807d028295d70c1066",
+       "executable": false
+     },
+     "src/core/platform/blobs/retained.ts": {
+@@ -8236,7 +8252,11 @@
+       "executable": false
+     },
+     "tests/e2e/helpers/public-history-flow.mjs": {
+-      "sha256": "749f7b2eba73dbf7279208077afe7ebcb4e78f98432e045bdea290465cb22e6d",
++      "sha256": "62e4cfee01bcc0ad3b391b8d7caec3d9b3edeedf28fa60f87b42b461b8a1b97b",
++      "executable": false
++    },
++    "tests/e2e/helpers/public-history-selection-flow.mjs": {
++      "sha256": "ef38a10379465779461c45173cd7c8a7011ea227bb34dea98d417ef37cb61a93",
+       "executable": false
+     },
+     "tests/e2e/helpers/public-isolation-flow.mjs": {
+@@ -8280,7 +8300,7 @@
+       "executable": false
+     },
+     "tests/e2e/helpers/snapshot-release-rebuild-flow.mjs": {
+-      "sha256": "49eb95f31f374cb12e6a5d486ff5698f88cd1f8a860be2609a469019f3a7cc7a",
++      "sha256": "579258e365a0d9cc7306de1f25d2a6a3b62a4a2dedbe1ed685befb9830e59666",
+       "executable": false
+     },
+     "tests/e2e/helpers/social-browser-flow.mjs": {
+@@ -8308,7 +8328,7 @@
+       "executable": false
+     },
+     "tests/e2e/helpers/status-journey.worker.ts": {
+-      "sha256": "9d3e0148207f3f3396a2c0d7a985118666c7f6a1f1d21fb09d1c48619c05d40e",
++      "sha256": "105b07b59178ea29d800b3f49fc44ec3a5a19bd5d823a7506164549d1cfaa74c",
+       "executable": false
+     },
+     "tests/e2e/helpers/statuspage-webhook-flow.mjs": {
+@@ -8488,7 +8508,7 @@
+       "executable": false
+     },
+     "tests/e2e/prior-backup.test.mjs": {
+-      "sha256": "8857ccc2a0650f5495b686931f91e872a7ea0104b5e0f72b421eb79173aa1a2e",
++      "sha256": "99ae5488f1bb7a8430c10e2b96327b40f66ef8029b711e2997cd04822f0de851",
+       "executable": false
+     },
+     "tests/e2e/public-contract.test.mjs": {
+@@ -8536,7 +8556,7 @@
+       "executable": false
+     },
+     "tests/e2e/snapshot-retained.test.mjs": {
+-      "sha256": "9a0668a664d3e96d5eb892b65b6d839b2d7a8a247d20044bfdb508ac7211a34d",
++      "sha256": "d4df058d1d4ed8ec25aec35ea8a72996ecc77f5f4a36645f08a3d2080457cc3a",
+       "executable": false
+     },
+     "tests/e2e/snapshot-retained.worker.ts": {
+@@ -8572,7 +8592,7 @@
+       "executable": false
+     },
+     "tests/e2e/update-reminders.test.mjs": {
+-      "sha256": "b6247b02089cd652e32bc966cefa873614606eda34dfc5559338b2dea696c51e",
++      "sha256": "00810e3baca91aa1724f1c32fd262f83b7401f427fd44d1ff3fcf1d7a10ffeb8",
+       "executable": false
+     },
+     "tests/e2e/website-onboarding.test.mjs": {
+diff --git a/src/core/features/channels/subscriber-events.repository.ts b/src/core/features/channels/subscriber-events.repository.ts
+index eb0fb922..d7dd34d8 100644
+--- a/src/core/features/channels/subscriber-events.repository.ts
++++ b/src/core/features/channels/subscriber-events.repository.ts
+@@ -23,7 +23,7 @@ export function createChatEventRepository(db: D1Database) {
+       return (await db.prepare(`SELECT x.id,x.subscriber_id AS subscriberId,x.kind,d.kind AS channelKind,
+         c.component_name AS componentName,c.previous_state AS previousState,c.new_state AS newState,c.changed_at AS changedAt,c.claimant_kind AS claimantKind,
+         m.reference,m.title,n.kind AS noticeKind,n.body AS noticeBody,n.published_at AS publishedAt,p.timezone
+-        FROM channel_subscriber_events x JOIN subscriber_directory s ON s.id=x.subscriber_id AND s.state='active'
++        FROM channel_subscriber_events x CROSS JOIN subscriber_directory s ON s.id=x.subscriber_id AND s.state='active'
+         JOIN delivery_channel_destinations d ON d.id=s.id AND d.removed_at IS NULL
+         JOIN page_settings p ON p.id='default'
+         LEFT JOIN component_notification_events c ON c.id=x.event_id AND x.kind='component'
+diff --git a/src/core/features/incidents/reminders.ts b/src/core/features/incidents/reminders.ts
+index 6913d353..c912ba8c 100644
+--- a/src/core/features/incidents/reminders.ts
++++ b/src/core/features/incidents/reminders.ts
+@@ -1,3 +1,4 @@
++import { ensureScheduledWork } from "../scheduled-work/repository";
+ import { defaultIncidentEscalationPolicy, type IncidentEscalationPolicy, type UpdateDuePolicy } from "./policies";
+ import { createCommunicationOwnerRepository } from "./communication-owner.repository";
+ 
+@@ -25,14 +26,21 @@ export interface UpdateReminders {
+ export function createUpdateReminders(binding: D1Database, policy: UpdateDuePolicy, send: (event: UpdateReminderEvent) => Promise<void>, escalationPolicy: IncidentEscalationPolicy = defaultIncidentEscalationPolicy, prepareDraft?: (commitment: OpenCommitment, now: string) => Promise<string | null>): UpdateReminders {
+   return {
+     async remindDue(now) {
+-      // Only an incident's newest update carries its live commitment. A resolved
+-      // incident, a resolving update and retroactive history have none.
+-      const open = await binding.prepare(`SELECT i.id AS incidentId, i.reference, i.title, u.id AS updateId, u.next_update_at AS nextUpdateAt
+-        FROM incidents i
+-        JOIN incident_updates u ON u.id = (SELECT id FROM incident_updates WHERE incident_id = i.id ORDER BY published_at DESC, id DESC LIMIT 1)
+-        WHERE i.deleted_at IS NULL AND i.lifecycle <> 'Resolved' AND u.lifecycle <> 'Resolved' AND u.is_retroactive = 0 AND u.next_update_at IS NOT NULL`).all<OpenCommitment>();
++      await ensureScheduledWork(binding);
+       const instant = Date.parse(now);
+       const lead = policy.leadMinutes() * 60_000;
++      const escalation = escalationPolicy.overdueMinutes() * 60_000;
++      // Each index selects only unsent current obligations at their due time.
++      // Publication and resolution maintain the derived work row atomically;
++      // accumulated incident/update history is never revisited by Cron.
++      const open = await binding.prepare(`WITH due AS (
++          SELECT incident_id FROM (SELECT incident_id FROM incident_update_reminder_work WHERE due_soon_sent=0 AND next_update_at>=? AND next_update_at<=? ORDER BY next_update_at,incident_id LIMIT 100)
++          UNION SELECT incident_id FROM (SELECT incident_id FROM incident_update_reminder_work WHERE overdue_sent=0 AND next_update_at<? ORDER BY next_update_at,incident_id LIMIT 100)
++          UNION SELECT incident_id FROM (SELECT incident_id FROM incident_update_reminder_work WHERE escalation_sent=0 AND next_update_at<=? ORDER BY next_update_at,incident_id LIMIT 100)
++        ) SELECT i.id AS incidentId,i.reference,i.title,w.update_id AS updateId,w.next_update_at AS nextUpdateAt
++        FROM due JOIN incident_update_reminder_work w ON w.incident_id=due.incident_id JOIN incidents i ON i.id=w.incident_id
++        ORDER BY w.next_update_at,w.incident_id LIMIT 100`)
++        .bind(now,new Date(instant+lead).toISOString(),now,new Date(instant-escalation).toISOString()).all<OpenCommitment>();
+       const sent: UpdateReminderEvent[] = [];
+       for (const commitment of open.results) {
+         const due = Date.parse(commitment.nextUpdateAt);
+diff --git a/src/core/features/public-snapshot/archive.repository.ts b/src/core/features/public-snapshot/archive.repository.ts
+new file mode 100644
+index 00000000..6e1ece04
+--- /dev/null
++++ b/src/core/features/public-snapshot/archive.repository.ts
+@@ -0,0 +1,133 @@
++import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql } from "drizzle-orm";
++import { createDatabase } from "../../platform/db/client";
++import { components, incidentComponents, incidents, incidentUpdates, maintenance, maintenanceComponents } from "../../shared/schema";
++import type { PublicSnapshotSource } from "./repository";
++import { ARCHIVE_PAGE_SIZE, decodeArchiveCursor, encodeArchiveCursor, parseArchiveKey, type ArchiveCursor, type ArchivePage } from "./archive";
++import { mostSevereState } from "../../shared/domain";
++import { isPublicComponentShown } from "./component-visibility";
++import { DAY, localMidnight } from "./format";
++
++type RecordKey = { id: string; at: string; kind: "incident" | "maintenance" };
++type EventKey = { id: string; at: string; recordId: string; kind: "incident-update" | "maintenance-notice" };
++// Only records with a published public attachment can enter the archive. Keep
++// detached public names while excluding deleted, private and draft-only rows.
++export const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
++export const publicMaintenance = `EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
++const compare = (a: { at: string; id: string; kind: string }, b: { at: string; id: string; kind: string }) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id) || b.kind.localeCompare(a.kind);
++function seek(column: string, id: string, kind: string, cursor: ArchiveCursor | null, values: unknown[]) {
++  if (!cursor) return "";
++  values.push(cursor.at, cursor.id);
++  return ` AND (${column},${id}) ${kind < cursor.kind ? "<=" : "<"} (?,?)`;
++}
++function monthBounds(month: string, zone: string) {
++  const next = month.endsWith("-12") ? `${Number(month.slice(0, 4)) + 1}-01-01` : `${month.slice(0, 5)}${String(Number(month.slice(5)) + 1).padStart(2, "0")}-01`;
++  return [new Date(localMidnight(`${month}-01`, zone)).toISOString(), new Date(localMidnight(next, zone)).toISOString()];
++}
++
++/** Cold archive requests do two bounded seeks and hydrate only the selected
++ * records. Published generations cache their rendered result outside the
++ * retained current-status bundle; accumulated history never enters that bundle. */
++export async function loadArchiveSource(binding: D1Database, context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null> {
++  const request = parseArchiveKey(key);
++  if (!request) return null;
++  const database = createDatabase(binding);
++  let incidentIds: string[] = [], maintenanceIds: string[] = [];
++  let updateIds: string[] | undefined, noticeIds: string[] | undefined;
++  let nextCursor: string | null = null;
++  let previousMonth: string | undefined, nextMonth: string | undefined;
++  const cursor = request.cursor && !request.kind.startsWith("api-") ? decodeArchiveCursor(request.cursor) : null;
++  if (request.cursor && !request.kind.startsWith("api-") && !cursor) return null;
++  if (request.kind === "incident") {
++    const row = await binding.prepare(`SELECT i.id FROM incidents i WHERE i.reference=? AND ${publicIncident} LIMIT 1`).bind(request.reference).first<{ id: string }>();
++    if (!row) return null;
++    incidentIds = [row.id];
++  } else if (request.kind === "maintenance") {
++    const row = await binding.prepare(`SELECT m.id FROM maintenance m WHERE m.reference=? AND ${publicMaintenance} LIMIT 1`).bind(request.reference).first<{ id: string }>();
++    if (!row) return null;
++    maintenanceIds = [row.id];
++  } else if (request.kind === "api-incidents" || request.kind === "api-maintenance") {
++    const incident = request.kind === "api-incidents";
++    const anchor = request.cursor ? await binding.prepare(incident ? `SELECT i.id,i.opened_at AS at FROM incidents i WHERE i.id=? AND ${publicIncident}` : `SELECT m.id,m.starts_at AS at FROM maintenance m WHERE m.id=? AND ${publicMaintenance}`).bind(request.cursor).first<{ id: string; at: string }>() : null;
++    if (request.cursor && !anchor) return null;
++    const query = incident ? `SELECT i.id FROM incidents i INDEXED BY incidents_public_archive_seek WHERE ${publicIncident}${anchor ? " AND (i.opened_at,i.id)<(?,?)" : ""} ORDER BY i.opened_at DESC,i.id DESC LIMIT ?` : `SELECT m.id FROM maintenance m INDEXED BY maintenance_public_archive_seek WHERE ${publicMaintenance}${anchor ? " AND (m.starts_at,m.id)>(?,?)" : ""} ORDER BY m.starts_at,m.id LIMIT ?`;
++    const values = anchor ? [anchor.at, anchor.id, ARCHIVE_PAGE_SIZE + 1] : [ARCHIVE_PAGE_SIZE + 1];
++    const rows = (await binding.prepare(query).bind(...values).all<{ id: string }>()).results;
++    const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
++    nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? page.at(-1)!.id : null;
++    if (incident) incidentIds = page.map(row => row.id); else maintenanceIds = page.map(row => row.id);
++  } else if (request.kind === "feed") {
++    if (cursor && !["incident-update", "maintenance-notice"].includes(cursor.kind)) return null;
++    const component = request.componentSlug ? context.components.find(row => row.id.toLowerCase() === request.componentSlug) : undefined;
++    if (request.componentSlug && (!component || !isPublicComponentShown({ ...component, state: mostSevereState(context.claims.filter(claim => claim.componentId === component.id).map(claim => claim.state)) }))) return null;
++    const since = new Date(Date.parse(generatedAt) - 365 * DAY).toISOString();
++    const left: unknown[] = [since];
++    const right: unknown[] = [since];
++    const componentIncident = component ? " AND EXISTS(SELECT 1 FROM incident_components ca WHERE ca.incident_id=i.id AND ca.component_id=? AND ca.published_at IS NOT NULL)" : "";
++    const componentMaintenance = component ? " AND EXISTS(SELECT 1 FROM maintenance_components ca WHERE ca.maintenance_id=m.id AND ca.component_id=?)" : "";
++    if (component) { left.push(component.id); right.push(component.id); }
++    const incidentSeek = seek("u.published_at", "u.id", "incident-update", cursor, left);
++    const maintenanceSeek = seek("n.published_at", "n.id", "maintenance-notice", cursor, right);
++    left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
++    const [updates, notices] = await Promise.all([
++      binding.prepare(`SELECT u.id,u.published_at AS at,u.incident_id AS recordId,'incident-update' AS kind FROM incident_updates u INDEXED BY incident_updates_public_feed_seek JOIN incidents i ON i.id=u.incident_id WHERE u.published_at>=? AND ${publicIncident}${componentIncident}${incidentSeek} ORDER BY u.published_at DESC,u.id DESC LIMIT ?`).bind(...left).all<EventKey>(),
++      binding.prepare(`SELECT n.id,n.published_at AS at,n.maintenance_id AS recordId,'maintenance-notice' AS kind FROM maintenance_notices n INDEXED BY maintenance_notices_public_feed_seek JOIN maintenance m ON m.id=n.maintenance_id WHERE n.published_at>=? AND ${publicMaintenance}${componentMaintenance}${maintenanceSeek} ORDER BY n.published_at DESC,n.id DESC LIMIT ?`).bind(...right).all<EventKey>(),
++    ]);
++    const rows = [...updates.results, ...notices.results].sort(compare);
++    const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
++    nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? encodeArchiveCursor(page.at(-1)!) : null;
++    updateIds = page.filter(row => row.kind === "incident-update").map(row => row.id);
++    noticeIds = page.filter(row => row.kind === "maintenance-notice").map(row => row.id);
++    incidentIds = [...new Set(page.filter(row => row.kind === "incident-update").map(row => row.recordId))];
++    maintenanceIds = [...new Set(page.filter(row => row.kind === "maintenance-notice").map(row => row.recordId))];
++  } else {
++    if (cursor && !["incident", "maintenance"].includes(cursor.kind)) return null;
++    const left: unknown[] = [], right: unknown[] = [];
++    const incidentSeek = seek("i.resolved_at", "i.id", "incident", cursor, left);
++    const maintenanceSeek = seek("COALESCE(m.completed_at,m.ends_at)", "m.id", "maintenance", cursor, right);
++    let incidentMonth = "", maintenanceMonth = "";
++    if (request.month) {
++      const [from, until] = monthBounds(request.month, context.settings.timezone);
++      incidentMonth = " AND i.resolved_at>=? AND i.resolved_at<?";
++      maintenanceMonth = " AND COALESCE(m.completed_at,m.ends_at)>=? AND COALESCE(m.completed_at,m.ends_at)<?";
++      left.push(from, until); right.push(from, until);
++      // Adjacent populated months are separate indexed seeks. A page holding
++      // only one month's records must still navigate through the full archive.
++      const [incidentBefore, incidentAfter, maintenanceBefore, maintenanceAfter] = await Promise.all([
++        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at<? AND ${publicIncident} ORDER BY i.resolved_at DESC,i.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
++        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at>=? AND ${publicIncident} ORDER BY i.resolved_at,i.id LIMIT 1`).bind(until).first<{at: string}>(),
++        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)<? AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
++        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)>=? AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at),m.id LIMIT 1`).bind(until).first<{at: string}>(),
++      ]);
++      const monthOf = (at: string | undefined) => {
++        if (!at) return undefined;
++        const parts = new Intl.DateTimeFormat('en-US', {timeZone: context.settings.timezone, year: 'numeric', month: '2-digit'}).formatToParts(new Date(at));
++        return `${parts.find(part => part.type === 'year')!.value}-${parts.find(part => part.type === 'month')!.value}`;
++      };
++      previousMonth = monthOf([incidentBefore?.at, maintenanceBefore?.at].filter((at): at is string => !!at).sort().at(-1));
++      nextMonth = monthOf([incidentAfter?.at, maintenanceAfter?.at].filter((at): at is string => !!at).sort()[0]);
++    }
++    left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
++    const [resolved, completed] = await Promise.all([
++      binding.prepare(`SELECT i.id,i.resolved_at AS at,'incident' AS kind FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident}${incidentSeek}${incidentMonth} ORDER BY i.resolved_at DESC,i.id DESC LIMIT ?`).bind(...left).all<RecordKey>(),
++      binding.prepare(`SELECT m.id,COALESCE(m.completed_at,m.ends_at) AS at,'maintenance' AS kind FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance}${maintenanceSeek}${maintenanceMonth} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT ?`).bind(...right).all<RecordKey>(),
++    ]);
++    const rows = [...resolved.results, ...completed.results].sort(compare);
++    const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
++    nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? encodeArchiveCursor(page.at(-1)!) : null;
++    incidentIds = page.filter(row => row.kind === "incident").map(row => row.id);
++    maintenanceIds = page.filter(row => row.kind === "maintenance").map(row => row.id);
++  }
++  const [incidentRows, maintenanceRows, attachments, maintenanceAttachments, updates, notices, reports, importedUpdates, impacts] = await Promise.all([
++    incidentIds.length ? database.select().from(incidents).where(and(inArray(incidents.id, incidentIds), isNull(incidents.deletedAt))).orderBy(desc(incidents.openedAt), desc(incidents.id)).all() : [],
++    maintenanceIds.length ? database.select().from(maintenance).where(inArray(maintenance.id, maintenanceIds)).orderBy(asc(maintenance.startsAt), asc(maintenance.id)).all() : [],
++    incidentIds.length ? database.select(getTableColumns(incidentComponents)).from(incidentComponents).leftJoin(components, eq(incidentComponents.componentId, components.id)).where(and(inArray(incidentComponents.incidentId, incidentIds), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
++    maintenanceIds.length ? database.select(getTableColumns(maintenanceComponents)).from(maintenanceComponents).leftJoin(components, eq(maintenanceComponents.componentId, components.id)).where(and(inArray(maintenanceComponents.maintenanceId, maintenanceIds), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
++    incidentIds.length && (!updateIds || updateIds.length) ? database.select().from(incidentUpdates).where(and(inArray(incidentUpdates.incidentId, incidentIds), updateIds ? inArray(incidentUpdates.id, updateIds) : undefined)).orderBy(desc(incidentUpdates.publishedAt), desc(incidentUpdates.id)).all() : [],
++    maintenanceIds.length && (!noticeIds || noticeIds.length) ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,kind,body,published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")})${noticeIds ? ` AND id IN (${noticeIds.map(() => "?").join(",")})` : ""} ORDER BY published_at DESC,id DESC`).bind(...maintenanceIds, ...(noticeIds ?? [])).all<PublicSnapshotSource["maintenanceNotices"][number]>().then(rows => rows.results) : [],
++    incidentIds.length ? binding.prepare(`SELECT incident_id AS incidentId,summary,timeline,cause,remediation,published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL AND incident_id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<PublicSnapshotSource["reports"][number]>().then(rows => rows.results) : [],
++    maintenanceIds.length && request.kind !== "feed" ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")}) ORDER BY published_at DESC,id`).bind(...maintenanceIds).all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>().then(rows => rows.results) : [],
++    incidentIds.length ? binding.prepare(`SELECT id,peak_impact AS impact FROM incidents WHERE id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<{id: string;impact: PublicSnapshotSource["claims"][number]["state"] | null}>().then(rows => rows.results) : [],
++  ]);
++  const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
++  return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates, maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
++}
+diff --git a/src/core/features/public-snapshot/archive.ts b/src/core/features/public-snapshot/archive.ts
+new file mode 100644
+index 00000000..988ddbbe
+--- /dev/null
++++ b/src/core/features/public-snapshot/archive.ts
+@@ -0,0 +1,55 @@
++/** Cursors seek through the immutable ordering rather than walking an OFFSET. */
++export interface ArchiveCursor { at: string; id: string; kind: "incident" | "maintenance" | "incident-update" | "maintenance-notice" }
++export interface ArchivePage {
++  kind: "history" | "month" | "feed" | "incident" | "maintenance" | "api-incidents" | "api-maintenance";
++  cursor?: string;
++  month?: string;
++  nextCursor: string | null;
++  pageSize: number;
++  componentSlug?: string;
++  previousMonth?: string;
++  nextMonth?: string;
++}
++export const ARCHIVE_PAGE_SIZE = 50;
++export function encodeArchiveCursor(value: ArchiveCursor) {
++  return btoa(JSON.stringify(value)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
++}
++export function decodeArchiveCursor(value: string): ArchiveCursor | null {
++  if (!/^[A-Za-z0-9_-]{1,512}$/.test(value)) return null;
++  try {
++    const parsed = JSON.parse(atob(value.replaceAll("-", "+").replaceAll("_", "/"))) as ArchiveCursor;
++    if (!parsed || !["incident", "maintenance", "incident-update", "maintenance-notice"].includes(parsed.kind) || !/^[A-Za-z0-9_.:-]{1,100}$/.test(parsed.id) || !Number.isFinite(Date.parse(parsed.at))) return null;
++    return parsed;
++  } catch { return null; }
++}
++export interface ArchiveRequest { kind: ArchivePage["kind"]; cursor?: string; month?: string; reference?: string; format?: "atom" | "rss"; componentSlug?: string }
++export function parseArchiveKey(key: string): ArchiveRequest | null {
++  let component = /^(?:archive\/components\/([A-Za-z0-9_-]{1,100})\/feed\/([A-Za-z0-9_-]{1,512})|components\/([A-Za-z0-9_-]{1,100})\/feed)\.(atom|rss)$/.exec(key);
++  if (component) return { kind: "feed", componentSlug: component[1] ?? component[3], cursor: component[2], format: component[4] as "atom" | "rss" };
++  const firstFeed = /^feed\.(atom|rss)$/.exec(key);
++  if (firstFeed) return { kind: "feed", format: firstFeed[1] as "atom" | "rss" };
++  let match = /^archive\/history\/([A-Za-z0-9_-]{1,512})\.html$/.exec(key);
++  if (match) return { kind: "history", cursor: match[1] };
++  match = /^(?:archive\/month\/|history\/)(\d{4}-(?:0[1-9]|1[0-2]))(?:\/([A-Za-z0-9_-]{1,512}))?\.html$/.exec(key);
++  if (match) return { kind: "month", month: match[1], cursor: match[2] };
++  match = /^archive\/feed\/([A-Za-z0-9_-]{1,512})\.(atom|rss)$/.exec(key);
++  if (match) return { kind: "feed", cursor: match[1], format: match[2] as "atom" | "rss" };
++  match = /^(incidents|maintenance)\/([^/]{1,200})\.html$/.exec(key);
++  if (match) {
++    try { return { kind: match[1] === "incidents" ? "incident" : "maintenance", reference: decodeURIComponent(match[2]) }; } catch { return null; }
++  }
++  match = /^api\/public\/v1\/(incidents|maintenance)(?:\/([A-Za-z0-9_-]{1,100}))?\.json$/.exec(key);
++  return match ? { kind: match[1] === "incidents" ? "api-incidents" : "api-maintenance", cursor: match[2] } : null;
++}
++export function historyArchiveKey(month: string | undefined, cursor: string | undefined) {
++  if (cursor && !decodeArchiveCursor(cursor)) return "history/invalid.html";
++  return month ? cursor ? `archive/month/${month}/${cursor}.html` : `history/${month}.html` : cursor ? `archive/history/${cursor}.html` : "history.html";
++}
++export function feedArchiveKey(format: "atom" | "rss", cursor: string | undefined) {
++  return cursor ? decodeArchiveCursor(cursor) ? `archive/feed/${cursor}.${format}` : "feed/invalid" : `feed.${format}`;
++}
++
++export function componentFeedArchiveKey(slug: string, format: "atom" | "rss", cursor: string | undefined) {
++  if (!/^[A-Za-z0-9_-]{1,100}$/.test(slug)) return "feed/invalid";
++  return cursor ? decodeArchiveCursor(cursor) ? `archive/components/${slug}/feed/${cursor}.${format}` : "feed/invalid" : `components/${slug}/feed.${format}`;
++}
+diff --git a/src/core/features/public-snapshot/feeds.ts b/src/core/features/public-snapshot/feeds.ts
+index e2f9fe65..598d8e0a 100644
+--- a/src/core/features/public-snapshot/feeds.ts
++++ b/src/core/features/public-snapshot/feeds.ts
+@@ -1,3 +1,4 @@
++import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor } from "./archive";
+ import { impactLabel } from "../../shared/incident-impact";
+ import { renderAtomContent, renderRssDescription } from "./feed-content";
+ import type { PublicSnapshotModel, SnapshotArtifact } from "./renderer";
+@@ -38,7 +39,7 @@ export function publicFeedEntries(model: PublicSnapshotModel): FeedEntry[] {
+       recordId: item.id,
+     }))),
+   ].filter((entry) => new Date(entry.publishedAt).getTime() >= new Date(model.generatedAt).getTime() - 365 * DAY)
+-    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
++    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt) || right.id.replace(/^(?:update-|maintenance-notice-)/, "").localeCompare(left.id.replace(/^(?:update-|maintenance-notice-)/, "")) || (right.recordKind === "incident" ? "incident-update" : "maintenance-notice").localeCompare(left.recordKind === "incident" ? "incident-update" : "maintenance-notice"));
+ }
+ 
+ function feedIdentity(model: PublicSnapshotModel) {
+@@ -54,12 +55,18 @@ interface FeedDocument {
+   identity: string;
+   atomPath: string;
+   rssPath: string;
++  nextCursor?: string | null;
++}
++
++function nextFeedLink(feed: FeedDocument, format: "atom" | "rss") {
++  const path = format === "atom" ? feed.atomPath : feed.rssPath;
++  return feed.nextCursor ? `<link href="${escapeXml(feed.model.origin + path + "?cursor=" + encodeURIComponent(feed.nextCursor))}" rel="next" type="application/${format === "atom" ? "atom" : "rss"}+xml"/>` : "";
+ }
+ 
+ function atomDocument(feed: FeedDocument) {
+   const { model, entries } = feed;
+   const origin = model.origin;
+-  return `<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>${escapeXml(feed.identity)}</id><title>${escapeXml(feed.title)}</title><updated>${escapeXml(model.generatedAt)}</updated><author><name>${escapeXml(model.settings.pageName)}</name></author><link href="${escapeXml(origin + feed.atomPath)}" rel="self" type="application/atom+xml"/><link href="${escapeXml(origin + "/")}" rel="alternate" type="text/html"/>${entries.map((entry) => `<entry><id>${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</id><title>${escapeXml(entry.title)}</title><updated>${escapeXml(entry.publishedAt)}</updated><link href="${escapeXml(origin + entry.path)}" rel="alternate" type="text/html"/>${renderAtomContent(entry.content)}</entry>`).join("")}</feed>`;
++  return `<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>${escapeXml(feed.identity)}</id><title>${escapeXml(feed.title)}</title><updated>${escapeXml(model.generatedAt)}</updated><author><name>${escapeXml(model.settings.pageName)}</name></author><link href="${escapeXml(origin + feed.atomPath)}" rel="self" type="application/atom+xml"/><link href="${escapeXml(origin + "/")}" rel="alternate" type="text/html"/>${nextFeedLink(feed, "atom")}${entries.map((entry) => `<entry><id>${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</id><title>${escapeXml(entry.title)}</title><updated>${escapeXml(entry.publishedAt)}</updated><link href="${escapeXml(origin + entry.path)}" rel="alternate" type="text/html"/>${renderAtomContent(entry.content)}</entry>`).join("")}</feed>`;
+ }
+ 
+ function rssDocument(feed: FeedDocument) {
+@@ -67,13 +74,16 @@ function rssDocument(feed: FeedDocument) {
+   const origin = model.origin;
+   // RSS descriptions carry HTML. Encode the prose inside that HTML as well as
+   // encoding the XML, so a literal <tag> remains text in a feed reader.
+-  return `<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>${escapeXml(feed.title)}</title><link>${escapeXml(origin + "/")}</link><description>${escapeXml(`${feed.title} — incident and maintenance updates`)}</description><language>en</language><lastBuildDate>${escapeXml(new Date(model.generatedAt).toUTCString())}</lastBuildDate><atom:link href="${escapeXml(origin + feed.rssPath)}" rel="self" type="application/rss+xml"/>${entries.map((entry) => `<item><guid isPermaLink="false">${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</guid><title>${escapeXml(entry.title)}</title><link>${escapeXml(origin + entry.path)}</link><pubDate>${escapeXml(new Date(entry.publishedAt).toUTCString())}</pubDate>${renderRssDescription(entry.content)}</item>`).join("")}</channel></rss>`;
++  return `<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>${escapeXml(feed.title)}</title><link>${escapeXml(origin + "/")}</link><description>${escapeXml(`${feed.title} — incident and maintenance updates`)}</description><language>en</language><lastBuildDate>${escapeXml(new Date(model.generatedAt).toUTCString())}</lastBuildDate><atom:link href="${escapeXml(origin + feed.rssPath)}" rel="self" type="application/rss+xml"/>${nextFeedLink(feed, "rss").replace("<link", "<atom:link")}${entries.map((entry) => `<item><guid isPermaLink="false">${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</guid><title>${escapeXml(entry.title)}</title><link>${escapeXml(origin + entry.path)}</link><pubDate>${escapeXml(new Date(entry.publishedAt).toUTCString())}</pubDate>${renderRssDescription(entry.content)}</item>`).join("")}</channel></rss>`;
+ }
+ 
+ export function renderFeeds(model: PublicSnapshotModel, source: PublicSnapshotSource): SnapshotArtifact[] {
+-  const entries = publicFeedEntries(model);
++  const allEntries = publicFeedEntries(model);
++  const entries = allEntries.slice(0, ARCHIVE_PAGE_SIZE);
++  const last = entries.at(-1);
++  const nextCursor = source.archive?.kind === "feed" ? source.archive.nextCursor : last && (allEntries.length > ARCHIVE_PAGE_SIZE || (source.bounded && model.incidents.filter(row => row.lifecycle === "Resolved").length >= ARCHIVE_PAGE_SIZE)) ? encodeArchiveCursor({ at: last.publishedAt, id: last.id.replace(/^(?:update-|maintenance-notice-)/, ""), kind: last.recordKind === "incident" ? "incident-update" : "maintenance-notice" }) : null;
+   const identity = feedIdentity(model);
+-  const global: FeedDocument = { model, entries, identity, title: model.settings.pageName, atomPath: "/feed.atom", rssPath: "/feed.rss" };
++  const global: FeedDocument = { model, entries, nextCursor, identity, title: model.settings.pageName, atomPath: "/feed.atom", rssPath: "/feed.rss" };
+   const atom = atomDocument(global);
+   const rss = rssDocument(global);
+   const artifacts: SnapshotArtifact[] = [
+@@ -86,9 +96,15 @@ export function renderFeeds(model: PublicSnapshotModel, source: PublicSnapshotSo
+     const incidents = new Set(source.incidentComponents.filter((claim) => claim.componentId === component.id).map((claim) => claim.incidentId));
+     const maintenance = new Set(source.maintenanceComponents.filter((claim) => claim.componentId === component.id).map((claim) => claim.maintenanceId));
+     const paths = publicComponentResources(component);
++    const componentEntries = allEntries.filter((entry) => entry.recordKind === "incident" ? incidents.has(entry.recordId) : maintenance.has(entry.recordId));
++    const componentPage = componentEntries.slice(0, ARCHIVE_PAGE_SIZE);
++    const tail = componentPage.at(-1);
++    const componentNext = source.archive?.componentSlug === componentSlug(component) ? source.archive.nextCursor : source.bounded || componentEntries.length > ARCHIVE_PAGE_SIZE
++      ? encodeArchiveCursor(tail ? { at: tail.publishedAt, id: tail.id.replace(/^(?:update-|maintenance-notice-)/, ""), kind: tail.recordKind === "incident" ? "incident-update" : "maintenance-notice" } : { at: model.generatedAt, id: "zzzz", kind: "maintenance-notice" }) : null;
+     const feed: FeedDocument = {
+       model,
+-      entries: entries.filter((entry) => entry.recordKind === "incident" ? incidents.has(entry.recordId) : maintenance.has(entry.recordId)),
++      entries: componentPage,
++      nextCursor: componentNext,
+       identity: `${identity}:component:${componentSlug(component)}`,
+       title: `${model.settings.pageName} — ${component.name}`,
+       atomPath: paths.atom,
+diff --git a/src/core/features/public-snapshot/history.ts b/src/core/features/public-snapshot/history.ts
+index 0b7865a9..3f03a605 100644
+--- a/src/core/features/public-snapshot/history.ts
++++ b/src/core/features/public-snapshot/history.ts
+@@ -1,28 +1,31 @@
++import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor, type ArchivePage } from "./archive";
+ import type { PublicIncident, PublicMaintenance } from "./record-markup";
+ import { noticeMarkup, recordHead, updateMarkup } from "./record-markup";
+ import { DAY, durationText, escapeHtml, timestamp } from "./format";
+ 
+ interface HistoryModel {
++  bounded?: boolean;
++  archive?: ArchivePage;
+   incidents: PublicIncident[];
+   maintenance: PublicMaintenance[];
+   generatedAt: string;
+   settings: { timezone: string };
+ }
+ 
+-interface HistoryRecord { timestamp: string; html: () => string }
++interface HistoryRecord { id: string; kind: "incident" | "maintenance"; timestamp: string; html: () => string }
+ 
+ function historyRecords(model: HistoryModel): HistoryRecord[] {
+   const timezone = model.settings.timezone;
+   return [
+     ...model.incidents.filter(incident => incident.lifecycle === "Resolved" && incident.resolvedAt).map(incident => ({
+-      timestamp: incident.resolvedAt!,
++      id: incident.id, kind: "incident" as const, timestamp: incident.resolvedAt!,
+       html: () => `<article class="history-item" data-incident-impact="${incident.effectiveImpact}">${recordHead("Incident", `<a href="/incidents/${encodeURIComponent(incident.reference)}">${escapeHtml(incident.title)}</a>`, "h3", incident.lifecycle)}<p class="incident-meta">Opened ${timestamp(incident.openedAt, timezone)} · Resolved ${timestamp(incident.resolvedAt!, timezone)} · ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt!))}${incident.components.length ? ` · affected ${escapeHtml(incident.components.join(", "))}` : ""}</p><div class="updates">${incident.updates.map(update => updateMarkup(incident, update, timezone)).join("")}</div></article>`,
+     })),
+     ...model.maintenance.filter(item => item.state === "Completed" || item.state === "Cancelled").map(item => ({
+-      timestamp: item.completedAt ?? item.endsAt,
++      id: item.id, kind: "maintenance" as const, timestamp: item.completedAt ?? item.endsAt,
+       html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: "Imported update" }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
+     })),
+-  ].sort((left, right) => right.timestamp.localeCompare(left.timestamp));
++  ].sort((left, right) => right.timestamp.localeCompare(left.timestamp) || right.id.localeCompare(left.id) || right.kind.localeCompare(left.kind));
+ }
+ 
+ function monthKey(value: string, timezone: string) {
+@@ -43,18 +46,23 @@ export function renderHistoryContent(model: HistoryModel, selectedMonth?: string
+   const records = historyRecords(model);
+   const cutoff = Date.parse(model.generatedAt) - 365 * DAY;
+   const months = [...new Set(records.map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
+-  const shown = selectedMonth ? records.filter(record => monthKey(record.timestamp, model.settings.timezone) === selectedMonth) : records.filter(record => Date.parse(record.timestamp) >= cutoff);
++  const candidates = selectedMonth ? records.filter(record => monthKey(record.timestamp, model.settings.timezone) === selectedMonth) : model.archive ? records : records.filter(record => Date.parse(record.timestamp) >= cutoff);
++  const shown = candidates.slice(0, ARCHIVE_PAGE_SIZE);
++  const more = model.archive ? model.archive.nextCursor : candidates.length > ARCHIVE_PAGE_SIZE || (model.bounded && records.length >= ARCHIVE_PAGE_SIZE)
++    ? encodeArchiveCursor(shown.length ? { at: shown.at(-1)!.timestamp, id: shown.at(-1)!.id, kind: shown.at(-1)!.kind } : { at: new Date(cutoff).toISOString(), id: "zzzz", kind: "incident" }) : null;
++  const base = selectedMonth ? `/history/${selectedMonth}` : "/history";
++  const paging = `<nav class="not-found-links" aria-label="History pages"><span>Up to ${ARCHIVE_PAGE_SIZE} records per page.</span>${model.archive?.cursor ? '<a class="text-link" href="/history">Latest history</a>' : ""}${more ? `<a class="text-link" rel="next" href="${base}?cursor=${encodeURIComponent(more)}">Older history</a>` : ""}</nav>`;
+   const groups = new Map<string, string[]>();
+   for (const record of shown) {
+     const key = monthKey(record.timestamp, model.settings.timezone);
+     groups.set(key, [...(groups.get(key) ?? []), record.html()]);
+   }
+   const index = selectedMonth ? months.indexOf(selectedMonth) : -1;
+-  const previous = index >= 0 ? months[index + 1] : undefined;
+-  const next = index > 0 ? months[index - 1] : undefined;
++  const previous = model.archive ? model.archive.previousMonth : index >= 0 ? months[index + 1] : undefined;
++  const next = model.archive ? model.archive.nextMonth : index > 0 ? months[index - 1] : undefined;
+   const navigation = selectedMonth ? `<nav class="not-found-links" aria-label="History months">${previous ? `<a class="text-link" rel="prev" href="/history/${previous}">Previous month: ${escapeHtml(monthLabel(previous))}</a>` : ""}<a class="text-link" href="/history">Last 12 months</a>${next ? `<a class="text-link" rel="next" href="/history/${next}">Next month: ${escapeHtml(monthLabel(next))}</a>` : ""}</nav>` : "";
+   const older = [...new Set(records.filter(record => Date.parse(record.timestamp) < cutoff).map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
+   const archive = !selectedMonth && older.length ? `<section class="history-month"><h2>Earlier history</h2><ul>${older.map(month => `<li><a class="text-link" href="/history/${month}">${escapeHtml(monthLabel(month))}</a></li>`).join("")}</ul></section>` : "";
+   const introduction = selectedMonth ? `Past incidents and maintenance in ${monthLabel(selectedMonth)}.` : "Past incidents and maintenance (12 months).";
+-  return `<section class="history"><header class="history-intro"><h1>${selectedMonth ? escapeHtml(monthLabel(selectedMonth)) : "History"}</h1><p>${escapeHtml(introduction)}</p></header>${navigation}${[...groups].map(([month, entries]) => `<section class="history-month"><h2>${escapeHtml(monthLabel(month))}</h2>${entries.join("")}</section>`).join("") || '<p class="empty-state">No past incidents or maintenance in the last 12 months.</p>'}${archive}${navigation}</section>`;
++  return `<section class="history"><header class="history-intro"><h1>${selectedMonth ? escapeHtml(monthLabel(selectedMonth)) : "History"}</h1><p>${escapeHtml(introduction)}</p></header>${navigation}${[...groups].map(([month, entries]) => `<section class="history-month"><h2>${escapeHtml(monthLabel(month))}</h2>${entries.join("")}</section>`).join("") || '<p class="empty-state">No past incidents or maintenance in the last 12 months.</p>'}${archive}${navigation}${paging}</section>`;
+ }
+diff --git a/src/core/features/public-snapshot/native-api.ts b/src/core/features/public-snapshot/native-api.ts
+index 99cfa9fe..2ef41036 100644
+--- a/src/core/features/public-snapshot/native-api.ts
++++ b/src/core/features/public-snapshot/native-api.ts
+@@ -2,7 +2,12 @@ import type { SnapshotArtifact } from "./renderer";
+ 
+ /** Pagination is rendered before the generation advances. A cursor addresses
+  * one immutable page, so public reads never query application data. */
+-export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string): SnapshotArtifact[] {
++export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string, page?: { cursor?: string; nextCursor: string | null }): SnapshotArtifact[] {
++  if (page) return [{
++    key: `api/public/v1/${name}${page.cursor ? `/${encodeURIComponent(page.cursor)}` : ""}.json`,
++    contentType: "application/json; charset=utf-8",
++    body: JSON.stringify({ generatedAt, data: records.slice(0, 50), nextCursor: page.nextCursor }),
++  }];
+   const artifacts: SnapshotArtifact[] = [];
+   const size = 50;
+   for (let offset = 0; offset < Math.max(records.length, 1); offset += size) {
+diff --git a/src/core/features/public-snapshot/public-api.ts b/src/core/features/public-snapshot/public-api.ts
+index 56fdd475..571332dd 100644
+--- a/src/core/features/public-snapshot/public-api.ts
++++ b/src/core/features/public-snapshot/public-api.ts
+@@ -11,18 +11,19 @@ export function renderPublicApi(model: PublicSnapshotModel, source: PublicSnapsh
+   const upcoming = maintenance.filter(item => item.status === "scheduled");
+   const unresolved = incidents.filter(item => item.status !== "resolved");
+   const json = (key: string, body: unknown): SnapshotArtifact => ({ key, body: JSON.stringify(body), contentType: "application/json; charset=utf-8" });
++  const archive = source.bounded ? { pagination: { pageSize: 50, history: "/history", incidents: "/api/public/v1/incidents", maintenance: "/api/public/v1/maintenance" } } : {};
+   const artifacts = [
+     json("api/v2/summary.json", { page, status, components: publicComponents, incidents: unresolved, scheduled_maintenances: [...active, ...upcoming] }),
+     json("api/v2/status.json", { page, status }), json("api/v2/components.json", { page, components: publicComponents }),
+-    json("api/v2/incidents.json", { page, incidents }), json("api/v2/incidents/unresolved.json", { page, incidents: unresolved }),
+-    json("api/v2/incidents/resolved.json", { page, incidents: incidents.filter(item => item.status === "resolved") }),
+-    json("api/v2/scheduled-maintenances.json", { page, scheduled_maintenances: maintenance }),
++    json("api/v2/incidents.json", { page, incidents, ...archive }), json("api/v2/incidents/unresolved.json", { page, incidents: unresolved }),
++    json("api/v2/incidents/resolved.json", { page, incidents: incidents.filter(item => item.status === "resolved"), ...archive }),
++    json("api/v2/scheduled-maintenances.json", { page, scheduled_maintenances: maintenance, ...archive }),
+     json("api/v2/scheduled-maintenances/upcoming.json", { page, scheduled_maintenances: upcoming }),
+     json("api/v2/scheduled-maintenances/active.json", { page, scheduled_maintenances: active }),
+     json("api/public/v1/summary.json", { generatedAt: model.generatedAt, page: { name: page.name, hostname: model.settings.hostname, timezone: model.settings.timezone }, overall: model.overall, collections: ["components", "incidents", "maintenance"].map(name => `/api/public/v1/${name}`) }),
+     ...nativeCollectionArtifacts("components", model.visibleComponents.map(component => ({ id: component.id, slug: componentSlug(component), name: component.name, description: component.description, onlyShowIfDegraded: component.onlyShowIfDegraded, uptimeStartDate: component.uptimeStartDate, note: component.note, state: component.state, uptime: component.uptime })), model.generatedAt),
+-    ...nativeCollectionArtifacts("incidents", model.incidents.map(incident => ({ id: incident.id, reference: incident.reference, title: incident.title, lifecycle: incident.lifecycle, impact: incident.effectiveImpact, derivedImpact: incident.derivedImpact, impactOverride: incident.impactOverride, effectiveImpact: incident.effectiveImpact, openedAt: incident.openedAt, resolvedAt: incident.resolvedAt, components: incident.components, updates: incident.updates.map(update => ({ id: update.id, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience, customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details, nextUpdateAt: update.lifecycle === "Resolved" ? null : update.nextUpdateAt, publishedAt: update.publishedAt, componentChanges: (update.componentChanges ?? []).map(({ componentId, name, previousState, newState }) => ({ componentId, name, previousState, newState })) })), report: incident.report })), model.generatedAt),
+-    ...nativeCollectionArtifacts("maintenance", model.maintenance.map(item => ({ id: item.id, reference: item.reference, title: item.title, state: item.state, startsAt: item.startsAt, endsAt: item.endsAt, completedAt: item.completedAt, components: item.components, notices: item.notices, importedUpdates: item.importedUpdates })), model.generatedAt),
++    ...((!source.bounded || source.archive?.kind === "api-incidents") ? nativeCollectionArtifacts("incidents", model.incidents.map(incident => ({ id: incident.id, reference: incident.reference, title: incident.title, lifecycle: incident.lifecycle, impact: incident.effectiveImpact, derivedImpact: incident.derivedImpact, impactOverride: incident.impactOverride, effectiveImpact: incident.effectiveImpact, openedAt: incident.openedAt, resolvedAt: incident.resolvedAt, components: incident.components, updates: incident.updates.map(update => ({ id: update.id, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience, customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details, nextUpdateAt: update.lifecycle === "Resolved" ? null : update.nextUpdateAt, publishedAt: update.publishedAt, componentChanges: (update.componentChanges ?? []).map(({ componentId, name, previousState, newState }) => ({ componentId, name, previousState, newState })) })), report: incident.report })), model.generatedAt, source.archive?.kind === "api-incidents" ? source.archive : undefined) : []),
++    ...((!source.bounded || source.archive?.kind === "api-maintenance") ? nativeCollectionArtifacts("maintenance", model.maintenance.map(item => ({ id: item.id, reference: item.reference, title: item.title, state: item.state, startsAt: item.startsAt, endsAt: item.endsAt, completedAt: item.completedAt, components: item.components, notices: item.notices, importedUpdates: item.importedUpdates })), model.generatedAt, source.archive?.kind === "api-maintenance" ? source.archive : undefined) : []),
+   ];
+   return artifacts;
+ }
+diff --git a/src/core/features/public-snapshot/renderer.ts b/src/core/features/public-snapshot/renderer.ts
+index b8d23556..a25ae554 100644
+--- a/src/core/features/public-snapshot/renderer.ts
++++ b/src/core/features/public-snapshot/renderer.ts
+@@ -61,7 +61,7 @@ interface PublicComponent {
+   uptime: Uptime;
+ }
+ 
+-function toPublicModel(source: PublicSnapshotSource, generatedAt: string, policies: PublicSnapshotPolicies) {
++function toPublicModel(source: PublicSnapshotSource, generatedAt: string, policies: PublicSnapshotPolicies, includeUptime = true) {
+   const theme = themeSchema.parse(JSON.parse(source.settings.theme ?? "{}"));
+   const claims = new Map<string, ComponentState[]>();
+   for (const claim of source.claims) claims.set(claim.componentId, [...(claims.get(claim.componentId) ?? []), claim.state]);
+@@ -72,7 +72,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
+     // deliberately only for the single overall page status.
+     state: mostSevereState(claims.get(component.id) ?? []),
+     hideUptime: theme.hiddenUptimeComponentIds.includes(component.id),
+-    uptime: computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }),
++    uptime: includeUptime ? computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }) : { percentage: null, trackingSince: null, coverageDays: 0, coverageMinutes: 0, marks: [] },
+   }));
+   if (theme.historyDays !== REPORTING_DAYS) for (const component of components) component.uptime.marks = component.uptime.marks.slice(-theme.historyDays);
+   const visibleComponents = components.filter(isPublicComponentShown);
+@@ -98,7 +98,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
+   const maintenance: PublicMaintenance[] = source.maintenance
+     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
+     .filter((item) => attachedMaintenanceIds.has(item.id));
+-  return { theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
++  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+ }
+ 
+ export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
+@@ -272,8 +272,29 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
+     ...model.incidents.map((incident) => ({ key: `incidents/${encodeURIComponent(incident.reference)}.html`, body: renderIncidentPage(incident, model, slots), contentType: "text/html; charset=utf-8" })),
+   ];
+   artifacts.push(...model.maintenance.map((item) => ({ key: `maintenance/${encodeURIComponent(item.reference)}.html`, body: pageShell(`${item.title} · ${model.settings.pageName}`, `${maintenanceMarkup(item, model.settings.timezone, generatedAt, true)}`, model, slots, "other"), contentType: "text/html; charset=utf-8" })));
+-  artifacts.push(...historyMonths(model).map(month => ({ key: `history/${month}.html`, body: renderHistory(model, slots, month), contentType: "text/html; charset=utf-8" })));
++  if (!source.bounded) artifacts.push(...historyMonths(model).map(month => ({ key: `history/${month}.html`, body: renderHistory(model, slots, month), contentType: "text/html; charset=utf-8" })));
+   artifacts.push(...renderImportAliases(source, model.incidents, model.maintenance, renderHistory(model, slots)));
+   artifacts.push(...templateArtifacts(model));
+   return { generatedAt, artifacts };
+ }
++
++/** Render one cold historical page using its generation's public presentation. */
++export function renderArchiveArtifact(source: PublicSnapshotSource, key: string, generatedAt: string, policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, slots: LampServerSlots = {}): SnapshotArtifact | null {
++  // Archive documents use component names and visibility, never uptime charts.
++  const model = toPublicModel(source, generatedAt, policies, false);
++  const html = (body: string): SnapshotArtifact => ({ key, body, contentType: "text/html; charset=utf-8" });
++  switch (source.archive?.kind) {
++    case "history": case "month": return html(renderHistory(model, slots, source.archive.month));
++    case "incident": return model.incidents[0] ? html(renderIncidentPage(model.incidents[0], model, slots)) : null;
++    case "maintenance": return model.maintenance[0] ? html(pageShell(`${model.maintenance[0].title} · ${model.settings.pageName}`, maintenanceMarkup(model.maintenance[0], model.settings.timezone, generatedAt, true), model, slots, "other")) : null;
++    case "feed": return renderFeeds(model, source).find(artifact => artifact.key === `${source.archive?.componentSlug ? `components/${source.archive.componentSlug}/` : ""}${key.endsWith(".rss") ? "feed.rss" : "feed.atom"}`) ?? null;
++    case "api-incidents": case "api-maintenance": {
++      const name = source.archive.kind === "api-incidents" ? "incidents" : "maintenance";
++      const artifact = renderPublicApi(model, source).find(artifact => artifact.key === key);
++      if (!artifact) return null;
++      const payload = JSON.parse(artifact.body);
++      return { ...artifact, key, body: JSON.stringify({ ...payload, nextCursor: source.archive.nextCursor }) };
++    }
++    default: return null;
++  }
++}
+diff --git a/src/core/features/public-snapshot/repository.ts b/src/core/features/public-snapshot/repository.ts
+index 7bbd65f0..2920ba14 100644
+--- a/src/core/features/public-snapshot/repository.ts
++++ b/src/core/features/public-snapshot/repository.ts
+@@ -1,3 +1,5 @@
++import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
++import { createUlid } from "../../shared/ids";
+ import { createDependencyRepository } from "../dependencies/repository";
+ import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
+ import { createMetricsRepository } from "../metrics/repository";
+@@ -6,7 +8,7 @@ import { readImportedNamespaces, readImportedPublicRecords } from "../statuspage
+ import type { ImportedPublicRecord } from "../statuspage-import/public-addresses";
+ import { loadPublicApiIds } from "./api-identity-repository";
+ import { createWebsiteRepository } from "../website/repository";
+-import { and, asc, desc, eq, isNull, ne, or, sql } from "drizzle-orm";
++import { and, asc, desc, eq, getTableColumns, inArray, isNull, ne, or, sql } from "drizzle-orm";
+ 
+ import { createDatabase } from "../../platform/db/client";
+ import {
+@@ -26,6 +28,7 @@ import {
+ 
+ export interface SnapshotRepository {
+   load(): Promise<PublicSnapshotSource | null>;
++  loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null>;
+   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
+   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
+   latestBuild(): Promise<typeof snapshotBuilds.$inferSelect | null>;
+@@ -40,6 +43,8 @@ export interface SnapshotRepository {
+ }
+ 
+ export interface PublicSnapshotSource {
++  archive?: import("./archive").ArchivePage;
++  bounded?: boolean;
+   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
+   smsEnabled?: boolean;
+   slackEnabled?: boolean;
+@@ -92,7 +97,27 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+     async load() {
+       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
+       if (!settings) return null;
++      // Settings restored or inserted after the feed-identity migration can
++      // still have its placeholder default. Persist one identity before rendering;
++      // competing builders must use the same winner, including on retries.
++      if (!settings.feedId || settings.feedId === "pending-feed-identity") {
++        await binding.prepare("UPDATE page_settings SET feed_id = ? WHERE id = 'default' AND feed_id IN ('', 'pending-feed-identity')").bind(createUlid()).run();
++        const identity = await binding.prepare("SELECT feed_id AS feedId FROM page_settings WHERE id = 'default'").first<{ feedId: string }>();
++        if (!identity?.feedId || identity.feedId === "pending-feed-identity") throw new Error("Public feed identity could not be persisted.");
++        settings.feedId = identity.feedId;
++      }
+ 
++      // The retained generation contains current work plus a recent window.
++      // Older records use indexed, bounded archive pages; no records are removed.
++      // Apply the archive's public membership before the limit: private rows
++      // cannot consume a slot and suppress the Older history continuation.
++      const recentIncidentQuery = `SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
++        UNION SELECT id FROM (SELECT i.id FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle = 'Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident} ORDER BY i.resolved_at DESC, i.id DESC LIMIT 50)`;
++      const recentMaintenanceQuery = `SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
++        UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
++      const recentIncidents = sql.raw(`(${recentIncidentQuery})`);
++      const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
++      const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
+       const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
+         database
+           .select({
+@@ -104,10 +129,10 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+             uptimeStartDate: components.uptimeStartDate,
+             note: components.note,
+             groupId: components.groupId,
+-            groupName: componentGroups.name,
+-            groupOrder: componentGroups.displayOrder,
+-            groupCreatedAt: componentGroups.createdAt,
+-            groupUpdatedAt: componentGroups.updatedAt,
++            groupName: sql<string | null>`${componentGroups.name}`.as("group_name"),
++            groupOrder: sql<number | null>`${componentGroups.displayOrder}`.as("group_order"),
++            groupCreatedAt: sql<string | null>`${componentGroups.createdAt}`.as("group_created_at"),
++            groupUpdatedAt: sql<string | null>`${componentGroups.updatedAt}`.as("group_updated_at"),
+             displayOrder: components.displayOrder,
+             createdAt: components.createdAt,
+             updatedAt: components.updatedAt,
+@@ -122,7 +147,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+           .select({ componentId: incidentComponents.componentId, state: incidentComponents.state })
+           .from(incidentComponents)
+           .innerJoin(incidents, eq(incidentComponents.incidentId, incidents.id))
+-          .where(and(isNull(incidents.deletedAt), ne(incidents.lifecycle, "Resolved"), sql`incident_components.published_at IS NOT NULL`))
++          .where(and(inArray(incidentComponents.incidentId, sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved')`), sql`incident_components.published_at IS NOT NULL`))
+           .all(),
+         database
+           .select({ componentId: maintenanceComponents.componentId, state: maintenanceComponents.state })
+@@ -130,37 +155,40 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+           .innerJoin(maintenance, eq(maintenanceComponents.maintenanceId, maintenance.id))
+           .where(eq(maintenance.state, "In progress"))
+           .all(),
+-        database.select().from(componentStateHistory).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
+-        database.select().from(componentStateCorrections).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
+-        database.select().from(incidents).where(isNull(incidents.deletedAt)).orderBy(desc(incidents.openedAt)).all(),
++        // Correction audit rows are not observations; computeUptime reads the
++        // independently stored correction intervals instead.
++        database.select().from(componentStateHistory).where(and(ne(componentStateHistory.causeType, "correction"), sql`(${componentStateHistory.changedAt} >= ${cutoff} OR ${componentStateHistory.id} IN
++          (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' AND h.changed_at < ${cutoff} ORDER BY h.changed_at DESC,h.created_at DESC,h.id DESC LIMIT 1) FROM components c WHERE c.internal=0)
++          OR ${componentStateHistory.id} IN (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' ORDER BY h.changed_at,h.created_at,h.id LIMIT 1) FROM components c WHERE c.internal=0))`)).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
++        database.select().from(componentStateCorrections).where(sql`${componentStateCorrections.endsAt} >= ${cutoff}`).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
++        database.select().from(incidents).where(inArray(incidents.id, recentIncidents)).orderBy(desc(incidents.openedAt)).all(),
+         database
+-          .select()
++          .select(getTableColumns(incidentComponents))
+           .from(incidentComponents)
+           .leftJoin(components, eq(incidentComponents.componentId, components.id))
+-          .where(and(sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
+-          .all()
+-          .then((rows) => rows.map((row) => row.incident_components)),
+-        database.select().from(incidentUpdates).orderBy(desc(incidentUpdates.publishedAt)).all(),
+-        database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all(),
++          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
++          .all(),
++        database.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, recentIncidents)).orderBy(desc(incidentUpdates.publishedAt)).all(),
++        database.select().from(maintenance).where(inArray(maintenance.id, recentMaintenance)).orderBy(asc(maintenance.startsAt)).all(),
+         database
+-          .select()
++          .select(getTableColumns(maintenanceComponents))
+           .from(maintenanceComponents)
+           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
+-          .where(or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false)))
+-          .all()
+-          .then((rows) => rows.map((row) => row.maintenance_components)),
+-        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
+-        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
++          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
++          .all(),
++        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (${recentIncidentQuery}) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
++        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
+         readImportedPublicRecords(binding),
+         readImportedNamespaces(binding),
+-        binding.prepare("SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates ORDER BY published_at DESC,id").all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
++        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
+         loadPublicApiIds(binding),
+-        binding.prepare("SELECT id,peak_impact AS impact FROM incidents WHERE deleted_at IS NULL").all<{ id: string; impact: typeof componentStandingClaims.$inferSelect.state | null }>().then(result => result.results),
++        database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
+       ]);
+ 
+       const website = await createWebsiteRepository(binding).get();
+       const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
+       return {
++        bounded: true,
+         websiteUrl: website?.url ?? null,
+         smsEnabled,
+         slackEnabled: chat.slack,
+@@ -185,6 +213,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+         maintenanceNotices, importedMaintenanceUpdates, metrics: await createMetricsRepository(binding).publicSeries(),
+       };
+     },
++    loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, context, key, generatedAt),
+     async startBuild(input) {
+       await database.insert(snapshotBuilds).values(input);
+     },
+diff --git a/src/core/features/public-snapshot/routes.ts b/src/core/features/public-snapshot/routes.ts
+index 11cbcdaa..d2385703 100644
+--- a/src/core/features/public-snapshot/routes.ts
++++ b/src/core/features/public-snapshot/routes.ts
+@@ -9,6 +9,7 @@ import { escapeHtml } from "./format";
+ import { applyPublicIsolationHeaders } from "./headers";
+ import type { PublicSnapshotService } from "./service";
+ import { nativeApiArtifact } from "./native-api";
++import { componentFeedArchiveKey, feedArchiveKey, historyArchiveKey } from "./archive";
+ import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
+ 
+ // Stable public URLs are selectors, not immutable artifacts. Revalidate the
+@@ -183,7 +184,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
+     const cache = await caches.open("lamp-public-snapshot-fallback").catch(() => null);
+     const cacheUrl = new URL(context.req.url);
+     cacheUrl.search = ""; // Public artifacts do not vary by query parameters.
+-    if (cacheUrl.pathname.startsWith("/api/public/v1/")) cacheUrl.searchParams.set("artifact", artifact(context));
++    if (cacheUrl.pathname.startsWith("/api/public/v1/") || key.startsWith("archive/")) cacheUrl.searchParams.set("artifact", key);
+     const cacheRequest = new Request(cacheUrl, { method: "GET" });
+     try {
+       const object = await service.readArtifact(artifact(context));
+@@ -265,18 +266,18 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
+   });
+   app.get("/maintenance/:reference", serve((context) => `maintenance/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
+   app.get("/", serve(() => "page.html"));
+-  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? `history/${context.req.param("month")}.html` : "history/invalid.html", false, "not-found.html"));
+-  app.get("/history", serve(() => "history.html"));
++  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? historyArchiveKey(context.req.param("month"), context.req.query("cursor")) : "history/invalid.html", false, "not-found.html"));
++  app.get("/history", serve(context => historyArchiveKey(undefined, context.req.query("cursor")), false, "not-found.html"));
+   app.get("/incidents/:reference", serve((context) => `incidents/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
+   app.get("/maintenance.ics", serve(() => "maintenance.ics"));
+-  app.get("/feed.atom", serve(() => "feed.atom"));
+-  app.get("/feed.rss", serve(() => "feed.rss"));
+-  app.get("/history.atom", serve(() => "history.atom"));
+-  app.get("/history.rss", serve(() => "history.rss"));
++  app.get("/feed.atom", serve(context => feedArchiveKey("atom", context.req.query("cursor"))));
++  app.get("/feed.rss", serve(context => feedArchiveKey("rss", context.req.query("cursor"))));
++  app.get("/history.atom", serve(context => context.req.query("cursor") ? feedArchiveKey("atom", context.req.query("cursor")) : "history.atom"));
++  app.get("/history.rss", serve(context => context.req.query("cursor") ? feedArchiveKey("rss", context.req.query("cursor")) : "history.rss"));
+   app.get("/badge.svg", serve(() => "badge.svg"));
+   app.get("/badge.json", serve(() => "badge.json"));
+   for (const resource of ["feed.atom", "feed.rss", "badge.svg", "uptime.svg"]) {
+-    app.get(`/components/:slug/${resource}`, serve(context => `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
++    app.get(`/components/:slug/${resource}`, serve(context => resource === "feed.atom" || resource === "feed.rss" ? componentFeedArchiveKey(context.req.param("slug") ?? "", resource === "feed.atom" ? "atom" : "rss", context.req.query("cursor")) : `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
+   }
+   app.get("/api/v2/*", serve(context => new URL(context.req.url).pathname.slice(1)));
+   for (const path of ["/api/public/v1", "/api/public/v1/", "/api/public/v1/summary.json"]) app.get(path, serve(() => "api/public/v1/summary.json"));
+diff --git a/src/core/features/public-snapshot/service.ts b/src/core/features/public-snapshot/service.ts
+index b4ded028..5299b5eb 100644
+--- a/src/core/features/public-snapshot/service.ts
++++ b/src/core/features/public-snapshot/service.ts
+@@ -7,7 +7,7 @@ import type { LampServerSlots } from "../../api/extensions";
+ import type { AppBindings } from "../../app/types";
+ 
+ import { readGenerationArtifact } from "./generation-cache";
+-import { renderPublicSnapshot } from "./renderer";
++import { renderArchiveArtifact, renderPublicSnapshot } from "./renderer";
+ import type { SnapshotRepository } from "./repository";
+ import { PRELAUNCH_ROBOTS_KEY } from "../prelaunch/policy";
+ import { readPrelaunch } from "../prelaunch/store";
+@@ -21,7 +21,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
+ // The minute scheduler periodically rereads source data even without a mutation.
+ const SNAPSHOT_REFRESH_MS = 5 * 60_000;
+ const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v22";
++export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v23";
+ 
+ interface SnapshotPointer {
+   version: string;
+@@ -197,21 +197,43 @@ export function createPublicSnapshotService(
+         const version = createUlid();
+         source.prelaunch = await readPrelaunch(blobs);
+         const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null }, slots);
++        // Feed event order is independent of incident resolution order. Read
++        // its first bounded page directly so later updates to older incidents
++        // cannot disappear behind the recent incident window.
++        const feedSource = await repository.loadArchive?.(source, "feed.atom", rendered.generatedAt);
++        if (feedSource) for (const format of ["atom", "rss"]) {
++          const artifact = renderArchiveArtifact(feedSource, `feed.${format}`, rendered.generatedAt, policies, slots);
++          if (artifact) for (const key of [`feed.${format}`, `history.${format}`]) {
++            const index = rendered.artifacts.findIndex(item => item.key === key);
++            if (index >= 0) rendered.artifacts[index] = { ...artifact, key };
++          }
++        }
++        for (const name of ["incidents", "maintenance"]) {
++          const key = `api/public/v1/${name}.json`;
++          const initial = await repository.loadArchive?.(source, key, rendered.generatedAt);
++          const artifact = initial ? renderArchiveArtifact(initial, key, rendered.generatedAt, policies, slots) : null;
++          if (artifact) rendered.artifacts.push(artifact);
++        }
+         rendered.artifacts.push(...await themeAssetArtifacts(source.settings.themeAssets, blobs));
+         const uploadedFont = rendered.artifacts.find(artifact => artifact.key === "assets/theme-font");
+         if (uploadedFont) for (const artifact of rendered.artifacts.filter(artifact => artifact.contentType.startsWith("text/css"))) {
+           artifact.body = artifact.body.replaceAll('url("/assets/theme-font")', `url("data:font/woff2;base64,${uploadedFont.body}")`);
+         }
+         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
+-        return { version, rendered, bundle, logo, logoContentType };
++        return { version, rendered, bundle, logo, logoContentType, source };
+       }
+-      let prepared: Awaited<ReturnType<typeof prepare>> | null = null;
++      // Source/renderer failures need a later revision or repair. Retrying
++      // them immediately reloads the same history three times. Only delivery
++      // to storage/replica/pointer is retried with the prepared bytes below.
++      const prepared = await prepare();
+       while (attempts < 3) {
+         attempts += 1;
+         try {
+         // Retry storage/replica/pointer delivery with identical generation bytes.
+-        prepared ??= await prepare();
+-        const { version, rendered, bundle, logo, logoContentType } = prepared;
++        const { version, rendered, bundle, logo, logoContentType, source } = prepared;
++        // Cold historical pages use this generation's public presentation data.
++        // They are independently cached, never added to its retained bundle.
++        await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...source, history: [], corrections: [], metrics: [] }), "application/json");
+         await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
+           ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
+           : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
+@@ -301,7 +323,16 @@ export function createPublicSnapshotService(
+           const bundle = await retained?.read();
+           return bundle ? retainedArtifact(bundle, key) : null;
+         }
+-        const object = await readGenerationArtifact(blobs, pointer.version, key);
++        let object = await readGenerationArtifact(blobs, pointer.version, key);
++        if (!object && repository.loadArchive) {
++          const context = await blobs.getText(`snapshots/${pointer.version}/archive-context.json`);
++          const source = context ? await repository.loadArchive(JSON.parse(context.text), key, pointer.generatedAt) : null;
++          const artifact = source ? renderArchiveArtifact(source, key, pointer.generatedAt, policies, slots) : null;
++          if (artifact) {
++            await blobs.putText(`snapshots/${pointer.version}/${key}`, artifact.body, artifact.contentType);
++            object = { bytes: new TextEncoder().encode(artifact.body).buffer, contentType: artifact.contentType };
++          }
++        }
+         if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
+         const marker = await staleMarker();
+         let retainedReady = false;
+diff --git a/src/core/features/public-snapshot/templates/parts.ts b/src/core/features/public-snapshot/templates/parts.ts
+index c7eefa78..fae7ae5c 100644
+--- a/src/core/features/public-snapshot/templates/parts.ts
++++ b/src/core/features/public-snapshot/templates/parts.ts
+@@ -154,11 +154,11 @@ export function records(model: PublicSnapshotModel) {
+   const active = model.maintenance.filter((item) => item.state === "In progress").sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+   const upcoming = model.maintenance.filter((item) => item.state === "Scheduled" && Date.parse(item.startsAt) <= now + 14 * DAY).sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+   const resolved = model.incidents.filter((incident) => incident.lifecycle === "Resolved" && incident.resolvedAt && Date.parse(incident.resolvedAt) >= now - model.theme.historyDays * DAY).sort((left, right) => (right.resolvedAt ?? "").localeCompare(left.resolvedAt ?? ""));
+-  return { historyDays: model.theme.historyDays, open, maintenance: [...active, ...upcoming], resolved: resolved.slice(0, 3), more: Math.max(0, resolved.length - 3) };
++  return { bounded: model.bounded, historyDays: model.theme.historyDays, open, maintenance: [...active, ...upcoming], resolved: resolved.slice(0, 3), more: Math.max(0, resolved.length - 3) };
+ }
+ 
+ export function quietLine(history: ReturnType<typeof records>, className: string) {
+-  const text = history.more
++  const text = history.bounded ? "Recent incidents are shown here." : history.more
+     ? `${history.more} more incident${history.more === 1 ? "" : "s"} in the last ${history.historyDays} days.`
+     : history.resolved.length || history.open.length ? `No other incidents in the last ${history.historyDays} days.` : `No incidents in the last ${history.historyDays} days.`;
+   return `<p class="${className}">${text} <a href="/history">Full history</a></p>`;
+diff --git a/src/core/features/reports/repository.ts b/src/core/features/reports/repository.ts
+index 19e7f31d..46a00e72 100644
+--- a/src/core/features/reports/repository.ts
++++ b/src/core/features/reports/repository.ts
+@@ -1,3 +1,4 @@
++import { ensureScheduledWork } from "../scheduled-work/repository";
+ import { incidentReportEndStatements } from "../subscribers/incident-lifecycle.repository";
+ import { reportReminderEligibleSql } from "./reminder-eligibility";
+ import { createUlid } from "../../shared/ids";
+@@ -21,7 +22,7 @@ export interface ReportRepository {
+   upsert(input: IncidentReportRow): Promise<void>;
+   publish(incidentId: string, report: IncidentReportRow, publishedAt: string, operatorId: string, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
+   listComponentIds(incidentId: string): Promise<string[]>;
+-  listResolvedWithoutPublishedReport(): Promise<Array<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>>;
++  listResolvedWithoutPublishedReport(reminders?: { now: string; defaultPolicy: boolean }): Promise<Array<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>>;
+   waiver(incidentId: string): Promise<{ reason: string; operatorId: string; createdAt: string } | null>;
+   waive(incidentId: string, reason: string, operatorId: string, at: string): Promise<boolean>;
+   reminderSent(incidentId: string, week: number): Promise<boolean>;
+@@ -96,11 +97,19 @@ export function createReportRepository(binding: D1Database): ReportRepository {
+     async reminderSent(incidentId, week) { return Boolean(await binding.prepare("SELECT 1 FROM report_reminders WHERE incident_id=? AND week=?").bind(incidentId,week).first()); },
+     async recordReminder(incidentId, week, at) { await binding.prepare("INSERT OR IGNORE INTO report_reminders(incident_id,week,recorded_at) VALUES(?,?,?)").bind(incidentId,week,at).run(); },
+     async listComponentIds(incidentId) { return (await binding.prepare(`SELECT component_id AS componentId FROM incident_components WHERE incident_id = ? AND component_id IS NOT NULL`).bind(incidentId).all<{ componentId: string }>()).results.map((row) => row.componentId); },
+-    async listResolvedWithoutPublishedReport() {
++    async listResolvedWithoutPublishedReport(reminders) {
++      if (reminders?.defaultPolicy) {
++        await ensureScheduledWork(binding);
++        return (await binding.prepare(`SELECT incidents.id,incidents.reference,incidents.title,incidents.lifecycle,incidents.resolved_at AS resolvedAt,incidents.peak_impact AS impact,1 AS reminderEligible
++          FROM incident_report_reminder_work work JOIN incidents ON incidents.id=work.incident_id
++          WHERE work.next_due_at<=? ORDER BY work.next_due_at,work.incident_id LIMIT 100`).bind(reminders.now)
++          .all<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>()).results;
++      }
++      const eligible = reminders ? ` AND ${reportReminderEligibleSql("incidents")}` : "";
+       const result = await binding.prepare(`SELECT incidents.id, incidents.reference, incidents.title, incidents.lifecycle, incidents.resolved_at AS resolvedAt, incidents.peak_impact AS impact,
+         ${reportReminderEligibleSql("incidents")} AS reminderEligible
+         FROM incidents LEFT JOIN incident_reports ON incident_reports.incident_id = incidents.id AND incident_reports.published_at IS NOT NULL
+-        WHERE incidents.lifecycle = 'Resolved' AND incidents.deleted_at IS NULL AND incident_reports.id IS NULL AND NOT EXISTS(SELECT 1 FROM report_waivers WHERE incident_id=incidents.id)`).all<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>();
++        WHERE incidents.lifecycle = 'Resolved' AND incidents.deleted_at IS NULL AND incident_reports.id IS NULL AND NOT EXISTS(SELECT 1 FROM report_waivers WHERE incident_id=incidents.id)${eligible}`).all<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>();
+       return result.results;
+     },
+   };
+diff --git a/src/core/features/reports/service.ts b/src/core/features/reports/service.ts
+index e9c9728e..003e632b 100644
+--- a/src/core/features/reports/service.ts
++++ b/src/core/features/reports/service.ts
+@@ -53,7 +53,7 @@ export function createReportsService(repository: ReportRepository, onPublicDataC
+     async remindDue(now) {
+       if (!remind) throw new Error("Report follow-up requires operator reminder wiring.");
+       let sent=0;
+-      for (const incident of await repository.listResolvedWithoutPublishedReport()) {
++      for (const incident of await repository.listResolvedWithoutPublishedReport({ now, defaultPolicy: duePolicy === defaultPostmortemDuePolicy })) {
+         if (!incident.reminderEligible || !duePolicy.isDue({ resolvedAt: incident.resolvedAt, impact: incident.impact as ComponentState | null, hasPublishedReport: false, now }) || !incident.resolvedAt) continue;
+         const week = Math.floor((Date.parse(now) - Date.parse(incident.resolvedAt) - REPORT_REMINDER_WEEK_MS) / REPORT_REMINDER_WEEK_MS);
+         if (week<0 || await repository.reminderSent(incident.id,week)) continue;
+diff --git a/src/core/features/scheduled-work/repository.ts b/src/core/features/scheduled-work/repository.ts
+new file mode 100644
+index 00000000..e9f61977
+--- /dev/null
++++ b/src/core/features/scheduled-work/repository.ts
+@@ -0,0 +1,30 @@
++/** These tables are derived work, not new reminder or consent facts. A native
++ * archive restores canonical rows with triggers dropped; older archives have no
++ * derived tables. Reconstruct once, atomically, before their first scheduler use.
++ * The marker travels with current archives and remains unset for older ones. */
++const initializing = new WeakMap<D1Database, Promise<void>>();
++
++export async function ensureScheduledWork(binding: D1Database): Promise<void> {
++  const pending = initializing.get(binding);
++  if (pending) return pending;
++  const initialize = (async () => {
++    const state = await binding.prepare("SELECT completed FROM scheduled_work_initialization WHERE id=1").first<{ completed: number }>();
++    if (!state) throw new Error("Scheduled work initialization is missing.");
++    if (state.completed) return;
++    // Every statement checks the same durable marker. A concurrent initializer
++    // which already committed makes this whole transaction an idempotent no-op.
++    const uninitialized = "(SELECT completed FROM scheduled_work_initialization WHERE id=1)=0";
++    await binding.batch([
++      binding.prepare(`DELETE FROM incident_update_reminder_work WHERE ${uninitialized}`),
++      binding.prepare(`INSERT INTO incident_update_reminder_work(incident_id,update_id,next_update_at,due_soon_sent,overdue_sent,escalation_sent)
++        SELECT incident_id,update_id,next_update_at,due_soon_sent,overdue_sent,escalation_sent FROM incident_update_reminder_candidates WHERE ${uninitialized}`),
++      binding.prepare(`DELETE FROM incident_report_reminder_work WHERE ${uninitialized}`),
++      binding.prepare(`INSERT INTO incident_report_reminder_work(incident_id,next_due_at)
++        SELECT incident_id,next_due_at FROM incident_report_reminder_candidates WHERE ${uninitialized}`),
++      binding.prepare(`UPDATE scheduled_work_initialization SET completed=1 WHERE id=1 AND completed=0`),
++    ]);
++  })();
++  initializing.set(binding, initialize);
++  try { await initialize; }
++  finally { initializing.delete(binding); }
++}
+diff --git a/src/core/features/subscribers/incident-lifecycle.repository.ts b/src/core/features/subscribers/incident-lifecycle.repository.ts
+index 19db1baa..aa2dde19 100644
+--- a/src/core/features/subscribers/incident-lifecycle.repository.ts
++++ b/src/core/features/subscribers/incident-lifecycle.repository.ts
+@@ -3,7 +3,8 @@
+ export function finishIncidentSubscriptionStatements(db: D1Database, now: string): D1PreparedStatement[] {
+   return [
+     db.prepare(`UPDATE subscribers SET state='deactivated',deactivation_reason='incident-follow-ended',deactivated_at=?,updated_at=?
+-      WHERE state IN ('pending','active') AND id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)`).bind(now,now),
++      WHERE rowid IN (SELECT s.rowid FROM incident_subscriptions ended CROSS JOIN subscribers s
++        WHERE ended.ended_at IS NOT NULL AND s.id=ended.subscriber_id AND s.state IN ('pending','active'))`).bind(now,now),
+     db.prepare(`UPDATE subscriber_tokens SET revoked_at=?,updated_at=? WHERE revoked_at IS NULL
+       AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)`).bind(now,now),
+     db.prepare(`UPDATE notification_deliveries SET outcome='suppressed',outcome_at=?,updated_at=? WHERE outcome='queued'
+diff --git a/src/core/features/subscribers/limits.repository.ts b/src/core/features/subscribers/limits.repository.ts
+index 68ec3e17..4d5dd008 100644
+--- a/src/core/features/subscribers/limits.repository.ts
++++ b/src/core/features/subscribers/limits.repository.ts
+@@ -2,10 +2,10 @@ import { SubscriberLimitError, subscriberCapacity, subscriberChannelFull, subscr
+ 
+ export function createSubscriberLimitRepository(db:D1Database) {
+   async function counts():Promise<SubscriberCounts> {
+-    const row=await db.prepare(`SELECT COUNT(*) AS total,
+-      COALESCE(SUM(channel='email'),0) AS email,COALESCE(SUM(channel='webhook'),0) AS webhook,
+-      COALESCE(SUM(channel='slack'),0) AS slack,COALESCE(SUM(channel='teams'),0) AS teams,COALESCE(SUM(channel='sms'),0) AS sms
+-      FROM subscriber_directory AS subscribers WHERE state IN ('pending','active')`).first<SubscriberCounts>();
++    const row=await db.prepare(`SELECT SUM(total) AS total,
++      SUM(CASE WHEN channel='email' THEN total ELSE 0 END) AS email,SUM(CASE WHEN channel='webhook' THEN total ELSE 0 END) AS webhook,
++      SUM(CASE WHEN channel='slack' THEN total ELSE 0 END) AS slack,SUM(CASE WHEN channel='teams' THEN total ELSE 0 END) AS teams,SUM(CASE WHEN channel='sms' THEN total ELSE 0 END) AS sms
++      FROM subscriber_limit_counts`).first<SubscriberCounts>();
+     if(!row)throw new Error("Subscriber counts could not be read.");
+     return row;
+   }
+diff --git a/src/core/platform/blobs/retained-bundle.ts b/src/core/platform/blobs/retained-bundle.ts
+index 8bb52454..0f0fd404 100644
+--- a/src/core/platform/blobs/retained-bundle.ts
++++ b/src/core/platform/blobs/retained-bundle.ts
+@@ -1,12 +1,30 @@
+-export interface RetainedArtifact { key: string; body: string; contentType: string; encoding?: "base64" }
++export interface RetainedArtifact { key: string; body: string; contentType: string; encoding?: "base64"; footer?: number; footerAt?: number }
+ export interface RetainedBundle {
+   version: string;
+   generatedAt: string;
+   generation: number;
+   artifacts: RetainedArtifact[];
++  footers?: string[];
+ }
+ export function encodeRetainedBundle(bundle: RetainedBundle) {
+-  const encoded = JSON.stringify(bundle);
++  // Public documents share the same complete footer (including component
++  // resources). Store repeated bytes once without changing any served HTML.
++  const counts = new Map<string, number>();
++  for (const artifact of bundle.artifacts) {
++    if (!artifact.contentType.startsWith("text/html")) continue;
++    const footer = artifact.body.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
++    if (footer && footer.length >= 1024) counts.set(footer, (counts.get(footer) ?? 0) + 1);
++  }
++  const footers = [...counts].filter(([, count]) => count > 1).map(([footer]) => footer);
++  const artifacts = footers.length ? bundle.artifacts.map(artifact => {
++    if (!artifact.contentType.startsWith("text/html")) return artifact;
++    const footer = artifact.body.match(/<footer\b[\s\S]*?<\/footer>/)?.[0];
++    const index = footer ? footers.indexOf(footer) : -1;
++    if (index < 0 || !footer) return artifact;
++    const at = artifact.body.indexOf(footer);
++    return { ...artifact, body: artifact.body.slice(0, at) + artifact.body.slice(at + footer.length), footer: index, footerAt: at };
++  }) : bundle.artifacts;
++  const encoded = JSON.stringify({ ...bundle, artifacts, ...(footers.length ? { footers } : {}) });
+   // Bound memory during rendering and replication; reject before publication.
+   if (new TextEncoder().encode(encoded).byteLength > 25 * 1024 * 1024) throw new Error("Retained snapshot exceeds the 25 MiB retained bundle limit.");
+   return encoded;
+@@ -14,14 +32,17 @@ export function encodeRetainedBundle(bundle: RetainedBundle) {
+ export function readRetainedArtifact(encoded: string, key: string) {
+   const bundle = JSON.parse(encoded) as RetainedBundle;
+   if (!bundle || typeof bundle.version !== "string" || !Number.isFinite(Date.parse(bundle.generatedAt)) || (!Number.isInteger(bundle.generation) || bundle.generation < 0) || !Array.isArray(bundle.artifacts)) throw new Error("Retained snapshot is invalid.");
++  if (bundle.footers !== undefined && (!Array.isArray(bundle.footers) || bundle.footers.some(footer => typeof footer !== "string"))) throw new Error("Retained snapshot footer table is invalid.");
+   const keys = new Set<string>();
+   for (const artifact of bundle.artifacts) {
+     if (typeof artifact.key !== "string" || typeof artifact.body !== "string" || typeof artifact.contentType !== "string" || keys.has(artifact.key)) throw new Error("Retained snapshot artifact is invalid.");
++    if (artifact.footer !== undefined && (!Number.isInteger(artifact.footer) || artifact.footer < 0 || !bundle.footers?.[artifact.footer] || !Number.isInteger(artifact.footerAt) || artifact.footerAt! < 0 || artifact.footerAt! > artifact.body.length || artifact.encoding)) throw new Error("Retained snapshot footer reference is invalid.");
+     keys.add(artifact.key);
+   }
+   for (const required of ["page.html", "feed.atom", "widget.js", "status.json"]) if (!keys.has(required)) throw new Error("Retained snapshot is incomplete.");
+   const artifact = bundle.artifacts.find((item) => item.key === key);
+   if (!artifact) return null;
+-  const bytes = artifact.encoding === "base64" ? Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer : new TextEncoder().encode(artifact.body).buffer;
++  const body = artifact.footer === undefined ? artifact.body : artifact.body.slice(0, artifact.footerAt) + bundle.footers![artifact.footer] + artifact.body.slice(artifact.footerAt);
++  const bytes = artifact.encoding === "base64" ? Uint8Array.from(atob(body), character => character.charCodeAt(0)).buffer : new TextEncoder().encode(body).buffer;
+   return { bytes, contentType: artifact.contentType, version: bundle.version, generatedAt: new Date(bundle.generatedAt).toISOString(), stale: true, retainedReady: true };
+ }
+diff --git a/tests/e2e/helpers/public-history-flow.mjs b/tests/e2e/helpers/public-history-flow.mjs
+index d64a4ee3..ec2dac0b 100644
+--- a/tests/e2e/helpers/public-history-flow.mjs
++++ b/tests/e2e/helpers/public-history-flow.mjs
+@@ -1,4 +1,5 @@
+ import assert from 'node:assert/strict';
++import { publicHistorySelectionFlow } from './public-history-selection-flow.mjs';
+ import { mkdir } from 'node:fs/promises';
+ import { join } from 'node:path';
+ import { chromium } from 'playwright';
+@@ -6,6 +7,7 @@ import { openStatusJourney } from './status-journey.mjs';
+ import { assertHistoryRecord, historyGroups, historyText, historyLinks } from './history-assertions.mjs';
+ 
+ export async function publicHistoryFlow() {
++  await publicHistorySelectionFlow();
+   const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+   let browser;
+   const clock = async instant => {
+@@ -103,6 +105,80 @@ export async function publicHistoryFlow() {
+     // month pages must present the same complete records as the index.
+     const monthly = await j.publicText('/history/2030-02');
+     for (const record of [february, maintenance]) assertHistoryRecord(monthly, record);
++    // A retained generation stays small when completed source history grows.
++    // Seed source records, never a snapshot: Cron must produce the public bytes.
++    const archived = Array.from({ length: 55 }, (_, index) => ({
++      id: `synthetic-history-${String(index).padStart(3, '0')}`,
++      reference: `INC-${9000 + index}`,
++      title: `Synthetic Lamp paged history ${index}`,
++      at: '2029-12-20T11:00:00.000Z',
++    }));
++    const original = (await j.db.prepare('SELECT id FROM incidents WHERE reference=?').bind(december.href.split('/').at(-1)).first()).id;
++    await j.db.batch(archived.flatMap(row => [
++      j.db.prepare("INSERT INTO incidents(id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at) SELECT ?,?,?,'Resolved',?,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(row.id, row.reference, row.title, row.at, row.at, row.at, row.at, original),
++      j.db.prepare("INSERT INTO incident_components(id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES(?,?,?,?,'Major outage','Primary',?,?,?)").bind(`${row.id}-component`, row.id, component.id, component.name, row.at, row.at, row.at),
++      j.db.prepare("INSERT INTO incident_updates(id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) SELECT ?,?,'Resolved','Synthetic archived customers','Synthetic archived impact','Read access remains available',?,NULL,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(`${row.id}-update`, row.id, row.title, row.at, row.at, row.at, original),
++    ]));
++    await j.tick(Date.parse('2030-01-31T14:25:00.000Z'));
++    const paged = await j.visible('/history', archived.at(-1).title);
++    assert.ok(paged.includes('50 records per page'), 'the public history states its page size');
++    const expected = [...archived.map(row => `/incidents/${row.reference}`), february.href, december.href, oldIncident.href, maintenance.href, oldWindow.href];
++    const observed = [];
++    let historyPage = paged;
++    let historyPages = 0;
++    for (;;) {
++      observed.push(...historyLinks(historyPage));
++      const next = /<a[^>]*rel="next"[^>]*href="([^"]*\?cursor=[^"]+)"[^>]*>Older history<\/a>/.exec(historyPage)?.[1];
++      historyPages += 1;
++      if (!next) break;
++      assert.ok(historyPages < 5, 'history cursors advance');
++      historyPage = await j.publicText(next.replaceAll('&amp;', '&'));
++    }
++    assert.ok(historyPages > 1, 'older history has its own bounded page');
++    assert.equal(new Set(observed).size, observed.length, 'tied timestamps do not repeat records');
++    assert.deepEqual(observed.sort(), expected.sort(), 'every historical record remains reachable exactly once');
++    for (const record of [oldIncident, oldWindow]) {
++      const permanent = await j.publicText(record.href);
++      assert.ok(permanent.includes(record.title));
++      for (const update of record.updates) {
++        assert.ok(permanent.includes(update.publishedAt));
++        for (const line of (update.details ?? update.body).split("\n").filter(Boolean)) assert.ok(permanent.includes(line));
++      }
++    }
++    const native = [];
++    let nativeCursor;
++    for (let pages = 0; pages < 5; pages += 1) {
++      const result = JSON.parse(await j.publicText(`/api/public/v1/incidents${nativeCursor ? `?cursor=${encodeURIComponent(nativeCursor)}` : ''}`));
++      assert.ok(result.data.length <= 50);
++      native.push(...result.data.map(row => row.reference));
++      nativeCursor = result.nextCursor;
++      if (!nativeCursor) break;
++    }
++    assert.equal(new Set(native).size, native.length);
++    assert.deepEqual(native.sort(), [...archived.map(row => row.reference), ...[february, december, oldIncident].map(row => row.href.split('/').at(-1)), active.reference].sort());
++    // A feed reader follows the advertised page relation without losing events.
++    let feedPage = await j.publicText('/feed.atom');
++    const events = [];
++    for (let pages = 0; pages < 5; pages += 1) {
++      events.push(...[...feedPage.matchAll(/<entry><id>([^<]+)<\/id>/g)].map(match => match[1]));
++      const next = /<link[^>]*href="([^"]+)"[^>]*rel="next"[^>]*\/>/.exec(feedPage)?.[1] || /<link[^>]*rel="next"[^>]*href="([^"]+)"[^>]*\/>/.exec(feedPage)?.[1];
++      if (!next) break;
++      feedPage = await j.publicText(next.replaceAll('&amp;', '&'));
++    }
++    assert.equal(new Set(events).size, events.length, 'feed pages do not duplicate equal-time events');
++    for (const row of archived) assert.ok(events.some(id => id.endsWith(`:event:update-${row.id}-update`)), `${row.reference} is reachable through feed paging`);
++    let componentFeed = await j.publicText(`/components/${component.id.toLowerCase()}/feed.atom`);
++    const componentEvents = [];
++    for (let pages = 0; pages < 5; pages += 1) {
++      componentEvents.push(...[...componentFeed.matchAll(/<entry><id>([^<]+)<\/id>/g)].map(match => match[1]));
++      const next = /<link[^>]*href="([^"]+)"[^>]*rel="next"[^>]*\/>/.exec(componentFeed)?.[1] || /<link[^>]*rel="next"[^>]*href="([^"]+)"[^>]*\/>/.exec(componentFeed)?.[1];
++      if (!next) break;
++      assert.ok(next.includes(`/components/${component.id.toLowerCase()}/feed.atom?`), 'component paging keeps its component');
++      componentFeed = await j.publicText(next.replaceAll('&amp;', '&'));
++    }
++    assert.equal(new Set(componentEvents).size, componentEvents.length);
++    for (const row of archived) assert.ok(componentEvents.some(id => id.endsWith(`:event:update-${row.id}-update`)), `${row.reference} remains in its component feed`);
++    for (const update of december.updates) assert.ok(!componentEvents.some(id => id.endsWith(`:event:update-${update.id}`)), 'component archive excludes unrelated incidents');
+     browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
+     const page = await browser.newPage({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
+     await page.goto(j.publicOrigin + '/history');
+diff --git a/tests/e2e/helpers/public-history-selection-flow.mjs b/tests/e2e/helpers/public-history-selection-flow.mjs
+new file mode 100644
+index 00000000..5c91c48d
+--- /dev/null
++++ b/tests/e2e/helpers/public-history-selection-flow.mjs
+@@ -0,0 +1,73 @@
++import assert from 'node:assert/strict';
++import { mkdir } from 'node:fs/promises';
++import { join } from 'node:path';
++import { chromium } from 'playwright';
++import { openStatusJourney } from './status-journey.mjs';
++
++// Seed source history, then follow the actual script-free public documents.
++// An internal-only record inside the newest window must not hide public history.
++export async function publicHistorySelectionFlow() {
++  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
++  let browser;
++  try {
++    const now = Date.parse('2031-04-20T12:00:00.000Z');
++    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) })).status, 204);
++    await j.signIn(undefined, { fresh: true });
++    const publicComponent = await j.component('Synthetic Lamp public history service');
++    const privateComponent = await j.component('Synthetic Lamp private history service', { internal: true });
++    const original = await j.incident('Synthetic Lamp public history template', [publicComponent]);
++    await j.save(original.id, { lifecycle: 'Resolved', nextUpdateAt: null });
++    await j.publish(original.id);
++    const rows = Array.from({ length: 51 }, (_, index) => ({
++      id: `synthetic-selection-${String(index).padStart(3, '0')}`,
++      reference: `INC-${9500 + index}`,
++      title: index === 1 ? 'Synthetic Lamp private history title' : `Synthetic Lamp public history ${index}`,
++      details: index === 1 ? 'Synthetic Lamp private history update' : `Synthetic Lamp public update ${index}`,
++      component: index === 1 ? privateComponent : publicComponent,
++      at: new Date(now - (index + 1) * 60_000).toISOString(),
++      internal: index === 1,
++    }));
++    await j.db.batch(rows.flatMap(row => [
++      j.db.prepare("INSERT INTO incidents(id,reference,title,lifecycle,opened_at,resolved_at,created_by_operator_id,created_at,updated_at) SELECT ?,?,?,'Resolved',?,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(row.id, row.reference, row.title, row.at, row.at, row.at, row.at, original.id),
++      j.db.prepare("INSERT INTO incident_components(id,incident_id,component_id,component_name,state,relationship,published_at,created_at,updated_at) VALUES(?,?,?,?,'Major outage','Primary',?,?,?)").bind(`${row.id}-component`, row.id, row.component.id, row.component.name, row.at, row.at, row.at),
++      j.db.prepare("INSERT INTO incident_updates(id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,published_at,author_operator_id,created_at,updated_at) SELECT ?,?,'Resolved','Synthetic history customers','Synthetic history impact','Read access remains available',?,NULL,?,created_by_operator_id,?,? FROM incidents WHERE id=?").bind(`${row.id}-update`, row.id, row.details, row.at, row.at, row.at, original.id),
++    ]));
++    // Remove only the source template, leaving exactly the gate's 51 incidents.
++    await j.db.prepare('UPDATE incidents SET deleted_at=? WHERE id=?').bind(new Date(now).toISOString(), original.id).run();
++    const refreshedAt = now + 300_000;
++    assert.equal((await j.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: refreshedAt }) })).status, 204);
++    await j.tick(refreshedAt);
++    await j.visible('/history', rows[0].title);
++    assert.equal((await j.db.prepare("SELECT COUNT(*) AS n FROM incidents WHERE deleted_at IS NULL AND lifecycle='Resolved'").first()).n, 51);
++    assert.equal((await j.db.prepare("SELECT COUNT(*) AS n FROM maintenance WHERE state IN ('Completed','Cancelled')").first()).n, 0);
++
++    browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
++    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1440, height: 1000 } });
++    const page = await context.newPage();
++    const proof = process.env.LAMP_HISTORY_PROOF_DIRECTORY || './test-results/public-history';
++    await mkdir(proof, { recursive: true });
++    const expected = rows.filter(row => !row.internal).map(row => `/incidents/${row.reference}`).sort();
++    const observed = [], visited = new Set();
++    let next = '/history';
++    while (next) {
++      assert.ok(visited.size < 5 && !visited.has(next), 'Older history links advance without a loop');
++      visited.add(next);
++      assert.equal((await page.goto(new URL(next, j.publicOrigin).href)).status(), 200);
++      observed.push(...await page.locator('article.history-item h3 a').evaluateAll(links => links.map(link => link.getAttribute('href'))));
++      const content = await page.content();
++      for (const privateValue of [rows[1].title, rows[1].details, privateComponent.name, `/incidents/${rows[1].reference}`]) assert.ok(!content.includes(privateValue), 'no private history disclosure');
++      if (visited.size === 1) {
++        await page.screenshot({ path: join(proof, 'public-selection-1440.png'), fullPage: true });
++        await page.setViewportSize({ width: 390, height: 844 });
++        await page.screenshot({ path: join(proof, 'public-selection-390.png'), fullPage: true });
++        await page.setViewportSize({ width: 1440, height: 1000 });
++      }
++      const older = page.getByRole('navigation', { name: 'History pages', exact: true }).getByRole('link', { name: 'Older history', exact: true });
++      next = await older.count() ? await older.getAttribute('href') : null;
++    }
++    console.info(`PUBLIC_SELECTION records=${observed.length} unique=${new Set(observed).size} expected=${expected.length} pages=${visited.size} private_disclosures=0`);
++    assert.equal(new Set(observed).size, observed.length, 'public history records appear exactly once');
++    assert.deepEqual(observed.sort(), expected, 'all 50 public records remain reachable past the internal-only record');
++    assert.equal((await j.publicResponse(`/incidents/${rows[1].reference}`)).status, 404);
++  } finally { await browser?.close(); await j.close(); }
++}
+diff --git a/tests/e2e/helpers/snapshot-release-rebuild-flow.mjs b/tests/e2e/helpers/snapshot-release-rebuild-flow.mjs
+index d9b9a587..8e1c8be6 100644
+--- a/tests/e2e/helpers/snapshot-release-rebuild-flow.mjs
++++ b/tests/e2e/helpers/snapshot-release-rebuild-flow.mjs
+@@ -11,7 +11,7 @@ const HEADING = 'Subscribe to status updates';
+  * identity, and "the earlier release's renderer" is its stored page.html. */
+ /** Runs the deploys and returns what each left behind; the caller closes `j`. */
+ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {}) {
+-  const j = await openStatusJourney({ extraBindings: { RER_RELEASE_DIGEST: 'release-1' } });
++  const j = await openStatusJourney({ extraBindings: { RER_RELEASE_DIGEST: 'release-1', LAMP_TEST_NAMED_ROWS: 'true' } });
+   try {
+     const bucket = () => j.runtime.getR2Bucket('SNAPSHOTS');
+     const pointer = async () => JSON.parse(await (await (await bucket()).get('snapshots/current.json')).text());
+@@ -33,6 +33,32 @@ export async function observeSnapshotReleaseRebuild({ afterDatabaseReset } = {})
+     };
+     const facts = {};
+ 
++    // A restored settings row may have the migration's placeholder rather
++    // than a feed identity. Cron must recover it without a setup-page write.
++    await j.db.prepare("UPDATE page_settings SET feed_id = 'pending-feed-identity'").run();
++    await j.component('Synthetic Lamp ungrouped recovery service');
++    await j.component('Synthetic Lamp second recovery service');
++    // The initial operator write repaired the identity; restore the schema
++    // placeholder so the scheduled door must independently recover it.
++    await j.db.prepare("UPDATE page_settings SET feed_id = 'pending-feed-identity'").run();
++    await j.tick(Date.now());
++    const recoveredIdentity = (await j.db.prepare("SELECT feed_id AS id FROM page_settings WHERE id='default'").first()).id;
++    assert.ok(recoveredIdentity && recoveredIdentity !== 'pending-feed-identity', 'Cron persists a deployment feed identity');
++    for (const path of ['/api/public/status', '/api/public/v1/components', '/history', '/feed.atom']) {
++      const response = await j.publicResponse(path);
++      assert.equal(response.status, 200, `Cron produces ${path} from the native settings row`);
++      const body = await response.text();
++      if (path === '/feed.atom') assert.ok(body.includes(`urn:lamp:${recoveredIdentity}`));
++      if (path === '/api/public/v1/components') assert.ok(body.includes('Synthetic Lamp ungrouped recovery service'), 'named-column metering preserves the public component');
++    }
++    // The repaired settings mutation is durable public work too. Let its
++    // revision settle before checking the following idle tick.
++    await j.tick(Date.now());
++    const recoveredVersion = (await pointer()).version;
++    await j.tick(Date.now());
++    assert.equal((await pointer()).version, recoveredVersion, 'an idle tick retains the complete snapshot');
++    assert.equal((await j.db.prepare("SELECT feed_id AS id FROM page_settings WHERE id='default'").first()).id, recoveredIdentity, 'idle work never rotates the feed identity');
++
+     // Three generations built the ordinary way, each by a real operator change.
+     for (const name of ['Synthetic Lamp rebuild one', 'Synthetic Lamp rebuild two', 'Synthetic Lamp rebuild three']) await j.visible('/', (await j.component(name)).name);
+     assert.equal(await health(), 200);
+diff --git a/tests/e2e/helpers/status-journey.worker.ts b/tests/e2e/helpers/status-journey.worker.ts
+index 464158f5..195f6c00 100644
+--- a/tests/e2e/helpers/status-journey.worker.ts
++++ b/tests/e2e/helpers/status-journey.worker.ts
+@@ -1,6 +1,26 @@
+ import worker from './follow-ups-worker';
+ import { lampServerExtensions } from '../../../src/ext/index.server';
+ export { SnapshotCache } from '../../../src/core/platform/blobs/snapshot-cache';
++// The published size meter obtains raw rows through all() to retain D1's
++// rows_read metadata. Exercise that named-column boundary on scheduled builds.
++function namedRowBindings(env: Parameters<typeof worker.fetch>[1]) {
++  if ((env as unknown as Record<string, string>).LAMP_TEST_NAMED_ROWS !== "true") return env;
++  const statement = (target: D1PreparedStatement): D1PreparedStatement => new Proxy(target, {
++    get(target, key) {
++      if (key === "bind") return (...values: unknown[]) => statement(target.bind(...values));
++      if (key === "raw") return async () => (await target.all()).results.map(row => Object.values(row));
++      const value = Reflect.get(target, key);
++      return typeof value === "function" ? value.bind(target) : value;
++    },
++  });
++  const DB = new Proxy(env.DB, { get(target, key) {
++    if (key === "prepare") return (query: string) => statement(target.prepare(query));
++    const value = Reflect.get(target, key);
++    return typeof value === "function" ? value.bind(target) : value;
++  } });
++  return { ...env, DB };
++}
++
+ let paused = false;
+ const executionBindings = (env: Parameters<typeof worker.fetch>[1]) => paused ? { ...env, EFFECTS_PAUSED: '1' } : env;
+ export default {
+@@ -9,7 +29,7 @@ export default {
+     return worker.queue(batch, executionBindings(env));
+   },
+   scheduled(controller: ScheduledController, env: Parameters<typeof worker.fetch>[1], context: ExecutionContext) {
+-    return worker.scheduled(controller, executionBindings(env), context);
++    return worker.scheduled(controller, namedRowBindings(executionBindings(env)), context);
+   },
+   async fetch(request: Request, env: Parameters<typeof worker.fetch>[1], context: ExecutionContext) {
+     const url = new URL(request.url);
+diff --git a/tests/e2e/prior-backup.test.mjs b/tests/e2e/prior-backup.test.mjs
+index 9ddc4722..f8418b60 100644
+--- a/tests/e2e/prior-backup.test.mjs
++++ b/tests/e2e/prior-backup.test.mjs
+@@ -6,6 +6,7 @@ import { readArchive } from '@runeditrun/rer/modules/portability';
+ import { bindCell } from '@runeditrun/rer/modules/portability/catalogue';
+ import { contract } from '../contract.mjs';
+ import { checkout, command, proxy } from '../helpers/native-transfer.mjs';
++import { loadTypescript } from '../reference-storage/runtime.mjs';
+ 
+ // A native backup the listed release (c5dab715, migrations up to 0032) made with
+ // its own rer of a populated install, retained unchanged: that release's HIST-004
+@@ -58,6 +59,27 @@ contract('HIST-004', 'a previous-release backup upgrades through rer import with
+         assert.deepEqual(incidentTotals, restoredTotals, 'older backups rebuild exact incident-list counts from their restored records');
+         const preferences=(await db.prepare('SELECT id,event_kinds_json,minimum_impact FROM subscriber_directory ORDER BY id').all()).results;
+         assert.deepEqual(preferences,archived('subscribers').map(row=>({id:row.id,event_kinds_json:JSON.stringify(row.channel==='webhook'?['incidents','maintenance','components']:['incidents','maintenance']),minimum_impact:null})).sort((a,b)=>a.id.localeCompare(b.id)),`${destination}: older subscriptions retain the channel defaults without invented consent`);
++        // Native restore replays the exact capacity backfill from the archived
++        // subscriber inventory. The new scheduler work derives only after all
++        // historical rows and reminder ledgers have finished restoring.
++        const { createSubscriberLimitRepository } = await loadTypescript('src/core/features/subscribers/limits.repository.ts');
++        const eligible = archived('subscribers').filter(row => ['pending','active'].includes(row.state));
++        const countByChannel = channel => eligible.filter(row => row.channel === channel).length;
++        assert.deepEqual(await createSubscriberLimitRepository(db).counts(), {
++          total: eligible.length, email: countByChannel('email'), webhook: countByChannel('webhook'), slack: 0, teams: 0, sms: 0,
++        }, 'the first capacity read after an older native restore counts its real subscriber inventory');
++        assert.equal((await db.prepare('SELECT completed FROM scheduled_work_initialization WHERE id=1').first()).completed, 0);
++        let workBatches = 0;
++        const schedulingDb = new Proxy(db, { get(target, name) {
++          if (name === 'batch') return statements => { workBatches++; return target.batch(statements); };
++          const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
++        } });
++        const { createReportRepository } = await loadTypescript('src/core/features/reports/repository.ts');
++        const reports = createReportRepository(schedulingDb), due = { now: new Date().toISOString(), defaultPolicy: true };
++        await reports.listResolvedWithoutPublishedReport(due);
++        assert.equal((await db.prepare('SELECT completed FROM scheduled_work_initialization WHERE id=1').first()).completed, 1);
++        await reports.listResolvedWithoutPublishedReport(due);
++        assert.equal(workBatches, 1, 'older native data initializes derived scheduler work once, then uses only indexed due reads');
+         // The restored installation keeps auditing state changes.
+         const [last] = history;
+         await db.prepare('INSERT INTO component_state_history (id, component_id, previous_state, new_state, cause_type, cause_id, operator_id, supersedes_history_id, changed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?)')
+diff --git a/tests/e2e/snapshot-retained.test.mjs b/tests/e2e/snapshot-retained.test.mjs
+index c562a853..d10a81d8 100644
+--- a/tests/e2e/snapshot-retained.test.mjs
++++ b/tests/e2e/snapshot-retained.test.mjs
+@@ -75,6 +75,9 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
+       updates: [{ id: 'outage-update', incidentId: 'incident', lifecycle: 'Identified', affectedAudience: 'API customers', customerImpact: 'Major outage affects customer requests.', whatStillWorks: 'Status information remains available.', details: 'The operator is restoring service.', nextUpdateAt: new Date(Date.parse(publishedAt) + 3600000).toISOString(), publishedAt }],
+       maintenance: [], maintenanceComponents: [], reports: [], maintenanceNotices: [],
+     };
++    // Repeated component resources make the full footer travel through the
++    // retained representation as well as each ordinary stored document.
++    for (let number = 2; number <= 6; number++) source.components.push({ id: `synthetic-lamp-retained-${number}`, name: `Synthetic retained service ${number}`, groupName: null, groupOrder: null, displayOrder: number, note: "" });
+     // Seed populated, nonconsecutive archive months before the real rebuild.
+     // Public reads below use a repository that throws on any access.
+     const archived = [
+@@ -180,6 +183,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
+       assert.ok(response.headers.get('x-lamp-snapshot-generated-at'));
+       const text = await response.text();
+       assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
++      if (path === '/') for (const component of source.components) assert.ok(text.includes(`/components/${component.id}/feed.atom`), 'storage failure preserves every component resource in the shared footer');
+       // Badge protocols retain their consumer schema; every surface carries
+       // the stale/generated-at HTTP headers checked above. Human and status
+       // representations also expose staleness in their body.
+diff --git a/tests/e2e/update-reminders.test.mjs b/tests/e2e/update-reminders.test.mjs
+index 610d414e..d96498f1 100644
+--- a/tests/e2e/update-reminders.test.mjs
++++ b/tests/e2e/update-reminders.test.mjs
+@@ -28,7 +28,9 @@ test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communicat
+     const committed = Date.now() + hour;
+     await j.save(incident.id, { nextUpdateAt: new Date(committed).toISOString() }); await j.publish(incident.id);
+     assert.equal((await j.read(incident.id)).owner.id, owner.id);
+-    await j.tick(committed - 5 * 60000); await j.tick(committed - 5 * 60000);
++    await j.tick(committed - 10 * 60000 - 1);
++    assert.equal(j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject)).length, 0, 'the indexed reminder work stays pending before the lead boundary');
++    await j.tick(committed - 10 * 60000); await j.tick(committed - 5 * 60000);
+     const dueMail = j.messages.filter(row => row.subject.includes(incident.reference) && /update due at/i.test(row.subject));
+     assert.equal(dueMail.length, 1); assert.ok(dueMail[0].to.includes(owner.email));
+     t.diagnostic('PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner');

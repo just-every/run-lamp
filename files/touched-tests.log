@@ -1,0 +1,181 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1m\\t\\t\\t\\tYou have defined bindings to the following internal Durable Objects:[0m
+#   \\t\\t\\t\\t- {"name":"SNAPSHOT_CACHE","class_name":"SnapshotCache"}
+#   \\t\\t\\t\\tThese will not work in local development, but they should work in production.
+#   
+#   \\t\\t\\t\\tIf you want to develop these locally, you can define your DO in a separate Worker, with a separate configuration file.
+#   \\t\\t\\t\\tFor detailed instructions, refer to the Durable Objects section here: [4mhttps://developers.cloudflare.com/workers/wrangler/api\#supported-bindings[0m
+# A DurableObjectNamespace in the config referenced the class "SnapshotCache", but no such Durable Object class is exported from the worker. Please make sure the class name matches, it is exported, and the class extends 'DurableObject'. Attempts to call to this Durable Object class will fail at runtime, but historically this was not a startup-time error. Future versions of workerd may make this a startup-time error.
+# Subtest: HIST-004 — a previous-release backup upgrades through rer import with its original history, consent and image bytes
+ok 1 - HIST-004 — a previous-release backup upgrades through rer import with its original history, consent and image bytes
+  ---
+  duration_ms: 53983.582948
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+# PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+# PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+# PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+# Subtest: HIST-008 — reviewed imported history stays completely browsable without scripts
+ok 2 - HIST-008 — reviewed imported history stays completely browsable without scripts
+  ---
+  duration_ms: 8414.817984
+  type: 'test'
+  ...
+# *** Fatal uncaught kj::Exception: kj/async-io-unix.c++:941: failed: ::bind(sockfd, &addr.generic, addrlen): Address already in use; toString() = 127.0.0.1:38165
+# stack: /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@569f006 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@569edd9 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@569d12c /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@248676c /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@24870c1 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2487bed /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@24891ba /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@23bda69 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a67d35 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a68286 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a65cbe /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a65abe /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@23a4d6c /lib/x86_64-linux-gnu/libc.so.6@29ca7 /lib/x86_64-linux-gnu/libc.so.6@29d64 /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@23a4024
+# Subtest: PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+not ok 3 - PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+  ---
+  duration_ms: 5285.236676
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/tests/e2e/public-contract.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: 'Address already in use (127.0.0.1:38165). Please check that you are not already running a server on this address or specify a different port with --port.'
+  code: 'ERR_ADDRESS_IN_USE'
+  name: 'MiniflareCoreError [ERR_ADDRESS_IN_USE]'
+  stack: |-
+    StartupLogBuffer.handleStartupFailure (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:65097:13)
+    Runtime.updateConfig (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:65184:24)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async #assembleAndUpdateConfig (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:82869:30)
+    async /home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:81664:7
+    async Mutex.runWith (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:54769:16)
+    async #waitForReady (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:82994:5)
+    async _Miniflare._getProxyClient (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:83215:5)
+    async #getProxy (/home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:83275:25)
+    async Object.restart (file:///home/agent/rer-consolidation/work/sd-lamp-qgrowth-tick-2-fix1-c1/run-lamp/tests/e2e/helpers/follow-ups-runtime.mjs:166:14)
+  ...
+# Subtest: UPTIME-003 — newly observed services report only their recorded coverage
+ok 4 - UPTIME-003 — newly observed services report only their recorded coverage
+  ---
+  duration_ms: 7082.854141
+  type: 'test'
+  ...
+# PUBLIC_SELECTION records=50 unique=50 expected=50 pages=1 private_disclosures=0
+# Component read: opening emitted Worker
+# Subtest: HIST-001 — completed native records retain their month, window, components and complete publication inventory
+ok 5 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+  ---
+  duration_ms: 19892.817807
+  type: 'test'
+  ...
+# Component read: owner signed in
+# Component read: 54 native corrections committed
+# Component read: native paging and Cron passed
+# PROBE PAGE-019 1: native maintenance without an incident -> both floating installations visible; inactive and operational controls hide every configured variant
+# PROBE PAGE-019 2: four served installations and populated script artifacts -> exact shared snapshot, raw and gzip size within ten KiB
+# PROBE PAGE-019 4: native publication and polling -> floating notices appear with exact selected corners and computed colors
+# PROBE PAGE-019 4: native resolution followed by eight actual HTTP polls -> original floating nodes remain attached and are positively hidden
+# PROBE COMP-010 minute=0 state=Operational shown=false uptime=null downtime=0 history=1 elapsedMs=330.8
+# PROBE COMP-010 minute=10 state=Degraded performance shown=true uptime=100.00% downtime=0 history=2 elapsedMs=320.7
+# PROBE COMP-010 minute=20 state=Operational shown=false uptime=75.00% downtime=5 history=3 elapsedMs=414.3
+# PROBE COMP-010 minute=30 state=Major outage shown=true uptime=83.33% downtime=5 history=4 elapsedMs=231.2
+# PROBE COMP-010 minute=40 state=Operational shown=false uptime=62.50% downtime=15 history=5 elapsedMs=272.3
+# PROBE COMP-010 minute=50 state=Partially unavailable shown=true uptime=70.00% downtime=15 history=6 elapsedMs=247.0
+# PROBE COMP-010 minute=60 state=Operational shown=false uptime=58.33% downtime=25 history=7 elapsedMs=220.2
+# PROBE COMP-010 minute=70 state=Under maintenance shown=true uptime=64.28% downtime=25 history=8 elapsedMs=243.0
+# PROBE COMP-010 minute=80 state=Operational shown=false uptime=68.75% downtime=25 history=9 elapsedMs=233.0
+# UPTIME_CORRECTION_DEADLINE {"template":"default","elapsedMs":216,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+# UPTIME_CORRECTION_DEADLINE {"template":"calm","elapsedMs":246,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+# UPTIME_CORRECTION_DEADLINE {"template":"uptime","elapsedMs":252,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+# UPTIME_CORRECTION_DEADLINE {"template":"regions","elapsedMs":264,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+# PAGE-009 generation age at 1440: just now -> 1 minute ago; instant=2026-11-14T19:32:17.177Z; tooltip=Nov 14, 2026, 11:32 UTC-08:00
+# PAGE-009 generation age at 390: just now -> 1 minute ago; instant=2026-11-14T19:32:17.177Z; tooltip=Nov 14, 2026, 11:32 UTC-08:00
+# PROBE PAGE-013 acceptance2 default: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+# PROBE PAGE-013 acceptance3 default: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+# PROBE PAGE-013 acceptance2 calm: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+# PROBE PAGE-013 acceptance3 calm: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+# PROBE PAGE-013 acceptance2 uptime: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+# PROBE PAGE-013 acceptance3 uptime: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+# PROBE PAGE-013 acceptance2 regions: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+# PROBE PAGE-013 acceptance3 regions: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+# COMP-007 public disappearance: 69.1 ms
+# Subtest: SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+ok 6 - SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+  ---
+  duration_ms: 340518.136895
+  type: 'test'
+  ...
+# Subtest: DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+ok 7 - DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+  ---
+  duration_ms: 30628.70486
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# PROBE HIST-008 4: all four generated month routes and incident permalinks -> 200 with exact membership through throwing D1, storage failure and cold restart; zero database accesses
+# Subtest: THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+ok 8 - THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+  ---
+  duration_ms: 10293.252568
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+ok 9 - INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+  ---
+  duration_ms: 8573.646245
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner
+# PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner
+# Subtest: AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+ok 10 - AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+  ---
+  duration_ms: 8262.917177
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window
+# PROBE NOTIFY-006 acceptance-4 terminal notification failure: public email subscription and owner publication receive provider HTTP 400, repeated Queue delivery and Cron -> failed subscriber delivery and exactly one captured email per active operator for that delivery
+# Subtest: NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+ok 11 - NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+  ---
+  duration_ms: 4861.136437
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator
+# PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident
+# Subtest: HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+ok 12 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+  ---
+  duration_ms: 42875.363607
+  type: 'test'
+  ...
+# HIST-006 starting built Worker
+# HIST-006 built Worker ready
+# HIST-006 real Worker bindings ready
+# HIST-006 fixture schema migrated
+# HIST-006 native owner sign-in starting
+# HIST-006 native owner signed in
+# HIST-006 production fixture started
+# HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+# HIST-009 1440px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+# HIST-009 390px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+# HIST-006: 840 public page + 420 feed baseline requests; default 3×, owner threshold, 5× exactly-once episode, incident suppression, recovery refusal, identifier-free counters and database-free reads asserted
+# HIST-006 riders: unknown baselines not tracked, historical refusal with a retained draft, private attributed immediate override with no later authority, scheduled due-time hold with a retained draft, near-baseline scheduled success
+# Subtest: AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+ok 13 - AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+  ---
+  duration_ms: 17221.142989
+  type: 'test'
+  ...
+# HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+# HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+1..13
+# tests 13
+# suites 0
+# pass 12
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 563125.165775
