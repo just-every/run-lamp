@@ -1,3 +1,4 @@
+import { incidentSnapshot } from '../../helpers/incident-snapshot.mjs';
 import assert from "node:assert/strict";
 import { moveInDoor } from "../../helpers/import-notifications.mjs";
 
@@ -34,7 +35,7 @@ export async function followUpsImport(fixture) {
   const applied = await moveIn.apply(reviewed.body);
   assert.equal(applied.status, 200, applied.text ?? JSON.stringify(applied.body));
   assert.equal(applied.body.job.state, "completed");
-  const incidents = (await fixture.api("/api/app/incidents")).body.incidents;
+  const incidents = await incidentSnapshot(path => fixture.api(path));
   const reports = [1, 2].map(number => {
     const incident = incidents.find(row => row.title === `Synthetic Lamp report ${number}`);
     assert.ok(incident, "historical report obligation has a surviving native incident");

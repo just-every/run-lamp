@@ -9,6 +9,7 @@ import { publishIncidentDraft } from "./publication-repository";
 import { loadRecoverySnapshot, type RecoverySnapshot } from "./recovery-repository";
 import type { RecoveryCheck } from "../brief/recovery-check";
 import { previewComponentChange } from "./component-change-repository";
+import { listIncidentPage, type IncidentPageQuery } from "./page-repository";
 import { listIncidentRelations, publishingDraft } from "./list-relations";
 import { activeIncidentGuard, attachClaimStatements, writeClaimBatch, type AttachedIncidentComponent } from "./component-claims";
 import type { UpdateChannel } from "../../shared/domain";
@@ -75,7 +76,8 @@ export interface IncidentRepository {
   attachComponent(claim: AttachedIncidentComponent, recipients: D1PreparedStatement[]): Promise<void>;
   detachComponent(incidentId: string, componentId: string, timestamp: string, eventId: string, operatorId: string): Promise<void>;
   listIncidents(): Promise<StoredIncident[]>;
-  listRelations(): ReturnType<typeof listIncidentRelations>;
+  listPage(query: IncidentPageQuery): ReturnType<typeof listIncidentPage>;
+  listRelations(incidentIds?: string[]): ReturnType<typeof listIncidentRelations>;
   findIncident(incidentId: string): Promise<StoredIncident | null>;
   loadRecoverySnapshot(incidentId: string): Promise<RecoverySnapshot | null>;
   listComponents(incidentId: string): Promise<StoredIncidentComponent[]>;
@@ -113,7 +115,8 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
   return {
     communicationOwners: createCommunicationOwnerRepository(binding),
     loadRecoverySnapshot: (incidentId) => loadRecoverySnapshot(binding, incidentId),
-    listRelations: () => listIncidentRelations(binding),
+    listPage: (query) => listIncidentPage(binding, query),
+    listRelations: (incidentIds) => listIncidentRelations(binding, incidentIds),
     previewComponentChange: (incidentId, componentId) => previewComponentChange(binding, incidentId, componentId),
     async attachComponent(claim, recipients) {
       await writeClaimBatch(binding, [

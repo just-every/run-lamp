@@ -1,3 +1,4 @@
+import { incidentSnapshot } from '../helpers/incident-snapshot.mjs';
 import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync, randomUUID, sign } from 'node:crypto';
 import { inflateRawSync } from 'node:zlib';
@@ -74,8 +75,8 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
       if (answered) t.diagnostic(`PROBE move-in deadline: ${action} answered with the rebuild held; injected background failure recovered through native scheduled retry`);
     };
     const snapshot = async () => {
-      const rows = await Promise.all(['/api/app/components', '/api/app/incidents', '/api/app/maintenance', '/api/app/subscribers'].map(path => owner(path)));
-      return { components: rows[0].body.components, incidents: rows[1].body.incidents, maintenance: rows[2].body.maintenance, subscribers: rows[3].body.subscribers };
+      const rows = await Promise.all([owner('/api/app/components'), incidentSnapshot(owner), owner('/api/app/maintenance'), owner('/api/app/subscribers')]);
+      return { components: rows[0].body.components, incidents: rows[1], maintenance: rows[2].body.maintenance, subscribers: rows[3].body.subscribers };
     };
     const cutover = async () => {
       const response = await nativeRequest('/api/rer/cutover-status', { method: 'POST', json: { since: new Date(0).toISOString() }, headers: { Authorization: `Bearer ${grant('cutover-status')}` } });
@@ -210,7 +211,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
     assert.ok(businessJob.planId && businessJob.fingerprint, 'Business import history carries the owner undo action');
     assert.ok((await owner('/api/app/audit-log?action=import-approved')).body.entries.some(row => row.entityId === reviewed.body.planId && Date.parse(row.createdAt) >= Date.parse(approval.approvedAt)));
     const imported = await snapshot(), original = imported.incidents.find(row => row.title === incidents[1].name);
-    assert.equal(imported.incidents.length, baseline.incidents.length + incidents.length);
+    assert.equal(imported.incidents.length, baseline.incidents.length + incidents.length, 'the complete imported history includes all 60 source incidents across visible pages');
     assert.ok(imported.subscribers.every(row => row.state === 'deactivated'), 'Business never activates subscribers on import');
     assert.equal((await door('reconcile', 'statuspage', { planId: reviewed.body.planId })).body.ok, true);
     const changedFiles = structuredClone(files), changedRows = structuredClone(incidents);

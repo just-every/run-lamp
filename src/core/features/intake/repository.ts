@@ -146,7 +146,7 @@ export function createIntakeRepository(binding: D1Database): IntakeRepository {
             INNER JOIN incidents ON incidents.id = alert_receipts.incident_id
             WHERE alert_receipts.source_id = ? AND alert_receipts.deduplication_key = ?
               AND incidents.lifecycle <> 'Resolved' AND incidents.deleted_at IS NULL
-          )`)
+          ) RETURNING id`)
           .bind(incident.id, incident.reference, incident.title, incident.timestamp, incident.operatorId, incident.timestamp, incident.timestamp, receipt.sourceId, receipt.deduplicationKey));
         statements.push(binding.prepare(`INSERT INTO incident_drafts (id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_at,author_operator_id,created_at,updated_at)
           SELECT ?,?, 'Investigating','','','','',NULL,?,?,? WHERE changes() = 1`)
@@ -204,7 +204,10 @@ export function createIntakeRepository(binding: D1Database): IntakeRepository {
       let incidentCreated = false;
       try {
         const results = await binding.batch(statements);
-        incidentCreated = Boolean(incident && results[0]?.meta.changes === 1);
+        // D1 meta.changes includes trigger writes, including list counters.
+        // RETURNING identifies only the incident inserted by this statement;
+        // a concurrent firing which reused an open incident returns no row.
+        incidentCreated = Boolean(incident && results[0]?.results.length === 1);
       } catch (cause) {
         const existing = await binding.prepare(`SELECT ${receiptFields} FROM alert_receipts WHERE source_id = ? AND request_hash = ?`).bind(receipt.sourceId, receipt.requestHash).first<Record<string, unknown>>();
         if (existing) return { receipt: receiptRow(existing), incidentCreated: false, replayed: true };

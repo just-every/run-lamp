@@ -11,7 +11,16 @@ import { InvalidIncidentUpdateError, type IncidentsService } from "./service";
 import { RecoveryCheckError } from "../brief/recovery-check";
 import { draftFromIncident } from "./draft";
 
-const incidentQuerySchema = z.object({ lifecycle: z.enum(INCIDENT_LIFECYCLES).optional() }).strict();
+const incidentCursorSchema = z.string().max(100).transform(value => {
+  const [openedAt, id, ...extra] = value.split("|");
+  return extra.length ? null : { openedAt, id };
+}).pipe(z.object({ openedAt: z.iso.datetime(), id: ulidSchema }));
+const incidentQuerySchema = z.object({
+  lifecycle: z.enum(INCIDENT_LIFECYCLES).optional(),
+  group: z.enum(["active", "resolved"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  cursor: incidentCursorSchema.optional(),
+}).strict().refine(query => !query.group || !query.lifecycle, "Choose a lifecycle or a group.");
 const publishSchema = z.object({ channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]), publishedAt: z.iso.datetime().optional(), componentStates: z.record(ulidSchema, z.enum(INCIDENT_CLAIM_STATES)).optional(), overrideReason: z.string().trim().max(1_000).optional() }).strict();
 const scheduleSchema = z.object({ publishAt: z.iso.datetime(), channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]) }).strict();
 const deleteSchema = z.object({ reason: z.string().trim().min(1).max(1_000) }).strict();
@@ -86,8 +95,7 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
   app.get("/api/app/incidents", async (context) => {
     const parsed = incidentQuerySchema.safeParse(context.req.query());
     if (!parsed.success) return context.json({ error: "Invalid incident query.", issues: parsed.error.issues }, 400);
-    const incidents = await service.list();
-    return context.json({ incidents: parsed.data.lifecycle ? incidents.filter((incident) => incident.lifecycle === parsed.data.lifecycle) : incidents });
+    return context.json(await service.listPage(parsed.data));
   });
 
   app.get("/api/app/incidents/:incidentId", async (context) => {
