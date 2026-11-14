@@ -2,7 +2,7 @@ import { mostSevereState, type ComponentState } from "../../shared/domain";
 import { createUlid, nowIso } from "../../shared/ids";
 import type { ComponentGroupInput, ComponentHistoryCorrectionInput, ComponentInput, ComponentUpdateInput, ComponentGroupUpdateInput } from "../../shared/schemas";
 
-import type { ComponentClaimEventInput, ComponentHistoryCorrection, ComponentHistoryEntry, ComponentRepository, ComponentStateHistoryInput, StateClaimCause, StoredComponent, StoredComponentGroup } from "./repository";
+import type { HistoryCursor, CorrectionCursor, ComponentClaimEventInput, ComponentHistoryCorrection, ComponentHistoryEntry, ComponentRepository, ComponentStateHistoryInput, StateClaimCause, StoredComponent, StoredComponentGroup } from "./repository";
 import { defaultComponentEvents, type ComponentEvents } from "./events";
 
 export type ComponentView = StoredComponent & {
@@ -14,13 +14,15 @@ export type ComponentView = StoredComponent & {
 export type ComponentHistoryView = {
   history: ComponentHistoryEntry[];
   corrections: ComponentHistoryCorrection[];
+  historyPage: { limit: number; nextCursor: string | null };
+  correctionsPage: { limit: number; nextCursor: string | null };
 };
 
 export interface ComponentsService {
   move(kind: "components" | "groups", id: string, direction: "up" | "down", expectedIds: string[], groupId: string | null): Promise<void>;
   list(): Promise<ComponentView[]>;
   listGroups(): Promise<StoredComponentGroup[]>;
-  history(componentId: string): Promise<ComponentHistoryView | null>;
+  history(componentId: string, page?: { limit: number; history: HistoryCursor | null; corrections: CorrectionCursor | null }): Promise<ComponentHistoryView | null>;
   get(componentId: string): Promise<ComponentView | null>;
   create(input: ComponentInput, operatorId: string): Promise<ComponentView>;
   update(componentId: string, input: ComponentUpdateInput): Promise<ComponentView | null>;
@@ -78,7 +80,8 @@ export function createComponentsService(
       await onPublicDataChanged();
     },
     async list() {
-      const [components, claims] = await Promise.all([repository.listComponents(), repository.listCurrentClaims()]);
+      const components = await repository.listComponents();
+      const claims = await repository.listCurrentClaims(components.map(component => component.id));
       const claimsByComponent = new Map<string, ComponentState[]>();
       const standingClaims = new Map<string, ComponentState>();
       for (const claim of claims) {
@@ -96,10 +99,19 @@ export function createComponentsService(
     async listGroups() {
       return repository.listGroups();
     },
-    async history(componentId) {
+    async history(componentId, page = { limit: 50, history: null, corrections: null }) {
       if (!await repository.findComponent(componentId)) return null;
-      const [history, corrections] = await Promise.all([repository.listHistory(componentId), repository.listCorrections(componentId)]);
-      return { history, corrections };
+      const [history, corrections] = await Promise.all([
+        repository.listHistory(componentId, { limit: page.limit, before: page.history }),
+        repository.listCorrections(componentId, { limit: page.limit, before: page.corrections }),
+      ]);
+      const entries = history.slice(0, page.limit), edits = corrections.slice(0, page.limit);
+      const lastEntry = entries.at(-1), lastEdit = edits.at(-1);
+      return {
+        history: entries, corrections: edits,
+        historyPage: { limit: page.limit, nextCursor: history.length > page.limit && lastEntry ? JSON.stringify([lastEntry.changedAt, lastEntry.createdAt, lastEntry.id]) : null },
+        correctionsPage: { limit: page.limit, nextCursor: corrections.length > page.limit && lastEdit ? JSON.stringify([lastEdit.createdAt, lastEdit.id]) : null },
+      };
     },
     async get(componentId) {
       const component = await repository.findComponent(componentId);

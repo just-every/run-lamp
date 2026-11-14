@@ -66,8 +66,8 @@ importers:
         specifier: 1.63.0
         version: 1.63.0
       '@runeditrun/rer':
-        specifier: 0.2.115
-        version: 0.2.115
+        specifier: 0.2.116
+        version: 0.2.116
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@22.19.17)(esbuild@0.28.1)(jiti@2.7.0))
@@ -707,8 +707,8 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@runeditrun/rer@0.2.115':
-    resolution: {integrity: sha512-Z50lPSrOHtRkCV5uvBL+94ETkBHnW790J1EU8hj6oEs1wroJAVfhMMgf8J6uvGrI0K6Scg0TwwpmbtvlXKoBhw==}
+  '@runeditrun/rer@0.2.116':
+    resolution: {integrity: sha512-CHZ2zc/GMwHXgnsCej2SScNxAHFR7kp2xMMgj6lYMzWdp1dcWsATk50tgZD5M4WRemd4Ed2w104uaK1XY5rK/Q==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -2143,7 +2143,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@runeditrun/rer@0.2.115': {}
+  '@runeditrun/rer@0.2.116': {}
 
   '@sindresorhus/is@7.2.0': {}
 

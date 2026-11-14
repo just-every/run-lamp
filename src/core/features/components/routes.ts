@@ -6,6 +6,16 @@ import { componentGroupSchema, componentHistoryCorrectionSchema, componentCreate
 import { ulidSchema } from "../../shared/ids";
 import type { ComponentsService } from "./service";
 
+const cursor = <T extends z.ZodType>(schema: T) => z.string().transform((value, context) => {
+  try { return JSON.parse(value) as unknown; }
+  catch { context.addIssue({ code: "custom", message: "Invalid history cursor." }); return z.NEVER; }
+}).pipe(schema).nullable().default(null);
+const historyPageSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  cursor: cursor(z.tuple([z.iso.datetime(), z.iso.datetime(), ulidSchema])),
+  correctionsCursor: cursor(z.tuple([z.iso.datetime(), ulidSchema])),
+});
+
 export function registerComponentRoutes(app: Hono<AppEnv>, service: ComponentsService) {
   app.get("/api/app/components", async (context) => {
     const [components, groups] = await Promise.all([service.list(), service.listGroups()]);
@@ -28,7 +38,9 @@ export function registerComponentRoutes(app: Hono<AppEnv>, service: ComponentsSe
   app.get("/api/app/components/:componentId/history", async (context) => {
     const componentId = ulidSchema.safeParse(context.req.param("componentId"));
     if (!componentId.success) return context.json({ error: "Invalid component identifier.", issues: componentId.error.issues }, 400);
-    const history = await service.history(componentId.data);
+    const page = historyPageSchema.safeParse(context.req.query());
+    if (!page.success) return context.json({ error: "Invalid history page.", issues: page.error.issues }, 400);
+    const history = await service.history(componentId.data, { limit: page.data.limit, history: page.data.cursor, corrections: page.data.correctionsCursor });
     return history ? context.json(history) : context.json({ error: "Component not found." }, 404);
   });
 
