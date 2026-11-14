@@ -1,3 +1,4 @@
+import { ensureScheduledWork } from "../scheduled-work/repository";
 import { incidentReportEndStatements } from "../subscribers/incident-lifecycle.repository";
 import { reportReminderEligibleSql } from "./reminder-eligibility";
 import { createUlid } from "../../shared/ids";
@@ -98,6 +99,7 @@ export function createReportRepository(binding: D1Database): ReportRepository {
     async listComponentIds(incidentId) { return (await binding.prepare(`SELECT component_id AS componentId FROM incident_components WHERE incident_id = ? AND component_id IS NOT NULL`).bind(incidentId).all<{ componentId: string }>()).results.map((row) => row.componentId); },
     async listResolvedWithoutPublishedReport(reminders) {
       if (reminders?.defaultPolicy) {
+        await ensureScheduledWork(binding);
         return (await binding.prepare(`SELECT incidents.id,incidents.reference,incidents.title,incidents.lifecycle,incidents.resolved_at AS resolvedAt,incidents.peak_impact AS impact,1 AS reminderEligible
           FROM incident_report_reminder_work work JOIN incidents ON incidents.id=work.incident_id
           WHERE work.next_due_at<=? ORDER BY work.next_due_at,work.incident_id LIMIT 100`).bind(reminders.now)

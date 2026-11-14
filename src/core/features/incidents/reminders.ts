@@ -1,3 +1,4 @@
+import { ensureScheduledWork } from "../scheduled-work/repository";
 import { defaultIncidentEscalationPolicy, type IncidentEscalationPolicy, type UpdateDuePolicy } from "./policies";
 import { createCommunicationOwnerRepository } from "./communication-owner.repository";
 
@@ -25,6 +26,7 @@ export interface UpdateReminders {
 export function createUpdateReminders(binding: D1Database, policy: UpdateDuePolicy, send: (event: UpdateReminderEvent) => Promise<void>, escalationPolicy: IncidentEscalationPolicy = defaultIncidentEscalationPolicy, prepareDraft?: (commitment: OpenCommitment, now: string) => Promise<string | null>): UpdateReminders {
   return {
     async remindDue(now) {
+      await ensureScheduledWork(binding);
       const instant = Date.parse(now);
       const lead = policy.leadMinutes() * 60_000;
       const escalation = escalationPolicy.overdueMinutes() * 60_000;

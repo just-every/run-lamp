@@ -33,9 +33,8 @@ SELECT i.id AS incident_id,u.id AS update_id,u.next_update_at,
   EXISTS(SELECT 1 FROM incident_update_reminders r WHERE r.update_id=u.id AND r.kind='due-soon') AS due_soon_sent,
   EXISTS(SELECT 1 FROM incident_update_reminders r WHERE r.update_id=u.id AND r.kind='overdue') AS overdue_sent,
   EXISTS(SELECT 1 FROM incident_update_escalations e WHERE e.update_id=u.id) AS escalation_sent
-FROM incidents i JOIN incident_updates u ON u.id=(SELECT latest.id FROM incident_updates latest WHERE latest.incident_id=i.id ORDER BY latest.published_at DESC,latest.id DESC LIMIT 1)
+FROM incidents i INDEXED BY incidents_active_work_idx JOIN incident_updates u ON u.id=(SELECT latest.id FROM incident_updates latest WHERE latest.incident_id=i.id ORDER BY latest.published_at DESC,latest.id DESC LIMIT 1)
 WHERE i.deleted_at IS NULL AND i.lifecycle<>'Resolved' AND u.lifecycle<>'Resolved' AND u.is_retroactive=0 AND u.next_update_at IS NOT NULL;
-INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates;
 
 CREATE TRIGGER incident_reminder_incident_insert AFTER INSERT ON incidents BEGIN
   INSERT INTO incident_update_reminder_work SELECT * FROM incident_update_reminder_candidates WHERE incident_id=NEW.id;
@@ -71,13 +70,12 @@ CREATE TABLE incident_report_reminder_work (
 CREATE INDEX incident_report_reminder_due ON incident_report_reminder_work(next_due_at,incident_id);
 CREATE VIEW incident_report_reminder_candidates AS
 SELECT i.id AS incident_id,strftime('%Y-%m-%dT%H:%M:%fZ',i.resolved_at,'+' || (7*(COALESCE((SELECT MAX(r.week) FROM report_reminders r WHERE r.incident_id=i.id),-1)+2)) || ' days') AS next_due_at
-FROM incidents i WHERE i.lifecycle='Resolved' AND i.deleted_at IS NULL AND i.resolved_at IS NOT NULL
+FROM incidents i INDEXED BY incidents_report_due_idx WHERE i.lifecycle='Resolved' AND i.deleted_at IS NULL AND i.resolved_at IS NOT NULL
   AND i.peak_impact IN('Partially unavailable','Major outage')
   AND NOT EXISTS(SELECT 1 FROM incident_reports p WHERE p.incident_id=i.id AND p.published_at IS NOT NULL)
   AND NOT EXISTS(SELECT 1 FROM report_waivers w WHERE w.incident_id=i.id)
   AND (NOT EXISTS(SELECT 1 FROM statuspage_import_targets imported WHERE imported.kind='incident' AND imported.id=i.id)
     OR EXISTS(SELECT 1 FROM incident_updates live WHERE live.incident_id=i.id AND live.is_retroactive=0));
-INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates;
 
 CREATE TRIGGER report_reminder_incident_insert AFTER INSERT ON incidents BEGIN
   INSERT INTO incident_report_reminder_work SELECT * FROM incident_report_reminder_candidates WHERE incident_id=NEW.id;
@@ -119,7 +117,15 @@ CREATE TABLE subscriber_limit_counts (
 );
 INSERT INTO subscriber_limit_counts(channel,total)
 SELECT 'email',0 UNION ALL SELECT 'webhook',0 UNION ALL SELECT 'slack',0 UNION ALL SELECT 'teams',0 UNION ALL SELECT 'sms',0;
-UPDATE subscriber_limit_counts SET total=(SELECT COUNT(*) FROM subscriber_directory s WHERE s.state IN('pending','active') AND s.channel=subscriber_limit_counts.channel);
+UPDATE subscriber_limit_counts SET total=(SELECT COUNT(*) FROM subscribers s INDEXED BY subscribers_capacity_idx WHERE s.state IN('pending','active') AND (CASE WHEN s.sms_kind=1 THEN 'sms' ELSE COALESCE(s.chat_kind,s.channel) END)=subscriber_limit_counts.channel);
+-- Old native archives restore with application triggers dropped. Leave the
+-- derived baseline unset until its first product use can atomically rebuild it
+-- from the complete restored canonical records and reminder ledgers.
+CREATE TABLE scheduled_work_initialization (
+  id INTEGER PRIMARY KEY CHECK(id=1),
+  completed INTEGER NOT NULL DEFAULT 0 CHECK(completed IN(0,1))
+);
+INSERT INTO scheduled_work_initialization(id,completed) VALUES(1,0);
 CREATE TRIGGER subscriber_limit_count_insert AFTER INSERT ON subscribers WHEN NEW.state IN('pending','active') BEGIN
   UPDATE subscriber_limit_counts SET total=total+1 WHERE channel=IIF(NEW.sms_kind=1,'sms',COALESCE(NEW.chat_kind,NEW.channel));
 END;
