@@ -6,6 +6,7 @@ import { readArchive } from '@runeditrun/rer/modules/portability';
 import { bindCell } from '@runeditrun/rer/modules/portability/catalogue';
 import { contract } from '../contract.mjs';
 import { checkout, command, proxy } from '../helpers/native-transfer.mjs';
+import { loadTypescript } from '../reference-storage/runtime.mjs';
 
 // A native backup the listed release (c5dab715, migrations up to 0032) made with
 // its own rer of a populated install, retained unchanged: that release's HIST-004
@@ -55,6 +56,27 @@ contract('HIST-004', 'a previous-release backup upgrades through rer import with
         }
         const preferences=(await db.prepare('SELECT id,event_kinds_json,minimum_impact FROM subscriber_directory ORDER BY id').all()).results;
         assert.deepEqual(preferences,archived('subscribers').map(row=>({id:row.id,event_kinds_json:JSON.stringify(row.channel==='webhook'?['incidents','maintenance','components']:['incidents','maintenance']),minimum_impact:null})).sort((a,b)=>a.id.localeCompare(b.id)),`${destination}: older subscriptions retain the channel defaults without invented consent`);
+        // Native restore replays the exact capacity backfill from the archived
+        // subscriber inventory. The new scheduler work derives only after all
+        // historical rows and reminder ledgers have finished restoring.
+        const { createSubscriberLimitRepository } = await loadTypescript('src/core/features/subscribers/limits.repository.ts');
+        const eligible = archived('subscribers').filter(row => ['pending','active'].includes(row.state));
+        const countByChannel = channel => eligible.filter(row => row.channel === channel).length;
+        assert.deepEqual(await createSubscriberLimitRepository(db).counts(), {
+          total: eligible.length, email: countByChannel('email'), webhook: countByChannel('webhook'), slack: 0, teams: 0, sms: 0,
+        }, 'the first capacity read after an older native restore counts its real subscriber inventory');
+        assert.equal((await db.prepare('SELECT completed FROM scheduled_work_initialization WHERE id=1').first()).completed, 0);
+        let workBatches = 0;
+        const schedulingDb = new Proxy(db, { get(target, name) {
+          if (name === 'batch') return statements => { workBatches++; return target.batch(statements); };
+          const value = Reflect.get(target, name); return typeof value === 'function' ? value.bind(target) : value;
+        } });
+        const { createReportRepository } = await loadTypescript('src/core/features/reports/repository.ts');
+        const reports = createReportRepository(schedulingDb), due = { now: new Date().toISOString(), defaultPolicy: true };
+        await reports.listResolvedWithoutPublishedReport(due);
+        assert.equal((await db.prepare('SELECT completed FROM scheduled_work_initialization WHERE id=1').first()).completed, 1);
+        await reports.listResolvedWithoutPublishedReport(due);
+        assert.equal(workBatches, 1, 'older native data initializes derived scheduler work once, then uses only indexed due reads');
         // The restored installation keeps auditing state changes.
         const [last] = history;
         await db.prepare('INSERT INTO component_state_history (id, component_id, previous_state, new_state, cause_type, cause_id, operator_id, supersedes_history_id, changed_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?)')
