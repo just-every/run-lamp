@@ -48,6 +48,14 @@ export function feedEntries(xml: string): FeedEntry[] {
 
 /** Markup as plain text, as a browser shows it: source line breaks are spaces, <br> and paragraphs break lines. */
 export function htmlText(html: string) {
-  return decodeEntities(html.replace(/\s+/g, " ").replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>\s*<p\b[^>]*>/gi, "\n\n").replace(/<[^>]*>/g, ""))
+  let text = html.replace(/\s+/g, " ").replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>\s*<p\b[^>]*>/gi, "\n\n");
+  // Remove innermost tags until malformed nesting cannot reassemble another tag.
+  let previous: string;
+  do {
+    previous = text;
+    text = text.replace(/<(?:[^<>"']|"[^"]*"|'[^']*')*>/g, "");
+  } while (text !== previous);
+  // Decode afterwards: an encoded angle bracket is literal message text.
+  return decodeEntities(text)
     .replace(/ *\n */g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
