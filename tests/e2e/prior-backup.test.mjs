@@ -53,6 +53,9 @@ contract('HIST-004', 'a previous-release backup upgrades through rer import with
           const actual=(await db.prepare(`SELECT ${columns.map(quote).join(',')} FROM ${quote(view)}`).all()).results.map(row=>key(columns,row)).sort();
           assert.deepEqual(actual,archived(table).map(row=>key(columns,row)).sort(),`${destination}: current product reads every archived ${table} value exactly once`);
         }
+        const incidentTotals = (await db.prepare('SELECT lifecycle,total FROM incident_list_counts WHERE total > 0 ORDER BY lifecycle').all()).results;
+        const restoredTotals = (await db.prepare('SELECT lifecycle,count(*) AS total FROM incidents WHERE deleted_at IS NULL GROUP BY lifecycle ORDER BY lifecycle').all()).results;
+        assert.deepEqual(incidentTotals, restoredTotals, 'older backups rebuild exact incident-list counts from their restored records');
         const preferences=(await db.prepare('SELECT id,event_kinds_json,minimum_impact FROM subscriber_directory ORDER BY id').all()).results;
         assert.deepEqual(preferences,archived('subscribers').map(row=>({id:row.id,event_kinds_json:JSON.stringify(row.channel==='webhook'?['incidents','maintenance','components']:['incidents','maintenance']),minimum_impact:null})).sort((a,b)=>a.id.localeCompare(b.id)),`${destination}: older subscriptions retain the channel defaults without invented consent`);
         // The restored installation keeps auditing state changes.

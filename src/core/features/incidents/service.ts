@@ -1,3 +1,4 @@
+import type { IncidentPageQuery } from "./page-repository";
 import type { CommunicationOwnership } from "./communication-owner.repository";
 import { incidentImpact, type IncidentImpact } from "../../shared/incident-impact";
 import { renderNotificationUpdate } from "../../shared/update-renderer";
@@ -58,6 +59,7 @@ export interface IncidentsService extends IncidentTemplateService {
   attachComponent(incidentId: string, claim: { componentId: string; state: ComponentState; relationship: "Primary" | "Dependent" }, operatorId: string): Promise<void>;
   detachComponent(incidentId: string, componentId: string, operatorId: string): Promise<void>;
   list(): Promise<IncidentView[]>;
+  listPage(query: IncidentPageQuery): Promise<{ incidents: IncidentView[]; total: number; activeTotal: number; resolvedTotal: number; limit: number; nextCursor: string | null }>;
   get(incidentId: string): Promise<IncidentView | null>;
   recoveryCheck(incidentId: string): Promise<RecoveryCheck | null>;
   saveDraft(incidentId: string, input: IncidentDraftInput, operatorId: string, expectedVersion: string, requestedId?: string): Promise<StoredIncidentDraft | null>;
@@ -269,6 +271,18 @@ export function createIncidentsService(
         const impact = relations.impacts.get(incident.id) ?? (components.length ? mostSevereState(components.map(component => component.state)) : null);
         return { ...incident, ...owners.get(incident.id)!, impact, ...incidentImpact(impact, incident.impactOverride), components, updates, draft: relations.drafts.get(incident.id) ?? null, internalNotes: relations.notes.get(incident.id) ?? [], ...updateDueState({ lifecycle: incident.lifecycle, nextUpdateAt: updates[0]?.nextUpdateAt ?? null, leadMinutes, now: Date.now() }) };
       });
+    },
+    async listPage(query) {
+      const page = await repository.listPage(query);
+      const ids = page.incidents.map(incident => incident.id);
+      const [relations, owners] = await Promise.all([repository.listRelations(ids), repository.communicationOwners.list(ids)]);
+      const leadMinutes = updateDuePolicy.leadMinutes();
+      return { ...page, incidents: page.incidents.map(incident => {
+        const components = relations.components.get(incident.id) ?? [];
+        const updates = relations.updates.get(incident.id) ?? [];
+        const impact = relations.impacts.get(incident.id) ?? (components.length ? mostSevereState(components.map(component => component.state)) : null);
+        return { ...incident, ...owners.get(incident.id)!, impact, ...incidentImpact(impact, incident.impactOverride), components, updates, draft: relations.drafts.get(incident.id) ?? null, internalNotes: relations.notes.get(incident.id) ?? [], ...updateDueState({ lifecycle: incident.lifecycle, nextUpdateAt: updates[0]?.nextUpdateAt ?? null, leadMinutes, now: Date.now() }) };
+      }) };
     },
     async get(incidentId) {
       const incident = await repository.findIncident(incidentId);
