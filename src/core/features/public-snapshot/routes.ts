@@ -9,6 +9,7 @@ import { escapeHtml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
 import { nativeApiArtifact } from "./native-api";
+import { componentFeedArchiveKey, feedArchiveKey, historyArchiveKey } from "./archive";
 import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
 
 // Stable public URLs are selectors, not immutable artifacts. Revalidate the
@@ -183,7 +184,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
     const cache = await caches.open("lamp-public-snapshot-fallback").catch(() => null);
     const cacheUrl = new URL(context.req.url);
     cacheUrl.search = ""; // Public artifacts do not vary by query parameters.
-    if (cacheUrl.pathname.startsWith("/api/public/v1/")) cacheUrl.searchParams.set("artifact", artifact(context));
+    if (cacheUrl.pathname.startsWith("/api/public/v1/") || key.startsWith("archive/")) cacheUrl.searchParams.set("artifact", key);
     const cacheRequest = new Request(cacheUrl, { method: "GET" });
     try {
       const object = await service.readArtifact(artifact(context));
@@ -265,18 +266,18 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   });
   app.get("/maintenance/:reference", serve((context) => `maintenance/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
   app.get("/", serve(() => "page.html"));
-  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? `history/${context.req.param("month")}.html` : "history/invalid.html", false, "not-found.html"));
-  app.get("/history", serve(() => "history.html"));
+  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? historyArchiveKey(context.req.param("month"), context.req.query("cursor")) : "history/invalid.html", false, "not-found.html"));
+  app.get("/history", serve(context => historyArchiveKey(undefined, context.req.query("cursor")), false, "not-found.html"));
   app.get("/incidents/:reference", serve((context) => `incidents/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
   app.get("/maintenance.ics", serve(() => "maintenance.ics"));
-  app.get("/feed.atom", serve(() => "feed.atom"));
-  app.get("/feed.rss", serve(() => "feed.rss"));
-  app.get("/history.atom", serve(() => "history.atom"));
-  app.get("/history.rss", serve(() => "history.rss"));
+  app.get("/feed.atom", serve(context => feedArchiveKey("atom", context.req.query("cursor"))));
+  app.get("/feed.rss", serve(context => feedArchiveKey("rss", context.req.query("cursor"))));
+  app.get("/history.atom", serve(context => context.req.query("cursor") ? feedArchiveKey("atom", context.req.query("cursor")) : "history.atom"));
+  app.get("/history.rss", serve(context => context.req.query("cursor") ? feedArchiveKey("rss", context.req.query("cursor")) : "history.rss"));
   app.get("/badge.svg", serve(() => "badge.svg"));
   app.get("/badge.json", serve(() => "badge.json"));
   for (const resource of ["feed.atom", "feed.rss", "badge.svg", "uptime.svg"]) {
-    app.get(`/components/:slug/${resource}`, serve(context => `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
+    app.get(`/components/:slug/${resource}`, serve(context => resource === "feed.atom" || resource === "feed.rss" ? componentFeedArchiveKey(context.req.param("slug") ?? "", resource === "feed.atom" ? "atom" : "rss", context.req.query("cursor")) : `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
   }
   app.get("/api/v2/*", serve(context => new URL(context.req.url).pathname.slice(1)));
   for (const path of ["/api/public/v1", "/api/public/v1/", "/api/public/v1/summary.json"]) app.get(path, serve(() => "api/public/v1/summary.json"));

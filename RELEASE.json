@@ -9,6 +9,10 @@
     {
       "id": "0079_subscriber_directory_order.sql",
       "buyerSteps": "Apply after 0078 through the ordinary migration runner before starting the updated Worker. Adds the subscriber directory order index; existing subscriber records, consent and delivery history remain unchanged. No account or credential is required."
+    },
+    {
+      "id": "0081_scheduled_work_indexes.sql",
+      "buyerSteps": "Apply the normal migrations to index due work and public history; existing records are retained."
     }
   ],
   "breaking": false,
