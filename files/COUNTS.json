@@ -1,0 +1,25 @@
+{
+  "head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+  "clause_total_before": 244,
+  "clause_total_after": 244,
+  "status_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "status_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55
+  },
+  "clause_status_changes": [],
+  "registered_cases_before": 92,
+  "registered_cases_after": 92,
+  "assertion_scripts_before": 10,
+  "assertion_scripts_after": 10,
+  "ordinary_passing_previous": 3,
+  "ordinary_passing_current": 6,
+  "ordinary_total": 11,
+  "ordinary_failures_previous": 8,
+  "ordinary_failures_current": 5
+}

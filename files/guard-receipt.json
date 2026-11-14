@@ -1,0 +1,18 @@
+{
+  "synthetic_input_guard_bytes": 209715200,
+  "inputs": {
+    "negative-size-check.json": {
+      "bytes": 8233,
+      "sha256": "06d3c0afe4bfd49ba5769ff5efdf06f0f9f2c2d3f04382bd05516431c3ef2642"
+    },
+    "negative-injection.txt": {
+      "bytes": 250,
+      "sha256": "737721f9331ec0d18253fdc80a5c17b0ad7b0e0ad55878cef89b94e53268b704"
+    },
+    "size-check.json": {
+      "bytes": 10488,
+      "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59"
+    }
+  },
+  "negative_control_origin": "evidence/sd-lamp-sizecheck-2; unchanged declaration and unbounded SELECT id FROM subscribers"
+}

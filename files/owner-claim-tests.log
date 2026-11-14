@@ -1,0 +1,23 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.15 test:owner-claim /home/agent/rer-consolidation/work/sd-lamp-sizecheck-4/run-lamp
+> node --test --test-concurrency=1 tests/demo/owner-claim.test.mjs tests/demo/owner-claim-status.test.mjs
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ ordinary host configuration carries public Business trust into a read-only native owner verification (4044.610053ms)
+✔ a page host on a zone outside the deploy account renders as a Worker route, and every inconsistent pair is refused by setting name (1.314447ms)
+✔ a deploy points the stored page hostname at LAMP_PAGE_HOST and changes no other page setting (2136.015293ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ host-configured signed owner claim creates a native Lamp session and refuses replay; a Business install opens its import door at the first bootstrap claim (8217.185546ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16503.601357

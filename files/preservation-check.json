@@ -1,0 +1,35 @@
+{
+  "agent-surface.json": {
+    "matches_previous_adoption": true,
+    "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9"
+  },
+  "size-check.json": {
+    "matches_previous_adoption": true,
+    "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59"
+  },
+  ".github/workflows/verify.yml": {
+    "matches_previous_adoption": true,
+    "sha256": "a4d22bbd8cde6385a532a70d5c0e2df15f66fa197cc87344315340ec7a069cc0"
+  },
+  "CONTRACT.md": {
+    "matches_main": true
+  },
+  "ACCEPTANCE.md": {
+    "matches_main": true
+  },
+  "docs/CLAIMS.md": {
+    "matches_main": true
+  },
+  "RELEASE.json": {
+    "matches_main": true
+  },
+  "src/base/lobby.ts": {
+    "matches_main": true
+  },
+  "src/base/run-site.ts": {
+    "matches_main": true
+  },
+  "product_queries_schema_tests": {
+    "matches_main": true
+  }
+}

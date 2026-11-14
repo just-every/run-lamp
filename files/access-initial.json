@@ -1,0 +1,20 @@
+[
+  {
+    "attempt": 1,
+    "backoff_before_seconds": 0,
+    "api_exit": 1,
+    "api_error": "gh: Bad credentials (HTTP 401)",
+    "fetch_exit": 128,
+    "fetch_error": "remote: Invalid username or token. Password authentication is not supported for Git operations.\nfatal: Authentication failed for 'https://github.com/just-every/run-lamp.git/'"
+  },
+  {
+    "attempt": 2,
+    "backoff_before_seconds": 15,
+    "refresh_exit": 0,
+    "setup_exit": 0,
+    "api_exit": 1,
+    "api_error": "gh: Bad credentials (HTTP 401)",
+    "fetch_exit": 128,
+    "fetch_error": "remote: Invalid username or token. Password authentication is not supported for Git operations.\nfatal: Authentication failed for 'https://github.com/just-every/run-lamp.git/'"
+  }
+]

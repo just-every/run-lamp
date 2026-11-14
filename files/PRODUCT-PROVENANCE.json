@@ -1,0 +1,13 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-sizecheck-4",
+  "head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+  "tree": "d137784c8083b9450e440020913c687ce7ec8292",
+  "parents": [
+    "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+    "76748e97deb8a8c2001c7ce043cf48ff6396d80a"
+  ],
+  "main": "76748e97deb8a8c2001c7ce043cf48ff6396d80a",
+  "rer": "0.2.116",
+  "qualified_base": "c3532e238fe3e4b9d1bc70c957b775185c8207de"
+}

@@ -1,0 +1,59 @@
+{
+  "clauses": [
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.schema",
+      "ok": false,
+      "message": "Agent surface must use schema rer-agent-surface/1."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.seed",
+      "ok": false,
+      "message": "Invalid seed undefined."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.specialist",
+      "ok": false,
+      "message": "Agent surface must name its specialist."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.tools",
+      "ok": false,
+      "message": "Agent surface must declare its tools."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.notTools",
+      "ok": false,
+      "message": "Agent surface must declare notTools."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.resources",
+      "ok": false,
+      "message": "Agent surface must declare resources."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.journey",
+      "ok": false,
+      "message": "Agent surface must declare its journey."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-005.surface.escalations",
+      "ok": true
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.events",
+      "ok": false,
+      "message": "Declare built-in undefined.events.list in the Agent surface."
+    },
+    {
+      "id": "SC-14.agents.BASE-AGENT-013.surface.witness",
+      "ok": false,
+      "message": "witness must name a declared readOnly tool and arguments."
+    }
+  ],
+  "messages": [
+    "Agent door conformance: undeclared (verification-only agent-surface.json)"
+  ],
+  "result": {
+    "declared": false
+  }
+}

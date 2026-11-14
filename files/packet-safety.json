@@ -1,0 +1,134 @@
+{
+  "raw_matches": 18,
+  "unresolved_credentials": 0,
+  "classifications": [
+    {
+      "file": "measured-build-files.json",
+      "source": "dist/server/app-assets/opaque-tokens-QW90qhqC.js",
+      "kind": "built file SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "pre-refresh/measured-build-files.json",
+      "source": "dist/server/app-assets/opaque-tokens-QW90qhqC.js",
+      "kind": "built file SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-lock.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    },
+    {
+      "file": "source-check.json",
+      "source": "key",
+      "kind": "retained source-origin descriptor SHA-256",
+      "verified": true,
+      "credential": false
+    }
+  ],
+  "regular_files_only": true,
+  "credentials_or_environment_dumps_or_private_held_out_material_selected": false
+}

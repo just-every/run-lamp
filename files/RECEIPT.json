@@ -1,0 +1,177 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-sizecheck-4",
+  "repository": "just-every/run-lamp",
+  "clone_shallow": true,
+  "prior_objects": {
+    "prior_adoption": {
+      "sha": "2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1",
+      "available_locally": true
+    },
+    "incident_candidate": {
+      "sha": "c65066509dc724bdd5e09c45f17f18d1758bc796",
+      "available_locally": false
+    },
+    "tick_candidate": {
+      "sha": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+      "available_locally": false
+    }
+  },
+  "rer_pin_on_available_main": "0.2.108",
+  "required_rer_pin": "0.2.116",
+  "acceptance_counts_before": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "acceptance_counts_after": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "product_commits_created": 1,
+  "product_push_attempts": 1,
+  "ci_runs_discovered": [
+    43558458920,
+    43558458719,
+    43558413306
+  ],
+  "clause_status_changes": [],
+  "touched_checks": {
+    "typecheck_exit": 0,
+    "verification_plan_exit": 0,
+    "workflow_parse": "pass"
+  },
+  "size_flow_measurements": "COMPLETE: final refreshed Worker, ordinary exit 1 (6/11 pass), negative control correctly exit 1",
+  "real_D1": "NOT RUN: remains with executing session",
+  "npm_release_lookup": {
+    "version": "0.2.116",
+    "dist.integrity": "sha512-CHZ2zc/GMwHXgnsCej2SScNxAHFR7kp2xMMgj6lYMzWdp1dcWsATk50tgZD5M4WRemd4Ed2w104uaK1XY5rK/Q=="
+  },
+  "initial_access_blocker_resolved": true,
+  "access_recovered_attempt": 4,
+  "product_branch": "cloud/sd-lamp-sizecheck-4",
+  "merge_main": "76748e97deb8a8c2001c7ce043cf48ff6396d80a",
+  "rer_pin_candidate": "0.2.116",
+  "setup_exit": 0,
+  "runtime_verification_only": {
+    "declared": false,
+    "message": "Agent door conformance: undeclared (verification-only agent-surface.json)"
+  },
+  "static_public_check_exit": 1,
+  "verification_inventory": {
+    "registered_cases_before": 92,
+    "registered_cases_after": 92,
+    "assert_scripts_before": 10,
+    "assert_scripts_after": 10,
+    "test_shards": 8,
+    "standalone_size_gate": 1
+  },
+  "ordinary_measurement": {
+    "exit": 1,
+    "passing": 6,
+    "total": 11,
+    "still_red": [
+      "incident-list",
+      "minute-tick",
+      "public-summary",
+      "public-history",
+      "public-feed"
+    ],
+    "measured_worker_sha256": "abaa642fa5583eba26a608fe67dd6d0df4bec786edecf54cd2f0d7807c6359f2",
+    "post_refresh_build_comparison": "Fresh Worker differs; both measurements rerun on final refreshed build. Results identical to pre-refresh flow totals.",
+    "source_head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+    "sizes": {
+      "small": {
+        "total_rows": 6783,
+        "generation_seconds": 0.224,
+        "phase_seconds": 27.719
+      },
+      "large": {
+        "total_rows": 541171,
+        "generation_seconds": 5.443,
+        "phase_seconds": 60.707
+      }
+    }
+  },
+  "negative_control": {
+    "exit": 1,
+    "small_rows": 1620,
+    "large_rows": 162000,
+    "rejected_for": [
+      "ceiling",
+      "growth"
+    ],
+    "built_worker_restored": true
+  },
+  "ordinary_statement_checks": {
+    "small": 0,
+    "large": 0,
+    "real_D1": false
+  },
+  "base_refresh": {
+    "required_from_api_exit": 1,
+    "required_from_api_error": "Unsafe path: scripts/size-check/; no files were refreshed",
+    "recovery": "gh api immutable target archive, then published refresh-base --base-archive with temporary path spelling normalization and byte-for-byte workflow restoration",
+    "target": "c3532e238fe3e4b9d1bc70c957b775185c8207de",
+    "archive_refresh_exit": 1,
+    "archive_refresh_applied": true,
+    "preserved_adaptations": [
+      "src/base/run-site.ts",
+      "src/base/lobby.ts"
+    ],
+    "preserved_dependency": "react 19.2.8; Base metadata requests 19.3.1",
+    "verify_base_offline": true,
+    "drift": [],
+    "managed_copy_records_before": 258,
+    "managed_copy_records_after": 258,
+    "base_archive_sha256": "c640ee70724c9afa00520a4f05147ee849b0be5765f0031918d9ca74651b67f0",
+    "base_archive_endpoint": "repos/runeditrun/base/tarball/c3532e238fe3e4b9d1bc70c957b775185c8207de"
+  },
+  "touched_owner_claim_tests": {
+    "exit": 0,
+    "registered_tests_executed": 4,
+    "pass": 4,
+    "fail": 0
+  },
+  "build_exit": 0,
+  "publication_scan": {
+    "status": "INCOMPLETE",
+    "exit": 2,
+    "rule": "scan.deadline-exceeded",
+    "initial_rule": "scan.public-base-rejected",
+    "public_base": "https://github.com/just-every/run-lamp#main",
+    "complete": false,
+    "fleet_publication_scan_required": true
+  },
+  "product_head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+  "source_lock_generated_last": true,
+  "source_check_exit": 0,
+  "source_copies_check_exit": 0,
+  "contract_view_check_exit": 0,
+  "product_push_status": "PUSH_OK",
+  "pr": {
+    "base": "main",
+    "draft": true,
+    "head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+    "html_url": "https://github.com/just-every/run-lamp/pull/373",
+    "number": 373
+  },
+  "candidate_worktree_clean": true,
+  "diff_secret_inspection": {
+    "raw_matches": 3,
+    "unresolved_credentials": 0,
+    "classification_receipt": "diff-secret-classification.json"
+  },
+  "initial_clone_branch": "main",
+  "initial_clone_head": "76748e97deb8a8c2001c7ce043cf48ff6396d80a",
+  "ci_exact_head": {
+    "id": 43558413306,
+    "status": "completed",
+    "conclusion": "failure",
+    "head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8"
+  },
+  "terminal_product_custody": "PUSHED, not READY; pending incident/tick integration; no landing submission"
+}

@@ -1,0 +1,1847 @@
+{
+  "refreshed": "c3532e238fe3e4b9d1bc70c957b775185c8207de",
+  "record": "base-copies.json",
+  "copies": [
+    {
+      "path": ".github/workflows/run-demo.yml",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": ".github/workflows/run-site.yml",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": ".node-version",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "BASELINE.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "CLAUDE.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "composition/modules/owner-migrations/LICENSE",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "composition/modules/owner-migrations/README.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "composition/modules/sendgrid-email/LICENSE",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "composition/modules/sendgrid-email/README.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "LICENSE",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/d1-transport",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 4,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/demo",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 14,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/CONTRACT.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/README.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/schema",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 2,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/budget.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/compressed-plan.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/creation.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/custody-fence.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/custody-state-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/database.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/entry-locator.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-artifacts.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-custody.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-plan.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-reversal.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-bounded.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-claims.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-compiler.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-disposition.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-fragments.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-index.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-pages.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-progress.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-related.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-report.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-selection.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-snapshot.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-stage.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-step.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-values.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-writes.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/expected-state.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/field-redaction.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/guards.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/history.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/index.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/integrity.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/inventory-snapshot.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/jobs.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-set.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-admission.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-context.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-offset.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-publication.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-rows.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-state.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/original-copies.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/original-storage.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/originals.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/plan-dictionary.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/plans.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-header.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-reader.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-state.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-combine.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-control.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-hash.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-pages.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-steps.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparations.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/provenance-set.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/publication-fence.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/published-stream.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/read-fence.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/read-results.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/README.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/redacted-custody.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/redaction-step.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/referenced-plans.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retained-values.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-bounded.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-door.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-scope.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-steps.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-tally.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-fence.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reverse.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reviewed-source.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/sets.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-admission.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-control.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-erasure.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-lifecycle.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-plan.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-privacy.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-publication.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-statements.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-transport.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-boundary.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-create.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-identity-admission.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-input.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-layout.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-origin.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-page-integrity.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-partition.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-plan.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-receipt.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-revision-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-snapshot.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-stage.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-state.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-working-set.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/streams.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/target-guards.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/target-identities.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/transport.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/types.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-observations.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-report.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-snapshot.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-state.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-types.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/door",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 27,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/engine",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 3,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/index.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/journal",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 4,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/plan",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 3,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/provenance",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 9,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/readers",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 11,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/reconcile",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/status",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 5,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/storage",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 6,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/types.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/integrations/core",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 17,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/integrations/README.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/integrations/slack",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 6,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/mail",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 59,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/operator-auth",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 46,
+      "added": [
+        "modules/operator-auth/dev-admission.d.mts",
+        "modules/operator-auth/dev-admission.mjs",
+        "modules/operator-auth/dev/invited.mjs"
+      ],
+      "removed": []
+    },
+    {
+      "path": "modules/owner-claim/index.d.mts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/owner-claim/verify.d.mts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/owner-claim/verify.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/sendgrid-email",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 3,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "schema/dependencies.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "schema/json-schema.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "schema/SEED.schema.json",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "schema/setup-validation.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "schema/validate.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/artifact.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/bindings.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/capabilities.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/cli.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/declarations.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/export.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/generators/integration.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/generators/managed.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/generators/project.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/generators/validation.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/mail.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/migrations.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/native-export.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/package.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/paths.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/payloads.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/dependencies.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/json-schema.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/setup-validation.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/SETUP.schema.json",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/sign-in.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/spec.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/sql-statements.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/deployment/OWNER-MIGRATIONS.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/deployment/owner-migrations.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 150,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/installer/ui/background.svg",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/operations.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/project-operations.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "SEED-COMMAND-CONTRACT.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/actor.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/command-receipts.sql",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/command-receipts.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-docs.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-filter.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-page.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-style.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/deployment-health.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/dispatch.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/font-head.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/font-response.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hydration/intro-guard.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hydration/README.md",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hydration/report.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hydration/unit.tsx",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/icon-head.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/identity.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/lobby.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/page-style.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/rejected-response.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-site.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 0,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/seed-contract.d.mts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/seed-contract.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/select-style.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/setup-state.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/setup.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/static-assets.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/theme-frame.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/editor/editor-surface.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/editor/live-edit-contracts.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/editor/live-edit-dom.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/editor/visual-style.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-pricing.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply-reads.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply-effects.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/verified-plan.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/staged-creation.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/atomic-prefix.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/column-layout.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/preserved-preview.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-journal.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/wave-boundary.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/wave-retirement.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/snapshot-text.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/receipt/index.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/receipt/uri.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/receipt/types.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/receipt/encoding.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "schema/business-field-inputs.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/business-field-inputs.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-anchor.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-prose.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hosting-page.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-chooser-style.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/receipt/policy.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "modules/import-kit/src/receipt/validation.ts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-prose-patterns.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-data.mjs",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-data.d.mts",
+      "from": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "files": 1,
+      "added": [],
+      "removed": []
+    }
+  ],
+  "retired": [],
+  "adapted": [
+    {
+      "path": "src/base/run-site.ts",
+      "originPath": "foundation/runtime/run-site.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf",
+      "conflict": true,
+      "note": "Upstream changed or removed this seed-owned adaptation; review and reconcile explicitly.",
+      "diffHint": "git -C <base> diff 73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf c3532e238fe3e4b9d1bc70c957b775185c8207de -- \"foundation/runtime/run-site.ts\""
+    }
+  ],
+  "relocated": [],
+  "withheld": [],
+  "packageDependencies": [
+    {
+      "package": "react",
+      "version": "19.2.8",
+      "baseVersion": "19.3.1",
+      "conflict": true,
+      "files": [
+        "src/base/hydration/unit.tsx"
+      ]
+    }
+  ],
+  "editionMigrations": [],
+  "templateAdoptions": [],
+  "notices": [
+    ".github/workflows/verify.yml: preserved seed-owned workflow. The current template pins Ubuntu 24.04 and moves browser and apt caches to the runner temporary directory. To adopt, merge export/verify.yml from Base c3532e238fe3e4b9d1bc70c957b775185c8207de into .github/workflows/verify.yml, then run node node_modules/@runeditrun/rer/edition-authoring/cli.mjs record-base .github/workflows/verify.yml export/verify.yml c3532e238fe3e4b9d1bc70c957b775185c8207de --base <base-checkout> and repeat rer refresh-base --ref c3532e238fe3e4b9d1bc70c957b775185c8207de --base <base-checkout>."
+  ],
+  "next": "Run verify-base, then the edition tests, and commit the copied files with the record."
+}
+

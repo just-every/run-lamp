@@ -1,0 +1,18 @@
+{
+  "direct_metadata_cli_calls_used": 10,
+  "direct_metadata_cli_call_limit": 10,
+  "direct_calls_so_far": {
+    "previous_report_requests_including_auth_retries": 4,
+    "immutable_Base_archive": 1,
+    "draft_PR_creation": 1
+  },
+  "remaining_reserved_for_CI": 0,
+  "watchers": 1,
+  "source_reader_internal_calls": "The required published --from-api source acquisition makes additional per-blob gh requests; the tool does not expose its total. No claim of ten total wire requests is made.",
+  "publication_checker_internal_calls": "Required scanner may call GitHub internally; no total exposed.",
+  "CI_calls": {
+    "exact_head_discovery": 1,
+    "jobs": 1,
+    "failed_job_archive_invocations": 2
+  }
+}

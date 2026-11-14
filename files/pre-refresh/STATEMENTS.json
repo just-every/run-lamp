@@ -1,0 +1,22 @@
+[
+  {
+    "file": "ordinary-statements/small.json",
+    "bytes": 249363,
+    "sha256": "7542ba4e459bc2f2d95eed41fad49985bde4a7288b02701317b0e64334a98fa3"
+  },
+  {
+    "file": "ordinary-statements/large.json",
+    "bytes": 249363,
+    "sha256": "5c77e4a63bc1206d6396ef769d2e2fcdf99248383f2c8171073091a7e7013f91"
+  },
+  {
+    "file": "negative-statements/small.json",
+    "bytes": 240,
+    "sha256": "09b2149d9ec177d1155cb8a4f19766faa2ffe9801985b5786265bbf81855c94f"
+  },
+  {
+    "file": "negative-statements/large.json",
+    "bytes": 240,
+    "sha256": "98e259095277cfd25fa06c2dad70c6b1c13f47446a98125a713b5ba1ed866275"
+  }
+]

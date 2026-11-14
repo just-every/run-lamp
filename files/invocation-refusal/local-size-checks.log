@@ -1,0 +1,5 @@
+rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)
+Ordinary size exit=2 seconds=1
+Negative control exit=2 seconds=0
+Statements small exit=3
+Statements large exit=3

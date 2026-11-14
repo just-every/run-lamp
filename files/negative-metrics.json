@@ -1,0 +1,235 @@
+{
+  "ok": false,
+  "exitCode": 1,
+  "queueConsumersMeasured": false,
+  "size": {
+    "small": {
+      "tables": [
+        {
+          "table": "page_settings",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 13
+        },
+        {
+          "table": "components",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 18
+        },
+        {
+          "table": "alert_sources",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 16
+        },
+        {
+          "table": "incidents",
+          "declared": 90,
+          "before": 0,
+          "readBack": 90,
+          "total": 90,
+          "ms": 12
+        },
+        {
+          "table": "incident_components",
+          "declared": 90,
+          "before": 0,
+          "readBack": 90,
+          "total": 90,
+          "ms": 13
+        },
+        {
+          "table": "incident_updates",
+          "declared": 270,
+          "before": 0,
+          "readBack": 270,
+          "total": 270,
+          "ms": 14
+        },
+        {
+          "table": "component_state_history",
+          "declared": 1619,
+          "before": 0,
+          "readBack": 1619,
+          "total": 1619,
+          "ms": 35
+        },
+        {
+          "table": "subscribers",
+          "declared": 1620,
+          "before": 0,
+          "readBack": 1620,
+          "total": 1620,
+          "ms": 64
+        },
+        {
+          "table": "maintenance",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 14
+        }
+      ],
+      "totalRows": 6783,
+      "phasesMs": {
+        "serve": 4136,
+        "owner": 48,
+        "generate": 198,
+        "after": 0,
+        "readback": 1080,
+        "personas": 0,
+        "flows": 276
+      },
+      "statements": 9
+    },
+    "large": {
+      "tables": [
+        {
+          "table": "page_settings",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 13
+        },
+        {
+          "table": "components",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 21
+        },
+        {
+          "table": "alert_sources",
+          "declared": 644,
+          "before": 0,
+          "readBack": 644,
+          "total": 644,
+          "ms": 13
+        },
+        {
+          "table": "incidents",
+          "declared": 9000,
+          "before": 0,
+          "readBack": 9000,
+          "total": 9000,
+          "ms": 75
+        },
+        {
+          "table": "incident_components",
+          "declared": 9000,
+          "before": 0,
+          "readBack": 9000,
+          "total": 9000,
+          "ms": 51
+        },
+        {
+          "table": "incident_updates",
+          "declared": 27000,
+          "before": 0,
+          "readBack": 27000,
+          "total": 27000,
+          "ms": 218
+        },
+        {
+          "table": "component_state_history",
+          "declared": 161893,
+          "before": 0,
+          "readBack": 161893,
+          "total": 161893,
+          "ms": 3881
+        },
+        {
+          "table": "subscribers",
+          "declared": 162000,
+          "before": 0,
+          "readBack": 162000,
+          "total": 162000,
+          "ms": 1242
+        },
+        {
+          "table": "maintenance",
+          "declared": 1,
+          "before": 0,
+          "readBack": 1,
+          "total": 1,
+          "ms": 11
+        }
+      ],
+      "totalRows": 541171,
+      "phasesMs": {
+        "serve": 2864,
+        "owner": 35,
+        "generate": 5524,
+        "after": 0,
+        "readback": 958,
+        "personas": 0,
+        "flows": 497
+      },
+      "statements": 43
+    }
+  },
+  "flows": [
+    {
+      "name": "deliberately-unbounded",
+      "persona": "owner",
+      "kind": "request",
+      "label": "GET /api/app/size-negative-control",
+      "callsInRow": 1,
+      "ceiling": 5000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 5,000 at large by 157,000"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 160,380 rows from small to large; allowed 10% of small + 200 = 362"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 1620,
+        "rowsWritten": 0,
+        "statements": 1,
+        "status": 200,
+        "ms": 14,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "SELECT id FROM subscribers",
+            "executions": 1,
+            "rowsRead": 1620,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 162000,
+        "rowsWritten": 0,
+        "statements": 1,
+        "status": 200,
+        "ms": 244,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "SELECT id FROM subscribers",
+            "executions": 1,
+            "rowsRead": 162000,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    }
+  ]
+}

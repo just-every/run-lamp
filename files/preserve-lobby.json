@@ -1,0 +1,11 @@
+{
+  "adapted": "src/base/lobby.ts",
+  "revision": "c3532e238fe3e4b9d1bc70c957b775185c8207de",
+  "sha256": "0838a4d0a68bda0c28797924d6a95ef4be6d79b837624b99a01af1a366170ccb",
+  "acknowledged": {
+    "sha256": "ca827c50f357a110153d94d5afa5116c99303abf2c2b5a292d4467636f134b07",
+    "mode": "100644"
+  },
+  "record": "base-copies.json"
+}
+

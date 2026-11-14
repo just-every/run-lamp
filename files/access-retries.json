@@ -1,0 +1,22 @@
+[
+  {
+    "attempt": 3,
+    "time_utc": "2026-11-14T03:50:18.222729+00:00",
+    "refresh_exit": 0,
+    "setup_exit": 0,
+    "api_exit": 1,
+    "api_error": "gh: Bad credentials (HTTP 401)",
+    "fetch_exit": 128,
+    "fetch_error": "remote: Invalid username or token. Password authentication is not supported for Git operations.\nfatal: Authentication failed for 'https://github.com/just-every/run-lamp.git/'"
+  },
+  {
+    "attempt": 4,
+    "time_utc": "2026-11-14T03:51:53.791211+00:00",
+    "refresh_exit": 0,
+    "setup_exit": 0,
+    "api_exit": 0,
+    "api_error": "",
+    "fetch_exit": 0,
+    "fetch_error": "From https://github.com/just-every/run-lamp\n * branch            2f20c96d83d9c4c0a350cf9e8fc7978a89d55fe1 -> FETCH_HEAD"
+  }
+]

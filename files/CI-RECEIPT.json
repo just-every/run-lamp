@@ -1,0 +1,141 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8",
+  "run_id": 43558413306,
+  "event": "push",
+  "status": "completed",
+  "conclusion": "failure",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/43558413306",
+  "observed_at_utc": "2026-11-14T05:06:31Z",
+  "jobs": [
+    {
+      "name": "plan",
+      "id": 132336410035,
+      "conclusion": "success",
+      "seconds": 7.0,
+      "failed_steps": []
+    },
+    {
+      "name": "build",
+      "id": 132336450498,
+      "conclusion": "success",
+      "seconds": 54.0,
+      "failed_steps": []
+    },
+    {
+      "name": "size-check",
+      "id": 132336677104,
+      "conclusion": "failure",
+      "seconds": 139.0,
+      "failed_steps": [
+        "Measure declared flows on small and large local D1"
+      ]
+    },
+    {
+      "name": "shards (portability)",
+      "id": 132336677151,
+      "conclusion": "success",
+      "seconds": 261.0,
+      "failed_steps": []
+    },
+    {
+      "name": "shards (delivery)",
+      "id": 132336677177,
+      "conclusion": "success",
+      "seconds": 680.0,
+      "failed_steps": []
+    },
+    {
+      "name": "shards (composer)",
+      "id": 132336677179,
+      "conclusion": "success",
+      "seconds": 1018.0,
+      "failed_steps": []
+    },
+    {
+      "name": "shards (ownership)",
+      "id": 132336677191,
+      "conclusion": "success",
+      "seconds": 291.0,
+      "failed_steps": []
+    },
+    {
+      "name": "shards (runtime)",
+      "id": 132336677197,
+      "conclusion": "failure",
+      "seconds": 514.0,
+      "failed_steps": [
+        "Verify this product shard"
+      ]
+    },
+    {
+      "name": "shards (imports)",
+      "id": 132336677201,
+      "conclusion": "success",
+      "seconds": 400.0,
+      "failed_steps": []
+    },
+    {
+      "name": "shards (public)",
+      "id": 132336677219,
+      "conclusion": "success",
+      "seconds": 786.0,
+      "failed_steps": []
+    },
+    {
+      "name": "shards (demo)",
+      "id": 132336677223,
+      "conclusion": "success",
+      "seconds": 299.0,
+      "failed_steps": []
+    },
+    {
+      "name": "verify",
+      "id": 132340905069,
+      "conclusion": "failure",
+      "seconds": 10.0,
+      "failed_steps": [
+        "Require every planned command to succeed on this commit"
+      ]
+    }
+  ],
+  "job_span_seconds": 1095.0,
+  "summed_job_minutes": 74.31666666666666,
+  "runtime_failure": "exactly five remaining declared size flows; native agent verification-only detection succeeds, all product shard tests pass",
+  "dedicated_size_failure": "measurement step exit 1; JSON artifact not retrieved, no fabricated independent per-flow values",
+  "aggregate_failure": "correctly rejects failing size/runtime jobs",
+  "logs": [
+    {
+      "run_id": 43558413306,
+      "job_id": 132336677104,
+      "job_name": "size-check",
+      "command": "gh run view 43558413306 --repo just-every/run-lamp --job 132336677104 --log-failed",
+      "exit": 0,
+      "file": "ci-failed-size-check.txt",
+      "sanitized": true
+    },
+    {
+      "run_id": 43558413306,
+      "job_id": 132336677197,
+      "job_name": "shards (runtime)",
+      "command": "gh run view 43558413306 --repo just-every/run-lamp --job 132336677197 --log-failed",
+      "exit": 0,
+      "file": "ci-failed-runtime.txt",
+      "sanitized": true
+    }
+  ],
+  "pr_run_at_discovery": [
+    {
+      "id": 43558458719,
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "e726cb9a0f786c96a19f3cfb16e84b3bc56c32a8"
+    }
+  ],
+  "watchers": 1,
+  "discovery_calls": 1,
+  "additional_polls": 0,
+  "why_no_polls": "Exact-SHA push run was already completed in the first delayed discovery.",
+  "rerun_or_dispatch": false,
+  "real_D1": false
+}
