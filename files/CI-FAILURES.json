@@ -1,0 +1,13 @@
+{
+  "head": "e4046666857c4771852e49ca4d26656262a116b7",
+  "run": 43546487324,
+  "conclusion": "failure",
+  "jobs": [
+    {"id":132299279054,"name":"composer","failure":"Unsaved work Worker exited before ready: Port 38733 is already in use; hookFailed in tests/e2e/unsaved-work-browser.test.mjs. All seven public-contract/retained tests passed.","archiveCommand":"gh run view 43546487324 --repo just-every/run-lamp --job 132299279054 --log-failed","localRerun":"passed 1/1 in 48.7 seconds with system Chromium"},
+    {"id":132299279116,"name":"portability","failure":"HIST-004 prior-backup restore refused schema_mismatch:migration_data for migration 0081_scheduled_work_indexes.sql. Auth portability and page-data cases passed.","archiveCommand":"gh run view 43546487324 --repo just-every/run-lamp --job 132299279116 --log-failed","repair":"In progress: preserve restore guard and reconstruct derived reminder work once from restored canonical rows."},
+    {"id":132303529593,"name":"verify","failure":"Aggregate requires every planned shard to succeed; composer and portability failed.","archiveCommand":null,"reason":"No independent product assertion; summary derived from completed job statuses."}
+  ],
+  "githubCallsUsed":9,
+  "githubCallsRemaining":1,
+  "rawLogsPublication":"Raw workflow logs are retained locally but excluded from evidence selection because their preamble prints workflow environment settings; this receipt carries the complete relevant failures without an environment dump."
+}

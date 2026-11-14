@@ -1,0 +1,14 @@
+{
+  "status": "reviewed",
+  "technical_archive": {
+    "export": "scripts/export.mjs:tableNames discovers every non-platform SQLite table, exports all rows in a consistent D1 batch; includes derived work and count tables.",
+    "restore": "scripts/import.mjs drops application triggers, defers foreign keys, replaces every archived table including empty tables in one batch, then recreates triggers. Derived counters therefore are restored exactly, with no double counting; work foreign keys are deferred until complete.",
+    "native_restore": "RER generic migration replay accepts the exact subscriber count seed/backfill from archived physical subscriber records. Candidate queue views refer to later reminder/waiver ledgers absent in the old archive, so those queues use a durable marker seeded at 0 and atomically initialize from the complete canonical rows on first scheduler use. Current archives carry the initialized marker and queues. The initializer rechecks its durable marker after a same-process restore; its WeakMap retains only pending calls."
+  },
+  "owner_page_data": {
+    "export": "src/core/features/page-export/format.ts lists canonical owner records explicitly; excludes existing private reminder ledgers and new derivative work/count tables.",
+    "restore": "Canonical records restore with application triggers active, maintaining counters and current work. First scheduler use performs the one-time complete reconstruction if its durable marker remains unset."
+  },
+  "changes_required": true,
+  "fixed": "Added restore-aware atomic queue initialization, explicit eligible indexes in candidate views, and older native restore first-use assertions; native prior-backup flow now passes."
+}

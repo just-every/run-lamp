@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "assertions": "current commitment replacement, ledger preservation, resolution, weekly advancement, waiver, silent imported history, later live update, all effective subscriber channels and state/channel/delete counters",
+  "plans": {
+    "due_reports": [
+      "SEARCH incident_report_reminder_work USING COVERING INDEX incident_report_reminder_due (next_due_at<?)"
+    ],
+    "due_updates": [
+      "SEARCH incident_update_reminder_work USING COVERING INDEX incident_reminder_soon_due (due_soon_sent=? AND next_update_at>? AND next_update_at<?)"
+    ],
+    "ended_subscribers": [
+      "SEARCH subscribers USING INTEGER PRIMARY KEY (rowid=?)",
+      "LIST SUBQUERY 1",
+      "SEARCH ended USING INDEX incident_subscriptions_ending (ended_at>?)",
+      "SEARCH s USING INDEX sqlite_autoindex_subscribers_1 (id=?)"
+    ]
+  }
+}

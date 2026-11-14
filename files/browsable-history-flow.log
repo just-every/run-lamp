@@ -1,0 +1,16 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+✔ HIST-008 — reviewed imported history stays completely browsable without scripts (12407.656615ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14139.646587

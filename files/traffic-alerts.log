@@ -1,0 +1,30 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions (79688.090659ms)
+ℹ HIST-006 starting built Worker
+ℹ HIST-006 built Worker ready
+ℹ HIST-006 real Worker bindings ready
+ℹ HIST-006 fixture schema migrated
+ℹ HIST-006 native owner sign-in starting
+ℹ HIST-006 native owner signed in
+ℹ HIST-006 production fixture started
+ℹ HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+ℹ HIST-009 1440px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+ℹ HIST-009 390px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+ℹ HIST-006: 840 public page + 420 feed baseline requests; default 3×, owner threshold, 5× exactly-once episode, incident suppression, recovery refusal, identifier-free counters and database-free reads asserted
+ℹ HIST-006 riders: unknown baselines not tracked, historical refusal with a retained draft, private attributed immediate override with no later authority, scheduled due-time hold with a retained draft, near-baseline scheduled success
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81891.75822

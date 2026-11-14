@@ -1,0 +1,56 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident (9596.917119ms)
+ℹ PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner
+ℹ PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner
+✔ AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery (8164.244717ms)
+ℹ PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window
+ℹ PROBE NOTIFY-006 acceptance-4 terminal notification failure: public email subscription and owner publication receive provider HTTP 400, repeated Queue delivery and Cron -> failed subscriber delivery and exactly one captured email per active operator for that delivery
+✔ NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private (5576.369459ms)
+ℹ PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator
+ℹ PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident
+✖ HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions (30890.487923ms)
+ℹ HIST-006 starting built Worker
+ℹ HIST-006 built Worker ready
+ℹ HIST-006 real Worker bindings ready
+ℹ HIST-006 fixture schema migrated
+ℹ HIST-006 native owner sign-in starting
+ℹ HIST-006 native owner signed in
+ℹ HIST-006 production fixture started
+ℹ HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+✔ AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders (18080.170758ms)
+ℹ HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+ℹ HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73583.625654
+
+✖ failing tests:
+
+test at tests/e2e/update-reminders.test.mjs:159:1
+✖ HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions (30890.487923ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at trafficAlertsFlow (/workspace/run-lamp/tests/e2e/helpers/traffic-alerts-flow.mjs:197:30) {
+    name: 'Error',
+    log: []
+  }

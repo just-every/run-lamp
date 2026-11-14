@@ -1,0 +1,6 @@
+{
+  "head": "74ae723749bcc68ee7bff5a17bb0f277e90f5f0f",
+  "workingDiff": " migrations/core/0081_scheduled_work_indexes.sql    |  6 ++---\n .../channels/subscriber-events.repository.ts       |  2 +-\n src/core/features/public-snapshot/repository.ts    |  4 ++--\n src/core/platform/blobs/retained-bundle.ts         | 27 +++++++++++++++++++---\n 4 files changed, 30 insertions(+), 9 deletions(-)\n",
+  "buildLog": "/tmp/lamp-build.log",
+  "declarationModified": false
+}

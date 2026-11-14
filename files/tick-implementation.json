@@ -1,0 +1,17 @@
+{
+  "changes": [
+    "Trigger-maintained current incident commitment work avoids scanning incident/update history. Indexed unsent due-soon, overdue and escalation clocks each select at most 100 candidates and service processes at most 100 commitments per run; unsent work remains queued.",
+    "Trigger-maintained severe native/live report obligations seek next_due_at, process at most 100, and advance weekly only after durable reminder recording. Imported historical-only incidents remain silent; report publication, waiver and incident lifecycle changes maintain eligibility.",
+    "Exact five-channel subscriber capacity counters replace full directory recounts; inserts, eligible state changes, effective channel changes and deletion update counts transactionally.",
+    "Incident-follow terminal cleanup selects ended-follow rows then subscriber rowids, preventing the planner from scanning every active/pending subscriber. Due indexes bound pending expiry, follow resolution expiry, scheduled publication and maintenance completion.",
+    "Native older archives reconstruct only queue work once on first scheduling use, under an atomic durable initialization marker. Capacity remains an admitted migration backfill and is correct immediately after native import."
+  ],
+  "verification": [
+    "SQLite foreign-key migration application and derived-work mutation/backfill diagnostics passed.",
+    "Wrangler statement splitter required avoiding CASE END in trigger bodies; IIF/boolean expressions preserve behavior and all statements parse completely.",
+    "Existing reminder source journeys passed 4/4; browser traffic journey passed separately with /usr/bin/chromium; final batch-limited promise/report rerun passed 2/2.",
+    "Whole-tree pnpm typecheck passed.",
+    "Native prior-backup journey passes with first capacity read and first scheduling use; actual initializer backfill/concurrency/idempotency/restore-reset diagnostic passes."
+  ],
+  "archive": "Native older restore verified end-to-end; queues initialize once after restored canonical rows and later ledgers are complete. Current archives preserve their exact work and completed marker; same-process restore resets are honored."
+}

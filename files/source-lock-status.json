@@ -1,0 +1,6 @@
+{
+  "head": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "exit": 0,
+  "workingTreeClean": true
+}

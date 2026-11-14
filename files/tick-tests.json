@@ -1,0 +1,55 @@
+{
+  "environment": {
+    "chromium": "/usr/bin/chromium",
+    "browser_flags": "existing --no-sandbox launch settings",
+    "node": "v24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "log": "tick-typecheck.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/update-reminders.test.mjs",
+      "status": "4 source-worker journeys passed; traffic browser journey failed solely because first invocation omitted Chromium executable environment; corrected dedicated rerun below passed",
+      "log": "update-reminders.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium LAMP_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern=HIST-006 tests/e2e/update-reminders.test.mjs",
+      "status": "passed 1/1",
+      "duration_ms": 81891.75822,
+      "log": "traffic-alerts.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium LAMP_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern=INCIDENT-010|AUTO-004 tests/e2e/update-reminders.test.mjs",
+      "status": "passed 2/2 after final restore-aware one-time initialization",
+      "duration_ms": 26288.744179,
+      "log": "reminder-batches.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium LAMP_CHROMIUM_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern=SUB-019 SUB-001 tests/e2e/delivery-contract.test.mjs",
+      "status": "passed 1/1; complete consent, capacity, selected publication, channels, CSV, export and erasure journey",
+      "duration_ms": 494811.227254,
+      "log": "subscriber-delivery.log"
+    },
+    {
+      "command": "python3 tick-work-check.py",
+      "status": "passed derived queue mutation, eligibility, ledger and exact counter behavior; indexed explain plans; restore backfill proven by the separate actual initializer diagnostic",
+      "log": "tick-work-check.json"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/prior-backup.test.mjs",
+      "status": "passed 1/1; unchanged older archive restores all original history, consent and images; added assertions prove first capacity read and scheduling initialization exactly once",
+      "duration_ms": 49576.763475,
+      "log": "prior-backup.log"
+    },
+    {
+      "command": "node tick-initialization-check.mjs",
+      "status": "passed actual initializer backfill, concurrent initialization, steady idempotency and same-process later restore reset",
+      "log": "tick-initialization-check.json"
+    }
+  ],
+  "provenance": "Local touched checks run on shared worktree while snapshot fixes were integrated. Exact final candidate SHA and branch Verify are reported by primary builder separately. Long-running commands used cloud_run subreaper."
+}

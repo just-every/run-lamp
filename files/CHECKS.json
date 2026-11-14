@@ -1,0 +1,66 @@
+{
+  "head": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "result": "passed",
+      "log": "typecheck-final.log"
+    },
+    {
+      "command": "node scripts/validate-release.mjs",
+      "result": "passed",
+      "log": "release-validation.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "result": "passed",
+      "log": "contract-docs-check.log"
+    },
+    {
+      "command": "node --test tests/auth-adoption/upgrade.test.mjs tests/auth-adoption/setup-migrations.test.mjs tests/auth-adoption/portability.test.mjs tests/e2e/export-import.test.mjs",
+      "result": "passed 8/8 including nested cases",
+      "log": "archive-tests.log"
+    },
+    {
+      "command": "node --test tests/e2e/snapshot-retained.test.mjs",
+      "result": "passed 1/1 with shared footer resources surviving cold storage and DB outage",
+      "log": "retained-final.log"
+    },
+    {
+      "command": "node --test --test-name-pattern=HIST-001|HIST-008 tests/e2e/public-contract.test.mjs",
+      "result": "passed 2/2 after lean archive rendering optimization",
+      "log": "history-final-flow.log"
+    },
+    {
+      "command": "node tests/release/verify.mjs",
+      "result": "passed 1/1 on exact final candidate; 168.9 seconds",
+      "log": "forward-upgrade-final.log"
+    },
+    {
+      "command": "node --test --test-name-pattern=SUB-019 PAGE-001 tests/e2e/public-contract.test.mjs",
+      "result": "passed 1/1; complete existing catalogue-to-customer journey, 311.4 seconds",
+      "log": "public-catalogue-final.log"
+    },
+    {
+      "command": "node tests/release/verify.mjs",
+      "result": "passed 1/1 on clean final9fec candidate,170.1seconds",
+      "log": "forward-upgrade-final-2.log"
+    },
+    {
+      "command": "node --test tests/e2e/prior-backup.test.mjs",
+      "result": "passed 1/1 on final9fec candidate,69.0seconds",
+      "log": "prior-backup-final-2.log"
+    },
+    {
+      "command": "node --test --test-name-pattern=HIST-001|HIST-008 tests/e2e/public-contract.test.mjs",
+      "result": "passed2/2 on final9fec candidate",
+      "log": "history-final-2.log"
+    },
+    {
+      "command": "node --test tests/e2e/unsaved-work-browser.test.mjs",
+      "result": "unchanged port-collision failure rerun passed1/1 locally",
+      "log": "unsaved-work-final.log"
+    }
+  ],
+  "earlier_failures": "First public browser invocation omitted system Chromium path; corrected dedicated runs used /usr/bin/chromium. Intermediate monthly archive lost adjacent-month links; indexed neighbor seeks repair it. The intermediate full catalogue journey exceeded owner freshness while recomputing unused uptime for archive pages; final code computes charts only where they render and retains lean archive presentation context. Final rerun passed without refreshing or weakening its owner-authority assertion. No assertions were deleted, skipped or weakened."
+}

@@ -1,0 +1,84 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ HIST-008 — reviewed imported history stays completely browsable without scripts (6272.365866ms)
+Lamp could not rebuild its public page for this release. Error: Configured logo object is missing from object storage.
+    at prepare2 (file:///workspace/run-lamp/script-0.mjs:90888:54)
+    at async rebuildOne (file:///workspace/run-lamp/script-0.mjs:90916:24)
+    at async Object.retryPendingBuild (file:///workspace/run-lamp/script-0.mjs:91080:11)
+    at async file:///workspace/run-lamp/script-0.mjs:94614:60
+    at async publication3 (file:///workspace/run-lamp/script-0.mjs:93957:11)
+    at async Promise.all (index 0)
+    at async Object.check (file:///workspace/run-lamp/script-0.mjs:93972:40)
+    at async Promise.all (index 0)
+    at async file:///workspace/run-lamp/script-0.mjs:93902:41
+    at async dispatch2 (file:///workspace/run-lamp/script-0.mjs:51590:17)
+✔ PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch (22611.030915ms)
+✖ UPTIME-003 — newly observed services report only their recorded coverage (3629.295113ms)
+✔ HIST-001 — completed native records retain their month, window, components and complete publication inventory (32783.546598ms)
+✖ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (6907.265938ms)
+✔ DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control (52733.222965ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-008 4: all four generated month routes and incident permalinks -> 200 with exact membership through throwing D1, storage failure and cold restart; zero database accesses
+✔ THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm (25566.716213ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 4
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 154487.049777
+
+✖ failing tests:
+
+test at tests/e2e/public-contract.test.mjs:23:1
+✖ HIST-008 — reviewed imported history stays completely browsable without scripts (6272.365866ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at TestContext.browsableHistoryFlow (/workspace/run-lamp/tests/e2e/helpers/browsable-history-flow.mjs:75:30) {
+    name: 'Error',
+    log: []
+  }
+
+test at tests/e2e/public-contract.test.mjs:27:1
+✖ UPTIME-003 — newly observed services report only their recorded coverage (3629.295113ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at TestContext.shortHistoryFlow (/workspace/run-lamp/tests/e2e/helpers/short-history-flow.mjs:29:30) {
+    name: 'Error',
+    log: []
+  }
+
+test at tests/e2e/public-contract.test.mjs:302:1
+✖ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (6907.265938ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at widgetVariantsJourney (/workspace/run-lamp/tests/e2e/public-contract.test.mjs:172:30)
+      at async TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/public-contract.test.mjs:303:3) {
+    name: 'Error',
+    log: []
+  }

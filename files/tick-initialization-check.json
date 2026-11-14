@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "assertions": [
+    "Migration counter backfill reads existing canonical subscribers exactly.",
+    "First scheduler use restores latest current commitment and existing sent ledger flags.",
+    "Report queue resumes after the already-recorded weekly reminder.",
+    "Concurrent initial use commits one atomic reconstruction.",
+    "Steady later use performs no reconstruction scans.",
+    "A later restore in the same process resets its durable marker and reconstructs correctly."
+  ],
+  "plans": {
+    "current": [
+      "SCAN i USING INDEX incidents_active_work_idx",
+      "SEARCH u USING INDEX sqlite_autoindex_incident_updates_1 (id=?)",
+      "CORRELATED SCALAR SUBQUERY 6",
+      "SEARCH latest USING INDEX incident_updates_incident_published_idx (incident_id=?)",
+      "USE TEMP B-TREE FOR LAST TERM OF ORDER BY"
+    ],
+    "reports": [
+      "SEARCH i USING INDEX incidents_report_due_idx (peak_impact=? AND resolved_at>?)",
+      "CORRELATED SCALAR SUBQUERY 4",
+      "SEARCH p USING INDEX sqlite_autoindex_incident_reports_2 (incident_id=?)",
+      "CORRELATED SCALAR SUBQUERY 5",
+      "SEARCH w USING COVERING INDEX sqlite_autoindex_report_waivers_1 (incident_id=?)",
+      "CORRELATED SCALAR SUBQUERY 6",
+      "SEARCH imported USING COVERING INDEX sqlite_autoindex_statuspage_import_targets_1 (kind=? AND id=?)",
+      "CORRELATED SCALAR SUBQUERY 7",
+      "SEARCH live USING INDEX incident_updates_incident_published_idx (incident_id=?)"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "time": "2026-11-14T02:11:46.637362+00:00",
+  "test": "HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory",
+  "command": "cloud_run node --test --test-name-pattern='HIST-001' tests/e2e/public-contract.test.mjs",
+  "status": "passed",
+  "tested_tree": "working tree after first published save; final exact-SHA receipt to be supplied by parent",
+  "assertions": [
+    "60 completed records reachable exactly once through history keyset pages",
+    "55 equal-timestamp fixture incidents do not repeat or disappear at cursor boundaries",
+    "old incident and maintenance permanent pages retain original times and full wording",
+    "59 incidents reachable exactly once through native API pages of at most 50",
+    "all 55 synthetic feed events reachable without duplication",
+    "component feed paging retains its component and excludes unrelated incidents",
+    "history browser screenshots at 1440 and 390"
+  ],
+  "browsable_history": {
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-name-pattern='HIST-008' tests/e2e/public-contract.test.mjs",
+    "status": "passed",
+    "test_unchanged": true,
+    "assertions": [
+      "five populated months reached exactly once in both directions",
+      "four resolved incidents and two completed maintenance records retain membership and permanent pages",
+      "month bounds respect America/Los_Angeles DST and midnight",
+      "Sorry aliases retain native month routes"
+    ],
+    "fix": "Monthly archive metadata seeks adjacent populated months with indexed LIMIT 1 reads."
+  },
+  "final_paths": {
+    "time": "2026-11-14T02:22:39.954479+00:00",
+    "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-name-pattern='HIST-001|HIST-008' tests/e2e/public-contract.test.mjs",
+    "passed": 2,
+    "failed": 0,
+    "duration_ms": 32652.289694,
+    "log": "history-final-flow.log",
+    "features": [
+      "forced indexed history/month/neighbour seeks",
+      "row-value history/feed cursor predicates",
+      "forced native incident and maintenance archive indexes",
+      "forced feed published-time indexes"
+    ],
+    "source_hashes": {
+      "src/core/features/public-snapshot/archive.repository.ts": "c617ce81d0299e5d75dfd313e9f3fc8054b3f1012a6ddcb06206838cd0fa8e05",
+      "src/core/features/public-snapshot/archive.ts": "ce31d859874a5fe1db6ddbd81740229312f1583e7321f3fdc6dd6b3cf914ce73",
+      "src/core/features/public-snapshot/history.ts": "9bbfbe8abe66cc9ef25d25b8236d214246b9443a7cfb246383dc182ed8266598",
+      "tests/e2e/helpers/public-history-flow.mjs": "607d66ebfb3ea80b0f780154aca6c70e8e6bb9257ddb789c854d6316df114315",
+      "tests/e2e/helpers/browsable-history-flow.mjs": "802199952644f3dd099e46bad5678e7779aa216698d3bb59eb2d3b5910115068"
+    }
+  }
+}

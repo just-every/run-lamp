@@ -1,0 +1,142 @@
+{
+  "view": "CREATE VIEW subscriber_directory AS SELECT s.id, CASE WHEN s.sms_kind=1 THEN 'sms' ELSE COALESCE(s.chat_kind,s.channel) END AS channel,\n CASE WHEN s.destination LIKE 'deleted:%' THEN s.destination ELSE COALESCE(f.destination,s.destination) END AS destination,\n s.contact_email,s.state,s.selection_mode,s.token_hash,s.deactivation_reason,s.deactivated_at,\n s.created_at,s.updated_at,s.created_by_operator_id,s.webhook_format,\n CASE WHEN s.preferences_set=0 AND s.channel='email' THEN '[\"incidents\",\"maintenance\"]' ELSE s.event_kinds_json END AS event_kinds_json,\n s.minimum_impact FROM subscribers s LEFT JOIN incident_subscriptions f ON f.subscriber_id=s.id",
+  "sql": "WITH follow_event AS (SELECT NULL AS incident_id,? AS event_at)\n          INSERT OR IGNORE INTO sms_deliveries(id,subscriber_id,event_id,kind,incident_update_id,maintenance_id,incident_report_id,outcome,queued_at,outcome_at)\n          SELECT ?||'.'||s.id,s.id,?,?,?,?,?,CASE WHEN s.state='active' THEN 'queued' ELSE 'suppressed' END,?,CASE WHEN s.state='active' THEN NULL ELSE ? END\n          FROM subscriber_directory s WHERE s.channel='sms' AND s.state IN ('active','deactivated') AND s.destination NOT LIKE 'deleted:%' AND ((NOT EXISTS(SELECT 1 FROM incident_subscriptions incident_follow WHERE incident_follow.subscriber_id=s.id) AND 1 AND (s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc WHERE sc.subscriber_id=s.id AND sc.component_id IN (NULL))) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (NULL) AND c.internal=0)\n            AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance') AND 1) OR (0))\n            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)",
+  "paramsOmitted": true,
+  "index": "CREATE INDEX subscribers_effective_channel_state_idx ON subscribers(CASE WHEN sms_kind=1 THEN 'sms' ELSE COALESCE(chat_kind,channel) END,state,id)",
+  "before": [
+    {
+      "id": 8,
+      "parent": 0,
+      "notused": 71,
+      "detail": "SEARCH s USING INDEX subscribers_capacity_idx (state=?)"
+    },
+    {
+      "id": 36,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 2"
+    },
+    {
+      "id": 40,
+      "parent": 36,
+      "notused": 39,
+      "detail": "SEARCH incident_follow USING COVERING INDEX sqlite_autoindex_incident_subscriptions_1 (subscriber_id=?)"
+    },
+    {
+      "id": 51,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 3"
+    },
+    {
+      "id": 55,
+      "parent": 51,
+      "notused": 39,
+      "detail": "SEARCH sc USING COVERING INDEX sqlite_autoindex_subscriber_components_2 (subscriber_id=? AND component_id=?)"
+    },
+    {
+      "id": 68,
+      "parent": 0,
+      "notused": 0,
+      "detail": "SCALAR SUBQUERY 4"
+    },
+    {
+      "id": 73,
+      "parent": 68,
+      "notused": 39,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_components_1 (id=?)"
+    },
+    {
+      "id": 87,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 5"
+    },
+    {
+      "id": 91,
+      "parent": 87,
+      "notused": 0,
+      "detail": "SCAN preference VIRTUAL TABLE INDEX 1:"
+    },
+    {
+      "id": 110,
+      "parent": 0,
+      "notused": 46,
+      "detail": "SEARCH f USING INDEX sqlite_autoindex_incident_subscriptions_1 (subscriber_id=?) LEFT-JOIN"
+    },
+    {
+      "id": 128,
+      "parent": 0,
+      "notused": 44,
+      "detail": "SEARCH maintenance_notices EXISTS USING COVERING INDEX sqlite_autoindex_maintenance_notices_1 (id=?)"
+    }
+  ],
+  "after": [
+    {
+      "id": 8,
+      "parent": 0,
+      "notused": 62,
+      "detail": "SEARCH s USING INDEX subscribers_effective_channel_state_idx (<expr>=? AND state=?)"
+    },
+    {
+      "id": 31,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 2"
+    },
+    {
+      "id": 35,
+      "parent": 31,
+      "notused": 39,
+      "detail": "SEARCH incident_follow USING COVERING INDEX sqlite_autoindex_incident_subscriptions_1 (subscriber_id=?)"
+    },
+    {
+      "id": 46,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 3"
+    },
+    {
+      "id": 50,
+      "parent": 46,
+      "notused": 39,
+      "detail": "SEARCH sc USING COVERING INDEX sqlite_autoindex_subscriber_components_2 (subscriber_id=? AND component_id=?)"
+    },
+    {
+      "id": 63,
+      "parent": 0,
+      "notused": 0,
+      "detail": "SCALAR SUBQUERY 4"
+    },
+    {
+      "id": 68,
+      "parent": 63,
+      "notused": 39,
+      "detail": "SEARCH c USING INDEX sqlite_autoindex_components_1 (id=?)"
+    },
+    {
+      "id": 82,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 5"
+    },
+    {
+      "id": 86,
+      "parent": 82,
+      "notused": 0,
+      "detail": "SCAN preference VIRTUAL TABLE INDEX 1:"
+    },
+    {
+      "id": 105,
+      "parent": 0,
+      "notused": 46,
+      "detail": "SEARCH f USING INDEX sqlite_autoindex_incident_subscriptions_1 (subscriber_id=?) LEFT-JOIN"
+    },
+    {
+      "id": 123,
+      "parent": 0,
+      "notused": 44,
+      "detail": "SEARCH maintenance_notices EXISTS USING COVERING INDEX sqlite_autoindex_maintenance_notices_1 (id=?)"
+    }
+  ]
+}

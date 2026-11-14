@@ -1,0 +1,256 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-tick-2",
+  "head": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+  "measuredAtUtc": "2026-11-14T03:00:40.261752+00:00",
+  "scopeResult": "pass",
+  "wholeHarnessExit": 1,
+  "wholeHarnessUnrelatedFailures": [
+    "incident-list",
+    "subscriber-list"
+  ],
+  "flows": [
+    {
+      "name": "minute-tick",
+      "persona": null,
+      "kind": "scheduled",
+      "label": "cron * * * * *",
+      "callsInRow": 1,
+      "ceiling": 40000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 5804,
+        "rowsWritten": 18,
+        "statements": 101,
+        "status": "ok",
+        "ms": 13975,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\" as \"group_name\", \"component_groups\".\"display_order\" as \"group_order\", \"component_groups\".\"created_at\" as \"group_created_at\", \"component_groups\".\"updated_at\" as \"group_updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+            "executions": 1,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id",
+            "executions": 1,
+            "rowsRead": 645,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+            "executions": 1,
+            "rowsRead": 644,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 5804,
+        "rowsWritten": 18,
+        "statements": 101,
+        "status": "ok",
+        "ms": 16193,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\" as \"group_name\", \"component_groups\".\"display_order\" as \"group_order\", \"component_groups\".\"created_at\" as \"group_created_at\", \"component_groups\".\"updated_at\" as \"group_updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+            "executions": 1,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id",
+            "executions": 1,
+            "rowsRead": 645,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+            "executions": 1,
+            "rowsRead": 644,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "public-summary",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/api/public/status",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 200,
+        "ms": 23,
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 200,
+        "ms": 22,
+        "top": []
+      }
+    },
+    {
+      "name": "public-history",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/history",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 200,
+        "ms": 30,
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 200,
+        "ms": 25,
+        "top": []
+      }
+    },
+    {
+      "name": "public-feed",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/feed.atom",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": true,
+      "failures": [],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 200,
+        "ms": 13,
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 200,
+        "ms": 13,
+        "top": []
+      }
+    }
+  ],
+  "fixtureReadbackTotal": {
+    "small": 6789,
+    "large": 541177
+  },
+  "coldMinute": {
+    "small": {
+      "rowsRead": 5813,
+      "status": "ok",
+      "retainedBytes": 16639719,
+      "buildStatus": "published",
+      "attempts": 1,
+      "error": null
+    },
+    "large": {
+      "rowsRead": 5813,
+      "status": "ok",
+      "retainedBytes": 16644687,
+      "buildStatus": "published",
+      "attempts": 1,
+      "error": null
+    }
+  },
+  "files": [
+    {
+      "path": "final2-size.jsonl",
+      "sha256": "d4d6583de4917d842d62c3086a36a7ad588be465623f52611de6bd731b61d0da",
+      "bytes": 100284
+    },
+    {
+      "path": "final2-size.json",
+      "sha256": "eba26ae1aa37a9270055e838a6aceb681e8b8e3096218849c0f63ed4a71d4ac9",
+      "bytes": 132134
+    },
+    {
+      "path": "final2-statements/small.json",
+      "sha256": "46f476f54544485366e1519fff94cc99a0529421b8e78809fa1d82e0262b8918",
+      "bytes": 253706
+    },
+    {
+      "path": "final2-statements/large.json",
+      "sha256": "45ac82c19fc3ee29f7a94669f6851a4540d8c521e6ca0dba1c281431d07a23ce",
+      "bytes": 253710
+    },
+    {
+      "path": "final2-metadata-small.json",
+      "sha256": "c81b23f5c3ff40729961271e79f619e4d5700e9ce344f27a3e8dd6b460e5e85e",
+      "bytes": 408726
+    },
+    {
+      "path": "final2-metadata-large.json",
+      "sha256": "0fab98888501fb5f61c9bf5398e66c8cc58fd564fcdb4d6b720c8836c0b92332",
+      "bytes": 408728
+    },
+    {
+      "path": "final2-metadata.log",
+      "sha256": "87da4ab2aff957765e16ebecbd8be05cf3558b67644f048a61a3fc206edf5fb3",
+      "bytes": 758
+    },
+    {
+      "path": "final2-provenance.json",
+      "sha256": "eb8683c4ee862bac575b7a25be6c944968dcd7071b4a0fb95ce8decab14924ba",
+      "bytes": 204117
+    },
+    {
+      "path": "measurement-declaration.json",
+      "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
+      "bytes": 10488
+    },
+    {
+      "path": "measurement-owner-declaration.json",
+      "sha256": "b0385eceb07c209891605760dd0a9cfad8bf685fa096dbc45c18290599775ee9",
+      "bytes": 262
+    },
+    {
+      "path": "measurement-entrypoint.mjs",
+      "sha256": "e7163202b05317ccf70dcd29c5383b4014d5322b9b977d43eb98180042ab86ad",
+      "bytes": 130
+    },
+    {
+      "path": "size-input-guard.json",
+      "sha256": "f4b411cf8de4d483aaff4ee410871d13359297087d2072769beeafc73461fd2e",
+      "bytes": 245
+    },
+    {
+      "path": "SCALE-RESULTS.md",
+      "sha256": "30e645175fc7b204530a24bb29f5018e9eaa39aab267a922073591a0513da43c",
+      "bytes": 5763
+    }
+  ]
+}

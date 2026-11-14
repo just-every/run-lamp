@@ -1,0 +1,115 @@
+{
+  "tag": "sd-lamp-qgrowth-tick-2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-qgrowth-tick-2",
+  "head": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+  "pr": "https://github.com/just-every/run-lamp/pull/370",
+  "productPush": "succeeded on first guard attempt",
+  "exactShaVerify": [
+    {
+      "conclusion": null,
+      "created_at": "2026-11-14T02:57:30Z",
+      "event": "pull_request",
+      "head_sha": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43549073115",
+      "id": 43549073115,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "created_at": "2026-11-14T02:57:26Z",
+      "event": "push",
+      "head_sha": "9fec60c9129dc05eea8ba21ca49d6bb3596fe9d6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43549067742",
+      "id": 43549067742,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "gitHubCalls": 10,
+  "status": "PUSHED; exact-head Verify runs in progress; API budget exhausted",
+  "measures": {
+    "minuteTick": {
+      "before": [
+        6853,
+        122680
+      ],
+      "after": [
+        5804,
+        5804
+      ],
+      "ceiling": 40000,
+      "growthRows": 0
+    },
+    "publicSummaryHistoryFeed": {
+      "beforeStatus": [
+        503,
+        503
+      ],
+      "afterStatus": [
+        200,
+        200
+      ],
+      "rowsRead": [
+        0,
+        0
+      ],
+      "ceiling": 1000
+    },
+    "coldMinute": {
+      "after": [
+        5813,
+        5813
+      ],
+      "status": "ok both"
+    },
+    "retainedBytes": [
+      16639719,
+      16644687
+    ],
+    "retainedLimitBytes": 26214400,
+    "fixtureRows": {
+      "before": [
+        6783,
+        541171
+      ],
+      "after": [
+        6789,
+        541177
+      ]
+    }
+  },
+  "migrations": {
+    "before": 77,
+    "after": 78,
+    "added": "0081_scheduled_work_indexes.sql"
+  },
+  "clauses": {
+    "statusChanges": [],
+    "countChanges": 0,
+    "claims": [
+      "CLAIM PAGE-005 PARTIAL points=1,2,3 tests=tests/e2e/public-contract.test.mjs#PAGE-005 \u2014 a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch",
+      "CLAIM HIST-001 PARTIAL points=1,2 tests=tests/e2e/public-contract.test.mjs#HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory",
+      "CLAIM HIST-008 PARTIAL points=1,2,3,5 tests=tests/e2e/public-contract.test.mjs#HIST-008 \u2014 reviewed imported history stays completely browsable without scripts",
+      "CLAIM AUTO-004 PARTIAL points=1,2,3,4,5,6 tests=tests/e2e/update-reminders.test.mjs#AUTO-004 HIST-003 \u2014 both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders"
+    ]
+  },
+  "localChecks": "Final clean head: typecheck, release/source lock, prior native backup1/1, forward upgrade+restore1/1, HIST-001/HIST-0082/2, focused reminder flows and exact size/cold probes pass. Earlier full catalogue and public CI flows pass; details in CHECKS.json.",
+  "outOfScopeFailures": "Final whole size harness remains red only for incident-list and subscriber-list budgets. All assigned flows pass. Main component-read repair makes component-list/component-history pass.",
+  "remainingFleetGates": [
+    "independent migration gate on final head",
+    "full publication scan against run-lamp#main for edition just-every/lamp, destination https://github.com/just-every/run-lamp",
+    "PR landing and main-only deployment"
+  ],
+  "publicationScan": "cloud cannot run fleet publication scan; no scan claimed",
+  "worktree": "clean",
+  "updatedAtUtc": "2026-11-14T03:02:28Z",
+  "previousRedVerify": {
+    "head": "e4046666857c4771852e49ca4d26656262a116b7",
+    "id": 43546487324,
+    "archiveFailure": "fixed; native prior backup and final upgrade pass",
+    "composerFailure": "port collision; unchanged local test passes"
+  },
+  "mainIntegrated": "1516f70a710d21775b8498c0357ea26a76f164d1"
+}

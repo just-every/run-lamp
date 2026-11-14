@@ -1,0 +1,18 @@
+{
+  "size": "large",
+  "builds": [
+    {
+      "id": "01M7BXE53NQ55QSXX5QFK6RDGC",
+      "status": "failed",
+      "version": null,
+      "error": "Retained snapshot exceeds the 25 MiB retained bundle limit.",
+      "attempts": 0,
+      "started_at": "2026-11-14T02:15:59.349Z",
+      "finished_at": "2026-11-14T02:16:41.080Z"
+    }
+  ],
+  "snapshot": {
+    "pointer": null,
+    "retainedBytes": null
+  }
+}

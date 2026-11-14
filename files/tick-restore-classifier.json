@@ -1,0 +1,14 @@
+{
+  "status": "accepted",
+  "method": "Ran the installed RER laterData classifier against the unchanged listed-c5dab715 archive manifest and complete migration catalogue, using a temporary source copy adding diagnostic console output only; no installed dependency or guard edits.",
+  "original_refusal": {
+    "incident_update_reminder_work": "Individually replayable, but plan removed because incident_update_escalations is not carried by the older archive and has no reconstructing replay plan.",
+    "incident_report_reminder_work": "Individually replayable, but plan removed because report_reminders and report_waivers are not carried by the older archive and have no reconstructing replay plans."
+  },
+  "accepted_0081_replays": [
+    "Subscriber capacity zero seed",
+    "Exact capacity count backfill from indexed active/pending physical subscribers",
+    "Durable queue initialization marker seed completed=0"
+  ],
+  "queue_recovery": "Product-owned one-time atomic queue reconstruction after restore completes; no fabricated reminder ledgers, no weakened guard, no repeated history scan per minute."
+}

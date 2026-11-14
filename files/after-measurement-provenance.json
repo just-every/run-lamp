@@ -1,0 +1,6 @@
+{
+  "head": "b183f2e078ca1ba777e1775c3c38b94780fdca1d",
+  "workingDiff": " .../features/public-snapshot/archive.repository.ts | 15 +++++++++++----\n src/core/features/public-snapshot/archive.ts       | 12 +++++++++++-\n src/core/features/public-snapshot/feeds.ts         | 10 ++++++++--\n src/core/features/public-snapshot/renderer.ts      |  4 ++--\n src/core/features/public-snapshot/repository.ts    | 12 ++++++------\n src/core/features/public-snapshot/routes.ts        |  4 ++--\n src/core/features/public-snapshot/service.ts       | 17 +++++++++++++++++\n tests/e2e/helpers/public-history-flow.mjs          | 22 ++++++++++++++++++++--\n 8 files changed, 77 insertions(+), 19 deletions(-)\n",
+  "buildLog": "/tmp/lamp-build.log",
+  "declarationModified": false
+}

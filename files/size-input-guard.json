@@ -1,0 +1,8 @@
+{
+  "input": "origin/cloud/sd-lamp-sizecheck-3:size-check.json",
+  "bytes": 10488,
+  "sha256": "60e2c2ab6d35aa9dce8312d19d50f3bd512812ebb850cb7c8f4566da3a4a9c59",
+  "guardBytes": 209715200,
+  "guardResult": "PASS",
+  "geometryModified": false
+}

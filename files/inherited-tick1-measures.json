@@ -1,0 +1,202 @@
+{
+  "provenance": "origin/evidence/sd-lamp-qgrowth-tick-1:files/after-size.json",
+  "productHead": "7d3c98681313082a83752abe8d1c4b6f4f7c92fb",
+  "flows": [
+    {
+      "name": "minute-tick",
+      "persona": null,
+      "kind": "scheduled",
+      "label": "cron * * * * *",
+      "callsInRow": 1,
+      "ceiling": 40000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "the scheduled handler failed: Native scheduled preparation failed (exception); fixture values are not logged. at small"
+        },
+        {
+          "rule": "status",
+          "message": "the scheduled handler failed: Native scheduled preparation failed (fetch failed); fixture values are not logged. at large"
+        },
+        {
+          "rule": "ceiling",
+          "message": "over its ceiling of 40,000 at large by 82,680"
+        },
+        {
+          "rule": "growth",
+          "message": "grew 115,827 rows from small to large; allowed 10% of small + 200 = 885"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 6853,
+        "rowsWritten": 16,
+        "statements": 80,
+        "status": null,
+        "ms": 8745,
+        "error": "Native scheduled preparation failed (exception); fixture values are not logged.",
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\" as \"group_name\", \"component_groups\".\"display_order\" as \"group_order\", \"component_groups\".\"created_at\" as \"group_created_at\", \"component_groups\".\"updated_at\" as \"group_updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+            "executions": 1,
+            "rowsRead": 1288,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "UPDATE subscribers SET state='deactivated',deactivation_reason='incident-follow-ended',deactivated_at=?,updated_at=?\n      WHERE state IN ('pending','active') AND id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)",
+            "executions": 1,
+            "rowsRead": 1005,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "SELECT COUNT(*) AS total,\n      COALESCE(SUM(channel='email'),0) AS email,COALESCE(SUM(channel='webhook'),0) AS webhook,\n      COALESCE(SUM(channel='slack'),0) AS slack,COALESCE(SUM(channel='teams'),0) AS teams,COALESCE(SUM(channel='sms'),0) AS sms\n      FROM subscriber_directory AS subscribers WHERE state IN ('pending','active')",
+            "executions": 1,
+            "rowsRead": 1003,
+            "rowsWritten": 0
+          }
+        ]
+      },
+      "large": {
+        "rowsRead": 122680,
+        "rowsWritten": 12,
+        "statements": 78,
+        "status": null,
+        "ms": 28318,
+        "error": "Native scheduled preparation failed (fetch failed); fixture values are not logged.",
+        "unsettled": true,
+        "top": [
+          {
+            "binding": "DB",
+            "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" order by \"incident_updates\".\"published_at\" desc",
+            "executions": 1,
+            "rowsRead": 54000,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"incident_components\".\"component_id\", \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+            "executions": 1,
+            "rowsRead": 18000,
+            "rowsWritten": 0
+          },
+          {
+            "binding": "DB",
+            "sql": "select \"incident_components\".\"id\", \"incident_components\".\"incident_id\", \"incident_components\".\"component_id\", \"incident_components\".\"component_name\", \"incident_components\".\"state\", \"incident_components\".\"relationship\", \"incident_components\".\"published_at\", \"incident_components\".\"created_at\", \"incident_components\".\"updated_at\" from \"incident_components\" left join \"components\" on \"incident_components\".\"component_id\" = \"components\".\"id\" where (incident_components.published_at IS NOT NULL and ((\"incident_components\".\"component_id\" is null and incident_components.detached_internal = 0) or \"components\".\"internal\" = ?))",
+            "executions": 1,
+            "rowsRead": 18000,
+            "rowsWritten": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "public-summary",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/api/public/status",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 14,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 37,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "unsettled": true,
+        "top": []
+      }
+    },
+    {
+      "name": "public-history",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/history",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 11,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 14,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "unsettled": true,
+        "top": []
+      }
+    },
+    {
+      "name": "public-feed",
+      "persona": "reader",
+      "kind": "request",
+      "label": "GET //status.rer-hosted-check.invalid/feed.atom",
+      "callsInRow": 3,
+      "ceiling": 1000,
+      "ok": false,
+      "failures": [
+        {
+          "rule": "status",
+          "message": "answered HTTP 503 (The last known public status snapshot is unavailable. No current state is being inferred.); expected status 200 at small and large"
+        }
+      ],
+      "growthAllowed": null,
+      "small": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 9,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "top": []
+      },
+      "large": {
+        "rowsRead": 0,
+        "rowsWritten": 0,
+        "statements": 0,
+        "status": 503,
+        "ms": 14,
+        "detail": "The last known public status snapshot is unavailable. No current state is being inferred.",
+        "unsettled": true,
+        "top": []
+      }
+    }
+  ]
+}

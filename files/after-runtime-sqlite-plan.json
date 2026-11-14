@@ -1,0 +1,95 @@
+{
+  "pointer": null,
+  "retainedBytes": null,
+  "bundle": null,
+  "indexes": [
+    {
+      "name": "sqlite_autoindex_incidents_1",
+      "sql": null
+    },
+    {
+      "name": "sqlite_autoindex_incidents_2",
+      "sql": null
+    },
+    {
+      "name": "incidents_lifecycle_opened_idx",
+      "sql": "CREATE INDEX incidents_lifecycle_opened_idx ON incidents(lifecycle, opened_at DESC)"
+    },
+    {
+      "name": "incidents_active_work_idx",
+      "sql": "CREATE INDEX incidents_active_work_idx\n  ON incidents(id) WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'"
+    },
+    {
+      "name": "incidents_unresolved_work_idx",
+      "sql": "CREATE INDEX incidents_unresolved_work_idx\n  ON incidents(id) WHERE resolved_at IS NULL AND deleted_at IS NULL"
+    },
+    {
+      "name": "incidents_report_due_idx",
+      "sql": "CREATE INDEX incidents_report_due_idx\n  ON incidents(peak_impact, resolved_at, id) WHERE lifecycle = 'Resolved' AND deleted_at IS NULL"
+    },
+    {
+      "name": "incidents_resolved_public_window",
+      "sql": "CREATE INDEX incidents_resolved_public_window\n  ON incidents(resolved_at DESC,id DESC) WHERE deleted_at IS NULL AND lifecycle='Resolved'"
+    },
+    {
+      "name": "incidents_public_archive_seek",
+      "sql": "CREATE INDEX incidents_public_archive_seek ON incidents(opened_at DESC,id DESC) WHERE deleted_at IS NULL"
+    }
+  ],
+  "plan": [
+    {
+      "id": 2,
+      "parent": 0,
+      "notused": 0,
+      "detail": "MERGE (UNION)"
+    },
+    {
+      "id": 4,
+      "parent": 2,
+      "notused": 0,
+      "detail": "LEFT"
+    },
+    {
+      "id": 8,
+      "parent": 4,
+      "notused": 213,
+      "detail": "SCAN incidents USING INDEX incidents_active_work_idx"
+    },
+    {
+      "id": 16,
+      "parent": 2,
+      "notused": 0,
+      "detail": "RIGHT"
+    },
+    {
+      "id": 18,
+      "parent": 16,
+      "notused": 0,
+      "detail": "CO-ROUTINE (subquery-2)"
+    },
+    {
+      "id": 23,
+      "parent": 18,
+      "notused": 62,
+      "detail": "SEARCH incidents USING INDEX incidents_lifecycle_opened_idx (lifecycle=?)"
+    },
+    {
+      "id": 40,
+      "parent": 18,
+      "notused": 0,
+      "detail": "USE TEMP B-TREE FOR ORDER BY"
+    },
+    {
+      "id": 47,
+      "parent": 16,
+      "notused": 48,
+      "detail": "SCAN (subquery-2)"
+    },
+    {
+      "id": 54,
+      "parent": 16,
+      "notused": 0,
+      "detail": "USE TEMP B-TREE FOR ORDER BY"
+    }
+  ]
+}
