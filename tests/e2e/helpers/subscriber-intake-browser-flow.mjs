@@ -131,12 +131,26 @@ export async function subscriberIntakeBrowserFlow(t) {
     for (const [index, count] of [[0, 2], [1, 1]]) {
       const section = page.getByRole('region', { name: 'Import and export subscribers', exact: true });
       const recipients = Array.from({ length: count }, (_, row) => address(`synthetic-lamp-browser-csv-${index}-${row}`));
-      const csv = subscriberCsv(['email', 'components'], recipients.map(email => [email, components[0].id]));
+      const componentValue = index === 0 ? `  ${components[0].name.toUpperCase()}  ` : components[0].id;
+      const rows = recipients.map(email => [email, componentValue]);
+      const unknown = 'Missing browser component';
+      if (index === 0) rows.push([address('synthetic-lamp-browser-refused'), unknown]);
+      const csv = subscriberCsv(['email', 'components'], rows);
+      await section.getByText('Component names and IDs', { exact: true }).click();
+      await expect(section.getByRole('listitem').filter({ hasText: components[0].id })).toContainText(components[0].name);
+      await section.getByText('Component names and IDs', { exact: true }).click();
       const before = messages.length;
       await section.getByLabel('CSV file', { exact: true }).setInputFiles({ name: 'synthetic-lamp-subscribers.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) });
       await expect(section.getByLabel('CSV contents')).toHaveValue(csv.replaceAll('\r\n', '\n'));
       await section.getByRole('button', { name: 'Dry run CSV', exact: true }).click();
-      await expect(section).toContainText(`${count} would be created; 0 skipped; 0 refused.`);
+      await expect(section).toContainText(`${count} would be created; 0 skipped; ${index === 0 ? 1 : 0} refused.`);
+      if (index === 0) {
+        await section.getByText('Row decisions', { exact: true }).click();
+        await expect(section.getByRole('listitem').filter({ hasText: unknown })).toContainText(/refused/i);
+        await section.getByText('Component names and IDs', { exact: true }).click();
+        await screens('subscriber-import-review');
+        await section.getByText('Component names and IDs', { exact: true }).click();
+      }
       assert.equal(messages.length, before);
       const applied = page.waitForResponse(response => response.url().endsWith('/api/app/subscribers/import/apply') && response.request().method() === 'POST');
       await section.getByRole('button', { name: 'Create pending subscriptions', exact: true }).click();
@@ -144,6 +158,13 @@ export async function subscriberIntakeBrowserFlow(t) {
       const result = await response.json(); batches.push({ id: result.batchId, recipients });
       await expect(section).toContainText(`${count} pending subscriptions created. No invitations have been sent.`);
       assert.equal(messages.length, before, 'browser review and apply stay silent');
+      const stored = (await api('/api/app/subscribers?limit=100')).subscribers;
+      for (const recipient of recipients) {
+        const subscriber = stored.find(row => row.destination === recipient);
+        assert.ok(subscriber); assert.equal(subscriber.state, 'pending'); assert.equal(subscriber.selectionMode, 'selected');
+        assert.deepEqual(subscriber.componentSelections.map(item => item.componentId), [components[0].id], 'visible names and IDs preserve exactly the chosen component');
+      }
+      assert.ok(!stored.some(row => row.destination === address('synthetic-lamp-browser-refused')), 'a refused name creates no subscriber');
     }
     await page.reload(); await operatorHydrated(page);
     const imports = page.getByRole('region', { name: 'Import and export subscribers', exact: true });

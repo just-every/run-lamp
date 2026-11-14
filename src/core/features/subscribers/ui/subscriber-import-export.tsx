@@ -11,6 +11,7 @@ type AppliedBatch = { batchId: string; counts: Counts };
 export function SubscriberImportExport({ onChanged, localMail }: { onChanged: () => void; localMail: boolean }) {
   const [csv, setCsv] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
+  const components = useAppData<{ components: { id: string; name: string; internal: boolean }[] }>("/api/app/components");
   const batches = useAppData<{ batches: Batch[] }>("/api/app/subscribers/import/batches");
   const formatOperatorTime = useOperatorTime();
   const [batchId, setBatchId] = useState<string | null>(null);
@@ -46,11 +47,15 @@ export function SubscriberImportExport({ onChanged, localMail }: { onChanged: ()
   return <section className="data-card" aria-label="Import and export subscribers">
     <h2>Import and export</h2><p><a className="text-link" href="/api/app/subscribers.csv" download>Export subscribers as CSV</a></p>
     <p>Review a CSV before creating pending subscriptions. Only an owner can send the imported subscribers their confirmation invitations.</p>
-    <p>Columns: email, phone, webhook_url, contact_email, components, language. Separate component IDs with semicolons; leave components blank for all visible components. Language must be English (en). Phone rows are refused.</p>
+    <p>Columns: email, phone, webhook_url, contact_email, components, language. Use component names or IDs in components; leave it blank for all visible components. Language must be English (en). Phone rows are refused.</p>
     <p>For webhook rows, optional webhook_format chooses lamp or statuspage. An omitted format uses Lamp.</p>
+    <p id="csv-component-help">Separate component names or IDs with semicolons. Names ignore letter case and surrounding spaces. For repeated names or names containing commas or semicolons, use IDs.</p>
+    {components.loading && !components.data ? <p role="status">Loading component names…</p> : null}
+    {components.error ? <FormError>{components.error}</FormError> : null}
+    {components.data ? <details><summary>Component names and IDs</summary><ul>{components.data.components.filter(component => !component.internal).map(component => <li key={component.id}>{component.name} — <code>{component.id}</code></li>)}</ul></details> : null}
     <form className="incident-note-form" onSubmit={dryRun}>
       <label className="form-label">CSV file<input type="file" accept=".csv,text/csv" disabled={pending} onChange={event => void selectFile(event.target.files?.[0])} /></label>
-      <label className="form-label">CSV contents<textarea rows={6} required disabled={pending} value={csv} onChange={event => reset(event.target.value)} /></label>
+      <label className="form-label">CSV contents<textarea aria-describedby="csv-component-help" rows={6} required disabled={pending} value={csv} onChange={event => reset(event.target.value)} /></label>
       <Button variant="secondary" type="submit" disabled={pending || !csv.trim()}>{pending ? "Working…" : "Dry run CSV"}</Button>
     </form>
     {preview ? <div><h3>Dry run</h3>{preview.limits.length ? <div role="status"><ul>{preview.limits.map(summary=><li key={summary}>{summary}</li>)}</ul><p>Remove excess rows and run a fresh dry run before applying.</p></div> : null}<p>{preview.counts.created} would be created; {preview.counts.skipped} skipped; {preview.counts.refused} refused.</p>

@@ -29,10 +29,16 @@ function records(csv:string):string[][] {
   return rows;
 }
 
-export function parseSubscriberCsv(csv:string):{valid:IntakeRow[];decisions:IntakeDecision[]} {
+export function parseSubscriberCsv(csv:string,components:readonly {id:string;name:string}[]):{valid:IntakeRow[];decisions:IntakeDecision[]} {
   const rows=records(csv),headers=rows.shift()?.map(value=>value.trim().toLowerCase().replaceAll(" ","_"))??[];
   if(!headers.some(value=>["email","phone","webhook_url"].includes(value))||new Set(headers).size!==headers.length||headers.some(value=>!headersAllowed.has(value)))throw new SubscriberIntakeError("Use unique CSV headers: email, phone, webhook_url, contact_email, components, language, webhook_format.");
   if(!rows.length)throw new SubscriberIntakeError("Choose a CSV containing subscriber rows.");
+  const identifiers=new Set(components.map(component=>component.id));
+  const names=new Map<string,string[]>();
+  for(const component of components) {
+    const name=component.name.trim().toLowerCase();
+    names.set(name,[...(names.get(name)??[]),component.id]);
+  }
   const valid:IntakeRow[]=[],decisions:IntakeDecision[]=[],seen=new Set<string>();
   rows.forEach((cells,index)=>{
     const row=index+2;
@@ -43,9 +49,32 @@ export function parseSubscriberCsv(csv:string):{valid:IntakeRow[];decisions:Inta
     if([value.email,value.phone,value.webhook_url].filter(Boolean).length!==1){refuse("Choose exactly one email address, phone number or webhook URL.");return;}
     if((value.email||value.phone)&&value.webhook_format){refuse("Webhook format applies only to webhook subscribers.");return;}
     if(value.webhook_format&&!webhookFormatSchema.safeParse(value.webhook_format).success){refuse("Choose Lamp or Statuspage as the webhook format.");return;}
-    const componentIds=value.components?value.components.split(/[;,]/u).map(id=>id.trim()).filter(Boolean):[];
+    const componentValues=value.components?value.components.split(/[;,]/u).map(value=>value.trim()).filter(Boolean):[];
+    const componentIds:string[]=[];
+    for(const component of componentValues) {
+      // Exact identifiers retain their existing meaning, even when a name resembles one.
+      if(identifiers.has(component)){componentIds.push(component);continue;}
+      const matches=names.get(component.toLowerCase())??[];
+      if(matches.length!==1) {
+        refuse(matches.length ? `Component "${component}" matches more than one component. Use its identifier.` : `Component "${component}" does not match a visible component.`);
+        return;
+      }
+      componentIds.push(matches[0]!);
+    }
     const parsed=subscriberAddSchema.safeParse(value.phone?{channel:"sms",phone:value.phone,componentIds}:value.email?{channel:"email",email:value.email,componentIds}:{channel:"webhook",destination:value.webhook_url,contactEmail:value.contact_email??"",componentIds,...(value.webhook_format?{webhookFormat:value.webhook_format}:{})});
-    if(!parsed.success){refuse("The destination, contact address or component identifiers are invalid.");return;}
+    if(!parsed.success){
+      const reasons=parsed.error.issues.map(issue=>{
+        switch(issue.path[0]) {
+          case "email": return "The email address is invalid.";
+          case "phone": return "The phone number is invalid. Use an international number starting with +.";
+          case "destination": return "The webhook URL is invalid. Use a public HTTPS URL without credentials or a port.";
+          case "contactEmail": return "The webhook contact email address is invalid.";
+          case "componentIds": return "Choose at most 200 component values.";
+          default: return "The subscriber row is invalid.";
+        }
+      });
+      refuse([...new Set(reasons)].join(" "));return;
+    }
     const item=parsed.data,destination=item.channel==="email"?item.email:item.channel==="sms"?item.phone:item.destination;
     if(seen.has(destination)){decisions.push({row,outcome:"skipped",reason:"This destination occurs earlier in the file."});return;}
     seen.add(destination);
