@@ -1083,6 +1083,10 @@
       "sha256": "904ed2911e133c1f9fb05fb8dfbac8e50c36ca44c64214d6f885b81f987c7ab4",
       "executable": false
     },
+    "migrations/core/0079_subscriber_directory_order.sql": {
+      "sha256": "c17148f4bb9b6e47cc154948715141d10126c9b8ec7c1fcef56ddd7d103b3e92",
+      "executable": false
+    },
     "migrations/README.md": {
       "sha256": "8aa6d22bcfab1ec1d279f128961286b0654cbc3f7c327da1aeb535793dd874e9",
       "executable": false
@@ -2856,7 +2860,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "7645ad91ce437360799fc4741c3b46a95f94afac2d0561ac1c5599d1fd49c7ab",
+      "sha256": "dffadf2495a9952d3a66c64a549956933f1150e522889b9056a02b333e3971d2",
       "executable": false
     },
     "rer-packaging.json": {
@@ -6516,15 +6520,15 @@
       "executable": false
     },
     "src/core/features/subscribers/repository.ts": {
-      "sha256": "64aed370b33ae6dd7c7bf5587b0ab1a84c7f090a61a4b6aba47e466784f996f5",
+      "sha256": "58b93e1d851f050ac0e18f1bc63e4e563acc2018209540c36e96d763469627a0",
       "executable": false
     },
     "src/core/features/subscribers/routes.ts": {
-      "sha256": "695deccb00973a5b24ba632d05ea642cdd410e20924b36541e57bfe654b5cf3a",
+      "sha256": "5836a1ceea88bda35b51659bd0a34a07048cb67212711a153446fb6da8094608",
       "executable": false
     },
     "src/core/features/subscribers/service.ts": {
-      "sha256": "904c9ebf1dfbc4c6f80008053caf05e77cd357eadcbb4d39c55bf65392551597",
+      "sha256": "494456934b5d9262a8d136a321beb1516448ee18d1dd332ad813865e4bd2da98",
       "executable": false
     },
     "src/core/features/subscribers/slack-subscriptions.ts": {
@@ -7804,7 +7808,7 @@
       "executable": false
     },
     "tests/auth-adoption/setup-migrations.test.mjs": {
-      "sha256": "9a68dea57995dc2d2e31f5a311832a0ad3ec16b277f20f8ba62fa8ef474d8ffc",
+      "sha256": "495851ce96f75ab86139cc87185a4757c8256cb5fd0e4e20a0dd33eadec6e915",
       "executable": false
     },
     "tests/auth-adoption/sign-in-providers.test.mjs": {
@@ -8316,7 +8320,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-directory-flow.mjs": {
-      "sha256": "d914cfd112454891dca5d14547427a5c0b8705e821744acefc5ae7c0300fed54",
+      "sha256": "956bac550da6ae8f7e6b10baa5bf00fe84ad951e8f709544d2e258488d2a68f6",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-expiry-flow.mjs": {
