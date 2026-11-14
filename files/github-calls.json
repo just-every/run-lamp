@@ -1,0 +1,72 @@
+[
+  {
+    "number": 1,
+    "time": 1794632838.2654016,
+    "command": "gh api repos/gitleaks/gitleaks/releases/tags/v8.30.1 --jq {tag_name,assets:[.assets[]|select(.name|test(\"linux_x64.tar.gz$\"))|{name,id,digest}]}",
+    "exit": 0,
+    "diagnostic": ""
+  },
+  {
+    "number": 2,
+    "time": 1794632859.272598,
+    "command": "gh api repos/gitleaks/gitleaks/releases/assets/378332058 -H Accept: application/octet-stream",
+    "exit": 0,
+    "diagnostic": ""
+  },
+  {
+    "number": 3,
+    "time": 1794632875.7505841,
+    "command": "gh api repos/just-every/run-lamp/dependabot/alerts?per_page=100 --jq [.[]|select(.number >=21 and .number <=26)|{number,state,manifest:.dependency.manifest_path,package:.dependency.package.name,ghsa:.security_advisory.ghsa_id,patched:.security_vulnerability.first_patched_version.identifier,url:.html_url}]",
+    "exit": 1,
+    "diagnostic": "gh: Resource not accessible by integration (HTTP 403)\n"
+  },
+  {
+    "number": 4,
+    "time": 1794632924.5231764,
+    "command": "gh api repos/just-every/run-lamp/dependabot/alerts?per_page=100 --jq [.[]|select(.number >=21 and .number <=26)|{number,state,manifest:.dependency.manifest_path,package:.dependency.package.name,ghsa:.security_advisory.ghsa_id,patched:.security_vulnerability.first_patched_version.identifier,url:.html_url}]",
+    "exit": 1,
+    "diagnostic": "gh: Resource not accessible by integration (HTTP 403)\n"
+  },
+  {
+    "number": 5,
+    "time": 1794632972.2192943,
+    "command": "gh api repos/just-every/run-lamp/dependabot/alerts?per_page=100 --jq [.[]|select(.number >=21 and .number <=26)|{number,state,manifest:.dependency.manifest_path,package:.dependency.package.name,ghsa:.security_advisory.ghsa_id,patched:.security_vulnerability.first_patched_version.identifier,url:.html_url}]",
+    "exit": 1,
+    "diagnostic": "gh: Resource not accessible by integration (HTTP 403)\n"
+  },
+  {
+    "number": 6,
+    "time": 1794633064.8353217,
+    "command": "gh api repos/just-every/run-lamp/dependabot/alerts?per_page=100 --jq [.[]|select(.number >=21 and .number <=26)|{number,state,manifest:.dependency.manifest_path,package:.dependency.package.name,ghsa:.security_advisory.ghsa_id,patched:.security_vulnerability.first_patched_version.identifier,url:.html_url}]",
+    "exit": 1,
+    "diagnostic": "gh: Resource not accessible by integration (HTTP 403)\n"
+  },
+  {
+    "number": 7,
+    "time": 1794633217.4341192,
+    "command": "gh api repos/just-every/run-lamp/dependabot/alerts?per_page=100 --jq [.[]|select(.number >=21 and .number <=26)|{number,state,manifest:.dependency.manifest_path,package:.dependency.package.name,ghsa:.security_advisory.ghsa_id,patched:.security_vulnerability.first_patched_version.identifier,url:.html_url}]",
+    "exit": 1,
+    "diagnostic": "gh: Resource not accessible by integration (HTTP 403)\n"
+  },
+  {
+    "number": 8,
+    "time": 1794633307.2888455,
+    "command": "gh api --hostname github.com --include graphql -f <repository visibility query> -f o0=7rulnik -f n0=source-map-js -f o1=account -f n1=api -f o2=actions -f n2=cache -f o3=actions -f n3=checkout -f o4=actions -f n4=download-artifact -f o5=actions -f n5=setup-node -f o6=actions -f n6=upload-artifact -f o7=america -f n7=new_york -f o8=application -f n8=x-www-form-urlencoded -f o9=babel -f n9=babel -f o10=cloud -f n10=sd-lamp-c-f46 -f o11=cloud -f n11=sd-lamp-c-f46-land-9da9242b77 -f o12=cloudflare -f n12=cloudflare-typescript -f o13=csstree -f n13=csstree -f o14=eemeli -f n14=yaml -f o15=europe -f n15=london -f o16=example -f n16=foundation -f o17=files -f n17=inter-latin-wght-normal.woff2 -f o18=google -f n18=fonts -f o19=googlefonts -f n19=opensans -f o20=instatushq -f n20=openapi -f o21=just-every -f n21=run-porthole -f o22=just-every -f n22=run-vane -f o23=lovell -f n23=sharp -f o24=lukeed -f n24=clsx -f o25=lukeed -f n25=qss -f o26=markedjs -f n26=marked -f o27=microsoft -f n27=playwright -f o28=modern -f n28=hero-check.py -f o29=modules -f n29=delivery-producer -f o30=modules -f n30=erasure -f o31=multipart -f n31=form-data -f o32=nodejs -f n32=undici -f o33=paralleldrive -f n33=cuid -f o34=receipt -f n34=registry -f o35=resend -f n35=resend-openapi -f o36=rsms -f n36=inter -f o37=runeditrun -f n37=base -f o38=runeditrun -f n38=default-seed-reference -f o39=runeditrun -f n39=delivery -f o40=simple-icons -f n40=simple-icons -f o41=sqlite -f n41=sqlite -f o42=tailwindlabs -f n42=tailwindcss",
+    "exit": 1,
+    "diagnostic": "gh: Could not resolve to a Repository with the name 'account/api'.\nCould not resolve to a Repository with the name 'america/new_york'.\nCould not resolve to a Repository with the name 'application/x-www-form-urlencoded'.\nCould not resolve to a Repository with the name 'cloud/sd-lamp-c-f46'.\nCould not resolve to a Repository with the name 'cloud/sd-lamp-c-f46-land-9da9242b77'.\nCould not resolve to a Repository with the name 'europe/london'.\nCould not resolve to a Repository with the name 'example/foundation'.\nCould not resolve to a Repository with the name 'files/inter-latin-wght-normal.woff2'.\nCould not resolve to a Repository with the name 'modern/hero-check.py'.\nCould not resolve to a Repository with the name 'modules/delivery-producer'.\nCould not resolve to a Repository with the name 'modules/erasure'.\nCould not resolve to a Repository with the name 'multipart/form-data'.\nCould not resolve to a Repository with the name 'receipt/registry'.\nCould not resolve to a Repository with the name 'runeditrun/default-seed-reference'.\n"
+  },
+  {
+    "number": 9,
+    "time": 1794633737.84922,
+    "command": "gh api --hostname github.com --include graphql -f <repository visibility query> -f o0=7rulnik -f n0=source-map-js -f o1=account -f n1=api -f o2=actions -f n2=cache -f o3=actions -f n3=checkout -f o4=actions -f n4=download-artifact -f o5=actions -f n5=setup-node -f o6=actions -f n6=upload-artifact -f o7=america -f n7=new_york -f o8=application -f n8=x-www-form-urlencoded -f o9=babel -f n9=babel -f o10=cloud -f n10=sd-lamp-c-f46 -f o11=cloud -f n11=sd-lamp-c-f46-land-9da9242b77 -f o12=cloudflare -f n12=cloudflare-typescript -f o13=eemeli -f n13=yaml -f o14=europe -f n14=london -f o15=example -f n15=foundation -f o16=files -f n16=inter-latin-wght-normal.woff2 -f o17=google -f n17=fonts -f o18=googlefonts -f n18=opensans -f o19=instatushq -f n19=openapi -f o20=just-every -f n20=run-porthole -f o21=just-every -f n21=run-vane -f o22=lovell -f n22=sharp -f o23=microsoft -f n23=playwright -f o24=modern -f n24=hero-check.py -f o25=modules -f n25=delivery-producer -f o26=modules -f n26=erasure -f o27=multipart -f n27=form-data -f o28=nodejs -f n28=undici -f o29=receipt -f n29=registry -f o30=resend -f n30=resend-openapi -f o31=rsms -f n31=inter -f o32=runeditrun -f n32=base -f o33=runeditrun -f n33=default-seed-reference -f o34=runeditrun -f n34=delivery -f o35=simple-icons -f n35=simple-icons -f o36=sqlite -f n36=sqlite",
+    "exit": 1,
+    "diagnostic": "gh: Could not resolve to a Repository with the name 'account/api'.\nCould not resolve to a Repository with the name 'america/new_york'.\nCould not resolve to a Repository with the name 'application/x-www-form-urlencoded'.\nCould not resolve to a Repository with the name 'cloud/sd-lamp-c-f46'.\nCould not resolve to a Repository with the name 'cloud/sd-lamp-c-f46-land-9da9242b77'.\nCould not resolve to a Repository with the name 'europe/london'.\nCould not resolve to a Repository with the name 'example/foundation'.\nCould not resolve to a Repository with the name 'files/inter-latin-wght-normal.woff2'.\nCould not resolve to a Repository with the name 'modern/hero-check.py'.\nCould not resolve to a Repository with the name 'modules/delivery-producer'.\nCould not resolve to a Repository with the name 'modules/erasure'.\nCould not resolve to a Repository with the name 'multipart/form-data'.\nCould not resolve to a Repository with the name 'receipt/registry'.\nCould not resolve to a Repository with the name 'runeditrun/default-seed-reference'.\n"
+  },
+  {
+    "number": 10,
+    "time": 1794633769.8035023,
+    "command": "gh api --method POST repos/just-every/run-lamp/pulls --input /home/agent/rer-consolidation/work/gr-mt-lamp-dep-7/pr-request.json --jq {number,html_url,state,head:.head.sha,head_ref:.head.ref,base:.base.ref}",
+    "exit": 0,
+    "diagnostic": ""
+  }
+]

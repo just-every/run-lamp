@@ -1,0 +1,29 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# {"label":"unclaimed published page","status":200,"generatedAt":"2026-11-14T05:06:50.929Z","retained":"true","state":null}
+# {"label":"past freshness bound, before scheduler","status":200,"generatedAt":"2026-11-14T05:06:50.929Z","retained":"true","state":null}
+# {"label":"past freshness bound, after scheduler","status":200,"generatedAt":"2026-11-14T05:12:50.929Z","retained":"true","state":null}
+# {"label":"primary snapshot unavailable","status":200,"generatedAt":"2026-11-14T05:12:50.929Z","retained":"true","state":"stale"}
+# Subtest: ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview
+ok 1 - ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview
+  ---
+  duration_ms: 7715.590575
+  type: 'test'
+  ...
+# {"publicDocs":{"sections":4,"pages":33,"markdownGuidance":"matched"}}
+# {"status":"passed","artifact":"dist/server/wrangler.json","browser":{"documents":1,"stableTimeOrigin":true},"publicSnapshotReadAfterD1Failure":true}
+# Subtest: DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation
+ok 2 - DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation
+  ---
+  duration_ms: 64640.68198
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73731.795698

@@ -1,0 +1,75 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-dep-7",
+  "head": "72c28ad1debc1b974f0d5d6bb75ff2c0d377bad4",
+  "tree": "1d57e6089a1cb6546b925d93a5d9c8cb8e4316a7",
+  "base": "76748e97deb8a8c2001c7ce043cf48ff6396d80a",
+  "recorded_at": "2026-11-14T05:10:28.838492+00:00",
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.108"
+  },
+  "files": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "dependency": {
+    "name": "vite",
+    "before": "8.2.2",
+    "after": "8.2.4",
+    "vulnerable_vite_resolutions_before": 1,
+    "vulnerable_vite_resolutions_after": 0,
+    "lockfile_other_changes": false
+  },
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "LAMP_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/start-runtime.test.mjs tests/e2e/independent-release.test.mjs",
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "log": "runtime-tests.log"
+    }
+  ],
+  "clauses": {
+    "changed": [],
+    "summary_before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "summary_after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "test_edits": 0,
+  "pnpm_lock_sha256": "99813c33ebc360da095fbdebac562b6d74121b027f0a01b46010fd58da05cb0a"
+}

@@ -1,0 +1,22 @@
+{
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.108"
+  },
+  "commands": [
+    {
+      "command": "pnpm add --save-exact --save-dev vite@8.2.4 --lockfile-only",
+      "exit": 0
+    },
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "result": "Owner and page are ready; RER_SETUP_READY http://127.0.0.1:8787"
+    }
+  ]
+}

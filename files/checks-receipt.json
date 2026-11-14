@@ -1,0 +1,85 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-dep-7",
+  "head": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+  "tree": "8fc6c12b6478680a00463fbf8d77f94fcfb777cb",
+  "base": "6a3fe92809524f6463f98454cd72af0cd8724100",
+  "recorded_at": "2026-11-14T05:19:43.385510+00:00",
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.108"
+  },
+  "files": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "dependency": {
+    "name": "vite",
+    "before": "8.2.2",
+    "after": "8.2.4",
+    "vulnerable_vite_resolutions_before": 1,
+    "vulnerable_vite_resolutions_after": 0,
+    "lockfile_other_changes": false
+  },
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "log": "frozen-install.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "LAMP_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/start-runtime.test.mjs tests/e2e/independent-release.test.mjs",
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "log": "runtime-tests.log"
+    }
+  ],
+  "clauses": {
+    "changed": [],
+    "summary_before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "summary_after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "test_edits": 0,
+  "pnpm_lock_sha256": "99813c33ebc360da095fbdebac562b6d74121b027f0a01b46010fd58da05cb0a",
+  "previous_candidate": "72c28ad1debc1b974f0d5d6bb75ff2c0d377bad4",
+  "validation_status": "passed on final rebased candidate",
+  "main_change_retained": "6a3fe92809524f6463f98454cd72af0cd8724100: Fix repeated tag sanitization in status feed text",
+  "logs": {
+    "typecheck.log": "314f042e4b412d3da42ab76797ba6a8212d585399670b211b5fe3645134646a3",
+    "build.log": "91827084e4a1317ae89953b46b3cb69241bc75097939c5c488da0bccd132fde3",
+    "runtime-tests.log": "501775b7552f92443c279ec41c34e4956eabd8b63716117a2170ead62999ba65",
+    "frozen-install.log": "fc8a03d9749b79fe26ea14a3c9dc8b83710519b5f93b7ca5498cb1d0e1c80bda"
+  }
+}

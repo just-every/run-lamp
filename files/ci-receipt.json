@@ -1,0 +1,10 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "bef5115afc3972d78962fbb899a2a32433f5f3a6",
+  "branch": "cloud/gr-mt-lamp-dep-7",
+  "status": "unobserved",
+  "run_ids": [],
+  "github_calls_used": 10,
+  "github_call_limit": 10,
+  "reason": "Budget exhausted: 2 pinned scanner asset/setup calls, 5 mandatory Dependabot access attempts (HTTP 403), 2 publication-scanner repository visibility batches, 1 required PR creation. No exact-SHA Actions discovery/poll was made. No green or READY claim."
+}
