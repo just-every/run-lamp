@@ -1,0 +1,6 @@
+{"version":1,"verb":"size","event":"node-selection","versionSelected":"22.20.0","previousVersion":"24.19.0","message":"Using project Node 22.20.0 (current Node 24.19.0)."}
+Checking pinned pnpm
+10.12.4
+Your application is running locally
+{"version":1,"verb":"size","event":"error","code":"safety_refusal","message":"The requested first-party capability is unavailable.","exitCode":4}
+{"version":1,"verb":"size","event":"result","ok":false,"exitCode":4}

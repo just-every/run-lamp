@@ -1,0 +1,143 @@
+{
+  "tag": "sd-lamp-sizecheck-2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-sizecheck-2",
+  "head": "865854019e82c8ed9530d30aeedbfa76f8a0df9e",
+  "base_main": "5dd84e13f6b0478edc2fc5e759d513f5eccf6d57",
+  "pr": "https://github.com/just-every/run-lamp/pull/362",
+  "draft": true,
+  "product_pushed": true,
+  "ready": false,
+  "blockers": [
+    "Committed rer size cannot initialize Lamp native extension owner (size_owner_missing); verification owner/public host declaration requires scoped support.",
+    "Disposable native-owner ordinary flow metering reports growth/ceiling violations and scheduled/public snapshot refusals."
+  ],
+  "ci": [
+    {
+      "id": 43530416554,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "865854019e82c8ed9530d30aeedbfa76f8a0df9e",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43530416554"
+    }
+  ],
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "rer 0.2.108 size --json",
+      "exit": 4
+    },
+    {
+      "command": "rer 0.2.115 size --json --write-statements packet/candidate-statements",
+      "exit": 1,
+      "code": "size_owner_missing"
+    },
+    {
+      "command": "rer size --declaration disposable-size-check-v2.json --json --write-statements ordinary-statements",
+      "exit": 1,
+      "evidence_only_verification_declaration": true
+    },
+    {
+      "command": "rer size --declaration negative-size-check.json --json --write-statements negative-statements",
+      "exit": 1,
+      "expected_failure": true,
+      "built_artifact_injection_only": true
+    },
+    {
+      "command": "rer size --statements ordinary-statements/small.json --json",
+      "exit": 0
+    },
+    {
+      "command": "rer size --statements ordinary-statements/large.json --json",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "workflow YAML parse",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock + check",
+      "exit": 0
+    }
+  ],
+  "before_after": {
+    "clauses": [
+      244,
+      244
+    ],
+    "done": [
+      60,
+      60
+    ],
+    "partial": [
+      129,
+      129
+    ],
+    "missing": [
+      55,
+      55
+    ],
+    "registrations": [
+      91,
+      91
+    ],
+    "assertion_scripts": [
+      10,
+      10
+    ],
+    "added_standalone_size_gate": 1,
+    "contract_status_changes": 0
+  },
+  "real_d1_confirmation": false,
+  "production_contact": false,
+  "cloud_resources_created": false,
+  "full_publication_scan": "Mac lander custody; shallow cloud builder does not claim COMPLETE",
+  "statements": [
+    {
+      "file": "ordinary-statements/small.json",
+      "sha256": "77549281af4787ead825e3bf00b36474d3fbd1a490d480daff200050b2579253",
+      "bytes": 170420,
+      "executions": 381,
+      "distinct_sql": 123
+    },
+    {
+      "file": "ordinary-statements/large.json",
+      "sha256": "00edd1e2ce10bb7fd7bbad4e76540c456446545e9e286424a825372bb2752a39",
+      "bytes": 170420,
+      "executions": 381,
+      "distinct_sql": 123
+    },
+    {
+      "file": "negative-statements/small.json",
+      "sha256": "09b2149d9ec177d1155cb8a4f19766faa2ffe9801985b5786265bbf81855c94f",
+      "bytes": 240,
+      "executions": 1,
+      "distinct_sql": 1
+    },
+    {
+      "file": "negative-statements/large.json",
+      "sha256": "98e259095277cfd25fa06c2dad70c6b1c13f47446a98125a713b5ba1ed866275",
+      "bytes": 240,
+      "executions": 1,
+      "distinct_sql": 1
+    }
+  ],
+  "verification_plan": "8 shards, one shared build; 91 registrations +10 existing assertion scripts; one standalone size gate added."
+}

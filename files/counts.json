@@ -1,0 +1,13 @@
+{
+  "contractClauses": 244,
+  "statusCounts": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "registrations": 91,
+  "assertionScripts": 10,
+  "addedStandaloneSizeGate": 1,
+  "testsChanged": 0,
+  "clausesChanged": 0
+}

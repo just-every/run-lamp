@@ -1,0 +1,2613 @@
+{
+ "about": "rer size: every statement each flow ran at the small size, in order, with its parameters as bound.",
+ "statements": [
+  {
+   "name": "component-list #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "component-list #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613843170
+   ]
+  },
+  {
+   "name": "component-list #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "component-list #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "component-list #5",
+   "sql": "select \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\", \"component_groups\".\"name\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" order by \"component_groups\".\"display_order\", \"components\".\"display_order\", \"components\".\"id\"",
+   "params": []
+  },
+  {
+   "name": "component-list #6",
+   "sql": "\n        SELECT component_id AS componentId, state, 'standing-claim' AS causeType\n        FROM component_standing_claims\n        UNION ALL SELECT component_id AS componentId,state,'vendor' AS causeType FROM vendor_dependencies WHERE state IS NOT NULL\n        UNION ALL\n        SELECT attached.component_id AS componentId, attached.state, 'incident' AS causeType\n        FROM incident_components AS attached\n        JOIN incidents AS incident ON incident.id = attached.incident_id\n        WHERE attached.component_id IS NOT NULL AND attached.published_at IS NOT NULL\n          AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'\n        UNION ALL\n        SELECT attached.component_id AS componentId, attached.state, 'maintenance' AS causeType\n        FROM maintenance_components AS attached\n        JOIN maintenance AS window ON window.id = attached.maintenance_id\n        WHERE attached.component_id IS NOT NULL AND window.state = 'In progress'\n      ",
+   "params": []
+  },
+  {
+   "name": "component-list #7",
+   "sql": "select \"id\", \"name\", \"display_order\", \"created_at\", \"updated_at\" from \"component_groups\" order by \"component_groups\".\"display_order\", \"component_groups\".\"id\"",
+   "params": []
+  },
+  {
+   "name": "component-list #8",
+   "sql": "SELECT checked_at FROM setup_readiness WHERE step=?",
+   "params": [
+    "scheduler"
+   ]
+  },
+  {
+   "name": "component-list #9",
+   "sql": "SELECT id, reference, title, affected_audience AS affectedAudience, customer_impact AS customerImpact, state, starts_at AS startsAt, ends_at AS endsAt, completed_at AS completedAt, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance WHERE (state = 'Scheduled' AND starts_at <= ?) OR (state = 'In progress' AND ends_at <= ?)",
+   "params": [
+    "2026-11-13T23:50:43.196Z",
+    "2026-11-13T23:50:43.196Z"
+   ]
+  },
+  {
+   "name": "component-list #10",
+   "sql": "SELECT maintenance.id, maintenance.reference, maintenance.title, maintenance.affected_audience AS affectedAudience, maintenance.customer_impact AS customerImpact, maintenance.state, maintenance.starts_at AS startsAt, maintenance.ends_at AS endsAt, maintenance.completed_at AS completedAt, maintenance.created_by_operator_id AS createdByOperatorId, maintenance.created_at AS createdAt, maintenance.updated_at AS updatedAt FROM maintenance LEFT JOIN maintenance_notices ON maintenance_notices.maintenance_id = maintenance.id AND maintenance_notices.kind = 'reminder' WHERE maintenance.state = 'Scheduled' AND maintenance.starts_at <= ? AND maintenance.starts_at > ? AND maintenance_notices.id IS NULL",
+   "params": [
+    "2026-11-14T23:50:43.196Z",
+    "2026-11-13T23:50:43.196Z"
+   ]
+  },
+  {
+   "name": "component-list #11",
+   "sql": "select \"id\", \"maintenance_id\", \"component_id\", \"component_name\", \"state\", \"created_at\", \"updated_at\" from \"maintenance_components\" where \"maintenance_components\".\"maintenance_id\" = ?",
+   "params": [
+    "80000000000000000000000001"
+   ]
+  },
+  {
+   "name": "component-list #12",
+   "sql": "INSERT OR IGNORE INTO maintenance_notices (id,maintenance_id,kind,body,published_at,author_operator_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",
+   "params": [
+    "01M7BN458DTZV60T94EXQ47B52",
+    "80000000000000000000000001",
+    "reminder",
+    "SCH-000001: Synthetic future maintenance",
+    "2026-11-13T23:50:43.213Z",
+    null,
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z"
+   ]
+  },
+  {
+   "name": "component-list #13",
+   "sql": "INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, payload_json, created_at, updated_at) SELECT ?, 'maintenance', ?, 'notice-published', ?, ?, ?, ? WHERE changes() = 1",
+   "params": [
+    "01M7BN458DTZV60T94EXQ47B52-audit",
+    "80000000000000000000000001",
+    null,
+    "{\"kind\":\"reminder\"}",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z"
+   ]
+  },
+  {
+   "name": "component-list #14",
+   "sql": "\n      WITH follow_event AS (SELECT NULL AS incident_id, ? AS event_at)\n      INSERT INTO notification_deliveries\n        (id, subscriber_id, incident_update_id, incident_report_id, maintenance_id, channel, outcome, queued_at, outcome_at, created_at, updated_at, notification_event_id, notification_event_type)\n      SELECT upper(substr(hex(randomblob(16)), 1, 26)), s.id, ?, ?, ?, ?, 'queued', ?, NULL, ?, ?, ?, ?\n      FROM subscriber_directory s WHERE s.state = 'active' AND s.channel = ? AND ((NOT EXISTS(SELECT 1 FROM incident_subscriptions incident_follow WHERE incident_follow.subscriber_id=s.id) AND 1 AND (0) AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance') AND 1) OR (0)) AND EXISTS (SELECT 1 FROM maintenance_notices published_notice WHERE published_notice.id = ?)\n      ON CONFLICT DO NOTHING\n    ",
+   "params": [
+    "2026-11-13T23:50:43.213Z",
+    null,
+    null,
+    "80000000000000000000000001",
+    "email",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "maintenance-notice",
+    "email",
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #15",
+   "sql": "\n      WITH follow_event AS (SELECT NULL AS incident_id, ? AS event_at)\n      INSERT INTO notification_deliveries\n        (id, subscriber_id, incident_update_id, incident_report_id, maintenance_id, channel, outcome, queued_at, outcome_at, created_at, updated_at, notification_event_id, notification_event_type)\n      SELECT upper(substr(hex(randomblob(16)), 1, 26)), s.id, ?, ?, ?, ?, 'queued', ?, NULL, ?, ?, ?, ?\n      FROM subscriber_directory s WHERE s.state = 'active' AND s.channel = ? AND ((NOT EXISTS(SELECT 1 FROM incident_subscriptions incident_follow WHERE incident_follow.subscriber_id=s.id) AND 1 AND (0) AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance') AND 1) OR (0)) AND EXISTS (SELECT 1 FROM maintenance_notices published_notice WHERE published_notice.id = ?)\n      ON CONFLICT DO NOTHING\n    ",
+   "params": [
+    "2026-11-13T23:50:43.213Z",
+    null,
+    null,
+    "80000000000000000000000001",
+    "webhook",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "maintenance-notice",
+    "webhook",
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #16",
+   "sql": "INSERT OR IGNORE INTO notification_outbox (id, kind, aggregate_id, payload_json, available_at, attempts, locked_at, completed_at, failed_at, last_error, created_at, updated_at) SELECT ?, 'delivery-dispatch', ?, ?, ?, 0, NULL, NULL, NULL, NULL, ?, ? WHERE EXISTS (SELECT 1 FROM maintenance_notices published_notice WHERE published_notice.id = ?)",
+   "params": [
+    "01M7BN458ENAHMGZX5JJWN599D",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "{\"eventId\":\"01M7BN458DTZV60T94EXQ47B52\",\"eventType\":\"maintenance-notice\"}",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #17",
+   "sql": "INSERT OR IGNORE INTO channel_subscriber_events(id,subscriber_id,event_id,kind,queued_at)\n          SELECT ? || '.' || s.id,s.id,?,'maintenance',? FROM subscriber_directory s\n          WHERE s.channel IN ('slack','teams') AND s.state='active' AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance')\n            AND (s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc JOIN components c ON c.id=sc.component_id WHERE sc.subscriber_id=s.id AND sc.component_id IN (NULL) AND c.internal=0)) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (NULL) AND c.internal=0)\n            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)",
+   "params": [
+    "01M7BN458DTZV60T94EXQ47B52",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "2026-11-13T23:50:43.213Z",
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #18",
+   "sql": "WITH follow_event AS (SELECT NULL AS incident_id,? AS event_at)\n          INSERT OR IGNORE INTO sms_deliveries(id,subscriber_id,event_id,kind,incident_update_id,maintenance_id,incident_report_id,outcome,queued_at,outcome_at)\n          SELECT ?||'.'||s.id,s.id,?,?,?,?,?,CASE WHEN s.state='active' THEN 'queued' ELSE 'suppressed' END,?,CASE WHEN s.state='active' THEN NULL ELSE ? END\n          FROM subscriber_directory s WHERE s.channel='sms' AND s.state IN ('active','deactivated') AND s.destination NOT LIKE 'deleted:%' AND ((NOT EXISTS(SELECT 1 FROM incident_subscriptions incident_follow WHERE incident_follow.subscriber_id=s.id) AND 1 AND (s.selection_mode='all' OR EXISTS(SELECT 1 FROM subscriber_components sc WHERE sc.subscriber_id=s.id AND sc.component_id IN (NULL))) AND EXISTS(SELECT 1 FROM components c WHERE c.id IN (NULL) AND c.internal=0)\n            AND EXISTS (SELECT 1 FROM json_each(s.event_kinds_json) preference WHERE preference.value = 'maintenance') AND 1) OR (0))\n            AND EXISTS(SELECT 1 FROM maintenance_notices WHERE id=?)",
+   "params": [
+    "2026-11-13T23:50:43.213Z",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "maintenance-notice",
+    null,
+    "80000000000000000000000001",
+    null,
+    "2026-11-13T23:50:43.213Z",
+    "2026-11-13T23:50:43.213Z",
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #19",
+   "sql": "select \"id\", \"kind\", \"aggregate_id\", \"payload_json\", \"available_at\", \"attempts\", \"locked_at\", \"completed_at\", \"failed_at\", \"last_error\", \"created_at\", \"updated_at\" from \"notification_outbox\" where (\"notification_outbox\".\"completed_at\" is null and \"notification_outbox\".\"failed_at\" is null and \"notification_outbox\".\"available_at\" <= ?) order by \"notification_outbox\".\"available_at\" asc limit ?",
+   "params": [
+    "2026-11-13T23:50:43.220Z",
+    100
+   ]
+  },
+  {
+   "name": "component-list #20",
+   "sql": "SELECT p.id,p.event_id AS eventId,p.account_id AS accountId,p.incident_id AS incidentId,p.maintenance_id AS maintenanceId,p.reference,p.lifecycle,p.customer_impact AS customerImpact,p.prefix,p.queued_at AS queuedAt,p.body,p.text,p.post_id AS postId,p.post_cid AS postCid FROM social_posts p JOIN social_accounts a ON a.id=p.account_id\n        WHERE a.removed_at IS NULL AND p.post_id IS NULL AND NOT EXISTS(SELECT 1 FROM integration_deliveries d WHERE d.namespace='lamp-social' AND d.id=p.id)\n        AND NOT EXISTS(SELECT 1 FROM social_posts earlier LEFT JOIN integration_deliveries d ON d.namespace='lamp-social' AND d.id=earlier.id\n          WHERE p.incident_id IS NOT NULL AND earlier.incident_id=p.incident_id AND earlier.account_id=p.account_id\n          AND (earlier.queued_at<p.queued_at OR (earlier.queued_at=p.queued_at AND earlier.id<p.id))\n          AND earlier.post_id IS NULL AND (d.state IS NULL OR d.state IN ('queued','sending','uncertain')))\n        ORDER BY p.queued_at,p.id LIMIT ?",
+   "params": [
+    100
+   ]
+  },
+  {
+   "name": "component-list #21",
+   "sql": "UPDATE notification_outbox SET locked_at = ?, updated_at = ?\n        WHERE id = ? AND completed_at IS NULL AND failed_at IS NULL AND available_at <= ?\n          AND (locked_at IS NULL OR locked_at < ?)",
+   "params": [
+    "2026-11-13T23:50:43.222Z",
+    "2026-11-13T23:50:43.222Z",
+    "01M7BN458ENAHMGZX5JJWN599D",
+    "2026-11-13T23:50:43.222Z",
+    "2026-11-13T23:45:43.222Z"
+   ]
+  },
+  {
+   "name": "component-list #22",
+   "sql": "UPDATE integration_attempts SET finished_at=?,outcome=? WHERE namespace=? AND finished_at IS NULL AND id IN (SELECT claim FROM integration_deliveries WHERE namespace=? AND state='sending' AND claim_until<=?)",
+   "params": [
+    1794613843223,
+    "{\"kind\":\"uncertain\",\"code\":\"claim_expired\"}",
+    "lamp-social",
+    "lamp-social",
+    1794613843223
+   ]
+  },
+  {
+   "name": "component-list #23",
+   "sql": "SELECT id FROM notification_delivery_records AS notification_deliveries WHERE notification_event_id = ? AND outcome = 'queued'\n        AND NOT EXISTS (SELECT 1 FROM notification_attempt_records AS notification_delivery_attempts WHERE delivery_id = notification_deliveries.id AND local_capture_id IS NOT NULL)",
+   "params": [
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #24",
+   "sql": "UPDATE integration_deliveries SET state='uncertain',claim=NULL,claim_until=NULL WHERE namespace=? AND state='sending' AND claim_until<=? RETURNING id",
+   "params": [
+    "lamp-social",
+    1794613843223
+   ]
+  },
+  {
+   "name": "component-list #25",
+   "sql": "UPDATE notification_outbox SET completed_at = ?, locked_at = NULL, updated_at = ?\n        WHERE kind = 'delivery-dispatch' AND aggregate_id = ? AND completed_at IS NULL\n          AND NOT EXISTS (SELECT 1 FROM notification_delivery_records d\n            WHERE d.notification_event_id = ? AND d.outcome = 'queued'\n              AND NOT EXISTS (SELECT 1 FROM notification_attempt_records a\n                WHERE a.delivery_id = d.id AND (a.provider_message_id IS NOT NULL OR a.local_capture_id IS NOT NULL)))",
+   "params": [
+    "2026-11-13T23:50:43.225Z",
+    "2026-11-13T23:50:43.225Z",
+    "01M7BN458DTZV60T94EXQ47B52",
+    "01M7BN458DTZV60T94EXQ47B52"
+   ]
+  },
+  {
+   "name": "component-list #26",
+   "sql": "SELECT id FROM integration_deliveries WHERE namespace=? AND state='queued' AND next_at<=? AND attempts<max_attempts ORDER BY next_at,id LIMIT ?",
+   "params": [
+    "lamp-social",
+    1794613843226,
+    100
+   ]
+  },
+  {
+   "name": "component-list #27",
+   "sql": "SELECT DISTINCT event.provider_message_id AS providerMessageId\n        FROM mail_provider_webhook_events event\n        JOIN notification_attempt_records attempt ON attempt.provider_message_id = event.provider_message_id\n        WHERE event.applied_at IS NULL AND event.provider_message_id IS NOT NULL\n          AND NOT EXISTS (SELECT 1 FROM notification_attempt_records captured WHERE captured.delivery_id = attempt.delivery_id AND captured.local_capture_id IS NOT NULL)\n        ORDER BY event.received_at ASC LIMIT ?",
+   "params": [
+    100
+   ]
+  },
+  {
+   "name": "component-list #28",
+   "sql": "SELECT p.id FROM social_posts p JOIN integration_deliveries d ON d.id=p.id AND d.namespace='lamp-social' WHERE p.post_id IS NULL AND d.state IN ('rejected','uncertain')",
+   "params": []
+  },
+  {
+   "name": "incident-list #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "incident-list #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613843501
+   ]
+  },
+  {
+   "name": "incident-list #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "incident-list #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "incident-list #5",
+   "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where \"incidents\".\"deleted_at\" is null order by \"incidents\".\"opened_at\" desc",
+   "params": []
+  },
+  {
+   "name": "incident-list #6",
+   "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null)",
+   "params": []
+  },
+  {
+   "name": "incident-list #7",
+   "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null) order by \"incident_updates\".\"published_at\" desc",
+   "params": []
+  },
+  {
+   "name": "incident-list #8",
+   "sql": "select \"id\", \"incident_id\", \"body\", \"author_operator_id\", \"created_at\", \"updated_at\" from \"incident_internal_notes\" where \"incident_internal_notes\".\"incident_id\" in (select \"id\" from \"incidents\" where \"incidents\".\"deleted_at\" is null) order by \"incident_internal_notes\".\"created_at\" desc",
+   "params": []
+  },
+  {
+   "name": "incident-list #9",
+   "sql": "SELECT d.id, d.incident_id AS incidentId, d.lifecycle, d.affected_audience AS affectedAudience, d.customer_impact AS customerImpact, d.what_still_works AS whatStillWorks, d.details, d.next_update_at AS nextUpdateAt, d.author_operator_id AS authorOperatorId, d.created_at AS createdAt, d.updated_at AS updatedAt, d.scheduled_publish_at AS scheduledPublishAt, d.scheduled_channels_json AS scheduledChannelsJson, d.reviewed_by_operator_id AS reviewedByOperatorId, d.reviewed_at AS reviewedAt, d.corrects_update_id AS correctsUpdateId, d.component_changes_json AS componentChangesJson,(SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=d.id AND active=1) AS agentPreparationJson FROM incident_drafts d JOIN incidents i ON i.id=d.incident_id WHERE i.deleted_at IS NULL",
+   "params": []
+  },
+  {
+   "name": "incident-list #10",
+   "sql": "SELECT id, peak_impact AS peakImpact FROM incidents WHERE deleted_at IS NULL",
+   "params": []
+  },
+  {
+   "name": "incident-list #11",
+   "sql": "SELECT i.id, i.lifecycle,person.id AS ownerId,person.display_name AS displayName FROM incidents i LEFT JOIN incident_communication_owners assignment ON assignment.incident_id=i.id\n    LEFT JOIN oa_operators person ON person.id=COALESCE(assignment.operator_id,i.created_by_operator_id) AND person.status='active' WHERE i.deleted_at IS NULL",
+   "params": []
+  },
+  {
+   "name": "incident-detail #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "incident-detail #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613843781
+   ]
+  },
+  {
+   "name": "incident-detail #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "incident-detail #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "incident-detail #5",
+   "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where (\"incidents\".\"id\" = ? and \"incidents\".\"deleted_at\" is null)",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #6",
+   "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" where \"incident_updates\".\"incident_id\" = ? order by \"incident_updates\".\"published_at\" desc",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #7",
+   "sql": "SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson, (SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=incident_drafts.id AND active=1) AS agentPreparationJson FROM incident_drafts WHERE incident_id = ?",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #8",
+   "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" = ?",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #9",
+   "sql": "select \"id\", \"incident_id\", \"body\", \"author_operator_id\", \"created_at\", \"updated_at\" from \"incident_internal_notes\" where \"incident_internal_notes\".\"incident_id\" = ? order by \"incident_internal_notes\".\"created_at\" desc",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #10",
+   "sql": "SELECT peak_impact AS peakImpact FROM incidents WHERE id = ?",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #11",
+   "sql": "SELECT i.lifecycle,person.id AS ownerId,person.display_name AS displayName FROM incidents i LEFT JOIN incident_communication_owners assignment ON assignment.incident_id=i.id\n    LEFT JOIN oa_operators person ON person.id=COALESCE(assignment.operator_id,i.created_by_operator_id) AND person.status='active' WHERE i.id=? AND i.deleted_at IS NULL",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #12",
+   "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where (\"incidents\".\"id\" = ? and \"incidents\".\"deleted_at\" is null)",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #13",
+   "sql": "SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson, (SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=incident_drafts.id AND active=1) AS agentPreparationJson FROM incident_drafts WHERE incident_id = ?",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #14",
+   "sql": "SELECT d.id, d.kind, d.name, d.sealed_url AS sealedUrl, d.host, d.selection_mode AS selectionMode, d.created_at AS createdAt, COALESCE(o.operator_alerts,0) AS operatorAlerts, o.id IS NOT NULL AS operatorManaged FROM delivery_channel_destinations d LEFT JOIN channel_destinations o ON o.id=d.id WHERE d.removed_at IS NULL ORDER BY d.created_at, d.id",
+   "params": []
+  },
+  {
+   "name": "incident-detail #15",
+   "sql": "select \"id\", \"incident_id\", \"component_id\", \"component_name\", \"state\", \"relationship\", \"published_at\", \"created_at\", \"updated_at\" from \"incident_components\" where \"incident_components\".\"incident_id\" = ?",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #16",
+   "sql": "select \"id\", \"page_name\", \"tagline\", \"accent_color\", \"timezone\", \"hostname\", \"footer_credit_enabled\", \"template\", \"theme\", \"theme_assets\", \"logo_key\", \"logo_content_type\", \"widget_allowed_origins\", \"widget_appearance\", \"mail_from_address\", \"email_branding\", \"ai_tone_instructions\", \"wording_blocked_terms\", \"wording_friendly_length\", \"feed_id\", \"created_at\", \"updated_at\" from \"page_settings\" where \"page_settings\".\"id\" = ?",
+   "params": [
+    "default"
+   ]
+  },
+  {
+   "name": "incident-detail #17",
+   "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+   "params": []
+  },
+  {
+   "name": "incident-detail #18",
+   "sql": "SELECT destination_id AS destinationId, component_id AS componentId FROM channel_destination_components",
+   "params": []
+  },
+  {
+   "name": "incident-detail #19",
+   "sql": "select \"id\", \"group_id\", \"name\", \"description\", \"region\", \"internal\", \"only_show_if_degraded\", \"uptime_start_date\", \"display_order\", \"note\", \"created_at\", \"updated_at\" from \"components\" where \"components\".\"id\" = ?",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #20",
+   "sql": "select \"state\" from \"component_standing_claims\" where \"component_standing_claims\".\"component_id\" = ?",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #21",
+   "sql": "select \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incident_components\".\"component_id\" = ? and \"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+   "params": [
+    "10000000000000000000000001",
+    "Resolved"
+   ]
+  },
+  {
+   "name": "incident-detail #22",
+   "sql": "select \"maintenance_components\".\"state\" from \"maintenance_components\" inner join \"maintenance\" on \"maintenance_components\".\"maintenance_id\" = \"maintenance\".\"id\" where (\"maintenance_components\".\"component_id\" = ? and \"maintenance\".\"state\" = ?)",
+   "params": [
+    "10000000000000000000000001",
+    "In progress"
+   ]
+  },
+  {
+   "name": "incident-detail #23",
+   "sql": "select \"state\" from \"component_standing_claims\" where \"component_standing_claims\".\"component_id\" = ?",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #24",
+   "sql": "SELECT state FROM vendor_dependencies WHERE component_id=? AND state IS NOT NULL",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #25",
+   "sql": "SELECT peak_impact AS peakImpact FROM incidents WHERE id = ?",
+   "params": [
+    "20000000000000000000000001"
+   ]
+  },
+  {
+   "name": "incident-detail #26",
+   "sql": "select \"id\", \"page_name\", \"tagline\", \"accent_color\", \"timezone\", \"hostname\", \"footer_credit_enabled\", \"template\", \"theme\", \"theme_assets\", \"logo_key\", \"logo_content_type\", \"widget_allowed_origins\", \"widget_appearance\", \"mail_from_address\", \"email_branding\", \"ai_tone_instructions\", \"wording_blocked_terms\", \"wording_friendly_length\", \"feed_id\", \"created_at\", \"updated_at\" from \"page_settings\" where \"page_settings\".\"id\" = ?",
+   "params": [
+    "default"
+   ]
+  },
+  {
+   "name": "incident-detail #27",
+   "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+   "params": []
+  },
+  {
+   "name": "component-history #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "component-history #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613844086
+   ]
+  },
+  {
+   "name": "component-history #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "component-history #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "component-history #5",
+   "sql": "select \"id\", \"group_id\", \"name\", \"description\", \"region\", \"internal\", \"only_show_if_degraded\", \"uptime_start_date\", \"display_order\", \"note\", \"created_at\", \"updated_at\" from \"components\" where \"components\".\"id\" = ?",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "component-history #6",
+   "sql": "select \"id\", \"source_name\", \"source_url\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"changed_at\", \"created_at\" from \"component_state_history\" where \"component_state_history\".\"component_id\" = ? order by \"component_state_history\".\"changed_at\" desc, \"component_state_history\".\"created_at\" desc",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "component-history #7",
+   "sql": "select \"id\", \"history_id\", \"state\", \"starts_at\", \"ends_at\", \"reason\", \"operator_id\", \"created_at\" from \"component_state_corrections\" where \"component_state_corrections\".\"component_id\" = ? order by \"component_state_corrections\".\"created_at\" desc",
+   "params": [
+    "10000000000000000000000001"
+   ]
+  },
+  {
+   "name": "subscriber-list #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "subscriber-list #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613844363
+   ]
+  },
+  {
+   "name": "subscriber-list #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "subscriber-list #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "subscriber-list #5",
+   "sql": "select \"id\", \"channel\", \"event_kinds_json\", \"minimum_impact\", \"destination\", \"contact_email\", \"state\", \"selection_mode\", \"token_hash\", \"deactivation_reason\", \"deactivated_at\", \"created_at\", \"updated_at\" from \"subscriber_directory\" order by \"subscriber_directory\".\"created_at\" asc limit ?",
+   "params": [
+    51
+   ]
+  },
+  {
+   "name": "subscriber-list #6",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000001"
+   ]
+  },
+  {
+   "name": "subscriber-list #7",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000001"
+   ]
+  },
+  {
+   "name": "subscriber-list #8",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000002"
+   ]
+  },
+  {
+   "name": "subscriber-list #9",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000002"
+   ]
+  },
+  {
+   "name": "subscriber-list #10",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000003"
+   ]
+  },
+  {
+   "name": "subscriber-list #11",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000003"
+   ]
+  },
+  {
+   "name": "subscriber-list #12",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000004"
+   ]
+  },
+  {
+   "name": "subscriber-list #13",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000004"
+   ]
+  },
+  {
+   "name": "subscriber-list #14",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000005"
+   ]
+  },
+  {
+   "name": "subscriber-list #15",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000005"
+   ]
+  },
+  {
+   "name": "subscriber-list #16",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000006"
+   ]
+  },
+  {
+   "name": "subscriber-list #17",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000006"
+   ]
+  },
+  {
+   "name": "subscriber-list #18",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000007"
+   ]
+  },
+  {
+   "name": "subscriber-list #19",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000007"
+   ]
+  },
+  {
+   "name": "subscriber-list #20",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000008"
+   ]
+  },
+  {
+   "name": "subscriber-list #21",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000008"
+   ]
+  },
+  {
+   "name": "subscriber-list #22",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000009"
+   ]
+  },
+  {
+   "name": "subscriber-list #23",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000009"
+   ]
+  },
+  {
+   "name": "subscriber-list #24",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000010"
+   ]
+  },
+  {
+   "name": "subscriber-list #25",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000010"
+   ]
+  },
+  {
+   "name": "subscriber-list #26",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000011"
+   ]
+  },
+  {
+   "name": "subscriber-list #27",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000011"
+   ]
+  },
+  {
+   "name": "subscriber-list #28",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000012"
+   ]
+  },
+  {
+   "name": "subscriber-list #29",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000012"
+   ]
+  },
+  {
+   "name": "subscriber-list #30",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000013"
+   ]
+  },
+  {
+   "name": "subscriber-list #31",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000013"
+   ]
+  },
+  {
+   "name": "subscriber-list #32",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000014"
+   ]
+  },
+  {
+   "name": "subscriber-list #33",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000014"
+   ]
+  },
+  {
+   "name": "subscriber-list #34",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000015"
+   ]
+  },
+  {
+   "name": "subscriber-list #35",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000015"
+   ]
+  },
+  {
+   "name": "subscriber-list #36",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000016"
+   ]
+  },
+  {
+   "name": "subscriber-list #37",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000016"
+   ]
+  },
+  {
+   "name": "subscriber-list #38",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000017"
+   ]
+  },
+  {
+   "name": "subscriber-list #39",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000017"
+   ]
+  },
+  {
+   "name": "subscriber-list #40",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000018"
+   ]
+  },
+  {
+   "name": "subscriber-list #41",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000018"
+   ]
+  },
+  {
+   "name": "subscriber-list #42",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000019"
+   ]
+  },
+  {
+   "name": "subscriber-list #43",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000019"
+   ]
+  },
+  {
+   "name": "subscriber-list #44",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000020"
+   ]
+  },
+  {
+   "name": "subscriber-list #45",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000020"
+   ]
+  },
+  {
+   "name": "subscriber-list #46",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000021"
+   ]
+  },
+  {
+   "name": "subscriber-list #47",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000021"
+   ]
+  },
+  {
+   "name": "subscriber-list #48",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000022"
+   ]
+  },
+  {
+   "name": "subscriber-list #49",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000022"
+   ]
+  },
+  {
+   "name": "subscriber-list #50",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000023"
+   ]
+  },
+  {
+   "name": "subscriber-list #51",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000023"
+   ]
+  },
+  {
+   "name": "subscriber-list #52",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000024"
+   ]
+  },
+  {
+   "name": "subscriber-list #53",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000024"
+   ]
+  },
+  {
+   "name": "subscriber-list #54",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000025"
+   ]
+  },
+  {
+   "name": "subscriber-list #55",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000025"
+   ]
+  },
+  {
+   "name": "subscriber-list #56",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000026"
+   ]
+  },
+  {
+   "name": "subscriber-list #57",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000026"
+   ]
+  },
+  {
+   "name": "subscriber-list #58",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000027"
+   ]
+  },
+  {
+   "name": "subscriber-list #59",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000027"
+   ]
+  },
+  {
+   "name": "subscriber-list #60",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000028"
+   ]
+  },
+  {
+   "name": "subscriber-list #61",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000028"
+   ]
+  },
+  {
+   "name": "subscriber-list #62",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000029"
+   ]
+  },
+  {
+   "name": "subscriber-list #63",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000029"
+   ]
+  },
+  {
+   "name": "subscriber-list #64",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000030"
+   ]
+  },
+  {
+   "name": "subscriber-list #65",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000030"
+   ]
+  },
+  {
+   "name": "subscriber-list #66",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000031"
+   ]
+  },
+  {
+   "name": "subscriber-list #67",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000031"
+   ]
+  },
+  {
+   "name": "subscriber-list #68",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000032"
+   ]
+  },
+  {
+   "name": "subscriber-list #69",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000032"
+   ]
+  },
+  {
+   "name": "subscriber-list #70",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000033"
+   ]
+  },
+  {
+   "name": "subscriber-list #71",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000033"
+   ]
+  },
+  {
+   "name": "subscriber-list #72",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000034"
+   ]
+  },
+  {
+   "name": "subscriber-list #73",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000034"
+   ]
+  },
+  {
+   "name": "subscriber-list #74",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000035"
+   ]
+  },
+  {
+   "name": "subscriber-list #75",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000035"
+   ]
+  },
+  {
+   "name": "subscriber-list #76",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000036"
+   ]
+  },
+  {
+   "name": "subscriber-list #77",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000036"
+   ]
+  },
+  {
+   "name": "subscriber-list #78",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000037"
+   ]
+  },
+  {
+   "name": "subscriber-list #79",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000037"
+   ]
+  },
+  {
+   "name": "subscriber-list #80",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000038"
+   ]
+  },
+  {
+   "name": "subscriber-list #81",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000038"
+   ]
+  },
+  {
+   "name": "subscriber-list #82",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000039"
+   ]
+  },
+  {
+   "name": "subscriber-list #83",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000039"
+   ]
+  },
+  {
+   "name": "subscriber-list #84",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000040"
+   ]
+  },
+  {
+   "name": "subscriber-list #85",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000040"
+   ]
+  },
+  {
+   "name": "subscriber-list #86",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000041"
+   ]
+  },
+  {
+   "name": "subscriber-list #87",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000041"
+   ]
+  },
+  {
+   "name": "subscriber-list #88",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000042"
+   ]
+  },
+  {
+   "name": "subscriber-list #89",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000042"
+   ]
+  },
+  {
+   "name": "subscriber-list #90",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000043"
+   ]
+  },
+  {
+   "name": "subscriber-list #91",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000043"
+   ]
+  },
+  {
+   "name": "subscriber-list #92",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000044"
+   ]
+  },
+  {
+   "name": "subscriber-list #93",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000044"
+   ]
+  },
+  {
+   "name": "subscriber-list #94",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000001"
+   ]
+  },
+  {
+   "name": "subscriber-list #95",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000002"
+   ]
+  },
+  {
+   "name": "subscriber-list #96",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000003"
+   ]
+  },
+  {
+   "name": "subscriber-list #97",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000004"
+   ]
+  },
+  {
+   "name": "subscriber-list #98",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000005"
+   ]
+  },
+  {
+   "name": "subscriber-list #99",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000006"
+   ]
+  },
+  {
+   "name": "subscriber-list #100",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000007"
+   ]
+  },
+  {
+   "name": "subscriber-list #101",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000008"
+   ]
+  },
+  {
+   "name": "subscriber-list #102",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000009"
+   ]
+  },
+  {
+   "name": "subscriber-list #103",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000010"
+   ]
+  },
+  {
+   "name": "subscriber-list #104",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000011"
+   ]
+  },
+  {
+   "name": "subscriber-list #105",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000012"
+   ]
+  },
+  {
+   "name": "subscriber-list #106",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000013"
+   ]
+  },
+  {
+   "name": "subscriber-list #107",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000014"
+   ]
+  },
+  {
+   "name": "subscriber-list #108",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000015"
+   ]
+  },
+  {
+   "name": "subscriber-list #109",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000016"
+   ]
+  },
+  {
+   "name": "subscriber-list #110",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000017"
+   ]
+  },
+  {
+   "name": "subscriber-list #111",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000018"
+   ]
+  },
+  {
+   "name": "subscriber-list #112",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000019"
+   ]
+  },
+  {
+   "name": "subscriber-list #113",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000020"
+   ]
+  },
+  {
+   "name": "subscriber-list #114",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000021"
+   ]
+  },
+  {
+   "name": "subscriber-list #115",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000022"
+   ]
+  },
+  {
+   "name": "subscriber-list #116",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000023"
+   ]
+  },
+  {
+   "name": "subscriber-list #117",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000024"
+   ]
+  },
+  {
+   "name": "subscriber-list #118",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000025"
+   ]
+  },
+  {
+   "name": "subscriber-list #119",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000026"
+   ]
+  },
+  {
+   "name": "subscriber-list #120",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000027"
+   ]
+  },
+  {
+   "name": "subscriber-list #121",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000028"
+   ]
+  },
+  {
+   "name": "subscriber-list #122",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000029"
+   ]
+  },
+  {
+   "name": "subscriber-list #123",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000030"
+   ]
+  },
+  {
+   "name": "subscriber-list #124",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000031"
+   ]
+  },
+  {
+   "name": "subscriber-list #125",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000032"
+   ]
+  },
+  {
+   "name": "subscriber-list #126",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000033"
+   ]
+  },
+  {
+   "name": "subscriber-list #127",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000034"
+   ]
+  },
+  {
+   "name": "subscriber-list #128",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000035"
+   ]
+  },
+  {
+   "name": "subscriber-list #129",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000036"
+   ]
+  },
+  {
+   "name": "subscriber-list #130",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000037"
+   ]
+  },
+  {
+   "name": "subscriber-list #131",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000038"
+   ]
+  },
+  {
+   "name": "subscriber-list #132",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000039"
+   ]
+  },
+  {
+   "name": "subscriber-list #133",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000040"
+   ]
+  },
+  {
+   "name": "subscriber-list #134",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000041"
+   ]
+  },
+  {
+   "name": "subscriber-list #135",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000042"
+   ]
+  },
+  {
+   "name": "subscriber-list #136",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000043"
+   ]
+  },
+  {
+   "name": "subscriber-list #137",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000045"
+   ]
+  },
+  {
+   "name": "subscriber-list #138",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000044"
+   ]
+  },
+  {
+   "name": "subscriber-list #139",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000045"
+   ]
+  },
+  {
+   "name": "subscriber-list #140",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000046"
+   ]
+  },
+  {
+   "name": "subscriber-list #141",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000046"
+   ]
+  },
+  {
+   "name": "subscriber-list #142",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000047"
+   ]
+  },
+  {
+   "name": "subscriber-list #143",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000045"
+   ]
+  },
+  {
+   "name": "subscriber-list #144",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000047"
+   ]
+  },
+  {
+   "name": "subscriber-list #145",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000046"
+   ]
+  },
+  {
+   "name": "subscriber-list #146",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000048"
+   ]
+  },
+  {
+   "name": "subscriber-list #147",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000047"
+   ]
+  },
+  {
+   "name": "subscriber-list #148",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000048"
+   ]
+  },
+  {
+   "name": "subscriber-list #149",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000049"
+   ]
+  },
+  {
+   "name": "subscriber-list #150",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000049"
+   ]
+  },
+  {
+   "name": "subscriber-list #151",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000048"
+   ]
+  },
+  {
+   "name": "subscriber-list #152",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000050"
+   ]
+  },
+  {
+   "name": "subscriber-list #153",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000049"
+   ]
+  },
+  {
+   "name": "subscriber-list #154",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000050"
+   ]
+  },
+  {
+   "name": "subscriber-list #155",
+   "sql": "select \"subscriber_components\".\"id\", \"subscriber_components\".\"subscriber_id\", \"subscriber_components\".\"component_id\", \"subscriber_components\".\"created_at\", \"subscriber_components\".\"updated_at\", \"components\".\"name\" from \"subscriber_components\" left join \"components\" on \"subscriber_components\".\"component_id\" = \"components\".\"id\" where \"subscriber_components\".\"subscriber_id\" = ?",
+   "params": [
+    "70000000000000000000000051"
+   ]
+  },
+  {
+   "name": "subscriber-list #156",
+   "sql": "SELECT s.created_by_operator_id AS id,CASE WHEN o.id IS NULL OR o.email='deleted-' || lower(o.id) || '@operator.invalid'\n        THEN 'Erased operator · ' || s.created_by_operator_id ELSE o.display_name END AS displayName\n        FROM subscriber_directory s LEFT JOIN oa_operators o ON o.id=s.created_by_operator_id WHERE s.id=? AND s.created_by_operator_id IS NOT NULL",
+   "params": [
+    "70000000000000000000000051"
+   ]
+  },
+  {
+   "name": "subscriber-list #157",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000050"
+   ]
+  },
+  {
+   "name": "subscriber-list #158",
+   "sql": "SELECT i.id,i.reference,i.title,f.include_report AS includeReport,f.ended_at AS endedAt\n        FROM incident_subscriptions f JOIN incidents i ON i.id=f.incident_id WHERE f.subscriber_id=?",
+   "params": [
+    "70000000000000000000000051"
+   ]
+  },
+  {
+   "name": "subscriber-list #159",
+   "sql": "SELECT COUNT(*) AS total,\n      COALESCE(SUM(channel='email'),0) AS email,COALESCE(SUM(channel='webhook'),0) AS webhook,\n      COALESCE(SUM(channel='slack'),0) AS slack,COALESCE(SUM(channel='teams'),0) AS teams,COALESCE(SUM(channel='sms'),0) AS sms\n      FROM subscriber_directory AS subscribers WHERE state IN ('pending','active')",
+   "params": []
+  },
+  {
+   "name": "monitor-list #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "monitor-list #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613844786
+   ]
+  },
+  {
+   "name": "monitor-list #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "monitor-list #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "monitor-list #5",
+   "sql": "SELECT id, name, credential_kind AS credentialKind, signing_secret AS signingSecret, responder_sealed_credentials AS responderSealedCredentials, responder_connected AS responderConnected, close_alert_on_resolve AS closeAlertOnResolve, bearer_token_hash AS bearerTokenHash, timestamp_header AS timestampHeader, signature_header AS signatureHeader, deduplication_path AS deduplicationPath, title_path AS titlePath, state_path AS statePath, recovered_value AS recoveredValue, COALESCE(vendor_preset,responder_preset,uptime_preset,grouped_preset,preset) AS preset, label_matchers_json AS labelMatchersJson, monitor_mappings_json AS monitorMappingsJson, component_id AS componentId, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM alert_sources ORDER BY name",
+   "params": []
+  },
+  {
+   "name": "monitor-list #6",
+   "sql": "SELECT source_id AS sourceId, MAX(received_at) AS lastReceivedAt FROM alert_receipts GROUP BY source_id",
+   "params": []
+  },
+  {
+   "name": "monitor-list #7",
+   "sql": "SELECT sourceId, monitorId, monitorName, MAX(receivedAt) AS lastSeenAt FROM (\n            SELECT r.source_id AS sourceId, r.received_at AS receivedAt,\n              CASE WHEN json_valid(r.payload_json) THEN json_extract(r.payload_json, '$.monitorId') END AS monitorId,\n              CASE WHEN json_valid(r.payload_json) THEN json_extract(r.payload_json, '$.monitorName') END AS monitorName\n            FROM alert_receipts r INNER JOIN alert_sources s ON s.id = r.source_id WHERE s.uptime_preset = 'uptime')\n          WHERE typeof(monitorId) = 'text' AND length(monitorId) BETWEEN 1 AND 200 AND monitorId = trim(monitorId) AND typeof(monitorName) = 'text' AND length(trim(monitorName)) > 0\n          GROUP BY sourceId, monitorId ORDER BY monitorName",
+   "params": []
+  },
+  {
+   "name": "maintenance-list #1",
+   "sql": "SELECT p.provider_id AS id,p.issuer,p.client_id AS clientId,p.linked_at AS linkedAt FROM oa_provider_session_pins p JOIN oa_sessions s ON s.id=p.session_id WHERE s.token_hash=?",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee"
+   ]
+  },
+  {
+   "name": "maintenance-list #2",
+   "sql": "SELECT s.id,s.operator_id AS operatorId,s.created_at AS createdAt,s.expires_at AS expiresAt,s.kind,p.issuer,p.subject,p.sid, o.email,o.display_name AS displayName,o.role,o.status,o.version,o.created_at AS operatorCreatedAt\n      FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id LEFT JOIN oa_provider_sessions p ON p.session_id=s.id\n      WHERE s.token_hash=? AND s.revoked_at IS NULL AND s.expires_at>? AND o.status='active' AND s.operator_version=o.version AND (s.kind!='oidc' OR (p.session_id IS NOT NULL AND EXISTS(SELECT 1 FROM oa_auth_settings a WHERE a.singleton=1 AND a.idp_sign_in=1 AND a.generation=p.generation))) AND 1",
+   "params": [
+    "efc33fe938d0cd142634bb79b1b532b51e7877386b39c1c7c953b439d0980dee",
+    1794613845081
+   ]
+  },
+  {
+   "name": "maintenance-list #3",
+   "sql": "SELECT 1 FROM oa_bootstrap WHERE claim_id=?",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "maintenance-list #4",
+   "sql": "SELECT CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE(r.role,'viewer') END AS role FROM oa_operators o LEFT JOIN operator_roles r ON r.operator_id=o.id WHERE o.id=? AND o.status='active'",
+   "params": [
+    "1cf387c2-7d65-4a15-8cc6-f192eef18fee"
+   ]
+  },
+  {
+   "name": "maintenance-list #5",
+   "sql": "select \"id\", \"maintenance_id\", \"component_id\", \"component_name\", \"state\", \"created_at\", \"updated_at\" from \"maintenance_components\" order by \"maintenance_components\".\"maintenance_id\"",
+   "params": []
+  },
+  {
+   "name": "maintenance-list #6",
+   "sql": "select \"id\", \"reference\", \"title\", \"affected_audience\", \"customer_impact\", \"state\", \"starts_at\", \"ends_at\", \"completed_at\", \"created_by_operator_id\", \"created_at\", \"updated_at\" from \"maintenance\" order by \"maintenance\".\"starts_at\" asc",
+   "params": []
+  },
+  {
+   "name": "maintenance-list #7",
+   "sql": "SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance_notices ORDER BY maintenance_id, published_at DESC",
+   "params": []
+  },
+  {
+   "name": "maintenance-list #8",
+   "sql": "SELECT id, maintenance_id AS maintenanceId, body, published_at AS publishedAt, source_states AS sourceStates FROM import_maintenance_updates ORDER BY maintenance_id, published_at DESC, id",
+   "params": []
+  },
+  {
+   "name": "maintenance-list #9",
+   "sql": "SELECT maintenance_id AS id,auto_start AS autoStart,auto_complete AS autoComplete FROM maintenance_automation",
+   "params": []
+  },
+  {
+   "name": "maintenance-list #10",
+   "sql": "SELECT auto_start AS autoStart,auto_complete AS autoComplete FROM maintenance_automation_defaults WHERE singleton=1",
+   "params": []
+  },
+  {
+   "name": "minute-tick #1",
+   "sql": "INSERT INTO setup_readiness (step,evidence_key,checked_at) VALUES (?,?,?) ON CONFLICT(step) DO UPDATE SET evidence_key=excluded.evidence_key, checked_at=excluded.checked_at",
+   "params": [
+    "scheduler",
+    "cron",
+    "2026-11-13T23:50:45.359Z"
+   ]
+  },
+  {
+   "name": "minute-tick #2",
+   "sql": "SELECT r.id AS receiptId,r.source_id AS sourceId,r.incident_id AS incidentId,r.payload_json AS payloadJson,r.received_at AS receivedAt\n        FROM alert_rule_work work JOIN alert_receipts r ON r.id=work.receipt_id\n        WHERE work.completed_at IS NULL AND work.attempts<5 AND work.next_attempt_at<=?\n        ORDER BY r.rowid LIMIT 10",
+   "params": [
+    1794613836258
+   ]
+  },
+  {
+   "name": "minute-tick #3",
+   "sql": "INSERT INTO metric_points(metric_id,resolution,bucket,value_sum,samples,last_at)\n      SELECT metric_id,?,CAST(bucket / ? AS INTEGER)*?,SUM(value_sum),SUM(samples),MAX(last_at)\n      FROM metric_points WHERE resolution=? AND bucket<? GROUP BY metric_id,CAST(bucket / ? AS INTEGER)\n      ON CONFLICT(metric_id,resolution,bucket) DO UPDATE SET value_sum=metric_points.value_sum+excluded.value_sum,samples=metric_points.samples+excluded.samples,last_at=MAX(metric_points.last_at,excluded.last_at)",
+   "params": [
+    3600,
+    3600000,
+    3600000,
+    60,
+    1794527400000,
+    3600000
+   ]
+  },
+  {
+   "name": "minute-tick #4",
+   "sql": "UPDATE incident_subscriptions SET ended_at=strftime('%Y-%m-%dT%H:%M:%fZ',resolution_at,'+30 days') WHERE ended_at IS NULL AND include_report=1\n          AND resolution_at IS NOT NULL AND resolution_at<=?",
+   "params": [
+    "2026-10-14T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #5",
+   "sql": "SELECT id,destination FROM subscribers WHERE state='deactivated' AND deactivation_reason IN ('held for Sorry cutover','held for Business cutover') AND created_at < ?",
+   "params": [
+    "2026-10-14T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #6",
+   "sql": "DELETE FROM subscribers WHERE state = 'deactivated' AND deactivation_reason = ? AND deactivated_at < ?",
+   "params": [
+    "held for page data confirmation",
+    "2026-10-14T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #7",
+   "sql": "SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson FROM incident_drafts WHERE scheduled_publish_at IS NOT NULL AND scheduled_publish_at <= ?",
+   "params": [
+    "2026-11-13T23:50:45.365Z"
+   ]
+  },
+  {
+   "name": "minute-tick #8",
+   "sql": "SELECT id,component_id AS componentId,catalog_id AS catalogId,name,vendor_name AS vendorName,source_url AS sourceUrl,status_page_url AS statusPageUrl,format,options_json AS options,mode,dependent_components_json AS dependentComponentIds,template_id AS templateId,created_by_operator_id AS createdByOperatorId,state,source_state AS sourceState,summary,incident_key AS incidentKey,incident_id AS incidentId,failures,unavailable_at AS unavailableAt,last_read_at AS lastReadAt,version FROM vendor_dependencies ORDER BY created_at,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #9",
+   "sql": "SELECT id, reference, title, affected_audience AS affectedAudience, customer_impact AS customerImpact, state, starts_at AS startsAt, ends_at AS endsAt, completed_at AS completedAt, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance WHERE (state = 'Scheduled' AND starts_at <= ?) OR (state = 'In progress' AND ends_at <= ?)",
+   "params": [
+    "2026-11-13T23:50:45.365Z",
+    "2026-11-13T23:50:45.365Z"
+   ]
+  },
+  {
+   "name": "minute-tick #10",
+   "sql": "SELECT i.id AS incidentId, i.reference, i.title, u.id AS updateId, u.next_update_at AS nextUpdateAt\n        FROM incidents i\n        JOIN incident_updates u ON u.id = (SELECT id FROM incident_updates WHERE incident_id = i.id ORDER BY published_at DESC, id DESC LIMIT 1)\n        WHERE i.deleted_at IS NULL AND i.lifecycle <> 'Resolved' AND u.lifecycle <> 'Resolved' AND u.is_retroactive = 0 AND u.next_update_at IS NOT NULL",
+   "params": []
+  },
+  {
+   "name": "minute-tick #11",
+   "sql": "SELECT incidents.id, incidents.reference, incidents.title, incidents.lifecycle, incidents.resolved_at AS resolvedAt, incidents.peak_impact AS impact,\n        (NOT EXISTS(SELECT 1 FROM statuspage_import_targets imported\n    WHERE imported.kind='incident' AND imported.id=incidents.id)\n    OR EXISTS(SELECT 1 FROM incident_updates live\n      WHERE live.incident_id=incidents.id AND live.is_retroactive=0)) AS reminderEligible\n        FROM incidents LEFT JOIN incident_reports ON incident_reports.incident_id = incidents.id AND incident_reports.published_at IS NOT NULL\n        WHERE incidents.lifecycle = 'Resolved' AND incidents.deleted_at IS NULL AND incident_reports.id IS NULL AND NOT EXISTS(SELECT 1 FROM report_waivers WHERE incident_id=incidents.id)",
+   "params": []
+  },
+  {
+   "name": "minute-tick #12",
+   "sql": "UPDATE incident_subscriptions SET ended_at=strftime('%Y-%m-%dT%H:%M:%fZ',resolution_at,'+24 hours')\n          WHERE ended_at IS NULL AND include_report=0 AND resolution_at IS NOT NULL AND resolution_at<=?",
+   "params": [
+    "2026-11-12T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #13",
+   "sql": "DELETE FROM metric_points WHERE resolution=? AND bucket<?",
+   "params": [
+    60,
+    1794527400000
+   ]
+  },
+  {
+   "name": "minute-tick #14",
+   "sql": "SELECT maintenance.id, maintenance.reference, maintenance.title, maintenance.affected_audience AS affectedAudience, maintenance.customer_impact AS customerImpact, maintenance.state, maintenance.starts_at AS startsAt, maintenance.ends_at AS endsAt, maintenance.completed_at AS completedAt, maintenance.created_by_operator_id AS createdByOperatorId, maintenance.created_at AS createdAt, maintenance.updated_at AS updatedAt FROM maintenance LEFT JOIN maintenance_notices ON maintenance_notices.maintenance_id = maintenance.id AND maintenance_notices.kind = 'reminder' WHERE maintenance.state = 'Scheduled' AND maintenance.starts_at <= ? AND maintenance.starts_at > ? AND maintenance_notices.id IS NULL",
+   "params": [
+    "2026-11-14T23:50:45.365Z",
+    "2026-11-13T23:50:45.365Z"
+   ]
+  },
+  {
+   "name": "minute-tick #15",
+   "sql": "SELECT window.rule_id AS ruleId,window.source_incident_id AS incidentId,receipt.id AS receiptId,receipt.source_id AS sourceId,\n        receipt.payload_json AS payloadJson,receipt.received_at AS receivedAt,work.source_version AS sourceVersion\n        FROM alert_rule_windows window JOIN alert_receipts receipt ON receipt.id=window.receipt_id JOIN alert_rule_work work ON work.receipt_id=receipt.id\n        WHERE window.completed=0 AND window.due_at<=? ORDER BY window.due_at LIMIT 100",
+   "params": [
+    1794613836258
+   ]
+  },
+  {
+   "name": "minute-tick #16",
+   "sql": "INSERT INTO metric_points(metric_id,resolution,bucket,value_sum,samples,last_at)\n      SELECT metric_id,?,CAST(bucket / ? AS INTEGER)*?,SUM(value_sum),SUM(samples),MAX(last_at)\n      FROM metric_points WHERE resolution=? AND bucket<? GROUP BY metric_id,CAST(bucket / ? AS INTEGER)\n      ON CONFLICT(metric_id,resolution,bucket) DO UPDATE SET value_sum=metric_points.value_sum+excluded.value_sum,samples=metric_points.samples+excluded.samples,last_at=MAX(metric_points.last_at,excluded.last_at)",
+   "params": [
+    86400,
+    86400000,
+    86400000,
+    3600,
+    1792018800000,
+    86400000
+   ]
+  },
+  {
+   "name": "minute-tick #17",
+   "sql": "UPDATE subscribers SET state='deactivated',deactivation_reason='incident-follow-ended',deactivated_at=?,updated_at=?\n      WHERE state IN ('pending','active') AND id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)",
+   "params": [
+    "2026-11-13T23:50:36.258Z",
+    "2026-11-13T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #18",
+   "sql": "UPDATE subscriber_tokens SET revoked_at=?,updated_at=? WHERE revoked_at IS NULL\n      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions WHERE ended_at IS NOT NULL)",
+   "params": [
+    "2026-11-13T23:50:36.258Z",
+    "2026-11-13T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #19",
+   "sql": "DELETE FROM metric_points WHERE resolution=? AND bucket<?",
+   "params": [
+    3600,
+    1792018800000
+   ]
+  },
+  {
+   "name": "minute-tick #20",
+   "sql": "DELETE FROM metric_points WHERE resolution=86400 AND bucket<?",
+   "params": [
+    1786752000000
+   ]
+  },
+  {
+   "name": "minute-tick #21",
+   "sql": "UPDATE notification_deliveries SET outcome='suppressed',outcome_at=?,updated_at=? WHERE outcome='queued'\n      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions x WHERE x.ended_at IS NOT NULL\n        AND (x.final_event_id IS NULL OR x.final_event_id<>notification_deliveries.notification_event_id))",
+   "params": [
+    "2026-11-13T23:50:36.258Z",
+    "2026-11-13T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #22",
+   "sql": "UPDATE public_metrics SET stale=1 WHERE stale=0 AND last_reported_at<?",
+   "params": [
+    1794613716258
+   ]
+  },
+  {
+   "name": "minute-tick #23",
+   "sql": "UPDATE report_notification_deliveries SET outcome='suppressed',outcome_at=?,updated_at=? WHERE outcome='queued'\n      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions x WHERE x.ended_at IS NOT NULL\n        AND (x.final_event_id IS NULL OR x.final_event_id<>report_notification_deliveries.notification_event_id))",
+   "params": [
+    "2026-11-13T23:50:36.258Z",
+    "2026-11-13T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #24",
+   "sql": "UPDATE sms_deliveries SET outcome='suppressed',outcome_at=? WHERE outcome='queued'\n      AND subscriber_id IN (SELECT subscriber_id FROM incident_subscriptions x WHERE x.ended_at IS NOT NULL\n        AND (x.final_event_id IS NULL OR x.final_event_id<>sms_deliveries.event_id))",
+   "params": [
+    "2026-11-13T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #25",
+   "sql": "SELECT id,component_id AS componentId,source_id AS sourceId,name,unit,provider,query,endpoint,account_id AS accountId,region,CASE WHEN sealed_credentials IS NOT NULL THEN 1 ELSE 0 END AS connected,last_reported_at AS lastReportedAt,error,sealed_credentials AS sealedCredentials,version FROM public_metrics WHERE provider NOT IN ('push','uptime') AND sealed_credentials IS NOT NULL AND pull_after<=? AND (pull_lease_until IS NULL OR pull_lease_until<=?) ORDER BY pull_after,id LIMIT 10",
+   "params": [
+    1794613836258,
+    1794613836258
+   ]
+  },
+  {
+   "name": "minute-tick #26",
+   "sql": "SELECT x.subscriber_id AS id FROM incident_subscriptions x JOIN subscribers s ON s.id=x.subscriber_id\n        WHERE x.ended_at IS NOT NULL AND s.destination NOT LIKE 'deleted:%' AND (\n          x.final_event_id IS NULL OR x.ended_at<=?\n          OR EXISTS(SELECT 1 FROM notification_delivery_records d WHERE d.subscriber_id=x.subscriber_id AND d.notification_event_id=x.final_event_id\n            AND d.outcome IN ('delivered','failed','suppressed','bounced','complained'))\n          OR EXISTS(SELECT 1 FROM sms_deliveries d WHERE d.subscriber_id=x.subscriber_id AND d.event_id=x.final_event_id\n            AND d.outcome IN ('delivered','failed','undelivered','suppressed')))\n        ORDER BY x.ended_at,x.subscriber_id LIMIT 1000",
+   "params": [
+    "2026-11-12T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #27",
+   "sql": "SELECT id, destination, contact_email FROM subscriber_directory AS subscribers WHERE state = 'pending' AND created_at <= ?",
+   "params": [
+    "2026-11-10T23:50:36.258Z"
+   ]
+  },
+  {
+   "name": "minute-tick #28",
+   "sql": "SELECT COUNT(*) AS total,\n      COALESCE(SUM(channel='email'),0) AS email,COALESCE(SUM(channel='webhook'),0) AS webhook,\n      COALESCE(SUM(channel='slack'),0) AS slack,COALESCE(SUM(channel='teams'),0) AS teams,COALESCE(SUM(channel='sms'),0) AS sms\n      FROM subscriber_directory AS subscribers WHERE state IN ('pending','active')",
+   "params": []
+  },
+  {
+   "name": "minute-tick #29",
+   "sql": "UPDATE snapshot_builds SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE status = 'building' AND started_at <= ?",
+   "params": [
+    "2026-11-13T23:50:45.436Z",
+    "2026-11-13T23:50:45.436Z",
+    "2026-11-13T23:45:45.436Z"
+   ]
+  },
+  {
+   "name": "minute-tick #30",
+   "sql": "select \"id\", \"page_name\", \"tagline\", \"accent_color\", \"timezone\", \"hostname\", \"footer_credit_enabled\", \"template\", \"theme\", \"theme_assets\", \"logo_key\", \"logo_content_type\", \"widget_allowed_origins\", \"widget_appearance\", \"mail_from_address\", \"email_branding\", \"ai_tone_instructions\", \"wording_blocked_terms\", \"wording_friendly_length\", \"feed_id\", \"created_at\", \"updated_at\" from \"page_settings\" where \"page_settings\".\"id\" = ?",
+   "params": [
+    "default"
+   ]
+  },
+  {
+   "name": "minute-tick #31",
+   "sql": "\n        SELECT DISTINCT trim(component.region) AS region FROM components AS component\n        WHERE component.internal = 0 AND length(trim(component.region)) > 0\n          AND (component.only_show_if_degraded = 0\n            OR EXISTS (SELECT 1 FROM component_standing_claims AS claim\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational')\n            OR EXISTS (SELECT 1 FROM incident_components AS claim\n              JOIN incidents AS incident ON incident.id = claim.incident_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational'\n                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')\n            OR EXISTS (SELECT 1 FROM maintenance_components AS claim\n              JOIN maintenance AS window ON window.id = claim.maintenance_id\n              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))\n      ",
+   "params": []
+  },
+  {
+   "name": "minute-tick #32",
+   "sql": "select \"id\", \"kind\", \"aggregate_id\", \"payload_json\", \"available_at\", \"attempts\", \"locked_at\", \"completed_at\", \"failed_at\", \"last_error\", \"created_at\", \"updated_at\" from \"notification_outbox\" where (\"notification_outbox\".\"completed_at\" is null and \"notification_outbox\".\"failed_at\" is null and \"notification_outbox\".\"available_at\" <= ?) order by \"notification_outbox\".\"available_at\" asc limit ?",
+   "params": [
+    "2026-11-13T23:50:45.437Z",
+    100
+   ]
+  },
+  {
+   "name": "minute-tick #33",
+   "sql": "SELECT p.id, p.incident_impact AS incidentImpact, p.destination_id AS destinationId, d.kind, p.incident_update_id AS incidentUpdateId, i.reference, i.title, u.lifecycle, u.customer_impact AS customerImpact, u.affected_audience AS affectedAudience, u.published_at AS publishedAt, u.component_changes_json AS componentChangesJson, u.what_still_works AS whatStillWorks, u.details, u.next_update_at AS nextUpdateAt, settings.timezone\n        FROM delivery_channel_posts p JOIN delivery_channel_destinations d ON d.id = p.destination_id JOIN incident_updates u ON u.id = p.incident_update_id JOIN incidents i ON i.id = u.incident_id JOIN page_settings settings ON settings.id = 'default'\n        WHERE d.removed_at IS NULL AND (d.created_by_operator_id IS NOT NULL OR EXISTS(SELECT 1 FROM subscriber_directory own WHERE own.id=d.id AND own.state='active')) AND NOT EXISTS(SELECT 1 FROM subscriber_directory cs WHERE cs.id=d.id AND cs.state<>'active') AND i.deleted_at IS NULL AND NOT EXISTS (SELECT 1 FROM integration_deliveries x WHERE x.namespace = 'lamp-channels' AND x.id = p.id)\n        ORDER BY p.queued_at, p.id LIMIT ?",
+   "params": [
+    25
+   ]
+  },
+  {
+   "name": "minute-tick #34",
+   "sql": "SELECT p.id,p.event_id AS eventId,p.account_id AS accountId,p.incident_id AS incidentId,p.maintenance_id AS maintenanceId,p.reference,p.lifecycle,p.customer_impact AS customerImpact,p.prefix,p.queued_at AS queuedAt,p.body,p.text,p.post_id AS postId,p.post_cid AS postCid FROM social_posts p JOIN social_accounts a ON a.id=p.account_id\n        WHERE a.removed_at IS NULL AND p.post_id IS NULL AND NOT EXISTS(SELECT 1 FROM integration_deliveries d WHERE d.namespace='lamp-social' AND d.id=p.id)\n        AND NOT EXISTS(SELECT 1 FROM social_posts earlier LEFT JOIN integration_deliveries d ON d.namespace='lamp-social' AND d.id=earlier.id\n          WHERE p.incident_id IS NOT NULL AND earlier.incident_id=p.incident_id AND earlier.account_id=p.account_id\n          AND (earlier.queued_at<p.queued_at OR (earlier.queued_at=p.queued_at AND earlier.id<p.id))\n          AND earlier.post_id IS NULL AND (d.state IS NULL OR d.state IN ('queued','sending','uncertain')))\n        ORDER BY p.queued_at,p.id LIMIT ?",
+   "params": [
+    100
+   ]
+  },
+  {
+   "name": "minute-tick #35",
+   "sql": "SELECT requested_revision AS requestedRevision, completed_revision AS completedRevision FROM public_snapshot_work WHERE id = 'default'",
+   "params": []
+  },
+  {
+   "name": "minute-tick #36",
+   "sql": "SELECT step, evidence_key, checked_at FROM setup_readiness",
+   "params": []
+  },
+  {
+   "name": "minute-tick #37",
+   "sql": "SELECT x.id,x.subscriber_id AS subscriberId,x.kind,d.kind AS channelKind,\n        c.component_name AS componentName,c.previous_state AS previousState,c.new_state AS newState,c.changed_at AS changedAt,c.claimant_kind AS claimantKind,\n        m.reference,m.title,n.kind AS noticeKind,n.body AS noticeBody,n.published_at AS publishedAt,p.timezone\n        FROM channel_subscriber_events x JOIN subscriber_directory s ON s.id=x.subscriber_id AND s.state='active'\n        JOIN delivery_channel_destinations d ON d.id=s.id AND d.removed_at IS NULL\n        JOIN page_settings p ON p.id='default'\n        LEFT JOIN component_notification_events c ON c.id=x.event_id AND x.kind='component'\n        LEFT JOIN maintenance_notices n ON n.id=x.event_id AND x.kind='maintenance'\n        LEFT JOIN maintenance m ON m.id=n.maintenance_id\n        WHERE NOT EXISTS(SELECT 1 FROM integration_deliveries i WHERE i.namespace='lamp-channels' AND i.id=x.id)\n        ORDER BY x.queued_at,x.id LIMIT ?",
+   "params": [
+    25
+   ]
+  },
+  {
+   "name": "minute-tick #38",
+   "sql": "UPDATE integration_attempts SET finished_at=?,outcome=? WHERE namespace=? AND finished_at IS NULL AND id IN (SELECT claim FROM integration_deliveries WHERE namespace=? AND state='sending' AND claim_until<=?)",
+   "params": [
+    1794613845443,
+    "{\"kind\":\"uncertain\",\"code\":\"claim_expired\"}",
+    "lamp-social",
+    "lamp-social",
+    1794613845443
+   ]
+  },
+  {
+   "name": "minute-tick #39",
+   "sql": "SELECT DISTINCT event.provider_message_id AS providerMessageId\n        FROM mail_provider_webhook_events event\n        JOIN notification_attempt_records attempt ON attempt.provider_message_id = event.provider_message_id\n        WHERE event.applied_at IS NULL AND event.provider_message_id IS NOT NULL\n          AND NOT EXISTS (SELECT 1 FROM notification_attempt_records captured WHERE captured.delivery_id = attempt.delivery_id AND captured.local_capture_id IS NOT NULL)\n        ORDER BY event.received_at ASC LIMIT ?",
+   "params": [
+    100
+   ]
+  },
+  {
+   "name": "minute-tick #40",
+   "sql": "UPDATE public_snapshot_work SET retry_lease_id = ?, retry_lease_until = ?, updated_at = ? WHERE id = 'default' AND requested_revision > completed_revision AND (retry_lease_until IS NULL OR retry_lease_until <= ?) AND NOT EXISTS (SELECT 1 FROM snapshot_builds WHERE status = 'building' AND started_at > ?)",
+   "params": [
+    "01M7BN47E51AS0GN1BRM76H20Z",
+    "2026-11-13T23:52:45.436Z",
+    "2026-11-13T23:50:45.436Z",
+    "2026-11-13T23:50:45.436Z",
+    "2026-11-13T23:45:45.436Z"
+   ]
+  },
+  {
+   "name": "minute-tick #41",
+   "sql": "UPDATE integration_deliveries SET state='uncertain',claim=NULL,claim_until=NULL WHERE namespace=? AND state='sending' AND claim_until<=? RETURNING id",
+   "params": [
+    "lamp-social",
+    1794613845443
+   ]
+  },
+  {
+   "name": "minute-tick #42",
+   "sql": "SELECT id FROM integration_deliveries WHERE namespace=? AND state='queued' AND next_at<=? AND attempts<max_attempts ORDER BY next_at,id LIMIT ?",
+   "params": [
+    "lamp-channels",
+    1794613845447,
+    25
+   ]
+  },
+  {
+   "name": "minute-tick #43",
+   "sql": "DELETE FROM setup_readiness WHERE step=?",
+   "params": [
+    "sender"
+   ]
+  },
+  {
+   "name": "minute-tick #44",
+   "sql": "SELECT requested_revision AS requestedRevision, completed_revision AS completedRevision FROM public_snapshot_work WHERE id = 'default'",
+   "params": []
+  },
+  {
+   "name": "minute-tick #45",
+   "sql": "SELECT id FROM integration_deliveries WHERE namespace=? AND state='queued' AND next_at<=? AND attempts<max_attempts ORDER BY next_at,id LIMIT ?",
+   "params": [
+    "lamp-social",
+    1794613845448,
+    100
+   ]
+  },
+  {
+   "name": "minute-tick #46",
+   "sql": "INSERT INTO setup_readiness (step,evidence_key,checked_at) VALUES (?,?,?) ON CONFLICT(step) DO UPDATE SET evidence_key=excluded.evidence_key, checked_at=excluded.checked_at",
+   "params": [
+    "sender-failed",
+    "fn1CoGpCNqbVu4pbeIdDgj-PHVHRtzGR9bP6x_cSNJE\nThe mail check could not read provider domain authentication. Check the provider and the key’s domain-read permission, then try again.",
+    "2026-11-13T23:50:45.450Z"
+   ]
+  },
+  {
+   "name": "minute-tick #47",
+   "sql": "SELECT p.id FROM social_posts p JOIN integration_deliveries d ON d.id=p.id AND d.namespace='lamp-social' WHERE p.post_id IS NULL AND d.state IN ('rejected','uncertain')",
+   "params": []
+  },
+  {
+   "name": "minute-tick #48",
+   "sql": "UPDATE snapshot_build_control SET next_generation = MAX(next_generation, ?) + 1, updated_at = ? WHERE id = 'default' RETURNING next_generation AS generation",
+   "params": [
+    0,
+    "2026-11-13T23:50:45.450Z"
+   ]
+  },
+  {
+   "name": "minute-tick #49",
+   "sql": "insert into \"snapshot_builds\" (\"id\", \"status\", \"version\", \"error\", \"attempts\", \"started_at\", \"finished_at\", \"created_at\", \"updated_at\") values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+   "params": [
+    "01M7BN47EADZ7E2MEHJ27A82QP",
+    "building",
+    null,
+    null,
+    0,
+    "2026-11-13T23:50:45.450Z",
+    null,
+    "2026-11-13T23:50:45.450Z",
+    "2026-11-13T23:50:45.450Z"
+   ]
+  },
+  {
+   "name": "minute-tick #50",
+   "sql": "select \"id\", \"page_name\", \"tagline\", \"accent_color\", \"timezone\", \"hostname\", \"footer_credit_enabled\", \"template\", \"theme\", \"theme_assets\", \"logo_key\", \"logo_content_type\", \"widget_allowed_origins\", \"widget_appearance\", \"mail_from_address\", \"email_branding\", \"ai_tone_instructions\", \"wording_blocked_terms\", \"wording_friendly_length\", \"feed_id\", \"created_at\", \"updated_at\" from \"page_settings\" where \"page_settings\".\"id\" = ?",
+   "params": [
+    "default"
+   ]
+  },
+  {
+   "name": "minute-tick #51",
+   "sql": "select \"component_id\", \"state\" from \"component_standing_claims\"",
+   "params": []
+  },
+  {
+   "name": "minute-tick #52",
+   "sql": "select \"incident_components\".\"component_id\", \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+   "params": [
+    "Resolved"
+   ]
+  },
+  {
+   "name": "minute-tick #53",
+   "sql": "select \"maintenance_components\".\"component_id\", \"maintenance_components\".\"state\" from \"maintenance_components\" inner join \"maintenance\" on \"maintenance_components\".\"maintenance_id\" = \"maintenance\".\"id\" where \"maintenance\".\"state\" = ?",
+   "params": [
+    "In progress"
+   ]
+  },
+  {
+   "name": "minute-tick #54",
+   "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\", \"component_groups\".\"display_order\", \"component_groups\".\"created_at\", \"component_groups\".\"updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #55",
+   "sql": "select \"source_name\", \"source_url\", \"id\", \"component_id\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"supersedes_history_id\", \"changed_at\", \"created_at\", \"updated_at\" from \"component_state_history\" order by \"component_state_history\".\"changed_at\" asc, \"component_state_history\".\"created_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #56",
+   "sql": "select \"id\", \"component_id\", \"history_id\", \"state\", \"starts_at\", \"ends_at\", \"reason\", \"operator_id\", \"created_at\", \"updated_at\" from \"component_state_corrections\" order by \"component_state_corrections\".\"starts_at\" asc, \"component_state_corrections\".\"created_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #57",
+   "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where \"incidents\".\"deleted_at\" is null order by \"incidents\".\"opened_at\" desc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #58",
+   "sql": "select \"incident_components\".\"id\", \"incident_components\".\"incident_id\", \"incident_components\".\"component_id\", \"incident_components\".\"component_name\", \"incident_components\".\"state\", \"incident_components\".\"relationship\", \"incident_components\".\"published_at\", \"incident_components\".\"created_at\", \"incident_components\".\"updated_at\", \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"incident_components\" left join \"components\" on \"incident_components\".\"component_id\" = \"components\".\"id\" where (incident_components.published_at IS NOT NULL and ((\"incident_components\".\"component_id\" is null and incident_components.detached_internal = 0) or \"components\".\"internal\" = ?))",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #59",
+   "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" order by \"incident_updates\".\"published_at\" desc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #60",
+   "sql": "select \"id\", \"reference\", \"title\", \"affected_audience\", \"customer_impact\", \"state\", \"starts_at\", \"ends_at\", \"completed_at\", \"created_by_operator_id\", \"created_at\", \"updated_at\" from \"maintenance\" order by \"maintenance\".\"starts_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #61",
+   "sql": "select \"maintenance_components\".\"id\", \"maintenance_components\".\"maintenance_id\", \"maintenance_components\".\"component_id\", \"maintenance_components\".\"component_name\", \"maintenance_components\".\"state\", \"maintenance_components\".\"created_at\", \"maintenance_components\".\"updated_at\", \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"maintenance_components\" left join \"components\" on \"maintenance_components\".\"component_id\" = \"components\".\"id\" where ((\"maintenance_components\".\"component_id\" is null and maintenance_components.detached_internal = 0) or \"components\".\"internal\" = ?)",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #62",
+   "sql": "SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC",
+   "params": []
+  },
+  {
+   "name": "minute-tick #63",
+   "sql": "SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC",
+   "params": []
+  },
+  {
+   "name": "minute-tick #64",
+   "sql": "SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #65",
+   "sql": "SELECT DISTINCT coalesce(d.namespace,j.namespace) AS namespace FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id WHERE j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND (j.state='completed' OR EXISTS(SELECT 1 FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.job_id=j.id AND p.reversed=0))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #66",
+   "sql": "SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates ORDER BY published_at DESC,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #67",
+   "sql": "SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id WHERE (j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace='statuspage')) AND j.destination='lamp' AND p.reversed=0",
+   "params": []
+  },
+  {
+   "name": "minute-tick #68",
+   "sql": "SELECT id,peak_impact AS impact FROM incidents WHERE deleted_at IS NULL",
+   "params": []
+  },
+  {
+   "name": "minute-tick #69",
+   "sql": "SELECT p.job_id,p.ordinal,p.target_kind,p.target_id FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND p.destination='lamp' AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #70",
+   "sql": "SELECT p.job_id,p.ordinal,p.target_id FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE (j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace='statuspage')) AND p.destination='lamp' AND p.reversed=0",
+   "params": []
+  },
+  {
+   "name": "minute-tick #71",
+   "sql": "SELECT step, evidence_key, checked_at FROM setup_readiness WHERE step IN ('website','website-status-page')",
+   "params": []
+  },
+  {
+   "name": "minute-tick #72",
+   "sql": "SELECT id,component_id AS componentId,catalog_id AS catalogId,name,vendor_name AS vendorName,source_url AS sourceUrl,status_page_url AS statusPageUrl,format,options_json AS options,mode,dependent_components_json AS dependentComponentIds,template_id AS templateId,created_by_operator_id AS createdByOperatorId,state,source_state AS sourceState,summary,incident_key AS incidentKey,incident_id AS incidentId,failures,unavailable_at AS unavailableAt,last_read_at AS lastReadAt,version FROM vendor_dependencies ORDER BY created_at,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #73",
+   "sql": "SELECT include_report FROM incident_follow_settings WHERE id=1",
+   "params": []
+  },
+  {
+   "name": "minute-tick #74",
+   "sql": "SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #75",
+   "sql": "SELECT m.id,m.component_id AS componentId,m.name,m.unit,m.provider AS source,m.last_reported_at AS lastReportedAt FROM public_metrics m JOIN components c ON c.id=m.component_id WHERE c.internal=0 ORDER BY m.created_at,m.id LIMIT 10",
+   "params": []
+  },
+  {
+   "name": "minute-tick #76",
+   "sql": "SELECT metric_id AS metricId,bucket AS at,value_sum/samples AS value FROM metric_points WHERE resolution=60 ORDER BY bucket",
+   "params": []
+  },
+  {
+   "name": "minute-tick #77",
+   "sql": "select \"id\", \"page_name\", \"tagline\", \"accent_color\", \"timezone\", \"hostname\", \"footer_credit_enabled\", \"template\", \"theme\", \"theme_assets\", \"logo_key\", \"logo_content_type\", \"widget_allowed_origins\", \"widget_appearance\", \"mail_from_address\", \"email_branding\", \"ai_tone_instructions\", \"wording_blocked_terms\", \"wording_friendly_length\", \"feed_id\", \"created_at\", \"updated_at\" from \"page_settings\" where \"page_settings\".\"id\" = ?",
+   "params": [
+    "default"
+   ]
+  },
+  {
+   "name": "minute-tick #78",
+   "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\", \"component_groups\".\"display_order\", \"component_groups\".\"created_at\", \"component_groups\".\"updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #79",
+   "sql": "select \"component_id\", \"state\" from \"component_standing_claims\"",
+   "params": []
+  },
+  {
+   "name": "minute-tick #80",
+   "sql": "select \"incident_components\".\"component_id\", \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+   "params": [
+    "Resolved"
+   ]
+  },
+  {
+   "name": "minute-tick #81",
+   "sql": "select \"maintenance_components\".\"component_id\", \"maintenance_components\".\"state\" from \"maintenance_components\" inner join \"maintenance\" on \"maintenance_components\".\"maintenance_id\" = \"maintenance\".\"id\" where \"maintenance\".\"state\" = ?",
+   "params": [
+    "In progress"
+   ]
+  },
+  {
+   "name": "minute-tick #82",
+   "sql": "select \"source_name\", \"source_url\", \"id\", \"component_id\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"supersedes_history_id\", \"changed_at\", \"created_at\", \"updated_at\" from \"component_state_history\" order by \"component_state_history\".\"changed_at\" asc, \"component_state_history\".\"created_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #83",
+   "sql": "select \"id\", \"component_id\", \"history_id\", \"state\", \"starts_at\", \"ends_at\", \"reason\", \"operator_id\", \"created_at\", \"updated_at\" from \"component_state_corrections\" order by \"component_state_corrections\".\"starts_at\" asc, \"component_state_corrections\".\"created_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #84",
+   "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where \"incidents\".\"deleted_at\" is null order by \"incidents\".\"opened_at\" desc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #85",
+   "sql": "select \"incident_components\".\"id\", \"incident_components\".\"incident_id\", \"incident_components\".\"component_id\", \"incident_components\".\"component_name\", \"incident_components\".\"state\", \"incident_components\".\"relationship\", \"incident_components\".\"published_at\", \"incident_components\".\"created_at\", \"incident_components\".\"updated_at\", \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"incident_components\" left join \"components\" on \"incident_components\".\"component_id\" = \"components\".\"id\" where (incident_components.published_at IS NOT NULL and ((\"incident_components\".\"component_id\" is null and incident_components.detached_internal = 0) or \"components\".\"internal\" = ?))",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #86",
+   "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" order by \"incident_updates\".\"published_at\" desc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #87",
+   "sql": "select \"id\", \"reference\", \"title\", \"affected_audience\", \"customer_impact\", \"state\", \"starts_at\", \"ends_at\", \"completed_at\", \"created_by_operator_id\", \"created_at\", \"updated_at\" from \"maintenance\" order by \"maintenance\".\"starts_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #88",
+   "sql": "select \"maintenance_components\".\"id\", \"maintenance_components\".\"maintenance_id\", \"maintenance_components\".\"component_id\", \"maintenance_components\".\"component_name\", \"maintenance_components\".\"state\", \"maintenance_components\".\"created_at\", \"maintenance_components\".\"updated_at\", \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"maintenance_components\" left join \"components\" on \"maintenance_components\".\"component_id\" = \"components\".\"id\" where ((\"maintenance_components\".\"component_id\" is null and maintenance_components.detached_internal = 0) or \"components\".\"internal\" = ?)",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #89",
+   "sql": "SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC",
+   "params": []
+  },
+  {
+   "name": "minute-tick #90",
+   "sql": "SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC",
+   "params": []
+  },
+  {
+   "name": "minute-tick #91",
+   "sql": "SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #92",
+   "sql": "SELECT DISTINCT coalesce(d.namespace,j.namespace) AS namespace FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id WHERE j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND (j.state='completed' OR EXISTS(SELECT 1 FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.job_id=j.id AND p.reversed=0))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #93",
+   "sql": "SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates ORDER BY published_at DESC,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #94",
+   "sql": "SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id WHERE (j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace='statuspage')) AND j.destination='lamp' AND p.reversed=0",
+   "params": []
+  },
+  {
+   "name": "minute-tick #95",
+   "sql": "SELECT id,peak_impact AS impact FROM incidents WHERE deleted_at IS NULL",
+   "params": []
+  },
+  {
+   "name": "minute-tick #96",
+   "sql": "SELECT p.job_id,p.ordinal,p.target_kind,p.target_id FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND p.destination='lamp' AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #97",
+   "sql": "SELECT p.job_id,p.ordinal,p.target_id FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE (j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace='statuspage')) AND p.destination='lamp' AND p.reversed=0",
+   "params": []
+  },
+  {
+   "name": "minute-tick #98",
+   "sql": "SELECT step, evidence_key, checked_at FROM setup_readiness WHERE step IN ('website','website-status-page')",
+   "params": []
+  },
+  {
+   "name": "minute-tick #99",
+   "sql": "SELECT id,component_id AS componentId,catalog_id AS catalogId,name,vendor_name AS vendorName,source_url AS sourceUrl,status_page_url AS statusPageUrl,format,options_json AS options,mode,dependent_components_json AS dependentComponentIds,template_id AS templateId,created_by_operator_id AS createdByOperatorId,state,source_state AS sourceState,summary,incident_key AS incidentKey,incident_id AS incidentId,failures,unavailable_at AS unavailableAt,last_read_at AS lastReadAt,version FROM vendor_dependencies ORDER BY created_at,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #100",
+   "sql": "SELECT include_report FROM incident_follow_settings WHERE id=1",
+   "params": []
+  },
+  {
+   "name": "minute-tick #101",
+   "sql": "SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #102",
+   "sql": "SELECT m.id,m.component_id AS componentId,m.name,m.unit,m.provider AS source,m.last_reported_at AS lastReportedAt FROM public_metrics m JOIN components c ON c.id=m.component_id WHERE c.internal=0 ORDER BY m.created_at,m.id LIMIT 10",
+   "params": []
+  },
+  {
+   "name": "minute-tick #103",
+   "sql": "SELECT metric_id AS metricId,bucket AS at,value_sum/samples AS value FROM metric_points WHERE resolution=60 ORDER BY bucket",
+   "params": []
+  },
+  {
+   "name": "minute-tick #104",
+   "sql": "select \"id\", \"page_name\", \"tagline\", \"accent_color\", \"timezone\", \"hostname\", \"footer_credit_enabled\", \"template\", \"theme\", \"theme_assets\", \"logo_key\", \"logo_content_type\", \"widget_allowed_origins\", \"widget_appearance\", \"mail_from_address\", \"email_branding\", \"ai_tone_instructions\", \"wording_blocked_terms\", \"wording_friendly_length\", \"feed_id\", \"created_at\", \"updated_at\" from \"page_settings\" where \"page_settings\".\"id\" = ?",
+   "params": [
+    "default"
+   ]
+  },
+  {
+   "name": "minute-tick #105",
+   "sql": "select \"components\".\"id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"note\", \"components\".\"group_id\", \"component_groups\".\"name\", \"component_groups\".\"display_order\", \"component_groups\".\"created_at\", \"component_groups\".\"updated_at\", \"components\".\"display_order\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"components\" left join \"component_groups\" on \"components\".\"group_id\" = \"component_groups\".\"id\" where \"components\".\"internal\" = ? order by \"component_groups\".\"display_order\" asc, \"components\".\"display_order\" asc",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #106",
+   "sql": "select \"component_id\", \"state\" from \"component_standing_claims\"",
+   "params": []
+  },
+  {
+   "name": "minute-tick #107",
+   "sql": "select \"incident_components\".\"component_id\", \"incident_components\".\"state\" from \"incident_components\" inner join \"incidents\" on \"incident_components\".\"incident_id\" = \"incidents\".\"id\" where (\"incidents\".\"deleted_at\" is null and \"incidents\".\"lifecycle\" <> ? and incident_components.published_at IS NOT NULL)",
+   "params": [
+    "Resolved"
+   ]
+  },
+  {
+   "name": "minute-tick #108",
+   "sql": "select \"maintenance_components\".\"component_id\", \"maintenance_components\".\"state\" from \"maintenance_components\" inner join \"maintenance\" on \"maintenance_components\".\"maintenance_id\" = \"maintenance\".\"id\" where \"maintenance\".\"state\" = ?",
+   "params": [
+    "In progress"
+   ]
+  },
+  {
+   "name": "minute-tick #109",
+   "sql": "select \"source_name\", \"source_url\", \"id\", \"component_id\", \"previous_state\", \"new_state\", \"cause_type\", \"cause_id\", \"operator_id\", \"supersedes_history_id\", \"changed_at\", \"created_at\", \"updated_at\" from \"component_state_history\" order by \"component_state_history\".\"changed_at\" asc, \"component_state_history\".\"created_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #110",
+   "sql": "select \"id\", \"component_id\", \"history_id\", \"state\", \"starts_at\", \"ends_at\", \"reason\", \"operator_id\", \"created_at\", \"updated_at\" from \"component_state_corrections\" order by \"component_state_corrections\".\"starts_at\" asc, \"component_state_corrections\".\"created_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #111",
+   "sql": "select \"id\", \"reference\", \"title\", \"lifecycle\", \"opened_at\", \"resolved_at\", \"impact_override\", \"created_by_operator_id\", \"deleted_at\", \"deletion_reason\", \"created_at\", \"updated_at\" from \"incidents\" where \"incidents\".\"deleted_at\" is null order by \"incidents\".\"opened_at\" desc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #112",
+   "sql": "select \"incident_components\".\"id\", \"incident_components\".\"incident_id\", \"incident_components\".\"component_id\", \"incident_components\".\"component_name\", \"incident_components\".\"state\", \"incident_components\".\"relationship\", \"incident_components\".\"published_at\", \"incident_components\".\"created_at\", \"incident_components\".\"updated_at\", \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"incident_components\" left join \"components\" on \"incident_components\".\"component_id\" = \"components\".\"id\" where (incident_components.published_at IS NOT NULL and ((\"incident_components\".\"component_id\" is null and incident_components.detached_internal = 0) or \"components\".\"internal\" = ?))",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #113",
+   "sql": "select \"automation_attribution\", \"automation_receipt_id\", \"id\", \"incident_id\", \"lifecycle\", \"affected_audience\", \"customer_impact\", \"what_still_works\", \"details\", \"next_update_at\", \"published_at\", \"is_retroactive\", \"author_operator_id\", \"corrects_update_id\", \"component_changes_json\", \"component_snapshot_json\", \"created_at\", \"updated_at\" from \"incident_updates\" order by \"incident_updates\".\"published_at\" desc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #114",
+   "sql": "select \"id\", \"reference\", \"title\", \"affected_audience\", \"customer_impact\", \"state\", \"starts_at\", \"ends_at\", \"completed_at\", \"created_by_operator_id\", \"created_at\", \"updated_at\" from \"maintenance\" order by \"maintenance\".\"starts_at\" asc",
+   "params": []
+  },
+  {
+   "name": "minute-tick #115",
+   "sql": "select \"maintenance_components\".\"id\", \"maintenance_components\".\"maintenance_id\", \"maintenance_components\".\"component_id\", \"maintenance_components\".\"component_name\", \"maintenance_components\".\"state\", \"maintenance_components\".\"created_at\", \"maintenance_components\".\"updated_at\", \"components\".\"id\", \"components\".\"group_id\", \"components\".\"name\", \"components\".\"description\", \"components\".\"region\", \"components\".\"internal\", \"components\".\"only_show_if_degraded\", \"components\".\"uptime_start_date\", \"components\".\"display_order\", \"components\".\"note\", \"components\".\"created_at\", \"components\".\"updated_at\" from \"maintenance_components\" left join \"components\" on \"maintenance_components\".\"component_id\" = \"components\".\"id\" where ((\"maintenance_components\".\"component_id\" is null and maintenance_components.detached_internal = 0) or \"components\".\"internal\" = ?)",
+   "params": [
+    0
+   ]
+  },
+  {
+   "name": "minute-tick #116",
+   "sql": "SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC",
+   "params": []
+  },
+  {
+   "name": "minute-tick #117",
+   "sql": "SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC",
+   "params": []
+  },
+  {
+   "name": "minute-tick #118",
+   "sql": "SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #119",
+   "sql": "SELECT DISTINCT coalesce(d.namespace,j.namespace) AS namespace FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id WHERE j.destination='lamp' AND (j.namespace IN ('statuspage','betterstack','instatus','sorry') OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace IN ('statuspage','betterstack','instatus','sorry'))) AND (j.state='completed' OR EXISTS(SELECT 1 FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.job_id=j.id AND p.reversed=0))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #120",
+   "sql": "SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates ORDER BY published_at DESC,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #121",
+   "sql": "SELECT DISTINCT j.id,j.plan_json FROM ik_jobs j JOIN ik_provenance p ON p.job_id=j.id WHERE (j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace='statuspage')) AND j.destination='lamp' AND p.reversed=0",
+   "params": []
+  },
+  {
+   "name": "minute-tick #122",
+   "sql": "SELECT id,peak_impact AS impact FROM incidents WHERE deleted_at IS NULL",
+   "params": []
+  },
+  {
+   "name": "minute-tick #123",
+   "sql": "SELECT p.job_id,p.ordinal,p.target_kind,p.target_id FROM ik_provenance p JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id WHERE p.reversed=0 AND p.destination='lamp' AND p.target_kind IN ('incident','maintenance') AND (EXISTS(SELECT 1 FROM incidents WHERE id=p.target_id AND deleted_at IS NULL) OR EXISTS(SELECT 1 FROM maintenance WHERE id=p.target_id))",
+   "params": []
+  },
+  {
+   "name": "minute-tick #124",
+   "sql": "SELECT p.job_id,p.ordinal,p.target_id FROM ik_provenance p JOIN ik_jobs j ON j.id=p.job_id WHERE (j.namespace='statuspage' OR EXISTS(SELECT 1 FROM ik_door_plans d WHERE d.job_id=j.id AND d.namespace='statuspage')) AND p.destination='lamp' AND p.reversed=0",
+   "params": []
+  },
+  {
+   "name": "minute-tick #125",
+   "sql": "SELECT step, evidence_key, checked_at FROM setup_readiness WHERE step IN ('website','website-status-page')",
+   "params": []
+  },
+  {
+   "name": "minute-tick #126",
+   "sql": "SELECT id,component_id AS componentId,catalog_id AS catalogId,name,vendor_name AS vendorName,source_url AS sourceUrl,status_page_url AS statusPageUrl,format,options_json AS options,mode,dependent_components_json AS dependentComponentIds,template_id AS templateId,created_by_operator_id AS createdByOperatorId,state,source_state AS sourceState,summary,incident_key AS incidentKey,incident_id AS incidentId,failures,unavailable_at AS unavailableAt,last_read_at AS lastReadAt,version FROM vendor_dependencies ORDER BY created_at,id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #127",
+   "sql": "SELECT include_report FROM incident_follow_settings WHERE id=1",
+   "params": []
+  },
+  {
+   "name": "minute-tick #128",
+   "sql": "SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id",
+   "params": []
+  },
+  {
+   "name": "minute-tick #129",
+   "sql": "SELECT m.id,m.component_id AS componentId,m.name,m.unit,m.provider AS source,m.last_reported_at AS lastReportedAt FROM public_metrics m JOIN components c ON c.id=m.component_id WHERE c.internal=0 ORDER BY m.created_at,m.id LIMIT 10",
+   "params": []
+  },
+  {
+   "name": "minute-tick #130",
+   "sql": "SELECT metric_id AS metricId,bucket AS at,value_sum/samples AS value FROM metric_points WHERE resolution=60 ORDER BY bucket",
+   "params": []
+  },
+  {
+   "name": "minute-tick #131",
+   "sql": "update \"snapshot_builds\" set \"id\" = ?, \"status\" = ?, \"version\" = ?, \"error\" = ?, \"attempts\" = ?, \"finished_at\" = ?, \"updated_at\" = ? where \"snapshot_builds\".\"id\" = ?",
+   "params": [
+    "01M7BN47EADZ7E2MEHJ27A82QP",
+    "failed",
+    null,
+    "Public snapshot build failed after 3 attempts: Lamp requires a persisted feed identity before rendering feeds.",
+    3,
+    "2026-11-13T23:51:04.895Z",
+    "2026-11-13T23:51:04.895Z",
+    "01M7BN47EADZ7E2MEHJ27A82QP"
+   ]
+  },
+  {
+   "name": "minute-tick #132",
+   "sql": "UPDATE public_snapshot_work SET retry_lease_id = NULL, retry_lease_until = NULL, updated_at = ? WHERE id = 'default' AND retry_lease_id = ?",
+   "params": [
+    "2026-11-13T23:51:05.086Z",
+    "01M7BN47E51AS0GN1BRM76H20Z"
+   ]
+  }
+ ]
+}

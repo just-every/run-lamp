@@ -1,0 +1,4 @@
+Usage: rer size [FLAGS]
+Flags: --help, --cwd, --non-interactive, --json
+Execute the declared OPERATIONS v2 argv with explicit arguments after --.
+

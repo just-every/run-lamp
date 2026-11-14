@@ -1,0 +1,1 @@
+{"valid":true,"cron":[{"cron":"37 3 * * *"}],"job":["size-check"],"needs":["plan","build"]}

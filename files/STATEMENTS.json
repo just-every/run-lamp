@@ -1,0 +1,30 @@
+[
+  {
+    "file": "ordinary-statements/small.json",
+    "sha256": "77549281af4787ead825e3bf00b36474d3fbd1a490d480daff200050b2579253",
+    "bytes": 170420,
+    "executions": 381,
+    "distinct_sql": 123
+  },
+  {
+    "file": "ordinary-statements/large.json",
+    "sha256": "00edd1e2ce10bb7fd7bbad4e76540c456446545e9e286424a825372bb2752a39",
+    "bytes": 170420,
+    "executions": 381,
+    "distinct_sql": 123
+  },
+  {
+    "file": "negative-statements/small.json",
+    "sha256": "09b2149d9ec177d1155cb8a4f19766faa2ffe9801985b5786265bbf81855c94f",
+    "bytes": 240,
+    "executions": 1,
+    "distinct_sql": 1
+  },
+  {
+    "file": "negative-statements/large.json",
+    "sha256": "98e259095277cfd25fa06c2dad70c6b1c13f47446a98125a713b5ba1ed866275",
+    "bytes": 240,
+    "executions": 1,
+    "distinct_sql": 1
+  }
+]

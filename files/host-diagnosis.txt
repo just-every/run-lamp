@@ -1,0 +1,5 @@
+{"verification":{"owner":{"email":"synthetic-lamp-1@example.test","emailField":"SETUP_OPERATOR_EMAIL","bindings":{"SESSION_SECRET":"sessionSecret"}},"publicHosts":["LAMP_PAGE_HOST"]},"deploy":"hosted-check.json"}
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{"origins":["https://rer-hosted-check.invalid","https://status.rer-hosted-check.invalid"]}

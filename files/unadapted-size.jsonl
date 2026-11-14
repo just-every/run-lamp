@@ -1,0 +1,3 @@
+Heavy job admitted: Lamp size:workflow [219eef004372]
+{"version":1,"verb":"size","event":"error","code":"size_owner_missing","message":"The declaration needs the owner (an owner persona or :owner_email) and this seed declares no way to create one: add an owner-claim step to rer-setup.json steps, or verification.owner to agent-surface.json.","exitCode":1}
+{"version":1,"verb":"size","event":"result","ok":false,"exitCode":1}
