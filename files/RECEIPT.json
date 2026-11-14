@@ -18,6 +18,7 @@
     390
   ],
   "candidate_browser_node": "22.20.0",
+  "ci_polls": 4,
   "clause_changes": [],
   "clause_counts_after": {
     "done": 60,
@@ -58,6 +59,7 @@
   ],
   "gate_required": false,
   "github_api_calls_before_watcher": 2,
+  "github_api_calls_total": 6,
   "head": "1516f70a710d21775b8498c0357ea26a76f164d1",
   "local_checks": {
     "candidate_emitted_worker_flow": "pass",
@@ -93,7 +95,8 @@
   "schema": 1,
   "targeted_size_flows_after_passed": 2,
   "targeted_size_flows_before_passed": 0,
-  "timestamp": "2026-11-14T01:49:49.020305+00:00",
+  "terminal_custody": "READY",
+  "timestamp": "2026-11-14T02:07:36.434754+00:00",
   "unchanged_files": {
     "ACCEPTANCE.md": true,
     "CONTRACT.md": true,
@@ -101,6 +104,7 @@
     "package.json": true,
     "pnpm-lock.yaml": true
   },
+  "verify_conclusion": "success",
   "verify_run": 43542499477,
-  "verify_status": "pending"
+  "verify_status": "completed"
 }

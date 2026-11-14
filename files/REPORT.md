@@ -1,6 +1,6 @@
 # Component read query growth repair
 
-Product: just-every/run-lamp, cloud/sd-lamp-qgrowth-components-1, commit `1516f70a710d21775b8498c0357ea26a76f164d1`. PR: https://github.com/just-every/run-lamp/pull/367. The product branch was pushed once through cloud-push.py. Exact-SHA Verify run 43542499477 is being watched; terminal custody is recorded below when it completes. Nothing was landed, deployed, tagged or released.
+Product: just-every/run-lamp, cloud/sd-lamp-qgrowth-components-1, commit `1516f70a710d21775b8498c0357ea26a76f164d1`. PR: https://github.com/just-every/run-lamp/pull/367. The product branch was pushed once through cloud-push.py. Exact-SHA Verify run 43542499477 completed successfully on this full candidate SHA; the product is READY for the fleet’s independent landing gates. Nothing was landed, deployed, tagged or released.
 
 ## Plan and source custody
 
@@ -61,3 +61,16 @@ CLAIM COMP-006 PARTIAL points=none tests=tests/e2e/helpers/component-read-flow.m
 DEFAULT COMP-003: History and correction pages default to 50 entries, accept 1–100, and expose stable next cursors plus older/newer drawer navigation.
 GAP COMP-003: Whole-clause acceptance/provider qualification is outside this measured query repair; prior judgments remain authoritative.
 GAP COMP-006: The other size-finding doors and prior claimant acceptance gaps are not repaired or promoted here.
+
+
+## Exact-SHA CI and terminal custody
+
+Exact candidate push Verify [43542499477](https://github.com/just-every/run-lamp/actions/runs/43542499477) completed **success** on `1516f70a710d21775b8498c0357ea26a76f164d1`. ci-discovery.json, ci-status.jsonl, ci-final.json and ci-watcher.log retain the actual REST observations. One watcher made four status calls, each more than 300 seconds apart after discovery. Total task GitHub API calls: **6/10** (PR creation, discovery, four status reads). No failure archive, rerun, dispatch or other-SHA green result was used.
+
+The ten-minute CI target was not met: this run was still in progress at the third observation, 16 minutes after its recorded creation, and was complete by the final observation at 21 minutes. Workflow definitions were outside this lease and unchanged. Green Verify is the exact-SHA product wall; this report does not claim CI-shape qualification, a complete fleet publication scan, main integration, deployment or whole-clause acceptance.
+
+The fleet must still run its complete publication scan (the cloud scanner lacked Gitleaks), integrate through PR #367 and apply its normal landing rules. No product blocker remains. Report-only evidence publication is independent of product readiness.
+
+CLAIM COMP-003 PARTIAL points=none tests=tests/e2e/helpers/component-read-flow.mjs#componentReadFlow
+CLAIM COMP-006 PARTIAL points=none tests=tests/e2e/helpers/component-read-flow.mjs#componentReadFlow
+READY branch=cloud/sd-lamp-qgrowth-components-1 head=1516f70a710d21775b8498c0357ea26a76f164d1
