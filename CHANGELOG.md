@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.11.17
+
+**Older public history remains reachable as your Lamp grows.** The history page shows completed incidents and maintenance in pages of up to 50 records, with Older history and month links. Atom and RSS feeds link to older entries within their twelve-month window; component feeds keep their filter. Permanent record addresses remain available, and internal-only records do not take public history slots.
+
+- **Scheduled work looks for what is due.** Notification preparation, incident update and report reminders, and subscriber capacity checks use indexed work and maintained counts instead of repeatedly reading accumulated history. Restored backups rebuild derived reminder work from the restored records and reminder history before it is used.
+- **Subscriber CSV imports accept visible component names.** Names ignore case and surrounding spaces, and existing component identifiers still work. The import form lists both. A refused row identifies an unknown or ambiguous component value, or explains the invalid destination or contact field, while other valid rows can proceed through the existing consent and invitation flow.
+- **Sorry imports preserve the affected component scope.** A group listed beside specific members no longer marks their siblings as affected. If an incident's recorded end precedes its start, Lamp uses an authored resolved update after the start when one exists and explains that choice; otherwise it refuses the notice. Source messages and publication times remain intact.
+- **Audit rows and their CSV export name surviving subjects.** Subscriber entries use readable destinations and report entries name their incident. Erased subscribers and removed records keep anonymous history without restoring copied identifiers.
+- **New native workers.dev installations can choose the public Worker name.** Set `LAMP_PAGE_WORKER` and a matching `LAMP_PAGE_HOST` under your account's workers.dev subdomain. The operator Worker and data resource names keep their existing names. Keep the same choice on redeploy: setup refuses a changed recorded target or an unrecorded occupied Worker before provisioning. The option is refused with custom-domain hosting, which also checks the recorded public Worker identity.
+- **The deployment guide keeps attribution out of its rendered instructions.**
+
+Upgrading from 1.11.16: back up data and your source changes first, update the checkout to `v1.11.17`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies one new migration, `0081_scheduled_work_indexes.sql`, after 0080 and before starting the updated Worker. It adds scheduled-work and public-history indexes, derived reminder work tables and triggers, subscriber capacity counts and restore-initialization tracking. Existing subscriber, incident, update and reminder history remains the source record; the first scheduled-work use rebuilds derived reminder work when needed after a restore. Keep the pre-upgrade backup and check your installation's scheduled notifications, reminders, public history and import workflows after updating. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including the two migrations introduced in 1.11.16 and keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.16
 
 **First-run setup keeps your saved time zone.** Reading your website and confirming setup preserve a valid saved zone. An invalid saved zone falls back to the browser's zone, or UTC if neither is valid. Page-settings saves also record the operator and the previous and new time zones in the audit log.

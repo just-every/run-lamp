@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "39dd23fc99f76a25c8c1224637df1b2f2552ffb34788d76b24798e97eca5aee5",
+      "sha256": "acd63e3f875e9b300d392bba771dc9610f47a0b9b4602e678595a2251b1576d4",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "87145c1054ef17c1a125e4a2805ab7fc36c0feedd7bceb9c94a57d37683a6290",
+      "sha256": "ba05b4a82f22bee78bdc2e5e2627728851927ddd8800ba07628f7f53f9cb9473",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2596,7 +2596,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "6b6c94f2617b5cf118b0f80f2b680371d7f7296bc7081b32e174342f5d5c932c",
+      "sha256": "36b738796356f22395b43efea2b2045c00f6f7b296c319b092e6e46942dfa213",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -2713,6 +2713,14 @@
     },
     "release-history/1.11.15.json": {
       "sha256": "7645ad91ce437360799fc4741c3b46a95f94afac2d0561ac1c5599d1fd49c7ab",
+      "executable": false
+    },
+    "release-history/1.11.16.CONTRACT.md": {
+      "sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
+      "executable": false
+    },
+    "release-history/1.11.16.json": {
+      "sha256": "04362f888975d43ce66a373f07d3691a8b035b823f2929060e3d247300482f5a",
       "executable": false
     },
     "release-history/1.11.2.CONTRACT.md": {
@@ -2876,7 +2884,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "cadf7d92ad07664341ca2255d9f0458ffb4633aa080047bb06a96f699882fee3",
+      "sha256": "9e62239e683a2be39f09550162729d276dd622c3711c1d343ffd1d5e6499d2b9",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4000,7 +4008,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "12d7013d559c4028d343349ad49aa8378d3850b131646967fad7aef356c32ba7",
+      "sha256": "588e2ec26a9f98801b4eed7cc2169f40cb4b88cde141449fddc512fa6d743cef",
       "executable": false
     },
     "src/base/actor.ts": {
