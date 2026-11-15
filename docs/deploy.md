@@ -93,7 +93,7 @@ and keep the app hostname as above. Leave the option unset to preserve the
 default public name and keep the same choice on redeploy. See the
 [naming requirements](deployment-reference.md#find-your-workersdev-hostnames).
 
-<!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
+[//]: # (Native public Worker naming: Codex, 2026-11-15T03:50:49Z.)
 
 The [deployment reference](deployment-reference.md#find-your-workersdev-hostnames)
 also shows a command that prints your subdomain.

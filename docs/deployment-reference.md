@@ -121,7 +121,7 @@ selection for an installation with creation records: native setup refuses a
 recorded target change or a name occupied by an unrecorded Worker before
 provisioning. `OPERATIONS.md` documents the complete native naming policy.
 
-<!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
+[//]: # (Native public Worker naming: Codex, 2026-11-15T03:50:49Z.)
 
 Use `--environment staging` for a separate installation; without an explicit
 prefix its hosts start with `lamp-staging` and `lamp-staging-page`. An explicit
