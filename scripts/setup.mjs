@@ -50,7 +50,7 @@ async function main() {
   if (flags.get("env-file")) Object.assign(process.env, await readDeployEnvFile(process.cwd(), flags.get("env-file")));
   const environment = flags.get("environment") ?? "production";
   const config = deploymentConfig(process.env, environment, { claimsOwner: false });
-  const names = resourceNames(config.environment, config.resourcePrefix);
+  const names = resourceNames(config.environment, config.resourcePrefix, config.pageWorker);
   const restoreFrom = flags.get("restore-from");
   if (restoreFrom) await readArchive(resolve(restoreFrom));
   if (flags.get("dry-run")) {
@@ -65,6 +65,7 @@ async function main() {
     const registered = await api.request("/workers/subdomain");
     if (!registered?.subdomain || config.appHost !== `${names.worker}.${registered.subdomain}.workers.dev`) throw new Error("The configured workers.dev hostname does not match this Cloudflare account. Enable its Workers subdomain in Cloudflare, then update LAMP_APP_HOST and LAMP_PAGE_HOST.");
   }
+  await ownership.checkWorkers();
   const databaseId = await ensureD1(ownership, names);
   await ensureBucket(ownership, names);
   await ensureQueue(ownership, names);

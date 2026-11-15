@@ -146,12 +146,14 @@ export function deploymentConfig(env = process.env, environment = "production", 
   const route = pageHostRoute(env, hosting, pageHost);
   const resourcePrefix = optional(env.LAMP_RESOURCE_PREFIX);
   if (resourcePrefix && !/^[a-z0-9](?:[a-z0-9-]{0,45}[a-z0-9])?$/.test(resourcePrefix)) throw new Error("LAMP_RESOURCE_PREFIX must be a lowercase resource name of at most 47 characters.");
+  const pageWorker = optional(env.LAMP_PAGE_WORKER);
+  if (pageWorker && hosting !== "workers-dev") throw new Error("LAMP_PAGE_WORKER is only supported with LAMP_HOSTING=workers-dev.");
+  const names = resourceNames(environment, resourcePrefix, pageWorker);
   if (hosting === "workers-dev") {
-    const names = resourceNames(environment, resourcePrefix);
     const suffix = appHost.slice(names.worker.length + 1);
     if (!/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.workers\.dev$/.test(suffix)
       || appHost !== `${names.worker}.${suffix}` || pageHost !== `${names.publicWorker}.${suffix}`) {
-      throw new Error("workers-dev hosts must be lamp-<environment> and lamp-<environment>-page under your account's workers.dev subdomain. See docs/deploy.md, step 3.");
+      throw new Error(`workers-dev hosts must be ${names.worker} and ${names.publicWorker} under the same account workers.dev subdomain. Set LAMP_APP_HOST and LAMP_PAGE_HOST to match. See docs/deploy.md, step 3.`);
     }
   } else if (pageHost.endsWith(".workers.dev") || appHost.endsWith(".workers.dev")) throw new Error("Use LAMP_HOSTING=workers-dev for workers.dev hostnames.");
   if (pageHost === appHost) throw new Error("LAMP_PAGE_HOST and LAMP_APP_HOST must be distinct for a deployment.");
@@ -214,6 +216,7 @@ export function deploymentConfig(env = process.env, environment = "production", 
     ownerClaim, importDoor,
     hosting,
     resourcePrefix,
+    pageWorker,
     accountId: optional(env.CLOUDFLARE_ACCOUNT_ID),
     pageHost,
     pageHostRoute: route,
@@ -252,9 +255,11 @@ export function deploymentConfig(env = process.env, environment = "production", 
   };
 }
 
-export function resourceNames(environment, resourcePrefix) {
+export function resourceNames(environment, resourcePrefix, pageWorker) {
   const worker = resourcePrefix ?? `lamp-${environment}`;
-  return { worker, publicWorker: `${worker}-page`, database: `${worker}-db`, bucket: `${worker}-files`, queue: `${worker}-jobs` };
+  if (pageWorker !== undefined && (typeof pageWorker !== "string" || !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(pageWorker))) throw new Error("LAMP_PAGE_WORKER must be a lowercase Worker name of at most 63 characters, using letters, digits and internal hyphens.");
+  if (pageWorker === worker) throw new Error("LAMP_PAGE_WORKER must differ from the operator app Worker name.");
+  return { worker, publicWorker: pageWorker ?? `${worker}-page`, database: `${worker}-db`, bucket: `${worker}-files`, queue: `${worker}-jobs` };
 }
 
 export function renderWranglerToml(config, resources) {

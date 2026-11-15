@@ -21,7 +21,7 @@ function run(command, args, options = {}) {
 async function buildGeneratedWorker(configPath, expected) {
   run("pnpm", ["run", "build:app"], { env: { ...process.env, LAMP_WRANGLER_CONFIG: configPath } });
   const built = await readBuiltWorkerArtifact();
-  const worker = resourceNames(expected.environment, expected.resourcePrefix).worker;
+  const worker = resourceNames(expected.environment, expected.resourcePrefix, expected.pageWorker).worker;
   if (built.config.name !== worker) throw new Error(`Vite emitted ${built.config.name ?? "an unnamed Worker"} instead of ${worker}.`);
   if (built.config.compatibility_date !== "2026-09-08" || !["nodejs_compat", "global_fetch_strictly_public"].every(flag => built.config.compatibility_flags?.includes(flag))) throw new Error("The compiled Worker configuration did not retain the required Start compatibility settings.");
   if (built.config.vars?.LAMP_PAGE_HOST !== expected.pageHost || built.config.vars?.LAMP_APP_HOST !== expected.appHost || built.config.vars?.MAIL_FROM_ADDRESS !== expected.mailFromAddress) throw new Error("The compiled Worker configuration did not retain the generated deployment bindings.");
@@ -47,12 +47,12 @@ async function main() {
     return;
   }
   const config = deploymentConfig(process.env, environment);
-  const names = resourceNames(config.environment, config.resourcePrefix);
+  const names = resourceNames(config.environment, config.resourcePrefix, config.pageWorker);
   const restoreArgs = flags.get("restore-from") ? ["--restore-from", flags.get("restore-from")] : [];
   if (flags.get("dry-run")) {
     run("pnpm", ["run", "setup:cloudflare", "--", "--dry-run", "--environment", config.environment, ...restoreArgs]);
     const dryRunConfig = resolve("wrangler.dry-run.toml");
-    await writeGeneratedWrangler(dryRunConfig, config, { ...resourceNames(config.environment, config.resourcePrefix), databaseId: "00000000-0000-0000-0000-000000000000" });
+    await writeGeneratedWrangler(dryRunConfig, config, { ...resourceNames(config.environment, config.resourcePrefix, config.pageWorker), databaseId: "00000000-0000-0000-0000-000000000000" });
     try {
       const builtConfig = await buildGeneratedWorker(dryRunConfig, config);
       const identity = identityVars({ source: deploySource(), fingerprint: await deployFingerprint() });

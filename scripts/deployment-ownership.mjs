@@ -8,7 +8,7 @@ import { resourceNames } from './ops-config.mjs';
 // Record actual creation identities in Base's format so signin and teardown
 // have the same ownership boundary as an ordinary rer deployment.
 export function deploymentOwnership(config, env = process.env) {
-  const names = resourceNames(config.environment, config.resourcePrefix);
+  const names = resourceNames(config.environment, config.resourcePrefix, config.pageWorker);
   for (const name of ['CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN']) {
     if (!env[name]?.trim()) throw new Error(`${name} is required for native deployment ownership.`);
   }
@@ -18,7 +18,20 @@ export function deploymentOwnership(config, env = process.env) {
   const path = (page = false) => resolve('.rer', 'deploy', `${config.environment}${page ? '.page' : ''}.json`);
   const read = (page = false) => readOwnerState(path(page), target(page));
   const save = (state, page = false) => writeOwnerState(path(page), state);
+  const checkWorker = async (page = false) => {
+    const state = await read(page), selected = target(page);
+    const live = await activeWorker(api, selected.worker);
+    if (live && !sameDeployment(live, state.receipt?.provider)) throw new Error(`Refusing unrecorded or replaced Worker ${selected.worker}. Keep its original deployment record.`);
+    if (!live && state.owned.worker?.status === 'created') throw new Error(`Recorded Worker ${selected.worker} is missing. Finish removing this environment before deploying it again.`);
+    return { state, selected };
+  };
   return { api, target, path, read,
+    // Check both targets before setup can create or migrate any resources.
+    // Reading Base's original records also refuses a renamed recorded Worker.
+    async checkWorkers() {
+      await checkWorker(false);
+      if (config.hosting === 'workers-dev') await checkWorker(true);
+    },
     /** The secret names the live Worker holds (never values); none before its first deploy. */
     async heldSecrets(page = false) {
       const live = await activeWorker(api, target(page).worker);
@@ -42,10 +55,7 @@ export function deploymentOwnership(config, env = process.env) {
       return made;
     },
     async upload(page, identity, action) {
-      const state = await read(page), selected = target(page);
-      const live = await activeWorker(api, selected.worker);
-      if (live && !sameDeployment(live, state.receipt?.provider)) throw new Error(`Refusing unrecorded or replaced Worker ${selected.worker}. Keep its original deployment record.`);
-      if (!live && state.owned.worker?.status === 'created') throw new Error(`Recorded Worker ${selected.worker} is missing. Finish removing this environment before deploying it again.`);
+      const { state, selected } = await checkWorker(page);
       state.owned.worker ??= { status: 'pending' };
       state.pendingUpload = { fingerprint: identity.fingerprint, build: identity.fingerprint };
       await save(state, page);
