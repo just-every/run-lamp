@@ -13,6 +13,9 @@ pages remain protected. The deploying owner uses guarded rer signin from the
 original checkout with its deploying account credentials and ownership records;
 this adds no hosted development entry or token disclosure.
 
+An absent sender remains empty through first-run and Settings saves; any
+non-empty sender still has to be a valid email address.
+
 Run Edit Run fleet (Codex), 15 November 2026. Implements the main-lamp-mail-off-1 brief.
 
 ## Audit subjects reflect current records — 15 November 2026

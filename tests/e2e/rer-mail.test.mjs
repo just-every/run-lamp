@@ -8,7 +8,7 @@ import { join, resolve } from 'node:path';
 import { unstable_splitSqlQuery } from 'wrangler';
 import { hashToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
 import { withDraftVersion } from './draft-version-helper.mjs';
-import { deploymentConfig, mailEnvironmentNames, renderWranglerToml, resourceNames } from '../../scripts/ops-config.mjs';
+import { deploymentConfig, mailEnvironmentNames, renderWranglerToml, resourceNames, setupPageSettingsStatement } from '../../scripts/ops-config.mjs';
 import { dryRunInputFailure } from '../../scripts/deploy-preflight.mjs';
 import { productionMail } from '@runeditrun/rer/internal/cli/production-mail.mjs';
 import { commandAdapter } from '../../scripts/installer/local.mjs';
@@ -21,6 +21,17 @@ const { build } = workerRequire('esbuild');
 const appOrigin = 'https://app.example.test', pageOrigin = 'https://status.example.test';
 const receiptKey = Buffer.from('synthetic-lamp-provider-receipt-secret');
 const owner = 'owner@example.test', reader = 'reader@example.test', pending = 'pending@example.test';
+
+function nativeDeploymentEnvironment(provider = 'none') {
+  return { LAMP_APP_HOST: 'app.example.test', LAMP_PAGE_HOST: 'status.example.test', LAMP_PAGE_NAME: 'Synthetic Lamp',
+    LAMP_PAGE_TAGLINE: 'Service updates', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C', SETUP_OPERATOR_EMAIL: owner,
+    MAIL_PROVIDER: provider, SESSION_SECRET: 'synthetic-lamp-session-secret-aaaaaaaaaaaa',
+    SETUP_TOKEN: randomBytes(32).toString('hex'), INSTALLATION_KEY: randomBytes(32).toString('hex'),
+    SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-secret-bbbbbbbb', WEBHOOK_SIGNING_SECRET: randomBytes(32).toString('hex'),
+    ...(provider === 'none' ? {} : { MAIL_FROM_ADDRESS: 'status@example.test', MAIL_PROVIDER_API_KEY: 'synthetic-lamp-provider-key-aaaaaaaa', MAIL_DKIM_SELECTOR: 'synthetic' }) };
+}
+
+const editableSettings = settings => Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'footerCreditEnabled', 'mailFromAddress'].map(key => [key, settings[key]]));
 
 async function buildMailWorker(entry = 'tests/e2e/rer-mail.worker.ts') {
   return build({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'browser', write: false,
@@ -391,14 +402,18 @@ test('Mail-off keeps email unavailable, operator alerts pending and status work 
       INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000001',${now});
       INSERT INTO oa_tokens(id,token_hash,kind,operator_id,operator_version,return_to,created_at,expires_at,consumed_at) SELECT 'synthetic-lamp-proof-1','synthetic-lamp-proof-hash-1','magic',id,version,'/app',${now},${now+1200000},${now} FROM oa_operators;
       INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,source_token_id,created_at,expires_at) SELECT 'synthetic-lamp-session-1','${sessionHash}',id,version,'native','synthetic-lamp-proof-1',${now},${now+86400000} FROM oa_operators;
-      INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp off','Updates','#16794C','UTC','status.example.test','synthetic-lamp-off-1','','2026-10-01','2026-10-01');
-      INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01');`);
+      ${setupPageSettingsStatement(deploymentConfig(nativeDeploymentEnvironment()))}`);
     const raw = (path, init = {}) => runtime.dispatchFetch(new URL(path, appOrigin).href, { redirect: 'manual', ...init,
       headers: { Host: new URL(path, appOrigin).host, 'CF-Connecting-IP': '192.0.2.1', ...init.headers } });
     const cookie = '__Host-operator_session=' + session;
     const call = async (path, body, method = body ? 'POST' : 'GET') => raw(path, await withDraftVersion(path,
       { method, ...(body ? { body: JSON.stringify(body) } : {}), headers: { Origin: appOrigin, Cookie: cookie, ...(body ? { 'Content-Type': 'application/json' } : {}) } },
       read => raw(read, { headers: { Cookie: cookie } })));
+    const installed = (await (await call('/api/app/page-settings')).json()).settings;
+    assert.equal(installed.mailFromAddress, '');
+    const confirmedSettings = await call('/api/app/page-settings', { ...editableSettings(installed), pageName: 'Synthetic Lamp off' }, 'PUT');
+    assert.equal(confirmedSettings.status, 200, await confirmedSettings.clone().text());
+    assert.equal((await call('/api/app/overview/first-run', { components: [], groups: [] })).status, 200);
     const emailResults = [];
     for (const email of [owner, 'unknown@example.test']) {
       const response = await raw('/auth/magic-link', { method: 'POST', headers: { Origin: appOrigin, 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
@@ -449,50 +464,119 @@ test('Mail-off keeps email unavailable, operator alerts pending and status work 
 });
 
 
-test('The built hosted mail-off sign-in screen offers guarded owner guidance and protects private documents', { timeout: 120_000 }, async () => {
+test('The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact', { timeout: 120_000 }, async () => {
   const { externalWorkers, ...built } = await reachBuiltWorkerOptions();
-  // dispatchFetch traverses Miniflare's loopback ingress. Restore its public
-  // HTTP Host before the actual built Worker's native host and auth guards.
+  // dispatchFetch traverses loopback ingress; restore the actual request's Host
+  // before the built Worker's host and native authentication guards.
   built.modules[0].contents = built.modules[0].contents.replace('return worker.fetch(request, bindings(env), context);',
     "request = new Request(request); request.headers.set('Host', new URL(request.url).host); return worker.fetch(request, bindings(env), context);");
-  const bindings = { LAMP_PAGE_HOST: 'status.example.test', LAMP_APP_HOST: 'app.example.test', AUTH_ORIGIN: appOrigin,
-    SETUP_OPERATOR_EMAIL: owner, SESSION_SECRET: 'synthetic-lamp-session-secret-aaaaaaaaaaaa', MAIL_PROVIDER: 'none' };
-  const runtime = new Miniflare(convertV4MiniflareOptions({ port: 0, inspectorPort: 0,
-    workers: [{ ...built, bindings, d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'] }, ...externalWorkers] }));
+  const requests = [];
   let browser;
   try {
-    const db = await runtime.getD1Database('DB');
-    for (const name of (await readdir('migrations/core')).filter(n => n.endsWith('.sql')).sort()) {
-      await db.batch(unstable_splitSqlQuery(await readFile(join('migrations/core', name), 'utf8')).map(statement => db.prepare(statement)));
-    }
-    await db.batch([
-      db.prepare("INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000001',?,'Owner','owner','active',?)").bind(owner, Date.now()),
-      db.prepare("INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000001',?)").bind(Date.now()),
-    ]);
-    const raw = (path, init = {}) => runtime.dispatchFetch(new URL(path, appOrigin).href, { redirect: 'manual', ...init,
-      headers: { Host: new URL(path, appOrigin).host, 'CF-Connecting-IP': '192.0.2.1', ...init.headers } });
-    for (const path of ['/app', '/app/incidents', '/app/settings']) {
-      const refused = await raw(path);
-      assert.equal(refused.status, 302, await refused.clone().text()); assert.equal(new URL(refused.headers.get('location')).pathname, '/signin');
-      assert.equal(refused.headers.has('set-cookie'), false);
-    }
     browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, args: ['--no-sandbox','--use-mock-keychain','--password-store=basic'] });
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-    await context.route('**/*', async route => {
-      const response = await raw(route.request().url());
-      await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
-    });
-    const page = await context.newPage(); await page.goto(appOrigin + '/signin');
-    assert.equal(await page.locator('form[action="/auth/magic-link"]').count(), 0);
-    assert.equal(await page.locator('code').filter({ hasText: 'rer signin' }).count(), 1);
-    assert.equal(await page.locator('input[type="password"]').count(), 0, 'no setup or sign-in token is exposed');
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
-    if (process.env.LAMP_MAIL_OFF_PROOF_DIR) {
-      await mkdir(process.env.LAMP_MAIL_OFF_PROOF_DIR, { recursive: true });
-      await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, 'signin-mail-off-1440.png'), fullPage: true });
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, 'signin-mail-off-390.png'), fullPage: true });
+    for (const [provider, choice] of [['none', 'skip'], ['none', 'read'], ['resend', 'skip'], ['resend', 'read']]) {
+      const env = nativeDeploymentEnvironment(provider);
+      const runtime = new Miniflare(convertV4MiniflareOptions({ port: 0, inspectorPort: 0,
+        workers: [{ ...built, bindings: { ...env, AUTH_ORIGIN: appOrigin }, d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'],
+          outboundService: async request => {
+            requests.push(request.url);
+            const url = new URL(request.url);
+            if (url.host === 'cloudflare-dns.com') return Response.json({ Status: 0, Answer: url.searchParams.get('type') === '1' ? [{ type: 1, data: '93.184.215.14' }] : [] });
+            assert.ok(['www.example.com', 'status.example.com', 'status.example.test'].includes(url.host), 'setup sends no provider request');
+            return new Response('<!doctype html><html><head><title>Synthetic company</title><meta name="description" content="Synthetic service updates"></head><body><h1>Synthetic company</h1></body></html>', { headers: { 'Content-Type': 'text/html' } });
+          } }, ...externalWorkers] }));
+      const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+      try {
+        const db = await runtime.getD1Database('DB');
+        for (const name of (await readdir('migrations/core')).filter(n => n.endsWith('.sql')).sort()) {
+          await db.batch(unstable_splitSqlQuery(await readFile(join('migrations/core', name), 'utf8')).map(statement => db.prepare(statement)));
+        }
+        const now = Date.now(), session = randomBytes(32).toString('base64url');
+        await db.batch([
+          db.prepare("INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000001',?,'Owner','owner','active',?)").bind(owner, now),
+          db.prepare("INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000001',?)").bind(now),
+          db.prepare(setupPageSettingsStatement(deploymentConfig(env))),
+          db.prepare("INSERT INTO oa_tokens(id,token_hash,kind,operator_id,operator_version,return_to,created_at,expires_at,consumed_at) SELECT 'synthetic-lamp-proof','synthetic-lamp-proof-hash','magic',id,version,'/app',?,?,? FROM oa_operators").bind(now, now + 1200000, now),
+          db.prepare("INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,source_token_id,created_at,expires_at) SELECT 'synthetic-lamp-session',?,id,version,'native','synthetic-lamp-proof',?,? FROM oa_operators").bind(await hashToken(env.SESSION_SECRET, 'session', session), now, now + 86400000),
+        ]);
+        assert.equal((await db.prepare("SELECT * FROM setup_readiness WHERE step='first-run'").all()).results.length, 0, 'native fresh setup has not been completed');
+        const raw = (path, init = {}) => runtime.dispatchFetch(new URL(path, appOrigin).href, { redirect: 'manual', ...init,
+          headers: { Host: new URL(path, appOrigin).host, 'CF-Connecting-IP': '192.0.2.1', ...init.headers } });
+        for (const path of ['/app', '/app/incidents', '/app/settings']) {
+          const refused = await raw(path);
+          assert.equal(refused.status, 302, await refused.clone().text()); assert.equal(new URL(refused.headers.get('location')).pathname, '/signin');
+          assert.equal(refused.headers.has('set-cookie'), false);
+        }
+        await context.route('**/*', async route => {
+          const request = route.request();
+          const response = await raw(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postDataBuffer() ?? undefined });
+          await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+        });
+        const page = await context.newPage(); await page.goto(appOrigin + '/signin');
+        if (provider === 'none') {
+          assert.equal(await page.locator('form[action="/auth/magic-link"]').count(), 0);
+          assert.equal(await page.locator('code').filter({ hasText: 'rer signin' }).count(), 1);
+          assert.equal(await page.locator('input[type="password"]').count(), 0, 'no setup or sign-in token is exposed');
+          assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+        }
+        // Only already-proven native session custody is seeded; first-run and
+        // Settings writes below come from the real hydrated production screens.
+        await context.addCookies([{ name: '__Host-operator_session', value: session, url: appOrigin, secure: true, httpOnly: true, sameSite: 'Lax' }]);
+        const gated = await raw('/app', { headers: { Cookie: '__Host-operator_session=' + session } });
+        assert.equal(gated.status, 302); assert.equal(new URL(gated.headers.get('location'), appOrigin).pathname, '/setup');
+        await page.goto(appOrigin + '/setup');
+        if (choice === 'skip') await page.getByRole('button', { name: "Skip, I'll fill it in", exact: true }).click();
+        else {
+          await page.getByLabel('Website', { exact: true }).fill('https://www.example.com');
+          await page.getByRole('button', { name: 'Read website', exact: true }).click();
+          await page.getByRole('status').filter({ hasText: 'We read example.com' }).waitFor();
+        }
+        if (provider === 'none' && process.env.LAMP_MAIL_OFF_PROOF_DIR) {
+          await mkdir(process.env.LAMP_MAIL_OFF_PROOF_DIR, { recursive: true });
+          await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, `setup-${choice}-mail-off-1440.png`), fullPage: true });
+          await page.setViewportSize({ width: 390, height: 844 });
+          await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, `setup-${choice}-mail-off-390.png`), fullPage: true });
+          await page.setViewportSize({ width: 1440, height: 1000 });
+        }
+        const saved = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/page-settings' && response.request().method() === 'PUT');
+        await page.getByRole('button', { name: choice === 'skip' ? 'Open Lamp' : 'Looks right, open Lamp', exact: true }).click();
+        const result = await saved;
+        assert.equal(result.status(), 200, `${provider}/${choice}: ${await result.text()}`);
+        await page.waitForURL('**/app');
+        assert.equal((await db.prepare("SELECT evidence_key FROM setup_readiness WHERE step='first-run'").first()).evidence_key, 'complete');
+        for (const path of ['/app', '/app/incidents', '/app/maintenance']) {
+          await page.goto(appOrigin + path); assert.equal(new URL(page.url()).pathname, path);
+          await page.getByRole('heading', { level: 1 }).waitFor();
+        }
+        await page.goto(appOrigin + '/app/settings');
+        const savedSettings = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/page-settings' && response.request().method() === 'PUT');
+        await page.getByLabel('Page name', { exact: true }).fill(`Synthetic saved ${provider} ${choice}`);
+        await page.getByLabel('Page name', { exact: true }).blur();
+        assert.equal((await savedSettings).status(), 200);
+        await page.getByRole('status').filter({ hasText: 'Saved' }).waitFor();
+        assert.equal(await page.getByRole('alert').count(), 0, 'the absent sender does not appear as a Settings save error');
+        const settings = (await (await raw('/api/app/page-settings', { headers: { Cookie: '__Host-operator_session=' + session } })).json()).settings;
+        assert.equal(settings.pageName, `Synthetic saved ${provider} ${choice}`);
+        assert.equal(settings.mailFromAddress, provider === 'none' ? '' : 'status@example.test');
+        assert.equal((await db.prepare("SELECT mail_from_address FROM page_settings WHERE id='default'").first()).mail_from_address, settings.mailFromAddress);
+        if (provider === 'resend') {
+          const invalid = await raw('/api/app/page-settings', { method: 'PUT', headers: { Origin: appOrigin, Cookie: '__Host-operator_session=' + session, 'Content-Type': 'application/json' }, body: JSON.stringify({ ...editableSettings(settings), mailFromAddress: 'invalid-sender' }) });
+          assert.equal(invalid.status, 400);
+          assert.ok((await invalid.json()).issues.some(issue => issue.path[0] === 'mailFromAddress'));
+          assert.equal((await db.prepare("SELECT mail_from_address FROM page_settings WHERE id='default'").first()).mail_from_address, 'status@example.test');
+        }
+        if (provider === 'none' && choice === 'skip' && process.env.LAMP_MAIL_OFF_PROOF_DIR) {
+          await mkdir(process.env.LAMP_MAIL_OFF_PROOF_DIR, { recursive: true });
+          for (const [name, path] of [['overview', '/app'], ['settings', '/app/settings']]) {
+            await page.goto(appOrigin + path); await page.getByRole('heading', { level: 1 }).waitFor();
+            await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, `${name}-mail-off-1440.png`), fullPage: true });
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, `${name}-mail-off-390.png`), fullPage: true });
+            await page.setViewportSize({ width: 1440, height: 1000 });
+          }
+        }
+      } finally { await context.close(); await runtime.dispose(); }
     }
-    await context.close();
-  } finally { await browser?.close(); await runtime.dispose(); }
+    assert.ok(requests.some(url => new URL(url).host === 'www.example.com'), 'Read website traverses the real website reader');
+  } finally { await browser?.close(); }
 });

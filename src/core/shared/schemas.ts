@@ -30,7 +30,9 @@ export const pageSettingsSchema = z.object({
   template: z.enum(["default", "calm", "uptime", "regions"]).optional(),
   widgetAllowedOrigins: z.array(widgetOriginSchema).max(100).optional(),
   widgetAppearance: widgetAppearanceSchema.optional(),
-  mailFromAddress: z.email().optional(),
+  // Native mail-off installs store an empty sender. It is absence, not an invalid
+  // address; Settings and first-run share this schema on both client and server.
+  mailFromAddress: z.email().or(z.literal("")).optional(),
   emailBranding: emailBrandingSchema.optional(),
   aiToneInstructions: optionalText(2_000).default(""),
   wordingBlockedTerms: z.array(nonEmptyText(100)).max(100).optional(),

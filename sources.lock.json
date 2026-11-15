@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "bbb1aed77498f21f0353b0c023ca4fe0e547659f1dfbc8b95a3986f14e1d3bee",
+      "sha256": "abcde329e6a978370489393efbed86ef0be46d97d85f795f142f92028506527f",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -7032,7 +7032,7 @@
       "executable": false
     },
     "src/core/shared/schemas.ts": {
-      "sha256": "fac67ab3b045037c2159d3370a2c7936c561b111e21ad550db19c0ca8d2c9184",
+      "sha256": "3cecc79bec22d1e160d02d2a86804b78914d58388e64cccc8384eede413e359f",
       "executable": false
     },
     "src/core/shared/statuspage-mapping.ts": {
@@ -8560,7 +8560,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "070e48db7fce3c55bb6ec28484bfa86d6a675b7b74fe07eb1c792efffb88a8ef",
+      "sha256": "e2331c785852f579680ed54cf8a82e57c303347b1f84d9c5624becc5e22ab91b",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {
