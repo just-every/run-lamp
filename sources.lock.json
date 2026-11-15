@@ -8348,7 +8348,7 @@
       "executable": false
     },
     "tests/e2e/helpers/status-journey.mjs": {
-      "sha256": "d299dc3024673a6cf55f5995b6ecc299116e55f8c6409a59b2b5eb8ed38beb35",
+      "sha256": "246623c56f091d5248bba95a532a71a851d7ceef495bc663bebe2834fcf9930e",
       "executable": false
     },
     "tests/e2e/helpers/status-journey.worker.ts": {
@@ -8440,7 +8440,7 @@
       "executable": false
     },
     "tests/e2e/helpers/theme-flow.mjs": {
-      "sha256": "99a58122bc5423d9e9cf52e70559989764f9dd3ab1ca3432e0e3ca14134a7250",
+      "sha256": "06ac92bac370667365fd7720da31c45eef1e6ab60adcb836fe2920a9450541c5",
       "executable": false
     },
     "tests/e2e/helpers/theme-owner-journey.mjs": {
