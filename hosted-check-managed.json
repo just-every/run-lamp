@@ -44,21 +44,25 @@
     {
       "binding": "MAIL_PROVIDER",
       "environment": "MAIL_PROVIDER",
-      "verifyStandIn": "rer"
+      "verifyStandIn": "rer",
+      "optional": true
     },
     {
       "binding": "MAIL_FROM",
       "environment": "MAIL_FROM",
-      "verifyStandIn": "proof@rer-hosted-check.invalid"
+      "verifyStandIn": "proof@rer-hosted-check.invalid",
+      "optional": true
     },
     {
       "binding": "MAIL_API_KEY",
-      "environment": "MAIL_API_KEY"
+      "environment": "MAIL_API_KEY",
+      "optional": true
     },
     {
       "binding": "MAIL_RELAY_URL",
       "environment": "MAIL_RELAY_URL",
-      "verifyStandIn": "https://mail.rer-hosted-check.invalid/api/managed-mail/send"
+      "verifyStandIn": "https://mail.rer-hosted-check.invalid/api/managed-mail/send",
+      "optional": true
     }
   ],
   "publicSettings": [

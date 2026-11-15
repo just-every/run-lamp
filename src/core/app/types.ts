@@ -52,7 +52,7 @@ export interface AppBindings {
   LAMP_APP_HOST: string;
   MAIL_FROM_ADDRESS: string;
   MAIL_PROVIDER_API_KEY?: string;
-  MAIL_PROVIDER?: "rer" | "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
+  MAIL_PROVIDER?: "none" | "rer" | "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
   MAIL_SECONDARY_PROVIDER?: "resend" | "sendgrid" | "mailgun" | "ses" | "postmark";
   MAIL_SECONDARY_API_KEY?: string;
   SES_REGION?: string;

@@ -1,5 +1,5 @@
 import type { AppBindings } from './types';
-import { developmentMail, SesMailSender, PostmarkMailSender, MailgunMailSender, FailoverMailSender, MailRouteGuardSender, createMailRouteRepository, type DirectMailProvider, ResendMailSender, SendGridMailSender, RerMailSender, createMailSendRepository, type MailSender } from '../platform/mail';
+import { UnavailableMailSender, developmentMail, SesMailSender, PostmarkMailSender, MailgunMailSender, FailoverMailSender, MailRouteGuardSender, createMailRouteRepository, type DirectMailProvider, ResendMailSender, SendGridMailSender, RerMailSender, createMailSendRepository, type MailSender } from '../platform/mail';
 
 export type MailExecution = Request | 'background';
 
@@ -17,6 +17,7 @@ export async function prepareAppMailBindings(bindings: AppBindings, _execution?:
 }
 
 export function createAppMailTransport(bindings: AppBindings, extension: MailSender | undefined, _execution?: MailExecution): { sender: MailSender; local: boolean } {
+  if (bindings.MAIL_PROVIDER === 'none') return { sender: new UnavailableMailSender(), local: false };
   if (bindings.MAIL_PROVIDER && !['rer', 'resend', 'sendgrid', 'mailgun', 'ses', 'postmark'].includes(bindings.MAIL_PROVIDER)) throw new Error('MAIL_PROVIDER must be rer, resend, sendgrid, mailgun, ses or postmark.');
   if (bindings.MAILGUN_REGION && !['us', 'eu'].includes(bindings.MAILGUN_REGION)) throw new Error('MAILGUN_REGION must be us or eu.');
   const repository = createMailSendRepository(bindings.DB);

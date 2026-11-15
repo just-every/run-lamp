@@ -18,7 +18,7 @@
     {
       "id": "mail",
       "label": "Online mail settings",
-      "help": "For Online hosting, configure a mail provider before Start. Run Edit Run supplies managed mail settings; ordinary providers use your verified sender and provider key. Local sign-in is one click and requires no mail."
+      "help": "Choose a mail provider for online hosting, or deliberately turn email off. With email off, the deployment owner uses rer signin from the original checkout with its deployment record and Cloudflare credentials; email links, invitations and email alerts are unavailable."
     },
     {
       "id": "sms",
@@ -33,7 +33,7 @@
       "kind": "text",
       "required": true,
       "group": "page",
-      "help": "Enter 1–120 characters."
+      "help": "Enter 1\u2013120 characters."
     },
     {
       "name": "LAMP_PAGE_TAGLINE",
@@ -41,7 +41,7 @@
       "kind": "text",
       "required": true,
       "group": "page",
-      "help": "Enter 1–280 characters."
+      "help": "Enter 1\u2013280 characters."
     },
     {
       "name": "LAMP_PAGE_TIMEZONE",
@@ -64,7 +64,7 @@
       "kind": "text",
       "required": true,
       "group": "owner",
-      "help": "Enter 1–120 characters."
+      "help": "Enter 1\u2013120 characters."
     },
     {
       "name": "LAMP_HOSTING",
@@ -119,6 +119,10 @@
         {
           "value": "resend",
           "label": "Resend"
+        },
+        {
+          "value": "none",
+          "label": "Email off"
         }
       ]
     },
@@ -195,13 +199,15 @@
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "resend"
-          }
+          },
+          "required": true
         },
         {
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "sendgrid"
-          }
+          },
+          "required": true
         }
       ]
     },
@@ -217,13 +223,15 @@
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "resend"
-          }
+          },
+          "required": true
         },
         {
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "sendgrid"
-          }
+          },
+          "required": true
         }
       ]
     },
@@ -241,14 +249,16 @@
             "field": "MAIL_PROVIDER",
             "equals": "resend"
           },
-          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command."
+          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command.",
+          "required": true
         },
         {
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "sendgrid"
           },
-          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command."
+          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command.",
+          "required": true
         }
       ],
       "when": {

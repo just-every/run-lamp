@@ -17,6 +17,7 @@ export interface ResourcePlan {
   durableObjectMigrations: Array<{tag:string;newSqliteClasses?:string[];newClasses?:string[];deletedClasses?:string[];renamedClasses?:Array<{from:string;to:string}>;transferredClasses?:Array<{from:string;fromScript:string;to:string}>}>;
   publicVariables: Record<string, string>;
   secretNames: string[];
+  optionalSecretNames?: string[];
   schedules: string[];
   queueConsumers: Array<{ binding:string; maxBatchSize:number; maxBatchTimeout:number; maxRetries:number; deadLetterBinding?:string }>;
   healthPath: string;

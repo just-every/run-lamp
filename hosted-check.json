@@ -41,16 +41,19 @@
     {
       "binding": "MAIL_PROVIDER",
       "environment": "MAIL_PROVIDER",
-      "verifyStandIn": "sendgrid"
+      "verifyStandIn": "sendgrid",
+      "optional": true
     },
     {
       "binding": "MAIL_FROM",
       "environment": "MAIL_FROM_ADDRESS",
-      "verifyStandIn": "proof@rer-hosted-check.invalid"
+      "verifyStandIn": "proof@rer-hosted-check.invalid",
+      "optional": true
     },
     {
       "binding": "MAIL_API_KEY",
-      "environment": "MAIL_PROVIDER_API_KEY"
+      "environment": "MAIL_PROVIDER_API_KEY",
+      "optional": true
     }
   ],
   "publicSettings": [

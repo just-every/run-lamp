@@ -64,7 +64,8 @@
     },
     {
       "binding": "MAIL_PROVIDER_API_KEY",
-      "environment": "MAIL_PROVIDER_API_KEY"
+      "environment": "MAIL_PROVIDER_API_KEY",
+      "optional": true
     },
     {
       "binding": "SUBSCRIBER_TOKEN_SECRET",
@@ -92,7 +93,8 @@
     },
     {
       "binding": "MAIL_API_KEY",
-      "environment": "MAIL_API_KEY"
+      "environment": "MAIL_API_KEY",
+      "optional": true
     },
     {
       "binding": "TWILIO_ACCOUNT_SID",
@@ -109,6 +111,11 @@
     {
       "binding": "TWILIO_MESSAGING_SERVICE",
       "environment": "TWILIO_MESSAGING_SERVICE"
+    },
+    {
+      "binding": "MAIL_PROVIDER",
+      "environment": "MAIL_PROVIDER",
+      "optional": true
     }
   ],
   "crons": [

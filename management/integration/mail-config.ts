@@ -7,7 +7,13 @@ export function mailConfiguration(config:Record<string,unknown>){
   if(typeof value!=='string'||!value.trim()||(pattern&&!pattern.test(value.trim())))throw Error(`Invalid or missing ${name}`);
   return value.trim();
  };
- const provider=required('MAIL_PROVIDER',/^(rer|resend|sendgrid|mailgun|ses|postmark)$/);
+ const provider=required('MAIL_PROVIDER',/^(none|rer|resend|sendgrid|mailgun|ses|postmark)$/);
+ if(provider==='none'){
+  const sendingInputs=['MAIL_API_KEY','SENDGRID_API_KEY','RESEND_API_KEY','MAIL_PROVIDER_API_KEY','MAIL_ACCOUNT_ID','MAIL_RELAY_URL','MAIL_SECONDARY_PROVIDER','MAIL_SECONDARY_API_KEY','POSTMARK_ACCOUNT_API_KEY'];
+  const conflicts=sendingInputs.filter(name=>typeof config[name]==='string'&&config[name].trim());
+  if(conflicts.length)throw Error(`MAIL_PROVIDER=none conflicts with ${conflicts.join(', ')}`);
+  return {provider,from:'',dkimSelector:undefined,publicVariables:{MAIL_PROVIDER:provider} as Record<string,string>,secondary:undefined,webhookSecrets:[] as string[],secretName:undefined};
+ }
  const from=required(provider==='rer'?'MAIL_FROM':'MAIL_FROM_ADDRESS',email);
  const publicVariables:Record<string,string>={MAIL_PROVIDER:provider,MAIL_FROM_ADDRESS:from};
  let dkimSelector:string|undefined;
