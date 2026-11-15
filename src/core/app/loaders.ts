@@ -43,6 +43,13 @@ export const loadOperatorSession = createServerFn({ method: "GET" })
   const runtime = current?.runtime ?? createApp(await prepareAppMailBindings(bindings, request), request);
   const session = current?.session ?? await runtime.services.auth().getSession(request);
   if (!session) redirectToSignIn(requestUrl);
+  // Client route changes load through this server function instead of the
+  // document preflight. Keep a returning owner out of the first-run card here
+  // too, using the same durable completion record as an ordinary page visit.
+  const firstRunComplete = await runtime.services.overview.live.firstRunComplete();
+  const setup = input.path === "/app/setup";
+  if (!firstRunComplete && !setup) throw redirect({ href: "/setup", statusCode: 302 });
+  if (firstRunComplete && setup) throw redirect({ href: "/app", statusCode: 302 });
   const settingsPromise = runtime.services.pageSettings.get();
   const operatorPromise = runtime.services.operators.view(session.operator);
   const paths = operatorPageReads(input.path, input.view);

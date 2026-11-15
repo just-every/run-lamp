@@ -57,7 +57,7 @@ export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], i
       else state = resolvedAt && Date.parse(update.created_at) >= Date.parse(resolvedAt) ? "resolved" : "investigating";
     }
     if (!state) return refuse("Sorry progress history has an unsupported or missing lifecycle state; no source state was invented.");
-    normalized.push({ id: `${row.id}:${id}`, status: state, body: update.content, created_at: update.created_at, display_at: update.created_at,
+    normalized.push({ id: `${row.id}:${id}`, status: state, ...(!update.state ? { authored_status: null } : {}), body: update.content, created_at: update.created_at, display_at: update.created_at,
       ...(row.type === "unplanned" ? { affected_components: selected.map((code) => ({ code, new_status: state === "resolved" ? "operational" as const : "degraded_performance" as const })) } : {}) });
   }
   if (row.type === "planned" && (!row.begins_at || !row.ends_at || Date.parse(row.ends_at) <= Date.parse(row.begins_at))) return refuse("Sorry planned notice has no valid documented begins_at/ends_at window.");

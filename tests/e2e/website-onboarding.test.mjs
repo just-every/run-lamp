@@ -158,7 +158,11 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     assert.equal(await history.isChecked(), true);
     assert.equal(requests.length, readsBeforeReload);
     await page.getByRole('button', { name: 'Looks right, open Lamp', exact: true }).click();
-    await page.waitForURL('**/app', { timeout: 120_000 });
+    await page.waitForURL('**/app', { timeout: 120_000 }).catch(async cause => {
+      const error = await page.locator('.save-message').textContent().catch(() => null);
+      if (error) throw new Error(`First-run setup could not open Lamp: ${error}`, { cause });
+      throw cause;
+    });
     await page.getByRole('region', { name: 'Your public page' }).waitFor();
 
     const api = async path => (await nativeRequest(path, { cookie })).json();
@@ -198,6 +202,27 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     assert.ok((await logo.arrayBuffer()).byteLength, 'the stored logo remains readable');
     assert.equal(requests.some(path => path.includes('ran-a-script')), false, 'nothing on the site ran');
     assert.ok(requests.every(path => /^(redirect\.example\.com|blocked\.example\.com|acme-tracking\.com|www\.acme-tracking\.com|status\.acme-tracking\.com)\//.test(path)), 'every read went to the named site or its linked status page');
+
+    // The saved first-run choice belongs to this installation, not its old
+    // browser session. A new local owner entry opens the workspace directly.
+    assert.equal((await nativeRequest('/api/app/session/signout', { cookie, method: 'POST', json: {} })).status, 204);
+    const returning = await signInAs({ origin, key: devKey });
+    await context.addCookies(returning.cookies.map(value => ({ ...value, url: origin })));
+    await page.goto(origin + returning.location);
+    await page.locator('.operator-shell[data-hydrated]').waitFor();
+    assert.equal(new URL(page.url()).pathname, '/app', 'a returning local owner lands in the admin after setup');
+    assert.equal(await page.getByText('Welcome', { exact: true }).count(), 0, 'completed setup does not show the Welcome card');
+    for (const method of ['GET', 'HEAD']) {
+      const response = await page.request.fetch(origin + '/setup', { method, maxRedirects: 0 });
+      assert.equal(response.status(), 302);
+      assert.equal(new URL(response.headers().location, origin).pathname, '/app', 'a saved setup address returns to the admin');
+    }
+    // Back/Forward can enter this route through Start's loader without making
+    // a new document request; that route must honor the same completed setup.
+    await page.evaluate(() => { history.pushState({}, '', '/setup'); dispatchEvent(new PopStateEvent('popstate')); });
+    await page.waitForURL(url => url.pathname === '/app');
+    await page.locator('.operator-shell[data-hydrated]').waitFor();
+    assert.equal(await page.getByText('Welcome', { exact: true }).count(), 0, 'client navigation cannot reopen completed first-run setup');
   } finally {
     await browser?.close(); await runtime.close();
     await new Promise(resolve => site.close(resolve));

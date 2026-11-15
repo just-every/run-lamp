@@ -103,12 +103,12 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
   const nextIncident = references("INC"), nextMaintenance = references("SCH");
 
   for (const incident of [...data.incidents].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))) {
-    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || data.publicFeed === true, data.publicFeed === true);
+    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || data.publicFeed === true, data.publicFeed === true, ["statuspage", "sorry"].includes(namespace));
     attachPostmortem(mapped, incident, operatorId, asOf, identify);
     results.push(mapped);
   }
   for (const window of [...data.maintenance].sort((a, b) => (a.scheduled_for ?? a.created_at).localeCompare(b.scheduled_for ?? b.created_at) || a.id.localeCompare(b.id))) {
-    results.push(mapMaintenance(window, components, claims, operatorId, asOf, nextMaintenance, identify, namespace !== "statuspage"));
+    results.push(mapMaintenance(window, components, claims, operatorId, asOf, nextMaintenance, identify));
   }
 
   // Components carry their whole derived history, so they are planned after
@@ -148,7 +148,7 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
   return [...results, ...componentResults, ...templates, ...subscriberResults].sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
 }
 
-function mapIncident(incident: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, sourceEndedAt?: string | null, allowUnattached = false, independentImpact = false, namesListed = false): Mapped {
+function mapIncident(incident: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, sourceEndedAt?: string | null, allowUnattached = false, independentImpact = false, namesListed = false, wholeSourceText = false): Mapped {
   const name = incident.name;
   const updates = [...incident.incident_updates].sort((a, b) => at(a).localeCompare(at(b)) || a.id.localeCompare(b.id));
   if (!updates.length) return { kind: "incident", sourceId: incident.id, accounting: [{ kind: "incident", sourceId: incident.id, name, outcome: "rejected", reason: "No published updates to carry." }] };
@@ -186,9 +186,14 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
     }
     if (lifecycle === "Resolved") resolvedAt = publishedAt;
     const body = (update.body ?? "").trim() || name, points = Array.from(body);
-    const impact = clip(body, 250);
-    const details = points.length > 250 ? clip(points.slice(249).join(""), 500) : "";
-    if (points.length > 749) notes.add("long update text was shortened to Lamp's update fields");
+    // Native wording stays bounded, while the journal retains the whole source
+    // message for the read projection. Overflow is never Additional details.
+    const prefix = points.slice(0, 250).join("");
+    const boundary = body.length > prefix.length && !/\s/u.test(body[prefix.length] ?? "") ? prefix.search(/\s+\S*$/u) : prefix.length;
+    const impact = wholeSourceText ? boundary > 0 ? prefix.slice(0, boundary).trimEnd() : "Imported update" : clip(body, 250);
+    const details = wholeSourceText ? "" : points.length > 250 ? clip(points.slice(249).join(""), 500) : "";
+    if (wholeSourceText && body !== impact) notes.add("long update text is retained in full with its imported history");
+    if (!wholeSourceText && points.length > 749) notes.add("long update text was shortened to Lamp's update fields");
     const stated = [...current.keys()].map((code) => components.get(code)!.name);
     const names = stated.length ? stated : listedNames;
     rows.push({ id: identify(`incident-update:${update.id}`, publishedAt), incident_id: id, lifecycle, affected_audience: clip(names.length ? `Customers using ${names.join(", ")}` : "All customers", 250), customer_impact: impact, what_still_works: "", details, next_update_at: null, published_at: publishedAt, author_operator_id: operatorId, corrects_update_id: null, is_retroactive: 1, created_at: asOf, updated_at: asOf });
@@ -208,7 +213,7 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
   } }, accounting: [{ kind: "incident", sourceId: incident.id, name, outcome: notes.size ? "changed" : "imported", reason: `${updates.length} update${updates.length === 1 ? "" : "s"} at their original times, notifying no one${notes.size ? `; ${[...notes].join("; ")}` : ""}.` }] };
 }
 
-function mapMaintenance(window: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, preserveUpdates: boolean): Mapped {
+function mapMaintenance(window: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId): Mapped {
   const name = window.name;
   const startsAt = window.scheduled_for ? iso(window.scheduled_for) : null, endsAt = window.scheduled_until ? iso(window.scheduled_until) : null;
   if (!startsAt || !endsAt || endsAt <= startsAt) return { kind: "maintenance", sourceId: window.id, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: "rejected", reason: "It has no valid scheduled window." }] };
@@ -227,7 +232,7 @@ function mapMaintenance(window: SourceIncident, components: Map<string, { id: st
   const sourceState = ({ scheduled: "Scheduled", in_progress: "In progress", verifying: "In progress", completed: "Completed", cancelled: "Cancelled" } as Record<string, string>)[window.status];
   return { kind: "maintenance", sourceId: window.id, value: { tables: {
     maintenance: [{ id, reference: reference(id), title: clip(name, 250), state, starts_at: startsAt, ends_at: endsAt, completed_at: completedAt, created_by_operator_id: operatorId, created_at: asOf, updated_at: asOf }],
-    ...(preserveUpdates && window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), source_states: JSON.stringify(update.affected_components ?? []) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
+    ...(window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), source_states: JSON.stringify({ status: update.authored_status === null ? null : update.status, components: update.affected_components ?? [] }) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
     maintenance_components: attached.map((code) => ({ id: identify(`maintenance-component:${window.id}:${code}`, startsAt), maintenance_id: id, component_id: components.get(code)!.id, component_name: components.get(code)!.name, state: "Under maintenance", created_at: asOf, updated_at: asOf })),
   } }, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: sourceState === state ? "imported" : "changed", reason: sourceState === state ? `${state} window carried over; no notice is sent for it.` : `Imported as ${state} because its window is ${state === "Completed" ? "over" : "under way"}; no notice is sent for it.` }] };
 }
