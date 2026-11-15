@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.11.18
+
+**Imported incident messages stay readable in full.** Statuspage and Sorry incident updates display the complete retained source message as one message, without splitting words or putting its continuation under Additional details. Existing imported updates use retained import history when their saved wording has not been edited.
+
+- **Imported maintenance keeps its messages and authored states.** Statuspage maintenance now carries its update history. Operator and public history show each imported message with its own source lifecycle in Lamp’s wording; a message without a recorded state uses the neutral Imported update label.
+- **Returning owners go back to the app.** After first-run setup is complete, opening a saved setup address through app navigation returns to the app instead of showing Welcome again.
+
+Upgrading from 1.11.17: back up data and your source changes first, update the checkout to `v1.11.18`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Keep the backup, exercise a restored copy and check your installation’s imported incident and maintenance history and returning-owner navigation. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17 and keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.17
 
 **Older public history remains reachable as your Lamp grows.** The history page shows completed incidents and maintenance in pages of up to 50 records, with Older history and month links. Atom and RSS feeds link to older entries within their twelve-month window; component feeds keep their filter. Permanent record addresses remain available, and internal-only records do not take public history slots.
