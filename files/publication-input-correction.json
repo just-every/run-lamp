@@ -1,0 +1,160 @@
+{
+  "schema": "rer.publish-check/v3",
+  "status": "FAIL",
+  "complete": true,
+  "source": {
+    "commit": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+    "tree": "22713a5cd0908ebe6d2120f4f1135d1ff11fa0a5"
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": true
+  },
+  "scope_correction": "Scanner working-tree inspection included ignored local setup/test files; scan rerun from isolated raw committed source with full mirrored history. Destination corrected to explicit project plus credential-free HTTPS URL.",
+  "findings": [
+    {
+      "rule": "destination.invalid",
+      "path": "edition.json",
+      "scope": "newly-public"
+    },
+    {
+      "rule": "SEC-3",
+      "path": ".dev.vars",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "SEC-3",
+      "path": ".dev.vars",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "SEC-3",
+      "path": ".dev.vars",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "SEC-3",
+      "path": ".dev.vars",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": ".dev.vars",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": ".lamp-sign-in-qCB82J/storage/d1/miniflare-D1DatabaseObject/e7352547963de7050bd7d94658afc4fe78b61811b7815da12d90be8e863abf4d.sqlite-wal",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": ".wrangler/state/v3/d1/miniflare-D1DatabaseObject/9ba2b04bf514d9facfd57ed57d849e77241a7adc99d1c1545d06688b43d84248.sqlite",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": "dist/server/index.js",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.local-path",
+      "path": "dist/server/wrangler.json",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.local-path",
+      "path": "dist/server/.vite/manifest.json",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": "dist/server/app-assets/manifest-8yGZYr17.js",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": "dist/server/app-assets/button-fvYi7Ujk.js",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.local-path",
+      "path": "dist/server/app-assets/_tanstack-start-manifest_v-CIYfKQA_.js",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": ".lamp-sign-in-TezamD/storage/d1/miniflare-D1DatabaseObject/e7352547963de7050bd7d94658afc4fe78b61811b7815da12d90be8e863abf4d.sqlite-wal",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "hygiene.email",
+      "path": ".seed/installer/setup-answers.json",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "secret.assignment",
+      "path": ".dev.vars",
+      "scope": "working-tree"
+    },
+    {
+      "rule": "secret.assignment",
+      "path": ".rer/local/dev-key.env",
+      "scope": "working-tree"
+    }
+  ],
+  "timings": {
+    "totalSeconds": 349.435194,
+    "phases": {
+      "history.prepare": {
+        "calls": 1,
+        "seconds": 0.617586
+      },
+      "history.context": {
+        "calls": 1147,
+        "seconds": 9.505905
+      },
+      "history.text": {
+        "calls": 19254,
+        "seconds": 260.238632
+      },
+      "working-tree.context": {
+        "calls": 1,
+        "seconds": 0.168252
+      },
+      "working-tree.text": {
+        "calls": 2576,
+        "seconds": 24.711676
+      },
+      "identities.prepare": {
+        "calls": 34,
+        "seconds": 4.418482
+      },
+      "gitleaks.git": {
+        "calls": 1,
+        "seconds": 11.158334
+      },
+      "checksums.prepare": {
+        "calls": 34,
+        "seconds": 0.012233
+      },
+      "gitleaks.dir": {
+        "calls": 1,
+        "seconds": 3.184766
+      },
+      "messages.text": {
+        "calls": 1177,
+        "seconds": 0.152175
+      },
+      "gitleaks.messages": {
+        "calls": 1,
+        "seconds": 0.65591
+      },
+      "github.references": {
+        "calls": 1,
+        "seconds": 1.730399
+      }
+    }
+  }
+}

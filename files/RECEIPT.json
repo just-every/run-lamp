@@ -1,0 +1,195 @@
+{
+  "schema": 1,
+  "tag": "gr-mt-lamp-code-15",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-15",
+  "base": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "head": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "changed_files": [
+    "tests/auth-adoption/sign-in-providers.test.mjs",
+    "sources.lock.json"
+  ],
+  "alert_ids": [
+    32,
+    33
+  ],
+  "test_registrations": {
+    "before": 2,
+    "after": 2
+  },
+  "flagged_substring_checks": {
+    "before": 2,
+    "after": 0
+  },
+  "clause_status_changes": [],
+  "contract_changed": false,
+  "ui_changed": false,
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "node --check tests/auth-adoption/sign-in-providers.test.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/sign-in-providers.test.mjs",
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "receipt": "sign-in-providers.tap"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "git rebase origin/main",
+      "exit": 0,
+      "result": "already up to date; no history rewrite"
+    }
+  ],
+  "review": {
+    "boundary_investigation": "No runtime URL authorization sink; raw JSON text assertions were imprecise. Exact domain-field equality matches the declared API.",
+    "candidate_review": "No concrete bypass or regression found; real installed route returns DomainRule[]. Exact match accepts intended rule, refuses lookalikes and unrelated fields, and invalid JSON/non-array responses fail closed."
+  },
+  "publication_scan": {
+    "status": "PASS",
+    "complete": true,
+    "exit": 0,
+    "findings": 0,
+    "pre_existing": 50,
+    "source": {
+      "commit": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+      "tree": "22713a5cd0908ebe6d2120f4f1135d1ff11fa0a5"
+    },
+    "guarantees": {
+      "historyScanned": true,
+      "visualRecognition": false,
+      "environmentChecked": true
+    },
+    "receipt": "publication-scan.json"
+  },
+  "ci": [
+    {
+      "conclusion": null,
+      "head_sha": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43745352347",
+      "status": "in_progress",
+      "id": 43745352347,
+      "name": "Verify",
+      "event": "push"
+    }
+  ],
+  "product_pushed": true,
+  "lock_sha256": "8213740235feb9438f1841bb19e1e4fc57ec36229313db4f0bcdc3c63dfb283f",
+  "tree": "22713a5cd0908ebe6d2120f4f1135d1ff11fa0a5",
+  "publication_attempts": [
+    {
+      "receipt": "publication-scan-initial-timeout.json",
+      "exit": 2,
+      "status": "INCOMPLETE",
+      "complete": false,
+      "reason": "default 300-second timeout"
+    },
+    {
+      "receipt": "publication-scan-local-artifacts.json",
+      "exit": 1,
+      "status": "FAIL",
+      "complete": true,
+      "findings": 18,
+      "reason": "included ignored local artifacts; destination argument format invalid"
+    },
+    {
+      "receipt": "publication-scan-incorrect-project.json",
+      "exit": 1,
+      "status": "FAIL",
+      "complete": true,
+      "findings": 1,
+      "reason": "project identity must be just-every/lamp, distinct from repository just-every/run-lamp"
+    },
+    {
+      "stage": "standalone destination precheck",
+      "exit": 2,
+      "reason": "Default all-local-ref prechecks encountered a missing blob outside the selected-and-public-base scope, including after a full main fetch; matching-scope precheck then passed.",
+      "attempts": 2,
+      "resolution": "Matching selected-and-public-base precheck passed; destination-precheck.json"
+    },
+    {
+      "receipt": "publication-scan.json",
+      "status": "PASS",
+      "timeout_seconds": 1200,
+      "input": "isolated raw committed tree with full mirrored history",
+      "project": "just-every/lamp",
+      "repository": "https://github.com/just-every/run-lamp",
+      "environment_requested": true,
+      "exit": 0,
+      "complete": true,
+      "findings": 0
+    }
+  ],
+  "project": "just-every/lamp",
+  "identity_check": {
+    "status": "PASS",
+    "candidate_commits": 1,
+    "receipt": "identity-check.log",
+    "trailers": "none"
+  },
+  "push": {
+    "status": "PUSH_OK",
+    "attempts": 1,
+    "branch": "cloud/gr-mt-lamp-code-15",
+    "head": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+    "receipt": "product-push.log"
+  },
+  "destination_precheck": {
+    "status": "PASS",
+    "receipt": "destination-precheck.json",
+    "project": "just-every/lamp",
+    "repository": "just-every/run-lamp"
+  },
+  "ci_rest_calls": 6,
+  "pr_rest_calls": 1,
+  "pr": {
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "cloud/gr-mt-lamp-code-15",
+      "sha": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/394",
+    "number": 394,
+    "state": "open"
+  },
+  "custody": "PUSHED",
+  "ready": false,
+  "blockers": [],
+  "remaining": "Exact-SHA Verify remains in progress after bounded polling; PR-triggered Verify not queried. No CI success or alert closure claimed.",
+  "remote_product_head": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+  "product_worktree_clean": true,
+  "finished_at": "2026-11-15T18:39:07.331108+00:00"
+}

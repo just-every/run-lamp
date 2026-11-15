@@ -1,0 +1,22 @@
+{
+  "timestamp": "2026-11-15T18:37:55.739728+00:00",
+  "request": {
+    "title": "Check sign-in domain rules by exact field value",
+    "head": "cloud/gr-mt-lamp-code-15",
+    "base": "main",
+    "body": "CodeQL alerts 32 and 33 flag domain-name substring checks against raw JSON in the sign-in provider journey. Parse the domain-rule response and compare its `domain` field exactly, preserving the checks that the Google rule exists before disconnect and disappears afterward.\n\nValidation: both native sign-in provider journeys pass (2/2), TypeScript and syntax checks pass, and the regenerated source lock passes its check. Base publication scan is complete/PASS with zero findings on the committed candidate. Exact-SHA [Verify run 43745352347](https://github.com/just-every/run-lamp/actions/runs/43745352347) remains in progress after bounded polling. No product behavior, test registrations, contract clauses or generated acceptance views changed.\n"
+  },
+  "response": {
+    "base": {
+      "ref": "main"
+    },
+    "head": {
+      "ref": "cloud/gr-mt-lamp-code-15",
+      "sha": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/394",
+    "number": 394,
+    "state": "open"
+  },
+  "exit": 0
+}
