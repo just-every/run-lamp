@@ -2588,11 +2588,11 @@
       "executable": false
     },
     "OPERATIONS.json": {
-      "sha256": "3ab5fc3511fa8437bad16e19d26123ffcaceb38f1d942957fe430b4c154b1f3f",
+      "sha256": "65792e4f0a25746c205d811d1e27a1458c8bfcf8bb3fcaa4927d3705cd700da4",
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "ce943a4ee5f8bc01b3150104742cb606719d20e5d5fbfddaee2f4f21d699d1e7",
+      "sha256": "dcab1e279ecee877d56a1a0e919fc0a63bd41d87b7b2a2abe9ee6dfc7f1c18ec",
       "executable": false
     },
     "package.json": {
@@ -3885,10 +3885,6 @@
     },
     "scripts/native-public-worker.mjs": {
       "sha256": "1623412c18d36bcb050dbec99dc1f246709afd8889d8231f0f6ae9f564ac6d9a",
-      "executable": false
-    },
-    "scripts/operations-config.mjs": {
-      "sha256": "1a4f0bac76b465cabe56ce65c6e4f924be77750d436a9068d44eb38202a7440f",
       "executable": false
     },
     "scripts/operations.mjs": {

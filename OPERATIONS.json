@@ -203,9 +203,6 @@
   "documentation": {
     "document": "OPERATIONS.md"
   },
-  "configuration": {
-    "module": "scripts/operations-config.mjs"
-  },
   "loops": [
     {
       "id": "native-mail-dispatch",

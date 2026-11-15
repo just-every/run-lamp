@@ -1,6 +1,6 @@
 # Lamp operations
 
-Mail dispatch is a required Worker loop. Lamp's configuration module validates
+Mail dispatch is a required Worker loop. Lamp's deploy command validates
 its conditional RER, SendGrid or Resend credentials before deployment; the
 Managed relay capability and assigned fields are declared in the generated
 deployment specification. Rer 0.2.29's generic mail-loop schema lists only direct
@@ -507,7 +507,7 @@ The minute cron sends an empty GET only on the heartbeat interval grid, after sc
 
 ## Shared operator authentication
 
-The checkout pins `@runeditrun/rer` 0.2.76. For hosted owner entry without email,
+The checkout pins `@runeditrun/rer` in `package.json` (`rer --version` inside it names the pin). For hosted owner entry without email,
 run this from the deploying checkout using the original account and environment:
 
 ```sh
