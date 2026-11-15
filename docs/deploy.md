@@ -91,11 +91,11 @@ and `lamp-<environment>-page`; for `--environment staging` they start with
 selects just the public Worker: set `LAMP_PAGE_HOST=service-status.<subdomain>.workers.dev`
 and keep the app hostname as above. Leave the option unset to preserve the
 default public name and keep the same choice on redeploy. See the
-[naming requirements](../OPERATIONS.md#optional-public-worker-name-on-workersdev).
+[naming requirements](deployment-reference.md#find-your-workersdev-hostnames).
 
 <!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
 
- The [deployment reference](deployment-reference.md#find-your-workersdev-hostnames)
+The [deployment reference](deployment-reference.md#find-your-workersdev-hostnames)
 also shows a command that prints your subdomain.
 
 **Your own domain:** leave out `LAMP_HOSTING`, set two different names on a domain

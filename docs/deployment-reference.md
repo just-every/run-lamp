@@ -119,7 +119,7 @@ To select just the public Worker for a new installation, add
 app Worker and data resources retain their existing names. Do not change this
 selection for an installation with creation records: native setup refuses a
 recorded target change or a name occupied by an unrecorded Worker before
-provisioning. See [optional public Worker naming](../OPERATIONS.md#optional-public-worker-name-on-workersdev).
+provisioning. `OPERATIONS.md` documents the complete native naming policy.
 
 <!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
 

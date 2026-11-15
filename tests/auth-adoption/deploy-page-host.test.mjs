@@ -92,7 +92,7 @@ const inputs = () => ({
   LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C',
   SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'rer',
   MAIL_FROM: 'status@example.test', MAIL_RELAY_URL: 'https://relay.example.test/send', MAIL_API_KEY: `synthetic-${hex()}`,
-  SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), INSTALLATION_KEY: hex(),
+  SETUP_TOKEN: hex(), SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), INSTALLATION_KEY: hex(),
 });
 async function nativeSetup(directory, env, { dryRun = true, edge } = {}) {
   const file = join(directory, 'inputs.env');
@@ -161,7 +161,7 @@ test('Native setup refuses invalid, colliding and mismatched public Worker selec
   const requests = [];
   const proxy = createServer(async (request, response) => {
     requests.push({ url: request.url, method: request.method });
-    const reply = request.method === 'GET' ? await fetch(`${edge.origin}${request.url}`) : new Response('Unexpected provider write', { status: 500 });
+    const reply = request.method === 'GET' ? await fetch(`${edge.origin}${request.url}`, { headers: request.headers }) : new Response('Unexpected provider write', { status: 500 });
     response.writeHead(reply.status, Object.fromEntries(reply.headers));
     response.end(Buffer.from(await reply.arrayBuffer()));
   });
