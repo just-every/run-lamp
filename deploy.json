@@ -118,6 +118,7 @@
   "deployGuide": "https://run-lamp.com/docs/deploy",
   "publicSettings": [
     "LAMP_APP_HOST",
-    "LAMP_PAGE_HOST"
+    "LAMP_PAGE_HOST",
+    "LAMP_PAGE_WORKER"
   ]
 }

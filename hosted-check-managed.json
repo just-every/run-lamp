@@ -60,5 +60,8 @@
       "environment": "MAIL_RELAY_URL",
       "verifyStandIn": "https://mail.rer-hosted-check.invalid/api/managed-mail/send"
     }
+  ],
+  "publicSettings": [
+    "LAMP_PAGE_WORKER"
   ]
 }
