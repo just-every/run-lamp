@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.19
+
+**Lamp can run with email deliberately turned off.** Hosted installations can select `MAIL_PROVIDER=none` without a sender, sending key or DKIM inputs. A missing or deferred selection does not turn email off, and conflicting sending credentials are refused. Enabled mail providers retain their checks.
+
+- **The deployment owner can sign in without email.** Run `rer signin` from the checkout that deployed the selected environment, with the same Cloudflare account credentials and recorded deployment ownership. It checks the recorded app Worker, including a custom app name; the public Worker is not a sign-in target. The hosted sign-in page explains that email links and invitations are unavailable and exposes no development sign-in shortcut.
+- **Mail-off installations can finish first-run and save Settings.** Opening Lamp after Skip or Read website works without a sender. Incidents, maintenance and public status work remain available. Email-dependent actions report unavailable, and operator email alerts remain pending rather than claiming delivery. Other operators need a configured sign-in provider or an administrator to enable email.
+- **The checkout uses rer 0.2.118.** This release includes Lamp’s native setup, deployment, management and runtime adoption of its mail-off support.
+
+Upgrading from 1.11.18: back up data and your source changes first, update the checkout to `v1.11.19`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. To deliberately disable email, set `MAIL_PROVIDER=none` and remove sender, sending credentials, relay settings, DKIM inputs and secondary mail-provider configuration as described in `docs/deploy.md`. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Keep the backup, exercise a restored copy and check your installation’s sign-in, first-run, Settings, incident and maintenance workflows. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17 and keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.18
 
 **Imported incident messages stay readable in full.** Statuspage and Sorry incident updates display the complete retained source message as one message, without splitting words or putting its continuation under Additional details. Existing imported updates use retained import history when their saved wording has not been edited.
