@@ -85,9 +85,17 @@ LAMP_APP_HOST=lamp-production.<subdomain>.workers.dev
 LAMP_PAGE_HOST=lamp-production-page.<subdomain>.workers.dev
 ```
 
-Replace `<subdomain>` with yours. The names must be exactly `lamp-<environment>`
+Replace `<subdomain>` with yours. By default the names are `lamp-<environment>`
 and `lamp-<environment>-page`; for `--environment staging` they start with
-`lamp-staging`. The [deployment reference](deployment-reference.md#find-your-workersdev-hostnames)
+`lamp-staging`. For a new installation, an optional `LAMP_PAGE_WORKER=service-status`
+selects just the public Worker: set `LAMP_PAGE_HOST=service-status.<subdomain>.workers.dev`
+and keep the app hostname as above. Leave the option unset to preserve the
+default public name and keep the same choice on redeploy. See the
+[naming requirements](../OPERATIONS.md#optional-public-worker-name-on-workersdev).
+
+<!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
+
+ The [deployment reference](deployment-reference.md#find-your-workersdev-hostnames)
 also shows a command that prints your subdomain.
 
 **Your own domain:** leave out `LAMP_HOSTING`, set two different names on a domain

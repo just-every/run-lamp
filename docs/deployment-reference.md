@@ -44,6 +44,7 @@ Optional values follow the required entries in the table.
 | `OWNER_DISPLAY_NAME` | Optional first-owner name, 1–120 characters; the native default is `Owner`. Existing owners keep their name. |
 | `LAMP_HOSTING` | `custom-domain` (default) or `workers-dev`. |
 | `LAMP_PAGE_HOST_ROUTE_ZONE`, `LAMP_PAGE_HOST_TARGET` | Optional, set together: serve `LAMP_PAGE_HOST` as a Worker route on a Cloudflare for SaaS provider zone in your account (`LAMP_PAGE_HOST_ROUTE_ZONE`) when its own DNS is elsewhere. The target is the proxied name on that zone (a CNAME to the fallback origin) that the page host's DNS points at: the zone or a name under it. Bare lowercase hostnames; the page host must be outside the zone; not valid with `LAMP_HOSTING=workers-dev`. See [a page host whose DNS is elsewhere](domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere). |
+| `LAMP_PAGE_WORKER` | Optional public Worker name for `workers-dev` only: 1–63 lowercase letters, digits and internal hyphens, distinct from the app Worker. Set `LAMP_PAGE_HOST` to this name under the same account subdomain. Omit it to keep `<prefix>-page`; retain the choice on redeploy. |
 | `LAMP_RESOURCE_PREFIX` | Optional resource namespace: lowercase letters, digits and hyphens, at most 47 characters. Defaults to `lamp-<environment>`. |
 | `SENDGRID_WEBHOOK_PUBLIC_KEY` or `RESEND_WEBHOOK_SECRET` | Optional at deploy time, required for accepting the selected provider's signed delivery receipts. Without a key or the optional signed SendGrid relay, feedback callbacks are rejected. The delivery log shows **Accepted by SendGrid** (or **Accepted by Resend**) as the final email status available; CSV retains the transport outcome and acceptance timestamp. |
 
@@ -112,11 +113,21 @@ required; Lamp validates their exact match with the generated Worker names and
 checks the registered account subdomain during real setup. A dry run checks the
 naming pattern but does not query the account.
 
+To select just the public Worker for a new installation, add
+`LAMP_PAGE_WORKER=service-status` and set
+`LAMP_PAGE_HOST=service-status.my-account.workers.dev`. The operator hostname,
+app Worker and data resources retain their existing names. Do not change this
+selection for an installation with creation records: native setup refuses a
+recorded target change or a name occupied by an unrecorded Worker before
+provisioning. See [optional public Worker naming](../OPERATIONS.md#optional-public-worker-name-on-workersdev).
+
+<!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
+
 Use `--environment staging` for a separate installation; without an explicit
 prefix its hosts start with `lamp-staging` and `lamp-staging-page`. An explicit
 prefix replaces that environment-derived namespace, so give each installation
-a distinct prefix. The app Worker is `<prefix>`, the public Worker is
-`<prefix>-page`, D1 is `<prefix>-db`, R2 is `<prefix>-files` and the Queue is
+a distinct prefix. The app Worker is `<prefix>`, the default public Worker is
+`<prefix>-page` (or the explicit `LAMP_PAGE_WORKER`), D1 is `<prefix>-db`, R2 is `<prefix>-files` and the Queue is
 `<prefix>-jobs`. Custom-domain hosting uses one Worker for both hosts.
 
 ## Removal and deployment records

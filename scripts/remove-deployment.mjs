@@ -15,7 +15,7 @@ try {
   const recordPath = deploymentRecordPath(values.environment);
   const record = JSON.parse(await readFile(recordPath, 'utf8'));
   if (record.accountId !== env.CLOUDFLARE_ACCOUNT_ID) throw new Error('Use the Cloudflare account that deployed this environment.');
-  const ownership = deploymentOwnership({ environment: values.environment, resourcePrefix: record.resources.worker, appHost: record.appHost, pageHost: record.pageHost }, env);
+  const ownership = deploymentOwnership({ environment: values.environment, resourcePrefix: record.resources.worker, pageWorker: record.resources.publicWorker, appHost: record.appHost, pageHost: record.pageHost }, env);
   const removed = [];
   // The public Worker refers to the app Worker's Durable Object. Release it
   // first, then let Base clear schedules, consumers, stored objects and data.

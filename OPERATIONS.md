@@ -131,6 +131,41 @@ page host.
 The landing page's former address `/lamp` answers 301 to the app host's `/` for one
 release. The landing page is a public, indexable document on the operator name.
 
+### Optional public Worker name on workers.dev
+
+Without an override, the app Worker remains `lamp-<environment>` and the public
+Worker remains `lamp-<environment>-page`. `LAMP_RESOURCE_PREFIX`, when supplied,
+continues to name the app Worker, D1, R2 and queue as before.
+
+For a new workers.dev installation, optionally set `LAMP_PAGE_WORKER` in the same
+private input file used by `rer deploy`. It selects only the public Worker;
+`LAMP_APP_HOST` must still match the app Worker, and `LAMP_PAGE_HOST` must match
+the selected public Worker under the same account subdomain. For example:
+
+```text
+LAMP_HOSTING=workers-dev
+LAMP_PAGE_WORKER=service-status
+LAMP_APP_HOST=lamp-production.my-account.workers.dev
+LAMP_PAGE_HOST=service-status.my-account.workers.dev
+```
+
+The name must contain 1–63 lowercase letters, digits or internal hyphens and
+must differ from the app Worker name. Leave it unset to retain the existing
+public name. It is not supported in custom-domain mode. Malformed names and
+host mismatches fail locally; a name occupied by an unrecorded Worker is refused
+before resources are created or migrated. Keep the same selection on redeploy:
+existing creation records refuse a change of Worker identity. This option does
+not rename or replace an existing installation or change its project, edition,
+package, app Worker, D1, R2 or queue identities.
+
+Run the ordinary `rer deploy --dry-run --environment production --env-file FILE`
+to inspect both hosts and resource names and compile both Worker configurations
+without any provider request. Sign in at the operator address. Custom app-target
+selection in shared `rer signin` and shared mail-off support require their Base
+updates and subsequent Lamp adoption; this public-name option adds neither.
+
+<!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
+
 ## Your own domain
 
 Lamp attaches the public page and operator app as Cloudflare Worker custom domains.

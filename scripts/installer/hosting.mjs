@@ -27,7 +27,7 @@ export async function hostLamp({root,input,store,signal}) {
   env={...process.env,...credentials,
    CLOUDFLARE_ACCOUNT_ID:input.accountId,
    LAMP_APP_HOST:origin.hostname,LAMP_PAGE_HOST:input.LAMP_PAGE_HOST,
-   LAMP_HOSTING:input.LAMP_HOSTING,LAMP_RESOURCE_PREFIX:input.prefix,
+   LAMP_HOSTING:input.LAMP_HOSTING,LAMP_RESOURCE_PREFIX:input.prefix,LAMP_PAGE_WORKER:input.LAMP_PAGE_WORKER,
    SETUP_OPERATOR_EMAIL:input.SETUP_OPERATOR_EMAIL,OWNER_DISPLAY_NAME:input.OWNER_DISPLAY_NAME,
    LAMP_PAGE_NAME:input.LAMP_PAGE_NAME,LAMP_PAGE_TAGLINE:input.LAMP_PAGE_TAGLINE,
    LAMP_PAGE_TIMEZONE:input.LAMP_PAGE_TIMEZONE,LAMP_ACCENT_COLOR:input.LAMP_ACCENT_COLOR,
@@ -43,7 +43,7 @@ export async function hostLamp({root,input,store,signal}) {
   const secrets=await nativeSecrets(root,store,'hosting');
   Object.assign(env,secrets);
   try{config=deploymentConfig(env);}catch(error){
-   const fields=['LAMP_PAGE_HOST','LAMP_APP_HOST','LAMP_HOSTING','LAMP_RESOURCE_PREFIX','SETUP_OPERATOR_EMAIL','OWNER_DISPLAY_NAME','LAMP_PAGE_NAME','LAMP_PAGE_TAGLINE','LAMP_PAGE_TIMEZONE','LAMP_ACCENT_COLOR','MAIL_PROVIDER',...mailEnvironmentNames(input)];
+   const fields=['LAMP_PAGE_HOST','LAMP_APP_HOST','LAMP_HOSTING','LAMP_RESOURCE_PREFIX','LAMP_PAGE_WORKER','SETUP_OPERATOR_EMAIL','OWNER_DISPLAY_NAME','LAMP_PAGE_NAME','LAMP_PAGE_TAGLINE','LAMP_PAGE_TIMEZONE','LAMP_ACCENT_COLOR','MAIL_PROVIDER',...mailEnvironmentNames(input)];
    const field=fields.find(name=>error.message.startsWith(name));
    await store.step(field?`Correct ${field} in Online settings before deploying; see its requirements in OPERATIONS.md.`:'Correct the distinct public and operator hostnames for the selected hosting mode; see OPERATIONS.md.');
    throw installationFailure('command_failed',{step:'deploy'});
