@@ -1,5 +1,6 @@
 import { incidentSnapshot } from '../helpers/incident-snapshot.mjs';
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
@@ -406,6 +407,10 @@ test('Imported incident wording stays whole beyond native field limits', { timeo
       let title, publishedAt;
       if (source === 'statuspage') {
         const incidents = parsed(files, 'incidents.json');
+        // A real export can retain large undocumented provider metadata. Force
+        // a chunked journal shared by several incidents without bloating the
+        // customer messages or pinning the journal's storage representation.
+        for (const row of incidents) row.export_metadata = randomBytes(120_000).toString('base64');
         incidents[0].incident_updates[0].body = body;
         title = incidents[0].name; publishedAt = incidents[0].incident_updates[0].display_at;
         files.find(file => file.name === 'incidents.json').text = JSON.stringify(incidents);
