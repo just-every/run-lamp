@@ -191,5 +191,12 @@
   "remaining": "Exact-SHA Verify remains in progress after bounded polling; PR-triggered Verify not queried. No CI success or alert closure claimed.",
   "remote_product_head": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
   "product_worktree_clean": true,
-  "finished_at": "2026-11-15T18:39:07.331108+00:00"
+  "finished_at": "2026-11-15T18:39:07.331108+00:00",
+  "first_evidence_transfer": {
+    "ref": "refs/heads/evidence/gr-mt-lamp-code-15",
+    "head": "b11ec0ca1cd4e07ae73d404f16dc8c119d5cec68",
+    "receipt": "TRANSFER-RECEIPT.json",
+    "remote_ref_verified": true,
+    "product_custody_unchanged": true
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "repository": "just-every/run-lamp",
+  "ref": "refs/heads/evidence/gr-mt-lamp-code-15",
+  "head": "b11ec0ca1cd4e07ae73d404f16dc8c119d5cec68",
+  "remote_verified": true,
+  "product_head": "3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1",
+  "product_head_branch_index_unchanged": true,
+  "phase": "first publication, before adding this transfer receipt to the complete packet",
+  "verification": "Remote ref/head matched by git ls-remote; product HEAD, branch, index and status unchanged"
+}

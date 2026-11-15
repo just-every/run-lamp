@@ -1,14 +1,14 @@
 {
   "status": "PASS",
-  "timestamp": "2026-11-15T18:40:27.963309+00:00",
+  "timestamp": "2026-11-15T18:42:07.571264+00:00",
   "regular_files": true,
   "symlinks": false,
   "injected_credential_value_matches": 0,
   "files": [
     {
       "path": "REPORT.md",
-      "bytes": 11424,
-      "sha256": "94724153e07f0a8d408148eaebcfbff0d0d8ede289ecadf94c42de6a2e95c6b0"
+      "bytes": 11740,
+      "sha256": "fabf4445e013340bb2bc4f37435411a33362e903345204195b933c35ab5641eb"
     },
     {
       "path": "PLAN.md",
@@ -17,8 +17,8 @@
     },
     {
       "path": "RECEIPT.json",
-      "bytes": 5786,
-      "sha256": "10ee86e2615d50075a704c9c3f47a57602a6cee7957094b3ebb6aa4f8a374496"
+      "bytes": 6042,
+      "sha256": "0187d5c73de6b988655296406ab663f500c42b5317b596c82e6864735e3f9e14"
     },
     {
       "path": "result.json",
@@ -119,6 +119,11 @@
       "path": "ci-43745352347-status.json",
       "bytes": 174,
       "sha256": "73c4a4c005233159ca0a5589cf34b579a34da498e76339ce8b3f4b7267e2ddf4"
+    },
+    {
+      "path": "TRANSFER-RECEIPT.json",
+      "bytes": 487,
+      "sha256": "6770fb75cb2a8a3f1aa432f8c3895fc1e551502e5a24a2ec64960445c0a4c1dc"
     }
   ]
 }

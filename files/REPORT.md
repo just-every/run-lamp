@@ -68,4 +68,6 @@ Before/after: flagged raw JSON substring checks 2 -> 0; existing authentication 
 
 All report and receipt files are outside the product branch. The evidence transport publishes only explicitly selected regular, non-secret packet files to `refs/heads/evidence/gr-mt-lamp-code-15`, with a manifest binding their hashes to this product head. Product code, contract and generated view files are not changed by evidence publication. Actual result.json and the packet are retained for fleet retrieval.
 
+The first evidence publication was remotely verified, and product HEAD/branch/index/status remained unchanged. Its actual transfer receipt is retained in TRANSFER-RECEIPT.json. The final complete packet appends this receipt through the same evidence-only ref; the terminal EVIDENCE line identifies that final head.
+
 PUSHED branch=cloud/gr-mt-lamp-code-15 head=3b1e54edc2c33fdd2c5ca44bc948bb94579d12a1
