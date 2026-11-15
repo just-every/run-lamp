@@ -540,7 +540,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "8ce03a9e6b7fdf8faf6c36eab7f95701409102253a94ef5a406861f36d1b7bcb",
+      "sha256": "ec5671b53c97f4b01b745a3ce2da1a4722698d61f98fb40bb602805c67b3ab77",
       "executable": false
     },
     "DIVERGENCE.md": {
@@ -628,11 +628,11 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "9ed9b440427bc42ace3aee905e16b0b6fb1f1e1e2c6fb2a9db2e545c20da9e3c",
+      "sha256": "1a5539956f3314056c7300d5d40b9df56e12ade98685be5f9df494c916ba2b47",
       "executable": false
     },
     "docs/deployment-reference.md": {
-      "sha256": "5761ff09bdfa698d9a1b690dfa99bb53d50a93c865497cf90b999756e0378565",
+      "sha256": "801ea84abaf927bec691ffddee8592cce012361a74942a7a001b3f0f535990b3",
       "executable": false
     },
     "docs/domains.md": {
@@ -716,11 +716,11 @@
       "executable": false
     },
     "hosted-check-managed.json": {
-      "sha256": "ec8b3ddda6a6d996287e2e376f5c9b7a882ec0f74646c36438aa108b10ade293",
+      "sha256": "8863aa77d0edbb2c06edc0f83c71848af8dc9f521e5e61b97c8fcc5f4a080ebd",
       "executable": false
     },
     "hosted-check.json": {
-      "sha256": "c8ca8c78ebbcc755cfbfb6d3c2652004f208b72111a55e3dc6a272eaf83f9f34",
+      "sha256": "73e65815a71d6550e0884ff5d136e712e8bc912f106eb5c5c7e2b52c1a6610dc",
       "executable": false
     },
     "importers.json": {
@@ -2592,7 +2592,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "ce943a4ee5f8bc01b3150104742cb606719d20e5d5fbfddaee2f4f21d699d1e7",
+      "sha256": "ead58908ade0bf38ec5e1a826e775c8c2e1914ed8a4de6521a56fa7882447dc5",
       "executable": false
     },
     "package.json": {
@@ -3112,7 +3112,7 @@
       "executable": false
     },
     "scripts/deploy.mjs": {
-      "sha256": "6a200e36c600bb0339bf1d15cfe8f9795a07048e2e627214e50c0e8e9af1037b",
+      "sha256": "693cb6571d82acf422fc7b009c157e0a7a947e4078e3d2e83034de5503e67a25",
       "executable": false
     },
     "scripts/deployment-identity.mjs": {
@@ -3120,7 +3120,7 @@
       "executable": false
     },
     "scripts/deployment-ownership.mjs": {
-      "sha256": "a373a4d794dc21ca9af13efe7e3a5a2bab44c0c245644f891fdbb27719fcc737",
+      "sha256": "28500717212363ba6c3a43a7ac37c16b4cf7de37e13b8af8a4f66828c227e09c",
       "executable": false
     },
     "scripts/deployment-secrets.mjs": {
@@ -3804,7 +3804,7 @@
       "executable": false
     },
     "scripts/installer/hosting.mjs": {
-      "sha256": "4d76a72f910adadc51ffaf155a17cf38457a401a9654dde863962c8b745d23ca",
+      "sha256": "441b95d52a50499bfb357359348de95f851382f23ed9c7e26b2b18313367c3c6",
       "executable": false
     },
     "scripts/installer/install.mjs": {
@@ -3896,7 +3896,7 @@
       "executable": false
     },
     "scripts/ops-config.mjs": {
-      "sha256": "2cf248d4744c4bf0098ea87187bf0f070bfd6d8d87c33fcf2a2dcdfc1a44cc8b",
+      "sha256": "2bf847235f423562e9b646b46c59ad255a88db2015adbc35108b201897a1e210",
       "executable": false
     },
     "scripts/owner-claim-config.mjs": {
@@ -3928,7 +3928,7 @@
       "executable": false
     },
     "scripts/remove-deployment.mjs": {
-      "sha256": "fd75665960b1101e1d3bc0989d4312fe08ed95d5ecd5b5f52bdf71e33973d6a2",
+      "sha256": "9745adb76f09aa2451b085bf63eb7ac3d33c4a15fcea9a226a20a068de2bff84",
       "executable": false
     },
     "scripts/setup-migrations.mjs": {
@@ -3936,7 +3936,7 @@
       "executable": false
     },
     "scripts/setup.mjs": {
-      "sha256": "d32eedb004fe05f2346045edd337c489602771204f14090d8d61676d886a275a",
+      "sha256": "d95de983dbfc3cd16ceb9575d25bff6d3a87da109f72bae791ae263b96aeddfd",
       "executable": false
     },
     "scripts/signin-link.mjs": {
@@ -7820,7 +7820,7 @@
       "executable": false
     },
     "tests/auth-adoption/deploy-page-host.test.mjs": {
-      "sha256": "25af05b4dd6bd375b1fb9552c0163e4d7f1dedb291d3bd25019943633298cfeb",
+      "sha256": "8f5b4841794ed5d4d5416e39984d9297912986ff47edfb646ddd49ffad963806",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
