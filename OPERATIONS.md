@@ -1,6 +1,6 @@
 # Lamp operations
 
-Mail dispatch is a required Worker loop. Lamp's configuration module validates
+Mail dispatch is a required Worker loop. Lamp's deploy command validates
 its conditional RER, SendGrid or Resend credentials before deployment; the
 Managed relay capability and assigned fields are declared in the generated
 deployment specification. Rer 0.2.29's generic mail-loop schema lists only direct
