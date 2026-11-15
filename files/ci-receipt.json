@@ -1,0 +1,25 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-ci-lamp-flake-1",
+  "head": "e556d574c59645510fcc1bf0aa8945bb96b447be",
+  "run_id": 43773900571,
+  "run_url": "https://github.com/just-every/run-lamp/actions/runs/43773900571",
+  "status": "completed",
+  "conclusion": "success",
+  "exact_head_verified": true,
+  "source": "ci-observation-5.json",
+  "observation_policy": "single observer; one REST call per 300 seconds for the run, including discovery; no rerun/dispatch",
+  "observations": 5,
+  "intervals_seconds": [
+    303,
+    307,
+    301,
+    450
+  ],
+  "source_sha256": "c935fb89f36a88e1ee76c196bc4ad0405d23a2fdf512ca00cbedb23d3d6f54ec",
+  "terminal_custody": "READY",
+  "recorded_at_utc": "2026-11-15T23:40:55.605685+00:00",
+  "rerun_requested": false,
+  "dispatch_requested": false,
+  "exception_used": false
+}

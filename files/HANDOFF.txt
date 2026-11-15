@@ -1,0 +1,2 @@
+POST lanes/gr/INBOX.md: gr-ci-lamp-flake-1 READY; different cause from Uptime: Playwright route callback outlived Miniflare; awaited route drain fixes deterministic fetch-failed race (before 1 fail, after 1 pass), mail 5/5, registrations 5->5; clause changes none; CLAIM none; SHA e556d574c59645510fcc1bf0aa8945bb96b447be; natural exact-head Verify 43773900571 completed/success; historical 43766968979 attempt 1 failed, attempt 2 success; publication COMPLETE/PASS zero candidate findings; no PR.
+READY branch=cloud/gr-ci-lamp-flake-1 head=e556d574c59645510fcc1bf0aa8945bb96b447be

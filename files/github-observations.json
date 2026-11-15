@@ -21,5 +21,60 @@
     }
   ],
   "scanner": "Base publication scanner uses its own unmodified batched public-reference resolver; no task-local Git/API adapter installed.",
-  "candidate_observations": []
+  "candidate_observations": [
+    {
+      "manual_call": 4,
+      "observed_at_epoch": 1794784647,
+      "kind": "discovery",
+      "file": "ci-discovery.json",
+      "run_id": 43773900571,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "manual_call": 5,
+      "observed_at_epoch": 1794784950,
+      "kind": "run",
+      "file": "ci-observation-2.json",
+      "run_id": 43773900571,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "manual_call": 6,
+      "observed_at_epoch": 1794785257,
+      "kind": "run",
+      "file": "ci-observation-3.json",
+      "run_id": 43773900571,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "manual_call": 7,
+      "observed_at_epoch": 1794785558,
+      "kind": "run",
+      "file": "ci-observation-4.json",
+      "run_id": 43773900571,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "manual_call": 8,
+      "observed_at_epoch": 1794786008,
+      "kind": "run",
+      "file": "ci-observation-5.json",
+      "run_id": 43773900571,
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "candidate_run_id": 43773900571,
+  "candidate_head": "e556d574c59645510fcc1bf0aa8945bb96b447be",
+  "budget_accounting": {
+    "manual_gh_read_invocations": 8,
+    "required_publication_scan_invocations": 2,
+    "total_counted": 10,
+    "limit": 10,
+    "remaining": 0
+  }
 }
