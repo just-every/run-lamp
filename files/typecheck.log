@@ -1,0 +1,4 @@
+
+> lamp@1.11.19 typecheck /home/agent/rer-consolidation/work/gr-ci-lamp-flake-1/run-lamp
+> tsc --noEmit
+

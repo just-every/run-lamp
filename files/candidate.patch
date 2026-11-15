@@ -1,0 +1,31 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index bc1c9bd7..ae5480cc 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -8568,7 +8568,7 @@
+       "executable": false
+     },
+     "tests/e2e/rer-mail.test.mjs": {
+-      "sha256": "fd544a9bd89e08e96b82d0b585580783187e79d9642b798afb057a1a1005992e",
++      "sha256": "a7a54a469c59a96e867025872e2faf96795cdd9000cae30fc789dd6b33bac579",
+       "executable": false
+     },
+     "tests/e2e/rer-mail.worker.ts": {
+diff --git a/tests/e2e/rer-mail.test.mjs b/tests/e2e/rer-mail.test.mjs
+index 5e86767f..43deaf4f 100644
+--- a/tests/e2e/rer-mail.test.mjs
++++ b/tests/e2e/rer-mail.test.mjs
+@@ -578,7 +578,12 @@ test('The built hosted mail-off owner signs in, finishes native first-run after
+             await page.setViewportSize({ width: 1440, height: 1000 });
+           }
+         }
+-      } finally { await context.close(); await runtime.dispose(); }
++      } finally {
++        // Browser close does not wait for route callbacks that still use Miniflare.
++        await context.unrouteAll({ behavior: 'wait' });
++        await context.close();
++        await runtime.dispose();
++      }
+     }
+     assert.ok(requests.some(url => new URL(url).host === 'www.example.com'), 'Read website traverses the real website reader');
+   } finally { await browser?.close(); }

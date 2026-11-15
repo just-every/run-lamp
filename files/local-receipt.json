@@ -1,0 +1,176 @@
+{
+  "tag": "gr-ci-lamp-flake-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-ci-lamp-flake-1",
+  "head": "e556d574c59645510fcc1bf0aa8945bb96b447be",
+  "base": "761f3d186e8fa73ea9aa8b61bcf9ebe8013384f6",
+  "product_files": [
+    "tests/e2e/rer-mail.test.mjs",
+    "sources.lock.json"
+  ],
+  "cause": "Playwright route callbacks outlive BrowserContext.close; Miniflare disposal rejects the in-flight dispatchFetch promise outside the awaited journey.",
+  "different_from_uptime": true,
+  "counts": {
+    "mail_registrations_before": 5,
+    "mail_registrations_after": 5,
+    "historical_attempt_1_pass": 4,
+    "historical_attempt_1_fail": 1,
+    "deterministic_before_pass": 0,
+    "deterministic_before_fail": 1,
+    "deterministic_after_pass": 1,
+    "deterministic_after_fail": 0,
+    "mail_after_pass": 5,
+    "mail_after_fail": 0,
+    "new_permanent_tests": 0,
+    "clauses_changed": 0,
+    "claims_changed": 0
+  },
+  "proof": {
+    "baseline": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='built hosted mail-off' tests/e2e/rer-mail.test.mjs",
+      "node": "24.19.0",
+      "result": "pass (unforced flake did not occur)",
+      "file": "focused-baseline.log"
+    },
+    "before": {
+      "node": "22.20.0",
+      "result": "unhandledRejection: TypeError fetch failed",
+      "active_callbacks_at_disposal": 1,
+      "file": "race-before.log",
+      "confirmation_file": "race-before-complete.log"
+    },
+    "after": {
+      "node": "22.20.0",
+      "result": "pass",
+      "delayed_worker_status": 200,
+      "active_callbacks_at_disposal": 0,
+      "file": "race-after.log"
+    },
+    "probe": "race-probe.patch (temporary timing instrumentation; not committed; no product mock)"
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "result": "pass"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "result": "pass",
+      "file": "build.log",
+      "sha256": "26e8a4dd672a359614b4ec0f40659387ca1545ede5de8b3c03a87cfe2ab433ac"
+    },
+    {
+      "command": "pnpm test:mail",
+      "result": "pass",
+      "pass": 5,
+      "fail": 0,
+      "file": "mail-suite.log",
+      "node": "22.20.0",
+      "chromium": "/usr/bin/chromium",
+      "sha256": "9463f95fab8a7b9b8e1cc312b60c446fae5dc7ee6c45e77672da1cac43d69df2"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "pass",
+      "file": "typecheck.log",
+      "sha256": "8572ca1fbbfcfb535f9a9d3fd9423e87fa0de54de43d9ff2e9a98f95999830ab"
+    },
+    {
+      "command": "pnpm check:syntax",
+      "result": "pass",
+      "modules": 472,
+      "file": "syntax.log",
+      "sha256": "2985660acfe89c978f41d1f88e85becece995731853c110d5bffbf2e9cd27b67"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs changes",
+      "result": "only rer-mail.test.mjs changed",
+      "file": "source-changes.json",
+      "sha256": "0574f5729ef783f6a19e02b2f7d2ee7ae2fd8c593a39e4857f943e6379a905da"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "result": "pass",
+      "file": "source-lock.log",
+      "sha256": "b0fba98beca538b1302be9e874c2853a5ddb926254d67502f2d56639652c89e1"
+    },
+    {
+      "command": "pnpm source:check",
+      "result": "pass after required source-lock regeneration",
+      "file": "source-check.log",
+      "sha256": "002f0fb8b05c3bdde96b028ee95a2316bcf1f492344ae65a26df2d1bd2768ee5"
+    },
+    {
+      "command": "pnpm check:contract-docs",
+      "result": "pass; current; zero errors/warnings",
+      "file": "contract-docs.log",
+      "sha256": "73ed1ef14b1b947f0c23e7a9e8f7f4c492bd26754707c7e1cd2c134b1f1ba74e"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "clauses": {
+    "changes": [],
+    "CLAIM": "none",
+    "generated_views_modified": false
+  },
+  "publication_scan": {
+    "initial": {
+      "report": "publication-scan-working-checkout.json",
+      "complete": true,
+      "status": "FAIL",
+      "findings": 16,
+      "cause": "working checkout intentionally contains ignored generated local setup secrets/build state; destination --repository initially passed slug rather than required URL"
+    },
+    "final": {
+      "complete": true,
+      "status": "PASS",
+      "source": {
+        "commit": "e556d574c59645510fcc1bf0aa8945bb96b447be",
+        "tree": "2d65e3f62555ba851bfb1b4d221c146db966ee32"
+      },
+      "findings": 0,
+      "preExisting": 50,
+      "preExistingRules": {
+        "SEC-3": 40,
+        "secret.assignment": 9,
+        "hygiene.email": 1
+      },
+      "history": {
+        "commits": 1155,
+        "trees": 1138,
+        "blobs": 8726,
+        "commitMessages": 1155,
+        "tagMessages": 31
+      },
+      "seconds": 428.06047,
+      "implementation": {
+        "version": "0.2.118",
+        "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+        "python": "3.12.14"
+      },
+      "environmentChecked": true,
+      "publicBase": {
+        "ref": "https://github.com/just-every/run-lamp.git#main",
+        "commit": "761f3d186e8fa73ea9aa8b61bcf9ebe8013384f6"
+      }
+    }
+  },
+  "push": {
+    "status": "pushed",
+    "attempts": 1,
+    "file": "push.log",
+    "branch": "cloud/gr-ci-lamp-flake-1",
+    "head": "e556d574c59645510fcc1bf0aa8945bb96b447be"
+  },
+  "verify": "pending",
+  "pr": null,
+  "recovery": {
+    "bundle": "/home/agent/rer-consolidation/work/gr-ci-lamp-flake-1/recovery/product-e556d574.bundle",
+    "sha256": "c5bb7ecbb5843d8c79e313e1fb05813fea7fc816acb3717f0220ff001a597cc7",
+    "verified": true,
+    "means_ready": false
+  }
+}

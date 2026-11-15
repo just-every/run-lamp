@@ -1,0 +1,47 @@
+
+> lamp@1.11.19 test:mail /home/agent/rer-consolidation/work/gr-ci-lamp-flake-1/run-lamp
+> node --test --test-concurrency=1 tests/e2e/rer-mail.test.mjs
+
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# (node:4340) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out
+ok 1 - BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out
+  ---
+  duration_ms: 25076.938067
+  type: 'test'
+  ...
+# Subtest: Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable
+ok 2 - Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable
+  ---
+  duration_ms: 14233.442901
+  type: 'test'
+  ...
+# Subtest: A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse
+ok 3 - A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse
+  ---
+  duration_ms: 61.952225
+  type: 'test'
+  ...
+# Subtest: Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts
+ok 4 - Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts
+  ---
+  duration_ms: 7987.376986
+  type: 'test'
+  ...
+# Subtest: The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact
+ok 5 - The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact
+  ---
+  duration_ms: 33104.432864
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83298.05496

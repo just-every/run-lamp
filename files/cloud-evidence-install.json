@@ -1,0 +1,12 @@
+{
+  "tool": "/home/agent/rer-consolidation/.tools/cloud_evidence.py",
+  "source": "user-provided task-side cloud_evidence.py entrypoint",
+  "sha256": "9da3034c8470c87e17152fb4928c0f711cd1104f3bc384b64e34dab2156f4d9c",
+  "validation": {
+    "py_compile": "passed",
+    "help": "passed"
+  },
+  "published": false,
+  "github_calls": 0,
+  "product_files_changed": false
+}

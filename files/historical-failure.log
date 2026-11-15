@@ -1,0 +1,25 @@
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5504629Z not ok 5 - The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5505610Z   ---
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5506169Z   duration_ms: 4919.613169
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5506497Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5506988Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/rer-mail.test.mjs:468:1'
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5507547Z   failureType: 'unhandledRejection'
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5507952Z   error: 'fetch failed'
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5508261Z   code: 'ERR_TEST_FAILURE'
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5508569Z   name: 'TypeError'
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5508872Z   stack: |-
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5509642Z     Object.processResponse (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/undici@7.30.1/node_modules/undici/lib/web/fetch/index.js:237:16)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5511015Z     /home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/undici@7.30.1/node_modules/undici/lib/web/fetch/index.js:1081:19
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5511752Z     node:internal/process/task_queues:151:7
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5512227Z     AsyncResource.runInAsyncScope (node:async_hooks:214:14)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5512815Z     AsyncResource.runMicrotask (node:internal/process/task_queues:148:8)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5513559Z     /home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/undici@7.30.1/node_modules/undici/index.js:157:7
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5514745Z     async fetch4 (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:63981:20)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5516516Z     async _Miniflare.dispatchFetch (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/miniflare@5.20260907.0-alpha_@types+node@22.19.17/node_modules/miniflare/dist/src/index.js:83182:22)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5517616Z     async file:///home/runner/work/run-lamp/run-lamp/tests/e2e/rer-mail.test.mjs:513:28
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5518198Z     async Promise.all (index 1)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5519263Z     async RouteHandler._handleInternal (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/playwright-core@1.63.0/node_modules/playwright-core/lib/coreBundle.js:60184:27)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5520944Z     async RouteHandler._handleImpl (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/playwright-core@1.63.0/node_modules/playwright-core/lib/coreBundle.js:60153:18)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5522311Z     async RouteHandler.handle (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/playwright-core@1.63.0/node_modules/playwright-core/lib/coreBundle.js:60147:16)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5523763Z     async _BrowserContext._onRoute (/home/runner/work/run-lamp/run-lamp/node_modules/.pnpm/playwright-core@1.63.0/node_modules/playwright-core/lib/coreBundle.js:62390:27)
+shards (imports)	Verify this product shard	2026-11-15T22:09:48.5524632Z   ...

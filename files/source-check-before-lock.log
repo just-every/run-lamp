@@ -1,0 +1,6 @@
+
+> lamp@1.11.19 source:check /home/agent/rer-consolidation/work/gr-ci-lamp-flake-1/run-lamp
+> node scripts/edition-authoring/cli.mjs check
+
+Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock
+ ELIFECYCLE  Command failed with exit code 1.

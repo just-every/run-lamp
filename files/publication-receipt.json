@@ -1,0 +1,33 @@
+{
+  "complete": true,
+  "status": "PASS",
+  "source": {
+    "commit": "e556d574c59645510fcc1bf0aa8945bb96b447be",
+    "tree": "2d65e3f62555ba851bfb1b4d221c146db966ee32"
+  },
+  "findings": 0,
+  "preExisting": 50,
+  "preExistingRules": {
+    "SEC-3": 40,
+    "secret.assignment": 9,
+    "hygiene.email": 1
+  },
+  "history": {
+    "commits": 1155,
+    "trees": 1138,
+    "blobs": 8726,
+    "commitMessages": 1155,
+    "tagMessages": 31
+  },
+  "seconds": 428.06047,
+  "implementation": {
+    "version": "0.2.118",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "environmentChecked": true,
+  "publicBase": {
+    "ref": "https://github.com/just-every/run-lamp.git#main",
+    "commit": "761f3d186e8fa73ea9aa8b61bcf9ebe8013384f6"
+  }
+}

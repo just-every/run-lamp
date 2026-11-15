@@ -1,0 +1,5 @@
+
+> lamp@1.11.19 check:syntax /home/agent/rer-consolidation/work/gr-ci-lamp-flake-1/run-lamp
+> node scripts/check-syntax.mjs
+
+check-syntax: 472/472 modules parsed

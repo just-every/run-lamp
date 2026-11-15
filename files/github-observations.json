@@ -1,0 +1,25 @@
+{
+  "task_requested_budget": 10,
+  "manual_calls": [
+    {
+      "number": 1,
+      "command": "gh run view 43766968979 --repo just-every/run-lamp --attempt 1 --log-failed",
+      "purpose": "one bounded failed log archive read",
+      "result": "success"
+    },
+    {
+      "number": 2,
+      "command": "gh api 'repos/runeditrun/base/git/trees/main?recursive=1' --jq '[.tree[] | select(.path | test(\"publication|hygiene|scan\")) | .path]'",
+      "purpose": "read-only scanner source discovery; no clone",
+      "result": "success; installed pinned rer contains scanner"
+    },
+    {
+      "number": 3,
+      "command": "gh api repos/just-every/run-lamp/actions/runs/43766968979 --jq '{id,run_attempt,status,conclusion,head_sha,html_url,updated_at}'",
+      "purpose": "same-SHA successful sibling rerun contrast, over 300 seconds after prior run observation",
+      "result": "attempt 2 completed/success"
+    }
+  ],
+  "scanner": "Base publication scanner uses its own unmodified batched public-reference resolver; no task-local Git/API adapter installed.",
+  "candidate_observations": []
+}
