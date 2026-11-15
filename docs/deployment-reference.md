@@ -17,12 +17,14 @@ override the calling shell's exported values.
 
 Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
 
-Hosted Lamp requires working mail. Managed hosting includes it without an owner
-provider account or mail key: RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`,
+Hosted Lamp can deliberately turn email off with `MAIL_PROVIDER=none`; see
+[mail-off setup](deploy.md#or-deliberately-turn-email-off) for unavailable email
+features and the guarded `rer signin` owner path. Managed hosting can instead
+provide enabled mail without an owner provider account or mail key: RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`,
 `MAIL_RELAY_URL` and private `MAIL_API_KEY`. The key is an installation credential
 for the RER relay, not a provider API key; it stays outside application builds.
 
-Free and Assisted hosting keep your own Resend or SendGrid account and use
+With email enabled, Free and Assisted hosting keep your own provider account and use
 `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and `MAIL_PROVIDER_API_KEY`. Generated
 signing secrets do not replace that provider API key or authenticated sender.
 The table below describes native deployment. The CLI's required-input list comes from
@@ -38,9 +40,9 @@ Optional values follow the required entries in the table.
 | `LAMP_PAGE_NAME`, `LAMP_PAGE_TAGLINE` | Your business's page name and description. |
 | `LAMP_PAGE_TIMEZONE`, `LAMP_ACCENT_COLOR` | An IANA time zone and a six-digit hex color, such as `Europe/London` and `#16794C`. |
 | `SETUP_OPERATOR_EMAIL` | The first owner's email address. Supply it explicitly for Lamp's native deployment. |
-| `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`, `MAIL_PROVIDER_API_KEY` | Your provider-authenticated sender, its DKIM selector and the selected provider's API key ([step 6](deploy.md#step-6-mail)). These are required owner inputs. |
+| `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`, `MAIL_PROVIDER_API_KEY` | Your provider-authenticated sender, its DKIM selector and the selected provider's API key ([step 6](deploy.md#step-6-mail)). These are required for enabled direct providers and unused with explicit `none`. |
 | `SETUP_TOKEN`, `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET`, `WEBHOOK_SIGNING_SECRET` | Required runtime secrets. `rer deploy` generates fresh random values when absent; they are not mandatory manual inputs for a first deployment. rer keeps the values it generates in `.rer/deploy/<environment>.secrets.env` and reuses them. A redeploy keeps the `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET`, `WEBHOOK_SIGNING_SECRET` and `OIDC_TRANSACTION_SECRET` each Worker already holds, so links, sessions and sign-ins in progress survive it; `LAMP_REPLACE_SECRETS=NAME` (with the new value in the file) or `rer deploy --rotate-secret NAME` replaces one on purpose. For restores into a new installation, supply and retain your original values as shown in the deployment guide. Each must be at least 32 characters. |
-| `MAIL_PROVIDER` | `resend` (native default) or `sendgrid`. Set explicitly to match the API key. |
+| `MAIL_PROVIDER` | `none` deliberately turns email off without sending credentials; `rer` uses the managed relay; `resend` (native default), `sendgrid`, `mailgun`, `ses` and `postmark` enable direct mail with their required inputs. A missing selection never means off. |
 | `OWNER_DISPLAY_NAME` | Optional first-owner name, 1–120 characters; the native default is `Owner`. Existing owners keep their name. |
 | `LAMP_HOSTING` | `custom-domain` (default) or `workers-dev`. |
 | `LAMP_PAGE_HOST_ROUTE_ZONE`, `LAMP_PAGE_HOST_TARGET` | Optional, set together: serve `LAMP_PAGE_HOST` as a Worker route on a Cloudflare for SaaS provider zone in your account (`LAMP_PAGE_HOST_ROUTE_ZONE`) when its own DNS is elsewhere. The target is the proxied name on that zone (a CNAME to the fallback origin) that the page host's DNS points at: the zone or a name under it. Bare lowercase hostnames; the page host must be outside the zone; not valid with `LAMP_HOSTING=workers-dev`. See [a page host whose DNS is elsewhere](domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere). |
@@ -168,3 +170,5 @@ and public Workers in `workers-dev` mode, their hostname attachments, the D1
 database, R2 bucket and Queue. Preserve any reused resources belonging to another
 installation. Keep the account's shared `workers.dev` subdomain. After removal,
 check that the selected Workers and owned storage resources are gone.
+
+<!-- Run Edit Run fleet (Codex), 2026-11-15: conditional mail inputs and guarded mail-off sign-in. -->

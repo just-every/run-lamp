@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign, createHmac, createHash, randomBytes } from 'node:crypto';
 import { test } from 'node:test';
-import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { unstable_splitSqlQuery } from 'wrangler';
 import { hashToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
 import { withDraftVersion } from './draft-version-helper.mjs';
+import { deploymentConfig, mailEnvironmentNames, renderWranglerToml, resourceNames } from '../../scripts/ops-config.mjs';
+import { dryRunInputFailure } from '../../scripts/deploy-preflight.mjs';
+import { productionMail } from '@runeditrun/rer/internal/cli/production-mail.mjs';
+import { commandAdapter } from '../../scripts/installer/local.mjs';
+import { chromium } from 'playwright';
+import { reachBuiltWorkerOptions } from './helpers/reach-built-worker.mjs';
 
 const require = createRequire(import.meta.url), workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
@@ -16,8 +22,8 @@ const appOrigin = 'https://app.example.test', pageOrigin = 'https://status.examp
 const receiptKey = Buffer.from('synthetic-lamp-provider-receipt-secret');
 const owner = 'owner@example.test', reader = 'reader@example.test', pending = 'pending@example.test';
 
-async function buildMailWorker() {
-  return build({ entryPoints: ['tests/e2e/rer-mail.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false,
+async function buildMailWorker(entry = 'tests/e2e/rer-mail.worker.ts') {
+  return build({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'browser', write: false,
     external: ['cloudflare:workers', 'node:*'], define: { 'import.meta.env.DEV': 'false' },
     plugins: [{ name: 'renderer-assets', setup(builder) {
       builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: 'asset' }));
@@ -319,4 +325,174 @@ test('Managed sender readiness clears an obsolete failure and enables subscriber
       assert.deepEqual(after.sender, before.sender, 'the current sender evidence remains stable on the next read');
     } finally { await runtime.dispose(); await rm(state, { recursive: true, force: true }); }
   }
+});
+
+test('A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse', async () => {
+  const env = { LAMP_APP_HOST: 'app.example.test', LAMP_PAGE_HOST: 'status.example.test', LAMP_PAGE_NAME: 'Synthetic Lamp',
+    LAMP_PAGE_TAGLINE: 'Service updates', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C', SETUP_OPERATOR_EMAIL: owner,
+    MAIL_PROVIDER: 'none', SESSION_SECRET: randomBytes(32).toString('hex'), SETUP_TOKEN: randomBytes(32).toString('hex'),
+    INSTALLATION_KEY: randomBytes(32).toString('hex'), SUBSCRIBER_TOKEN_SECRET: randomBytes(32).toString('hex'), WEBHOOK_SIGNING_SECRET: randomBytes(32).toString('hex') };
+  const config = deploymentConfig(env);
+  const toml = renderWranglerToml(config, { ...resourceNames('production'), databaseId: '00000000-0000-0000-0000-000000000000' });
+  const { unstable_readConfig } = await import('wrangler');
+  const directory = await mkdtemp(join(tmpdir(), 'synthetic-lamp-mail-off-'));
+  try {
+    const file = join(directory, 'wrangler.toml');
+    const { writeFile } = await import('node:fs/promises');
+    await writeFile(file, toml);
+    const runtime = unstable_readConfig({ config: file });
+    assert.equal(runtime.vars.MAIL_PROVIDER, 'none');
+    assert.equal(runtime.vars.MAIL_FROM_ADDRESS, undefined);
+    const operations = JSON.parse(await readFile('OPERATIONS.json', 'utf8'));
+    operations.requiredEnvironment = [...new Set([...operations.requiredEnvironment, ...mailEnvironmentNames(env)])];
+    assert.equal(dryRunInputFailure(operations, env), null);
+    const declaration = JSON.parse(await readFile(commandAdapter.deployDeclaration, 'utf8'));
+    const preflight = await productionMail(process.cwd(), declaration, env, commandAdapter.deployDeclaration, commandAdapter);
+    assert.equal(preflight.off, true); assert.deepEqual(preflight.offConflicts, []);
+    for (const provider of ['rer','resend','sendgrid','mailgun','ses','postmark']) {
+      const sending = { ...env, MAIL_PROVIDER: provider, MAIL_FROM: 'status@example.test', MAIL_FROM_ADDRESS: 'status@example.test',
+        MAIL_DKIM_SELECTOR: 'synthetic', MAIL_RELAY_URL: 'https://relay.example.test/send', MAIL_API_KEY: randomBytes(32).toString('hex'),
+        MAIL_PROVIDER_API_KEY: randomBytes(32).toString('hex'), SES_REGION: 'us-east-1', SES_CONFIGURATION_SET: 'synthetic', SES_EVENT_TOPIC_ARN: 'arn:aws:sns:us-east-1:123456789012:synthetic' };
+      deploymentConfig(sending);
+      delete sending[provider === 'rer' ? 'MAIL_API_KEY' : 'MAIL_PROVIDER_API_KEY'];
+      assert.throws(() => deploymentConfig(sending), /required/);
+    }
+    for (const name of ['MAIL_API_KEY','MAIL_PROVIDER_API_KEY','MAIL_RELAY_URL','MAIL_SECONDARY_API_KEY','RESEND_API_KEY','SENDGRID_API_KEY','MAIL_ACCOUNT_ID']) {
+      assert.throws(() => deploymentConfig({ ...env, [name]: 'synthetic-lamp-credential' }), /conflicts/);
+    }
+    for (const selection of [undefined, 'later', 'direct']) {
+      const input = { ...env, MAIL_PROVIDER: selection };
+      assert.throws(() => deploymentConfig(input));
+      assert.equal((await productionMail(process.cwd(), declaration, input, commandAdapter.deployDeclaration, commandAdapter)).off, false);
+    }
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});
+
+test('Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts', { timeout: 120_000 }, async () => {
+  const built = await buildMailWorker('tests/e2e/rer-mail-off.worker.ts');
+  const state = await mkdtemp(join(tmpdir(), 'synthetic-lamp-off-'));
+  const secret = 'synthetic-lamp-session-secret-aaaaaaaaaaaa', session = randomBytes(32).toString('base64url');
+  const sessionHash = await hashToken(secret, 'session', session);
+  const requests = [];
+  const runtime = new Miniflare(convertV4MiniflareOptions({ name: 'synthetic-lamp-off', modules: true, script: built.outputFiles[0].text,
+    port: 0, inspectorPort: 0, compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'],
+    bindings: { LAMP_PAGE_HOST: 'status.example.test', LAMP_APP_HOST: 'app.example.test', AUTH_ORIGIN: appOrigin,
+      SETUP_OPERATOR_EMAIL: owner, SESSION_SECRET: secret, MAIL_PROVIDER: 'none', SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-secret-bbbbbbbb' },
+    d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } },
+    queueProducers: { JOBS: 'synthetic-lamp-off-jobs' }, resourcePersistencePath: join(state, 'storage'),
+    outboundService: async request => { requests.push(request.url); return new Response('Synthetic public check', { status: 200 }); },
+  }));
+  try {
+    const db = await runtime.getD1Database('DB');
+    const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
+    for (const name of (await readdir('migrations/core')).filter(n => n.endsWith('.sql')).sort()) await execute(await readFile(join('migrations/core', name), 'utf8'));
+    const now = Date.now();
+    await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000001','${owner}','Owner','owner','active',${now});
+      INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000001',${now});
+      INSERT INTO oa_tokens(id,token_hash,kind,operator_id,operator_version,return_to,created_at,expires_at,consumed_at) SELECT 'synthetic-lamp-proof-1','synthetic-lamp-proof-hash-1','magic',id,version,'/app',${now},${now+1200000},${now} FROM oa_operators;
+      INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,source_token_id,created_at,expires_at) SELECT 'synthetic-lamp-session-1','${sessionHash}',id,version,'native','synthetic-lamp-proof-1',${now},${now+86400000} FROM oa_operators;
+      INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp off','Updates','#16794C','UTC','status.example.test','synthetic-lamp-off-1','','2026-10-01','2026-10-01');
+      INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01');`);
+    const raw = (path, init = {}) => runtime.dispatchFetch(new URL(path, appOrigin).href, { redirect: 'manual', ...init,
+      headers: { Host: new URL(path, appOrigin).host, 'CF-Connecting-IP': '192.0.2.1', ...init.headers } });
+    const cookie = '__Host-operator_session=' + session;
+    const call = async (path, body, method = body ? 'POST' : 'GET') => raw(path, await withDraftVersion(path,
+      { method, ...(body ? { body: JSON.stringify(body) } : {}), headers: { Origin: appOrigin, Cookie: cookie, ...(body ? { 'Content-Type': 'application/json' } : {}) } },
+      read => raw(read, { headers: { Cookie: cookie } })));
+    const emailResults = [];
+    for (const email of [owner, 'unknown@example.test']) {
+      const response = await raw('/auth/magic-link', { method: 'POST', headers: { Origin: appOrigin, 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      assert.equal(response.status, 503); emailResults.push(await response.json());
+    }
+    assert.deepEqual(emailResults[0], emailResults[1]); assert.equal(emailResults[0].error, 'mail_unavailable');
+    const invitations = [];
+    // The first request names a new address; the second names the now-known
+    // pending operator. Neither returns a token or claims that mail was sent.
+    for (const email of ['invited@example.test', 'invited@example.test']) {
+      const invitation = await call('/api/app/operators/invite', { email, displayName: 'Invited operator' });
+      assert.equal(invitation.status, 503); invitations.push(await invitation.json());
+    }
+    assert.deepEqual(invitations[0], invitations[1]); assert.equal(invitations[0].error, 'mail_unavailable');
+    assert.equal((await raw('/api/app/incidents')).status, 401);
+    for (const path of ['/__dev/owner','/__dev/sign-in','/__dev/outbox','/auth/local-entry']) {
+      const refused = await raw(path, { headers: { 'x-rer-dev-key': 'synthetic-lamp-dev-key' } });
+      assert.equal(refused.headers.has('set-cookie'), false); assert.ok([404,401,403].includes(refused.status), path);
+    }
+    const forged = await raw('/auth/owner-signin?token=' + randomBytes(32).toString('base64url'));
+    assert.equal(forged.status, 303); assert.equal(forged.headers.has('set-cookie'), false);
+    const created = await call('/api/app/components', { groupId: null, name: 'Payments', description: '', internal: false, displayOrder: 0, note: '' });
+    assert.equal(created.status, 201); const component = (await created.json()).component;
+    const incidentResponse = await call('/api/app/incidents', { title: 'Synthetic payment delays', components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
+    assert.equal(incidentResponse.status, 201); const incident = (await incidentResponse.json()).incident;
+    const saved = await call(`/api/app/incidents/${incident.id}/draft`, { lifecycle: 'Monitoring', affectedAudience: 'Payment customers', customerImpact: 'Payments are delayed.', whatStillWorks: 'Balances remain readable.', details: 'Operators are restoring service.', nextUpdateAt: new Date(now + 3600000).toISOString() }, 'PUT');
+    assert.equal(saved.status, 200, await saved.clone().text());
+    const published = await call(`/api/app/incidents/${incident.id}/publish`, { channels: [] });
+    assert.equal(published.status, 200, await published.clone().text());
+    const maintenanceResponse = await call('/api/app/maintenance', { title: 'Synthetic payment upgrade', affectedAudience: 'Payment customers', customerImpact: 'Authorizations may pause.', startsAt: new Date(now + 7200000).toISOString(), endsAt: new Date(now + 10800000).toISOString(), componentIds: [component.id], autoStart: false, autoComplete: false });
+    assert.equal(maintenanceResponse.status, 201, await maintenanceResponse.clone().text());
+    const maintenance = (await maintenanceResponse.json()).maintenance;
+    const publicPage = await raw(pageOrigin + '/'); assert.equal(publicPage.status, 200);
+    const html = await publicPage.text(); assert.ok(html.includes(incident.title) && html.includes(maintenance.title));
+    assert.equal((await call('/__test/clock', { now: now + 7500000 }, 'PUT')).status, 204);
+    assert.equal((await call('/__test/tick')).status, 204);
+    const held = (await (await call('/api/app/overview/follow-ups')).json()).followUps;
+    assert.ok(held.some(row => row.kind === 'notification-dispatch' && row.failure), JSON.stringify(held));
+    const delivery = (await (await call('/api/app/deliveries')).json());
+    assert.equal(delivery.mail.provider, 'none'); assert.equal(delivery.mail.local, false);
+    assert.equal(delivery.localConfirmationAllowed, false);
+    assert.ok(delivery.deliveries.every(row => !row.providerAcceptedAt && row.outcome !== 'delivered'));
+    assert.ok(requests.every(url => new URL(url).host === 'status.example.test'), 'no provider request occurs');
+    const start = await call(`/api/app/maintenance/${maintenance.id}/start`, {}); assert.equal(start.status, 200);
+    assert.equal((await call('/api/app/incidents')).status, 200);
+
+  } finally { await runtime.dispose(); await rm(state, { recursive: true, force: true }); }
+});
+
+
+test('The built hosted mail-off sign-in screen offers guarded owner guidance and protects private documents', { timeout: 120_000 }, async () => {
+  const { externalWorkers, ...built } = await reachBuiltWorkerOptions();
+  // dispatchFetch traverses Miniflare's loopback ingress. Restore its public
+  // HTTP Host before the actual built Worker's native host and auth guards.
+  built.modules[0].contents = built.modules[0].contents.replace('return worker.fetch(request, bindings(env), context);',
+    "request = new Request(request); request.headers.set('Host', new URL(request.url).host); return worker.fetch(request, bindings(env), context);");
+  const bindings = { LAMP_PAGE_HOST: 'status.example.test', LAMP_APP_HOST: 'app.example.test', AUTH_ORIGIN: appOrigin,
+    SETUP_OPERATOR_EMAIL: owner, SESSION_SECRET: 'synthetic-lamp-session-secret-aaaaaaaaaaaa', MAIL_PROVIDER: 'none' };
+  const runtime = new Miniflare(convertV4MiniflareOptions({ port: 0, inspectorPort: 0,
+    workers: [{ ...built, bindings, d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'] }, ...externalWorkers] }));
+  let browser;
+  try {
+    const db = await runtime.getD1Database('DB');
+    for (const name of (await readdir('migrations/core')).filter(n => n.endsWith('.sql')).sort()) {
+      await db.batch(unstable_splitSqlQuery(await readFile(join('migrations/core', name), 'utf8')).map(statement => db.prepare(statement)));
+    }
+    await db.batch([
+      db.prepare("INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000001',?,'Owner','owner','active',?)").bind(owner, Date.now()),
+      db.prepare("INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000001',?)").bind(Date.now()),
+    ]);
+    const raw = (path, init = {}) => runtime.dispatchFetch(new URL(path, appOrigin).href, { redirect: 'manual', ...init,
+      headers: { Host: new URL(path, appOrigin).host, 'CF-Connecting-IP': '192.0.2.1', ...init.headers } });
+    for (const path of ['/app', '/app/incidents', '/app/settings']) {
+      const refused = await raw(path);
+      assert.equal(refused.status, 302, await refused.clone().text()); assert.equal(new URL(refused.headers.get('location')).pathname, '/signin');
+      assert.equal(refused.headers.has('set-cookie'), false);
+    }
+    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, args: ['--no-sandbox','--use-mock-keychain','--password-store=basic'] });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    await context.route('**/*', async route => {
+      const response = await raw(route.request().url());
+      await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+    });
+    const page = await context.newPage(); await page.goto(appOrigin + '/signin');
+    assert.equal(await page.locator('form[action="/auth/magic-link"]').count(), 0);
+    assert.equal(await page.locator('code').filter({ hasText: 'rer signin' }).count(), 1);
+    assert.equal(await page.locator('input[type="password"]').count(), 0, 'no setup or sign-in token is exposed');
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+    if (process.env.LAMP_MAIL_OFF_PROOF_DIR) {
+      await mkdir(process.env.LAMP_MAIL_OFF_PROOF_DIR, { recursive: true });
+      await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, 'signin-mail-off-1440.png'), fullPage: true });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, 'signin-mail-off-390.png'), fullPage: true });
+    }
+    await context.close();
+  } finally { await browser?.close(); await runtime.dispose(); }
 });

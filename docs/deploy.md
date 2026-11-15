@@ -11,14 +11,15 @@
 
 Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
 
-A hosted Lamp sends real email: sign-in links to you and your team, and updates
-to your subscribers. On the Free path that mail goes through your own SendGrid or
-Resend account, from a domain you own and have authenticated there (step 6 shows
-how). If you have no domain you can add DNS records to, choose Managed instead.
+A hosted Lamp can send sign-in links, invitations and subscriber updates through
+your mail provider, or you can deliberately turn email off in step 6. On the
+Free path, enabled mail uses your own provider and an authenticated sender
+domain. Managed hosting can supply mail without your own provider account.
 
 You need the Lamp folder from [Run Lamp locally](../RUN-LOCALLY.md) (run every
-command below from it), a Cloudflare account, a mail account at SendGrid or
-Resend, and a domain whose DNS records you can change.
+command below from it) and a Cloudflare account. For enabled email, you also
+need a mail provider and an authenticated sender domain. Custom-domain hosting
+needs domains whose DNS records you can change; workers.dev hosting does not.
 
 After the curl install, if `~/.local/bin` is missing from your PATH, run the
 installer's Bash line once to make the command available now and in future
@@ -131,6 +132,30 @@ when left out).
 
 ## Step 6: Mail
 
+<!-- Run Edit Run fleet (Codex), 2026-11-15: deliberate mail-off adoption. -->
+### Or deliberately turn email off
+
+Set `MAIL_PROVIDER=none` in your private deployment input file. Leave sender,
+DKIM and all sending credentials unset, including managed relay settings and any
+secondary mail provider. An absent or deferred provider selection does not turn
+email off. Supplying sending credentials together with `none` refuses deployment.
+
+With email off, email sign-in links, invitations and email subscriptions are
+unavailable. Pending email alerts remain unfinished; Lamp never reports them as
+sent. Incidents, maintenance and the public status page keep working. Private
+operator pages still require authentication.
+
+The deployment owner signs in with `rer signin` in step 8. Keep the checkout's
+`.rer/deploy` records and the Cloudflare credentials that deployed that environment:
+the command checks the recorded account, project, environment, Worker and live
+ownership receipt. It refuses missing or mismatched records. Other operators
+need a configured identity provider or an administrator to enable mail. The
+hosted sign-in page provides no local-development entry or reusable token.
+
+To enable email later, select and configure an enabled provider below and
+redeploy with the same environment and ownership records.
+
+
 Lamp sends mail through SendGrid or Resend from an address on a domain you have
 authenticated there. Authenticate the exact domain of your sender address: for
 `status@example.com` that is `example.com`; for `status@mail.example.com` it is
@@ -231,9 +256,11 @@ another name, with its own input file and step 3 addresses, for a second one.
 
 ## Step 8: Sign in
 
-Open `https://<LAMP_APP_HOST>`, enter your `SETUP_OPERATOR_EMAIL` and open the
-link Lamp emails you. To get in without waiting for email, run this from the
-same folder and open the link it prints within 15 minutes; it works once:
+With email enabled, open `https://<LAMP_APP_HOST>`, enter your
+`SETUP_OPERATOR_EMAIL` and open the link Lamp emails you. With email off, or to
+enter as the deployment owner without waiting for mail, run this from the same
+checkout with its deployment records and deploying account credentials. Open
+the link it prints within 15 minutes; it works once:
 
 ```sh
 rer signin --environment production --env-file "$LAMP_DEPLOY_ENV"

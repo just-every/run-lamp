@@ -199,15 +199,13 @@
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "resend"
-          },
-          "required": true
+          }
         },
         {
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "sendgrid"
-          },
-          "required": true
+          }
         }
       ]
     },
@@ -223,15 +221,13 @@
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "resend"
-          },
-          "required": true
+          }
         },
         {
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "sendgrid"
-          },
-          "required": true
+          }
         }
       ]
     },
@@ -249,16 +245,14 @@
             "field": "MAIL_PROVIDER",
             "equals": "resend"
           },
-          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command.",
-          "required": true
+          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command."
         },
         {
           "when": {
             "field": "MAIL_PROVIDER",
             "equals": "sendgrid"
           },
-          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command.",
-          "required": true
+          "help": "Online only. Enter the direct provider key for this sender. It remains private and is sent only through the native deployment command."
         }
       ],
       "when": {

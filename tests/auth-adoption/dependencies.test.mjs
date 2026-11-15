@@ -255,12 +255,13 @@ test('ACCESS-002 an installation linked before sealing keeps its provider key, s
 // The rotation RELEASE.json names, through rer's own command, on a Lamp that Lamp's deploy code provisioned and
 // recorded (scripts/setup.mjs's D1, deployment-ownership's Worker upload). Only Cloudflare is substituted
 // (../helpers/cloudflare-edge.mjs); the deployed Worker's D1 is this test's real Lamp D1.
-test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY reseals the dependency keys under a new key and retires the old one', async () => {
+test('ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key', async () => {
   const root = process.cwd(), environment = `key-rotation-${randomBytes(3).toString('hex')}`, names = resourceNames(environment);
   const dir = await mkdtemp(join(root, '.lamp-key-rotation-'));
   const storage = await database(dir);
   const cache = await openSnapshotCacheRuntime(dir);
-  const state = join(root, '.rer'), records = join(state, 'deploy'), existing = [state, records].filter(path => existsSync(path)), custodyFile = join(records, `${environment}.secrets.env`);
+  const state = join(root, '.rer'), records = join(state, 'deploy'), existing = [state, records].filter(path => existsSync(path)), custodyFile = join(records, `${environment}.secrets.env`), recordFile = join(records, `${environment}.json`);
+  const deployment = join(root, '.seed', 'deployment'), madeDirectories = [deployment, join(root, '.seed')].filter(path => !existsSync(path));
   const hex = () => randomBytes(32).toString('hex'), oldKey = hex(), appHost = 'app.example.test';
   const credentials = { CLOUDFLARE_ACCOUNT_ID: randomBytes(16).toString('hex'), CLOUDFLARE_API_TOKEN: `synthetic-${hex()}` };
   const { createApp } = await load('src/core/app/server.ts');
@@ -279,19 +280,92 @@ test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY reseals the depende
   globalThis.fetch = edgeFetch({ edge: edge.origin, hosts, fetch: originalFetch });
   try {
     const config = deploymentConfig({ LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: 'page.example.test', LAMP_PAGE_NAME: 'Synthetic key rotation', LAMP_PAGE_TAGLINE: 'Installation key rotation', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C',
-      SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_DKIM_SELECTOR: 'resend', MAIL_PROVIDER_API_KEY: `synthetic-${hex()}`,
+      SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'none',
       SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), SETUP_TOKEN: hex(), INSTALLATION_KEY: oldKey }, environment);
     const ownership = deploymentOwnership(config, credentials);
     const created = await ownership.resource('d1', names.database, async () => (await ownership.api.list('/d1/database')).find(row => row.name === names.database),
       () => ownership.api.request('/d1/database', { method: 'POST', body: { name: names.database } }));
     const identity = { source: 'synthetic-source-commit', fingerprint: hex() };
-    const vars = { LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: config.pageHost, AUTH_ORIGIN: `https://${appHost}`, SETUP_OPERATOR_EMAIL: config.setupOperatorEmail, MAIL_FROM_ADDRESS: config.mailFromAddress,
+    const vars = { LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: config.pageHost, AUTH_ORIGIN: `https://${appHost}`, SETUP_OPERATOR_EMAIL: config.setupOperatorEmail,
       MAIL_PROVIDER: config.mailProvider, RER_DEPLOY_SOURCE: identity.source, RER_DEPLOY_FINGERPRINT: identity.fingerprint };
     await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
     // What rer keeps for a deployed environment: its generated secrets in .rer/deploy/<environment>.secrets.env.
     await mkdir(records, { recursive: true, mode: 0o700 });
     await writeFile(custodyFile, Object.entries({ INSTALLATION_KEY: oldKey, SESSION_SECRET: config.sessionSecret, SUBSCRIBER_TOKEN_SECRET: config.subscriberTokenSecret, WEBHOOK_SIGNING_SECRET: config.webhookSigningSecret })
       .map(([name, value]) => `${name}=${value}\n`).join(''), { mode: 0o600 });
+    const cli = async (args, override = {}) => {
+      const child = spawn(process.execPath, ['node_modules/@runeditrun/rer/bin/rer.mjs', ...args, '--environment', environment, '--json'], { cwd: root, timeout: 180000, stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(CLOUDFLARE_|MAIL_|NODE_OPTIONS$)/.test(name))), ...credentials, ...override,
+          MAIL_PROVIDER: 'none', NODE_OPTIONS: `--import=${new URL('../helpers/cloudflare-edge-preload.mjs', import.meta.url).href}`, LAMP_FAKE_EDGE: edge.origin, LAMP_FAKE_EDGE_HOSTS: hosts.join(',') } });
+      let stdout = '', stderr = '';
+      child.stdout.on('data', chunk => { stdout += chunk; });
+      child.stderr.on('data', chunk => { stderr += chunk; });
+      return { code: await new Promise(resolve => child.once('close', resolve)), stdout, stderr };
+    };
+    const post = (path, body) => fetch(`https://${appHost}${path}`, { method: 'POST', redirect: 'manual', headers: { Origin: `https://${appHost}`, 'Content-Type': 'application/json', 'CF-Connecting-IP': '192.0.2.31' }, body: JSON.stringify(body) });
+    const bootstrap = await post('/auth/bootstrap', { token: config.setupToken, displayName: 'Synthetic Lamp owner' });
+    assert.equal(bootstrap.status, 303, await bootstrap.clone().text());
+    assert.equal((await fetch(`https://${appHost}/api/app/session`)).status, 401, 'mail-off hosted access remains protected without a browser session');
+    const grants = async () => (await storage.db.prepare('SELECT id,token_hash,consumed_at FROM oa_owner_signins ORDER BY id').all()).results;
+    const refused = async (label, override = {}) => {
+      const before = await grants(), result = await cli(['signin'], override);
+      assert.notEqual(result.code, 0, `${label} refuses terminal sign-in`);
+      assert.ok(!result.stdout.includes('"link":'), `${label} emits no grant`);
+      assert.deepEqual(await grants(), before, `${label} writes no owner grant`);
+    };
+    await refused('missing deploying token', { CLOUDFLARE_API_TOKEN: '' });
+    await refused('another account', { CLOUDFLARE_ACCOUNT_ID: randomBytes(16).toString('hex') });
+    await refused('another deploying token', { CLOUDFLARE_API_TOKEN: `synthetic-${hex()}` });
+    const record = await readFile(recordFile, 'utf8');
+    await rm(recordFile);
+    await refused('missing deployment record');
+    await writeFile(recordFile, record, { mode: 0o600 });
+    for (const [label, mutate] of [
+      ['another project', state => { state.project = 'synthetic/other'; }],
+      ['another environment', state => { state.environment = 'synthetic-other'; }],
+      ['another Worker', state => { state.worker += '-other'; }],
+      ['incomplete ownership receipt', state => { state.receipt = null; }],
+    ]) {
+      const altered = JSON.parse(record); mutate(altered);
+      await writeFile(recordFile, JSON.stringify(altered), { mode: 0o600 });
+      await refused(label);
+      await writeFile(recordFile, record, { mode: 0o600 });
+    }
+    const identities = async () => ({
+      operators: (await storage.db.prepare('SELECT COUNT(*) n FROM oa_operators').first()).n,
+      sessions: (await storage.db.prepare('SELECT COUNT(*) n FROM oa_sessions').first()).n,
+    });
+    const beforeIssuance = await identities();
+    const signedIn = await cli(['signin']);
+    assert.equal(signedIn.code, 0, signedIn.stdout + signedIn.stderr);
+    const terminal = JSON.parse(signedIn.stdout.trim().split('\n').at(-1));
+    assert.equal(terminal.owner, config.setupOperatorEmail);
+    assert.deepEqual(await identities(), beforeIssuance, 'grant issuance creates neither an operator nor a session');
+    const link = new URL(terminal.link), token = link.searchParams.get('token');
+    assert.equal(link.origin, `https://${appHost}`, 'the deployment record selects its own hosted origin');
+    assert.equal(link.pathname, '/auth/owner-signin');
+    assert.ok(token);
+    assert.ok((await grants()).every(row => row.token_hash !== token), 'only a digest reaches the deployment D1');
+    assert.ok(!(await readFile(recordFile, 'utf8')).includes(token), 'the deployment record never retains the terminal grant');
+    const preview = await fetch(link, { redirect: 'manual' });
+    assert.equal(preview.status, 200);
+    assert.equal(preview.headers.has('set-cookie'), false, 'preview does not sign in or consume the one-use grant');
+    const confirmed = await post('/auth/owner-signin', { token });
+    assert.equal(confirmed.status, 303);
+    const cookie = confirmed.headers.get('set-cookie').split(';')[0];
+    assert.deepEqual(await identities(), { ...beforeIssuance, sessions: beforeIssuance.sessions + 1 }, 'consuming the grant creates the native Base session');
+    const session = await fetch(`https://${appHost}/api/app/session`, { headers: { Cookie: cookie } });
+    assert.equal(session.status, 200);
+    assert.equal((await session.json()).operator.email, config.setupOperatorEmail);
+    const reused = await post('/auth/owner-signin', { token });
+    assert.equal(reused.status, 303);
+    assert.equal(new URL(reused.headers.get('location'), link).pathname, '/signin', 'a spent grant returns to sign-in');
+    assert.equal(reused.headers.has('set-cookie'), false, 'the terminal grant opens only one session');
+    assert.equal((await storage.db.prepare("SELECT COUNT(*) n FROM oa_auth_audit WHERE action='owner:signin-link'").first()).n, 1);
+    assert.equal(edge.live(names.worker).bindings.find(binding => binding.name === 'MAIL_PROVIDER').text, 'none', 'the native deployment applies mail off to the Worker');
+    assert.equal(edge.live(names.worker).bindings.some(binding => ['MAIL_API_KEY', 'MAIL_PROVIDER_API_KEY'].includes(binding.name) && binding.text?.trim()), false, 'hosted owner access needs no sending credential; blank replacements clear old credentials');
+    assert.equal(edge.live(names.worker).bindings.some(binding => ['RER_DEV_KEY', 'RER_DEMO'].includes(binding.name)), false, 'hosted owner access adds no local entry');
+
     const jwks = async () => {
       const response = await fetch(`https://${appHost}/.well-known/rer-link/jwks/oidc-provider@1`);
       assert.equal(response.status, 200, await response.clone().text());
@@ -317,12 +391,19 @@ test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY reseals the depende
     const retired = await serve(edge.live(names.worker), new Request(`https://${appHost}/.well-known/rer-link/jwks/oidc-provider@1`), { INSTALLATION_KEY: oldKey });
     assert.equal(retired.status, 503);
     assert.deepEqual(await retired.json(), { error: 'installation_key_unavailable' }, 'the old key no longer opens any dependency key');
+    const retained = await fetch(`https://${appHost}/api/app/session`, { headers: { Cookie: cookie } });
+    assert.equal(retained.status, 200, 'key rotation preserves the terminal owner session with mail still off');
+    assert.equal((await retained.json()).operator.email, config.setupOperatorEmail);
+    edge.upload(names.worker, { vars, secrets: held, database: created.uuid });
+    await refused('a Worker replaced after the recorded deployment');
   } finally {
     globalThis.fetch = originalFetch;
     await edge.close();
     await cache.dispose();
     await storage.runtime.dispose();
     await rm(dir, { recursive: true, force: true });
+    await rm(join(deployment, `${environment}.hosted-check.json`), { force: true });
+    for (const path of madeDirectories) await rmdir(path).catch(() => {});
     // Remove only what this test made: the whole .rer or .rer/deploy it created, else its two environment files.
     const made = [state, records].find(path => !existing.includes(path));
     if (made) await rm(made, { recursive: true, force: true });

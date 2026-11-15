@@ -108,7 +108,9 @@ export function createDeliveriesService(
   }
 
   async function queueMailAlert(input: { eventId: string; title: string; text: string; recipients?: string[] }) {
-    const from = await configuredFromAddress();
+    // Keep the obligation when mail is unavailable. Dispatch records the
+    // unavailable attempt without preventing the underlying status work.
+    const from = options.mail?.configured ? await configuredFromAddress() : "";
     const recipients = input.recipients ?? await repository.listActiveOperatorEmails();
     if (!recipients.length) return;
     const now = nowIso();

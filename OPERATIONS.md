@@ -1,10 +1,12 @@
 # Lamp operations
 
-Mail dispatch is a required Worker loop. Lamp's configuration module validates
-its conditional RER, SendGrid or Resend credentials before deployment; the
-Managed relay capability and assigned fields are declared in the generated
-deployment specification. Rer 0.2.29's generic mail-loop schema lists only direct
-providers, so it does not describe Lamp's relay transport.
+The notification dispatcher remains a required Worker loop. Lamp's native
+configuration validates sending inputs for enabled mail providers. Explicit
+`MAIL_PROVIDER=none` disables email transport; attempts remain unavailable and
+pending instead of reporting delivery. It does not disable the dispatcher or
+scheduled status work, and does not make required delivery succeed without mail.
+
+<!-- Run Edit Run fleet (Codex), 2026-11-15: native mail-off adoption. -->
 
 Lamp uses distinct public page and operator application hosts. Each has its own
 home page: the page host's `/` is the company's public status page, and the app
@@ -42,16 +44,24 @@ must be able to read the account's Workers subdomain.
 
 Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
 
-Hosted Lamp requires working mail, including when using terminal recovery links.
-Managed hosting includes it without a provider account or mail key from the owner:
+Hosted Lamp accepts deliberately disabled email with `MAIL_PROVIDER=none` on
+rer 0.2.118. No sender, sending key or DKIM input is then required. Sending
+credentials, relay settings and secondary mail providers must be removed;
+missing or deferred provider choices never mean off. Email links, invitations
+and email alerts are unavailable. The deploying owner uses `rer signin` from
+the original checkout with its deployment records and account credentials.
+See [the mail-off deployment guide](docs/deploy.md#or-deliberately-turn-email-off).
+
+Managed hosting can provide enabled mail without your own provider account:
+
 RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and the
 private installation credential `MAIL_API_KEY`. These values are runtime bindings;
 provider credentials never enter the application build.
 
 Free and Assisted hosting retain your own Resend or SendGrid configuration. For
 native deployment, supply the Cloudflare credentials, both hostnames,
-page branding, first operator email, `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and
-`MAIL_PROVIDER_API_KEY`. The complete [input reference](docs/deployment-reference.md#inputs-you-supply-and-values-rer-generates)
+page branding and first operator email. An enabled direct mail provider also
+requires `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and `MAIL_PROVIDER_API_KEY`. The complete [input reference](docs/deployment-reference.md#inputs-you-supply-and-values-rer-generates)
 distinguishes owner-supplied values from generated runtime secrets and uses the
 same names as the CLI. The required-input source of truth is
 `requiredEnvironment` in [OPERATIONS.json](OPERATIONS.json).
@@ -160,9 +170,10 @@ package, app Worker, D1, R2 or queue identities.
 
 Run the ordinary `rer deploy --dry-run --environment production --env-file FILE`
 to inspect both hosts and resource names and compile both Worker configurations
-without any provider request. Sign in at the operator address. Custom app-target
-selection in shared `rer signin` and shared mail-off support require their Base
-updates and subsequent Lamp adoption; this public-name option adds neither.
+without any provider request. Sign in at the operator address. On rer 0.2.118,
+`rer signin` reads the selected environment's recorded app Worker, including a
+custom app name, and verifies its live ownership receipt. The public Worker
+never becomes the owner sign-in target. Mail can be deliberately off as above.
 
 <!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
 

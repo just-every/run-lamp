@@ -628,11 +628,11 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "93b2d596998a976e982b79bbb7a795bae34986d31ec1ee4292e83e7630044c19",
+      "sha256": "d996773f41dd97c696fc4607c37236de49e95e3c35129915b565b37519205b14",
       "executable": false
     },
     "docs/deployment-reference.md": {
-      "sha256": "b58656753984a4afe8d6b3021ada1252b365a90f1ebd37e3af49268621987c27",
+      "sha256": "a02aad82c37bf598d78f7371d59ba3dd79b3583aef52309371390641bc5aab31",
       "executable": false
     },
     "docs/domains.md": {
@@ -2592,7 +2592,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "ead58908ade0bf38ec5e1a826e775c8c2e1914ed8a4de6521a56fa7882447dc5",
+      "sha256": "9601da2de82e092bdf48ff8243b1f1cde61e9e52c04a20c61d3d67573f892a17",
       "executable": false
     },
     "package.json": {
@@ -2904,7 +2904,7 @@
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "04873a85226838677d11a4deeacffdfa77c29bc840d94dd050d05c155faec287",
+      "sha256": "03f4d79398edeb91e355ba37638059f1bfe42d4a3b5aec9100932d397be2af9f",
       "executable": false
     },
     "RULINGS.md": {
@@ -4788,7 +4788,7 @@
       "executable": false
     },
     "src/core/features/deliveries/service.ts": {
-      "sha256": "e1c7e61592cee92b9e410ac684bda9c3bb1d788dbff5d38ee047ccc50f01d613",
+      "sha256": "7ec03a9f9b9f5937e18e1027761920ead1cb52e9c79c3aa002b70d955afd0c2e",
       "executable": false
     },
     "src/core/features/deliveries/ses-events.ts": {
@@ -6732,7 +6732,7 @@
       "executable": false
     },
     "src/core/platform/auth/http.ts": {
-      "sha256": "7209f157ee31fb3d92cadf394a2fc8283e34bc4adc747343ab17ef2f9b33b5f9",
+      "sha256": "d176fdc2819df0b739f6f1f6c0af62e12afadb3b3ca0ec50edbb8eb268e21317",
       "executable": false
     },
     "src/core/platform/auth/identity-provider-guides.ts": {
@@ -7840,7 +7840,7 @@
       "executable": false
     },
     "tests/auth-adoption/dependencies.test.mjs": {
-      "sha256": "9a29f9ce6c4b0ab5ed188194e233d386b82539f3942e3db9a0a3dde880a3db28",
+      "sha256": "f0afa07dd72d16a07957a3d233fea09ea0e25b254bef00582357be292c676e99",
       "executable": false
     },
     "tests/auth-adoption/deploy-page-host.test.mjs": {
@@ -8556,7 +8556,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "6c978e5ef6d174892079a5719dca6ef264b8fd1f23b94ab5981df0dcf9bd995f",
+      "sha256": "070e48db7fce3c55bb6ec28484bfa86d6a675b7b74fe07eb1c792efffb88a8ef",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {
