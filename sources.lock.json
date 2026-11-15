@@ -628,11 +628,11 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "1a5539956f3314056c7300d5d40b9df56e12ade98685be5f9df494c916ba2b47",
+      "sha256": "93b2d596998a976e982b79bbb7a795bae34986d31ec1ee4292e83e7630044c19",
       "executable": false
     },
     "docs/deployment-reference.md": {
-      "sha256": "801ea84abaf927bec691ffddee8592cce012361a74942a7a001b3f0f535990b3",
+      "sha256": "b58656753984a4afe8d6b3021ada1252b365a90f1ebd37e3af49268621987c27",
       "executable": false
     },
     "docs/domains.md": {
