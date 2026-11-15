@@ -307,3 +307,53 @@ test('MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, a
     assert.equal((await response.json()).files.length, fixtureFiles.length);
   } finally { await managed.runtime.close(); }
 });
+
+test('MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral', { timeout: 120_000 }, async t => {
+  const runtime = await openStatusJourney();
+  try {
+    const api = async (path, body, headers, method = body === undefined ? 'GET' : 'POST') => {
+      const response = await runtime.request(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }), headers });
+      return { status: response.status, body: response.status === 204 ? null : await response.json() };
+    };
+    const moveIn = moveInDoor(api);
+    const files = fixture('sorry', 'authenticated');
+    const detail = files.find(file => file.name === 'sorry-notice-101.json');
+    const window = JSON.parse(detail.text).response;
+    window.updates.unshift({
+      id: 1009, state: 'scheduled', content: 'Database work is scheduled for tomorrow.',
+      created_at: '2025-04-01T10:00:00.000Z', updated_at: '2025-04-01T10:00:00.000Z',
+    });
+    // Management exports can omit authored lifecycle; the window's inferred
+    // timing must not turn that message into an invented authored status.
+    window.updates.splice(1, 0, {
+      id: 1008, content: 'We will post another update when work starts.',
+      created_at: '2025-04-01T11:00:00.000Z', updated_at: '2025-04-01T11:00:00.000Z',
+    });
+    detail.text = JSON.stringify({ response: window });
+    const notices = files.find(file => file.name === 'sorry-notices.json');
+    const list = JSON.parse(notices.text);
+    list.response = list.response.map(row => row.id === window.id ? window : row);
+    notices.text = JSON.stringify(list);
+    const quiet = await notificationActivity(runtime);
+    const review = await moveIn.preview({ source: 'sorry', files, pageId: 'synthpage01', publicAccessAcknowledged: true });
+    assert.equal(review.status, 200, JSON.stringify(review.body));
+    const result = await moveIn.apply(review.body);
+    assert.equal(result.status, 200, JSON.stringify(result.body));
+    const windows = (await api('/api/app/maintenance')).body.maintenance;
+    const imported = windows.find(row => row.title === window.subject);
+    assert.ok(imported);
+    assert.equal(imported.importedUpdates.length, window.updates.length);
+    assert.equal(imported.notices.length, 0);
+    const labels = ['Scheduled', 'Imported update', 'In progress', 'Completed'];
+    for (const path of ['/maintenance/' + imported.reference, '/history/2025-04']) {
+      const html = await runtime.visible(path, window.updates[0].content);
+      for (const [index, label] of labels.entries()) {
+        const article = html.match(/<article class="update maintenance-notice">[\s\S]*?<\/article>/gu).find(part => part.includes(window.updates[index].content));
+        assert.ok(article, path + ' keeps every complete message');
+        assert.ok(article.includes('<strong>' + label + '</strong>'), path + ' gives the source message its own label ' + label);
+      }
+    }
+    await assertNoNewNotifications(runtime, quiet);
+    t.diagnostic('PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors');
+  } finally { await runtime.close(); }
+});

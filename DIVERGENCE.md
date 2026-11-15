@@ -1829,3 +1829,14 @@ validation, and valid windows clear the ordering hint. Subscriber reporting uses
 singular for one current subscriber and plural for every other total. These are
 presentation corrections; existing publication, maintenance and reporting
 requirements remain unchanged.
+
+## Imported customer messages and returning owner setup — 15 November 2026
+
+An imported incident update remains one readable message, with whole words and
+its complete retained source text. Additional details describes separate material,
+rather than a continuation created by a fixed character cut. Historical maintenance
+messages display their own authored source lifecycle in Lamp's wording; a source
+that omits it keeps a neutral label. Import remains retroactive and silent.
+A local owner who already confirmed first-run setup returns to the app, including
+through client navigation to a saved setup address. Only an uncompleted install
+shows Welcome. Existing clause judgments and release metadata are unchanged.

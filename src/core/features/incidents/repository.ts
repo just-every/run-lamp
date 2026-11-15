@@ -1,4 +1,5 @@
 import { createOperatorRolesRepository } from '../operators/roles.repository';
+import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import { publishes } from '../operators/permissions';
 import { createCommunicationOwnerRepository } from "./communication-owner.repository";
 import { createUlid } from "../../shared/ids";
@@ -147,7 +148,8 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
       return database.select().from(incidentComponents).where(eq(incidentComponents.incidentId, incidentId)).all();
     },
     async listUpdates(incidentId) {
-      return database.select().from(incidentUpdates).where(eq(incidentUpdates.incidentId, incidentId)).orderBy(desc(incidentUpdates.publishedAt)).all();
+      const updates = await database.select().from(incidentUpdates).where(eq(incidentUpdates.incidentId, incidentId)).orderBy(desc(incidentUpdates.publishedAt)).all();
+      return projectImportedIncidentUpdates(binding, updates);
     },
     async findPublishingDraft(incidentId) {
       const row = await binding.prepare(`SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson, (SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=incident_drafts.id AND active=1) AS agentPreparationJson FROM incident_drafts WHERE incident_id = ?`).bind(incidentId).first<import("./list-relations").DraftRow>();

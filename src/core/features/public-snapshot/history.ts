@@ -1,3 +1,4 @@
+import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenance-update";
 import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor, type ArchivePage } from "./archive";
 import type { PublicIncident, PublicMaintenance } from "./record-markup";
 import { noticeMarkup, recordHead, updateMarkup } from "./record-markup";
@@ -23,7 +24,7 @@ function historyRecords(model: HistoryModel): HistoryRecord[] {
     })),
     ...model.maintenance.filter(item => item.state === "Completed" || item.state === "Cancelled").map(item => ({
       id: item.id, kind: "maintenance" as const, timestamp: item.completedAt ?? item.endsAt,
-      html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: "Imported update" }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
+      html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
     })),
   ].sort((left, right) => right.timestamp.localeCompare(left.timestamp) || right.id.localeCompare(left.id) || right.kind.localeCompare(left.kind));
 }

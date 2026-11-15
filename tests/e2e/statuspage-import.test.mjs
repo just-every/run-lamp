@@ -1,5 +1,6 @@
 import { incidentSnapshot } from '../helpers/incident-snapshot.mjs';
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
@@ -341,5 +342,115 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     // RL-6: the full Move in after setup's incident history is that import's catch-up.
     await historyCatchupFlow({ t, runtime, api, moveIn, repeatImport, original: sourceFiles });
 
+  } finally { await runtime.close(); }
+});
+
+test('MAINT-015 — imported maintenance messages retain their own source lifecycle labels', { timeout: 120_000 }, async t => {
+  const runtime = await openStatusJourney();
+  try {
+    const api = async (path, body, headers, method = body === undefined ? 'GET' : 'POST') => {
+      const response = await runtime.request(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }), headers });
+      return { status: response.status, body: response.status === 204 ? null : await response.json() };
+    };
+    const moveIn = moveInDoor(api);
+    const files = fixtures('statuspage');
+    const times = ['2026-01-10T09:00:00.000Z', '2026-01-11T09:00:00.000Z', '2026-01-11T10:00:00.000Z'];
+    const messages = [
+      { status: 'scheduled', body: 'Scheduled database work is planned for tomorrow.' },
+      { status: 'in_progress', body: 'The database work is now underway.' },
+      { status: 'completed', body: 'Database work is complete and normal service has resumed.' },
+    ];
+    const window = {
+      id: 'labelwindow1', name: 'Source maintenance lifecycle', status: 'completed', impact: 'maintenance',
+      created_at: times[0], scheduled_for: times[1], scheduled_until: times[2], resolved_at: times[2],
+      components: [{ id: 'c0000000001' }],
+      incident_updates: messages.map((message, index) => ({
+        ...message, id: 'labelupdate' + index, created_at: times[index], display_at: times[index],
+        affected_components: [{ code: 'c0000000001', new_status: index === 2 ? 'operational' : 'under_maintenance' }],
+      })),
+    };
+    files.find(file => file.name === 'incidents.json').text = JSON.stringify([window]);
+    const quiet = await notificationActivity(runtime);
+    const review = await moveIn.preview({ source: 'statuspage', files, pageId: 'synthpage01', publicAccessAcknowledged: true });
+    assert.equal(review.status, 200, JSON.stringify(review.body));
+    const applied = await moveIn.apply(review.body);
+    assert.equal(applied.status, 200, JSON.stringify(applied.body));
+    const windows = (await api('/api/app/maintenance')).body.maintenance;
+    const imported = windows.find(row => row.title === window.name);
+    assert.ok(imported);
+    assert.equal(imported.notices.length, 0, 'historical messages never become native notification notices');
+    assert.equal(imported.importedUpdates.length, messages.length, 'every source maintenance message survives the public import door');
+    assert.deepEqual(imported.importedUpdates.map(row => row.publishedAt).sort(), times);
+    for (const path of ['/maintenance/' + imported.reference, '/history/2026-01']) {
+      const html = await runtime.visible(path, messages[0].body);
+      for (const [index, label] of ['Scheduled', 'In progress', 'Completed'].entries()) {
+        assert.ok(html.includes('<strong>' + label + '</strong>'), path + ' labels ' + messages[index].status);
+        assert.ok(html.includes(messages[index].body), path + ' keeps source message');
+      }
+    }
+    await assertNoNewNotifications(runtime, quiet);
+    t.diagnostic('PROBE MAINT-015: scheduled, in_progress and completed source messages survive review/apply, native read, public permalink and monthly history at original times without notifications');
+  } finally { await runtime.close(); }
+});
+
+test('Imported incident wording stays whole beyond native field limits', { timeout: 180_000 }, async t => {
+  const runtime = await openStatusJourney();
+  const send = async (path, body, headers) => {
+    const response = await runtime.request(path, { ...(body === undefined ? {} : { method: 'POST', body: JSON.stringify(body) }), headers });
+    return { status: response.status, body: await response.json() };
+  };
+  const door = moveInDoor(send);
+  const body = `${'Customers can continue reading their saved invoices while the processing queue recovers. '.repeat(14)}The final source sentence remains part of this same update.`;
+  try {
+    for (const source of ['statuspage', 'sorry']) {
+      const files = source === 'statuspage' ? fixtures(source) : readdirSync('tests/fixtures/sorry/authenticated').map(name => ({ name, text: readFileSync(`tests/fixtures/sorry/authenticated/${name}`, 'utf8') }));
+      let title, publishedAt;
+      if (source === 'statuspage') {
+        const incidents = parsed(files, 'incidents.json');
+        // A real export can retain large undocumented provider metadata. Force
+        // a chunked journal shared by several incidents without bloating the
+        // customer messages or pinning the journal's storage representation.
+        for (const row of incidents) row.export_metadata = randomBytes(120_000).toString('base64');
+        incidents[0].incident_updates[0].body = body;
+        title = incidents[0].name; publishedAt = incidents[0].incident_updates[0].display_at;
+        files.find(file => file.name === 'incidents.json').text = JSON.stringify(incidents);
+      } else {
+        const notice = parsed(files, 'sorry-notice-100.json').response;
+        title = notice.subject; publishedAt = notice.updates[0].created_at;
+        const original = notice.updates[0].content;
+        for (const file of files) file.text = file.text.replaceAll(original, body);
+      }
+      const reviewed = await door.preview({ source, files, pageId: 'synthpage01', publicAccessAcknowledged: true });
+      assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
+      const applied = await door.apply(reviewed.body);
+      assert.equal(applied.status, 200, JSON.stringify(applied.body));
+      const incidents = await incidentSnapshot(send);
+      const incident = incidents.find(row => row.title === title);
+      assert.ok(incident, `${source} incident is readable through its native document`);
+      const update = incident.updates.find(row => row.publishedAt === publishedAt);
+      assert.equal(update.customerImpact, body, `${source} retains the entire source update in its readable wording`);
+      assert.equal(update.details, '', 'overflow does not become unrelated Additional details');
+      const html = await runtime.publicText(`/incidents/${incident.reference}`);
+      assert.ok(html.includes(body), `${source} public permanent page contains the whole update`);
+      assert.ok(!html.includes('Additional details'), 'the imported sentence stays in one update field');
+      const native = await runtime.db.prepare('SELECT customer_impact,details FROM incident_updates WHERE id=?').bind(update.id).first();
+      assert.ok(Array.from(native.customer_impact).length <= 250, 'native row remains within the unchanged schema bound');
+      assert.ok(body.startsWith(native.customer_impact));
+      assert.ok(/\s/u.test(body[native.customer_impact.length] ?? ' '), 'the saved prefix ends at a word boundary');
+      assert.equal(native.details, '');
+      t.diagnostic(`PROBE ${source} long incident wording: ${body.length} source characters, complete native/public wording, boundary-safe native prefix`);
+      await runtime.save(incident.id, { lifecycle: 'Resolved', affectedAudience: 'Invoice customers', customerImpact: 'Owner-authored historical clarification.', whatStillWorks: '', details: 'Separate owner supplied diagnostics.', nextUpdateAt: null });
+      await runtime.publish(incident.id, { publishedAt: '2026-11-01T12:00:00.000Z' });
+      const edited = await runtime.read(incident.id);
+      const authored = edited.updates.find(row => row.customerImpact === 'Owner-authored historical clarification.');
+      assert.equal(authored.isRetroactive, true, 'control is a native backdated update beside imported history');
+      assert.equal(authored.details, 'Separate owner supplied diagnostics.', 'a genuine native details field is preserved');
+      assert.equal(edited.updates.find(row => row.id === update.id).customerImpact, body);
+      const undone = await door.undo(applied.body.door);
+      assert.equal(undone.status, 200, JSON.stringify(undone.body));
+      const kept = await runtime.read(incident.id);
+      assert.equal(kept.updates.find(row => row.id === update.id).customerImpact, body, 'conditional undo preserves readable source wording beside the owner publication');
+      assert.equal(kept.updates.find(row => row.id === authored.id).details, authored.details);
+    }
   } finally { await runtime.close(); }
 });

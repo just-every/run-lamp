@@ -1,4 +1,5 @@
 import { desc, inArray, isNull } from "drizzle-orm";
+import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import { createDatabase } from "../../platform/db/client";
 import { incidents, incidentComponents, incidentUpdates, incidentInternalNotes } from "../../shared/schema";
 import type { ComponentState } from "../../shared/domain";
@@ -42,7 +43,7 @@ export async function listIncidentRelations(binding: D1Database, incidentIds?: s
     binding.prepare(`SELECT i.id, i.peak_impact AS peakImpact FROM incidents i WHERE ${scope}`).bind(...(incidentIds ?? [])).all<{ id: string; peakImpact: ComponentState | null }>(),
   ]);
   return {
-    components: byIncident(components), updates: byIncident(updates), notes: byIncident(notes),
+    components: byIncident(components), updates: byIncident(await projectImportedIncidentUpdates(binding, updates)), notes: byIncident(notes),
     drafts: new Map(drafts.results.map(row => [row.incidentId, publishingDraft(row)])),
     impacts: new Map(impacts.results.map(row => [row.id, row.peakImpact])),
   };
