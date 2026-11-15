@@ -1479,9 +1479,9 @@ packages:
     peerDependencies:
       seroval: ^1.0
 
-  seroval@1.6.7:
-    resolution: {integrity: sha512-AeDcLh0yO2SFm9W71essgnSzLV9DI8ZH0x0knXn2DMnUZj728mpLbxjlbB6IqKCmqh8JA3cEqRyGoNkt584JcQ==}
-    engines: {node: '>=10'}
+  seroval@1.8.1:
+    resolution: {integrity: sha512-7z9x1flFYfZBz+LfDkXNfm5UIhZJ/97ASaV8Q1wctoVkeqVfv+tLPsWebeMXBNw6XprvwxDE5wC5Ylqmr+iSrA==}
+    engines: {node: '>=20'}
 
   sharp@0.35.5:
     resolution: {integrity: sha512-Ywn4OnzGukp7CDMrp08RQ50YKmuwG47brZgIVPTvBaaAfQlRlygrRqSrxdCiL9M+LlzLBiJ68IR1QqvzHyjC7g==}
@@ -2312,8 +2312,8 @@ snapshots:
     dependencies:
       '@tanstack/history': 1.162.4
       cookie-es: 3.1.1
-      seroval: 1.6.7
-      seroval-plugins: 1.6.7(seroval@1.6.7)
+      seroval: 1.8.1
+      seroval-plugins: 1.6.7(seroval@1.8.1)
 
   '@tanstack/router-generator@1.167.40':
     dependencies:
@@ -2370,7 +2370,7 @@ snapshots:
       '@tanstack/router-core': 1.171.34
       '@tanstack/start-fn-stubs': 1.162.0
       '@tanstack/start-storage-context': 1.167.36
-      seroval: 1.6.7
+      seroval: 1.8.1
 
   '@tanstack/start-fn-stubs@1.162.0': {}
 
@@ -2389,7 +2389,7 @@ snapshots:
       lightningcss: 1.33.0
       pathe: 2.0.3
       picomatch: 4.0.7
-      seroval: 1.6.7
+      seroval: 1.8.1
       source-map: 0.7.6
       srvx: 0.11.22
       tinyglobby: 0.2.17
@@ -2421,7 +2421,7 @@ snapshots:
       '@tanstack/start-storage-context': 1.167.36
       fetchdts: 0.1.7
       h3-v2: h3@2.0.1-rc.20
-      seroval: 1.6.7
+      seroval: 1.8.1
     transitivePeerDependencies:
       - crossws
 
@@ -2791,11 +2791,11 @@ snapshots:
 
   semver@7.8.5: {}
 
-  seroval-plugins@1.6.7(seroval@1.6.7):
+  seroval-plugins@1.6.7(seroval@1.8.1):
     dependencies:
-      seroval: 1.6.7
+      seroval: 1.8.1
 
-  seroval@1.6.7: {}
+  seroval@1.8.1: {}
 
   sharp@0.35.5(@types/node@22.19.17):
     dependencies:
