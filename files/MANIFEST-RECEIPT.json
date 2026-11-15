@@ -1,0 +1,37 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "rows": [
+    {
+      "path": "rer-setup.json",
+      "parsedContentUnchanged": true,
+      "bytesChanged": true,
+      "canonical": true
+    },
+    {
+      "path": "deploy.json",
+      "parsedContentUnchanged": true,
+      "bytesChanged": false,
+      "canonical": true
+    },
+    {
+      "path": "seed.json",
+      "parsedContentUnchanged": true,
+      "bytesChanged": false,
+      "canonical": false
+    },
+    {
+      "path": "hosted-check.json",
+      "parsedContentUnchanged": true,
+      "bytesChanged": false,
+      "canonical": true
+    },
+    {
+      "path": "hosted-check-managed.json",
+      "parsedContentUnchanged": true,
+      "bytesChanged": false,
+      "canonical": true
+    }
+  ],
+  "rule": "scripts/delivery/base/setup-manifest.mjs:32 requires canonical rer-setup.json; no equivalent byte rule was found for seed.json; the other three manifest files are already canonical."
+}

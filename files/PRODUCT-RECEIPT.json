@@ -1,0 +1,17 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-mail-off-1-c1",
+  "head": "5e532d8ccf7bd122e74edbef4e803379d48d20e9",
+  "base": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "original_head": "46fa4e5275960b72f895611b9cacab3539839c62",
+  "push_completed_utc": "2026-11-15T16:36:59.857048+00:00",
+  "push_completed_epoch": 1794760619.857064,
+  "push": "success",
+  "product_changes": [
+    "rer-setup.json",
+    "sources.lock.json"
+  ],
+  "setup_manifest_sha256": "09950eb7a3f6a4bc426a09fc8c24d07b8a5f77e38ea8dd6bd2338fcd5d867993"
+}

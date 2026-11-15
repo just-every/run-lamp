@@ -1,0 +1,31 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable (14331.227936ms)
+✔ ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it (4946.707221ms)
+✔ ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key (18437.94645ms)
+✔ ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change (2926.733782ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{"label":"unclaimed published page","status":200,"generatedAt":"2026-11-15T16:35:17.936Z","retained":"true","state":null}
+{"label":"past freshness bound, before scheduler","status":200,"generatedAt":"2026-11-15T16:35:17.936Z","retained":"true","state":null}
+{"label":"past freshness bound, after scheduler","status":200,"generatedAt":"2026-11-15T16:41:17.936Z","retained":"true","state":null}
+{"label":"primary snapshot unavailable","status":200,"generatedAt":"2026-11-15T16:41:17.936Z","retained":"true","state":"stale"}
+✔ ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview (14044.030197ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out (19516.148573ms)
+✔ Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable (9983.824086ms)
+✔ A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse (42.388475ms)
+✔ Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts (4559.645741ms)
+✔ The built hosted mail-off sign-in screen offers guarded owner guidance and protects private documents (4621.924321ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 97889.184821

@@ -1,0 +1,190 @@
+{
+  "files": [
+    {
+      "blob": "f3d5c808a4e5736db1833533cfd8b3630514fc5a",
+      "bytes": 2042,
+      "path": "CHECKS-RECEIPT.json",
+      "sha256": "948e5606b97502c133e6085793c07de8c2949d90922fcc9384e78945a2fe652a"
+    },
+    {
+      "blob": "771c42b3760cc5a0399de3dfabb81b0d38ca9680",
+      "bytes": 45048,
+      "path": "CI-DISCOVERY.json",
+      "sha256": "635cc05420a65220e1e0df560fbf0e4c16775c6223e8331ba3c333e565da3479"
+    },
+    {
+      "blob": "ef892d58fd93c10c99725fd6d89a26a91f133e09",
+      "bytes": 329,
+      "path": "CI-RECEIPT.json",
+      "sha256": "53641a34f4207765243921212cc196e76ecfeb35eca650e9e87a152d39d683ef"
+    },
+    {
+      "blob": "9b610dfff0cfbdbc00864a1a578e7f9b0bedf638",
+      "bytes": 3395,
+      "path": "COUNTS-RECEIPT.json",
+      "sha256": "579e60ddbfe827ee0d9bdbcf9ba5c23288c96d1f74249fbfe33a51a5185cc41c"
+    },
+    {
+      "blob": "5b410059a1112f542048faf1edf59066d5b175c5",
+      "bytes": 509,
+      "path": "GITHUB-CALLS.json",
+      "sha256": "4987783784851170f0b5ee92bfd4bf95550e9574d0a1ef2032f6d62bdf05ca02"
+    },
+    {
+      "blob": "8e437df7e0c9923aba76d87d3d269ecdac2ff0ef",
+      "bytes": 1586,
+      "path": "IDENTITY-RECEIPT.json",
+      "sha256": "d0e0d6bbe7ba91bfa59127d6b2c4001ec0e79fb1a26a83b6873a421f9eaf2735"
+    },
+    {
+      "blob": "17ba5d0623ad08815ce182929359761194c47eae",
+      "bytes": 958,
+      "path": "MANIFEST-RECEIPT.json",
+      "sha256": "295fed8e91bacf39f8c0fcac90e8e7db27bed11776df51e84cfa6dd5f7d69dac"
+    },
+    {
+      "blob": "cd0f271eb969a84468f18c32fc869ad9a817446c",
+      "bytes": 9926,
+      "path": "ORIGINAL-REPORT.md",
+      "sha256": "e5a7da431eb402f8aa5160e3fa37379b9d764e315ec66697bc92f614a6be1881"
+    },
+    {
+      "blob": "dfd50d6aa591a3fc46c845c8cbbca3f12c8a7417",
+      "bytes": 390,
+      "path": "PR-RECEIPT.json",
+      "sha256": "d0687328c8affee9c5d0c70cb087e056d18ee029d38e4a27ea825947783ae9f9"
+    },
+    {
+      "blob": "04f9a268bec4898628d0fbdfcc8e99eea447b5fc",
+      "bytes": 611,
+      "path": "PRODUCT-RECEIPT.json",
+      "sha256": "ae9b05393bb0dd11b64d3f9d6e47c7d517545f4942a8b62b178cc3e49ecd60ca"
+    },
+    {
+      "blob": "9ed28b9863400ead99f72719812ff0eca9b3bcf4",
+      "bytes": 9595,
+      "path": "REPORT.md",
+      "sha256": "d4699533ad7d786a977fa4efeb888fed66135dbdb8a913c8f6de5f3f207ef5cd"
+    },
+    {
+      "blob": "aee94d952761ba9b3ebe49c29c615d59b4f7ad30",
+      "bytes": 1481,
+      "path": "SCOPE-RECEIPT.json",
+      "sha256": "de70d0f2139b027e11d00dc76d51919c02bf79f70b6fe591dbbe092aee591061"
+    },
+    {
+      "blob": "75d649b99e0697ff15fffc4b225155220586ab8e",
+      "bytes": 20065,
+      "path": "build.log",
+      "sha256": "fc6d899d8b40b80126e0620c5c8c3671e06f74870c04214f04b3fce3a94d64b3"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-check.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "2f6ee815fa48c63f88c9379beaa5923f85019734",
+      "bytes": 2442,
+      "path": "install.log",
+      "sha256": "02b2895773d348f6bcad3627ba8305acc2d79506561b0193c3dbf980ece31896"
+    },
+    {
+      "blob": "df0bc8e84cada04e7f3c966fbc74be13bf78d5b5",
+      "bytes": 3463,
+      "path": "original/CHECKS-RECEIPT.json",
+      "sha256": "fd896488d9820afde7720f768a16a7dc9ca2b1d911ea9a8e207ae472bd243164"
+    },
+    {
+      "blob": "ec637236ef2f9e1287879cc6e35c737ac5a135c0",
+      "bytes": 2126,
+      "path": "original/CI-RECEIPT.json",
+      "sha256": "37d59749c640977eb6b5b37c814b9409a78242bbfde5f72e6cdaa27df7a12957"
+    },
+    {
+      "blob": "c63ed2902d77e1b94a1539e26ecce56e175c6c80",
+      "bytes": 56513,
+      "path": "original/DEPLOY-DRY-RUN.log",
+      "sha256": "d02322d03d44fcf134b1768bff9f2ea7dff89814f0183d67656a7e749b1ff38e"
+    },
+    {
+      "blob": "3b8f21efb4e0321ce565951251ca7ca4d014692f",
+      "bytes": 2050,
+      "path": "original/MANAGEMENT-REPORT.md",
+      "sha256": "3653ae09baaada34b8e2ae0dfc40195560044686e4a9413f52853b3d0c3e877e"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "original/MANAGEMENT-TYPECHECK.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "c1734594e651ef2a6b1641c3a8d4592cf324e72b",
+      "bytes": 291,
+      "path": "original/PR-RECEIPT.json",
+      "sha256": "56d2b31feb458becaadc4ab3f33fab1292a489bac33199893f0a1268f62c8345"
+    },
+    {
+      "blob": "800b43c2755cc17c6ebebc85558b003f4b725f9d",
+      "bytes": 964,
+      "path": "original/PRODUCT-RECEIPT.json",
+      "sha256": "8a71c7899f0a947e877a5b40ef3c81f3232d1c871e925f1b2e9a42805bf1725a"
+    },
+    {
+      "blob": "b686fc4b8ecf4b259e5c13e40a3e3d65e0ce1d7a",
+      "bytes": 929,
+      "path": "product-push.log",
+      "sha256": "d85b94bb19d1896c4d85a2529d2aabd2f0cc1320051b32ee3bd7b7a64481fc5c"
+    },
+    {
+      "blob": "7a173c70f0bb87be1f313d1e6e85fccc28f9e15b",
+      "bytes": 21576,
+      "path": "setup.log",
+      "sha256": "5cc344b68f8f0e378b611aa282bbdd8229342176959e0e83629c6154d67b5dc5"
+    },
+    {
+      "blob": "037c8f96cc9dc9dae714ba1cae4193954d25c7b6",
+      "bytes": 47576,
+      "path": "signin-mail-off-1440.png",
+      "sha256": "a1398879ac15b050b0ebb4f915c0b3efa6a1baf1edb9f7c993d7e3e4a53539ce"
+    },
+    {
+      "blob": "03669049f317ca6ad77729fea6593c6e8ade70b7",
+      "bytes": 36587,
+      "path": "signin-mail-off-390.png",
+      "sha256": "cab1002556ed86b9f6b06da681cc02e126cbbbf5e795dcd3e960d50c498a0856"
+    },
+    {
+      "blob": "770256de53034fc1229cb860d64834f65123926b",
+      "bytes": 399895,
+      "path": "source-lock-check.log",
+      "sha256": "403d66c4ae0a6f26581b9f6fb52e7926d69ecc454973642dbd73a19eb10ff0b6"
+    },
+    {
+      "blob": "29bbae8196e8a89f0e083f750fd5fea4caa94af4",
+      "bytes": 399881,
+      "path": "source-lock-regenerate.log",
+      "sha256": "b96188824475a90092e684ffd1f5a61ace998666c60e96ec76ed9b7d2ae98f16"
+    },
+    {
+      "blob": "eed4267a21ca207faa2d3b32fcadf2bba8a4afa5",
+      "bytes": 2816,
+      "path": "touched-tests.log",
+      "sha256": "f257f521ac343abb5c3eab148e0b220abb0c5eead779db4ae2ff656cf563167b"
+    },
+    {
+      "blob": "9d58d053f0f86cbcdf17a5e6cb6176548e174790",
+      "bytes": 216,
+      "path": "typecheck.log",
+      "sha256": "6267a7588f1e687a682cc38ebad1e060aac3450a9e60be4fb46c3c8da64ab8a8"
+    }
+  ],
+  "product_branch": "cloud/main-lamp-mail-off-1-c1",
+  "product_head": "5e532d8ccf7bd122e74edbef4e803379d48d20e9",
+  "ref": "refs/heads/evidence/main-lamp-mail-off-1-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "main-lamp-mail-off-1-c1"
+}

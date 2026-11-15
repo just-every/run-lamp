@@ -1,0 +1,85 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "source_head": "46fa4e5275960b72f895611b9cacab3539839c62",
+  "working_change": "rer-setup.json canonical JSON bytes only",
+  "checks": [
+    {
+      "name": "touched-tests",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "tests/e2e/independent-release.test.mjs",
+        "tests/e2e/rer-mail.test.mjs",
+        "tests/auth-adoption/dependencies.test.mjs"
+      ],
+      "exit_code": 0,
+      "seconds": 98.04
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "seconds": 21.2
+    }
+  ],
+  "candidate_head": "5e532d8ccf7bd122e74edbef4e803379d48d20e9",
+  "test_summary": {
+    "tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0
+  },
+  "additional_checks": [
+    {
+      "name": "frozen dependencies",
+      "exit_code": 0,
+      "log": "install.log"
+    },
+    {
+      "name": "local setup",
+      "exit_code": 0,
+      "log": "setup.log"
+    },
+    {
+      "name": "production build",
+      "exit_code": 0,
+      "log": "build.log"
+    },
+    {
+      "name": "contract-document check",
+      "exit_code": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "name": "regenerate source lock last",
+      "exit_code": 0,
+      "log": "source-lock-regenerate.log"
+    },
+    {
+      "name": "source-lock check",
+      "exit_code": 0,
+      "log": "source-lock-check.log"
+    },
+    {
+      "name": "git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "proof": [
+    {
+      "file": "signin-mail-off-1440.png",
+      "sha256": "a1398879ac15b050b0ebb4f915c0b3efa6a1baf1edb9f7c993d7e3e4a53539ce"
+    },
+    {
+      "file": "signin-mail-off-390.png",
+      "sha256": "cab1002556ed86b9f6b06da681cc02e126cbbbf5e795dcd3e960d50c498a0856"
+    }
+  ],
+  "test_source_binding": "Tests ran with the final rer-setup.json bytes; only the generated source-lock hash changed afterward. No test or application source changed after the run."
+}

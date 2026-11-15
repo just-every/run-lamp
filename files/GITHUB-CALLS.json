@@ -1,0 +1,16 @@
+[
+  {
+    "number": 1,
+    "command": "gh api repos/just-every/run-lamp/pulls --method POST --input -",
+    "purpose": "Create repository-required draft PR",
+    "time": "2026-11-15T16:37:41.160523+00:00"
+  },
+  {
+    "number": 2,
+    "command": "gh api repos/just-every/run-lamp/actions/runs?head_sha=5e532d8ccf7bd122e74edbef4e803379d48d20e9&per_page=100",
+    "purpose": "Exact-SHA Verify discovery",
+    "time": "2026-11-15T16:51:59.860447+00:00",
+    "epoch": 1794761519.8604472,
+    "exit_code": 0
+  }
+]

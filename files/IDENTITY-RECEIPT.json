@@ -1,0 +1,41 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "range": "origin/main..HEAD",
+  "all_parents_included": true,
+  "candidates": [
+    {
+      "head": "5e532d8ccf7bd122e74edbef4e803379d48d20e9",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "message": "Canonicalize Lamp setup manifest bytes\n"
+    },
+    {
+      "head": "46fa4e5275960b72f895611b9cacab3539839c62",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "message": "Document deliberate mail-off in native seed metadata\n"
+    },
+    {
+      "head": "aa6335e987950bb1f80be13d70b1db4e687b9191",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "message": "Prove mail-off owner access and retain unavailable alert work\n"
+    },
+    {
+      "head": "481f21271d15fe39cbe4dbb47f1407e4bc3c1c76",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "message": "Support deliberate mail-off deployments on rer 0.2.118 [skip ci]\n"
+    }
+  ],
+  "review": "All candidates use fleet author and committer; no co-author trailers; final head has no skip marker."
+}
