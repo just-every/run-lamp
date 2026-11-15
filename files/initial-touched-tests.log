@@ -1,0 +1,44 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable (12793.090271ms)
+✔ ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it (4541.972636ms)
+✔ ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key (14011.754751ms)
+✔ ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change (2590.810556ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{"label":"unclaimed published page","status":200,"generatedAt":"2026-11-15T18:05:18.716Z","retained":"true","state":null}
+{"label":"past freshness bound, before scheduler","status":200,"generatedAt":"2026-11-15T18:05:18.716Z","retained":"true","state":null}
+{"label":"past freshness bound, after scheduler","status":200,"generatedAt":"2026-11-15T18:11:18.716Z","retained":"true","state":null}
+{"label":"primary snapshot unavailable","status":200,"generatedAt":"2026-11-15T18:11:18.716Z","retained":"true","state":"stale"}
+✔ ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview (16542.757884ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out (16794.055098ms)
+✔ Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable (9300.622163ms)
+✔ A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse (49.305433ms)
+✔ Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts (4647.161791ms)
+✖ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (43135.964095ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 128976.477228
+
+✖ failing tests:
+
+test at tests/e2e/rer-mail.test.mjs:467:1
+✖ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (43135.964095ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('status').filter({ hasText: 'We read www.example.com' }) to be visible[22m
+  
+      at TestContext.<anonymous> (/home/agent/rer-consolidation/work/main-lamp-mail-off-1-c1-fix1/run-lamp/tests/e2e/rer-mail.test.mjs:530:89) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('status').filter({ hasText: 'We read www.example.com' }) to be visible" ]
+  }

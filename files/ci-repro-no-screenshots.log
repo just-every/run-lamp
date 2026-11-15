@@ -1,0 +1,22 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (43861.576352ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 46025.9098
+
+✖ failing tests:
+
+test at tests/e2e/rer-mail.test.mjs:467:1
+✖ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (43861.576352ms)
+  page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response"
+      at TestContext.<anonymous> (/home/agent/rer-consolidation/work/main-lamp-mail-off-1-c1-fix1/run-lamp/tests/e2e/rer-mail.test.mjs:552:36) {
+    name: 'TimeoutError',
+    log: []
+  }

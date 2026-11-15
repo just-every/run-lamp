@@ -1,0 +1,245 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-mail-off-1-c1-fix1",
+  "head": "b0162c2c961b38c1f42de12e28af8501c483d664",
+  "parent": "1b15506835b108bd8e200bba660948c6332953ee",
+  "base": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "pull_request": "https://github.com/just-every/run-lamp/pull/393",
+  "changed_files": [
+    "DIVERGENCE.md",
+    "sources.lock.json",
+    "src/core/shared/schemas.ts",
+    "tests/e2e/rer-mail.test.mjs"
+  ],
+  "checks": [
+    {
+      "command": "pnpm run build:app",
+      "exit": 0,
+      "log": "build-app.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/rer-mail.test.mjs tests/e2e/independent-release.test.mjs tests/auth-adoption/dependencies.test.mjs",
+      "exit": 0,
+      "passed": 10,
+      "failed": 0,
+      "log": "final-touched-tests.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "final-typecheck.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "log": "test-counts-after.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock-write.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-lock-check.json"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-docs-check.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-name-pattern='The built hosted mail-off owner' tests/e2e/rer-mail.test.mjs (with browser proof enabled)",
+      "exit": 0,
+      "passed": 1,
+      "log": "final-browser-proof.log"
+    }
+  ],
+  "reproduction": {
+    "built_first_run": {
+      "provider": "none",
+      "choice": "skip",
+      "settings_put": 400,
+      "issue": "mailFromAddress",
+      "log": "before-first-run.log"
+    },
+    "native_settings_api": {
+      "settings_put": 400,
+      "issue": "mailFromAddress",
+      "log": "before-settings-api.log"
+    }
+  },
+  "built_screen_scenarios": [
+    {
+      "provider": "none",
+      "choice": "skip",
+      "settings_put": 200,
+      "first_run_recorded": true,
+      "operator_paths": [
+        "/app",
+        "/app/incidents",
+        "/app/maintenance"
+      ],
+      "settings_autosave": 200,
+      "stored_sender": "",
+      "invalid_nonempty_sender_put": null
+    },
+    {
+      "provider": "none",
+      "choice": "read",
+      "settings_put": 200,
+      "first_run_recorded": true,
+      "operator_paths": [
+        "/app",
+        "/app/incidents",
+        "/app/maintenance"
+      ],
+      "settings_autosave": 200,
+      "stored_sender": "",
+      "invalid_nonempty_sender_put": null
+    },
+    {
+      "provider": "resend",
+      "choice": "skip",
+      "settings_put": 200,
+      "first_run_recorded": true,
+      "operator_paths": [
+        "/app",
+        "/app/incidents",
+        "/app/maintenance"
+      ],
+      "settings_autosave": 200,
+      "stored_sender": "status@example.test",
+      "invalid_nonempty_sender_put": 400
+    },
+    {
+      "provider": "resend",
+      "choice": "read",
+      "settings_put": 200,
+      "first_run_recorded": true,
+      "operator_paths": [
+        "/app",
+        "/app/incidents",
+        "/app/maintenance"
+      ],
+      "settings_autosave": 200,
+      "stored_sender": "status@example.test",
+      "invalid_nonempty_sender_put": 400
+    }
+  ],
+  "counts": {
+    "author": "Run Edit Run fleet",
+    "date": "2026-11-15",
+    "mailCases": {
+      "before": 5,
+      "after": 5
+    },
+    "registeredCases": {
+      "before": 101,
+      "after": 101
+    },
+    "assertionScripts": 10,
+    "totalChecks": {
+      "before": 111,
+      "after": 111
+    }
+  },
+  "product_push": {
+    "pushes": 2,
+    "attempts_each": 1,
+    "result": "success",
+    "logs": [
+      "product-push-first-head.log",
+      "product-push.log"
+    ]
+  },
+  "publication_scan": "Deferred to fleet Mac lander as instructed; no COMPLETE cloud scan claim.",
+  "ci": {
+    "initial_head": "1b15506835b108bd8e200bba660948c6332953ee",
+    "initial_run": 43745111748,
+    "initial_conclusion": "failure",
+    "failed_jobs": [
+      {
+        "id": 132906966142,
+        "name": "shards (imports)"
+      },
+      {
+        "id": 132912189074,
+        "name": "verify"
+      }
+    ],
+    "cause": "New test filled SSR Settings field before React hydration; no autosave request was produced. Reproduced locally without screenshots. Added existing operator hydration wait and Settings ready guard.",
+    "failure_log": "verify-imports-failed.log",
+    "local_reproduction_log": "ci-repro-no-screenshots.log",
+    "final_head": "b0162c2c961b38c1f42de12e28af8501c483d664",
+    "final_status": "completed",
+    "final_conclusion": "success",
+    "final_push_run": 43747447829,
+    "final_pr_run": 43747453572,
+    "final_push_url": "https://github.com/just-every/run-lamp/actions/runs/43747447829",
+    "github_calls": 6,
+    "github_budget": 10
+  },
+  "claim_status_changes": [],
+  "proofs": [
+    {
+      "file": "browser/overview-mail-off-1440.png",
+      "bytes": 224592,
+      "sha256": "c6560ec09f486023a8637b88d6d31fa45280f94589b693c15a42617a8259b741"
+    },
+    {
+      "file": "browser/overview-mail-off-390.png",
+      "bytes": 154202,
+      "sha256": "c5fb700fd5f0f2cd691080c94ef72d1634078de19bba8ab62474fbc1d3083bf4"
+    },
+    {
+      "file": "browser/settings-mail-off-1440.png",
+      "bytes": 169870,
+      "sha256": "65b1316aa5aa7b9a9716e9050d9aa5bbc30df53a2dba6dd0e3655ed2f00303ff"
+    },
+    {
+      "file": "browser/settings-mail-off-390.png",
+      "bytes": 116496,
+      "sha256": "631be8d5e0caa0f1c7ad02aa8f42bf56626640a38f16883a95cbdb25a6dd15e7"
+    },
+    {
+      "file": "browser/setup-read-mail-off-1440.png",
+      "bytes": 288958,
+      "sha256": "ff3bc0e30d9b52624839910c44aa0c9b253c25805ea34f3da513f94be0f82edd"
+    },
+    {
+      "file": "browser/setup-read-mail-off-390.png",
+      "bytes": 168947,
+      "sha256": "53f3d5e3c23b11887033bb156733e70b0acd64b23af6089ed26a73124529323f"
+    },
+    {
+      "file": "browser/setup-skip-mail-off-1440.png",
+      "bytes": 284658,
+      "sha256": "13eb70a38cacd73981e2f660bfc95620cac7f89a3f40a168aa4e836be97f30fd"
+    },
+    {
+      "file": "browser/setup-skip-mail-off-390.png",
+      "bytes": 172733,
+      "sha256": "22fad95b5d2d9a7f1032050588c5c6520af347fea44a7f3ceb6e117238b96e0f"
+    }
+  ],
+  "prior_round_head": "5e532d8ccf7bd122e74edbef4e803379d48d20e9",
+  "product_commits": [
+    "1b15506835b108bd8e200bba660948c6332953ee",
+    "b0162c2c961b38c1f42de12e28af8501c483d664"
+  ],
+  "runtime": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser_executable": "/usr/bin/chromium"
+  },
+  "custody": "READY candidate: exact-SHA push Verify success; required Opus re-gate and full fleet publication scan remain before landing."
+}

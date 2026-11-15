@@ -1,0 +1,259 @@
+shards (imports)	Verify this product shard	﻿2026-11-15T18:10:58.2268582Z ##[group]Run # rer verify adds Base's hosted-output and hydration checks after the
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2269067Z [36;1m# rer verify adds Base's hosted-output and hydration checks after the[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2269462Z [36;1m# runtime shard has built and exercised the actual production Worker.[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2269801Z [36;1mif [ "$LAMP_VERIFY_SHARD" = runtime ]; then[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2270116Z [36;1m  pnpm verify 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2270411Z [36;1melse[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2270670Z [36;1m  pnpm run verify:app 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2270972Z [36;1mfi[0m
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2287792Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2288074Z env:
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2288258Z   PLAYWRIGHT_SKIP_BROWSER_GC: 1
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2288494Z   LAMP_VERIFY_SHARD: imports
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2288818Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2289297Z   LAMP_BASELINE_REPORT: /home/runner/work/_temp/lamp-verification/baseline-report.json
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.2289631Z ##[endgroup]
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.4361067Z 
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.4361703Z > lamp@1.11.18 verify:app /home/runner/work/run-lamp/run-lamp
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.4362106Z > node scripts/verification/run.mjs
+shards (imports)	Verify this product shard	2026-11-15T18:10:58.4362265Z 
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.1514973Z Verification plan: 8 test shards and one shared build, 35 routine test files, 101 registered cases (including release qualification) + 10 assertion scripts = 111 checks.
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.1601460Z 
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.1602052Z Verifying imports: test:imports
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.3611150Z 
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.3611651Z > lamp@1.11.18 test:imports /home/runner/work/run-lamp/run-lamp
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.3613113Z > node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs tests/e2e/cutover-browser.test.mjs tests/e2e/sorry-import.test.mjs tests/e2e/sorry-reconciliation.test.mjs
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.3614248Z 
+shards (imports)	Verify this product shard	2026-11-15T18:10:59.3944143Z TAP version 13
+shards (imports)	Verify this product shard	2026-11-15T18:11:48.3503390Z # PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording
+shards (imports)	Verify this product shard	2026-11-15T18:11:48.3505223Z # PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible
+shards (imports)	Verify this product shard	2026-11-15T18:12:31.2391941Z # Subtest: MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover
+shards (imports)	Verify this product shard	2026-11-15T18:12:31.2398146Z ok 1 - MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover
+shards (imports)	Verify this product shard	2026-11-15T18:12:31.2399495Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:12:31.2399770Z   duration_ms: 91419.050809
+shards (imports)	Verify this product shard	2026-11-15T18:12:31.2400076Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:12:31.2400358Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:12:54.0299193Z # Subtest: MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+shards (imports)	Verify this product shard	2026-11-15T18:12:54.0300322Z     # Subtest: unchanged Business plan skips preparation
+shards (imports)	Verify this product shard	2026-11-15T18:12:54.0301818Z     ok 1 - unchanged Business plan skips preparation
+shards (imports)	Verify this product shard	2026-11-15T18:12:54.0303918Z       ---
+shards (imports)	Verify this product shard	2026-11-15T18:12:54.0304114Z       duration_ms: 0.447865
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0495486Z       type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0495804Z       ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0496147Z     # Subtest: apply answers before rebuilding the public page
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0496994Z     ok 2 - apply answers before rebuilding the public page
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0497764Z       ---
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0499963Z       duration_ms: 1448.078965
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0500354Z       type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:01.0500625Z       ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:02.8657639Z # Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+shards (imports)	Verify this product shard	2026-11-15T18:13:02.8659361Z #     at runtime.services.publicSnapshots.rebuild (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:96060:67)
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0436381Z     # Subtest: undo answers before rebuilding the public page
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0437221Z     ok 3 - undo answers before rebuilding the public page
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0437712Z       ---
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0438013Z       duration_ms: 356.237412
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0438395Z       type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0438702Z       ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0441540Z # Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+shards (imports)	Verify this product shard	2026-11-15T18:13:04.0442582Z #     at runtime.services.publicSnapshots.rebuild (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:96060:67)
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2907983Z     1..3
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2915267Z ok 2 - MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2916636Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2917278Z   duration_ms: 37099.036865
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2917624Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2917873Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2918798Z # PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2920253Z # PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2921292Z # PROBE move-in deadline: first/unchanged Business plans prepare 1/0 times
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2921953Z # PROBE move-in deadline: changed Business bundle prepares 1 time
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2922953Z # PROBE move-in deadline: apply answered with the rebuild held; injected background failure recovered through native scheduled retry
+shards (imports)	Verify this product shard	2026-11-15T18:13:09.2924342Z # PROBE move-in deadline: undo answered with the rebuild held; injected background failure recovered through native scheduled retry
+shards (imports)	Verify this product shard	2026-11-15T18:13:19.3190766Z # Subtest: MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers
+shards (imports)	Verify this product shard	2026-11-15T18:13:19.3191984Z ok 3 - MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers
+shards (imports)	Verify this product shard	2026-11-15T18:13:19.3192691Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:13:19.3193142Z   duration_ms: 10028.134874
+shards (imports)	Verify this product shard	2026-11-15T18:13:19.3193799Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:19.3194212Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0349175Z # Subtest: MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0350430Z ok 4 - MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0353346Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0353879Z   duration_ms: 2716.626919
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0354198Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0354493Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:22.0355474Z # PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0199495Z # Subtest: MOVE-001 Move in explains how Sorry component rows arrive as components and groups
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0200552Z ok 5 - MOVE-001 Move in explains how Sorry component rows arrive as components and groups
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0207384Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0209439Z   duration_ms: 7151.243666
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0209968Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0210267Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0211123Z # PROBE: 16 source component rows -> 14 components + 2 groups (a parent row is shown once, as its children's group); unmapped warnings 0
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0212967Z # PROBE: mixed parent/child selection affects only listed children; parent alone includes its group; malformed end uses latest authored resolution and discloses it; absent or pre-start resolution still refuses
+shards (imports)	Verify this product shard	2026-11-15T18:13:30.0214814Z # PROBE: genuinely unmapped row -> still warns (1 warning, nested group 11)
+shards (imports)	Verify this product shard	2026-11-15T18:14:39.6543107Z # PROBE MOVE-013 statuspage: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+shards (imports)	Verify this product shard	2026-11-15T18:14:41.2362697Z # PROBE MOVE-013 statuspage: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+shards (imports)	Verify this product shard	2026-11-15T18:15:23.7652562Z # PROBE MOVE-013 statuspage: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+shards (imports)	Verify this product shard	2026-11-15T18:15:31.7517196Z # PROBE MOVE-013 betterstack: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+shards (imports)	Verify this product shard	2026-11-15T18:15:33.4089574Z # PROBE MOVE-013 betterstack: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+shards (imports)	Verify this product shard	2026-11-15T18:15:40.4245329Z # PROBE MOVE-013 betterstack: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+shards (imports)	Verify this product shard	2026-11-15T18:15:48.4300162Z # PROBE MOVE-013 instatus: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+shards (imports)	Verify this product shard	2026-11-15T18:15:50.0479373Z # PROBE MOVE-013 instatus: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+shards (imports)	Verify this product shard	2026-11-15T18:15:55.6086628Z # PROBE MOVE-013 instatus: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+shards (imports)	Verify this product shard	2026-11-15T18:16:06.0048414Z # SUB-019: opening native Worker fixture
+shards (imports)	Verify this product shard	2026-11-15T18:16:08.2079352Z # SUB-019: native Worker signed in
+shards (imports)	Verify this product shard	2026-11-15T18:16:08.9709085Z # SUB-019: created INC-3
+shards (imports)	Verify this product shard	2026-11-15T18:16:09.2184699Z # SUB-019: published and delivered INC-3 Identified: Synthetic Lamp unrelated live update beside imported history.
+shards (imports)	Verify this product shard	2026-11-15T18:16:09.6047635Z # SUB-019: published and delivered INC-1 Identified: Synthetic Lamp live update after Statuspage import.
+shards (imports)	Verify this product shard	2026-11-15T18:16:09.8897659Z # SUB-019: published and delivered INC-1 Resolved: Synthetic Lamp delivered resolution after Statuspage import.
+shards (imports)	Verify this product shard	2026-11-15T18:16:10.1424312Z # SUB-019: published and delivered INC-1 Investigating: Synthetic Lamp reopening after imported follow ended.
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9675219Z # Subtest: SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9695335Z ok 6 - SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9696487Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9696774Z   duration_ms: 166879.681689
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9697062Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9697388Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9698120Z # PROBE SUB-023 1: owner Move in review with 300 email rows and 100 free slots -> exact email excess 200, first 100 fit, final 200 refused with over-limit reason
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9699126Z # PROBE SUB-023 2: apply the over-limit reviewed plan -> 409, every application table and complete outbound inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9700358Z # PROBE SUB-023 4: remove email, freshly review and apply -> completed; group, component, complete incident history, report, maintenance and template graph reconciled; existing subscribers and outbound work unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9702014Z # PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9703636Z # PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9705363Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9707268Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9709091Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9710911Z # PROBE MOVE-003 1 instatus: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9713353Z # PROBE MOVE-003 2: later Statuspage bundles naming owned records -> planned and applied as the catch-up: owned record with a new creation time listed as a conflict, unchanged records kept, corrected record replaced in place, one new component, silent, repeat stable, undo restores; reviewed new-only bundle -> one new component; other namespace stays distinct
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9715924Z # PROBE MOVE-003 1 betterstack: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9717780Z # PROBE MOVE-003 1 instatus: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9719272Z # PROBE MOVE-014 4: native owner preview over populated templates -> complete existing contents and component rows unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9720868Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9722438Z # PROBE MOVE-014 1: reviewed owner import -> all three source names, identities, lifecycles, metadata and exact component claims reconciled
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9723853Z # PROBE MOVE-014 2: native template readback -> exact body mapping and audience names both selected components
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9724979Z # PROBE MOVE-014 5: native apply-template -> private composer fields and component state filled without publication
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9726096Z # PROBE MOVE-014 3: oversized native template apply -> 409, operator shortening -> 200 with exact shortened details
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9727713Z # PROBE MOVE-014 6: repeated reviewed import and preserve-conflicts undo -> no duplicates; exact edited template and both original complete component rows retained
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9729206Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9730500Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9732204Z # PROBE MOVE-003 3: full Move in after setup history -> planned and applied as its catch-up: owner-edited incident listed as a conflict, history replaced in place, left-out component and subscribers added once, silent, repeat stable
+shards (imports)	Verify this product shard	2026-11-15T18:16:17.9734260Z # PROBE MOVE-003 4: after undo kept an owner-edited record -> upload naming it refused with followable advice and no native change; leaving it out imports the rest afresh. Refusal: Some of these records stayed in Lamp when their import was undone, because they were changed here: Slow dashboard loads. Leave them out of the saved responses to import the rest.
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6678690Z # Subtest: MAINT-015 — imported maintenance messages retain their own source lifecycle labels
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6679537Z ok 7 - MAINT-015 — imported maintenance messages retain their own source lifecycle labels
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6679915Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6680099Z   duration_ms: 2700.727814
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6680320Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6680492Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:16:20.6681186Z # PROBE MAINT-015: scheduled, in_progress and completed source messages survive review/apply, native read, public permalink and monthly history at original times without notifications
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4657296Z # Subtest: Imported incident wording stays whole beyond native field limits
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4658236Z ok 8 - Imported incident wording stays whole beyond native field limits
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4658656Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4658978Z   duration_ms: 5797.993959
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4659284Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4659512Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4660219Z # PROBE statuspage long incident wording: 1305 source characters, complete native/public wording, boundary-safe native prefix
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.4661371Z # PROBE sorry long incident wording: 1305 source characters, complete native/public wording, boundary-safe native prefix
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5141266Z 1..8
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5141619Z # tests 11
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5141805Z # suites 0
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5155771Z # pass 11
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5155990Z # fail 0
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5156184Z # cancelled 0
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5156400Z # skipped 0
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5156650Z # todo 0
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5156951Z # duration_ms 327130.100446
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5252293Z 
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.5252885Z Verifying imports: test:mail
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.7324962Z 
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.7325831Z > lamp@1.11.18 test:mail /home/runner/work/run-lamp/run-lamp
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.7326579Z > node --test --test-concurrency=1 tests/e2e/rer-mail.test.mjs
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.7326915Z 
+shards (imports)	Verify this product shard	2026-11-15T18:16:26.7654053Z TAP version 13
+shards (imports)	Verify this product shard	2026-11-15T18:16:27.8346706Z # (node:3910) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (imports)	Verify this product shard	2026-11-15T18:16:27.8347933Z # (Use `node --trace-warnings ...` to show where the warning was created)
+shards (imports)	Verify this product shard	2026-11-15T18:16:41.5845306Z # Subtest: BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out
+shards (imports)	Verify this product shard	2026-11-15T18:16:41.5849388Z ok 1 - BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out
+shards (imports)	Verify this product shard	2026-11-15T18:16:41.5852506Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:41.5852862Z   duration_ms: 13742.816351
+shards (imports)	Verify this product shard	2026-11-15T18:16:41.5853233Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:41.5853683Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7127684Z # Subtest: Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7129321Z ok 2 - Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7129970Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7130164Z   duration_ms: 6124.322835
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7130448Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7130627Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7367759Z # Subtest: A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7369572Z ok 3 - A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7370386Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7370570Z   duration_ms: 28.41943
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7370825Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:47.7371045Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:16:51.2192401Z # Subtest: Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts
+shards (imports)	Verify this product shard	2026-11-15T18:16:51.2194012Z ok 4 - Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts
+shards (imports)	Verify this product shard	2026-11-15T18:16:51.2194644Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:16:51.2194939Z   duration_ms: 3482.413138
+shards (imports)	Verify this product shard	2026-11-15T18:16:51.2195234Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:16:51.2195420Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8485389Z # Subtest: The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8487391Z not ok 5 - The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8488362Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8488661Z   duration_ms: 33629.178781
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8489056Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8489606Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/rer-mail.test.mjs:467:1'
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8490340Z   failureType: 'testCodeFailure'
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8491087Z   error: 'page.waitForResponse: Timeout 30000ms exceeded while waiting for event "response"'
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8492056Z   code: 'ERR_TEST_FAILURE'
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8494495Z   name: 'TimeoutError'
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8495058Z   stack: |-
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8496019Z     TestContext.<anonymous> (/home/runner/work/run-lamp/run-lamp/tests/e2e/rer-mail.test.mjs:552:36)
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8496702Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8849755Z 1..5
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8850034Z # tests 5
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8850215Z # suites 0
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8854737Z # pass 4
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8854961Z # fail 1
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8855137Z # cancelled 0
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8855330Z # skipped 0
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8855497Z # todo 0
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8855696Z # duration_ms 58129.169498
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.8993154Z  ELIFECYCLE  Command failed with exit code 1.
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.9153068Z 
+shards (imports)	Verify this product shard	2026-11-15T18:17:24.9153324Z Verifying imports: test:site
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.1163280Z 
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.1164276Z > lamp@1.11.18 test:site /home/runner/work/run-lamp/run-lamp
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.1165570Z > node --test --test-concurrency=1 tests/lamp-site/browser.test.mjs tests/e2e/website-onboarding.test.mjs tests/e2e/site-reader-security.test.mjs
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.1166371Z 
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.1500230Z TAP version 13
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3534910Z # Subtest: site reading bounds hostile icon prefixes and preserves supported image detection
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3544631Z ok 1 - site reading bounds hostile icon prefixes and preserves supported image detection
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3545061Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3545252Z   duration_ms: 105.058681
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3545465Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3545638Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3546043Z # Subtest: status feed reads remove tags reassembled by stripping while preserving message text
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3549575Z ok 2 - status feed reads remove tags reassembled by stripping while preserving message text
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3550371Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3550646Z   duration_ms: 72.563689
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3550948Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:17:25.3551211Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:18:16.6296516Z # Subtest: SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+shards (imports)	Verify this product shard	2026-11-15T18:18:16.6305164Z ok 3 - SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+shards (imports)	Verify this product shard	2026-11-15T18:18:16.6306762Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:18:16.6307056Z   duration_ms: 50907.72322
+shards (imports)	Verify this product shard	2026-11-15T18:18:16.6307373Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:18:16.6307651Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.2308343Z # Subtest: DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.2311428Z ok 4 - DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.2321447Z   ---
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.2321924Z   duration_ms: 37107.730576
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.2322362Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.2322831Z   ...
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3636814Z 1..4
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3637152Z # tests 4
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3637420Z # suites 0
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3637840Z # pass 4
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3638229Z # fail 0
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3638623Z # cancelled 0
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3639046Z # skipped 0
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3639450Z # todo 0
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.3639951Z # duration_ms 89223.835174
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.4124533Z  ELIFECYCLE  Command failed with exit code 1.
+shards (imports)	Verify this product shard	2026-11-15T18:18:54.4304076Z ##[error]Process completed with exit code 1.

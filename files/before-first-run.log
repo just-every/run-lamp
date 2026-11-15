@@ -1,0 +1,31 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (6160.466731ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8156.923846
+
+✖ failing tests:
+
+test at tests/e2e/rer-mail.test.mjs:467:1
+✖ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (6160.466731ms)
+  AssertionError [ERR_ASSERTION]: none/skip: {"error":"Invalid page settings.","issues":[{"origin":"string","code":"invalid_format","format":"email","pattern":"/^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$/","path":["mailFromAddress"],"message":"Invalid email address"}]}
+  
+  400 !== 200
+  
+      at TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/main-lamp-mail-off-1-c1-fix1/run-lamp/tests/e2e/rer-mail.test.mjs:535:16)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 400,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

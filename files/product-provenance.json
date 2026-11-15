@@ -1,0 +1,12 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-mail-off-1-c1-fix1",
+  "local_head": "b0162c2c961b38c1f42de12e28af8501c483d664",
+  "remote_head": "b0162c2c961b38c1f42de12e28af8501c483d664",
+  "working_tree_clean": true,
+  "push_verify": 43747447829,
+  "pr_verify": 43747453572,
+  "exact_sha_success": true,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15"
+}

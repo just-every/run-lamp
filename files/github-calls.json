@@ -1,0 +1,35 @@
+{
+  "used": 6,
+  "budget": 10,
+  "calls": [
+    {
+      "operation": "create draft PR",
+      "exit": 0
+    },
+    {
+      "operation": "exact-SHA Verify discovery",
+      "exit": 0,
+      "time": "2026-11-15T18:24:13.544096+00:00"
+    },
+    {
+      "operation": "poll push Verify 43745111748",
+      "exit": 0,
+      "time": "2026-11-15T18:29:13.454165+00:00"
+    },
+    {
+      "operation": "completed Verify jobs",
+      "exit": 0,
+      "time": "2026-11-15T18:29:25.807318+00:00"
+    },
+    {
+      "operation": "gh run view 43745111748 --repo just-every/run-lamp --job 132906966142 --log-failed",
+      "exit": 0,
+      "time": "2026-11-15T18:29:43.763728+00:00"
+    },
+    {
+      "operation": "exact-SHA Verify discovery",
+      "exit": 0,
+      "time": "2026-11-15T18:48:40.614566+00:00"
+    }
+  ]
+}
