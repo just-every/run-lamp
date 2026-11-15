@@ -578,7 +578,12 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
             await page.setViewportSize({ width: 1440, height: 1000 });
           }
         }
-      } finally { await context.close(); await runtime.dispose(); }
+      } finally {
+        // Browser close does not wait for route callbacks that still use Miniflare.
+        await context.unrouteAll({ behavior: 'wait' });
+        await context.close();
+        await runtime.dispose();
+      }
     }
     assert.ok(requests.some(url => new URL(url).host === 'www.example.com'), 'Read website traverses the real website reader');
   } finally { await browser?.close(); }
