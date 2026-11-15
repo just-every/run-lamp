@@ -1,0 +1,34 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ Imported incident wording stays whole beyond native field limits (4797.286797ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6256.450976
+
+✖ failing tests:
+
+test at tests/e2e/statuspage-import.test.mjs:395:1
+✖ Imported incident wording stays whole beyond native field limits (4797.286797ms)
+  AssertionError [ERR_ASSERTION]: statuspage retains the entire source update in its readable wording
+  + actual - expected
+  
+  + 'Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processin…'
+  - 'Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. The final source sentence remains part of this same update.'
+  
+      at TestContext.<anonymous> (file:///workspace/run-lamp/tests/e2e/statuspage-import.test.mjs:426:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processin…',
+    expected: 'Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. Customers can continue reading their saved invoices while the processing queue recovers. The final source sentence remains part of this same update.',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

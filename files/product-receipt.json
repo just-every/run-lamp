@@ -1,0 +1,29 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-run1-faults-2",
+  "head": "02ee8ab2b6f5a96eb49935d41d099d95975b4924",
+  "base": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+  "productPush": "initial and final pushes succeeded first attempt; see product-push.log and final-product-push.log",
+  "clauses": {
+    "MOVE-002": "PARTIAL points=none",
+    "MAINT-015": "PARTIAL points=none",
+    "SETUP-002": "PARTIAL points=none"
+  },
+  "contractCounts": "unchanged",
+  "defaultBranchWrites": false,
+  "migrations": false,
+  "releaseMetadataChanged": false,
+  "pullRequest": {
+    "base": "main",
+    "head": "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+    "html_url": "https://github.com/just-every/run-lamp/pull/389",
+    "number": 389,
+    "expectedCurrentHead": "02ee8ab2b6f5a96eb49935d41d099d95975b4924",
+    "observation": "PR API response at creation is pr-receipt.json; final branch head is proven by final-product-push.log."
+  },
+  "initialHead": "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+  "commits": [
+    "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+    "02ee8ab2b6f5a96eb49935d41d099d95975b4924"
+  ]
+}

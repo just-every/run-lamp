@@ -1,0 +1,16 @@
+{
+  "discoveryAt": 1794726566.149285,
+  "repository": "just-every/run-lamp",
+  "head": "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+  "runs": [
+    {
+      "id": 43688624100,
+      "name": "Verify",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43688624100"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+✖ SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see (194607.791387ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 195223.561347
+
+✖ failing tests:
+
+test at tests/contract.mjs:10:10
+✖ SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see (194607.791387ms)
+  page.waitForURL: Timeout 120000ms exceeded.
+  =========================== logs ===========================
+  waiting for navigation to "**/app" until "load"
+    navigated to "http://127.0.0.1:38059/setup"
+  ============================================================
+      at TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/website-onboarding.test.mjs:161:16) {
+    name: 'TimeoutError',
+    log: []
+  }

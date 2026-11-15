@@ -1,0 +1,41 @@
+{
+  "publicDoor": "review and apply saved Statuspage responses",
+  "sourceCharacters": 1203,
+  "importedIncidentUpdates": 1,
+  "importedMaintenanceUpdates": 3,
+  "screens": [
+    {
+      "name": "imported-incident",
+      "path": "/incidents/INC-1",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "wordingFont": 14,
+      "screenshot": "imported-incident-1440.png"
+    },
+    {
+      "name": "imported-incident",
+      "path": "/incidents/INC-1",
+      "width": 390,
+      "scrollWidth": 390,
+      "wordingFont": 14,
+      "screenshot": "imported-incident-390.png"
+    },
+    {
+      "name": "imported-maintenance",
+      "path": "/maintenance/SCH-1",
+      "width": 1440,
+      "scrollWidth": 1440,
+      "wordingFont": 14,
+      "screenshot": "imported-maintenance-1440.png"
+    },
+    {
+      "name": "imported-maintenance",
+      "path": "/maintenance/SCH-1",
+      "width": 390,
+      "scrollWidth": 390,
+      "wordingFont": 14,
+      "screenshot": "imported-maintenance-390.png"
+    }
+  ],
+  "candidateHead": "02ee8ab2b6f5a96eb49935d41d099d95975b4924"
+}

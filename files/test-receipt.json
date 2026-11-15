@@ -1,0 +1,57 @@
+{
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "file": "typecheck.log"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/website-onboarding.test.mjs",
+      "exit": 0,
+      "passed": 1,
+      "file": "owner-touched-test.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "file": "source-lock-write.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "file": "source-lock-check.json"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "file": "contract-docs-check.log"
+    },
+    {
+      "command": "cloud_run node /tmp/lamp-import-browser.mjs",
+      "exit": 0,
+      "file": "import-browser-receipt.json"
+    },
+    {
+      "command": "native owner sign-in + reviewed Statuspage import + expanded operator maintenance",
+      "exit": 0,
+      "file": "maintenance-operator-receipt.json"
+    },
+    {
+      "command": "LAMP_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-name-pattern='Imported incident wording stays whole' tests/e2e/statuspage-import.test.mjs",
+      "exit": 0,
+      "passed": 1,
+      "file": "chunked-journal-probe.log",
+      "journalChunksObserved": 13,
+      "scope": "Final follow-up adds only large-export metadata to this regression; production code unchanged from the full passing suites."
+    }
+  ],
+  "fullImports": {
+    "exit": 0,
+    "passed": 9,
+    "failed": 0,
+    "file": "imports-full.log",
+    "durationMs": 308089.825859,
+    "command": "LAMP_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs tests/e2e/sorry-import.test.mjs"
+  },
+  "broadLocalVerify": "not run per brief; CI is the full wall"
+}

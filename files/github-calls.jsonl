@@ -1,0 +1,4 @@
+{"call": 1, "at": 1794726563.5520704, "args": ["api", "repos/just-every/run-lamp/pulls", "--method", "POST", "--input", "/tmp/lamp-pr.json", "--jq", "{number,html_url,head:.head.sha,base:.base.ref}"]}
+{"call": 2, "at": 1794726565.5328164, "args": ["api", "repos/just-every/run-lamp/actions/runs?head_sha=65c6779fc0a4ead9eea1300785a4d372ce6a9047&per_page=100"]}
+{"call": 3, "at": 1794726967.4744036, "args": ["api", "repos/just-every/run-lamp/actions/runs?head_sha=02ee8ab2b6f5a96eb49935d41d099d95975b4924&per_page=100"]}
+{"call": 4, "at": 1794727269.1405528, "args": ["api", "repos/just-every/run-lamp/actions/runs/43689140242", "--jq", "{status,conclusion,head_sha,html_url}"]}

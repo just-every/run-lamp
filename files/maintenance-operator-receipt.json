@@ -1,0 +1,56 @@
+{
+  "source": "synthetic Statuspage export",
+  "reviewStatus": 200,
+  "applyStatus": 200,
+  "jobState": "completed",
+  "jobId": "c8c5a505-f4fe-4250-aefc-b72c872d983d",
+  "sourceMessages": [
+    {
+      "status": "scheduled",
+      "body": "Scheduled database work is planned for tomorrow."
+    },
+    {
+      "status": "in_progress",
+      "body": "The database work is now underway."
+    },
+    {
+      "status": "completed",
+      "body": "Database work is complete and normal service has resumed."
+    }
+  ],
+  "displayedLabels": [
+    "Completed",
+    "In progress",
+    "Scheduled"
+  ],
+  "sizes": [
+    {
+      "label": "Completed",
+      "labelFont": "15px",
+      "bodyFont": "13px"
+    },
+    {
+      "label": "In progress",
+      "labelFont": "15px",
+      "bodyFont": "13px"
+    },
+    {
+      "label": "Scheduled",
+      "labelFont": "15px",
+      "bodyFont": "13px"
+    }
+  ],
+  "assertedWidth": 1440,
+  "visuallyReviewedWidths": [
+    1440,
+    390
+  ],
+  "screenshots": [
+    "maintenance-operator-1440.png",
+    "maintenance-operator-390.png"
+  ],
+  "visualReview": "Both actual screenshots inspected: labels and full source messages readable, completed/in-progress/scheduled wording preserved, no visible horizontal overflow at either width.",
+  "runtimeStopped": true,
+  "candidateHead": "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+  "provenance": "Captured from the working tree committed as this SHA; product checkout clean after commit."
+}

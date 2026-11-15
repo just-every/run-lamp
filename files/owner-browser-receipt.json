@@ -1,0 +1,23 @@
+{
+  "observed": {
+    "signedPath": "/app",
+    "directSetupStatus": 302,
+    "directSetupLocation": "http://127.0.0.1:34637/app",
+    "clientSetupPath": "/app",
+    "welcomeVisible": false
+  },
+  "screens": [
+    {
+      "width": 1440,
+      "fits": true,
+      "headingFont": "40px"
+    },
+    {
+      "width": 390,
+      "fits": true,
+      "headingFont": "32px"
+    }
+  ],
+  "candidateHead": "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
+  "provenance": "Captured from the working tree committed as this SHA; product checkout clean after commit."
+}

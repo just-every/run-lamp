@@ -1,0 +1,7 @@
+{
+  "signedPath": "/app",
+  "directSetupStatus": 302,
+  "directSetupLocation": "http://127.0.0.1:34637/app",
+  "clientSetupPath": "/app",
+  "welcomeVisible": false
+}
