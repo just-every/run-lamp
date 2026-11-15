@@ -7868,7 +7868,7 @@
       "executable": false
     },
     "tests/auth-adoption/sign-in-providers.test.mjs": {
-      "sha256": "832f2c97f9ff0e2ba44d436d473d68e50bae90574ae53badf19259f53b7802ad",
+      "sha256": "350d93fd0dcde6b97b00ba27ad608549855af08cf7f8bcfcc21bb10c8d014023",
       "executable": false
     },
     "tests/auth-adoption/upgrade.test.mjs": {
