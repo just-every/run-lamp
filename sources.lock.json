@@ -3120,7 +3120,7 @@
       "executable": false
     },
     "scripts/deployment-ownership.mjs": {
-      "sha256": "28500717212363ba6c3a43a7ac37c16b4cf7de37e13b8af8a4f66828c227e09c",
+      "sha256": "af601eaee2bc134dca4ab629a348cbf451dd08df18c03a109422f85c27342b1e",
       "executable": false
     },
     "scripts/deployment-secrets.mjs": {
