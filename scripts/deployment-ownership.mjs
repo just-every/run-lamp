@@ -31,6 +31,9 @@ export function deploymentOwnership(config, env = process.env) {
     async checkWorkers() {
       await checkWorker(false);
       if (config.hosting === 'workers-dev') await checkWorker(true);
+      // Custom-domain hosting leaves the page Worker inactive, but must not
+      // replace its recorded identity when setup writes the resource record.
+      else await read(true);
     },
     /** The secret names the live Worker holds (never values); none before its first deploy. */
     async heldSecrets(page = false) {
