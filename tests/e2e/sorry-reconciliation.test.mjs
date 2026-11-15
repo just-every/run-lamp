@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { openStatusJourney } from './helpers/status-journey.mjs';
+import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { moveInDoor } from '../helpers/import-notifications.mjs';
 
 const files = family => readdirSync(`tests/fixtures/sorry/${family}`).map(name => ({ name, text: readFileSync(`tests/fixtures/sorry/${family}/${name}`, 'utf8') }));
@@ -46,6 +46,59 @@ test('MOVE-001 Move in explains how Sorry component rows arrive as components an
     assert.equal(evidence.body.nativeCounts.component + evidence.body.nativeCounts.group, 16, 'the native rows add back up to the source rows');
     assert.equal(evidence.body.unexplainedDifferences, 0);
     assert.equal((await moveIn.undo(applied.body.door)).status, 200);
+
+    // Source defects are reviewed through the same ordinary Move in door.
+    const capture = (patch, updatePatch = updates => updates) => withComponents(rows).map(file => {
+      if (!['sorry-notices.json', 'sorry-notice-100.json'].includes(file.name)) return file;
+      const data = JSON.parse(file.text);
+      if (data.notices) data.notices = data.notices.map(notice => notice.id === 100 ? { ...notice, ...patch } : notice);
+      else data.notice = { ...data.notice, ...patch, updates: updatePatch(data.notice.updates) };
+      return { ...file, text: JSON.stringify(data) };
+    });
+    for (const [selection, expected] of [
+      [[10, 11], ['Billing API']],
+      [[10], rows.filter(row => row.parent_id === 10).map(row => row.name)],
+      [[10, 11, 20, 26, 40], ['Billing API', 'Platform part 26', 'Website']],
+    ]) {
+      const began_at = '2025-04-02T10:00:00.000Z', ended_at = '2025-04-02T09:00:00.000Z';
+      const closed = '2025-04-02T10:45:00.000Z';
+      const bundle = capture({ components: selection.map(id => ({ id })), began_at, ended_at }, updates => [
+        ...updates,
+        { id: 1002, state: 'resolved', content: 'Recovery remains confirmed.', created_at: closed, updated_at: closed },
+      ]);
+      const plan = await moveIn.preview({ ...source, files: bundle });
+      assert.equal(plan.status, 200, JSON.stringify(plan.body));
+      const change = plan.body.report.items.find(item => item.sourceId === '100' && item.kind === 'incident');
+      assert.equal(change.outcome, 'changed');
+      assert.ok(change.reason.includes(ended_at) && change.reason.includes(began_at) && change.reason.includes(closed), 'review discloses the original invalid end and the source-supported replacement');
+      const result = await moveIn.apply(plan.body);
+      assert.equal(result.status, 200, JSON.stringify(result.body));
+      const incidents = (await owner('/api/app/incidents')).body.incidents;
+      const incident = incidents.find(item => item.title === 'Delayed invoice processing');
+      const detail = (await owner(`/api/app/incidents/${incident.id}`)).body.incident;
+      assert.deepEqual(detail.components.map(item => item.componentName).sort(), [...expected].sort());
+      assert.equal(Date.parse(detail.openedAt), Date.parse(began_at));
+      assert.equal(Date.parse(detail.resolvedAt), Date.parse(closed));
+      assert.deepEqual(detail.updates.map(item => Date.parse(item.publishedAt)).sort(), [began_at, '2025-04-02T10:30:00.000Z', closed].map(Date.parse).sort(), 'every authored update keeps its source instant');
+      const publicIncident = await eventually(async () => {
+        const response = await runtime.raw(runtime.publicOrigin + '/api/public/v1/incidents');
+        return response.status === 200 ? (await response.json()).data.find(item => item.id === incident.id) : null;
+      }, value => value?.title === incident.title, 'normalized incident reaches the public API');
+      assert.deepEqual(publicIncident.components.sort(), [...expected].sort(), 'public affected set excludes unlisted siblings');
+      assert.equal(Date.parse(publicIncident.openedAt), Date.parse(began_at));
+      assert.equal(Date.parse(publicIncident.resolvedAt), Date.parse(closed));
+      assert.deepEqual(publicIncident.updates.map(item => Date.parse(item.publishedAt)).sort(), detail.updates.map(item => Date.parse(item.publishedAt)).sort(), 'public updates retain every source publication time');
+      assert.equal((await moveIn.undo(result.body.door)).status, 200);
+    }
+    for (const updatePatch of [updates => updates.slice(0, 1), updates => updates.map(update => ({ ...update, created_at: '2025-04-02T09:00:00.000Z' }))]) {
+      const refused = await moveIn.preview({ ...source, files: capture({ ended_at: '2025-04-02T09:00:00.000Z' }, updatePatch) });
+      assert.equal(refused.status, 200, JSON.stringify(refused.body));
+      const rejection = refused.body.report.items.find(item => item.sourceId === '100' && item.kind === 'incident');
+      assert.equal(rejection.outcome, 'rejected', 'no usable authored resolution must remain refused');
+      assert.match(rejection.reason, /end precedes its start/);
+    }
+
+    t.diagnostic('PROBE: mixed parent/child selection affects only listed children; parent alone includes its group; malformed end uses latest authored resolution and discloses it; absent or pre-start resolution still refuses');
 
     // A row that is genuinely lost still warns: a grandchild flattens the hierarchy, which no parent-as-group rule explains.
     const nested = await moveIn.preview({ ...source, files: withComponents(rows, [row(90, 'Billing detail', 11)]) });
