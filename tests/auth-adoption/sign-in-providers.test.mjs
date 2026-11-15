@@ -141,7 +141,7 @@ test('ACCESS-002 the owner sets up Google in Settings, tests the real flow, repl
     const again = sessionCookie((await testSignIn(call, 'google', idp, {}, owner)).callback);
     assert.equal((await status(owner)).providers[0].status, 'working');
     assert.equal((await call('/auth/domain-rules', { method: 'POST', json: { domain: 'rules.example.org', provider: 'google' }, cookie: owner })).status, 200);
-    assert.ok((await (await call('/auth/domain-rules', { cookie: owner })).text()).includes('rules.example.org'));
+    assert.ok((await (await call('/auth/domain-rules', { cookie: owner })).json()).some(rule => rule.domain === 'rules.example.org'));
     const refusedByAdmin = await call('/api/app/sign-in/google', { method: 'DELETE', cookie: others.admin.cookie });
     assert.equal(refusedByAdmin.status, 403);
     assert.equal((await call('/api/app/sign-in/google', { method: 'DELETE', cookie: owner })).status, 200);
@@ -150,7 +150,7 @@ test('ACCESS-002 the owner sets up Google in Settings, tests the real flow, repl
     assert.equal((await (await call('/signin')).text()).includes('/auth/oidc/google/start'), false, '/signin stops offering the provider');
     assert.equal(await rows(), 0);
     assert.equal((await storage.db.prepare('SELECT COUNT(*) n FROM sign_in_people').first()).n, 0);
-    assert.equal((await (await call('/auth/domain-rules', { cookie: owner })).text()).includes('rules.example.org'), false, 'a rule naming the provider is lifted');
+    assert.equal((await (await call('/auth/domain-rules', { cookie: owner })).json()).some(rule => rule.domain === 'rules.example.org'), false, 'a rule naming the provider is lifted');
     const audit = (await storage.db.prepare("SELECT action,operator_id,payload_json FROM audit_entries WHERE entity_type='sign-in' ORDER BY created_at,id").all()).results;
     assert.deepEqual(audit.map(row => row.action), ['saved', 'saved', 'disconnected']);
     assert.ok(audit.every(row => row.payload_json === '{}' && row.operator_id));
