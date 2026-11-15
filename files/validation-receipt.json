@@ -1,0 +1,179 @@
+{
+  "tag": "gr-mt-lamp-code-16",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-16",
+  "head": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+  "base": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "tree": "6ab314806c3436a226e94d7eb43c2addaf2ec831",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "browser": "/usr/bin/chromium --no-sandbox",
+  "checks": {
+    "syntax": {
+      "command": "node --check tests/e2e/helpers/theme-flow.mjs && node --check tests/e2e/helpers/status-journey.mjs",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "cloud_run pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    "extraction_probe": {
+      "command": "cloud_run node <packet>/text-extraction-probe.mjs <repo>",
+      "exit": 0,
+      "cases": 11,
+      "original_failing_cases": 5,
+      "log": "text-extraction-probe.log"
+    },
+    "status_journeys": {
+      "command": "cloud_run node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "pass": 9,
+      "fail": 0,
+      "log": "status-journeys.log",
+      "head": "660000e4d9f72db7ec0bc36aee8242370fc5c10d"
+    },
+    "theme_journey": {
+      "command": "cloud_run node --import /tmp/lamp-chromium.mjs --test --test-concurrency=1 --test-name-pattern=THEME-001 tests/e2e/publishing-browser.test.mjs",
+      "exit": 1,
+      "pass": 0,
+      "fail": 1,
+      "log": "theme-journey.log",
+      "head": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+      "changed_removal_assertions": "passed before browser resource failure"
+    },
+    "theme_baseline": {
+      "command": "same theme command at detached origin/main",
+      "exit": 1,
+      "pass": 0,
+      "fail": 1,
+      "log": "theme-baseline.log",
+      "head": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+      "same_failure": "fifth /assets/favicon.svg request exceeds existing four-request budget under /usr/bin/chromium"
+    },
+    "source_lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "diff_check": {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    "setup": {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "log": "not published because setup can emit private local entry information"
+    },
+    "independent_review": {
+      "pre_patch": "read-only security-boundary investigator",
+      "post_patch": "fresh read-only bypass and regression reviewer",
+      "confirmed_findings": 0,
+      "report": "security-review.md"
+    }
+  },
+  "product_files": [
+    "sources.lock.json",
+    "tests/e2e/helpers/status-journey.mjs",
+    "tests/e2e/helpers/theme-flow.mjs"
+  ],
+  "contract_status_changes": [],
+  "counts": {
+    "flagged_operations_before": 2,
+    "flagged_operations_after": 0,
+    "touched_suite_registrations_before": 10,
+    "touched_suite_registrations_after": 10,
+    "core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "agent": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "total": 244
+  },
+  "publication_scan": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "head": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+    "tree": "6ab314806c3436a226e94d7eb43c2addaf2ec831",
+    "historyCommits": 1147,
+    "preExisting": 50,
+    "seconds": 372.545072,
+    "invocation": "pinned Base scanner on clean byte-verified committed tree; project just-every/lamp; repository https://github.com/just-every/run-lamp; remote main public base"
+  },
+  "product_push": {
+    "status": "pushed",
+    "branch": "cloud/gr-mt-lamp-code-16",
+    "head": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+    "attempts": 1,
+    "receipt": "product-push.log"
+  },
+  "ci": {
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+    "id": 43751482949,
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43751482949",
+    "custody": "PUSHED",
+    "ready": false,
+    "reason": "still in progress after three 300-second waits; stopping at conservative ten-call budget boundary accounting for required scanner visibility reads and launcher authentication, while retaining room for failed-job diagnostics"
+  },
+  "pull_request": {
+    "head_sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+    "html_url": "https://github.com/just-every/run-lamp/pull/395",
+    "number": 395
+  },
+  "ci_discovery": {
+    "runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43751482949",
+        "id": 43751482949,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "total_count": 1
+  },
+  "api_commands_explicitly_issued": 5,
+  "ci_poll_policy": "one watcher; next read no sooner than 300 seconds after discovery; exact run 43751482949; ten-call task budget",
+  "ci_polls": [
+    {
+      "conclusion": null,
+      "head_sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43751482949",
+      "id": 43751482949,
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43751482949",
+      "id": 43751482949,
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43751482949",
+      "id": 43751482949,
+      "status": "in_progress"
+    }
+  ],
+  "outcome": "implemented; final CI acceptance pending",
+  "blockers": [],
+  "limitations": [
+    "Local THEME-001 fails at existing favicon asset budget on both candidate and unchanged main.",
+    "Exact-head Verify remains in progress; no READY, acceptance or landing claimed.",
+    "Provider-side CodeQL alert closure has not been verified."
+  ],
+  "source_lock_sha256": "78b65cf1223e448a65cfc78829039b7586781853528ea87bcfe7ff09561580fd"
+}

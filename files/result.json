@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+  "summary": "Implemented both CodeQL helper corrections with unchanged production behavior and contract judgments; product branch pushed, PR 395 open, exact-SHA Verify still in progress so custody is PUSHED only.",
+  "tests": "Syntax and TypeScript pass; 11 extraction probes pass (original helper fails five); nine publishing/status journeys pass; THEME-001 passes changed removal assertions then fails the same favicon four-request budget on candidate and unchanged main; source-lock check passes; exact-tree publication COMPLETE/PASS with zero findings; Verify run 43751482949 remains in progress.",
+  "security": true
+}

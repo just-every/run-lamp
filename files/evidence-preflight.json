@@ -1,0 +1,7 @@
+{
+  "command": "gitleaks dir <packet> --config <pinned-rer>/scripts/publish-check/gitleaks.toml --redact=100 --no-banner --no-color --report-format json --report-path <private-temp>",
+  "exit": 0,
+  "findings": 0,
+  "scanner": "gitleaks 8.30.1",
+  "stage": "final complete packet before publication"
+}

@@ -1,0 +1,28 @@
+TAP version 13
+# file:///tmp/lamp-chromium.mjs:4
+# const launch = chromium.launch.bind(chromium);
+#                         ^
+# TypeError: Cannot read properties of undefined (reading 'launch')
+#     at file:///tmp/lamp-chromium.mjs:4:25
+# Node.js v22.20.0
+# Subtest: tests/e2e/publishing-browser.test.mjs
+not ok 1 - tests/e2e/publishing-browser.test.mjs
+  ---
+  duration_ms: 553.686536
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/maint/gr-mt-lamp-code-16/repo/tests/e2e/publishing-browser.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 562.674315

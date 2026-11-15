@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "complete": true,
+  "findings": 0,
+  "head": "660000e4d9f72db7ec0bc36aee8242370fc5c10d",
+  "tree": "6ab314806c3436a226e94d7eb43c2addaf2ec831",
+  "historyCommits": 1147,
+  "preExisting": 50,
+  "seconds": 372.545072,
+  "invocation": "pinned Base scanner on clean byte-verified committed tree; project just-every/lamp; repository https://github.com/just-every/run-lamp; remote main public base"
+}
