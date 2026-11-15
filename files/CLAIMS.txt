@@ -1,0 +1,3 @@
+CLAIM TEAM-007 PARTIAL points=1,2 tests=tests/e2e/publishing-browser.test.mjs#TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+GAP TEAM-007: This carry does not claim the remaining audit obligations; the existing contract status, Gap and Evidence are unchanged.
+Author: Run Edit Run fleet, 2026-11-15.

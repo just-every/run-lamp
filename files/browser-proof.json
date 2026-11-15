@@ -1,0 +1,36 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "head": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+  "assertionWidth": 1440,
+  "proofWidths": [
+    1440,
+    390
+  ],
+  "reviewedScreens": [
+    "Live subjects show subscriber destinations, report incident reference/title, named settings and import batch.",
+    "After erasure, removed subjects are anonymous and the surviving pending subscriber remains named."
+  ],
+  "screens": [
+    {
+      "file": "screens/1440-audit-record-labels.png",
+      "bytes": 412346,
+      "sha256": "a051dc3c2cf34769e7960858fced8c2836a17dcb7cd4a97480c7bcfe3f81b2d0"
+    },
+    {
+      "file": "screens/390-audit-record-labels.png",
+      "bytes": 438577,
+      "sha256": "8daa20b7e33e30bd4512268767e88bedf0b9594650e063ac347d134473bdeaf5"
+    },
+    {
+      "file": "screens/1440-audit-after-erasure.png",
+      "bytes": 444155,
+      "sha256": "e2fbdd8d88e90cd70ddefd0fab0d7eeebbdb32178f1c7b4c07e036f25182e5bf"
+    },
+    {
+      "file": "screens/390-audit-after-erasure.png",
+      "bytes": 489807,
+      "sha256": "47b18b3cc5af101d8a8c5872d18f2c9bb78618beda701ec3b63aebb0c9fb9fac"
+    }
+  ]
+}

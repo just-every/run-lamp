@@ -1,0 +1,43 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-audit-record-labels-1-c1",
+  "head": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+  "base": "1936e7f3d407b37c7c97eca193d9052b1fc3cd01",
+  "originalAuditCandidate": "ed52f740415afc4959285a72afb6d26d28c18edf",
+  "reviewedResolver": "cf00e46d8a3be9c6551d14d5fcd16190fee3aa67",
+  "commitCount": 1,
+  "mergeCommitCount": 0,
+  "checksBefore": 103,
+  "checksAfter": 103,
+  "targetClause": "TEAM-007",
+  "clauseStatusBefore": "PARTIAL",
+  "clauseStatusAfter": "PARTIAL",
+  "claimedPoints": [
+    1,
+    2
+  ],
+  "contractCellsEdited": false,
+  "productPush": "success",
+  "ci": "completed/success on exact SHA",
+  "completePublicationScan": "fleet Mac lander required",
+  "prePushRebase": "up to date on origin/main",
+  "productPushAttempts": 1,
+  "remoteRef": "refs/heads/cloud/main-lamp-audit-record-labels-1-c1",
+  "remoteHeadVerified": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+  "tree": "5ab545e373a71cb92a2b225f065d921ae5026ace",
+  "parents": [
+    "1936e7f3d407b37c7c97eca193d9052b1fc3cd01"
+  ],
+  "ciRunId": 43680013865,
+  "ciUrl": "https://github.com/just-every/run-lamp/actions/runs/43680013865",
+  "ciStatus": "completed",
+  "ciConclusion": "success",
+  "ciApiCalls": 5,
+  "prUrl": "https://github.com/just-every/run-lamp/pull/387",
+  "prNumber": 387,
+  "githubApiCallsTotal": 6,
+  "productReady": true,
+  "blockers": []
+}

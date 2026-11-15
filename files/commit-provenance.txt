@@ -1,0 +1,16 @@
+commit a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Sun Nov 15 05:03:35 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Sun Nov 15 05:03:35 2026 +0000
+
+    Name live audit subjects while preserving anonymous erasure
+
+ DIVERGENCE.md                             |  15 +++++
+ sources.lock.json                         |  12 ++--
+ src/core/features/audit-log/repository.ts |  32 ++++++++-
+ tests/e2e/helpers/audit-labels-flow.mjs   | 105 ++++++++++++++++++++++++++++--
+ tests/e2e/helpers/sms-subscriber-flow.mjs |  10 ++-
+ tests/e2e/helpers/subscriber-add-flow.mjs |  18 ++++-
+ tests/e2e/publishing-browser.test.mjs     |   2 +-
+ 7 files changed, 178 insertions(+), 16 deletions(-)

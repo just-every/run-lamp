@@ -1,0 +1,29 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-15",
+  "original": "ed52f740415afc4959285a72afb6d26d28c18edf",
+  "candidate": "a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6",
+  "files": [
+    {
+      "path": "src/core/features/audit-log/repository.ts",
+      "identicalToOriginalAuditCandidate": true
+    },
+    {
+      "path": "tests/e2e/helpers/audit-labels-flow.mjs",
+      "identicalToOriginalAuditCandidate": true
+    },
+    {
+      "path": "tests/e2e/helpers/sms-subscriber-flow.mjs",
+      "identicalToOriginalAuditCandidate": true
+    },
+    {
+      "path": "tests/e2e/helpers/subscriber-add-flow.mjs",
+      "identicalToOriginalAuditCandidate": true
+    },
+    {
+      "path": "tests/e2e/publishing-browser.test.mjs",
+      "identicalToOriginalAuditCandidate": true
+    }
+  ],
+  "differencesOutsideOriginalCarry": "Only signed divergence carry entry and regenerated source lock; newer main changes retained."
+}

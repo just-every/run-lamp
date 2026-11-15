@@ -1,0 +1,3 @@
+Author: Run Edit Run fleet, 2026-11-15.
+1936e7f3d407b37c7c97eca193d9052b1fc3cd01
+Fix Sorry notice component scope and source-backed resolution

@@ -1,0 +1,5 @@
+Author: Run Edit Run fleet, 2026-11-15.
+PR https://github.com/just-every/run-lamp/pull/387
+Verify 43680013865 completed/success a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6
+CLAIM TEAM-007 PARTIAL points=1,2 tests=tests/e2e/publishing-browser.test.mjs#TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+READY branch=cloud/main-lamp-audit-record-labels-1-c1 head=a3ab249f53fc8923fea5215a72d2cd41b4a9c7b6

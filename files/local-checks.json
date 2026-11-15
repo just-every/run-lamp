@@ -1,0 +1,10 @@
+{
+  "buildExit": 0,
+  "auditJourneyExit": 0,
+  "subscriberJourneyExit": 0,
+  "typecheckExit": 0,
+  "contractDocsCheckExit": 0,
+  "sourceLockCheckExit": 0,
+  "node": "22.20.0",
+  "chromiumExecutable": "/usr/bin/chromium"
+}
