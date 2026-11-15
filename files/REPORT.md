@@ -31,3 +31,34 @@ The Mac lander owns publication scanning and landing; this cloud pushes only its
 Final review expanded the existing incident regression with large, undocumented synthetic provider metadata. The native door retains a 13-chunk journal shared by multiple incidents and still reads complete source wording, separate owner details and conditional-undo history correctly. The committed reader already deduplicated job reads; no production change was needed. Actual probe output is chunked-journal-probe.log. The final follow-up commit only adds this regression coverage and its regenerated source-lock hash.
 
 The production source tree in the final test-only commit is identical to the fully tested initial candidate. Public import browser proof was captured again on the final SHA; operator maintenance and owner landing captures remain from the identical production sources at the initial SHA. Source and test receipt filenames preserve actual observations; no CI success is inferred from local checks or another SHA.
+
+
+## Final custody
+
+READY repository just-every/run-lamp, branch cloud/sd-lamp-run1-faults-2,
+head 02ee8ab2b6f5a96eb49935d41d099d95975b4924.
+PR: https://github.com/just-every/run-lamp/pull/389
+
+Both exact-SHA Verify workflows completed successfully:
+- Push 43689140242: https://github.com/just-every/run-lamp/actions/runs/43689140242
+- Pull request 43689143309: https://github.com/just-every/run-lamp/actions/runs/43689143309
+
+Seven of the ten GitHub API calls were used. Full REST receipts and the call ledger
+are included; no result from the superseded initial SHA is used as green evidence.
+The product checkout is clean, both product pushes succeeded on the first attempt,
+and no published history was rewritten. The initial and final product commits are
+65c6779fc0a4ead9eea1300785a4d372ce6a9047 and
+02ee8ab2b6f5a96eb49935d41d099d95975b4924.
+
+Results: all three reported synthetic fault cases now pass. Full touched import
+suites pass 9/9; full setup suite passes 1/1; the expanded chunked-journal regression
+passes 1/1. Typecheck, source lock and generated-document checks pass. Changed
+screens were inspected at both 1440 and 390, with changed message text at least
+13px. Before/after full-target counts stay 60 done / 129 partial / 55 missing /
+244 total. Contract Status, Gap and Evidence cells are unchanged.
+
+Builder claims remain PARTIAL points=none for MOVE-002, MAINT-015 and SETUP-002;
+no clause is claimed DONE and no held-out gate is claimed. No implementation or
+CI blocker remains. The fleet owns publication scanning and landing under the
+Lamp 1.11.17 release lock. This report-only evidence branch is separate from
+product READY, acceptance and landing.

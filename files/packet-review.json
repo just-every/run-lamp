@@ -47,7 +47,10 @@
     "owner-initial-test.log",
     "owner-touched-test.log",
     "packet-review.json",
-    "ci-poll-1.json"
+    "ci-poll-1.json",
+    "ci-poll-2.json",
+    "ci-poll-3.json",
+    "ci-pr-final.json"
   ],
   "regularFilesOnly": true,
   "credentialValueMatches": 0,

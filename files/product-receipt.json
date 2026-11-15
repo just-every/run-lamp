@@ -25,5 +25,12 @@
   "commits": [
     "65c6779fc0a4ead9eea1300785a4d372ce6a9047",
     "02ee8ab2b6f5a96eb49935d41d099d95975b4924"
-  ]
+  ],
+  "terminalStatus": "READY",
+  "verifyPushRun": 43689140242,
+  "verifyPullRequestRun": 43689143309,
+  "exactShaVerify": "both completed/success",
+  "evidenceRef": "refs/heads/evidence/sd-lamp-run1-faults-2",
+  "publicationScan": "Mac lander responsibility; not claimed by cloud",
+  "landing": "not performed; release 1.11.17 lock acknowledged"
 }
