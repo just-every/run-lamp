@@ -1,0 +1,106 @@
+{
+  "author": "Run Edit Run fleet (Codex)",
+  "date": "2026-11-15",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-mail-off-1",
+  "head": "46fa4e5275960b72f895611b9cacab3539839c62",
+  "origin_main": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "rer_before": "0.2.108",
+  "rer_after": "0.2.118",
+  "product_version": "1.11.18",
+  "local_tests": {
+    "files": [
+      "tests/e2e/rer-mail.test.mjs",
+      "tests/auth-adoption/dependencies.test.mjs"
+    ],
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0,
+    "log": "TOUCHED-TESTS.log",
+    "timing": "Tests passed on candidate application/test source before final metadata-only seed description/divergence edits and final lock regeneration. Exact-SHA CI checks the final candidate."
+  },
+  "test_budget": {
+    "before_registrations": 98,
+    "after_registrations": 101,
+    "assertion_scripts": 10,
+    "before_total": 108,
+    "after_total": 111,
+    "cap": 200
+  },
+  "clause_status_counts_before": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "clause_status_counts_after": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "clause_status_changes": [],
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "log": "TYPECHECK.log"
+    },
+    {
+      "command": "pnpm exec tsc --noEmit --strict --skipLibCheck --module ESNext --moduleResolution Bundler --resolveJsonModule --allowSyntheticDefaultImports --target ES2022 --lib ES2022,DOM management/integration/index.ts",
+      "exit_code": 0,
+      "log": "MANAGEMENT-TYPECHECK.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "CONTRACT-CHECK.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit_code": 0,
+      "log": "PLAN-CHECK.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "SOURCE-CHECK.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit_code": 0,
+      "log": "SETUP.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit_code": 0,
+      "log": "BUILD.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer deploy --dry-run --environment mail-off-proof --env-file <temporary private synthetic inputs>",
+      "exit_code": 0,
+      "log": "DEPLOY-DRY-RUN.log"
+    }
+  ],
+  "browser_proof": [
+    {
+      "path": "signin-mail-off-1440.png",
+      "sha256": "a1398879ac15b050b0ebb4f915c0b3efa6a1baf1edb9f7c993d7e3e4a53539ce"
+    },
+    {
+      "path": "signin-mail-off-390.png",
+      "sha256": "cab1002556ed86b9f6b06da681cc02e126cbbbf5e795dcd3e960d50c498a0856"
+    }
+  ],
+  "identity": "All three candidate commits have fleet author/committer and no trailers; every candidate including side parents was inspected before each guarded product push.",
+  "publication": "Cloud branch only; full publication scan belongs to the Mac fleet lander.",
+  "real_provider_calls": false,
+  "real_deployment": false,
+  "ci": {
+    "run_id": 43728430669,
+    "conclusion": "failure",
+    "head_sha": "46fa4e5275960b72f895611b9cacab3539839c62",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43728430669",
+    "status": "completed",
+    "observed_at": "2026-11-15T15:31:15.554321+00:00"
+  },
+  "terminal_custody": "BLOCKED: Verify failure, diagnosis pending outside this task budget."
+}

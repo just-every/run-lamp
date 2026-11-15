@@ -1,0 +1,57 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "46fa4e5275960b72f895611b9cacab3539839c62",
+  "discovered_at": "2026-11-15T15:11:12.942866+00:00",
+  "last_call_epoch": 1794756675.5538347,
+  "runs": [
+    {
+      "id": 43728430669,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "46fa4e5275960b72f895611b9cacab3539839c62",
+      "event": "push",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43728430669"
+    }
+  ],
+  "gh_calls_used": 10,
+  "polls": [
+    {
+      "conclusion": null,
+      "head_sha": "46fa4e5275960b72f895611b9cacab3539839c62",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43728430669",
+      "status": "in_progress",
+      "observed_at": "2026-11-15T15:16:13.721475+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "46fa4e5275960b72f895611b9cacab3539839c62",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43728430669",
+      "status": "in_progress",
+      "observed_at": "2026-11-15T15:21:14.305264+00:00"
+    },
+    {
+      "conclusion": null,
+      "head_sha": "46fa4e5275960b72f895611b9cacab3539839c62",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43728430669",
+      "status": "in_progress",
+      "observed_at": "2026-11-15T15:26:14.949958+00:00"
+    },
+    {
+      "conclusion": "failure",
+      "head_sha": "46fa4e5275960b72f895611b9cacab3539839c62",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43728430669",
+      "status": "completed",
+      "observed_at": "2026-11-15T15:31:15.554321+00:00"
+    }
+  ],
+  "terminal_custody": "BLOCKED: exact-SHA Verify failed; GitHub API budget exhausted before job/log diagnosis.",
+  "api_call_breakdown": {
+    "source_read_attempts": 3,
+    "exact_sha_run_discoveries": 2,
+    "pr_creation": 1,
+    "workflow_status_polls": 4
+  },
+  "failed_job": "Unknown: failed-job listing and archive log were not requested because all ten permitted GitHub calls had been used.",
+  "rerun": "Not requested: failure scope could not be diagnosed within the remaining budget."
+}

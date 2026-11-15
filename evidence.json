@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "2dde6b3c1251bcf7d57c9740373c2e38b4b72528",
+      "bytes": 20348,
+      "path": "BUILD.log",
+      "sha256": "0480ce625ac64df56ac63f5f01fc316c265741386d73ba0be501d34d05d41866"
+    },
+    {
+      "blob": "df0bc8e84cada04e7f3c966fbc74be13bf78d5b5",
+      "bytes": 3463,
+      "path": "CHECKS-RECEIPT.json",
+      "sha256": "fd896488d9820afde7720f768a16a7dc9ca2b1d911ea9a8e207ae472bd243164"
+    },
+    {
+      "blob": "ec637236ef2f9e1287879cc6e35c737ac5a135c0",
+      "bytes": 2126,
+      "path": "CI-RECEIPT.json",
+      "sha256": "37d59749c640977eb6b5b37c814b9409a78242bbfde5f72e6cdaa27df7a12957"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "CONTRACT-CHECK.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "c63ed2902d77e1b94a1539e26ecce56e175c6c80",
+      "bytes": 56513,
+      "path": "DEPLOY-DRY-RUN.log",
+      "sha256": "d02322d03d44fcf134b1768bff9f2ea7dff89814f0183d67656a7e749b1ff38e"
+    },
+    {
+      "blob": "3b8f21efb4e0321ce565951251ca7ca4d014692f",
+      "bytes": 2050,
+      "path": "MANAGEMENT-REPORT.md",
+      "sha256": "3653ae09baaada34b8e2ae0dfc40195560044686e4a9413f52853b3d0c3e877e"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "MANAGEMENT-TYPECHECK.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "72c2a1b9e99859f47ad99036a36ef7c3935768a0",
+      "bytes": 170,
+      "path": "PLAN-CHECK.log",
+      "sha256": "ec670a5de41d866272e45697faa4024113400e2242385f7fa58279ffdebbabff"
+    },
+    {
+      "blob": "c1734594e651ef2a6b1641c3a8d4592cf324e72b",
+      "bytes": 291,
+      "path": "PR-RECEIPT.json",
+      "sha256": "56d2b31feb458becaadc4ab3f33fab1292a489bac33199893f0a1268f62c8345"
+    },
+    {
+      "blob": "800b43c2755cc17c6ebebc85558b003f4b725f9d",
+      "bytes": 964,
+      "path": "PRODUCT-RECEIPT.json",
+      "sha256": "8a71c7899f0a947e877a5b40ef3c81f3232d1c871e925f1b2e9a42805bf1725a"
+    },
+    {
+      "blob": "cd0f271eb969a84468f18c32fc869ad9a817446c",
+      "bytes": 9926,
+      "path": "REPORT.md",
+      "sha256": "e5a7da431eb402f8aa5160e3fa37379b9d764e315ec66697bc92f614a6be1881"
+    },
+    {
+      "blob": "84a1943ffc8ff9d75c5e8a182f977cbb6dcc60dc",
+      "bytes": 22092,
+      "path": "SETUP.log",
+      "sha256": "24cd68d77da5eb4aca0fc8edede1dfefd3995cb65a09a7e468d25169638d2467"
+    },
+    {
+      "blob": "59cd4ccf43122e0626e03809473c4be0162770fb",
+      "bytes": 399895,
+      "path": "SOURCE-CHECK.log",
+      "sha256": "07eb7510be50a620577408084ea4113aa1375eb90ba87e880e6c1fa91e57f6ca"
+    },
+    {
+      "blob": "d6d16113ae991d3cf81fdc84d8c94e417cca4aaf",
+      "bytes": 626,
+      "path": "SUPERSEDED-CI-RECEIPT.json",
+      "sha256": "53e9b82aa6fe2058e33f85946b62fd381795083390c3474fc54bbe9d00009365"
+    },
+    {
+      "blob": "3eb33c8fb0f749b9442f0c81ed3f46192a1334cb",
+      "bytes": 3962,
+      "path": "TOUCHED-TESTS.log",
+      "sha256": "a99bef6d3f4c5f9855c65e3db7b2920d2740e7ec93a0e025c77eb5bfee45e84a"
+    },
+    {
+      "blob": "22a3f40a534522c92fa6e363aa020611f134a2bf",
+      "bytes": 107,
+      "path": "TYPECHECK.log",
+      "sha256": "0975e93a3afb53e8c02a45d2620c20b73a5ddcc479aee39a2b7a3b1ff2a49a1f"
+    },
+    {
+      "blob": "037c8f96cc9dc9dae714ba1cae4193954d25c7b6",
+      "bytes": 47576,
+      "path": "signin-mail-off-1440.png",
+      "sha256": "a1398879ac15b050b0ebb4f915c0b3efa6a1baf1edb9f7c993d7e3e4a53539ce"
+    },
+    {
+      "blob": "03669049f317ca6ad77729fea6593c6e8ade70b7",
+      "bytes": 36587,
+      "path": "signin-mail-off-390.png",
+      "sha256": "cab1002556ed86b9f6b06da681cc02e126cbbbf5e795dcd3e960d50c498a0856"
+    }
+  ],
+  "product_branch": "cloud/main-lamp-mail-off-1",
+  "product_head": "46fa4e5275960b72f895611b9cacab3539839c62",
+  "ref": "refs/heads/evidence/main-lamp-mail-off-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "main-lamp-mail-off-1"
+}

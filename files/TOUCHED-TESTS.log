@@ -1,0 +1,68 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable
+ok 1 - ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable
+  ---
+  duration_ms: 19091.849715
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it
+ok 2 - ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it
+  ---
+  duration_ms: 7340.303855
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key
+ok 3 - ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key
+  ---
+  duration_ms: 14654.932735
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change
+ok 4 - ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change
+  ---
+  duration_ms: 2304.195299
+  type: 'test'
+  ...
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# (node:6915) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out
+ok 5 - BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out
+  ---
+  duration_ms: 26412.629873
+  type: 'test'
+  ...
+# Subtest: Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable
+ok 6 - Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable
+  ---
+  duration_ms: 24533.25631
+  type: 'test'
+  ...
+# Subtest: A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse
+ok 7 - A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse
+  ---
+  duration_ms: 76.844472
+  type: 'test'
+  ...
+# Subtest: Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts
+ok 8 - Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts
+  ---
+  duration_ms: 10503.451895
+  type: 'test'
+  ...
+# Subtest: The built hosted mail-off sign-in screen offers guarded owner guidance and protects private documents
+ok 9 - The built hosted mail-off sign-in screen offers guarded owner guidance and protects private documents
+  ---
+  duration_ms: 8982.688866
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 118621.693441

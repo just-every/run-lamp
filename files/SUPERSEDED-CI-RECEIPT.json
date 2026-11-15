@@ -1,0 +1,19 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "aa6335e987950bb1f80be13d70b1db4e687b9191",
+  "discovered_at": "2026-11-15T15:06:29.391004+00:00",
+  "last_call_epoch": 1794755189.3910575,
+  "runs": [
+    {
+      "id": 43727957572,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "aa6335e987950bb1f80be13d70b1db4e687b9191",
+      "event": "push",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43727957572"
+    }
+  ],
+  "gh_calls_used": 4,
+  "custody": "Superseded by native seed metadata and divergence documentation correction; no READY claim."
+}
