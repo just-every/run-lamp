@@ -1,0 +1,12 @@
+{
+  "version": "1.11.16",
+  "clauses": 244,
+  "counts": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "migrations": 80,
+  "retainedReleases": 30
+}

@@ -1,0 +1,9 @@
+Waiting 237 seconds for the permitted next exact-SHA CI read.
+{"conclusion":null,"head_sha":"b5b5628a247ba2289aeb9af16cab04a998e823ce","html_url":"https://github.com/just-every/run-lamp/actions/runs/43687023390","status":"in_progress"}
+Waiting 300 seconds for the permitted next exact-SHA CI read.
+{"conclusion":null,"head_sha":"b5b5628a247ba2289aeb9af16cab04a998e823ce","html_url":"https://github.com/just-every/run-lamp/actions/runs/43687023390","status":"in_progress"}
+Waiting 300 seconds for the permitted next exact-SHA CI read.
+{"conclusion":null,"head_sha":"b5b5628a247ba2289aeb9af16cab04a998e823ce","html_url":"https://github.com/just-every/run-lamp/actions/runs/43687023390","status":"in_progress"}
+Waiting 300 seconds for the permitted next exact-SHA CI read.
+{"conclusion":"success","head_sha":"b5b5628a247ba2289aeb9af16cab04a998e823ce","html_url":"https://github.com/just-every/run-lamp/actions/runs/43687023390","status":"completed"}
+CI_FINAL success https://github.com/just-every/run-lamp/actions/runs/43687023390

@@ -1,0 +1,6 @@
+{
+  "title": "Prepare Lamp 1.11.17 release metadata",
+  "head": "cloud/sd-lamp-release-1-11-17",
+  "base": "main",
+  "body": "Prepare v1.11.17 from the green Lamp main with owner-facing notes for the changes since v1.11.16. The release introduces only 0081_scheduled_work_indexes.sql with backup-first upgrade instructions; exact tagged v1.11.16 release and contract records retain 0079, 0080 and its time-zone change. Package, seed and accessibility version references agree, and rer remains 0.2.108.\n\nValidation: release metadata validator, generated contract-document check, TypeScript typecheck and regenerated source-lock check pass under Node 22.20.0 / pnpm 10.12.4. Product, tests, contract judgments and generated views are unchanged. Fleet landing, publication scanning, signing, tagging and release publication remain with their existing owners.\n\nRun Edit Run fleet, 2026-11-15 (UTC)."
+}

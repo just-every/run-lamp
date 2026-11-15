@@ -1,0 +1,52 @@
+{
+  "utc": "2026-11-15T06:48:06Z",
+  "version": "1.11.17",
+  "previousVersion": "1.11.16",
+  "baseSha": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+  "headSha": "b5b5628a247ba2289aeb9af16cab04a998e823ce",
+  "commitsSincePreviousTag": 11,
+  "previousTagObject": "de6a8948cf2e12e3efb876066caa1a334bfd2599",
+  "previousTagCommit": "429a46081ce68bab2dbdae46b8402b8ccce3ee2a",
+  "newMigrations": [
+    "0081_scheduled_work_indexes.sql"
+  ],
+  "retainedPreviousMigrations": [
+    "0079_subscriber_directory_order.sql",
+    "0080_incident_list_paging.sql"
+  ],
+  "contractChanges": {},
+  "retainedPreviousContractChanges": [
+    "SETUP-002"
+  ],
+  "changedPaths": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.16.CONTRACT.md",
+    "release-history/1.11.16.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "localChecks": {
+    "validate:release": "pass",
+    "contract-docs check": "pass",
+    "typecheck": "pass",
+    "source lock regenerate": "pass",
+    "source lock check": "pass",
+    "diff whitespace": "pass",
+    "immutable tagged history": "pass",
+    "notes match changelog": "pass"
+  },
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.108"
+  },
+  "newTests": 0,
+  "changedTests": 0,
+  "clauseStatusChanges": [],
+  "scope": "release metadata only",
+  "publicationScan": "deferred to guarded Mac lander as instructed",
+  "tagAndReleasePublication": "not authorized in this round"
+}

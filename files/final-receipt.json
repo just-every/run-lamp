@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "utc": "2026-11-15T07:08:18Z",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-17",
+  "head": "b5b5628a247ba2289aeb9af16cab04a998e823ce",
+  "base": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+  "version": "1.11.17",
+  "previousVersion": "1.11.16",
+  "productPush": "success, first attempt",
+  "pullRequest": {
+    "base": "main",
+    "head": {
+      "ref": "cloud/sd-lamp-release-1-11-17",
+      "sha": "b5b5628a247ba2289aeb9af16cab04a998e823ce"
+    },
+    "html_url": "https://github.com/just-every/run-lamp/pull/388",
+    "number": 388,
+    "state": "open"
+  },
+  "candidateVerify": {
+    "conclusion": "success",
+    "head_sha": "b5b5628a247ba2289aeb9af16cab04a998e823ce",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43687023390",
+    "status": "completed",
+    "id": 43687023390,
+    "readAtUtc": "2026-11-15T07:07:40.367819+00:00"
+  },
+  "baseChecks": {
+    "runs": [
+      {
+        "conclusion": "success",
+        "event": "dynamic",
+        "head_sha": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43685623404",
+        "id": 43685623404,
+        "name": "Push on main",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43685623590",
+        "id": 43685623590,
+        "name": "Verify",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "event": "push",
+        "head_sha": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43685623597",
+        "id": 43685623597,
+        "name": "Run demo",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43685623713",
+        "id": 43685623713,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "9b4ec5e7f84715ef4cbed54c8a51ece72c6303ea",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/43683591123",
+        "id": 43683591123,
+        "name": "Verify",
+        "status": "completed"
+      }
+    ],
+    "total_count": 5
+  },
+  "localChecks": {
+    "validate:release": "pass",
+    "contract-docs check": "pass",
+    "typecheck": "pass",
+    "source lock regenerate": "pass",
+    "source lock check": "pass",
+    "diff whitespace": "pass",
+    "immutable tagged history": "pass",
+    "notes match changelog": "pass"
+  },
+  "before": {
+    "version": "1.11.16",
+    "clauses": 244,
+    "counts": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "migrations": 80,
+    "retainedReleases": 30
+  },
+  "after": {
+    "version": "1.11.17",
+    "clauses": 244,
+    "counts": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "migrations": 80,
+    "retainedReleases": 31
+  },
+  "clauseStatusChanges": [],
+  "contractChanges": {},
+  "newMigrationIds": [
+    "0081_scheduled_work_indexes.sql"
+  ],
+  "immutablePreviousMigrations": [
+    "0079_subscriber_directory_order.sql",
+    "0080_incident_list_paging.sql"
+  ],
+  "githubApiCalls": 7,
+  "blockers": [],
+  "productCustody": "READY",
+  "evidenceCustody": "separate evidence ref, publication follows this receipt",
+  "landing": "fleet only; not performed",
+  "tagOrReleasePublication": "not performed"
+}

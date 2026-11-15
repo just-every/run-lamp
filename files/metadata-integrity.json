@@ -1,0 +1,12 @@
+{
+  "release-history/1.11.16.json": "04362f888975d43ce66a373f07d3691a8b035b823f2929060e3d247300482f5a",
+  "release-history/1.11.16.CONTRACT.md": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
+  "checks": [
+    "tagged history byte-identical",
+    "public notes match changelog",
+    "only 0081 introduced",
+    "contract and generated views unchanged",
+    "rer pin and pnpm lock unchanged",
+    "README/install already evergreen"
+  ]
+}

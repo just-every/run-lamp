@@ -1,0 +1,1041 @@
+diff --git a/DIVERGENCE.md b/DIVERGENCE.md
+index 812ee87..358c776 100644
+--- a/DIVERGENCE.md
++++ b/DIVERGENCE.md
+@@ -1,5 +1,29 @@
+ # DIVERGENCE.md
+ 
++## Audit subjects reflect current records — 15 November 2026
++
++Audit rows and their CSV export name surviving subjects from the current native
++records. Subscriber rows use the directory's destination labels, and reports
++identify their incident by reference and title. Erased subscribers and removed
++records retain anonymous audit history without restoring copied identifiers.
++Static settings, import batches and access events are named without implying
++that a record was removed. Privacy journeys distinguish the live read projection
++from persisted audit entries: the latter never copy a subscriber destination,
++and erasure removes it from both the view and CSV. This changes presentation
++only: audit recording, admission, selection, pagination, erasure and retention
++are unchanged.
++
++Run Edit Run fleet, 15 November 2026. Carries the 14 November audit-label decision onto current main.
++
++## Subscriber CSV component names — 14 November 2026
++
++Import and export accepts visible component names without regard to case or
++surrounding spaces, alongside existing component identifiers. Owners can find
++names and identifiers beside the CSV input. Unknown and ambiguous names refuse
++only their row and identify the value; other validation failures name their own
++cause. Resolved imports retain pending consent, explicit invitations, capacity
++review and the existing export.
++
+ ## Public subscription choices and Teams guidance — 13 November 2026
+ 
+ The public subscribe area offers email and only the SMS, Slack and Teams channels
+diff --git a/src/core/features/audit-log/repository.ts b/src/core/features/audit-log/repository.ts
+index 0c8c166..0675c2f 100644
+--- a/src/core/features/audit-log/repository.ts
++++ b/src/core/features/audit-log/repository.ts
+@@ -9,18 +9,48 @@ export function createAuditLogRepository(db: D1Database) {
+     for (const [key, column, comparison] of [["actorId", "a.operator_id", "="], ["action", "a.action", "="], ["from", "a.created_at", ">="], ["until", "a.created_at", "<"]] as const) {
+       if (filter[key]) { conditions.push(`${column} ${comparison} ?`); values.push(filter[key]!); }
+     }
++    // Only unresolved native subjects mean removal. Static event subjects have
++    // their own labels; subscriber identities never fall back to audit payloads.
+     const sql = `SELECT a.id, a.entity_type AS entityType, a.entity_id AS entityId,
+       COALESCE(CASE a.entity_type
+         WHEN 'operator' THEN (SELECT email FROM oa_operators subject WHERE subject.id=a.entity_id
+           AND subject.email <> 'deleted-' || lower(subject.id) || '@operator.invalid')
+         WHEN 'incident-update' THEN (SELECT i.title FROM incident_updates u JOIN incidents i ON i.id=u.incident_id
+           WHERE u.id=a.entity_id AND i.deleted_at IS NULL)
++        WHEN 'incident-report' THEN (SELECT i.reference || ': ' || i.title FROM incidents i
++          WHERE i.deleted_at IS NULL AND i.id = CASE WHEN a.action='report.waived' THEN a.entity_id
++            ELSE (SELECT incident_id FROM incident_reports WHERE id=a.entity_id) END)
++        WHEN 'subscriber' THEN (SELECT CASE channel WHEN 'slack' THEN 'Slack channel' WHEN 'teams' THEN 'Teams channel' ELSE destination END
++          FROM subscriber_directory WHERE id=a.entity_id AND destination NOT LIKE 'deleted:%')
++        WHEN 'subscriber-import' THEN 'Subscriber CSV import'
+         WHEN 'incident' THEN (SELECT title FROM incidents WHERE id=a.entity_id AND deleted_at IS NULL)
+         WHEN 'maintenance' THEN (SELECT title FROM maintenance WHERE id=a.entity_id)
+         WHEN 'component' THEN (SELECT name FROM components WHERE id=a.entity_id)
++        WHEN 'component-state-history' THEN (SELECT c.name FROM component_state_history h JOIN components c ON c.id=h.component_id WHERE h.id=a.entity_id)
++        WHEN 'component-standing-claim' THEN (SELECT name FROM components WHERE id=a.entity_id)
++        WHEN 'incident-component' THEN (SELECT i.reference || ': ' || i.title FROM incident_components c JOIN incidents i ON i.id=c.incident_id
++          WHERE c.id=a.entity_id AND i.deleted_at IS NULL)
++        WHEN 'incident-template-components' THEN (SELECT name FROM incident_templates WHERE id=a.entity_id)
+         WHEN 'component-group' THEN (SELECT name FROM component_groups WHERE id=a.entity_id)
+         WHEN 'alert-rule' THEN (SELECT name FROM alert_rules WHERE id=a.entity_id)
+-        ELSE json_extract(a.payload_json,'$.recordName')
++        WHEN 'alert-source' THEN (SELECT name FROM alert_sources WHERE id=a.entity_id)
++        WHEN 'metric' THEN (SELECT name FROM public_metrics WHERE id=a.entity_id)
++        WHEN 'vendor-dependency' THEN (SELECT name FROM vendor_dependencies WHERE id=a.entity_id)
++        WHEN 'management-token' THEN (SELECT name FROM management_tokens WHERE id=a.entity_id)
++        WHEN 'channel' THEN (SELECT name FROM delivery_channel_destinations WHERE id=a.entity_id AND removed_at IS NULL)
++        WHEN 'social-account' THEN (SELECT name FROM social_accounts WHERE id=a.entity_id AND removed_at IS NULL)
++        WHEN 'settings' THEN CASE a.entity_id WHEN 'sms' THEN 'SMS settings' WHEN 'prelaunch' THEN 'Prelaunch settings'
++          WHEN 'incident-follow' THEN 'Incident subscription settings' ELSE 'Settings' END
++        WHEN 'page-logo' THEN 'Page logo'
++        WHEN 'operator-access' THEN 'Operator access'
++        WHEN 'sign-in' THEN CASE a.entity_id WHEN 'google' THEN 'Google sign-in' WHEN 'okta' THEN 'Okta sign-in' ELSE 'Sign-in settings' END
++        WHEN 'follow-up' THEN 'Follow-up: ' || replace(substr(a.entity_id,1,instr(a.entity_id,':')-1),'-',' ')
++        WHEN 'chat-desk' THEN CASE json_extract(a.payload_json,'$.event')
++          WHEN 'published' THEN (SELECT i.reference || ': ' || i.title FROM incident_updates u JOIN incidents i ON i.id=u.incident_id
++            WHERE u.id=a.entity_id AND i.deleted_at IS NULL)
++          WHEN 'linked' THEN CASE a.entity_id WHEN 'slack' THEN 'Slack chat identity' WHEN 'teams' THEN 'Teams chat identity' ELSE 'Chat identity' END
++          ELSE (SELECT CASE transport WHEN 'slack' THEN 'Slack chat identity' ELSE 'Teams chat identity' END FROM chat_links WHERE id=a.entity_id) END
++        ELSE COALESCE(json_extract(a.payload_json,'$.recordName'), 'Audit record')
+       END, 'Removed item') AS entityName, a.action,
+       a.operator_id AS actorId,
+       CASE WHEN a.operator_id IS NULL THEN 'System'
+diff --git a/src/core/features/public-snapshot/archive.repository.ts b/src/core/features/public-snapshot/archive.repository.ts
+new file mode 100644
+index 0000000..6e1ece0
+--- /dev/null
++++ b/src/core/features/public-snapshot/archive.repository.ts
+@@ -0,0 +1,133 @@
++import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql } from "drizzle-orm";
++import { createDatabase } from "../../platform/db/client";
++import { components, incidentComponents, incidents, incidentUpdates, maintenance, maintenanceComponents } from "../../shared/schema";
++import type { PublicSnapshotSource } from "./repository";
++import { ARCHIVE_PAGE_SIZE, decodeArchiveCursor, encodeArchiveCursor, parseArchiveKey, type ArchiveCursor, type ArchivePage } from "./archive";
++import { mostSevereState } from "../../shared/domain";
++import { isPublicComponentShown } from "./component-visibility";
++import { DAY, localMidnight } from "./format";
++
++type RecordKey = { id: string; at: string; kind: "incident" | "maintenance" };
++type EventKey = { id: string; at: string; recordId: string; kind: "incident-update" | "maintenance-notice" };
++// Only records with a published public attachment can enter the archive. Keep
++// detached public names while excluding deleted, private and draft-only rows.
++export const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
++export const publicMaintenance = `EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
++const compare = (a: { at: string; id: string; kind: string }, b: { at: string; id: string; kind: string }) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id) || b.kind.localeCompare(a.kind);
++function seek(column: string, id: string, kind: string, cursor: ArchiveCursor | null, values: unknown[]) {
++  if (!cursor) return "";
++  values.push(cursor.at, cursor.id);
++  return ` AND (${column},${id}) ${kind < cursor.kind ? "<=" : "<"} (?,?)`;
++}
++function monthBounds(month: string, zone: string) {
++  const next = month.endsWith("-12") ? `${Number(month.slice(0, 4)) + 1}-01-01` : `${month.slice(0, 5)}${String(Number(month.slice(5)) + 1).padStart(2, "0")}-01`;
++  return [new Date(localMidnight(`${month}-01`, zone)).toISOString(), new Date(localMidnight(next, zone)).toISOString()];
++}
++
++/** Cold archive requests do two bounded seeks and hydrate only the selected
++ * records. Published generations cache their rendered result outside the
++ * retained current-status bundle; accumulated history never enters that bundle. */
++export async function loadArchiveSource(binding: D1Database, context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null> {
++  const request = parseArchiveKey(key);
++  if (!request) return null;
++  const database = createDatabase(binding);
++  let incidentIds: string[] = [], maintenanceIds: string[] = [];
++  let updateIds: string[] | undefined, noticeIds: string[] | undefined;
++  let nextCursor: string | null = null;
++  let previousMonth: string | undefined, nextMonth: string | undefined;
++  const cursor = request.cursor && !request.kind.startsWith("api-") ? decodeArchiveCursor(request.cursor) : null;
++  if (request.cursor && !request.kind.startsWith("api-") && !cursor) return null;
++  if (request.kind === "incident") {
++    const row = await binding.prepare(`SELECT i.id FROM incidents i WHERE i.reference=? AND ${publicIncident} LIMIT 1`).bind(request.reference).first<{ id: string }>();
++    if (!row) return null;
++    incidentIds = [row.id];
++  } else if (request.kind === "maintenance") {
++    const row = await binding.prepare(`SELECT m.id FROM maintenance m WHERE m.reference=? AND ${publicMaintenance} LIMIT 1`).bind(request.reference).first<{ id: string }>();
++    if (!row) return null;
++    maintenanceIds = [row.id];
++  } else if (request.kind === "api-incidents" || request.kind === "api-maintenance") {
++    const incident = request.kind === "api-incidents";
++    const anchor = request.cursor ? await binding.prepare(incident ? `SELECT i.id,i.opened_at AS at FROM incidents i WHERE i.id=? AND ${publicIncident}` : `SELECT m.id,m.starts_at AS at FROM maintenance m WHERE m.id=? AND ${publicMaintenance}`).bind(request.cursor).first<{ id: string; at: string }>() : null;
++    if (request.cursor && !anchor) return null;
++    const query = incident ? `SELECT i.id FROM incidents i INDEXED BY incidents_public_archive_seek WHERE ${publicIncident}${anchor ? " AND (i.opened_at,i.id)<(?,?)" : ""} ORDER BY i.opened_at DESC,i.id DESC LIMIT ?` : `SELECT m.id FROM maintenance m INDEXED BY maintenance_public_archive_seek WHERE ${publicMaintenance}${anchor ? " AND (m.starts_at,m.id)>(?,?)" : ""} ORDER BY m.starts_at,m.id LIMIT ?`;
++    const values = anchor ? [anchor.at, anchor.id, ARCHIVE_PAGE_SIZE + 1] : [ARCHIVE_PAGE_SIZE + 1];
++    const rows = (await binding.prepare(query).bind(...values).all<{ id: string }>()).results;
++    const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
++    nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? page.at(-1)!.id : null;
++    if (incident) incidentIds = page.map(row => row.id); else maintenanceIds = page.map(row => row.id);
++  } else if (request.kind === "feed") {
++    if (cursor && !["incident-update", "maintenance-notice"].includes(cursor.kind)) return null;
++    const component = request.componentSlug ? context.components.find(row => row.id.toLowerCase() === request.componentSlug) : undefined;
++    if (request.componentSlug && (!component || !isPublicComponentShown({ ...component, state: mostSevereState(context.claims.filter(claim => claim.componentId === component.id).map(claim => claim.state)) }))) return null;
++    const since = new Date(Date.parse(generatedAt) - 365 * DAY).toISOString();
++    const left: unknown[] = [since];
++    const right: unknown[] = [since];
++    const componentIncident = component ? " AND EXISTS(SELECT 1 FROM incident_components ca WHERE ca.incident_id=i.id AND ca.component_id=? AND ca.published_at IS NOT NULL)" : "";
++    const componentMaintenance = component ? " AND EXISTS(SELECT 1 FROM maintenance_components ca WHERE ca.maintenance_id=m.id AND ca.component_id=?)" : "";
++    if (component) { left.push(component.id); right.push(component.id); }
++    const incidentSeek = seek("u.published_at", "u.id", "incident-update", cursor, left);
++    const maintenanceSeek = seek("n.published_at", "n.id", "maintenance-notice", cursor, right);
++    left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
++    const [updates, notices] = await Promise.all([
++      binding.prepare(`SELECT u.id,u.published_at AS at,u.incident_id AS recordId,'incident-update' AS kind FROM incident_updates u INDEXED BY incident_updates_public_feed_seek JOIN incidents i ON i.id=u.incident_id WHERE u.published_at>=? AND ${publicIncident}${componentIncident}${incidentSeek} ORDER BY u.published_at DESC,u.id DESC LIMIT ?`).bind(...left).all<EventKey>(),
++      binding.prepare(`SELECT n.id,n.published_at AS at,n.maintenance_id AS recordId,'maintenance-notice' AS kind FROM maintenance_notices n INDEXED BY maintenance_notices_public_feed_seek JOIN maintenance m ON m.id=n.maintenance_id WHERE n.published_at>=? AND ${publicMaintenance}${componentMaintenance}${maintenanceSeek} ORDER BY n.published_at DESC,n.id DESC LIMIT ?`).bind(...right).all<EventKey>(),
++    ]);
++    const rows = [...updates.results, ...notices.results].sort(compare);
++    const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
++    nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? encodeArchiveCursor(page.at(-1)!) : null;
++    updateIds = page.filter(row => row.kind === "incident-update").map(row => row.id);
++    noticeIds = page.filter(row => row.kind === "maintenance-notice").map(row => row.id);
++    incidentIds = [...new Set(page.filter(row => row.kind === "incident-update").map(row => row.recordId))];
++    maintenanceIds = [...new Set(page.filter(row => row.kind === "maintenance-notice").map(row => row.recordId))];
++  } else {
++    if (cursor && !["incident", "maintenance"].includes(cursor.kind)) return null;
++    const left: unknown[] = [], right: unknown[] = [];
++    const incidentSeek = seek("i.resolved_at", "i.id", "incident", cursor, left);
++    const maintenanceSeek = seek("COALESCE(m.completed_at,m.ends_at)", "m.id", "maintenance", cursor, right);
++    let incidentMonth = "", maintenanceMonth = "";
++    if (request.month) {
++      const [from, until] = monthBounds(request.month, context.settings.timezone);
++      incidentMonth = " AND i.resolved_at>=? AND i.resolved_at<?";
++      maintenanceMonth = " AND COALESCE(m.completed_at,m.ends_at)>=? AND COALESCE(m.completed_at,m.ends_at)<?";
++      left.push(from, until); right.push(from, until);
++      // Adjacent populated months are separate indexed seeks. A page holding
++      // only one month's records must still navigate through the full archive.
++      const [incidentBefore, incidentAfter, maintenanceBefore, maintenanceAfter] = await Promise.all([
++        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at<? AND ${publicIncident} ORDER BY i.resolved_at DESC,i.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
++        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at>=? AND ${publicIncident} ORDER BY i.resolved_at,i.id LIMIT 1`).bind(until).first<{at: string}>(),
++        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)<? AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
++        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)>=? AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at),m.id LIMIT 1`).bind(until).first<{at: string}>(),
++      ]);
++      const monthOf = (at: string | undefined) => {
++        if (!at) return undefined;
++        const parts = new Intl.DateTimeFormat('en-US', {timeZone: context.settings.timezone, year: 'numeric', month: '2-digit'}).formatToParts(new Date(at));
++        return `${parts.find(part => part.type === 'year')!.value}-${parts.find(part => part.type === 'month')!.value}`;
++      };
++      previousMonth = monthOf([incidentBefore?.at, maintenanceBefore?.at].filter((at): at is string => !!at).sort().at(-1));
++      nextMonth = monthOf([incidentAfter?.at, maintenanceAfter?.at].filter((at): at is string => !!at).sort()[0]);
++    }
++    left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
++    const [resolved, completed] = await Promise.all([
++      binding.prepare(`SELECT i.id,i.resolved_at AS at,'incident' AS kind FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident}${incidentSeek}${incidentMonth} ORDER BY i.resolved_at DESC,i.id DESC LIMIT ?`).bind(...left).all<RecordKey>(),
++      binding.prepare(`SELECT m.id,COALESCE(m.completed_at,m.ends_at) AS at,'maintenance' AS kind FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance}${maintenanceSeek}${maintenanceMonth} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT ?`).bind(...right).all<RecordKey>(),
++    ]);
++    const rows = [...resolved.results, ...completed.results].sort(compare);
++    const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
++    nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? encodeArchiveCursor(page.at(-1)!) : null;
++    incidentIds = page.filter(row => row.kind === "incident").map(row => row.id);
++    maintenanceIds = page.filter(row => row.kind === "maintenance").map(row => row.id);
++  }
++  const [incidentRows, maintenanceRows, attachments, maintenanceAttachments, updates, notices, reports, importedUpdates, impacts] = await Promise.all([
++    incidentIds.length ? database.select().from(incidents).where(and(inArray(incidents.id, incidentIds), isNull(incidents.deletedAt))).orderBy(desc(incidents.openedAt), desc(incidents.id)).all() : [],
++    maintenanceIds.length ? database.select().from(maintenance).where(inArray(maintenance.id, maintenanceIds)).orderBy(asc(maintenance.startsAt), asc(maintenance.id)).all() : [],
++    incidentIds.length ? database.select(getTableColumns(incidentComponents)).from(incidentComponents).leftJoin(components, eq(incidentComponents.componentId, components.id)).where(and(inArray(incidentComponents.incidentId, incidentIds), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
++    maintenanceIds.length ? database.select(getTableColumns(maintenanceComponents)).from(maintenanceComponents).leftJoin(components, eq(maintenanceComponents.componentId, components.id)).where(and(inArray(maintenanceComponents.maintenanceId, maintenanceIds), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
++    incidentIds.length && (!updateIds || updateIds.length) ? database.select().from(incidentUpdates).where(and(inArray(incidentUpdates.incidentId, incidentIds), updateIds ? inArray(incidentUpdates.id, updateIds) : undefined)).orderBy(desc(incidentUpdates.publishedAt), desc(incidentUpdates.id)).all() : [],
++    maintenanceIds.length && (!noticeIds || noticeIds.length) ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,kind,body,published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")})${noticeIds ? ` AND id IN (${noticeIds.map(() => "?").join(",")})` : ""} ORDER BY published_at DESC,id DESC`).bind(...maintenanceIds, ...(noticeIds ?? [])).all<PublicSnapshotSource["maintenanceNotices"][number]>().then(rows => rows.results) : [],
++    incidentIds.length ? binding.prepare(`SELECT incident_id AS incidentId,summary,timeline,cause,remediation,published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL AND incident_id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<PublicSnapshotSource["reports"][number]>().then(rows => rows.results) : [],
++    maintenanceIds.length && request.kind !== "feed" ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")}) ORDER BY published_at DESC,id`).bind(...maintenanceIds).all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>().then(rows => rows.results) : [],
++    incidentIds.length ? binding.prepare(`SELECT id,peak_impact AS impact FROM incidents WHERE id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<{id: string;impact: PublicSnapshotSource["claims"][number]["state"] | null}>().then(rows => rows.results) : [],
++  ]);
++  const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
++  return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates, maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
++}
+diff --git a/src/core/features/public-snapshot/archive.ts b/src/core/features/public-snapshot/archive.ts
+new file mode 100644
+index 0000000..988ddbb
+--- /dev/null
++++ b/src/core/features/public-snapshot/archive.ts
+@@ -0,0 +1,55 @@
++/** Cursors seek through the immutable ordering rather than walking an OFFSET. */
++export interface ArchiveCursor { at: string; id: string; kind: "incident" | "maintenance" | "incident-update" | "maintenance-notice" }
++export interface ArchivePage {
++  kind: "history" | "month" | "feed" | "incident" | "maintenance" | "api-incidents" | "api-maintenance";
++  cursor?: string;
++  month?: string;
++  nextCursor: string | null;
++  pageSize: number;
++  componentSlug?: string;
++  previousMonth?: string;
++  nextMonth?: string;
++}
++export const ARCHIVE_PAGE_SIZE = 50;
++export function encodeArchiveCursor(value: ArchiveCursor) {
++  return btoa(JSON.stringify(value)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
++}
++export function decodeArchiveCursor(value: string): ArchiveCursor | null {
++  if (!/^[A-Za-z0-9_-]{1,512}$/.test(value)) return null;
++  try {
++    const parsed = JSON.parse(atob(value.replaceAll("-", "+").replaceAll("_", "/"))) as ArchiveCursor;
++    if (!parsed || !["incident", "maintenance", "incident-update", "maintenance-notice"].includes(parsed.kind) || !/^[A-Za-z0-9_.:-]{1,100}$/.test(parsed.id) || !Number.isFinite(Date.parse(parsed.at))) return null;
++    return parsed;
++  } catch { return null; }
++}
++export interface ArchiveRequest { kind: ArchivePage["kind"]; cursor?: string; month?: string; reference?: string; format?: "atom" | "rss"; componentSlug?: string }
++export function parseArchiveKey(key: string): ArchiveRequest | null {
++  let component = /^(?:archive\/components\/([A-Za-z0-9_-]{1,100})\/feed\/([A-Za-z0-9_-]{1,512})|components\/([A-Za-z0-9_-]{1,100})\/feed)\.(atom|rss)$/.exec(key);
++  if (component) return { kind: "feed", componentSlug: component[1] ?? component[3], cursor: component[2], format: component[4] as "atom" | "rss" };
++  const firstFeed = /^feed\.(atom|rss)$/.exec(key);
++  if (firstFeed) return { kind: "feed", format: firstFeed[1] as "atom" | "rss" };
++  let match = /^archive\/history\/([A-Za-z0-9_-]{1,512})\.html$/.exec(key);
++  if (match) return { kind: "history", cursor: match[1] };
++  match = /^(?:archive\/month\/|history\/)(\d{4}-(?:0[1-9]|1[0-2]))(?:\/([A-Za-z0-9_-]{1,512}))?\.html$/.exec(key);
++  if (match) return { kind: "month", month: match[1], cursor: match[2] };
++  match = /^archive\/feed\/([A-Za-z0-9_-]{1,512})\.(atom|rss)$/.exec(key);
++  if (match) return { kind: "feed", cursor: match[1], format: match[2] as "atom" | "rss" };
++  match = /^(incidents|maintenance)\/([^/]{1,200})\.html$/.exec(key);
++  if (match) {
++    try { return { kind: match[1] === "incidents" ? "incident" : "maintenance", reference: decodeURIComponent(match[2]) }; } catch { return null; }
++  }
++  match = /^api\/public\/v1\/(incidents|maintenance)(?:\/([A-Za-z0-9_-]{1,100}))?\.json$/.exec(key);
++  return match ? { kind: match[1] === "incidents" ? "api-incidents" : "api-maintenance", cursor: match[2] } : null;
++}
++export function historyArchiveKey(month: string | undefined, cursor: string | undefined) {
++  if (cursor && !decodeArchiveCursor(cursor)) return "history/invalid.html";
++  return month ? cursor ? `archive/month/${month}/${cursor}.html` : `history/${month}.html` : cursor ? `archive/history/${cursor}.html` : "history.html";
++}
++export function feedArchiveKey(format: "atom" | "rss", cursor: string | undefined) {
++  return cursor ? decodeArchiveCursor(cursor) ? `archive/feed/${cursor}.${format}` : "feed/invalid" : `feed.${format}`;
++}
++
++export function componentFeedArchiveKey(slug: string, format: "atom" | "rss", cursor: string | undefined) {
++  if (!/^[A-Za-z0-9_-]{1,100}$/.test(slug)) return "feed/invalid";
++  return cursor ? decodeArchiveCursor(cursor) ? `archive/components/${slug}/feed/${cursor}.${format}` : "feed/invalid" : `components/${slug}/feed.${format}`;
++}
+diff --git a/src/core/features/public-snapshot/feeds.ts b/src/core/features/public-snapshot/feeds.ts
+index e2f9fe6..598d8e0 100644
+--- a/src/core/features/public-snapshot/feeds.ts
++++ b/src/core/features/public-snapshot/feeds.ts
+@@ -1,3 +1,4 @@
++import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor } from "./archive";
+ import { impactLabel } from "../../shared/incident-impact";
+ import { renderAtomContent, renderRssDescription } from "./feed-content";
+ import type { PublicSnapshotModel, SnapshotArtifact } from "./renderer";
+@@ -38,7 +39,7 @@ export function publicFeedEntries(model: PublicSnapshotModel): FeedEntry[] {
+       recordId: item.id,
+     }))),
+   ].filter((entry) => new Date(entry.publishedAt).getTime() >= new Date(model.generatedAt).getTime() - 365 * DAY)
+-    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
++    .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt) || right.id.replace(/^(?:update-|maintenance-notice-)/, "").localeCompare(left.id.replace(/^(?:update-|maintenance-notice-)/, "")) || (right.recordKind === "incident" ? "incident-update" : "maintenance-notice").localeCompare(left.recordKind === "incident" ? "incident-update" : "maintenance-notice"));
+ }
+ 
+ function feedIdentity(model: PublicSnapshotModel) {
+@@ -54,12 +55,18 @@ interface FeedDocument {
+   identity: string;
+   atomPath: string;
+   rssPath: string;
++  nextCursor?: string | null;
++}
++
++function nextFeedLink(feed: FeedDocument, format: "atom" | "rss") {
++  const path = format === "atom" ? feed.atomPath : feed.rssPath;
++  return feed.nextCursor ? `<link href="${escapeXml(feed.model.origin + path + "?cursor=" + encodeURIComponent(feed.nextCursor))}" rel="next" type="application/${format === "atom" ? "atom" : "rss"}+xml"/>` : "";
+ }
+ 
+ function atomDocument(feed: FeedDocument) {
+   const { model, entries } = feed;
+   const origin = model.origin;
+-  return `<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>${escapeXml(feed.identity)}</id><title>${escapeXml(feed.title)}</title><updated>${escapeXml(model.generatedAt)}</updated><author><name>${escapeXml(model.settings.pageName)}</name></author><link href="${escapeXml(origin + feed.atomPath)}" rel="self" type="application/atom+xml"/><link href="${escapeXml(origin + "/")}" rel="alternate" type="text/html"/>${entries.map((entry) => `<entry><id>${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</id><title>${escapeXml(entry.title)}</title><updated>${escapeXml(entry.publishedAt)}</updated><link href="${escapeXml(origin + entry.path)}" rel="alternate" type="text/html"/>${renderAtomContent(entry.content)}</entry>`).join("")}</feed>`;
++  return `<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom"><id>${escapeXml(feed.identity)}</id><title>${escapeXml(feed.title)}</title><updated>${escapeXml(model.generatedAt)}</updated><author><name>${escapeXml(model.settings.pageName)}</name></author><link href="${escapeXml(origin + feed.atomPath)}" rel="self" type="application/atom+xml"/><link href="${escapeXml(origin + "/")}" rel="alternate" type="text/html"/>${nextFeedLink(feed, "atom")}${entries.map((entry) => `<entry><id>${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</id><title>${escapeXml(entry.title)}</title><updated>${escapeXml(entry.publishedAt)}</updated><link href="${escapeXml(origin + entry.path)}" rel="alternate" type="text/html"/>${renderAtomContent(entry.content)}</entry>`).join("")}</feed>`;
+ }
+ 
+ function rssDocument(feed: FeedDocument) {
+@@ -67,13 +74,16 @@ function rssDocument(feed: FeedDocument) {
+   const origin = model.origin;
+   // RSS descriptions carry HTML. Encode the prose inside that HTML as well as
+   // encoding the XML, so a literal <tag> remains text in a feed reader.
+-  return `<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>${escapeXml(feed.title)}</title><link>${escapeXml(origin + "/")}</link><description>${escapeXml(`${feed.title} — incident and maintenance updates`)}</description><language>en</language><lastBuildDate>${escapeXml(new Date(model.generatedAt).toUTCString())}</lastBuildDate><atom:link href="${escapeXml(origin + feed.rssPath)}" rel="self" type="application/rss+xml"/>${entries.map((entry) => `<item><guid isPermaLink="false">${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</guid><title>${escapeXml(entry.title)}</title><link>${escapeXml(origin + entry.path)}</link><pubDate>${escapeXml(new Date(entry.publishedAt).toUTCString())}</pubDate>${renderRssDescription(entry.content)}</item>`).join("")}</channel></rss>`;
++  return `<?xml version="1.0" encoding="utf-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>${escapeXml(feed.title)}</title><link>${escapeXml(origin + "/")}</link><description>${escapeXml(`${feed.title} — incident and maintenance updates`)}</description><language>en</language><lastBuildDate>${escapeXml(new Date(model.generatedAt).toUTCString())}</lastBuildDate><atom:link href="${escapeXml(origin + feed.rssPath)}" rel="self" type="application/rss+xml"/>${nextFeedLink(feed, "rss").replace("<link", "<atom:link")}${entries.map((entry) => `<item><guid isPermaLink="false">${escapeXml(`${feedIdentity(model)}:event:${entry.id}`)}</guid><title>${escapeXml(entry.title)}</title><link>${escapeXml(origin + entry.path)}</link><pubDate>${escapeXml(new Date(entry.publishedAt).toUTCString())}</pubDate>${renderRssDescription(entry.content)}</item>`).join("")}</channel></rss>`;
+ }
+ 
+ export function renderFeeds(model: PublicSnapshotModel, source: PublicSnapshotSource): SnapshotArtifact[] {
+-  const entries = publicFeedEntries(model);
++  const allEntries = publicFeedEntries(model);
++  const entries = allEntries.slice(0, ARCHIVE_PAGE_SIZE);
++  const last = entries.at(-1);
++  const nextCursor = source.archive?.kind === "feed" ? source.archive.nextCursor : last && (allEntries.length > ARCHIVE_PAGE_SIZE || (source.bounded && model.incidents.filter(row => row.lifecycle === "Resolved").length >= ARCHIVE_PAGE_SIZE)) ? encodeArchiveCursor({ at: last.publishedAt, id: last.id.replace(/^(?:update-|maintenance-notice-)/, ""), kind: last.recordKind === "incident" ? "incident-update" : "maintenance-notice" }) : null;
+   const identity = feedIdentity(model);
+-  const global: FeedDocument = { model, entries, identity, title: model.settings.pageName, atomPath: "/feed.atom", rssPath: "/feed.rss" };
++  const global: FeedDocument = { model, entries, nextCursor, identity, title: model.settings.pageName, atomPath: "/feed.atom", rssPath: "/feed.rss" };
+   const atom = atomDocument(global);
+   const rss = rssDocument(global);
+   const artifacts: SnapshotArtifact[] = [
+@@ -86,9 +96,15 @@ export function renderFeeds(model: PublicSnapshotModel, source: PublicSnapshotSo
+     const incidents = new Set(source.incidentComponents.filter((claim) => claim.componentId === component.id).map((claim) => claim.incidentId));
+     const maintenance = new Set(source.maintenanceComponents.filter((claim) => claim.componentId === component.id).map((claim) => claim.maintenanceId));
+     const paths = publicComponentResources(component);
++    const componentEntries = allEntries.filter((entry) => entry.recordKind === "incident" ? incidents.has(entry.recordId) : maintenance.has(entry.recordId));
++    const componentPage = componentEntries.slice(0, ARCHIVE_PAGE_SIZE);
++    const tail = componentPage.at(-1);
++    const componentNext = source.archive?.componentSlug === componentSlug(component) ? source.archive.nextCursor : source.bounded || componentEntries.length > ARCHIVE_PAGE_SIZE
++      ? encodeArchiveCursor(tail ? { at: tail.publishedAt, id: tail.id.replace(/^(?:update-|maintenance-notice-)/, ""), kind: tail.recordKind === "incident" ? "incident-update" : "maintenance-notice" } : { at: model.generatedAt, id: "zzzz", kind: "maintenance-notice" }) : null;
+     const feed: FeedDocument = {
+       model,
+-      entries: entries.filter((entry) => entry.recordKind === "incident" ? incidents.has(entry.recordId) : maintenance.has(entry.recordId)),
++      entries: componentPage,
++      nextCursor: componentNext,
+       identity: `${identity}:component:${componentSlug(component)}`,
+       title: `${model.settings.pageName} — ${component.name}`,
+       atomPath: paths.atom,
+diff --git a/src/core/features/public-snapshot/history.ts b/src/core/features/public-snapshot/history.ts
+index 0b7865a..3f03a60 100644
+--- a/src/core/features/public-snapshot/history.ts
++++ b/src/core/features/public-snapshot/history.ts
+@@ -1,28 +1,31 @@
++import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor, type ArchivePage } from "./archive";
+ import type { PublicIncident, PublicMaintenance } from "./record-markup";
+ import { noticeMarkup, recordHead, updateMarkup } from "./record-markup";
+ import { DAY, durationText, escapeHtml, timestamp } from "./format";
+ 
+ interface HistoryModel {
++  bounded?: boolean;
++  archive?: ArchivePage;
+   incidents: PublicIncident[];
+   maintenance: PublicMaintenance[];
+   generatedAt: string;
+   settings: { timezone: string };
+ }
+ 
+-interface HistoryRecord { timestamp: string; html: () => string }
++interface HistoryRecord { id: string; kind: "incident" | "maintenance"; timestamp: string; html: () => string }
+ 
+ function historyRecords(model: HistoryModel): HistoryRecord[] {
+   const timezone = model.settings.timezone;
+   return [
+     ...model.incidents.filter(incident => incident.lifecycle === "Resolved" && incident.resolvedAt).map(incident => ({
+-      timestamp: incident.resolvedAt!,
++      id: incident.id, kind: "incident" as const, timestamp: incident.resolvedAt!,
+       html: () => `<article class="history-item" data-incident-impact="${incident.effectiveImpact}">${recordHead("Incident", `<a href="/incidents/${encodeURIComponent(incident.reference)}">${escapeHtml(incident.title)}</a>`, "h3", incident.lifecycle)}<p class="incident-meta">Opened ${timestamp(incident.openedAt, timezone)} · Resolved ${timestamp(incident.resolvedAt!, timezone)} · ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt!))}${incident.components.length ? ` · affected ${escapeHtml(incident.components.join(", "))}` : ""}</p><div class="updates">${incident.updates.map(update => updateMarkup(incident, update, timezone)).join("")}</div></article>`,
+     })),
+     ...model.maintenance.filter(item => item.state === "Completed" || item.state === "Cancelled").map(item => ({
+-      timestamp: item.completedAt ?? item.endsAt,
++      id: item.id, kind: "maintenance" as const, timestamp: item.completedAt ?? item.endsAt,
+       html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: "Imported update" }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
+     })),
+-  ].sort((left, right) => right.timestamp.localeCompare(left.timestamp));
++  ].sort((left, right) => right.timestamp.localeCompare(left.timestamp) || right.id.localeCompare(left.id) || right.kind.localeCompare(left.kind));
+ }
+ 
+ function monthKey(value: string, timezone: string) {
+@@ -43,18 +46,23 @@ export function renderHistoryContent(model: HistoryModel, selectedMonth?: string
+   const records = historyRecords(model);
+   const cutoff = Date.parse(model.generatedAt) - 365 * DAY;
+   const months = [...new Set(records.map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
+-  const shown = selectedMonth ? records.filter(record => monthKey(record.timestamp, model.settings.timezone) === selectedMonth) : records.filter(record => Date.parse(record.timestamp) >= cutoff);
++  const candidates = selectedMonth ? records.filter(record => monthKey(record.timestamp, model.settings.timezone) === selectedMonth) : model.archive ? records : records.filter(record => Date.parse(record.timestamp) >= cutoff);
++  const shown = candidates.slice(0, ARCHIVE_PAGE_SIZE);
++  const more = model.archive ? model.archive.nextCursor : candidates.length > ARCHIVE_PAGE_SIZE || (model.bounded && records.length >= ARCHIVE_PAGE_SIZE)
++    ? encodeArchiveCursor(shown.length ? { at: shown.at(-1)!.timestamp, id: shown.at(-1)!.id, kind: shown.at(-1)!.kind } : { at: new Date(cutoff).toISOString(), id: "zzzz", kind: "incident" }) : null;
++  const base = selectedMonth ? `/history/${selectedMonth}` : "/history";
++  const paging = `<nav class="not-found-links" aria-label="History pages"><span>Up to ${ARCHIVE_PAGE_SIZE} records per page.</span>${model.archive?.cursor ? '<a class="text-link" href="/history">Latest history</a>' : ""}${more ? `<a class="text-link" rel="next" href="${base}?cursor=${encodeURIComponent(more)}">Older history</a>` : ""}</nav>`;
+   const groups = new Map<string, string[]>();
+   for (const record of shown) {
+     const key = monthKey(record.timestamp, model.settings.timezone);
+     groups.set(key, [...(groups.get(key) ?? []), record.html()]);
+   }
+   const index = selectedMonth ? months.indexOf(selectedMonth) : -1;
+-  const previous = index >= 0 ? months[index + 1] : undefined;
+-  const next = index > 0 ? months[index - 1] : undefined;
++  const previous = model.archive ? model.archive.previousMonth : index >= 0 ? months[index + 1] : undefined;
++  const next = model.archive ? model.archive.nextMonth : index > 0 ? months[index - 1] : undefined;
+   const navigation = selectedMonth ? `<nav class="not-found-links" aria-label="History months">${previous ? `<a class="text-link" rel="prev" href="/history/${previous}">Previous month: ${escapeHtml(monthLabel(previous))}</a>` : ""}<a class="text-link" href="/history">Last 12 months</a>${next ? `<a class="text-link" rel="next" href="/history/${next}">Next month: ${escapeHtml(monthLabel(next))}</a>` : ""}</nav>` : "";
+   const older = [...new Set(records.filter(record => Date.parse(record.timestamp) < cutoff).map(record => monthKey(record.timestamp, model.settings.timezone)))].sort().reverse();
+   const archive = !selectedMonth && older.length ? `<section class="history-month"><h2>Earlier history</h2><ul>${older.map(month => `<li><a class="text-link" href="/history/${month}">${escapeHtml(monthLabel(month))}</a></li>`).join("")}</ul></section>` : "";
+   const introduction = selectedMonth ? `Past incidents and maintenance in ${monthLabel(selectedMonth)}.` : "Past incidents and maintenance (12 months).";
+-  return `<section class="history"><header class="history-intro"><h1>${selectedMonth ? escapeHtml(monthLabel(selectedMonth)) : "History"}</h1><p>${escapeHtml(introduction)}</p></header>${navigation}${[...groups].map(([month, entries]) => `<section class="history-month"><h2>${escapeHtml(monthLabel(month))}</h2>${entries.join("")}</section>`).join("") || '<p class="empty-state">No past incidents or maintenance in the last 12 months.</p>'}${archive}${navigation}</section>`;
++  return `<section class="history"><header class="history-intro"><h1>${selectedMonth ? escapeHtml(monthLabel(selectedMonth)) : "History"}</h1><p>${escapeHtml(introduction)}</p></header>${navigation}${[...groups].map(([month, entries]) => `<section class="history-month"><h2>${escapeHtml(monthLabel(month))}</h2>${entries.join("")}</section>`).join("") || '<p class="empty-state">No past incidents or maintenance in the last 12 months.</p>'}${archive}${navigation}${paging}</section>`;
+ }
+diff --git a/src/core/features/public-snapshot/native-api.ts b/src/core/features/public-snapshot/native-api.ts
+index 99cfa9f..2ef4103 100644
+--- a/src/core/features/public-snapshot/native-api.ts
++++ b/src/core/features/public-snapshot/native-api.ts
+@@ -2,7 +2,12 @@ import type { SnapshotArtifact } from "./renderer";
+ 
+ /** Pagination is rendered before the generation advances. A cursor addresses
+  * one immutable page, so public reads never query application data. */
+-export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string): SnapshotArtifact[] {
++export function nativeCollectionArtifacts(name: string, records: Array<{ id: string }>, generatedAt: string, page?: { cursor?: string; nextCursor: string | null }): SnapshotArtifact[] {
++  if (page) return [{
++    key: `api/public/v1/${name}${page.cursor ? `/${encodeURIComponent(page.cursor)}` : ""}.json`,
++    contentType: "application/json; charset=utf-8",
++    body: JSON.stringify({ generatedAt, data: records.slice(0, 50), nextCursor: page.nextCursor }),
++  }];
+   const artifacts: SnapshotArtifact[] = [];
+   const size = 50;
+   for (let offset = 0; offset < Math.max(records.length, 1); offset += size) {
+diff --git a/src/core/features/public-snapshot/public-api.ts b/src/core/features/public-snapshot/public-api.ts
+index 56fdd47..571332d 100644
+--- a/src/core/features/public-snapshot/public-api.ts
++++ b/src/core/features/public-snapshot/public-api.ts
+@@ -11,18 +11,19 @@ export function renderPublicApi(model: PublicSnapshotModel, source: PublicSnapsh
+   const upcoming = maintenance.filter(item => item.status === "scheduled");
+   const unresolved = incidents.filter(item => item.status !== "resolved");
+   const json = (key: string, body: unknown): SnapshotArtifact => ({ key, body: JSON.stringify(body), contentType: "application/json; charset=utf-8" });
++  const archive = source.bounded ? { pagination: { pageSize: 50, history: "/history", incidents: "/api/public/v1/incidents", maintenance: "/api/public/v1/maintenance" } } : {};
+   const artifacts = [
+     json("api/v2/summary.json", { page, status, components: publicComponents, incidents: unresolved, scheduled_maintenances: [...active, ...upcoming] }),
+     json("api/v2/status.json", { page, status }), json("api/v2/components.json", { page, components: publicComponents }),
+-    json("api/v2/incidents.json", { page, incidents }), json("api/v2/incidents/unresolved.json", { page, incidents: unresolved }),
+-    json("api/v2/incidents/resolved.json", { page, incidents: incidents.filter(item => item.status === "resolved") }),
+-    json("api/v2/scheduled-maintenances.json", { page, scheduled_maintenances: maintenance }),
++    json("api/v2/incidents.json", { page, incidents, ...archive }), json("api/v2/incidents/unresolved.json", { page, incidents: unresolved }),
++    json("api/v2/incidents/resolved.json", { page, incidents: incidents.filter(item => item.status === "resolved"), ...archive }),
++    json("api/v2/scheduled-maintenances.json", { page, scheduled_maintenances: maintenance, ...archive }),
+     json("api/v2/scheduled-maintenances/upcoming.json", { page, scheduled_maintenances: upcoming }),
+     json("api/v2/scheduled-maintenances/active.json", { page, scheduled_maintenances: active }),
+     json("api/public/v1/summary.json", { generatedAt: model.generatedAt, page: { name: page.name, hostname: model.settings.hostname, timezone: model.settings.timezone }, overall: model.overall, collections: ["components", "incidents", "maintenance"].map(name => `/api/public/v1/${name}`) }),
+     ...nativeCollectionArtifacts("components", model.visibleComponents.map(component => ({ id: component.id, slug: componentSlug(component), name: component.name, description: component.description, onlyShowIfDegraded: component.onlyShowIfDegraded, uptimeStartDate: component.uptimeStartDate, note: component.note, state: component.state, uptime: component.uptime })), model.generatedAt),
+-    ...nativeCollectionArtifacts("incidents", model.incidents.map(incident => ({ id: incident.id, reference: incident.reference, title: incident.title, lifecycle: incident.lifecycle, impact: incident.effectiveImpact, derivedImpact: incident.derivedImpact, impactOverride: incident.impactOverride, effectiveImpact: incident.effectiveImpact, openedAt: incident.openedAt, resolvedAt: incident.resolvedAt, components: incident.components, updates: incident.updates.map(update => ({ id: update.id, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience, customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details, nextUpdateAt: update.lifecycle === "Resolved" ? null : update.nextUpdateAt, publishedAt: update.publishedAt, componentChanges: (update.componentChanges ?? []).map(({ componentId, name, previousState, newState }) => ({ componentId, name, previousState, newState })) })), report: incident.report })), model.generatedAt),
+-    ...nativeCollectionArtifacts("maintenance", model.maintenance.map(item => ({ id: item.id, reference: item.reference, title: item.title, state: item.state, startsAt: item.startsAt, endsAt: item.endsAt, completedAt: item.completedAt, components: item.components, notices: item.notices, importedUpdates: item.importedUpdates })), model.generatedAt),
++    ...((!source.bounded || source.archive?.kind === "api-incidents") ? nativeCollectionArtifacts("incidents", model.incidents.map(incident => ({ id: incident.id, reference: incident.reference, title: incident.title, lifecycle: incident.lifecycle, impact: incident.effectiveImpact, derivedImpact: incident.derivedImpact, impactOverride: incident.impactOverride, effectiveImpact: incident.effectiveImpact, openedAt: incident.openedAt, resolvedAt: incident.resolvedAt, components: incident.components, updates: incident.updates.map(update => ({ id: update.id, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience, customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details, nextUpdateAt: update.lifecycle === "Resolved" ? null : update.nextUpdateAt, publishedAt: update.publishedAt, componentChanges: (update.componentChanges ?? []).map(({ componentId, name, previousState, newState }) => ({ componentId, name, previousState, newState })) })), report: incident.report })), model.generatedAt, source.archive?.kind === "api-incidents" ? source.archive : undefined) : []),
++    ...((!source.bounded || source.archive?.kind === "api-maintenance") ? nativeCollectionArtifacts("maintenance", model.maintenance.map(item => ({ id: item.id, reference: item.reference, title: item.title, state: item.state, startsAt: item.startsAt, endsAt: item.endsAt, completedAt: item.completedAt, components: item.components, notices: item.notices, importedUpdates: item.importedUpdates })), model.generatedAt, source.archive?.kind === "api-maintenance" ? source.archive : undefined) : []),
+   ];
+   return artifacts;
+ }
+diff --git a/src/core/features/public-snapshot/renderer.ts b/src/core/features/public-snapshot/renderer.ts
+index b8d2355..a25ae55 100644
+--- a/src/core/features/public-snapshot/renderer.ts
++++ b/src/core/features/public-snapshot/renderer.ts
+@@ -61,7 +61,7 @@ interface PublicComponent {
+   uptime: Uptime;
+ }
+ 
+-function toPublicModel(source: PublicSnapshotSource, generatedAt: string, policies: PublicSnapshotPolicies) {
++function toPublicModel(source: PublicSnapshotSource, generatedAt: string, policies: PublicSnapshotPolicies, includeUptime = true) {
+   const theme = themeSchema.parse(JSON.parse(source.settings.theme ?? "{}"));
+   const claims = new Map<string, ComponentState[]>();
+   for (const claim of source.claims) claims.set(claim.componentId, [...(claims.get(claim.componentId) ?? []), claim.state]);
+@@ -72,7 +72,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
+     // deliberately only for the single overall page status.
+     state: mostSevereState(claims.get(component.id) ?? []),
+     hideUptime: theme.hiddenUptimeComponentIds.includes(component.id),
+-    uptime: computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }),
++    uptime: includeUptime ? computeUptime(source, component.id, now, source.settings.timezone, policies, component.uptimeStartDate, theme.historyDays === 90 ? undefined : { startsAt: now - theme.historyDays * DAY, endsAt: now }) : { percentage: null, trackingSince: null, coverageDays: 0, coverageMinutes: 0, marks: [] },
+   }));
+   if (theme.historyDays !== REPORTING_DAYS) for (const component of components) component.uptime.marks = component.uptime.marks.slice(-theme.historyDays);
+   const visibleComponents = components.filter(isPublicComponentShown);
+@@ -98,7 +98,7 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
+   const maintenance: PublicMaintenance[] = source.maintenance
+     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
+     .filter((item) => attachedMaintenanceIds.has(item.id));
+-  return { theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
++  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+ }
+ 
+ export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
+@@ -272,8 +272,29 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
+     ...model.incidents.map((incident) => ({ key: `incidents/${encodeURIComponent(incident.reference)}.html`, body: renderIncidentPage(incident, model, slots), contentType: "text/html; charset=utf-8" })),
+   ];
+   artifacts.push(...model.maintenance.map((item) => ({ key: `maintenance/${encodeURIComponent(item.reference)}.html`, body: pageShell(`${item.title} · ${model.settings.pageName}`, `${maintenanceMarkup(item, model.settings.timezone, generatedAt, true)}`, model, slots, "other"), contentType: "text/html; charset=utf-8" })));
+-  artifacts.push(...historyMonths(model).map(month => ({ key: `history/${month}.html`, body: renderHistory(model, slots, month), contentType: "text/html; charset=utf-8" })));
++  if (!source.bounded) artifacts.push(...historyMonths(model).map(month => ({ key: `history/${month}.html`, body: renderHistory(model, slots, month), contentType: "text/html; charset=utf-8" })));
+   artifacts.push(...renderImportAliases(source, model.incidents, model.maintenance, renderHistory(model, slots)));
+   artifacts.push(...templateArtifacts(model));
+   return { generatedAt, artifacts };
+ }
++
++/** Render one cold historical page using its generation's public presentation. */
++export function renderArchiveArtifact(source: PublicSnapshotSource, key: string, generatedAt: string, policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, slots: LampServerSlots = {}): SnapshotArtifact | null {
++  // Archive documents use component names and visibility, never uptime charts.
++  const model = toPublicModel(source, generatedAt, policies, false);
++  const html = (body: string): SnapshotArtifact => ({ key, body, contentType: "text/html; charset=utf-8" });
++  switch (source.archive?.kind) {
++    case "history": case "month": return html(renderHistory(model, slots, source.archive.month));
++    case "incident": return model.incidents[0] ? html(renderIncidentPage(model.incidents[0], model, slots)) : null;
++    case "maintenance": return model.maintenance[0] ? html(pageShell(`${model.maintenance[0].title} · ${model.settings.pageName}`, maintenanceMarkup(model.maintenance[0], model.settings.timezone, generatedAt, true), model, slots, "other")) : null;
++    case "feed": return renderFeeds(model, source).find(artifact => artifact.key === `${source.archive?.componentSlug ? `components/${source.archive.componentSlug}/` : ""}${key.endsWith(".rss") ? "feed.rss" : "feed.atom"}`) ?? null;
++    case "api-incidents": case "api-maintenance": {
++      const name = source.archive.kind === "api-incidents" ? "incidents" : "maintenance";
++      const artifact = renderPublicApi(model, source).find(artifact => artifact.key === key);
++      if (!artifact) return null;
++      const payload = JSON.parse(artifact.body);
++      return { ...artifact, key, body: JSON.stringify({ ...payload, nextCursor: source.archive.nextCursor }) };
++    }
++    default: return null;
++  }
++}
+diff --git a/src/core/features/public-snapshot/repository.ts b/src/core/features/public-snapshot/repository.ts
+index 7bbd65f..2920ba1 100644
+--- a/src/core/features/public-snapshot/repository.ts
++++ b/src/core/features/public-snapshot/repository.ts
+@@ -1,3 +1,5 @@
++import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
++import { createUlid } from "../../shared/ids";
+ import { createDependencyRepository } from "../dependencies/repository";
+ import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
+ import { createMetricsRepository } from "../metrics/repository";
+@@ -6,7 +8,7 @@ import { readImportedNamespaces, readImportedPublicRecords } from "../statuspage
+ import type { ImportedPublicRecord } from "../statuspage-import/public-addresses";
+ import { loadPublicApiIds } from "./api-identity-repository";
+ import { createWebsiteRepository } from "../website/repository";
+-import { and, asc, desc, eq, isNull, ne, or, sql } from "drizzle-orm";
++import { and, asc, desc, eq, getTableColumns, inArray, isNull, ne, or, sql } from "drizzle-orm";
+ 
+ import { createDatabase } from "../../platform/db/client";
+ import {
+@@ -26,6 +28,7 @@ import {
+ 
+ export interface SnapshotRepository {
+   load(): Promise<PublicSnapshotSource | null>;
++  loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null>;
+   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
+   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
+   latestBuild(): Promise<typeof snapshotBuilds.$inferSelect | null>;
+@@ -40,6 +43,8 @@ export interface SnapshotRepository {
+ }
+ 
+ export interface PublicSnapshotSource {
++  archive?: import("./archive").ArchivePage;
++  bounded?: boolean;
+   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
+   smsEnabled?: boolean;
+   slackEnabled?: boolean;
+@@ -92,7 +97,27 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+     async load() {
+       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
+       if (!settings) return null;
++      // Settings restored or inserted after the feed-identity migration can
++      // still have its placeholder default. Persist one identity before rendering;
++      // competing builders must use the same winner, including on retries.
++      if (!settings.feedId || settings.feedId === "pending-feed-identity") {
++        await binding.prepare("UPDATE page_settings SET feed_id = ? WHERE id = 'default' AND feed_id IN ('', 'pending-feed-identity')").bind(createUlid()).run();
++        const identity = await binding.prepare("SELECT feed_id AS feedId FROM page_settings WHERE id = 'default'").first<{ feedId: string }>();
++        if (!identity?.feedId || identity.feedId === "pending-feed-identity") throw new Error("Public feed identity could not be persisted.");
++        settings.feedId = identity.feedId;
++      }
+ 
++      // The retained generation contains current work plus a recent window.
++      // Older records use indexed, bounded archive pages; no records are removed.
++      // Apply the archive's public membership before the limit: private rows
++      // cannot consume a slot and suppress the Older history continuation.
++      const recentIncidentQuery = `SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
++        UNION SELECT id FROM (SELECT i.id FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle = 'Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident} ORDER BY i.resolved_at DESC, i.id DESC LIMIT 50)`;
++      const recentMaintenanceQuery = `SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
++        UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
++      const recentIncidents = sql.raw(`(${recentIncidentQuery})`);
++      const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
++      const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
+       const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
+         database
+           .select({
+@@ -104,10 +129,10 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+             uptimeStartDate: components.uptimeStartDate,
+             note: components.note,
+             groupId: components.groupId,
+-            groupName: componentGroups.name,
+-            groupOrder: componentGroups.displayOrder,
+-            groupCreatedAt: componentGroups.createdAt,
+-            groupUpdatedAt: componentGroups.updatedAt,
++            groupName: sql<string | null>`${componentGroups.name}`.as("group_name"),
++            groupOrder: sql<number | null>`${componentGroups.displayOrder}`.as("group_order"),
++            groupCreatedAt: sql<string | null>`${componentGroups.createdAt}`.as("group_created_at"),
++            groupUpdatedAt: sql<string | null>`${componentGroups.updatedAt}`.as("group_updated_at"),
+             displayOrder: components.displayOrder,
+             createdAt: components.createdAt,
+             updatedAt: components.updatedAt,
+@@ -122,7 +147,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+           .select({ componentId: incidentComponents.componentId, state: incidentComponents.state })
+           .from(incidentComponents)
+           .innerJoin(incidents, eq(incidentComponents.incidentId, incidents.id))
+-          .where(and(isNull(incidents.deletedAt), ne(incidents.lifecycle, "Resolved"), sql`incident_components.published_at IS NOT NULL`))
++          .where(and(inArray(incidentComponents.incidentId, sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved')`), sql`incident_components.published_at IS NOT NULL`))
+           .all(),
+         database
+           .select({ componentId: maintenanceComponents.componentId, state: maintenanceComponents.state })
+@@ -130,37 +155,40 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+           .innerJoin(maintenance, eq(maintenanceComponents.maintenanceId, maintenance.id))
+           .where(eq(maintenance.state, "In progress"))
+           .all(),
+-        database.select().from(componentStateHistory).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
+-        database.select().from(componentStateCorrections).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
+-        database.select().from(incidents).where(isNull(incidents.deletedAt)).orderBy(desc(incidents.openedAt)).all(),
++        // Correction audit rows are not observations; computeUptime reads the
++        // independently stored correction intervals instead.
++        database.select().from(componentStateHistory).where(and(ne(componentStateHistory.causeType, "correction"), sql`(${componentStateHistory.changedAt} >= ${cutoff} OR ${componentStateHistory.id} IN
++          (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' AND h.changed_at < ${cutoff} ORDER BY h.changed_at DESC,h.created_at DESC,h.id DESC LIMIT 1) FROM components c WHERE c.internal=0)
++          OR ${componentStateHistory.id} IN (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' ORDER BY h.changed_at,h.created_at,h.id LIMIT 1) FROM components c WHERE c.internal=0))`)).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
++        database.select().from(componentStateCorrections).where(sql`${componentStateCorrections.endsAt} >= ${cutoff}`).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
++        database.select().from(incidents).where(inArray(incidents.id, recentIncidents)).orderBy(desc(incidents.openedAt)).all(),
+         database
+-          .select()
++          .select(getTableColumns(incidentComponents))
+           .from(incidentComponents)
+           .leftJoin(components, eq(incidentComponents.componentId, components.id))
+-          .where(and(sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
+-          .all()
+-          .then((rows) => rows.map((row) => row.incident_components)),
+-        database.select().from(incidentUpdates).orderBy(desc(incidentUpdates.publishedAt)).all(),
+-        database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all(),
++          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
++          .all(),
++        database.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, recentIncidents)).orderBy(desc(incidentUpdates.publishedAt)).all(),
++        database.select().from(maintenance).where(inArray(maintenance.id, recentMaintenance)).orderBy(asc(maintenance.startsAt)).all(),
+         database
+-          .select()
++          .select(getTableColumns(maintenanceComponents))
+           .from(maintenanceComponents)
+           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
+-          .where(or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false)))
+-          .all()
+-          .then((rows) => rows.map((row) => row.maintenance_components)),
+-        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
+-        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
++          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
++          .all(),
++        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (${recentIncidentQuery}) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
++        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
+         readImportedPublicRecords(binding),
+         readImportedNamespaces(binding),
+-        binding.prepare("SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates ORDER BY published_at DESC,id").all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
++        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
+         loadPublicApiIds(binding),
+-        binding.prepare("SELECT id,peak_impact AS impact FROM incidents WHERE deleted_at IS NULL").all<{ id: string; impact: typeof componentStandingClaims.$inferSelect.state | null }>().then(result => result.results),
++        database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
+       ]);
+ 
+       const website = await createWebsiteRepository(binding).get();
+       const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
+       return {
++        bounded: true,
+         websiteUrl: website?.url ?? null,
+         smsEnabled,
+         slackEnabled: chat.slack,
+@@ -185,6 +213,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+         maintenanceNotices, importedMaintenanceUpdates, metrics: await createMetricsRepository(binding).publicSeries(),
+       };
+     },
++    loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, context, key, generatedAt),
+     async startBuild(input) {
+       await database.insert(snapshotBuilds).values(input);
+     },
+diff --git a/src/core/features/public-snapshot/routes.ts b/src/core/features/public-snapshot/routes.ts
+index 11cbcda..d238570 100644
+--- a/src/core/features/public-snapshot/routes.ts
++++ b/src/core/features/public-snapshot/routes.ts
+@@ -9,6 +9,7 @@ import { escapeHtml } from "./format";
+ import { applyPublicIsolationHeaders } from "./headers";
+ import type { PublicSnapshotService } from "./service";
+ import { nativeApiArtifact } from "./native-api";
++import { componentFeedArchiveKey, feedArchiveKey, historyArchiveKey } from "./archive";
+ import { PRELAUNCH_ROBOTS_KEY, PRELAUNCH_ROBOTS_TAG } from "../prelaunch/policy";
+ 
+ // Stable public URLs are selectors, not immutable artifacts. Revalidate the
+@@ -183,7 +184,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
+     const cache = await caches.open("lamp-public-snapshot-fallback").catch(() => null);
+     const cacheUrl = new URL(context.req.url);
+     cacheUrl.search = ""; // Public artifacts do not vary by query parameters.
+-    if (cacheUrl.pathname.startsWith("/api/public/v1/")) cacheUrl.searchParams.set("artifact", artifact(context));
++    if (cacheUrl.pathname.startsWith("/api/public/v1/") || key.startsWith("archive/")) cacheUrl.searchParams.set("artifact", key);
+     const cacheRequest = new Request(cacheUrl, { method: "GET" });
+     try {
+       const object = await service.readArtifact(artifact(context));
+@@ -265,18 +266,18 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
+   });
+   app.get("/maintenance/:reference", serve((context) => `maintenance/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
+   app.get("/", serve(() => "page.html"));
+-  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? `history/${context.req.param("month")}.html` : "history/invalid.html", false, "not-found.html"));
+-  app.get("/history", serve(() => "history.html"));
++  app.get("/history/:month", serve(context => /^\d{4}-(?:0[1-9]|1[0-2])$/.test(context.req.param("month") ?? "") ? historyArchiveKey(context.req.param("month"), context.req.query("cursor")) : "history/invalid.html", false, "not-found.html"));
++  app.get("/history", serve(context => historyArchiveKey(undefined, context.req.query("cursor")), false, "not-found.html"));
+   app.get("/incidents/:reference", serve((context) => `incidents/${encodeURIComponent(context.req.param("reference") ?? "")}.html`, false, "not-found.html"));
+   app.get("/maintenance.ics", serve(() => "maintenance.ics"));
+-  app.get("/feed.atom", serve(() => "feed.atom"));
+-  app.get("/feed.rss", serve(() => "feed.rss"));
+-  app.get("/history.atom", serve(() => "history.atom"));
+-  app.get("/history.rss", serve(() => "history.rss"));
++  app.get("/feed.atom", serve(context => feedArchiveKey("atom", context.req.query("cursor"))));
++  app.get("/feed.rss", serve(context => feedArchiveKey("rss", context.req.query("cursor"))));
++  app.get("/history.atom", serve(context => context.req.query("cursor") ? feedArchiveKey("atom", context.req.query("cursor")) : "history.atom"));
++  app.get("/history.rss", serve(context => context.req.query("cursor") ? feedArchiveKey("rss", context.req.query("cursor")) : "history.rss"));
+   app.get("/badge.svg", serve(() => "badge.svg"));
+   app.get("/badge.json", serve(() => "badge.json"));
+   for (const resource of ["feed.atom", "feed.rss", "badge.svg", "uptime.svg"]) {
+-    app.get(`/components/:slug/${resource}`, serve(context => `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
++    app.get(`/components/:slug/${resource}`, serve(context => resource === "feed.atom" || resource === "feed.rss" ? componentFeedArchiveKey(context.req.param("slug") ?? "", resource === "feed.atom" ? "atom" : "rss", context.req.query("cursor")) : `components/${encodeURIComponent(context.req.param("slug") ?? "")}/${resource}`));
+   }
+   app.get("/api/v2/*", serve(context => new URL(context.req.url).pathname.slice(1)));
+   for (const path of ["/api/public/v1", "/api/public/v1/", "/api/public/v1/summary.json"]) app.get(path, serve(() => "api/public/v1/summary.json"));
+diff --git a/src/core/features/public-snapshot/service.ts b/src/core/features/public-snapshot/service.ts
+index b4ded02..5299b5e 100644
+--- a/src/core/features/public-snapshot/service.ts
++++ b/src/core/features/public-snapshot/service.ts
+@@ -7,7 +7,7 @@ import type { LampServerSlots } from "../../api/extensions";
+ import type { AppBindings } from "../../app/types";
+ 
+ import { readGenerationArtifact } from "./generation-cache";
+-import { renderPublicSnapshot } from "./renderer";
++import { renderArchiveArtifact, renderPublicSnapshot } from "./renderer";
+ import type { SnapshotRepository } from "./repository";
+ import { PRELAUNCH_ROBOTS_KEY } from "../prelaunch/policy";
+ import { readPrelaunch } from "../prelaunch/store";
+@@ -21,7 +21,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
+ // The minute scheduler periodically rereads source data even without a mutation.
+ const SNAPSHOT_REFRESH_MS = 5 * 60_000;
+ const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v22";
++export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v23";
+ 
+ interface SnapshotPointer {
+   version: string;
+@@ -197,21 +197,43 @@ export function createPublicSnapshotService(
+         const version = createUlid();
+         source.prelaunch = await readPrelaunch(blobs);
+         const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null }, slots);
++        // Feed event order is independent of incident resolution order. Read
++        // its first bounded page directly so later updates to older incidents
++        // cannot disappear behind the recent incident window.
++        const feedSource = await repository.loadArchive?.(source, "feed.atom", rendered.generatedAt);
++        if (feedSource) for (const format of ["atom", "rss"]) {
++          const artifact = renderArchiveArtifact(feedSource, `feed.${format}`, rendered.generatedAt, policies, slots);
++          if (artifact) for (const key of [`feed.${format}`, `history.${format}`]) {
++            const index = rendered.artifacts.findIndex(item => item.key === key);
++            if (index >= 0) rendered.artifacts[index] = { ...artifact, key };
++          }
++        }
++        for (const name of ["incidents", "maintenance"]) {
++          const key = `api/public/v1/${name}.json`;
++          const initial = await repository.loadArchive?.(source, key, rendered.generatedAt);
++          const artifact = initial ? renderArchiveArtifact(initial, key, rendered.generatedAt, policies, slots) : null;
++          if (artifact) rendered.artifacts.push(artifact);
++        }
+         rendered.artifacts.push(...await themeAssetArtifacts(source.settings.themeAssets, blobs));
+         const uploadedFont = rendered.artifacts.find(artifact => artifact.key === "assets/theme-font");
+         if (uploadedFont) for (const artifact of rendered.artifacts.filter(artifact => artifact.contentType.startsWith("text/css"))) {
+           artifact.body = artifact.body.replaceAll('url("/assets/theme-font")', `url("data:font/woff2;base64,${uploadedFont.body}")`);
+         }
+         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
+-        return { version, rendered, bundle, logo, logoContentType };
++        return { version, rendered, bundle, logo, logoContentType, source };
+       }
+-      let prepared: Awaited<ReturnType<typeof prepare>> | null = null;
++      // Source/renderer failures need a later revision or repair. Retrying
++      // them immediately reloads the same history three times. Only delivery
++      // to storage/replica/pointer is retried with the prepared bytes below.
++      const prepared = await prepare();
+       while (attempts < 3) {
+         attempts += 1;
+         try {
+         // Retry storage/replica/pointer delivery with identical generation bytes.
+-        prepared ??= await prepare();
+-        const { version, rendered, bundle, logo, logoContentType } = prepared;
++        const { version, rendered, bundle, logo, logoContentType, source } = prepared;
++        // Cold historical pages use this generation's public presentation data.
++        // They are independently cached, never added to its retained bundle.
++        await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...source, history: [], corrections: [], metrics: [] }), "application/json");
+         await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
+           ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
+           : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
+@@ -301,7 +323,16 @@ export function createPublicSnapshotService(
+           const bundle = await retained?.read();
+           return bundle ? retainedArtifact(bundle, key) : null;
+         }
+-        const object = await readGenerationArtifact(blobs, pointer.version, key);
++        let object = await readGenerationArtifact(blobs, pointer.version, key);
++        if (!object && repository.loadArchive) {
++          const context = await blobs.getText(`snapshots/${pointer.version}/archive-context.json`);
++          const source = context ? await repository.loadArchive(JSON.parse(context.text), key, pointer.generatedAt) : null;
++          const artifact = source ? renderArchiveArtifact(source, key, pointer.generatedAt, policies, slots) : null;
++          if (artifact) {
++            await blobs.putText(`snapshots/${pointer.version}/${key}`, artifact.body, artifact.contentType);
++            object = { bytes: new TextEncoder().encode(artifact.body).buffer, contentType: artifact.contentType };
++          }
++        }
+         if (!object && ["page.html", "feed.atom", "widget.js", "status.json"].includes(key)) throw new Error("Published snapshot artifact is missing.");
+         const marker = await staleMarker();
+         let retainedReady = false;
+diff --git a/src/core/features/public-snapshot/templates/parts.ts b/src/core/features/public-snapshot/templates/parts.ts
+index c7eefa7..fae7ae5 100644
+--- a/src/core/features/public-snapshot/templates/parts.ts
++++ b/src/core/features/public-snapshot/templates/parts.ts
+@@ -154,11 +154,11 @@ export function records(model: PublicSnapshotModel) {
+   const active = model.maintenance.filter((item) => item.state === "In progress").sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+   const upcoming = model.maintenance.filter((item) => item.state === "Scheduled" && Date.parse(item.startsAt) <= now + 14 * DAY).sort((left, right) => left.startsAt.localeCompare(right.startsAt));
+   const resolved = model.incidents.filter((incident) => incident.lifecycle === "Resolved" && incident.resolvedAt && Date.parse(incident.resolvedAt) >= now - model.theme.historyDays * DAY).sort((left, right) => (right.resolvedAt ?? "").localeCompare(left.resolvedAt ?? ""));
+-  return { historyDays: model.theme.historyDays, open, maintenance: [...active, ...upcoming], resolved: resolved.slice(0, 3), more: Math.max(0, resolved.length - 3) };
++  return { bounded: model.bounded, historyDays: model.theme.historyDays, open, maintenance: [...active, ...upcoming], resolved: resolved.slice(0, 3), more: Math.max(0, resolved.length - 3) };
+ }
+ 
+ export function quietLine(history: ReturnType<typeof records>, className: string) {
+-  const text = history.more
++  const text = history.bounded ? "Recent incidents are shown here." : history.more
+     ? `${history.more} more incident${history.more === 1 ? "" : "s"} in the last ${history.historyDays} days.`
+     : history.resolved.length || history.open.length ? `No other incidents in the last ${history.historyDays} days.` : `No incidents in the last ${history.historyDays} days.`;
+   return `<p class="${className}">${text} <a href="/history">Full history</a></p>`;
+diff --git a/src/core/features/scheduled-work/repository.ts b/src/core/features/scheduled-work/repository.ts
+new file mode 100644
+index 0000000..e9f6197
+--- /dev/null
++++ b/src/core/features/scheduled-work/repository.ts
+@@ -0,0 +1,30 @@
++/** These tables are derived work, not new reminder or consent facts. A native
++ * archive restores canonical rows with triggers dropped; older archives have no
++ * derived tables. Reconstruct once, atomically, before their first scheduler use.
++ * The marker travels with current archives and remains unset for older ones. */
++const initializing = new WeakMap<D1Database, Promise<void>>();
++
++export async function ensureScheduledWork(binding: D1Database): Promise<void> {
++  const pending = initializing.get(binding);
++  if (pending) return pending;
++  const initialize = (async () => {
++    const state = await binding.prepare("SELECT completed FROM scheduled_work_initialization WHERE id=1").first<{ completed: number }>();
++    if (!state) throw new Error("Scheduled work initialization is missing.");
++    if (state.completed) return;
++    // Every statement checks the same durable marker. A concurrent initializer
++    // which already committed makes this whole transaction an idempotent no-op.
++    const uninitialized = "(SELECT completed FROM scheduled_work_initialization WHERE id=1)=0";
++    await binding.batch([
++      binding.prepare(`DELETE FROM incident_update_reminder_work WHERE ${uninitialized}`),
++      binding.prepare(`INSERT INTO incident_update_reminder_work(incident_id,update_id,next_update_at,due_soon_sent,overdue_sent,escalation_sent)
++        SELECT incident_id,update_id,next_update_at,due_soon_sent,overdue_sent,escalation_sent FROM incident_update_reminder_candidates WHERE ${uninitialized}`),
++      binding.prepare(`DELETE FROM incident_report_reminder_work WHERE ${uninitialized}`),
++      binding.prepare(`INSERT INTO incident_report_reminder_work(incident_id,next_due_at)
++        SELECT incident_id,next_due_at FROM incident_report_reminder_candidates WHERE ${uninitialized}`),
++      binding.prepare(`UPDATE scheduled_work_initialization SET completed=1 WHERE id=1 AND completed=0`),
++    ]);
++  })();
++  initializing.set(binding, initialize);
++  try { await initialize; }
++  finally { initializing.delete(binding); }
++}
+diff --git a/src/core/features/statuspage-import/sorry/notices.ts b/src/core/features/statuspage-import/sorry/notices.ts
+index 84ea16b..e3c58e1 100644
+--- a/src/core/features/statuspage-import/sorry/notices.ts
++++ b/src/core/features/statuspage-import/sorry/notices.ts
+@@ -16,12 +16,34 @@ export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], i
+   if (!supplied) return refuse("Sorry affected component history is absent; capture notice details with include=components,updates.");
+   if (row.components && row.component_ids && canonicalJson([...supplied].sort()) !== canonicalJson([...row.component_ids].sort())) return refuse("Sorry component_ids and included components disagree.");
+   if (supplied.some((id) => !componentScope.has(id))) return refuse("A Sorry affected component is absent from the saved component list.");
+-  const selected = [...new Set(supplied.flatMap(id => componentScope.get(id)!))];
++  // A parent alone names its whole group. Beside explicit members, it is
++  // context for those members, not evidence that their siblings were affected.
++  const listed = new Set(supplied);
++  const selected = [...new Set(supplied.flatMap(id => {
++    const leaves = componentScope.get(id)!;
++    const group = !(leaves.length === 1 && leaves[0] === id);
++    return group && leaves.some(leaf => listed.has(leaf)) ? [] : leaves;
++  }))];
+   if (!updates.length) return refuse("Sorry notice has no progress update history; no publication time or message was invented.");
+   const ids = new Set<string>();
+   let projected = false;
+   const normalized: SourceUpdate[] = [];
+   const ordered = [...updates].sort((a, b) => a.created_at.localeCompare(b.created_at) || (a.id ?? "").localeCompare(b.id ?? "") || a.content.localeCompare(b.content));
++  const state = row.type === "general" ? "resolved" : row.type === "planned" ? maintenanceStates[row.state as keyof typeof maintenanceStates] : incidentStates[row.state as keyof typeof incidentStates];
++  if (!state) return refuse("Sorry notice has an unsupported lifecycle state.");
++  let resolvedAt = row.ended_at ?? (row.type === "general" ? ordered.at(-1)!.created_at : undefined);
++  const notes: string[] = [];
++  if (row.ended_at && row.began_at && Date.parse(row.ended_at) < Date.parse(row.began_at)) {
++    // Only an authored resolution is evidence of recovery. A projected
++    // management lifecycle derived from the invalid ended_at cannot repair it.
++    const closing = row.type === "unplanned" && state === "resolved"
++      ? updates.filter(update => update.state === "resolved" && Date.parse(update.created_at) >= Date.parse(row.began_at!))
++        .sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)).at(-1)
++      : undefined;
++    if (!closing) return refuse("Sorry notice's actual end precedes its start.");
++    resolvedAt = closing.created_at;
++    notes.push(`Sorry notice's ended_at (${row.ended_at}) precedes its began_at (${row.began_at}); its end is taken from its resolved update at ${resolvedAt}. Every message and publication time is retained.`);
++  }
+   for (const update of ordered) {
+     const id = update.id ?? `at-${sha256(canonicalJson({ created_at: update.created_at, state: update.state ?? null, content: update.content } as Json))}`;
+     if (ids.has(id)) throw new Error("Sorry notice repeats a progress update identity.");
+@@ -31,28 +53,26 @@ export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], i
+     else if (update.state) state = row.type === "planned" ? maintenanceStates[update.state as keyof typeof maintenanceStates] : incidentStates[update.state as keyof typeof incidentStates];
+     else if (!isPublic) {
+       projected = true;
+-      if (row.type === "planned") state = row.ended_at && Date.parse(update.created_at) >= Date.parse(row.ended_at) ? "completed" : row.began_at && Date.parse(update.created_at) >= Date.parse(row.began_at) ? "in_progress" : "scheduled";
+-      else state = row.ended_at && Date.parse(update.created_at) >= Date.parse(row.ended_at) ? "resolved" : "investigating";
++      if (row.type === "planned") state = resolvedAt && Date.parse(update.created_at) >= Date.parse(resolvedAt) ? "completed" : row.began_at && Date.parse(update.created_at) >= Date.parse(row.began_at) ? "in_progress" : "scheduled";
++      else state = resolvedAt && Date.parse(update.created_at) >= Date.parse(resolvedAt) ? "resolved" : "investigating";
+     }
+     if (!state) return refuse("Sorry progress history has an unsupported or missing lifecycle state; no source state was invented.");
+     normalized.push({ id: `${row.id}:${id}`, status: state, body: update.content, created_at: update.created_at, display_at: update.created_at,
+       ...(row.type === "unplanned" ? { affected_components: selected.map((code) => ({ code, new_status: state === "resolved" ? "operational" as const : "degraded_performance" as const })) } : {}) });
+   }
+-  const state = row.type === "general" ? "resolved" : row.type === "planned" ? maintenanceStates[row.state as keyof typeof maintenanceStates] : incidentStates[row.state as keyof typeof incidentStates];
+-  if (!state) return refuse("Sorry notice has an unsupported lifecycle state.");
+-  if (row.ended_at && row.began_at && Date.parse(row.ended_at) < Date.parse(row.began_at)) return refuse("Sorry notice's actual end precedes its start.");
+   if (row.type === "planned" && (!row.begins_at || !row.ends_at || Date.parse(row.ends_at) <= Date.parse(row.begins_at))) return refuse("Sorry planned notice has no valid documented begins_at/ends_at window.");
+   if (row.type === "unplanned" && !row.began_at) return refuse("Sorry incident has no documented began_at instant.");
+   if (row.latest_update) {
+     const latest = ordered.at(-1)!;
+     if (row.latest_update.content !== latest.content || Date.parse(row.latest_update.created_at) !== Date.parse(latest.created_at)) throw new Error("Sorry latest_update and full progress history disagree.");
+   }
+-  if (row.type === "general") accounting.push({ kind, sourceId: row.id, name: row.subject, outcome: "changed", reason: "General Sorry notice is carried as a resolved informational incident; its messages and original times are retained without component outage claims." });
+-  else if (projected) accounting.push({ kind, sourceId: row.id, name: row.subject, outcome: "changed", reason: "Sorry management updates omit authored lifecycle states. Display lifecycle is projected from documented notice start/end times; every message and publication instant is retained. Original authored lifecycle is unavailable." });
+-  else if (row.state === "false_alarm") accounting.push({ kind, sourceId: row.id, name: row.subject, outcome: "changed", reason: "Sorry false alarm is represented as resolved; full source history remains retained." });
++  if (row.type === "general") notes.push("General Sorry notice is carried as a resolved informational incident; its messages and original times are retained without component outage claims.");
++  else if (projected) notes.push("Sorry management updates omit authored lifecycle states. Display lifecycle is projected from documented notice start/end times; every message and publication instant is retained. Original authored lifecycle is unavailable.");
++  else if (row.state === "false_alarm") notes.push("Sorry false alarm is represented as resolved; full source history remains retained.");
++  if (notes.length) accounting.push({ kind, sourceId: row.id, name: row.subject, outcome: "changed", reason: notes.join(" ") });
+   return { id: row.id, name: row.subject, status: row.type === "planned" && row.state === "cancelled" ? "cancelled" : state, impact: row.type === "general" ? "none" : row.type === "planned" ? "maintenance" : "minor",
+     created_at: row.type === "planned" ? row.created_at : row.began_at ?? row.created_at,
+-    resolved_at: row.ended_at ?? (row.type === "general" ? ordered.at(-1)!.created_at : undefined),
++    resolved_at: resolvedAt,
+     ...(row.type === "planned" ? { scheduled_for: row.begins_at, scheduled_until: row.ends_at } : {}),
+     components: [...new Set(selected)].map((id) => ({ id })), incident_updates: normalized };
+ }
+diff --git a/src/core/features/subscribers/csv.ts b/src/core/features/subscribers/csv.ts
+index 8bcb96d..b439b18 100644
+--- a/src/core/features/subscribers/csv.ts
++++ b/src/core/features/subscribers/csv.ts
+@@ -29,10 +29,16 @@ function records(csv:string):string[][] {
+   return rows;
+ }
+ 
+-export function parseSubscriberCsv(csv:string):{valid:IntakeRow[];decisions:IntakeDecision[]} {
++export function parseSubscriberCsv(csv:string,components:readonly {id:string;name:string}[]):{valid:IntakeRow[];decisions:IntakeDecision[]} {
+   const rows=records(csv),headers=rows.shift()?.map(value=>value.trim().toLowerCase().replaceAll(" ","_"))??[];
+   if(!headers.some(value=>["email","phone","webhook_url"].includes(value))||new Set(headers).size!==headers.length||headers.some(value=>!headersAllowed.has(value)))throw new SubscriberIntakeError("Use unique CSV headers: email, phone, webhook_url, contact_email, components, language, webhook_format.");
+   if(!rows.length)throw new SubscriberIntakeError("Choose a CSV containing subscriber rows.");
++  const identifiers=new Set(components.map(component=>component.id));
++  const names=new Map<string,string[]>();
++  for(const component of components) {
++    const name=component.name.trim().toLowerCase();
++    names.set(name,[...(names.get(name)??[]),component.id]);
++  }
+   const valid:IntakeRow[]=[],decisions:IntakeDecision[]=[],seen=new Set<string>();
+   rows.forEach((cells,index)=>{
+     const row=index+2;
+@@ -43,9 +49,32 @@ export function parseSubscriberCsv(csv:string):{valid:IntakeRow[];decisions:Inta
+     if([value.email,value.phone,value.webhook_url].filter(Boolean).length!==1){refuse("Choose exactly one email address, phone number or webhook URL.");return;}
+     if((value.email||value.phone)&&value.webhook_format){refuse("Webhook format applies only to webhook subscribers.");return;}
+     if(value.webhook_format&&!webhookFormatSchema.safeParse(value.webhook_format).success){refuse("Choose Lamp or Statuspage as the webhook format.");return;}
+-    const componentIds=value.components?value.components.split(/[;,]/u).map(id=>id.trim()).filter(Boolean):[];
++    const componentValues=value.components?value.components.split(/[;,]/u).map(value=>value.trim()).filter(Boolean):[];
++    const componentIds:string[]=[];
++    for(const component of componentValues) {
++      // Exact identifiers retain their existing meaning, even when a name resembles one.
++      if(identifiers.has(component)){componentIds.push(component);continue;}
++      const matches=names.get(component.toLowerCase())??[];
++      if(matches.length!==1) {
++        refuse(matches.length ? `Component "${component}" matches more than one component. Use its identifier.` : `Component "${component}" does not match a visible component.`);
++        return;
++      }
++      componentIds.push(matches[0]!);
++    }
+     const parsed=subscriberAddSchema.safeParse(value.phone?{channel:"sms",phone:value.phone,componentIds}:value.email?{channel:"email",email:value.email,componentIds}:{channel:"webhook",destination:value.webhook_url,contactEmail:value.contact_email??"",componentIds,...(value.webhook_format?{webhookFormat:value.webhook_format}:{})});
+-    if(!parsed.success){refuse("The destination, contact address or component identifiers are invalid.");return;}
++    if(!parsed.success){
++      const reasons=parsed.error.issues.map(issue=>{
++        switch(issue.path[0]) {
++          case "email": return "The email address is invalid.";
++          case "phone": return "The phone number is invalid. Use an international number starting with +.";
++          case "destination": return "The webhook URL is invalid. Use a public HTTPS URL without credentials or a port.";
++          case "contactEmail": return "The webhook contact email address is invalid.";
++          case "componentIds": return "Choose at most 200 component values.";
++          default: return "The subscriber row is invalid.";
++        }
++      });
++      refuse([...new Set(reasons)].join(" "));return;
++    }
+     const item=parsed.data,destination=item.channel==="email"?item.email:item.channel==="sms"?item.phone:item.destination;
+     if(seen.has(destination)){decisions.push({row,outcome:"skipped",reason:"This destination occurs earlier in the file."});return;}
+     seen.add(destination);
+diff --git a/src/core/features/subscribers/intake.service.ts b/src/core/features/subscribers/intake.service.ts
+index 50d0645..80497c2 100644
+--- a/src/core/features/subscribers/intake.service.ts
++++ b/src/core/features/subscribers/intake.service.ts
+@@ -21,8 +21,9 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
+   sendConfirmation:(id:string,origin:string,actor:string|null,ownerOnly:boolean,tokenId?:string|null)=>Promise<boolean>;
+ }) {
+   async function plan(csv:string) {
+-    const parsed=parseSubscriberCsv(csv);
+-    const [destinations,components]=await Promise.all([repository.intake.destinations(),repository.listVisibleComponents()]);
++    const components=await repository.listVisibleComponents();
++    const parsed=parseSubscriberCsv(csv,components);
++    const destinations=await repository.intake.destinations();
+     const visible=new Set(components.map(row=>row.id));
+     const accepted=[] as typeof parsed.valid;
+     for(const item of parsed.valid) {
+@@ -39,7 +40,7 @@ export function createSubscriberIntakeService(repository:SubscriberRepository,ho
+     for(const row of capacity.refused){const decision=parsed.decisions.find(item=>item.row===row.row)!;decision.outcome="refused";decision.reason="over the subscriber limit";}
+     const counts:IntakeCounts={created:0,skipped:0,refused:0};
+     for(const decision of parsed.decisions)counts[decision.outcome]++;
+-    const fingerprint=await hashOpaqueToken(JSON.stringify({csv,decisions:parsed.decisions,components:[...visible].sort(),limits:capacity.summaries}));
++    const fingerprint=await hashOpaqueToken(JSON.stringify({csv,decisions:parsed.decisions,components:[...visible].sort(),selections:parsed.valid.map(row=>({row:row.row,componentIds:row.componentIds})),limits:capacity.summaries}));
+     return {accepted:accepted.filter(row=>!capacity.refused.has(row)),preview:{fingerprint,counts,rows:parsed.decisions,limits:capacity.summaries} satisfies IntakePreview};
+   }
+   return {

@@ -1,0 +1,4 @@
+
+> lamp@1.11.17 typecheck /home/agent/rer-consolidation/work/sd-lamp-release-1-11-17/run-lamp
+> tsc --noEmit
+
