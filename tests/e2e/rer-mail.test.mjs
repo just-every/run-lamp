@@ -14,6 +14,7 @@ import { productionMail } from '@runeditrun/rer/internal/cli/production-mail.mjs
 import { commandAdapter } from '../../scripts/installer/local.mjs';
 import { chromium } from 'playwright';
 import { reachBuiltWorkerOptions } from './helpers/reach-built-worker.mjs';
+import { operatorHydrated } from './helpers/operator-hydrated.mjs';
 
 const require = createRequire(import.meta.url), workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
@@ -549,6 +550,8 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           await page.getByRole('heading', { level: 1 }).waitFor();
         }
         await page.goto(appOrigin + '/app/settings');
+        await operatorHydrated(page);
+        await page.locator('.settings-page:not([inert])').waitFor();
         const savedSettings = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/page-settings' && response.request().method() === 'PUT');
         await page.getByLabel('Page name', { exact: true }).fill(`Synthetic saved ${provider} ${choice}`);
         await page.getByLabel('Page name', { exact: true }).blur();
