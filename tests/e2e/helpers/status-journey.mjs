@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { parse } from 'parse5';
 import { openFollowUpsRuntime, eventuallyFollowUp } from './follow-ups-runtime.mjs';
 import { UPDATE_LINK_FIELDS } from './update-component-flow.mjs';
 
@@ -7,7 +8,8 @@ export { eventuallyFollowUp as eventually };
 // the original string across anchor markup; the journeys also assert the exact
 // escaping/link rendering and the raw saved fields after readiness.
 export function visibleText(html) {
-  return html.replace(/<[^>]*>/g, '').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&apos;', "'").replaceAll('&amp;', '&');
+  const text = node => node.nodeName === '#text' ? node.value : (node.childNodes ?? []).map(text).join('');
+  return text(parse(html));
 }
 
 export const wording = {

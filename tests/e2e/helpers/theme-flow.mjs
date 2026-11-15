@@ -52,7 +52,7 @@ export async function themeFlow({ appFetch, fetch, appUrl, pageUrl, currentSetti
     }
     const sanitized = await requestTheme({ ...theme, headerHtml: `${theme.headerHtml}<script>window.themeUnsafe=1</script><p onclick="window.themeUnsafe=2" style="color:red">Safe note</p><img src="https://example.test/pixel.png"><form><input></form><iframe src="https://example.test"></iframe>` });
     assert.doesNotMatch(sanitized.settings.theme.headerHtml, /script|onclick|style=|<img|<form|<iframe/);
-    for (const removal of [/<script>/, /onclick/, /src.*<img>/]) assert.ok(sanitized.settings.themeRemovals.some(value => removal.test(value)), `save response reports ${removal}`);
+    for (const removal of ["headerHtml: removed <script> element.", "headerHtml: removed onclick attribute from <p>.", "headerHtml: removed src attribute from <img>."]) assert.ok(sanitized.settings.themeRemovals.includes(removal), `save response reports ${removal}`);
     const oversize = await requestTheme({ ...theme, footerHtml: "é".repeat(4097) }, 400);
     assert.match(oversize.error, /8192/);
     assert.deepEqual((await currentSettings()).theme, sanitized.settings.theme, "oversized HTML leaves the saved theme unchanged");
