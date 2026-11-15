@@ -1,4 +1,5 @@
 import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
+import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import { createUlid } from "../../shared/ids";
 import { createDependencyRepository } from "../dependencies/repository";
 import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
@@ -86,7 +87,7 @@ export interface PublicSnapshotSource {
   maintenance: Array<typeof maintenance.$inferSelect>;
   maintenanceComponents: Array<typeof maintenanceComponents.$inferSelect>;
   reports: Array<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>;
-  importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string }>;
+  importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates?: string }>;
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
 }
 
@@ -180,7 +181,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
         readImportedPublicRecords(binding),
         readImportedNamespaces(binding),
-        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
+        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates: string}>().then(result => result.results),
         loadPublicApiIds(binding),
         database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
       ]);
@@ -206,7 +207,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         corrections,
         incidents: incidentRows,
         incidentComponents: attachedComponents,
-        updates,
+        updates: await projectImportedIncidentUpdates(binding, updates),
         maintenance: maintenanceRows,
         maintenanceComponents: attachedMaintenanceComponents,
         reports,

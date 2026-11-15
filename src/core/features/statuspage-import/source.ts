@@ -40,7 +40,11 @@ export const sourceSchemas = {
 
 export type SourceGroup = z.infer<z.ZodObject<typeof shapes.group>>;
 export type SourceComponent = z.infer<z.ZodObject<typeof shapes.component>>;
-export type SourceUpdate = z.infer<z.ZodObject<typeof shapes.update>>;
+export type SourceUpdate = z.infer<z.ZodObject<typeof shapes.update>> & {
+  /** Null when a provider omitted the authored state and normalization only
+   * projected lifecycle from the notice's times. */
+  authored_status?: null;
+};
 export type SourceIncident = Omit<z.infer<z.ZodObject<typeof shapes.incident>>, "incident_updates" | "status"> & { status: z.infer<z.ZodObject<typeof shapes.incident>>["status"] | "cancelled"; incident_updates: SourceUpdate[] };
 export type SourceSubscriber = z.infer<z.ZodObject<typeof shapes.subscriber>>;
 export type SourceTemplate = z.infer<z.ZodObject<typeof shapes.template>>;
