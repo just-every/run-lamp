@@ -365,7 +365,7 @@
     {
       "id": "sorry-api",
       "required": false,
-      "why": "MOVE-001 only, at the owner’s request: authenticated GET reads from https://api.sorryapp.com/v1/pages or keyless GET reads from the selected public Sorry HTTPS page, for the owner’s own Move in and, while Business imports are on, when Business asks through POST /api/rer/source-capture (also on Managed hosting). Redirects are refused; pagination stays on the selected collection. Keys are used only for the read and never stored. Saved responses make no network request.",
+      "why": "MOVE-001 only, at the owner\u2019s request: authenticated GET reads from https://api.sorryapp.com/v1/pages or keyless GET reads from the selected public Sorry HTTPS page, for the owner\u2019s own Move in and, while Business imports are on, when Business asks through POST /api/rer/source-capture (also on Managed hosting). Redirects are refused; pagination stays on the selected collection. Keys are used only for the read and never stored. Saved responses make no network request.",
       "data": [
         "API key in authenticated Authorization header only",
         "Page ID or public status-page hostname and notice IDs"
@@ -516,7 +516,7 @@
       "name": "MAIL_PROVIDER",
       "required": false,
       "secret": false,
-      "why": "Select rer for managed relay mail, resend (default), sendgrid, mailgun, ses or postmark for mail.sender.v1. SES credentials use JSON containing accessKeyId, secretAccessKey and optional sessionToken. Hosted mail must be configured."
+      "why": "Select none deliberately to disable outbound email without sending credentials; the deployment owner uses rer signin with its account credentials and recorded deployment ownership. Missing or deferred selection never means off. Select rer for managed relay mail, or resend (default), sendgrid, mailgun, ses or postmark for enabled mail.sender.v1. SES credentials use JSON containing accessKeyId, secretAccessKey and optional sessionToken."
     },
     {
       "name": "SENDGRID_WEBHOOK_PUBLIC_KEY",

@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "edd486b43fe1b4f943c130f2ec17fc40ac8c1ddbf9f4e7e38528919bb4827836",
+      "sha256": "bbb1aed77498f21f0353b0c023ca4fe0e547659f1dfbc8b95a3986f14e1d3bee",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -4016,7 +4016,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "b6e8bdb89b3124d69b89b5281cf3dd808f7b34367ec30b60a64ab8bbe9fe8499",
+      "sha256": "0a5eb618b140e0d1e25ddbd35d8ed2278fadd2a7a55ca2cff34b0f3d5cfb747e",
       "executable": false
     },
     "src/base/actor.ts": {
@@ -8553,6 +8553,10 @@
     },
     "tests/e2e/real-session-helper.mjs": {
       "sha256": "1ee5def8eb0608f998a703972e91f4f1d215aacab4edcf11d053993b98375ef6",
+      "executable": false
+    },
+    "tests/e2e/rer-mail-off.worker.ts": {
+      "sha256": "dbb3d444d0303776ec2d701daf828bd987981d557555652ffff6e65bd28808ef",
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {

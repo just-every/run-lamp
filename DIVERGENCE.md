@@ -1,5 +1,20 @@
 # DIVERGENCE.md
 
+## Deliberately disabled hosted email — 15 November 2026
+
+A deployment can explicitly choose MAIL_PROVIDER=none on rer 0.2.118 without
+sender, key or DKIM inputs. Missing/deferred selections never disable email,
+and sending credentials conflict with none. Native configuration, management
+plans and runtime agree on that selection. Enabled providers retain their
+preflight checks. Email links and invitations report unavailable uniformly;
+operator mail obligations remain pending instead of claiming delivery. Status
+publication, maintenance and the public page continue, and private operator
+pages remain protected. The deploying owner uses guarded rer signin from the
+original checkout with its deploying account credentials and ownership records;
+this adds no hosted development entry or token disclosure.
+
+Run Edit Run fleet (Codex), 15 November 2026. Implements the main-lamp-mail-off-1 brief.
+
 ## Audit subjects reflect current records — 15 November 2026
 
 Audit rows and their CSV export name surviving subjects from the current native
