@@ -90,7 +90,9 @@ export async function subscriberAddFlow() {
     const audit = await api("/api/app/audit-log?action=subscriber.added&limit=100");
     assert.equal(audit.status, 200, audit.text);
     assert.equal(audit.body.entries.filter(entry => entry.entityId === id && entry.actorId === owner.id).length, 1);
-    assert.ok(!audit.text.includes(email), "attributed subscriber audit entries do not copy the destination");
+    assert.equal(audit.body.entries.find(entry => entry.entityId === id).entityName, email, "the live audit subject uses its current subscriber destination");
+    const storedAudit = (await fixture.db.prepare("SELECT * FROM audit_entries WHERE entity_type='subscriber' AND entity_id=?").bind(id).all()).results;
+    assert.ok(!JSON.stringify(storedAudit).includes(email), "persisted audit entries do not copy the destination");
     const exportResponse = await fixture.request("/api/app/subscribers.csv");
     assert.equal(exportResponse.status, 200);
     const exported = subscriberCsvRows(await exportResponse.text()).find(row => row.destination === email);
@@ -196,6 +198,15 @@ export async function subscriberAddFlow() {
     assert.equal(erasedExport.status, 200);
     const erasedText = await erasedExport.text();
     for (const address of [email, contact, destination]) assert.ok(!erasedText.includes(address), "deleted destinations and contacts leave the subscriber export");
+    const erasedAudit = await api('/api/app/audit-log?limit=100');
+    const erasedAuditCsv = await fixture.request('/api/app/audit-log?format=csv');
+    assert.equal(erasedAudit.status, 200);
+    assert.equal(erasedAuditCsv.status, 200);
+    const erasedAuditExport = await erasedAuditCsv.text();
+    for (const address of [email, contact, destination]) {
+      assert.ok(!erasedAudit.text.includes(address), "erasure removes every audit display destination and contact");
+      assert.ok(!erasedAuditExport.includes(address), "erasure removes every audit CSV destination and contact");
+    }
     const remaining = await fixture.databaseState();
     for (const [table, data] of remaining) for (const address of [email, contact, destination]) assert.ok(!data.includes(address), `subscriber erasure left a retained address in ${table}`);
   } finally { await fixture.close(); }
@@ -263,7 +274,10 @@ export async function subscriberTokenAddFlow() {
       const audit = await api(`/api/app/audit-log?action=${action}&limit=100`);
       assert.equal(audit.status, 200, audit.text);
       for (const id of added) assert.deepEqual(audit.body.entries.filter(entry => entry.entityId === id).map(entry => [entry.actorId, entry.reason]), [[owner.id, tokenReason]], `${action} is attributed to the token and its issuer`);
-      for (const address of [email, contact, destination]) assert.ok(!audit.text.includes(address), "token audit entries copy no destination");
+      for (const row of [emailRow, webhookRow]) assert.equal(audit.body.entries.find(entry => entry.entityId === row.id).entityName, row.destination, "the live token audit subject uses the directory destination");
+      assert.ok(!audit.text.includes(contact), "audit subject labels never expose a webhook contact address");
+      const storedAudit = (await fixture.db.prepare("SELECT * FROM audit_entries WHERE entity_type='subscriber' AND action=?").bind(action).all()).results;
+      for (const address of [email, contact, destination]) assert.ok(!JSON.stringify(storedAudit).includes(address), "persisted token audit entries copy no destination or contact");
     }
     assert.ok(Number.isFinite((await api("/api/app/management-tokens")).body.tokens.find(token => token.id === writer.credential.id).lastUsedAt), "the token records its use");
 

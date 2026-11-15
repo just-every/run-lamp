@@ -218,7 +218,9 @@ export async function smsSubscriberFlow() {
     const addAudit = await api('/api/app/audit-log?action=subscriber.added&limit=100');
     assert.equal(addAudit.status, 200, addAudit.text);
     assert.equal(addAudit.body.entries.filter(entry => entry.entityId === added.body.subscriber.id && entry.actorId === owner.id).length, 1, 'SMS Add has one attributed audit entry');
-    assert.ok(!addAudit.text.includes('+12025550103'), 'the attributed audit copies no phone number');
+    assert.equal(addAudit.body.entries.find(entry => entry.entityId === added.body.subscriber.id).entityName, '+12025550103', 'the live audit subject uses the current phone destination');
+    const storedAudit = (await fixture.db.prepare("SELECT * FROM audit_entries WHERE entity_type='subscriber' AND entity_id=?").bind(added.body.subscriber.id).all()).results;
+    assert.ok(!JSON.stringify(storedAudit).includes('+12025550103'), 'persisted audit entries copy no phone number');
     const addedConfirmedAfter = Date.now();
     assert.equal((await inbound('+12025550103', 'YES')).status, 200);
     const addedConfirmedBefore = Date.now();
@@ -276,6 +278,12 @@ export async function smsSubscriberFlow() {
     assert.equal(messagesFor(pendingPhone).length, 1, 'unconfirmed number never receives publications or maintenance');
     assert.equal((await api(`/api/app/subscribers/${subscriber.id}`, { method: 'DELETE' })).status, 204);
     assert.equal((await fixture.list()).find(row => row.destination === pendingPhone).state, 'pending', 'erasure preserves unrelated SMS subscribers');
+    const erasedAudit = await api('/api/app/audit-log?limit=100');
+    const erasedAuditCsv = await fixture.request('/api/app/audit-log?format=csv');
+    assert.equal(erasedAudit.status, 200);
+    assert.equal(erasedAuditCsv.status, 200);
+    assert.ok(!erasedAudit.text.includes(phone), 'erasure removes the phone destination from every audit display label');
+    assert.ok(!(await erasedAuditCsv.text()).includes(phone), 'erasure removes the phone destination from audit CSV');
     const erased = await fixture.databaseState();
     for (const [table, data] of erased) assert.ok(!data.includes(phone), `subscriber erasure removes the number from ${table}`);
     await incidentFollowSmsFlow({ fixture, publish, inbound, flush, messagesFor, component, pageOrigin });

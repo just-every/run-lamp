@@ -1,5 +1,20 @@
 # DIVERGENCE.md
 
+## Audit subjects reflect current records — 15 November 2026
+
+Audit rows and their CSV export name surviving subjects from the current native
+records. Subscriber rows use the directory's destination labels, and reports
+identify their incident by reference and title. Erased subscribers and removed
+records retain anonymous audit history without restoring copied identifiers.
+Static settings, import batches and access events are named without implying
+that a record was removed. Privacy journeys distinguish the live read projection
+from persisted audit entries: the latter never copy a subscriber destination,
+and erasure removes it from both the view and CSV. This changes presentation
+only: audit recording, admission, selection, pagination, erasure and retention
+are unchanged.
+
+Run Edit Run fleet, 15 November 2026. Carries the 14 November audit-label decision onto current main.
+
 ## Subscriber CSV component names — 14 November 2026
 
 Import and export accepts visible component names without regard to case or
