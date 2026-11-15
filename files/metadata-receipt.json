@@ -1,0 +1,74 @@
+{
+  "author": "Run Edit Run fleet",
+  "timestamp": "2026-11-15T09:45:00Z",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-18",
+  "head": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "base": "6b833653dcfd44f2bc57561cc705dde119fd9126",
+  "previous_release_tag": "v1.11.17",
+  "previous_release_commit": "b5b5628a247ba2289aeb9af16cab04a998e823ce",
+  "tag_to_main_commit_count": 2,
+  "version_before": "1.11.17",
+  "version_after": "1.11.18",
+  "rer_pin_before": "0.2.108",
+  "rer_pin_after": "0.2.108",
+  "new_migrations_before": 1,
+  "new_migrations_after": 0,
+  "clause_status_changes": [],
+  "contract_changes": {},
+  "counts_before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "counts_after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "tests_added": 0,
+  "tests_removed": 0,
+  "changed_paths": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.17.CONTRACT.md",
+    "release-history/1.11.17.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "package_lock_present": false,
+  "pnpm_lock_changed": false,
+  "checks": {
+    "frozen_install": "passed",
+    "release_validator": "passed",
+    "typecheck": "passed",
+    "contract_docs": "passed",
+    "source_lock": "passed",
+    "metadata_consistency": "passed",
+    "diff_check": "passed"
+  },
+  "previous_release_record_sha256": "9e62239e683a2be39f09550162729d276dd622c3711c1d343ffd1d5e6499d2b9",
+  "previous_contract_snapshot_sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
+  "publication_scan": "Fleet Mac lander only; cloud task does not run it",
+  "local_runtime": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "node_engine_warning": "repository requests 22.20.0; supplied toolchain retains newer VM Node"
+  },
+  "github_api_calls_used": 8,
+  "product_push": "passed first attempt",
+  "release_publication": "not authorized in metadata round",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43700670727",
+    "status": "completed"
+  },
+  "final_observed_at": "2026-11-15T10:05:09Z",
+  "product_custody": "READY; exact-SHA Verify success",
+  "blockers": []
+}

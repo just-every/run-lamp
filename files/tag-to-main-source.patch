@@ -1,0 +1,413 @@
+diff --git a/DIVERGENCE.md b/DIVERGENCE.md
+index 358c776..f83e9f7 100644
+--- a/DIVERGENCE.md
++++ b/DIVERGENCE.md
+@@ -1829,3 +1829,14 @@ validation, and valid windows clear the ordering hint. Subscriber reporting uses
+ singular for one current subscriber and plural for every other total. These are
+ presentation corrections; existing publication, maintenance and reporting
+ requirements remain unchanged.
++
++## Imported customer messages and returning owner setup — 15 November 2026
++
++An imported incident update remains one readable message, with whole words and
++its complete retained source text. Additional details describes separate material,
++rather than a continuation created by a fixed character cut. Historical maintenance
++messages display their own authored source lifecycle in Lamp's wording; a source
++that omits it keeps a neutral label. Import remains retroactive and silent.
++A local owner who already confirmed first-run setup returns to the app, including
++through client navigation to a saved setup address. Only an uncompleted install
++shows Welcome. Existing clause judgments and release metadata are unchanged.
+diff --git a/src/core/app/loaders.ts b/src/core/app/loaders.ts
+index 51638ba..29ef347 100644
+--- a/src/core/app/loaders.ts
++++ b/src/core/app/loaders.ts
+@@ -43,6 +43,13 @@ export const loadOperatorSession = createServerFn({ method: "GET" })
+   const runtime = current?.runtime ?? createApp(await prepareAppMailBindings(bindings, request), request);
+   const session = current?.session ?? await runtime.services.auth().getSession(request);
+   if (!session) redirectToSignIn(requestUrl);
++  // Client route changes load through this server function instead of the
++  // document preflight. Keep a returning owner out of the first-run card here
++  // too, using the same durable completion record as an ordinary page visit.
++  const firstRunComplete = await runtime.services.overview.live.firstRunComplete();
++  const setup = input.path === "/app/setup";
++  if (!firstRunComplete && !setup) throw redirect({ href: "/setup", statusCode: 302 });
++  if (firstRunComplete && setup) throw redirect({ href: "/app", statusCode: 302 });
+   const settingsPromise = runtime.services.pageSettings.get();
+   const operatorPromise = runtime.services.operators.view(session.operator);
+   const paths = operatorPageReads(input.path, input.view);
+diff --git a/src/core/features/incidents/list-relations.ts b/src/core/features/incidents/list-relations.ts
+index ff54f95..edbcd50 100644
+--- a/src/core/features/incidents/list-relations.ts
++++ b/src/core/features/incidents/list-relations.ts
+@@ -1,4 +1,5 @@
+ import { desc, inArray, isNull } from "drizzle-orm";
++import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
+ import { createDatabase } from "../../platform/db/client";
+ import { incidents, incidentComponents, incidentUpdates, incidentInternalNotes } from "../../shared/schema";
+ import type { ComponentState } from "../../shared/domain";
+@@ -42,7 +43,7 @@ export async function listIncidentRelations(binding: D1Database, incidentIds?: s
+     binding.prepare(`SELECT i.id, i.peak_impact AS peakImpact FROM incidents i WHERE ${scope}`).bind(...(incidentIds ?? [])).all<{ id: string; peakImpact: ComponentState | null }>(),
+   ]);
+   return {
+-    components: byIncident(components), updates: byIncident(updates), notes: byIncident(notes),
++    components: byIncident(components), updates: byIncident(await projectImportedIncidentUpdates(binding, updates)), notes: byIncident(notes),
+     drafts: new Map(drafts.results.map(row => [row.incidentId, publishingDraft(row)])),
+     impacts: new Map(impacts.results.map(row => [row.id, row.peakImpact])),
+   };
+diff --git a/src/core/features/incidents/repository.ts b/src/core/features/incidents/repository.ts
+index 84f8ae4..c706e2f 100644
+--- a/src/core/features/incidents/repository.ts
++++ b/src/core/features/incidents/repository.ts
+@@ -1,4 +1,5 @@
+ import { createOperatorRolesRepository } from '../operators/roles.repository';
++import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
+ import { publishes } from '../operators/permissions';
+ import { createCommunicationOwnerRepository } from "./communication-owner.repository";
+ import { createUlid } from "../../shared/ids";
+@@ -147,7 +148,8 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
+       return database.select().from(incidentComponents).where(eq(incidentComponents.incidentId, incidentId)).all();
+     },
+     async listUpdates(incidentId) {
+-      return database.select().from(incidentUpdates).where(eq(incidentUpdates.incidentId, incidentId)).orderBy(desc(incidentUpdates.publishedAt)).all();
++      const updates = await database.select().from(incidentUpdates).where(eq(incidentUpdates.incidentId, incidentId)).orderBy(desc(incidentUpdates.publishedAt)).all();
++      return projectImportedIncidentUpdates(binding, updates);
+     },
+     async findPublishingDraft(incidentId) {
+       const row = await binding.prepare(`SELECT id, incident_id AS incidentId, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt, scheduled_publish_at AS scheduledPublishAt, scheduled_channels_json AS scheduledChannelsJson, reviewed_by_operator_id AS reviewedByOperatorId, reviewed_at AS reviewedAt, corrects_update_id AS correctsUpdateId, component_changes_json AS componentChangesJson, (SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=incident_drafts.id AND active=1) AS agentPreparationJson FROM incident_drafts WHERE incident_id = ?`).bind(incidentId).first<import("./list-relations").DraftRow>();
+diff --git a/src/core/features/maintenance/ui/maintenance-page.tsx b/src/core/features/maintenance/ui/maintenance-page.tsx
+index 3fc36d4..55dcebd 100644
+--- a/src/core/features/maintenance/ui/maintenance-page.tsx
++++ b/src/core/features/maintenance/ui/maintenance-page.tsx
+@@ -1,3 +1,4 @@
++import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
+ import { useMemo, useRef, useState } from "react";
+ 
+ import type { ComponentsService } from "../../components";
+@@ -60,7 +61,7 @@ function MaintenanceRow({ item, refresh, onError }: { item: NonNullable<Maintena
+   const cancel = async () => { setSaving(true); onError(null); try { await appApi(`/api/app/maintenance/${item.id}/cancel`, { method: "POST" }); refresh(); } catch (cause) { onError(cause instanceof Error ? cause.message : "Maintenance could not be cancelled."); } finally { setSaving(false); } };
+   const start = async () => { setSaving(true); onError(null); try { await appApi(`/api/app/maintenance/${item.id}/start`, { method: "POST" }); refresh(); } catch (cause) { onError(cause instanceof Error ? cause.message : "Maintenance could not be started."); } finally { setSaving(false); } };
+   const complete = async () => { setSaving(true); onError(null); try { await appApi(`/api/app/maintenance/${item.id}/complete`, { method: "POST" }); refresh(); } catch (cause) { onError(cause instanceof Error ? cause.message : "Maintenance could not be completed."); } finally { setSaving(false); } };
+-  return <article className="maintenance-row"><div><span className="record-ref">{item.reference}</span><h3>{item.title}</h3><p>{formatOperatorTime(item.startsAt)} – {formatOperatorTime(item.endsAt)}</p><p>{item.components.map((component) => component.componentName).join(", ") || "No components"}</p>{item.overrunning ? <p className="overrun-note">Running longer than planned since {formatOperatorTime(item.endsAt)}.</p> : null}</div><div className="maintenance-actions"><span className={`state-pill state-${item.state.toLowerCase().replaceAll(" ", "-")}`}>{item.state}</span>{item.state === "Scheduled" ? <><details className="maintenance-date-editor" ref={datesDisclosure}><summary>Change dates</summary><form className="row-window" onSubmit={reschedule}><p>Times in {timezone}.</p><label className="form-label">New start<input aria-label={`${item.reference} start`} type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label><label className="form-label">New end<input aria-label={`${item.reference} end`} type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label><MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required={wordingRequired} /><MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} showStart={!inProgress} /><label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label><div className="form-actions"><Button type="button" variant="secondary" disabled={saving} onClick={resetDates}>Cancel changes</Button><Button type="submit" variant="secondary" disabled={saving}>Reschedule</Button></div></form></details>{!item.autoStart ? <Button type="button" variant="secondary" disabled={saving} onClick={start}>Start maintenance</Button> : null}<Button type="button" variant="secondary" disabled={saving} onClick={cancel}>Cancel maintenance</Button></> : null}{inProgress ? <><details className="maintenance-date-editor" ref={datesDisclosure}><summary>Extend window</summary><form className="row-window" onSubmit={reschedule}><p>Times in {timezone}. The start stays the same.</p><label className="form-label">New end<input aria-label={`${item.reference} end`} type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label><MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required={wordingRequired} /><MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} showStart={!inProgress} /><label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label><div className="form-actions"><Button type="button" variant="secondary" disabled={saving} onClick={resetDates}>Cancel changes</Button><Button type="submit" variant="secondary" disabled={saving || (!canExtend && !automationChanged && !wordingChanged)}>{canExtend ? "Extend window" : wordingChanged ? "Save changes" : "Save automation"}</Button></div></form></details><Button type="button" variant="secondary" disabled={saving} onClick={complete}>Complete maintenance</Button></> : null}</div>{item.importedUpdates?.length > 0 && <details><summary>{item.importedUpdates.length} imported updates</summary>{item.importedUpdates.map(update => <section key={update.id}><time dateTime={update.publishedAt}>{new Date(update.publishedAt).toLocaleString(undefined, { timeZone: timezone })}</time><p>{update.body}</p></section>)}</details>}</article>;
++  return <article className="maintenance-row"><div><span className="record-ref">{item.reference}</span><h3>{item.title}</h3><p>{formatOperatorTime(item.startsAt)} – {formatOperatorTime(item.endsAt)}</p><p>{item.components.map((component) => component.componentName).join(", ") || "No components"}</p>{item.overrunning ? <p className="overrun-note">Running longer than planned since {formatOperatorTime(item.endsAt)}.</p> : null}</div><div className="maintenance-actions"><span className={`state-pill state-${item.state.toLowerCase().replaceAll(" ", "-")}`}>{item.state}</span>{item.state === "Scheduled" ? <><details className="maintenance-date-editor" ref={datesDisclosure}><summary>Change dates</summary><form className="row-window" onSubmit={reschedule}><p>Times in {timezone}.</p><label className="form-label">New start<input aria-label={`${item.reference} start`} type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label><label className="form-label">New end<input aria-label={`${item.reference} end`} type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label><MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required={wordingRequired} /><MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} showStart={!inProgress} /><label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label><div className="form-actions"><Button type="button" variant="secondary" disabled={saving} onClick={resetDates}>Cancel changes</Button><Button type="submit" variant="secondary" disabled={saving}>Reschedule</Button></div></form></details>{!item.autoStart ? <Button type="button" variant="secondary" disabled={saving} onClick={start}>Start maintenance</Button> : null}<Button type="button" variant="secondary" disabled={saving} onClick={cancel}>Cancel maintenance</Button></> : null}{inProgress ? <><details className="maintenance-date-editor" ref={datesDisclosure}><summary>Extend window</summary><form className="row-window" onSubmit={reschedule}><p>Times in {timezone}. The start stays the same.</p><label className="form-label">New end<input aria-label={`${item.reference} end`} type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label><MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required={wordingRequired} /><MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} showStart={!inProgress} /><label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label><div className="form-actions"><Button type="button" variant="secondary" disabled={saving} onClick={resetDates}>Cancel changes</Button><Button type="submit" variant="secondary" disabled={saving || (!canExtend && !automationChanged && !wordingChanged)}>{canExtend ? "Extend window" : wordingChanged ? "Save changes" : "Save automation"}</Button></div></form></details><Button type="button" variant="secondary" disabled={saving} onClick={complete}>Complete maintenance</Button></> : null}</div>{item.importedUpdates?.length > 0 && <details><summary>{item.importedUpdates.length} imported updates</summary>{item.importedUpdates.map(update => <section key={update.id}><strong>{importedMaintenanceUpdateLabel(update)}</strong>{" · "}<time dateTime={update.publishedAt}>{new Date(update.publishedAt).toLocaleString(undefined, { timeZone: timezone })}</time><p>{update.body}</p></section>)}</details>}</article>;
+ }
+ 
+ function MaintenanceWordingFields({ affectedAudience, customerImpact, onAudience, onImpact, disabled, required }: { affectedAudience: string; customerImpact: string; onAudience: (value: string) => void; onImpact: (value: string) => void; disabled: boolean; required: boolean }) {
+diff --git a/src/core/features/public-snapshot/archive.repository.ts b/src/core/features/public-snapshot/archive.repository.ts
+index 6e1ece0..7e0810d 100644
+--- a/src/core/features/public-snapshot/archive.repository.ts
++++ b/src/core/features/public-snapshot/archive.repository.ts
+@@ -1,4 +1,5 @@
+ import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql } from "drizzle-orm";
++import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
+ import { createDatabase } from "../../platform/db/client";
+ import { components, incidentComponents, incidents, incidentUpdates, maintenance, maintenanceComponents } from "../../shared/schema";
+ import type { PublicSnapshotSource } from "./repository";
+@@ -125,9 +126,9 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
+     incidentIds.length && (!updateIds || updateIds.length) ? database.select().from(incidentUpdates).where(and(inArray(incidentUpdates.incidentId, incidentIds), updateIds ? inArray(incidentUpdates.id, updateIds) : undefined)).orderBy(desc(incidentUpdates.publishedAt), desc(incidentUpdates.id)).all() : [],
+     maintenanceIds.length && (!noticeIds || noticeIds.length) ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,kind,body,published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")})${noticeIds ? ` AND id IN (${noticeIds.map(() => "?").join(",")})` : ""} ORDER BY published_at DESC,id DESC`).bind(...maintenanceIds, ...(noticeIds ?? [])).all<PublicSnapshotSource["maintenanceNotices"][number]>().then(rows => rows.results) : [],
+     incidentIds.length ? binding.prepare(`SELECT incident_id AS incidentId,summary,timeline,cause,remediation,published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL AND incident_id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<PublicSnapshotSource["reports"][number]>().then(rows => rows.results) : [],
+-    maintenanceIds.length && request.kind !== "feed" ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")}) ORDER BY published_at DESC,id`).bind(...maintenanceIds).all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>().then(rows => rows.results) : [],
++    maintenanceIds.length && request.kind !== "feed" ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")}) ORDER BY published_at DESC,id`).bind(...maintenanceIds).all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>().then(rows => rows.results) : [],
+     incidentIds.length ? binding.prepare(`SELECT id,peak_impact AS impact FROM incidents WHERE id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<{id: string;impact: PublicSnapshotSource["claims"][number]["state"] | null}>().then(rows => rows.results) : [],
+   ]);
+   const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
+-  return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates, maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
++  return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates: await projectImportedIncidentUpdates(binding, updates), maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
+ }
+diff --git a/src/core/features/public-snapshot/history.ts b/src/core/features/public-snapshot/history.ts
+index 3f03a60..fa443a9 100644
+--- a/src/core/features/public-snapshot/history.ts
++++ b/src/core/features/public-snapshot/history.ts
+@@ -1,3 +1,4 @@
++import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenance-update";
+ import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor, type ArchivePage } from "./archive";
+ import type { PublicIncident, PublicMaintenance } from "./record-markup";
+ import { noticeMarkup, recordHead, updateMarkup } from "./record-markup";
+@@ -23,7 +24,7 @@ function historyRecords(model: HistoryModel): HistoryRecord[] {
+     })),
+     ...model.maintenance.filter(item => item.state === "Completed" || item.state === "Cancelled").map(item => ({
+       id: item.id, kind: "maintenance" as const, timestamp: item.completedAt ?? item.endsAt,
+-      html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: "Imported update" }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
++      html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone)).join("")}</div></article>`,
+     })),
+   ].sort((left, right) => right.timestamp.localeCompare(left.timestamp) || right.id.localeCompare(left.id) || right.kind.localeCompare(left.kind));
+ }
+diff --git a/src/core/features/public-snapshot/record-markup.ts b/src/core/features/public-snapshot/record-markup.ts
+index 22f446d..78ca101 100644
+--- a/src/core/features/public-snapshot/record-markup.ts
++++ b/src/core/features/public-snapshot/record-markup.ts
+@@ -1,3 +1,4 @@
++import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenance-update";
+ import type { PublishedIncidentComponentChange } from "../../shared/incident-component-changes";
+ import type { IncidentLifecycle } from "../../shared/domain";
+ import { type IncidentImpact } from "../../shared/incident-impact";
+@@ -32,7 +33,7 @@ export interface PublicMaintenance {
+   endsAt: string;
+   completedAt: string | null;
+   components: string[];
+-  importedUpdates?: Array<{ id: string; body: string; publishedAt: string }>;
++  importedUpdates?: Array<{ id: string; body: string; publishedAt: string; sourceStates?: string }>;
+   notices: Array<{ id: string; kind: string; body: string; publishedAt: string }>;
+ }
+ 
+@@ -83,6 +84,6 @@ export function noticeMarkup(notice: PublicMaintenance["notices"][number], timez
+ 
+ export function maintenanceMarkup(item: PublicMaintenance, timezone: string, generatedAt: string, permalink = false) {
+   const overrun = item.state === "In progress" && new Date(item.endsAt).getTime() + 15 * MINUTE <= new Date(generatedAt).getTime();
+-  const notices = [...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: "Imported update" }))].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((notice) => noticeMarkup(notice, timezone)).join("");
++  const notices = [...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((notice) => noticeMarkup(notice, timezone)).join("");
+   return `<article class="maintenance">${recordHead(item.state === "Scheduled" ? "Planned maintenance" : "Maintenance", permalink ? escapeHtml(item.title) : `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, permalink ? "h1" : "h4", item.state)}<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)}${overrun ? ` <span class="overrun">Running longer than planned</span>` : ""}</p>${item.components.length ? `<p class="incident-meta">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${notices ? `<div class="updates">${notices}</div>` : ""}</article>`;
+ }
+diff --git a/src/core/features/public-snapshot/repository.ts b/src/core/features/public-snapshot/repository.ts
+index 2920ba1..98607cc 100644
+--- a/src/core/features/public-snapshot/repository.ts
++++ b/src/core/features/public-snapshot/repository.ts
+@@ -1,4 +1,5 @@
+ import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
++import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
+ import { createUlid } from "../../shared/ids";
+ import { createDependencyRepository } from "../dependencies/repository";
+ import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
+@@ -86,7 +87,7 @@ export interface PublicSnapshotSource {
+   maintenance: Array<typeof maintenance.$inferSelect>;
+   maintenanceComponents: Array<typeof maintenanceComponents.$inferSelect>;
+   reports: Array<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>;
+-  importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string }>;
++  importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates?: string }>;
+   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
+ }
+ 
+@@ -180,7 +181,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
+         readImportedPublicRecords(binding),
+         readImportedNamespaces(binding),
+-        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string}>().then(result => result.results),
++        binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates: string}>().then(result => result.results),
+         loadPublicApiIds(binding),
+         database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
+       ]);
+@@ -206,7 +207,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
+         corrections,
+         incidents: incidentRows,
+         incidentComponents: attachedComponents,
+-        updates,
++        updates: await projectImportedIncidentUpdates(binding, updates),
+         maintenance: maintenanceRows,
+         maintenanceComponents: attachedMaintenanceComponents,
+         reports,
+diff --git a/src/core/features/public-snapshot/templates/parts.ts b/src/core/features/public-snapshot/templates/parts.ts
+index fae7ae5..de27b0f 100644
+--- a/src/core/features/public-snapshot/templates/parts.ts
++++ b/src/core/features/public-snapshot/templates/parts.ts
+@@ -1,3 +1,4 @@
++import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
+ import { themeChrome } from "../theme-rendering";
+ import type { PublicSnapshotModel } from "../renderer";
+ import type { PublicIncident, PublicMaintenance } from "../record-markup";
+@@ -193,6 +194,6 @@ export function maintenanceWindow(item: PublicMaintenance, timezone: string) {
+ 
+ export function maintenanceNotices(item: PublicMaintenance, timezone: string) {
+   // The window's own times already say it is planned or under way; later notices say what changed.
+-  const notices = [...item.notices.filter((notice) => !["scheduled", "reminder", "started"].includes(notice.kind.toLowerCase())), ...(item.importedUpdates ?? []).map((update) => ({ ...update, kind: "Update" }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).slice(0, 3);
++  const notices = [...item.notices.filter((notice) => !["scheduled", "reminder", "started"].includes(notice.kind.toLowerCase())), ...(item.importedUpdates ?? []).map((update) => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).slice(0, 3);
+   return notices.map((notice) => `<li><p class="tpl-meta">${escapeHtml(notice.kind.charAt(0).toUpperCase() + notice.kind.slice(1))} · ${when(notice.publishedAt, timezone)}</p>${notice.body ? `<p class="tpl-said">${renderUpdateHtml(notice.body)}</p>` : ""}</li>`).join("");
+ }
+diff --git a/src/core/features/statuspage-import/imported-update.repository.ts b/src/core/features/statuspage-import/imported-update.repository.ts
+new file mode 100644
+index 0000000..edf9b1a
+--- /dev/null
++++ b/src/core/features/statuspage-import/imported-update.repository.ts
+@@ -0,0 +1,79 @@
++import { loadPlans } from "../../../../modules/import-kit/src/d1/plans";
++import { canonicalJson, sha256 } from "../../../../modules/import-kit/src/d1/index";
++import type { Json } from "../../../../modules/import-kit/src/types";
++import { moveInPlan } from "./door-plan";
++import { stableId, type NativeValue, type Row } from "./rows";
++
++interface UpdateWording {
++  id: string;
++  incidentId: string;
++  customerImpact: string;
++  affectedAudience: string;
++  whatStillWorks: string;
++  details: string;
++  publishedAt: string;
++  nextUpdateAt: string | null;
++  lifecycle: string;
++  authorOperatorId: string;
++  correctsUpdateId: string | null;
++  isRetroactive: boolean;
++}
++
++/** These are the source formats already retained by both import doors. Using
++ * their source update identities also supports journals made before this fix. */
++function retainedBodies(namespace: string, sourceId: string, raw: Record<string, unknown>): Array<{ id: string; body: string }> {
++  const updates = namespace === "statuspage" ? raw.incident_updates : namespace === "sorry" ? raw.updates : undefined;
++  if (!Array.isArray(updates)) return [];
++  return updates.flatMap((update: Record<string, unknown>) => {
++    if (!update || typeof update !== "object" || Array.isArray(update)) return [];
++    const content = namespace === "statuspage" ? update.body : update.content;
++    const instant = namespace === "statuspage" ? update.display_at ?? update.created_at : update.created_at;
++    if ((typeof content !== "string" && content !== null) || typeof instant !== "string" || !Number.isFinite(Date.parse(instant))) return [];
++    const sourceUpdateId = namespace === "statuspage" ? update.id : `${sourceId}:${update.id ?? `at-${sha256(canonicalJson({ created_at: update.created_at, state: update.state ?? null, content: update.content } as Json))}`}`;
++    if (typeof sourceUpdateId !== "string") return [];
++    const fallback = namespace === "statuspage" ? raw.name : raw.subject;
++    const body = (typeof content === "string" ? content.trim() : "") || (typeof fallback === "string" ? fallback : "");
++    return [{ id: stableId(`incident-update:${sourceUpdateId}`, instant, namespace), body: body.toWellFormed() }];
++  });
++}
++
++/** Native incident wording is bounded. The applied import journal already
++ * retains the source message without that bound, including after a conditional
++ * undo preserves an owner's incident. Only unchanged imported updates receive
++ * that read projection; this never changes native rows or sealed undo values. */
++export async function projectImportedIncidentUpdates<T extends UpdateWording>(db: D1Database, updates: T[]): Promise<T[]> {
++  const ids = [...new Set(updates.filter(update => update.isRetroactive).map(update => update.incidentId))];
++  if (!ids.length) return updates;
++  const applied = (await db.prepare(`SELECT p.job_id,p.ordinal,p.target_id
++    FROM ik_provenance p
++    JOIN statuspage_import_targets t ON t.kind=p.target_kind AND t.id=p.target_id
++    WHERE p.reversed=0 AND p.destination='lamp' AND p.target_kind='incident'
++    AND p.target_id IN (SELECT value FROM json_each(?))`).bind(JSON.stringify(ids)).all<{ job_id: string; ordinal: number; target_id: string }>()).results;
++  if (!applied.length) return updates;
++  // Load each journal once: many incidents can belong to one chunked plan.
++  const jobs = (await db.prepare("SELECT id,plan_json FROM ik_jobs WHERE id IN (SELECT value FROM json_each(?))").bind(JSON.stringify([...new Set(applied.map(row => row.job_id))])).all<{ id: string; plan_json: string }>()).results;
++  const plans = new Map([...(await loadPlans(jobs, db as never))].map(([id, plan]) => [id, moveInPlan(plan)]));
++  const bodies = new Map<string, { body: string; expected: Row; incidentId: string }>();
++  for (const row of applied) {
++    const entry = plans.get(row.job_id)?.entries[row.ordinal];
++    if (!entry || entry.erased) continue;
++    const raw = (entry.source.payload as { raw?: Record<string, unknown> }).raw;
++    if (!raw) continue;
++    const retained = retainedBodies(entry.source.namespace, entry.source.sourceId, raw);
++    const effect = entry.effects.find(effect => effect.targetKind === "incident" && effect.targetId === row.target_id);
++    const native = (effect?.value as unknown as NativeValue | undefined)?.tables.incident_updates ?? [];
++    for (const source of retained) {
++      const expected = native.find(update => update.id === source.id);
++      if (expected && expected.is_retroactive === 1) bodies.set(source.id, { body: source.body, expected, incidentId: row.target_id });
++    }
++  }
++  return updates.map(update => {
++    const source = bodies.get(update.id);
++    const unchanged = source && ([
++      ["customerImpact", "customer_impact"], ["affectedAudience", "affected_audience"], ["whatStillWorks", "what_still_works"], ["details", "details"],
++      ["publishedAt", "published_at"], ["nextUpdateAt", "next_update_at"], ["lifecycle", "lifecycle"], ["authorOperatorId", "author_operator_id"], ["correctsUpdateId", "corrects_update_id"],
++    ] as const).every(([field, column]) => update[field] === source.expected[column]);
++    return source && unchanged && update.isRetroactive && update.incidentId === source.incidentId
++      ? { ...update, customerImpact: source.body, details: "" } : update;
++  });
++}
+diff --git a/src/core/features/statuspage-import/rows.ts b/src/core/features/statuspage-import/rows.ts
+index 76b9a68..ca88929 100644
+--- a/src/core/features/statuspage-import/rows.ts
++++ b/src/core/features/statuspage-import/rows.ts
+@@ -103,12 +103,12 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
+   const nextIncident = references("INC"), nextMaintenance = references("SCH");
+ 
+   for (const incident of [...data.incidents].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))) {
+-    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || data.publicFeed === true, data.publicFeed === true);
++    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || data.publicFeed === true, data.publicFeed === true, ["statuspage", "sorry"].includes(namespace));
+     attachPostmortem(mapped, incident, operatorId, asOf, identify);
+     results.push(mapped);
+   }
+   for (const window of [...data.maintenance].sort((a, b) => (a.scheduled_for ?? a.created_at).localeCompare(b.scheduled_for ?? b.created_at) || a.id.localeCompare(b.id))) {
+-    results.push(mapMaintenance(window, components, claims, operatorId, asOf, nextMaintenance, identify, namespace !== "statuspage"));
++    results.push(mapMaintenance(window, components, claims, operatorId, asOf, nextMaintenance, identify));
+   }
+ 
+   // Components carry their whole derived history, so they are planned after
+@@ -148,7 +148,7 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
+   return [...results, ...componentResults, ...templates, ...subscriberResults].sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
+ }
+ 
+-function mapIncident(incident: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, sourceEndedAt?: string | null, allowUnattached = false, independentImpact = false, namesListed = false): Mapped {
++function mapIncident(incident: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, sourceEndedAt?: string | null, allowUnattached = false, independentImpact = false, namesListed = false, wholeSourceText = false): Mapped {
+   const name = incident.name;
+   const updates = [...incident.incident_updates].sort((a, b) => at(a).localeCompare(at(b)) || a.id.localeCompare(b.id));
+   if (!updates.length) return { kind: "incident", sourceId: incident.id, accounting: [{ kind: "incident", sourceId: incident.id, name, outcome: "rejected", reason: "No published updates to carry." }] };
+@@ -186,9 +186,14 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
+     }
+     if (lifecycle === "Resolved") resolvedAt = publishedAt;
+     const body = (update.body ?? "").trim() || name, points = Array.from(body);
+-    const impact = clip(body, 250);
+-    const details = points.length > 250 ? clip(points.slice(249).join(""), 500) : "";
+-    if (points.length > 749) notes.add("long update text was shortened to Lamp's update fields");
++    // Native wording stays bounded, while the journal retains the whole source
++    // message for the read projection. Overflow is never Additional details.
++    const prefix = points.slice(0, 250).join("");
++    const boundary = body.length > prefix.length && !/\s/u.test(body[prefix.length] ?? "") ? prefix.search(/\s+\S*$/u) : prefix.length;
++    const impact = wholeSourceText ? boundary > 0 ? prefix.slice(0, boundary).trimEnd() : "Imported update" : clip(body, 250);
++    const details = wholeSourceText ? "" : points.length > 250 ? clip(points.slice(249).join(""), 500) : "";
++    if (wholeSourceText && body !== impact) notes.add("long update text is retained in full with its imported history");
++    if (!wholeSourceText && points.length > 749) notes.add("long update text was shortened to Lamp's update fields");
+     const stated = [...current.keys()].map((code) => components.get(code)!.name);
+     const names = stated.length ? stated : listedNames;
+     rows.push({ id: identify(`incident-update:${update.id}`, publishedAt), incident_id: id, lifecycle, affected_audience: clip(names.length ? `Customers using ${names.join(", ")}` : "All customers", 250), customer_impact: impact, what_still_works: "", details, next_update_at: null, published_at: publishedAt, author_operator_id: operatorId, corrects_update_id: null, is_retroactive: 1, created_at: asOf, updated_at: asOf });
+@@ -208,7 +213,7 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
+   } }, accounting: [{ kind: "incident", sourceId: incident.id, name, outcome: notes.size ? "changed" : "imported", reason: `${updates.length} update${updates.length === 1 ? "" : "s"} at their original times, notifying no one${notes.size ? `; ${[...notes].join("; ")}` : ""}.` }] };
+ }
+ 
+-function mapMaintenance(window: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId, preserveUpdates: boolean): Mapped {
++function mapMaintenance(window: SourceIncident, components: Map<string, { id: string; name: string }>, claims: Claim[], operatorId: string, asOf: string, reference: (id: string) => string, identify: typeof stableId): Mapped {
+   const name = window.name;
+   const startsAt = window.scheduled_for ? iso(window.scheduled_for) : null, endsAt = window.scheduled_until ? iso(window.scheduled_until) : null;
+   if (!startsAt || !endsAt || endsAt <= startsAt) return { kind: "maintenance", sourceId: window.id, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: "rejected", reason: "It has no valid scheduled window." }] };
+@@ -227,7 +232,7 @@ function mapMaintenance(window: SourceIncident, components: Map<string, { id: st
+   const sourceState = ({ scheduled: "Scheduled", in_progress: "In progress", verifying: "In progress", completed: "Completed", cancelled: "Cancelled" } as Record<string, string>)[window.status];
+   return { kind: "maintenance", sourceId: window.id, value: { tables: {
+     maintenance: [{ id, reference: reference(id), title: clip(name, 250), state, starts_at: startsAt, ends_at: endsAt, completed_at: completedAt, created_by_operator_id: operatorId, created_at: asOf, updated_at: asOf }],
+-    ...(preserveUpdates && window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), source_states: JSON.stringify(update.affected_components ?? []) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
++    ...(window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), source_states: JSON.stringify({ status: update.authored_status === null ? null : update.status, components: update.affected_components ?? [] }) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
+     maintenance_components: attached.map((code) => ({ id: identify(`maintenance-component:${window.id}:${code}`, startsAt), maintenance_id: id, component_id: components.get(code)!.id, component_name: components.get(code)!.name, state: "Under maintenance", created_at: asOf, updated_at: asOf })),
+   } }, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: sourceState === state ? "imported" : "changed", reason: sourceState === state ? `${state} window carried over; no notice is sent for it.` : `Imported as ${state} because its window is ${state === "Completed" ? "over" : "under way"}; no notice is sent for it.` }] };
+ }
+diff --git a/src/core/features/statuspage-import/sorry/notices.ts b/src/core/features/statuspage-import/sorry/notices.ts
+index e3c58e1..1f16ed5 100644
+--- a/src/core/features/statuspage-import/sorry/notices.ts
++++ b/src/core/features/statuspage-import/sorry/notices.ts
+@@ -57,7 +57,7 @@ export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], i
+       else state = resolvedAt && Date.parse(update.created_at) >= Date.parse(resolvedAt) ? "resolved" : "investigating";
+     }
+     if (!state) return refuse("Sorry progress history has an unsupported or missing lifecycle state; no source state was invented.");
+-    normalized.push({ id: `${row.id}:${id}`, status: state, body: update.content, created_at: update.created_at, display_at: update.created_at,
++    normalized.push({ id: `${row.id}:${id}`, status: state, ...(!update.state ? { authored_status: null } : {}), body: update.content, created_at: update.created_at, display_at: update.created_at,
+       ...(row.type === "unplanned" ? { affected_components: selected.map((code) => ({ code, new_status: state === "resolved" ? "operational" as const : "degraded_performance" as const })) } : {}) });
+   }
+   if (row.type === "planned" && (!row.begins_at || !row.ends_at || Date.parse(row.ends_at) <= Date.parse(row.begins_at))) return refuse("Sorry planned notice has no valid documented begins_at/ends_at window.");
+diff --git a/src/core/features/statuspage-import/source.ts b/src/core/features/statuspage-import/source.ts
+index fa6e0fe..6a0d5eb 100644
+--- a/src/core/features/statuspage-import/source.ts
++++ b/src/core/features/statuspage-import/source.ts
+@@ -40,7 +40,11 @@ export const sourceSchemas = {
+ 
+ export type SourceGroup = z.infer<z.ZodObject<typeof shapes.group>>;
+ export type SourceComponent = z.infer<z.ZodObject<typeof shapes.component>>;
+-export type SourceUpdate = z.infer<z.ZodObject<typeof shapes.update>>;
++export type SourceUpdate = z.infer<z.ZodObject<typeof shapes.update>> & {
++  /** Null when a provider omitted the authored state and normalization only
++   * projected lifecycle from the notice's times. */
++  authored_status?: null;
++};
+ export type SourceIncident = Omit<z.infer<z.ZodObject<typeof shapes.incident>>, "incident_updates" | "status"> & { status: z.infer<z.ZodObject<typeof shapes.incident>>["status"] | "cancelled"; incident_updates: SourceUpdate[] };
+ export type SourceSubscriber = z.infer<z.ZodObject<typeof shapes.subscriber>>;
+ export type SourceTemplate = z.infer<z.ZodObject<typeof shapes.template>>;
+diff --git a/src/core/shared/imported-maintenance-update.ts b/src/core/shared/imported-maintenance-update.ts
+new file mode 100644
+index 0000000..bb2129e
+--- /dev/null
++++ b/src/core/shared/imported-maintenance-update.ts
+@@ -0,0 +1,14 @@
++const maintenanceStates: Record<string, string> = {
++  scheduled: "Scheduled", in_progress: "In progress", verifying: "In progress",
++  completed: "Completed", cancelled: "Cancelled",
++};
++
++/** Legacy imports retained only component states. Those cannot establish a
++ * message's authored lifecycle; neither can a window's present-day state. */
++export function importedMaintenanceUpdateLabel(update: { sourceStates?: string }): string {
++  if (!update.sourceStates) return "Imported update";
++  const source: unknown = JSON.parse(update.sourceStates);
++  if (!source || typeof source !== "object" || Array.isArray(source)) return "Imported update";
++  const status = (source as { status?: unknown }).status;
++  return typeof status === "string" && Object.hasOwn(maintenanceStates, status) ? maintenanceStates[status] : "Imported update";
++}

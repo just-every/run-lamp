@@ -1,0 +1,2 @@
+6b833653dcfd44f2bc57561cc705dde119fd9126 test: cover imported wording in shared chunked journals
+183cd7bdb42695590e5f886d8024f61199b318d0 fix: preserve imported updates and completed owner landing

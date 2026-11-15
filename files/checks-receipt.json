@@ -1,0 +1,44 @@
+{
+  "author": "Run Edit Run fleet",
+  "timestamp": "2026-11-15T09:46:33Z",
+  "repository": "just-every/run-lamp",
+  "head": "f495b89afd9f6832e4d4807018d91fa4c4670147",
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/validate-release.mjs",
+      "exit": 0,
+      "output": "release-validation.txt"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "output": "typecheck.txt"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": "contract-docs.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "output": "source-lock-generation.json"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "output": "source-check.json"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    }
+  ],
+  "full_local_suite": "not run per version-only scope",
+  "browser_proof": "not applicable; no UI edits",
+  "metadata_consistency": "passed; exact notes/prior archive, unchanged pin, no new migrations"
+}
