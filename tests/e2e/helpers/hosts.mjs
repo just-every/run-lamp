@@ -12,7 +12,9 @@ export const appOrigin = (port, fixtureVars = {}) => {
   // Wrangler secrets override config vars, including the fixture session key.
   for (const key of ['RER_DEV_ORIGIN', 'RER_DEV_KEY', 'RER_DEV_IDENTITY']) delete process.env[key];
   Object.assign(process.env, {AUTH_ORIGIN:origin,AUTH_LOCAL:'true',SESSION_SECRET:secret,SETUP_OPERATOR_EMAIL:'operator@example.test',CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV:'false',CLOUDFLARE_INCLUDE_PROCESS_ENV:'false'});
-  const configure = config => ({ ...config, vars: { ...config.vars, ...fixtureVars } });
+  // These native-session journeys exercise enabled mail with local delivery suppressed.
+  // Keep that choice explicit now that a fresh deployment defaults to email off.
+  const configure = config => ({ ...config, vars: { ...config.vars, MAIL_PROVIDER: "resend", ...fixtureVars } });
   if (fixtureConfig) fixtureConfig.write(configure);
   else fixtureConfig = isolatedWranglerConfig(configure);
   process.env.LAMP_WRANGLER_CONFIG = fixtureConfig.path;
