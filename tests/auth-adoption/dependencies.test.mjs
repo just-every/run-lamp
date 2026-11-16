@@ -425,7 +425,7 @@ test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RE
   globalThis.fetch = edgeFetch({ edge: edge.origin, hosts, fetch: originalFetch });
   try {
     const config = deploymentConfig({ LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: 'page.example.test', LAMP_RESOURCE_PREFIX: names.worker, LAMP_PAGE_NAME: 'Synthetic prefixed key rotation', LAMP_PAGE_TAGLINE: 'Installation key rotation', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#16794C',
-      SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_DKIM_SELECTOR: 'resend', MAIL_PROVIDER_API_KEY: `synthetic-${hex()}`,
+      SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_DKIM_SELECTOR: 'resend', MAIL_PROVIDER_API_KEY: `synthetic-${hex()}`,
       SESSION_SECRET: hex(), SUBSCRIBER_TOKEN_SECRET: hex(), WEBHOOK_SIGNING_SECRET: hex(), SETUP_TOKEN: hex(), INSTALLATION_KEY: oldKey }, environment);
     const ownership = deploymentOwnership(config, credentials);
     const created = await ownership.resource('d1', names.database, async () => (await ownership.api.list('/d1/database')).find(row => row.name === names.database),

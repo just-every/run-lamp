@@ -374,6 +374,9 @@ test('A deliberate mail-off deployment passes native configuration and Base pref
     }
     const defaultInput = { ...env }; delete defaultInput.MAIL_PROVIDER;
     assert.equal(deploymentConfig(defaultInput).mailProvider, 'none', 'a fresh deploy follows the declared mail-off default');
+    const defaultOperations = JSON.parse(await readFile('OPERATIONS.json', 'utf8'));
+    defaultOperations.requiredEnvironment = [...new Set([...defaultOperations.requiredEnvironment, ...mailEnvironmentNames(defaultInput)])];
+    assert.equal(dryRunInputFailure(defaultOperations, defaultInput), null, 'the default needs no mail credentials or explicit provider input');
     assert.equal((await productionMail(process.cwd(), declaration, defaultInput, commandAdapter.deployDeclaration, commandAdapter)).off, true);
     for (const selection of ['later', 'direct']) {
       const input = { ...env, MAIL_PROVIDER: selection };

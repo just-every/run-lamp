@@ -131,7 +131,8 @@ export function parseArgs(argv) {
 }
 
 export function mailEnvironmentNames(env = process.env) {
-  if (!env.MAIL_PROVIDER?.trim() || env.MAIL_PROVIDER.trim() === "none") return ["MAIL_PROVIDER"];
+  if (!env.MAIL_PROVIDER?.trim()) return [];
+  if (env.MAIL_PROVIDER.trim() === "none") return ["MAIL_PROVIDER"];
   return env.MAIL_PROVIDER?.trim() === "rer"
     ? ["MAIL_PROVIDER", "MAIL_FROM", "MAIL_RELAY_URL", "MAIL_API_KEY"]
     : ["MAIL_FROM_ADDRESS", "MAIL_DKIM_SELECTOR", "MAIL_PROVIDER_API_KEY"];
