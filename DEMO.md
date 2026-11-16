@@ -25,7 +25,9 @@ checklist reads complete.
 
 ## Base adoption
 
-Lamp pins the published npm package `@runeditrun/rer@0.2.38`.
+Lamp pins the published npm package `@runeditrun/rer` in `package.json` under
+`devDependencies`, locked in `pnpm-lock.yaml`. From the checkout, `rer --version`
+shows the installed CLI first and the checkout's pin second.
 Every vendored Base copy (`modules/demo`, operator-auth, `modules/mail`,
 import-kit, d1-transport, integrations, delivery producer, authoring tools and
 the `run-demo.yml`/`run-site.yml` workflows) is a verbatim copy from tag
@@ -65,3 +67,5 @@ test host is dispatched from a branch whose `deploy-demo.json` sets
 `page.demo.test.run-lamp.com`. The input `remove` runs
 `rer deploy --demo --remove --yes` for the selected host instead of deploying
 it.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

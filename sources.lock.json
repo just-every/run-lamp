@@ -528,7 +528,7 @@
       "executable": false
     },
     "DEMO.md": {
-      "sha256": "86566122e41f9c4cbbd4e4e76ab33dacad6067ee942f610f197a14907b96e306",
+      "sha256": "a2441cd2df232b091edc82718066ee13342507338e597f1bd4a83dd0f77054e4",
       "executable": false
     },
     "deploy-demo.json": {
@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "abcde329e6a978370489393efbed86ef0be46d97d85f795f142f92028506527f",
+      "sha256": "7daef7b748b9bb2d3bae393c01e4bbbaf9e871e6875db4fc47c1600ca115a0f9",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -632,7 +632,7 @@
       "executable": false
     },
     "docs/deployment-reference.md": {
-      "sha256": "a02aad82c37bf598d78f7371d59ba3dd79b3583aef52309371390641bc5aab31",
+      "sha256": "b1080b578e48801093aa3030c5c0c6ca89640813ea9c970b2f85e70adb88dcb4",
       "executable": false
     },
     "docs/domains.md": {
@@ -652,7 +652,7 @@
       "executable": false
     },
     "docs/install.md": {
-      "sha256": "456e5f04c4b0dcdd5a9bd4b15fd13f573dffb55fe395bf660771d15070f23cec",
+      "sha256": "a6e70c989aace2e0b4cfee17c3c202f722e05623e2abcac2b2da5512234b79a8",
       "executable": false
     },
     "docs/maintenance.md": {
@@ -664,7 +664,7 @@
       "executable": false
     },
     "docs/operators-and-sign-in.md": {
-      "sha256": "b870dcaecdb8c188e128f0dfe5c97320a04a4dea21f7fb358f9ba1d893567ce2",
+      "sha256": "3d3a7bb827b89db7776b255a24abdce9b02945a2007a290d1bc2705d4ba3d6ce",
       "executable": false
     },
     "docs/overview.md": {
@@ -712,7 +712,7 @@
       "executable": false
     },
     "HANDOVER.md": {
-      "sha256": "a9bd351f72292ccde23f299227a2eb25d6613e15a65b657af73b30620a514c67",
+      "sha256": "7ec4f80e562c2affef50eb4a955c094e2be90fb50ced03a7878c49899e792db5",
       "executable": false
     },
     "hosted-check-managed.json": {
@@ -2592,7 +2592,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "9601da2de82e092bdf48ff8243b1f1cde61e9e52c04a20c61d3d67573f892a17",
+      "sha256": "6cc17865ccc05fe4fe14e118f4f4e431c273d7582fbdd69ff6f603ab222b1404",
       "executable": false
     },
     "package.json": {
@@ -2624,7 +2624,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "1a20f137749ab26bb365e00f19345f2eb11df7d68141088a16f89448266b31c5",
+      "sha256": "07cd5175bf71048e094fc325b6a4049c6a47f3b284a2886b57af8677c6212a47",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -2920,7 +2920,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "9b4974d5c8b1286372bd4ae3472252280508276d869d41e38691144852f53299",
+      "sha256": "aac45c20e8f1b99fbcca49bf237a268bda9ddb4a36e22a48c9debfb25033fd52",
       "executable": false
     },
     "schema/business-field-inputs.mjs": {

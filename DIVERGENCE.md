@@ -1451,9 +1451,8 @@ provider when signed receipts are not configured; only signed provider events
 establish delivery or bounce. Subscriber erasure requires confirmation, and an
 erased destination offers no further removal action.
 
-The checkout pins rer 0.2.22. Its Base refresh removed Lamp's former 0.2.21
-production-auth dependency patch. Lamp's native deployment preflight continues
-to name its documented owner inputs; runtime bindings remain mapped to those
+The rer 0.2.22 adoption removed Lamp's former 0.2.21 production-auth dependency
+patch. Lamp's native deployment preflight continues to name its documented owner inputs; runtime bindings remain mapped to those
 inputs.
 
 ## Release 1.5.0 repairs — 16 October 2026
@@ -1858,3 +1857,5 @@ that omits it keeps a neutral label. Import remains retroactive and silent.
 A local owner who already confirmed first-run setup returns to the app, including
 through client navigation to a saved setup address. Only an uncompleted install
 shows Welcome. Existing clause judgments and release metadata are unchanged.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

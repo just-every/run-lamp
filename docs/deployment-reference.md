@@ -1,8 +1,11 @@
 # Deployment reference
 
-Use `rer deploy` from the project root. The checkout pins
-`@runeditrun/rer` 0.2.76; use `rer describe` and `rer deploy --help` for the installed
-command reference. [Deploy to Cloudflare](deploy.md) is the guided setup: it asks
+Use `rer deploy` from the project root. The exact `@runeditrun/rer` pin is in
+`package.json` under `devDependencies`, locked in `pnpm-lock.yaml`.
+`rer --version` shows the installed CLI first and the checkout's pin second;
+commands inside the checkout use that pin after dependencies are installed.
+Use `rer describe` and `rer deploy --help` there for its command reference.
+[Deploy to Cloudflare](deploy.md) is the guided setup: it asks
 for each input below in the order `rer deploy --dry-run` lists missing ones, and
 gives the validation, deploy and removal commands. `--env-file` values
 override the calling shell's exported values.
@@ -172,3 +175,5 @@ installation. Keep the account's shared `workers.dev` subdomain. After removal,
 check that the selected Workers and owned storage resources are gone.
 
 <!-- Run Edit Run fleet (Codex), 2026-11-15: conditional mail inputs and guarded mail-off sign-in. -->
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

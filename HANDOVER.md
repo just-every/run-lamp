@@ -157,7 +157,10 @@ establish source integrity; every product and installation obligation remains.
 Lamp's Base copies are byte-identical to Base at
 `052e5ea88c1e7b73cca10c4813524a5f72580af8` (`rer-v0.2.71`), apart from
 `SEED-COMMAND-CONTRACT.md` at `91c082876d6560150f3dc012ec57b92bd9895228`
-(`rer-v0.2.76`, the pinned `@runeditrun/rer`), and recorded in `base-copies.json`:
+(`rer-v0.2.76`), and recorded in `base-copies.json`. The current
+`@runeditrun/rer` pin is in `package.json` under `devDependencies`, locked in
+`pnpm-lock.yaml`; `rer --version` shows the installed CLI first and the
+checkout's pin second. The recorded copies include:
 onboarding (`scripts/base-onboarding/`), the rer CLI (`scripts/base-cli/`), mail
 (`modules/mail/`), the delivery producer (`scripts/delivery/base/`), owner
 migrations, operations and edition authoring. `pnpm run source:copies` checks the
@@ -225,7 +228,7 @@ are not interrupted.
 For hosted owner entry, use
 `rer signin --environment production --env-file "$HOME/.config/lamp/production.env"`
 from the deploying checkout with its original Cloudflare account. The pinned
-`@runeditrun/rer` 0.2.22 prints one single-use, 15-minute owner link without mail
+`@runeditrun/rer` prints one single-use, 15-minute owner link without mail
 when using the default `lamp-<environment>` prefix. Retain the deploying checkout
 and its records; the
 [operations reference](OPERATIONS.md#shared-operator-authentication) covers the
@@ -243,3 +246,5 @@ browser suites at 1440, 390 and 320 with Axe, the generated artifact, the rer
 journey from a clean copy) and CI on `main`. Not proven by the source: a hosted
 installation, DNS, live provider delivery or RER-managed delivery; apply
 `ACCEPTANCE.md` to your own installation.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

@@ -27,8 +27,11 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.
 For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. Run the
 remaining commands from the `run-lamp` folder.
 
-The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever
-rer you installed; `rer describe` reports the commands and tooling in use.
+The exact `@runeditrun/rer` pin is in `package.json` under `devDependencies`,
+locked in `pnpm-lock.yaml`. From this folder, `rer --version` prints the installed
+CLI first and the checkout's pin second. After dependencies are installed,
+every command here runs that pin; the installed CLI starts it. `rer describe`
+reports the commands and tooling in use.
 Choose a published tag from the [releases page](https://github.com/just-every/run-lamp/releases)
 and use that checkout's own instructions and pinned tooling. See
 [source and tooling versions](README.md#source-and-tooling-versions).
@@ -113,3 +116,5 @@ recovery](docs/backups-and-recovery.md) and the technical [Cloudflare archive
 reference](OPERATIONS.md#portable-backups-and-restore).
 
 Run `rer describe` for the installed command and flag reference.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

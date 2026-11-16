@@ -553,8 +553,10 @@ The minute cron sends an empty GET only on the heartbeat interval grid, after sc
 
 ## Shared operator authentication
 
-The checkout pins `@runeditrun/rer` 0.2.76. For hosted owner entry without email,
-run this from the deploying checkout using the original account and environment:
+The exact `@runeditrun/rer` pin is in `package.json` under `devDependencies`,
+locked in `pnpm-lock.yaml`. `rer --version` shows the installed CLI first and the
+checkout's pin second. For hosted owner entry without email, run this from the
+deploying checkout using the original account and environment:
 
 ```sh
 rer signin --environment production --env-file "$HOME/.config/lamp/production.env"
@@ -732,3 +734,5 @@ invitations remain authoritative throughout.
 ## Business self-host trust
 
 [Link a self-hosted Lamp to Business](docs/business-self-host.md) documents the ordinary setup/deploy trust file, native-owner verification door and existing-owner recovery. Standalone configuration leaves Business trust and its import door unconfigured.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

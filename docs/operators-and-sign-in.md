@@ -11,7 +11,9 @@ keeping the opaque audit attribution.
 
 ## Terminal entry for the hosted owner
 
-With the checkout's pinned `@runeditrun/rer` (0.2.76), the hosted owner can enter without receiving email.
+With the checkout's pinned `@runeditrun/rer`, the hosted owner can enter without
+receiving email. The pin is in `package.json` under `devDependencies`;
+`rer --version` shows the installed CLI first and the checkout's pin second.
 From the checkout that deployed Lamp, use the same Cloudflare account, deployment
 environment and [private input file](deploy.md#step-1-make-a-private-input-file):
 
@@ -186,3 +188,5 @@ The checkbox cannot perform that link. Give the [Auth linking procedure](../OPER
 to the person operating the two installations, then enable provider sign-in and
 check a real invited-operator sign-in as above. A restored installation needs
 fresh link approval and starts with provider sign-in disabled.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

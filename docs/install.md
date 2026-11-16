@@ -1,7 +1,8 @@
 # Install Lamp
 
-Lamp uses the checkout's pinned `@runeditrun/rer` 0.2.108 and can run locally or
-in your Cloudflare account. For the local path, run `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`, which installs rer, clones Lamp into `run-lamp`, installs dependencies, sets up the first owner and starts it. Git is required; rer brings Node and pnpm. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-lamp` does the same. To start it again later, run the same line from the same folder, or `cd run-lamp && rer dev` (after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found`; `"$HOME/.local/bin/rer" cli path` shows the line for your shell).
+Lamp uses the exact `@runeditrun/rer` pin in `package.json` under
+`devDependencies`, locked in `pnpm-lock.yaml`, and can run locally or in your
+Cloudflare account. For the local path, run `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`, which installs rer, clones Lamp into `run-lamp`, installs dependencies, sets up the first owner and starts it. Git is required; rer brings Node and pnpm. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-lamp` does the same. To start it again later, run the same line from the same folder, or `cd run-lamp && rer dev` (after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found`; `"$HOME/.local/bin/rer" cli path` shows the line for your shell).
 The [local guide](../RUN-LOCALLY.md) has the details. Local mail is silently
 suppressed and not retained; use a hosted installation to exercise real email delivery.
 
@@ -9,7 +10,8 @@ That start line clones `main`, Lamp's development source, not a release tag. Cho
 published tag from the [releases page](https://github.com/just-every/run-lamp/releases);
 see [source and tooling versions](../README.md#source-and-tooling-versions) to use
 that release instead. `rer --version` names the `rer` you installed first and the
-version the checkout pins second; inside the checkout, `rer` runs the pinned one.
+version the checkout pins second. After dependencies are installed, commands
+inside the checkout run that pin; the installed CLI starts it.
 
 ## Prepare a hosted installation
 
@@ -62,3 +64,5 @@ or DKIM header coverage. After deployment, verify a received message and the
 For SendGrid, the key Lamp uses to check your sender also needs authenticated-domain
 read permission (`whitelabel.read`). Lamp searches all matching domain pages and
 shows the provider's outstanding DNS records when authentication is incomplete.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->

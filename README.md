@@ -86,9 +86,10 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 
 The [Run page's](https://run-lamp.com/run) combined curl line above clones the
 default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
-development source and may hold changes not yet in a release; it pins
-`@runeditrun/rer` 0.2.108. `package.json` and `RELEASE.json` name this checkout's
-Lamp version. To use a published release, choose a tag from the
+development source and may hold changes not yet in a release. The exact
+`@runeditrun/rer` pin is in `package.json` under `devDependencies`, locked in
+`pnpm-lock.yaml`. `package.json` and `RELEASE.json` name this checkout's Lamp
+version. To use a published release, choose a tag from the
 [releases page](https://github.com/just-every/run-lamp/releases), then clone it
 and start it (replace `vX.Y.Z` with your chosen tag):
 
@@ -134,8 +135,9 @@ You can also export the input names in the calling shell. The
 [input reference](docs/deployment-reference.md) distinguishes required owner
 values from secrets that `rer` generates on a first deploy.
 
-Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.108. Before a
-command that builds or verifies the checkout,
+Use `rer` from the project root with the pin declared in `package.json`;
+`rer --version` shows the installed CLI first and the checkout's pin second.
+Before a command that builds or verifies the checkout,
 stop a running development server with `rer dev --stop` or a production preview
 with `rer preview --stop`.
 
@@ -182,3 +184,5 @@ for Cloudflare zone and DNS steps.
 Preserve applied migration history. Back up data and the source revision before
 an update, restore into an empty destination when needed, and verify the exact
 candidate before adoption.
+
+<!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
