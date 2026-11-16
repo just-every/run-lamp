@@ -1,0 +1,38 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "repository": "just-every/run-lamp",
+  "historicalRun": 41967897516,
+  "historicalHead": "db51225570c06767f403c1bb1634bc12e0575336",
+  "jobs": [
+    {
+      "id": 127049058814,
+      "name": "journeys (installer)",
+      "conclusion": "success"
+    },
+    {
+      "id": 127049059040,
+      "name": "journeys (readme)",
+      "conclusion": "success"
+    },
+    {
+      "id": 127049059169,
+      "name": "journeys (upgrade)",
+      "conclusion": "failure",
+      "failedStep": "Upgrade from the declared previous release tag",
+      "stepNumber": 9
+    }
+  ],
+  "logCommand": "gh run view 41967897516 --repo just-every/run-lamp --job 127049059169 --log-failed",
+  "logExit": 0,
+  "stdoutBytes": 0,
+  "stderrBytes": 0,
+  "logLimitation": "GitHub returned no failed-step text. No archive retry was made. Exact historical assertion text is unavailable.",
+  "existingCorrection": "ddb626c97e14a57c9121169a0276e5e9991f7ffa supplies affectedAudience and customerImpact for maintenance fixtures from 1.11 onward, preserving compatibility with older strict schemas. This is the only upgrade-harness difference from the failing head.",
+  "githubBudgetCalls": 4,
+  "sourceHead": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "productCommits": 0,
+  "productFilesChanged": 0,
+  "contractStatusChanges": [],
+  "publication": "Report-only evidence ref; no product branch push, no PR, no landing request."
+}

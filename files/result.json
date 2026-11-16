@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "summary": "Release journeys is already fixed on main: three subsequent scheduled runs passed, and the unchanged current head passes the full release upgrade and restore journey locally.",
+  "tests": "Node 22.20.0, pnpm 10.12.4: pnpm run verify:release --evidence /home/agent/rer-consolidation/work/maint/gr-mt-lamp-ci-6/upgrade-proof passed (1/1; zero failures/skips); pnpm typecheck passed. Exact-head Verify 43894123980 and Run site 43894124023 completed/success; latest scheduled Release journeys 43804964374 passed at ancestor 9a12aa722bb49eff2c9db2c266180c11a869220d.",
+  "security": true
+}

@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "6d415b7153376e4a44aaafed5d683bde16155dc9",
+      "bytes": 7637,
+      "path": "REPORT.md",
+      "sha256": "2bf180e4650cf579752e055334e97091538b8179f28e93a0e5f26c4563734758"
+    },
+    {
+      "blob": "3894c0e7f6a90afcec67aefdfef195b7f5c7dfae",
+      "bytes": 1483,
+      "path": "current-head-runs.json",
+      "sha256": "29b7797a8578f48aab3b4040692746983ac0fe8bf8a8708aad93ff6f6555c3c2"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "historical-failure.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "27d441455468661e509d1d6bff027000f68942fc",
+      "bytes": 1453,
+      "path": "investigation.json",
+      "sha256": "bcbcfafe2a5fe9a948a0755d193ba9e5deb35b3af561bc6b1390d51d34d33943"
+    },
+    {
+      "blob": "61b23e94e551ad80a6e6f3bfd1e5369fbcde7cff",
+      "bytes": 1152,
+      "path": "recent-release-runs.json",
+      "sha256": "fc9808ee560c7e6ebffa04ef201769a832ab01644b40ca64bacf7c3551fadbe1"
+    },
+    {
+      "blob": "083e31b0e05cfb17b2b164aec70875de589fdb3d",
+      "bytes": 679,
+      "path": "result.json",
+      "sha256": "956a5152feeca70fe1747f2e1ed78e6b869c6646c10d70b6137d404e9677ddb8"
+    },
+    {
+      "blob": "6b46a62a3f8b067ce24cdb5517405f78cfed81b8",
+      "bytes": 13516,
+      "path": "table-counts.json",
+      "sha256": "eae41a0084ea19f2e239029f2ca4a9ea78c5e379bd258b869723bf29d5975adb"
+    },
+    {
+      "blob": "5a66efca81561a19f0a1d9fd20a4e0e3d8c8ffc0",
+      "bytes": 104,
+      "path": "typecheck.log",
+      "sha256": "d8f78a0669646e18f9467cb49761759e1b769f786d391b92804ab251452b0637"
+    },
+    {
+      "blob": "101ee8681c95c18e194c060b725dfd87280165c8",
+      "bytes": 6824,
+      "path": "upgrade-receipt.json",
+      "sha256": "d4da03f4c1fe5ed5dffaffd4295e00f276830ee3c9fee8d9e38827ee01a03f15"
+    },
+    {
+      "blob": "ae0b5d92063a72b81fe4ec4a57d8634750774575",
+      "bytes": 6304,
+      "path": "upgrade.log",
+      "sha256": "1258627581a3520daac5ae74d3f6c3b770247a280dd71b71b3a74c1da170393f"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-lamp-ci-6",
+  "product_head": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "ref": "refs/heads/evidence/gr-mt-lamp-ci-6",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "gr-mt-lamp-ci-6"
+}
