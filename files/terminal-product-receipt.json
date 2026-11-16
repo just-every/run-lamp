@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16 UTC",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-20",
+  "head": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+  "state": "PUSHED",
+  "ready": false,
+  "reason": "Exact-SHA Verify is still in progress at the end of the ten-call GitHub budget.",
+  "pull_request": "https://github.com/just-every/run-lamp/pull/397",
+  "verify_run_ids": [
+    43967552249,
+    43967565782
+  ],
+  "rer_pin": "0.2.118",
+  "new_migrations": [],
+  "clause_status_changes": [],
+  "publication_scan": "Fleet Mac gate pending",
+  "tag_created": false,
+  "release_created": false
+}

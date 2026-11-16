@@ -2,8 +2,8 @@
   "schema": 1,
   "repository": "just-every/run-lamp",
   "head": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
-  "observed_at": "2026-11-16T22:18:26Z",
-  "api_calls_used": 6,
+  "observed_at": "2026-11-16T22:28:30Z",
+  "api_calls_used": 10,
   "api_call_budget": 10,
   "minimum_poll_seconds": 300,
   "runs": [
@@ -22,5 +22,7 @@
       "status": "in_progress"
     }
   ],
-  "status": "pending"
+  "status": "pending",
+  "ready_claimed": false,
+  "terminal_state": "PUSHED"
 }
