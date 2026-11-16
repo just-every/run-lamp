@@ -131,7 +131,7 @@ export function parseArgs(argv) {
 }
 
 export function mailEnvironmentNames(env = process.env) {
-  if (env.MAIL_PROVIDER?.trim() === "none") return ["MAIL_PROVIDER"];
+  if (!env.MAIL_PROVIDER?.trim() || env.MAIL_PROVIDER.trim() === "none") return ["MAIL_PROVIDER"];
   return env.MAIL_PROVIDER?.trim() === "rer"
     ? ["MAIL_PROVIDER", "MAIL_FROM", "MAIL_RELAY_URL", "MAIL_API_KEY"]
     : ["MAIL_FROM_ADDRESS", "MAIL_DKIM_SELECTOR", "MAIL_PROVIDER_API_KEY"];
@@ -168,7 +168,7 @@ export function deploymentConfig(env = process.env, environment = "production", 
   if (importDoor !== undefined && !['on','off'].includes(importDoor)) throw new Error('RER_IMPORT_DOOR must be on or off.');
   if (importDoor === 'on' && !ownerClaim) throw new Error('RER_IMPORT_DOOR=on requires app-bound owner claim trust.');
   const setupOperatorDisplayName = env.OWNER_DISPLAY_NAME === undefined ? "Owner" : text(env.OWNER_DISPLAY_NAME, "OWNER_DISPLAY_NAME", 120);
-  const mailProvider = optional(env.MAIL_PROVIDER) ?? "resend";
+  const mailProvider = optional(env.MAIL_PROVIDER) ?? "none";
   if (!["none", "rer", "resend", "sendgrid", "mailgun", "ses", "postmark"].includes(mailProvider)) throw new Error("MAIL_PROVIDER must be none, rer, resend, sendgrid, mailgun, ses or postmark.");
   if (mailProvider === "none") {
     const conflicts = ["MAIL_API_KEY", "SENDGRID_API_KEY", "RESEND_API_KEY", "MAIL_PROVIDER_API_KEY", "MAIL_ACCOUNT_ID", "MAIL_RELAY_URL", "MAIL_SECONDARY_PROVIDER", "MAIL_SECONDARY_API_KEY", "POSTMARK_ACCOUNT_API_KEY"].filter(name => optional(env[name]));

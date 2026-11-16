@@ -3932,7 +3932,7 @@
       "executable": false
     },
     "scripts/ops-config.mjs": {
-      "sha256": "071deda374f8fb525ce549bb683d3a3c234e558c8959467bb7c70f5a0d4416b2",
+      "sha256": "9b5a5aa2bba164fb1b4e94f126466a0085d579f2c95db5af0dd80db10e1dbdb5",
       "executable": false
     },
     "scripts/owner-claim-config.mjs": {
@@ -8580,7 +8580,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "40572ad1745063314395a2fd2a2fad80c95e0ad4b9027db426ccb5f810bb3961",
+      "sha256": "0b6667ad3e9489880f578acc84a31c5921b12a622dea0006f7bd416cb80348bd",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

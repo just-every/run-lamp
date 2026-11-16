@@ -372,7 +372,10 @@ test('A deliberate mail-off deployment passes native configuration and Base pref
     for (const name of ['MAIL_API_KEY','MAIL_PROVIDER_API_KEY','MAIL_RELAY_URL','MAIL_SECONDARY_API_KEY','RESEND_API_KEY','SENDGRID_API_KEY','MAIL_ACCOUNT_ID']) {
       assert.throws(() => deploymentConfig({ ...env, [name]: 'synthetic-lamp-credential' }), /conflicts/);
     }
-    for (const selection of [undefined, 'later', 'direct']) {
+    const defaultInput = { ...env }; delete defaultInput.MAIL_PROVIDER;
+    assert.equal(deploymentConfig(defaultInput).mailProvider, 'none', 'a fresh deploy follows the declared mail-off default');
+    assert.equal((await productionMail(process.cwd(), declaration, defaultInput, commandAdapter.deployDeclaration, commandAdapter)).off, true);
+    for (const selection of ['later', 'direct']) {
       const input = { ...env, MAIL_PROVIDER: selection };
       assert.throws(() => deploymentConfig(input));
       assert.equal((await productionMail(process.cwd(), declaration, input, commandAdapter.deployDeclaration, commandAdapter)).off, false);
