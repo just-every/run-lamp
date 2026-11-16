@@ -1,0 +1,9 @@
+ CHANGELOG.md                        |    6 +
+ RELEASE.json                        |   10 +-
+ docs/accessibility/vpat.md          |    2 +-
+ package.json                        |    2 +-
+ release-history/1.11.19.CONTRACT.md | 3438 +++++++++++++++++++++++++++++++++++
+ release-history/1.11.19.json        |   11 +
+ seed.json                           |    2 +-
+ sources.lock.json                   |   18 +-
+ 8 files changed, 3476 insertions(+), 13 deletions(-)

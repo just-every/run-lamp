@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "head": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+  "observed_at": "2026-11-16T22:18:26Z",
+  "api_calls_used": 6,
+  "api_call_budget": 10,
+  "minimum_poll_seconds": 300,
+  "runs": [
+    {
+      "id": 43967552249,
+      "conclusion": null,
+      "head_sha": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43967552249",
+      "status": "in_progress"
+    },
+    {
+      "id": 43967565782,
+      "conclusion": null,
+      "head_sha": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/43967565782",
+      "status": "in_progress"
+    }
+  ],
+  "status": "pending"
+}

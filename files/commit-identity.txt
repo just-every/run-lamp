@@ -1,0 +1,11 @@
+commit 626388fca54b18499b35b9e9c5f9cbcb51b4125b
+Author: Run Edit Run fleet <fleet@runeditrun.com>
+Commit: Run Edit Run fleet <fleet@runeditrun.com>
+
+    Set Lamp 1.11.20 versions and buyer upgrade notes
+
+commit 43df283d3f14d150d2ce3fe7d9f6592dd18b393c
+Author: Run Edit Run fleet <fleet@runeditrun.com>
+Commit: Run Edit Run fleet <fleet@runeditrun.com>
+
+    Prepare Lamp 1.11.20 release metadata

@@ -1,0 +1,3 @@
+626388fca54b18499b35b9e9c5f9cbcb51b4125b	refs/heads/cloud/sd-lamp-release-1-11-20
+fa751697bd6ea6301dad830dd9f3483da57a1c98	refs/heads/main
+c7564be953deee8815dd0519e9dab0d06552282d	refs/tags/v1.11.19

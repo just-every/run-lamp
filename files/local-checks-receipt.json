@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16 UTC",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-20",
+  "head": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+  "pull_request": "https://github.com/just-every/run-lamp/pull/397",
+  "checks": [
+    {
+      "name": "Frozen dependency installation",
+      "exit_code": 0,
+      "evidence": "dependencies-final.log",
+      "sha256": "fc481db9e3adff2ed8cb350e01e23e19a51530943ab8d0c4c155cf579285e7ed"
+    },
+    {
+      "name": "Typecheck",
+      "exit_code": 0,
+      "evidence": "typecheck.log",
+      "sha256": "2972b0fb3ac8e392e1b3cb68250193674f428d139d41131346427133b969a1af"
+    },
+    {
+      "name": "Release schema, migration inventory and predecessor chain",
+      "exit_code": 0,
+      "evidence": "release-validation.log",
+      "sha256": "19296717981540b7cd9582caa1ed6669ece9d279cb1fae4b763496c29b134345"
+    },
+    {
+      "name": "Generated contract documents",
+      "exit_code": 0,
+      "evidence": "contract-docs-check.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "Regenerated source lock",
+      "exit_code": 0,
+      "evidence": "source-lock-check.json",
+      "sha256": "82512e76430e309ab38f9263f39d4dfe7a3e9477db63b41ea69a5652ead9255d"
+    }
+  ],
+  "browser_proof": "Not applicable: release metadata only; no UI changes.",
+  "publication_scan": "Not run in cloud: the fleet performs the Mac-only publication scan before landing.",
+  "clauses_changed": [],
+  "working_tree_clean": true
+}

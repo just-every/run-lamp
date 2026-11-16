@@ -1,0 +1,14 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16 UTC",
+  "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+  "exit_code": 0,
+  "observed": [
+    "Database update complete",
+    "Owner and page are ready",
+    "RER_SETUP_READY"
+  ],
+  "private_runtime_outputs_excluded": true,
+  "browser_started": false,
+  "local_servers_remaining": false
+}

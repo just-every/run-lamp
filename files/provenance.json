@@ -1,0 +1,65 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16 UTC",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-20",
+  "head": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+  "main": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "previous_tag": "v1.11.19",
+  "previous_tag_commit": "761f3d186e8fa73ea9aa8b61bcf9ebe8013384f6",
+  "commits_since_previous_release": [
+    "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+    "0315c508e0dfba37e7d5799fee11cd3aa79fb0b3",
+    "9a12aa722bb49eff2c9db2c266180c11a869220d"
+  ],
+  "changed_files_since_previous_release": [
+    "DEMO.md",
+    "DIVERGENCE.md",
+    "HANDOVER.md",
+    "OPERATIONS.md",
+    "README.md",
+    "RUN-LOCALLY.md",
+    "docs/deployment-reference.md",
+    "docs/install.md",
+    "docs/operators-and-sign-in.md",
+    "sources.lock.json",
+    "tests/auth-adoption/sign-in-providers.test.mjs",
+    "tests/e2e/rer-mail.test.mjs"
+  ],
+  "migrations_added": [],
+  "rer_pin": "0.2.118",
+  "rer_lock_excerpt": [
+    "",
+    "        specifier: 0.2.118",
+    "        version: 0.2.118"
+  ],
+  "working_tree_clean": true,
+  "retained_release_snapshots": "byte-identical to v1.11.19",
+  "contract_counts_before_after": [
+    [
+      "| Core | 60 | 129 | 50 | 239 |",
+      "| Agent surface | 0 | 0 | 5 | 5 |",
+      "| Later | 0 | 0 | 0 | 0 |",
+      "| Full target | 60 | 129 | 55 | 244 |"
+    ],
+    [
+      "| Core | 60 | 129 | 50 | 239 |",
+      "| Agent surface | 0 | 0 | 5 | 5 |",
+      "| Later | 0 | 0 | 0 | 0 |",
+      "| Full target | 60 | 129 | 55 | 244 |"
+    ]
+  ],
+  "clause_status_changes": [],
+  "migration_count_before": 80,
+  "migration_count_after": 80,
+  "product_files_changed": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.19.CONTRACT.md",
+    "release-history/1.11.19.json",
+    "seed.json",
+    "sources.lock.json"
+  ]
+}
