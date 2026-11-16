@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.20
+
+**The install and deployment guides now explain which rer version the checkout runs.** They point to the exact pin in `package.json` and `pnpm-lock.yaml`, and explain that `rer --version` shows the installed CLI first and the checkout's pin second. After dependencies are installed, commands run the checkout's pin. Lamp keeps rer 0.2.118.
+
+Upgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.20`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+
 ## 1.11.19
 
 **Lamp can run with email deliberately turned off.** Hosted installations can select `MAIL_PROVIDER=none` without a sender, sending key or DKIM inputs. A missing or deferred selection does not turn email off, and conflicting sending credentials are refused. Enabled mail providers retain their checks.
