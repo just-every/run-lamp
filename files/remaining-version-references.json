@@ -1,0 +1,337 @@
+[
+  {
+    "path": "CHANGELOG.md",
+    "line": 9,
+    "text": "- **The checkout uses rer 0.2.118.** This release includes Lamp\u2019s native setup, deployment, management and runtime adoption of its mail-off support."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 20,
+    "text": "Upgrading from 1.11.17: back up data and your source changes first, update the checkout to `v1.11.18`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Keep the backup, exercise a restored copy and check your installation\u2019s imported incident and maintenance history and returning-owner navigation. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17 and keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 33,
+    "text": "Upgrading from 1.11.16: back up data and your source changes first, update the checkout to `v1.11.17`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies one new migration, `0081_scheduled_work_indexes.sql`, after 0080 and before starting the updated Worker. It adds scheduled-work and public-history indexes, derived reminder work tables and triggers, subscriber capacity counts and restore-initialization tracking. Existing subscriber, incident, update and reminder history remains the source record; the first scheduled-work use rebuilds derived reminder work when needed after a restore. Keep the pre-upgrade backup and check your installation's scheduled notifications, reminders, public history and import workflows after updating. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including the two migrations introduced in 1.11.16 and keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 42,
+    "text": "- **The build uses Vite 8.2.4.** The checkout keeps rer 0.2.108."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 44,
+    "text": "Upgrading from 1.11.15: back up data and your source changes first, update the checkout to `v1.11.16`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies two migrations in order: `0079_subscriber_directory_order.sql` adds the subscriber directory order index; `0080_incident_list_paging.sql` adds incident-list indexes and backfills lifecycle totals maintained by database triggers. The migrations retain existing subscriber and incident records and incident update history. Keep the backup before deployment and check your installation's workflows after updating. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 56,
+    "text": "Upgrading from 1.11.14: back up data and your source changes first, update the checkout to `v1.11.15`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 68,
+    "text": "Upgrading from 1.11.13: back up data and your source changes first, update the checkout to `v1.11.14`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 76,
+    "text": "Upgrading from 1.11.12: back up data and your source changes first, update the checkout to `v1.11.13`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 87,
+    "text": "Upgrading from 1.11.11: back up data and your source changes first, update the checkout to `v1.11.12`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.108. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 99,
+    "text": "- **The pinned `rer` is 0.2.108.** `pnpm install --frozen-lockfile` installs it."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 103,
+    "text": "Upgrading from 1.11.10: back up data and your source changes first, update the checkout to `v1.11.11`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout now keeps rer 0.2.108 (the 1.11.10 text said 0.2.107). Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 109,
+    "text": "- **The pinned `rer` is 0.2.107.** `pnpm install --frozen-lockfile` installs it."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 111,
+    "text": "Upgrading from 1.11.9: back up data and your source changes first, update the checkout to `v1.11.10`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout now keeps rer 0.2.107 (the 1.11.9 text said 0.2.106). Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 121,
+    "text": "- **The pinned `rer` is 0.2.106**, which carries these deploy and sign-in fixes."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 123,
+    "text": "Upgrading from 1.11.8: back up data and your source changes first, update the checkout to `v1.11.9`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout now keeps rer 0.2.106 (the 1.11.8 text said 0.2.98); `pnpm install --frozen-lockfile` installs it. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 133,
+    "text": "Upgrading from 1.11.7: back up data and your source changes first, update the checkout to `v1.11.8`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 141,
+    "text": "Upgrading from 1.11.6: back up data and your source changes first, update the checkout to `v1.11.7`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 149,
+    "text": "Upgrading from 1.11.5: back up data and your source changes first, update the checkout to `v1.11.6`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 157,
+    "text": "Upgrading from 1.11.4: back up data and your source changes first, update the checkout to `v1.11.5`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 172,
+    "text": "Upgrading from 1.11.3: back up data and your source changes first, update the checkout to `v1.11.4`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies two migrations for import audit history and vendor followers. The checkout keeps rer 0.2.98. Earlier installations also follow the retained upgrade notes below, including keeping `INSTALLATION_KEY` with their private secrets."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 190,
+    "text": "Upgrading from 1.11.2: back up first, update the checkout to `v1.11.3`, run `pnpm install --frozen-lockfile` (the checkout now pins rer 0.2.98) and `rer deploy` with the same environment and input file. The deploy creates `INSTALLATION_KEY` if your deployment has none and applies one database migration, which adds two columns for the sealed keys and leaves your data as it is. An installation on 1.11.1 or earlier also follows the notes below: their migrations and steps still apply."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 201,
+    "text": "Upgrading from 1.11.1: back up first, update the checkout to `v1.11.2`, run `pnpm install --frozen-lockfile` (rer 0.2.76, unchanged) and `rer deploy` with the same environment and input file. There is no migration and no configuration change. An installation on 1.10.0 also follows the 1.11.1 notes below: their migrations and steps still apply."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 265,
+    "text": "Back up first, as the update guide describes: for a hosted installation run `node scripts/export.mjs --remote` (or `rer export --target remote --output DIR`), and download your page data from Settings \u2192 Export and restore. Update the checkout to `v1.11.1`, then run `rer install` and `rer deploy` with the same environment and input file. Lamp still pins rer 0.2.76 with no local patch. Migrations 0043 through 0075 (32 in all; there is no 0051) apply in order on deploy; `release-history/1.11.0.json` and `RELEASE.json` give each one's steps, and neither release is marked breaking. New choices start where Lamp was: maintenance auto-start and auto-complete on, Lamp's webhook format, and secondary mail, operator alerts in team channels, social posting and text messages off. Existing operators keep their Owner or Admin access, and existing incidents take the operator who opened them as their communication owner."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 315,
+    "text": "**Hosted backups with `rer export`.** `rer export --target remote --output DIR` backs up the hosted installation this checkout deployed as `production`: it runs Lamp's hosted backup, `node scripts/export.mjs --remote --environment production --out DIR`, with the Cloudflare credentials in your shell (`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`), and names the folder and exit status when it finishes. rer 0.2.72 and earlier refused it and printed `wrangler d1 export` commands instead. The folder is the same hosted archive as before, restored with `node scripts/import.mjs` ([backups and recovery](docs/backups-and-recovery.md))."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 317,
+    "text": "**Business moves you can check.** Lamp's import door is now Base's door exactly as rer 0.2.71 ships it; the local change that undid Business imports while keeping your later edits is gone, because Base's door now does that itself. Business can archive an uploaded source and check that a restore of it would read, with no write to Lamp; a source uploaded again after an undo plans afresh. Deleting a subscriber, or its expiry, also withdraws the Business archives that name them. `POST /api/rer/cutover-status` answers Business's signed read of a move (counts and ids only: old addresses, components, incidents and maintenance, held and pending subscribers and invitations sent since a time, records created in Lamp since then, and each alert source's receipts). It is refused without Run Edit Run trust or with a revoked key."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 321,
+    "text": "**rer 0.2.76.** Lamp pins rer 0.2.76 with no local patch to rer. Lamp's archive policy moves, unchanged apart from leaving out the sealed PagerDuty key, into `scripts/installer/archive-policy.mjs`."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 325,
+    "text": "Upgrading from 1.9.0: back up first (`node scripts/export.mjs --remote`, or `rer export --target remote --output DIR`, for a hosted installation, and Settings \u2192 Export page data), update the checkout to `v1.10.0`, run `pnpm install --frozen-lockfile` (rer 0.2.76) and `rer deploy` with the same environment and input file. Two additive migrations apply on deploy and no input changes; the deploy keeps your signing secrets, subscriber links and operator sessions. If your fork adapted the import door, take Base's door at rer-v0.2.71 and re-apply only your own changes; if it changed Lamp's archive policy, carry that change into `scripts/installer/archive-policy.mjs`."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 337,
+    "text": "**Managed installations build again.** Lamp 1.8.0 and 1.8.1 patched their pinned rer (0.2.63) so the sign-in page offered your identity providers beside the owner entry. Run Edit Run's trusted build checks that `pnpm-lock.yaml` locks the plain rer release (`rer check --profile first-party`, SC-13) and refused the patched lock, so a new Managed installation of 1.8.1 could not be built. Lamp 1.9.0 pins rer 0.2.69, which offers those sign-in choices itself, and carries no rer patch: the `patches/` directory and the `patchedDependencies` entry are gone and the trusted build's checks pass. The sign-in page looks and works as before."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 345,
+    "text": "Upgrading from 1.8.1: back up first (`node scripts/export.mjs --remote` for a hosted installation, and Settings \u2192 Export page data), update the checkout to `v1.9.0`, run `pnpm install --frozen-lockfile` (rer 0.2.69) and `rer deploy` with the same environment and input file. No migration applies and no input changes; the deploy keeps your signing secrets, subscriber links and operator sessions. If your fork kept its own copy of the 1.8.x rer patch, drop it."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 372,
+    "text": "Upgrading from 1.8.0: back up first, update the checkout to `v1.8.1`, run `pnpm install --frozen-lockfile` (rer 0.2.63, unchanged) and `rer deploy` with the same environment and input file. One migration applies:"
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 412,
+    "text": "Upgrading from 1.7.x: back up first, with `node scripts/export.mjs --remote` for a hosted installation and Settings \u2192 Export page data. Then update the checkout to `v1.8.0`, run `pnpm install --frozen-lockfile` (rer 0.2.63) and `rer deploy` with the same environment and input file. These migrations apply in order and keep existing data:"
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 430,
+    "text": "Known issues: with rer 0.2.63, a `rer deploy` run without a terminal stops with \"Deploy needs your owner name\" the first time an existing installation redeploys; pass `--owner-name \"Your name\"` (a terminal asks for it). A drafted post-incident report keeps machine timestamps and `[U1]`-style citations in its summary and timeline until you edit them, and they are published as written. Wrangler may print \"Network connection lost\" during a hosted export or restore that still completes; check the final \"Exported\" or \"Imported\" line."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 444,
+    "text": "- The docs name the pinned `@runeditrun/rer` 0.2.42."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 449,
+    "text": "- Pins `@runeditrun/rer` 0.2.38: generated deployment secrets are kept in `.rer/deploy/<environment>.secrets.env` and reused, and deploy hooks build without local settings files."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 451,
+    "text": "- This checkout pins rer **0.2.42**."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 454,
+    "text": "Upgrading: back up data and owner source. This release adds no migration. Run `pnpm install --frozen-lockfile` for the rer 0.2.42 pin. Sorry subscribers still held for cutover more than 30 days after their reviewed dry run are deleted with their addresses by the first scheduled run after the update: release or undo them first if you mean to keep them. Hosted backups and restores now use `node scripts/export.mjs --remote` and `node scripts/setup.mjs --restore-from` with `--env-file` (docs/backups-and-recovery.md). Installations on 1.5.1 or earlier follow the earlier notes below first."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 464,
+    "text": "- The Run page shows Base's standard two lines (rer 0.2.35 and later): install `rer`, then `rer dev just-every/run-lamp`."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 474,
+    "text": "- This checkout pins rer **0.2.36**."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 477,
+    "text": "Upgrading: back up data and owner source, then apply `0025_sorry_import_release.sql` and `0026_managed_mail_threads.sql` before starting this revision; both are additive. Run `pnpm install --frozen-lockfile` for the rer 0.2.36 pin. Redeploys keep the secrets behind existing links and sessions; use `LAMP_REPLACE_SECRETS` only to rotate one on purpose. Installations on 1.5.0 or earlier follow the earlier notes below first."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 482,
+    "text": "- This checkout pins rer **0.2.24**, with every Base copy refreshed from that release and the demo imported from the package. Lamp's SendGrid and Resend mail paths are unchanged."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 497,
+    "text": "- This checkout pins rer **0.2.22**, with all Base copies refreshed from that release; the former local production-auth diagnostic patch is no longer carried. The public installer may install a newer CLI; the checkout's pin selects its runtime. Local setup repairs obsolete `AUTH_ORIGIN` values when moving ports."
+  },
+  {
+    "path": "CHANGELOG.md",
+    "line": 516,
+    "text": "- Dependency updates address the reviewed security advisories: Playwright and its test package move to [1.55.1](https://github.com/microsoft/playwright/releases/tag/v1.55.1); the lock and overrides update transitive Sharp to [0.35.5](https://github.com/lovell/sharp/releases/tag/v0.35.5), including its native libraries, Undici to [7.29.1](https://github.com/nodejs/undici/releases/tag/v7.29.1) and source-map-js to [1.2.2](https://github.com/7rulnik/source-map-js/releases/tag/v1.2.2). The RER CLI is also pinned to 0.2.1."
+  },
+  {
+    "path": "DEMO.md",
+    "line": 34,
+    "text": "`rer-v0.2.36` (commit `d320c14`), recorded together in `base-copies.json`; the"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 5,
+    "text": "A deployment can explicitly choose MAIL_PROVIDER=none on rer 0.2.118 without"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1433,
+    "text": "documented installation-secret sign-in command because rer 0.2.20 derives the"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1454,
+    "text": "The rer 0.2.22 adoption removed Lamp's former 0.2.21 production-auth dependency"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1460,
+    "text": "The former rer 0.2.21 dependency patch at"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1461,
+    "text": "`patches/@runeditrun__rer@0.2.21.patch` changed Base's"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1463,
+    "text": "declaration's environment names. The rer 0.2.22 adoption"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1542,
+    "text": "Since rer 0.2.61 the door is Base's integrated door, refreshed with"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1543,
+    "text": "`refresh-base`/`record-base` and recorded in `base-copies.json`. Until rer 0.2.71"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1545,
+    "text": "passed a `reversalPolicy` into each door job. Since rer 0.2.71 (Base #298) the"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1571,
+    "text": "the door does since rer 0.2.71 (earlier clients' `attempt` field is accepted and"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1601,
+    "text": "sign-in renderers offer these choices from rer 0.2.69; Lamp carries no rer patch."
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1620,
+    "text": "The package pin moves to rer 0.2.55 with the existing configured-provider"
+  },
+  {
+    "path": "DIVERGENCE.md",
+    "line": 1635,
+    "text": "The package pin moves to rer 0.2.57 with the configured-provider sign-in patch retained."
+  },
+  {
+    "path": "HANDOVER.md",
+    "line": 158,
+    "text": "`052e5ea88c1e7b73cca10c4813524a5f72580af8` (`rer-v0.2.71`), apart from"
+  },
+  {
+    "path": "HANDOVER.md",
+    "line": 160,
+    "text": "(`rer-v0.2.76`), and recorded in `base-copies.json`. The current"
+  },
+  {
+    "path": "OPERATIONS.md",
+    "line": 48,
+    "text": "rer 0.2.118. No sender, sending key or DKIM input is then required. Sending"
+  },
+  {
+    "path": "OPERATIONS.md",
+    "line": 173,
+    "text": "without any provider request. Sign in at the operator address. On rer 0.2.118,"
+  },
+  {
+    "path": "modules/import-kit/README.md",
+    "line": 528,
+    "text": "`@runeditrun/rer/modules/import-kit/d1` in a supplying rer release after 0.2.77"
+  },
+  {
+    "path": "modules/import-kit/README.md",
+    "line": 552,
+    "text": "Historically, rer 0.2.77 lacked these APIs. Adoption through the package requires"
+  },
+  {
+    "path": "modules/import-kit/src/d1/README.md",
+    "line": 21,
+    "text": "after 0.2.77 in TypeScript Workers with `nodejs_compat` (or `src/d1/index.ts`"
+  },
+  {
+    "path": "modules/import-kit/src/d1/README.md",
+    "line": 989,
+    "text": "Historically, rer 0.2.77 lacked this API. A seed adopts a reviewed vendored Base"
+  },
+  {
+    "path": "scripts/edition-authoring/README.md",
+    "line": 53,
+    "text": "For release adoption, a copied CLI predating 0.2.82 must use the updated"
+  },
+  {
+    "path": "scripts/edition-authoring/README.md",
+    "line": 470,
+    "text": "0.2.82 recovery](../ADOPTING.md)."
+  },
+  {
+    "path": "scripts/edition-authoring/README.md",
+    "line": 484,
+    "text": "FULL_40_HEX_COMMIT --base /absolute/base-checkout` to adopt 0.2.82 when the seed's"
+  }
+]

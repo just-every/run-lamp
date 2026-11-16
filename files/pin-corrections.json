@@ -1,0 +1,53 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "corrections": [
+    {
+      "path": "DEMO.md",
+      "old_statement": "Lamp pins the published npm package `@runeditrun/rer@0.2.38`."
+    },
+    {
+      "path": "DIVERGENCE.md",
+      "old_statement": "The checkout pins rer 0.2.22. Its Base refresh removed Lamp's former 0.2.21"
+    },
+    {
+      "path": "HANDOVER.md",
+      "old_statement": "(`rer-v0.2.76`, the pinned `@runeditrun/rer`), and recorded in `base-copies.json`:"
+    },
+    {
+      "path": "HANDOVER.md",
+      "old_statement": "`@runeditrun/rer` 0.2.22 prints one single-use, 15-minute owner link without mail"
+    },
+    {
+      "path": "OPERATIONS.md",
+      "old_statement": "The checkout pins `@runeditrun/rer` 0.2.76. For hosted owner entry without email,"
+    },
+    {
+      "path": "README.md",
+      "old_statement": "`@runeditrun/rer` 0.2.108. `package.json` and `RELEASE.json` name this checkout's"
+    },
+    {
+      "path": "README.md",
+      "old_statement": "Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.108. Before a"
+    },
+    {
+      "path": "RUN-LOCALLY.md",
+      "old_statement": "The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever"
+    },
+    {
+      "path": "docs/deployment-reference.md",
+      "old_statement": "`@runeditrun/rer` 0.2.76; use `rer describe` and `rer deploy --help` for the installed"
+    },
+    {
+      "path": "docs/install.md",
+      "old_statement": "Lamp uses the checkout's pinned `@runeditrun/rer` 0.2.108 and can run locally or"
+    },
+    {
+      "path": "docs/operators-and-sign-in.md",
+      "old_statement": "With the checkout's pinned `@runeditrun/rer` (0.2.76), the hosted owner can enter without receiving email."
+    }
+  ],
+  "before_count": 11,
+  "after_stale_current_pin_count": 0,
+  "note": "Retained historical release/adoption and compatibility statements are inventoried separately; no pin assertion test was introduced."
+}

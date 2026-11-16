@@ -1,0 +1,91 @@
+{
+  "main_head": "0315c508e0dfba37e7d5799fee11cd3aa79fb0b3",
+  "declared_pin": "0.2.118",
+  "guide_statements": [
+    {
+      "path": "README.md",
+      "line": 90,
+      "text": "`@runeditrun/rer` 0.2.108. `package.json` and `RELEASE.json` name this checkout's"
+    },
+    {
+      "path": "README.md",
+      "line": 103,
+      "text": "this checkout pins on its second. Inside the checkout every `rer` command runs the"
+    },
+    {
+      "path": "README.md",
+      "line": 104,
+      "text": "pinned version once the checkout's dependencies are installed (`rer dev` and"
+    },
+    {
+      "path": "README.md",
+      "line": 107,
+      "text": "Node 22.20.0 and pnpm 10.12.4 are pinned. `rer` downloads and uses that Node"
+    },
+    {
+      "path": "README.md",
+      "line": 137,
+      "text": "Use `rer` from the project root; the checkout pins `@runeditrun/rer` 0.2.108. Before a"
+    },
+    {
+      "path": "RUN-LOCALLY.md",
+      "line": 30,
+      "text": "The checkout pins `@runeditrun/rer` 0.2.108, which every command here runs whatever"
+    },
+    {
+      "path": "docs/install.md",
+      "line": 3,
+      "text": "Lamp uses the checkout's pinned `@runeditrun/rer` 0.2.108 and can run locally or"
+    },
+    {
+      "path": "docs/install.md",
+      "line": 12,
+      "text": "version the checkout pins second; inside the checkout, `rer` runs the pinned one."
+    },
+    {
+      "path": "docs/deployment-reference.md",
+      "line": 4,
+      "text": "`@runeditrun/rer` 0.2.76; use `rer describe` and `rer deploy --help` for the installed"
+    },
+    {
+      "path": "docs/operators-and-sign-in.md",
+      "line": 14,
+      "text": "With the checkout's pinned `@runeditrun/rer` (0.2.76), the hosted owner can enter without receiving email."
+    },
+    {
+      "path": "OPERATIONS.md",
+      "line": 530,
+      "text": "With a custom `LAMP_RESOURCE_PREFIX`, rer refuses `rer deploy --rotate-secret INSTALLATION_KEY` before it changes the key, its private custody or the Worker: the pinned rer rotates the installation key only on the Worker it names `lamp-<environment>`, and a rotation it could not finish there would stop every later deploy."
+    },
+    {
+      "path": "OPERATIONS.md",
+      "line": 556,
+      "text": "The checkout pins `@runeditrun/rer` 0.2.76. For hosted owner entry without email,"
+    },
+    {
+      "path": "OPERATIONS.md",
+      "line": 570,
+      "text": "grant. The pinned `rer signin` targets the default `lamp-<environment>` prefix; for a"
+    },
+    {
+      "path": "DEMO.md",
+      "line": 28,
+      "text": "Lamp pins the published npm package `@runeditrun/rer@0.2.38`."
+    },
+    {
+      "path": "HANDOVER.md",
+      "line": 160,
+      "text": "(`rer-v0.2.76`, the pinned `@runeditrun/rer`), and recorded in `base-copies.json`:"
+    },
+    {
+      "path": "HANDOVER.md",
+      "line": 228,
+      "text": "`@runeditrun/rer` 0.2.22 prints one single-use, 15-minute owner link without mail"
+    },
+    {
+      "path": "DIVERGENCE.md",
+      "line": 1454,
+      "text": "The checkout pins rer 0.2.22. Its Base refresh removed Lamp's former 0.2.21"
+    }
+  ]
+}

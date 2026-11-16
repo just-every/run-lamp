@@ -1,0 +1,17 @@
+{
+  "head": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "diff_credential_shape_check": "pass",
+  "identity_and_trailer_check": "pass",
+  "scope": [
+    "DEMO.md",
+    "DIVERGENCE.md",
+    "HANDOVER.md",
+    "OPERATIONS.md",
+    "README.md",
+    "RUN-LOCALLY.md",
+    "docs/deployment-reference.md",
+    "docs/install.md",
+    "docs/operators-and-sign-in.md",
+    "sources.lock.json"
+  ]
+}

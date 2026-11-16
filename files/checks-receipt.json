@@ -1,0 +1,56 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "head": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "notes": "Ran through cloud_run; private installer log excluded from public packet."
+    },
+    {
+      "command": "npx -y @runeditrun/rer build --site",
+      "exit": 0,
+      "log": "docs-build.log",
+      "notes": "Includes build-time Markdown links and anchor validation.",
+      "log_sha256": "2280bac9e6e421521fb47331d9f08faf80b40ec182af888946d99812cd4dc04b"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-concurrency=1 --test-name-pattern='DOCS-001 PAGE-020' tests/lamp-site/browser.test.mjs",
+      "exit": 0,
+      "log": "docs-journey.log",
+      "tests": 1,
+      "pass": 1,
+      "log_sha256": "d512d31cf99d804ebe5c5401f77eb95cf2831c5f1294f959dfa35607c3455134"
+    },
+    {
+      "command": "node ../browser-proof.mjs",
+      "exit": 0,
+      "log": "browser-proof.log",
+      "notes": "Four changed published pages, each once at 1440 and 390. Browser receipt and eight screenshots retained. Initial harness import error fixed before running successful proof.",
+      "log_sha256": "19809eda15e515d4ba42d1f209e9ef6a681560fe4526f24fac93de20bd43cf06"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "source-lock.log",
+      "log_sha256": "899a9da0e1d35ca5c2955b62145afbcdf4b6d548f34f34cd9fbb9dd891ed9d2f"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.log",
+      "log_sha256": "6234e1687032c70e9cba099bcf8ac5e0fb13fcfdeb81f37b2c6555da33fa09e7"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "typecheck": "not run: no code changed",
+  "full_local_verifier": "not run as instructed; exact-SHA CI is the full wall",
+  "registration_count_change": 0,
+  "tests_added": 0,
+  "contract_status_changes": [],
+  "claims": []
+}

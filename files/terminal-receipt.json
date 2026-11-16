@@ -1,0 +1,48 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-16",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/main-lamp-stranger6-trips-1",
+  "head": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "pr": "https://github.com/just-every/run-lamp/pull/396",
+  "status": "READY",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/43885139385",
+    "status": "completed",
+    "run_id": 43885139385,
+    "checked_at": 1794840196.6218798,
+    "api_calls_total": 6
+  },
+  "before_after": {
+    "trip": [
+      1,
+      0
+    ],
+    "stale_current_pin_statements": [
+      11,
+      0
+    ],
+    "contract_done": [
+      60,
+      60
+    ],
+    "contract_partial": [
+      129,
+      129
+    ],
+    "contract_missing": [
+      55,
+      55
+    ],
+    "test_registrations_delta": 0
+  },
+  "clause_changes": [],
+  "claims": [],
+  "blockers": [],
+  "main_pushes": 0,
+  "product_pushes": 1,
+  "evidence_ref": "refs/heads/evidence/main-lamp-stranger6-trips-1",
+  "landing": "fleet-owned; not performed"
+}

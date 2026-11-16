@@ -1,0 +1,2 @@
+0.2.118
+This checkout (/home/agent/rer-consolidation/work/main-lamp-stranger6-trips-1/run-lamp) pins rer 0.2.118 (package).

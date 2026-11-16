@@ -1,0 +1,9 @@
+file:///home/agent/rer-consolidation/work/main-lamp-stranger6-trips-1/browser-proof.mjs:13
+const browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
+                             ^
+
+TypeError: Cannot read properties of undefined (reading 'launch')
+    at file:///home/agent/rer-consolidation/work/main-lamp-stranger6-trips-1/browser-proof.mjs:13:30
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+Node.js v24.19.0

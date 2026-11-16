@@ -1,0 +1,93 @@
+{
+  "date": "2026-11-16T14:22:07.187Z",
+  "rows": [
+    {
+      "path": "/docs/run-locally",
+      "width": 1440,
+      "status": 200,
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "pageErrors": [],
+      "screenshot": "screenshots/run-locally-1440.png",
+      "screenshot_sha256": "ccfd5700fd0f5a1a9959c42811ce4f17f87396b387599bd85c935d265f8672fe"
+    },
+    {
+      "path": "/docs/install",
+      "width": 1440,
+      "status": 200,
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "pageErrors": [],
+      "screenshot": "screenshots/install-1440.png",
+      "screenshot_sha256": "4bfc3b1f124bc0879f177cfa777881875515a673bba08ccb9205a5703ea4054c"
+    },
+    {
+      "path": "/docs/deployment-reference",
+      "width": 1440,
+      "status": 200,
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "pageErrors": [],
+      "screenshot": "screenshots/deployment-reference-1440.png",
+      "screenshot_sha256": "763521f12591cdeb561dcc7f55c2f9365b6756e9ef06beb863bd6b0f812ba318"
+    },
+    {
+      "path": "/docs/operators-and-sign-in",
+      "width": 1440,
+      "status": 200,
+      "viewport": 1440,
+      "scrollWidth": 1440,
+      "pageErrors": [],
+      "screenshot": "screenshots/operators-and-sign-in-1440.png",
+      "screenshot_sha256": "f6db1e1dcb90d78d3961bc3a9413df27ed709c4d21304dce979cce760559080c"
+    },
+    {
+      "path": "/docs/run-locally",
+      "width": 390,
+      "status": 200,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "pageErrors": [],
+      "screenshot": "screenshots/run-locally-390.png",
+      "screenshot_sha256": "e0a59835ec922ae9671c377e04622a3513e169175c886692242884920120b48e"
+    },
+    {
+      "path": "/docs/install",
+      "width": 390,
+      "status": 200,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "pageErrors": [],
+      "screenshot": "screenshots/install-390.png",
+      "screenshot_sha256": "f0f45887b4c93f72b8e410bb609f0faf5b94854edc5336fc84e6ccf2fd7fbaa4"
+    },
+    {
+      "path": "/docs/deployment-reference",
+      "width": 390,
+      "status": 200,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "pageErrors": [],
+      "screenshot": "screenshots/deployment-reference-390.png",
+      "screenshot_sha256": "6362e6065e42a233c9f1d93006bc0d3e1045d28928daea77844ecdd5b3d0774a"
+    },
+    {
+      "path": "/docs/operators-and-sign-in",
+      "width": 390,
+      "status": 200,
+      "viewport": 390,
+      "scrollWidth": 390,
+      "pageErrors": [],
+      "screenshot": "screenshots/operators-and-sign-in-390.png",
+      "screenshot_sha256": "bb862ef314580f6b2f3a62c252b32888f54bc3b5c21c7665c4464ba2d7370af7"
+    }
+  ],
+  "candidate_head": "fa751697bd6ea6301dad830dd9f3483da57a1c98",
+  "provenance": "Browser proof ran before the single commit; no product bytes changed between proof and commit, and rebase was a no-op.",
+  "source_hashes": {
+    "RUN-LOCALLY.md": "aac45c20e8f1b99fbcca49bf237a268bda9ddb4a36e22a48c9debfb25033fd52",
+    "docs/install.md": "a6e70c989aace2e0b4cfee17c3c202f722e05623e2abcac2b2da5512234b79a8",
+    "docs/deployment-reference.md": "b1080b578e48801093aa3030c5c0c6ca89640813ea9c970b2f85e70adb88dcb4",
+    "docs/operators-and-sign-in.md": "3d3a7bb827b89db7776b255a24abdce9b02945a2007a290d1bc2705d4ba3d6ce"
+  }
+}
