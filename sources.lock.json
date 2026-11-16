@@ -716,11 +716,11 @@
       "executable": false
     },
     "hosted-check-managed.json": {
-      "sha256": "53b873e1577369a6bb02ed9406ec1d6efbd8787f3fb4b321e0937cc711a6ea80",
+      "sha256": "d09c9998c4c2c2117026ea09aa340e1dbe82c93cd29be53c5442746eafa36dae",
       "executable": false
     },
     "hosted-check.json": {
-      "sha256": "f4073aafb0379c454f233cfa26af4e07913d5657ea1d284a6fd30697ad573337",
+      "sha256": "9ca1b0b33e6d48b3ecf109b0d2391edfd0e9e8b926b3a63d3cc80a73d3216544",
       "executable": false
     },
     "importers.json": {
