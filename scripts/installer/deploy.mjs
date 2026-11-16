@@ -9,6 +9,7 @@ import {deploymentConfig} from '../ops-config.mjs';
 export function lampDeploy(lifecycle){
  return async({root,options,store,signal,operationToken})=>{
   const environment=options.environment??'production';
+  if(!options.dryRun && process.env.LAMP_RESOURCE_PREFIX?.trim() && process.env.LAMP_RESOURCE_PREFIX.trim()!==`lamp-${environment}`)throw Error('LAMP_RESOURCE_PREFIX cannot be combined with the deploy owner claim; remove it and name this copy with --environment instead.');
   const temporary=await mkdtemp(join(tmpdir(),'lamp-deploy-'));
   const resultFile=join(temporary,'result.json');
   try{

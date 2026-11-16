@@ -76,9 +76,22 @@ async function main() {
     const imported = spawnSync(process.execPath, ["scripts/import.mjs", "--remote", "--environment", config.environment, "--from", resolve(restoreFrom)], { stdio: "inherit" });
     if (imported.status !== 0) throw new Error("Restore did not complete. The Worker has not been deployed; preserve the archive and use a fresh environment for recovery.");
   }
-  wrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", "wrangler.toml"]);
-  // An apply that exits cleanly is not proof that it finished: read the ledger back and compare it with the shipped list.
-  assertMigrationsApplied(shippedMigrations(), ledgerNames(wrangler(["d1", "execute", "DB", "--remote", "--json", "--config", "wrangler.toml", "--command", coreLedgerQuery])));
+  // Wrangler applies migrations individually. A clean exit can still leave a
+  // partial ledger, so resume here rather than making the owner deploy twice.
+  const shipped = shippedMigrations();
+  let previous = 0;
+  for (let pass = 1; pass <= 5; pass += 1) {
+    wrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", "wrangler.toml"], { timeout: 180_000, env: { ...process.env, CI: "true" } });
+    const applied = ledgerNames(wrangler(["d1", "execute", "DB", "--remote", "--json", "--config", "wrangler.toml", "--command", coreLedgerQuery], { timeout: 30_000 }));
+    const recorded = new Set(applied);
+    const count = shipped.filter(name => recorded.has(name)).length;
+    if (count === shipped.length) break;
+    if (count <= previous || pass === 5) {
+      assertMigrationsApplied(shipped, applied, count <= previous ? "the latest pass made no progress" : "the five-pass migration budget was reached");
+    }
+    console.log(`Cloudflare applied ${count} of ${shipped.length} migrations; setup is continuing with pass ${pass + 1} of 5 to apply the rest.`);
+    previous = count;
+  }
   await applyOwnerMigrations("wrangler.toml", ["--remote"]);
   wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", `${setupPageSettingsStatement(config)} ${pageHostBindingStatement(config)}`]);
   if (!existsSync("wrangler.toml")) throw new Error("Setup did not generate wrangler.toml.");

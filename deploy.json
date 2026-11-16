@@ -116,6 +116,11 @@
       "binding": "MAIL_PROVIDER",
       "environment": "MAIL_PROVIDER",
       "optional": true
+    },
+    {
+      "binding": "LAMP_RESOURCE_PREFIX",
+      "environment": "LAMP_RESOURCE_PREFIX",
+      "optional": true
     }
   ],
   "crons": [
@@ -126,6 +131,12 @@
   "publicSettings": [
     "LAMP_APP_HOST",
     "LAMP_PAGE_HOST",
-    "LAMP_PAGE_WORKER"
-  ]
+    "LAMP_PAGE_WORKER",
+    "MAIL_PROVIDER",
+    "LAMP_RESOURCE_PREFIX"
+  ],
+  "vars": {
+    "MAIL_PROVIDER": "none",
+    "LAMP_RESOURCE_PREFIX": ""
+  }
 }

@@ -135,10 +135,11 @@ when left out).
 <!-- Run Edit Run fleet (Codex), 2026-11-15: deliberate mail-off adoption. -->
 ### Or deliberately turn email off
 
-Set `MAIL_PROVIDER=none` in your private deployment input file. Leave sender,
+`rer deploy` defaults `MAIL_PROVIDER` to `none`; set `MAIL_PROVIDER=none` in
+your private deployment input file to make that choice explicit. Leave sender,
 DKIM and all sending credentials unset, including managed relay settings and any
-secondary mail provider. An absent or deferred provider selection does not turn
-email off. Supplying sending credentials together with `none` refuses deployment.
+secondary mail provider. A deferred provider selection is refused. Supplying
+sending credentials together with `none` refuses deployment.
 
 With email off, email sign-in links, invitations and email subscriptions are
 unavailable. Pending email alerts remain unfinished; Lamp never reports them as
@@ -200,8 +201,8 @@ sending domain and add the records it shows at your DNS host (one of them is a
 **TXT** record named `resend._domainkey`), add the `_dmarc` record from step 5
 above if you have none, then choose **Verify DNS Records**. Create a key under
 **API Keys** with **Sending access**. Then set `MAIL_PROVIDER=resend`,
-`MAIL_DKIM_SELECTOR=resend`, your sender address and the key. Leaving out
-`MAIL_PROVIDER` also means Resend.
+`MAIL_DKIM_SELECTOR=resend`, your sender address and the key. Set the provider
+explicitly: leaving out `MAIL_PROVIDER` keeps `rer deploy`'s default of `none`.
 
 ### Or use Managed hosting
 
@@ -252,7 +253,14 @@ hostname is not in DNS at all (a detached page host), the deploy prints
 serving the snapshot fails the deploy.
 
 `--environment` names this installation; it defaults to `production`. Use
-another name, with its own input file and step 3 addresses, for a second one.
+`--environment staging`, with its own input file and step 3 addresses, for a
+second copy named `lamp-staging`. Leave `LAMP_RESOURCE_PREFIX` unset: it does
+not work with `rer deploy`'s owner claim until rer follows the recorded Worker,
+and a failed claim would leave the deployment owner unable to use `rer signin`.
+
+The app Worker runs a one-minute cron (`* * * * *`) for scheduled status work,
+notifications and snapshot maintenance. In `workers.dev` mode the separate
+public Worker has no second cron.
 
 ## Step 8: Sign in
 
@@ -332,6 +340,12 @@ that none remains. In custom-domain mode there is one Worker. `rer deploy --remo
 --yes` alone does not remove the separate public page Worker of a `workers.dev`
 installation, so use this command.
 
+A second run can be needed because Cloudflare may still report a just-deleted
+Worker or R2 bucket after deletion or a long object purge; if the command ends
+with `remove-incomplete`, run the same command again with the retained records.
+
 Removal only touches what its creation records prove this environment created;
 it never matches by name. If an older installation has no creation records, the
 command refuses; see the [removal limits](deployment-reference.md#removal-and-deployment-records).
+
+<!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->

@@ -20,7 +20,8 @@
     // Local sample identity; without a provider key, mail requests fail explicitly.
     // Deployment setup supplies the buyer's verified sender.
     "MAIL_FROM_ADDRESS": "lamp@localhost.invalid",
-    "MAIL_PROVIDER": "",
+    "MAIL_PROVIDER": "none",
+    "LAMP_RESOURCE_PREFIX": "",
     "MAIL_FROM": "",
     "MAIL_RELAY_URL": ""
   },

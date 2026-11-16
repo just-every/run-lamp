@@ -4,7 +4,7 @@ import { checkSender, senderEvidenceKey, MANAGED_SENDER_NOTICE, type SenderCheck
 
 /** One check Lamp ran on its own. reason is a short sentence with the one thing to do; null when it passed. */
 export interface LiveCheck { ok: boolean; checkedAt: string; reason: string | null }
-export interface SenderStatus { state: 'local' | 'verified' | 'failed' | 'unchecked'; message: string | null; checkedAt: string | null }
+export interface SenderStatus { state: 'local' | 'off' | 'verified' | 'failed' | 'unchecked'; message: string | null; checkedAt: string | null }
 export interface LiveStatus {
   preview: boolean;
   publicOrigin: string;
@@ -56,7 +56,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
         // Inspect the real rendered form; a route constant says nothing about
         // whether a visitor can reach its input and submit control.
         const forms = (await response.text()).match(/<form\b[^>]*>[\s\S]*?<\/form>/gi) ?? [];
-        if (!await options.prelaunch() && !forms.some(form => /\baction=["']\/subscribe["']/i.test(form) && /\bmethod=["']post["']/i.test(form) && /<input\b[^>]*\bname=["']email["']/i.test(form) && /<button\b/i.test(form))) subscribe = NO_FORM;
+        if (options.sender.provider !== 'none' && !await options.prelaunch() && !forms.some(form => /\baction=["']\/subscribe["']/i.test(form) && /\bmethod=["']post["']/i.test(form) && /<input\b[^>]*\bname=["']email["']/i.test(form) && /<button\b/i.test(form))) subscribe = NO_FORM;
       }
     } catch { page = NOT_ANSWERING; }
     await repository.record(PAGE_STEP, JSON.stringify({ origin, page, subscribe: page ? NOT_ANSWERING : subscribe }));
@@ -70,7 +70,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
   }
 
   async function checkSenderIfDue(operatorEmail = '') {
-    if (options.sender.local) return;
+    if (options.sender.local || options.sender.provider === 'none') return;
     const value = await settings.get();
     if (!value) return;
     const key = await senderEvidenceKey(value.mailFromAddress, options.sender);
@@ -88,6 +88,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
   }
 
   async function sender(): Promise<SenderStatus> {
+    if (options.sender.provider === 'none') return { state: 'off', message: 'Email is off for this installation', checkedAt: null };
     if (options.sender.local) return { state: 'local', message: null, checkedAt: null };
     const value = await settings.get();
     if (!value) return { state: 'unchecked', message: null, checkedAt: null };
@@ -110,7 +111,7 @@ export function createLiveStatusService(repository: OverviewRepository, settings
       await checkSenderIfDue();
       const check = (reason: string | null): LiveCheck | null => stored ? { ok: reason === null, checkedAt: stored.checkedAt, reason } : null;
       const prelaunch = await options.prelaunch();
-      return { preview: options.preview === true, publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: prelaunch ? null : check(stored?.subscribe ?? null), sender: await sender(),
+      return { preview: options.preview === true, publicOrigin: origin, publishedAt, page: check(stored?.page ?? null), subscribe: prelaunch || options.sender.provider === 'none' ? null : check(stored?.subscribe ?? null), sender: await sender(),
         senderVerificationManaged: !options.sender.local && options.sender.provider === 'rer' && options.sender.mail.configured };
     },
     runChecks,

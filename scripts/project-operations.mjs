@@ -18,6 +18,11 @@ function fields(value, allowed) {
 }
 
 function mailInputs(provider, declaration, fallback = false) {
+  if (provider === 'none' && !fallback) {
+    fields(declaration, ['requiredEnvironment']);
+    if (!Array.isArray(declaration.requiredEnvironment) || declaration.requiredEnvironment.length) throw new Error('Mail off cannot require delivery inputs.');
+    return { provider, names: [] };
+  }
   fields(declaration, ['apiKeyEnvironment', 'requiredEnvironment', 'accountIdEnvironment', 'development', ...(fallback ? ['provider'] : [])]);
   if (![...hostedProviders, ...(fallback ? [] : ['development'])].includes(provider)
       || !Array.isArray(declaration.requiredEnvironment) || declaration.requiredEnvironment.some(name => !environmentName(name))) throw new Error('Invalid mail binding declaration.');
@@ -145,7 +150,9 @@ export function inspectRequiredLoops(descriptor, env) {
         const { providerEnvironment, providers, whenUnset } = loop.binding;
         const provider = env[providerEnvironment];
         const selected = provider === undefined ? whenUnset : typeof provider === 'string' && has(providers, provider) ? providers[provider] : undefined;
-        result = selected ? inspectMailInputs(selected, env) : { status: 'invalid-mail-provider', missingEnvironment: [providerEnvironment] };
+        result = selected?.provider === 'none'
+          ? { status: loop.required ? 'disabled-required' : 'optional-disabled', missingEnvironment: [], mailOff: true }
+          : selected ? inspectMailInputs(selected, env) : { status: 'invalid-mail-provider', missingEnvironment: [providerEnvironment] };
       } else {
         result = inspectMailInputs(loop.selected, env);
         // Preserve the fixed-provider contract's truthy-selector mismatch behavior.

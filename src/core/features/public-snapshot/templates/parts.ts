@@ -40,6 +40,7 @@ export function tagline(model: PublicSnapshotModel) {
  *  management page every confirmation links to (SUB-004). */
 export function subscribeForm(model: PublicSnapshotModel, id: string, className = "", placeholder = "Your email address") {
   if (model.prelaunch) return "";
+  if (!model.emailEnabled) return "<p>Email subscriptions are unavailable for this installation.</p>";
   return `<form class="tpl-subscribe${className ? ` ${className}` : ""}" method="post" action="/subscribe"><label class="sr-only" for="${id}">Email address</label><input id="${id}" name="email" type="email" autocomplete="email" required placeholder="${placeholder}"><button type="submit">Subscribe</button></form>`;
 }
 

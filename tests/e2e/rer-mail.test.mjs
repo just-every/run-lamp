@@ -392,7 +392,7 @@ test('Mail-off keeps email unavailable, operator alerts pending and status work 
       SETUP_OPERATOR_EMAIL: owner, SESSION_SECRET: secret, MAIL_PROVIDER: 'none', SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-secret-bbbbbbbb' },
     d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } },
     queueProducers: { JOBS: 'synthetic-lamp-off-jobs' }, resourcePersistencePath: join(state, 'storage'),
-    outboundService: async request => { requests.push(request.url); return new Response('Synthetic public check', { status: 200 }); },
+    outboundService: async request => { requests.push(request.url); return new Response('<!doctype html><html><body>Synthetic public check</body></html>', { status: 200, headers: { 'Content-Type': 'text/html' } }); },
   }));
   try {
     const db = await runtime.getD1Database('DB');
@@ -449,6 +449,13 @@ test('Mail-off keeps email unavailable, operator alerts pending and status work 
     const maintenance = (await maintenanceResponse.json()).maintenance;
     const publicPage = await raw(pageOrigin + '/'); assert.equal(publicPage.status, 200);
     const html = await publicPage.text(); assert.ok(html.includes(incident.title) && html.includes(maintenance.title));
+    assert.doesNotMatch(html, /<form\b[^>]*action=["']\/subscribe["']/i, 'a deliberately mail-off page offers no email subscription form');
+    assert.match(html, /Email subscriptions are unavailable/i);
+    const live = (await (await call('/api/app/overview/live')).json()).live;
+    assert.equal(live.sender.state, 'off', 'deliberately disabled email is not a sender failure');
+    assert.equal(live.sender.checkedAt, null, 'mail-off needs no provider verification');
+    assert.equal(live.subscribe, null, 'the intentionally unavailable email form is not a failing check');
+    assert.equal(live.page.ok, true, 'the public page remains checked independently');
     assert.equal((await call('/__test/clock', { now: now + 7500000 }, 'PUT')).status, 204);
     assert.equal((await call('/__test/tick')).status, 204);
     const held = (await (await call('/api/app/overview/follow-ups')).json()).followUps;
@@ -549,6 +556,14 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           await page.goto(appOrigin + path); assert.equal(new URL(page.url()).pathname, path);
           await page.getByRole('heading', { level: 1 }).waitFor();
         }
+        if (provider === 'none' && choice === 'skip') {
+          await page.goto(appOrigin + '/app');
+          await page.getByText('Email is off for this installation', { exact: true }).waitFor();
+          assert.equal(await page.locator('.live-strip.is-failing').count(), 0, 'deliberate mail-off does not mark the installation as broken');
+          await page.goto(pageOrigin + '/');
+          assert.equal(await page.locator('form[action="/subscribe"]').count(), 0, 'the hosted public page does not offer unusable email signup');
+          await page.getByText('Email subscriptions are unavailable for this installation.', { exact: true }).first().waitFor();
+        }
         await page.goto(appOrigin + '/app/settings');
         await operatorHydrated(page);
         await page.locator('.settings-page:not([inert])').waitFor();
@@ -570,8 +585,8 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
         }
         if (provider === 'none' && choice === 'skip' && process.env.LAMP_MAIL_OFF_PROOF_DIR) {
           await mkdir(process.env.LAMP_MAIL_OFF_PROOF_DIR, { recursive: true });
-          for (const [name, path] of [['overview', '/app'], ['settings', '/app/settings']]) {
-            await page.goto(appOrigin + path); await page.getByRole('heading', { level: 1 }).waitFor();
+          for (const [name, path] of [['overview', appOrigin + '/app'], ['public', pageOrigin + '/'], ['settings', appOrigin + '/app/settings']]) {
+            await page.goto(path); await page.getByRole('heading', { level: 1 }).waitFor();
             await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, `${name}-mail-off-1440.png`), fullPage: true });
             await page.setViewportSize({ width: 390, height: 844 });
             await page.screenshot({ path: join(process.env.LAMP_MAIL_OFF_PROOF_DIR, `${name}-mail-off-390.png`), fullPage: true });
