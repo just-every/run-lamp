@@ -24,7 +24,7 @@ async function setup(directory, edge, credentials, limit) {
     LAMP_FAKE_WRANGLER_STATE: join(directory, 'ledger.json'),
   };
   if (limit !== undefined) environment.LAMP_FAKE_WRANGLER_LIMIT = String(limit);
-  const child = spawn(process.execPath, [join(root, 'scripts/setup.mjs'), '--environment', 'setup-migrations'], { cwd: directory, timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'], env: environment });
+  const child = spawn('pnpm', ['run', 'setup:cloudflare', '--', '--environment', 'setup-migrations'], { cwd: directory, timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'], env: environment });
   let output = '';
   child.stdout.on('data', chunk => { output += chunk; });
   child.stderr.on('data', chunk => { output += chunk; });
@@ -38,6 +38,7 @@ test('Setup resumes a short migration apply in one command and stops safely with
   const credentials = { CLOUDFLARE_ACCOUNT_ID: randomBytes(16).toString('hex'), CLOUDFLARE_API_TOKEN: `synthetic-${randomBytes(16).toString('hex')}` };
   const edge = await cloudflareEdge({ accountId: credentials.CLOUDFLARE_ACCOUNT_ID, token: credentials.CLOUDFLARE_API_TOKEN, subdomain: 'synthetic-owner', workerHost: { host: 'app.example.test', name: 'lamp-setup-migrations' }, app: () => new Response('Lamp') });
   try {
+    await writeFile(join(directory, 'package.json'), JSON.stringify({ private: true, scripts: { 'setup:cloudflare': `${JSON.stringify(process.execPath)} ${JSON.stringify(join(root, 'scripts/setup.mjs'))}` } }));
     await mkdir(join(directory, 'node_modules/wrangler/bin'), { recursive: true });
     await cp(new URL('../helpers/fake-wrangler.mjs', import.meta.url), join(directory, 'node_modules/wrangler/bin/wrangler.js'));
     await symlink(join(root, 'migrations'), join(directory, 'migrations'));
