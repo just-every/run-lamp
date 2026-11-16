@@ -22,6 +22,7 @@ export const bindings = {
   SESSION_SECRET: randomBytes(32).toString("hex"),
   SETUP_TOKEN: randomBytes(32).toString("hex"),
   SETUP_OPERATOR_EMAIL: owner,
+  MAIL_PROVIDER: "resend",
   MAIL_FROM_ADDRESS: "status@upgrade.example.test",
   MAIL_PROVIDER_API_KEY: randomBytes(32).toString("hex"),
   SUBSCRIBER_TOKEN_SECRET: randomBytes(32).toString("hex"),

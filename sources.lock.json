@@ -7940,7 +7940,7 @@
       "executable": false
     },
     "tests/demo/owner-claim-status.test.mjs": {
-      "sha256": "c7cf2e3e6b54da228f2ba7c9d2bed9fbae305003d6907281c6d5abfc914f1439",
+      "sha256": "d2d1e405ecc6db7a914ed24ee9e646ad14f540fb74a001c396cf9e323d2536b2",
       "executable": false
     },
     "tests/demo/owner-claim.test.mjs": {
@@ -8536,7 +8536,7 @@
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
-      "sha256": "ad484c73eb24d2383a306752c97fda416f25cf53d58260b2d88f330e949bef99",
+      "sha256": "a9c8f3cf1ee5ab50b33536e5395428fffdd3c98fc51009e72b67f241a118d276",
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
@@ -8620,7 +8620,7 @@
       "executable": false
     },
     "tests/e2e/start-runtime.test.mjs": {
-      "sha256": "a816c2146eb128fbe27e0b8368bcb9f71c04d7525fa30dea6c61eb1776d194f4",
+      "sha256": "8c10f9ce713558b09898b340aacc9adb8a74c5021beb223e667597d46c7071df",
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
@@ -9412,7 +9412,7 @@
       "executable": false
     },
     "tests/lamp-site/browser.test.mjs": {
-      "sha256": "baf4940c4cf61c9c35cd9902b33281a3fb27d76e902cefee6b7e8d9228973999",
+      "sha256": "cfbc0be3cec98cc4988e9972941cc19e353daab2304bf901293e4c2cd72e7108",
       "executable": false
     },
     "tests/operator-readiness/runtime.mjs": {
@@ -9456,7 +9456,7 @@
       "executable": false
     },
     "tests/release/runtime.mjs": {
-      "sha256": "61b0b837f7631364ee3553c6fb26dd77e8a6257436a85ec2303ea00f007587fb",
+      "sha256": "7fecd3073124d3bdfe619be4c43a11b851b6d59ca0a248714b6cf82f2719bd92",
       "executable": false
     },
     "tests/release/upgrade.test.mjs": {

@@ -306,7 +306,7 @@ before(async () => {
   // Enable the native form; its submitted address is not a fixture operator,
   // so native auth accepts the request without attempting mail delivery.
   // The cron dispatch probe must also leave queued notification effects paused.
-  worker = spawn("pnpm", ["exec", "wrangler", "dev", "--local", "--config", artifactPath, ...envArgs, "--persist-to", statePath, "--show-interactive-dev-session=false", "--ip", "127.0.0.1", "--port", String(port), "--inspector-port", "0", "--local-upstream", `${appHost}:${port}`, "--var", `LAMP_PAGE_HOST:${pageHost}`, "--var", `LAMP_APP_HOST:${appHost}`, "--var", `AUTH_ORIGIN:${appOrigin}`, "--var", "AUTH_LOCAL:true", "--var", `SESSION_SECRET:${secret}`, "--var", "SETUP_OPERATOR_EMAIL:operator@example.test", "--var", "MAIL_PROVIDER_API_KEY:test-only-signin-presentation-no-delivery", "--var", "EFFECTS_PAUSED:1", "--log-level", "warn"], {
+  worker = spawn("pnpm", ["exec", "wrangler", "dev", "--local", "--config", artifactPath, ...envArgs, "--persist-to", statePath, "--show-interactive-dev-session=false", "--ip", "127.0.0.1", "--port", String(port), "--inspector-port", "0", "--local-upstream", `${appHost}:${port}`, "--var", `LAMP_PAGE_HOST:${pageHost}`, "--var", `LAMP_APP_HOST:${appHost}`, "--var", `AUTH_ORIGIN:${appOrigin}`, "--var", "AUTH_LOCAL:true", "--var", `SESSION_SECRET:${secret}`, "--var", "SETUP_OPERATOR_EMAIL:operator@example.test", "--var", "MAIL_PROVIDER:resend", "--var", "MAIL_PROVIDER_API_KEY:test-only-signin-presentation-no-delivery", "--var", "EFFECTS_PAUSED:1", "--log-level", "warn"], {
     cwd: process.cwd(),
     env: fixtureProcessEnv(),
     stdio: ["ignore", "pipe", "pipe"],
