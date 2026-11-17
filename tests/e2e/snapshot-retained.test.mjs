@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { test } from 'node:test';
+import { parse } from 'parse5';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 const require = createRequire(import.meta.url);
 const wranglerRequire = createRequire(require.resolve('wrangler'));
@@ -71,7 +72,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const read = (path, init) => runtime.dispatchFetch(`https://page.example${path}`, init);
     const publishedAt = new Date().toISOString();
     const source = {
-      settings: { pageName: 'Known service status', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
+      settings: { pageName: 'Known service status <synthetic-lamp> & $&', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
       components: [{ id: 'customer-api', name: 'Customer API', groupName: null, groupOrder: null, displayOrder: 0, note: '' }],
       claims: [{ componentId: 'customer-api', state: 'Major outage' }], history: [], corrections: [],
       incidents: [{ id: 'incident', reference: 'INC-1', title: 'Known API outage', lifecycle: 'Identified', openedAt: publishedAt, resolvedAt: null }],
@@ -114,6 +115,9 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const rebuild = async input => (await read('/test/rebuild', { method: 'POST', body: JSON.stringify({ source, ...input }) })).json();
     assert.equal((await read('/?storage=down')).status, 503, 'a fresh installation never invents an all-clear');
     const generation = await rebuild({ generation: 1 }); assert.equal(generation.failure, null);
+    const pageKey = `snapshots/${generation.pointer.version}/page.html`;
+    const pageObject = await bucket.get(pageKey);
+    await bucket.put(pageKey, (await pageObject.text()).replace('<body', '<body data-synthetic-note="a > b"'), { httpMetadata: { contentType: 'text/html; charset=utf-8' } });
     const monthObjects = await bucket.list({ prefix: `snapshots/${generation.pointer.version}/history/` });
     const monthPaths = monthObjects.objects.map(object => '/' + object.key.slice(`snapshots/${generation.pointer.version}/`.length).replace(/\.html$/, '')).sort();
     assert.deepEqual(monthPaths, ['/history/2019-12', '/history/2020-02', '/history/2020-04', '/history/2025-04'], 'every independently expected populated month is generated');
@@ -132,8 +136,8 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     };
     for (const path of monthPaths) await checkMonth(path);
     assert.equal((await (await read('/test/database-touches')).json()).accesses, 0);
-    const paths = ['/', '/feed.atom', '/widget.js', '/api/public/status', '/badge.svg', '/badge.json'];
-    const artifactKeys = ['page.html', 'feed.atom', 'widget.js', 'status.json', 'badge.svg', 'badge.json'];
+    const paths = ['/', '/feed.atom', '/feed.rss', '/widget.js', '/api/public/status', '/badge.svg', '/badge.json'];
+    const artifactKeys = ['page.html', 'feed.atom', 'feed.rss', 'widget.js', 'status.json', 'badge.svg', 'badge.json'];
     const blobReads = async () => (await read('/test/blob-reads')).json();
     const beforeCold = await blobReads();
     const coldBodies = new Map();
@@ -179,6 +183,15 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const afterConditional = await blobReads();
     assert.deepEqual(afterConditional.getBytes, afterCold.getBytes, 'conditional warm reads also reuse cached artifact bytes');
     assert.equal(afterConditional.getText['snapshots/current.json'] - beforeConditional.getText['snapshots/current.json'], paths.length, 'conditional responses validate the pointer before accepting old bytes');
+    const edgeFallback = await read('/?storage=down&replica=down');
+    assert.equal(edgeFallback.status, 200);
+    assert.equal(edgeFallback.headers.get('x-lamp-snapshot-state'), 'stale');
+    const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
+    const body = descendants(parse(await edgeFallback.text())).find(node => node.tagName === 'body');
+    assert.equal(body.attrs.find(attr => attr.name === 'data-synthetic-note')?.value, 'a > b', 'stale labeling preserves quoted body attributes');
+    const banner = body.childNodes.find(node => node.tagName === 'aside' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'snapshot-stale'));
+    assert.ok(banner, 'the stale notice is an actual child of the body');
+    assert.ok(banner.childNodes.some(node => node.value?.includes(generation.pointer.generatedAt)), 'the notice identifies the retained generation');
     const failed = await rebuild({ generation: 2, replicaFailure: 'always' });
     assert.ok(failed.failure); assert.equal(failed.completed, false);
     for (const path of paths) {
@@ -186,6 +199,12 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       assert.equal(response.headers.get('x-lamp-snapshot-state'), 'stale');
       assert.ok(response.headers.get('x-lamp-snapshot-generated-at'));
       const text = await response.text();
+      if (path === '/feed.atom' || path === '/feed.rss') {
+        const original = coldBodies.get(path).toString();
+        assert.equal(text.slice(0, text.indexOf('</title>') + '</title>'.length), original.slice(0, original.indexOf('</title>') + '</title>'.length), 'stale feed labeling preserves the complete escaped title');
+        assert.ok(text.includes('Known service status &lt;synthetic-lamp&gt; &amp; $&'));
+        assert.ok(text.includes(`content generated at ${generation.pointer.generatedAt}`));
+      }
       assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
       if (path === '/') for (const component of source.components) assert.ok(text.includes(`/components/${component.id}/feed.atom`), 'storage failure preserves every component resource in the shared footer');
       // Badge protocols retain their consumer schema; every surface carries
