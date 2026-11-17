@@ -1461,7 +1461,7 @@ Core · published · **partial** · Cites BASE-SECRET-001
 
 **Acceptance.**
 1. The owner can supply a source API key and page identity or saved responses; source credentials are read once from the source's fixed origin and never stored.
-2. The dry run counts every component, group, incident and its updates, maintenance window and subscriber as imported, changed, skipped or refused, with reasons, and writes no record.
+2. The dry run counts every component, group, incident and its updates, maintenance window and subscriber as imported, changed, skipped or refused, with reasons, and writes no record. For Sorry, the dry run and saved job also account for every supplied field path as mapped, changed, raw-only, deleted or refused, with a reason and next action; unknown nested fields, shortened text and unsupported resource files cannot be silently ignored.
 3. Changing either the source or Lamp page after review refuses application and requires a fresh dry run.
 4. A dry run names each excess subscriber over a SUB-020 channel capacity and refuses excess rows; an over-limit apply writes nothing until a narrowed review fits.
 

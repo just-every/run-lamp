@@ -85,7 +85,9 @@ export function useSettingsAutosave(initial: PageSettingsView | undefined, onSav
       const issue = parsed.error.issues[0]!;
       q.stopped = revision;
       if (q.mounted) {
-        setError(`${fieldNames[String(issue.path[0])] ?? "Settings"} could not be saved: ${issue.message}`);
+        // The accent input explains invalid text beside the field. Retrying
+        // identical invalid text cannot save it.
+        setError(issue.path[0] === "accentColor" ? null : `${fieldNames[String(issue.path[0])] ?? "Settings"} could not be saved: ${issue.message}`);
         setPhase("error");
       }
       answer();

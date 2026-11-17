@@ -1,6 +1,6 @@
 import { rememberCutover, clearCutover } from "./cutover-draft";
 import { AccountHelp, PageFinder, SavedResponsesHelp } from "./source-help";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -33,8 +33,48 @@ function Reconciliation({ report }: { report: MoveInReport }) {
 
 function ReportItems({ report }: { report: MoveInReport }) {
   const notable = report.items.filter((item) => item.outcome !== "imported");
-  if (!notable.length) return <p>Every record carries over unchanged.</p>;
+  if (!notable.length) return <p>{report.fieldLedger?.some(field => field.outcome !== "mapped") ? "Every record can be imported. Review field changes and losses below." : "Every record carries over unchanged."}</p>;
   return <details><summary>{notable.length} record{notable.length === 1 ? "" : "s"} changed, kept private, skipped or refused</summary><ul className="move-in-items">{notable.map((item) => <li key={`${item.kind}:${item.sourceId}`}><strong>{item.name}</strong> ({item.outcome}): {item.reason}</li>)}</ul></details>;
+}
+
+/** The same value-free ledger is available before import and on saved jobs.
+ * Paginate the view, never the downloadable accounting. */
+function FieldLedger({ report }: { report: MoveInReport }) {
+  const [search, setSearch] = useState("");
+  const [outcome, setOutcome] = useState("all");
+  const [page, setPage] = useState(0);
+  const fields = report.fieldLedger;
+  const [download, setDownload] = useState<string | null>(null);
+  useEffect(() => {
+    if (!fields) return;
+    const url = URL.createObjectURL(new Blob([JSON.stringify({ schema: 1, fingerprint: report.fingerprint, fields }, null, 2)], { type: "application/json" }));
+    setDownload(url);
+    return () => URL.revokeObjectURL(url);
+  }, [fields, report.fingerprint]);
+  const selected = useMemo(() => (fields ?? []).filter(field =>
+    (outcome === "all" || field.outcome === outcome) &&
+    (field.file + field.path).toLowerCase().includes(search.toLowerCase())), [fields, outcome, search]);
+  if (!fields?.length) return null;
+  const size = 25, pages = Math.max(1, Math.ceil(selected.length / size));
+  const current = Math.min(page, pages - 1);
+  const totals = ["mapped", "changed", "raw-only", "deleted", "refused"].map(value => value + ": " + fields.filter(field => field.outcome === value).length).join(" · ");
+  return <details className="move-in-field-ledger"><summary>Field ledger ({fields.length} fields)</summary>
+    <p>{totals}</p>
+    <p>Each path names a field in a supplied file. Raw-only fields stay in source data and have no native mapping. Deleted fields are removed from sanitized source records. Source values are excluded from this ledger.</p>
+    {download && <p><a className="text-link" href={download} download="sorry-field-ledger.json">Download field ledger</a></p>}
+    <label className="form-label">Find a field path<input type="search" value={search} onChange={event => { setSearch(event.target.value); setPage(0); }} /></label>
+    <label className="form-label">Field outcome<select value={outcome} onChange={event => { setOutcome(event.target.value); setPage(0); }}>
+      <option value="all">All fields</option>{["mapped", "changed", "raw-only", "deleted", "refused"].map(value => <option key={value} value={value}>{value}</option>)}
+    </select></label>
+    <p>{selected.length ? current * size + 1 : 0}–{Math.min((current + 1) * size, selected.length)} of {selected.length} matching fields</p>
+    <ol className="move-in-items" start={current * size + 1}>{selected.slice(current * size, (current + 1) * size).map(field =>
+      <li key={field.file + ":" + field.path} style={{ overflowWrap: "anywhere" }}>
+        <strong>{field.file}{field.path}</strong> ({field.outcome}){field.target && <> → {field.target}</>}
+        <p>{field.reason} Next: {field.action}</p>
+      </li>)}</ol>
+    {pages > 1 && <p><Button type="button" variant="secondary" disabled={current === 0} onClick={() => setPage(current - 1)}>Previous fields</Button>{" "}
+      <Button type="button" variant="secondary" disabled={current + 1 >= pages} onClick={() => setPage(current + 1)}>Next fields</Button></p>}
+  </details>;
 }
 
 /** Settings → Move in: a dry run first, then the import, then undo. */
@@ -141,13 +181,13 @@ export function MoveInPage() {
     {error && <FormError>{error}</FormError>}
     {preview && !result && <section className="data-card" aria-labelledby="move-in-dry-run"><h2 id="move-in-dry-run">{preview.report.state === "already imported" ? "Already imported" : "Dry run"}</h2>
       {preview.report.state === "already imported" ? <p>This source was imported already; importing it again changes nothing.</p> : <p>Nothing has been written. This is what the import will do.</p>}
-      <p><a className="text-link" href={preview.jobId ? `/app/cutover?job=${encodeURIComponent(preview.jobId)}` : "/app/cutover"}>Read the Cutover preview</a></p><ReportTable report={preview.report} /><ReportItems report={preview.report} />
+      <p><a className="text-link" href={preview.jobId ? `/app/cutover?job=${encodeURIComponent(preview.jobId)}` : "/app/cutover"}>Read the Cutover preview</a></p><ReportTable report={preview.report} /><ReportItems report={preview.report} /><FieldLedger report={preview.report} />
       {saved && <p><a href={saved} download={`${source}-saved-responses.json`}>Download these saved responses</a></p>}
       {preview.report.state !== "already imported" && <><label className="checkbox-label"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} /> I reviewed what changes, is skipped or is refused.</label>
         <Button type="button" disabled={busy || !acknowledged || preview.report.limits.length > 0} onClick={apply}>{busy ? "Importing…" : "Import"}</Button></>}
     </section>}
     {result && <section className="data-card" aria-labelledby="move-in-result"><h2 id="move-in-result">{result.job.state === "completed" ? "Imported" : result.job.state === "undone" ? "Undone" : result.job.state === "undoing" ? "Undo in progress" : "Import in progress"}</h2>
-      <p><a className="text-link" href={`/app/cutover?job=${encodeURIComponent(result.job.id)}`}>Read Cutover and send invitations</a>{result.job.state === "completed" && <> · <a className="text-link" href="#import-history">Undo this import in Your imports</a></>}</p><ReportTable report={result.report} />
+      <p><a className="text-link" href={`/app/cutover?job=${encodeURIComponent(result.job.id)}`}>Read Cutover and send invitations</a>{result.job.state === "completed" && <> · <a className="text-link" href="#import-history">Undo this import in Your imports</a></>}</p><ReportTable report={result.report} /><ReportItems report={result.report} /><FieldLedger report={result.report} />
       {result.job.state === "completed" && <p>{result.invites.remaining ? `${result.invites.remaining} subscriber invitations still to send.` : "No eligible invitations remain. Read Cutover for subscription and expiry details."}</p>}
       {result.undo && <p>{result.undo.dispositions.filter((item) => item.disposition === "retained").length} record(s) changed since the import stayed.</p>}
       {result.undo?.expiredSubscribers ? <p>{result.undo.expiredSubscribers} held subscriber(s) had already expired and were deleted before this undo.</p> : null}

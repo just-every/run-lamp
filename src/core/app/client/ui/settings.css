@@ -36,3 +36,10 @@
 .embed-preview-status p { flex: 1 1 100%; margin: 2px 0 0; border-top: 1px solid var(--line); padding-top: 10px; white-space: pre-line; }
 .embed-preview-dot { justify-self: start; border: 0; padding: 4px 0; }
 
+/* Invitation choices stay beside the person's details at every width. */
+.operators-invite-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.operators-invite-form > button { justify-self: start; }
+.invitation-role-help { grid-column: 1 / -1; display: grid; gap: 6px; }
+@media (max-width: 760px) {
+  .operators-invite-form { grid-template-columns: 1fr; }
+}

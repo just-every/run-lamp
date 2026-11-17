@@ -1,0 +1,59 @@
+{
+  "notice": {
+    "id": 2001,
+    "type": "unplanned",
+    "subject": "synthetic-lamp-2 unplanned notice",
+    "state": "resolved",
+    "timeline_state": "past_distant",
+    "url": "https://status.example.invalid/notices/synthetic-lamp-2",
+    "created_at": "2025-01-01T11:00:00.000Z",
+    "updated_at": "2025-01-01T11:30:00.000Z",
+    "began_at": "2025-01-01T11:00:00.000Z",
+    "ended_at": "2025-01-01T11:30:00.000Z",
+    "tag_list": [
+      "synthetic-lamp-1",
+      "incident"
+    ],
+    "impact_time": {
+      "seconds": 1800,
+      "words": "30 minutes"
+    },
+    "links": {
+      "self": "/api/v1/notices/2001"
+    },
+    "components": [
+      {
+        "id": 1005,
+        "name": "synthetic-lamp-6",
+        "description": "Synthetic service 6; no production data.",
+        "state": "operational",
+        "parent_id": 1001,
+        "created_at": "2025-01-01T10:00:00.000Z",
+        "updated_at": "2025-01-01T10:00:00.000Z"
+      }
+    ],
+    "updates": [
+      {
+        "id": 30010,
+        "content": "Synthetic unplanned notice 2: review is underway.",
+        "state": "investigating",
+        "created_at": "2025-01-01T11:00:00.000Z",
+        "updated_at": "2025-01-01T11:00:00.000Z"
+      },
+      {
+        "id": 30011,
+        "content": "Synthetic unplanned notice 2: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T11:30:00.000Z",
+        "updated_at": "2025-01-01T11:30:00.000Z"
+      }
+    ],
+    "latest_update": {
+      "id": 30011,
+      "content": "Synthetic unplanned notice 2: this is the final saved update.",
+      "state": "resolved",
+      "created_at": "2025-01-01T11:30:00.000Z",
+      "updated_at": "2025-01-01T11:30:00.000Z"
+    }
+  }
+}

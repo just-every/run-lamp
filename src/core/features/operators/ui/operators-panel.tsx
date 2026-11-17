@@ -4,7 +4,7 @@ import type { StoredFormerOperator, StoredOperator } from "../repository";
 import { ApiError, appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { LoadingState, FormError } from "../../../app/client/ui/states";
-import { OperatorRoleSelect, operatorRoleLabels } from "./operator-role-select";
+import { OperatorRoleSelect, operatorRoleLabels, operatorRoleDescriptions } from "./operator-role-select";
 
 type OperatorsResponse = { operators: StoredOperator[] };
 type FormerOperatorsResponse = { operators: StoredFormerOperator[] };
@@ -16,6 +16,7 @@ export function OperatorsPanel() {
   const former = useAppData<FormerOperatorsResponse>("/api/app/operators/former");
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<StoredOperator["role"]>("communicator");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
@@ -47,9 +48,9 @@ export function OperatorsPanel() {
     event.preventDefault();
     setSaving(true); setMessage(null);
     try {
-      const result = await appApi<{ email: "sent" | "suppressed" }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName }) });
+      const result = await appApi<{ email: "sent" | "suppressed" }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName, role }) });
       setNeedsConfirmation(false);
-      setEmail(""); setDisplayName(""); setMessage(result.email === "suppressed" ? "Invitation created. No email was sent on this computer." : "Invitation email sent.");
+      setEmail(""); setDisplayName(""); setRole("communicator"); setMessage(result.email === "suppressed" ? "Invitation created. No email was sent on this computer." : "Invitation email sent.");
       invited.refresh();
     } catch (cause) {
       showError(cause, "The invitation could not be sent.");
@@ -101,7 +102,15 @@ export function OperatorsPanel() {
     <form className="operators-invite-form" onSubmit={invite}>
       <label className="form-label">Email<input required type="email" value={email} placeholder="operator@example.com" onChange={(event) => setEmail(event.target.value)} /></label>
       <label className="form-label">Name<input required maxLength={120} value={displayName} placeholder="Operator name" onChange={(event) => setDisplayName(event.target.value)} /></label>
+      <label className="form-label">Invitation role
+        <select aria-label="Invitation role" value={role} disabled={saving} aria-describedby="invitation-role-help" onChange={event => setRole(event.target.value as StoredOperator["role"])}>
+          {Object.entries(operatorRoleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
       <Button disabled={saving}>{saving ? "Sending…" : "Invite operator"}</Button>
+      <div className="invitation-role-help" id="invitation-role-help">
+        {Object.entries(operatorRoleLabels).map(([value, label]) => <p key={value}><strong>{label}</strong> — {operatorRoleDescriptions[value as StoredOperator["role"]]}</p>)}
+      </div>
     </form>
     {message && <p className="save-message" role="status">{message}</p>}
     <div className="operators-list" aria-label="Active operators">
