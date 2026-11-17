@@ -8,7 +8,7 @@ import { Button } from "../../../app/client/ui/button";
 import { ErrorState } from "../../../app/client/ui/lit-states";
 import { LitPage } from "../../../app/client/ui/lit-page";
 import { LoadingState } from "../../../app/client/ui/states";
-import { isVectorMark, markToPng, uploadMark } from "../../../app/client/ui/mark-image";
+import { isVectorMark, markToPng, uploadMark, uploadIcon } from "../../../app/client/ui/mark-image";
 import { FoundCard, type FoundPage } from "./found-card";
 import { foundLayout } from "./found-components";
 import { bringHistory } from "./bring-history";
@@ -22,7 +22,7 @@ type SettingsResponse = { settings: Awaited<ReturnType<PageSettingsService["get"
 export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: string; ownerId: string }) {
   const { data, error, loading } = useAppData<SettingsResponse>("/api/app/page-settings");
   const { draft, setDraft, ready, storageError, clear } = useSetupDraft(ownerId);
-  const { website, found, review } = draft;
+  const { website, review } = draft;
   const [reading, setReading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<"publishing" | "history" | "checking" | "opening" | null>(null);
@@ -30,7 +30,9 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
   if ((loading && !data) || !ready) return <LoadingState />;
   if (error || !data?.settings) return <ErrorState onRetry={() => window.location.reload()}>{error ?? "Your page settings could not be loaded."}</ErrorState>;
   const settings = data.settings;
-  const plain = (): FoundPage => ({ pageName: settings.pageName, tagline: settings.tagline, accentColor: settings.accentColor.toUpperCase(), mark: null, components: [], groups: [], statusPage: null, existing: null, history: false });
+  const suggestedZone = acceptedZone(settings.timezone === "UTC" ? Intl.DateTimeFormat().resolvedOptions().timeZone : settings.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const found = draft.found ? { ...draft.found, timezone: draft.found.timezone ?? suggestedZone } : null;
+  const plain = (): FoundPage => ({ timezone: suggestedZone, pageName: settings.pageName, tagline: settings.tagline, accentColor: settings.accentColor.toUpperCase(), mark: null, components: [], groups: [], statusPage: null, existing: null, history: false });
   const address = new URL(publicPageOrigin).host;
 
   async function read(event: FormEvent) {
@@ -63,16 +65,14 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
     setProgress("publishing"); setMessage(null);
     try {
       const { pageName, tagline, accentColor } = found;
-      // Setup does not ask for the time zone. Keep the installed choice; only an invalid saved zone needs recovery.
-      const timezone = acceptedZone(settings.timezone, Intl.DateTimeFormat().resolvedOptions().timeZone);
+      const timezone = found.timezone;
       const { hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, emailBranding, aiToneInstructions, wordingBlockedTerms, wordingFriendlyLength } = settings;
       const next: Required<PageSettingsInput> = { theme: settings.theme, template: settings.template, widgetAppearance: settings.widgetAppearance, pageName: pageName.trim(), tagline: tagline.trim(), accentColor, timezone, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, emailBranding, aiToneInstructions, wordingBlockedTerms, wordingFriendlyLength };
       await appApi<SettingsResponse>("/api/app/page-settings", { method: "PUT", body: JSON.stringify(next) });
       if (found.mark) {
-        // The page still opens with a letter mark if this browser cannot draw the file.
-        const png = await markToPng(found.mark.src, found.mark.vector).catch(() => null);
-        if (png) await uploadMark(png);
+        await uploadMark(await markToPng(found.mark.src, found.mark.vector));
       }
+      if (found.icon) await uploadIcon(await markToPng(found.icon.src, found.icon.vector, true));
       if (found.existing && found.history) {
         setProgress("history");
         await bringHistory(found, found.existing);

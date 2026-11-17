@@ -132,7 +132,7 @@ function footerResources(model: PublicSnapshotModel) {
 function pageShell(title: string, body: string, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots, current: "root" | "history" | "other") {
   const { settings, overall } = model;
   const publicOrigin = model.origin;
-  const masthead = publicMasthead(settings.pageName, current === "root" ? "status" : current === "history" ? "history" : undefined, settings.tagline, !model.prelaunch);
+  const masthead = publicMasthead(settings.pageName, current === "root" ? "status" : current === "history" ? "history" : undefined, settings.tagline, !model.prelaunch, Boolean(settings.logoKey));
   const website = model.websiteUrl ? new URL(model.websiteUrl) : null;
   const websiteLink = website ? `<a href="${escapeHtml(website.href)}">← ${escapeHtml(website.hostname)}</a>` : "";
   const meta = `<p class="page-meta">${websiteLink}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span></p>`;
@@ -247,7 +247,7 @@ function renderHistory(model: ReturnType<typeof toPublicModel>, slots: LampServe
   return pageShell(`${month ?? "History"} · ${model.settings.pageName}`, `${renderHistoryContent(model, month)}`, model, slots, "history");
 }
 
-export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}): RenderedSnapshot {
+export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null; iconDataUrl?: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}): RenderedSnapshot {
   const model = toPublicModel(source, generatedAt, policies);
   const dependencies = source.dependencies ?? [];
   const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => `<article class="component"><div class="component-name"><h3>${escapeHtml(row.name)}</h3><p><a href="${escapeHtml(row.statusPageUrl)}">Reported by ${escapeHtml(row.vendorName)}</a></p><p>${escapeHtml(row.state ?? "Waiting for first read")}</p>${row.unavailableAt ? `<p>Vendor status unavailable since ${timestamp(row.unavailableAt, model.settings.timezone)}. Last reported: ${escapeHtml(row.state ?? "No observation")}.</p>` : ""}</div></article>`).join("")}</section>` : "";
@@ -265,9 +265,9 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
     { key: "status.json", body: JSON.stringify(statusPayload(model)), contentType: "application/json; charset=utf-8" },
     { key: "assets/status-page.js", body: publicPageScript, contentType: "application/javascript; charset=utf-8" },
     { key: "assets/status-page.css", body: publicPageStyles(model.settings.accentColor, model.theme, model.origin), contentType: "text/css; charset=utf-8" },
-    { key: "assets/mark.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl }, "mark"), contentType: "image/svg+xml; charset=utf-8" },
-    { key: "assets/favicon.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl }, "favicon"), contentType: "image/svg+xml; charset=utf-8" },
-    { key: "assets/og.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl }, "og"), contentType: "image/svg+xml; charset=utf-8" },
+    { key: "assets/mark.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "mark"), contentType: "image/svg+xml; charset=utf-8" },
+    { key: "assets/favicon.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "favicon"), contentType: "image/svg+xml; charset=utf-8" },
+    { key: "assets/og.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "og"), contentType: "image/svg+xml; charset=utf-8" },
     { key: "not-found.html", body: renderNotFoundPage(model, slots), contentType: "text/html; charset=utf-8" },
     ...model.incidents.map((incident) => ({ key: `incidents/${encodeURIComponent(incident.reference)}.html`, body: renderIncidentPage(incident, model, slots), contentType: "text/html; charset=utf-8" })),
   ];

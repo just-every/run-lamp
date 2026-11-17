@@ -47,3 +47,6 @@
 .page-title-row { display: flex; align-items: end; justify-content: space-between; gap: 20px; min-height: 72px; margin-bottom: 4px; }
 .page-title-row > div > p:not(.eyebrow) { max-width: 62ch; margin: 0; color: var(--ink-2); font-size: 16px; line-height: 1.55; }
 .page-title-row .quiet-link { margin-top: 12px; }
+
+.app-brand { min-width: 0; font-size: 22px; line-height: 1.2; overflow-wrap: anywhere; }
+.app-brand span { min-width: 0; }
