@@ -18,6 +18,9 @@ export function BrandCard({ settings, accentColor, footerCreditEnabled, onAccent
   const website = useAppData<WebsiteResponse>("/api/app/website");
   const [logo, setLogo] = useState<File | null>(null);
   const [address, setAddress] = useState("");
+  const [accentBlurred, setAccentBlurred] = useState(false);
+  const accentInvalid = !/^#[0-9a-f]{6}$/i.test(accentColor);
+  const showAccentError = accentBlurred && accentInvalid;
   const version = encodeURIComponent(settings.updatedAt);
   const known = website.data?.website ?? null;
 
@@ -58,7 +61,15 @@ export function BrandCard({ settings, accentColor, footerCreditEnabled, onAccent
       <figure><figcaption>Favicon</figcaption><img className="brand-favicon" src={`/api/app/page-settings/brand/favicon?v=${version}`} alt="" /></figure>
       <figure><figcaption>Social image</figcaption><img className="brand-social" src={`/api/app/page-settings/brand/social?v=${version}`} alt="" /></figure>
     </div>
-    <label className="form-label">Accent colour<span className="colour-field"><input type="color" className="colour-picker" aria-label="Pick accent colour" value={/^#[0-9a-f]{6}$/i.test(accentColor) ? accentColor : "#000000"} onChange={(event) => onAccentChange(event.target.value.toUpperCase(), true)} /><input required pattern="#[0-9A-Fa-f]{6}" value={accentColor} onChange={(event) => onAccentChange(event.target.value)} /></span></label>
+    <div className="form-label">
+      <label htmlFor="accent-colour">Accent colour</label>
+      <span className="colour-field">
+        <input type="color" className="colour-picker" aria-label="Pick accent colour" value={accentInvalid ? settings.accentColor : accentColor} onChange={event => { setAccentBlurred(false); onAccentChange(event.target.value.toUpperCase(), true); }} />
+        <input id="accent-colour" required pattern="#[0-9A-Fa-f]{6}" value={accentColor} aria-invalid={showAccentError || undefined} aria-describedby={showAccentError ? "accent-colour-help accent-colour-error" : "accent-colour-help"} onChange={event => { setAccentBlurred(false); onAccentChange(event.target.value); }} onBlur={() => setAccentBlurred(true)} />
+      </span>
+      <small id="accent-colour-help">Pick a colour, or type it like #1F3A5F.</small>
+      {showAccentError && <p className="save-message" id="accent-colour-error" role="alert">This colour has not been saved. Use # followed by six letters or numbers from 0–9 and A–F, or pick a colour above.</p>}
+    </div>
     {known ? <div className="brand-website"><span>Read from {shortUrl(known.url)} on {new Date(known.readAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span><Button type="button" variant="secondary" disabled={busy} onClick={() => readWebsite(known.url)}>Read website again</Button></div>
       : <div className="brand-website"><label className="form-label">Website<input type="text" inputMode="url" placeholder="example.com" value={address} onChange={(event) => setAddress(event.target.value)} /></label><Button type="button" variant="secondary" disabled={busy || !address.trim()} onClick={() => readWebsite(address)}>Read website</Button></div>}
     <details className="brand-upload">

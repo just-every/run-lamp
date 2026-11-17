@@ -8,6 +8,14 @@ export const operatorRoleLabels: Record<Role, string> = {
   owner: "Owner", admin: "Admin", communicator: "Communicator", responder: "Responder", viewer: "Viewer",
 };
 
+export const operatorRoleDescriptions: Record<Role, string> = {
+  owner: "Full control, including granting ownership and removing operators.",
+  admin: "Manage settings and operators, but cannot change an Owner’s access.",
+  communicator: "Write and publish updates, without managing settings or operators.",
+  responder: "Write drafts and internal notes, but cannot publish updates.",
+  viewer: "Read the incident desk, without making changes.",
+};
+
 export function OperatorRoleSelect({ operator, disabled, lastOwner, onChange }: {
   operator: StoredOperator;
   disabled: boolean;

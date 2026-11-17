@@ -89,3 +89,13 @@ test("A refused Impact save keeps the chosen value for Retry, and an unsaved SMS
   await page.getByRole("link", { name: "Writing", exact: true }).click();
   await page.waitForFunction(() => location.hash === "#writing");
 });
+
+test("An invalid accent colour preserves the saved colour and recovers through typing or the picker", { timeout: 120_000 }, async () => {
+  const colourContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  try {
+    await colourContext.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
+    const colourPage = await colourContext.newPage();
+    const { accentColourFlow } = await import('./helpers/accent-colour-flow.mjs');
+    await accentColourFlow({ page: colourPage, origin });
+  } finally { await colourContext.close(); }
+});

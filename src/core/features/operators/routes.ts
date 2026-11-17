@@ -8,7 +8,7 @@ import type { createLampAuth } from '../../platform/auth';
 import { createOperatorRepository, type StoredOperator } from './repository';
 export type OperatorReadSession = { session: Session; operator: StoredOperator };
 const idSchema = z.union([z.uuid(),z.string().regex(/^[0-9A-HJKMNP-TV-Z]{26}$/)]);
-const inviteSchema = z.object({email:z.email(),displayName:z.string().trim().min(1).max(120)}).strict();
+const inviteSchema = z.object({email:z.email(),displayName:z.string().trim().min(1).max(120),role:z.enum(OPERATOR_ROLES).default("communicator")}).strict();
 export function requireOperator(auth: () => OperatorAuth, authorizedRead?: (request: Request) => OperatorReadSession | undefined): MiddlewareHandler<AppEnv> {
   return async (c,next) => {
     // A document's internal GETs share its just-validated authority. Only the
@@ -50,8 +50,8 @@ export function registerOperatorRoutes(app:Hono<AppEnv>,auth:()=>OperatorAuth,pu
   app.get('/api/app/operators/invited',async c=> {await auth().listOperators(c.req.raw);return c.json({operators:await createOperatorRepository(c.env.DB).listInvitedOperators()});});
   app.get('/api/app/operators/former',async c=> {await auth().listOperators(c.req.raw);return c.json({operators:await createOperatorRepository(c.env.DB).listFormerOperators()});});
   app.post('/api/app/operators/invite',async c=> {
-    const parsed=inviteSchema.safeParse(await c.req.json().catch(()=>null));if(!parsed.success)return c.json({error:'An email and display name are required.'},400);
-    await auth().invite(c.req.raw,{...parsed.data,role:c.get('operator').role==='admin'?'member':'owner'});await createOperatorRepository(c.env.DB).recordInvitation(parsed.data.email,c.get('operator').id);
+    const parsed=inviteSchema.safeParse(await c.req.json().catch(()=>null));if(!parsed.success)return c.json({error:'Enter an email and name, and choose a role.'},400);
+    await (auth() as ReturnType<typeof createLampAuth>).inviteWithRole(c.req.raw,parsed.data);await createOperatorRepository(c.env.DB).recordInvitation(parsed.data.email,c.get('operator').id);
     // Local development suppresses mail, so the panel must not say an email went out.
     return c.json({email:options.localMail?'suppressed':'sent'},202);
   });

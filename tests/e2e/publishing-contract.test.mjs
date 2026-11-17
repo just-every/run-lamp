@@ -668,7 +668,7 @@ test('INCIDENT-013 — each set and clear appends the exact acting operator and 
     await j.signIn(undefined, { fresh: true });
     const owner = (await j.json('/api/app/session')).operator;
     const colleagueEmail = owner.email.replace(/^[^@]+/, 'synthetic-lamp-impact-3');
-    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator' }, 202);
+    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator', role: 'admin' }, 202);
     await j.signIn(colleagueEmail);
     const colleague = (await j.json('/api/app/session')).operator;
     assert.notEqual(colleague.id, owner.id);
