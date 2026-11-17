@@ -7,6 +7,8 @@ export async function exerciseRebuild(env, input) {
   const blobs = createR2BlobStore(env.SNAPSHOTS);
   const cache = createRetainedSnapshotCache(env);
   const attemptedVersions = [];
+  const cleanup = { lists: [], deletes: [] };
+  let overlap = null, overlapped = false;
   let loads = 0, completed = false, pointerWrites = 0;
   const builds = [];
   const source = input.source ?? {
@@ -21,7 +23,22 @@ export async function exerciseRebuild(env, input) {
     completeWork: async () => { completed = true; },
     markInterruptedBuilds: async () => {}, claimPendingWork: async () => true, releaseWorkLease: async () => {},
   };
-  const faultBlobs = { ...blobs, async putTextConditionally(key, ...args) {
+  const faultBlobs = { ...blobs,
+  async list(options) {
+    cleanup.lists.push(options);
+    if (input.cleanupFailure) throw new Error("Injected R2 list failure");
+    if (input.overlapGeneration && !overlapped) {
+      overlapped = true;
+      overlap = await exerciseRebuild(env, { generation: input.overlapGeneration });
+    }
+    if (input.cleanupDelay) await new Promise(resolve => setTimeout(resolve, input.cleanupDelay));
+    return blobs.list(options);
+  },
+  async delete(keys) {
+    cleanup.deletes.push(keys);
+    return blobs.delete(keys);
+  },
+  async putTextConditionally(key, ...args) {
     if (key === "snapshots/current.json") {
       pointerWrites++;
       if (input.pointerFailure) throw new Error("Injected R2 selector failure");
@@ -39,5 +56,5 @@ export async function exerciseRebuild(env, input) {
   try { await service.rebuild(); } catch (cause) { failure = cause.message; }
   const selected = await blobs.getText("snapshots/current.json");
   const retained = await cache.read();
-  return { loads, completed, pointerWrites, builds, attemptedVersions, failure, pointer: selected ? JSON.parse(selected.text) : null, replica: retained ? JSON.parse(retained) : null };
+  return { loads, completed, pointerWrites, builds, attemptedVersions, failure, cleanup, overlap, pointer: selected ? JSON.parse(selected.text) : null, replica: retained ? JSON.parse(retained) : null };
 }

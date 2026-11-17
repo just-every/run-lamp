@@ -25,6 +25,10 @@ export function createR2BlobStore(bucket: R2Bucket): BlobStore {
     async putBytes(key, bytes, contentType) {
       await bucket.put(key, bytes, { httpMetadata: { contentType } });
     },
+    async list(options) {
+      const result = await bucket.list(options);
+      return { keys: result.objects.map(object => object.key), prefixes: result.delimitedPrefixes, truncated: result.truncated };
+    },
     async delete(key) {
       await bucket.delete(key);
     },
