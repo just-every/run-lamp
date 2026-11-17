@@ -13,6 +13,15 @@ const wranglerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = wranglerRequire('miniflare');
 const { build } = wranglerRequire('esbuild');
 
+async function snapshotWorkerScript() {
+  const built = await build({ entryPoints: ['tests/e2e/snapshot-retained.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false, external: ['cloudflare:workers'], plugins: [{ name: 'vite-assets', setup(builder) {
+    builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: args.path.endsWith('?raw') ? 'raw' : 'inline' }));
+    builder.onLoad({ filter: /.*/, namespace: 'raw' }, async args => ({ contents: `export default ${JSON.stringify(await readFile(args.path, 'utf8'))}`, loader: 'js' }));
+    builder.onLoad({ filter: /.*/, namespace: 'inline' }, async args => ({ contents: `export default ${JSON.stringify('data:application/octet-stream;base64,' + (await readFile(args.path)).toString('base64'))}`, loader: 'js' }));
+  } }] });
+  return built.outputFiles[0].text;
+}
+
 test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-resilience-'));
   let runtime, j, monitor, alarmTimer;
@@ -57,12 +66,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
 
     // Real public routes, R2 and durable replica. Its repository throws on every
     // read; only the provider edges are replaced to inject failure.
-    const built = await build({ entryPoints: ['tests/e2e/snapshot-retained.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false, external: ['cloudflare:workers'], plugins: [{ name: 'vite-assets', setup(builder) {
-      builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: args.path.endsWith('?raw') ? 'raw' : 'inline' }));
-      builder.onLoad({ filter: /.*/, namespace: 'raw' }, async args => ({ contents: `export default ${JSON.stringify(await readFile(args.path, 'utf8'))}`, loader: 'js' }));
-      builder.onLoad({ filter: /.*/, namespace: 'inline' }, async args => ({ contents: `export default ${JSON.stringify('data:application/octet-stream;base64,' + (await readFile(args.path)).toString('base64'))}`, loader: 'js' }));
-    } }] });
-    const options = { bindings: { LAMP_APP_HOST: 'app.example' }, name: 'lamp-retained-journey', resourcePersistencePath: join(directory, 'storage'), modules: true, script: built.outputFiles[0].text, compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'] };
+    const options = { bindings: { LAMP_APP_HOST: 'app.example' }, name: 'lamp-retained-journey', resourcePersistencePath: join(directory, 'storage'), modules: true, script: await snapshotWorkerScript(), compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'] };
     runtime = new Miniflare(convertV4MiniflareOptions(options));
     const read = (path, init) => runtime.dispatchFetch(`https://page.example${path}`, init);
     const publishedAt = new Date().toISOString();
@@ -236,4 +240,132 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     monitor?.closeAllConnections(); if (monitor) await new Promise(resolve => monitor.close(resolve));
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/snapshot-retention.worker.ts' });
+  try {
+    const bucket = await j.runtime.getR2Bucket('SNAPSHOTS');
+    const keys = async () => (await bucket.list({ prefix: 'snapshots/' })).objects.map(object => object.key);
+    const versions = async () => [...new Set((await keys()).filter(key => key.split('/').length > 2).map(key => key.split('/')[1]))];
+    const pointer = async () => (await bucket.get('snapshots/current.json'))?.json();
+    const component = await j.component('Synthetic Lamp retention service');
+    const incident = await j.incident('Synthetic Lamp retention publication', [component]);
+    const publish = async number => {
+      await j.save(incident.id, { details: `Synthetic Lamp retention update ${number}` });
+      await j.publish(incident.id);
+      await j.visible('/', `Synthetic Lamp retention update ${number}`);
+      await eventually(versions, value => value.length === 2, 'publication completes bounded cleanup');
+    };
+    for (let number = 1; number <= 5; number++) {
+      const previous = await pointer();
+      await publish(number);
+      const current = await pointer();
+      assert.notEqual(current.version, previous.version);
+      assert.deepEqual((await versions()).sort(), [current.version, previous.version].sort());
+    }
+    console.info('RETENTION operator publish route: five publishes hold exactly current+previous=2');
+    const before = await keys();
+    const deletes = (await j.json('/test/retention')).deletes;
+    await j.json('/test/retention', 'PUT', { failWrites: true });
+    await j.save(incident.id, { details: 'Synthetic Lamp failed snapshot write' });
+    // Incident publication succeeds independently of retryable snapshot delivery.
+    await j.publish(incident.id);
+    const latest = await j.db.prepare('SELECT status FROM snapshot_builds ORDER BY rowid DESC LIMIT 1').first();
+    assert.equal(latest.status, 'failed');
+    assert.deepEqual((await keys()).sort(), before.sort());
+    assert.equal((await j.json('/test/retention')).deletes, deletes);
+    await j.json('/test/retention', 'PUT', { failWrites: false });
+    for (let number = 0; number < 10; number++) {
+      const version = `synthetic-lamp-legacy-${number}`;
+      await bucket.put(`snapshots/${version}/retained.json`, JSON.stringify({ version, generation: 0 }));
+      await bucket.put(`snapshots/${version}/page.html`, `Synthetic legacy page ${number}`);
+    }
+    const counts = [];
+    for (let number = 6; number <= 10; number++) {
+      await j.save(incident.id, { details: `Synthetic Lamp retention update ${number}` });
+      await j.publish(incident.id);
+      await j.visible('/', `Synthetic Lamp retention update ${number}`);
+      counts.push((await versions()).length);
+      if (counts.at(-1) === 2) break;
+    }
+    assert.equal(counts.at(-1), 2, 'real publish requests drain the legacy pile');
+    console.info(`RETENTION operator publish route: ten old versions drained; versionCounts=${counts.join(',')}`);
+  } finally { await j.close(); }
+  const runtime = new Miniflare(convertV4MiniflareOptions({
+    bindings: { LAMP_APP_HOST: 'app.example' },
+    name: 'lamp-retention', modules: true, script: await snapshotWorkerScript(),
+    compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'],
+    durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'],
+  }));
+  try {
+    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
+    const publish = async input => {
+      const response = await runtime.dispatchFetch('https://page.example/test/rebuild', { method: 'POST', body: JSON.stringify(input) });
+      assert.equal(response.status, 200);
+      return response.json();
+    };
+    const keys = async () => (await bucket.list({ prefix: 'snapshots/' })).objects.map(object => object.key).sort();
+    const versions = async () => [...new Set((await keys()).filter(key => key.split('/').length > 2).map(key => key.split('/')[1]))].sort();
+    const published = [];
+    for (let generation = 1; generation <= 5; generation++) {
+      const result = await publish({ generation });
+      assert.equal(result.failure, null);
+      published.push(result.pointer.version);
+      assert.deepEqual(await versions(), published.slice(-2).sort(), 'only the current and actual predecessor remain');
+      const response = await runtime.dispatchFetch('https://page.example/');
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), result.pointer.version);
+      await response.arrayBuffer();
+    }
+    console.info('RETENTION five publishes: versions=2');
+    for (const failure of [{ replicaFailure: 'always' }, { pointerFailure: true }]) {
+      const before = await keys();
+      const result = await publish({ generation: failure.pointerFailure ? 7 : 6, ...failure });
+      assert.ok(result.failure);
+      assert.deepEqual(result.cleanup.deletes, []);
+      assert.deepEqual(result.cleanup.lists, []);
+      const after = await keys();
+      for (const key of before) assert.ok(after.includes(key), 'a failed publish deletes no existing object');
+    }
+    // An upgrade can find legacy versions with only the existing retained bundle
+    // as their sequence fence. Give one more than a deletion page to prove resume.
+    const legacy = [];
+    for (let generation = 0; generation < 10; generation++) {
+      const version = `synthetic-lamp-old-${generation}`;
+      legacy.push(version);
+      await bucket.put(`snapshots/${version}/retained.json`, JSON.stringify({ version, generation }));
+      for (let item = 0; item < (generation === 0 ? 300 : 1); item++) await bucket.put(`snapshots/${version}/artifact-${item}`, 'synthetic snapshot');
+    }
+    const deferred = await publish({ generation: 20, cleanupFailure: true });
+    assert.equal(deferred.failure, null, 'cleanup failure cannot undo a successful publish');
+    const timed = await publish({ generation: 21, cleanupDelay: 1_050 });
+    assert.equal(timed.failure, null);
+    assert.deepEqual(timed.cleanup.deletes, [], 'no further storage work starts after the time budget');
+    let remaining = legacy.length, rounds = 0;
+    const counts = [];
+    while (rounds < 8) {
+      const result = await publish({ generation: 22 + rounds++ });
+      assert.equal(result.failure, null);
+      const present = await versions();
+      remaining = legacy.filter(version => present.includes(version)).length;
+      counts.push(remaining);
+      assert.ok(result.cleanup.deletes.length <= 4, 'bounded deletion pages per publication');
+      for (const batch of result.cleanup.deletes) assert.ok(batch.length <= 256, 'bounded explicit key batches');
+      if (present.length === 2) break;
+    }
+    assert.equal(remaining, 0);
+    assert.equal((await versions()).length, 2);
+    console.info(`RETENTION legacy pile: oldVersions=10 remaining=${counts.join(',')} finalVersions=2`);
+    const overlapping = await publish({ generation: 40, overlapGeneration: 41 });
+    assert.equal(overlapping.failure, null);
+    assert.equal(overlapping.overlap.failure, null);
+    assert.equal(overlapping.pointer.generation, 41);
+    const current = overlapping.pointer.version;
+    const previous = overlapping.builds.find(build => build.status === 'published').version;
+    assert.deepEqual(await versions(), [current, previous].sort(), 'the delayed older cleanup preserves the concurrent winner and its predecessor');
+    const superseded = await publish({ generation: 39 });
+    assert.equal(superseded.completed, false);
+    assert.deepEqual(superseded.cleanup.deletes, [], 'a superseded publish cannot run retention');
+  } finally { await runtime.dispose(); }
 });
