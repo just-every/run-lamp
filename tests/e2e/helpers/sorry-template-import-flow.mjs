@@ -92,7 +92,11 @@ export async function sorryTemplateImportFlow({ runtime, move, send, t }) {
     for (const kind of ['template', 'update-template']) assert.equal(nameConflict.body.report.counts[kind].rejected, 1, `${kind}: an existing name is refused instead of replaced`);
     assert.deepEqual(await templateRows(), before.templates, 'name conflicts preserve complete existing templates of both kinds');
 
-    const applied = await move.apply(reviewed.body);
+    const stale = await move.apply(reviewed.body);
+    assert.equal(stale.status, 409, "changing the supplied source requires a fresh review before application");
+    const fresh = await move.preview({ ...source, files });
+    assert.equal(fresh.status, 200, JSON.stringify(fresh.body));
+    const applied = await move.apply(fresh.body);
     assert.equal(applied.status, 200, JSON.stringify(applied.body));
     assert.equal(applied.body.job.state, 'completed');
     const templates = await templateRows();
@@ -122,7 +126,9 @@ export async function sorryTemplateImportFlow({ runtime, move, send, t }) {
     }
     const exactNative = await importedRecordInventory(runtime);
     assert.deepEqual(await notificationInventory(runtime), before.notifications, 'apply and complete template reads remain silent');
-    assert.deepEqual(await publicAliasInventory(runtime), before.public, 'template imports publish no incident or alias');
+    const publicAfter = await publicAliasInventory(runtime);
+    for (const alias of before.public) assert.deepEqual(publicAfter.find(row => row.path === alias.path), alias, 'template import preserves every existing public alias');
+    for (const table of ['incidents', 'incident_updates', 'maintenance', 'maintenance_notices']) assert.deepEqual(exactNative[table], before.native[table], 'template import publishes no incident or maintenance record');
     const repeated = await move.preview({ ...source, files });
     assert.equal(repeated.status, 200, JSON.stringify(repeated.body));
     assert.equal(repeated.body.report.state, 'already imported');
