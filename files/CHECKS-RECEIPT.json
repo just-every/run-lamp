@@ -1,0 +1,153 @@
+{
+  "author": "Run Edit Run fleet",
+  "at": "2026-11-17T22:37:31.575281+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-design-notify-2",
+  "head": "28998ea138ef6c8c8572984a2a64cf27b832403b",
+  "main": "96794ba126e1cf93642760b65a92a02541221045",
+  "priorRound": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+  "checks": [
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run validate:release",
+      "exit": 0,
+      "releaseEditRequired": false
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='operator follows real scheduled' tests/e2e/update-reminders.test.mjs",
+      "exit": 0,
+      "passed": 1
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "passed": 3
+    },
+    {
+      "command": "node <packet>/FOCUSED-BROWSER.mjs",
+      "exit": 0,
+      "flows": [
+        "mailSettingsBrowserFlow",
+        "maintenanceBrowserFlow (built production Worker)"
+      ]
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "cases": 111,
+      "assertionScripts": 10,
+      "total": 121
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "git log --merges origin/main..HEAD",
+      "output": "",
+      "exit": 0
+    }
+  ],
+  "counts": {
+    "automaticOwnerSteps": {
+      "before": 2,
+      "after": 0
+    },
+    "advanceAnnouncementTotalFollowUps": {
+      "before": 3,
+      "after": 1,
+      "remaining": "main\u2019s advance reminder"
+    },
+    "recentAnnouncementReminder": {
+      "before": 0,
+      "after": 0
+    },
+    "testCases": {
+      "before": 111,
+      "after": 111
+    },
+    "assertionScripts": {
+      "before": 10,
+      "after": 10
+    },
+    "clauses": {
+      "before": {
+        "done": 60,
+        "partial": 129,
+        "missing": 55
+      },
+      "after": {
+        "done": 60,
+        "partial": 129,
+        "missing": 55
+      }
+    }
+  },
+  "screens": [
+    {
+      "file": "before/scheduled-overview-1440.png",
+      "width": 1440,
+      "sha256": "d632e594ad383e5bc90752b545cba2dd160e0b99c192815d4d22b923a2f2eb72",
+      "inspected": true
+    },
+    {
+      "file": "before/scheduled-overview-390.png",
+      "width": 390,
+      "sha256": "7d7ba2b86a8198dd377fc246aa74dd646aaecc69c1082a8d1208a803b0127563",
+      "inspected": true
+    },
+    {
+      "file": "before/local-notification-settings-1440.png",
+      "width": 1440,
+      "sha256": "22ab245603b05a5e03de7bd007373b236ef36cf2eddb04d896cde8bc5e95569b",
+      "inspected": true
+    },
+    {
+      "file": "before/local-notification-settings-390.png",
+      "width": 390,
+      "sha256": "f0f74054ad6baea7cc95236b3016289aedc8d02add69ba52aa9f15f2b0a007d4",
+      "inspected": true
+    },
+    {
+      "file": "after/scheduled-overview-1440.png",
+      "width": 1440,
+      "sha256": "ee813b9ee2fc527674fb5f1ce8a9618a5065dec4b8097fb6b0898333204032d1",
+      "inspected": true
+    },
+    {
+      "file": "after/scheduled-overview-390.png",
+      "width": 390,
+      "sha256": "1e1d2624904abf5a7712599e835be5a02a2900b8ef73e7f934a05d1e4020f6e7",
+      "inspected": true
+    },
+    {
+      "file": "after/local-notification-settings-1440.png",
+      "width": 1440,
+      "sha256": "b13c05e094e27db32f21255966955deee11bdee32daed91b5f326ca391a34580",
+      "inspected": true
+    },
+    {
+      "file": "after/local-notification-settings-390.png",
+      "width": 390,
+      "sha256": "bbe4459e083aa520dd59d6b45f20028323df7c22fb004aa9902389e7444c8eb0",
+      "inspected": true
+    }
+  ],
+  "publicationScan": "Fleet/Mac custody; unavailable in this cloud, as brief states."
+}

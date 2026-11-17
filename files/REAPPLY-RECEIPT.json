@@ -1,0 +1,40 @@
+{
+  "priorHead": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+  "freshMain": "96794ba126e1cf93642760b65a92a02541221045",
+  "byteIdenticalToPreviousRound": [
+    "docs/subscribers-and-notifications.md",
+    "src/core/features/overview/ui/follow-ups.tsx",
+    "src/core/features/overview/ui/overview-page.tsx",
+    "src/core/features/page-settings/ui/mail-delivery-settings.tsx",
+    "src/core/features/page-settings/ui/notification-settings-tab.tsx",
+    "src/core/features/page-settings/ui/sms-settings.tsx",
+    "tests/e2e/helpers/local-subscribers-flow.mjs",
+    "tests/e2e/helpers/mail-settings-browser-flow.mjs",
+    "tests/e2e/helpers/maintenance-browser-flow.mjs"
+  ],
+  "intentionalAdaptations": {
+    "src/core/features/overview/follow-ups/maintenance.repository.ts": "Keep main\u2019s advance-announcement reminder obligation and recent-notice exclusion; re-apply only automatic-step filters.",
+    "tests/e2e/helpers/follow-ups-flow.mjs": "Keep main\u2019s advance/recent fixtures, reminder timing assertions and cancellation cleanup; add missed-automatic-step assertions alongside.",
+    "tests/e2e/maintenance-timezone.test.mjs": "Expect main\u2019s retained advance reminder while proving saved automatic start/end times and absence of automatic-step follow-ups.",
+    "sources.lock.json": "Regenerate last against fresh main plus this round."
+  },
+  "candidate": "28998ea138ef6c8c8572984a2a64cf27b832403b",
+  "productParent": "96794ba126e1cf93642760b65a92a02541221045",
+  "changedFilesFromMain": [
+    "docs/subscribers-and-notifications.md",
+    "sources.lock.json",
+    "src/core/features/overview/follow-ups/maintenance.repository.ts",
+    "src/core/features/overview/ui/follow-ups.tsx",
+    "src/core/features/overview/ui/overview-page.tsx",
+    "src/core/features/page-settings/ui/mail-delivery-settings.tsx",
+    "src/core/features/page-settings/ui/notification-settings-tab.tsx",
+    "src/core/features/page-settings/ui/sms-settings.tsx",
+    "tests/e2e/helpers/follow-ups-flow.mjs",
+    "tests/e2e/helpers/local-subscribers-flow.mjs",
+    "tests/e2e/helpers/mail-settings-browser-flow.mjs",
+    "tests/e2e/helpers/maintenance-browser-flow.mjs",
+    "tests/e2e/maintenance-timezone.test.mjs"
+  ],
+  "mergeCommits": [],
+  "otherFilesMatchFreshMain": true
+}

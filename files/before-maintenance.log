@@ -1,0 +1,15 @@
+BASELINE_FOLLOW_UPS [{"id":"maintenance-reminder:01M7NT3QQVQZRDRJH4YYQH3QT5","kind":"maintenance-reminder","title":"SCH-1: subscriber reminder — Configured-zone window","owner":{"id":"01J00000000000000000000001","displayName":"Contract Operator"},"dueAt":"2027-07-13T23:00:00.000Z","stopCondition":"Record the maintenance reminder, start the window, or cancel it.","failure":null,"link":"/app/maintenance","occurrence":"[\"01M7NT3QQVQZRDRJH4YYQH3QT5\",\"2027-07-14T23:00:00.000Z\",0]"},{"id":"maintenance-start:01M7NT3QQVQZRDRJH4YYQH3QT5","kind":"maintenance-start","title":"SCH-1: automatic start — Configured-zone window","owner":{"id":"01J00000000000000000000001","displayName":"Contract Operator"},"dueAt":"2027-07-14T23:00:00.000Z","stopCondition":"Start or cancel the maintenance window.","failure":null,"link":"/app/maintenance","occurrence":"[\"01M7NT3QQVQZRDRJH4YYQH3QT5\",\"2027-07-14T23:00:00.000Z\",1,0]"},{"id":"maintenance-end:01M7NT3QQVQZRDRJH4YYQH3QT5","kind":"maintenance-end","title":"SCH-1: complete maintenance — Configured-zone window","owner":{"id":"01J00000000000000000000001","displayName":"Contract Operator"},"dueAt":"2027-07-15T00:00:00.000Z","stopCondition":"Complete or cancel the maintenance window.","failure":null,"link":"/app/maintenance","occurrence":"[\"01M7NT3QQVQZRDRJH4YYQH3QT5\",\"2027-07-15T00:00:00.000Z\",1,\"Scheduled\",0]"}]
+✔ MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard (121413.661513ms)
+ℹ PAGE-020 1440px public status page: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px public history: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px public incident permalink: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px VPAT document: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px: full-page status, history, incident, maintenance, VPAT, subscribe result, confirmation, management and saved selection axe passed; keyboard-only subscribe/manage with visible focus and ordered controls passed
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122566.539225

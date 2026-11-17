@@ -1,0 +1,59 @@
+{
+  "main": "96794ba126e1cf93642760b65a92a02541221045",
+  "widths": [
+    1440,
+    390
+  ],
+  "followUps": [
+    {
+      "id": "maintenance-reminder:01M7NT3QQVQZRDRJH4YYQH3QT5",
+      "kind": "maintenance-reminder",
+      "title": "SCH-1: subscriber reminder \u2014 Configured-zone window",
+      "owner": {
+        "id": "01J00000000000000000000001",
+        "displayName": "Contract Operator"
+      },
+      "dueAt": "2027-07-13T23:00:00.000Z",
+      "stopCondition": "Record the maintenance reminder, start the window, or cancel it.",
+      "failure": null,
+      "link": "/app/maintenance",
+      "occurrence": "[\"01M7NT3QQVQZRDRJH4YYQH3QT5\",\"2027-07-14T23:00:00.000Z\",0]"
+    },
+    {
+      "id": "maintenance-start:01M7NT3QQVQZRDRJH4YYQH3QT5",
+      "kind": "maintenance-start",
+      "title": "SCH-1: automatic start \u2014 Configured-zone window",
+      "owner": {
+        "id": "01J00000000000000000000001",
+        "displayName": "Contract Operator"
+      },
+      "dueAt": "2027-07-14T23:00:00.000Z",
+      "stopCondition": "Start or cancel the maintenance window.",
+      "failure": null,
+      "link": "/app/maintenance",
+      "occurrence": "[\"01M7NT3QQVQZRDRJH4YYQH3QT5\",\"2027-07-14T23:00:00.000Z\",1,0]"
+    },
+    {
+      "id": "maintenance-end:01M7NT3QQVQZRDRJH4YYQH3QT5",
+      "kind": "maintenance-end",
+      "title": "SCH-1: complete maintenance \u2014 Configured-zone window",
+      "owner": {
+        "id": "01J00000000000000000000001",
+        "displayName": "Contract Operator"
+      },
+      "dueAt": "2027-07-15T00:00:00.000Z",
+      "stopCondition": "Complete or cancel the maintenance window.",
+      "failure": null,
+      "link": "/app/maintenance",
+      "occurrence": "[\"01M7NT3QQVQZRDRJH4YYQH3QT5\",\"2027-07-15T00:00:00.000Z\",1,\"Scheduled\",0]"
+    }
+  ],
+  "automaticSteps": 2,
+  "totalMaintenanceFollowUps": 3,
+  "tests": {
+    "maintenance": "pass (corrected temporary evidence probe route)",
+    "localSubscribers": "pass",
+    "localOperatorInvitations": "pass"
+  },
+  "temporaryProbeError": "First evidence probe used /api/app/follow-ups (404); corrected to /api/app/overview/follow-ups and reran successfully. No product failure."
+}

@@ -1,0 +1,10 @@
+{
+  "base": "main",
+  "head_sha": "28998ea138ef6c8c8572984a2a64cf27b832403b",
+  "html_url": "https://github.com/just-every/run-lamp/pull/416",
+  "number": 416,
+  "state": "open",
+  "at": "2026-11-17T22:52:21.241021+00:00",
+  "command": "gh api repos/just-every/run-lamp/pulls -X POST --input /tmp/lamp-pr.json",
+  "githubCalls": 1
+}
