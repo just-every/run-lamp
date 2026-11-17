@@ -17,7 +17,9 @@ Authenticated mode asks for a hidden token on a TTY unless --key-file is used.
 No token argument or environment variable is accepted. The token file must be a
 regular file owned by you, with no group/other permissions. --out must be a new
 directory outside this checkout. Public mode accepts an HTTPS origin only and
-does not read a key. Capture performs GET requests only; redirects are refused.
+does not read a key. Capture performs GET requests only; redirects are refused. Authenticated capture
+includes every page of both notice_templates and update_templates, retaining
+collection-page scope and complete wording without choosing publishing defaults.
 Public mode also writes <out>.metadata.json beside the folder, so every file in
 the folder can be selected in Move in.
 `;

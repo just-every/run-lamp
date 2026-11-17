@@ -987,3 +987,7 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
 test('Owner incident communication — manual resolution, customer email and timeline correction', { timeout: 240_000 }, async () => {
   await (await import('./helpers/incident-owner-journey.mjs')).incidentOwnerJourney({ page, browserContext, appUrl, pageUrl, api });
 });
+
+test('Sorry templates — both collections stay complete in Settings and private composers', { timeout: 600_000 }, async () => {
+  await (await import('./helpers/sorry-template-browser-flow.mjs')).sorryTemplateBrowserFlow({ page, appUrl, appFetch, api, screens: previewScreens });
+});
