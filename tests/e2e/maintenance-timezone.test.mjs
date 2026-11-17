@@ -103,7 +103,11 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     const automationTimes = await scheduled.locator('time').evaluateAll(nodes => nodes.map(node => node.dateTime));
     assert.deepEqual(automationTimes, [window.startsAt, window.endsAt], 'the automatic plan uses the actual saved window');
     const followUps = page.getByRole('region', { name: 'Follow-ups', exact: true });
-    await followUps.getByText("No outstanding follow-ups.", { exact: true }).waitFor();
+    const reminder = followUps.locator(`[data-follow-up="maintenance-reminder:${window.id}"]`);
+    await reminder.waitFor();
+    assert.equal(await followUps.locator('[data-follow-up]').count(), 1, 'only the subscriber reminder is outstanding');
+    const reminderDueAt = new Date(Date.parse(window.startsAt) - 24 * 60 * 60 * 1000).toISOString();
+    assert.equal(await reminder.locator('time').getAttribute('datetime'), reminderDueAt);
     assert.equal(await followUps.locator(`[data-follow-up="maintenance-start:${window.id}"], [data-follow-up="maintenance-end:${window.id}"]`).count(), 0, 'future automatic steps need no owner action');
     if (process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE) {
       await mkdir(process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE, { recursive: true });
