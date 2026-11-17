@@ -1,0 +1,21 @@
+{
+  "recordedServerPids": [
+    2169,
+    2212,
+    2236,
+    2249,
+    2360,
+    2440
+  ],
+  "signal": {
+    "pid": 2249,
+    "signal": "SIGTERM"
+  },
+  "remainingRecordedPids": [],
+  "ports": {
+    "8899": "closed",
+    "19102": "closed"
+  },
+  "browser": "closed in finally; fresh non-persistent context",
+  "privateLogs": "removed; excluded from packet"
+}

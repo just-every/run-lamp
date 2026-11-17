@@ -1,0 +1,54 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-lamp",
+  "head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "originMain": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "productBranch": "cloud/gr-mt-lamp-code-17",
+  "gitStatus": "",
+  "sources": [
+    {
+      "path": "src/core/features/social/ui/social-settings.tsx",
+      "sha256": "63b71eacd91e6c0fbad3af26f620b06fae4fa9c4bc2d1c2a9a440296cbff4b45",
+      "domTextOrHtmlApis": []
+    },
+    {
+      "path": "src/core/features/social/routes.ts",
+      "sha256": "0d664dd7e3e2ce9dc9673cd4732cd64321a422f8e0db7eeed5cda6a861f2cecd",
+      "domTextOrHtmlApis": []
+    },
+    {
+      "path": "src/core/features/social/service.ts",
+      "sha256": "b37b4ce480f4a0d5506a1a8a7b02866c3e5d58dfba27daf0b29f645a1338a17b",
+      "domTextOrHtmlApis": []
+    },
+    {
+      "path": "src/core/features/social/repository.ts",
+      "sha256": "801add72de0bad943d1ca3ad372e81dad848f347140ac2853f4f9b3173ed93ef",
+      "domTextOrHtmlApis": []
+    },
+    {
+      "path": "src/core/app/client/ui/api.ts",
+      "sha256": "043f95959808e570132e6fc517c604ab938f93805b4fc1f4df76f3d2fa852e4c",
+      "domTextOrHtmlApis": []
+    },
+    {
+      "path": "src/core/app/client/ui/states.tsx",
+      "sha256": "1abe26c4dad09d8b938d64ead828fd7393fce398f603318b8c05838775b75d49",
+      "domTextOrHtmlApis": []
+    }
+  ],
+  "componentHistory": [
+    {
+      "commit": "3b430ac6e0f2997fe85957f54fb1d03dc4506602",
+      "summary": "Guide owners through chat and social connections",
+      "domTextOrHtmlApiMatches": []
+    },
+    {
+      "commit": "819694685d201546ac6fea35ae15b84c5973f92f",
+      "summary": "Post selected updates to connected social accounts",
+      "domTextOrHtmlApiMatches": []
+    }
+  ],
+  "conclusion": "No DOM text read or HTML reinterpretation API exists in the component or traced helpers. React escapes the text children. The current reported line 57 is a fixed-prefix local documentation link with a three-option network selector."
+}

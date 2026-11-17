@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "selectedFiles": [
+    "REPORT.md",
+    "alert-access-receipt.json",
+    "alert-access-retries.log",
+    "browser-receipt.json",
+    "cleanup-receipt.json",
+    "result.json",
+    "settings-1440.png",
+    "settings-390.png",
+    "social-settings-probe.mjs",
+    "source-trace.json",
+    "typecheck.log"
+  ],
+  "symlinks": 0,
+  "injectedSecretMatches": 0,
+  "credentialShapeMatches": 0,
+  "privateOwnerUrlMatches": 0,
+  "note": "Private logs and generated local configuration are excluded. Browser payload and credentials are explicit synthetic fixtures. Screenshots were visually reviewed for public suitability."
+}

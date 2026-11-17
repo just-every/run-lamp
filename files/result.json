@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "summary": "Alert 34 is a false positive for current main: social settings and its helpers render untrusted account, delivery, status and error values as React text, with no DOM-text-to-HTML sink; the live browser probe confirms literal rendering without script execution.",
+  "tests": "pnpm install --frozen-lockfile PASS; npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive PASS; pnpm typecheck with Node 22.20.0 / pnpm 10.12.4 PASS; cloud_run node social-settings-probe.mjs PASS (7 grouped behavioral assertions at 1440; screenshots at 1440 and 390). Code-scanning trace API returned HTTP 403; no full suite or CI requested for unchanged source.",
+  "security": true
+}

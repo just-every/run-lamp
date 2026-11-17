@@ -1,0 +1,25 @@
+{
+  "status": "pass",
+  "productHead": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "productModified": false,
+  "assertions": [
+    "Real account connect persists a markup-shaped name as literal text and clears the credential input.",
+    "A reload renders the saved account name literally in the server-rendered and hydrated settings.",
+    "All seven delivery-log string fields remain literal text after a real default change refreshes the API resource; no payload elements or handlers appear.",
+    "Each of the three network choices retains its fixed local setup-document link.",
+    "A markup-shaped API error reaches FormError as literal text and a failed default mutation rolls back the optimistic checkbox.",
+    "Real account removal succeeds and the name-derived status message remains literal text.",
+    "No JavaScript page errors occurred."
+  ],
+  "screenshots": [
+    "settings-1440.png",
+    "settings-390.png"
+  ],
+  "assertionViewport": 1440,
+  "observedViewports": [
+    1440,
+    390
+  ],
+  "providerCalls": 0,
+  "caveat": "Delivery values and one PATCH error are browser network-edge fixtures. Account connect, persisted reload, successful default change, and removal use the real local Worker and database."
+}

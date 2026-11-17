@@ -1,0 +1,24 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "command": "gh api repos/just-every/run-lamp/code-scanning/alerts/34 --jq '{number,state,rule:.rule,most_recent_instance,tool,html_url}'",
+  "attempts": 5,
+  "statuses": [
+    403,
+    403,
+    403,
+    403,
+    403
+  ],
+  "retryDelaysSeconds": [
+    15,
+    45,
+    90,
+    150
+  ],
+  "credentialSource": "launcher decrypted bundle, re-read after every launcher refresh",
+  "diagnostic": "Resource not accessible by integration",
+  "apiCallsUsed": 5,
+  "apiBudget": 10,
+  "effect": "Original analysis trace and remote alert state unavailable. Source review and public-door browser probe determine no-change for current main independently."
+}
