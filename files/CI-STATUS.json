@@ -1,0 +1,10 @@
+{
+  "checked_at_utc": "2026-11-17T13:18:07.867061+00:00",
+  "checked_at_epoch": 1794921487.867083,
+  "gh_calls": 2,
+  "run_id": 44090302049,
+  "conclusion": "failure",
+  "head_sha": "2b8e632f16dd3ff2006ae72e9c3ff3649c2ce3b9",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090302049",
+  "status": "completed"
+}

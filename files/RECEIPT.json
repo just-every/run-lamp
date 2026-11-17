@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date_utc": "2026-11-17T13:21:13.381228+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-maint-1",
+  "head": "2b8e632f16dd3ff2006ae72e9c3ff3649c2ce3b9",
+  "tree": "28350deb04601df2c85587fa695832ee0c1cecfd",
+  "product_custody": "pushed; remote branch matched by git ls-remote",
+  "ci_runs": [
+    {
+      "id": 44090302049,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "2b8e632f16dd3ff2006ae72e9c3ff3649c2ce3b9",
+      "url": "https://github.com/just-every/run-lamp/actions/runs/44090302049",
+      "failed_build_job": 134063475009,
+      "failed_aggregate_job": 134064128221,
+      "shards": "skipped after build failure"
+    }
+  ],
+  "pr": "https://github.com/just-every/run-lamp/pull/406",
+  "checks": [
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log",
+      "log_sha256": "2f088aefa8694c42ab310b0c54663b93bd5043c77b534b788744d124ed92e395"
+    },
+    {
+      "name": "syntax",
+      "command": "node scripts/check-syntax.mjs",
+      "exit_code": 0,
+      "log": "syntax.log",
+      "log_sha256": "f7af344d194b11be7223f6cf3470b5f77bca1acb14a06d0e291dbc922990c75f"
+    },
+    {
+      "name": "test inventory",
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit_code": 0,
+      "log": "test-inventory.log",
+      "log_sha256": "6bb754e852e488197190aaf2c062497a6ae8b4d22fbc32da0d3ddc87f755b537"
+    },
+    {
+      "name": "production build",
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit_code": 0,
+      "log": "production-build.log",
+      "log_sha256": "0769a3009cba705e0c8d1647d3b9547a6f376fffe5b9dc4dda2ef4801697f913"
+    },
+    {
+      "name": "maintenance flow",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern \"MAINT-001|Maintenance reminders|Maintenance cancellation\" tests/e2e/publishing-contract.test.mjs",
+      "exit_code": 0,
+      "log": "maintenance-flow.log",
+      "log_sha256": "7105693c186148506b492f556612855efa0095b46c3aced420962a747ac68eda"
+    },
+    {
+      "name": "provider mail",
+      "command": "cloud_run node --test --test-concurrency=1 tests/e2e/rer-mail.test.mjs",
+      "exit_code": 0,
+      "log": "provider-mail.log",
+      "log_sha256": "d8b1c8a1382a906ce5bdb14e8ec96e5f33593d21382dbd0d53fe5695cb340ba2"
+    },
+    {
+      "name": "public history",
+      "command": "cloud_run node --test --test-name-pattern \"HIST-001\" tests/e2e/public-contract.test.mjs",
+      "exit_code": 0,
+      "log": "public-history.log",
+      "log_sha256": "1145d1612c1db9a4f23ae383ac53cfeeb787543105e30350b5b20dde9350b9c0"
+    },
+    {
+      "name": "source lock",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "log": "source-lock.log",
+      "log_sha256": "2083fc48f2b2ff81ec011c2bcff5269770d56e428c1bcaef0cce03843a4a3373"
+    },
+    {
+      "name": "contract documents",
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-documents.log",
+      "log_sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "name": "additional public catalogue regression",
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern \"HIST-001|owner maintains a complete catalogue\" tests/e2e/public-contract.test.mjs",
+      "command_exit_code": 1,
+      "catalogue_case": "passed",
+      "history_case": "earlier assertion failure, corrected and passed in the separate public-history check",
+      "log": "public-catalogue-and-initial-history.log",
+      "log_sha256": "36e4c3beb4ce134070048f9afeb64bd495a69e6d27b10b973361ebc57f451c60"
+    },
+    {
+      "name": "release validation (scope blocker)",
+      "command": "node scripts/validate-release.mjs",
+      "exit_code": 1,
+      "log": "release-validation.log",
+      "log_sha256": "c407b8aa20d96276ead7d02141188dadf5304534131c1394cc430d2bbde8b726"
+    }
+  ],
+  "counts": {
+    "registered_before": 102,
+    "registered_after": 104,
+    "assertion_scripts": 10,
+    "total_before": 112,
+    "total_after": 114
+  },
+  "clause_status_changes": [],
+  "browser_receipts": [
+    "before-receipt.json",
+    "after-receipt.json"
+  ],
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "assertion_width": 1440,
+  "push_attempts": 3,
+  "base_main": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "terminal_status": "BLOCKED",
+  "gh_calls": 6,
+  "blocker": "Verify validate:release requires RELEASE.json to list 0082_repeated_maintenance_cancellation.sql; the brief explicitly prohibits release metadata edits.",
+  "evidence_custody": "separate report ref and exact head are recorded by the publication entrypoint and terminal EVIDENCE line"
+}

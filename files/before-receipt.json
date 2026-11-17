@@ -1,0 +1,20 @@
+{
+  "head": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "widths": [
+    1440,
+    390
+  ],
+  "reminderAfterMinutes": 2,
+  "notices": [
+    {
+      "kind": "scheduled",
+      "body": "SCH-1: Billing system upgrade\n\nWho is affected: Account owners who use billing and invoices\n\nCustomer impact: Invoices and payment settings will be read-only during the upgrade."
+    },
+    {
+      "kind": "reminder",
+      "body": "SCH-1: Billing system upgrade\n\nWho is affected: Account owners who use billing and invoices\n\nCustomer impact: Invoices and payment settings will be read-only during the upgrade."
+    }
+  ],
+  "cancelledAfterSingleClick": true,
+  "actionsAfterCancellation": []
+}

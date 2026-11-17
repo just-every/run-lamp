@@ -1,0 +1,22 @@
+{
+  "widths": [
+    1440,
+    390
+  ],
+  "assertionsWidth": 1440,
+  "confirmationDismissedWithoutChange": true,
+  "cancelledWithReason": true,
+  "restoredSameWindow": true,
+  "noticeKindsAfterUndo": [
+    "rescheduled",
+    "cancelled",
+    "scheduled"
+  ],
+  "nearStartReminderCount": 0,
+  "subscriberMessagesAfterUndo": 3,
+  "automaticTransitionsAfterUndo": [
+    "In progress",
+    "Completed"
+  ],
+  "networkEdges": "Synthetic mail provider only; no hosted inbox claim"
+}

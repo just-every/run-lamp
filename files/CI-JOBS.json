@@ -1,0 +1,256 @@
+{
+  "gh_calls": 3,
+  "jobs": [
+    {
+      "id": 134063385778,
+      "name": "plan",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090302049/job/134063385778",
+      "started_at": "2026-11-17T13:11:52Z",
+      "completed_at": "2026-11-17T13:11:59Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T13:11:53Z",
+          "completed_at": "2026-11-17T13:11:54Z"
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T13:11:54Z",
+          "completed_at": "2026-11-17T13:11:57Z"
+        },
+        {
+          "name": "Reuse only verified push evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T13:11:57Z",
+          "completed_at": "2026-11-17T13:11:57Z"
+        },
+        {
+          "name": "Read the shared local and CI verification plan",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T13:11:57Z",
+          "completed_at": "2026-11-17T13:11:57Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-11-17T13:11:57Z",
+          "completed_at": "2026-11-17T13:11:57Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-11-17T13:11:57Z",
+          "completed_at": "2026-11-17T13:11:57Z"
+        }
+      ]
+    },
+    {
+      "id": 134063475009,
+      "name": "build",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090302049/job/134063475009",
+      "started_at": "2026-11-17T13:12:02Z",
+      "completed_at": "2026-11-17T13:13:09Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T13:12:03Z",
+          "completed_at": "2026-11-17T13:12:04Z"
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T13:12:04Z",
+          "completed_at": "2026-11-17T13:12:06Z"
+        },
+        {
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T13:12:06Z",
+          "completed_at": "2026-11-17T13:12:12Z"
+        },
+        {
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T13:12:12Z",
+          "completed_at": "2026-11-17T13:12:12Z"
+        },
+        {
+          "name": "Install pinned tools and dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-11-17T13:12:12Z",
+          "completed_at": "2026-11-17T13:12:17Z"
+        },
+        {
+          "name": "Build the production Worker once",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-11-17T13:12:17Z",
+          "completed_at": "2026-11-17T13:13:04Z"
+        },
+        {
+          "name": "Retain commit-bound build completion",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-11-17T13:13:04Z",
+          "completed_at": "2026-11-17T13:13:06Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-11-17T13:13:06Z",
+          "completed_at": "2026-11-17T13:13:06Z"
+        },
+        {
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-11-17T13:13:06Z",
+          "completed_at": "2026-11-17T13:13:06Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-11-17T13:13:06Z",
+          "completed_at": "2026-11-17T13:13:06Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-11-17T13:13:06Z",
+          "completed_at": "2026-11-17T13:13:06Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-11-17T13:13:06Z",
+          "completed_at": "2026-11-17T13:13:06Z"
+        }
+      ]
+    },
+    {
+      "id": 134064128221,
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "failure",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090302049/job/134064128221",
+      "started_at": "2026-11-17T13:13:11Z",
+      "completed_at": "2026-11-17T13:13:23Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-11-17T13:13:12Z",
+          "completed_at": "2026-11-17T13:13:14Z"
+        },
+        {
+          "name": "Require a successful plan",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-11-17T13:13:14Z",
+          "completed_at": "2026-11-17T13:13:14Z"
+        },
+        {
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-11-17T13:13:14Z",
+          "completed_at": "2026-11-17T13:13:18Z"
+        },
+        {
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-11-17T13:13:18Z",
+          "completed_at": "2026-11-17T13:13:19Z"
+        },
+        {
+          "name": "Require every planned command to succeed on this commit",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-11-17T13:13:19Z",
+          "completed_at": "2026-11-17T13:13:19Z"
+        },
+        {
+          "name": "Retain combined verification verdict",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-11-17T13:13:19Z",
+          "completed_at": "2026-11-17T13:13:21Z"
+        },
+        {
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-11-17T13:13:21Z",
+          "completed_at": "2026-11-17T13:13:21Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-11-17T13:13:21Z",
+          "completed_at": "2026-11-17T13:13:21Z"
+        }
+      ]
+    },
+    {
+      "id": 134064129932,
+      "name": "shards",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090302049/job/134064129932",
+      "started_at": "2026-11-17T13:13:09Z",
+      "completed_at": "2026-11-17T13:13:09Z",
+      "steps": []
+    }
+  ]
+}
