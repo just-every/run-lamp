@@ -197,7 +197,7 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       await tick();
       const start = await call(`/api/app/maintenance/${maintenance.id}/start`, {}); assert.equal(start.status, 200); await tick();
       const maintenanceRows = (await deliveries()).filter(row => row.maintenanceReference === maintenance.reference);
-      assert.deepEqual(maintenanceRows.map(row => row.maintenanceNoticeKind).sort(), ['reminder', 'scheduled', 'started']);
+      assert.deepEqual(maintenanceRows.map(row => row.maintenanceNoticeKind).sort(), ['scheduled', 'started']);
       assert.ok(maintenanceRows.every(row => row.providerAcceptedAt));
       for (const row of sentTo(reader).slice(-2)) {
         const notice = wire(row.body);

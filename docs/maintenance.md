@@ -15,6 +15,10 @@ maintenance. Scheduled, rescheduled, started, completed and canceled notices
 appear in the Atom feed. Notices remain with their maintenance record and appear
 in public history when the window is completed or canceled.
 
+Cancelling asks you to confirm that previous subscribers will receive a cancellation notice; you can add a reason for customers. Use **Reinstate maintenance** on a cancelled window to restore it, reviewing its dates first. Subscribers receive a change notice, and the same window keeps its history and automatic start and completion choices. Reminders go out 24 hours before work starts; if you announce or change the work within that time, that notice replaces the reminder. Customer notices show who is affected and the impact on separate lines.
+
+<!-- Run Edit Run fleet, 2026-11-17: maintenance cancellation, reinstatement and notice timing. -->
+
 ## Subscriber notices and delivery checks
 
 By default, Lamp sends notices to matching confirmed subscribers when you

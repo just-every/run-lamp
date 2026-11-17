@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { parse } from 'parse5';
 import { publicHistorySelectionFlow } from './public-history-selection-flow.mjs';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -36,14 +37,14 @@ export async function publicHistoryFlow() {
       assert.equal(created.notices[0].kind, 'scheduled');
       assert.equal(created.notices[0].body, body);
       assert.equal(created.notices[0].publishedAt, `${day}T14:00:00.000Z`);
-      const updates = [{ id: created.notices[0].id, kind: 'scheduled', body, publishedAt: `${day}T14:00:00.000Z` }];
+      const updates = [{ id: created.notices[0].id, kind: 'scheduled', body, affectedAudience: input.affectedAudience, customerImpact: input.customerImpact, publishedAt: `${day}T14:00:00.000Z` }];
       const capture = (record, kind, instant) => {
         const added = record.notices.filter(row => !updates.some(saved => saved.id === row.id));
         assert.equal(added.length, 1);
         assert.equal(added[0].kind, kind);
         assert.equal(added[0].publishedAt, instant);
         assert.equal(added[0].body, body);
-        updates.push({ id: added[0].id, kind, body, publishedAt: instant });
+        updates.push({ id: added[0].id, kind, body, affectedAudience: input.affectedAudience, customerImpact: input.customerImpact, publishedAt: instant });
       };
       await clock(`${day}T14:01:00.000Z`);
       const endsAt = `${day}T14:25:00.000Z`;
@@ -142,7 +143,8 @@ export async function publicHistoryFlow() {
       assert.ok(permanent.includes(record.title));
       for (const update of record.updates) {
         assert.ok(permanent.includes(update.publishedAt));
-        for (const line of (update.details ?? update.body).split("\n").filter(Boolean)) assert.ok(permanent.includes(line));
+        for (const value of update.kind ? [update.affectedAudience, update.customerImpact] : update.details.split("\n").filter(Boolean)) assert.ok(permanent.includes(value));
+        if (update.kind) assert.ok(!historyText(parse(permanent)).includes(record.href.split("/").at(-1)), "permanent maintenance history hides internal references");
       }
     }
     const native = [];

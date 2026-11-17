@@ -1,3 +1,4 @@
+import { maintenanceCancellationFlow, maintenanceReminderTimingFlow } from "./helpers/maintenance-notices-flow.mjs";
 import assert from 'node:assert/strict';
 import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
 import { updateReachFlow } from './helpers/update-reach-flow.mjs';
@@ -860,7 +861,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.ok(!(await j.json('/api/app/incidents')).incidents.some(row => row.id === maintenance.id));
     await j.visible(`/maintenance/${maintenance.reference}`, input.customerImpact);
     await j.tick(now + 1000); await j.tick(now + 1000);
-    assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 1);
+    assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 0, 'the recent scheduling notice replaces the reminder');
     const actualStart = new Date(now - 7200000).toISOString();
     const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
     let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
@@ -1182,3 +1183,6 @@ test('AGENT-005 HIST-002 — cited report reconciles the retained record, requir
 test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
   await updateReachFlow({ diagnostic: message => t.diagnostic(message) });
 });
+
+test("Maintenance reminders respect the lead time and skip recent announcements", maintenanceReminderTimingFlow);
+test("Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers", { timeout: 180_000 }, maintenanceCancellationFlow);
