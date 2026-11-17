@@ -1,0 +1,50 @@
+{
+  "timestamp": 1794903811.888479,
+  "gh_calls": 5,
+  "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+  "runs": [
+    {
+      "id": 44046302963,
+      "name": "Verify",
+      "event": "push",
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44046302963"
+    }
+  ],
+  "observations": [
+    {
+      "timestamp": 1794904112.706277,
+      "run_id": 44046302963,
+      "conclusion": null,
+      "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44046302963",
+      "status": "in_progress"
+    },
+    {
+      "timestamp": 1794904413.4470165,
+      "run_id": 44046302963,
+      "conclusion": null,
+      "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44046302963",
+      "status": "in_progress"
+    },
+    {
+      "timestamp": 1794904714.1251009,
+      "run_id": 44046302963,
+      "conclusion": null,
+      "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44046302963",
+      "status": "in_progress"
+    },
+    {
+      "timestamp": 1794905025.6251569,
+      "run_id": 44046302963,
+      "conclusion": "failure",
+      "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44046302963",
+      "status": "completed"
+    }
+  ]
+}

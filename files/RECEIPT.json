@@ -1,0 +1,231 @@
+{
+  "timestamp": "2026-11-17T08:22:32Z",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-health-ledger-1",
+  "base_head": "e569004dcd02b3453a9dbf1c8cbdaccb5d4f5528",
+  "candidate_file_hashes": {
+    "OPERATIONS.md": "7652717c013221e778647f3ac99542ba9489fa900c8206c6b60c7f6358b618e0",
+    "docs/deploy.md": "bf833c635402f0d2b220898cecc6870dd03afba0a58efad78a20fd069edacd59",
+    "scripts/import.mjs": "4df731139186b05c4966a4cf2aab37eaeaee763938ee5c57b6e05468abab6334",
+    "scripts/platform-ledger.mjs": "2e2dab8cc49097b25976c4a918b8369435eef3dc1802a66f76bcf03e53f30930",
+    "scripts/setup-migrations.mjs": "d71a008494b4011b6f25b2b67d3354a07cf9d272b86cb4c1dd53583db25501bb",
+    "scripts/setup.mjs": "930b5e5ad39224309d0a245c92af75afb41da9f6fed6e75fb9b33e13ff44ccd1",
+    "sources.lock.json": "c733395132a261602a8026c9b21ba1f24859685ed223997400ba293480ad3c0d",
+    "tests/auth-adoption/setup-migrations.test.mjs": "e79889cfb2cc0ac2b925fdf1976b18702ef7ee797b76a8a711f3adff7e3084d5",
+    "tests/e2e/export-import.test.mjs": "c2d12fce3852de0c2069b9c1afe3fe10c5d55d22463cdc641d67a42c5cd9f365",
+    "tests/e2e/helpers/health-schema-proof.mjs": "ae44a45749a04e8e709fb10c4461aeb90f4cbf484b950b836d44f04eaba7ce40",
+    "tests/helpers/fake-wrangler.mjs": "621065b7af95d7371722bf936587e49c8f73d8f63e3988903bd884910ff0a860"
+  },
+  "local_environment": {
+    "node": "v24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/setup-migrations.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "log": "setup-ledger.log",
+      "duration_ms": 151622.404445
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs",
+      "exit": 0,
+      "tests": 2,
+      "log": "health-snapshot.log",
+      "duration_ms": 41199.486429
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-docs.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "files": 2298
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/export-import.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "log": "native-archive.log",
+      "duration_ms": 139154.594875
+    },
+    {
+      "command": "cloud_run node --test --test-name-pattern='An owner publishes private installation data safely' tests/baseline/e2e-baseline/core-baseline.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "duration_ms": 83993.382158,
+      "log": "baseline-focused.log",
+      "purpose": "Focused diagnosis of the CI failure; local pass does not substitute for exact-SHA Verify"
+    }
+  ],
+  "migration_observation": {
+    "state_before": "unavailable",
+    "reason_before": "ledger_missing",
+    "state_after": "available",
+    "completeCount": 80,
+    "partialCount": 0,
+    "inventorySha256": "1621631d8de89a7285c07b0240051a7ec7693cbed26cc3e6c88c460c9b7d6a8f"
+  },
+  "test_counts": {
+    "touched_before": 4,
+    "touched_after": 4
+  },
+  "clause_changes": [],
+  "proof_scope": "Fake Cloudflare HTTP edge, real local D1, emitted production Worker /health. No production provider deployment or browser/UI claim.",
+  "product_head": "555a02465950e651e8daa7fb5d675950b5056596",
+  "product_tree": "ada7f9fd7162537ad6d27d8eb155fa6fce9f74fa",
+  "product_push": {
+    "result": "PASS",
+    "branch": "cloud/sd-lamp-health-ledger-1",
+    "head": "555a02465950e651e8daa7fb5d675950b5056596",
+    "attempts": 1,
+    "log": "push.log"
+  },
+  "publication_scan": {
+    "command": "node node_modules/@runeditrun/rer/scripts/publish-check.mjs --repo . --ref HEAD --public-base https://github.com/just-every/run-lamp.git#main --project just-every/lamp --repository just-every/run-lamp",
+    "exit": 2,
+    "status": "INCOMPLETE",
+    "rule": "scan.gitleaks-unavailable",
+    "log": "publication-scan.json",
+    "landing_gate": "Mac fleet independently runs required publication scan"
+  },
+  "identity_inspection": {
+    "commits": 1,
+    "all_parents": true,
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": [],
+    "log": "identities.log"
+  },
+  "content_matches_local_checks": true,
+  "packet_logs": {
+    "build.log": {
+      "bytes": 20505,
+      "sha256": "e1f03bd1e9d5f945d51d5fcede3bf88e28055a181b8cd75790285310c9e94503"
+    },
+    "typecheck.log": {
+      "bytes": 168,
+      "sha256": "f33da871f892863eba5678fdacdb7a350cfe4de7ef8b05cf6e19e6ad210639e1"
+    },
+    "setup-ledger.log": {
+      "bytes": 4222,
+      "sha256": "d57edb774ad7d4db5b02a5c060fa019c2aec150967d17e261084a8b0414ae5b2"
+    },
+    "health-snapshot.log": {
+      "bytes": 1112,
+      "sha256": "f3a4374df16be4a5d2c2b45bd6687a5790d859a9f2be74fd40acc92ee2c14e6d"
+    },
+    "native-archive.log": {
+      "bytes": 409,
+      "sha256": "1e589fb898624887781655e6ffa9329ba6ae29efe3f8df107f0bf9a802b84f5b"
+    },
+    "contract-docs.log": {
+      "bytes": 70,
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    "publication-scan.json": {
+      "bytes": 755,
+      "sha256": "88a19cb20f82da24684ec858d6de498ca43e56f98f9afe031bdc80db0d2b163c"
+    },
+    "push.log": {
+      "bytes": 926,
+      "sha256": "b6b23e1bad4400e2a986da098fe8344303ee3bda32083f0d2ec06f024df92217"
+    },
+    "identities.log": {
+      "bytes": 85,
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    "source-check.json": {
+      "bytes": 163,
+      "sha256": "a95768e02054c05f0cc7ec5a570971f2aceb4c442c7df5f82c5db0576256266e"
+    },
+    "CI.json": {
+      "bytes": 1573,
+      "sha256": "946cc48f0f9d3884894152aa950078fe708f3d23b4542b616d649684c9a785e6"
+    },
+    "CI-jobs.json": {
+      "bytes": 21688,
+      "sha256": "56cc5767e9602479e940f0dcc7c797a2c68f3e2b51c1eb8679ddc8badbd50bf0"
+    },
+    "CI-demo-failed.log": {
+      "bytes": 16037,
+      "sha256": "06e046570202b9b2064061e2f72f715cfcfef139c47555a00a325894d7df78b7"
+    },
+    "CI-verify-failed.log": {
+      "bytes": 1271,
+      "sha256": "3b0a4b66824dffc31b4c80a2a40c0a987e84077ee0603245b7aa8aea9d096058"
+    },
+    "PR.json": {
+      "bytes": 264,
+      "sha256": "0361438bbd6f91d1a4284f5282c23350295012b5c8f717e40babf7c3840c6ae8"
+    },
+    "baseline-focused.log": {
+      "bytes": 1173,
+      "sha256": "5275b34434351f0a320eb3b27b784a73d6016d160b6651d73e5dd1b781f1b92b"
+    }
+  },
+  "ci": {
+    "run_id": 44046302963,
+    "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/44046302963",
+    "details": "CI.json",
+    "jobs": "CI-jobs.json",
+    "failed_jobs": [
+      {
+        "id": 133913319983,
+        "name": "shards (demo)",
+        "log": "CI-demo-failed.log"
+      },
+      {
+        "id": 133922167267,
+        "name": "verify",
+        "log": "CI-verify-failed.log"
+      }
+    ]
+  },
+  "gh_calls_so_far": 10,
+  "timestamp_completed": "2026-11-17T08:49:00Z",
+  "pr": {
+    "number": 401,
+    "html_url": "https://github.com/just-every/run-lamp/pull/401",
+    "state": "open",
+    "draft": true,
+    "title": "Maintain the hosted installed-health migration ledger",
+    "head_sha": "555a02465950e651e8daa7fb5d675950b5056596",
+    "gh_calls": 2
+  },
+  "github_api_budget": {
+    "limit": 10,
+    "used": 10,
+    "ci_observations": 5,
+    "job_list": 1,
+    "failed_job_log_reads": 2,
+    "pr_lookup": 1,
+    "pr_creation": 1
+  },
+  "terminal_status": "BLOCKED",
+  "blocker": "Successful exact-SHA Verify: demo/baseline widget privacy cleanup PUT /api/app/page-settings returned 500 instead of 200; aggregate job failed. Focused local reproduction passed; no speculative out-of-scope change or workflow rerun made."
+}

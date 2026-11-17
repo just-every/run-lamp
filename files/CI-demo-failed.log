@@ -1,0 +1,127 @@
+shards (demo)	Verify this product shard	﻿2026-11-17T08:25:10.3256259Z ##[group]Run # rer verify adds Base's hosted-output and hydration checks after the
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3256784Z [36;1m# rer verify adds Base's hosted-output and hydration checks after the[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3257187Z [36;1m# runtime shard has built and exercised the actual production Worker.[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3257528Z [36;1mif [ "$LAMP_VERIFY_SHARD" = runtime ]; then[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3257860Z [36;1m  pnpm verify 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3258157Z [36;1melse[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3258415Z [36;1m  pnpm run verify:app 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3258714Z [36;1mfi[0m
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3276810Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+[CI environment metadata omitted from public packet]
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.3278687Z ##[endgroup]
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.5346563Z 
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.5347411Z > lamp@1.11.21 verify:app /home/runner/work/run-lamp/run-lamp
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.5348033Z > node scripts/verification/run.mjs
+shards (demo)	Verify this product shard	2026-11-17T08:25:10.5348279Z 
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.2625102Z Verification plan: 8 test shards and one shared build, 35 routine test files, 102 registered cases (including release qualification) + 10 assertion scripts = 112 checks.
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.2697576Z 
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.2698247Z Verifying demo: test:demo
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.4862645Z 
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.4863275Z > lamp@1.11.21 test:demo /home/runner/work/run-lamp/run-lamp
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.4863758Z > node --test --test-concurrency=1 tests/demo/journey.test.mjs
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.4863975Z 
+shards (demo)	Verify this product shard	2026-11-17T08:25:11.5193752Z TAP version 13
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8221602Z # Subtest: disposable demo opens signed in, mocks effects and leaves owner state intact
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8228591Z ok 1 - disposable demo opens signed in, mocks effects and leaves owner state intact
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8229774Z   ---
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8230110Z   duration_ms: 131292.169953
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8232613Z   type: 'test'
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8233268Z   ...
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8233910Z # Real public subscription-form read and mocked email, webhook and chat sends completed.
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8584273Z 1..1
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8584585Z # tests 1
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8584826Z # suites 0
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8585840Z # pass 1
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8587255Z # fail 0
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8587720Z # cancelled 0
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8588644Z # skipped 0
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8589100Z # todo 0
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8589480Z # duration_ms 132348.612223
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8711769Z 
+shards (demo)	Verify this product shard	2026-11-17T08:27:23.8712164Z Verifying demo: test:baseline
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.0771654Z 
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.0772576Z > lamp@1.11.21 test:baseline /home/runner/work/run-lamp/run-lamp
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.0773230Z > node scripts/baseline/run.mjs
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.0773460Z 
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.1548976Z baseline reporter probes: passed
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.2084080Z TAP version 13
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.5602948Z # (node:4801) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (demo)	Verify this product shard	2026-11-17T08:27:24.5612750Z # (Use `node --trace-warnings ...` to show where the warning was created)
+shards (demo)	Verify this product shard	2026-11-17T08:28:10.7312518Z # PROBE PAGE-019 3: banner allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+shards (demo)	Verify this product shard	2026-11-17T08:28:11.1217120Z # PROBE PAGE-019 3: dot allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+shards (demo)	Verify this product shard	2026-11-17T08:28:11.5784045Z # PROBE PAGE-019 3: floating allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+shards (demo)	Verify this product shard	2026-11-17T08:28:11.8958538Z # PROBE PAGE-019 3: compatibility allowed installation and own-origin poll reconcile the public snapshot; denied origin renders nothing and never polls
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1680724Z # Subtest: [baseline:BASE-ACCESS-001] [baseline:BASE-ACCESS-002] [baseline:BASE-ACCESS-003] [baseline:BASE-ACCESS-004] [baseline:BASE-INPUT-001] [baseline:BASE-INPUT-002] [baseline:BASE-INPUT-003] [baseline:BASE-SECRET-001] [baseline:BASE-DATA-002] [baseline:BASE-DATA-003] [baseline:BASE-DATA-004] [baseline:BASE-DATA-005] [baseline:BASE-PUBLIC-001] [baseline:BASE-PUBLIC-002] An owner publishes private installation data safely, then erases identities and signs out
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1686464Z not ok 1 - [baseline:BASE-ACCESS-001] [baseline:BASE-ACCESS-002] [baseline:BASE-ACCESS-003] [baseline:BASE-ACCESS-004] [baseline:BASE-INPUT-001] [baseline:BASE-INPUT-002] [baseline:BASE-INPUT-003] [baseline:BASE-SECRET-001] [baseline:BASE-DATA-002] [baseline:BASE-DATA-003] [baseline:BASE-DATA-004] [baseline:BASE-DATA-005] [baseline:BASE-PUBLIC-001] [baseline:BASE-PUBLIC-002] An owner publishes private installation data safely, then erases identities and signs out
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1688387Z   ---
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1688627Z   duration_ms: 47605.951664
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1688895Z   type: 'test'
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1689402Z   location: '/home/runner/work/run-lamp/run-lamp/tests/baseline/e2e-baseline/case.mjs:9:10'
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1689940Z   failureType: 'testCodeFailure'
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1690264Z   error: |-
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1690534Z     Expected values to be strictly equal:
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1690836Z     
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1691037Z     500 !== 200
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1691258Z     
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1691502Z   code: 'ERR_ASSERTION'
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1691773Z   name: 'AssertionError'
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1692048Z   expected: 200
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1692293Z   actual: 500
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1692552Z   operator: 'strictEqual'
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1692867Z   stack: |-
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1693714Z     widgetPrivacyFlow (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/widget-privacy-flow.mjs:92:12)
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1694375Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1695029Z     async TestContext.<anonymous> (file:///home/runner/work/run-lamp/run-lamp/tests/baseline/e2e-baseline/core-baseline.test.mjs:204:3)
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1695819Z     async Test.run (node:internal/test_runner/test:1054:7)
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1696389Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+shards (demo)	Verify this product shard	2026-11-17T08:28:12.1696721Z   ...
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.6390467Z # Subtest: [baseline:BASE-SECRET-002] [baseline:BASE-DATA-001] [baseline:BASE-OPS-001] [baseline:BASE-OPS-002] [baseline:BASE-OPS-003] [baseline:BASE-OPS-004] [baseline:BASE-OPS-005] An installation restores and upgrades its data, exposes failed work and recovers without duplicate delivery
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.6394236Z ok 2 - [baseline:BASE-SECRET-002] [baseline:BASE-DATA-001] [baseline:BASE-OPS-001] [baseline:BASE-OPS-002] [baseline:BASE-OPS-003] [baseline:BASE-OPS-004] [baseline:BASE-OPS-005] An installation restores and upgrades its data, exposes failed work and recovers without duplicate delivery
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.6396044Z   ---
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.6396508Z   duration_ms: 79470.260351
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.6396961Z   type: 'test'
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.6397358Z   ...
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7269844Z 1..2
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7270599Z # tests 2
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7270791Z # suites 0
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7270963Z # pass 1
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7271125Z # fail 1
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7271299Z # cancelled 0
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7271486Z # skipped 0
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7271654Z # todo 0
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7271846Z # duration_ms 127528.817892
+shards (demo)	Verify this product shard	2026-11-17T08:29:31.7627138Z TAP version 13
+shards (demo)	Verify this product shard	2026-11-17T08:30:22.6308723Z # Subtest: [baseline:BASE-PUBLIC-003] Axe WCAG 2.2 AA passes real local public, operator, and widget surfaces
+shards (demo)	Verify this product shard	2026-11-17T08:30:22.6309928Z ok 1 - [baseline:BASE-PUBLIC-003] Axe WCAG 2.2 AA passes real local public, operator, and widget surfaces
+shards (demo)	Verify this product shard	2026-11-17T08:30:22.6310871Z   ---
+shards (demo)	Verify this product shard	2026-11-17T08:30:22.6311270Z   duration_ms: 50460.900923
+shards (demo)	Verify this product shard	2026-11-17T08:30:22.6312472Z   type: 'test'
+shards (demo)	Verify this product shard	2026-11-17T08:30:22.6312808Z   ...
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1008380Z 1..1
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1009053Z # tests 1
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1009297Z # suites 0
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1010558Z # pass 1
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1010772Z # fail 0
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1011117Z # cancelled 0
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1012487Z # skipped 0
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1014041Z # todo 0
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1015263Z # duration_ms 51347.494653
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1068591Z baseline report: /home/runner/work/_temp/lamp-verification/baseline-report.json
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1069474Z baseline: tests/baseline/e2e-baseline/core-baseline.test.mjs exited 1.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1070507Z baseline: BASE-ACCESS-001 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1071814Z baseline: BASE-ACCESS-002 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1073101Z baseline: BASE-ACCESS-003 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1074403Z baseline: BASE-ACCESS-004 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1075905Z baseline: BASE-INPUT-001 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1077085Z baseline: BASE-INPUT-002 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1078347Z baseline: BASE-INPUT-003 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1079558Z baseline: BASE-SECRET-001 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1080757Z baseline: BASE-DATA-002 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1082032Z baseline: BASE-DATA-003 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1083264Z baseline: BASE-DATA-004 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1084436Z baseline: BASE-DATA-005 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1085798Z baseline: BASE-PUBLIC-001 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1087038Z baseline: BASE-PUBLIC-002 has nonpassing executed result(s): failed in tests/baseline/e2e-baseline/core-baseline.test.mjs.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1218564Z  ELIFECYCLE  Command failed with exit code 1.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1596354Z  ELIFECYCLE  Command failed with exit code 1.
+shards (demo)	Verify this product shard	2026-11-17T08:30:23.1769474Z ##[error]Process completed with exit code 1.

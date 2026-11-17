@@ -1,0 +1,65 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Lamp could not record its health check. Error: D1_ERROR: no such table: setup_readiness: SQLITE_ERROR
+    at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:188:19)
+    at async cloudflare-internal:d1-api:478:19
+    ... 7 lines matching cause stack trace ...
+    at async Object.fetch (file:///workspace/run-lamp/dist/server/index.js:97233:21) {
+  [cause]: Error: no such table: setup_readiness: SQLITE_ERROR
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)
+      at async cloudflare-internal:d1-api:478:19
+      at async Object.recordGood (file:///workspace/run-lamp/dist/server/index.js:78658:4)
+      at async record (file:///workspace/run-lamp/dist/server/index.js:78805:4)
+      at async Object.check (file:///workspace/run-lamp/dist/server/index.js:78840:20)
+      at async Promise.all (index 0)
+      at async file:///workspace/run-lamp/dist/server/index.js:78747:39
+      at async dispatch (file:///workspace/run-lamp/dist/server/index.js:29137:11)
+      at async file:///workspace/run-lamp/dist/server/index.js:30361:21
+      at async Object.fetch (file:///workspace/run-lamp/dist/server/index.js:97233:21)
+}
+Lamp could not record its health check. Error: D1_ERROR: no such table: setup_readiness: SQLITE_ERROR
+    at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:188:19)
+    at async cloudflare-internal:d1-api:478:19
+    ... 7 lines matching cause stack trace ...
+    at async Object.fetch (file:///workspace/run-lamp/dist/server/index.js:97233:21) {
+  [cause]: Error: no such table: setup_readiness: SQLITE_ERROR
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)
+      at async cloudflare-internal:d1-api:478:19
+      at async Object.recordGood (file:///workspace/run-lamp/dist/server/index.js:78658:4)
+      at async record (file:///workspace/run-lamp/dist/server/index.js:78805:4)
+      at async Object.check (file:///workspace/run-lamp/dist/server/index.js:78840:20)
+      at async Promise.all (index 0)
+      at async file:///workspace/run-lamp/dist/server/index.js:78747:39
+      at async dispatch (file:///workspace/run-lamp/dist/server/index.js:29137:11)
+      at async file:///workspace/run-lamp/dist/server/index.js:30361:21
+      at async Object.fetch (file:///workspace/run-lamp/dist/server/index.js:97233:21)
+}
+Lamp could not run due work after a request; Cron retries it. Error: D1_ERROR: no such table: social_posts: SQLITE_ERROR
+    at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:188:19)
+    at async cloudflare-internal:d1-api:497:19
+    ... 4 lines matching cause stack trace ...
+    at async runDueWorkWhileCronQuiet (file:///workspace/run-lamp/dist/server/index.js:97064:3) {
+  [cause]: Error: no such table: social_posts: SQLITE_ERROR
+      at D1DatabaseSessionAlwaysPrimary._sendOrThrow (cloudflare-internal:d1-api:189:24)
+      at async cloudflare-internal:d1-api:497:19
+      at async Object.pending (file:///workspace/run-lamp/dist/server/index.js:31594:12)
+      at async Object.dispatchPending (file:///workspace/run-lamp/dist/server/index.js:31980:26)
+      at async Promise.all (index 2)
+      at async dispatchMail (file:///workspace/run-lamp/dist/server/index.js:97052:2)
+      at async runDueWorkWhileCronQuiet (file:///workspace/run-lamp/dist/server/index.js:97064:3)
+}
+✔ Setup resumes migration apply, backfills the installed-health ledger and stops safely on interruption or without progress (151622.404445ms)
+ℹ PROBE: fresh apply, re-deploy, missing/empty/subset backfill -> /health available, 80, 1621631d8de89a7285c07b0240051a7ec7693cbed26cc3e6c88c460c9b7d6a8f
+ℹ PROBE: clean early return after 56 -> same setup command finishes 80 migrations
+ℹ PROBE: made no progress -> stops with 0/80, no page settings
+ℹ PROBE: five-pass migration budget -> stops with 65/80, no page settings
+ℹ PROBE: Synthetic interruption -> stops with 56/80, no page settings
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 153571.196865
