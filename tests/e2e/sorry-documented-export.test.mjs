@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { generateSorryFixture } from '../../scripts/generate-sorry-fixture.mjs';
+import { sorryTemplateImportFlow } from './helpers/sorry-template-import-flow.mjs';
 import { openStatusJourney } from './helpers/status-journey.mjs';
 import { importedRecordInventory, notificationInventory, publicAliasInventory, moveInDoor } from '../helpers/import-notifications.mjs';
 
@@ -104,7 +105,7 @@ test('documented Sorry exports account for every field through preview, saved jo
 
       // A complete but unsupported resource must stop the entire input, name
       // the file, and leave native/public/notification inventories unchanged.
-      for (const name of await readdir(join(root, 'unsupported'))) {
+      for (const name of (await readdir(join(root, 'unsupported'))).filter(name => !/^sorry-(?:notice|update)-templates\.json$/.test(name))) {
         const refused = await move.preview({ ...input, files: [...files, { name, text: await readFile(join(root, 'unsupported', name), 'utf8') }] });
         assert.notEqual(refused.status, 200, 'unsupported resource cannot be ignored');
         assert.ok(JSON.stringify(refused.body).includes(name), 'refusal names the unsupported resource');
@@ -147,7 +148,7 @@ test('documented Sorry exports account for every field through preview, saved jo
         nativeCounts: verification.body.nativeCounts, subscriberCount: inventory.subscribers.length,
         ledgerCount: fields.length, outcomes: Object.fromEntries(['mapped', 'changed', 'raw-only', 'deleted', 'refused'].map(outcome => [outcome, fields.filter(field => field.outcome === outcome).length])),
         unexplainedDifferences: verification.body.unexplainedDifferences,
-        expectedResourceGaps: (await readdir(join(root, 'unsupported'))).sort(),
+        expectedResourceGaps: (await readdir(join(root, 'unsupported'))).filter(name => !/^sorry-(?:notice|update)-templates\.json$/.test(name)).sort(),
       };
       if (process.env.LAMP_SORRY_SYNTHETIC_PROOF) await writeFile(join(process.env.LAMP_SORRY_SYNTHETIC_PROOF, mode + '-field-ledger.json'), JSON.stringify({ schema: 1, fingerprint: report.fingerprint, fields }, null, 2) + '\n');
       console.log('Synthetic Sorry ' + mode + ': repeat');
@@ -170,6 +171,7 @@ test('documented Sorry exports account for every field through preview, saved jo
       results.push({ ...rawSummary, previewUnchanged: true, hostileRefusalUnchanged: true, repeatUnchanged: true, undoRestoredExceptReservedReferences: true, silent: true });
       t.diagnostic(JSON.stringify(results.at(-1)));
     }
+    await sorryTemplateImportFlow({ runtime, move, send, t });
     if (process.env.LAMP_SORRY_SYNTHETIC_PROOF) {
       const receipt = { schemaVersion: 1, type: 'lamp.sorry.synthetic-proof', synthetic: true, signed: false,
         sourceClassification: 'documentation-derived generated fixtures; not a real export',
