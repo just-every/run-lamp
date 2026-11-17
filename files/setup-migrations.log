@@ -1,0 +1,12 @@
+✔ Setup resumes a short migration apply in one command and stops safely without progress or after its budget (1580.472415ms)
+ℹ PROBE: clean early return after 56 -> same setup command finishes 80 migrations
+ℹ PROBE: made no progress -> stops with 0/80, no page settings
+ℹ PROBE: five-pass migration budget -> stops with 65/80, no page settings
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1668.271982

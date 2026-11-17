@@ -1,0 +1,56 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Lamp verify:workflow [5f57fb6aadad]
+Checking pinned pnpm
+10.12.4
+Verifying application
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.20 verify:app [REDACTED]
+> node scripts/verification/run.mjs
+
+Verification plan: 8 test shards and one shared build, 35 routine test files, 101 registered cases (including release qualification) + 10 assertion scripts = 111 checks.
+
+Verifying ownership: test:ownership
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.20 test:ownership [REDACTED]
+> node --test --test-concurrency=1 tests/e2e/auth-adoption-journey.test.mjs tests/auth-adoption/dependencies.test.mjs tests/auth-adoption/setup-migrations.test.mjs tests/auth-adoption/deploy-page-host.test.mjs tests/auth-adoption/sign-in-providers.test.mjs tests/auth-adoption/upgrade.test.mjs
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable (9554.736772ms)
+✔ ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it (2682.631364ms)
+✔ ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key (10242.196181ms)
+✔ ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change (981.068099ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ Deploy retries a page host whose DNS answer is not there yet and completes once it serves (3.704038ms)
+✔ Deploy completes with a detached page host and says it skipped the check (0.42507ms)
+✔ Deploy fails naming the host and the DNS code when the resolver never answers (0.642928ms)
+✔ Deploy still fails when the page host answers but is not serving the retained snapshot (4.087495ms)
+✔ A page host behind a Cloudflare for SaaS route is checked once its DNS reaches the target, skipped until then, and still fails when the resolver never answers (0.92937ms)
+✔ Native deployment keeps default resources and selects only the explicitly named public Worker and host (564.393297ms)
+✔ Native setup refuses invalid, colliding and mismatched public Worker selections before provider mutation (1225.419544ms)
+✔ Setup resumes a short migration apply in one command and stops safely without progress or after its budget (2585.887706ms)
+ℹ PROBE: clean early return after 56 -> same setup command finishes 80 migrations
+ℹ PROBE: made no progress -> stops with 0/80, no page settings
+ℹ PROBE: five-pass migration budget -> stops with 65/80, no page settings
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ACCESS-002 the owner sets up Google in Settings, tests the real flow, replaces and disconnects it, and the secret is write-only (8538.695032ms)
+✔ ACCESS-002 TEAM-003 Okta pairs people and deploy providers complete native sign-in while unusable rows and Managed hosting keep their boundaries (11339.860544ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials (4538.753952ms)
+▶ ACCESS-002 upgrade moves setup authority only with the setup operator who still exists
+  ✔ kept (2717.439478ms)
+  ✔ erased (2473.694628ms)
+  ✔ revoked (2530.78614ms)
+✔ ACCESS-002 upgrade moves setup authority only with the setup operator who still exists (7723.043147ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+

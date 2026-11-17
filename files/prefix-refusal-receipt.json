@@ -1,0 +1,8 @@
+{
+  "head": "3d440ddbb86de07564c840008f128b15ef4ac6a8",
+  "entrypoint": "Lamp rer deploy hook (scripts/installer/deploy.mjs)",
+  "result": "passed",
+  "deployment_commands_started": 0,
+  "refusal": "LAMP_RESOURCE_PREFIX cannot be combined with the deploy owner claim; remove it and name this copy with --environment instead.",
+  "cli_probe_note": "A network-denying preload stopped a separate full CLI probe at its pnpm prerequisite; this is the actual dispatch hook refusal before any deployment command."
+}

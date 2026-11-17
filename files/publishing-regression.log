@@ -1,0 +1,44 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (53681.924029ms)
+✔ INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey (128924.020728ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+ℹ PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+ℹ PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+ℹ PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+ℹ PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+ℹ {"phase":"acknowledged","finalEdit":1794873723771,"refreshDelivered":1794873723830,"refreshReceived":1794873723841,"putDispatched":1794873724289,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794873724315,"putStatus":200,"finalEditPerformance":2431.7000000001863,"nativeAcknowledged":1794873724311,"nativeAcknowledgedPerformance":2971.5,"saved":1794873724326,"savedPerformance":2987,"elapsedToSaved":555,"deadlinePassed":true}
+ℹ {"finalEdit":1794873723771,"refreshDelivered":1794873723830,"refreshReceived":1794873723841,"putDispatched":1794873724289,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794873724315,"putStatus":200,"finalEditPerformance":2431.7000000001863,"nativeAcknowledged":1794873724311,"nativeAcknowledgedPerformance":2971.5,"saved":1794873724326,"savedPerformance":2987,"storedDraft":{"id":"01M7KCZ3BZXXWHSFG3CXV5Z0HV","incidentId":"01M7KCZ0D1XPNBK0RJX3422DXF","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-17T00:02:01.249Z","updatedAt":"2026-11-17T00:02:04.304Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":555,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-11,"browserAckBeforeSavedMs":15.5}
+ℹ {"earlierPersisted":1794873728089,"finalEdit":1794873728141,"earlierAcknowledged":1794873729151,"latestAcknowledged":1794873729204,"finalEditPerformance":2234.8000000002794,"nativeAcknowledged":1794873729203,"nativeAcknowledgedPerformance":3296.5,"saved":1794873729226,"savedPerformance":3319.7000000001863,"writes":[{"at":1794873728070,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794873729178,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1085,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-22,"browserAckBeforeSavedMs":23.200000000186265}
+✖ THEME-001 — owner publishes branded themes and layouts within the page budget (88406.6373ms)
+ℹ THEME-001 — owner settings reach the retained page; unsafe CSS and HTML never execute
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 272953.986143
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:940:1
+✖ THEME-001 — owner publishes branded themes and layouts within the page budget (88406.6373ms)
+  AssertionError [ERR_ASSERTION]: default exceeds the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+      at themeOwnerJourney (file:///home/agent/rer-consolidation/work/sd-lamp-deploy-faults-1/lamp/tests/e2e/helpers/theme-owner-journey.mjs:81:14)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-deploy-faults-1/lamp/tests/e2e/publishing-browser.test.mjs:941:3)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

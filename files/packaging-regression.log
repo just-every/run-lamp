@@ -1,0 +1,16 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{"label":"unclaimed published page","status":200,"generatedAt":"2026-11-17T00:27:31.001Z","retained":"true","state":null}
+{"label":"past freshness bound, before scheduler","status":200,"generatedAt":"2026-11-17T00:27:31.001Z","retained":"true","state":null}
+{"label":"past freshness bound, after scheduler","status":200,"generatedAt":"2026-11-17T00:33:31.001Z","retained":"true","state":null}
+{"label":"primary snapshot unavailable","status":200,"generatedAt":"2026-11-17T00:33:31.001Z","retained":"true","state":"stale"}
+✔ ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview (10544.138643ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12115.691395

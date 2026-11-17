@@ -1,0 +1,4 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Lamp verify:workflow [5f57fb6aadad]
+An active local operation owns the state: PID 36473 (node). Stop it with rer dev --stop or rer preview --stop; for an unmanaged process, stop PID 36473 before retrying.
+verify: failed (exit 4)

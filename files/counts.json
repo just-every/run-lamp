@@ -1,0 +1,13 @@
+{
+  "before": {
+    "registered_cases": 101,
+    "assertion_scripts": 10,
+    "total": 111
+  },
+  "after": {
+    "registered_cases": 101,
+    "assertion_scripts": 10,
+    "total": 111
+  },
+  "contract_status": "unchanged: 60 done, 129 partial, 55 missing; total 244"
+}

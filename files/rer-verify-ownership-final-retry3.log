@@ -1,0 +1,160 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Heavy job admitted: Lamp verify:workflow [5f57fb6aadad]
+Checking pinned pnpm
+10.12.4
+Verifying application
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.20 verify:app [REDACTED]
+> node scripts/verification/run.mjs
+
+Verification plan: 8 test shards and one shared build, 35 routine test files, 101 registered cases (including release qualification) + 10 assertion scripts = 111 checks.
+
+Verifying ownership: test:ownership
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.20 test:ownership [REDACTED]
+> node --test --test-concurrency=1 tests/e2e/auth-adoption-journey.test.mjs tests/auth-adoption/dependencies.test.mjs tests/auth-adoption/setup-migrations.test.mjs tests/auth-adoption/deploy-page-host.test.mjs tests/auth-adoption/sign-in-providers.test.mjs tests/auth-adoption/upgrade.test.mjs
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable (9077.428185ms)
+✔ ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it (2847.488865ms)
+✔ ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key (9398.550698ms)
+✔ ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change (1169.243887ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ Deploy retries a page host whose DNS answer is not there yet and completes once it serves (4.464053ms)
+✔ Deploy completes with a detached page host and says it skipped the check (0.57767ms)
+✔ Deploy fails naming the host and the DNS code when the resolver never answers (0.8701ms)
+✔ Deploy still fails when the page host answers but is not serving the retained snapshot (5.349947ms)
+✔ A page host behind a Cloudflare for SaaS route is checked once its DNS reaches the target, skipped until then, and still fails when the resolver never answers (0.926245ms)
+✔ Native deployment keeps default resources and selects only the explicitly named public Worker and host (319.412806ms)
+✔ Native setup refuses invalid, colliding and mismatched public Worker selections before provider mutation (1384.386527ms)
+✔ Setup resumes a short migration apply in one command and stops safely without progress or after its budget (2602.246462ms)
+ℹ PROBE: clean early return after 56 -> same setup command finishes 80 migrations
+ℹ PROBE: made no progress -> stops with 0/80, no page settings
+ℹ PROBE: five-pass migration budget -> stops with 65/80, no page settings
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ACCESS-002 the owner sets up Google in Settings, tests the real flow, replaces and disconnects it, and the secret is write-only (8986.456383ms)
+✔ ACCESS-002 TEAM-003 Okta pairs people and deploy providers complete native sign-in while unusable rows and Managed hosting keep their boundaries (10963.275126ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 upgrade preserves identities, history and subscriber authority and destroys legacy credentials (5528.990226ms)
+▶ ACCESS-002 upgrade moves setup authority only with the setup operator who still exists
+  ✔ kept (2811.723421ms)
+  ✔ erased (2445.625653ms)
+  ✔ revoked (2265.480232ms)
+✔ ACCESS-002 upgrade moves setup authority only with the setup operator who still exists (7523.995913ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out (88373.680196ms)
+ℹ Execution host: 78387a2f78a9
+ℹ Starting the built operator management Worker
+ℹ Migrating the operator management installation
+ℹ Claiming the operator management setup identity
+ℹ Confirming the setup owner and opening Settings
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 153890.65214
+
+Verifying ownership: test:owner-claim
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.20 test:owner-claim [REDACTED]
+> node --test --test-concurrency=1 tests/demo/owner-claim.test.mjs tests/demo/owner-claim-status.test.mjs
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ ordinary host configuration carries public Business trust into a read-only native owner verification (3846.105482ms)
+✔ a page host on a zone outside the deploy account renders as a Worker route, and every inconsistent pair is refused by setting name (2.417647ms)
+✔ a deploy points the stored page hostname at LAMP_PAGE_HOST and changes no other page setting (1927.067832ms)
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ host-configured signed owner claim creates a native Lamp session and refuses replay; a Business install opens its import door at the first bootstrap claim (10724.825001ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19017.260145
+
+Verifying ownership: test:owner-backup
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.20 test:owner-backup [REDACTED]
+> node --test --test-concurrency=1 tests/e2e/export-import.test.mjs
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+✔ HIST-004 PORT-001 — owner SQL rolls back a failed upgrade, recovers once, and travels through a clean technical backup and restore (84751.846385ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85597.748646
+Serving the production build as rer deploy hosts it
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+Checking that page sections hydrate as separate units
+Hydration check: 35 page(s), 309 load(s)
+  /: skipped, plain HTML: React does not hydrate this page and it loads no application script
+  /docs: 10 load(s), 8 section(s)
+  /docs/overview: 9 load(s), 7 section(s)
+  /docs/getting-started: 8 load(s), 6 section(s)
+  /docs/install: 9 load(s), 7 section(s)
+  /docs/deploy: 11 load(s), 7 section(s)
+  /docs/deployment-reference: 9 load(s), 7 section(s)
+  /docs/run-locally: 9 load(s), 7 section(s)
+  /docs/first-run: 9 load(s), 7 section(s)
+  /docs/domains: 9 load(s), 7 section(s)
+  /docs/components-and-groups: 9 load(s), 7 section(s)
+  /docs/incidents-and-updates: 9 load(s), 7 section(s)
+  /docs/maintenance: 8 load(s), 6 section(s)
+  /docs/public-page: 9 load(s), 7 section(s)
+  /docs/subscribers-and-notifications: 9 load(s), 7 section(s)
+  /docs/alerts-from-monitoring-tools: 9 load(s), 7 section(s)
+  /docs/ai-assistance: 9 load(s), 7 section(s)
+  /docs/operators-and-sign-in: 11 load(s), 7 section(s)
+  /docs/moving-in: 9 load(s), 7 section(s)
+  /docs/public-resources: 9 load(s), 7 section(s)
+  /docs/social-accounts: 9 load(s), 7 section(s)
+  /docs/chat-desk: 9 load(s), 7 section(s)
+  /docs/backups-and-recovery: 9 load(s), 7 section(s)
+  /docs/updating: 9 load(s), 7 section(s)
+  /docs/changelog: 9 load(s), 7 section(s)
+  /docs/accessibility/vpat: 9 load(s), 7 section(s)
+  /docs/contract-rulings: 8 load(s), 6 section(s)
+  /docs/contract-evidence: 8 load(s), 6 section(s)
+  /docs/release-verification: 11 load(s), 7 section(s)
+  /docs/contract/publishing-details: 9 load(s), 7 section(s)
+  /docs/contract/intake-details: 9 load(s), 7 section(s)
+  /docs/contract/document-workflow: 8 load(s), 6 section(s)
+  /docs/contract/public-details: 9 load(s), 7 section(s)
+  /docs/contract/delivery-details: 9 load(s), 7 section(s)
+  /docs/contract/operations-details: 9 load(s), 7 section(s)
+Agent door conformance: undeclared (no agent-surface.json).
+Checking statement size and growth with data
+Statement size: 548 view and trigger statements checked; largest 7 FROM items, depth 21.
+Size check: undeclared (no size-check.json).
+verify: complete (exit 0)

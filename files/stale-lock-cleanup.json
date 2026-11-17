@@ -1,0 +1,7 @@
+{
+  "pid": 36473,
+  "state": "Z (zombie)",
+  "lock": ".wrangler/local-operation/active.json",
+  "same_inode_verified": true,
+  "action": "removed own stale lock; no live process or token changed"
+}

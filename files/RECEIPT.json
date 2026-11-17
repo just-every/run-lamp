@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-deploy-faults-1",
+  "author": "Run Edit Run fleet",
+  "recorded_at": "2026-11-17T00:35:34.350044+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-deploy-faults-1",
+  "head": "14646dbd7d4087885cb776587aeaad2a0722bbb1",
+  "pr": "https://github.com/just-every/run-lamp/pull/398",
+  "ci": {
+    "final_head": "14646dbd7d4087885cb776587aeaad2a0722bbb1",
+    "final_verify_status": "not polled: GitHub budget exhausted",
+    "api_calls_used": 10,
+    "observed_previous_head": "8d029bf50529cc9086992700ff983928475c4f54",
+    "observed_previous_run": 43984818749,
+    "observed_previous_pr_run": 43984825835,
+    "failed_runtime_job": 133710922491,
+    "runtime_failure": "Undeclared public build variable: LAMP_RESOURCE_PREFIX",
+    "runtime_fix": "Both packaging allowlists include the public prefix; existing packaging journey passes",
+    "new_exact_sha_green_claimed": false
+  },
+  "checks": {
+    "typecheck": "passed on final head",
+    "rer_check": "exit 0 on final head",
+    "setup_deploy_tests": "8 passed",
+    "mail_tests": "4 passed",
+    "owner_status_tests": "3 passed",
+    "public_dry_run": "exit 0; all resource names visible",
+    "source_lock": "check passed on final head; regenerated last before commit",
+    "contract_docs": "passed unchanged",
+    "rer_verify": "scoped ownership verifier exit 0 on 8d029bf50529cc9086992700ff983928475c4f54, including hosted output, hydration and statement checks",
+    "prefix_dispatch_hook": "passed on final head; zero deployment commands started",
+    "cutover_regression": "passed, 1 case (108311 ms), existing assertions unchanged",
+    "publishing_regression": "2 passed (audit attribution, complete operator publication); THEME-001 failed unchanged four-request budget with five requests",
+    "build_final": "passed on final candidate",
+    "browser_final": "exit 0 on 8d029bf50529cc9086992700ff983928475c4f54 rebuilt runtime; only packaging declarations/source lock changed afterward",
+    "packaging_regression": "exit 0 with final packaging declaration bytes",
+    "base_copies": "offline check passed"
+  },
+  "counts": {
+    "before": {
+      "registered_cases": 101,
+      "assertion_scripts": 10,
+      "total": 111
+    },
+    "after": {
+      "registered_cases": 101,
+      "assertion_scripts": 10,
+      "total": 111
+    },
+    "contract_status": "unchanged: 60 done, 129 partial, 55 missing; total 244"
+  },
+  "contract_claim": "No contract clause claimed; these are deploy-fault follow-ups.",
+  "release_metadata": "unchanged",
+  "live_provider_proof": "not run; fake edge and local production runtime only",
+  "publication_scan": "fleet Mac landing gate, not performed in this cloud",
+  "integration": "Merged origin/main 626388f; regenerated lock conflict; no release metadata diff against main",
+  "candidate_commit_count": 9,
+  "status": "PUSHED",
+  "unresolved": [
+    "THEME-001 unchanged local request budget: five requests vs four",
+    "Final exact-SHA required CI must still succeed before landing",
+    "Fault 8 R2 version retention still open"
+  ]
+}

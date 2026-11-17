@@ -1,0 +1,7 @@
+{
+  "command": "gh run view 43984818749 --repo just-every/run-lamp --job 133710922491 --log-failed",
+  "exit_code": 0,
+  "job_was_completed_failure": true,
+  "api_calls_used": 10,
+  "signed_url_queries_removed": true
+}

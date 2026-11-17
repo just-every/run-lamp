@@ -1,0 +1,2 @@
+Run Edit Run fleet, 2026-11-16 UTC.
+Fault 8: still open for R2 snapshots/<version> objects; SnapshotCache already replaces its current retained generation transactionally. src/core/features/public-snapshot/service.ts writes each new version prefix without deleting old ones; src/core/platform/blobs/snapshot-cache.ts deletes retained_chunks before inserting the new generation in one transaction. Safe R2 cleanup needs a bounded cursor/retention policy that preserves current and in-flight publication/read generations. Not implemented in this round.

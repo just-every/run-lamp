@@ -1,0 +1,22 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ Deploy retries a page host whose DNS answer is not there yet and completes once it serves (3.733561ms)
+✔ Deploy completes with a detached page host and says it skipped the check (0.501505ms)
+✔ Deploy fails naming the host and the DNS code when the resolver never answers (0.765082ms)
+✔ Deploy still fails when the page host answers but is not serving the retained snapshot (4.649921ms)
+✔ A page host behind a Cloudflare for SaaS route is checked once its DNS reaches the target, skipped until then, and still fails when the resolver never answers (0.847496ms)
+✔ Native deployment keeps default resources and selects only the explicitly named public Worker and host (339.727224ms)
+✔ Native setup refuses invalid, colliding and mismatched public Worker selections before provider mutation (1335.874561ms)
+✔ Setup resumes a short migration apply in one command and stops safely without progress or after its budget (1670.593208ms)
+ℹ PROBE: clean early return after 56 -> same setup command finishes 80 migrations
+ℹ PROBE: made no progress -> stops with 0/80, no page settings
+ℹ PROBE: five-pass migration budget -> stops with 65/80, no page settings
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4335.004329

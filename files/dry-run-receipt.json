@@ -1,0 +1,12 @@
+{
+  "command": "rer deploy --dry-run --environment faultsproof --env-file <synthetic input file>",
+  "exit_code": 0,
+  "resources_visible": {
+    "lamp-faultsproof": true,
+    "lamp-faultsproof-db": true,
+    "lamp-faultsproof-files": true,
+    "lamp-faultsproof-jobs": true
+  },
+  "provider_requests": "dry-run: none",
+  "mail_provider": "none"
+}

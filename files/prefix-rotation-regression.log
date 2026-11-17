@@ -1,0 +1,95 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change (180119.592923ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 181353.733355
+
+✖ failing tests:
+
+test at tests/auth-adoption/dependencies.test.mjs:417:1
+✖ ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change (180119.592923ms)
+  AssertionError [ERR_ASSERTION]: a safety refusal: Using project Node 22.20.0 (current Node 24.19.0).
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 14.8 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 14.8 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 15.1 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 15.5 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 15.3 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 14.9 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 15.1 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 15.4 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 15.1 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 14.7 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 14.5 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Waiting to start (queue position 1/1): all job slots are in use (1 of 1; change slots in /home/agent/.rer/jobs/config.json).
+  Ahead of this job:
+    running: Lamp verify:workflow [5f57fb6aadad] in [REDACTED]
+  Memory: 14.7 GiB available, floor 2.0 GiB. Change the floor with RER_JOBS_MIN_FREE_MEMORY_BYTES (bytes; 0 for no floor).
+  Run from the project root. Inspect the queue with: 'node' 'node_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/job-queue/cli.mjs' 'status' '--json'
+  Stopped by SIGTERM after owned children were stopped.
+  deploy: failed (exit 143)
+  
+  
+  143 !== 4
+  
+      at TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-deploy-faults-1/lamp/tests/auth-adoption/dependencies.test.mjs:447:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 143,
+    expected: 4,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

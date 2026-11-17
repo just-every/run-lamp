@@ -1,0 +1,26 @@
+{
+  "author": "Run Edit Run fleet",
+  "recorded_at": "2026-11-16T23:29:56.069287+00:00",
+  "scope": "mail-off Overview and public signup follow-up",
+  "registrations_added": 0,
+  "checks": [
+    {
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='Mail-off keeps|Managed sender readiness' tests/e2e/rer-mail.test.mjs",
+      "result": "Managed sender readiness passed (8367ms); Mail-off keeps initially failed because its synthetic public check edge returned text/plain; fixed that fixture to return HTML, preserving independent page health assertion."
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='Mail-off keeps' tests/e2e/rer-mail.test.mjs",
+      "result": "passed",
+      "tests": 1,
+      "duration_ms": 5438.903447
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "pending": [
+    "Parent production build, typecheck, hosted browser journey, exact-SHA CI"
+  ],
+  "fault_8": "Still open for R2 snapshots/<version> artifacts: service.ts writes a fresh prefix and never deletes it. SnapshotCache already replaces its single retained generation in one transaction (DELETE FROM retained_chunks before insert). A bounded cursor-based cleanup must retain the selected generation and protect in-flight reads/publication; not a few-line fix."
+}

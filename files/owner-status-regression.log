@@ -1,0 +1,14 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ ordinary host configuration carries public Business trust into a read-only native owner verification (4310.255014ms)
+✔ a page host on a zone outside the deploy account renders as a Worker route, and every inconsistent pair is refused by setting name (1.703265ms)
+✔ a deploy points the stored page hostname at LAMP_PAGE_HOST and changes no other page setting (2102.889271ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7400.391076
