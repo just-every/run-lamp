@@ -1,0 +1,125 @@
+{
+  "author": "Run Edit Run fleet",
+  "recorded_at": "2026-11-17T13:12:49.230320+00:00",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "operatorManagementFlow (includes invitationRolesFlow) and accentColourFlow on the built app, system Chromium",
+      "exit": 0,
+      "log": "touched-browser.log",
+      "receipt": "touched-browser-receipt.json"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/unsaved-work-browser.test.mjs",
+      "exit": 0,
+      "tests": 2,
+      "log": "unsaved-work.log"
+    },
+    {
+      "command": "node --test --test-name-pattern='native identity setup|each set and clear appends' tests/auth-adoption/dependencies.test.mjs tests/e2e/publishing-contract.test.mjs",
+      "exit": 0,
+      "tests": 2,
+      "log": "supporting-authority.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node --import <external system-Chromium preloader> --test --test-name-pattern='Private channels deliver' tests/e2e/channels-and-presets.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "log": "channel-check.log"
+    },
+    {
+      "command": "node --test --test-name-pattern='invalid accent colour' tests/e2e/unsaved-work-browser.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "log": "accent-final.log",
+      "purpose": "Check absence of Retry after the ordinary autosave validation pause"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build at the committed candidate",
+      "exit": 0,
+      "log": "build-final.log"
+    },
+    {
+      "command": "Built-page invitation and accent proof at 1440 and 390 on the committed candidate",
+      "exit": 0,
+      "receipt": "after-receipt.json",
+      "log": "browser-proof-final.log"
+    },
+    {
+      "command": "Five formerly failing public-door subscriber, catalogue, reviewed publication, maintenance and reminder journeys with system Chromium",
+      "exit": 0,
+      "tests": 5,
+      "log": "ci-corrections.log"
+    },
+    {
+      "command": "pnpm typecheck after fixture corrections",
+      "exit": 0,
+      "log": "typecheck-corrected.log"
+    },
+    {
+      "command": "Source lock regenerated last and checked after fixture corrections",
+      "exit": 0,
+      "write_log": "source-lock-corrected-write.json",
+      "check_log": "source-lock-corrected-check.json"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build on corrected committed head",
+      "exit": 0,
+      "log": "build-corrected.log"
+    },
+    {
+      "command": "Built-page proof at 1440 and 390 on corrected committed head",
+      "exit": 0,
+      "log": "browser-corrected.log",
+      "receipt": "corrected-receipt.json"
+    }
+  ],
+  "counts": {
+    "testRegistrations": {
+      "before": 102,
+      "after": 103
+    },
+    "assertionScripts": 10,
+    "contractCounts": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "notes": [
+    "The optional 12ui hosted design helper could not draft without account sign-in; the requested functional changes preserve the existing interface.",
+    "One early browser test used a non-exact label; the control now has an explicit accessible label.",
+    "One erasure check needed a real reload after its new colleague-page visit; the same invalid-session and replay assertions remain.",
+    "The channel test first encountered an absent bundled browser; rerun uses system Chromium through an external launcher preloader.",
+    "The isolated built Worker fixture does not load brand preview images; the same limitation appears in the before captures.",
+    "The full publication scan and landing run on the fleet machine under the cloud adaptation."
+  ],
+  "product_head": "82d9833d8b6fe34a4e439ec5f27f1a9cb4951b21"
+}

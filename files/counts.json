@@ -1,0 +1,13 @@
+{
+  "testRegistrations": {
+    "before": 102,
+    "after": 103
+  },
+  "assertionScripts": 10,
+  "contractCounts": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  }
+}

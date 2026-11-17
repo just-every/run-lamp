@@ -1,0 +1,56 @@
+{
+  "head": "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+  "run_id": 44090059079,
+  "calls": [
+    {
+      "call": 1,
+      "at": "2026-11-17T13:10:49.582865+00:00",
+      "kind": "discovery",
+      "data": [
+        {
+          "conclusion": null,
+          "event": "push",
+          "head_sha": "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+          "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090059079",
+          "id": 44090059079,
+          "name": "Verify",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "call": 2,
+      "at": "2026-11-17T13:15:49.725813+00:00",
+      "kind": "run",
+      "data": {
+        "conclusion": null,
+        "head_sha": "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090059079",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 3,
+      "at": "2026-11-17T13:20:49.710097+00:00",
+      "kind": "run",
+      "data": {
+        "conclusion": null,
+        "head_sha": "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090059079",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 4,
+      "at": "2026-11-17T13:25:49.766384+00:00",
+      "kind": "run",
+      "data": {
+        "conclusion": "failure",
+        "head_sha": "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090059079",
+        "status": "completed"
+      }
+    }
+  ],
+  "status": "failed"
+}

@@ -1,0 +1,14 @@
+{
+  "results": [
+    {
+      "journey": "operatorManagementFlow including invitationRolesFlow",
+      "status": "passed",
+      "width": 1440
+    },
+    {
+      "journey": "accentColourFlow",
+      "status": "passed",
+      "width": 1440
+    }
+  ]
+}

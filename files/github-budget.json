@@ -1,0 +1,60 @@
+{
+  "budget": 10,
+  "used": 10,
+  "remaining": 0,
+  "calls": [
+    {
+      "kind": "PR creation",
+      "repository": "just-every/run-lamp",
+      "result": "PR 405"
+    },
+    {
+      "kind": "exact-SHA discovery",
+      "run": 44090059079
+    },
+    {
+      "kind": "run poll",
+      "run": 44090059079,
+      "at": "2026-11-17T13:15:49Z"
+    },
+    {
+      "kind": "run poll",
+      "run": 44090059079,
+      "at": "2026-11-17T13:20:49Z"
+    },
+    {
+      "kind": "run poll",
+      "run": 44090059079,
+      "at": "2026-11-17T13:25:49Z",
+      "conclusion": "failure"
+    },
+    {
+      "kind": "failed-job discovery",
+      "run": 44090059079
+    },
+    {
+      "kind": "gh run view --log-failed",
+      "run": 44090059079,
+      "job": 134063202702,
+      "exit": 0
+    },
+    {
+      "kind": "gh run view --log-failed",
+      "run": 44090059079,
+      "job": 134063202711,
+      "exit": 0
+    },
+    {
+      "kind": "gh run view --log-failed",
+      "run": 44090059079,
+      "job": 134063202745,
+      "exit": 0
+    },
+    {
+      "kind": "gh run view --log-failed",
+      "run": 44090059079,
+      "job": 134068564562,
+      "exit": 0
+    }
+  ]
+}

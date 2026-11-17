@@ -1,0 +1,72 @@
+{
+  "surface": "built application",
+  "product_head": "82d9833d8b6fe34a4e439ec5f27f1a9cb4951b21",
+  "widths": [
+    1440,
+    390
+  ],
+  "observations": [
+    {
+      "width": 1440,
+      "defaultRole": "communicator",
+      "roleHelp": "Owner — Full control, including granting ownership and removing operators.\n\nAdmin — Manage settings and operators, but cannot change an Owner’s access.\n\nCommunicator — Write and publish updates, without managing settings or operators.\n\nResponder — Write drafts and internal notes, but cannot publish updates.\n\nViewer — Read the incident desk, without making changes."
+    },
+    {
+      "width": 1440,
+      "pending": "Pending invitations\n\nThese people have not accepted their invitation. Erasing their personal data cancels every outstanding invitation link.\n\nInvited operator\nsynthetic-lamp-proof@example.test\n· Communicator\nErase personal data",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "acceptedRole": "communicator",
+      "removeButtons": 0,
+      "eraseButtons": 0
+    },
+    {
+      "width": 1440,
+      "invalid": "true",
+      "help": "Pick a colour, or type it like #1F3A5F.",
+      "error": "This colour has not been saved. Use # followed by six letters or numbers from 0–9 and A–F, or pick a colour above.",
+      "swatchBefore": "#16794c",
+      "swatchAfter": "#16794c",
+      "retryButtons": 0,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "correctedStatus": 200,
+      "savedColour": "#1F3A5F"
+    },
+    {
+      "width": 390,
+      "defaultRole": "communicator",
+      "roleHelp": "Owner — Full control, including granting ownership and removing operators.\n\nAdmin — Manage settings and operators, but cannot change an Owner’s access.\n\nCommunicator — Write and publish updates, without managing settings or operators.\n\nResponder — Write drafts and internal notes, but cannot publish updates.\n\nViewer — Read the incident desk, without making changes."
+    },
+    {
+      "width": 390,
+      "pending": "Pending invitations\n\nThese people have not accepted their invitation. Erasing their personal data cancels every outstanding invitation link.\n\nInvited operator\nsynthetic-lamp-proof@example.test\n· Communicator\nErase personal data",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "acceptedRole": "communicator",
+      "removeButtons": 0,
+      "eraseButtons": 0
+    },
+    {
+      "width": 390,
+      "invalid": "true",
+      "help": "Pick a colour, or type it like #1F3A5F.",
+      "error": "This colour has not been saved. Use # followed by six letters or numbers from 0–9 and A–F, or pick a colour above.",
+      "swatchBefore": "#16794c",
+      "swatchAfter": "#16794c",
+      "retryButtons": 0,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "correctedStatus": 200,
+      "savedColour": "#1F3A5F"
+    }
+  ]
+}

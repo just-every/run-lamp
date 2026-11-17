@@ -1,0 +1,73 @@
+{
+  "author": "Run Edit Run fleet",
+  "at": "2026-11-17T13:52:07Z",
+  "tag": "sd-lamp-settings-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-settings-1",
+  "head": "82d9833d8b6fe34a4e439ec5f27f1a9cb4951b21",
+  "tree": "aad094ff56dc381bd15f5cf9a559db1266250f35",
+  "base": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "product_commits": [
+    "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+    "82d9833d8b6fe34a4e439ec5f27f1a9cb4951b21"
+  ],
+  "product_pushed": true,
+  "product_push_receipt": "corrected-product-push.log",
+  "pr": "https://github.com/just-every/run-lamp/pull/405",
+  "source_clean": true,
+  "first_candidate_verify": {
+    "id": 44090059079,
+    "head_sha": "6b459467fc17e8dd6d72b481b1356fe6db6ad10f",
+    "status": "completed",
+    "conclusion": "failure",
+    "details": "CI-CORRECTIONS.md"
+  },
+  "corrected_candidate_verify": {
+    "head_sha": "82d9833d8b6fe34a4e439ec5f27f1a9cb4951b21",
+    "status": "unobserved",
+    "run_id": null,
+    "reason": "Ten-call GitHub budget exhausted after required failed-job logs"
+  },
+  "custody": "PUSHED",
+  "ready_claimed": false,
+  "github_budget": {
+    "used": 10,
+    "limit": 10
+  },
+  "clause_status_changes": [],
+  "counts": {
+    "testRegistrations": {
+      "before": 102,
+      "after": 103
+    },
+    "assertionScripts": 10,
+    "contractCounts": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "no_claim": "No contract clause claimed; these are owner-journey fixes (DIRECT 87).",
+  "candidate_browser_receipt": "corrected-receipt.json",
+  "candidate_browser_files": [
+    "corrected-operators-1440.png",
+    "corrected-operators-390.png",
+    "corrected-pending-1440.png",
+    "corrected-pending-390.png",
+    "corrected-colleague-1440.png",
+    "corrected-colleague-390.png",
+    "corrected-accent-1440.png",
+    "corrected-accent-390.png",
+    "corrected-accent-saved-1440.png",
+    "corrected-accent-saved-390.png"
+  ],
+  "local_rechecks": {
+    "formerly_failing_journeys": 5,
+    "passed": 5,
+    "log": "ci-corrections.log"
+  },
+  "evidence_ref": "refs/heads/evidence/sd-lamp-settings-1",
+  "evidence_custody": "Transport custody is the exact EVIDENCE line returned separately in the final message.",
+  "remaining_gap": "Successful exact-SHA Verify has not been observed on the corrected head; the fleet must check it before landing."
+}

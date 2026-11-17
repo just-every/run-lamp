@@ -1,0 +1,25 @@
+{
+  "source": "built main",
+  "observations": [
+    {
+      "width": 1440,
+      "pending": "Pending invitations\n\nThese people have not accepted their invitation. Erasing their personal data cancels every outstanding invitation link.\n\nInvited operator\nsynthetic-lamp-invite@example.test\n· Owner\nErase personal data",
+      "acceptedRole": "owner"
+    },
+    {
+      "width": 1440,
+      "error": "Accent colour could not be saved: accentColor must be a six-digit hex colour Retry",
+      "swatch": "#000000"
+    },
+    {
+      "width": 390,
+      "pending": "Pending invitations\n\nThese people have not accepted their invitation. Erasing their personal data cancels every outstanding invitation link.\n\nInvited operator\nsynthetic-lamp-invite@example.test\n· Owner\nErase personal data",
+      "acceptedRole": "owner"
+    },
+    {
+      "width": 390,
+      "error": "Accent colour could not be saved: accentColor must be a six-digit hex colour Retry",
+      "swatch": "#000000"
+    }
+  ]
+}
