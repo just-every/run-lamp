@@ -1,10 +1,14 @@
 # Changelog
 
-## 1.11.20
+## 1.11.21
 
-**The install and deployment guides now explain which rer version the checkout runs.** They point to the exact pin in `package.json` and `pnpm-lock.yaml`, and explain that `rer --version` shows the installed CLI first and the checkout's pin second. After dependencies are installed, commands run the checkout's pin. Lamp keeps rer 0.2.118.
+**A fresh Lamp deployment completes in one command.** `rer deploy` resumes partially applied migrations while progress continues and checks that every shipped migration is recorded before writing page settings. The deployment form exposes the public app and page addresses, the optional public Worker name, the mail choice and the resource prefix.
 
-Upgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.20`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+- **Name a second copy with `--environment`.** For example, `--environment staging` creates the `lamp-staging` copy. Leave `LAMP_RESOURCE_PREFIX` unset: a custom prefix is refused when it cannot be combined with the deployment owner claim. `rer signin` checks the recorded app Worker and its live ownership receipt; it cannot repair a failed owner claim.
+- **Email-off installations say what is available.** `rer deploy` defaults to `MAIL_PROVIDER=none`; choose a provider explicitly to enable email. Overview reports email as off without promising a working email subscription form, and the public page explains that email subscriptions are unavailable. The deployment and sign-in guides explain owner entry without email, the choices for other operators and the inputs that must stay unset when email is off.
+- **The install and deployment guides explain the checkout's rer pin.** They point to `package.json` and `pnpm-lock.yaml`, distinguish the installed CLI from the checkout's pinned version and clarify deployment, scheduled work and removal retries. This checkout uses rer 0.2.121.
+
+Upgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.21`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
 
 ## 1.11.19
 
