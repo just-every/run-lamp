@@ -1,0 +1,7 @@
+commit 3ca73da203d56aa88efd9ad85626645337648856
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Tue Nov 17 15:16:45 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Tue Nov 17 15:16:45 2026 +0000
+
+    Upgrade hono to 4.13.11 to fix static middleware bypass

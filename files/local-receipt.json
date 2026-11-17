@@ -1,0 +1,131 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-dep-6",
+  "head": "3ca73da203d56aa88efd9ad85626645337648856",
+  "base": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "dependency": {
+    "name": "hono",
+    "before": "4.13.7",
+    "after": "4.13.11",
+    "vulnerable_resolutions_before": 1,
+    "vulnerable_resolutions_after": 0,
+    "advisory": "GHSA-5r4p-p66f-jhc7"
+  },
+  "changes": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0,
+      "receipt": "install-after.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "receipt": "setup-summary.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "receipt": "build.log"
+    },
+    {
+      "command": "LAMP_CHROMIUM_PATH=/usr/bin/chromium cloud_run node --test --test-concurrency=1 tests/e2e/start-runtime.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "receipt": "start-runtime.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "receipt": "check-plan.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "receipt": "contract-docs-check.log"
+    }
+  ],
+  "clause_status_changes": [],
+  "contract_status_counts_before": {
+    "partial": 129,
+    "done": 60,
+    "missing": 52
+  },
+  "contract_status_counts_after": {
+    "partial": 129,
+    "done": 60,
+    "missing": 52
+  },
+  "assertions_added": 0,
+  "assertions_removed": 0,
+  "source_lock_file_count": 2300,
+  "lock_sha256": "f3d4e47b6a6ebebafd78792cd1ae70d6d79ce439d31fad22f69542a2c453076d",
+  "test_count_before": 112,
+  "test_count_after": 112,
+  "test_count_source": "scripts/verification/check-plan.mjs",
+  "registered_cases_before": 102,
+  "registered_cases_after": 102,
+  "assertion_scripts_before": 10,
+  "assertion_scripts_after": 10,
+  "commit_identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": [],
+    "candidate_count": 1
+  },
+  "static_middleware": {
+    "serveStatic_matches": 0,
+    "app_assets": "Cloudflare ASSETS binding",
+    "public_assets": "explicit R2 snapshot routes",
+    "auth": "requireOperator on /api/app/*"
+  },
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "pre_existing": 50,
+    "public_base": {
+      "ref": "https://github.com/just-every/run-lamp#main",
+      "commit": "cb6f9af49f440380caeca1722bac8fb7b7815699"
+    },
+    "source": {
+      "commit": "3ca73da203d56aa88efd9ad85626645337648856",
+      "tree": "7b28653130c784d493ab047e91caca46f89dee20"
+    },
+    "receipt": "publication-scan.json"
+  },
+  "product_pushed": true,
+  "ci": {
+    "run_id": 44117942173,
+    "head": "3ca73da203d56aa88efd9ad85626645337648856",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/44117942173",
+    "receipt": "ci-receipt.json"
+  },
+  "pr": "https://github.com/just-every/run-lamp/pull/410",
+  "blockers": [],
+  "product_custody": "READY for fleet landing"
+}

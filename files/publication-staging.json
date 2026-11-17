@@ -1,0 +1,10 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "source_head": "3ca73da203d56aa88efd9ad85626645337648856",
+  "source_tree": "7b28653130c784d493ab047e91caca46f89dee20",
+  "staged_tree": "7b28653130c784d493ab047e91caca46f89dee20",
+  "staged_files": 2320,
+  "clean": true,
+  "method": "Base committedSource and sourcePublicationScan; exact raw Git blobs and full mirrored history"
+}

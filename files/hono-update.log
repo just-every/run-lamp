@@ -1,0 +1,14 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+ WARN  `node_modules` is present. Lockfile only installation will make it out-of-date
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 30, reused 0, downloaded 0, added 0
+Progress: resolved 71, reused 0, downloaded 0, added 0
+Progress: resolved 144, reused 0, downloaded 0, added 0
+Progress: resolved 199, reused 0, downloaded 0, added 0
+ WARN  GET https://registry.npmjs.org/workerd error (503). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmjs.org/@tanstack%2Fstore error (503). Will retry in 10 seconds. 2 retries left.
+Progress: resolved 200, reused 0, downloaded 0, added 0
+Progress: resolved 261, reused 0, downloaded 0, added 0
+Progress: resolved 277, reused 0, downloaded 0, added 0, done
+
+Done in 18.5s using pnpm v10.12.4

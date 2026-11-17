@@ -1,0 +1,66 @@
+diff --git a/package.json b/package.json
+index dc0380cf..e8a9761e 100644
+--- a/package.json
++++ b/package.json
+@@ -74,7 +74,7 @@
+     "clsx": "^2.1.1",
+     "css-tree": "3.2.1",
+     "drizzle-orm": "0.45.2",
+-    "hono": "4.13.7",
++    "hono": "4.13.11",
+     "parse5": "8.0.1",
+     "react": "19.2.8",
+     "react-dom": "19.2.8",
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index d58cafb5..a78b0411 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -35,8 +35,8 @@ importers:
+         specifier: 0.45.2
+         version: 0.45.2(@cloudflare/workers-types@5.20260908.1)
+       hono:
+-        specifier: 4.13.7
+-        version: 4.13.7
++        specifier: 4.13.11
++        version: 4.13.11
+       parse5:
+         specifier: 8.0.1
+         version: 8.0.1
+@@ -1199,8 +1199,8 @@ packages:
+       crossws:
+         optional: true
+ 
+-  hono@4.13.7:
+-    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
++  hono@4.13.11:
++    resolution: {integrity: sha512-/SMX/RQNJn7oNmFwH6DtwDqcrzZU2otm1FD6OJe2cWF6cfy/F8hq0XVBv7xW3FTJshRQwuBnXHDq2kNsdZnshg==}
+     engines: {node: '>=16.9.0'}
+ 
+   ical.js@2.2.1:
+@@ -2578,7 +2578,7 @@ snapshots:
+       rou3: 0.8.1
+       srvx: 0.11.22
+ 
+-  hono@4.13.7: {}
++  hono@4.13.11: {}
+ 
+   ical.js@2.2.1: {}
+ 
+diff --git a/sources.lock.json b/sources.lock.json
+index 74e1e81b..1d6ac191 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -2608,11 +2608,11 @@
+       "executable": false
+     },
+     "package.json": {
+-      "sha256": "483c4e0264c88932c0f2b669066590c6449fdd6dbc90bacbd1cfa3aed4707444",
++      "sha256": "259d8f96ad9cbaf20b0667e05ef06b64d0daecc25ae5bbb4f2cda90854b8a49f",
+       "executable": false
+     },
+     "pnpm-lock.yaml": {
+-      "sha256": "6cbcf089f1e212cd3b9a6f42a527d1975e508ad828694666f21674c2ddd5ef73",
++      "sha256": "f3d4e47b6a6ebebafd78792cd1ae70d6d79ce439d31fad22f69542a2c453076d",
+       "executable": false
+     },
+     "public/app-assets/brand/lamp-mark.svg": {

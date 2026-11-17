@@ -1,0 +1,16 @@
+[
+  {
+    "name": "lamp",
+    "version": "1.11.22",
+    "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-6/repo",
+    "private": true,
+    "dependencies": {
+      "hono": {
+        "from": "hono",
+        "version": "4.13.11",
+        "resolved": "https://registry.npmjs.org/hono/-/hono-4.13.11.tgz",
+        "path": "/home/agent/rer-consolidation/work/maint/gr-mt-lamp-dep-6/repo/node_modules/.pnpm/hono@4.13.11/node_modules/hono"
+      }
+    }
+  }
+]

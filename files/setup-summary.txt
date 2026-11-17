@@ -1,0 +1,2 @@
+Author: Run Edit Run fleet, 2026-11-17.
+The required non-interactive rer setup completed successfully, built the app, applied local migrations and prepared the fleet owner. Raw setup output and private local configuration are excluded from the public evidence packet.

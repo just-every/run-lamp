@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "3ca73da203d56aa88efd9ad85626645337648856",
+  "summary": "Upgrade direct Hono from 4.13.7 to patched 4.13.11 for GHSA-5r4p-p66f-jhc7; only Hono lock entries and required source hashes changed. Product branch pushed and PR 410 is open for fleet landing.",
+  "tests": "pnpm 10.12.4 frozen install PASS; Node 22.20.0 typecheck PASS; source-lock and contract-doc checks PASS; production rer build PASS; built Worker routing/auth/static-asset journey PASS (1/1); Base publication COMPLETE/PASS with 0 new findings; exact-SHA full Verify 44117942173 completed/success.",
+  "security": true
+}

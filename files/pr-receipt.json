@@ -1,0 +1,11 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "number": 410,
+  "html_url": "https://github.com/just-every/run-lamp/pull/410",
+  "state": "open",
+  "head": "3ca73da203d56aa88efd9ad85626645337648856",
+  "head_ref": "cloud/gr-mt-lamp-dep-6",
+  "base": "main",
+  "api_calls": 1
+}

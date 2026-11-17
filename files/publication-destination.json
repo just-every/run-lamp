@@ -1,0 +1,8 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "project": "just-every/lamp",
+  "repository": "https://github.com/just-every/run-lamp",
+  "validator": "Base destination.py",
+  "exit": 0
+}

@@ -1,0 +1,51 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "head": "3ca73da203d56aa88efd9ad85626645337648856",
+  "api_calls": 4,
+  "visibility_api_calls": 1,
+  "discovered_at": "2026-11-17T15:45:30.771233+00:00",
+  "runs": [
+    {
+      "id": 44117942173,
+      "name": "Verify",
+      "status": "queued",
+      "conclusion": null,
+      "head_sha": "3ca73da203d56aa88efd9ad85626645337648856",
+      "event": "push",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44117942173",
+      "created_at": "2026-11-17T15:45:18Z",
+      "head_branch": "cloud/gr-mt-lamp-dep-6"
+    }
+  ],
+  "polls": [
+    {
+      "conclusion": null,
+      "head_sha": "3ca73da203d56aa88efd9ad85626645337648856",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44117942173",
+      "status": "in_progress",
+      "at": "2026-11-17T15:50:31.306463+00:00",
+      "run_id": 44117942173
+    },
+    {
+      "conclusion": null,
+      "head_sha": "3ca73da203d56aa88efd9ad85626645337648856",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44117942173",
+      "status": "in_progress",
+      "at": "2026-11-17T15:55:31.821657+00:00",
+      "run_id": 44117942173
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "3ca73da203d56aa88efd9ad85626645337648856",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44117942173",
+      "status": "completed",
+      "at": "2026-11-17T16:00:32.331404+00:00",
+      "run_id": 44117942173
+    }
+  ],
+  "notes": "Native publication scanner visibility lookups are recorded by its github.references phase; this counter tracks explicit CI requests.",
+  "final_status": "success",
+  "pr_api_calls": 1,
+  "pr": "https://github.com/just-every/run-lamp/pull/410"
+}
