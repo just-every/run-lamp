@@ -34,9 +34,14 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   await form.title.fill('Mobile requests are slow');
   await form.impact.fill('Some mobile requests take longer to finish.');
   await form.addComponent(component.name);
-  await form.componentState(component.name, 'Degraded performance');
   await form.audience.fill('Customers using mobile apps.');
-  await form.nextUpdate.fill('2027-09-08T14:00');
+  await page.getByRole('button', { name: '30 min', exact: true }).click();
+  const state = page.getByLabel(`${component.name} state with this update`, { exact: true });
+  assert.equal(await state.inputValue(), '', 'adding a component leaves its state unset');
+  assert.equal(await form.publish.isDisabled(), true, 'the owner must choose an affected state to publish');
+  const reason = await form.publish.getAttribute('aria-describedby');
+  assert.ok((await page.locator(`[id="${reason}"]`).innerText()).includes(component.name));
+  await form.componentState(component.name, 'Degraded performance');
   await page.getByRole('button', { name: 'Email', exact: true }).click();
   const preview = page.locator('.preview-panel');
   await page.frameLocator('iframe[title="Notification email message"]').getByText('Some mobile requests take longer to finish.', { exact: false }).waitFor();
@@ -54,6 +59,22 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   const id = new URL(page.url()).pathname.split('/').at(-1);
   const path = `/api/app/incidents/${id}`;
   const composer = incidentComposer(page);
+  const firstUpdate = (await api(path)).incident.updates[0];
+  const live = page.locator('.live-preview');
+  await live.getByText(firstUpdate.customerImpact, { exact: true }).waitFor();
+  assert.equal(await live.locator('.state-pill').innerText(), firstUpdate.lifecycle);
+  assert.equal(await live.locator('time').getAttribute('datetime'), firstUpdate.nextUpdateAt);
+  assert.equal(await composer.impact.isVisible(), false, 'publication closes the next draft');
+  const [publicIncident] = await Promise.all([
+    browserContext.waitForEvent('page'),
+    page.getByRole('link', { name: 'View public page' }).click(),
+  ]);
+  try {
+    const update = publicIncident.locator(`#update-${firstUpdate.id}`);
+    await update.getByText(firstUpdate.customerImpact, { exact: true }).waitFor();
+    assert.equal(await update.locator('dl time').getAttribute('datetime'), firstUpdate.nextUpdateAt);
+  } finally { await publicIncident.close(); }
+  await composer.openDraft();
   await composer.setStatus('Resolved');
   await composer.impact.fill('Fixed. Mobile requests finish normally again.');
   await page.locator('.autosave-status.is-saved').waitFor();
@@ -115,6 +136,7 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
     assert.ok((await publicPage.locator(`#update-${incident.updates[0].id}`).innerText()).includes(corrected));
     await capture(publicPage, 'public-correction');
     // Returning the manual setting to Automatic does not change the retained resolution.
+    await composer.openDraft();
     await composer.setStatus('Resolved');
     await page.getByRole('button', { name: `Set ${component.name} to Automatic`, exact: true }).click();
     await page.getByRole('region', { name: 'Component statuses after resolution' }).waitFor({ state: 'detached' });

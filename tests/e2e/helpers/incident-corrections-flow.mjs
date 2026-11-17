@@ -100,6 +100,7 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
     await publicCorrection(resolvedCorrectionIncident, resolvedCorrection, resolution);
     await capture(publicPage, 'resolved-correction-public');
 
+    await composer.openDraft();
     await composer.setStatus('Investigating');
     await composer.impact.fill('Harbour Cart checkout is failing again; investigation has reopened.');
     await page.getByLabel(`${component.name} state with this update`, { exact: true }).selectOption('Partially unavailable');
@@ -134,6 +135,7 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
     }
 
     // Active incidents use exactly the same correction controls.
+    await composer.openDraft();
     await composer.setStatus('Identified');
     await composer.impact.fill('Harbour Cart retries sometimes succeed while checkout capacity recovers.');
     await composer.nextUpdate.fill('2027-09-08T16:00');

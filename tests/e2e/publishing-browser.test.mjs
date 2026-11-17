@@ -752,7 +752,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await page.locator('.ai-suggestion [role=status]').filter({ hasText: /503|intentionally unavailable/i }).waitFor();
   assert.equal(await composer.publish.isEnabled(), true, 'a failed suggestion leaves ordinary publication usable');
   await composer.publish.click();
-  await page.getByText('Update published.', { exact: true }).waitFor();
+  await page.locator('.publication-confirmation').waitFor();
   incident = await readIncident(id);
   const first = incident.updates[0];
   await publishedIncidentState({ page, composer, component, update: first, screens: previewScreens });
@@ -787,6 +787,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await composer.publish.click();
   await page.waitForFunction(() => document.querySelector('.composer-panel textarea')?.value === '');
 
+  await composer.openDraft();
   await composer.setStatus('Resolved');
   await composer.audience.fill('US customers paying by card.');
   await composer.impact.fill('Checkout authorizations are working normally.');
@@ -794,7 +795,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await composer.details.fill('Follow https://support.example.test/checkout for any remaining questions.');
   await saved();
   assert.equal(await composer.nextUpdate.count(), 0, 'resolution needs no further update promise');
-  await composer.publish.click(); await page.getByText('Update published.', { exact: true }).waitFor();
+  await composer.publish.click(); await page.locator('.publication-confirmation').waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
   await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimState: 'Degraded performance', screens: previewScreens });
