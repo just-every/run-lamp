@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { IncidentTemplate } from "../../incidents/template-repository";
+import { templateLabel } from "../../incidents/ui/template-source";
 import { TemplateEditor } from "../../incidents/ui/template-editor";
 import { useAppData } from "../../../app/client/ui/api";
 import { useLeaveGuard } from "../../../app/client/ui/leave-guard";
@@ -34,7 +35,7 @@ export function TemplatesSettingsTab() {
   return <section className="data-card templates-card" aria-label="Update templates">
     {data.templates.length ? <label className="form-label">Saved update template<select aria-label="Saved update template" value={selected} onChange={event => choose(event.target.value)}>
       <option value="">Choose a saved template</option>
-      {data.templates.map(item => <option key={item.id} value={item.id}>{item.folder ? `${item.folder} / ` : ""}{item.name}</option>)}
+      {data.templates.map(item => <option key={item.id} value={item.id}>{templateLabel(item)}</option>)}
     </select></label> : <p>No saved templates yet. Save an update as a template from an incident.</p>}
     {template ? <TemplateEditor key={template.id} template={template} captureUpdate={captureUpdate} onDirty={setDirty} onSaved={saved => { setEdited(saved); refresh(); }} /> : null}
   </section>;

@@ -4,7 +4,7 @@ import { safeValue } from "../../../../../modules/import-kit/src/readers/records
 import type { Json, SourceArtifact } from "../../../../../modules/import-kit/src/types.ts";
 import type { SavedFile } from "../source.ts";
 import { assertSorrySafe, parseSorryJson, retainedSorry, sorryFieldInventory, SorryFieldRefusal } from "./json.ts";
-import { componentSchema, managementPageSchema, nextPublicPage, noticeSchema, object, publicPageSchema, publicUrl, sorryLimits, subscriberSchema, updateSchema, type ObjectValue } from "./schema.ts";
+import { componentSchema, managementPageSchema, nextPublicPage, noticeSchema, object, publicPageSchema, publicUrl, sorryLimits, subscriberSchema, updateSchema, noticeTemplateSchema, updateTemplateSchema, templatePagination, type ObjectValue } from "./schema.ts";
 
 type SavedRow = { raw: ObjectValue; origin: SourceArtifact };
 const equal = (a: unknown, b: unknown) => canonicalJson(a as Json) === canonicalJson(b as Json);
@@ -26,7 +26,7 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
     if (records > sorryLimits.maxRecords || new TextEncoder().encode(JSON.stringify(value)).length > sorryLimits.maxRecordBytes) throw new Error("Sorry source record count or record size exceeds its limit; nothing was truncated.");
   };
   for (const file of files) {
-    if (envelopes.has(file.name) || !/^sorry-(?:status|page|components(?:-[1-9][0-9]*)?|notices(?:-[1-9][0-9]*)?|subscribers(?:-[1-9][0-9]*)?|notice-[0-9]+(?:-updates(?:-[1-9][0-9]*)?)?)\.json$/u.test(file.name)) throw new Error(file.name + ":/ (all fields refused): unsupported or duplicate Sorry resource file; no fields were imported. Remove it and recreate that resource separately before reviewing again.");
+    if (envelopes.has(file.name) || !/^sorry-(?:status|page|components(?:-[1-9][0-9]*)?|notices(?:-[1-9][0-9]*)?|(?:notice|update)-templates(?:-[1-9][0-9]*)?|subscribers(?:-[1-9][0-9]*)?|notice-[0-9]+(?:-updates(?:-[1-9][0-9]*)?)?)\.json$/u.test(file.name)) throw new Error(file.name + ":/ (all fields refused): unsupported or duplicate Sorry resource file; no fields were imported. Remove it and recreate that resource separately before reviewing again.");
     try {
       const value = object(parseSorryJson(file.text));
       const hasChannels = assertSorrySafe(value, undefined, /^sorry-subscribers(?:-[1-9][0-9]*)?\.json$/u.test(file.name));
@@ -89,6 +89,29 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
   const components = collection("components", "components").map(({ raw, origin }) => ({ raw: componentSchema.parse(raw), origin }));
   const notices = collection("notices", "notices").map(({ raw, origin }) => ({ raw: noticeSchema.parse(raw), origin }));
   const subscribers = isPublic ? [] : collection("subscribers", "subscribers", 500).map(({ raw, origin }) => ({ raw: subscriberSchema.parse(raw), origin }));
+  function templates(stem: "notice" | "update") {
+    const rows: Array<{ raw: import("./schema.ts").SorryTemplate; origin: SourceArtifact }> = [];
+    const firstName = `sorry-${stem}-templates.json`;
+    // Original historical/public captures can omit template resources. If any
+    // page is present its full documented pagination chain must be supplied.
+    if (!envelopes.has(firstName)) return rows;
+    if (isPublic) throw new Error("Sorry template collections require authenticated saved responses, not a public status capture.");
+    let pagination: ReturnType<typeof templatePagination> | undefined;
+    for (let number = 1; number <= sorryLimits.pages; number++) {
+      const name = `sorry-${stem}-templates${number === 1 ? "" : `-${number}`}.json`;
+      const entry = envelopes.get(name);
+      if (!entry) throw new Error(`Include ${name}; Sorry template pagination must be complete.`);
+      used.add(name);
+      pagination = templatePagination(entry.value, number, rows.length, pagination);
+      for (const value of entry.value.response as unknown[]) {
+        const raw = (stem === "notice" ? noticeTemplateSchema : updateTemplateSchema).parse(value);
+        count(raw); rows.push({ raw, origin: entry.origin });
+      }
+      if (!pagination.next) return rows;
+    }
+    throw new Error("Sorry template collection exceeds 50 pages; nothing was truncated.");
+  }
+  const noticeTemplates = templates("notice"), updateTemplates = templates("update");
   const details = new Map<string, SavedRow>();
   const updates = new Map<string, SavedRow[]>();
   for (const item of notices) {
@@ -110,7 +133,7 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
     updates.set(raw.id, parsed);
   }
   if ([...envelopes.keys()].some((name) => !used.has(name))) throw new Error("A Sorry response is extraneous, duplicated, orphaned or follows a completed pagination chain.");
-  for (const rows of [components, notices, subscribers]) if (new Set(rows.map(({ raw }) => raw.id)).size !== rows.length) throw new Error("Sorry collection repeats source identities across pages.");
+  for (const rows of [components, notices, subscribers, noticeTemplates, updateTemplates]) if (new Set(rows.map(({ raw }) => raw.id)).size !== rows.length) throw new Error("Sorry collection repeats source identities across pages.");
   function checkPage(value: unknown): void {
     if (Array.isArray(value)) { value.forEach(checkPage); return; }
     if (!value || typeof value !== "object") return;
@@ -118,7 +141,10 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
     if (raw.page_id != null && String(raw.page_id) !== page.id) throw new Error("A Sorry record belongs to another page.");
     Object.values(raw).forEach(checkPage);
   }
-  for (const { raw } of [...components, ...notices, ...subscribers, ...details.values(), ...[...updates.values()].flat()]) checkPage(raw);
+  for (const { raw } of [...components, ...notices, ...subscribers, ...noticeTemplates, ...updateTemplates, ...details.values(), ...[...updates.values()].flat()]) checkPage(raw);
+  for (const rows of [noticeTemplates, updateTemplates]) for (const { raw } of rows) {
+    if (raw.component_id != null && !components.some(component => component.raw.id === raw.component_id)) throw new Error(`Sorry template ${raw.name} has a collection-page scope outside the selected page; no scope was broadened.`);
+  }
   const groupIds = new Set(components.flatMap(({ raw }) => raw.parent_id ? [String(raw.parent_id)] : []));
   const fieldLedger = sorryFieldInventory([...envelopes].map(([name, { value }]) => ({ name, value })), groupIds);
   // Preserve safe envelope/page fields even when channel capabilities prevent
@@ -127,5 +153,5 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
     retainedSorry(Object.fromEntries(Object.entries(value).filter(([key]) =>
       !["response", "components", "notices", "subscribers", "notice"].includes(key) ||
       name === "sorry-page.json" && key === "response")))]));
-  return { fieldLedger, fieldMetadata, isPublic, page, pageUrl: sourceUrl, components, notices, subscribers, details, updates, artifacts };
+  return { fieldLedger, fieldMetadata, isPublic, page, pageUrl: sourceUrl, components, notices, subscribers, details, updates, noticeTemplates, updateTemplates, artifacts };
 }

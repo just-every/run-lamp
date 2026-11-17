@@ -115,7 +115,7 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
       db.prepare("SELECT namespace, last_number FROM reference_counters"),
       db.prepare("SELECT reference FROM reference_allocations"),
       db.prepare("SELECT s.destination, CASE WHEN EXISTS (SELECT 1 FROM ik_provenance p WHERE p.destination='lamp' AND p.target_kind='subscriber' AND p.target_id=s.id AND p.reversed=0) THEN s.id END AS imported FROM subscribers s"),
-      db.prepare("SELECT t.name, CASE WHEN EXISTS (SELECT 1 FROM ik_provenance p WHERE p.destination='lamp' AND p.target_kind='template' AND p.target_id=t.id AND p.reversed=0) THEN t.id END AS imported FROM incident_templates t"),
+      db.prepare("SELECT t.name, CASE WHEN EXISTS (SELECT 1 FROM ik_provenance p WHERE p.destination='lamp' AND p.target_kind IN ('template','update-template') AND p.target_id=t.id AND p.reversed=0) THEN t.id END AS imported FROM incident_templates t"),
       db.prepare("SELECT id, reference FROM incidents UNION ALL SELECT id, reference FROM maintenance"),
       db.prepare("SELECT id, display_order FROM components UNION ALL SELECT id, display_order FROM component_groups"),
     ]);

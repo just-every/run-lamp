@@ -25,6 +25,41 @@ export const subscriberSchema = z.object({
 }).passthrough();
 export const publicPageSchema = z.object({ name: text, url: z.string().url(), id: sorryId.optional(), created_at: time, updated_at: time.optional() }).passthrough();
 export const managementPageSchema = z.object({ id: sorryId, name: text, endpoint: z.string().min(1).max(2048), created_at: time, updated_at: time.optional() }).passthrough();
+/** Sorry templates expose reusable wording, not lifecycle or component-state
+ * defaults. component_id scopes availability to one collection page only. */
+const templateShape = {
+  id: sorryId, name: text, subject: text.optional(),
+  initial_comment: text.optional(), content: text.optional(),
+  component_id: sorryId.nullable().optional(),
+  page_id: sorryId.optional(), created_at: time, updated_at: time.optional(),
+};
+export const noticeTemplateSchema = z.object(templateShape).passthrough()
+  .refine(row => row.subject !== undefined, "A Sorry notice template needs its subject.")
+  .refine(row => row.initial_comment !== undefined || row.content !== undefined, "A Sorry notice template needs initial_comment or content.")
+  .refine(row => row.initial_comment === undefined || row.content === undefined || row.initial_comment === row.content, "Sorry template initial_comment and content disagree; nothing was imported.");
+export const updateTemplateSchema = z.object(templateShape).passthrough()
+  .refine(row => row.initial_comment !== undefined || row.content !== undefined, "A Sorry update template needs content or initial_comment.")
+  .refine(row => row.initial_comment === undefined || row.content === undefined || row.initial_comment === row.content, "Sorry template initial_comment and content disagree; nothing was imported.");
+export type SorryTemplate = z.infer<typeof updateTemplateSchema>;
+
+/** Both documented template collections use count plus this pagination
+ * envelope. Missing/inconsistent pages refuse instead of implying completeness. */
+export function templatePagination(value: ObjectValue, number: number, before: number, previous?: { total: number; perPage: number; pages: number }): { next: boolean; total: number; perPage: number; pages: number } {
+  const rows = value.response;
+  if (!Array.isArray(rows) || value.count !== rows.length) throw new SorryReadError("invalid", "Sorry template count does not match its response records.");
+  const page = object(value.pagination);
+  const total = Number(page.count), perPage = Number(page.per_page), pages = Number(page.pages);
+  if (![page.count, page.per_page, page.pages].every(Number.isSafeInteger) || total < 0 || perPage < 1 || pages < 1
+    || pages !== Math.max(1, Math.ceil(total / perPage)) || page.current !== number || number > pages
+    || page.previous !== (number === 1 ? null : number - 1) || page.next !== (number < pages ? number + 1 : null)
+    || rows.length > perPage || number < pages && rows.length !== perPage
+    || number === pages && before + rows.length !== total
+    || previous && (previous.total !== total || previous.perPage !== perPage || previous.pages !== pages)) {
+    throw new SorryReadError("invalid", "Sorry template pagination is incomplete, inconsistent or changed during capture.");
+  }
+  return { next: number < pages, total, perPage, pages };
+}
+
 export type SorryComponent = z.infer<typeof componentSchema>;
 export type SorryNotice = z.infer<typeof noticeSchema>;
 export type SorryUpdate = z.infer<typeof updateSchema>;

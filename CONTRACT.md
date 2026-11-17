@@ -1128,7 +1128,7 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 **Acceptance.**
 1. The owner can supply a source API key and page identity or saved responses; source credentials are read once from the source's fixed origin and never stored.
-2. The dry run counts every component, group, incident and its updates, maintenance window and subscriber as imported, changed, skipped or refused, with reasons, and writes no record. For Sorry, the dry run and saved job also account for every supplied field path as mapped, changed, raw-only, deleted or refused, with a reason and next action; unknown nested fields, shortened text and unsupported resource files cannot be silently ignored.
+2. The dry run counts every component, group, incident and its updates, maintenance window, subscriber and exposed notice or update template as imported, changed, skipped or refused, with reasons, and writes no record. For Sorry, the dry run and saved job also account for every supplied field path as mapped, changed, raw-only, deleted or refused, with a reason and next action; unknown nested fields, shortened text and unsupported resource files cannot be silently ignored.
 3. Changing either the source or Lamp page after review refuses application and requires a fresh dry run.
 4. A dry run names each excess subscriber over a SUB-020 channel capacity and refuses excess rows; an over-limit apply writes nothing until a narrowed review fits.
 
@@ -2761,14 +2761,14 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 *Tier:* Core · *From:* MOVE-011
 
-**Requirement.** Statuspage incident templates retain their metadata, component claims and complete wording when moved to Lamp; exposed templates from Status.io and incident.io follow these rules in their own reader clauses.
+**Requirement.** Statuspage incident templates and both Sorry notice and update template collections retain their metadata and complete wording when moved to Lamp; supplied component claims remain intact, while absent lifecycle and affected-service defaults require operator choices in a private draft. Exposed templates from Status.io and incident.io follow these rules in their own reader clauses.
 
 **Acceptance.**
-1. Each source template retains its name, title, lifecycle, components and states, channel default and source group as a Lamp folder.
-2. The first body paragraph fills customer impact, remaining wording fills details, and the affected-audience statement names the template's components.
+1. Each source template retains its name, title, lifecycle, components and states, channel default and source group as a Lamp folder where supplied. Sorry notice and update templates also retain their source timestamps, optional update subject and collection-page component_id scope; scope never invents affected-service impact.
+2. The first body paragraph fills customer impact, remaining wording fills details, and the affected-audience statement names the template's components where supplied. Sorry initial_comment or content variants retain complete wording and refuse disagreement; missing lifecycle, audience and affected-service defaults are requested in the private draft.
 3. Oversized wording is named with its template and field in dry run, retained unchanged and marked for shortening before application.
 4. Dry run counts imported templates and those needing shortening; application imports only reviewed templates and changes no public incident.
-5. Applying an imported template fills the composer's components, states and wording without publication.
+5. Applying an imported template fills the composer's supplied components, states and wording without publication; Sorry notice and update wording preserves existing private-draft choices and requests missing defaults without inventing them.
 6. Repeating the import creates no duplicate; undo removes unchanged templates and preserves and names edited ones with needed components.
 
 #### MOVE-012 — Private and audience pages move as private

@@ -2,7 +2,24 @@ import { createUlid } from "../../shared/ids";
 import type { ComponentState, IncidentLifecycle, UpdateChannel } from "../../shared/domain";
 import { TEMPLATE_WORDING_FIELDS, templateFieldsToShorten, type TemplateWording, type TemplateWordingField } from "./template-fields";
 
+/** Sorry's componentId identifies a collection page, never an affected service. */
+export interface IncidentTemplateSourceMetadata {
+  provider: "sorry";
+  id: string;
+  subject?: string;
+  componentId?: string | null;
+  body: string;
+  createdAt: string;
+  updatedAt?: string;
+  needsLifecycle: boolean;
+  needsComponents: boolean;
+}
+
 export interface IncidentTemplateRecord extends TemplateWording {
+  kind: "incident" | "notice" | "update";
+  sourceMetadata: IncidentTemplateSourceMetadata | null;
+  /** The source supplied wording only; applying it requires private draft review. */
+  requiresReview: boolean;
   channels: UpdateChannel[];
   resolvedUpdate: TemplateWording | null;
   id: string;
@@ -30,11 +47,11 @@ export interface IncidentTemplateComponentRecord {
 }
 
 export type IncidentTemplate = IncidentTemplateRecord & { components: IncidentTemplateComponentRecord[] };
-type TemplateRow = Omit<IncidentTemplateRecord, "fieldsToShorten" | "shouldSendNotifications" | "channels" | "resolvedUpdate"> & { shouldSendNotifications: number | null; importedFieldsJson: string | null; channelsJson: string; resolvedUpdateJson: string | null };
-const columns = `channels_json AS channelsJson, resolved_update_json AS resolvedUpdateJson, id, name, title, folder, should_send_notifications AS shouldSendNotifications, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_offset_minutes AS nextUpdateOffsetMinutes, imported_fields_json AS importedFieldsJson, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt`;
+type TemplateRow = Omit<IncidentTemplateRecord, "fieldsToShorten" | "shouldSendNotifications" | "channels" | "resolvedUpdate" | "sourceMetadata" | "requiresReview"> & { sourceMetadataJson: string | null; shouldSendNotifications: number | null; importedFieldsJson: string | null; channelsJson: string; resolvedUpdateJson: string | null };
+const columns = `kind, source_metadata_json AS sourceMetadataJson, channels_json AS channelsJson, resolved_update_json AS resolvedUpdateJson, id, name, title, folder, should_send_notifications AS shouldSendNotifications, lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_offset_minutes AS nextUpdateOffsetMinutes, imported_fields_json AS importedFieldsJson, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt`;
 const componentColumns = `id, template_id AS templateId, component_id AS componentId, component_name AS componentName, state, relationship, created_at AS createdAt, updated_at AS updatedAt`;
 
-function decodeTemplate({ importedFieldsJson, shouldSendNotifications, channelsJson, resolvedUpdateJson, ...row }: TemplateRow): IncidentTemplateRecord {
+function decodeTemplate({ sourceMetadataJson, importedFieldsJson, shouldSendNotifications, channelsJson, resolvedUpdateJson, ...row }: TemplateRow): IncidentTemplateRecord {
   if (importedFieldsJson !== null) {
     const imported: unknown = JSON.parse(importedFieldsJson);
     if (!imported || typeof imported !== "object" || Array.isArray(imported)) throw new Error("Imported template wording must be an object.");
@@ -46,7 +63,8 @@ function decodeTemplate({ importedFieldsJson, shouldSendNotifications, channelsJ
       }
     }
   }
-  return { ...row, channels: JSON.parse(channelsJson || "[]") as UpdateChannel[], resolvedUpdate: resolvedUpdateJson ? JSON.parse(resolvedUpdateJson) as TemplateWording : null, shouldSendNotifications: shouldSendNotifications === null ? null : shouldSendNotifications === 1, fieldsToShorten: templateFieldsToShorten(row) };
+  const sourceMetadata = sourceMetadataJson ? JSON.parse(sourceMetadataJson) as IncidentTemplateSourceMetadata : null;
+  return { ...row, sourceMetadata, requiresReview: Boolean(sourceMetadata?.needsLifecycle || sourceMetadata?.needsComponents), channels: JSON.parse(channelsJson || "[]") as UpdateChannel[], resolvedUpdate: resolvedUpdateJson ? JSON.parse(resolvedUpdateJson) as TemplateWording : null, shouldSendNotifications: shouldSendNotifications === null ? null : shouldSendNotifications === 1, fieldsToShorten: templateFieldsToShorten(row) };
 }
 
 export function createIncidentTemplateRepository(binding: D1Database) {
@@ -68,7 +86,7 @@ export function createIncidentTemplateRepository(binding: D1Database) {
     },
     async saveTemplate(input: IncidentTemplateRecord, components: IncidentTemplateComponentRecord[]) {
       await binding.batch([
-        binding.prepare(`INSERT INTO incident_templates (id,name,title,folder,should_send_notifications,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_offset_minutes,created_by_operator_id,created_at,updated_at,channels_json,resolved_update_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(name) DO UPDATE SET lifecycle=excluded.lifecycle,affected_audience=excluded.affected_audience,customer_impact=excluded.customer_impact,what_still_works=excluded.what_still_works,details=excluded.details,next_update_offset_minutes=excluded.next_update_offset_minutes,imported_fields_json=NULL,channels_json=excluded.channels_json,resolved_update_json=excluded.resolved_update_json,updated_at=excluded.updated_at`).bind(input.id, input.name, input.title, input.folder, input.shouldSendNotifications === null ? null : Number(input.shouldSendNotifications), input.lifecycle, input.affectedAudience, input.customerImpact, input.whatStillWorks, input.details, input.nextUpdateOffsetMinutes, input.createdByOperatorId, input.createdAt, input.updatedAt, JSON.stringify(input.channels ?? []), input.resolvedUpdate ? JSON.stringify(input.resolvedUpdate) : null),
+        binding.prepare(`INSERT INTO incident_templates (kind,source_metadata_json,id,name,title,folder,should_send_notifications,lifecycle,affected_audience,customer_impact,what_still_works,details,next_update_offset_minutes,created_by_operator_id,created_at,updated_at,channels_json,resolved_update_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(name) DO UPDATE SET lifecycle=excluded.lifecycle,affected_audience=excluded.affected_audience,customer_impact=excluded.customer_impact,what_still_works=excluded.what_still_works,details=excluded.details,next_update_offset_minutes=excluded.next_update_offset_minutes,imported_fields_json=NULL,channels_json=excluded.channels_json,resolved_update_json=excluded.resolved_update_json,updated_at=excluded.updated_at`).bind(input.kind, input.sourceMetadata ? JSON.stringify(input.sourceMetadata) : null, input.id, input.name, input.title, input.folder, input.shouldSendNotifications === null ? null : Number(input.shouldSendNotifications), input.lifecycle, input.affectedAudience, input.customerImpact, input.whatStillWorks, input.details, input.nextUpdateOffsetMinutes, input.createdByOperatorId, input.createdAt, input.updatedAt, JSON.stringify(input.channels ?? []), input.resolvedUpdate ? JSON.stringify(input.resolvedUpdate) : null),
         binding.prepare(`INSERT INTO audit_entries (id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
           SELECT ?, 'incident-template-components', id, 'replaced', ?, '{}', ?, ? FROM incident_templates WHERE name = ? AND EXISTS (SELECT 1 FROM incident_template_components WHERE template_id = incident_templates.id)`)
           .bind(createUlid(), input.createdByOperatorId, input.updatedAt, input.updatedAt, input.name),
