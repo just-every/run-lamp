@@ -94,7 +94,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await j.json('/api/app/page-settings', 'PUT', { ...settings, timezone: ['Australia', 'Brisbane'].join('/') });
     assert.equal((await j.raw('/api/app/components')).status, 401);
     assert.equal((await j.raw(new URL('/api/app/components', j.publicOrigin).href)).status, 404);
-    await j.json('/api/app/operators/invite', 'POST', { email: reviewer, displayName: 'Incident reviewer' }, 202);
+    await j.json('/api/app/operators/invite', 'POST', { email: reviewer, displayName: 'Incident reviewer', role: 'admin' }, 202);
     const component = await j.component('Payments API');
     const hidden = await j.component('PRIVATE internal queue', { internal: true });
     const template = (await j.json('/api/app/incident-templates', 'POST', {

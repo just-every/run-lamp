@@ -8264,7 +8264,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operator-attribution.mjs": {
-      "sha256": "343fc1d1ccdf4a02086a75cf3be1586f615c714a28509f37fb1e53130d4de71c",
+      "sha256": "72cd79fa16cee1b08bd9d8d8b5ef199eb21067814c0ec936359acc9eeef1f4f3",
       "executable": false
     },
     "tests/e2e/helpers/operator-email-proof.mjs": {
@@ -8596,7 +8596,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "09d930032024cbd233b73112db2b595608a1cd8eabb323fdd1dfaedbfdbaede2",
+      "sha256": "eb140e5044e7e3fd9ab9cad48dadcac00876a3d6ba7edc1a0f83d1d551533e98",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
@@ -8676,7 +8676,7 @@
       "executable": false
     },
     "tests/e2e/update-reminders.test.mjs": {
-      "sha256": "00810e3baca91aa1724f1c32fd262f83b7401f427fd44d1ff3fcf1d7a10ffeb8",
+      "sha256": "2d83536a364b88b87928c200f288109b596338c1b5e75dc3ac8da3ddfaff0453",
       "executable": false
     },
     "tests/e2e/website-onboarding.test.mjs": {

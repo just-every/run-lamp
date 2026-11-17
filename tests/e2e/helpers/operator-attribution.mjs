@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
 
 // Admit the second person through the same invitation and sign-in doors as an
-// installation. Keep the creator identity separate from the later actor.
+// installation. These attribution journeys manage settings and read audit records,
+// so request Admin explicitly. Keep the creator separate from the later actor.
 export async function admitAttributionOperator(fixture, label) {
   const creator = (await fixture.api('/api/app/session')).body.operator;
   const email = [`synthetic-lamp-${label}`, 'example.test'].join('@');
   const invitation = await fixture.api('/api/app/operators/invite', {
-    method: 'POST', body: JSON.stringify({ email, displayName: `Synthetic Lamp ${label}` }),
+    method: 'POST', body: JSON.stringify({ email, displayName: `Synthetic Lamp ${label}`, role: "admin" }),
   });
   assert.equal(invitation.status, 202, invitation.text);
   await fixture.signIn(email);
