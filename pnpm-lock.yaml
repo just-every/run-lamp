@@ -35,8 +35,8 @@ importers:
         specifier: 0.45.2
         version: 0.45.2(@cloudflare/workers-types@5.20260908.1)
       hono:
-        specifier: 4.13.7
-        version: 4.13.7
+        specifier: 4.13.11
+        version: 4.13.11
       parse5:
         specifier: 8.0.1
         version: 8.0.1
@@ -1199,8 +1199,8 @@ packages:
       crossws:
         optional: true
 
-  hono@4.13.7:
-    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
+  hono@4.13.11:
+    resolution: {integrity: sha512-/SMX/RQNJn7oNmFwH6DtwDqcrzZU2otm1FD6OJe2cWF6cfy/F8hq0XVBv7xW3FTJshRQwuBnXHDq2kNsdZnshg==}
     engines: {node: '>=16.9.0'}
 
   ical.js@2.2.1:
@@ -2578,7 +2578,7 @@ snapshots:
       rou3: 0.8.1
       srvx: 0.11.22
 
-  hono@4.13.7: {}
+  hono@4.13.11: {}
 
   ical.js@2.2.1: {}
 
