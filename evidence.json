@@ -1,0 +1,154 @@
+{
+  "files": [
+    {
+      "blob": "cd03031f90f0c8da503b71ff3ab1b32a15c1009d",
+      "bytes": 4769,
+      "path": "REPORT.md",
+      "sha256": "55cd2e49436c3cacb1f094ffe24d1fdcd1a2e1fdbca6b2caf10c8cbae5ba8221"
+    },
+    {
+      "blob": "bccf8ff3d78712ac7c01e38675bbb170ae3f41b2",
+      "bytes": 114124,
+      "path": "after-D12-1440.png",
+      "sha256": "263617002f26244d15d0ab8eae4c0a118cd4d4560c2019e802ed9332b3c54154"
+    },
+    {
+      "blob": "124b41358ffda944c64c62d5444f25653769d9a1",
+      "bytes": 91718,
+      "path": "after-D12-390.png",
+      "sha256": "9f7e569507ceadf2083bf6a7676b1d0b9916df1d1d47d9024e6eed0d0ebbd655"
+    },
+    {
+      "blob": "7176f65fea3e7dbd2a4925d4ae4bf3861815ddd8",
+      "bytes": 128317,
+      "path": "after-D8-1440.png",
+      "sha256": "c6a204f062398dc3db83d03037b6bf8ee517bd36d89e65228429323bfe0fa18b"
+    },
+    {
+      "blob": "f93503488752712b830f2ad03359e3b12087d7a7",
+      "bytes": 99937,
+      "path": "after-D8-390.png",
+      "sha256": "c39b92a08567b38767552e2319db2767a4bc7095afcad8f25c1276f5932b8bdc"
+    },
+    {
+      "blob": "5527465e7dec2335f95fc59bfbbeda23853a7d20",
+      "bytes": 2645,
+      "path": "after-final-receipt.txt",
+      "sha256": "3fca2e8d60a24fe6f1e77e194c089965d2537ec4f4b0f725953935965314310a"
+    },
+    {
+      "blob": "9cc711825e9d258e804f437d4a6e0e0e4a6a3398",
+      "bytes": 230796,
+      "path": "after-public-1440.png",
+      "sha256": "70991a36b3bc40d287679001f1cf0b014357829b5bef61841f3a834cb03fab3e"
+    },
+    {
+      "blob": "93701c5f6438df1d012c05cbff27406e859c9fd3",
+      "bytes": 142773,
+      "path": "after-public-390.png",
+      "sha256": "efcd9360e024c6b523f45c9c378aaed4f49575e0e1baa4443f87985bc6d439e5"
+    },
+    {
+      "blob": "309e2b74e2fcdd46be4703802a93f87dfe7e4b7f",
+      "bytes": 1921,
+      "path": "baseline-theme-check.txt",
+      "sha256": "8ef6e7c09a2b0180497edc4375e89d82887baf4a39c4c6047ddaca05e05afc81"
+    },
+    {
+      "blob": "3f316fa5c4511e98e79be01c63e26766623b0d7c",
+      "bytes": 115428,
+      "path": "before-D12-1440.png",
+      "sha256": "e10554434e8bb01ed82c43353566e4bd2ebc75630ef390a2e4e32d83fa86647d"
+    },
+    {
+      "blob": "176e863c220d707e2f75ad955f79d8865714bd6c",
+      "bytes": 92994,
+      "path": "before-D12-390.png",
+      "sha256": "cba996b4e4c2742f21c405911066368b19125eb99cb693a8db30382cc857e153"
+    },
+    {
+      "blob": "e4eb0423e2bd792f033e37a62becd399e0e90453",
+      "bytes": 164061,
+      "path": "before-D8-1440.png",
+      "sha256": "63e75b2f70696c1887abcaa63c28bee2a99cf1bc5dd95988ba9168d502972cc9"
+    },
+    {
+      "blob": "6782424d1bcbb2906dc506e33addf8d06bee6abc",
+      "bytes": 139905,
+      "path": "before-D8-390.png",
+      "sha256": "fd1ca979b359c6c6a48ae5b6b63f6b1d82a8c4ab3c8a42d67e71e5838c4d1c4e"
+    },
+    {
+      "blob": "86d68ffe1142e4d0c42198c8be1750ce66f9ae49",
+      "bytes": 230752,
+      "path": "before-public-1440.png",
+      "sha256": "70924a8a67ae60e216b3a5086240e86a2fbf9a6a69533717f7a3784e6f3b01ce"
+    },
+    {
+      "blob": "f6e5399970a64f0990dd832ad41beac8626f7fa7",
+      "bytes": 142649,
+      "path": "before-public-390.png",
+      "sha256": "a2aeb4e21c6d1a76173ea5c6ee060715013df6c1dd94d456d9473b19ed27d7ca"
+    },
+    {
+      "blob": "ab55d932e55689c1a0c92b5e9504256753385d56",
+      "bytes": 2473,
+      "path": "before-receipt.txt",
+      "sha256": "6b610c6f45338796d16629cf0baffb91f96504a6dd6780068e465bc8661929a7"
+    },
+    {
+      "blob": "2713d1e8cbababd1a9d9113588949164a37090e6",
+      "bytes": 6077,
+      "path": "channels-check.txt",
+      "sha256": "41d4ac02b57fdec6980378ee8b9f37a6c1ee2f91be3ca33af0e532431a72ea69"
+    },
+    {
+      "blob": "8a99d6b4316140412c12fdda11d749615d15d676",
+      "bytes": 660,
+      "path": "ci-receipt.txt",
+      "sha256": "152be290f4d1b06ac233a844b351100eeb52cf3bd795181d01ac086985b322ef"
+    },
+    {
+      "blob": "5efcbc917008b4414f0a326ef3f33659fdc274ba",
+      "bytes": 404774,
+      "path": "local-checks.txt",
+      "sha256": "0a7d3034f0ad73e250800e7345aaf3c5fbb30156546d6badc0b3da760d2e8244"
+    },
+    {
+      "blob": "1375da312d4cefb2b3b0b22f8f06573703aa2cfc",
+      "bytes": 1663,
+      "path": "maintenance-check.txt",
+      "sha256": "7d2769c7a032027777f37d1c6f6f0179098102b71e5c4f762fa0fdbdbd25a484"
+    },
+    {
+      "blob": "6431a87ca2f8492b794899448fccbba596701d7b",
+      "bytes": 284,
+      "path": "product-push.txt",
+      "sha256": "b237b0a41af5a74256ae370c8d19a88c031571ddd5d758c97308db6bab6dcef4"
+    },
+    {
+      "blob": "7745c9374a99ed6689b051f9b5b9b8217cc5420f",
+      "bytes": 9922,
+      "path": "publishing-check.txt",
+      "sha256": "7d59bd8cb9c049e5987efcbf6edab87d9d543aeff8ca1737824e15cc1144d1b1"
+    },
+    {
+      "blob": "93d29b162529478994ef20e00d41d5e5fe37cf5d",
+      "bytes": 2050,
+      "path": "publishing-theme-retry.txt",
+      "sha256": "77613ee7daaf89761f5b6b244524993304ebd539fcf5aa3725d87a10637ad450"
+    },
+    {
+      "blob": "776cad8721e6daac4a23153738a47002e5959d3c",
+      "bytes": 191,
+      "path": "verify-latest.json",
+      "sha256": "9d4fa51143c3d41a8a04306f60b96b463f7a1cfb9e4a9f6d8b310b054354ae0d"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-design-publish-1",
+  "product_head": "277c1ebb6da89e7378f6bfb1bf13c61effddfffe",
+  "ref": "refs/heads/evidence/sd-lamp-design-publish-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-design-publish-1"
+}

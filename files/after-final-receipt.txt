@@ -1,0 +1,22 @@
+Tue Nov 17 19:36:52 UTC 2026
+277c1ebb6da89e7378f6bfb1bf13c61effddfffe
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# {"phase":"after","d12":{"width":1440,"state":"","enabled":false,"options":["Choose a state","Working","Slow or partly down","Down"],"preview":"PUBLIC PAGE\\n\\nInvestigating\\nINC-1: Delayed inbox messages 1440\\nWHO IS AFFECTED\\nCustomers waiting for incoming messages.\\nCUSTOMER IMPACT\\nSome incoming messages are taking longer to appear.\\nNEXT UPDATE BY\\nNov 17, 2026, 12:10 UTC-08:00"},"d8":{"width":1440,"liveText":"What customers see now\\nInvestigating\\nINC-1: Delayed inbox messages 1440\\nWHO IS AFFECTED\\nCustomers waiting for incoming messages.\\nCUSTOMER IMPACT\\nSome incoming messages are taking longer to appear.\\nNEXT UPDATE BY\\n12:10\\nCOMPONENT STATE\\nEmail inbox sync: Operational → Degraded performance","publicText":"Investigating\\nNov 17, 2026, 11:39 UTC-08:00\\nWho is affected\\nCustomers waiting for incoming messages.\\nCustomer impact\\nSome incoming messages are taking longer to appear.\\nNext update by\\nNov 17, 2026, 12:10 UTC-08:00\\nComponent state\\nEmail inbox sync: Operational → Degraded performance","deadline":"2026-11-17T20:10:00.000Z"}}
+# {"phase":"after","d12":{"width":390,"state":"","enabled":false,"options":["Choose a state","Working","Slow or partly down","Down"],"preview":"PUBLIC PAGE\\n\\nInvestigating\\nINC-2: Delayed inbox messages 390\\nWHO IS AFFECTED\\nCustomers waiting for incoming messages.\\nCUSTOMER IMPACT\\nSome incoming messages are taking longer to appear.\\nNEXT UPDATE BY\\nNov 17, 2026, 12:10 UTC-08:00"},"d8":{"width":390,"liveText":"What customers see now\\nInvestigating\\nINC-2: Delayed inbox messages 390\\nWHO IS AFFECTED\\nCustomers waiting for incoming messages.\\nCUSTOMER IMPACT\\nSome incoming messages are taking longer to appear.\\nNEXT UPDATE BY\\n12:10\\nCOMPONENT STATE\\nEmail inbox sync: Operational → Degraded performance","publicText":"Investigating\\nNov 17, 2026, 11:39 UTC-08:00\\nWho is affected\\nCustomers waiting for incoming messages.\\nCustomer impact\\nSome incoming messages are taking longer to appear.\\nNext update by\\nNov 17, 2026, 12:10 UTC-08:00\\nComponent state\\nEmail inbox sync: Operational → Degraded performance","deadline":"2026-11-17T20:10:00.000Z"}}
+# Subtest: DIRECT 87 browser proof
+ok 1 - DIRECT 87 browser proof
+  ---
+  duration_ms: 144721.623215
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 148563.028934
+exit=0

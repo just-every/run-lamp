@@ -1,0 +1,37 @@
+Tue Nov 17 19:36:11 UTC 2026
+277c1ebb6da89e7378f6bfb1bf13c61effddfffe
+TAP version 13
+# Subtest: MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard
+ok 1 - MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard
+  ---
+  duration_ms: 179853.374393
+  type: 'test'
+  ...
+# PAGE-020 1440px public status page: full-page axe and no horizontal overflow passed
+# PAGE-020 1440px public history: full-page axe and no horizontal overflow passed
+# PAGE-020 1440px public incident permalink: full-page axe and no horizontal overflow passed
+# PAGE-020 1440px VPAT document: full-page axe and no horizontal overflow passed
+# PAGE-020 1440px: full-page status, history, incident, maintenance, VPAT, subscribe result, confirmation, management and saved selection axe passed; keyboard-only subscribe/manage with visible focus and ordered controls passed
+# Subtest: SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+ok 2 - SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+  ---
+  duration_ms: 60010.698178
+  type: 'test'
+  ...
+# Subtest: TEAM-002 — Local operator invitations disclose suppressed email
+ok 3 - TEAM-002 — Local operator invitations disclose suppressed email
+  ---
+  duration_ms: 6703.110328
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 248409.102377
+
+exit=0
