@@ -1,0 +1,33 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-5",
+  "head": "a2e46d5883feba6d1269c6d18e804bae86906c1d",
+  "productPushed": true,
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0
+  },
+  "pr": {
+    "head_sha": "a2e46d5883feba6d1269c6d18e804bae86906c1d",
+    "html_url": "https://github.com/just-every/run-lamp/pull/402",
+    "number": 402,
+    "state": "open"
+  },
+  "verify": {
+    "id": 44069615104,
+    "name": "Verify",
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "a2e46d5883feba6d1269c6d18e804bae86906c1d",
+    "head_branch": "cloud/gr-mt-lamp-code-5",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44069615104",
+    "queries": 2,
+    "queriedAt": "2026-11-17T11:07:43.996087+00:00"
+  },
+  "terminal": "PUSHED",
+  "readyClaimed": false,
+  "clauseChanges": [],
+  "remaining": "Exact-SHA Verify remains in progress after two reads spaced 300 seconds apart; API budget exhausted. Fleet must observe its final conclusion before landing."
+}

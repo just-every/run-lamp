@@ -1,0 +1,12 @@
+{
+  "id": 44069615104,
+  "name": "Verify",
+  "event": "push",
+  "status": "in_progress",
+  "conclusion": null,
+  "head_sha": "a2e46d5883feba6d1269c6d18e804bae86906c1d",
+  "head_branch": "cloud/gr-mt-lamp-code-5",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44069615104",
+  "queries": 2,
+  "queriedAt": "2026-11-17T11:07:43.996087+00:00"
+}

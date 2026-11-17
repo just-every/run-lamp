@@ -1,0 +1,62 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-5",
+  "head": "a2e46d5883feba6d1269c6d18e804bae86906c1d",
+  "base": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0,
+    "node": "22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "tests": {
+    "command": "node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs",
+    "exit": 0,
+    "passed": 2,
+    "failed": 0
+  },
+  "regression": {
+    "originalCodeExit": 1,
+    "failure": "stale labeling preserves quoted body attributes",
+    "fixedCodeExit": 0
+  },
+  "sourceLock": {
+    "command": "node scripts/edition-authoring/cli.mjs lock",
+    "exit": 0,
+    "check": true
+  },
+  "counts": {
+    "beforeRegistrations": 102,
+    "afterRegistrations": 102,
+    "beforeAssertionScripts": 10,
+    "afterAssertionScripts": 10,
+    "beforeTouchedTests": 2,
+    "afterTouchedTests": 2,
+    "beforeClauseStatuses": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "afterClauseStatuses": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    }
+  },
+  "codeScanningApi": {
+    "command": "gh api repos/just-every/run-lamp/code-scanning/alerts/2",
+    "attempts": 5,
+    "backoffSeconds": [
+      15,
+      45,
+      90,
+      150
+    ],
+    "httpStatus": 403,
+    "message": "Resource not accessible by integration",
+    "alertClosureVerified": false
+  },
+  "clauseStatusChanges": []
+}

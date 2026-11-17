@@ -1,0 +1,23 @@
+{
+  "head": "a2e46d5883feba6d1269c6d18e804bae86906c1d",
+  "results": [
+    {
+      "width": 1440,
+      "status": 200,
+      "snapshotState": "stale",
+      "noticeCount": 1,
+      "generatedAt": "2026-11-17T10:38:55.140Z",
+      "pageErrors": [],
+      "screenshot": "stale-1440.png"
+    },
+    {
+      "width": 390,
+      "status": 200,
+      "snapshotState": "stale",
+      "noticeCount": 1,
+      "generatedAt": "2026-11-17T10:38:55.140Z",
+      "pageErrors": [],
+      "screenshot": "stale-390.png"
+    }
+  ]
+}
