@@ -67,7 +67,7 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
   const paragraphs = text.split('\n\n');
   assert.ok(paragraphs.includes(`${incident.reference}: ${incident.title}`), `${surface}: incident identity`);
   assert.ok(paragraphs.includes(`Status: ${publication.lifecycle}`), `${surface}: publication lifecycle`);
-  const labels = ['Who is affected', 'Customer impact', 'What still works', 'Next update by', 'Additional details'];
+  const labels = ['Who is affected', 'Customer impact', 'Update', 'What still works', 'Next update by', 'Additional details'];
   assert.deepEqual(paragraphs.filter(paragraph => labels.some(label => paragraph.startsWith(`${label}:`))),
     expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
 }
@@ -267,7 +267,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     const publicUpdates = publishedArticles.map(article => {
       const head = matchingDescendants(article, node => publishedAttribute(node, 'class') === 'update-head')[0];
       const fields = Object.fromEntries(matchingDescendants(article, node => node.tagName === 'div').filter(node => node.childNodes?.some(child => child.tagName === 'dt')).map(node => [publishedText(node.childNodes.find(child => child.tagName === 'dt')), publishedText(node.childNodes.find(child => child.tagName === 'dd'))]));
-      return { lifecycle: publishedText(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: publishedAttribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Customer impact'], details: fields['Additional details'] };
+      return { lifecycle: publishedText(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: publishedAttribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Update'] ?? fields['Customer impact'], details: fields['Additional details'] };
     });
     assert.deepEqual(publicUpdates, [
       { ...correctedRecovery, publishedAt: corrected.publishedAt },
@@ -314,7 +314,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await saveReviewed(incident.id, { lifecycle: 'Resolved', customerImpact: 'Payment processing has recovered.', whatStillWorks: '', details: '', nextUpdateAt: null });
     const resolution = (await j.publish(incident.id, { channels: ['email'] })).update;
     assert.equal(resolution.lifecycle, 'Resolved');
-    const resolvedFields = [['Who is affected', wording.affectedAudience], ['Customer impact', 'Payment processing has recovered.']];
+    const resolvedFields = [['Who is affected', wording.affectedAudience], ['Update', 'Payment processing has recovered.']];
     assert.equal(resolution.nextUpdateAt, null);
     assertPublicationPage(await j.visible(`/incidents/${incident.reference}`, resolution.customerImpact), resolution, resolvedFields, 'resolved permalink');
     const resolvedRoot = descendants(parse(await j.visible('/', resolution.customerImpact))).filter(node => node.tagName === 'article'

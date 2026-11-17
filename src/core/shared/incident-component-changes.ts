@@ -33,5 +33,7 @@ export interface PublishedIncidentComponentChange {
   name: string;
   previousState: ComponentState;
   newState: ComponentState;
+  /** Overall state left by other incidents, maintenance or a manual status at resolution. */
+  remainingState?: ComponentState;
   internal: boolean;
 }
