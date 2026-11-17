@@ -1,0 +1,15 @@
+{
+  "at": "2026-11-17T18:07:42Z",
+  "head": "c383a5263a73d61d5faf40a076f41d0a976cd983",
+  "runs": [
+    {
+      "id": 44144448427,
+      "name": "Verify",
+      "head_sha": "c383a5263a73d61d5faf40a076f41d0a976cd983",
+      "status": "in_progress",
+      "conclusion": null,
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44144448427",
+      "event": "push"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "base": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+  "prior_head": "aab0f2e95fae28ff7c968ace7321f26a85664991",
+  "prior_product_files": 44,
+  "candidate_product_files": 45,
+  "changed_copy_declarations": [
+    "src/base/lobby.ts"
+  ],
+  "unchanged_comparison_baselines": true,
+  "new_adaptations": 1,
+  "before_counts": {
+    "core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50
+    },
+    "full": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    }
+  },
+  "after_counts": {
+    "core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50
+    },
+    "full": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    }
+  },
+  "clause_status_changes": [],
+  "base_adaptations_before": 1,
+  "base_adaptations_after": 2,
+  "head": "8863365f299cc5202384df08e4bd0b49e2ef1531",
+  "candidate_commits": 2,
+  "candidate_merges": 0
+}

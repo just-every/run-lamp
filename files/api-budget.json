@@ -1,0 +1,65 @@
+{
+  "limit": 10,
+  "calls": [
+    {
+      "number": 1,
+      "at": "2026-11-17T18:07:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs?head_sha=c383a5263a73d61d5faf40a076f41d0a976cd983&per_page=100"
+    },
+    {
+      "number": 2,
+      "at": "2026-11-17T18:12:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427"
+    },
+    {
+      "number": 3,
+      "at": "2026-11-17T18:17:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427"
+    },
+    {
+      "number": 4,
+      "at": "2026-11-17T18:27:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427"
+    },
+    {
+      "number": 5,
+      "at": "2026-11-17T18:32:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427"
+    },
+    {
+      "number": 6,
+      "at": "2026-11-17T18:42:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427"
+    },
+    {
+      "number": 7,
+      "at": "2026-11-17T18:47:43Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427/jobs?per_page=100"
+    },
+    {
+      "number": 8,
+      "at": "2026-11-17T18:56:42Z",
+      "method": "GET",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44144448427"
+    },
+    {
+      "number": 9,
+      "at": "2026-11-17T18:57:33Z",
+      "command": "gh run view 44144448427 --repo just-every/run-lamp --job 134256346369 --log-failed",
+      "exit_code": 0
+    },
+    {
+      "number": 10,
+      "at": "2026-11-17T18:58:40Z",
+      "command": "gh run view 44144448427 --repo just-every/run-lamp --job 134256346355 --log-failed",
+      "exit_code": 0
+    }
+  ]
+}

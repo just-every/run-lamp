@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-11-17T18:05:43Z",
+  "node": "22.20.0",
+  "chromium": "/usr/bin/chromium",
+  "chromium_args": [
+    "--no-sandbox"
+  ],
+  "assertion_width": 1440,
+  "proof_widths": [
+    1440,
+    390
+  ],
+  "focused_tests_passed": 12,
+  "focused_tests_failed": 0,
+  "setup": {
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "log": "setup-journey.log"
+  },
+  "maintenance_public_retention": {
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "log": "touched-journeys.log"
+  },
+  "initial_display_assertion": {
+    "outcome": "failed; corrected and rerun successfully",
+    "expected": "/UTC/",
+    "actual": "Universal time",
+    "log": "initial-display-assertion.log"
+  },
+  "screens": [
+    "screens/setup-details-1440.png",
+    "screens/setup-details-390.png",
+    "screens/public-branding-1440.png",
+    "screens/public-branding-390.png",
+    "screens/settings-page-1440.png",
+    "screens/settings-page-390.png",
+    "screens/maintenance-local-time-1440.png",
+    "screens/maintenance-local-time-390.png",
+    "screens/sign-in-name-1440.png",
+    "screens/sign-in-name-390.png"
+  ]
+}

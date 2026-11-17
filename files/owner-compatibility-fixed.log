@@ -1,0 +1,55 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable
+ok 1 - ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable
+  ---
+  duration_ms: 21965.205058
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it
+ok 2 - ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it
+  ---
+  duration_ms: 8079.512288
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key
+ok 3 - ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key
+  ---
+  duration_ms: 20606.779806
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change
+ok 4 - ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change
+  ---
+  duration_ms: 2736.686733
+  type: 'test'
+  ...
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: ACCESS-002 the owner sets up Google in Settings, tests the real flow, replaces and disconnects it, and the secret is write-only
+ok 5 - ACCESS-002 the owner sets up Google in Settings, tests the real flow, replaces and disconnects it, and the secret is write-only
+  ---
+  duration_ms: 22739.844362
+  type: 'test'
+  ...
+# Subtest: ACCESS-002 TEAM-003 Okta pairs people and deploy providers complete native sign-in while unusable rows and Managed hosting keep their boundaries
+ok 6 - ACCESS-002 TEAM-003 Okta pairs people and deploy providers complete native sign-in while unusable rows and Managed hosting keep their boundaries
+  ---
+  duration_ms: 29920.766381
+  type: 'test'
+  ...
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: host-configured signed owner claim creates a native Lamp session and refuses replay; a Business install opens its import door at the first bootstrap claim
+ok 7 - host-configured signed owner claim creates a native Lamp session and refuses replay; a Business install opens its import door at the first bootstrap claim
+  ---
+  duration_ms: 24876.408591
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 55661.252825

@@ -1,0 +1,8 @@
+{
+  "at": "2026-11-17T18:57:33Z",
+  "command": "gh run view 44144448427 --repo just-every/run-lamp --job 134256346369 --log-failed",
+  "exit_code": 0,
+  "log": "ci-ownership-failed.log.gz",
+  "uncompressed_bytes": 46476,
+  "redaction": "injected values, credential-shaped tokens and URL queries removed"
+}

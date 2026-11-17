@@ -1,0 +1,28 @@
+{
+  "recorded_at": "2026-11-17T19:10:55Z",
+  "node": "22.20.0",
+  "affected_node_tests": {
+    "tests": 7,
+    "pass": 7,
+    "fail": 0,
+    "log": "owner-compatibility-fixed.log"
+  },
+  "native_signin_browser": {
+    "tests": 1,
+    "pass": 1,
+    "log": "auth-browser-batch.log"
+  },
+  "final_setup_browser": {
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "log": "setup-parser-final.log"
+  },
+  "presenter_security_probe": "signin-presenter-receipt.json",
+  "typecheck": {
+    "exit_code": 0,
+    "log": "auth-fix-typecheck.log"
+  },
+  "fixture_transport_diagnosis": "UND_ERR_SOCKET after synchronous Wrangler reset; preceding settings connection now explicitly closed; no request retries or removed assertions",
+  "screens": "all ten captures refreshed from corrected source at1440/390"
+}

@@ -1,0 +1,39 @@
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out
+ok 1 - SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out
+  ---
+  duration_ms: 168267.174644
+  type: 'test'
+  ...
+# Execution host: 80b7989ee917
+# Starting the built operator management Worker
+# Migrating the operator management installation
+# Claiming the operator management setup identity
+# Confirming the setup owner and opening Settings
+# Subtest: SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+not ok 2 - SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+  ---
+  duration_ms: 100744.695139
+  type: 'test'
+  location: '/workspace/run-lamp/tests/contract.mjs:10:10'
+  failureType: 'testCodeFailure'
+  error: 'fetch failed'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    node:internal/deps/undici/undici:13510:13
+    async nativeRequest (file:///workspace/run-lamp/tests/dev-ingress/runtime.mjs:89:20)
+    async TestContext.<anonymous> (file:///workspace/run-lamp/tests/e2e/website-onboarding.test.mjs:86:23)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 272405.099709

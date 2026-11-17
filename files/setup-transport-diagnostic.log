@@ -1,0 +1,54 @@
+TAP version 13
+# Setup runtime diagnostics: 
+# > lamp@1.11.22 dev:app [REDACTED]
+# > node scripts/dev.mjs --port 39897 --strictPort
+# Local database migrations are up to date.
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# 7:04:36 PM [vite] (ssr) [optimizer] scanning dependencies...
+#   VITE v8.2.4  ready in 18993 ms
+#   ➜  Local:   [REDACTED]/
+# Lamp landing page: [REDACTED]/  (sign in at [REDACTED]/signin)
+# Lamp status page:  http://localhost:39897/
+# The status page is unavailable until owner setup and a public snapshot are ready. Open sign-in to complete setup.
+# 7:05:09 PM [vite] (ssr) warning: [REDACTED]/src/core/app/loaders.ts:28:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+#   Plugin: tanstack-start-core::server-fn:ssr
+#   File: [REDACTED]/src/core/app/loaders.ts
+# 7:05:10 PM [vite] (ssr) warning: [REDACTED]/src/site/docs/body.ts:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+#   Plugin: tanstack-start-core::server-fn:ssr
+#   File: [REDACTED]/src/site/docs/body.ts
+# 7:05:10 PM [vite] (ssr) warning: [REDACTED]/src/core/app/loaders.ts?tss-serverfn-split:28:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+#   Plugin: tanstack-start-core::server-fn:ssr
+#   File: [REDACTED]/src/core/app/loaders.ts?tss-serverfn-split
+# 7:05:13 PM [vite] (client) warning: [REDACTED]/src/core/app/loaders.ts:28:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+#   Plugin: tanstack-start-core::server-fn:client
+#   File: [REDACTED]/src/core/app/loaders.ts
+# 7:05:13 PM [vite] (client) warning: [REDACTED]/src/site/docs/body.ts:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+#   Plugin: tanstack-start-core::server-fn:client
+#   File: [REDACTED]/src/site/docs/body.ts
+# Setup transport cause: UND_ERR_SOCKET
+# Subtest: SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+not ok 1 - SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+  ---
+  duration_ms: 93239.173358
+  type: 'test'
+  location: '/workspace/run-lamp/tests/contract.mjs:10:10'
+  failureType: 'testCodeFailure'
+  error: 'fetch failed'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    node:internal/deps/undici/undici:13510:13
+    async nativeRequest (file:///workspace/run-lamp/tests/dev-ingress/runtime.mjs:89:20)
+    async TestContext.<anonymous> (file:///workspace/run-lamp/tests/e2e/website-onboarding.test.mjs:87:23)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 94201.318155

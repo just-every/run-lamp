@@ -1,0 +1,15 @@
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+
+8863365f299cc5202384df08e4bd0b49e2ef1531
+Preserve branded sign-in across native auth handlers
+
+Use the existing HTML parser to preserve native controls and headers in Node and Worker handlers. Close the setup fixture connection before its synchronous Wrangler reset so each subsequent API request uses a live socket.
+
+c383a5263a73d61d5faf40a076f41d0a976cd983
+Restore setup design fixes with declared lobby adaptation
+

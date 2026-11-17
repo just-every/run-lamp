@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-design-setup-2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-design-setup-2",
+  "head": "8863365f299cc5202384df08e4bd0b49e2ef1531",
+  "tree": "9239b8a3ed6721079ee0a0617526255695ac8b89",
+  "base": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+  "parent": "c383a5263a73d61d5faf40a076f41d0a976cd983",
+  "recorded_at": "2026-11-17T19:13:56Z",
+  "terminal_status": "PUSHED",
+  "product_pushed": true,
+  "remote_head_verified": true,
+  "candidate_commits": 2,
+  "candidate_merges": 0,
+  "candidate_product_files": 45,
+  "clean_checkout": true,
+  "pushed_heads": [
+    "c383a5263a73d61d5faf40a076f41d0a976cd983",
+    "8863365f299cc5202384df08e4bd0b49e2ef1531"
+  ],
+  "push_attempts_per_push": [
+    1,
+    1
+  ],
+  "current_exact_sha_verify": {
+    "status": "unobserved",
+    "run_id": null,
+    "reason": "ten-call GitHub budget exhausted after prior candidate diagnostics; no green claim"
+  },
+  "previous_candidate_ci": {
+    "run_id": 44144448427,
+    "at": "2026-11-17T18:56:42Z",
+    "conclusion": "failure",
+    "head_sha": "c383a5263a73d61d5faf40a076f41d0a976cd983",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44144448427",
+    "status": "completed",
+    "ownership_job": 134256346369,
+    "confirmed_errors": "503 responses and missing native provider sign-in HTML",
+    "ownership_failure_fixed_locally": true,
+    "affected_node_tests_passed": 7,
+    "composer_log_failed_exit": 0,
+    "composer_log_failed_bytes": 0
+  },
+  "github_calls_used": 10,
+  "github_call_limit": 10,
+  "pr_url": null,
+  "pr_next_step": "lane may open the PR after observing exact-SHA Verify",
+  "build_receipt": "build-receipt.json",
+  "initial_journey_receipt": "journey-receipt.json",
+  "followup_validation_receipt": "followup-validation-receipt.json",
+  "scope_receipt": "scope-receipt.json",
+  "commit_audit": "commit-audit.txt"
+}

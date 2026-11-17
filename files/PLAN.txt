@@ -1,0 +1,14 @@
+Task sd-lamp-design-setup-2; declared write repository just-every/run-lamp.
+1. Configure fleet identity, launcher bundle Git helper, clone-local commit hooks and pinned toolchain.
+2. Confirm prior tip aab0f2e95fae28ff7c968ace7321f26a85664991 and fresh main; replay its one commit without creating a merge, preserving main's newer text.
+3. Read the Base acknowledgement and copy tooling; run adapt-base src/base/lobby.ts for precisely one file. Preserve all recorded Base comparison baselines.
+4. Keep valid saved UTC as the initial setup time zone; retain the explicit editable choice. Correct the first-run guide; assert preserved UTC before choosing Toronto. No clause or release meaning changes.
+5. Regenerate source lock last; check contract docs, source copies, source lock, typecheck, syntax, release, visual source, app build and site build in that order.
+6. Exercise the touched setup/branding, Settings, maintenance, public snapshot and sign-in journeys at 1440; capture changed surfaces at 1440 and 390. Retain actual non-secret proof outside the product tree.
+7. Audit scope, linearity and every candidate identity/message; commit with fleet identity and active hooks, push only cloud/sd-lamp-design-setup-2 using the cloud push guard.
+8. Discover and poll exact-SHA Verify via gh REST, respecting the ten-call budget and 300-second cadence. Fix actionable failures and repush without rewriting published history. Open a PR to main as required by AGENTS.md.
+9. Retain the complete non-secret results and receipt packet; publish only to evidence/sd-lamp-design-setup-2. Return branch/SHA, CI runs, counts, unchanged clause statuses and lane POST.
+No rer refresh-base; no default-branch push; no INBOX.md/STATE.md read or write.
+
+10. CI diagnosed a native sign-in compatibility defect. Reproduce the 503, replace the runtime-specific presenter with existing parse5, preserve forms/headers and escaping, run the affected Node and browser journeys, diagnose/close the fixture stale connection without retries, regenerate the source lock last, run all nine build gates, audit both commits and push the follow-up without rewriting the first published save.
+11. The ten-call GitHub limit was reached while reading the failed workflow and its job logs. Return the final pushed source under the explicit PUSHED fallback; leave exact-SHA Verify and the PR to the lane. Publish all actual relevant reports/receipts on the evidence ref and retain the local packet.

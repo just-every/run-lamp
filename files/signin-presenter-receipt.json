@@ -1,0 +1,14 @@
+{
+  "runtime": "Node 22.20.0",
+  "globalHTMLRewriter": "undefined",
+  "passed": true,
+  "assertions": [
+    "escapes owner name",
+    "preserves native form and button",
+    "preserves script bytes",
+    "preserves security headers",
+    "drops obsolete content length",
+    "retains restart guidance",
+    "passes non-HTML through"
+  ]
+}
