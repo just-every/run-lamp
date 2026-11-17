@@ -1,3 +1,4 @@
+import { usePageTimezone } from "../../../app/client/ui/timezone";
 import { useId, useState, type FormEvent } from "react";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -19,6 +20,8 @@ export function FollowUps() {
 
 function FollowUpRow({ item, onChanged }: { item: FollowUp; onChanged: () => void }) {
   const formatTime = useOperatorTime();
+  const timezone = usePageTimezone();
+  const dueTime = new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", minute: "2-digit" }).format(new Date(item.dueAt));
   const reasonId = useId();
   const [reason, setReason] = useState("");
   const [pending, setPending] = useState(false);
@@ -42,7 +45,7 @@ function FollowUpRow({ item, onChanged }: { item: FollowUp; onChanged: () => voi
     <p>Owner: {item.owner?.displayName ?? "Unowned"} · Due <time dateTime={item.dueAt}>{formatTime(item.dueAt)}</time></p>
     <p>{item.stopCondition}</p>
     {item.failure ? <>
-      <p className="overdue-note"><strong>Failed:</strong> {item.failure.message}</p>
+      <p className="overdue-note">{item.kind === "maintenance-start" ? <>Didn’t start at {dueTime}. Open maintenance to start or cancel it.</> : item.kind === "maintenance-end" ? <>Didn’t finish at {dueTime}. Complete it now in maintenance.</> : <><strong>Failed:</strong> {item.failure.message}</>}</p>
       {item.kind === "notification-dispatch" ? <Button type="button" variant="secondary" disabled={pending} onClick={() => void retry()}>Retry notification dispatch</Button> : null}
       <details><summary>Dismiss failed follow-up</summary><form className="incident-note-form" onSubmit={dismiss}>
         <label className="form-label" htmlFor={reasonId}>Reason for dismissal</label>
