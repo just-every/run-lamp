@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T15:13:02.219640+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-incident-1-pc1",
+  "starting_head": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+  "product_head": "9f870400c181298626416cbdf2e39f56f5760daf",
+  "push": "succeeded",
+  "verify": {
+    "at": "2026-11-17T15:36:53.034032+00:00",
+    "id": 44111436347,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "9f870400c181298626416cbdf2e39f56f5760daf",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44111436347"
+  },
+  "local_checks": {
+    "typecheck": "passed",
+    "focused_tests": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "log": "focused-after.log"
+    },
+    "production_build": "passed",
+    "source_lock": "passed",
+    "all_candidate_identities": "passed",
+    "production_browser_proof": {
+      "result": "passed",
+      "surface": "built production Worker",
+      "assertionWidth": 1440,
+      "proofWidths": [
+        1440,
+        390
+      ],
+      "journeys": [
+        "manual degradation preserved on resolve",
+        "customer email preview",
+        "published update correction",
+        "return component to Automatic"
+      ],
+      "accessibility": "no serious or critical violations",
+      "date": "2026-11-17T15:16:18.548Z"
+    },
+    "accessibility_assertions_preserved": "passed: email image-alt and containing frame-title negative probes"
+  },
+  "counts": {
+    "before": {
+      "registered_tests": 103,
+      "assertion_scripts": 10,
+      "total": 113
+    },
+    "after": {
+      "registered_tests": 103,
+      "assertion_scripts": 10,
+      "total": 113
+    }
+  },
+  "contract_status_changes": [],
+  "pr_created": false,
+  "production_artifact": {
+    "path": "dist/server/index.js",
+    "sha256": "ca675701907dd091507cb8d8f03c28bfb1096c4837a1be6cb2f237f3425e9f6b"
+  },
+  "starting_head_preserved": true,
+  "product_worktree": "clean",
+  "updated_at": "2026-11-17T15:38:00.220398+00:00",
+  "production_browser_proof_attempts": [
+    {
+      "attempt": 1,
+      "status": "harness_failure",
+      "reason": "The local Wrangler upstream was fixed to the app hostname; public-host reads did not reach the public surface.",
+      "log": "built-proof-attempt-1.log"
+    },
+    {
+      "attempt": 2,
+      "status": "passed",
+      "reason": "Used the repository runtime fixture pattern: app and public host listeners share the same built Worker artifact and isolated state.",
+      "log": "built-proof.log"
+    }
+  ],
+  "github_calls": 8,
+  "terminal_product_status": "READY",
+  "blockers": []
+}

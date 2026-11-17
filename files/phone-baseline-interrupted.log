@@ -1,0 +1,26 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Phone desk: 390 sign-in
+Phone desk: 390 alerts
+Phone desk: 390 composer
+Phone desk: 390 preview
+
+Interrupted while running:
+
+⚠ tests/e2e/publishing-browser.test.mjs (tests/e2e/publishing-browser.test.mjs:1:1)
+✖ tests/e2e/publishing-browser.test.mjs (216814.150745ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 0
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 216826.179498
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:1:1
+✖ tests/e2e/publishing-browser.test.mjs (216814.150745ms)
+  'Promise resolution is still pending but the event loop has already resolved'

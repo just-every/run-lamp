@@ -1,0 +1,23 @@
+{
+  "phase": "after",
+  "screens": [
+    "new-email-1440.png",
+    "new-email-390.png",
+    "resolve-manual-1440.png",
+    "resolve-manual-390.png",
+    "resolved-email-1440.png",
+    "resolved-email-390.png",
+    "public-resolved-1440.png",
+    "public-resolved-390.png",
+    "timeline-1440.png",
+    "timeline-390.png",
+    "correction-draft-1440.png",
+    "correction-draft-390.png",
+    "public-correction-1440.png",
+    "public-correction-390.png"
+  ],
+  "newEmail": "PREVIEW\nPage\nEmail\n\nNOTIFICATION EMAIL\n\nThis computer does not send email. A hosted page uses your sender address.\n\nAtlas Cloud Status: [INC-1] Mobile requests are slow\n\nIncident impact comes from the component statuses you choose.",
+  "resolve": "UPDATE DRAFT\n\nDraft saved\n\nStatus\nInvestigating\nIdentified\nMonitoring\nResolved\nWhat’s happening?\nWho’s affected?\nMobile apps\nDegraded performance →\nMajor outage\nPartially unavailable\nDegraded performance\nEffect ends\n\nResolving closes the incident. No next update.\n\nMobile apps also has a manual status of Degraded performance. Resolving this incident will leave that status in place.\n\nSet Mobile apps to Automatic\n\nAutomatic follows any other open incidents or maintenance, and is Operational when nothing affects the component.\n\nRecovery check\n\nTracked recovery checks pass. Checked Nov 17, 2026, 07:15 UTC-08:00.\n\nNot tracked: Linked monitors and alerts (none received), Vendor dependencies, Public-page traffic baseline, Linked support tickets, Continuous monitor passing samples.\n\nCheck recovery again",
+  "publicResolution": "Resolved\nResolved at Nov 17, 2026, 07:15 UTC-08:00\nWho is affected\nCustomers using mobile apps.\nUpdate\nFixed. Mobile requests finish normally again.\nComponent state\nMobile apps: remains Degraded performance after this incident was resolved.",
+  "correctButtons": 2
+}
