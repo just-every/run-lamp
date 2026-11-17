@@ -1,5 +1,5 @@
-import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 
 import { getPlatformProxy } from "wrangler";
 import { readDeployEnvFile } from "@runeditrun/rer/internal/modules/deploy-kit/env-file.mjs";
@@ -29,6 +29,23 @@ async function loadCloudflareCredentials(flags) {
   for (const name of ["CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_API_TOKEN"]) if (values[name]) process.env[name] = values[name];
 }
 
+// Archive commands read only D1 and R2. The full wrangler.jsonc also declares the
+// SnapshotCache Durable Object, which belongs to the Worker script and cannot be
+// served by a bindings-only proxy, so the proxy gets just the two bindings it uses.
+async function localArchiveConfig(flags) {
+  const source = resolve(localConfig(flags));
+  const config = JSON.parse((await readFile(source, "utf8")).replace(/^\s*\/\/.*$/gm, ""));
+  const proxy = {
+    name: config.name,
+    compatibility_date: config.compatibility_date,
+    d1_databases: config.d1_databases.filter((entry) => entry.binding === "DB"),
+    r2_buckets: config.r2_buckets.filter((entry) => entry.binding === "SNAPSHOTS"),
+  };
+  const path = join(dirname(source), `.lamp-archive-proxy-${process.pid}.json`);
+  await writeFile(path, `${JSON.stringify(proxy, null, 2)}\n`, { mode: 0o600 });
+  return path;
+}
+
 async function remoteConfig(flags) {
   if (flags.get("config")) throw new Error("Remote archives use the generated owner deployment record; --config is only supported for local archives.");
   const environment = archiveEnvironment(flags);
@@ -52,14 +69,28 @@ async function remoteConfig(flags) {
 export async function openArchivePlatform(flags) {
   if (flags.get("local") && flags.get("remote")) throw new Error("Choose exactly one of --local or --remote.");
   if (!flags.get("remote")) {
-    const platform = await getPlatformProxy({
+    const proxyConfig = await localArchiveConfig(flags);
+    let platform;
+    try {
+      platform = await getPlatformProxy({
+        configPath: proxyConfig,
+        remoteBindings: false,
+        // Wrangler's local CLI writes a v3 directory below --persist-to. Its Node
+        // binding accepts that v3 directory itself, so both sides address one state.
+        persist: { path: join(persistence(flags), "v3") },
+      });
+    } catch (cause) {
+      await rm(proxyConfig, { force: true });
+      throw cause;
+    }
+    return {
+      platform,
       configPath: localConfig(flags),
-      remoteBindings: false,
-      // Wrangler's local CLI writes a v3 directory below --persist-to. Its Node
-      // binding accepts that v3 directory itself, so both sides address one state.
-      persist: { path: join(persistence(flags), "v3") },
-    });
-    return { platform, configPath: localConfig(flags), dispose: () => platform.dispose() };
+      async dispose() {
+        await platform.dispose();
+        await rm(proxyConfig, { force: true });
+      },
+    };
   }
   const configPath = await remoteConfig(flags);
   let platform;
