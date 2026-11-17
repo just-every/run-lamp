@@ -60,7 +60,7 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   const path = `/api/app/incidents/${id}`;
   const composer = incidentComposer(page);
   const firstUpdate = (await api(path)).incident.updates[0];
-  const live = page.locator('.live-preview');
+  const live = page.getByRole('region', { name: 'What customers see now' });
   await live.getByText(firstUpdate.customerImpact, { exact: true }).waitFor();
   assert.equal(await live.locator('.state-pill').innerText(), firstUpdate.lifecycle);
   assert.equal(await live.locator('time').getAttribute('datetime'), firstUpdate.nextUpdateAt);

@@ -795,7 +795,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await composer.details.fill('Follow https://support.example.test/checkout for any remaining questions.');
   await saved();
   assert.equal(await composer.nextUpdate.count(), 0, 'resolution needs no further update promise');
-  await composer.publish.click(); await page.locator('.publication-confirmation').waitFor();
+  await composer.publish.click();
+  await page.locator('.next-draft-toggle[aria-expanded="false"]').waitFor();
+  await page.locator('.live-preview').getByText('Checkout authorizations are working normally.', { exact: true }).waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
   await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimState: 'Degraded performance', screens: previewScreens });
