@@ -80,7 +80,8 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.getByLabel('Recovery override reason', { exact: true }).fill(recoveryReason);
     await inspect('resolve');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
-    await page.locator('.publication-confirmation').waitFor();
+    await page.locator('.next-draft-toggle[aria-expanded="false"]').waitFor();
+    await page.locator('.live-preview').getByText('Card authorization is restored. Checkouts are completing normally.', { exact: true }).waitFor();
     const resolved = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(resolved.lifecycle, 'Resolved');
     assert.ok(resolved.internalNotes.some(note => note.body.includes(recoveryReason)), 'the phone operator records the required private override');
