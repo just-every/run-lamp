@@ -9416,7 +9416,7 @@
       "executable": false
     },
     "tests/helpers/wrangler-config.mjs": {
-      "sha256": "9912ef3164ce786e67fc4d5fafc7ad881248a013cfe0676d73099255ca8beba8",
+      "sha256": "619af3f8cf0b2059abce2fc61a697cd04bd8c2a1eb8cbaa0a2f758dbea0816a2",
       "executable": false
     },
     "tests/lamp-site/browser.test.mjs": {
