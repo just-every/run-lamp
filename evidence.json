@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "903909b4744a5e28f9440726e23d836746d63359",
+      "bytes": 5183,
+      "path": "INSPECTION-RECEIPT.json",
+      "sha256": "60c54248098defe89d16c6d201f2a5f5422afd75a6a3a88d793e62592102cd70"
+    },
+    {
+      "blob": "8743bb75e460fba3fe40733a74510954fe0c4a5e",
+      "bytes": 44521,
+      "path": "REPORT.md",
+      "sha256": "8333d485fc1b99ce9befe81bb74fbaabb7eb2c1631fbb49ee4be48636877bda7"
+    },
+    {
+      "blob": "b3fb0c69de596f3b76ed14a9cd4b306844f77be6",
+      "bytes": 11635,
+      "path": "SORRY-DOC-FINDINGS.md",
+      "sha256": "e28bb578ceee74daad856056ed10c4f9bd9ddd4c56f9f827bda00b5772cc4ea2"
+    }
+  ],
+  "product_branch": "main",
+  "product_head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "ref": "refs/heads/evidence/ct-import-plan-lamp-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "ct-import-plan-lamp-1"
+}
