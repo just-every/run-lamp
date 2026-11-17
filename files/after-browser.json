@@ -1,0 +1,73 @@
+{
+  "phase": "after",
+  "maintenance": {
+    "id": "01M7N36SCMF22HEXM8KAA53WE2",
+    "reference": "SCH-3",
+    "title": "Synthetic automatic window",
+    "affectedAudience": "Customers using the scheduled service.",
+    "customerImpact": "Requests may pause during the window.",
+    "state": "Scheduled",
+    "startsAt": "2027-07-15T22:00:00.000Z",
+    "endsAt": "2027-07-15T23:00:00.000Z",
+    "completedAt": null,
+    "createdByOperatorId": "619af82c-de3b-4d37-ad1c-ab4b2e4dd3bd",
+    "createdAt": "2026-11-17T15:49:59.316Z",
+    "updatedAt": "2026-11-17T15:49:59.316Z",
+    "autoStart": true,
+    "autoComplete": true,
+    "components": [
+      {
+        "id": "01M7N36SCPNFHJRN2M9VBCTCBG",
+        "maintenanceId": "01M7N36SCMF22HEXM8KAA53WE2",
+        "componentId": "01M7N2T02TZZ6RSCA4B65QGEQV",
+        "componentName": "Synthetic scheduled service",
+        "state": "Under maintenance",
+        "createdAt": "2026-11-17T15:49:59.316Z",
+        "updatedAt": "2026-11-17T15:49:59.316Z"
+      }
+    ],
+    "notices": [
+      {
+        "id": "01M7N36SCP6E2AY3B92JHDQ8V7",
+        "maintenanceId": "01M7N36SCMF22HEXM8KAA53WE2",
+        "kind": "scheduled",
+        "body": "SCH-3: Synthetic automatic window\n\nWho is affected: Customers using the scheduled service.\n\nCustomer impact: Requests may pause during the window.",
+        "publishedAt": "2026-11-17T15:49:59.316Z",
+        "authorOperatorId": "619af82c-de3b-4d37-ad1c-ab4b2e4dd3bd",
+        "createdAt": "2026-11-17T15:49:59.316Z",
+        "updatedAt": "2026-11-17T15:49:59.316Z"
+      }
+    ],
+    "importedUpdates": [],
+    "overrunning": false
+  },
+  "mail": {
+    "local": true,
+    "primaryProvider": null,
+    "configuredSecondaryProvider": null,
+    "secondaryProvider": null
+  },
+  "sms": false,
+  "screens": [
+    {
+      "name": "overview",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "overview",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "notifications",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "notifications",
+      "width": 390,
+      "overflow": false
+    }
+  ]
+}

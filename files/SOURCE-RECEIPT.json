@@ -1,0 +1,49 @@
+{
+  "author": "Run Edit Run fleet",
+  "timestamp": "2026-11-17T15:55:30.426374+00:00",
+  "repository": "just-every/run-lamp",
+  "base": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+  "files": [
+    {
+      "path": "docs/subscribers-and-notifications.md",
+      "sha256": "b2f9b4b41f965b60910deff6ef29237ab8b63797c930d62645f1e8fb6ed1b7fb"
+    },
+    {
+      "path": "src/core/features/overview/follow-ups/maintenance.repository.ts",
+      "sha256": "8fbe4b389c1d2ac72dcd4118f6e74c245406d727e7d1aa5b2e8a5b8c33a0e429"
+    },
+    {
+      "path": "src/core/features/overview/ui/follow-ups.tsx",
+      "sha256": "c9e1bda65c34fdc3ef973942aadb0dd974c1f8feb9abbbf85e38688293711cbc"
+    },
+    {
+      "path": "src/core/features/overview/ui/overview-page.tsx",
+      "sha256": "0efb4c91662ed7049cc48a9339accfed3d16a7cfef63df04477c2e3b053206d1"
+    },
+    {
+      "path": "src/core/features/page-settings/ui/mail-delivery-settings.tsx",
+      "sha256": "27eb5504aad7923aa1bf95be4daec73219e650bf8ab882e72245dec45be5b593"
+    },
+    {
+      "path": "src/core/features/page-settings/ui/notification-settings-tab.tsx",
+      "sha256": "e252f4192603212e40da32e1fe764d8adb801cdf9b9b5fbd25c0c820dd4ee4cd"
+    },
+    {
+      "path": "src/core/features/page-settings/ui/sms-settings.tsx",
+      "sha256": "152b491e732f9e5308e929c3fac60717b3f452592fa08304cbaa7e7dfb6e3195"
+    }
+  ],
+  "noContractChanges": true,
+  "testInventory": {
+    "before": 115,
+    "after": 115,
+    "registrations": 105,
+    "assertionScripts": 10
+  },
+  "productHead": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+  "branch": "cloud/sd-lamp-design-notify-1",
+  "cleanWorktree": true,
+  "committedSourceMatchesBrowserCandidate": true,
+  "sourcesLockSha256": "8bb60aba800949407cc91ce98fda62c6a2f365f2aa7543ac65d8d49197d8e35b",
+  "scope": "Committed source/doc delta only; the publication test temporary visual-edit fixture is excluded."
+}

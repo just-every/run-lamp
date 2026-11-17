@@ -1,0 +1,18 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-design-notify-1",
+  "head": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+  "base": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+  "push": "succeeded on attempt 1 through cloud-push.py",
+  "identity": "all commits in origin/main..HEAD have Run Edit Run fleet author and committer with fleet@runeditrun.com; no trailers",
+  "commits": [
+    "aa25410deb9a5d8597c5a63779bff8ebcd20ee74"
+  ],
+  "releaseMetadataChanged": false,
+  "contractChanged": false,
+  "generatedViewsCommitted": false,
+  "tree": "7d22a6cfd7ba02dc7335d7d6dd32f8366c248f74",
+  "remoteHeadVerified": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+  "cleanWorktree": true,
+  "lockCheckAfterFixtureRestore": "passed"
+}

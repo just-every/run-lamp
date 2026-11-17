@@ -1,0 +1,107 @@
+{
+  "author": "Run Edit Run fleet",
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=AUTO-003 tests/e2e/update-reminders.test.mjs",
+      "status": "passed",
+      "summary": [
+        "ok 1 - AUTO-003 NOTIFY-006 \u2014 operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 26134.134527"
+      ],
+      "logSha256": "2944992a0c40979dfb5d08a9fdf2fa4031f5e58cbad056db869c33f42a4c8bcd"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"operator schedules\" tests/e2e/maintenance-timezone.test.mjs",
+      "status": "passed",
+      "summary": [
+        "ok 1 - MAINT-009 PAGE-020 \u2014 operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 235761.104852"
+      ],
+      "logSha256": "95397266a9ee72d6fce1ee472be86d23ee7ef251ff32e2c7e85c53fe84c88dcd"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "status": "passed",
+      "logSha256": "005c3bf95928ba2dad283630e5691f783010a32cd53b78f2ba137a6ddfd1048b"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build (through cloud_run)",
+      "status": "passed",
+      "logSha256": "ee3d25f0da8f0672e025be3051c4fdf0d74462cd4975bcf63394b34da3ec471c"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check",
+      "status": "passed"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "status": "passed",
+      "output": "Contract prose: 0 errors, 0 warnings. Contract documents are current."
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"Local owner confirms\" tests/e2e/maintenance-timezone.test.mjs",
+      "status": "passed",
+      "summary": [
+        "ok 1 - SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 \u2014 Local owner confirms public subscribers and inspects unsent incident notifications",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 211248.178352"
+      ],
+      "logSha256": "3512a1ab13a946f2f9d3282f47a7e8be656f80e5e657fda9c7f36b597aef09c0"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"compiled visual edits\" tests/e2e/publishing-browser.test.mjs",
+      "status": "passed",
+      "summary": [
+        "ok 1 - INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 \u2014 compiled visual edits and the operator publication journey",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 429984.565617"
+      ],
+      "logSha256": "eee478c10fd042343c2eac707848be2727a8c1662dd73a2d753a83c5c4b3b28f"
+    },
+    {
+      "command": "cloud_run node /tmp/lamp-hosted-focused.mjs (the existing mailSettingsBrowserFlow with its unrelated incident-follow prelude omitted in a temporary external probe)",
+      "status": "passed",
+      "summary": [
+        "NOTIFY-013 1440px default-off owner choice persists; real Resend acceptance names its provider in Deliveries",
+        "PASS focused hosted notification browser journey"
+      ],
+      "logSha256": "92e49dd03513b39dd21544023416b44e36d8f5a340310581667cd7b267206a3d"
+    }
+  ],
+  "browser": {
+    "before": "before-browser.json",
+    "after": "after-browser.json",
+    "widths": [
+      1440,
+      390
+    ],
+    "horizontalOverflow": false
+  },
+  "initialAttempts": [
+    {
+      "check": "maintenance browser",
+      "result": "failed on obsolete future-reminder wait; replaced with empty follow-ups wait and passed"
+    },
+    {
+      "check": "local subscriber browser",
+      "result": "ECONNRESET during rebuild/source update; stable-tree rerun passed"
+    },
+    {
+      "check": "hosted sender browser",
+      "result": "initial full provider journey hit an unrelated incident-follow hydration timeout; a direct rerun hung in disposal and was terminated by its own PIDs; a focused stable-output notification journey passed. The committed full journey remains intact for CI."
+    }
+  ],
+  "productHead": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+  "branch": "cloud/sd-lamp-design-notify-1",
+  "completedAt": "2026-11-17T16:01:58.932450+00:00"
+}

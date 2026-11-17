@@ -1,0 +1,73 @@
+{
+  "phase": "before",
+  "maintenance": {
+    "id": "01M7N2YMWN7WZM7FQEC6VSY9HB",
+    "reference": "SCH-1",
+    "title": "Synthetic automatic window",
+    "affectedAudience": "Customers using the scheduled service.",
+    "customerImpact": "Requests may pause during the window.",
+    "state": "Scheduled",
+    "startsAt": "2027-07-15T22:00:00.000Z",
+    "endsAt": "2027-07-15T23:00:00.000Z",
+    "completedAt": null,
+    "createdByOperatorId": "619af82c-de3b-4d37-ad1c-ab4b2e4dd3bd",
+    "createdAt": "2026-11-17T15:45:32.565Z",
+    "updatedAt": "2026-11-17T15:45:32.565Z",
+    "autoStart": true,
+    "autoComplete": true,
+    "components": [
+      {
+        "id": "01M7N2YMWR0MD1JW9N8TEHP7SZ",
+        "maintenanceId": "01M7N2YMWN7WZM7FQEC6VSY9HB",
+        "componentId": "01M7N2T02TZZ6RSCA4B65QGEQV",
+        "componentName": "Synthetic scheduled service",
+        "state": "Under maintenance",
+        "createdAt": "2026-11-17T15:45:32.565Z",
+        "updatedAt": "2026-11-17T15:45:32.565Z"
+      }
+    ],
+    "notices": [
+      {
+        "id": "01M7N2YMWR94EC454QFY2YRNM2",
+        "maintenanceId": "01M7N2YMWN7WZM7FQEC6VSY9HB",
+        "kind": "scheduled",
+        "body": "SCH-1: Synthetic automatic window\n\nWho is affected: Customers using the scheduled service.\n\nCustomer impact: Requests may pause during the window.",
+        "publishedAt": "2026-11-17T15:45:32.565Z",
+        "authorOperatorId": "619af82c-de3b-4d37-ad1c-ab4b2e4dd3bd",
+        "createdAt": "2026-11-17T15:45:32.565Z",
+        "updatedAt": "2026-11-17T15:45:32.565Z"
+      }
+    ],
+    "importedUpdates": [],
+    "overrunning": false
+  },
+  "mail": {
+    "local": true,
+    "primaryProvider": null,
+    "configuredSecondaryProvider": null,
+    "secondaryProvider": null
+  },
+  "sms": false,
+  "screens": [
+    {
+      "name": "overview",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "overview",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "notifications",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "notifications",
+      "width": 390,
+      "overflow": false
+    }
+  ]
+}
