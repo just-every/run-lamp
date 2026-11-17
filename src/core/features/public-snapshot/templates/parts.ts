@@ -1,3 +1,4 @@
+import { maintenanceTimeRange } from "../format";
 import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
 import { themeChrome } from "../theme-rendering";
 import type { PublicSnapshotModel } from "../renderer";
@@ -29,7 +30,7 @@ export function templateShell(template: TemplateName, model: PublicSnapshotModel
 }
 
 export function brand(model: PublicSnapshotModel) {
-  return `<a class="tpl-brand" href="/"><img class="tpl-mark" src="/assets/mark.svg" alt=""><span>${escapeHtml(model.settings.pageName)}</span></a>`;
+  return `<a class="tpl-brand" href="/"><img class="${model.settings.logoKey ? "tpl-logo" : "tpl-mark"}" src="${model.settings.logoKey ? "/assets/logo" : "/assets/mark.svg"}" alt=""><span>${escapeHtml(model.settings.pageName)}</span></a>`;
 }
 
 export function tagline(model: PublicSnapshotModel) {
@@ -190,7 +191,7 @@ export function resolvedSpan(incident: PublicIncident, timezone: string) {
 
 /** A maintenance window's times in the markup the public routes use to flag an overrun as it happens. */
 export function maintenanceWindow(item: PublicMaintenance, timezone: string) {
-  return `<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${item.state === "Scheduled" ? "Planned" : "In progress"} · ${when(item.startsAt, timezone)} – ${when(item.endsAt, timezone, item.startsAt)}</p>`;
+  return `<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${item.state === "Scheduled" ? "Planned" : "In progress"} · ${maintenanceTimeRange(item.startsAt, item.endsAt, timezone)}</p>`;
 }
 
 export function maintenanceNotices(item: PublicMaintenance, timezone: string) {

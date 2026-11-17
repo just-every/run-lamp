@@ -52,20 +52,19 @@ Already have Node 22 or later? Use this alternative:
 npx -y @runeditrun/rer dev just-every/run-lamp
 ```
 
-After the curl install, if `~/.local/bin` is missing from your PATH, run the
-installer's Bash line once to make the command available now and in future
-terminals:
+After the curl install, to make `rer` available by name in new terminals, run:
 
 ```sh
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && export PATH="$HOME/.local/bin:$PATH"
+~/.local/bin/rer cli path
 ```
 
-For another shell, `"$HOME/.local/bin/rer" cli path` prints its line. To start
-Lamp again later:
+Paste the line it prints for your shell, then open a new Terminal window.
+If you see 'command not found', run `~/.local/bin/rer cli path` and paste the line it prints.
+To start Lamp again later:
 
 ```sh
 cd run-lamp
-rer dev
+~/.local/bin/rer dev
 ```
 
 ## Owner guides
@@ -85,7 +84,7 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 ## Source and tooling versions
 
 The [Run page's](https://run-lamp.com/run) combined curl line above clones the
-default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `rer dev` from that folder. `main` is Lamp's
+default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `~/.local/bin/rer dev` from that folder. `main` is Lamp's
 development source and may hold changes not yet in a release. The exact
 `@runeditrun/rer` pin is in `package.json` under `devDependencies`, locked in
 `pnpm-lock.yaml`. `package.json` and `RELEASE.json` name this checkout's Lamp
@@ -95,15 +94,15 @@ and start it (replace `vX.Y.Z` with your chosen tag):
 
 ```sh
 git clone --branch vX.Y.Z https://github.com/just-every/run-lamp.git lamp
-cd lamp && rer dev
+cd lamp && ~/.local/bin/rer dev
 ```
 
 Then follow the documentation inside that checkout, which matches its tools.
 
-`rer --version` prints the `rer` you installed on its first line and the version
+`~/.local/bin/rer --version` prints the `rer` you installed on its first line and the version
 this checkout pins on its second. Inside the checkout every `rer` command runs the
-pinned version once the checkout's dependencies are installed (`rer dev` and
-`rer install` install them); the installed `rer` only starts it.
+pinned version once the checkout's dependencies are installed (`~/.local/bin/rer dev` and
+`~/.local/bin/rer install` install them); the installed `rer` only starts it.
 
 Node 22.20.0 and pnpm 10.12.4 are pinned. `rer` downloads and uses that Node
 version when your shell has a different one, and says so when it starts. Every
@@ -136,31 +135,31 @@ You can also export the input names in the calling shell. The
 values from secrets that `rer` generates on a first deploy.
 
 Use `rer` from the project root with the pin declared in `package.json`;
-`rer --version` shows the installed CLI first and the checkout's pin second.
+`~/.local/bin/rer --version` shows the installed CLI first and the checkout's pin second.
 Before a command that builds or verifies the checkout,
-stop a running development server with `rer dev --stop` or a production preview
-with `rer preview --stop`.
+stop a running development server with `~/.local/bin/rer dev --stop` or a production preview
+with `~/.local/bin/rer preview --stop`.
 
 ```sh
-rer deploy --dry-run --environment production --env-file "$HOME/.config/lamp/production.env"
-rer deploy --environment production --env-file "$HOME/.config/lamp/production.env"
+~/.local/bin/rer deploy --dry-run --environment production --env-file "$HOME/.config/lamp/production.env"
+~/.local/bin/rer deploy --environment production --env-file "$HOME/.config/lamp/production.env"
 ```
 
 The dry run validates and compiles locally without contacting Cloudflare. A
 deployment validates owner inputs, provisions or reuses resources, applies
 migrations, builds and uploads the Worker with secrets, and checks application health.
-Run `rer verify` separately for the full source and browser checks; deployment does
+Run `~/.local/bin/rer verify` separately for the full source and browser checks; deployment does
 not run the verifier. The deploy ends by naming the sign-in address (your
 `LAMP_APP_HOST`). Use the same environment on later deploys.
 For terminal entry to the hosted owner account, use
-`rer signin --environment production --env-file "$HOME/.config/lamp/production.env"`
+`~/.local/bin/rer signin --environment production --env-file "$HOME/.config/lamp/production.env"`
 from the deploying checkout with the default `lamp-<environment>` resource prefix.
 It prints a private, single-use link without sending email; see
 [terminal sign-in](docs/operators-and-sign-in.md#terminal-entry-for-the-hosted-owner)
 for custom prefixes and other prerequisites.
 To retire an installation, see the [removal command and record limits](docs/deploy.md#remove-an-installation).
 
-Before `rer verify`, stop the active development server or production preview
+Before `~/.local/bin/rer verify`, stop the active development server or production preview
 with the corresponding command above. A passing source verifier does not
 establish hosted readiness or provider delivery; record each installation's
 acceptance evidence separately in [ACCEPTANCE.md](ACCEPTANCE.md).

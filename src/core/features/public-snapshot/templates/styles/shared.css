@@ -5,9 +5,10 @@ body { background: var(--paper); }
 .tpl { --wrap: 1296px; --gutter: 72px; --ok-ink: #1d6b48; --cell-ok: #1f5e42; --cell-partial: #dc8a34; min-height: 100vh; overflow-wrap: break-word; }
 .wrap { width: 100%; max-width: calc(var(--wrap) + 2 * var(--gutter)); margin-inline: auto; padding-inline: var(--gutter); }
 
-.tpl-brand { display: inline-flex; align-items: center; gap: 16px; min-width: 0; color: var(--ink); font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -.02em; text-decoration: none; }
-.tpl-brand span { overflow-wrap: anywhere; }
+.tpl-brand { display: inline-flex; align-items: center; gap: 16px; min-width: 0; max-width: 100%; color: var(--ink); font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -.02em; text-decoration: none; }
+.tpl-brand span { min-width: 0; overflow-wrap: anywhere; }
 .tpl-mark { width: 44px; height: 44px; flex: none; object-fit: contain; }
+.tpl-logo { display: block; width: auto; height: 36px; max-width: min(180px, 45vw); flex: 0 1 auto; min-width: 0; object-fit: contain; }
 .tpl-tagline { margin: 0; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; }
 
 .tpl-subscribe { display: flex; align-items: center; min-width: 0; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--card); padding: 3px; }

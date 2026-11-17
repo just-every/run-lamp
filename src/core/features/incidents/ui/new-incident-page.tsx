@@ -4,7 +4,7 @@ import { useId, useState } from "react";
 import { INCIDENT_LIFECYCLES, type IncidentLifecycle } from "../../../shared/domain";
 import { Button } from "../../../app/client/ui/button";
 import { FormError } from "../../../app/client/ui/states";
-import { fromPageDateTime, toPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
+import { TimezoneHint, fromPageDateTime, toPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
 import { ComponentRelationships, NewIncidentComponents, relationshipSummary } from "./affected-components";
 import { IncidentPreview } from "./incident-preview";
 import { NextUpdateField } from "./next-update-field";
@@ -71,7 +71,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
           </fieldset>
           <OptionalText id={stillWorksId} label="What still works" value={update.whatStillWorks} max={250} shown={shownFields.whatStillWorks} onChange={(value) => setUpdate("whatStillWorks", value)} />
           <OptionalText id={detailsId} label="Details" value={update.details} max={500} shown={shownFields.details} onChange={(value) => setUpdate("details", value)} />
-          <div className="form-label option-text" hidden={!shownFields.openedAt && !form.openedAt && !openedAtError}><label htmlFor={openedAtId}>Opened at</label><input id={openedAtId} type="datetime-local" value={toPageDateTime(form.openedAt, timezone)} onChange={(event) => { try { setForm(current => ({ ...current, openedAt: fromPageDateTime(event.target.value, timezone) })); setOpenedAtError(null); } catch (cause) { setOpenedAtError((cause as Error).message); } }} /><small>When it started, if earlier. Times in {timezone}.</small>{openedAtError ? <FormError>{openedAtError}</FormError> : null}</div>
+          <div className="form-label option-text" hidden={!shownFields.openedAt && !form.openedAt && !openedAtError}><label htmlFor={openedAtId}>Opened at</label><input id={openedAtId} type="datetime-local" value={toPageDateTime(form.openedAt, timezone)} onChange={(event) => { try { setForm(current => ({ ...current, openedAt: fromPageDateTime(event.target.value, timezone) })); setOpenedAtError(null); } catch (cause) { setOpenedAtError((cause as Error).message); } }} /><small>When it started, if earlier. <TimezoneHint timezone={timezone} at={form.openedAt} />.</small>{openedAtError ? <FormError>{openedAtError}</FormError> : null}</div>
           {update.lifecycle === "Resolved" ? <p className="resolution-note" role="status">Resolved: no next update.</p> : <NextUpdateField value={update.nextUpdateAt} timezone={timezone} onChange={(value) => setUpdate("nextUpdateAt", value)} onError={(message) => setTimeErrors(current => ({ ...current, nextUpdate: message }))} />}
           {error ? <FormError>{error}</FormError> : null}
         </form>

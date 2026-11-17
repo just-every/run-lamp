@@ -1,11 +1,6 @@
 # First run and sign-in
 
-After installing Lamp, open the local owner entry address from `rer dev` or the
-operator hostname of your deployment. On a new installation, `/setup` asks for
-your website. Lamp reads that page once and fills in the page name, tagline,
-mark, accent color and first components from it, with the time zone from your
-browser. Check the card, change anything, and open Lamp. If Lamp cannot read the
-site, or you skip it, the page starts with plain defaults.
+After installing Lamp, open your owner entry link. Setup reads your website and lets you choose what to call your page and which time zone to use. It keeps your saved time zone, with a suggestion from your browser only when the saved zone is invalid. Search by city to change it. Your page name appears in your workspace, tab and sign-in card; change it in Settings → Page. You can upload a wide logo and a separate optional square icon there, or during setup. Maintenance forms use your chosen local time and link back to that setting. — sd, 2026-11-17.
 
 If your site links to a status page you run on Statuspage, Instatus or Better
 Stack, or one that names your site answers at `status.<your domain>`, the card takes that page's own

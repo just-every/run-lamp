@@ -12,7 +12,7 @@ function shownSession(load: unknown): { shown?: OperatorSessionView } {
 }
 
 export const Route = createFileRoute("/app")({
-  head: () => ({ links: appIconLinks }),
+  head: ({ loaderData }: { loaderData?: OperatorSessionView }) => ({ links: appIconLinks, meta: [{ title: loaderData?.pageName?.trim() ? `${loaderData.pageName} · Lamp` : "Lamp" }] }),
   // While /app stays open its session is read again only for another screen, never for a move that stays on the
   // screen (a Settings tab, Back between tabs, the screen's own link). A read again that fails (offline) keeps the
   // session on show, so the open page and its typed edits stay in place of the router's error page; the new screen

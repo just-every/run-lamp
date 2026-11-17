@@ -1,3 +1,4 @@
+import { chooseSetupBranding, checkPublishedBranding, renamePage, scheduleLocalMaintenance, captureSetupScreen } from './helpers/setup-page-branding.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
@@ -124,7 +125,10 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     assert.equal(await row('page name').innerText(), 'Acme Tracking Status');
     assert.equal(await row('tagline').innerText(), "Acme Tracking keeps your team's hours in one place.");
     assert.equal(await row('accent colour').innerText(), '#0F7B6C');
-    assert.equal(await page.locator('[data-found="time zone"]').count(), 0, 'setup does not ask for the time zone: the page takes the browser\'s');
+    const timezone = page.getByRole('combobox', { name: 'Which time zone are you in?' });
+    assert.equal(await timezone.inputValue(), 'Universal time', 'setup keeps valid saved UTC even when the browser is in New York');
+    await timezone.fill('Toronto');
+    await page.getByRole('option', { name: /^Toronto / }).click();
     // Its real components replace the navigation's guesses, labelled with where they came from, in its own groups.
     assert.equal(await label('components').textContent(), 'Components (8 from status.acme-tracking.com)');
     const groups = async () => page.locator('[data-found="components"] .found-groups > div').evaluateAll(blocks => blocks.map(block => [block.querySelector('.found-group').textContent, [...block.querySelectorAll('li')].map(item => item.textContent)]));
@@ -149,6 +153,8 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     assert.deepEqual(await groups(), edited);
     assert.equal(await label('components').textContent(), 'Components (8 from status.acme-tracking.com)');
     await history.check();
+    await chooseSetupBranding(page);
+    await captureSetupScreen(page, 'setup-details');
     // Reloading restores both the read and the owner's edits and choice without another network read.
     const readsBeforeReload = requests.length;
     await page.reload();
@@ -164,10 +170,12 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
       throw cause;
     });
     await page.getByRole('region', { name: 'Your public page' }).waitFor();
+    assert.equal(await page.locator('.app-brand span').innerText(), (await (await nativeRequest('/api/app/page-settings', { cookie })).json()).settings.pageName);
+    assert.equal(await page.title(), `${await page.locator('.app-brand span').innerText()} · Lamp`);
 
     const api = async path => (await nativeRequest(path, { cookie })).json();
     const { settings } = await api('/api/app/page-settings');
-    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'UTC']);
+    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'America/Toronto']);
     assert.ok(settings.logoKey, 'the mark became the page logo');
     const { components } = await api('/api/app/components');
     const byGroup = edited.map(([group, names]) => [group === 'Other services' ? null : group, names]);
@@ -200,12 +208,20 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     const logo = await fetch(`${publicOrigin}/assets/logo`, { headers: devKeyHeaders });
     assert.equal(logo.headers.get('content-type'), 'image/png');
     assert.ok((await logo.arrayBuffer()).byteLength, 'the stored logo remains readable');
+    assert.equal(settings.themeAssetAvailability.icon, true);
+    await checkPublishedBranding(context, publicOrigin);
     assert.equal(requests.some(path => path.includes('ran-a-script')), false, 'nothing on the site ran');
     assert.ok(requests.every(path => /^(redirect\.example\.com|blocked\.example\.com|acme-tracking\.com|www\.acme-tracking\.com|status\.acme-tracking\.com)\//.test(path)), 'every read went to the named site or its linked status page');
 
+    await renamePage(page, origin);
+    await scheduleLocalMaintenance(page, origin, context, publicOrigin);
     // The saved first-run choice belongs to this installation, not its old
     // browser session. A new local owner entry opens the workspace directly.
     assert.equal((await nativeRequest('/api/app/session/signout', { cookie, method: 'POST', json: {} })).status, 204);
+    await page.goto(origin + '/signin');
+    await page.getByRole('heading', { name: 'Sign in to Brightwell Support', exact: true }).waitFor();
+    assert.equal(await page.title(), 'Brightwell Support · Lamp');
+    await captureSetupScreen(page, 'sign-in-name');
     const returning = await signInAs({ origin, key: devKey });
     await context.addCookies(returning.cookies.map(value => ({ ...value, url: origin })));
     await page.goto(origin + returning.location);

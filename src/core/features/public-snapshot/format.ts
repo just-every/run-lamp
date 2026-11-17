@@ -1,3 +1,4 @@
+import { zoneLabel } from "../../shared/timezone-label";
 export const MINUTE = 60_000;
 
 export const DAY = 86_400_000;
@@ -56,11 +57,7 @@ export function formatTime(value: string, timezone: string) {
 }
 
 export function timezoneLabel(timezone: string) {
-  const label = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "long" })
-    .formatToParts(new Date())
-    .find((part) => part.type === "timeZoneName")?.value;
-  if (!label) throw new Error("A public timezone label is invalid.");
-  return `${label} (${timezone})`;
+  return zoneLabel(timezone);
 }
 
 export function timestamp(value: string, timezone: string) {
@@ -98,4 +95,16 @@ export function localMidnight(day: string, timezone: string) {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date(approximate));
   const part = (kind: string) => Number(parts.find((entry) => entry.type === kind)?.value ?? 0);
   return approximate + (approximate - Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute")));
+}
+
+export function maintenanceTimeRange(startsAt: string, endsAt: string, timezone: string) {
+  const start = validDate(startsAt), end = validDate(endsAt);
+  const universal = ["UTC", "Etc/UTC", "Etc/GMT"].includes(timezone);
+  const date = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric" }).format(at);
+  const clock = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "2-digit", minute: "2-digit", ...(universal ? { hourCycle: "h23" } as const : { hour12: true }) }).format(at);
+  const zone = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "short" }).formatToParts(at).find(part => part.type === "timeZoneName")!.value;
+  const sameDay = dayKey(start.getTime(), timezone) === dayKey(end.getTime(), timezone);
+  const startText = `${date(start)}, ${clock(start)}${zone(start) !== zone(end) ? ` ${zone(start)}` : ""}`;
+  const endText = `${sameDay ? "" : `${date(end)}, `}${clock(end)} ${universal ? "UTC" : zone(end)}`;
+  return `<time datetime="${escapeHtml(startsAt)}">${escapeHtml(startText)}</time> – <time datetime="${escapeHtml(endsAt)}">${escapeHtml(endText)}</time>`;
 }

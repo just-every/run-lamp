@@ -6,6 +6,7 @@ export interface BrandSnapshot {
   settings: { logoKey: string | null; pageName: string };
   overall: ComponentState;
   logoDataUrl: string | null;
+  iconDataUrl?: string | null;
 }
 
 // The public page's state colours (styles/foundation.css), so the favicon dot matches the page's chips.
@@ -24,8 +25,9 @@ export function renderBrandSvg(model: BrandSnapshot, kind: "favicon" | "og" | "m
   const width = square ? 128 : 1200;
   const height = square ? 128 : 630;
   if (settings.logoKey && !model.logoDataUrl) throw new Error("Configured logo data is unavailable for public branding.");
-  const mark = model.logoDataUrl
-    ? `<image href="${escapeXml(model.logoDataUrl)}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" opacity=".95"/>`
+  const artwork = square ? model.iconDataUrl : model.logoDataUrl;
+  const mark = artwork
+    ? `<image href="${escapeXml(artwork)}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/>`
     : `<rect width="100%" height="100%" fill="${square ? INK : "#f8f6f0"}"/><text x="${square ? 18 : 70}" y="${square ? 80 : 300}" fill="${square ? "#fbfaf5" : INK}" font-family="system-ui,sans-serif" font-size="${square ? 62 : 120}" font-weight="600">${escapeXml(settings.pageName.slice(0, 1).toUpperCase())}</text>`;
   const label = square ? "" : `<rect x="50" y="${height - 156}" width="1100" height="106" rx="18" fill="${INK}" fill-opacity=".92"/><text x="88" y="${height - 88}" fill="#fbfaf5" font-family="system-ui,sans-serif" font-size="50" font-weight="600">${escapeXml(`${settings.pageName}: ${overall}`)}</text>`;
   const radius = kind === "favicon" ? 23 : 62;
