@@ -76,6 +76,9 @@ export async function maintenanceIdentityFlow(j, component, maintenance, input, 
     await j.json('/api/app/page-settings', 'PUT', { ...settings, template });
     const html = await eventually(() => j.publicText('/'), body => body.includes(`data-template="${template}"`) && body.includes(incident.title) && body.includes(maintenance.title), `${template} separates the two record kinds`);
     assertSeparateRecords(html, incident, maintenance, 'tl-body');
+    const customerNotice = text(recordContaining(html, maintenance.title, 'tl-body'));
+    for (const value of [input.affectedAudience, input.customerImpact]) assert.ok(customerNotice.includes(value), 'each template preserves the customer wording');
+    assert.ok(!customerNotice.includes(maintenance.reference), 'each template hides internal maintenance references');
   }
   await j.json('/api/app/page-settings', 'PUT', settings);
   await eventually(() => j.publicText('/'), body => body.includes('class="incident"') && body.includes(incident.title), 'restore the original public layout');

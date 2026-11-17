@@ -1,3 +1,4 @@
+import { maintenanceNoticeBody } from "../record-markup";
 import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
 import { themeChrome } from "../theme-rendering";
 import type { PublicSnapshotModel } from "../renderer";
@@ -193,8 +194,8 @@ export function maintenanceWindow(item: PublicMaintenance, timezone: string) {
   return `<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${item.state === "Scheduled" ? "Planned" : "In progress"} · ${when(item.startsAt, timezone)} – ${when(item.endsAt, timezone, item.startsAt)}</p>`;
 }
 
-export function maintenanceNotices(item: PublicMaintenance, timezone: string) {
+export function maintenanceNotices(item: PublicMaintenance, timezone: string, currentNoticeId?: string) {
   // The window's own times already say it is planned or under way; later notices say what changed.
-  const notices = [...item.notices.filter((notice) => !["scheduled", "reminder", "started"].includes(notice.kind.toLowerCase())), ...(item.importedUpdates ?? []).map((update) => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).slice(0, 3);
-  return notices.map((notice) => `<li><p class="tpl-meta">${escapeHtml(notice.kind.charAt(0).toUpperCase() + notice.kind.slice(1))} · ${when(notice.publishedAt, timezone)}</p>${notice.body ? `<p class="tpl-said">${renderUpdateHtml(notice.body)}</p>` : ""}</li>`).join("");
+  const notices = [...item.notices.filter((notice) => notice.id !== currentNoticeId && !["scheduled", "reminder", "started"].includes(notice.kind.toLowerCase())), ...(item.importedUpdates ?? []).map((update) => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).slice(0, 3);
+  return notices.map((notice) => `<li><p class="tpl-meta">${escapeHtml(notice.kind.charAt(0).toUpperCase() + notice.kind.slice(1))} · ${when(notice.publishedAt, timezone)}</p>${maintenanceNoticeBody(notice, item)}</li>`).join("");
 }

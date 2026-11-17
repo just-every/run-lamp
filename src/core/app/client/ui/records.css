@@ -149,3 +149,8 @@
 .incident-subscribers-card th, .incident-subscribers-card td small, .subscriber-table-card .incident-subscriber-row td small { font-size: 13px; }
 .incident-subscribers-card td::before, .subscriber-table-card .incident-subscriber-row td::before { font-size: 13px; }
 .incident-subscribers-card .state-pill, .subscriber-table-card .incident-subscriber-row .state-pill { font-size: 13px; }
+
+.maintenance-cancellation { grid-column: 1 / -1; width: 100%; }
+.maintenance-cancellation-form { display: grid; gap: 12px; min-width: 0; }
+.maintenance-cancellation-form h4, .maintenance-cancellation-form p { margin: 0; }
+.maintenance-cancellation-form .form-actions { flex-wrap: wrap; justify-content: flex-start; }

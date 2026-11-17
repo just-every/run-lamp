@@ -29,6 +29,8 @@ SELECT 'maintenance-reminder:' || m.id,'maintenance-reminder',m.reference || ': 
 FROM maintenance m LEFT JOIN oa_operators o ON o.id=m.created_by_operator_id AND o.status='active'
 CROSS JOIN follow_up_clock c WHERE m.state='Scheduled' AND julianday(m.starts_at)>julianday(c.now)
   AND NOT EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind='reminder')
+  AND EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind IN ('scheduled','rescheduled'))
+  AND NOT EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind IN ('scheduled','rescheduled') AND julianday(n.published_at)>=julianday(m.starts_at,'-24 hours'))
 UNION ALL
 SELECT 'maintenance-overrun:' || m.id,'maintenance-overrun',m.reference || ': maintenance overrun — ' || m.title,
   o.id,o.display_name,strftime('%Y-%m-%dT%H:%M:%fZ',m.ends_at,'+15 minutes'),

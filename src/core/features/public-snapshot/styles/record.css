@@ -36,8 +36,9 @@
 .maintenance-notice .update-head strong::first-letter { text-transform: uppercase; }
 .update-head span { color: var(--ink-3); font-size: 13px; }
 .update dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; margin: 10px 0 0; }
-.update dt { color: var(--ink-3); font-size: 13px; font-weight: 500; }
-.update dd { margin: 2px 0 0; color: var(--ink); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
+.update dt, .maintenance-notice dt { color: var(--ink-3); font-size: 13px; font-weight: 500; }
+.update dd, .maintenance-notice dd { margin: 2px 0 0; color: var(--ink); font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; white-space: pre-wrap; }
+.maintenance-notice dl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 10px 0 0; }
 .maintenance-notice p { margin: 6px 0 0; color: var(--ink); font-size: 14px; overflow-wrap: anywhere; }
 .incident > .text-link { margin-top: 20px; }
 
