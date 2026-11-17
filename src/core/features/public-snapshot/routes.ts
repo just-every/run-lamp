@@ -5,7 +5,7 @@ import type { Context, Hono } from "hono";
 import { createTrafficStorage } from "../traffic-alerts/storage";
 import type { TrafficSurface } from "../traffic-alerts/surfaces";
 import type { AppEnv } from "../../app/types";
-import { escapeHtml } from "./format";
+import { escapeHtml, escapeXml } from "./format";
 import { applyPublicIsolationHeaders } from "./headers";
 import type { PublicSnapshotService } from "./service";
 import { nativeApiArtifact } from "./native-api";
@@ -66,16 +66,28 @@ async function labelledStaleResponse(cached: Response, artifact: string) {
   headers.delete("ETag");
   headers.set("Warning", '110 - "Response is stale"');
   const contentType = headers.get("Content-Type") ?? "";
+  const message = `Last known state — content generated at ${headers.get("X-Lamp-Snapshot-Generated-At") ?? "unknown"}; current state could not be verified.`;
   if (contentType.includes("text/html")) {
-    const body = (await cached.clone().text()).replace(/<body([^>]*)>/i, `<body$1><aside role="status" aria-live="polite" class="snapshot-stale">Last known state — content generated at ${headers.get("X-Lamp-Snapshot-Generated-At") ?? "unknown"}; current state could not be verified.</aside>`);
-    return new Response(body, { status: cached.status, headers });
+    // Parse HTML rather than reconstructing a tag with a regular expression:
+    // a quoted attribute can itself contain a closing angle bracket.
+    return new HTMLRewriter().on("body", {
+      element(element) {
+        element.prepend(`<aside role="status" aria-live="polite" class="snapshot-stale">${escapeHtml(message)}</aside>`, { html: true });
+      },
+    }).transform(new Response(cached.body, { status: cached.status, headers }));
   }
   if (contentType.includes("atom+xml")) {
-    const body = (await cached.clone().text()).replace(/<title>([^<]*)<\/title>/, `<title>$1</title><subtitle>Last known state — content generated at ${headers.get("X-Lamp-Snapshot-Generated-At") ?? "unknown"}; current state could not be verified.</subtitle>`);
+    // These feeds are generated snapshot artifacts. Preserve their title bytes
+    // whole and insert only escaped text, without matching/rebuilding XML tags.
+    const body = (await cached.clone().text()).replace("</title>", () => `</title><subtitle>${escapeXml(message)}</subtitle>`);
     return new Response(body, { status: cached.status, headers });
   }
   if (contentType.includes("rss+xml")) {
-    const body = (await cached.clone().text()).replace(/<description>[^<]*<\/description>/, `<description>Last known state — content generated at ${headers.get("X-Lamp-Snapshot-Generated-At") ?? "unknown"}; current state could not be verified.</description>`);
+    const xml = await cached.clone().text();
+    const opening = xml.indexOf("<description>");
+    const start = opening + "<description>".length;
+    const end = xml.indexOf("</description>", start);
+    const body = opening < 0 || end < 0 ? xml : xml.slice(0, start) + escapeXml(message) + xml.slice(end);
     return new Response(body, { status: cached.status, headers });
   }
   if (artifact === "status.json" && contentType.includes("application/json")) {

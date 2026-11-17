@@ -1859,3 +1859,11 @@ through client navigation to a saved setup address. Only an uncompleted install
 shows Welcome. Existing clause judgments and release metadata are unchanged.
 
 <!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
+
+## Retained snapshot labels — Run Edit Run fleet, 17 November 2026
+
+PAGE-006's Last known state notice preserves the stored document's markup and
+escaped customer wording. HTML uses the runtime parser; generated feeds retain
+their title bytes and receive an escaped label. This removes the tag-rewriting
+regular expressions reported by CodeQL alert 2 without changing the outage
+policy or claiming that a stale snapshot is current.
