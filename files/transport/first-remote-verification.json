@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-17T19:18:06Z",
+  "product": "8863365f299cc5202384df08e4bd0b49e2ef1531",
+  "evidence": "e94999df0763b5c461dace1934afa5510f483ba1",
+  "files": 49,
+  "all_remote_file_bytes_and_manifest_hashes_match": true,
+  "product_head_and_index_unchanged": true,
+  "remote_refs": [
+    "8863365f299cc5202384df08e4bd0b49e2ef1531\trefs/heads/cloud/sd-lamp-design-setup-2",
+    "e94999df0763b5c461dace1934afa5510f483ba1\trefs/heads/evidence/sd-lamp-design-setup-2"
+  ]
+}

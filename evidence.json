@@ -293,6 +293,24 @@
       "bytes": 11154,
       "path": "touched-journeys.log",
       "sha256": "8479f2089b9c3f28599ac92206c8cdbef08e187ef2a9eb50e3d4483922fb3ae8"
+    },
+    {
+      "blob": "1aac414558f58da264069ceea70e7c3607aee961",
+      "bytes": 10725,
+      "path": "transport/first-publication.json",
+      "sha256": "d691add490e35d09fa0e30f86f82325c8a52e546e4e8067caa9717ae3814458d"
+    },
+    {
+      "blob": "728ec6c349f3097b6b440ce5014ffd940d427d47",
+      "bytes": 9172,
+      "path": "transport/first-publication.log",
+      "sha256": "7f2cbf1c1b08bccee3abb5fe5c6369f6b85f566489a97eee800bfd7d14173907"
+    },
+    {
+      "blob": "b2d282e4bf243a7ce0995262bfed17181ef60b5a",
+      "bytes": 472,
+      "path": "transport/first-remote-verification.json",
+      "sha256": "fa59ea6dd29db324c87dc58031674cc0ec3d836f15f46911f8bf65bdfa48a305"
     }
   ],
   "product_branch": "cloud/sd-lamp-design-setup-2",
