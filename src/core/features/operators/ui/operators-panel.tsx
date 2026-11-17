@@ -49,11 +49,23 @@ export function OperatorsPanel() {
     try {
       const result = await appApi<{ email: "sent" | "suppressed" }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName }) });
       setNeedsConfirmation(false);
-      setEmail(""); setDisplayName(""); setMessage(result.email === "suppressed" ? "Invitation created. No email was sent on this computer." : "Invitation email sent.");
+      setEmail(""); setDisplayName(""); setMessage(result.email === "suppressed" ? `Invitation created. No email was sent on this computer. To sign in as ${displayName.trim() || "them"}, run rer dev --as ${email.trim()} in the Lamp folder.` : "Invitation email sent.");
       invited.refresh();
     } catch (cause) {
       showError(cause, "The invitation could not be sent.");
     } finally { setSaving(false); }
+  }
+
+  // Stays on this page: the confirmation link goes to the owner's email, which a local install does not send.
+  async function confirmIdentity(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true); setMessage(null);
+    try {
+      const response = await fetch("/auth/step-up", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "owner:transfer", returnTo: "/app/settings#operators" }) });
+      if (!response.ok) throw new Error("The confirmation email could not be sent. Try again in a minute.");
+      setMessage("A confirmation link is on its way to your email address. Open it in this browser, then return here and try again. No email is sent on a local install.");
+    } catch (cause) { showError(cause, "The confirmation email could not be sent."); }
+    finally { setSaving(false); }
   }
 
   async function revokeAccess(operator: StoredOperator) {
@@ -92,11 +104,9 @@ export function OperatorsPanel() {
       <h2 id="operators-title">Operators</h2>
       <p>Roles control what each operator can do. Removing access signs them out. Erasing personal data removes their name and email for good.</p>
     </div>
-    {needsConfirmation && <form className="page-stack" action="/auth/step-up" method="post">
-      <input type="hidden" name="action" value="owner:transfer" />
-      <input type="hidden" name="returnTo" value="/app/settings#operators" />
+    {needsConfirmation && <form className="page-stack" onSubmit={confirmIdentity}>
       <p>This change needs a recent email confirmation. Confirm your identity with an email link, then return here to try again.</p>
-      <Button variant="secondary">Confirm my identity</Button>
+      <Button variant="secondary" disabled={saving}>{saving ? "Sending…" : "Confirm my identity"}</Button>
     </form>}
     <form className="operators-invite-form" onSubmit={invite}>
       <label className="form-label">Email<input required type="email" value={email} placeholder="operator@example.com" onChange={(event) => setEmail(event.target.value)} /></label>

@@ -14,7 +14,7 @@ export type SingleTool = "newrelic" | "datadog" | "uptimerobot" | "betterstack" 
 // Each tool takes Lamp's key in the address, so the address is the one thing to paste (with the body the tool must send).
 const SETUP: Record<SingleTool, string> = {
   newrelic: "In New Relic, add a workflow webhook destination with this address and custom payload. Notify on activated and closed issues.",
-  datadog: "In Datadog's Webhooks integration, add a webhook with this address and payload, then mention @webhook-<its name> in your monitor.",
+  datadog: "In Datadog, open Integrations, then Webhooks, and add a webhook named lamp-status with this address as the URL and this payload. Datadog turns the name into the handle @webhook-lamp-status: write that handle in the monitor's message, then use the monitor's Test notifications button to send the first alert.",
   uptimerobot: "In UptimeRobot, add a Webhook with this address as URL to Notify, tick Send as JSON and paste the body. Then add it to each monitor's alert contacts.",
   betterstack: "In Better Stack, add an incident webhook with this address.",
   pingdom: "In Pingdom, add a webhook integration with this address and attach it to the check.",

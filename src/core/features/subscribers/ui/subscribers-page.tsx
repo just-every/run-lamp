@@ -57,7 +57,7 @@ export function SubscribersPage() {
       {data.subscribers.length === 0 ? <EmptyState>No subscribers yet.</EmptyState> : <ListPagination label="Subscriber" offset={data.offset} shown={data.subscribers.length} hasMore={data.hasMore} onPrevious={() => setOffset((current) => Math.max(0, current - data.limit))} onNext={() => setOffset((current) => current + data.limit)} />}
     </section>
     <section className="limit-note"><Icon name="warning" width={17} height={17} />Every subscriber is available through these pages. Removing a subscriber deletes their destination and keeps only non-identifying delivery history.</section>
-    <section className="data-card"><h2>Email unsubscribe requests</h2><p>Monitor your From mailbox. When someone emails an unsubscribe request, find their destination above and choose Remove. One-click unsubscribe from a notification is processed automatically.</p><p><a href="/docs/subscribers-and-notifications#process-email-unsubscribe-requests">Unsubscribe guide</a></p></section>
+    <section className="data-card"><h2>Email unsubscribe requests</h2><p>Monitor your From mailbox. When someone emails an unsubscribe request, find their destination above and choose Remove. One-click unsubscribe from a notification is processed automatically.</p><p><a className="quiet-link" href="/docs/subscribers-and-notifications#process-email-unsubscribe-requests">Unsubscribe guide</a></p></section>
     <SubscriberImportExport onChanged={refresh} localMail={data.localMail} />
   </div>;
 }

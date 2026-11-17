@@ -263,7 +263,7 @@ export function createDeliveriesService(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
     try {
-      const response = await fetch(destination, { method: "POST", redirect: "manual", signal: controller.signal, headers: { "Content-Type": "application/json", "webhook-id": delivery.id, "webhook-timestamp": timestamp, "webhook-signature": signature }, body });
+      const response = await fetch(destination, { method: "POST", redirect: "manual", signal: controller.signal, headers: { "Content-Type": "application/json", "webhook-id": delivery.id, "webhook-timestamp": timestamp, "webhook-signature": signature }, body }).catch((cause: unknown) => { throw new Error(cause instanceof Error && cause.name === "AbortError" ? "The endpoint did not answer within 30 seconds." : "Could not reach the endpoint."); });
       if (slack) {
         const outcome = classifySlackIncomingWebhook({ status: response.status, headers: { "retry-after": response.headers.get("retry-after") ?? "" }, body: await response.text() });
         if (outcome.kind !== "accepted") throw new Error(`Slack webhook did not accept the message (${outcome.code}).`);
