@@ -11,12 +11,13 @@ export const componentSchema = z.object({
   id: recordId, name: text, description: text.nullable().optional(), state: z.enum(["operational", "degraded", "partially-degraded", "under-maintenance"]),
   parent_id: recordId.nullable().optional(), position: z.number().int().optional(), created_at: time, updated_at: time.optional(),
 }).passthrough();
-export const updateSchema = z.object({ id: recordId.optional(), content: text, state: z.string().nullable().optional(), created_at: time, updated_at: time.optional() }).passthrough();
+export const updateSchema = z.object({ id: recordId.optional(), content: text, state: z.string().nullable().optional(), created_at: time, updated_at: time.optional(), should_publish: z.boolean().optional(), published: z.boolean().optional(), url: z.string().url().optional(), link: z.string().url().optional() }).passthrough();
 export const noticeSchema = z.object({
   id: recordId, type: z.enum(["planned", "unplanned", "general"]), subject: text, state: z.string().nullable().optional(),
   created_at: time, updated_at: time.optional(), began_at: optionalTime, ended_at: optionalTime,
   begins_at: optionalTime, ends_at: optionalTime, url: z.string().url().optional(), link: z.string().url().optional(),
   components: z.array(z.object({ id: recordId }).passthrough()).optional(), component_ids: z.array(recordId).optional(),
+  should_automate_schedule: z.boolean().optional(), synopsis: text.nullable().optional(), tag_list: z.array(text).optional(),
   updates: z.array(updateSchema).optional(), latest_update: updateSchema.optional(),
 }).passthrough();
 export const subscriberSchema = z.object({

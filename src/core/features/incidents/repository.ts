@@ -1,5 +1,5 @@
 import { createOperatorRolesRepository } from '../operators/roles.repository';
-import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
+import { projectImportedIncidentUpdates, projectImportedRecordMetadata } from "../statuspage-import/imported-update.repository";
 import { publishes } from '../operators/permissions';
 import { createCommunicationOwnerRepository } from "./communication-owner.repository";
 import { createUlid } from "../../shared/ids";
@@ -28,7 +28,7 @@ import {
   incidentUpdates,
 } from "../../shared/schema";
 
-export type StoredIncident = typeof incidents.$inferSelect;
+export type StoredIncident = typeof incidents.$inferSelect & { sourceMetadata?: Record<string, unknown> };
 export type StoredIncidentComponent = typeof incidentComponents.$inferSelect;
 export type StoredIncidentDraft = typeof incidentDrafts.$inferSelect;
 export type StoredIncidentUpdate = typeof incidentUpdates.$inferSelect;
@@ -116,7 +116,10 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
   return {
     communicationOwners: createCommunicationOwnerRepository(binding),
     loadRecoverySnapshot: (incidentId) => loadRecoverySnapshot(binding, incidentId),
-    listPage: (query) => listIncidentPage(binding, query),
+    async listPage(query) {
+      const page = await listIncidentPage(binding, query);
+      return { ...page, incidents: await projectImportedRecordMetadata(binding, "incidents", page.incidents) };
+    },
     listRelations: (incidentIds) => listIncidentRelations(binding, incidentIds),
     previewComponentChange: (incidentId, componentId) => previewComponentChange(binding, incidentId, componentId),
     async attachComponent(claim, recipients) {
@@ -138,11 +141,11 @@ export function createIncidentRepository(binding: D1Database): IncidentRepositor
       ]);
     },
     async listIncidents() {
-      return database.select().from(incidents).where(isNull(incidents.deletedAt)).orderBy(desc(incidents.openedAt)).all();
+      return projectImportedRecordMetadata(binding, "incidents", await database.select().from(incidents).where(isNull(incidents.deletedAt)).orderBy(desc(incidents.openedAt)).all());
     },
     async findIncident(incidentId) {
       const incident = await database.select().from(incidents).where(and(eq(incidents.id, incidentId), isNull(incidents.deletedAt))).get();
-      return incident ?? null;
+      return incident ? (await projectImportedRecordMetadata(binding, "incidents", [incident]))[0] : null;
     },
     async listComponents(incidentId) {
       return database.select().from(incidentComponents).where(eq(incidentComponents.incidentId, incidentId)).all();
