@@ -1,0 +1,79 @@
+{
+  "author": "Run Edit Run fleet",
+  "recordedAt": "2026-11-17T22:33:48.759670+00:00",
+  "scope": "Sorry source notice normalization, source automation, historical metadata, markup and portable full wording",
+  "checks": [
+    {
+      "command": ". /tmp/rer-cloud-toolchain.sh; pnpm typecheck",
+      "status": "passed",
+      "observedExit": 0
+    },
+    {
+      "command": "cloud_run node --test --test-name-pattern='MAINT-015 \u2014 Sorry maintenance labels' tests/e2e/sorry-import.test.mjs",
+      "status": "passed",
+      "registrations": 1,
+      "durationMs": 14260.947839
+    },
+    {
+      "command": "cloud_run node --test tests/e2e/sorry-documented-export.test.mjs tests/e2e/sorry-import.test.mjs",
+      "status": "failed",
+      "passed": 4,
+      "failed": 1,
+      "failure": "Main lifecycle test calls built-worker scripts/sorry-receipt.mjs; native reconciliation assertion failed while dist/server/wrangler.json predated current mapping/default columns. Source-runtime generated fixture/census/repeat/undo, keyless capture and frozen automation tests passed. Final rebuilt-artifact rerun pending."
+    },
+    {
+      "command": "cloud_run timeout 600 node --test --test-concurrency=1 tests/e2e/sorry-import.test.mjs",
+      "status": "passed",
+      "observedExit": 0,
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "durationMs": 169657.37285,
+      "builtWorkerArtifact": "dist/server/wrangler.json",
+      "builtWorkerArtifactMtimeUtc": "2026-11-17T22:27:24.921426Z",
+      "log": "SORRY-IMPORT.log",
+      "logSha256": "fc1d75df6e9a4632d77baa7fc51aef7c8ee33b6c95b88a331a5bb13631a8cb67",
+      "notes": "Built production Worker receipt, owner move-in/repeat/catch-up/conditional undo/erasure, source capture and frozen source automation all passed. Earlier reconciliation failure resolved by rebuilding candidate; no test assertion removed."
+    },
+    {
+      "command": "cloud_run timeout 180 node --test --test-name-pattern='MAINT-015 \u2014 Sorry maintenance labels' tests/e2e/sorry-import.test.mjs",
+      "status": "passed",
+      "observedExit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "durationMs": 11020.09323,
+      "log": "MAINT-final.log",
+      "logSha256": "cff62aea1b5f8e87022007d9fba3e8dc10174ade2e8d08306739e199e69ee791",
+      "sourceChangeAfterFullSuite": "Sorry maintenance with unknown actual start no longer creates historical claim at scheduled startsAt. Running unknown start is observed at import, completed unknown start creates no inferred interval; source actual start null remains exposed. Other providers unchanged.",
+      "notes": "Existing frozen-clock registration extended with running/completed missingbegan cases and native claim-time assertions. Parent rebuild follows."
+    }
+  ],
+  "generatedPublicResult": {
+    "sourceComponents": 56,
+    "nativeGroups": 4,
+    "nativeComponents": 52,
+    "sourceNotices": 53,
+    "nativeIncidents": 43,
+    "nativeMaintenance": 10,
+    "sourceUpdates": 106,
+    "nativeUpdates": 106,
+    "fieldLedger": 3680,
+    "outcomes": {
+      "mapped": 826,
+      "changed": 1361,
+      "raw-only": 1493,
+      "deleted": 0,
+      "refused": 0
+    },
+    "unexplainedDifferences": 0,
+    "repeatUnchanged": true,
+    "undoRestoredExceptReservedReferences": true,
+    "silent": true
+  },
+  "automationProof": "Frozen2035-01-01T12:00Z; future and running should_automate_schedule=false keep autoStart/autoComplete false after advancing3hours; neither source window transitions or publishes lifecycle notices. Past/canceled windows remain silent. Only the two normal owner due/overrun alerts occur after clock advance; no subscriber delivery is queued. Repeat and undo include switch sidecars. Final timing case: a running source with began_at absent records only the import observation instant; a completed source with no actual start contributes no inferred maintenance claim interval. Supplied actual start remains11:07 while scheduled start11:00, and source metadata retains null where absent.",
+  "markupProof": "Documented generator hostile notice2001 in authenticated/public modes; public history and incident keep plain customer words and HTTPS link with no script content or raw tags. loadPlans confirms original source markup retained in raw source record. Separate browser proof covers recent feeds and both widths.",
+  "sourceDefaults": "Missing Sorry authored lifecycle remains null labeled metadata and display lifecycle is projected; missing source automation defaults off; published:false/private access remains refused.",
+  "workingTreeHeadAtCheck": "96794ba126e1cf93642760b65a92a02541221045",
+  "sourceFrozenAtCheck": true
+}

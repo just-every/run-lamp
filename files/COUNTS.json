@@ -1,0 +1,61 @@
+{
+  "before": {
+    "partial": 124,
+    "done": 60,
+    "missing": 48
+  },
+  "after": {
+    "partial": 124,
+    "done": 60,
+    "missing": 48
+  },
+  "targetStatuses": {
+    "MOVE-001": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-002": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-003": {
+      "before": "done",
+      "after": "done"
+    },
+    "MOVE-004": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-005": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "COMP-002": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "COMP-009": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MAINT-015": {
+      "before": "missing",
+      "after": "missing"
+    },
+    "HIST-008": {
+      "before": "done",
+      "after": "done"
+    }
+  },
+  "statusEdits": {},
+  "sourceFixture": {
+    "componentRows": 56,
+    "nativeComponents": 52,
+    "nativeGroups": 4,
+    "noticeRows": 53,
+    "nativeIncidents": 43,
+    "nativeMaintenance": 10,
+    "sourceAndNativeUpdates": 106,
+    "unexplainedDifferences": 0
+  }
+}

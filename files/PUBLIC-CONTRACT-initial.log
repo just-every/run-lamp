@@ -1,0 +1,84 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ HIST-008 — reviewed imported history stays completely browsable without scripts (13320.362059ms)
+Lamp could not rebuild its public page for this release. Error: Configured logo object is missing from object storage.
+    at prepare2 (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:92590:54)
+    at async rebuildOne (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:92618:24)
+    at async Object.retryPendingBuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:92790:11)
+    at async file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:96386:60
+    at async publication3 (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:95729:11)
+    at async Promise.all (index 0)
+    at async Object.check (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:95744:40)
+    at async Promise.all (index 0)
+    at async file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:95674:41
+    at async dispatch2 (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:52559:17)
+✔ PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch (27600.582291ms)
+✖ UPTIME-003 — newly observed services report only their recorded coverage (6977.24725ms)
+PUBLIC_SELECTION records=50 unique=50 expected=50 pages=1 private_disclosures=0
+Component read: opening emitted Worker
+✔ HIST-001 — completed native records retain their month, window, components and complete publication inventory (51420.249347ms)
+Component read: owner signed in
+Component read: 54 native corrections committed
+Component read: native paging and Cron passed
+✖ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (59908.083406ms)
+✔ DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control (49727.512412ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 3
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 212426.676035
+
+✖ failing tests:
+
+test at tests/e2e/public-contract.test.mjs:24:1
+✖ HIST-008 — reviewed imported history stays completely browsable without scripts (13320.362059ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at TestContext.browsableHistoryFlow (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/tests/e2e/helpers/browsable-history-flow.mjs:75:30) {
+    name: 'Error',
+    log: []
+  }
+
+test at tests/e2e/public-contract.test.mjs:28:1
+✖ UPTIME-003 — newly observed services report only their recorded coverage (6977.24725ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at TestContext.shortHistoryFlow (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/tests/e2e/helpers/short-history-flow.mjs:29:30) {
+    name: 'Error',
+    log: []
+  }
+
+test at tests/e2e/public-contract.test.mjs:303:1
+✖ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (59908.083406ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     npx playwright install                                 ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at widgetVariantsJourney (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/tests/e2e/public-contract.test.mjs:173:30)
+      at async TestContext.<anonymous> (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/tests/e2e/public-contract.test.mjs:305:3) {
+    name: 'Error',
+    log: []
+  }

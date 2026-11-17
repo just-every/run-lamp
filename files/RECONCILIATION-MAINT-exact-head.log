@@ -1,0 +1,20 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral (9128.955485ms)
+ℹ PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ MOVE-001 Move in explains how Sorry component rows arrive as components and groups (17881.079827ms)
+ℹ PROBE: 16 source component rows -> 14 components + 2 groups (a parent row is shown once, as its children's group); unmapped warnings 0
+ℹ PROBE: mixed parent/child selection affects only listed children; parent alone includes its group; malformed end uses latest authored resolution and discloses it; absent or pre-start resolution still refuses
+ℹ PROBE: recursive groups reconcile once with full original metadata; repeat is stable; undo keeps edited groups, their ancestry and an owner-created child
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30099.834768

@@ -1,0 +1,18 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "redactions": [
+    {
+      "file": "CI-job-134430179574.log",
+      "environmentLinesRemoved": 3,
+      "failureDiagnosticsPreserved": true,
+      "URLQueriesRemoved": true
+    },
+    {
+      "file": "CI-job-134430354544.log",
+      "environmentLinesRemoved": 3,
+      "failureDiagnosticsPreserved": true,
+      "URLQueriesRemoved": true
+    }
+  ]
+}

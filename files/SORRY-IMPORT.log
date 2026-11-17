@@ -1,0 +1,29 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+▶ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+  ✔ unchanged Business plan skips preparation (1.207206ms)
+  ✔ apply answers before rebuilding the public page (1658.253524ms)
+Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+    at runtime.services.publicSnapshots.rebuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:96656:67)
+  ✔ undo answers before rebuilding the public page (745.314766ms)
+Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+    at runtime.services.publicSnapshots.rebuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2/run-lamp/script-0.mjs:96656:67)
+✔ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow (101196.711402ms)
+ℹ PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+ℹ PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+ℹ PROBE move-in deadline: first/unchanged Business plans prepare 1/0 times
+ℹ PROBE move-in deadline: changed Business bundle prepares 1 time
+ℹ PROBE move-in deadline: apply answered with the rebuild held; injected background failure recovered through native scheduled retry
+ℹ PROBE move-in deadline: undo answered with the rebuild held; injected background failure recovered through native scheduled retry
+✔ MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers (49111.714203ms)
+✔ MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral (17304.142608ms)
+ℹ PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 169657.37285

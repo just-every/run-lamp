@@ -1,0 +1,22 @@
+{
+  "calls": 2,
+  "lastCallEpoch": 1794955491.2982633,
+  "runs": [
+    {
+      "id": 44192175982,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44192175982",
+      "event": "push",
+      "created_at": "2026-11-17T22:39:30Z"
+    }
+  ],
+  "lastResult": {
+    "conclusion": "failure",
+    "head_sha": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44192175982",
+    "status": "completed"
+  }
+}

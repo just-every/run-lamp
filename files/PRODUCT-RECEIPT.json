@@ -1,0 +1,201 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2",
+  "head": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+  "base": "96794ba126e1cf93642760b65a92a02541221045",
+  "pr": {
+    "base": "main",
+    "head": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+    "html_url": "https://github.com/just-every/run-lamp/pull/414",
+    "number": 414
+  },
+  "recordedAt": "2026-11-17T22:58:17.082888+00:00",
+  "productPush": {
+    "status": "pushed",
+    "attempts": 1,
+    "log": "PUSH.log"
+  },
+  "identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "candidateCommits": 2,
+    "trailers": []
+  },
+  "generatedViews": "Excluded and restored from origin/main; exact candidate view check differs only in ACCEPTANCE.md; lander regenerates.",
+  "localChecks": [
+    {
+      "check": "Ordered build checks",
+      "result": "passed",
+      "log": "BUILD-final.log",
+      "bytes": 505940,
+      "sha256": "6aade7bc0dd52b4ce4113a6530957b1b7306722045dd82d88a0099f90c6e9d96"
+    },
+    {
+      "check": "Documented synthetic export on exact committed head",
+      "result": "passed:2/2",
+      "log": "DOCUMENTED-EXPORT-exact-head.log",
+      "bytes": 1431,
+      "sha256": "51bbe22c4e95a8a0b791aca523babcef8eab868e5bb460e02f35ebea15fd7488"
+    },
+    {
+      "check": "Recursive reconciliation/catch-up/undo",
+      "result": "passed:1/1",
+      "log": "RECONCILIATION.log",
+      "bytes": 866,
+      "sha256": "dc905111d31d8cb6c254abe2b0e8af32edfc969c524f075e1d443ff0976b9413"
+    },
+    {
+      "check": "Full Sorry move-in lifecycle including nested subtests",
+      "result": "passed:6/6",
+      "log": "SORRY-IMPORT.log",
+      "bytes": 2488,
+      "sha256": "fc1d75df6e9a4632d77baa7fc51aef7c8ee33b6c95b88a331a5bb13631a8cb67"
+    },
+    {
+      "check": "Final frozen-clock actual-start handling",
+      "result": "passed:1/1",
+      "log": "MAINT-final.log",
+      "bytes": 527,
+      "sha256": "cff62aea1b5f8e87022007d9fba3e8dc10174ade2e8d08306739e199e69ee791"
+    },
+    {
+      "check": "Native portability/erasure",
+      "result": "passed:1/1",
+      "log": "PAGE-DATA.log",
+      "bytes": 358,
+      "sha256": "cb61c080aa2ee5d56dd2cd69d0c18b3f763fdc99ef8a46df5c8ec3d8ba431421"
+    },
+    {
+      "check": "Both-width changed public screens and actual feed readers",
+      "result": "passed:1/1",
+      "log": "CUTOVER-BROWSER.log",
+      "bytes": 1002,
+      "sha256": "9fa0d8ad4e3f455c639ebd6658b8d07bfce1659eefde0ef711ee684c3e30fe41"
+    },
+    {
+      "check": "Three corrected Chromium regression registrations",
+      "result": "passed:3/3",
+      "log": "PUBLIC-CONTRACT.log",
+      "bytes": 5808,
+      "sha256": "408317850bc3b7dad86f48f6f227f4682e8586ab9f32a3ef62727359f2984a0f"
+    },
+    {
+      "check": "Other three public regression registrations",
+      "result": "passed:3/3; browser paths retried correctly in PUBLIC-CONTRACT.log",
+      "log": "PUBLIC-CONTRACT-initial.log",
+      "bytes": 7057,
+      "sha256": "50b2211c8ad099f07b13669a7a3ea4b8f0d5955168c16a617f6c82e090946f35"
+    },
+    {
+      "check": "Recursive reconciliation and final maintenance timing on exact committed head",
+      "result": "passed:2/2",
+      "log": "RECONCILIATION-MAINT-exact-head.log",
+      "bytes": 1278,
+      "sha256": "1c9a4e3a11d14db3f446c2a9216c269bf7ee7e6e263afc0d3b0cfeec3477bc39",
+      "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63"
+    },
+    {
+      "check": "Ordered build checks after nested affected-scope correction",
+      "result": "passed",
+      "log": "BUILD-nested-scope.log",
+      "bytes": 507019,
+      "sha256": "77f619b132e6fbc0636c26a1c6d5906385eae9636f7bdacad05fbc5bce1c6e47",
+      "head": null
+    },
+    {
+      "check": "Parent plus nested subgroup excludes unrelated sibling leaves through owner/public APIs",
+      "result": "passed:1/1",
+      "log": "NESTED-AFFECTED-LEAVES-final.log",
+      "bytes": 866,
+      "sha256": "243787f1e16773f66af83535506686177c4538614ad20d48c92661d62eee60a6",
+      "head": null
+    },
+    {
+      "check": "Final committed-head generated export and recursive reconciliation",
+      "result": "passed:3/3",
+      "log": "FINAL-EXACT-HEAD.log",
+      "bytes": 2180,
+      "sha256": "1dbbf75b5d30d101ced75981dd73a9c3e5b782246af7a4683f5a23c3d308e3f1",
+      "head": "564366bf4c4dfe477e841d82dd7a409564fa9c7e"
+    },
+    {
+      "check": "Final source lock checked after restoring generated views",
+      "result": "passed",
+      "log": "SOURCE-LOCK-CHECK.log",
+      "bytes": 429657,
+      "sha256": "3144032caebefa3cb4314aac1e3f17f2591bfcdd91c33de03824b6d40681d6ec",
+      "head": null
+    }
+  ],
+  "ci": {
+    "author": "Run Edit Run fleet",
+    "recordedAt": "2026-11-17T23:03:23.744987+00:00",
+    "repository": "just-every/run-lamp",
+    "branch": "cloud/sd-lamp-import-sorry-2",
+    "head": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+    "branchVerify": {
+      "id": 44193889068,
+      "status": "completed",
+      "conclusion": "failure",
+      "head_sha": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44193889068"
+    },
+    "rootFailure": {
+      "command": "node src/base/contract-docs.mjs check",
+      "file": "ACCEPTANCE.md",
+      "meaning": "Generated view differs; builder intentionally excludes lander-owned views."
+    },
+    "downstreamFailures": [
+      "Build completion artifact absent because generator check exits before build receipt",
+      "Verification aggregate missing all shards because build failed and shards skipped"
+    ],
+    "decision": "READY under explicit generated-view-only exception; actual workflow conclusion remains failure",
+    "PRVerify": {
+      "id": 44193900148,
+      "jobs": "CI-PR-JOBS.json",
+      "observed": "same completed failure/skip pattern and same failing build/aggregate steps",
+      "separateLogsRead": false,
+      "reason": "Branch failed-job logs provide exact-source root evidence; ten-call task GitHub budget exhausted."
+    },
+    "previousHeadRun": {
+      "id": 44192175982,
+      "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+      "status": "completed",
+      "conclusion": "failure",
+      "candidate": "superseded by final linear commit"
+    },
+    "manualGitHubCommands": 10,
+    "failedJobLogCommands": [
+      "gh run view 44193889068 --repo just-every/run-lamp --job 134430179574 --log-failed",
+      "gh run view 44193889068 --repo just-every/run-lamp --job 134430354544 --log-failed"
+    ],
+    "reruns": 0,
+    "dispatches": 0,
+    "localFinalExactHeadTests": {
+      "log": "FINAL-EXACT-HEAD.log",
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "claims": "CLAIMS.txt",
+  "counts": "COUNTS.json",
+  "plan": "PLAN.md",
+  "report": "REPORT.md",
+  "remoteConfirmedHead": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+  "tree": "649f225162ec201aacb1dec7d50f23475aa114a7",
+  "priorHeads": [
+    {
+      "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+      "ci": {
+        "conclusion": "failure",
+        "head_sha": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44192175982",
+        "status": "completed"
+      },
+      "status": "superseded by linear nested-scope correction"
+    }
+  ],
+  "readiness": "READY under generated-view-only exception",
+  "successfulProductPushes": 2,
+  "publicationScan": "Fleet Mac guard performs full publication scan before landing; cloud ran scoped added-diff credential-pattern and complete packet privacy checks."
+}

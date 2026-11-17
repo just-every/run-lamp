@@ -1,0 +1,28 @@
+{
+  "author": "Run Edit Run fleet",
+  "branch": "cloud/sd-lamp-import-sorry-2",
+  "buildConfigSha256": "5f5197e82143ead477d1261164be5f89471bd4c477ac838e2168c330d2becf7c",
+  "command": "source /tmp/rer-cloud-toolchain.sh; cloud_run timeout 360 node --test --test-concurrency=1 tests/e2e/page-data.test.mjs",
+  "durationMs": 63967.35357,
+  "exitCode": 0,
+  "failed": 0,
+  "headAtReceipt": "96794ba126e1cf93642760b65a92a02541221045",
+  "log": {
+    "bytes": 358,
+    "path": "PAGE-DATA.log",
+    "sha256": "cb61c080aa2ee5d56dd2cd69d0c18b3f763fdc99ef8a46df5c8ec3d8ba431421"
+  },
+  "passed": 1,
+  "proof": [
+    "all six native source metadata columns export and restore",
+    "recursive group parent and description travel",
+    "sanitized source message over 2000 characters reads in restored owner API and public calendar history without import journals",
+    "private original HTML is absent from portable native file",
+    "removed native components and groups no longer export original source metadata",
+    "existing subscriber consent and unverified restoration flow remains passing"
+  ],
+  "recordedAt": "2026-11-17T22:31:17.892063+00:00",
+  "schema": 1,
+  "tests": 1,
+  "trackedWorktreeDirty": true
+}

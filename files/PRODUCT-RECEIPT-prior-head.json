@@ -1,0 +1,116 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2",
+  "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+  "base": "96794ba126e1cf93642760b65a92a02541221045",
+  "pr": {
+    "base": "main",
+    "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+    "html_url": "https://github.com/just-every/run-lamp/pull/414",
+    "number": 414
+  },
+  "recordedAt": "2026-11-17T22:42:57.597581+00:00",
+  "productPush": {
+    "status": "pushed",
+    "attempts": 1,
+    "log": "PUSH.log"
+  },
+  "identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "candidateCommits": 1,
+    "trailers": []
+  },
+  "generatedViews": "Excluded and restored from origin/main; exact candidate view check differs only in ACCEPTANCE.md; lander regenerates.",
+  "localChecks": [
+    {
+      "check": "Ordered build checks",
+      "result": "passed",
+      "log": "BUILD-final.log",
+      "bytes": 505940,
+      "sha256": "6aade7bc0dd52b4ce4113a6530957b1b7306722045dd82d88a0099f90c6e9d96"
+    },
+    {
+      "check": "Source lock after restoring generated views",
+      "result": "passed",
+      "log": "SOURCE-LOCK-CHECK.log",
+      "bytes": 428578,
+      "sha256": "2783a64db0b2b1d95616c4a77ae299f23b0ecd7d845c2b91400fe82a1b4f429b"
+    },
+    {
+      "check": "Documented synthetic export on exact committed head",
+      "result": "passed:2/2",
+      "log": "DOCUMENTED-EXPORT-exact-head.log",
+      "bytes": 1431,
+      "sha256": "51bbe22c4e95a8a0b791aca523babcef8eab868e5bb460e02f35ebea15fd7488"
+    },
+    {
+      "check": "Recursive reconciliation/catch-up/undo",
+      "result": "passed:1/1",
+      "log": "RECONCILIATION.log",
+      "bytes": 866,
+      "sha256": "dc905111d31d8cb6c254abe2b0e8af32edfc969c524f075e1d443ff0976b9413"
+    },
+    {
+      "check": "Full Sorry move-in lifecycle including nested subtests",
+      "result": "passed:6/6",
+      "log": "SORRY-IMPORT.log",
+      "bytes": 2488,
+      "sha256": "fc1d75df6e9a4632d77baa7fc51aef7c8ee33b6c95b88a331a5bb13631a8cb67"
+    },
+    {
+      "check": "Final frozen-clock actual-start handling",
+      "result": "passed:1/1",
+      "log": "MAINT-final.log",
+      "bytes": 527,
+      "sha256": "cff62aea1b5f8e87022007d9fba3e8dc10174ade2e8d08306739e199e69ee791"
+    },
+    {
+      "check": "Native portability/erasure",
+      "result": "passed:1/1",
+      "log": "PAGE-DATA.log",
+      "bytes": 358,
+      "sha256": "cb61c080aa2ee5d56dd2cd69d0c18b3f763fdc99ef8a46df5c8ec3d8ba431421"
+    },
+    {
+      "check": "Both-width changed public screens and actual feed readers",
+      "result": "passed:1/1",
+      "log": "CUTOVER-BROWSER.log",
+      "bytes": 1002,
+      "sha256": "9fa0d8ad4e3f455c639ebd6658b8d07bfce1659eefde0ef711ee684c3e30fe41"
+    },
+    {
+      "check": "Three corrected Chromium regression registrations",
+      "result": "passed:3/3",
+      "log": "PUBLIC-CONTRACT.log",
+      "bytes": 5808,
+      "sha256": "408317850bc3b7dad86f48f6f227f4682e8586ab9f32a3ef62727359f2984a0f"
+    },
+    {
+      "check": "Other three public regression registrations",
+      "result": "passed:3/3; browser paths retried correctly in PUBLIC-CONTRACT.log",
+      "log": "PUBLIC-CONTRACT-initial.log",
+      "bytes": 7057,
+      "sha256": "50b2211c8ad099f07b13669a7a3ea4b8f0d5955168c16a617f6c82e090946f35"
+    },
+    {
+      "check": "Recursive reconciliation and final maintenance timing on exact committed head",
+      "result": "passed:2/2",
+      "log": "RECONCILIATION-MAINT-exact-head.log",
+      "bytes": 1278,
+      "sha256": "1c9a4e3a11d14db3f446c2a9216c269bf7ee7e6e263afc0d3b0cfeec3477bc39",
+      "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63"
+    }
+  ],
+  "ci": {
+    "runId": 44192175982,
+    "status": "awaiting cadence-compliant poll",
+    "expectedHead": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63"
+  },
+  "claims": "CLAIMS.txt",
+  "counts": "COUNTS.json",
+  "plan": "PLAN.md",
+  "report": "REPORT.md",
+  "remoteConfirmedHead": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+  "tree": "ff7c11b9292beaa08535d49f396330ff381c0951"
+}

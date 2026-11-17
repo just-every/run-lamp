@@ -1,0 +1,28 @@
+{
+  "sorry-reconciliation": [
+    "MOVE-001 Move in explains how Sorry component rows arrive as components and groups"
+  ],
+  "sorry-documented-export": [
+    "documented Sorry generator reproduces all bytes and hashes without provider reads",
+    "documented Sorry exports account for every field through preview, saved jobs and explicit refusals"
+  ],
+  "sorry-import": [
+    "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 \u2014 Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow",
+    "MOVE-001 \u2014 Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers",
+    "MAINT-015 \u2014 Sorry maintenance labels use authored source states and keep missing states neutral"
+  ],
+  "cutover-browser": [
+    "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 \u2014 owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover"
+  ],
+  "page-data": [
+    "Page data restores verified consent and holds unverified addresses until confirmation"
+  ],
+  "public-contract": [
+    "HIST-008 \u2014 reviewed imported history stays completely browsable without scripts",
+    "PAGE-005 \u2014 a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch",
+    "UPTIME-003 \u2014 newly observed services report only their recorded coverage",
+    "HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory",
+    "SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 \u2014 owner maintains a complete catalogue and customers read, refresh, embed and retain its public story",
+    "DEP-001 DEP-002 \u2014 scheduled vendor reports retain attribution and buyer control"
+  ]
+}

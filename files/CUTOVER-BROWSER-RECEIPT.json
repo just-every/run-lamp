@@ -1,0 +1,241 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T22:31:59.558980+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2",
+  "baseHeadDuringRun": "96794ba126e1cf93642760b65a92a02541221045",
+  "testedState": "Uncommitted integrated candidate in shared checkout; browser runtime loads source directly. Product commit provenance is recorded by the primary agent separately.",
+  "command": "LAMP_CHROMIUM_PATH=/usr/bin/chromium LAMP_CUTOVER_EVIDENCE=<packet>/browser cloud_run timeout 650 node --test --test-concurrency=1 tests/e2e/cutover-browser.test.mjs",
+  "result": "passed",
+  "tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "durationMs": 306395.75164,
+  "assertionWidth": 1440,
+  "captureWidths": [
+    1440,
+    390
+  ],
+  "newBehavior": [
+    "Recursive Sorry group ancestry preserved as one source row per group/leaf",
+    "Hostile update body becomes readable customer prose and a safe HTTPS link on /history and incident permalink",
+    "RSS and Atom payloads retain readable prose and safe links without imported b/script/img markup, event attributes or script body",
+    "Original existing four-provider wizard, cutover, invitation and undo assertions still pass",
+    "Actual delivered RSS description and Atom HTML content parse to browser feed-reader documents with readable words, safe HTTPS link and no executable or source tag elements"
+  ],
+  "visualInspection": [
+    "Nested source groups visibly preserve ancestry and descriptions at 1440 and 390",
+    "History and incident pages show paragraphs and safe linked URL at 1440 and 390",
+    "Actual RSS and Atom reader payloads show customer words, original publication time, lifecycle and affected leaves with safe links at 1440 and 390; raw XML transport screenshots retained separately"
+  ],
+  "log": {
+    "path": "CUTOVER-BROWSER.log",
+    "sha256": "9fa0d8ad4e3f455c639ebd6658b8d07bfce1659eefde0ef711ee684c3e30fe41"
+  },
+  "screenshots": [
+    {
+      "path": "browser/betterstack-cutover-1440.png",
+      "bytes": 312785,
+      "sha256": "18d7898dbb579a55a414d9e2720004389edcdc81a22b43c82b02a3bdbb79c0c3"
+    },
+    {
+      "path": "browser/betterstack-cutover-390.png",
+      "bytes": 258937,
+      "sha256": "7fc2faa96a842637a76c1e894aee585213fb9347125c58b4ae25e02e50bdae3c"
+    },
+    {
+      "path": "browser/instatus-cutover-1440.png",
+      "bytes": 330780,
+      "sha256": "c9a7a2cf829d7b3c06120d74d220800f093dc3735608f2a3b50fb614259e685b"
+    },
+    {
+      "path": "browser/instatus-cutover-390.png",
+      "bytes": 270168,
+      "sha256": "61fcd1349ecd3ad0ec683cd637644cb15a34ae0a68ff72a3b5caed3f413b797a"
+    },
+    {
+      "path": "browser/sorry-audit-1440.png",
+      "bytes": 593496,
+      "sha256": "fd7b8e3adabf8107d5b0f03da5ff5508585dc023d0f6b100aede6e9c1679261a"
+    },
+    {
+      "path": "browser/sorry-audit-390.png",
+      "bytes": 766454,
+      "sha256": "5defb4de55a9cb3c842e477a1acc767cf9c3ee2ba3af42efcdf21f2b4bc16628"
+    },
+    {
+      "path": "browser/sorry-components-1440.png",
+      "bytes": 66939,
+      "sha256": "6622c85b1126a4dc430557eb43095e23e251dc4777a993cd0389df2480f4e3c7"
+    },
+    {
+      "path": "browser/sorry-components-390.png",
+      "bytes": 44336,
+      "sha256": "d0bf1accc7693dafa3470a1970c29e94b6741cf5c516378a3ac3c91802716399"
+    },
+    {
+      "path": "browser/sorry-cutover-1440.png",
+      "bytes": 366131,
+      "sha256": "4a802d6b1b7e5355d30e3b35753e15383f41a75731d911d676fd277bc60e628b"
+    },
+    {
+      "path": "browser/sorry-cutover-390.png",
+      "bytes": 296442,
+      "sha256": "296bc0aa0af88c731cfe94e8c0309341dd04624682de0131cc60e66fd5f8b8b5"
+    },
+    {
+      "path": "browser/sorry-feed-reader-atom-1440.png",
+      "bytes": 44568,
+      "sha256": "6fe58d263b2bd95f792806b4948348086fcf04bc397835334685d1c61bde3617"
+    },
+    {
+      "path": "browser/sorry-feed-reader-atom-390.png",
+      "bytes": 38056,
+      "sha256": "a13f764663fe2b45b7b9516d6841180f519578b5321982c0a41fec24183e06c8"
+    },
+    {
+      "path": "browser/sorry-feed-reader-rss-1440.png",
+      "bytes": 44420,
+      "sha256": "2eb33feac1792421af2d04b33436adc53fd236d31bdc509daa50c9cd7d6e79f2"
+    },
+    {
+      "path": "browser/sorry-feed-reader-rss-390.png",
+      "bytes": 37909,
+      "sha256": "e3e469393bf0ab8767da40f76b1425d44e9345f58cded0f9cdd4f1cd03701fdc"
+    },
+    {
+      "path": "browser/sorry-field-ledger-dry-run-1440.png",
+      "bytes": 384924,
+      "sha256": "5a46e9a52f0f7a5cd0f1bc947b79ec8e22ff06b1b937c69d9e34bc8b5b71af04"
+    },
+    {
+      "path": "browser/sorry-field-ledger-dry-run-390.png",
+      "bytes": 327426,
+      "sha256": "138d500b0c74e0ad09595f83097e84171aa169d4a84f88e0311d4340f466ba20"
+    },
+    {
+      "path": "browser/sorry-field-ledger-saved-1440.png",
+      "bytes": 384655,
+      "sha256": "5a868f585d755858b09747859148a0d445712b27791804bbaec4e0e08d653f4e"
+    },
+    {
+      "path": "browser/sorry-field-ledger-saved-390.png",
+      "bytes": 327640,
+      "sha256": "acb5aeb2b2a76057efc1dc2f2b576bdaf92e7a0f4e73adf62d03a5e3fd5c1f51"
+    },
+    {
+      "path": "browser/sorry-history-1440.png",
+      "bytes": 205977,
+      "sha256": "07cb1180adf0c020a1841b6fc9bc5e10fab51e30d9fcf3ac03ba449ae72ca89a"
+    },
+    {
+      "path": "browser/sorry-history-390.png",
+      "bytes": 158954,
+      "sha256": "dbdfd482e5ab5dc30616974e0d7eb43dc11bb82fd9dd678de0699b7303279a6b"
+    },
+    {
+      "path": "browser/sorry-imported-1440.png",
+      "bytes": 364749,
+      "sha256": "7f93841f91646697c58b6118ceed973deca14a4b8eb545dc38e7663e920f7800"
+    },
+    {
+      "path": "browser/sorry-imported-390.png",
+      "bytes": 327640,
+      "sha256": "acb5aeb2b2a76057efc1dc2f2b576bdaf92e7a0f4e73adf62d03a5e3fd5c1f51"
+    },
+    {
+      "path": "browser/sorry-public-feed-atom-1440.png",
+      "bytes": 152662,
+      "sha256": "7c0da3ffc2ed77deb1e1f89a12911c20fc03b1fb5e4a0e03bba6c0dc1ab66199"
+    },
+    {
+      "path": "browser/sorry-public-feed-atom-390.png",
+      "bytes": 151563,
+      "sha256": "723d3ca69a65bb24e1a9df2269c2aefeb462f85f2f5b1e1772e8c8af0fad5b1d"
+    },
+    {
+      "path": "browser/sorry-public-feed-rss-1440.png",
+      "bytes": 105180,
+      "sha256": "354084cbb6ad400c4eda70a2d1367a83e284475b1decfc56e8cc5787c7d37c2e"
+    },
+    {
+      "path": "browser/sorry-public-feed-rss-390.png",
+      "bytes": 103204,
+      "sha256": "26cd36688a85e5c15678e17649bf76cf18537169282f1e0ec9630d76819e5b20"
+    },
+    {
+      "path": "browser/sorry-public-hierarchy-1440.png",
+      "bytes": 304550,
+      "sha256": "425457e092ee661ba7a324b647c5e8229b3600a3b2bcfc08d4afc434ef338ee6"
+    },
+    {
+      "path": "browser/sorry-public-hierarchy-390.png",
+      "bytes": 176921,
+      "sha256": "5fe0bcd598a512c4e8bf5b576dcf619c29d5d321f634af69466be6e3d6a10e9c"
+    },
+    {
+      "path": "browser/sorry-public-history-1440.png",
+      "bytes": 312529,
+      "sha256": "918aa7511b27fecef3635562ce9798d62f5c39f3ded14b796eeb54c46ba88313"
+    },
+    {
+      "path": "browser/sorry-public-history-390.png",
+      "bytes": 174107,
+      "sha256": "e3cb604de2c30068be0e709e5bff9e87f7d32dcc6c1910b3dbdc88a129d48667"
+    },
+    {
+      "path": "browser/sorry-public-incident-1440.png",
+      "bytes": 316424,
+      "sha256": "c03112dd41f0c209d0f592e0ff123e0afc2f074537851419d80383a582284f3c"
+    },
+    {
+      "path": "browser/sorry-public-incident-390.png",
+      "bytes": 157236,
+      "sha256": "8ec0015bd59b16e4ddc684219e1706f802809fc057e0e6cc50ee69c2fcdae226"
+    },
+    {
+      "path": "browser/sorry-undone-1440.png",
+      "bytes": 271667,
+      "sha256": "9cb9b345007c4728c4182c931177ee3e58641e2e67630543a2feab9d888d5efd"
+    },
+    {
+      "path": "browser/sorry-undone-390.png",
+      "bytes": 216816,
+      "sha256": "7e3a40546ce745626f830123ff5d2cec844afe767ee1a126e2ea968249308ac0"
+    },
+    {
+      "path": "browser/source-page-text-1440.png",
+      "bytes": 208680,
+      "sha256": "10db31028e92a07640cb22884c116844f1cf048858dc37ad46775ddd7a65168e"
+    },
+    {
+      "path": "browser/source-page-text-390.png",
+      "bytes": 157865,
+      "sha256": "216ee31b724df2b37d57665a7fbdd9212577d910d606aeee6d5e4a5c95a9aa16"
+    },
+    {
+      "path": "browser/statuspage-cutover-1440.png",
+      "bytes": 363037,
+      "sha256": "30edc257863497ced3c0d84d56bed6ea67ba5a48f718fd1a5669b78d172a1a07"
+    },
+    {
+      "path": "browser/statuspage-cutover-390.png",
+      "bytes": 297548,
+      "sha256": "2c8ebd453fda9b1d85572258e484eea9a886c6cc5da632d7ed70cd59c26844d4"
+    },
+    {
+      "path": "browser/statuspage-old-embed-1440.png",
+      "bytes": 32991,
+      "sha256": "9b1d5bb3ce593602f18a7c54eabff5519075b459a74df40fb9134fe8463229dc"
+    },
+    {
+      "path": "browser/statuspage-old-embed-390.png",
+      "bytes": 24591,
+      "sha256": "e9ecb4b353d588113362cf088ffc0ad56059784eb52e9085f40982f0e3314d05"
+    }
+  ],
+  "testFile": {
+    "path": "tests/e2e/cutover-browser.test.mjs",
+    "sha256": "55451f0766f8f78365d2728a0f1eaa58dc0317731741d0c5294504f474e12eb9"
+  }
+}

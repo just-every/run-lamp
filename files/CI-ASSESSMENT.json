@@ -1,0 +1,50 @@
+{
+  "author": "Run Edit Run fleet",
+  "recordedAt": "2026-11-17T23:03:23.744987+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2",
+  "head": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+  "branchVerify": {
+    "id": 44193889068,
+    "status": "completed",
+    "conclusion": "failure",
+    "head_sha": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44193889068"
+  },
+  "rootFailure": {
+    "command": "node src/base/contract-docs.mjs check",
+    "file": "ACCEPTANCE.md",
+    "meaning": "Generated view differs; builder intentionally excludes lander-owned views."
+  },
+  "downstreamFailures": [
+    "Build completion artifact absent because generator check exits before build receipt",
+    "Verification aggregate missing all shards because build failed and shards skipped"
+  ],
+  "decision": "READY under explicit generated-view-only exception; actual workflow conclusion remains failure",
+  "PRVerify": {
+    "id": 44193900148,
+    "jobs": "CI-PR-JOBS.json",
+    "observed": "same completed failure/skip pattern and same failing build/aggregate steps",
+    "separateLogsRead": false,
+    "reason": "Branch failed-job logs provide exact-source root evidence; ten-call task GitHub budget exhausted."
+  },
+  "previousHeadRun": {
+    "id": 44192175982,
+    "head": "28fe21dfb4abf70a3c26dfe512b2097d9fdb5c63",
+    "status": "completed",
+    "conclusion": "failure",
+    "candidate": "superseded by final linear commit"
+  },
+  "manualGitHubCommands": 10,
+  "failedJobLogCommands": [
+    "gh run view 44193889068 --repo just-every/run-lamp --job 134430179574 --log-failed",
+    "gh run view 44193889068 --repo just-every/run-lamp --job 134430354544 --log-failed"
+  ],
+  "reruns": 0,
+  "dispatches": 0,
+  "localFinalExactHeadTests": {
+    "log": "FINAL-EXACT-HEAD.log",
+    "passed": 3,
+    "failed": 0
+  }
+}
