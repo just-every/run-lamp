@@ -5,7 +5,7 @@
   "repository": "just-every/run-lamp",
   "branch": "main",
   "head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
-  "origin_main": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "origin_main": "c77030f1bf9501975efca38be82a33d9611a9d5a",
   "inspected_at": "2026-11-17T10:54:42.178985+00:00",
   "product_worktree_status": "",
   "product_index_tree": "22f5fff0ef0da2a82fb8a4c00227e82d68e4b576",
@@ -158,5 +158,40 @@
     "fixture_inventory_json_parsed": true,
     "evidence_entrypoint_compiles": true
   },
-  "bootstrap": "User-required fleet Git identity/helper bootstrap only; no product/provider signing keys or account setup."
+  "bootstrap": "User-required fleet Git identity/helper bootstrap only; no product/provider signing keys or account setup.",
+  "inspected_main": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+  "main_advance_review": {
+    "initial_main": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+    "reviewed_main": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+    "reviewed_at": "2026-11-17T11:02:27.671829+00:00",
+    "summary": "c77030f1 Maintain the hosted installed-health migration ledger",
+    "changed_paths": [
+      "OPERATIONS.md",
+      "docs/deploy.md",
+      "scripts/import.mjs",
+      "scripts/platform-ledger.mjs",
+      "scripts/setup-migrations.mjs",
+      "scripts/setup.mjs",
+      "sources.lock.json",
+      "tests/auth-adoption/setup-migrations.test.mjs",
+      "tests/e2e/export-import.test.mjs",
+      "tests/e2e/helpers/health-schema-proof.mjs",
+      "tests/helpers/fake-wrangler.mjs"
+    ],
+    "verified_unchanged_paths": [
+      "AGENTS.md",
+      "CONTRACT.md",
+      "ACCEPTANCE.md",
+      "docs/moving-in.md",
+      "src/core/features/statuspage-import",
+      "tests/fixtures/sorry",
+      "tests/e2e/sorry-import.test.mjs",
+      "tests/e2e/sorry-reconciliation.test.mjs",
+      "tests/e2e/cutover-browser.test.mjs",
+      "scripts/sorry-capture.mjs",
+      "scripts/sorry-receipt.mjs",
+      "importers.json"
+    ],
+    "product_checkout_head_unchanged": true
+  }
 }
