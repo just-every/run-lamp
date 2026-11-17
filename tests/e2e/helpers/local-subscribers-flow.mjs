@@ -48,6 +48,9 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
     await expect(emailStatus).toHaveAttribute('data-mail-mode', 'local');
     assert.equal(await emailStatus.getAttribute('data-provider'), null);
+    assert.equal(await page.getByRole('textbox', { name: 'From email', exact: true }).count(), 0, 'a suppressed sender offers no active From field');
+    const details = page.locator('details').filter({ has: page.locator('summary').getByText('Details', { exact: true }) });
+    assert.equal(await details.getAttribute('open'), null, 'deployment details start collapsed');
     const smsSettings = await api('/api/app/sms/settings');
     await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
       .toHaveAttribute('data-sms-configured', String(smsSettings.configured));

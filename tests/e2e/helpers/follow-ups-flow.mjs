@@ -85,6 +85,9 @@ export async function followUpsFlow(t) {
     const startDue = await maintenance("Synthetic Lamp manual start due", iso(Date.now() - hour), iso(Date.now() + hour), false, false);
     const overrun = await maintenance("Synthetic Lamp manual completion due", iso(Date.now() - 2 * hour), iso(Date.now() - hour), false, false);
     assert.equal((await post(`/api/app/maintenance/${overrun.id}/start`)).status, 200);
+    const missedStart = await maintenance("Synthetic Lamp missed automatic start", iso(Date.now() - hour), iso(Date.now() + hour), true, true);
+    const missedEnd = await maintenance("Synthetic Lamp missed automatic completion", iso(Date.now() - 2 * hour), iso(Date.now() - hour), false, true);
+    assert.equal((await post(`/api/app/maintenance/${missedEnd.id}/start`)).status, 200);
     const imported = await followUpsImport(fixture);
     const reports = [];
     for (let number = 1; number <= 2; number++) {
@@ -108,8 +111,16 @@ export async function followUpsFlow(t) {
     const futureStart = find(rows, "maintenance-start", future);
     const futureEnd = find(rows, "maintenance-end", future);
     const reminder = find(rows, "maintenance-reminder", future);
-    assert.equal(futureStart?.dueAt, future.startsAt);
-    assert.equal(futureEnd?.dueAt, future.endsAt);
+    assert.equal(futureStart, undefined, "a future automatic start needs no owner follow-up");
+    assert.equal(futureEnd, undefined, "a future automatic completion needs no owner follow-up");
+    const overview = (await api("/api/app/overview")).body.overview;
+    const scheduledWindow = overview.maintenance.find(row => row.id === future.id);
+    assert.equal(scheduledWindow.autoStart, true);
+    assert.equal(scheduledWindow.autoComplete, true);
+    assert.equal(scheduledWindow.startsAt, future.startsAt);
+    assert.equal(scheduledWindow.endsAt, future.endsAt);
+    assert.equal(find(rows, "maintenance-start", missedStart)?.failure.state, "failed", "a missed automatic start becomes owner work");
+    assert.equal(find(rows, "maintenance-end", missedEnd)?.failure.state, "failed", "a missed automatic completion becomes owner work");
     assert.equal(reminder?.dueAt, iso(Date.parse(future.startsAt) - 24 * hour));
     assert.equal(reminder.failure, null, "an advance announcement owes its reminder only at the future lead boundary");
     assert.equal(find(rows, "maintenance-reminder", recent), undefined, "a notice already inside the 24-hour window creates no reminder obligation");
@@ -125,6 +136,7 @@ export async function followUpsFlow(t) {
     // the same obligation. Count actual serialized mail after dispatch settles.
     await api("/api/app/maintenance");
     await tick();
+    await expectAbsent([`maintenance-start:${missedStart.id}`, `maintenance-end:${missedEnd.id}`]);
     await settleOperatorEmails(fixture);
     assertOneOperatorEmail(fixture, operatorEmails, /maintenance.*longer than planned/i, overrun.id);
     await api("/api/app/maintenance");
@@ -151,7 +163,7 @@ export async function followUpsFlow(t) {
     assert.equal((await post(`/api/app/incidents/${scheduledIncident.id}/publish`, { channels: [] })).status, 200);
     await expectAbsent([promise.id, publication.id]);
     assert.equal((await post(`/api/app/maintenance/${future.id}/cancel`)).status, 200);
-    await expectAbsent([futureStart.id, futureEnd.id, reminder.id]);
+    await expectAbsent([`maintenance-start:${future.id}`, `maintenance-end:${future.id}`, reminder.id]);
     assert.equal((await post(`/api/app/maintenance/${recent.id}/cancel`)).status, 200);
     await expectAbsent([`maintenance-start:${recent.id}`, `maintenance-end:${recent.id}`, `maintenance-reminder:${recent.id}`]);
     assert.equal((await post(`/api/app/maintenance/${startDue.id}/start`)).status, 200);
