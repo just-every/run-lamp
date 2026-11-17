@@ -1,0 +1,89 @@
+rer toolchain: node v22.20.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)
+Raw build-step logs /tmp/tmp.pgR2m545XY
+Tue Nov 17 23:29:32 UTC 2026
+de69743bb4b5d41127577a5e95ee64666c54333b
+Wrote 1 contract documents.
+ ACCEPTANCE.md | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+Tue Nov 17 23:29:33 UTC 2026
+pnpm run check:contract-docs
+PASS check:contract-docs
+
+> lamp@1.11.22 check:contract-docs /home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c1/run-lamp
+> node src/base/contract-docs.mjs check
+
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Tue Nov 17 23:29:34 UTC 2026
+pnpm run source:copies
+PASS source:copies
+  "adapted": [
+    {
+      "path": "src/base/run-site.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf"
+    }
+  ],
+  "meaning": "Undeclared copies claim Base byte equality. Declared adaptations must match their acknowledged local bytes and mode; their recorded Base bytes and revision remain comparison baselines."
+}
+
+Tue Nov 17 23:29:34 UTC 2026
+pnpm run source:check
+PASS source:check
+  "ok": true,
+Tue Nov 17 23:29:35 UTC 2026
+pnpm run typecheck
+PASS typecheck
+
+> lamp@1.11.22 typecheck /home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c1/run-lamp
+> tsc --noEmit
+
+Tue Nov 17 23:29:59 UTC 2026
+pnpm run check:syntax
+PASS check:syntax
+
+> lamp@1.11.22 check:syntax /home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c1/run-lamp
+> node scripts/check-syntax.mjs
+
+check-syntax: 483/483 modules parsed
+Tue Nov 17 23:30:12 UTC 2026
+pnpm run validate:release
+PASS validate:release
+
+> lamp@1.11.22 validate:release /home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c1/run-lamp
+> node scripts/validate-release.mjs
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.22.
+Tue Nov 17 23:30:13 UTC 2026
+pnpm run verify:visual:source
+PASS verify:visual:source
+
+> lamp@1.11.22 verify:visual:source /home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c1/run-lamp
+> node --experimental-strip-types scripts/verify-visual-edit.mjs --source-only
+
+Validated 0 compiled visual edits at revision 0.
+Tue Nov 17 23:30:13 UTC 2026
+pnpm run build:app
+PASS build:app
+dist/server/app-assets/schemas-CsY7VrCO.js                                  191.07 kB │ gzip:    41.92 kB
+dist/server/app-assets/app.settings-CMrLfva0.js                             328.19 kB │ gzip:    60.27 kB
+dist/server/app-assets/undo-snapshot-BUqB49ht.js                            436.25 kB │ gzip:   110.60 kB
+dist/server/app-assets/bodies-bzuV966F.js                                 1,671.30 kB │ gzip:   315.85 kB
+dist/server/index.js                                                      4,162.89 kB │ gzip: 1,049.26 kB
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/demo/index.mjs is dynamically imported by src/core/app/mail.ts, src/core/features/overview/sender-check.ts, src/core/platform/ai/demo.ts but also statically imported by src/server.ts, dynamic import will not move module into another chunk.
+
+✓ built in 3.53s
+Tue Nov 17 23:30:24 UTC 2026
+pnpm run build:site
+PASS build:site
+> rer build --site
+
+Heavy job admitted: Lamp build:workflow [f6b1c520cac4]
+Checking pinned pnpm
+10.12.4
+Building the run site
+{"pages":38,"assets":3,"styles":1}
+Run site written to dist/site (38 pages, 63 files): [REDACTED]/dist/site
+build: complete (exit 0)
+Candidate source lock check passed.

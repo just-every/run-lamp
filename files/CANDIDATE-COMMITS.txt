@@ -1,0 +1,12 @@
+de69743bb4b5d41127577a5e95ee64666c54333b
+Keep nested Sorry affected scope within selected subgroups
+
+dc5aa13d675261b857ad4494915edfa2a6484d3c
+Preserve recursive Sorry groups and original notice meaning
+
+Retain native ancestry and labeled source metadata without duplicating parent
+components. Keep source automation choices and actual timing honest, normalize
+imported HTML into readable safe wording, and carry full messages through native
+portability. Include metadata and automation in repeat, catch-up and conditional
+undo, with documented synthetic export and public browser coverage.
+

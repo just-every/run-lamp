@@ -1,0 +1,117 @@
+{
+  "commit": "de69743bb4b5d41127577a5e95ee64666c54333b",
+  "startedUtc": "2026-11-17T23:38:46Z",
+  "test": "ok 1 - MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 \u2014 owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover",
+  "browser": "Chromium at /usr/bin/chromium with --no-sandbox",
+  "assertionWidth": 1440,
+  "screenshots": [
+    {
+      "file": "browser/sorry-components-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "6622c85b1126a4dc430557eb43095e23e251dc4777a993cd0389df2480f4e3c7"
+    },
+    {
+      "file": "browser/sorry-components-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "d0bf1accc7693dafa3470a1970c29e94b6741cf5c516378a3ac3c91802716399"
+    },
+    {
+      "file": "browser/sorry-history-1440.png",
+      "width": 1440,
+      "height": 1604,
+      "sha256": "e6c1eed22b6bde2e50a71262bc023fd19a47f15045a6485699a4de6c14fd98f9"
+    },
+    {
+      "file": "browser/sorry-history-390.png",
+      "width": 390,
+      "height": 2059,
+      "sha256": "8aa10100f9e8b9d4b91a6fdc1d3f5146690f550142a8a7dca5f1aa6719272285"
+    },
+    {
+      "file": "browser/sorry-imported-1440.png",
+      "width": 1440,
+      "height": 3117,
+      "sha256": "68a2b017c2210bc911357df465307646837f23ed7db106d5e19a820ef01de5c4"
+    },
+    {
+      "file": "browser/sorry-imported-390.png",
+      "width": 390,
+      "height": 4189,
+      "sha256": "c3309c7093209fcb79da0e26995df1ff5ff0659d9b365e230ee75278e3e33161"
+    },
+    {
+      "file": "browser/sorry-audit-1440.png",
+      "width": 1440,
+      "height": 4329,
+      "sha256": "4a2b01cb114b32295baf3b22fb4f4819480644251347a1ceedccc66aa6bdce79"
+    },
+    {
+      "file": "browser/sorry-audit-390.png",
+      "width": 390,
+      "height": 12298,
+      "sha256": "b25521c8ec70115516ca19de2cab8f5b3bbfc39d30a284d8605ae80ce2734e26"
+    },
+    {
+      "file": "browser/sorry-public-hierarchy-1440.png",
+      "width": 1440,
+      "height": 1800,
+      "sha256": "425457e092ee661ba7a324b647c5e8229b3600a3b2bcfc08d4afc434ef338ee6"
+    },
+    {
+      "file": "browser/sorry-public-hierarchy-390.png",
+      "width": 390,
+      "height": 1947,
+      "sha256": "5fe0bcd598a512c4e8bf5b576dcf619c29d5d321f634af69466be6e3d6a10e9c"
+    },
+    {
+      "file": "browser/sorry-public-history-1440.png",
+      "width": 1440,
+      "height": 1472,
+      "sha256": "918aa7511b27fecef3635562ce9798d62f5c39f3ded14b796eeb54c46ba88313"
+    },
+    {
+      "file": "browser/sorry-public-history-390.png",
+      "width": 390,
+      "height": 1709,
+      "sha256": "e3cb604de2c30068be0e709e5bff9e87f7d32dcc6c1910b3dbdc88a129d48667"
+    },
+    {
+      "file": "browser/sorry-public-incident-1440.png",
+      "width": 1440,
+      "height": 1428,
+      "sha256": "c03112dd41f0c209d0f592e0ff123e0afc2f074537851419d80383a582284f3c"
+    },
+    {
+      "file": "browser/sorry-public-incident-390.png",
+      "width": 390,
+      "height": 1944,
+      "sha256": "8ec0015bd59b16e4ddc684219e1706f802809fc057e0e6cc50ee69c2fcdae226"
+    },
+    {
+      "file": "browser/sorry-feed-reader-atom-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "6fe58d263b2bd95f792806b4948348086fcf04bc397835334685d1c61bde3617"
+    },
+    {
+      "file": "browser/sorry-feed-reader-atom-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "a13f764663fe2b45b7b9516d6841180f519578b5321982c0a41fec24183e06c8"
+    },
+    {
+      "file": "browser/sorry-feed-reader-rss-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "2eb33feac1792421af2d04b33436adc53fd236d31bdc509daa50c9cd7d6e79f2"
+    },
+    {
+      "file": "browser/sorry-feed-reader-rss-390.png",
+      "width": 390,
+      "height": 1000,
+      "sha256": "e3e469393bf0ab8767da40f76b1425d44e9345f58cded0f9cdd4f1cd03701fdc"
+    }
+  ]
+}

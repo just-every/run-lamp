@@ -1,0 +1,53 @@
+{
+  "before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "statusEvidenceAndGapChanges": 0,
+  "scopedJudgments": {
+    "MOVE-001": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-002": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-003": {
+      "before": "done",
+      "after": "done"
+    },
+    "MOVE-004": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MOVE-005": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "COMP-002": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "COMP-009": {
+      "before": "partial",
+      "after": "partial"
+    },
+    "MAINT-015": {
+      "before": "missing",
+      "after": "missing"
+    },
+    "HIST-008": {
+      "before": "done",
+      "after": "done"
+    }
+  }
+}

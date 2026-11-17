@@ -1,0 +1,9 @@
+2026-11-17T23:47:52Z
+gh run view 44200060011 --repo just-every/run-lamp --job 134451635571 --log-failed
+Archive command exit 0
+build	Build the production Worker once	2026-11-17T23:31:38.5051461Z Contract prose: 0 errors, 0 warnings.
+build	Build the production Worker once	2026-11-17T23:31:38.5922491Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Build the production Worker once	2026-11-17T23:31:38.6165986Z Error: Command failed: /opt/hostedtoolcache/node/22.20.0/x64/bin/node src/base/contract-docs.mjs check
+build	Build the production Worker once	2026-11-17T23:31:38.6394429Z  ELIFECYCLE  Command failed with exit code 1.
+build	Build the production Worker once	2026-11-17T23:31:38.6692287Z ##[error]Process completed with exit code 1.
+build	Retain commit-bound build completion	2026-11-17T23:31:38.8485520Z ##[error]No files were found with the provided path: /home/runner/work/_temp/lamp-verification/ci-shards/build.json. No artifacts will be uploaded.

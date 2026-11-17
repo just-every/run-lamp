@@ -1,0 +1,18 @@
+Tue Nov 17 23:29:06 UTC 2026
+5991d3a4d8d358795af306201e210971e031b554350745a770468a7f3ffb7b0f  CONTRACT.md
+Wrote 1 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+5991d3a4d8d358795af306201e210971e031b554350745a770468a7f3ffb7b0f  CONTRACT.md
+ ACCEPTANCE.md | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+6	6	ACCEPTANCE.md
+11:| Core | 60 | 129 | 50 | 239 |
+12:| Agent surface | 0 | 0 | 5 | 5 |
+13:| Later | 0 | 0 | 0 | 0 |
+14:| Full target | 60 | 129 | 55 | 244 |
+{"edition": "just-every/lamp", "manifest": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf", "ok": true, "toolchain": {"id": "runeditrun/edition-authoring", "sha256": "fae294214f81f9890955eeeaf16a061aa45270bd8f5f6733c71d389969f5dece", "version": "1.1.0"}}
+
+Successfully rebased and updated refs/heads/cloud/sd-lamp-import-sorry-2-c1.
+de69743 Keep nested Sorry affected scope within selected subgroups
+dc5aa13 Preserve recursive Sorry groups and original notice meaning

@@ -1,0 +1,26 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2-c1",
+  "head": "de69743bb4b5d41127577a5e95ee64666c54333b",
+  "originMainAtPush": "2490c9fefe5e3bee30d2d1a49441d90a4ebe6ca3",
+  "originalBranchHead": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+  "originalMergeBase": "96794ba126e1cf93642760b65a92a02541221045",
+  "candidateCommits": [
+    "dc5aa13d675261b857ad4494915edfa2a6484d3c",
+    "de69743bb4b5d41127577a5e95ee64666c54333b"
+  ],
+  "mergeCommits": 0,
+  "remoteHead": "de69743bb4b5d41127577a5e95ee64666c54333b",
+  "remoteRef": "refs/heads/cloud/sd-lamp-import-sorry-2-c1",
+  "diffPathsFromOriginalHead": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "diffPathsFromMainGeneratedViews": [],
+  "version": "1.11.22",
+  "rerPin": "0.2.121",
+  "candidatePr": null,
+  "originalPr": "https://github.com/just-every/run-lamp/pull/414",
+  "recordedAtUtc": "2026-11-17T23:36:21.414616+00:00"
+}

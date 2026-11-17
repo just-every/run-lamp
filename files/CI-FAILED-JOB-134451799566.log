@@ -1,0 +1,13 @@
+2026-11-17T23:52:52Z
+gh run view 44200060011 --repo just-every/run-lamp --job 134451799566 --log-failed
+Archive command exit 0
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5680599Z build: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5680920Z ownership: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5681255Z portability: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5681594Z imports: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5681925Z composer: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5682255Z delivery: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5682564Z public: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5682956Z runtime: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5683334Z demo: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-17T23:31:46.5735816Z ##[error]Process completed with exit code 1.

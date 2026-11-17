@@ -1,0 +1,21 @@
+{
+  "head": "de69743bb4b5d41127577a5e95ee64666c54333b",
+  "workflow": "Verify",
+  "runId": 44200060011,
+  "conclusion": "failure",
+  "expectedShards": 9,
+  "executedShards": 0,
+  "buildPreflightFailed": true,
+  "rootOnlyFailure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "dependentFailures": [
+    "missing build completion artifact",
+    "skipped test matrix",
+    "missing build and shard receipts at aggregate"
+  ],
+  "archiveJobs": {
+    "build": 134451635571,
+    "verify": 134451799566
+  },
+  "cloudCustody": "READY under the generated-view-only instruction",
+  "landingVerify": "pending new landing SHA with generated views and lock"
+}
