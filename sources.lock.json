@@ -2924,7 +2924,7 @@
       "executable": false
     },
     "rer-packaging.json": {
-      "sha256": "1b0999156e80219343fad3ba5a3a31a292100924035729eed4dc0740e3e38434",
+      "sha256": "fbf4dd80fa7c69bdc5dbdbedb59fccc61ba01ac0a89f4a27162c95ffe1105b61",
       "executable": false
     },
     "rer-project.json": {
@@ -3096,7 +3096,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "c84e1038ea46a568cf1b7abb49e1b730cae2ee12980818de84ab2b31af4f5af8",
+      "sha256": "0d94b505056e2a9fd773c988e9724748137e45ef4f273dce0742301221a05212",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
