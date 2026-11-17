@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "steps": [
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "check:contract-docs"
+      ],
+      "start": "2026-11-17T22:41:41.390389+00:00",
+      "exit": 1,
+      "log": "build-check-contract-docs.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "source:copies"
+      ],
+      "start": "2026-11-17T22:41:42.041338+00:00",
+      "exit": 0,
+      "log": "build-source-copies.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "source:check"
+      ],
+      "start": "2026-11-17T22:41:42.628027+00:00",
+      "exit": 0,
+      "log": "build-source-check.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "typecheck"
+      ],
+      "start": "2026-11-17T22:41:43.638567+00:00",
+      "exit": 0,
+      "log": "build-typecheck.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "check:syntax"
+      ],
+      "start": "2026-11-17T22:42:08.633487+00:00",
+      "exit": 0,
+      "log": "build-check-syntax.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "validate:release"
+      ],
+      "start": "2026-11-17T22:42:22.806369+00:00",
+      "exit": 0,
+      "log": "build-validate-release.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "verify:visual:source"
+      ],
+      "start": "2026-11-17T22:42:24.635765+00:00",
+      "exit": 0,
+      "log": "build-verify-visual-source.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "build:app"
+      ],
+      "start": "2026-11-17T22:42:25.221964+00:00",
+      "exit": 0,
+      "log": "build-build-app.log"
+    },
+    {
+      "command": [
+        "pnpm",
+        "run",
+        "build:site"
+      ],
+      "start": "2026-11-17T22:42:33.677686+00:00",
+      "exit": 0,
+      "log": "build-build-site.log"
+    }
+  ]
+}

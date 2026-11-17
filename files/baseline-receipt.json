@@ -1,0 +1,18 @@
+{
+  "main": "96794ba126e1cf93642760b65a92a02541221045",
+  "original_head": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+  "rebase": "Replayed three original commits onto fresh main 2490c9f; no conflicts, no merges; original published branch unchanged",
+  "merge_commits": "",
+  "contract_unchanged_by_generator": true,
+  "fresh_main": "2490c9fefe5e3bee30d2d1a49441d90a4ebe6ca3",
+  "rebased_original_head": "3788388b90bc68703d4e4584ce2e171900201a0c",
+  "status_section_byte_identical_to_main": true,
+  "contract_byte_identical_to_original": true,
+  "contract_sha256": "de3bc152a75d1f0b67597bb8f003cecd85356e45d4c8060bd31677530d5725f6",
+  "preserved_main_dependency_update": "hono 4.13.11; installed frozen dependencies after rebase",
+  "setup": {
+    "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+    "exit": 0,
+    "private_output_excluded": true
+  }
+}

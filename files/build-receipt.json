@@ -1,0 +1,68 @@
+{
+  "head_before_commit": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+  "commands": [
+    {
+      "command": "pnpm run check:contract-docs",
+      "start": "2026-11-17T23:07:16.232783+00:00",
+      "finish": "2026-11-17T23:07:17.004450+00:00",
+      "exit": 0,
+      "log": "build-check-contract-docs.log"
+    },
+    {
+      "command": "pnpm run source:copies",
+      "start": "2026-11-17T23:07:17.004845+00:00",
+      "finish": "2026-11-17T23:07:17.656129+00:00",
+      "exit": 0,
+      "log": "build-source-copies.log"
+    },
+    {
+      "command": "pnpm run source:check",
+      "start": "2026-11-17T23:07:17.656559+00:00",
+      "finish": "2026-11-17T23:07:18.939949+00:00",
+      "exit": 1,
+      "log": "build-source-check.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "start": "2026-11-17T23:07:38.864061+00:00",
+      "finish": "2026-11-17T23:08:00.323842+00:00",
+      "exit": 0,
+      "log": "build-typecheck.log"
+    },
+    {
+      "command": "pnpm run check:syntax",
+      "start": "2026-11-17T23:08:00.326722+00:00",
+      "finish": "2026-11-17T23:08:36.217999+00:00",
+      "exit": 0,
+      "log": "build-check-syntax.log"
+    },
+    {
+      "command": "pnpm run validate:release",
+      "start": "2026-11-17T23:08:36.220847+00:00",
+      "finish": "2026-11-17T23:08:37.760451+00:00",
+      "exit": 0,
+      "log": "build-validate-release.log"
+    },
+    {
+      "command": "pnpm run verify:visual:source",
+      "start": "2026-11-17T23:08:37.761099+00:00",
+      "finish": "2026-11-17T23:08:38.255265+00:00",
+      "exit": 0,
+      "log": "build-verify-visual-source.log"
+    },
+    {
+      "command": "pnpm run build:app",
+      "start": "2026-11-17T23:08:38.255758+00:00",
+      "finish": "2026-11-17T23:08:46.676298+00:00",
+      "exit": 0,
+      "log": "build-build-app.log"
+    },
+    {
+      "command": "pnpm run build:site",
+      "start": "2026-11-17T23:08:46.676859+00:00",
+      "finish": "2026-11-17T23:08:54.327933+00:00",
+      "exit": 0,
+      "log": "build-build-site.log"
+    }
+  ]
+}

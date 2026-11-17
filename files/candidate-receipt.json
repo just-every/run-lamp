@@ -1,0 +1,36 @@
+{
+  "date": "2026-11-17T23:11:16.665802+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-3-c1",
+  "head": "bb0d352045ccee4a350678dc61bfcdf6e91f6f2b",
+  "base": "2490c9fefe5e3bee30d2d1a49441d90a4ebe6ca3",
+  "commits": [
+    "bb0d352 Regenerate Sorry template acceptance view and source lock",
+    "3788388 Assert fresh review and complete template ownership inventories",
+    "c8f65ca Prove Sorry template refusal, repeat and preserved undo through HTTP",
+    "c70e4e1 Import both Sorry template collections into private composers [skip ci]"
+  ],
+  "correction_files": [
+    "ACCEPTANCE.md",
+    "sources.lock.json"
+  ],
+  "commit_identity": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>",
+  "all_candidate_identity_checks": "pass; fleet author/committer and no coauthor trailers",
+  "no_merge_commits": true,
+  "ordered_build_receipt": "final-build-receipt.json",
+  "publication_scan": "fleet Mac; not run in cloud",
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "remote_head": "bb0d352045ccee4a350678dc61bfcdf6e91f6f2b"
+  },
+  "source_tree_files": {
+    "CONTRACT.md": "de3bc152a75d1f0b67597bb8f003cecd85356e45d4c8060bd31677530d5725f6",
+    "ACCEPTANCE.md": "1c1ad5427275e4705ad4866a2f846a07627b707186f2860347a7c330e25963e0",
+    "docs/CLAIMS.md": "81012202cbbe77ad65bc06cd01af763a8d34d20cc421071e7ec4e66ba43f21db",
+    "sources.lock.json": "bda9eb9f234c2f33bb7ae740891bc248f88fbee239fa0ad187a094ce5309a691",
+    "package.json": "6520322f2a4e6121b48862ba1905c099b7222b570f7fbf5532215ccac3f64e0a",
+    "pnpm-lock.yaml": "f3d4e47b6a6ebebafd78792cd1ae70d6d79ce439d31fad22f69542a2c453076d"
+  },
+  "local_build_source_matches_commit": true
+}

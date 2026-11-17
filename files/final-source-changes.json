@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "ACCEPTANCE.md",
+      "change": "modified",
+      "before": {
+        "sha256": "8f41c12c1ae2c646de688d5ae82a7a09eca63b75a8b4b9422ca5944baa6c6218",
+        "executable": false
+      },
+      "after": {
+        "sha256": "1c1ad5427275e4705ad4866a2f846a07627b707186f2860347a7c330e25963e0",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+

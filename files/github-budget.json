@@ -1,0 +1,38 @@
+{
+  "limit": 10,
+  "calls": [
+    {
+      "number": 1,
+      "purpose": "Read original PR 415",
+      "endpoint": "repos/just-every/run-lamp/pulls/415"
+    },
+    {
+      "number": 2,
+      "purpose": "Discover exact-SHA Verify",
+      "endpoint": "repos/just-every/run-lamp/actions/runs?head_sha=bb0d352045ccee4a350678dc61bfcdf6e91f6f2b&per_page=100",
+      "time": "2026-11-17T23:11:41.765888+00:00",
+      "unix": 1794957101.7659092
+    },
+    {
+      "number": 3,
+      "purpose": "Poll exact-SHA Verify",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44197129871",
+      "time": "2026-11-17T23:16:43.722166+00:00",
+      "unix": 1794957403.7223244
+    },
+    {
+      "number": 4,
+      "purpose": "Check whether push door opened a PR",
+      "endpoint": "repos/just-every/run-lamp/pulls?state=all&head=just-every%3Acloud%2Fsd-lamp-import-sorry-3-c1&per_page=100",
+      "time": "2026-11-17T23:19:36.019017+00:00",
+      "unix": 1794957576.0190272
+    },
+    {
+      "number": 5,
+      "purpose": "Poll exact-SHA Verify",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44197129871",
+      "time": "2026-11-17T23:21:46.417319+00:00",
+      "unix": 1794957706.4174876
+    }
+  ]
+}

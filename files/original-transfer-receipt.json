@@ -1,0 +1,31 @@
+{
+  "ref": "refs/heads/evidence/sd-lamp-import-sorry-3",
+  "head": "11ceffe15f7fc7394d939250d68f3a04f21a553c",
+  "product_head": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+  "verified_files": [
+    "PLAN.md",
+    "REPORT.md",
+    "build-receipt.json",
+    "candidate-receipt.json",
+    "capture-receipt.json",
+    "browser-receipt.json",
+    "regression-receipt.json",
+    "templates-http-receipt.json",
+    "templates-receipt.json",
+    "ci-receipt.json",
+    "ci-build-failed.log",
+    "ci-final-discovery.json",
+    "ci-final-jobs.json",
+    "source-lock-check.log",
+    "contract-generation-write.log",
+    "contract-generation-check.log",
+    "screens/1440-sorry-notice-new-composer.png",
+    "screens/1440-sorry-notice-settings.png",
+    "screens/1440-sorry-update-existing-composer.png",
+    "screens/1440-sorry-update-settings.png",
+    "screens/390-sorry-notice-new-composer.png",
+    "screens/390-sorry-notice-settings.png",
+    "screens/390-sorry-update-existing-composer.png",
+    "screens/390-sorry-update-settings.png"
+  ]
+}

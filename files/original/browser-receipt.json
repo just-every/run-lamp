@@ -1,0 +1,74 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T22:23:39.977968+00:00",
+  "test": "tests/e2e/publishing-browser.test.mjs#Sorry templates \u2014 both collections stay complete in Settings and private composers",
+  "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium LAMP_SCREENSHOTS=<packet>/screens cloud_run timeout 900 node --test --test-concurrency=1 --test-name-pattern='Sorry templates \u2014' tests/e2e/publishing-browser.test.mjs",
+  "result": "PASS",
+  "tests": 1,
+  "failures": 0,
+  "duration_ms": 95377.570467,
+  "viewports": [
+    1440,
+    390
+  ],
+  "assertion_viewport": 1440,
+  "screens": [
+    {
+      "path": "screens/1440-sorry-notice-new-composer.png",
+      "bytes": 168914,
+      "sha256": "8abea1872c77e270cdb4b73a9f907eb77da22caf7846f9284193ec57dc3c271a"
+    },
+    {
+      "path": "screens/1440-sorry-notice-settings.png",
+      "bytes": 148112,
+      "sha256": "a1a759ff8c730fddb266c4850826b24a1befd00332e28a4af859b5082d7208ce"
+    },
+    {
+      "path": "screens/1440-sorry-update-existing-composer.png",
+      "bytes": 232829,
+      "sha256": "31a2543a84bcb567f7db1a8e9b0f39009d96e55b0a585abf07ad34d521c9cf23"
+    },
+    {
+      "path": "screens/1440-sorry-update-settings.png",
+      "bytes": 150965,
+      "sha256": "2f1bdfc34960d2141133e04aab9ce5db7c6a8413f4ac417651e6fcced0cb6d4d"
+    },
+    {
+      "path": "screens/390-sorry-notice-new-composer.png",
+      "bytes": 133456,
+      "sha256": "924b8fb15bf2b1906ad73f3099f8a6a6a57d0ce9f7958182bd741cc311737edd"
+    },
+    {
+      "path": "screens/390-sorry-notice-settings.png",
+      "bytes": 96672,
+      "sha256": "82d45d916132c7a0449441b7a599822c7a7ac0f47a975fdd32ebc0e50a0a98de"
+    },
+    {
+      "path": "screens/390-sorry-update-existing-composer.png",
+      "bytes": 193600,
+      "sha256": "33b064467008f2b0dd58e9fd7f9e87676a10957be1fd75436101d1b4d0bf2c03"
+    },
+    {
+      "path": "screens/390-sorry-update-settings.png",
+      "bytes": 99250,
+      "sha256": "58d986eef59ca021995c5f1a403538e43c830b409ed6f51222e758b49ee906ef"
+    }
+  ],
+  "notes": [
+    "Synthetic documented management responses only; provider not contacted.",
+    "Source subject/body/scope/timestamps read in Settings and composers.",
+    "Notice template fills new private form without affected-service claims.",
+    "Update template fills existing private draft preserving lifecycle, affected services and next update; zero published updates.",
+    "Oversized wording shortens in Settings while original source body remains unchanged."
+  ],
+  "expandedHttpTest": {
+    "result": "PASS",
+    "tests": 1,
+    "failures": 0,
+    "duration_ms": 112760.660303,
+    "log": "browser-expanded.log",
+    "receipt": "templates-http-receipt.json",
+    "assertion_viewport": 1440,
+    "screensPreservedFromOriginalRun": true
+  }
+}

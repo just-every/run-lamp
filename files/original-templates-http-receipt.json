@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "type": "lamp.sorry.template-http-proof",
+  "synthetic": true,
+  "signed": false,
+  "author": "Run Edit Run fleet",
+  "completedAt": "2026-11-17T22:35:56.394Z",
+  "counts": {
+    "notice": 27,
+    "update": 27,
+    "imported": 54,
+    "unchangedRemovedByUndo": 52,
+    "editedRetainedByUndo": 2
+  },
+  "exactMetadataReads": 54,
+  "refusals": [
+    {
+      "kind": "notice",
+      "fault": "missing-page",
+      "status": 400
+    },
+    {
+      "kind": "notice",
+      "fault": "conflicting-wording",
+      "status": 400
+    },
+    {
+      "kind": "notice",
+      "fault": "cross-page-scope",
+      "status": 400
+    },
+    {
+      "kind": "notice",
+      "fault": "wrong-owning-page",
+      "status": 400
+    },
+    {
+      "kind": "update",
+      "fault": "missing-page",
+      "status": 400
+    },
+    {
+      "kind": "update",
+      "fault": "conflicting-wording",
+      "status": 400
+    },
+    {
+      "kind": "update",
+      "fault": "cross-page-scope",
+      "status": 400
+    },
+    {
+      "kind": "update",
+      "fault": "wrong-owning-page",
+      "status": 400
+    }
+  ],
+  "identicalRepeatAddsNothing": true,
+  "sourceConflictsPreserveEdits": true,
+  "editedDependenciesRetained": true,
+  "originalWordingRetainedAfterShortening": true,
+  "noPublication": true,
+  "noCustomerMail": true
+}

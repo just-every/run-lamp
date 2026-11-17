@@ -1,0 +1,70 @@
+{
+  "head_before_commit": "3788388b90bc68703d4e4584ce2e171900201a0c",
+  "main": "2490c9fefe5e3bee30d2d1a49441d90a4ebe6ca3",
+  "node": "v24.19.0",
+  "commands": [
+    {
+      "command": "pnpm run check:contract-docs",
+      "start": "2026-11-17T23:09:43.466661+00:00",
+      "finish": "2026-11-17T23:09:44.118098+00:00",
+      "exit": 0,
+      "log": "final-build-check-contract-docs.log"
+    },
+    {
+      "command": "pnpm run source:copies",
+      "start": "2026-11-17T23:09:44.118550+00:00",
+      "finish": "2026-11-17T23:09:44.775394+00:00",
+      "exit": 0,
+      "log": "final-build-source-copies.log"
+    },
+    {
+      "command": "pnpm run source:check",
+      "start": "2026-11-17T23:09:44.776332+00:00",
+      "finish": "2026-11-17T23:09:45.622155+00:00",
+      "exit": 0,
+      "log": "final-build-source-check.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "start": "2026-11-17T23:09:45.622505+00:00",
+      "finish": "2026-11-17T23:10:03.408337+00:00",
+      "exit": 0,
+      "log": "final-build-typecheck.log"
+    },
+    {
+      "command": "pnpm run check:syntax",
+      "start": "2026-11-17T23:10:03.408939+00:00",
+      "finish": "2026-11-17T23:10:39.237928+00:00",
+      "exit": 0,
+      "log": "final-build-check-syntax.log"
+    },
+    {
+      "command": "pnpm run validate:release",
+      "start": "2026-11-17T23:10:39.240494+00:00",
+      "finish": "2026-11-17T23:10:40.625426+00:00",
+      "exit": 0,
+      "log": "final-build-validate-release.log"
+    },
+    {
+      "command": "pnpm run verify:visual:source",
+      "start": "2026-11-17T23:10:40.625811+00:00",
+      "finish": "2026-11-17T23:10:41.076953+00:00",
+      "exit": 0,
+      "log": "final-build-verify-visual-source.log"
+    },
+    {
+      "command": "pnpm run build:app",
+      "start": "2026-11-17T23:10:41.077326+00:00",
+      "finish": "2026-11-17T23:10:49.664217+00:00",
+      "exit": 0,
+      "log": "final-build-build-app.log"
+    },
+    {
+      "command": "pnpm run build:site",
+      "start": "2026-11-17T23:10:49.664574+00:00",
+      "finish": "2026-11-17T23:10:57.307165+00:00",
+      "exit": 0,
+      "log": "final-build-build-site.log"
+    }
+  ]
+}

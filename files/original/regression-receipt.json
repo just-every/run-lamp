@@ -1,0 +1,100 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T22:34:52.678908+00:00",
+  "candidate": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+  "runs": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/cutover-browser.test.mjs",
+      "node": "24.19.0",
+      "result": "failed",
+      "reason": "30 s next-wizard response timeout after Statuspage probes",
+      "log": "cutover-first.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/cutover-browser.test.mjs",
+      "node": "22.20.0",
+      "result": "passed",
+      "tests": 1,
+      "failures": 0,
+      "log": "cutover-retry.log"
+    },
+    {
+      "command": "node --test --test-name-pattern='documented Sorry generator' tests/e2e/sorry-documented-export.test.mjs",
+      "result": "passed",
+      "tests": 1,
+      "failures": 0,
+      "log": "generator-test.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/sorry-documented-export.test.mjs tests/e2e/publishing-contract.test.mjs",
+      "node": "24.19.0",
+      "result": "failed",
+      "tests": 13,
+      "passed": 11,
+      "failed": 2,
+      "log": "api-first.log",
+      "reasons": [
+        "new test expected old review to apply after supplying different source; corrected to assert409 then freshreview",
+        "maintenance browser executable unset; supplied required system Chromium on rerun"
+      ]
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/sorry-documented-export.test.mjs",
+      "node": "22.20.0",
+      "result": "failed",
+      "log": "sorry-api-stale-review.log",
+      "reason": "new test sequencing assumed stale source review remained applicable; product correctly refused409"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/sorry-documented-export.test.mjs",
+      "node": "22.20.0",
+      "result": "failed",
+      "log": "sorry-api-alias-assumption.log",
+      "reason": "new test wrongly expected no continuity aliases from ordinary Sorry source import; changed to preserve existing aliases and assert no new public incident/maintenance records"
+    },
+    {
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node --test --test-name-pattern=\"Maintenance cancellation is reviewed\" tests/e2e/publishing-contract.test.mjs",
+      "node": "22.20.0",
+      "result": "passed",
+      "tests": 1,
+      "failures": 0,
+      "log": "publishing-browser-retry.log"
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/sorry-documented-export.test.mjs",
+      "node": "22.20.0",
+      "result": "passed",
+      "tests": 2,
+      "failures": 0,
+      "log": "sorry-api-passed.log",
+      "templateCounts": {
+        "imported": 54,
+        "removedByUndo": 50,
+        "editedRetained": 4
+      }
+    },
+    {
+      "command": "node --test --test-name-pattern=\"Sorry templates \u2014\" tests/e2e/publishing-browser.test.mjs",
+      "result": "passed",
+      "head": "45bb83a58d8119004e22571cd6e702223590e472",
+      "tests": 1,
+      "failures": 0,
+      "log": "candidate-browser.log",
+      "templateCounts": {
+        "imported": 54,
+        "removedByUndo": 52,
+        "editedRetained": 2
+      }
+    }
+  ],
+  "publishingContractAggregate": {
+    "tests": 11,
+    "passed": 11,
+    "method": "ten passing tests in api-first.log plus corrected-executable single-test rerun in publishing-browser-retry.log; no product/test assertion changes for publishing contract"
+  },
+  "passedTestFileHashes": {
+    "tests/e2e/sorry-documented-export.test.mjs": "a4e8220803dedff55a455cf08028d62b012bd763d159b395b173163b0601e820",
+    "tests/e2e/helpers/sorry-template-import-flow.mjs": "6f5b1065a7c027343f9527349fb14b0333f60627cd222a44d9eb29eef03d4a48",
+    "tests/helpers/import-notifications.mjs": "1d9dde7a1724080bc83e81a9f49cc5954c816748eb39ba24e51e49dcf0270858"
+  }
+}

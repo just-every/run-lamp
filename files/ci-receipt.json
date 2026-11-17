@@ -1,0 +1,10 @@
+{
+  "head": "bb0d352045ccee4a350678dc61bfcdf6e91f6f2b",
+  "run_id": 44197129871,
+  "status": "in_progress",
+  "conclusion": null,
+  "url": "https://github.com/just-every/run-lamp/actions/runs/44197129871",
+  "last_call_unix": 1794957706.418315,
+  "discovered": "2026-11-17T23:11:41.766168+00:00",
+  "polled": "2026-11-17T23:21:46.417319+00:00"
+}

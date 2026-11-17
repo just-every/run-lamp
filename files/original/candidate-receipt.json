@@ -1,0 +1,44 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T22:32:55.986520+00:00",
+  "candidate": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+  "branch": "cloud/sd-lamp-import-sorry-3",
+  "base": "96794ba126e1cf93642760b65a92a02541221045",
+  "contractGeneration": {
+    "write": "Wrote 1 contract documents.\n",
+    "check": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n",
+    "generatedViewsRestoredFromMain": true
+  },
+  "orderedBuildReceipt": "build-receipt.json",
+  "sourceLockCheckExit": 0,
+  "sourceLockCheckedAfterFinalStage": true,
+  "testRegistrations": {
+    "before": 111,
+    "after": 112,
+    "assertionScriptsBefore": 10,
+    "assertionScriptsAfter": 10,
+    "checksBefore": 121,
+    "checksAfter": 122,
+    "method": "Final exact-SHA verification plan reports112 cases plus10 assertion scripts; one new registration in this round, all other registration counts unchanged."
+  },
+  "statusCounts": {
+    "doneBefore": 60,
+    "doneAfter": 60,
+    "partialBefore": 129,
+    "partialAfter": 129,
+    "statusSectionByteIdentical": true
+  },
+  "publicationScan": "Deferred to fleet Mac per cloud authorization; no main push or landing attempted.",
+  "exactCandidateBrowser": {
+    "head": "45bb83a58d8119004e22571cd6e702223590e472",
+    "tests": 1,
+    "failures": 0,
+    "command": "node --test --test-concurrency=1 --test-name-pattern='Sorry templates \u2014' tests/e2e/publishing-browser.test.mjs",
+    "log": "candidate-browser.log",
+    "screensRecaptured": false
+  },
+  "runtimeIdenticalToBrowserHead": true,
+  "workingTreeClean": true,
+  "passedApiTestBlobsMatchCandidate": true,
+  "completedAt": "2026-11-17T22:43:25.230366+00:00"
+}
