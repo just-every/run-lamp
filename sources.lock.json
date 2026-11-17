@@ -660,7 +660,7 @@
       "executable": false
     },
     "docs/moving-in.md": {
-      "sha256": "6b937fbcb872d4033a97c1b83ca3c7b9d007677af024d3412575d3a9373afc2e",
+      "sha256": "3b547d9095b5f1df0b26f3b76c7cd632b039cac0aec432a2eeda00ba82399d91",
       "executable": false
     },
     "docs/operators-and-sign-in.md": {
@@ -8464,7 +8464,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sorry-template-browser-flow.mjs": {
-      "sha256": "028cd6c7e3cfbece005d44ee251f69a97decb256a4c96512d3462a410543d388",
+      "sha256": "7f105a4f3d29f561242101c9f95f32ae7657a4a6e0b65fdc496dba135861b8e5",
       "executable": false
     },
     "tests/e2e/helpers/sorry-template-edge.mjs": {
