@@ -5,7 +5,7 @@ import { INCIDENT_LIFECYCLES, type IncidentLifecycle } from "../../../shared/dom
 import { Button } from "../../../app/client/ui/button";
 import { FormError } from "../../../app/client/ui/states";
 import { fromPageDateTime, toPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
-import { ComponentRelationships, NewIncidentComponents, relationshipSummary } from "./affected-components";
+import { ComponentRelationships, NewIncidentComponents, componentChoiceReason, relationshipSummary } from "./affected-components";
 import { IncidentPreview } from "./incident-preview";
 import { NextUpdateField } from "./next-update-field";
 import { OptionalText } from "./optional-text";
@@ -21,13 +21,15 @@ import type { ComponentsService } from "../../components";
  * With `onClose`, it stands in for an empty incident list (an empty list opens the create form). */
 export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
   const timezone = usePageTimezone();
-  const { form, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate } = useNewIncident();
+  const { form, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate } = useNewIncident();
   const { data: componentData } = useAppData<{ components: Awaited<ReturnType<ComponentsService["list"]>> }>("/api/app/components");
   const [openedAtError, setOpenedAtError] = useState<string | null>(null);
   const [shownFields, setShownFields] = useState({ whatStillWorks: false, details: false, openedAt: false });
   const stillWorksId = useId(), detailsId = useId(), openedAtId = useId();
   const { update } = form;
+  const publishReasonId = useId();
   const name = (componentId: string) => componentData?.components.find(component => component.id === componentId)?.name ?? "Component";
+  const pending = form.claims.find(claim => !claim.state);
   const relationshipRows = form.claims.map(claim => ({ componentId: claim.componentId, name: name(claim.componentId), relationship: claim.relationship }));
   const chooseTiming = (mode: PublishTiming["mode"]) => { if (form.timing.mode !== mode) { setForm(current => ({ ...current, timing: { mode, at: null } })); setTimeErrors(current => ({ ...current, timing: null })); } };
   const groups: OptionGroup[] = [
@@ -48,7 +50,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
       { key: "save-template", label: "Save as a template", glyph: "template", panel: "template-save" },
     ] },
     { caption: "Draft", entries: [
-      { key: "private-draft", label: "Save as private draft", glyph: "lock", disabled: !savable || Boolean(openedAtError), value: savable ? undefined : "Title and component first", onSelect: () => void saveDraft() },
+      { key: "private-draft", label: "Save as private draft", glyph: "lock", disabled: !savable || Boolean(openedAtError), value: savable ? undefined : pending ? "Choose a component state" : "Title and component first", onSelect: () => void saveDraft() },
     ] },
   ];
   return <div className="incident-page new-incident">
@@ -78,11 +80,11 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
       </section>
       <div className="incident-side"><IncidentPreview preview={preview} error={previewError} /></div>
       <div className="composer-publish" inert={publishing}>
-        <UpdateOptions groups={groups} footer={<><span className="publish-hint">{publishHint(form.channels, form.timing, timezone)}</span><Button type="button" disabled={!publishable || publishing || Boolean(openedAtError)} onClick={() => void publish()}>{publishing ? "Publishing…" : form.timing.mode === "schedule" ? "Schedule" : form.timing.mode === "backdate" ? "Publish historical update" : "Publish"}</Button></>}>
+        <UpdateOptions groups={groups} footer={<><span className="publish-hint">{publishHint(form.channels, form.timing, timezone)}</span><Button type="button" disabled={!publishable || publishing || Boolean(openedAtError)} aria-describedby={pending ? publishReasonId : undefined} onClick={() => void publish()}>{publishing ? "Publishing…" : form.timing.mode === "schedule" ? "Schedule" : form.timing.mode === "backdate" ? "Publish historical update" : "Publish"}</Button>{pending ? <p id={publishReasonId} className="publish-reason" role="status">{componentChoiceReason(name(pending.componentId))}</p> : null}</>}>
           <OptionPanel name="notify" title="Notify"><NotifyChannels channels={form.channels} onChange={setChannels} /></OptionPanel>
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={form.timing} timezone={timezone} error={timeErrors.timing} onChange={(timing) => setForm(current => ({ ...current, timing }))} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>
           <OptionPanel name="relationship" title="Relationship"><ComponentRelationships rows={relationshipRows} onChange={(componentId, relationship) => setForm(current => ({ ...current, claims: current.claims.map(claim => claim.componentId === componentId ? { ...claim, relationship } : claim) }))} /></OptionPanel>
-          <TemplateControls draft={update} components={form.claims} onApply={async (template) => applyTemplate(template)} captureUpdate={() => () => true} />
+          <TemplateControls draft={update} components={selectedClaims} onApply={async (template) => applyTemplate(template)} captureUpdate={() => () => true} />
         </UpdateOptions>
       </div>
     </div>

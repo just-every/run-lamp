@@ -35,6 +35,19 @@
 .autosave-status.is-error::before { background: var(--down); }
 .publication-message { margin: 0 0 16px; color: var(--ink-2); font-size: 14px; font-weight: 500; }
 .publication-message.is-error { color: var(--down); }
+.published-update { display: grid; gap: 12px; }
+.publication-confirmation { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); font-size: 14px; }
+.publication-confirmation p { margin: 0; }
+.live-preview { min-width: 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+.live-preview h2 { margin: 0 0 12px; font-size: 17px; }
+.live-preview .preview-card { margin: 0; border: 0; box-shadow: none; padding: 0; }
+.next-draft-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); font-size: 15px; font-weight: 600; text-align: left; cursor: pointer; }
+.next-draft-toggle::after { content: ""; width: 8px; height: 8px; margin-right: 3px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.next-draft-toggle[aria-expanded="true"]::after { transform: rotate(225deg); }
+.incident-compose.is-draft-collapsed { grid-template: "side" auto "panel" auto / minmax(0, 1fr); }
+.is-draft-collapsed .incident-side { border: 0; }
+.is-draft-collapsed .incident-record { border-top: 0; }
+
 .ai-suggestion { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; }
 .ai-suggestion span { color: var(--ink-3); font-size: 13px; }
 .impact-form { display: grid; gap: 20px; }

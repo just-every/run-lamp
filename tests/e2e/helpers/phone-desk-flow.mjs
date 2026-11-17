@@ -45,7 +45,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.locator(`a[href="/app/incidents/${incidentId}"]`).click();
     await page.getByRole('heading', { name: 'First update' }).waitFor();
     await operatorHydrated(page);
-    // Choosing a component from "+ Add component" stages it with this update.
+    // The new attachment needs an explicit choice before it joins the saved update.
     await page.getByLabel('Add component', { exact: true }).selectOption(component.id);
     const composer = incidentComposer(page);
     const audience = composer.audience;
@@ -53,6 +53,10 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await audience.fill('Customers making card payments in the US.');
     await impact.fill('Some checkouts fail during authorization. Retrying may succeed.');
     await page.getByLabel('Next update date and time').fill('2027-09-08T14:00');
+    const state = page.getByLabel(`${component.name} state with this update`, { exact: true });
+    assert.equal(await state.inputValue(), '');
+    assert.equal(await composer.publish.isDisabled(), true);
+    await state.selectOption('Major outage');
     await page.getByText('Draft saved', { exact: true }).waitFor();
     await page.reload();
     await operatorHydrated(page);
@@ -63,10 +67,11 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.getByText('Notification email', { exact: true }).waitFor();
     await inspect('preview');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
-    await page.getByText('Update published.').waitFor();
+    await page.locator('.publication-confirmation').waitFor();
     const published = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(published.updates.length, 1);
     assert.equal(published.components[0].componentId, component.id);
+    await composer.openDraft();
     await composer.setStatus('Resolved');
     await audience.fill('Customers making card payments in the US.');
     await impact.fill('Card authorization is restored. Checkouts are completing normally.');
@@ -75,7 +80,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.getByLabel('Recovery override reason', { exact: true }).fill(recoveryReason);
     await inspect('resolve');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
-    await page.getByText('Update published.').waitFor();
+    await page.locator('.publication-confirmation').waitFor();
     const resolved = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(resolved.lifecycle, 'Resolved');
     assert.ok(resolved.internalNotes.some(note => note.body.includes(recoveryReason)), 'the phone operator records the required private override');

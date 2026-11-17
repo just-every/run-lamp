@@ -136,7 +136,8 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     const form = newIncidentForm(page);
     await form.title.fill("Historical configured-zone incident");
     await form.impact.fill("An earlier outage interval.");
-    await page.getByLabel("Add component", { exact: true }).selectOption(component.id);
+    await form.addComponent(component.name);
+    await form.componentState(component.name, "Major outage");
     await form.audience.fill("Configured-zone customers.");
     await form.nextUpdate.fill("2027-07-15T09:00");
     await form.option("Opened at");
