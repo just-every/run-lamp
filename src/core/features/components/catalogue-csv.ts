@@ -71,7 +71,7 @@ export function catalogueFromCsv(csv: string, current: ComponentCatalogue): Comp
       if (matches.length > 1) throw new Error(`CSV row ${number}: group ${name} is ambiguous; rename the duplicate groups first.`);
       let group = matches[0];
       if (name && !group) {
-        group = { id: createUlid(), name, displayOrder: Math.max(-1, ...catalogue.groups.map(item => item.displayOrder)) + 1 };
+        group = { id: createUlid(), name, parentId: null, description: "", displayOrder: Math.max(-1, ...catalogue.groups.map(item => item.displayOrder)) + 1 };
         catalogue.groups.push(group);
       }
       groupId = name ? group!.id : null;

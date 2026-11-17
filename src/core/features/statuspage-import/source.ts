@@ -38,14 +38,15 @@ export const sourceSchemas = {
   templateGroup: z.object(shapes.templateGroup).passthrough(),
 };
 
-export type SourceGroup = z.infer<z.ZodObject<typeof shapes.group>>;
-export type SourceComponent = z.infer<z.ZodObject<typeof shapes.component>>;
+export type SourceGroup = z.infer<z.ZodObject<typeof shapes.group>> & { parent_id?: string | null; source_metadata?: Record<string, unknown> };
+export type SourceComponent = z.infer<z.ZodObject<typeof shapes.component>> & { source_metadata?: Record<string, unknown> };
 export type SourceUpdate = z.infer<z.ZodObject<typeof shapes.update>> & {
   /** Null when a provider omitted the authored state and normalization only
    * projected lifecycle from the notice's times. */
   authored_status?: null;
+  source_metadata?: Record<string, unknown>;
 };
-export type SourceIncident = Omit<z.infer<z.ZodObject<typeof shapes.incident>>, "incident_updates" | "status"> & { status: z.infer<z.ZodObject<typeof shapes.incident>>["status"] | "cancelled"; incident_updates: SourceUpdate[] };
+export type SourceIncident = Omit<z.infer<z.ZodObject<typeof shapes.incident>>, "incident_updates" | "status"> & { status: z.infer<z.ZodObject<typeof shapes.incident>>["status"] | "cancelled"; incident_updates: SourceUpdate[]; source_metadata?: Record<string, unknown>; source_automation?: boolean; source_began_at?: string | null };
 export type SourceSubscriber = z.infer<z.ZodObject<typeof shapes.subscriber>>;
 export type SourceTemplate = z.infer<z.ZodObject<typeof shapes.template>>;
 export type SourceTemplateGroup = z.infer<z.ZodObject<typeof shapes.templateGroup>>;
