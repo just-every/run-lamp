@@ -1,0 +1,12 @@
+# Lamp 1.11.21 release metadata plan
+
+Author: Run Edit Run fleet. Date: 2026-11-17 UTC.
+
+1. Configure fleet identity, refresh the launcher, install the decrypted-bundle Git helper, push guard and clone-local forwarding commit hooks.
+2. Clone only just-every/run-lamp, create cloud/sd-lamp-release-1-11-21 from fresh main, and inspect its instructions, current metadata, the last published release and the actual v1.11.19..main diff. Check v1.11.21 tag and Release availability without creating either.
+3. Change existing release metadata from 1.11.20 to 1.11.21; retain previousVersion 1.11.19 and all earlier published release records. Fold the unreleased 1.11.20 notes into 1.11.21. Describe the one-command first deployment, public deployment choices, copy naming and prefix restriction, mail-off behavior, sign-in guidance and documentation changes. Exclude test-only changes from buyer notes.
+4. Keep the existing rer pin unchanged, prove package.json and pnpm-lock.yaml agree, inventory migrations from the real published-tag diff, and preserve backup, restore rehearsal, deployment ownership, installation secret custody and upgrade steps.
+5. Install frozen dependencies, retain fleet hooks, fetch fresh main and rebase before the first publication. Regenerate sources.lock.json last with node scripts/edition-authoring/cli.mjs lock; check it, validate release metadata, check generated contract documents, run the typecheck and inspect the exact diff. No product, homepage, README or contract changes are authorized; no new test is needed for release prose.
+6. Commit with explicit fleet author and committer, inspect every candidate commit identity and trailer, and push only the named branch with cloud-push.py. The cloud cannot run the fleet publication scan; the Mac lander must scan before landing. Never publish a tag or GitHub Release, submit for landing, or push main.
+7. Observe exact-SHA Verify through the declared repository REST API, at least 300 seconds between observations of a run, using one watcher and at most ten GitHub calls. Report failures honestly. Open the one contribution PR if required by seed rules and none was opened by the push door.
+8. Write full non-secret results and actual receipts to this packet, publish explicitly selected files only to evidence/sd-lamp-release-1-11-21, verify product branch custody, then remove the product clone after successful publication. Final response includes product SHA, CI runs, before/after counts, unchanged clause statuses, any remaining gates and the sd inbox relay line.

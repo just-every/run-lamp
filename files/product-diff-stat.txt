@@ -1,0 +1,7 @@
+ CHANGELOG.md               | 10 +++++++---
+ RELEASE.json               |  8 ++++----
+ docs/accessibility/vpat.md |  2 +-
+ package.json               |  2 +-
+ seed.json                  |  2 +-
+ sources.lock.json          | 10 +++++-----
+ 6 files changed, 19 insertions(+), 15 deletions(-)

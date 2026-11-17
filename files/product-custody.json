@@ -1,0 +1,14 @@
+{
+  "timestampUTC": "2026-11-17T02:52:39.114468+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-21",
+  "localHead": "4d0675dbe51e2a86f69a8112b153baaf3fd91094",
+  "remoteHead": "4d0675dbe51e2a86f69a8112b153baaf3fd91094",
+  "tree": "3f52ace349da30610511090820c3be2c1523e091",
+  "base": "7c17a3201ef326a841d91fb4dc26c035a5b1c60a",
+  "clean": true,
+  "candidateCommits": 1,
+  "mergeCommits": 0,
+  "productPushVerified": true,
+  "pr": "https://github.com/just-every/run-lamp/pull/399"
+}

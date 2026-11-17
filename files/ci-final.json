@@ -1,0 +1,34 @@
+{
+  "conclusion": "failure",
+  "head_sha": "4d0675dbe51e2a86f69a8112b153baaf3fd91094",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44005467148",
+  "id": 44005467148,
+  "status": "completed",
+  "observedUTC": "2026-11-17T03:02:51Z",
+  "apiCalls": 10,
+  "jobSummary": "plan and build passed; seven of eight test shards passed; composer and aggregate failed",
+  "failedJobIds": [
+    133780118818,
+    133784904824
+  ],
+  "blockingFailure": "locator.click: Timeout 30000ms exceeded waiting for getByRole('button', { name: 'History', exact: true })",
+  "failureLocation": "tests/e2e/helpers/component-read-flow.mjs:80:70",
+  "registeredTests": 101,
+  "assertionScripts": 10,
+  "totalChecks": 111,
+  "failedLogReads": [
+    {
+      "job": 133780118818,
+      "command": "gh run view 44005467148 --repo just-every/run-lamp --job 133780118818 --log-failed",
+      "result": "success",
+      "reads": 1
+    },
+    {
+      "job": 133784904824,
+      "command": "gh run view 44005467148 --repo just-every/run-lamp --job 133784904824 --log-failed",
+      "result": "success",
+      "reads": 1
+    }
+  ],
+  "workflowReruns": 0
+}

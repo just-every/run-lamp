@@ -1,0 +1,8 @@
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+4d0675dbe51e2a86f69a8112b153baaf3fd91094
+Prepare Lamp 1.11.21 release metadata
+
+Fold the unreleased 1.11.20 notes into 1.11.21, describing the one-command first deploy, copy naming, mail-off behavior and current sign-in guidance. Keep the last published predecessor at 1.11.19 and the rer pin at 0.2.121. Regenerate source identities after the metadata changes.
+

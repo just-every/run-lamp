@@ -1,0 +1,44 @@
+{
+  "base": "7c17a3201ef326a841d91fb4dc26c035a5b1c60a",
+  "lastPublishedTag": "v1.11.19",
+  "lastPublishedCommit": "761f3d186e8fa73ea9aa8b61bcf9ebe8013384f6",
+  "versionBefore": "1.11.20",
+  "versionAfter": "1.11.21",
+  "previousVersion": "1.11.19",
+  "rerPackageAndLock": "0.2.121",
+  "newMigrations": [],
+  "coreMigrations": 80,
+  "changedFiles": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "clausesBefore": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "clausesAfter": {
+    "partial": 129,
+    "done": 60,
+    "missing": 55
+  },
+  "clauseStatusChanges": 0,
+  "testsAdded": 0,
+  "testsRemoved": 0,
+  "changelogMatchesReleaseNotes": true,
+  "priorChangelogPreserved": true,
+  "generatedViewsUnchanged": true,
+  "pnpmLockUnchanged": true,
+  "sourceLockFiles": 2296,
+  "clausesTotal": 244,
+  "registeredTestsBefore": 101,
+  "registeredTestsAfter": 101,
+  "assertionScriptsBefore": 10,
+  "assertionScriptsAfter": 10,
+  "totalChecksBefore": 111,
+  "totalChecksAfter": 111
+}

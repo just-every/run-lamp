@@ -1,0 +1,6 @@
+7c17a3201ef326a841d91fb4dc26c035a5b1c60a Resume fresh deploy migrations and expose public deployment choices
+626388fca54b18499b35b9e9c5f9cbcb51b4125b Set Lamp 1.11.20 versions and buyer upgrade notes
+43df283d3f14d150d2ce3fe7d9f6592dd18b393c Prepare Lamp 1.11.20 release metadata
+fa751697bd6ea6301dad830dd9f3483da57a1c98 docs: explain the checkout rer pin without stale version numbers
+0315c508e0dfba37e7d5799fee11cd3aa79fb0b3 Wait for hosted mail routes before fixture teardown
+9a12aa722bb49eff2c9db2c266180c11a869220d Check sign-in domain rules by exact field value

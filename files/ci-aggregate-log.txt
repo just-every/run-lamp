@@ -1,0 +1,10 @@
+verify	Require every planned command to succeed on this commit	﻿2026-11-17T03:00:48.6154265Z ##[group]Run node scripts/verification/aggregate.mjs
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.6154704Z node scripts/verification/aggregate.mjs
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.6155031Z test "$SHARDS_RESULT" = success
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.6172918Z shell: /usr/bin/bash -e {0}
+[workflow environment block omitted from evidence]
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.6174420Z ##[endgroup]
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.8115523Z The shard jobs did not all succeed.
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.8116349Z composer: wrong shard, commit or unsuccessful completion
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.8117142Z Verification: 8/9 shards completed successfully for this commit.
+verify	Require every planned command to succeed on this commit	2026-11-17T03:00:48.8170732Z ##[error]Process completed with exit code 1.

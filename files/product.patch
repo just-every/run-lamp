@@ -1,0 +1,129 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 874aef5..6c7ab84 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,10 +1,14 @@
+ # Changelog
+ 
+-## 1.11.20
++## 1.11.21
+ 
+-**The install and deployment guides now explain which rer version the checkout runs.** They point to the exact pin in `package.json` and `pnpm-lock.yaml`, and explain that `rer --version` shows the installed CLI first and the checkout's pin second. After dependencies are installed, commands run the checkout's pin. Lamp keeps rer 0.2.118.
++**A fresh Lamp deployment completes in one command.** `rer deploy` resumes partially applied migrations while progress continues and checks that every shipped migration is recorded before writing page settings. The deployment form exposes the public app and page addresses, the optional public Worker name, the mail choice and the resource prefix.
+ 
+-Upgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.20`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
++- **Name a second copy with `--environment`.** For example, `--environment staging` creates the `lamp-staging` copy. Leave `LAMP_RESOURCE_PREFIX` unset: a custom prefix is refused when it cannot be combined with the deployment owner claim. `rer signin` checks the recorded app Worker and its live ownership receipt; it cannot repair a failed owner claim.
++- **Email-off installations say what is available.** `rer deploy` defaults to `MAIL_PROVIDER=none`; choose a provider explicitly to enable email. Overview reports email as off without promising a working email subscription form, and the public page explains that email subscriptions are unavailable. The deployment and sign-in guides explain owner entry without email, the choices for other operators and the inputs that must stay unset when email is off.
++- **The install and deployment guides explain the checkout's rer pin.** They point to `package.json` and `pnpm-lock.yaml`, distinguish the installed CLI from the checkout's pinned version and clarify deployment, scheduled work and removal retries. This checkout uses rer 0.2.121.
++
++Upgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.21`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+ 
+ ## 1.11.19
+ 
+diff --git a/RELEASE.json b/RELEASE.json
+index 3600991..c5c99b8 100644
+--- a/RELEASE.json
++++ b/RELEASE.json
+@@ -1,11 +1,11 @@
+ {
+-  "version": "1.11.20",
++  "version": "1.11.21",
+   "previousVersion": "1.11.19",
+-  "date": "2026-11-16",
+-  "publicReleaseNotes": "**The install and deployment guides now explain which rer version the checkout runs.** They point to the exact pin in `package.json` and `pnpm-lock.yaml`, and explain that `rer --version` shows the installed CLI first and the checkout's pin second. After dependencies are installed, commands run the checkout's pin. Lamp keeps rer 0.2.118.\n\nUpgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.20`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.",
++  "date": "2026-11-17",
++  "publicReleaseNotes": "**A fresh Lamp deployment completes in one command.** `rer deploy` resumes partially applied migrations while progress continues and checks that every shipped migration is recorded before writing page settings. The deployment form exposes the public app and page addresses, the optional public Worker name, the mail choice and the resource prefix.\n\n- **Name a second copy with `--environment`.** For example, `--environment staging` creates the `lamp-staging` copy. Leave `LAMP_RESOURCE_PREFIX` unset: a custom prefix is refused when it cannot be combined with the deployment owner claim. `rer signin` checks the recorded app Worker and its live ownership receipt; it cannot repair a failed owner claim.\n- **Email-off installations say what is available.** `rer deploy` defaults to `MAIL_PROVIDER=none`; choose a provider explicitly to enable email. Overview reports email as off without promising a working email subscription form, and the public page explains that email subscriptions are unavailable. The deployment and sign-in guides explain owner entry without email, the choices for other operators and the inputs that must stay unset when email is off.\n- **The install and deployment guides explain the checkout's rer pin.** They point to `package.json` and `pnpm-lock.yaml`, distinguish the installed CLI from the checkout's pinned version and clarify deployment, scheduled work and removal retries. This checkout uses rer 0.2.121.\n\nUpgrading from 1.11.19: back up data and your source changes first, update the checkout to `v1.11.21`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.",
+   "contractChanges": {},
+   "extensionPointChanges": [],
+   "migrations": [],
+   "breaking": false,
+-  "agentUpdateInstructions": "From v1.11.19: back up data and owner source first, update the checkout to v1.11.20, run pnpm install --frozen-lockfile (the checkout keeps @runeditrun/rer exactly 0.2.118) and rer deploy with the same environment and input file. This release adds no migrations or contract meaning changes. The guides now identify the checkout pin and distinguish it from the installed CLI version. Preserve the original deployment checkout, recorded ownership and Cloudflare account credentials for guarded rer signin to the selected environment's app Worker. Preserve the intended enabled or disabled mail configuration; for deliberate MAIL_PROVIDER=none follow the retained 1.11.19 notes and docs/deploy.md, including removal of conflicting sender, sending credentials, relay settings, DKIM inputs and secondary mail-provider configuration. Keep the pre-upgrade backup, exercise a restored copy and check sign-in, first-run, Settings, incident and maintenance workflows. Earlier installations follow the retained release-history records through 1.11.19, including the 0081 migration introduced in 1.11.17 and INSTALLATION_KEY custody. Preserve all published release records, immutable contract snapshots, applied migration history, owner customizations and recorded Worker names and hosting inputs. Run the existing verifier, release validator and affected owner workflows before adopting."
++  "agentUpdateInstructions": "From v1.11.19: back up data and owner source first, update the checkout to v1.11.21, run pnpm install --frozen-lockfile (the checkout pins @runeditrun/rer exactly 0.2.121) and rer deploy with the same environment and input file. This release adds no migrations or contract meaning changes. A fresh deploy resumes partially applied migrations while progress continues and checks the complete ledger before writing page settings. Name a second copy with --environment and leave LAMP_RESOURCE_PREFIX unset so the deployment owner claim can complete. Preserve the original deployment checkout, recorded ownership and Cloudflare account credentials for guarded rer signin to the selected environment's app Worker; signin cannot repair a failed owner claim. Preserve the intended enabled or disabled mail configuration: rer deploy defaults MAIL_PROVIDER to none, so select the intended provider explicitly for enabled email. For deliberate MAIL_PROVIDER=none follow the retained 1.11.19 notes and docs/deploy.md, including removal of conflicting sender, sending credentials, relay settings, DKIM inputs and secondary mail-provider configuration. The guides identify the checkout pin and distinguish it from the installed CLI version. Keep the pre-upgrade backup, exercise a restored copy and check sign-in, first-run, Settings, incident and maintenance workflows. Earlier installations follow the retained release-history records through 1.11.19, including the 0081 migration introduced in 1.11.17 and INSTALLATION_KEY custody. Preserve all published release records, immutable contract snapshots, applied migration history, owner customizations and recorded Worker names and hosting inputs. Run the existing verifier, release validator and affected owner workflows before adopting."
+ }
+diff --git a/docs/accessibility/vpat.md b/docs/accessibility/vpat.md
+index 2f6512a..949bd95 100644
+--- a/docs/accessibility/vpat.md
++++ b/docs/accessibility/vpat.md
+@@ -3,7 +3,7 @@
+ VPAT® Version 2.5 Rev, Revised Section 508 Edition (April 2025).
+ 
+ Product name: Lamp
+-Product version: 1.11.20
++Product version: 1.11.21
+ Evaluation date: 25 October 2026 (UTC; 2026-10-25)
+ Report date: 25 October 2026
+ 
+diff --git a/package.json b/package.json
+index e3b6f0e..4fcea61 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "lamp",
+-  "version": "1.11.20",
++  "version": "1.11.21",
+   "private": true,
+   "type": "module",
+   "packageManager": "pnpm@10.12.4",
+diff --git a/seed.json b/seed.json
+index 4e23eba..eed4c3a 100644
+--- a/seed.json
++++ b/seed.json
+@@ -1,7 +1,7 @@
+ {
+   "id": "lamp",
+   "name": "Lamp",
+-  "version": "1.11.20",
++  "version": "1.11.21",
+   "maturity": "ui-port-local-runtime",
+   "category": "status",
+   "spine": {
+diff --git a/sources.lock.json b/sources.lock.json
+index cb92560..d4afad4 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -496,7 +496,7 @@
+       "executable": false
+     },
+     "CHANGELOG.md": {
+-      "sha256": "896b631b3aa74daf6dc0098400820051459876fa9a7551c5209f12c0641c0b18",
++      "sha256": "0aa26f45bde71030194cccd61a6cc5c778d85023a3e1a0cb6e370649a3ae518a",
+       "executable": false
+     },
+     "CLAUDE.md": {
+@@ -548,7 +548,7 @@
+       "executable": false
+     },
+     "docs/accessibility/vpat.md": {
+-      "sha256": "54dd1782dfe1f064d67fe1fa4bace6c278bf4a69deee73882151da418ca4dfca",
++      "sha256": "603dd3786b7f3bd3e8cb5547a7dbf41942b5cfa3cc2395810f1c5264b015f2a8",
+       "executable": false
+     },
+     "docs/ai-assistance.md": {
+@@ -2608,7 +2608,7 @@
+       "executable": false
+     },
+     "package.json": {
+-      "sha256": "3c6493665d91a6d71d845fffba7baa21f4af43d42e1ddd1278093eeadb52ecf3",
++      "sha256": "fad72f6edf6e9a8512bf4a53e7bf3d1da1f153c0f5fea80b55235d873e1fffb5",
+       "executable": false
+     },
+     "pnpm-lock.yaml": {
+@@ -2920,7 +2920,7 @@
+       "executable": false
+     },
+     "RELEASE.json": {
+-      "sha256": "4759efb6316ee358966e851d9a503504592bb6a963b531d3cb879d81669333c4",
++      "sha256": "179b367fb9a62f4893e147b9cee60eea6e1a66fc88a5ba6f8c06268d7cba9ee7",
+       "executable": false
+     },
+     "rer-packaging.json": {
+@@ -4044,7 +4044,7 @@
+       "executable": false
+     },
+     "seed.json": {
+-      "sha256": "75d7e9ef86ad6c05ceb01905e8b4a6540c75d2ed11ac23ba1a62baedb936f61d",
++      "sha256": "a054c61cca55d2d9468816ee34c365da907aa13644effddaa47f37fc79552230",
+       "executable": false
+     },
+     "src/base/actor.ts": {
