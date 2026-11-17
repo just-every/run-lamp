@@ -1,0 +1,13 @@
+{
+  "head": "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+  "checks": {
+    "typecheck": 0,
+    "rer check --profile first-party --json": 0,
+    "verification-plan": 0,
+    "source-lock-check": 0,
+    "git-diff-check": 0
+  },
+  "time": "2026-11-17T11:10:32.125120+00:00",
+  "sourceTree": "c94b2ad62be5c56563acf0642c69ffdbd85abb00",
+  "proof": "Command passed against the tracked tree committed at this head; no tracked edits followed the checks."
+}

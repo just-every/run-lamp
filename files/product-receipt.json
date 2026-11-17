@@ -1,0 +1,23 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-removal-1",
+  "head": "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+  "base": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+  "identityLog": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+  "files": [
+    "OPERATIONS.md",
+    "docs/deploy.md",
+    "scripts/removal/owner-remove.mjs",
+    "scripts/remove-deployment.mjs",
+    "sources.lock.json",
+    "tests/auth-adoption/deploy-page-host.test.mjs",
+    "tests/helpers/cloudflare-removal-preload.mjs",
+    "tests/helpers/removal-edge.mjs"
+  ],
+  "pushed": true,
+  "time": "2026-11-17T11:10:32.132620+00:00",
+  "commits": [
+    "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+    "2b9a9dcbe17a02f2885c57cb01ef130d0a01456c"
+  ]
+}

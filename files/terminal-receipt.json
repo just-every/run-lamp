@@ -1,0 +1,29 @@
+{
+  "tag": "sd-lamp-removal-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-removal-1",
+  "head": "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+  "custody": "PUSHED",
+  "pr": "https://github.com/just-every/run-lamp/pull/403",
+  "verifyRun": 44071530326,
+  "verify": {
+    "conclusion": null,
+    "head_sha": "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44071530326",
+    "status": "in_progress"
+  },
+  "apiCalls": 10,
+  "blockers": [
+    "Item 2: rer 0.2.121 cannot express a first-party remove capability; exact refusal: The requested first-party capability is unavailable. (exit 4)"
+  ],
+  "clauseChanges": [],
+  "counts": {
+    "casesBefore": 102,
+    "casesAfter": 105,
+    "assertionScripts": 10,
+    "focusedBefore": 7,
+    "focusedAfter": 10,
+    "focusedPassed": 10
+  },
+  "time": "2026-11-17T11:36:08.435549+00:00"
+}

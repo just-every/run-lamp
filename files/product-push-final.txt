@@ -1,0 +1,11 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/sd-lamp-removal-1
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/just-every/run-lamp.git
+ 	HEAD:refs/heads/cloud/sd-lamp-removal-1	2b9a9dc..e08997d
+Done
+remote: 
+remote: GitHub found 12 vulnerabilities on just-every/run-lamp's default branch (10 moderate, 2 low). To find out more, visit:        
+remote:      https://github.com/just-every/run-lamp/security/dependabot        
+remote: 
+PUSH_OK branch=cloud/sd-lamp-removal-1

@@ -1,0 +1,11 @@
+{
+  "command": "node --test tests/auth-adoption/deploy-page-host.test.mjs",
+  "head": "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+  "exitCode": 0,
+  "tests": 10,
+  "passed": 10,
+  "fakeEdgeOnly": true,
+  "time": "2026-11-17T11:10:32.125392+00:00",
+  "sourceTree": "c94b2ad62be5c56563acf0642c69ffdbd85abb00",
+  "proof": "Command passed against the tracked tree committed at this head; no tracked edits followed the checks."
+}

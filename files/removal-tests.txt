@@ -1,0 +1,21 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ Deploy retries a page host whose DNS answer is not there yet and completes once it serves (11.705523ms)
+✔ Deploy completes with a detached page host and says it skipped the check (0.720411ms)
+✔ Deploy fails naming the host and the DNS code when the resolver never answers (0.834638ms)
+✔ Deploy still fails when the page host answers but is not serving the retained snapshot (9.369724ms)
+✔ A page host behind a Cloudflare for SaaS route is checked once its DNS reaches the target, skipped until then, and still fails when the resolver never answers (1.328478ms)
+✔ Native deployment keeps default resources and selects only the explicitly named public Worker and host (728.88311ms)
+✔ Native setup refuses invalid, colliding and mismatched public Worker selections before provider mutation (3531.428444ms)
+✔ Native removal settles deletion lag, drains multiple object batches and resumes a half-removed installation in one invocation (28042.467916ms)
+✔ Native removal requires confirmation and refuses replaced identities before writes (834.190045ms)
+✔ Native removal retains resumable records after provider refusal (7243.338659ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 42467.115033

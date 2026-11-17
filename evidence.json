@@ -1,0 +1,142 @@
+{
+  "files": [
+    {
+      "blob": "6eb39f2be2e127eca0c1e85a827fc962be4cb30e",
+      "bytes": 2307,
+      "path": "PLAN.md",
+      "sha256": "9b2d1230a5524330f5b15b2deb572bb2499920fcaa8ced10245d9a06de492cdf"
+    },
+    {
+      "blob": "dd59d382519247b5884ba2d9b455bac442a0365b",
+      "bytes": 7391,
+      "path": "REPORT.md",
+      "sha256": "01a4c7c487e058358fe3793484f867441fe10ccb32b25b8c57243b7bf6d9e07d"
+    },
+    {
+      "blob": "53f887c308264816710c4a4d7f81da627e86a580",
+      "bytes": 181,
+      "path": "api-calls.json",
+      "sha256": "042a4d65e8c55f71b26358250034bc2087b868ec72b2e2e5d30788697d02804b"
+    },
+    {
+      "blob": "e6d6500befb71eb70550f5e88a05f720f0ac94c5",
+      "bytes": 447,
+      "path": "checks-receipt.json",
+      "sha256": "5c4c6f19584a8e8fa5351c11e6d2dde82be469315b92c503eb65900d38dd6182"
+    },
+    {
+      "blob": "325e1458c191bf878f2814287ff30016103b8fd6",
+      "bytes": 14577,
+      "path": "ci-discovery-final.json",
+      "sha256": "5b505b482624b2dd34dadbab77a0ee5ab3ea7f05da6b9d3a9beb36f875c89fbc"
+    },
+    {
+      "blob": "db4efad438bcffa5bca29518ebf0a00ff5482e3b",
+      "bytes": 14563,
+      "path": "ci-discovery.json",
+      "sha256": "088b4fa72c49feed2d7a127178031e5f3b46ca76d015c8e99a2c1190c4270571"
+    },
+    {
+      "blob": "02a1f1f60ef64fa530250573bb75a563509a5b0c",
+      "bytes": 174,
+      "path": "ci-final-status.json",
+      "sha256": "40ea2ff7a22502f24ef1a95931ba7ff889661444c93c3ae98cac77f03e4e419a"
+    },
+    {
+      "blob": "3c86266104500be8fe132938ed7c2e589cfed5de",
+      "bytes": 98,
+      "path": "contract-regenerate.txt",
+      "sha256": "6a3edad7783bf6c13e63dbe5a49f4f1d6a932a81c60be61934495e59874a258a"
+    },
+    {
+      "blob": "65fd2f4f2a73f22c71318a0c856481d9ebfc699c",
+      "bytes": 170,
+      "path": "counts-after.txt",
+      "sha256": "999d437840c67d3a5461ebe7e008c996b653c44a847440cc365f3e5857036dd8"
+    },
+    {
+      "blob": "ab5e85479a91da07819f345f7bc8c1c861bdb8f7",
+      "bytes": 170,
+      "path": "counts-before.txt",
+      "sha256": "7fda5d3895cb041e7a2986fc277ed141113cf305a16b90caa857f5d2ce678d0c"
+    },
+    {
+      "blob": "3b494a2fb5cd47016a3527128573b2dbbde2f893",
+      "bytes": 155,
+      "path": "pr-receipt.json",
+      "sha256": "9002d0843f5cebc4dde54d6494406fa6538aca80aa00de07363a77bbdb8b16c3"
+    },
+    {
+      "blob": "8abfb6e371d39e3b6a22377bebf34cbce0931951",
+      "bytes": 611,
+      "path": "product-push-final.txt",
+      "sha256": "ebca499b855f86820713d24379de3a4330025bbfcc95de6fe97ebfe43dcd9707"
+    },
+    {
+      "blob": "53595821482f04afa2f39170b5f12258b8c4f7dc",
+      "bytes": 800,
+      "path": "product-push.txt",
+      "sha256": "bea9a1a17507eeac43823b9ec402b93c47d671df73f9dee5ff3b4809c61901d7"
+    },
+    {
+      "blob": "70f1cdadb1240d4a3bd0d3a482c62506a240e20f",
+      "bytes": 870,
+      "path": "product-receipt.json",
+      "sha256": "0f387f8dc83744f1084c02b70cb8221d0f22e339bbd799d08dbe6ba252538af0"
+    },
+    {
+      "blob": "f9717db32a6954b4331e20d101ba3b176a28557d",
+      "bytes": 425,
+      "path": "removal-receipt.json",
+      "sha256": "50088bf340c48e2618d6af25e011684f67b1a375ab8aff9f9d9070d485ba111c"
+    },
+    {
+      "blob": "940df55226b896a55954cd2a1a804e20431c119b",
+      "bytes": 1407,
+      "path": "removal-tests.txt",
+      "sha256": "a0f9e2bb1028c9e63159e7d8ea60f9d380a476ae67345a8c51ff40e0d27fa2c4"
+    },
+    {
+      "blob": "543776dadd6e69b836207286c77160fca8d069a5",
+      "bytes": 44986,
+      "path": "rer-check.txt",
+      "sha256": "8d834cd954a794019b50870293d446433ba4ef8cf6f9136a1b05d528920f7c91"
+    },
+    {
+      "blob": "c2e24e66a735de5f91d551d6071c796f8da044a5",
+      "bytes": 193,
+      "path": "rer-remove-before.txt",
+      "sha256": "4630a16c6754aff81990614d496bfc1e82de5ea3867507ec3985581f50f03b69"
+    },
+    {
+      "blob": "33444c071454ac91983ac4af94744a18d73da0f5",
+      "bytes": 402169,
+      "path": "source-check-final.txt",
+      "sha256": "6ec2ed16acb7bba42d784ba005faf0edfaa8eb799024a97b2574b3439a7a4dd0"
+    },
+    {
+      "blob": "a8a733feeb8f8d1ca23477d4797d7c33b6ec9013",
+      "bytes": 402155,
+      "path": "source-lock.txt",
+      "sha256": "3d120ae58ceb11e7cabd3d2cdcbf848b819fb8e20f3c76a12155e314b4d0d366"
+    },
+    {
+      "blob": "7f4a5d78384be52802a26a1be816308a8e5f2e24",
+      "bytes": 914,
+      "path": "terminal-receipt.json",
+      "sha256": "e4e898278ca1964e15360569e81f539199ba0dfcb05aadfac3c5de951c062bac"
+    },
+    {
+      "blob": "a703dc788b27f26504bd5571c647274b30b50230",
+      "bytes": 168,
+      "path": "typecheck.txt",
+      "sha256": "1bcb893c47f1474f8234559b99a1cbfbdf9282d9aae888e07411b89778ead03d"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-removal-1",
+  "product_head": "e08997d6bd318805f8e8f3f73e8f9d3ec5602c2f",
+  "ref": "refs/heads/evidence/sd-lamp-removal-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-removal-1"
+}

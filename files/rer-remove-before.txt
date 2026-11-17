@@ -1,0 +1,6 @@
+Using project Node 22.20.0 (current Node 24.19.0).
+Checking pinned pnpm
+10.12.4
+Your application is running locally
+The requested first-party capability is unavailable.
+remove: failed (exit 4)
