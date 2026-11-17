@@ -1,0 +1,20 @@
+{
+  "head": "52b8cf9a9fea49553adb7e18a3877c76c8122d00",
+  "run_id": 44166174802,
+  "queries": [
+    {
+      "time": "2026-11-17T20:25:36.189790+00:00",
+      "result": [
+        {
+          "conclusion": "success",
+          "event": "push",
+          "head_sha": "52b8cf9a9fea49553adb7e18a3877c76c8122d00",
+          "html_url": "https://github.com/just-every/run-lamp/actions/runs/44166174802",
+          "id": 44166174802,
+          "name": "Verify",
+          "status": "completed"
+        }
+      ]
+    }
+  ]
+}

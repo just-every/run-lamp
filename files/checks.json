@@ -1,0 +1,58 @@
+{
+  "edition": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-design-invite-1",
+  "head": "52b8cf9a9fea49553adb7e18a3877c76c8122d00",
+  "baseline": "c26d13c6df113fb79ac4b9d1480f15c16a06be51",
+  "timestamp": "2026-11-17T20:09:12.965293+00:00",
+  "local_setup": "passed",
+  "build": "passed",
+  "typecheck": "passed",
+  "browser": {
+    "engine": "Chromium",
+    "widths": [
+      1440,
+      390
+    ],
+    "candidate_head": "52b8cf9a9fea49553adb7e18a3877c76c8122d00",
+    "before": "before-browser.json",
+    "after": "after-browser.json"
+  },
+  "repeat_setup": {
+    "second_answer": "#863d20",
+    "retained_colour": "#48724E",
+    "notice": "Your existing accent colour was kept. You can change it in Settings \u2192 Look."
+  },
+  "touched_journey": {
+    "file": "tests/e2e/auth-adoption-journey.test.mjs",
+    "name": "SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out",
+    "before_registrations": 1,
+    "after_registrations": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "contract_docs": "current",
+  "source_lock": "passed",
+  "candidate_push": "success",
+  "candidate_identity_and_trailers": "checked",
+  "contract": {
+    "before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55
+    },
+    "claimed": []
+  },
+  "publication_scan": "fleet lander runs its own publication scan",
+  "local_mail_notice_regression": {
+    "file": "tests/e2e/maintenance-timezone.test.mjs",
+    "test": "TEAM-002 \u2014 Local operator invitations disclose suppressed email",
+    "passed": 1,
+    "failed": 0
+  }
+}

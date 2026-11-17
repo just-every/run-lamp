@@ -1,0 +1,129 @@
+{
+  "head": "cc96176d7f05f8e026c569d31f97db25e6ec6f08",
+  "run_id": 44161343617,
+  "queries": [
+    {
+      "time": "2026-11-17T19:41:51.277001+00:00",
+      "result": []
+    },
+    {
+      "time": "2026-11-17T19:46:52.352031+00:00",
+      "result": [
+        {
+          "conclusion": null,
+          "event": "push",
+          "head_sha": "cc96176d7f05f8e026c569d31f97db25e6ec6f08",
+          "html_url": "https://github.com/just-every/run-lamp/actions/runs/44161343617",
+          "id": 44161343617,
+          "name": "Verify",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "time": "2026-11-17T19:51:53.347254+00:00",
+      "result": {
+        "conclusion": null,
+        "head_sha": "cc96176d7f05f8e026c569d31f97db25e6ec6f08",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44161343617",
+        "status": "in_progress"
+      }
+    },
+    {
+      "time": "2026-11-17T19:56:54.323261+00:00",
+      "result": {
+        "conclusion": null,
+        "head_sha": "cc96176d7f05f8e026c569d31f97db25e6ec6f08",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44161343617",
+        "status": "in_progress"
+      }
+    },
+    {
+      "time": "2026-11-17T20:01:55.480526+00:00",
+      "result": {
+        "conclusion": "failure",
+        "head_sha": "cc96176d7f05f8e026c569d31f97db25e6ec6f08",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44161343617",
+        "status": "completed"
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134315687296,
+      "name": "plan"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134315782515,
+      "name": "build"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421131,
+      "name": "shards (demo)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421136,
+      "name": "shards (public)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421141,
+      "name": "shards (portability)"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Verify this product shard"
+      ],
+      "id": 134316421202,
+      "name": "shards (composer)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421234,
+      "name": "shards (runtime)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421238,
+      "name": "shards (ownership)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421310,
+      "name": "shards (imports)"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134316421354,
+      "name": "shards (delivery)"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require every planned command to succeed on this commit"
+      ],
+      "id": 134325786597,
+      "name": "verify"
+    }
+  ],
+  "failed_assertion": {
+    "file": "tests/e2e/maintenance-timezone.test.mjs",
+    "test": "TEAM-002 \u2014 Local operator invitations disclose suppressed email",
+    "job": 134316421202,
+    "result": "The Operators status did not contain the expected local mail-suppression sentence within 30000 ms."
+  }
+}
