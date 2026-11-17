@@ -69,8 +69,10 @@ test('INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communicat
     assert.ok(publicPage.includes(new Date(revised).toISOString()));
     for (const identity of [owner.displayName, replacement.displayName]) assert.ok(!publicPage.includes(identity));
     assert.ok(!publicPage.includes(operatorDraft.details));
+    await j.signIn();
     const audit = await j.json('/api/app/audit-log?action=communication-owner-changed&limit=100');
     assert.ok(audit.entries.some(row => row.entityId === incident.id && row.actorId === replacement.id));
+    await j.signIn(replacementEmail);
     await j.save(incident.id, { lifecycle: 'Resolved', nextUpdateAt: null }); await j.publish(incident.id);
     const count = j.messages.length;
     await j.tick(revised + 2 * hour);
