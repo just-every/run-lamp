@@ -199,3 +199,137 @@ test('Native setup refuses invalid, colliding and mismatched public Worker selec
     assert.ok(requests.every(request => request.method === 'GET'), 'a new selection cannot replace an existing recorded public Worker');
   } finally { proxy.closeAllConnections(); await new Promise(resolve => proxy.close(resolve)); await edge.close(); await rm(directory, { recursive: true, force: true }); }
 });
+
+// Native teardown is a public process door; only Cloudflare's network edge is
+// replaced. Each run gets its own real deployment and creation records.
+async function removalFixture() {
+  const { removalEdge } = await import('../helpers/removal-edge.mjs');
+  const directory = await mkdtemp(join(tmpdir(), 'lamp-removal-'));
+  const environment = 'synthetic-removal';
+  const names = resourceNames(environment);
+  const accountId = randomBytes(16).toString('hex'), token = `synthetic-lamp-${hex()}`;
+  const edge = await removalEdge({accountId, token, names});
+  const paths = {record: join(directory, '.seed/deployment', `${environment}.json`), app: join(directory, '.rer/deploy', `${environment}.json`), page: join(directory, '.rer/deploy', `${environment}.page.json`)};
+  const envFile = join(directory, 'inputs.env');
+  await writeFile(envFile, `CLOUDFLARE_ACCOUNT_ID=${accountId}\nCLOUDFLARE_API_TOKEN=${token}\n`, {mode: 0o600});
+  for (const path of [join(directory, '.seed/deployment'), join(directory, '.rer/deploy')]) await mkdir(path, {recursive: true});
+  await writeFile(paths.record, JSON.stringify({accountId, resources: names, appHost: `${names.worker}.synthetic-owner.workers.dev`, pageHost: `${names.publicWorker}.synthetic-owner.workers.dev`}));
+  for (const [page, path] of [[false, paths.app], [true, paths.page]]) {
+    const worker = page ? names.publicWorker : names.worker;
+    const live = edge.base.live(worker), deployment = edge.base.workers.get(worker).deployments[0];
+    const owned = {worker: {status: 'created'}, d1: {}, r2: {}, kv: {}, queues: {}};
+    if (!page) {
+      owned.d1[names.database] = {status: 'created', id: edge.database.uuid};
+      owned.r2[names.bucket] = {status: 'created', id: edge.bucket.creation_date};
+      owned.queues[names.queue] = {status: 'created', id: edge.queue.queue_id};
+    }
+    await writeFile(path, JSON.stringify({version: 1, kind: 'rer-deploy-owner-state', accountId, project: 'just-every/lamp', environment, worker, owned,
+      receipt: {provider: {versionId: live.id, deploymentId: deployment.id, etag: live.etag}}}));
+  }
+  const run = async (confirm = true) => {
+    const child = spawn(process.execPath, [join(root, 'scripts/remove-deployment.mjs'), '--environment', environment, '--env-file', envFile, ...(confirm ? ['--yes'] : [])], {
+      cwd: directory, timeout: 45000, stdio: ['ignore', 'pipe', 'pipe'],
+      env: {...Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(CLOUDFLARE_|LAMP_|RER_|NODE_OPTIONS$)/.test(name))),
+        NODE_OPTIONS: `--import=${new URL('../helpers/cloudflare-removal-preload.mjs', import.meta.url).href}`, LAMP_FAKE_EDGE: edge.origin, LAMP_FAKE_EDGE_HOSTS: 'api.cloudflare.com'},
+    });
+    let output = '';
+    child.stdout.on('data', chunk => { output += chunk; });
+    child.stderr.on('data', chunk => { output += chunk; });
+    return {code: await new Promise((resolve, reject) => { child.once('error', reject); child.once('close', resolve); }), output};
+  };
+  return {edge, paths, names, run, async close() { await edge.close(); await rm(directory, {recursive: true, force: true}); }};
+}
+
+test('Native removal settles deletion lag, drains multiple object batches and resumes a half-removed installation in one invocation', async () => {
+  for (const scenario of ['full', 'half', 'retired-records']) {
+    const fixture = await removalFixture();
+    const {edge, paths, names} = fixture;
+    try {
+      if (scenario !== 'full') {
+        edge.base.workers.delete(names.publicWorker);
+        edge.base.workers.delete(names.worker);
+        edge.namespaces.delete(names.worker);
+        edge.databases.delete(names.database);
+        edge.queues.delete(names.queue);
+        // The first target's state can already have been retired.
+        await rm(paths.page);
+      }
+      if (scenario === 'retired-records') {
+        edge.buckets.delete(names.bucket);
+        edge.objects.clear();
+        await rm(paths.app);
+      }
+      const result = await fixture.run();
+      assert.equal(result.code, 0, result.output);
+      assert.match(result.output, /read back: none remains\./);
+      if (scenario !== 'retired-records') {
+        assert.ok(edge.objectPages.filter(rows => rows.length).length > 2, 'several object batches are needed');
+        assert.ok(edge.bucketDeletes > 1, 'a not-empty bucket delete is retried inside the same run');
+      } else assert.deepEqual(edge.writes, [], 'retired creation records require complete readback, never fresh deletion authority');
+      assert.equal(edge.objects.size, 0);
+      assert.deepEqual([...edge.base.workers.keys()], ['synthetic-other']);
+      assert.deepEqual([...edge.databases.values()], [edge.foreign.database]);
+      assert.deepEqual([...edge.buckets.values()], [edge.foreign.bucket]);
+      assert.deepEqual([...edge.queues.values()], [edge.foreign.queue]);
+      assert.deepEqual([...edge.namespaces.values()], [edge.foreign.namespace]);
+      for (const path of Object.values(paths)) await assert.rejects(readFile(path), {code: 'ENOENT'});
+    } finally { await fixture.close(); }
+  }
+});
+
+test('Native removal requires confirmation and refuses replaced identities before writes', async () => {
+  const fixture = await removalFixture();
+  const {edge, paths, names} = fixture;
+  try {
+    const unconfirmed = await fixture.run(false);
+    assert.notEqual(unconfirmed.code, 0);
+    assert.deepEqual(edge.writes, []);
+    const original = await readFile(paths.app, 'utf8');
+    const replaced = JSON.parse(original);
+    replaced.owned.r2[names.bucket].id = '2026-11-16T00:00:00.000Z';
+    await writeFile(paths.app, JSON.stringify(replaced));
+    // The public target must also pass its original identity check.
+    const page = JSON.parse(await readFile(paths.page, 'utf8'));
+    page.receipt.provider.etag = 'synthetic-replaced';
+    const pageOriginal = await readFile(paths.page, 'utf8');
+    await writeFile(paths.page, JSON.stringify(page));
+    const wrongWorker = await fixture.run();
+    assert.notEqual(wrongWorker.code, 0);
+    assert.match(wrongWorker.output, /owned-resource-replaced/);
+    assert.deepEqual(edge.writes, []);
+    // Skip the already absent public target to prove bucket identity preflight.
+    await writeFile(paths.page, pageOriginal);
+    edge.base.workers.delete(names.publicWorker);
+    const wrongBucket = await fixture.run();
+    assert.notEqual(wrongBucket.code, 0);
+    assert.match(wrongBucket.output, /owned-resource-replaced/);
+    assert.deepEqual(edge.writes, []);
+    await rm(paths.app);
+    edge.base.workers.delete(names.worker);
+    const missingRecord = await fixture.run();
+    assert.notEqual(missingRecord.code, 0);
+    assert.match(missingRecord.output, /unrecorded-resource/);
+    assert.deepEqual(edge.writes, [], 'missing creation records cannot retire the outer deployment record while named data remains');
+    assert.ok(await readFile(paths.record));
+  } finally { await fixture.close(); }
+});
+
+test('Native removal retains resumable records after provider refusal', async () => {
+  const fixture = await removalFixture();
+  const {edge, paths, names} = fixture;
+  try {
+    edge.denyBucket = true;
+    const refused = await fixture.run();
+    assert.notEqual(refused.code, 0);
+    assert.match(refused.output, /remove-incomplete/);
+    assert.ok(refused.output.includes(names.bucket));
+    assert.match(refused.output, /same command again resumes/);
+    assert.ok(await readFile(paths.app));
+    assert.ok(await readFile(paths.record));
+    edge.denyBucket = false;
+    const resumed = await fixture.run();
+    assert.equal(resumed.code, 0, resumed.output);
+    assert.match(resumed.output, /none remains/);
+    assert.deepEqual([...edge.buckets.values()], [edge.foreign.bucket]);
+  } finally { await fixture.close(); }
+});

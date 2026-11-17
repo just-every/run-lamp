@@ -334,7 +334,8 @@ and optional.
 ## Remove an installation
 
 Back up anything you want to keep first ([Backups and recovery](backups-and-recovery.md)).
-Removal runs on Node 22 or later rather than through `rer`. Check with
+The native command runs on Node 22 or later. The pinned rer CLI does not yet
+expose `rer remove` for first-party projects; use the command below. Check with
 `node --version`; if it is missing or older (the Run page's installer keeps its
 Node private to `rer`), install Node 22 from [nodejs.org](https://nodejs.org/en/download)
 or your package manager and open a new terminal. Then, from the Lamp folder that
@@ -344,9 +345,12 @@ deployed it, with the same environment and input file:
 node scripts/remove-deployment.mjs --environment production --env-file "$LAMP_DEPLOY_ENV" --yes
 ```
 
-It removes the public page Worker, then the app Worker with its database, files
-and queue, saying which it is doing (each can take a few minutes), and reads back
-that none remains. In custom-domain mode there is one Worker. `rer deploy --remove
+One invocation removes the public page Worker, then the app Worker with its
+database, files and queue, and reads back that none remains, including its
+Durable Object namespace. It allows up to 60 seconds per readback for Cloudflare
+to stop reporting a deleted resource and up to 10 minutes per R2 bucket to purge
+bounded object batches and retry a not-empty bucket delete. Large buckets can
+take about five minutes per GB-scale bucket. In custom-domain mode there is one Worker. `rer deploy --remove
 --yes` alone does not remove the separate public page Worker of a `workers.dev`
 installation, so use this command.
 
@@ -359,12 +363,12 @@ A failed publication deletes nothing; a failed cleanup resumes on a later publis
 Deployment removal purges all snapshot versions with the rest of that bucket.
 <!-- Run Edit Run fleet, 2026-11-17: bounded snapshot retention. -->
 
-A second run can be needed because Cloudflare may still report a just-deleted
-Worker or R2 bucket after deletion or a long object purge; if the command ends
-with `remove-incomplete`, run the same command again with the retained records.
+If a provider refusal or exhausted budget leaves a resource unverified, the
+command stops with `remove-incomplete`, names the remaining resource and keeps
+its creation records; running the same command again resumes safely.
 
 Removal only touches what its creation records prove this environment created;
 it never matches by name. If an older installation has no creation records, the
 command refuses; see the [removal limits](deployment-reference.md#removal-and-deployment-records).
 
-<!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->
+<!-- Run Edit Run fleet, 2026-11-17: single-invocation removal follow-up. -->

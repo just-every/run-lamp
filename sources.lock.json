@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "bf833c635402f0d2b220898cecc6870dd03afba0a58efad78a20fd069edacd59",
+      "sha256": "9561f2c77ec8852d6d6650a7cd1001ea36f1fe4119b763f3e5d959f9a8a11311",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -2604,7 +2604,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "7652717c013221e778647f3ac99542ba9489fa900c8206c6b60c7f6358b618e0",
+      "sha256": "92cf419cb58f7c0a1d239bd3f8ce9cbd22e9a523dd83f922ec1dd365cd9caed8",
       "executable": false
     },
     "package.json": {
@@ -3979,8 +3979,12 @@
       "sha256": "58e870e58aa281fddf66ebb34c70281cf32e517353ceba4f13536682fcf9de89",
       "executable": false
     },
+    "scripts/removal/owner-remove.mjs": {
+      "sha256": "2b1006d0df5ae0db02542eafb626c4b4b39c8c4e458a7e1827c69a2d471c8f38",
+      "executable": false
+    },
     "scripts/remove-deployment.mjs": {
-      "sha256": "9745adb76f09aa2451b085bf63eb7ac3d33c4a15fcea9a226a20a068de2bff84",
+      "sha256": "cf3148007a1600ea411c16a281ceb0d40f0f651030cf2541709ce11e18f370e8",
       "executable": false
     },
     "scripts/setup-migrations.mjs": {
@@ -7884,7 +7888,7 @@
       "executable": false
     },
     "tests/auth-adoption/deploy-page-host.test.mjs": {
-      "sha256": "8f5b4841794ed5d4d5416e39984d9297912986ff47edfb646ddd49ffad963806",
+      "sha256": "1baac19b43c4a1aa4ac1e05ad64d12d1fe0f97318f4387d4e82a2162e974e512",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {
@@ -9383,6 +9387,10 @@
       "sha256": "12f8123bffd952aa58f9c118f467899b0753e1fba5fbeb8bd32176c19958bff4",
       "executable": false
     },
+    "tests/helpers/cloudflare-removal-preload.mjs": {
+      "sha256": "c17eea2f566fc42f353a8a5e7e99221094dd4381db9d223b66e6b446ef69ef1f",
+      "executable": false
+    },
     "tests/helpers/dev-key.mjs": {
       "sha256": "d97cf20cfe9647fbb53f4d3ae227d78cd02c1fb0e498aa908224a25a247da7cd",
       "executable": false
@@ -9405,6 +9413,10 @@
     },
     "tests/helpers/public-meaning.mjs": {
       "sha256": "9411a3b66ddc3c5ea47bfba2855acc6ac8b5567cc482f0497e8fa4c1d3f1f6d6",
+      "executable": false
+    },
+    "tests/helpers/removal-edge.mjs": {
+      "sha256": "396a42dcd96785582711f593bcad90f148dd7351e0494d7bb127dd448355513e",
       "executable": false
     },
     "tests/helpers/request-headers.mjs": {
