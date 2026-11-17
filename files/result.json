@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "summary": "Current main already uses constant script bytes and an allowlisted Demo/Dev suffix, with escaped metadata passed as data; browser probes verified hostile values cannot inject code, so no product change is needed for code-8.",
+  "tests": "Node 22.20.0 / pnpm 10.12.4: node --check modules/demo/label.mjs PASS; pnpm typecheck PASS; standalone Chromium decorateLabel response probe PASS (1 test, four cases). Exact-SHA existing Verify 44081744764 success.",
+  "security": true
+}

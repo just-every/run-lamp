@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "tag": "gr-mt-lamp-code-10",
+  "repository": "just-every/run-lamp",
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "status": "no-change",
+  "product": {
+    "branch": "cloud/gr-mt-lamp-code-10",
+    "head": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+    "origin_main": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+    "working_tree_clean": true,
+    "new_commits": 0,
+    "changed_files": 0,
+    "product_pushed": false,
+    "pr": null
+  },
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "/usr/bin/chromium",
+    "workers": 1
+  },
+  "checks": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "exit": 0
+    },
+    {
+      "command": "node --check modules/demo/label.mjs",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "receipt": "typecheck.txt"
+    },
+    {
+      "command": "LAMP_CHECKOUT=<clone> LAMP_PROBE_EVIDENCE=<packet> node --test --test-concurrency=1 <packet>/label-probe.test.mjs",
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "cases": 4,
+      "receipt": "label-probe.tap"
+    }
+  ],
+  "initial_probe": {
+    "receipt": "label-probe-initial.tap",
+    "exit": 1,
+    "cause": "Fixture requested visibility for a deliberately concealed demo exit; probe corrected to wait for attachment. Product source unchanged."
+  },
+  "source_history": {
+    "constant_script_introduced": "0e6cbfe073cd3fd799ce7d810dfd56664905282a",
+    "main_inherits_it": true,
+    "current_label_sha256": "7ca757507f3d3495a8777f3058dfa55d946b1656d6e31bec1c9c774dde1f3fb3"
+  },
+  "ci": {
+    "run_id": 44081744764,
+    "workflow": "Verify",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/44081744764",
+    "scope": "existing main run; no new product candidate"
+  },
+  "counts": {
+    "before": {
+      "product_files_changed": 0,
+      "new_product_tests": 0,
+      "contract_done": 60,
+      "contract_partial": 129,
+      "contract_missing": 55,
+      "contract_total": 244
+    },
+    "after": {
+      "product_files_changed": 0,
+      "new_product_tests": 0,
+      "contract_done": 60,
+      "contract_partial": 129,
+      "contract_missing": 55,
+      "contract_total": 244
+    }
+  },
+  "clause_changes": [],
+  "alert_access": {
+    "attempts": 5,
+    "status": 403,
+    "message": "Resource not accessible by integration",
+    "receipt": "alert-access.json"
+  },
+  "github_api_calls": 6,
+  "limitations": [
+    "GitHub code-scanning alert state is unavailable to this integration; no dismissal or closed-state claim.",
+    "Screenshots show a synthetic decorated Response fixture, not a deployed installation.",
+    "No full local suite: source unchanged; focused behavior probe plus typecheck and existing exact-SHA CI were used."
+  ],
+  "product_publication_scan": "not run: no product change or product push"
+}

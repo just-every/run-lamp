@@ -1,0 +1,23 @@
+✖ demo label keeps metadata and mode out of executable code while preserving title updates and CSP (30893.775782ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 31355.314672
+
+✖ failing tests:
+
+test at ../../../gr-mt-lamp-code-10/packet/label-probe.test.mjs:19:1
+✖ demo label keeps metadata and mode out of executable code while preserving title updates and CSP (30893.775782ms)
+  locator.waitFor: Timeout 30000ms exceeded.
+  Call log:
+  [2m  - waiting for locator('[data-rer-demo-exit]') to be visible[22m
+  [2m    63 × locator resolved to hidden <a popover="manual" data-rer-demo-exit="" title="Run Synthetic "'><& </script><script>globalThis.syntheticExecuted=true</script>" aria-label="Run Synthetic "'><& </script><script>globalThis.syntheticExecuted=true</script>" href="https://run.example.invalid/?q="'><&</script><script>globalThis.syntheticExecuted=true</script>">…</a>[22m
+  
+      at TestContext.<anonymous> (/home/agent/rer-consolidation/work/gr-mt-lamp-code-10/packet/label-probe.test.mjs:53:52) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for locator('[data-rer-demo-exit]') to be visible", `    63 × locator resolved to hidden <a popover="manual" data-rer-demo-exit="" title="Run Synthetic "'><& </script><script>globalThis.syntheticExecuted=true</script>" aria-label="Run Synthetic "'><& </script><script>globalThis.syntheticExecuted=true</script>" href="https://run.example.invalid/?q="'><&</script><script>globalThis.syntheticExecuted=true</script>">…</a>` ]
+  }

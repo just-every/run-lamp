@@ -1,0 +1,30 @@
+{
+  "command": "gh api repos/just-every/run-lamp/code-scanning/alerts/8",
+  "attempts": [
+    {
+      "attempt": 1,
+      "status": 403,
+      "reason": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 2,
+      "status": 403,
+      "reason": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 3,
+      "status": 403,
+      "reason": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 4,
+      "status": 403,
+      "reason": "Resource not accessible by integration"
+    },
+    {
+      "attempt": 5,
+      "status": 403,
+      "reason": "Resource not accessible by integration"
+    }
+  ]
+}
