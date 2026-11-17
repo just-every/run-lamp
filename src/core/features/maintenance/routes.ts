@@ -39,9 +39,20 @@ export function registerMaintenanceRoutes(app: Hono<AppEnv>, service: Maintenanc
     }
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Maintenance could not be rescheduled." }, 409); }
   });
-  app.post("/api/app/maintenance/:maintenanceId/cancel", async (context) => {
+  app.post("/api/app/maintenance/:maintenanceId/reinstate", async context => {
+    const input = maintenanceSchema.pick({ startsAt: true, endsAt: true }).safeParse(await context.req.json().catch(() => null));
+    if (!input.success) return context.json({ error: "Choose a valid start and end time." }, 400);
     try {
-      const maintenance = await service.cancel(context.req.param("maintenanceId"), context.get("operator").id);
+      const maintenance = await service.reinstate(context.req.param("maintenanceId"), input.data, context.get("operator").id);
+      if (maintenance) context.executionCtx.waitUntil(service.refreshPublic());
+      return maintenance ? context.json({ maintenance }) : context.json({ error: "Maintenance not found." }, 404);
+    } catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Maintenance could not be reinstated." }, 409); }
+  });
+  app.post("/api/app/maintenance/:maintenanceId/cancel", async (context) => {
+    const input = z.object({ reason: z.string().trim().max(1000).optional() }).strict().safeParse(await context.req.json().catch(() => ({})));
+    if (!input.success) return context.json({ error: "Keep the cancellation reason within 1,000 characters." }, 400);
+    try {
+      const maintenance = await service.cancel(context.req.param("maintenanceId"), context.get("operator").id, input.data.reason);
       if (maintenance) context.executionCtx.waitUntil(service.refreshPublic());
       return maintenance ? context.json({ maintenance }) : context.json({ error: "Maintenance not found." }, 404);
     }

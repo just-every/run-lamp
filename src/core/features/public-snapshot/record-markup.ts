@@ -1,3 +1,4 @@
+import { maintenanceNoticeDetails } from "../../shared/maintenance-notice";
 import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenance-update";
 import type { PublishedIncidentComponentChange } from "../../shared/incident-component-changes";
 import type { IncidentLifecycle } from "../../shared/domain";
@@ -80,12 +81,18 @@ export function resolvedMarkup(incident: PublicIncident, timezone: string) {
   return `<article class="incident resolved-incident" data-incident-impact="${incident.effectiveImpact}">${recordHead("Resolved incident", title, "h4", incident.lifecycle)}<p class="incident-meta">${ended}Affected ${escapeHtml(incident.components.join(", "))}</p>${impact ? `<p class="resolved-summary">${renderUpdateHtml(impact)}</p>` : ""}${incident.updates[0] ? correctionMarkup(incident, incident.updates[0], timezone) : ""}</article>`;
 }
 
-export function noticeMarkup(notice: PublicMaintenance["notices"][number], timezone: string) {
-  return `<article class="update maintenance-notice"><div class="update-head"><strong>${escapeHtml(notice.kind)}</strong><span>${timestamp(notice.publishedAt, timezone)}</span></div>${notice.body ? `<p>${renderUpdateHtml(notice.body)}</p>` : ""}</article>`;
+export function maintenanceNoticeBody(notice: PublicMaintenance["notices"][number], item: Pick<PublicMaintenance, "reference" | "title">) {
+  return maintenanceNoticeDetails(notice.body, item.reference, item.title).map(field => field.label
+    ? `<dl><div><dt>${escapeHtml(field.label)}</dt><dd>${renderUpdateHtml(field.value)}</dd></div></dl>`
+    : `<p>${renderUpdateHtml(field.value)}</p>`).join("");
+}
+
+export function noticeMarkup(notice: PublicMaintenance["notices"][number], timezone: string, item: Pick<PublicMaintenance, "reference" | "title">) {
+  return `<article class="update maintenance-notice"><div class="update-head"><strong>${escapeHtml(notice.kind)}</strong><span>${timestamp(notice.publishedAt, timezone)}</span></div>${maintenanceNoticeBody(notice, item)}</article>`;
 }
 
 export function maintenanceMarkup(item: PublicMaintenance, timezone: string, generatedAt: string, permalink = false) {
   const overrun = item.state === "In progress" && new Date(item.endsAt).getTime() + 15 * MINUTE <= new Date(generatedAt).getTime();
-  const notices = [...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((notice) => noticeMarkup(notice, timezone)).join("");
+  const notices = [...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((notice) => noticeMarkup(notice, timezone, item)).join("");
   return `<article class="maintenance">${recordHead(item.state === "Scheduled" ? "Planned maintenance" : "Maintenance", permalink ? escapeHtml(item.title) : `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, permalink ? "h1" : "h4", item.state)}<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)}${overrun ? ` <span class="overrun">Running longer than planned</span>` : ""}</p>${item.components.length ? `<p class="incident-meta">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${notices ? `<div class="updates">${notices}</div>` : ""}</article>`;
 }

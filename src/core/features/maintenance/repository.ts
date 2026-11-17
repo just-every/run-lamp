@@ -32,6 +32,7 @@ export interface MaintenanceRepository {
   extendInProgressWithNotice(maintenanceId: string, startsAt: string, previousEndsAt: string, endsAt: string, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], automation?: Partial<MaintenanceAutomation>, wording?: MaintenanceWording): Promise<boolean>;
   transitionWithNotice(maintenanceId: string, from: "Scheduled" | "In progress", to: "In progress" | "Completed", completedAt: string | null, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], expectedWindow?: Pick<StoredMaintenance, "startsAt" | "endsAt"> & Partial<MaintenanceAutomation>): Promise<boolean>;
   cancelWithNotice(maintenanceId: string, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
+  reinstateWithNotice(maintenanceId: string, startsAt: string, endsAt: string, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
   listDue(now: string): Promise<StoredMaintenance[]>;
   listReminderDue(now: string): Promise<StoredMaintenance[]>;
   writeNotice(input: MaintenanceNotice, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
@@ -126,12 +127,19 @@ export function createMaintenanceRepository(binding: D1Database): MaintenanceRep
         notificationStatements,
       );
     },
+    async reinstateWithNotice(maintenanceId, startsAt, endsAt, updatedAt, notice, notificationStatements) {
+      return writeMutationWithNotice(
+        binding.prepare(`UPDATE maintenance SET state = 'Scheduled', starts_at = ?, ends_at = ?, completed_at = NULL, updated_at = ? WHERE id = ? AND state = 'Cancelled' AND julianday(?) > julianday(?)`).bind(startsAt, endsAt, updatedAt, maintenanceId, startsAt, updatedAt),
+        notice,
+        notificationStatements,
+      );
+    },
     async listDue(now) {
       const result = await binding.prepare(`SELECT id, reference, title, affected_audience AS affectedAudience, customer_impact AS customerImpact, state, starts_at AS startsAt, ends_at AS endsAt, completed_at AS completedAt, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance WHERE (state = 'Scheduled' AND starts_at <= ?) OR (state = 'In progress' AND ends_at <= ?)`).bind(now, now).all<StoredMaintenance>();
       return result.results;
     },
     async listReminderDue(now) {
-      const result = await binding.prepare(`SELECT maintenance.id, maintenance.reference, maintenance.title, maintenance.affected_audience AS affectedAudience, maintenance.customer_impact AS customerImpact, maintenance.state, maintenance.starts_at AS startsAt, maintenance.ends_at AS endsAt, maintenance.completed_at AS completedAt, maintenance.created_by_operator_id AS createdByOperatorId, maintenance.created_at AS createdAt, maintenance.updated_at AS updatedAt FROM maintenance LEFT JOIN maintenance_notices ON maintenance_notices.maintenance_id = maintenance.id AND maintenance_notices.kind = 'reminder' WHERE maintenance.state = 'Scheduled' AND maintenance.starts_at <= ? AND maintenance.starts_at > ? AND maintenance_notices.id IS NULL`).bind(new Date(new Date(now).getTime() + 24 * 60 * 60 * 1000).toISOString(), now).all<StoredMaintenance>();
+      const result = await binding.prepare(`SELECT maintenance.id, maintenance.reference, maintenance.title, maintenance.affected_audience AS affectedAudience, maintenance.customer_impact AS customerImpact, maintenance.state, maintenance.starts_at AS startsAt, maintenance.ends_at AS endsAt, maintenance.completed_at AS completedAt, maintenance.created_by_operator_id AS createdByOperatorId, maintenance.created_at AS createdAt, maintenance.updated_at AS updatedAt FROM maintenance LEFT JOIN maintenance_notices ON maintenance_notices.maintenance_id = maintenance.id AND maintenance_notices.kind = 'reminder' WHERE maintenance.state = 'Scheduled' AND maintenance.starts_at <= ? AND maintenance.starts_at > ? AND maintenance_notices.id IS NULL AND EXISTS (SELECT 1 FROM maintenance_notices announcement WHERE announcement.maintenance_id = maintenance.id AND announcement.kind IN ('scheduled','rescheduled')) AND NOT EXISTS (SELECT 1 FROM maintenance_notices announcement WHERE announcement.maintenance_id = maintenance.id AND announcement.kind IN ('scheduled','rescheduled') AND julianday(announcement.published_at) >= julianday(maintenance.starts_at,'-24 hours'))`).bind(new Date(new Date(now).getTime() + 24 * 60 * 60 * 1000).toISOString(), now).all<StoredMaintenance>();
       return result.results;
     },
     async writeNotice(input, notificationStatements) {

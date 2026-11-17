@@ -28,7 +28,8 @@ export interface MaintenanceService {
   create(input: MaintenanceInput, operatorId: string): Promise<MaintenanceView>;
   start(maintenanceId: string, operatorId: string): Promise<MaintenanceView | null>;
   reschedule(maintenanceId: string, input: Pick<MaintenanceInput, "startsAt" | "endsAt" | "autoStart" | "autoComplete" | "social"> & Partial<Pick<MaintenanceInput, "affectedAudience" | "customerImpact">>, operatorId: string): Promise<MaintenanceView | null>;
-  cancel(maintenanceId: string, operatorId: string): Promise<MaintenanceView | null>;
+  reinstate(maintenanceId: string, input: Pick<MaintenanceInput, "startsAt" | "endsAt">, operatorId: string): Promise<MaintenanceView | null>;
+  cancel(maintenanceId: string, operatorId: string, reason?: string): Promise<MaintenanceView | null>;
   complete(maintenanceId: string, operatorId: string): Promise<MaintenanceView | null>;
   finishCompletion(maintenanceId: string, operatorId: string): Promise<void>;
   runDue(now?: string): Promise<{ started: string[]; completed: string[]; reminded: string[] }>;
@@ -73,9 +74,9 @@ export function createMaintenanceService(
     ]);
     return { ...record, ...automation, components, notices, importedUpdates, overrunning: record.state === "In progress" && new Date(record.endsAt).getTime() + 15 * 60 * 1000 <= Date.now() };
   };
-  const prepareNotice = async (record: StoredMaintenance, components: StoredMaintenanceComponent[], kind: MaintenanceNotice["kind"], operatorId: string | null, recipientScope: "eligible" | "previous", social=false) => {
+  const prepareNotice = async (record: StoredMaintenance, components: StoredMaintenanceComponent[], kind: MaintenanceNotice["kind"], operatorId: string | null, recipientScope: "eligible" | "previous", social=false, explanation?: string) => {
     if (!notificationStatements) throw new Error("Maintenance notification transaction wiring is required.");
-    const timestamp = nowIso(); const notice: MaintenanceNotice = { id: createUlid(), maintenanceId: record.id, kind, body: renderMaintenanceWording(record), publishedAt: timestamp, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
+    const timestamp = nowIso(); const notice: MaintenanceNotice = { id: createUlid(), maintenanceId: record.id, kind, body: [renderMaintenanceWording(record), explanation].filter(Boolean).join("\n\n"), publishedAt: timestamp, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
     const previousEventIds = recipientScope === "previous" ? (await repository.listNotices(record.id)).map((prior) => prior.id) : [];
     const statements = await notificationStatements.forMaintenanceNotice({ eventId: notice.id, maintenanceId: record.id, componentIds: components.flatMap((component) => component.componentId ? [component.componentId] : []), kind, queuedAt: timestamp, recipientScope, previousEventIds, social });
     return { notice, statements };
@@ -155,11 +156,22 @@ export function createMaintenanceService(
       await onPublicDataChanged();
       return view((await repository.find(maintenanceId))!);
     },
-    async cancel(maintenanceId, operatorId) {
+    async reinstate(maintenanceId, input, operatorId) {
+      assertWindow(input.startsAt, input.endsAt);
+      if (Date.parse(input.startsAt) <= Date.now()) throw new Error("Choose a future start time to reinstate this maintenance.");
+      const record = await repository.find(maintenanceId); if (!record) return null;
+      if (record.state !== "Cancelled") throw new Error("Only cancelled maintenance can be reinstated.");
+      const timestamp = nowIso(); const components = await repository.listComponents(maintenanceId);
+      const changed = { ...record, ...input, state: "Scheduled" as const, updatedAt: timestamp };
+      const { notice, statements } = await prepareNotice(changed, components, "rescheduled", operatorId, "previous", false, "Maintenance reinstated. The work will go ahead at the times shown.");
+      if (!(await repository.reinstateWithNotice(maintenanceId, input.startsAt, input.endsAt, timestamp, notice, statements))) throw new Error("The maintenance changed before it could be reinstated. Refresh and try again.");
+      return view((await repository.find(maintenanceId))!);
+    },
+    async cancel(maintenanceId, operatorId, reason) {
       const record = await repository.find(maintenanceId); if (!record) return null;
       const timestamp = nowIso(); const components = await repository.listComponents(maintenanceId);
       const changed = { ...record, state: "Cancelled" as const, updatedAt: timestamp };
-      const { notice, statements } = await prepareNotice(changed, components, "cancelled", operatorId, "previous");
+      const { notice, statements } = await prepareNotice(changed, components, "cancelled", operatorId, "previous", false, reason?.trim() ? `Reason: ${reason.trim()}` : undefined);
       if (!(await repository.cancelWithNotice(maintenanceId, timestamp, notice, statements))) throw new Error("Only scheduled maintenance can be cancelled.");
       return view((await repository.find(maintenanceId))!);
     },
