@@ -61,7 +61,15 @@ export function normalizeSorryNotice(row: SorryNotice, updates: SorryUpdate[], _
   const selected = [...new Set(supplied.flatMap(id => {
     const leaves = componentScope.get(id)!;
     const group = !(leaves.length === 1 && leaves[0] === id);
-    return group && leaves.some(leaf => listed.has(leaf)) ? [] : leaves;
+    // A listed subgroup is also an explicit member. Its proper subset of
+    // leaves narrows this parent exactly as a listed leaf does; equal scopes
+    // may both expand because deduplication keeps the same affected set.
+    const explicitMember = group && supplied.some(other => {
+      if (other === id) return false;
+      const member = componentScope.get(other)!;
+      return member.length < leaves.length && member.every(leaf => leaves.includes(leaf));
+    });
+    return group && (leaves.some(leaf => listed.has(leaf)) || explicitMember) ? [] : leaves;
   }))];
   if (!updates.length) return refuse("Sorry notice has no progress update history; no publication time or message was invented.");
   const ids = new Set<string>();
