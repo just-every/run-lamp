@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "644df07c7d178fb7ce8a1e5ffba549d1ca755330",
+      "bytes": 6382,
+      "path": "REPORT.md",
+      "sha256": "1135c1890bae8c42dcc5200d833e9a6ebd8804c4a9288b538acebe67bd87708b"
+    },
+    {
+      "blob": "1ca1c1f2227bd2b3d4e889a8453a1d3a6635f0e6",
+      "bytes": 675,
+      "path": "codeql-api-receipt.json",
+      "sha256": "a13a4d3d8c516c9beaa1152b1ba9de296fe2a009a0942eb9a5b9bfc19d10c77b"
+    },
+    {
+      "blob": "6d63d8d5fa3ff98fc03331d4356a0a4bd08721ea",
+      "bytes": 588,
+      "path": "result.json",
+      "sha256": "59705244b7738688687e375f3db0f39acb081be1d7567550436c3ad6c75c4584"
+    },
+    {
+      "blob": "e2daf23cc718afadbe137b5299a9cec7eaca12ec",
+      "bytes": 9858,
+      "path": "source-review-receipt.json",
+      "sha256": "b5b1507e2fbd35c3ca3d8e1974c9a18ab731f4c3701582e3e85b755c335ab078"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-lamp-code-6",
+  "product_head": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "ref": "refs/heads/evidence/gr-mt-lamp-code-6",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "gr-mt-lamp-code-6"
+}

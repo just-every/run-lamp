@@ -1,0 +1,7 @@
+{
+  "status": "no-change",
+  "sha": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "summary": "Already resolved on current main cb6f9af49f440380caeca1722bac8fb7b7815699: commit 97ff3d82bd155d372fa75141275fca2ab648088a removed snapshot-proxy.mjs and its sole importer; the vulnerable exception-to-HTTP response path and all references are absent.",
+  "tests": "Source-history and exact-tree provenance checks passed (see source-review-receipt.json). No code changed; runtime tests and typecheck not run. GitHub code-scanning alert state could not be read (HTTP 403).",
+  "security": true
+}

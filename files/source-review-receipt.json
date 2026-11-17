@@ -1,0 +1,206 @@
+{
+  "tag": "gr-mt-lamp-code-6",
+  "repository": "just-every/run-lamp",
+  "date_utc": "2026-11-17T12:25:46.786776+00:00",
+  "branch": "cloud/gr-mt-lamp-code-6",
+  "head": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "status": "no-change",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "cb6f9af49f440380caeca1722bac8fb7b7815699\n",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "exit_code": 0,
+      "stdout": "cloud/gr-mt-lamp-code-6\n",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "ls-remote",
+        "origin",
+        "refs/heads/main"
+      ],
+      "exit_code": 0,
+      "stdout": "cb6f9af49f440380caeca1722bac8fb7b7815699\trefs/heads/main\n",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "cat-file",
+        "-e",
+        "cb6f9af49f440380caeca1722bac8fb7b7815699:tests/e2e/helpers/snapshot-proxy.mjs"
+      ],
+      "exit_code": 128,
+      "stdout": "",
+      "stderr": "fatal: path 'tests/e2e/helpers/snapshot-proxy.mjs' does not exist in 'cb6f9af49f440380caeca1722bac8fb7b7815699'\n",
+      "expected_exit_code": 128,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "97ff3d82bd155d372fa75141275fca2ab648088a",
+        "cb6f9af49f440380caeca1722bac8fb7b7815699"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "show",
+        "--format=fuller",
+        "--stat",
+        "97ff3d82bd155d372fa75141275fca2ab648088a",
+        "--",
+        "tests/e2e/helpers/snapshot-proxy.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "commit 97ff3d82bd155d372fa75141275fca2ab648088a\nAuthor:     Run Edit Run fleet <fleet@runeditrun.com>\nAuthorDate: Wed Oct 28 19:37:09 2026 +0000\nCommit:     Run Edit Run fleet <fleet@runeditrun.com>\nCommitDate: Wed Oct 28 19:37:09 2026 +0000\n\n    Replay consolidated Lamp journeys preserving current clause judgments [skip ci]\n\n tests/e2e/helpers/snapshot-proxy.mjs | 65 ------------------------------------\n 1 file changed, 65 deletions(-)\n",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "show",
+        "97ff3d82bd155d372fa75141275fca2ab648088a",
+        "--",
+        "tests/e2e/helpers/snapshot-proxy.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "commit 97ff3d82bd155d372fa75141275fca2ab648088a\nAuthor: Run Edit Run fleet <fleet@runeditrun.com>\nDate:   Wed Oct 28 19:37:09 2026 +0000\n\n    Replay consolidated Lamp journeys preserving current clause judgments [skip ci]\n\ndiff --git a/tests/e2e/helpers/snapshot-proxy.mjs b/tests/e2e/helpers/snapshot-proxy.mjs\ndeleted file mode 100644\nindex 752a503d..00000000\n--- a/tests/e2e/helpers/snapshot-proxy.mjs\n+++ /dev/null\n@@ -1,65 +0,0 @@\n-import { createServer } from \"node:http\";\n-\n-// A real network-edge HTTP cache. The application and Chromium are unmodified;\n-// implement the response directives that matter to the publication contract.\n-export async function snapshotProxy(upstream) {\n-  const entries = new Map();\n-  const pending = new Set();\n-  const stats = { hits: 0, validations: 0, notModified: 0, stale: 0 };\n-  let down = false;\n-  let origin;\n-  const seconds = (policy, name) => Number(new RegExp(`(?:^|,)\\\\s*${name}=(\\\\d+)`).exec(policy)?.[1] ?? 0);\n-  async function refresh(path, prior) {\n-    stats.validations++;\n-    if (down) throw new Error(\"Origin disconnected at the network edge\");\n-    const response = await fetch(`${upstream}${path}`, { headers: prior?.headers.etag ? { \"If-None-Match\": prior.headers.etag } : {}, redirect: \"manual\" });\n-    if (response.status >= 500) throw new Error(`Origin returned ${response.status}`);\n-    const headers = Object.fromEntries(response.headers);\n-    delete headers[\"content-length\"];\n-    delete headers[\"content-encoding\"];\n-    if (headers[\"content-security-policy\"]) headers[\"content-security-policy\"] = headers[\"content-security-policy\"].replaceAll(upstream, origin);\n-    const item = response.status === 304 && prior\n-      ? { ...prior, headers: { ...prior.headers, ...headers }, storedAt: Date.now() }\n-      : { status: response.status, headers, body: Buffer.from(await response.arrayBuffer()), storedAt: Date.now() };\n-    if (response.status === 304) stats.notModified++;\n-    if (!/no-store/.test(item.headers[\"cache-control\"] ?? \"\")) entries.set(path, item);\n-    return item;\n-  }\n-  const server = createServer(async (request, response) => {\n-    try {\n-      const prior = entries.get(request.url);\n-      const policy = prior?.headers[\"cache-control\"] ?? \"\";\n-      const age = prior ? (Date.now() - prior.storedAt) / 1000 : Infinity;\n-      const maxAge = seconds(policy, \"s-maxage\") || seconds(policy, \"max-age\");\n-      let item, stale = false;\n-      if (prior && !/no-cache/.test(policy) && age < maxAge) { stats.hits++; item = prior; }\n-      else if (prior && !/no-cache|must-revalidate/.test(policy) && age < maxAge + seconds(policy, \"stale-while-revalidate\")) {\n-        stats.hits++; item = prior;\n-        const work = refresh(request.url, prior).catch(() => {}).finally(() => pending.delete(work));\n-        pending.add(work);\n-      } else {\n-        try { item = await refresh(request.url, prior); }\n-        catch (error) {\n-          if (!prior || /no-cache|must-revalidate|s-maxage/.test(policy) || age >= maxAge + seconds(policy, \"stale-if-error\")) throw error;\n-          stats.stale++; item = prior; stale = true;\n-        }\n-      }\n-      const headers = { ...item.headers, Age: String(Math.floor((Date.now() - item.storedAt) / 1000)) };\n-      if (stale) headers.Warning = '110 - \"Response is stale\"';\n-      if (!stale && request.headers[\"if-none-match\"] && request.headers[\"if-none-match\"] === item.headers.etag) {\n-        response.writeHead(304, headers); response.end();\n-      } else { response.writeHead(item.status, headers); response.end(item.body); }\n-    } catch (error) { response.writeHead(502); response.end(error.message); }\n-  });\n-  await new Promise((resolve, reject) => { server.once(\"error\", reject); server.listen(0, \"127.0.0.1\", resolve); });\n-  origin = `http://127.0.0.1:${server.address().port}`;\n-  return {\n-    origin, stats,\n-    disconnect() { down = true; },\n-    async close() {\n-      server.closeAllConnections();\n-      await new Promise(resolve => server.close(resolve));\n-      await Promise.allSettled(pending);\n-    },\n-  };\n-}\n",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "grep",
+        "-n",
+        "-i",
+        "-E",
+        "snapshot.?proxy|Origin disconnected at the network edge|response\\.end\\(error\\.message\\)",
+        "cb6f9af49f440380caeca1722bac8fb7b7815699",
+        "--",
+        "."
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 1,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "grep",
+        "-n",
+        "snapshotProxy",
+        "97ff3d82bd155d372fa75141275fca2ab648088a^",
+        "--",
+        "tests/e2e/helpers/public-freshness-flow.mjs"
+      ],
+      "exit_code": 0,
+      "stdout": "97ff3d82bd155d372fa75141275fca2ab648088a^:tests/e2e/helpers/public-freshness-flow.mjs:4:import { snapshotProxy } from \"./snapshot-proxy.mjs\";\n97ff3d82bd155d372fa75141275fca2ab648088a^:tests/e2e/helpers/public-freshness-flow.mjs:37:  const proxy = await snapshotProxy(pageUrl);\n",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "cat-file",
+        "-e",
+        "cb6f9af49f440380caeca1722bac8fb7b7815699:tests/e2e/helpers/public-freshness-flow.mjs"
+      ],
+      "exit_code": 128,
+      "stdout": "",
+      "stderr": "fatal: path 'tests/e2e/helpers/public-freshness-flow.mjs' does not exist in 'cb6f9af49f440380caeca1722bac8fb7b7815699'\n",
+      "expected_exit_code": 128,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "origin/main...HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": [
+        "git",
+        "log",
+        "origin/main..HEAD",
+        "--format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "expected_exit_code": 0,
+      "passed": true
+    }
+  ],
+  "source_deletion_commit": "97ff3d82bd155d372fa75141275fca2ab648088a",
+  "before_after": {
+    "vulnerable_path_on_current_main": {
+      "before": 0,
+      "after": 0
+    },
+    "current_symbol_references": {
+      "before": 0,
+      "after": 0
+    },
+    "files_changed": 0,
+    "product_commits": 0,
+    "tests_added": 0,
+    "tests_deleted": 0,
+    "clause_status_changes": 0
+  },
+  "runtime_tests": "Not run: no source changes and the affected helper and sole importer no longer exist. No full verifier, dependency setup, browser journey or typecheck was needed for this source-history disposition."
+}
