@@ -54,8 +54,9 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
     const kind = list.type === "planned" ? "maintenance" : "incident";
     const detail = saved.details.get(list.id);
     if (!detail) throw new SorryReadError("invalid", "Every Sorry notice requires its complete saved detail and update history; capture every detail before importing.");
-    const row = noticeSchema.parse(detail.raw);
-    agree(list, row, accessFields);
+    const detailRow = noticeSchema.parse(detail.raw);
+    agree(list, detailRow, accessFields);
+    const row = noticeSchema.parse({ ...list, ...detailRow });
     const history = saved.updates.get(list.id)!;
     const updates = history.map(({ raw }) => updateSchema.parse(raw));
     const parsedUpdates = row.updates ?? updates;
@@ -66,7 +67,7 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
     if (addresses.length) {
       publicAddresses[`${kind}:${row.id}`] = [...new Set(addresses.flatMap((address) => [address, new URL(`/notices/${row.id}`, address).href]))];
     }
-    const incident = normalizeSorryNotice(row, parsedUpdates, saved.isPublic, componentScope, accounting);
+    const incident = normalizeSorryNotice({ ...list, ...row }, parsedUpdates, saved.isPublic, componentScope, accounting);
     if (incident) (kind === "maintenance" ? data.maintenance : data.incidents).push(incident);
   }
   for (const { raw: row, origin } of saved.subscribers) {

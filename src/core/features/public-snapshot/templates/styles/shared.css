@@ -103,3 +103,11 @@ body { background: var(--paper); }
 
 .update-correction { margin: 8px 0 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
 .update-correction a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+.component-group .component-group { margin-inline-start: clamp(8px, 2vw, 24px); }
+.component-group h3, .group-description, .source-metadata { overflow-wrap: anywhere; min-width: 0; }
+.source-metadata { margin-block: 12px; font-size: 14px; }
+.source-metadata summary { cursor: pointer; }
+.source-metadata dl { display: grid; gap: 8px; }
+.source-metadata dt { font-weight: 600; }
+.source-metadata dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

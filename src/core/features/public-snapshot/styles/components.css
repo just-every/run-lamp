@@ -37,3 +37,12 @@
 .component-description p { margin: 8px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .availability-since { margin: 8px 0 0; color: var(--ink-3); font-size: 13px; }
+
+/* Imported source labels are unbounded text; nested disclosures stay readable on phones. */
+.component-group .component-group { margin-inline-start: clamp(8px, 2vw, 24px); }
+.component-group h3, .group-description, .source-metadata, .component-name h4 { overflow-wrap: anywhere; min-width: 0; }
+.source-metadata { margin-block: 12px; font-size: 14px; }
+.source-metadata summary { cursor: pointer; }
+.source-metadata dl { display: grid; gap: 8px; }
+.source-metadata dt { font-weight: 600; }
+.source-metadata dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }

@@ -9,7 +9,7 @@ export const tablesOf = (kind: string): Record<string, string> => {
   if (kind === "source") return sourceTables;
   const tables = entityTables[kind as keyof typeof entityTables];
   if (!tables) throw new Error("Unsupported import native kind.");
-  return kind === "component" ? { ...tables, component_standing_claims: "component_id" } : kind === "maintenance" ? { ...tables, import_maintenance_updates: "maintenance_id" } : tables;
+  return kind === "component" ? { ...tables, component_standing_claims: "component_id" } : kind === "maintenance" ? { ...tables, import_maintenance_updates: "maintenance_id", maintenance_automation: "maintenance_id" } : tables;
 };
 export const nativeKinds = [...Object.keys(entityTables), "source"];
 /** Kinds newer than the shared marker table's kind check keep their own. */
@@ -22,7 +22,8 @@ export const allMarkers = ["SELECT kind,id,revision FROM statuspage_import_targe
 /** Defaults added after old import journals were sealed do not constitute an
  * owner edit: a native value equal to its default reads as absent. */
 export const sealedDefaults: Record<string, Row> = {
-  components: { only_show_if_degraded: 0, uptime_start_date: null, region: null },
+  component_groups: { parent_id: null, description: "", source_metadata_json: null },
+  components: { only_show_if_degraded: 0, uptime_start_date: null, region: null, source_metadata_json: null },
   // Nullable vendor attribution leaves sealed component history unchanged.
   // An actual attributed source remains an edit protected by custody and undo.
   component_state_history: { source_name: null, source_url: null },
@@ -31,11 +32,12 @@ export const sealedDefaults: Record<string, Row> = {
   subscribers: { created_by_operator_id: null, webhook_format: "lamp", event_kinds_json: '["incidents","maintenance","components"]', minimum_impact: null, chat_kind: null, preferences_set: 0, sms_kind: 0 },
   // Existing import journals predate per-update component snapshots. Empty
   // migration defaults are not an operator edit; real published changes are.
-  incident_updates: { component_changes_json: "[]", component_snapshot_json: "[]", automation_attribution: null, automation_receipt_id: null },
+  incident_updates: { source_metadata_json: null, component_changes_json: "[]", component_snapshot_json: "[]", automation_attribution: null, automation_receipt_id: null },
   // Unapproved automation defaults do not turn imported templates into edits.
   incident_templates: { channels_json: "[]", resolved_update_json: null },
-  incidents: { impact_override: null },
+  incidents: { impact_override: null, source_metadata_json: null },
+  import_maintenance_updates: { source_metadata_json: null },
   incident_components: { detached_internal: 0 },
-  maintenance: { affected_audience: null, customer_impact: null },
+  maintenance: { affected_audience: null, customer_impact: null, source_metadata_json: null },
   maintenance_components: { detached_internal: 0 },
 };
