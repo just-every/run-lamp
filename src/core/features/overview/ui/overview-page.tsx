@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
+import { usePageTimezone } from "../../../app/client/ui/timezone";
 import { LiveStrip } from "./live-strip";
 import { FollowUps } from "./follow-ups";
 import { IncidentOwnerLabel } from "./incident-owner-label";
@@ -25,6 +26,8 @@ function severeImpact(impact: string | null) {
 
 export function OverviewPage() {
   const formatOperatorTime = useOperatorTime();
+  const timezone = usePageTimezone();
+  const time = (instant: string) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", minute: "2-digit" }).format(new Date(instant));
   const committedTime = useCommittedTime();
   const { data, error, loading } = useAppData<OverviewResponse>("/api/app/overview");
   // A refresh keeps the page mounted: only the first load shows the loading state.
@@ -67,8 +70,8 @@ export function OverviewPage() {
         {components.length ? <Link className="text-link" to="/app/components">Components and history <Icon name="arrow" width={15} height={15} /></Link> : null}
       </article>
       <article className="data-card">
-        <h2>Upcoming maintenance</h2>
-        {upcoming.length ? <><div className="compact-records">{upcoming.map((item) => <div key={item.id}><strong className="record-ref">{item.reference}</strong><span>{item.title}</span><small>{item.state} · {formatOperatorTime(item.startsAt)}</small></div>)}</div><Link className="text-link" to="/app/maintenance">View maintenance <Icon name="arrow" width={15} height={15} /></Link></> : <EmptyState icon="maintenance">No upcoming maintenance.<br /><Button asChild className="overview-empty-action"><Link to="/app/maintenance" hash="schedule-maintenance">Schedule maintenance</Link></Button></EmptyState>}
+        <h2>Scheduled</h2>
+        {upcoming.length ? <><div className="compact-records">{upcoming.map((item) => <div key={item.id}><strong className="record-ref">{item.reference}</strong><span>{item.title}</span><small>{item.state} · {formatOperatorTime(item.startsAt)}{item.state === "Scheduled" && item.autoStart && Date.parse(item.startsAt) > Date.now() ? <><br />Lamp starts this at <time dateTime={item.startsAt}>{time(item.startsAt)}</time>{item.autoComplete ? <> and finishes it at <time dateTime={item.endsAt}>{time(item.endsAt)}</time>. Nothing for you to do.</> : ". You finish it when the work is done."}</> : item.state === "In progress" && item.autoComplete && Date.parse(item.endsAt) > Date.now() ? <><br />Lamp finishes this at <time dateTime={item.endsAt}>{time(item.endsAt)}</time>. Nothing for you to do.</> : null}</small></div>)}</div><Link className="text-link" to="/app/maintenance">View maintenance <Icon name="arrow" width={15} height={15} /></Link></> : <EmptyState icon="maintenance">No upcoming maintenance.<br /><Button asChild className="overview-empty-action"><Link to="/app/maintenance" hash="schedule-maintenance">Schedule maintenance</Link></Button></EmptyState>}
       </article>
     </section>
     <FollowUps />

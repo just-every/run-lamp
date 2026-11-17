@@ -97,7 +97,23 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await create.getByRole("button", { name: "Schedule window", exact: true }).click();
     const window = (await (await created).json()).maintenance;
     assert.equal(window.startsAt, "2027-07-14T23:00:00.000Z"); assert.equal(window.endsAt, "2027-07-15T00:00:00.000Z");
-    await page.reload(); await operatorHydrated(page);
+    await page.goto(`${origin}/app`); await operatorHydrated(page);
+    const scheduled = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Scheduled', exact: true }) });
+    await scheduled.getByText(window.title, { exact: true }).waitFor();
+    const automationTimes = await scheduled.locator('time').evaluateAll(nodes => nodes.map(node => node.dateTime));
+    assert.deepEqual(automationTimes, [window.startsAt, window.endsAt], 'the automatic plan uses the actual saved window');
+    const followUps = page.getByRole('region', { name: 'Follow-ups', exact: true });
+    await followUps.getByText("No outstanding follow-ups.", { exact: true }).waitFor();
+    assert.equal(await followUps.locator(`[data-follow-up="maintenance-start:${window.id}"], [data-follow-up="maintenance-end:${window.id}"]`).count(), 0, 'future automatic steps need no owner action');
+    if (process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE) {
+      await mkdir(process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: join(process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE, `scheduled-overview-${width}.png`), fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+    await page.goto(`${origin}/app/maintenance`); await operatorHydrated(page);
     const scheduledRow = page.locator('.maintenance-row').filter({ hasText: window.reference });
     await scheduledRow.getByText('Change dates', { exact: true }).click();
     const scheduledStart = scheduledRow.getByLabel(`${window.reference} start`, { exact: true });
