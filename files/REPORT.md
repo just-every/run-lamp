@@ -1,5 +1,7 @@
 # sd-lamp-import-sorry-3-c1 results
 
+BLOCKED: exact-SHA Verify 44197129871 failed in the imports shard with a real HTTP 409/200 reconciliation assertion. The correction itself passes the full local build list and the CI build; repairing this new blocker requires product/test work excluded by the lease.
+
 Repository: just-every/run-lamp. Product branch: cloud/sd-lamp-import-sorry-3-c1.
 
 ## Scope and plan
@@ -51,3 +53,21 @@ EVIDENCE sd-lamp-import-sorry-3: Actual build, capture, HTTP, browser, regressio
 Product head: bb0d352045ccee4a350678dc61bfcdf6e91f6f2b. Fleet commit author and committer: Run Edit Run fleet <fleet@runeditrun.com>. Four candidate commits (three replayed original commits and one correction) were inspected, including complete messages and trailers; all use fleet identity and have no coauthor trailers. The correction commit contains only ACCEPTANCE.md and sources.lock.json. The guarded push succeeded on its first attempt, and Git readback confirms the named remote branch at this exact SHA. The working tree is clean.
 
 Exact-SHA push Verify run 44197129871 was discovered in progress at https://github.com/just-every/run-lamp/actions/runs/44197129871. No READY is inferred from that pending result. No new PR was opened by this builder, as the correction brief assigns the PR door to the lane. Original PR 415 remains historical context.
+
+## Final CI verdict and blocker
+
+Exact-SHA push Verify 44197129871 completed with actual conclusion failure on bb0d352045ccee4a350678dc61bfcdf6e91f6f2b. The CI build passed. All eight test shards executed: ownership, portability, composer, delivery, public, runtime and demo passed; imports failed. This is 8/9 successful product completion records (one build plus seven shards), with all 9/9 product jobs executed. The aggregate verify job failed because of that one unsuccessful shard. The original candidate had 0/9 successful completion records because generation blocked the build; this correction reaches all planned jobs but does not reach green Verify.
+
+The imports archive was retrieved exactly once using `gh run view 44197129871 --repo just-every/run-lamp --job 134442079662 --log-failed` (exit 0). Its real failure is in `tests/e2e/helpers/postmortem-template-import-flow.mjs:102`, called from `tests/e2e/statuspage-import.test.mjs:323`: after template import and repeat, the Statuspage reconcile door returns HTTP 409 with `{"error":"import_door_conflict"}` instead of the asserted HTTP 200. The archive labels this ERR_ASSERTION / testCodeFailure. The handler deliberately maps unknown native/parser errors to that safe response, so the generic public code alone does not identify the inner cause. The complete sanitized archive and exact excerpt are ci-imports-failed.log and ci-assertion-excerpt.log.
+
+This is not a generated-view failure and no exception is claimed. It is not evidence of a provider flake. The brief prohibits product code and test changes and permits a failed-job rerun only for provider flakes; therefore no assertion rerun or out-of-scope fix was attempted. A follow-up builder needs scope to diagnose and repair Statuspage template reconciliation while preserving existing assertions, then obtain green exact-SHA Verify. The failed aggregate is consequential, not a second independent product assertion. Its archive was also read exactly once using `gh run view 44197129871 --repo just-every/run-lamp --job 134449046617 --log-failed` (exit 0): it reports "imports: wrong shard, commit or unsuccessful completion" and "Verification: 8/9 shards completed successfully for this commit." Nine of ten allowed GitHub calls were used for original/context/PR reads, discovery, three run polls, job details and the two failed-job archives; every call for this run was separated by at least 300 seconds.
+
+A local diagnostic of the same imports shard was started after the CI failure with system Chromium and no source/test edits. Its final status is recorded separately in imports-local-receipt.json; no pending or unobserved local result is treated as a pass. Local proof cannot override the red exact-SHA workflow.
+
+The local diagnostic independently reproduced the same Statuspage reconcile ERR_ASSERTION (HTTP 409 import_door_conflict instead of 200). The test:imports step exited 1; no test or product edits were made. The diagnostic completed: test:imports failed with that assertion, test:mail passed, and test:site passed (four site tests, zero failures). The complete local shard command exited 1. All test-owned browsers and native runtimes closed and the cloud subreaper returned.
+
+## Terminal product custody
+
+BLOCKED branch=cloud/sd-lamp-import-sorry-3-c1 head=bb0d352045ccee4a350678dc61bfcdf6e91f6f2b prerequisite="Successful exact-SHA Verify"
+
+The product branch is pushed and retained. No PR was created or found for this correction branch; the lane owns its PR/landing door. The original PR 415 remains read-only context. No product/test patch or CI rerun was made after the real assertion was identified. Complete plan, local checks, root failure and aggregate archives, local reproduction, original claim receipts and screenshots are selected for the final report-only evidence publication. The product clone is removed after the final evidence transfer and Git remote-head verification as requested; this packet remains outside the clone.

@@ -1,0 +1,12 @@
+verify	Require every planned command to succeed on this commit	﻿2026-11-17T23:26:19.7068753Z ##[group]Run node scripts/verification/aggregate.mjs
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7069191Z [36;1mnode scripts/verification/aggregate.mjs[0m
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7069518Z [36;1mtest "$SHARDS_RESULT" = success[0m
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7087447Z shell: /usr/bin/bash -e {0}
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7087709Z env:
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7087917Z   SHARDS_RESULT: failure
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7088476Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.7088857Z ##[endgroup]
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.9830277Z The shard jobs did not all succeed.
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.9831043Z imports: wrong shard, commit or unsuccessful completion
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.9834598Z Verification: 8/9 shards completed successfully for this commit.
+verify	Require every planned command to succeed on this commit	2026-11-17T23:26:19.9882842Z ##[error]Process completed with exit code 1.

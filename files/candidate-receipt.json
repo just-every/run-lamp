@@ -32,5 +32,10 @@
     "package.json": "6520322f2a4e6121b48862ba1905c099b7222b570f7fbf5532215ccac3f64e0a",
     "pnpm-lock.yaml": "f3d4e47b6a6ebebafd78792cd1ae70d6d79ce439d31fad22f69542a2c453076d"
   },
-  "local_build_source_matches_commit": true
+  "local_build_source_matches_commit": true,
+  "terminal_status": "BLOCKED",
+  "terminal_prerequisite": "Successful exact-SHA Verify",
+  "ci_receipt": "ci-verdict.json",
+  "local_diagnostic": "imports-local-receipt.json",
+  "date_completed": "2026-11-17T23:46:19.914543+00:00"
 }

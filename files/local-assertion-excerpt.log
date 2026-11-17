@@ -1,0 +1,33 @@
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 525416.632286
+
+✖ failing tests:
+
+test at tests/e2e/statuspage-import.test.mjs:27:1
+✖ SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes (204182.366027ms)
+  AssertionError [ERR_ASSERTION]: {"error":"import_door_conflict"}
+  
+  409 !== 200
+  
+      at postmortemTemplateImportFlow (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp/tests/e2e/helpers/postmortem-template-import-flow.mjs:102:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp/tests/e2e/statuspage-import.test.mjs:323:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 409,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+ ELIFECYCLE  Command failed with exit code 1.
+
+Verifying imports: test:mail
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 test:mail /home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp

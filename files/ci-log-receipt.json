@@ -1,0 +1,9 @@
+{
+  "command": "gh run view 44197129871 --repo just-every/run-lamp --job 134442079662 --log-failed",
+  "date": "2026-11-17T23:37:09.218474+00:00",
+  "exit": 0,
+  "log": "ci-imports-failed.log",
+  "bytes": 37923,
+  "sanitization": "injected values and credential patterns masked; URL queries omitted",
+  "retrievals": 1
+}

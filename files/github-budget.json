@@ -33,6 +33,34 @@
       "endpoint": "repos/just-every/run-lamp/actions/runs/44197129871",
       "time": "2026-11-17T23:21:46.417319+00:00",
       "unix": 1794957706.4174876
+    },
+    {
+      "number": 6,
+      "purpose": "Poll exact-SHA Verify",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44197129871",
+      "time": "2026-11-17T23:27:00.954556+00:00",
+      "unix": 1794958020.954937
+    },
+    {
+      "number": 7,
+      "purpose": "Read completed exact-SHA jobs and failed step names",
+      "endpoint": "repos/just-every/run-lamp/actions/runs/44197129871/jobs?per_page=100",
+      "time": "2026-11-17T23:32:02.681876+00:00",
+      "unix": 1794958322.6821845
+    },
+    {
+      "number": 8,
+      "purpose": "Read failed imports job archive once",
+      "command": "gh run view 44197129871 --repo just-every/run-lamp --job 134442079662 --log-failed",
+      "time": "2026-11-17T23:37:03.728767+00:00",
+      "unix": 1794958623.7287843
+    },
+    {
+      "number": 9,
+      "purpose": "Read consequential aggregate failure archive once",
+      "command": "gh run view 44197129871 --repo just-every/run-lamp --job 134449046617 --log-failed",
+      "time": "2026-11-17T23:42:04.751363+00:00",
+      "unix": 1794958924.7513788
     }
   ]
 }

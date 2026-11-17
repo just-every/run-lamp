@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-17T23:40:16.668819+00:00",
+  "head": "bb0d352045ccee4a350678dc61bfcdf6e91f6f2b",
+  "run_id": 44197129871,
+  "workflow_status": "completed",
+  "workflow_conclusion": "failure",
+  "product_jobs_expected": 9,
+  "product_jobs_executed": 9,
+  "product_jobs_successful": 8,
+  "test_shards_executed": 8,
+  "test_shards_successful": 7,
+  "failed_job": 134442079662,
+  "failed_job_name": "shards (imports)",
+  "failed_step": "Verify this product shard",
+  "failure": "postmortemTemplateImportFlow Statuspage reconcile returned HTTP 409 {\"error\":\"import_door_conflict\"}; expected HTTP 200",
+  "assertion": "tests/e2e/helpers/postmortem-template-import-flow.mjs:102",
+  "caller": "tests/e2e/statuspage-import.test.mjs:323",
+  "classification": "real ERR_ASSERTION; no provider flake evidence",
+  "reruns": 0,
+  "rerun_policy": "brief permits one failed-job rerun only for provider flakes and forbids reruns for real assertions",
+  "blocker": "Repairing a product reconciliation regression or its test requires product/test changes outside this correction lease",
+  "generated_view_build_blocker_resolved": true,
+  "independent_publication_scan": "fleet Mac, not performed in cloud",
+  "local_assertion_reproduced": true,
+  "github_calls_used": 9,
+  "aggregate_failed_log": "ci-aggregate-failed.log",
+  "aggregate_failure": "8/9 shards completed successfully; imports unsuccessful completion",
+  "local_shard_exit": 1,
+  "local_steps": [
+    {
+      "script": "test:imports",
+      "exitCode": 1,
+      "durationMs": 526251
+    },
+    {
+      "script": "test:mail",
+      "exitCode": 0,
+      "durationMs": 71683
+    },
+    {
+      "script": "test:site",
+      "exitCode": 0,
+      "durationMs": 157850
+    }
+  ]
+}

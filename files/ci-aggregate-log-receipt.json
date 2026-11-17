@@ -1,0 +1,8 @@
+{
+  "command": "gh run view 44197129871 --repo just-every/run-lamp --job 134449046617 --log-failed",
+  "date": "2026-11-17T23:42:06.277107+00:00",
+  "exit": 0,
+  "log": "ci-aggregate-failed.log",
+  "bytes": 1610,
+  "retrievals": 1
+}

@@ -1,0 +1,29 @@
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1146565Z not ok 8 - SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1147408Z   ---
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1147810Z   duration_ms: 134879.976312
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1148281Z   type: 'test'
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1156839Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/statuspage-import.test.mjs:27:1'
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1157457Z   failureType: 'testCodeFailure'
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1157808Z   error: |-
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1158088Z     {"error":"import_door_conflict"}
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1158422Z     
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1158787Z     409 !== 200
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1159036Z     
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1159281Z   code: 'ERR_ASSERTION'
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1159562Z   name: 'AssertionError'
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1159835Z   expected: 200
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1160079Z   actual: 409
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1160346Z   operator: 'strictEqual'
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1160629Z   stack: |-
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1161449Z     postmortemTemplateImportFlow (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/postmortem-template-import-flow.mjs:102:10)
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1162434Z     process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1163386Z     async TestContext.<anonymous> (file:///home/runner/work/run-lamp/run-lamp/tests/e2e/statuspage-import.test.mjs:323:5)
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1164190Z     async Test.run (node:internal/test_runner/test:1054:7)
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1164822Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1165323Z   ...
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1166264Z # PROBE SUB-023 1: owner Move in review with 300 email rows and 100 free slots -> exact email excess 200, first 100 fit, final 200 refused with over-limit reason
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1167542Z # PROBE SUB-023 2: apply the over-limit reviewed plan -> 409, every application table and complete outbound inventory unchanged
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1169397Z # PROBE SUB-023 4: remove email, freshly review and apply -> completed; group, component, complete incident history, report, maintenance and template graph reconciled; existing subscribers and outbound work unchanged
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1171343Z # PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1173419Z # PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable
+shards (imports)	Verify this product shard	2026-11-17T23:18:26.1174989Z # PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged

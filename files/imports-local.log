@@ -1,0 +1,162 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 verify:app /home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp
+> node scripts/verification/run.mjs
+
+Verification plan: 8 test shards and one shared build, 36 routine test files, 112 registered cases (including release qualification) + 10 assertion scripts = 122 checks.
+
+Verifying imports: test:imports
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 test:imports /home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp
+> node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs tests/e2e/cutover-browser.test.mjs tests/e2e/sorry-import.test.mjs tests/e2e/sorry-reconciliation.test.mjs tests/e2e/sorry-documented-export.test.mjs
+
+PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording
+PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible
+✔ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover (152004.170687ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ documented Sorry generator reproduces all bytes and hashes without provider reads (289.174531ms)
+Synthetic Sorry authenticated: preview
+Synthetic Sorry public: preview
+Synthetic Sorry public: apply
+Synthetic Sorry public: repeat
+Synthetic Sorry public: undo
+✔ documented Sorry exports account for every field through preview, saved jobs and explicit refusals (68923.612574ms)
+ℹ All 1003 authenticated subscriber rows and 23974 fields reviewed; full subscriber apply/repeat/undo runs in scripts/sorry-synthetic-proof.mjs outside push CI.
+ℹ {"mode":"public","sourceRows":{"components":56,"notices":53,"updates":106,"subscribers":0},"nativeCounts":{"group":4,"component":52,"incident":43,"maintenance":10,"updates":106},"subscriberCount":0,"ledgerCount":3680,"outcomes":{"mapped":436,"changed":1199,"raw-only":2045,"deleted":0,"refused":0},"unexplainedDifferences":0,"expectedResourceGaps":["sorry-brand.json","sorry-component-1004-metrics.json","sorry-custom-domain.json"],"previewUnchanged":true,"hostileRefusalUnchanged":true,"repeatUnchanged":true,"undoRestoredExceptReservedReferences":true,"silent":true}
+ℹ PROBE Sorry templates: capture 27 notice + 27 update across 25-row pages; 54 exact metadata/body reads; refusal, private draft, repeat, edited-template dependency undo all passed
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+▶ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+  ✔ unchanged Business plan skips preparation (0.829459ms)
+  ✔ apply answers before rebuilding the public page (1297.842646ms)
+Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+    at runtime.services.publicSnapshots.rebuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp/script-0.mjs:96176:67)
+  ✔ undo answers before rebuilding the public page (384.090035ms)
+Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+    at runtime.services.publicSnapshots.rebuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp/script-0.mjs:96176:67)
+✔ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow (46811.309283ms)
+ℹ PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+ℹ PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+ℹ PROBE move-in deadline: first/unchanged Business plans prepare 1/0 times
+ℹ PROBE move-in deadline: changed Business bundle prepares 1 time
+ℹ PROBE move-in deadline: apply answered with the rebuild held; injected background failure recovered through native scheduled retry
+ℹ PROBE move-in deadline: undo answered with the rebuild held; injected background failure recovered through native scheduled retry
+✔ MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers (17588.383915ms)
+✔ MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral (5228.658933ms)
+ℹ PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ MOVE-001 Move in explains how Sorry component rows arrive as components and groups (11402.940241ms)
+ℹ PROBE: 16 source component rows -> 14 components + 2 groups (a parent row is shown once, as its children's group); unmapped warnings 0
+ℹ PROBE: mixed parent/child selection affects only listed children; parent alone includes its group; malformed end uses latest authored resolution and discloses it; absent or pre-start resolution still refuses
+ℹ PROBE: genuinely unmapped row -> still warns (1 warning, nested group 11)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE MOVE-013 statuspage: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+PROBE MOVE-013 statuspage: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+PROBE MOVE-013 statuspage: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+PROBE MOVE-013 betterstack: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+PROBE MOVE-013 betterstack: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+PROBE MOVE-013 betterstack: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+PROBE MOVE-013 instatus: signed-in admin POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+PROBE MOVE-013 instatus: signed-in communicator POST refused 403; no mail, unchanged remaining invitations and all tables except one attributed access-denied entry
+PROBE MOVE-013 instatus: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed
+✖ SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes (204182.366027ms)
+ℹ PROBE SUB-023 1: owner Move in review with 300 email rows and 100 free slots -> exact email excess 200, first 100 fit, final 200 refused with over-limit reason
+ℹ PROBE SUB-023 2: apply the over-limit reviewed plan -> 409, every application table and complete outbound inventory unchanged
+ℹ PROBE SUB-023 4: remove email, freshly review and apply -> completed; group, component, complete incident history, report, maintenance and template graph reconciled; existing subscribers and outbound work unchanged
+ℹ PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted
+ℹ PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable
+ℹ PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+ℹ PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+ℹ PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+ℹ PROBE MOVE-003 1 instatus: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+ℹ PROBE MOVE-003 2: later Statuspage bundles naming owned records -> planned and applied as the catch-up: owned record with a new creation time listed as a conflict, unchanged records kept, corrected record replaced in place, one new component, silent, repeat stable, undo restores; reviewed new-only bundle -> one new component; other namespace stays distinct
+ℹ PROBE MOVE-003 1 betterstack: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+ℹ PROBE MOVE-003 1 instatus: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+ℹ PROBE MOVE-014 4: native owner preview over populated templates -> complete existing contents and component rows unchanged
+ℹ PROBE MOVE-003 1 statuspage: repeat saved review and apply, then native scheduled tick -> already imported, same job, complete native rows, aliases and notification inventory unchanged
+✔ MAINT-015 — imported maintenance messages retain their own source lifecycle labels (4220.643538ms)
+ℹ PROBE MAINT-015: scheduled, in_progress and completed source messages survive review/apply, native read, public permalink and monthly history at original times without notifications
+✔ Imported incident wording stays whole beyond native field limits (7607.10738ms)
+ℹ PROBE statuspage long incident wording: 1305 source characters, complete native/public wording, boundary-safe native prefix
+ℹ PROBE sorry long incident wording: 1305 source characters, complete native/public wording, boundary-safe native prefix
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 525416.632286
+
+✖ failing tests:
+
+test at tests/e2e/statuspage-import.test.mjs:27:1
+✖ SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes (204182.366027ms)
+  AssertionError [ERR_ASSERTION]: {"error":"import_door_conflict"}
+  
+  409 !== 200
+  
+      at postmortemTemplateImportFlow (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp/tests/e2e/helpers/postmortem-template-import-flow.mjs:102:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp/tests/e2e/statuspage-import.test.mjs:323:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 409,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+ ELIFECYCLE  Command failed with exit code 1.
+
+Verifying imports: test:mail
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 test:mail /home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp
+> node --test --test-concurrency=1 tests/e2e/rer-mail.test.mjs
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out (20958.184069ms)
+✔ Managed sender readiness clears an obsolete failure and enables subscriber mail; missing mail credentials remain actionable and unavailable (10720.226975ms)
+✔ A deliberate mail-off deployment passes native configuration and Base preflight; enabled and contradictory inputs still refuse (64.44838ms)
+✔ Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts (5050.174039ms)
+✔ The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact (32498.841034ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 71175.007028
+
+Verifying imports: test:site
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 test:site /home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c1/run-lamp
+> node --test --test-concurrency=1 tests/lamp-site/browser.test.mjs tests/e2e/website-onboarding.test.mjs tests/e2e/site-reader-security.test.mjs
+
+✔ site reading bounds hostile icon prefixes and preserves supported image detection (267.479287ms)
+✔ status feed reads remove tags reassembled by stripping while preserving message text (79.101927ms)
+✔ SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see (89411.458413ms)
+✔ DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey (66176.335955ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 157327.964906
+ ELIFECYCLE  Command failed with exit code 1.
