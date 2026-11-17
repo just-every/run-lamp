@@ -16,6 +16,7 @@ export interface IncidentUpdateRenderInput {
 }
 
 export interface RenderedIncidentUpdate {
+  impactExplanation?: string;
   public: {
     heading: string;
     lifecycle: IncidentLifecycle;
@@ -28,11 +29,16 @@ export interface RenderedIncidentUpdate {
     replyTo?: string;
     logoUrl?: string;
     logoAlt?: string;
+    html?: string;
+    deliverySuppressed?: boolean;
+    deliveryNotice?: string;
   };
 }
 
 export function componentChangeLines(changes: PublishedIncidentComponentChange[] = []): string[] {
-  return changes.filter(change => !change.internal && change.previousState !== change.newState).map(change => `${change.name}: ${change.previousState} → ${change.newState}`);
+  return changes.filter(change => !change.internal && change.previousState !== change.newState).map(change => change.remainingState && change.remainingState !== "Operational"
+    ? `${change.name}: remains ${change.remainingState} after this incident was resolved.`
+    : `${change.name}: ${change.previousState} → ${change.newState}`);
 }
 
 /** UPDATE-002 uses the same plain wording fields for incident and maintenance notices. */
@@ -45,7 +51,7 @@ export function renderImpactWording(input: Pick<IncidentUpdateRenderInput, "affe
 
 export function renderIncidentUpdate(input: IncidentUpdateRenderInput): RenderedIncidentUpdate {
   const fields = [
-    ...renderImpactWording(input),
+    ...renderImpactWording(input).map(field => field.label === "Customer impact" && input.lifecycle === "Resolved" ? { ...field, label: "Update" } : field),
     { label: "What still works", value: input.whatStillWorks },
     ...(input.lifecycle === "Resolved" ? [] : [{ label: "Next update by", value: input.nextUpdateDisplay ?? input.nextUpdateAt ?? "Not yet committed", instant: input.nextUpdateAt ?? undefined }]),
     { label: "Additional details", value: input.details },
