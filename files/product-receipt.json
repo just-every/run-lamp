@@ -42,5 +42,16 @@
   "github_release_created": false,
   "publication_scan": "deferred to fleet Mac gate per cloud instructions",
   "local_node": "v24.19.0",
-  "local_pnpm": "10.12.4"
+  "local_pnpm": "10.12.4",
+  "ci_run_id": 44037000523,
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44037000523",
+    "status": "completed"
+  },
+  "ci_api_call_count": 6,
+  "blockers": [],
+  "terminal_product_status": "READY",
+  "final_recorded_at": "2026-11-17T07:34:22.458682+00:00"
 }

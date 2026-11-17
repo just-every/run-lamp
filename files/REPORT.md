@@ -44,7 +44,10 @@ Product diff: 8 files, 3479 additions, 12 deletions. The retained prior contract
 Before/after clause counts: 244 total; 60 done, 129 partial, 55 missing in both. Status/Gap/Evidence changes: none. Tests added/deleted/modified: 0/0/0.
 Migration inventory: 80 existing SQL files before and after, byte-identical to v1.11.21; zero new migrations.
 No PR, tag or GitHub Release was created. This branch prepares release metadata only. No self-submission or landing was performed.
-Exact-SHA Verify run: 44037000523, https://github.com/just-every/run-lamp/actions/runs/44037000523. Initial state: in_progress.
-CI final verdict and evidence publication receipt will follow in this packet.
-
-Evidence checkpoint, Run Edit Run fleet, 2026-11-17T07:29:16.541270+00:00: third exact-SHA poll is still in_progress with no conclusion. Product is PUSHED; READY is not yet claimed. This report-only checkpoint preserves local work while CI runs.
+Exact-SHA Verify run: 44037000523, https://github.com/just-every/run-lamp/actions/runs/44037000523.
+Final REST verdict: completed/success on 4c90e6c8f35775e2a0287ab24ccba87d7a8d8485. Four polls followed discovery, each at least 300 seconds apart. Six explicit GitHub API calls were used including the initial Release read. No workflow was manually dispatched or retried, and no failed-job log call was needed.
+Product CI verdict: READY for the fleet's independent landing gates. Blockers: none.
+An initial report-only evidence checkpoint was published at 8ac5284af2fb7a148cbb88d5e8edfd794ca00f49 while CI was still running; this final packet supersedes it with the completed exact-SHA verdict.
+The final evidence ref is refs/heads/evidence/sd-lamp-release-1-11-22. Product and evidence custody remain separate; the evidence ref never replaces a product verification or landing gate.
+The cloud publication scan is not claimed. The fleet Mac runs its independent scan and landing checks. The clone is removed only after the final evidence publication succeeds.
+Run Edit Run fleet, 2026-11-17 UTC.
