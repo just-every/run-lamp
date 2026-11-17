@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "201902deda325d843c4398e22c013f61618a3b43f50b2a610a77200ceceae164",
+      "sha256": "bf833c635402f0d2b220898cecc6870dd03afba0a58efad78a20fd069edacd59",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -2604,7 +2604,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "20546a1ccd11516975c2255fb73135f6a8edbaeecf2416776544d3aadd3a1df6",
+      "sha256": "7652717c013221e778647f3ac99542ba9489fa900c8206c6b60c7f6358b618e0",
       "executable": false
     },
     "package.json": {
@@ -3824,7 +3824,7 @@
       "executable": false
     },
     "scripts/import.mjs": {
-      "sha256": "c73000064077a004fdf6a1d78dcebabc21af6f7994206e90317d8837b9365ce7",
+      "sha256": "4df731139186b05c4966a4cf2aab37eaeaee763938ee5c57b6e05468abab6334",
       "executable": false
     },
     "scripts/independent-build-setup.sh": {
@@ -3964,7 +3964,7 @@
       "executable": false
     },
     "scripts/platform-ledger.mjs": {
-      "sha256": "3c7e62d3d782dd8758da11f0a32fd57a8c3b90ca7ce3d3a6424b8d1f7122f0b7",
+      "sha256": "2e2dab8cc49097b25976c4a918b8369435eef3dc1802a66f76bcf03e53f30930",
       "executable": false
     },
     "scripts/project-operations.mjs": {
@@ -3984,11 +3984,11 @@
       "executable": false
     },
     "scripts/setup-migrations.mjs": {
-      "sha256": "07e16bb95672bf3932fc1f0b6bde8461b82773cdf7673720d6f8787e7cfd6b4c",
+      "sha256": "d71a008494b4011b6f25b2b67d3354a07cf9d272b86cb4c1dd53583db25501bb",
       "executable": false
     },
     "scripts/setup.mjs": {
-      "sha256": "e3facdf987e207853664e17a7e20e5d12730a927e04a39120b888fcd8a1dda50",
+      "sha256": "930b5e5ad39224309d0a245c92af75afb41da9f6fed6e75fb9b33e13ff44ccd1",
       "executable": false
     },
     "scripts/signin-link.mjs": {
@@ -7904,7 +7904,7 @@
       "executable": false
     },
     "tests/auth-adoption/setup-migrations.test.mjs": {
-      "sha256": "16538724b915972fd0601fde6200cea79a5729e60b83329e72e8c32f0f8c399b",
+      "sha256": "e79889cfb2cc0ac2b925fdf1976b18702ef7ee797b76a8a711f3adff7e3084d5",
       "executable": false
     },
     "tests/auth-adoption/sign-in-providers.test.mjs": {
@@ -8000,7 +8000,7 @@
       "executable": false
     },
     "tests/e2e/export-import.test.mjs": {
-      "sha256": "410acbf63c3ce0ff790c25ad28bc96c17bfae4681999c086849212e36247e03e",
+      "sha256": "c2d12fce3852de0c2069b9c1afe3fe10c5d55d22463cdc641d67a42c5cd9f365",
       "executable": false
     },
     "tests/e2e/fixtures/grafana-webhook-v1.json": {
@@ -8124,7 +8124,7 @@
       "executable": false
     },
     "tests/e2e/helpers/health-schema-proof.mjs": {
-      "sha256": "39048436a26bc610b1cf443f3482f4054ab2f8968bb7d8af4d394d44dad38510",
+      "sha256": "ae44a45749a04e8e709fb10c4461aeb90f4cbf484b950b836d44f04eaba7ce40",
       "executable": false
     },
     "tests/e2e/helpers/history-assertions.mjs": {
@@ -9388,7 +9388,7 @@
       "executable": false
     },
     "tests/helpers/fake-wrangler.mjs": {
-      "sha256": "1ae6dccbaff65684d69ff5b23f07483b1f0d1bdd2255ecab89561e097718c483",
+      "sha256": "621065b7af95d7371722bf936587e49c8f73d8f63e3988903bd884910ff0a860",
       "executable": false
     },
     "tests/helpers/import-notifications.mjs": {

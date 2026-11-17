@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { promisify } from 'node:util';
 import { checkout } from '../helpers/native-transfer.mjs';
+import { observationLedgerSql, shippedMigrations } from '../../scripts/setup-migrations.mjs';
 import { fixtureProcessEnv } from '../helpers/worker-environment.mjs';
 
 const execute = promisify(execFile);
@@ -44,11 +45,16 @@ test('HIST-004 PORT-001 — owner SQL rolls back a failed upgrade, recovers once
     await script('migrate:local'); // An applied migration does not run again.
     await query(source, "DELETE FROM owner_labels WHERE id='deleted'; DELETE FROM owner_empty;");
 
+    // Native hosted setup adds an observation ledger beside Wrangler's history.
+    // It must neither turn a native source into a Managed install nor travel as
+    // owner data to the restored database.
+    await query(source, observationLedgerSql(shippedMigrations(), shippedMigrations()));
     await script('export:cloudflare', '--out', archive, '--persist-to', source);
     await script('import:cloudflare', '--from', archive, '--persist-to', target);
     await assert.rejects(script('import:cloudflare', '--from', archive, '--persist-to', target), /failed/, 'restore never overwrites a populated installation');
     await script('export:cloudflare', '--out', reexport, '--persist-to', target);
     const original = JSON.parse(await readFile(join(archive, 'entities.json'), 'utf8'));
+    assert.ok(original.tables.every(table => table.name !== 'rer_migrations'), 'native health inventory stays installation metadata');
     assert.deepEqual(JSON.parse(await readFile(join(reexport, 'entities.json'), 'utf8')), original, 'all owner tables, relationships, generated values and empty/deleted state survive unchanged');
     assert.deepEqual((await query(target, 'SELECT id,label FROM owner_labels ORDER BY id'))[0], [
       { id: 'owner-1', label: 'Preserve this owner intent' },

@@ -21,6 +21,16 @@ without progress. If it still cannot finish, it stops and names the missing
 migrations instead of reporting success. (`rer setup` is the local first-owner
 setup.)
 
+Hosted deploy and `node scripts/setup.mjs` maintain `rer_migrations` in the
+`DB` database: each migration confirmed applied in D1 gets its filename and the
+SHA-256 of its exact file bytes. Re-running either command backfills missing
+entries for older installs and preserves recorded entries, including after a
+partial apply. `/health` reports that observed inventory separately from
+liveness, with the complete-file count and deterministic inventory hash; an
+existing empty ledger reports count zero, while a missing ledger is unavailable.
+
+<!-- Run Edit Run fleet, 2026-11-17: installed-health ledger follow-up. -->
+
 Owner task guides are published at `/docs` on the app host. Use
 [`RUN-LOCALLY.md`](RUN-LOCALLY.md) for local launch, export, reset and restore;
 it is the canonical local command sequence. This file remains the technical

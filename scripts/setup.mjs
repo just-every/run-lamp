@@ -7,7 +7,7 @@ import { assertMailDns } from "./mail-dns.mjs";
 import { deploymentOwnership } from "./deployment-ownership.mjs";
 
 import { applyOwnerMigrations } from "./owner-migrations.mjs";
-import { assertMigrationsApplied, coreLedgerQuery, ledgerNames, shippedMigrations } from "./setup-migrations.mjs";
+import { assertMigrationsApplied, coreLedgerQuery, ledgerNames, observationLedgerSql, shippedMigrations } from "./setup-migrations.mjs";
 import { deploymentConfig, deploymentRecordPath, parseArgs, resourceNames, pageHostBindingStatement, setupPageSettingsStatement, writeDeploymentRecord, writeGeneratedWrangler } from "./ops-config.mjs";
 
 // The checkout's own Wrangler, run by this Node: a restore needs no global pnpm.
@@ -81,8 +81,17 @@ async function main() {
   const shipped = shippedMigrations();
   let previous = 0;
   for (let pass = 1; pass <= 5; pass += 1) {
-    wrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", "wrangler.toml"], { timeout: 180_000, env: { ...process.env, CI: "true" } });
+    let applyError;
+    try {
+      wrangler(["d1", "migrations", "apply", "DB", "--remote", "--config", "wrangler.toml"], { timeout: 180_000, env: { ...process.env, CI: "true" } });
+    } catch (error) {
+      // A failed command may still have committed earlier files. Read back and
+      // record that subset before surfacing the failure; a later setup resumes.
+      applyError = error;
+    }
     const applied = ledgerNames(wrangler(["d1", "execute", "DB", "--remote", "--json", "--config", "wrangler.toml", "--command", coreLedgerQuery], { timeout: 30_000 }));
+    wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", observationLedgerSql(shipped, applied)], { timeout: 30_000 });
+    if (applyError) throw applyError;
     const recorded = new Set(applied);
     const count = shipped.filter(name => recorded.has(name)).length;
     if (count === shipped.length) break;
