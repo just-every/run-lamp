@@ -1,0 +1,9 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs lock",
+  "check": "node scripts/edition-authoring/cli.mjs check",
+  "check_exit": 0,
+  "changed_file_identities": [
+    "RELEASE.json"
+  ],
+  "other_lock_metadata_unchanged": true
+}

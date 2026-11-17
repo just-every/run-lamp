@@ -1,0 +1,34 @@
+[
+  {
+    "queriedAt": "2026-11-17T16:35:45.920654+00:00",
+    "runId": 44126537925,
+    "conclusion": null,
+    "head_sha": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44126537925",
+    "status": "in_progress"
+  },
+  {
+    "queriedAt": "2026-11-17T16:41:02.103073+00:00",
+    "runId": 44126537925,
+    "conclusion": null,
+    "head_sha": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44126537925",
+    "status": "in_progress"
+  },
+  {
+    "queriedAt": "2026-11-17T16:46:17.928377+00:00",
+    "runId": 44126537925,
+    "conclusion": null,
+    "head_sha": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44126537925",
+    "status": "in_progress"
+  },
+  {
+    "queriedAt": "2026-11-17T16:51:32.398671+00:00",
+    "runId": 44126537925,
+    "conclusion": "success",
+    "head_sha": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44126537925",
+    "status": "completed"
+  }
+]

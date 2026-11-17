@@ -1,0 +1,20 @@
+{
+  "before": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "after": {
+    "done": 60,
+    "partial": 129,
+    "missing": 55,
+    "total": 244
+  },
+  "clauseStatusChanges": [],
+  "move001": {
+    "before": "partial",
+    "after": "partial"
+  },
+  "contractUnchanged": true
+}

@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-11-17T16:42:08.763689+00:00",
+  "releaseVersionBefore": "1.11.22",
+  "releaseVersionAfter": "1.11.22",
+  "entryCountBefore": 0,
+  "entryCountAfter": 1,
+  "entryIdsAfter": [
+    "MOVE-001"
+  ],
+  "move001MarkerBefore": null,
+  "move001MarkerAfter": "changed",
+  "changedTopLevelFields": [
+    "contractChanges"
+  ],
+  "allOtherReleaseFieldsUnchanged": true,
+  "newCommitFiles": [
+    "RELEASE.json",
+    "sources.lock.json"
+  ]
+}

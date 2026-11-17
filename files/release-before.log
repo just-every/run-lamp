@@ -1,0 +1,7 @@
+Vendor catalog: 20 sources and 162 native state cases validated.
+1.11.22 MOVE-001 changed meaning without a changed release entry.
++ actual - expected
+
++ undefined
+- 'changed'
+

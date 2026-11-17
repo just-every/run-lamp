@@ -1,0 +1,12 @@
+e00d7bc55372c053a2423fcd01c29958b897c0a8
+Record the changed MOVE-001 Sorry field accounting guarantee
+
+
+7e89344cf612377ddb821c707de47158e78a2820
+Regenerate contract views from CONTRACT.md
+
+
+2b4239efca12d03ca17cc20c7da37f158a037c25
+Account for every field in documented Sorry imports
+
+

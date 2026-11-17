@@ -1,0 +1,54 @@
+{
+  "shard": "build",
+  "commit": null,
+  "runId": null,
+  "runAttempt": 0,
+  "success": true,
+  "steps": [
+    {
+      "script": "check:contract-docs",
+      "exitCode": 0,
+      "durationMs": 668
+    },
+    {
+      "script": "source:copies",
+      "exitCode": 0,
+      "durationMs": 670
+    },
+    {
+      "script": "source:check",
+      "exitCode": 0,
+      "durationMs": 1076
+    },
+    {
+      "script": "typecheck",
+      "exitCode": 0,
+      "durationMs": 21288
+    },
+    {
+      "script": "check:syntax",
+      "exitCode": 0,
+      "durationMs": 12712
+    },
+    {
+      "script": "validate:release",
+      "exitCode": 0,
+      "durationMs": 1287
+    },
+    {
+      "script": "verify:visual:source",
+      "exitCode": 0,
+      "durationMs": 393
+    },
+    {
+      "script": "build:app",
+      "exitCode": 0,
+      "durationMs": 8170
+    },
+    {
+      "script": "build:site",
+      "exitCode": 0,
+      "durationMs": 6686
+    }
+  ]
+}

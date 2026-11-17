@@ -1,0 +1,16 @@
+{
+  "queriedAt": "2026-11-17T16:30:33.453300+00:00",
+  "head": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+  "runs": [
+    {
+      "id": 44126537925,
+      "name": "Verify",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44126537925",
+      "created_at": "2026-11-17T16:30:27Z",
+      "updated_at": "2026-11-17T16:30:30Z"
+    }
+  ]
+}

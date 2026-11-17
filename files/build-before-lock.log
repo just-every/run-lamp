@@ -1,0 +1,1848 @@
+
+> lamp@1.11.22 verify:app /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node scripts/verification/run.mjs build
+
+Verification plan: 8 test shards and one shared build, 36 routine test files, 107 registered cases (including release qualification) + 10 assertion scripts = 117 checks.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+
+Verifying build: check:contract-docs
+
+> lamp@1.11.22 check:contract-docs /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node src/base/contract-docs.mjs check
+
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+
+Verifying build: source:copies
+
+> lamp@1.11.22 source:copies /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node scripts/edition-authoring/cli.mjs verify-base --offline
+
+{
+  "ok": true,
+  "record": "base-copies.json",
+  "origin": "not checked (--offline): local bytes against recorded SHA-256 only",
+  "copies": [
+    {
+      "path": ".github/workflows/run-demo.yml",
+      "originPath": "export/run-demo.yml",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": ".github/workflows/run-site.yml",
+      "originPath": "export/run-site.yml",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": ".node-version",
+      "originPath": "default-seed/.node-version",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "BASELINE.md",
+      "originPath": "export/BASELINE.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "CLAUDE.md",
+      "originPath": "export/CLAUDE.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/owner-migrations/LICENSE",
+      "originPath": "LICENSE",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/owner-migrations/README.md",
+      "originPath": "deployment/OWNER-MIGRATIONS.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/sendgrid-email/LICENSE",
+      "originPath": "modules/sendgrid-email/LICENSE",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "composition/modules/sendgrid-email/README.md",
+      "originPath": "modules/sendgrid-email/README.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "LICENSE",
+      "originPath": "LICENSE",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/d1-transport",
+      "originPath": "modules/d1-transport",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 4
+    },
+    {
+      "path": "modules/demo",
+      "originPath": "modules/demo",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 14
+    },
+    {
+      "path": "modules/import-kit/CONTRACT.md",
+      "originPath": "modules/import-kit/CONTRACT.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/README.md",
+      "originPath": "modules/import-kit/README.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/schema",
+      "originPath": "modules/import-kit/schema",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 2
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply.ts",
+      "originPath": "modules/import-kit/src/d1/apply.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/budget.ts",
+      "originPath": "modules/import-kit/src/d1/budget.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/compressed-plan.ts",
+      "originPath": "modules/import-kit/src/d1/compressed-plan.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/creation.ts",
+      "originPath": "modules/import-kit/src/d1/creation.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/custody-fence.ts",
+      "originPath": "modules/import-kit/src/d1/custody-fence.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/custody-state-schema.ts",
+      "originPath": "modules/import-kit/src/d1/custody-state-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/database.ts",
+      "originPath": "modules/import-kit/src/d1/database.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/entry-locator.ts",
+      "originPath": "modules/import-kit/src/d1/entry-locator.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-artifacts.ts",
+      "originPath": "modules/import-kit/src/d1/erased-artifacts.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-custody.ts",
+      "originPath": "modules/import-kit/src/d1/erased-custody.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-plan.ts",
+      "originPath": "modules/import-kit/src/d1/erased-plan.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erased-reversal.ts",
+      "originPath": "modules/import-kit/src/d1/erased-reversal.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-bounded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-bounded.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-claims.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-claims.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-compiler.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-compiler.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-disposition.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-disposition.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-fragments.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-fragments.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-index.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-index.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-pages.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-pages.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-progress-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-progress.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-progress.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-related.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-related.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-report.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-report.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-schema.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-selection.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-selection.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-snapshot.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-stage.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-stage.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-step.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-step.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-superseded.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-values.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-values.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure-writes.ts",
+      "originPath": "modules/import-kit/src/d1/erasure-writes.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/erasure.ts",
+      "originPath": "modules/import-kit/src/d1/erasure.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "originPath": "modules/import-kit/src/d1/evolutions/0001-preserved-undo.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/expected-state.ts",
+      "originPath": "modules/import-kit/src/d1/expected-state.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/field-redaction.ts",
+      "originPath": "modules/import-kit/src/d1/field-redaction.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/guards.ts",
+      "originPath": "modules/import-kit/src/d1/guards.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/history.ts",
+      "originPath": "modules/import-kit/src/d1/history.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/index.ts",
+      "originPath": "modules/import-kit/src/d1/index.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/integrity.ts",
+      "originPath": "modules/import-kit/src/d1/integrity.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/inventory-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/inventory-snapshot.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/jobs.ts",
+      "originPath": "modules/import-kit/src/d1/jobs.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-set.ts",
+      "originPath": "modules/import-kit/src/d1/native-set.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-admission.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-admission.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-context.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-context.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-lifecycle.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-offset.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-offset.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-publication.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-publication.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-rows.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-rows.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-schema.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging-state.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging-state.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/native-staging.ts",
+      "originPath": "modules/import-kit/src/d1/native-staging.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/original-copies.ts",
+      "originPath": "modules/import-kit/src/d1/original-copies.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/original-storage.ts",
+      "originPath": "modules/import-kit/src/d1/original-storage.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/originals.ts",
+      "originPath": "modules/import-kit/src/d1/originals.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/plan-dictionary.ts",
+      "originPath": "modules/import-kit/src/d1/plan-dictionary.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/plans.ts",
+      "originPath": "modules/import-kit/src/d1/plans.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-fingerprint.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-header.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-header.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-reader.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-reader.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-schema.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-state.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-state.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-combine.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-combine.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-control.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-control.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-hash.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-hash.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-step-pages.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-step-pages.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-steps-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparation-steps.ts",
+      "originPath": "modules/import-kit/src/d1/preparation-steps.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preparations.ts",
+      "originPath": "modules/import-kit/src/d1/preparations.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/provenance-set.ts",
+      "originPath": "modules/import-kit/src/d1/provenance-set.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/publication-fence.ts",
+      "originPath": "modules/import-kit/src/d1/publication-fence.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "originPath": "modules/import-kit/src/d1/publication-receipt-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/published-stream.ts",
+      "originPath": "modules/import-kit/src/d1/published-stream.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/read-fence.ts",
+      "originPath": "modules/import-kit/src/d1/read-fence.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/read-results.ts",
+      "originPath": "modules/import-kit/src/d1/read-results.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/README.md",
+      "originPath": "modules/import-kit/src/d1/README.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/redacted-custody.ts",
+      "originPath": "modules/import-kit/src/d1/redacted-custody.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/redaction-step.ts",
+      "originPath": "modules/import-kit/src/d1/redaction-step.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/referenced-plans.ts",
+      "originPath": "modules/import-kit/src/d1/referenced-plans.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retained-values.ts",
+      "originPath": "modules/import-kit/src/d1/retained-values.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-bounded.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-bounded.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-door.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-door.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-schema.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-scope.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-scope.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-steps.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-steps.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement-tally.ts",
+      "originPath": "modules/import-kit/src/d1/retirement-tally.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/retirement.ts",
+      "originPath": "modules/import-kit/src/d1/retirement.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-fence-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-fence.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-fence.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reverse.ts",
+      "originPath": "modules/import-kit/src/d1/reverse.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reviewed-source.ts",
+      "originPath": "modules/import-kit/src/d1/reviewed-source.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/sets.ts",
+      "originPath": "modules/import-kit/src/d1/sets.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-admission.ts",
+      "originPath": "modules/import-kit/src/d1/staging-admission.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-control.ts",
+      "originPath": "modules/import-kit/src/d1/staging-control.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-erasure.ts",
+      "originPath": "modules/import-kit/src/d1/staging-erasure.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-lifecycle.ts",
+      "originPath": "modules/import-kit/src/d1/staging-lifecycle.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-plan.ts",
+      "originPath": "modules/import-kit/src/d1/staging-plan.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-privacy.ts",
+      "originPath": "modules/import-kit/src/d1/staging-privacy.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-publication.ts",
+      "originPath": "modules/import-kit/src/d1/staging-publication.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-schema.ts",
+      "originPath": "modules/import-kit/src/d1/staging-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-statements.ts",
+      "originPath": "modules/import-kit/src/d1/staging-statements.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staging-transport.ts",
+      "originPath": "modules/import-kit/src/d1/staging-transport.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-boundary.ts",
+      "originPath": "modules/import-kit/src/d1/stream-boundary.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-create.ts",
+      "originPath": "modules/import-kit/src/d1/stream-create.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-identity-admission.ts",
+      "originPath": "modules/import-kit/src/d1/stream-identity-admission.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-input.ts",
+      "originPath": "modules/import-kit/src/d1/stream-input.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-layout.ts",
+      "originPath": "modules/import-kit/src/d1/stream-layout.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-origin.ts",
+      "originPath": "modules/import-kit/src/d1/stream-origin.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-page-integrity.ts",
+      "originPath": "modules/import-kit/src/d1/stream-page-integrity.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-partition.ts",
+      "originPath": "modules/import-kit/src/d1/stream-partition.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-plan.ts",
+      "originPath": "modules/import-kit/src/d1/stream-plan.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-receipt.ts",
+      "originPath": "modules/import-kit/src/d1/stream-receipt.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-revision-schema.ts",
+      "originPath": "modules/import-kit/src/d1/stream-revision-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/stream-snapshot.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-stage.ts",
+      "originPath": "modules/import-kit/src/d1/stream-stage.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-state.ts",
+      "originPath": "modules/import-kit/src/d1/stream-state.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/stream-working-set.ts",
+      "originPath": "modules/import-kit/src/d1/stream-working-set.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/streams.ts",
+      "originPath": "modules/import-kit/src/d1/streams.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/target-guards.ts",
+      "originPath": "modules/import-kit/src/d1/target-guards.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/target-identities.ts",
+      "originPath": "modules/import-kit/src/d1/target-identities.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/transport.ts",
+      "originPath": "modules/import-kit/src/d1/transport.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/types.ts",
+      "originPath": "modules/import-kit/src/d1/types.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-observations.ts",
+      "originPath": "modules/import-kit/src/d1/undo-observations.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-report.ts",
+      "originPath": "modules/import-kit/src/d1/undo-report.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-snapshot.ts",
+      "originPath": "modules/import-kit/src/d1/undo-snapshot.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-state.ts",
+      "originPath": "modules/import-kit/src/d1/undo-state.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/undo-types.ts",
+      "originPath": "modules/import-kit/src/d1/undo-types.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/door",
+      "originPath": "modules/import-kit/src/door",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 27
+    },
+    {
+      "path": "modules/import-kit/src/engine",
+      "originPath": "modules/import-kit/src/engine",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 3
+    },
+    {
+      "path": "modules/import-kit/src/index.ts",
+      "originPath": "modules/import-kit/src/index.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/journal",
+      "originPath": "modules/import-kit/src/journal",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 4
+    },
+    {
+      "path": "modules/import-kit/src/plan",
+      "originPath": "modules/import-kit/src/plan",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 3
+    },
+    {
+      "path": "modules/import-kit/src/provenance",
+      "originPath": "modules/import-kit/src/provenance",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 9
+    },
+    {
+      "path": "modules/import-kit/src/readers",
+      "originPath": "modules/import-kit/src/readers",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 11
+    },
+    {
+      "path": "modules/import-kit/src/reconcile",
+      "originPath": "modules/import-kit/src/reconcile",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/status",
+      "originPath": "modules/import-kit/src/status",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 5
+    },
+    {
+      "path": "modules/import-kit/src/storage",
+      "originPath": "modules/import-kit/src/storage",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 6
+    },
+    {
+      "path": "modules/import-kit/src/types.ts",
+      "originPath": "modules/import-kit/src/types.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/integrations/core",
+      "originPath": "modules/integrations/core",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 17
+    },
+    {
+      "path": "modules/integrations/README.md",
+      "originPath": "modules/integrations/README.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/integrations/slack",
+      "originPath": "modules/integrations/slack",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 6
+    },
+    {
+      "path": "modules/mail",
+      "originPath": "modules/mail",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 59
+    },
+    {
+      "path": "modules/operator-auth",
+      "originPath": "modules/operator-auth",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 46
+    },
+    {
+      "path": "modules/owner-claim/index.d.mts",
+      "originPath": "modules/owner-claim/index.d.mts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/owner-claim/verify.d.mts",
+      "originPath": "modules/owner-claim/verify.d.mts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/owner-claim/verify.mjs",
+      "originPath": "modules/owner-claim/verify.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/sendgrid-email",
+      "originPath": "modules/sendgrid-email",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 3
+    },
+    {
+      "path": "schema/dependencies.mjs",
+      "originPath": "schema/dependencies.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "schema/json-schema.mjs",
+      "originPath": "schema/json-schema.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "schema/SEED.schema.json",
+      "originPath": "schema/SEED.schema.json",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "schema/setup-validation.mjs",
+      "originPath": "schema/setup-validation.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "schema/validate.mjs",
+      "originPath": "schema/validate.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/artifact.mjs",
+      "originPath": "modules/delivery-producer/artifact.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/bindings.mjs",
+      "originPath": "modules/delivery-producer/bindings.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/capabilities.mjs",
+      "originPath": "modules/delivery-producer/capabilities.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/cli.mjs",
+      "originPath": "modules/delivery-producer/cli.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/declarations.mjs",
+      "originPath": "modules/delivery-producer/declarations.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/export.mjs",
+      "originPath": "modules/delivery-producer/export.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/integration.mjs",
+      "originPath": "modules/delivery-producer/generators/integration.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/managed.mjs",
+      "originPath": "modules/delivery-producer/generators/managed.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/project.mjs",
+      "originPath": "modules/delivery-producer/generators/project.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/generators/validation.mjs",
+      "originPath": "modules/delivery-producer/generators/validation.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/mail.mjs",
+      "originPath": "modules/delivery-producer/mail.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/migrations.mjs",
+      "originPath": "modules/delivery-producer/migrations.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/native-export.mjs",
+      "originPath": "modules/delivery-producer/native-export.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/package.mjs",
+      "originPath": "modules/delivery-producer/package.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/paths.mjs",
+      "originPath": "modules/delivery-producer/paths.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/payloads.mjs",
+      "originPath": "modules/delivery-producer/payloads.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/dependencies.mjs",
+      "originPath": "schema/dependencies.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/json-schema.mjs",
+      "originPath": "schema/json-schema.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/setup-validation.mjs",
+      "originPath": "schema/setup-validation.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/SETUP.schema.json",
+      "originPath": "schema/SETUP.schema.json",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/sign-in.mjs",
+      "originPath": "modules/delivery-producer/sign-in.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/spec.mjs",
+      "originPath": "modules/delivery-producer/spec.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/sql-statements.mjs",
+      "originPath": "modules/delivery-producer/sql-statements.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/deployment/OWNER-MIGRATIONS.md",
+      "originPath": "deployment/OWNER-MIGRATIONS.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/deployment/owner-migrations.mjs",
+      "originPath": "deployment/owner-migrations.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/edition-authoring",
+      "originPath": "edition-authoring",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 150
+    },
+    {
+      "path": "scripts/installer/ui/background.svg",
+      "originPath": "default-seed/scripts/installer/ui/background.svg",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/operations.mjs",
+      "originPath": "operations/operations.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/project-operations.mjs",
+      "originPath": "operations/project-operations.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "SEED-COMMAND-CONTRACT.md",
+      "originPath": "export/SEED-COMMAND-CONTRACT.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/actor.ts",
+      "originPath": "foundation/runtime/actor.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/command-receipts.sql",
+      "originPath": "foundation/runtime/command-receipts.sql",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/command-receipts.ts",
+      "originPath": "foundation/runtime/command-receipts.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-docs.mjs",
+      "originPath": "foundation/runtime/contract-docs.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-filter.ts",
+      "originPath": "foundation/runtime/contract-filter.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-page.ts",
+      "originPath": "foundation/runtime/contract-page.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-style.ts",
+      "originPath": "foundation/runtime/contract-style.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/deployment-health.ts",
+      "originPath": "foundation/runtime/deployment-health.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/dispatch.ts",
+      "originPath": "foundation/runtime/dispatch.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/font-head.ts",
+      "originPath": "foundation/runtime/font-head.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/font-response.ts",
+      "originPath": "foundation/runtime/font-response.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/intro-guard.ts",
+      "originPath": "foundation/runtime/hydration/intro-guard.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/README.md",
+      "originPath": "foundation/runtime/hydration/README.md",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/report.ts",
+      "originPath": "foundation/runtime/hydration/report.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/hydration/unit.tsx",
+      "originPath": "foundation/runtime/hydration/unit.tsx",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/icon-head.ts",
+      "originPath": "foundation/runtime/icon-head.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/identity.ts",
+      "originPath": "foundation/runtime/identity.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/lobby.ts",
+      "originPath": "foundation/runtime/lobby.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/page-style.ts",
+      "originPath": "foundation/runtime/page-style.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/rejected-response.ts",
+      "originPath": "foundation/runtime/rejected-response.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-site.ts",
+      "originPath": "foundation/runtime/run-site.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/seed-contract.d.mts",
+      "originPath": "foundation/runtime/seed-contract.d.mts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/seed-contract.mjs",
+      "originPath": "foundation/runtime/seed-contract.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/select-style.ts",
+      "originPath": "foundation/runtime/select-style.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/setup-state.ts",
+      "originPath": "foundation/runtime/setup-state.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/setup.ts",
+      "originPath": "foundation/runtime/setup.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/static-assets.ts",
+      "originPath": "foundation/runtime/static-assets.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/theme-frame.ts",
+      "originPath": "foundation/runtime/theme-frame.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/editor/editor-surface.ts",
+      "originPath": "modules/editor/src/widget/editor-surface.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/editor/live-edit-contracts.ts",
+      "originPath": "modules/editor/src/widget/live-edit-contracts.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/editor/live-edit-dom.ts",
+      "originPath": "modules/editor/src/widget/live-edit-dom.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/editor/visual-style.ts",
+      "originPath": "modules/editor/src/widget/visual-style.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-pricing.ts",
+      "originPath": "foundation/runtime/run-pricing.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply-reads.ts",
+      "originPath": "modules/import-kit/src/d1/apply-reads.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/apply-effects.ts",
+      "originPath": "modules/import-kit/src/d1/apply-effects.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/verified-plan.ts",
+      "originPath": "modules/import-kit/src/d1/verified-plan.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/staged-creation.ts",
+      "originPath": "modules/import-kit/src/d1/staged-creation.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/atomic-prefix.ts",
+      "originPath": "modules/import-kit/src/d1/atomic-prefix.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion-schema.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/column-layout.ts",
+      "originPath": "modules/import-kit/src/d1/column-layout.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/preserved-preview.ts",
+      "originPath": "modules/import-kit/src/d1/preserved-preview.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-journal.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-journal.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/wave-boundary.ts",
+      "originPath": "modules/import-kit/src/d1/wave-boundary.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/wave-retirement.ts",
+      "originPath": "modules/import-kit/src/d1/wave-retirement.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/snapshot-text.ts",
+      "originPath": "modules/import-kit/src/d1/snapshot-text.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "originPath": "modules/import-kit/src/d1/reversal-conversion-record.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/index.ts",
+      "originPath": "modules/import-kit/src/receipt/index.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/uri.ts",
+      "originPath": "modules/import-kit/src/receipt/uri.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/types.ts",
+      "originPath": "modules/import-kit/src/receipt/types.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/encoding.ts",
+      "originPath": "modules/import-kit/src/receipt/encoding.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "schema/business-field-inputs.mjs",
+      "originPath": "schema/business-field-inputs.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "scripts/delivery/base/schema/business-field-inputs.mjs",
+      "originPath": "schema/business-field-inputs.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-anchor.mjs",
+      "originPath": "foundation/runtime/contract-anchor.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-prose.mjs",
+      "originPath": "foundation/runtime/contract-prose.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/hosting-page.ts",
+      "originPath": "foundation/runtime/hosting-page.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-chooser-style.ts",
+      "originPath": "foundation/runtime/run-chooser-style.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/policy.ts",
+      "originPath": "modules/import-kit/src/receipt/policy.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "modules/import-kit/src/receipt/validation.ts",
+      "originPath": "modules/import-kit/src/receipt/validation.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/contract-prose-patterns.mjs",
+      "originPath": "foundation/runtime/contract-prose-patterns.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-data.mjs",
+      "originPath": "foundation/runtime/run-data.mjs",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    },
+    {
+      "path": "src/base/run-data.d.mts",
+      "originPath": "foundation/runtime/run-data.d.mts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f",
+      "files": 1
+    }
+  ],
+  "drift": [],
+  "unrecordedCopies": [],
+  "adapted": [
+    {
+      "path": "src/base/run-site.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf"
+    }
+  ],
+  "meaning": "Undeclared copies claim Base byte equality. Declared adaptations must match their acknowledged local bytes and mode; their recorded Base bytes and revision remain comparison baselines."
+}
+
+
+Verifying build: source:check
+
+> lamp@1.11.22 source:check /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node scripts/edition-authoring/cli.mjs check
+
+Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock
+ ELIFECYCLE  Command failed with exit code 1.
+
+Verifying build: typecheck
+
+> lamp@1.11.22 typecheck /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> tsc --noEmit
+
+
+Verifying build: check:syntax
+
+> lamp@1.11.22 check:syntax /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node scripts/check-syntax.mjs
+
+check-syntax: 478/478 modules parsed
+
+Verifying build: validate:release
+
+> lamp@1.11.22 validate:release /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node scripts/validate-release.mjs
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.22.
+
+Verifying build: verify:visual:source
+
+> lamp@1.11.22 verify:visual:source /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node --experimental-strip-types scripts/verify-visual-edit.mjs --source-only
+
+Validated 0 compiled visual edits at revision 0.
+
+Verifying build: build:app
+
+> lamp@1.11.22 build:app /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> node scripts/build.mjs
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+vite v8.2.4 building client environment for production...
+transforming...
+[plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp/src/site/docs/body.ts:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp/src/core/app/loaders.ts:27:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+✓ 557 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/client/.assetsignore                                        0.02 kB
+dist/client/app-assets/lamp-badge-DIkgGAxu.svg                   0.29 kB │ gzip:   0.19 kB
+dist/client/app-assets/lamp-badge-16-dJ5R_YkC.png                0.43 kB
+dist/client/app-assets/lamp-badge-icon-saRGOymC.svg              0.60 kB │ gzip:   0.28 kB
+dist/client/app-assets/grain-CRrFAgVd.svg                        0.62 kB │ gzip:   0.33 kB
+dist/client/app-assets/lamp-badge-32-wv7CD4nG.png                0.83 kB
+dist/client/app-assets/lamp-badge-touch-CBjYEgUH.png             3.51 kB
+dist/client/app-assets/lamp-off-720-BqTRFQSu.avif               11.51 kB
+dist/client/app-assets/bulb-glow-720-fswawJfh.avif              12.73 kB
+dist/client/app-assets/lamp-on-720-_hQ3xdmq.avif                14.32 kB
+dist/client/app-assets/lamp-off-1200-C0JK4fHi.avif              19.08 kB
+dist/client/app-assets/lamp-off-720-CADQxApg.webp               20.66 kB
+dist/client/app-assets/bulb-glow-1200-BVjWKVCJ.avif             23.20 kB
+dist/client/app-assets/lamp-on-1200-CtpNOQtN.avif               23.37 kB
+dist/client/app-assets/lamp-on-720-OAGA45Ob.webp                23.74 kB
+dist/client/app-assets/lamp-off-1200-yUlTvulk.webp              40.95 kB
+dist/client/app-assets/bulb-glow-720-DTDXje5w.webp              45.52 kB
+dist/client/app-assets/lamp-on-1200-u5q1Gbet.webp               46.24 kB
+dist/client/app-assets/inter-latin-Dx4kXJAl.woff2               48.25 kB
+dist/client/app-assets/bulb-glow-1200-BWyNPU2y.webp             97.92 kB
+dist/client/app-assets/fonts-BhyjwMBU.css                        0.33 kB │ gzip:   0.24 kB
+dist/client/app-assets/app-CpCg4Oqd.css                          0.48 kB │ gzip:   0.21 kB
+dist/client/app-assets/performance-CvMbzayb.css                  1.86 kB │ gzip:   0.66 kB
+dist/client/app-assets/DocsNav-qUwKP4pS.css                     20.58 kB │ gzip:   4.68 kB
+dist/client/app-assets/operator-runtime-LWqpfDB9.css            94.52 kB │ gzip:  18.31 kB
+dist/client/app-assets/app.incidents-P1wCm8Ke.js                 0.08 kB │ gzip:   0.09 kB
+dist/client/app-assets/docs-P1wCm8Ke.js                          0.08 kB │ gzip:   0.09 kB
+dist/client/app-assets/package-C0ms7sIB.js                       0.09 kB │ gzip:   0.10 kB
+dist/client/app-assets/incident-component-changes-CxqP57kR.js    0.09 kB │ gzip:   0.10 kB
+dist/client/app-assets/app-CzADhDKU.js                           0.16 kB │ gzip:   0.15 kB
+dist/client/app-assets/app.incidents.new-NX6haXmU.js             0.18 kB │ gzip:   0.16 kB
+dist/client/app-assets/docs._slug-DeOXPeLA.js                    0.20 kB │ gzip:   0.18 kB
+dist/client/app-assets/docs._-w_FBXvJz.js                        0.20 kB │ gzip:   0.18 kB
+dist/client/app-assets/cutover-draft-B7R4iewQ.js                 0.24 kB │ gzip:   0.17 kB
+dist/client/app-assets/domain-DkT8C6F1.js                        0.46 kB │ gzip:   0.28 kB
+dist/client/app-assets/docs-72OoBoKi.js                          0.67 kB │ gzip:   0.36 kB
+dist/client/app-assets/rolldown-runtime-hePW80VL.js              0.71 kB │ gzip:   0.42 kB
+dist/client/app-assets/update-due-notice-DphpCOmz.js             0.95 kB │ gzip:   0.52 kB
+dist/client/app-assets/index-B-o2NPXA.js                         0.97 kB │ gzip:   0.65 kB
+dist/client/app-assets/docs.index-UhJMb9ox.js                    1.10 kB │ gzip:   0.44 kB
+dist/client/app-assets/door-client-CGYe3xYj.js                   1.20 kB │ gzip:   0.74 kB
+dist/client/app-assets/page-preview-7L4TAab_.js                  2.45 kB │ gzip:   1.01 kB
+dist/client/app-assets/DocsArticle-BYx5aUMV.js                   3.38 kB │ gzip:   1.23 kB
+dist/client/app-assets/app.incidents.index-LhDMchaL.js           4.15 kB │ gzip:   1.52 kB
+dist/client/app-assets/DocsNav-DHp_j2zy.js                       4.19 kB │ gzip:   1.30 kB
+dist/client/app-assets/performance-SBC5Fdpv.js                   4.46 kB │ gzip:   1.66 kB
+dist/client/app-assets/use-source-autosave-aEPwnn6i.js           5.02 kB │ gzip:   1.95 kB
+dist/client/app-assets/presets-D4DmHw6v.js                       5.25 kB │ gzip:   2.19 kB
+dist/client/app-assets/app.index-DUSEaNaQ.js                     9.21 kB │ gzip:   3.00 kB
+dist/client/app-assets/new-incident-page-CUPq9Cpj.js            11.17 kB │ gzip:   3.89 kB
+dist/client/app-assets/app.maintenance-CUKLiW_t.js              11.69 kB │ gzip:   3.19 kB
+dist/client/app-assets/app.cutover-CkTWAchA.js                  11.72 kB │ gzip:   4.24 kB
+dist/client/app-assets/setup-CEFXbQTh.js                        14.68 kB │ gzip:   4.82 kB
+dist/client/app-assets/sign-in-pane-CJo4mAL4.js                 15.68 kB │ gzip:   5.10 kB
+dist/client/app-assets/app.move-in-9liYqWJ2.js                  21.61 kB │ gzip:   6.24 kB
+dist/client/app-assets/publish-options-D4HMsdBZ.js              22.14 kB │ gzip:   7.52 kB
+dist/client/app-assets/app.subscribers-CNpSHEW6.js              25.34 kB │ gzip:   7.10 kB
+dist/client/app-assets/app.components-CGzlDBRM.js               35.62 kB │ gzip:   9.16 kB
+dist/client/app-assets/app.incidents._incidentId-DGV-1ctm.js    54.65 kB │ gzip:  16.48 kB
+dist/client/app-assets/schemas-BSh8bPFY.js                      90.25 kB │ gzip:  25.54 kB
+dist/client/app-assets/app.settings-IJ772o6a.js                177.29 kB │ gzip:  44.76 kB
+dist/client/app-assets/operator-runtime-Dn9uD-W5.js            402.19 kB │ gzip: 131.54 kB
+
+✓ built in 2.14s
+vite v8.2.4 building ssr environment for production...
+transforming...
+[plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp/src/site/docs/body.ts?tss-serverfn-split:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp/src/core/app/loaders.ts?tss-serverfn-split:27:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp/src/core/app/loaders.ts:27:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp/src/site/docs/body.ts:7:29 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+✓ 1601 modules transformed.
+rendering chunks...
+Using secrets defined in .dev.vars
+computing gzip size...
+dist/server/app-assets/lamp-badge-DIkgGAxu.svg                                0.29 kB │ gzip:     0.19 kB
+dist/server/app-assets/lamp-badge-16-dJ5R_YkC.png                             0.43 kB
+dist/server/app-assets/lamp-badge-icon-saRGOymC.svg                           0.60 kB │ gzip:     0.28 kB
+dist/server/app-assets/grain-CRrFAgVd.svg                                     0.62 kB │ gzip:     0.33 kB
+dist/server/app-assets/lamp-badge-32-wv7CD4nG.png                             0.83 kB
+dist/server/wrangler.json                                                     2.05 kB │ gzip:     1.00 kB
+dist/server/app-assets/lamp-badge-touch-CBjYEgUH.png                          3.51 kB
+dist/server/app-assets/lamp-off-720-BqTRFQSu.avif                            11.51 kB
+dist/server/app-assets/bulb-glow-720-fswawJfh.avif                           12.73 kB
+dist/server/app-assets/lamp-on-720-_hQ3xdmq.avif                             14.32 kB
+dist/server/app-assets/lamp-off-1200-C0JK4fHi.avif                           19.08 kB
+dist/server/app-assets/lamp-off-720-CADQxApg.webp                            20.66 kB
+dist/server/app-assets/bulb-glow-1200-BVjWKVCJ.avif                          23.20 kB
+dist/server/app-assets/lamp-on-1200-CtpNOQtN.avif                            23.37 kB
+dist/server/app-assets/lamp-on-720-OAGA45Ob.webp                             23.74 kB
+dist/server/.vite/manifest.json                                              31.88 kB │ gzip:     4.32 kB
+dist/server/app-assets/lamp-off-1200-yUlTvulk.webp                           40.95 kB
+dist/server/app-assets/bulb-glow-720-DTDXje5w.webp                           45.52 kB
+dist/server/app-assets/lamp-on-1200-u5q1Gbet.webp                            46.24 kB
+dist/server/app-assets/inter-latin-Dx4kXJAl.woff2                            48.25 kB
+dist/server/app-assets/bulb-glow-1200-BWyNPU2y.webp                          97.92 kB
+dist/server/app-assets/fonts-BhyjwMBU.css                                     0.33 kB │ gzip:     0.24 kB
+dist/server/app-assets/app-CpCg4Oqd.css                                       0.48 kB │ gzip:     0.21 kB
+dist/server/app-assets/lit-states-OIF8zF0b.css                                1.62 kB │ gzip:     0.62 kB
+dist/server/app-assets/performance-CvMbzayb.css                               1.86 kB │ gzip:     0.66 kB
+dist/server/app-assets/DocsNav-qUwKP4pS.css                                  20.58 kB │ gzip:     4.68 kB
+dist/server/app-assets/router-BsRzzjXZ.css                                   92.90 kB │ gzip:    17.76 kB
+dist/server/app-assets/badge-BGx2UbIh.js                                      0.13 kB │ gzip:     0.12 kB
+dist/server/app-assets/bindings.server-Cftjx4Db.js                            0.17 kB │ gzip:     0.14 kB
+dist/server/app-assets/docs-ovXhRPCr.js                                       0.18 kB │ gzip:     0.15 kB
+dist/server/app-assets/app.incidents-BYeM6QIb.js                              0.19 kB │ gzip:     0.15 kB
+dist/server/app-assets/held-sorry-CkG3y6e0.js                                 0.19 kB │ gzip:     0.16 kB
+dist/server/app-assets/package-DCvyntRA.js                                    0.19 kB │ gzip:     0.16 kB
+dist/server/app-assets/empty-plugin-adapters-D_0twvAa.js                      0.28 kB │ gzip:     0.18 kB
+dist/server/app-assets/start-BMZC9kQx.js                                      0.28 kB │ gzip:     0.20 kB
+dist/server/app-assets/inter-latin-CSroAmTI.js                                0.34 kB │ gzip:     0.20 kB
+dist/server/app-assets/body-BYTH_gsr.js                                       0.38 kB │ gzip:     0.27 kB
+dist/server/app-assets/createServerRpc-clVF8hjL.js                            0.45 kB │ gzip:     0.29 kB
+dist/server/app-assets/docs._-Dm4BTZ0H.js                                     0.48 kB │ gzip:     0.29 kB
+dist/server/app-assets/docs._slug-BbZedtbg.js                                 0.49 kB │ gzip:     0.29 kB
+dist/server/app-assets/app.incidents.new-_YGhpREg.js                          0.53 kB │ gzip:     0.30 kB
+dist/server/app-assets/public-origin-DsO7EJ-x.js                              0.53 kB │ gzip:     0.32 kB
+dist/server/app-assets/cutover-draft-DTKJTmPk.js                              0.55 kB │ gzip:     0.32 kB
+dist/server/app-assets/utils-gBu8rjNy.js                                      0.57 kB │ gzip:     0.36 kB
+dist/server/app-assets/createSsrRpc-C0axU1UR.js                               0.66 kB │ gzip:     0.39 kB
+dist/server/app-assets/VisualEditBoundary-B1Cz6xvT.js                         0.81 kB │ gzip:     0.45 kB
+dist/server/app-assets/body-jDFiRgih.js                                       0.81 kB │ gzip:     0.46 kB
+dist/server/app-assets/imported-maintenance-update-BCYTRgrp.js                0.83 kB │ gzip:     0.44 kB
+dist/server/app-assets/domain-B7v_qPoN.js                                     0.85 kB │ gzip:     0.42 kB
+dist/server/app-assets/app-head-DgojhLXn.js                                   0.93 kB │ gzip:     0.54 kB
+dist/server/app-assets/__23tanstack-start-server-fn-resolver-BMOynFvF.js      0.96 kB │ gzip:     0.50 kB
+dist/server/app-assets/useRouterState-CZqJMBuF.js                             1.06 kB │ gzip:     0.57 kB
+dist/server/app-assets/pagination-C0owyDCp.js                                 1.17 kB │ gzip:     0.52 kB
+dist/server/app-assets/useNavigate-BDQi2mDc.js                                1.17 kB │ gzip:     0.64 kB
+dist/server/app-assets/root-9EyTSWnO.js                                       1.18 kB │ gzip:     0.57 kB
+dist/server/app-assets/opaque-tokens-QW90qhqC.js                              1.25 kB │ gzip:     0.61 kB
+dist/server/app-assets/ClientOnly-g8WI9LzP.js                                 1.36 kB │ gzip:     0.67 kB
+dist/server/app-assets/useMatch-D1YBAE71.js                                   1.48 kB │ gzip:     0.70 kB
+dist/server/app-assets/extensions-Bz3A-lvL.js                                 1.55 kB │ gzip:     0.65 kB
+dist/server/app-assets/docs-DgDHyh9U.js                                       1.58 kB │ gzip:     0.60 kB
+dist/server/app-assets/month-QNzw0JLq.js                                      1.71 kB │ gzip:     0.76 kB
+dist/server/app-assets/redirect-BDbpra0T.js                                   1.75 kB │ gzip:     0.85 kB
+dist/server/app-assets/accent-ink-BD7iXk4V.js                                 1.90 kB │ gzip:     0.84 kB
+dist/server/app-assets/preferences-DHBzPBuO.js                                2.04 kB │ gzip:     0.85 kB
+dist/server/app-assets/update-due-notice-BS5z145l.js                          2.26 kB │ gzip:     0.93 kB
+dist/server/app-assets/lazyRouteComponent-D1-dA6LM.js                         2.47 kB │ gzip:     1.05 kB
+dist/server/app-assets/door-client-CT5iJRra.js                                2.51 kB │ gzip:     1.25 kB
+dist/server/app-assets/docs.index-CJNz36T-.js                                 2.63 kB │ gzip:     0.84 kB
+dist/server/app-assets/format-jHkeX60Y.js                                     4.17 kB │ gzip:     1.44 kB
+dist/server/app-assets/path-E273zKfp.js                                       4.87 kB │ gzip:     1.88 kB
+dist/server/app-assets/settings-tabs-3kkE9LZ6.js                              4.94 kB │ gzip:     1.87 kB
+dist/server/app-assets/incident-component-changes-DhqzxtgM.js                 4.99 kB │ gzip:     1.84 kB
+dist/server/app-assets/loaders-CYlV_GI5.js                                    5.05 kB │ gzip:     1.93 kB
+dist/server/app-assets/lit-states-BGknRyhc.js                                 5.65 kB │ gzip:     1.34 kB
+dist/server/app-assets/_tanstack-start-manifest_v-Bxn9UCTU.js                 6.06 kB │ gzip:     1.23 kB
+dist/server/app-assets/link-B9INioPt.js                                       6.17 kB │ gzip:     2.30 kB
+dist/server/app-assets/mark-image-ByiAlfzs.js                                 6.53 kB │ gzip:     2.20 kB
+dist/server/app-assets/react-dom-N3pJMQfH.js                                  6.62 kB │ gzip:     1.95 kB
+dist/server/app-assets/DocsArticle-DAneAFMo.js                                7.66 kB │ gzip:     2.16 kB
+dist/server/app-assets/useSelector-CVndwx7n.js                                7.89 kB │ gzip:     2.18 kB
+dist/server/app-assets/states-C2EoPI9z.js                                     8.38 kB │ gzip:     3.26 kB
+dist/server/app-assets/invariant-B8Adqqro.js                                  8.44 kB │ gzip:     3.53 kB
+dist/server/app-assets/performance-AjiAuH9R.js                                8.78 kB │ gzip:     2.33 kB
+dist/server/app-assets/app.incidents.index-ap9qwnvc.js                        8.80 kB │ gzip:     2.27 kB
+dist/server/app-assets/DocsNav-BhW-Xmkt.js                                    9.34 kB │ gzip:     2.29 kB
+dist/server/app-assets/pages-EJg45NZe.js                                     10.95 kB │ gzip:     3.06 kB
+dist/server/app-assets/effects-VLK67xmW.js                                   11.26 kB │ gzip:     4.11 kB
+dist/server/app-assets/labels-Bx_zrvE6.js                                    11.36 kB │ gzip:     4.15 kB
+dist/server/app-assets/use-source-autosave-DRZQRyDX.js                       11.68 kB │ gzip:     3.45 kB
+dist/server/app-assets/Match-CZzGy0eu.js                                     11.74 kB │ gzip:     3.06 kB
+dist/server/app-assets/route-DnstX7Cm.js                                     12.34 kB │ gzip:     2.78 kB
+dist/server/app-assets/createServerFn-LbQwuMn2.js                            12.37 kB │ gzip:     3.65 kB
+dist/server/app-assets/esm-DtGsYRiG.js                                       12.55 kB │ gzip:     3.73 kB
+dist/server/app-assets/app-CjQGmBOa.js                                       13.69 kB │ gzip:     3.85 kB
+dist/server/app-assets/live-edit-runtime-CiYnunoh.js                         15.07 kB │ gzip:     4.65 kB
+dist/server/app-assets/draft-D5La1iPG.js                                     17.13 kB │ gzip:     6.20 kB
+dist/server/app-assets/jsx-runtime-zPeYIBpK.js                               18.51 kB │ gzip:     4.98 kB
+dist/server/app-assets/app.index-CJ2W14R7.js                                 18.82 kB │ gzip:     4.23 kB
+dist/server/app-assets/app.cutover-DkmvkuBz.js                               20.53 kB │ gzip:     5.38 kB
+dist/server/app-assets/presets-CaAUr_TD.js                                   20.89 kB │ gzip:     6.63 kB
+dist/server/app-assets/new-incident-page-B3_NFPvj.js                         22.26 kB │ gzip:     5.46 kB
+dist/server/app-assets/app.maintenance-Bk9zslJY.js                           24.41 kB │ gzip:     4.57 kB
+dist/server/app-assets/setup-gjKihfVj.js                                     28.69 kB │ gzip:     7.42 kB
+dist/server/app-assets/sign-in-pane-DCJz5xeD.js                              29.28 kB │ gzip:     7.30 kB
+dist/server/app-assets/app.move-in-Bg9W1A93.js                               40.14 kB │ gzip:     8.26 kB
+dist/server/app-assets/publish-options-vx4hnMe1.js                           41.29 kB │ gzip:    10.36 kB
+dist/server/app-assets/router-BOfaS6wD.js                                    45.57 kB │ gzip:    12.56 kB
+dist/server/app-assets/app.subscribers-CxtL7R24.js                           49.03 kB │ gzip:     9.51 kB
+dist/server/app-assets/app.components-slxQ7UDB.js                            73.56 kB │ gzip:    13.89 kB
+dist/server/app-assets/button-fvYi7Ujk.js                                    99.08 kB │ gzip:    18.98 kB
+dist/server/app-assets/app.incidents._incidentId-DL6bqE-D.js                101.59 kB │ gzip:    21.70 kB
+dist/server/app-assets/manifest-8yGZYr17.js                                 107.38 kB │ gzip:    25.94 kB
+dist/server/app-assets/mail-Dlv5OepR.js                                     113.51 kB │ gzip:    27.94 kB
+dist/server/app-assets/schemas-CsY7VrCO.js                                  191.07 kB │ gzip:    41.92 kB
+dist/server/app-assets/app.settings-Cr_oWMkm.js                             325.48 kB │ gzip:    59.75 kB
+dist/server/app-assets/undo-snapshot-BUqB49ht.js                            436.25 kB │ gzip:   110.60 kB
+dist/server/app-assets/bodies-DRxNgpEl.js                                 1,668.32 kB │ gzip:   314.79 kB
+dist/server/index.js                                                      4,124.75 kB │ gzip: 1,038.53 kB
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/.pnpm/@runeditrun+rer@0.2.121/node_modules/@runeditrun/rer/modules/demo/index.mjs is dynamically imported by src/core/app/mail.ts, src/core/features/overview/sender-check.ts, src/core/platform/ai/demo.ts but also statically imported by src/server.ts, dynamic import will not move module into another chunk.
+
+✓ built in 3.06s
+
+Verifying build: build:site
+
+> lamp@1.11.22 build:site /home/agent/rer-consolidation/work/sd-lamp-import-sorry-1-c1/run-lamp
+> rer build --site
+
+Heavy job admitted: Lamp build:workflow [27693d6996e7]
+Checking pinned pnpm
+10.12.4
+Building the run site
+{"pages":38,"assets":3,"styles":1}
+Run site written to dist/site (38 pages, 63 files): [REDACTED]/dist/site
+build: complete (exit 0)
+ ELIFECYCLE  Command failed with exit code 1.

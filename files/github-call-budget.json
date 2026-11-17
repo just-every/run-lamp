@@ -1,0 +1,35 @@
+{
+  "limit": 10,
+  "calls": [
+    {
+      "number": 1,
+      "at": "2026-11-17T16:30:33.453300+00:00",
+      "command": "gh api repos/just-every/run-lamp/actions/runs?head_sha=e00d7bc55372c053a2423fcd01c29958b897c0a8&per_page=100",
+      "exit": 0
+    },
+    {
+      "number": 2,
+      "at": "2026-11-17T16:35:45.920654+00:00",
+      "command": "gh api repos/just-every/run-lamp/actions/runs/44126537925 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0
+    },
+    {
+      "number": 3,
+      "at": "2026-11-17T16:41:02.103073+00:00",
+      "command": "gh api repos/just-every/run-lamp/actions/runs/44126537925 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0
+    },
+    {
+      "number": 4,
+      "at": "2026-11-17T16:46:17.928377+00:00",
+      "command": "gh api repos/just-every/run-lamp/actions/runs/44126537925 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0
+    },
+    {
+      "number": 5,
+      "at": "2026-11-17T16:51:32.398671+00:00",
+      "command": "gh api repos/just-every/run-lamp/actions/runs/44126537925 --jq {status,conclusion,head_sha,html_url}",
+      "exit": 0
+    }
+  ]
+}

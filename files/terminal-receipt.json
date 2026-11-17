@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-11-17T16:31:03.985194+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-1-c1",
+  "head": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+  "parent": "7e89344cf612377ddb821c707de47158e78a2820",
+  "newCommitCount": 1,
+  "productPushes": 1,
+  "pushAttempt": 1,
+  "remoteHeadVerified": true,
+  "worktreeClean": true,
+  "changedFiles": [
+    "RELEASE.json",
+    "sources.lock.json"
+  ],
+  "fileHashes": {
+    "RELEASE.json": "f5443cdcaa7f146539a5844ca43cc27aa42fc70baa554b157212d59362f44673",
+    "sources.lock.json": "b84b01f1467f76f02dea92b19b92a6823f850f522b855444f7b6d776006f5a9a"
+  },
+  "noPrCreated": true,
+  "noContractChanges": true,
+  "localOrderedBuildSteps": 9,
+  "localOrderedBuildSuccess": true,
+  "ciRunId": 44126537925,
+  "ciAtDiscovery": "in_progress",
+  "terminal": "READY",
+  "ciStatus": "completed",
+  "ciConclusion": "success",
+  "ciHead": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+  "ciUrl": "https://github.com/just-every/run-lamp/actions/runs/44126537925",
+  "ciObservedAt": "2026-11-17T16:51:32.398671+00:00",
+  "githubCallsUsed": 5,
+  "blockers": [],
+  "generatedViewExceptionUsed": false,
+  "clauseStatusChanges": [],
+  "releaseEntryCountBefore": 0,
+  "releaseEntryCountAfter": 1,
+  "cloneCleanup": "Delete after successful evidence publication and fetch/hash verification."
+}

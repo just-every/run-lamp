@@ -1,0 +1,33 @@
+diff --git a/RELEASE.json b/RELEASE.json
+index c5b827c..2a5c194 100644
+--- a/RELEASE.json
++++ b/RELEASE.json
+@@ -3,7 +3,14 @@
+   "previousVersion": "1.11.21",
+   "date": "2026-11-17",
+   "publicReleaseNotes": "**Published status-page snapshots no longer accumulate without limit in R2.** After a successful publication and pointer readback, Lamp keeps the current and previous snapshot generations and prunes older versions in bounded batches. An existing pile drains over successive successful publishes. A failed publication deletes nothing; deferred cleanup resumes on a later publish. Deployment removal clears snapshot objects with the rest of the files bucket.\n\nThe deployment guide explains the two-generation retention policy and its bounded cleanup. The checkout keeps rer 0.2.121.\n\nUpgrading from 1.11.21: back up data and your source changes first, update the checkout to `v1.11.22`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.\n\n<!-- Run Edit Run fleet, 2026-11-17: release metadata for bounded R2 snapshot retention. -->",
+-  "contractChanges": {},
++  "contractChanges": {
++    "MOVE-001": {
++      "change": "changed",
++      "summary": "Sorry import dry runs and saved jobs account for every supplied field path as mapped, changed, raw-only, deleted or refused, with a reason and next action, so unknown nested fields, shortened text and unsupported resource files cannot be silently ignored.",
++      "was": "Move in previews a switch from Statuspage, Better Stack, Instatus or Sorry before writing Lamp records, and applies only the exact source and page state the owner reviewed. 1. The owner can supply a source API key and page identity or saved responses; source credentials are read once from the source's fixed origin and never stored. 2. The dry run counts every component, group, incident and its updates, maintenance window and subscriber as imported, changed, skipped or refused, with reasons, and writes no record. 3. Changing either the source or Lamp page after review refuses application and requires a fresh dry run. 4. A dry run names each excess subscriber over a SUB-020 channel capacity and refuses excess rows; an over-limit apply writes nothing until a narrowed review fits.",
++      "now": "Move in previews a switch from Statuspage, Better Stack, Instatus or Sorry before writing Lamp records, and applies only the exact source and page state the owner reviewed. 1. The owner can supply a source API key and page identity or saved responses; source credentials are read once from the source's fixed origin and never stored. 2. The dry run counts every component, group, incident and its updates, maintenance window and subscriber as imported, changed, skipped or refused, with reasons, and writes no record. For Sorry, the dry run and saved job also account for every supplied field path as mapped, changed, raw-only, deleted or refused, with a reason and next action; unknown nested fields, shortened text and unsupported resource files cannot be silently ignored. 3. Changing either the source or Lamp page after review refuses application and requires a fresh dry run. 4. A dry run names each excess subscriber over a SUB-020 channel capacity and refuses excess rows; an over-limit apply writes nothing until a narrowed review fits."
++    }
++  },
+   "extensionPointChanges": [],
+   "migrations": [],
+   "breaking": false,
+diff --git a/sources.lock.json b/sources.lock.json
+index 9cb1108..7610b77 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -2928,7 +2928,7 @@
+       "executable": false
+     },
+     "RELEASE.json": {
+-      "sha256": "f66d41b37d2001e684d241bd06a1ee084cd1ea3864ba194e6d8e60ac872d8866",
++      "sha256": "f5443cdcaa7f146539a5844ca43cc27aa42fc70baa554b157212d59362f44673",
+       "executable": false
+     },
+     "rer-packaging.json": {

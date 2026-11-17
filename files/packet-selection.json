@@ -1,0 +1,43 @@
+{
+  "reviewedAt": "2026-11-17T16:52:14.080506+00:00",
+  "selectedFiles": [
+    "PLAN.md",
+    "REPORT.md",
+    "release-before.log",
+    "release-after.log",
+    "release-scope-receipt.json",
+    "source-changes.json",
+    "source-lock-receipt.json",
+    "counts-receipt.json",
+    "provenance-receipt.json",
+    "build-before-lock.log",
+    "build-before-lock.json",
+    "build.log",
+    "build-receipts/build.json",
+    "identity-receipt.json",
+    "candidate-messages.txt",
+    "product-commit.txt",
+    "product.patch",
+    "product-push.log",
+    "product-remote-ref.txt",
+    "product-history.txt",
+    "terminal-receipt.json",
+    "ci-discovery.json",
+    "ci-status.json",
+    "ci-polls.json",
+    "github-call-budget.json",
+    "packet-selection.json",
+    "packet-review-receipt.json"
+  ],
+  "excluded": [
+    "setup log",
+    "private local installation data",
+    "credential bundle",
+    "environment dumps",
+    "held-out material"
+  ],
+  "productPatchScope": [
+    "RELEASE.json",
+    "sources.lock.json"
+  ]
+}

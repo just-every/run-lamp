@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-17T16:29:00.486224+00:00",
+  "repository": "just-every/run-lamp",
+  "main": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+  "sourceRef": "origin/cloud/sd-lamp-import-sorry-1-rebase-7e89344cf612377ddb821c707de47158e78a2820",
+  "sourceHead": "7e89344cf612377ddb821c707de47158e78a2820",
+  "sourceAhead": 2,
+  "mergeCommits": 0,
+  "mainIsAncestor": true,
+  "branch": "cloud/sd-lamp-import-sorry-1-c1"
+}

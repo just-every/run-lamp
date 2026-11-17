@@ -1,0 +1,11 @@
+commit e00d7bc55372c053a2423fcd01c29958b897c0a8
+Author:     Run Edit Run fleet <fleet@runeditrun.com>
+AuthorDate: Tue Nov 17 16:30:21 2026 +0000
+Commit:     Run Edit Run fleet <fleet@runeditrun.com>
+CommitDate: Tue Nov 17 16:30:21 2026 +0000
+
+    Record the changed MOVE-001 Sorry field accounting guarantee
+
+ RELEASE.json      | 9 ++++++++-
+ sources.lock.json | 2 +-
+ 2 files changed, 9 insertions(+), 2 deletions(-)

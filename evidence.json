@@ -1,0 +1,172 @@
+{
+  "files": [
+    {
+      "blob": "cf2d3402635e3ae217b45e8da2eaf07b62ef30df",
+      "bytes": 1974,
+      "path": "PLAN.md",
+      "sha256": "d5d29bf47273d0d43afa88e3e81d36014cb02d6de3eb8c6881ec01f11f08cec4"
+    },
+    {
+      "blob": "281edf330cfa71445d1f5e64ef8d11e42ee67f0d",
+      "bytes": 5600,
+      "path": "REPORT.md",
+      "sha256": "b848db99e5c6af76a31e49c25de5ffebba7e71566c38d3516e990eccda82026a"
+    },
+    {
+      "blob": "08fabb6384247239067611bbcf295b129faa46ee",
+      "bytes": 943,
+      "path": "build-before-lock.json",
+      "sha256": "2719fa182a0d26c11f05fa46e16797d72e3c4a77814d1f84135f96355aa5957f"
+    },
+    {
+      "blob": "5e698127d6ff48f1ff264c80c0d5777bcdbc9995",
+      "bytes": 77522,
+      "path": "build-before-lock.log",
+      "sha256": "bdf8a477b9886c6a192ed864466324c77c2f09c7d354d3e880be2688458e3f0d"
+    },
+    {
+      "blob": "996cbe474d774f0c01a749b8d8d0e68c029e2fe0",
+      "bytes": 943,
+      "path": "build-receipts/build.json",
+      "sha256": "d49db6239447d8f2cdef00dbf8e7505c2f8f06042aa472361a3317eb43678611"
+    },
+    {
+      "blob": "14ef546330c76ec87251e2ba2b2676c219f6d643",
+      "bytes": 504329,
+      "path": "build.log",
+      "sha256": "9efa1a3c1f4da9960e106742952b52a6f46cd66fdd618a21d5bd9b725c99e19a"
+    },
+    {
+      "blob": "92a8857497c4378b55e5adeab2fab691afbbc7cb",
+      "bytes": 285,
+      "path": "candidate-messages.txt",
+      "sha256": "63756d119a6345a067cd3e5f3602e557bfd5a093ea4cfdf73fe4f24e86bc56f4"
+    },
+    {
+      "blob": "60b3abe08cc8783b4f255b82ad9fec278ba13d2e",
+      "bytes": 477,
+      "path": "ci-discovery.json",
+      "sha256": "4a8bf787796ba50bfb63ca5fe05af2b22250bdb2ccd827827eedf6b97782e596"
+    },
+    {
+      "blob": "7452361cb794673b06d98ee3304be298154ab3cf",
+      "bytes": 1138,
+      "path": "ci-polls.json",
+      "sha256": "8bf64b40f81929cf9954228f06340f7e1f8bd88bfa7583730bf9b6078a5bbf43"
+    },
+    {
+      "blob": "713b7f31d2fff99b1812022794f17c477598a5dc",
+      "bytes": 269,
+      "path": "ci-status.json",
+      "sha256": "230883058a54c4ab33e3462e8eb160c72329a772e9f305e0a0639e635d2fdb87"
+    },
+    {
+      "blob": "6b75c5c0da8d45d8a224a63f55aec4c2fd3e4061",
+      "bytes": 310,
+      "path": "counts-receipt.json",
+      "sha256": "9b79baaeaf1d8148c9dedb8ef1a301428867c13cefd0fc4b790398f4fd4c8a22"
+    },
+    {
+      "blob": "29b2261a7b3f0b4634f01e4a921844347071d209",
+      "bytes": 1128,
+      "path": "github-call-budget.json",
+      "sha256": "e4fa6c9abb1e3555336d00ff5dc423b6d098d1941d1f98fc8ea148137dec0fc8"
+    },
+    {
+      "blob": "ebe6f266aaecfd06011443cc937cfd97efe1b9d4",
+      "bytes": 750,
+      "path": "identity-receipt.json",
+      "sha256": "284f349eb5231cd0b91a63b538254f48c3ea4d9e314748d71f7848a83cbc2f32"
+    },
+    {
+      "blob": "d44aabfcc25f8c9d37c41f1da16afaea52de4e01",
+      "bytes": 192,
+      "path": "packet-review-receipt.json",
+      "sha256": "bbfb78c66f7b4661f521da3c9decb49ed519004ae52edc6b033d4bbbeb0ffc8d"
+    },
+    {
+      "blob": "a73760c0d0002fba89be9e4d3dbadbfe8f0a853c",
+      "bytes": 1026,
+      "path": "packet-selection.json",
+      "sha256": "61dbdbb7e71152a66a10f9409d7324400905ef5bca873de6c765ca11caacc5d9"
+    },
+    {
+      "blob": "a130e619fbde14e649aeb5c68532dce16bed82a1",
+      "bytes": 418,
+      "path": "product-commit.txt",
+      "sha256": "b760f7504c69fb36c04bd89adfb199de58d3fcd8562f91f957292cabe20f5f64"
+    },
+    {
+      "blob": "3befa1410826612f7c797e526d7a693f134380b0",
+      "bytes": 180,
+      "path": "product-history.txt",
+      "sha256": "76e5ca70542ea0d069d87ec68153bfd93221aaf57aac2babc12a51e78b9ae959"
+    },
+    {
+      "blob": "bec256e14dcb4c17f53adbb07a3c574179f41fc7",
+      "bytes": 935,
+      "path": "product-push.log",
+      "sha256": "951e42034a352c00474b2d590e20c995fd3ce4bf770a1cf38f4089ef67b71585"
+    },
+    {
+      "blob": "fe1e22de5bdcb960adc780a00fe2d59576c75593",
+      "bytes": 84,
+      "path": "product-remote-ref.txt",
+      "sha256": "fe44c3d39006d5e9fb71e16c729da5f4f67098e2e5b188dc24270b039dd23a04"
+    },
+    {
+      "blob": "f6c32257253b473b65f85a294ed8bce9d6f26abf",
+      "bytes": 4410,
+      "path": "product.patch",
+      "sha256": "a5c71934997a587eb3ae26a56645723b8d38389e5c3ad4c05396874f87ca6605"
+    },
+    {
+      "blob": "30ee3997f0d2b0d0752706451523feaf08f524b2",
+      "bytes": 423,
+      "path": "provenance-receipt.json",
+      "sha256": "50506ecdb23b7a5a61dc515f9578dbb4392e1770e599b297e87d58207fd17041"
+    },
+    {
+      "blob": "e5025fc197378ea78ffb9e2d83a198885f2bd58e",
+      "bytes": 131,
+      "path": "release-after.log",
+      "sha256": "07278cb4fe1a8f28a8547202baf6d0a0ccf15c990286c661bdf7f25eb4a4e4ce"
+    },
+    {
+      "blob": "8b972aa5af6110512069fe4a1729dbe0de854d30",
+      "bytes": 177,
+      "path": "release-before.log",
+      "sha256": "cb8e597f1c93b1212c2074b0fb11ece31aab47701499db3e9bb8187eb1d7dc1e"
+    },
+    {
+      "blob": "f77205790cc2ff2d208b07e8ff92937460151dca",
+      "bytes": 452,
+      "path": "release-scope-receipt.json",
+      "sha256": "9092cd8a1f267c01b08617771cd318649a1b77ee607d8fa392301209b49cffce"
+    },
+    {
+      "blob": "eafb11df9c84ba46267f0e8533b0cd5710503f80",
+      "bytes": 508,
+      "path": "source-changes.json",
+      "sha256": "522261a9df2906096bec81fffac8b90f8b7e1244eead6e90e0d680958773c531"
+    },
+    {
+      "blob": "e6c3086740a86c09b5aed46015334f909ef00f3b",
+      "bytes": 237,
+      "path": "source-lock-receipt.json",
+      "sha256": "4594ee0ab2e6981bb9c075e850890f4c9800e7c20ac66104f57e555d7a6ae9a3"
+    },
+    {
+      "blob": "268ee20252d0a2ebebd948d51db316215b24bf94",
+      "bytes": 1356,
+      "path": "terminal-receipt.json",
+      "sha256": "9f0cf4988fc536f5e8a8fbb3cbc3d286224a67472fedd583f00cea2ab35c3ac6"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-import-sorry-1-c1",
+  "product_head": "e00d7bc55372c053a2423fcd01c29958b897c0a8",
+  "ref": "refs/heads/evidence/sd-lamp-import-sorry-1-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-import-sorry-1-c1"
+}
