@@ -201,3 +201,11 @@ fresh link approval and starts with provider sign-in disabled.
 <!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
 
 <!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->
+
+<!-- Run Edit Run fleet, 2026-11-17 -->
+In Settings → Operators, choose a role before inviting someone. Communicator is
+the default: they can write and publish updates without managing settings or
+other operators. The form explains every role, and pending invitations show the
+chosen role. In Settings → Look, pick an accent colour or type a value such as
+#1F3A5F; invalid text stays in the field with help, while the swatch keeps the
+saved colour until you correct it.

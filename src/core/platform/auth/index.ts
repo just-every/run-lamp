@@ -9,7 +9,8 @@ import { authConfig } from './config';
 export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: AuthConfig['providers']) {
   const repository = createOperatorRepository(env.DB);
   const config = authConfig(env, stored);
-  const auth = createOperatorAuth({ db: env.DB, config,
+  const nativeAuth = (invitationRole?: OperatorRole) => createOperatorAuth({ db: env.DB, config,
+    ...(invitationRole ? { hooks: { audit: event => repository.invitationRoleStatements(event, invitationRole) } } : {}),
     clientIp: request => config.local ? 'loopback' : request.headers.get('CF-Connecting-IP') ?? '',
     rolePolicy: async input => {
       if (input.actor.status !== 'active') return false;
@@ -28,6 +29,7 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
       return { status: 'accepted' as const, provider: 'lamp-mail', providerMessageId: null };
     } } } : {}),
   });
+  const auth = nativeAuth();
   async function setProductRole(request: Request, id: string, role: OperatorRole) {
     if (!OPERATOR_ROLES.includes(role)) throw new AuthError('invalid_role',400);
     if (request.method !== 'POST' || request.headers.get('Origin') !== new URL(request.url).origin || request.headers.get('Sec-Fetch-Site') === 'cross-site') throw new AuthError('same_origin_required',403);
@@ -44,6 +46,14 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
   return Object.freeze({
     ...auth,
     setProductRole,
+    async inviteWithRole(request: Request, input: { email: string; displayName: string; role: OperatorRole }) {
+      if (!OPERATOR_ROLES.includes(input.role)) throw new AuthError('invalid_role', 400);
+      if (normalizeEmail(input.email).endsWith('@operator.invalid')) throw new AuthError('email_not_allowed', 403);
+      const role = input.role === 'owner' || input.role === 'admin' ? input.role : 'member';
+      // The product role joins the native invitation transaction before any mail
+      // is sent, so accepting the link immediately keeps the chosen authority.
+      return nativeAuth(input.role).invite(request, { ...input, role });
+    },
     async setRole(request: Request, id: string, role: Parameters<typeof auth.setRole>[2]) {
       return setProductRole(request,id,role === 'member' ? 'viewer' : role);
     },

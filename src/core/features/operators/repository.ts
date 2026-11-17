@@ -1,7 +1,7 @@
 import { createOperatorRolesRepository } from './roles.repository';
 import { sessionAuthority } from '../../platform/auth/authority';
 import { createUlid, nowIso } from '../../shared/ids';
-import { AuthError, type Operator, type Session } from '@runeditrun/rer/modules/operator-auth';
+import { AuthError, type Operator, type Session, type AuthAuditEvent, type AuthAuditStatement } from '@runeditrun/rer/modules/operator-auth';
 export interface StoredOperator { id: string; email: string; displayName: string; isSetupOperator: boolean; role: import('./permissions').OperatorRole }
 export interface StoredFormerOperator extends StoredOperator { deactivatedAt: string }
 export function createOperatorRepository(db: D1Database) {
@@ -18,6 +18,12 @@ export function createOperatorRepository(db: D1Database) {
     },
     async listFormerOperators(): Promise<StoredFormerOperator[]> {
       return (await db.prepare("SELECT p.id,p.email,p.display_name AS displayName,EXISTS(SELECT 1 FROM oa_bootstrap WHERE claim_id=p.id) AS isSetupOperator,p.deactivated_at AS deactivatedAt,CASE WHEN o.role IN ('owner','admin') THEN o.role ELSE COALESCE((SELECT role FROM operator_roles WHERE operator_id=o.id),'viewer') END AS role FROM operators p JOIN oa_operators o ON o.id=p.id WHERE o.status='inactive' AND p.email <> 'deleted-' || lower(p.id) || '@operator.invalid' ORDER BY p.email").all<StoredFormerOperator>()).results;
+    },
+    invitationRoleStatements(event: AuthAuditEvent, role: StoredOperator["role"]): AuthAuditStatement[] {
+      if (event.action !== 'operators.invite' || !event.subjectId) return [];
+      if (role === 'owner' || role === 'admin') return [['DELETE FROM operator_roles WHERE operator_id=?', [event.subjectId]]];
+      return [[`INSERT INTO operator_roles(operator_id,role) VALUES(?,?)
+        ON CONFLICT(operator_id) DO UPDATE SET role=excluded.role`, [event.subjectId, role]]];
     },
     async recordInvitation(email: string, actor: string) {
       const now=nowIso();

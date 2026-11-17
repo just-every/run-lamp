@@ -8,6 +8,7 @@ import { expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { migrate } from '../../reference-storage/runtime.mjs';
 import { reservePort } from '../worker-startup.mjs';
+import { invitationRolesFlow } from './invitation-roles-flow.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 
 const require = createRequire(import.meta.url);
@@ -17,7 +18,7 @@ const address = name => `${name}${String.fromCharCode(64)}example.test`;
 
 // Run the built app, including Start documents and browser assets. Only the
 // outbound mail provider is replaced; confirmation and authority stay native.
-async function managementInstallation(diagnostic) {
+export async function managementInstallation(diagnostic = () => {}) {
   const port = await reservePort({ label: 'operator management Worker' });
   const origin = `http://127.0.0.1:${port}`;
   const state = await mkdtemp(join(tmpdir(), 'lamp-operator-management-'));
@@ -98,6 +99,7 @@ export async function operatorManagementFlow({ browser, capture, diagnostic = ()
     await page.goto(origin + '/app/settings#operators');
     await operatorHydrated(page);
     const panel = page.getByRole('region', { name: 'Operators', exact: true });
+    await expect(panel.getByLabel('Invitation role', { exact: true })).toHaveValue('communicator');
     const email = address('synthetic-lamp-3'), displayName = 'Synthetic Lamp invited operator';
     await panel.getByLabel('Email', { exact: true }).fill(email);
     await panel.getByLabel('Name', { exact: true }).fill(displayName);
@@ -109,6 +111,7 @@ export async function operatorManagementFlow({ browser, capture, diagnostic = ()
     assert.equal(pendingResponse.status(), 200);
     const pending = (await pendingResponse.json()).operators.find(row => row.email === email);
     assert.ok(pending);
+    assert.equal(pending.role, 'communicator', 'the default invitation can publish without owner authority');
     const link = linkFor(email);
     const invitedPage = await invitedContext.newPage(); watch(invitedPage);
     await confirm(invitedPage, link);
@@ -118,6 +121,27 @@ export async function operatorManagementFlow({ browser, capture, diagnostic = ()
     assert.equal(operator.id, pending.id, 'confirmation admits the exact pending identity');
     assert.equal(operator.email, email);
     assert.equal(operator.displayName, displayName);
+    assert.equal(operator.role, 'communicator');
+    const ownerId = (await (await page.request.get(origin + '/api/app/session')).json()).operator.id;
+    for (const path of [`/api/app/operators/${ownerId}/revoke-access`, `/api/app/operators/${ownerId}`]) {
+      const response = await invitedPage.request.fetch(origin + path, { method: path.endsWith('/revoke-access') ? 'POST' : 'DELETE', headers: { Origin: origin } });
+      assert.equal(response.status(), 403, 'the invited communicator cannot remove or erase the owner');
+    }
+    assert.equal((await invitedPage.request.get(origin + '/api/app/operators')).status(), 403);
+    await invitedPage.goto(origin + '/app/settings#operators'); await operatorHydrated(invitedPage);
+    await expect(invitedPage.getByRole('button', { name: 'Remove access', exact: true })).toHaveCount(0);
+    await expect(invitedPage.getByRole('button', { name: 'Erase personal data', exact: true })).toHaveCount(0);
+    const componentResponse = await page.request.post(origin + '/api/app/components', { headers: { Origin: origin }, data: { name: 'Synthetic service', groupId: null, description: '', internal: false, displayOrder: 0, note: '' } });
+    assert.equal(componentResponse.status(), 201);
+    const component = (await componentResponse.json()).component;
+    const created = await invitedPage.request.post(origin + '/api/app/incidents', { headers: { Origin: origin }, data: { title: 'Synthetic service interruption', components: [{ componentId: component.id, state: 'Major outage', relationship: 'Primary' }] } });
+    assert.equal(created.status(), 201);
+    const incident = (await created.json()).incident;
+    const draft = await invitedPage.request.put(origin + `/api/app/incidents/${incident.id}/draft`, { headers: { Origin: origin, 'If-Match': `${incident.draft?.id ?? "-"}:${incident.updates.length}` }, data: { lifecycle: 'Monitoring', affectedAudience: 'Service customers', customerImpact: 'Requests are delayed.', whatStillWorks: 'The dashboard remains available.', details: 'Recovery is being checked.', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() } });
+    assert.equal(draft.status(), 200);
+    const savedIncident = (await (await invitedPage.request.get(origin + `/api/app/incidents/${incident.id}`)).json()).incident;
+    const publication = await invitedPage.request.post(origin + `/api/app/incidents/${incident.id}/publish`, { headers: { Origin: origin, 'If-Match': `${savedIncident.draft?.id ?? "-"}:${savedIncident.updates.length}` }, data: { channels: [] } });
+    assert.equal(publication.status(), 200, 'the default invitation permits posting updates');
     const active = await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(pending.id).first();
     assert.equal(active.status, 'active', 'confirmation durably activates the invited identity');
     const cookies = await invitedContext.cookies(origin);
@@ -174,10 +198,11 @@ export async function operatorManagementFlow({ browser, capture, diagnostic = ()
     const token = new URL(link).searchParams.get('token');
     const replay = await invitedPage.request.post(origin + '/auth/confirm', { data: { token }, headers: { Origin: origin }, maxRedirects: 0 });
     assert.equal(replay.status(), 400, 'the captured invitation cannot resurrect the erased operator');
-    await invitedPage.goto(origin + '/app/settings#operators');
+    await invitedPage.reload();
     await invitedPage.waitForURL(url => url.pathname === '/signin');
     assert.equal((await page.request.get(origin + '/api/app/session')).status(), 200, 'removal preserves the setup owner access');
     assert.deepEqual(errors, [], 'the management journey has no browser or hydration errors');
+    await invitationRolesFlow({ browser, page, origin, linkFor, confirm });
   } finally {
     await invitedContext.close(); await ownerContext.close(); await fixture.close();
   }
