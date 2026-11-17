@@ -40,10 +40,15 @@ export async function assertPlatformLedger(rows) {
   if (recorded.length !== expected.length || recorded.some((row, index) => row.name !== expected[index].name || row.sha256 !== expected[index].sha256)) throw mismatch();
 }
 
-// Returns null for a database without Platform's ledger.
+// Returns null without Platform's ledger, including native setup's two-column
+// health mirror. Native history stays in Wrangler's d1_migrations; it is not a
+// managed installation and must retain the ordinary native archive path.
 export async function platformLedgerRows(database) {
   if (!(await database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").bind(platformLedger).first())) return null;
   try {
+    const columns = (await database.prepare(`PRAGMA table_info(${platformLedger})`).all()).results;
+    if (columns.length === 2 && columns[0].name === "name" && columns[1].name === "sha256"
+      && await database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'd1_migrations'").first()) return null;
     return (await database.prepare(`SELECT name, sha256 FROM ${platformLedger}`).all()).results;
   } catch {
     throw mismatch();

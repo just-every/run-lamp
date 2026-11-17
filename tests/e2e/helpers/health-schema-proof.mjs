@@ -6,6 +6,18 @@ const inventoryDigest = pairs => createHash('sha256').update(JSON.stringify(
   pairs.map(([name, hash]) => [name, hash.toLowerCase()]).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0),
 )).digest('hex');
 
+/** Recompute the contract digest from caller-supplied file bytes/row pairs. */
+export function assertMigrationObservation(observation, pairs, partialCount = 0) {
+  assert.equal(observation.version, 1);
+  assert.equal(observation.ledger, 'rer_migrations');
+  assert.equal(observation.binding, 'DB');
+  assert.equal(observation.state, 'available');
+  assert.equal(observation.reason, null);
+  assert.equal(observation.completeCount, pairs.length);
+  assert.equal(observation.partialCount, partialCount);
+  assert.equal(observation.inventorySha256, inventoryDigest(pairs));
+}
+
 /** Exercise the emitted door with actual local D1, never an invented inventory. */
 export async function healthSchemaProof(fixture) {
   const { version } = JSON.parse(await readFile('package.json', 'utf8'));
@@ -35,13 +47,7 @@ export async function healthSchemaProof(fixture) {
     assert.equal(observation.inventorySha256, null);
     assert.deepEqual(Object.keys(observation).sort(), ['version', 'ledger', 'binding', 'observedAt', 'state', 'completeCount', 'inventorySha256', 'partialCount', 'reason'].sort(), 'only the safe fixed observation fields escape');
   };
-  const available = (observation, pairs, partialCount = 0) => {
-    assert.equal(observation.state, 'available');
-    assert.equal(observation.reason, null);
-    assert.equal(observation.completeCount, pairs.length);
-    assert.equal(observation.partialCount, partialCount);
-    assert.equal(observation.inventorySha256, inventoryDigest(pairs));
-  };
+  const available = assertMigrationObservation;
   assert.equal(await fixture.db.prepare("SELECT 1 FROM sqlite_master WHERE name='rer_migrations'").first(), null);
   unavailable(await probe(), 'ledger_missing');
   assert.equal(await fixture.db.prepare("SELECT 1 FROM sqlite_master WHERE name='rer_migrations'").first(), null, 'health never creates its ledger');
