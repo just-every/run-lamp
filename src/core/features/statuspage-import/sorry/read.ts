@@ -37,7 +37,7 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
   const origins = new Map<string, SourceArtifact>();
   const publicAddresses: Record<string, string[]> = {};
   const normalized = normalizeSorryComponents(saved.components.map(({ raw }) => raw), accounting);
-  const data: SourceData = { ...normalized, incidents: [], maintenance: [], subscribers: [] };
+  const data: SourceData = { ...normalized, incidents: [], maintenance: [], subscribers: [], sorryTemplates: [] };
   const components = new Set(data.components.map((row) => row.id));
   const children = new Map(data.groups.map(group => [group.id, group.components]));
   const leaves = (id: string): string[] => components.has(id) ? [id] : (children.get(id) ?? []).flatMap(leaves);
@@ -49,6 +49,15 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
   }
   for (const { raw, origin } of saved.components) {
     add(data.groups.some((group) => group.id === raw.id) ? "group" : "component", raw.id, raw, origin);
+  }
+  for (const [kind, rows] of [["notice", saved.noticeTemplates], ["update", saved.updateTemplates]] as const) {
+    for (const { raw, origin } of rows) {
+      const recordKind = kind === "notice" ? "template" : "update-template";
+      add(recordKind, raw.id, raw, origin);
+      data.sorryTemplates!.push({ id: raw.id, kind, name: raw.name, subject: raw.subject,
+        body: raw.initial_comment ?? raw.content!, component_id: raw.component_id,
+        created_at: raw.created_at, updated_at: raw.updated_at });
+    }
   }
   for (const { raw: list } of saved.notices) {
     const kind = list.type === "planned" ? "maintenance" : "incident";

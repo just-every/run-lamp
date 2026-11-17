@@ -28,6 +28,10 @@ export const templateSchema = z.object({
 }).strict();
 
 export const templateUpdateSchema = templateSchema.extend({
+  // Imported wording can be edited before the owner supplies draft-only defaults.
+  // Native templates still receive the complete-template validation in service.
+  affectedAudience: z.string().max(250),
+  customerImpact: z.string().max(250),
   nextUpdateOffsetMinutes: z.number().int().min(1).max(10_080).nullable(),
   title: z.string().max(250),
   folder: z.string().max(250),

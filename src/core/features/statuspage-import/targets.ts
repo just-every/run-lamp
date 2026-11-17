@@ -74,12 +74,12 @@ async function readTargets(db: D1Database, destination: string, wanted?: Readonl
 }
 
 /** Native records that cite an imported target, by cited id, in one query per citing table. */
-const citingTables = (kind: string) => kind === "group" ? [["components", "group_id"]] : kind === "component" ? [["incident_components", "component_id"], ["maintenance_components", "component_id"], ["subscriber_components", "component_id"], ["component_standing_claims", "component_id"], ["incident_template_components", "component_id"]] : kind === "incident" ? [["incident_subscriptions", "incident_id"]] : kind === "template" ? [["vendor_dependencies", "template_id"]] : [];
+const citingTables = (kind: string) => kind === "group" ? [["components", "group_id"]] : kind === "component" ? [["incident_components", "component_id"], ["maintenance_components", "component_id"], ["subscriber_components", "component_id"], ["component_standing_claims", "component_id"], ["incident_template_components", "component_id"]] : kind === "incident" ? [["incident_subscriptions", "incident_id"]] : ["template", "update-template"].includes(kind) ? [["vendor_dependencies", "template_id"]] : [];
 const citerIdentity = (table: string) => table === "incident_subscriptions" ? "subscriber_id" : "id";
 async function readCiting(db: D1Database, effects: D1UndoEffect[]) {
   const cited = new Map<string, string[]>();
   const of = (key: string) => { let ids = cited.get(key); if (!ids) cited.set(key, ids = []); return ids; };
-  for (const kind of ["group", "component", "incident", "template"]) {
+  for (const kind of ["group", "component", "incident", "template", "update-template"]) {
     const ids = effects.filter((effect) => effect.expected.targetKind === kind).map((effect) => effect.expected.targetId);
     if (!ids.length) continue;
     for (const [table, column] of citingTables(kind)) {
