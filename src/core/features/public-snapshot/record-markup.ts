@@ -1,3 +1,5 @@
+import type { SourceMetadata } from "./imported-metadata.repository";
+import { sourceMetadataMarkup } from "./source-metadata";
 import { maintenanceNoticeDetails } from "../../shared/maintenance-notice";
 import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenance-update";
 import type { PublishedIncidentComponentChange } from "../../shared/incident-component-changes";
@@ -11,6 +13,7 @@ import { MINUTE, durationText, escapeHtml, stateClass, timestamp } from "./forma
 /** The public record's shared pieces: state chips, incident and maintenance entries and their updates, used by the
  *  current page, history and each incident's permanent page alike. */
 export interface PublicIncident {
+  sourceMetadata?: SourceMetadata | null;
   id: string;
   reference: string;
   title: string;
@@ -21,11 +24,12 @@ export interface PublicIncident {
   openedAt: string;
   resolvedAt: string | null;
   components: string[];
-  updates: Array<{ componentChanges?: PublishedIncidentComponentChange[]; id: string; correctsUpdateId?: string | null; lifecycle: string; affectedAudience: string; customerImpact: string; whatStillWorks: string; details: string; nextUpdateAt: string | null; publishedAt: string }>;
+  updates: Array<{ componentChanges?: PublishedIncidentComponentChange[]; id: string; correctsUpdateId?: string | null; lifecycle: string; affectedAudience: string; customerImpact: string; whatStillWorks: string; details: string; nextUpdateAt: string | null; publishedAt: string; sourceMetadata?: SourceMetadata | null }>;
   report: { summary: string; timeline: string; cause: string; remediation: string; publishedAt: string } | null;
 }
 
 export interface PublicMaintenance {
+  sourceMetadata?: SourceMetadata | null;
   id: string;
   reference: string;
   title: string;
@@ -34,8 +38,8 @@ export interface PublicMaintenance {
   endsAt: string;
   completedAt: string | null;
   components: string[];
-  importedUpdates?: Array<{ id: string; body: string; publishedAt: string; sourceStates?: string }>;
-  notices: Array<{ id: string; kind: string; body: string; publishedAt: string }>;
+  importedUpdates?: Array<{ id: string; body: string; publishedAt: string; sourceStates?: string; sourceMetadata?: SourceMetadata | null }>;
+  notices: Array<{ id: string; kind: string; body: string; publishedAt: string; sourceMetadata?: SourceMetadata | null }>;
 }
 
 export type TitleHeading = "h1" | "h3" | "h4";
@@ -64,13 +68,13 @@ export function updateMarkup(incident: PublicIncident, update: PublicIncident["u
   const fields = rendered.public.fields.map((field) => `<div><dt>${escapeHtml(field.label)}</dt><dd>${field.instant ? timestamp(field.instant, timezone) : renderUpdateHtml(field.value)}</dd></div>`).join("");
   const isResolutionTime = incident.lifecycle === "Resolved" && update.lifecycle === "Resolved" && update.publishedAt === incident.resolvedAt;
   const published = isResolutionTime ? `Resolved at ${timestamp(update.publishedAt, timezone)}` : timestamp(update.publishedAt, timezone);
-  return `<article class="update" id="update-${escapeHtml(update.id)}" data-update-id="${escapeHtml(update.id)}"><div class="update-head"><strong>${escapeHtml(rendered.public.lifecycle)}</strong><span>${published}</span></div>${correctionMarkup(incident, update, timezone)}<dl>${fields}</dl></article>`;
+  return `<article class="update" id="update-${escapeHtml(update.id)}" data-update-id="${escapeHtml(update.id)}"><div class="update-head"><strong>${escapeHtml(rendered.public.lifecycle)}</strong><span>${published}</span></div>${correctionMarkup(incident, update, timezone)}<dl>${fields}</dl>${sourceMetadataMarkup(update.sourceMetadata)}</article>`;
 }
 
 export function incidentMarkup(incident: PublicIncident, timezone: string, maximumUpdates?: number, label = "Incident", heading: TitleHeading = "h3") {
   const updates = maximumUpdates === undefined ? incident.updates : incident.updates.slice(0, maximumUpdates);
   const more = maximumUpdates !== undefined ? `<a class="text-link" href="/incidents/${encodeURIComponent(incident.reference)}">${incident.updates.length > updates.length ? `View all ${incident.updates.length} updates` : "View incident"}</a>` : "";
-  return `<article class="incident" data-incident-impact="${incident.effectiveImpact}">${recordHead(label, escapeHtml(incident.title), heading, heading === "h1" ? null : incident.lifecycle)}${incident.components.length ? `<p class="incident-meta">Affecting ${escapeHtml(incident.components.join(", "))}</p>` : ""}<div class="updates">${updates.map((update) => updateMarkup(incident, update, timezone)).join("")}</div>${more}</article>`;
+  return `<article class="incident" data-incident-impact="${incident.effectiveImpact}">${recordHead(label, escapeHtml(incident.title), heading, heading === "h1" ? null : incident.lifecycle)}${incident.components.length ? `<p class="incident-meta">Affecting ${escapeHtml(incident.components.join(", "))}</p>` : ""}${sourceMetadataMarkup(incident.sourceMetadata)}<div class="updates">${updates.map((update) => updateMarkup(incident, update, timezone)).join("")}</div>${more}</article>`;
 }
 
 /** A recently resolved incident on the current page: what it was, when it ended and what customers were told last. */
@@ -88,11 +92,11 @@ export function maintenanceNoticeBody(notice: PublicMaintenance["notices"][numbe
 }
 
 export function noticeMarkup(notice: PublicMaintenance["notices"][number], timezone: string, item: Pick<PublicMaintenance, "reference" | "title">) {
-  return `<article class="update maintenance-notice"><div class="update-head"><strong>${escapeHtml(notice.kind)}</strong><span>${timestamp(notice.publishedAt, timezone)}</span></div>${maintenanceNoticeBody(notice, item)}</article>`;
+  return `<article class="update maintenance-notice"><div class="update-head"><strong>${escapeHtml(notice.kind)}</strong><span>${timestamp(notice.publishedAt, timezone)}</span></div>${maintenanceNoticeBody(notice, item)}${sourceMetadataMarkup(notice.sourceMetadata)}</article>`;
 }
 
 export function maintenanceMarkup(item: PublicMaintenance, timezone: string, generatedAt: string, permalink = false) {
   const overrun = item.state === "In progress" && new Date(item.endsAt).getTime() + 15 * MINUTE <= new Date(generatedAt).getTime();
   const notices = [...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((notice) => noticeMarkup(notice, timezone, item)).join("");
-  return `<article class="maintenance">${recordHead(item.state === "Scheduled" ? "Planned maintenance" : "Maintenance", permalink ? escapeHtml(item.title) : `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, permalink ? "h1" : "h4", item.state)}<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)}${overrun ? ` <span class="overrun">Running longer than planned</span>` : ""}</p>${item.components.length ? `<p class="incident-meta">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${notices ? `<div class="updates">${notices}</div>` : ""}</article>`;
+  return `<article class="maintenance">${recordHead(item.state === "Scheduled" ? "Planned maintenance" : "Maintenance", permalink ? escapeHtml(item.title) : `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, permalink ? "h1" : "h4", item.state)}<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)}${overrun ? ` <span class="overrun">Running longer than planned</span>` : ""}</p>${item.components.length ? `<p class="incident-meta">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${sourceMetadataMarkup(item.sourceMetadata)}${notices ? `<div class="updates">${notices}</div>` : ""}</article>`;
 }

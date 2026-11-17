@@ -19,8 +19,8 @@
     },
     {
       "path": "authenticated/sorry-notice-2001.json",
-      "bytes": 1585,
-      "sha256": "d9b2767a04f14bff03e67b5b6168cbaa66c8a596138e1bd2cce09993f3031479"
+      "bytes": 1981,
+      "sha256": "e32767305740cfdc36f8db5373bfcd11a47b30c75d98876e789afa13ee509091"
     },
     {
       "path": "authenticated/sorry-notice-2002.json",
@@ -279,8 +279,8 @@
     },
     {
       "path": "authenticated/sorry-notices.json",
-      "bytes": 45234,
-      "sha256": "5ef0b5f06f0a8a0cfde5f5a0c960dc37eef888f417e562a908163f3f7a414c2b"
+      "bytes": 45432,
+      "sha256": "0bc1eaa44127818fa0048715128bc7c40c2785725059a05d1549b6f4bd16f6c0"
     },
     {
       "path": "authenticated/sorry-page.json",
@@ -304,8 +304,8 @@
     },
     {
       "path": "expected-inventory.json",
-      "bytes": 1040071,
-      "sha256": "633a781f40e82d9e32a3176002943571cebe5fba25b60e2ac8909ab700e37dda"
+      "bytes": 1040086,
+      "sha256": "150dc1ef08be2b3a449af9dbf6c3cdae2b04ac74a0919e9d648d30c03444d567"
     },
     {
       "path": "public/sorry-components-2.json",
@@ -329,8 +329,8 @@
     },
     {
       "path": "public/sorry-notice-2001.json",
-      "bytes": 1726,
-      "sha256": "a34a2dc28b9064545baf2f1e7d3510f5dcc692d139e3ace34ce41a687578b4e2"
+      "bytes": 1924,
+      "sha256": "22741b2833ac4eb124814d05488033effff3d9fe863ee9615af8ea4b0b636a89"
     },
     {
       "path": "public/sorry-notice-2002.json",

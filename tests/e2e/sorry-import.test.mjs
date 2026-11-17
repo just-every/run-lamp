@@ -309,8 +309,14 @@ test('MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, a
 });
 
 test('MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral', { timeout: 120_000 }, async t => {
-  const runtime = await openStatusJourney();
+  const runtime = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
+    const frozen = Date.parse('2035-01-01T12:00:00.000Z');
+    const advance = async at => {
+      assert.equal((await runtime.raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: at }) })).status, 204);
+      await runtime.signIn(undefined, { fresh: true });
+    };
+    await advance(frozen);
     const api = async (path, body, headers, method = body === undefined ? 'GET' : 'POST') => {
       const response = await runtime.request(path, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }), headers });
       return { status: response.status, body: response.status === 204 ? null : await response.json() };
@@ -329,10 +335,31 @@ test('MAINT-015 — Sorry maintenance labels use authored source states and keep
       id: 1008, content: 'We will post another update when work starts.',
       created_at: '2025-04-01T11:00:00.000Z', updated_at: '2025-04-01T11:00:00.000Z',
     });
+    window.should_automate_schedule = false;
+    window.tag_list = ['synthetic-lamp-maintenance', 'database'];
+    window.synopsis = 'Source maintenance synopsis';
+    window.updates[0].should_publish = false;
+    window.updates[0].link = 'https://status.example.invalid/notices/synthetic-database-maintenance#source-update';
+    window.updates[0].updated_at = '2025-04-01T10:05:00.000Z';
     detail.text = JSON.stringify({ response: window });
+    const extra = [
+      { id: 110, state: 'scheduled', begins_at: '2035-01-01T13:00:00.000Z', ends_at: '2035-01-01T14:00:00.000Z', began_at: null, ended_at: null },
+      { id: 111, state: 'underway', begins_at: '2035-01-01T11:00:00.000Z', ends_at: '2035-01-01T13:00:00.000Z', began_at: '2035-01-01T11:07:00.000Z', ended_at: null },
+      { id: 112, state: 'complete', begins_at: '2035-01-01T10:00:00.000Z', ends_at: '2035-01-01T11:00:00.000Z', began_at: '2035-01-01T10:04:00.000Z', ended_at: '2035-01-01T10:55:00.000Z' },
+      { id: 113, state: 'cancelled', begins_at: '2035-01-01T13:00:00.000Z', ends_at: '2035-01-01T14:00:00.000Z', began_at: null, ended_at: null },
+      { id: 114, state: 'underway', begins_at: '2035-01-01T11:00:00.000Z', ends_at: '2035-01-01T13:00:00.000Z', began_at: null, ended_at: null },
+      { id: 115, state: 'complete', begins_at: '2035-01-01T10:00:00.000Z', ends_at: '2035-01-01T11:00:00.000Z', began_at: null, ended_at: '2035-01-01T10:55:00.000Z' },
+    ].map(row => ({ ...window, ...row, subject: `Synthetic source automation ${row.id}`, should_automate_schedule: [112, 113, 115].includes(row.id),
+      url: `https://status.example.invalid/notices/synthetic-automation-${row.id}`,
+      link: `https://status.example.invalid/notices/synthetic-automation-${row.id}`,
+      updates: [{ id: row.id * 10, content: `Synthetic historical message ${row.id}.`, state: row.state,
+        created_at: '2035-01-01T10:00:00.000Z', updated_at: '2035-01-01T10:02:00.000Z', should_publish: false }],
+    }));
+    for (const row of extra) files.push({ name: `sorry-notice-${row.id}.json`, text: JSON.stringify({ response: row }) });
     const notices = files.find(file => file.name === 'sorry-notices.json');
     const list = JSON.parse(notices.text);
-    list.response = list.response.map(row => row.id === window.id ? window : row);
+    list.response = [...list.response.map(row => row.id === window.id ? window : row), ...extra];
+    list.count = list.response.length;
     notices.text = JSON.stringify(list);
     const quiet = await notificationActivity(runtime);
     const review = await moveIn.preview({ source: 'sorry', files, pageId: 'synthpage01', publicAccessAcknowledged: true });
@@ -344,6 +371,26 @@ test('MAINT-015 — Sorry maintenance labels use authored source states and keep
     assert.ok(imported);
     assert.equal(imported.importedUpdates.length, window.updates.length);
     assert.equal(imported.notices.length, 0);
+    assert.deepEqual(imported.sourceMetadata.tags, window.tag_list);
+    assert.equal(imported.sourceMetadata.synopsis, window.synopsis);
+    assert.equal(imported.sourceMetadata.type, 'planned');
+    assert.equal(imported.sourceMetadata.shouldAutomateSchedule, false);
+    assert.equal(imported.importedUpdates.find(update => update.publishedAt === window.updates[0].created_at).sourceMetadata.shouldPublish, false);
+    assert.equal(imported.importedUpdates.find(update => update.publishedAt === window.updates[0].created_at).sourceMetadata.updatedAt, window.updates[0].updated_at);
+    const controlled = windows.filter(row => row.sourceMetadata?.sourceId && extra.some(source => String(source.id) === row.sourceMetadata.sourceId));
+    assert.equal(controlled.length, extra.length);
+    const controls = controlled.sort((a, b) => a.sourceMetadata.sourceId.localeCompare(b.sourceMetadata.sourceId));
+    assert.deepEqual(controls.map(row => [row.state, row.autoStart, row.autoComplete]), [
+      ['Scheduled', false, false], ['In progress', false, false], ['Completed', true, true], ['Cancelled', true, true], ['In progress', false, false], ['Completed', true, true],
+    ]);
+    assert.deepEqual(controls.map(row => [row.sourceMetadata.beganAt, row.sourceMetadata.endedAt]), extra.map(row => [row.began_at, row.ended_at]));
+    assert.ok(controls.every(row => row.notices.length === 0), 'all source history imports silently');
+    const claimTimes = async id => (await runtime.db.prepare("SELECT changed_at FROM component_claim_events WHERE cause_type='maintenance' AND cause_id=? ORDER BY changed_at").bind(id).all()).results.map(row => row.changed_at);
+    assert.deepEqual([...new Set(await claimTimes(controls[1].id))], [extra[1].began_at], 'supplied actual start remains distinct from the schedule');
+    assert.equal(controls[4].sourceMetadata.beganAt, null);
+    assert.deepEqual([...new Set(await claimTimes(controls[4].id))], [new Date(frozen).toISOString()], 'missing actual start is observed now, never backdated to its scheduled start');
+    assert.deepEqual(await claimTimes(controls[5].id), [], 'completed history without an actual start invents no historical component claim');
+
     const labels = ['Scheduled', 'Imported update', 'In progress', 'Completed'];
     for (const path of ['/maintenance/' + imported.reference, '/history/2025-04']) {
       const html = await runtime.visible(path, window.updates[0].content);
@@ -353,7 +400,28 @@ test('MAINT-015 — Sorry maintenance labels use authored source states and keep
         assert.ok(article.includes('<strong>' + label + '</strong>'), path + ' gives the source message its own label ' + label);
       }
     }
+    const importedInventory = await importedRecordInventory(runtime);
+    const repeated = await moveIn.preview({ source: 'sorry', files, pageId: 'synthpage01', publicAccessAcknowledged: true });
+    assert.equal(repeated.status, 200, JSON.stringify(repeated.body));
+    assert.equal((await moveIn.apply(repeated.body)).status, 200);
+    assert.deepEqual(await importedRecordInventory(runtime), importedInventory, 'repeat retains full historical updates and metadata');
     await assertNoNewNotifications(runtime, quiet);
+    await advance(frozen + 3 * 3600_000);
+    await runtime.tick(frozen + 3 * 3600_000);
+    const after = (await api('/api/app/maintenance')).body.maintenance;
+    assert.deepEqual(controls.map(row => [row.id, row.state, row.notices.length]), controls.map(row => {
+      const current = after.find(item => item.id === row.id);
+      return [current.id, current.state, current.notices.length];
+    }), 'advancing beyond both disabled windows never starts, completes or replays them; past and canceled stay silent');
+    const queued = (await runtime.db.prepare('SELECT kind,aggregate_id FROM notification_outbox ORDER BY aggregate_id').all()).results;
+    assert.deepEqual(queued.map(row => row.kind), ['operator-alert', 'operator-alert', 'operator-alert'], 'only normal operator due/overrun reminders are created after time advances');
+    assert.ok(queued.some(row => row.aggregate_id.startsWith('maintenance-start-due/' + controls[0].id + '/')));
+    assert.ok(queued.some(row => row.aggregate_id.startsWith('maintenance-overrun/' + controls[1].id + '/')));
+    assert.ok(queued.some(row => row.aggregate_id.startsWith('maintenance-overrun/' + controls[4].id + '/')));
+    assert.equal((await runtime.db.prepare('SELECT count(*) AS n FROM notification_deliveries').first()).n, 0, 'no subscriber lifecycle replay is queued');
+    assert.equal((await moveIn.undo(result.body.door)).status, 200);
+    assert.equal((await api('/api/app/maintenance')).body.maintenance.length, 0, 'undo removes unchanged maintenance and source metadata');
+    assert.equal((await runtime.db.prepare('SELECT count(*) AS n FROM maintenance_automation').first()).n, 0, 'undo owns every imported automation switch');
     t.diagnostic('PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors');
   } finally { await runtime.close(); }
 });
