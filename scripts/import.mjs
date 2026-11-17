@@ -6,7 +6,7 @@ import { parseArgs } from "./ops-config.mjs";
 import { archivePersistence, openArchivePlatform } from "./archive-runtime.mjs";
 import { readArchive } from "./archive-validation.mjs";
 import { applyOwnerMigrations } from "./owner-migrations.mjs";
-import { assertNewManagedDestination, platformLedger } from "./platform-ledger.mjs";
+import { assertNewManagedDestination, platformLedgerRows } from "./platform-ledger.mjs";
 
 function databaseFlags(flags) {
   return flags.get("remote") ? ["--remote"] : ["--local", "--persist-to", archivePersistence(flags)];
@@ -43,7 +43,7 @@ async function main() {
   let managed, keepConfig = false;
   try {
     const existingTables = (await platform.env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations')").all()).results.map((row) => String(row.name));
-    managed = existingTables.includes(platformLedger);
+    managed = Boolean(await platformLedgerRows(platform.env.DB));
     if (managed) await assertNewManagedDestination(platform.env.DB, existingTables, tables);
     const existingObjects = await platform.env.SNAPSHOTS.list({ limit: 1 });
     if ((!managed && existingTables.length) || existingObjects.objects.length) throw new Error("Import requires an empty D1 database and R2 bucket; create a new deployment instead of overwriting existing records.");

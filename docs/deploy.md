@@ -280,6 +280,16 @@ for details of `rer signin`.
 
 ## After the first deploy
 
+Hosted deploy and `node scripts/setup.mjs` maintain `rer_migrations` in the
+`DB` database: each migration confirmed applied in D1 gets its filename and the
+SHA-256 of its exact file bytes. Re-running either command backfills missing
+entries for older installs and preserves recorded entries, including after a
+partial apply. `/health` reports that observed inventory separately from
+liveness, with the complete-file count and deterministic inventory hash; an
+existing empty ledger reports count zero, while a missing ledger is unavailable.
+
+<!-- Run Edit Run fleet, 2026-11-17: installed-health ledger follow-up. -->
+
 Deploy again with the same command after you change inputs or update Lamp
 ([Update Lamp](updating.md) shows the backup to take first). A redeploy keeps the
 `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET` and `WEBHOOK_SIGNING_SECRET` each
