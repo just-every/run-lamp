@@ -22,10 +22,10 @@ function usePublicComponents() {
 function ComponentChip({ name, state, states, now, disabled, onState, onRemove }: { name: string; state: IncidentClaimState; states: readonly IncidentClaimState[]; now?: IncidentClaimState; disabled?: boolean; onState: (state: IncidentClaimState) => void; onRemove?: () => void }) {
   const changed = now !== undefined && now !== state;
   return <span className={`component-chip${changed ? " is-changed" : ""}`}>
-    <span className={`fact-dot state-${slug(state)}`} aria-hidden="true" />
+    {disabled ? null : <span className={`fact-dot state-${slug(state)}`} aria-hidden="true" />}
     <span className="component-chip-name">{name}</span>
     {changed ? <span className="component-chip-now">{now} →</span> : null}
-    <select aria-label={`${name} state with this update`} disabled={disabled} value={state} onChange={(event) => onState(event.target.value as IncidentClaimState)}>{states.map(value => <option key={value}>{value}</option>)}</select>
+    <select aria-label={`${name} state with this update`} disabled={disabled} value={state} onChange={(event) => onState(event.target.value as IncidentClaimState)}>{states.map(value => <option key={value} value={value}>{disabled && value === "Operational" ? "Effect ends" : value}</option>)}</select>
     {onRemove ? <button type="button" className="chip-remove" aria-label={`Remove ${name}`} onClick={onRemove}>×</button> : null}
   </span>;
 }

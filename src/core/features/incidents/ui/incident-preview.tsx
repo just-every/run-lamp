@@ -1,4 +1,4 @@
-import { useState, type Ref } from "react";
+import { useEffect, useRef, useState, type Ref } from "react";
 
 import type { RenderedIncidentUpdate } from "../renderer";
 import { FormError, LoadingState } from "../../../app/client/ui/states";
@@ -17,6 +17,29 @@ export function IncidentPreview({ preview, error, headingRef }: { preview: Rende
     </div>
     {error ? <FormError>{error}</FormError> : !preview ? <LoadingState>Rendering this draft…</LoadingState> : view === "page"
       ? <PreviewCard title="Public page" heading={preview.public.heading} lifecycle={preview.public.lifecycle} fields={preview.public.fields} />
-      : <PreviewCard title="Notification email" heading={preview.email.subject} lifecycle={null} logoUrl={preview.email.logoUrl} logoAlt={preview.email.logoAlt} fields={[...(preview.email.from ? [{ label: "From", value: preview.email.from }] : []), ...(preview.email.replyTo ? [{ label: "Reply-To", value: preview.email.replyTo }] : []), ...preview.email.plainText.split("\n\n").map(value => ({ label: "Message", value }))]} />}
+      : <section className="preview-card email-preview">
+        <p className="preview-type">Notification email</p>
+        {preview.email.deliverySuppressed ? <p role="status">{preview.email.deliveryNotice}</p> : null}
+        <dl>{preview.email.from && !preview.email.deliverySuppressed ? <div><dt>From</dt><dd>{preview.email.from}</dd></div> : null}{preview.email.replyTo ? <div><dt>Reply-To</dt><dd>{preview.email.replyTo}</dd></div> : null}</dl>
+        <h3>{preview.email.subject}</h3>
+        {preview.email.html ? <EmailMessage key={preview.email.html} html={preview.email.html} /> : <div className="email-preview-text">{preview.email.plainText}</div>}
+        {preview.impactExplanation ? <p className="email-impact-source">{preview.impactExplanation}</p> : null}
+      </section>}
   </aside>;
+}
+
+/** Keep the customer's document readable when the preview changes width. */
+function EmailMessage({ html }: { html: string }) {
+  const observer = useRef<ResizeObserver | null>(null);
+  useEffect(() => () => observer.current?.disconnect(), []);
+  return <iframe title="Notification email message" sandbox="allow-same-origin" srcDoc={html} onLoad={event => {
+    const frame = event.currentTarget;
+    observer.current?.disconnect();
+    const body = frame.contentDocument?.body;
+    if (!body) return;
+    const resize = () => { frame.style.height = `${Math.ceil(body.getBoundingClientRect().height)}px`; };
+    resize();
+    observer.current = new ResizeObserver(resize);
+    observer.current.observe(body);
+  }} />;
 }
