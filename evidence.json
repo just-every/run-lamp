@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "0b555949ff03d815c041c1669f2acceaf9bee66e",
+      "bytes": 209,
+      "path": "CI-DISCOVERY.json",
+      "sha256": "5ecd8d216208e1c728916677edffdb4de55afd2e074815c22760cc97cf27ee5b"
+    },
+    {
+      "blob": "f9ef73b7448a770b22681c5b590dadc4cd1ca2c3",
+      "bytes": 177,
+      "path": "CI-STATUS.json",
+      "sha256": "9837dffdbe49676ddf2ac1d2e8b8802e16fdacca5b5b2536a0e978f78606ddcc"
+    },
+    {
+      "blob": "558d9aad98c0a5aa0e41d554b3a5894bbab5eeca",
+      "bytes": 144,
+      "path": "PR.json",
+      "sha256": "01b6b3a9e7f3bbc853ccd8159567dc0956bd6b5ad007b34826c07ac153286c9f"
+    },
+    {
+      "blob": "45477ec2be79687f16c4da355c816a4974b705a8",
+      "bytes": 4710,
+      "path": "RECEIPT.json",
+      "sha256": "42c6c1d16e4bcf7be52a054e424ad94b08ba5965854979d99f8818a7e41e3c36"
+    },
+    {
+      "blob": "6e494e7ef01a1800a80bf433bccfe114b50813a3",
+      "bytes": 8962,
+      "path": "REPORT.md",
+      "sha256": "f73796d37402bbaba3e7ec88f791fafbd5ecfff74d1a26dbf0eb426ba6cbe0db"
+    },
+    {
+      "blob": "b59d39532e8a030ff74f6339019ab7870ef51548",
+      "bytes": 70,
+      "path": "contract-docs.log",
+      "sha256": "b04031901cfff3e9bc42a429b52cbc14c2442ffb68817fd62a245ac52847b422"
+    },
+    {
+      "blob": "a051b74f20e3d3ce8c12a0de9638e17ea8f9e1cf",
+      "bytes": 1184,
+      "path": "release-rebuild.log",
+      "sha256": "70240426ee4afca79538dde7857d4e40cfa1c5fb0bfa440991c1133ff5f21d64"
+    },
+    {
+      "blob": "38dbea3dfc0e4afe40d0aed8c2c080fa3e623032",
+      "bytes": 1111,
+      "path": "snapshot-tests.log",
+      "sha256": "495cf1db9bed2b9140ebc7646b6d49c478288d3a571548436523b978d9f32811"
+    },
+    {
+      "blob": "b4956aabb857072abf1f016c2d47faa29d08f74c",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "9f81bed9f323bbc305bc3fe371f685ac907006252538abd2f2efbfadafb6d4da"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-r2-retention-1",
+  "product_head": "e7cec74a5c0b10255961cae0c3cebc6e0b8c75dd",
+  "ref": "refs/heads/evidence/sd-lamp-r2-retention-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-r2-retention-1"
+}

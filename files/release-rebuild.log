@@ -1,0 +1,23 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Lamp could not rebuild its public page for this release. Error: Configured logo object is missing from object storage.
+    at prepare2 (file:///workspace/run-lamp/script-0.mjs:92118:54)
+    at async rebuildOne (file:///workspace/run-lamp/script-0.mjs:92146:24)
+    at async Object.retryPendingBuild (file:///workspace/run-lamp/script-0.mjs:92318:11)
+    at async file:///workspace/run-lamp/script-0.mjs:95857:60
+    at async publication3 (file:///workspace/run-lamp/script-0.mjs:95200:11)
+    at async Promise.all (index 0)
+    at async Object.check (file:///workspace/run-lamp/script-0.mjs:95215:40)
+    at async Promise.all (index 0)
+    at async file:///workspace/run-lamp/script-0.mjs:95145:41
+    at async dispatch2 (file:///workspace/run-lamp/script-0.mjs:52548:17)
+✔ PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch (25264.76015ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30231.019793

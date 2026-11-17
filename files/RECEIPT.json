@@ -1,0 +1,172 @@
+{
+  "tag": "sd-lamp-r2-retention-1",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-r2-retention-1",
+  "head": "e7cec74a5c0b10255961cae0c3cebc6e0b8c75dd",
+  "starting_main": "7c17a3201ef326a841d91fb4dc26c035a5b1c60a",
+  "timestamp_utc": "2026-11-17T03:27:23.467479+00:00",
+  "product_push": {
+    "status": "success",
+    "guard": "cloud-push.py",
+    "attempts": 1
+  },
+  "pr": {
+    "base": "main",
+    "head_sha": "e7cec74a5c0b10255961cae0c3cebc6e0b8c75dd",
+    "html_url": "https://github.com/just-every/run-lamp/pull/400",
+    "number": 400
+  },
+  "ci": {
+    "status": "completed",
+    "discovery": [
+      {
+        "conclusion": null,
+        "head_sha": "e7cec74a5c0b10255961cae0c3cebc6e0b8c75dd",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44007747026",
+        "id": 44007747026,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "api_calls_used": 6,
+    "last_response": {
+      "conclusion": "success",
+      "head_sha": "e7cec74a5c0b10255961cae0c3cebc6e0b8c75dd",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44007747026",
+      "status": "completed"
+    },
+    "poll_times_utc": [
+      "2026-11-17T03:06:11Z",
+      "2026-11-17T03:11:21Z",
+      "2026-11-17T03:16:21Z",
+      "2026-11-17T03:21:26Z",
+      "2026-11-17T03:26:31Z"
+    ],
+    "conclusion": "success",
+    "run_ids": [
+      44007747026
+    ]
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit_code": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs",
+      "exit_code": 0,
+      "tests": 2,
+      "log": "snapshot-tests.log"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 --test-name-pattern='a new release rebuilds' tests/e2e/public-contract.test.mjs",
+      "exit_code": 0,
+      "tests": 1,
+      "log": "release-rebuild.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit_code": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit_code": 0,
+      "result_ok": true,
+      "tracked_file_identities": 2298
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit_code": 0,
+      "log": "contract-docs.log"
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit_code": 0,
+      "registered_cases": 102,
+      "assertion_scripts": 10,
+      "total_checks": 112
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit_code": 0
+    },
+    {
+      "command": "git fetch origin main; git rebase origin/main (fleet identity environment)",
+      "exit_code": 0,
+      "result": "up to date; no rewritten commits"
+    }
+  ],
+  "before_after": {
+    "registered_cases": [
+      101,
+      102
+    ],
+    "assertion_scripts": [
+      10,
+      10
+    ],
+    "total_checks": [
+      111,
+      112
+    ],
+    "routine_test_files": [
+      35,
+      35
+    ],
+    "ci_test_shards": [
+      8,
+      8
+    ]
+  },
+  "clause_status_changes": [],
+  "clause_claim": "No contract clause claimed; this is the fault 8 retention follow-up.",
+  "retention_results": {
+    "operator_route_five_publishes_versions": 2,
+    "failed_R2_write_existing_objects": "unchanged; latest snapshot build failed; delete counter unchanged",
+    "legacy_old_versions": 10,
+    "operator_route_backlog_total_version_counts": [
+      9,
+      6,
+      3,
+      2
+    ],
+    "oversize_legacy_pile_remaining_counts": [
+      10,
+      9,
+      6,
+      3,
+      0
+    ],
+    "maximum_delete_pages": 4,
+    "maximum_keys_per_delete": 256,
+    "time_budget_ms": 1000,
+    "overlapping_and_superseded_publish": "pass"
+  },
+  "publication_scan": {
+    "status": "delegated to Mac fleet per cloud instructions",
+    "local_claim": "none"
+  },
+  "provider_removal": {
+    "status": "source-inspected only",
+    "result": "owned files bucket lists/deletes all objects and reads back absence; no live provider request"
+  },
+  "identity": {
+    "authors": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committers": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": []
+  },
+  "blockers": [],
+  "product_custody": {
+    "status": "READY",
+    "branch": "cloud/sd-lamp-r2-retention-1",
+    "head": "e7cec74a5c0b10255961cae0c3cebc6e0b8c75dd",
+    "exact_sha_verify": 44007747026,
+    "publication_scan": "Mac fleet landing gate; not run or claimed in cloud"
+  },
+  "evidence_transport": {
+    "ref": "refs/heads/evidence/sd-lamp-r2-retention-1",
+    "files": "explicitly selected report, receipt, CI/PR responses and command logs",
+    "product_ref_changed": false
+  }
+}
