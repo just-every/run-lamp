@@ -1,0 +1,35 @@
+{
+  "response": {
+    "id": 2052,
+    "type": "general",
+    "subject": "synthetic-lamp-53 general notice",
+    "timeline_state": "past_distant",
+    "link": "https://status.example.invalid/notices/synthetic-lamp-53",
+    "synopsis": "Synthetic general notice 53: review is underway.",
+    "created_at": "2025-01-03T14:00:00.000Z",
+    "updated_at": "2025-01-03T14:30:00.000Z",
+    "tag_list": [
+      "synthetic-lamp-1",
+      "information"
+    ],
+    "components": [],
+    "updates": [
+      {
+        "id": 30520,
+        "content": "Synthetic general notice 53: review is underway.",
+        "created_at": "2025-01-03T14:00:00.000Z",
+        "updated_at": "2025-01-03T14:00:00.000Z",
+        "should_publish": true,
+        "link": "https://status.example.invalid/notices/synthetic-lamp-53#update-30520"
+      },
+      {
+        "id": 30521,
+        "content": "Synthetic general notice 53: this is the final saved update.",
+        "created_at": "2025-01-03T14:30:00.000Z",
+        "updated_at": "2025-01-03T14:30:00.000Z",
+        "should_publish": false,
+        "link": "https://status.example.invalid/notices/synthetic-lamp-53#update-30521"
+      }
+    ]
+  }
+}

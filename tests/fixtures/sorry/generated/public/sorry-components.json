@@ -1,0 +1,452 @@
+{
+  "components": [
+    {
+      "id": 1000,
+      "name": "synthetic-lamp-1 group ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+      "description": "Synthetic service 1; no production data.",
+      "state": "operational",
+      "parent_id": null,
+      "position": 1,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1000",
+          "count": 14
+        }
+      }
+    },
+    {
+      "id": 1001,
+      "name": "synthetic-lamp-2",
+      "description": "Synthetic service 2; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 2,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1001",
+          "count": 13
+        }
+      }
+    },
+    {
+      "id": 1002,
+      "name": "synthetic-lamp-3",
+      "description": "Synthetic service 3; no production data.",
+      "state": "operational",
+      "parent_id": null,
+      "position": 3,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1002",
+          "count": 13
+        }
+      }
+    },
+    {
+      "id": 1003,
+      "name": "synthetic-lamp-4",
+      "description": "Synthetic service 4; no production data.",
+      "state": "operational",
+      "parent_id": null,
+      "position": 4,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1003",
+          "count": 13
+        }
+      }
+    },
+    {
+      "id": 1004,
+      "name": "synthetic-lamp-5 service nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "description": "synthetic-lamp-5 description dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 5,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "future_metadata": {
+        "nested": {
+          "owner/note~text": "synthetic-lamp-5 unknown field",
+          "flags": [
+            true,
+            false
+          ],
+          "empty": {}
+        }
+      },
+      "metrics_summary": {
+        "timeframe_start": "2025-01-01",
+        "timeframe_end": "2025-01-31",
+        "percentage_uptime": {
+          "percent": 99.5,
+          "words": "99.50%"
+        },
+        "url": "https://status.example.invalid/components/synthetic-lamp-5/metrics"
+      },
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1004",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1005,
+      "name": "synthetic-lamp-6",
+      "description": "Synthetic service 6; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 6,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1005",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1006,
+      "name": "synthetic-lamp-7",
+      "description": "Synthetic service 7; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 7,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1006",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1007,
+      "name": "synthetic-lamp-8",
+      "description": "Synthetic service 8; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 8,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1007",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1008,
+      "name": "synthetic-lamp-9",
+      "description": "Synthetic service 9; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 9,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1008",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1009,
+      "name": "synthetic-lamp-10",
+      "description": "Synthetic service 10; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 10,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1009",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1010,
+      "name": "synthetic-lamp-11",
+      "description": "Synthetic service 11; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 11,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1010",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1011,
+      "name": "synthetic-lamp-12",
+      "description": "Synthetic service 12; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 12,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1011",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1012,
+      "name": "synthetic-lamp-13",
+      "description": "Synthetic service 13; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 13,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1012",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1013,
+      "name": "synthetic-lamp-14",
+      "description": "Synthetic service 14; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 14,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1013",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1014,
+      "name": "synthetic-lamp-15",
+      "description": "Synthetic service 15; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 15,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1014",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1015,
+      "name": "synthetic-lamp-16",
+      "description": "Synthetic service 16; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 16,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1015",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1016,
+      "name": "synthetic-lamp-17",
+      "description": "Synthetic service 17; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 17,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1016",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1017,
+      "name": "synthetic-lamp-18",
+      "description": "Synthetic service 18; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 18,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1017",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1018,
+      "name": "synthetic-lamp-19",
+      "description": "Synthetic service 19; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 19,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1018",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1019,
+      "name": "synthetic-lamp-20",
+      "description": "Synthetic service 20; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 20,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1019",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1020,
+      "name": "synthetic-lamp-21",
+      "description": "Synthetic service 21; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 21,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1020",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1021,
+      "name": "synthetic-lamp-22",
+      "description": "Synthetic service 22; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 22,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1021",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1022,
+      "name": "synthetic-lamp-23",
+      "description": "Synthetic service 23; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 23,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1022",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1023,
+      "name": "synthetic-lamp-24",
+      "description": "Synthetic service 24; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 24,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1023",
+          "count": 0
+        }
+      }
+    },
+    {
+      "id": 1024,
+      "name": "synthetic-lamp-25",
+      "description": "Synthetic service 25; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 25,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "metrics_summary": null,
+      "links": {
+        "children": {
+          "href": "/api/v1/components?filter[parent_id_eq]=1024",
+          "count": 0
+        }
+      }
+    }
+  ],
+  "meta": {
+    "count": 25,
+    "total_count": 56,
+    "next_page": "/api/v1/components?page=2"
+  }
+}

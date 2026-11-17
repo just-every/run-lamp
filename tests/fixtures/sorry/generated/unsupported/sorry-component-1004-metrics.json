@@ -1,0 +1,24 @@
+{
+  "component": {
+    "id": "1004",
+    "name": "synthetic-lamp-5"
+  },
+  "timeframe_start": "2025-01-01",
+  "timeframe_end": "2025-01-31",
+  "percentage_uptime": {
+    "percent": 99.5,
+    "words": "99.50%",
+    "calculation": "100 - ((total_impact_time / total_time) * 100)"
+  },
+  "mean_time_to_recovery": {
+    "seconds": 1800,
+    "words": "30 minutes",
+    "calculation": "total_impact_time / notices.count"
+  },
+  "mean_time_between_failures": {
+    "seconds": 2590200,
+    "words": "29 days",
+    "calculation": "(total_time - total_impact_time) / notices.count"
+  },
+  "url": "https://status.example.invalid/components/synthetic-lamp-5/metrics"
+}

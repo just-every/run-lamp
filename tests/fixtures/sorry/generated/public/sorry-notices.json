@@ -1,0 +1,767 @@
+{
+  "notices": [
+    {
+      "id": 2000,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-1 incident ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-1",
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:30:00.000Z",
+      "began_at": "2025-01-01T10:00:00.000Z",
+      "ended_at": "2025-01-01T10:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2000"
+      },
+      "latest_update": {
+        "id": 30001,
+        "content": "Synthetic unplanned notice 1: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T10:30:00.000Z",
+        "updated_at": "2025-01-01T10:30:00.000Z"
+      },
+      "future_metadata": {
+        "nested": {
+          "labels": [
+            "synthetic-lamp-1"
+          ],
+          "empty": null
+        }
+      }
+    },
+    {
+      "id": 2001,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-2 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-2",
+      "created_at": "2025-01-01T11:00:00.000Z",
+      "updated_at": "2025-01-01T11:30:00.000Z",
+      "began_at": "2025-01-01T11:00:00.000Z",
+      "ended_at": "2025-01-01T11:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2001"
+      },
+      "latest_update": {
+        "id": 30011,
+        "content": "Synthetic unplanned notice 2: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T11:30:00.000Z",
+        "updated_at": "2025-01-01T11:30:00.000Z"
+      }
+    },
+    {
+      "id": 2002,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-3 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-3",
+      "created_at": "2025-01-01T12:00:00.000Z",
+      "updated_at": "2025-01-01T12:30:00.000Z",
+      "began_at": "2025-01-01T12:00:00.000Z",
+      "ended_at": "2025-01-01T12:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2002"
+      },
+      "latest_update": {
+        "id": 30021,
+        "content": "Synthetic unplanned notice 3: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T12:30:00.000Z",
+        "updated_at": "2025-01-01T12:30:00.000Z"
+      }
+    },
+    {
+      "id": 2003,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-4 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-4",
+      "created_at": "2025-01-01T13:00:00.000Z",
+      "updated_at": "2025-01-01T13:30:00.000Z",
+      "began_at": "2025-01-01T13:00:00.000Z",
+      "ended_at": "2025-01-01T13:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2003"
+      },
+      "latest_update": {
+        "id": 30031,
+        "content": "Synthetic unplanned notice 4: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T13:30:00.000Z",
+        "updated_at": "2025-01-01T13:30:00.000Z"
+      }
+    },
+    {
+      "id": 2004,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-5 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-5",
+      "created_at": "2025-01-01T14:00:00.000Z",
+      "updated_at": "2025-01-01T14:30:00.000Z",
+      "began_at": "2025-01-01T14:00:00.000Z",
+      "ended_at": "2025-01-01T14:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2004"
+      },
+      "latest_update": {
+        "id": 30041,
+        "content": "Synthetic unplanned notice 5: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T14:30:00.000Z",
+        "updated_at": "2025-01-01T14:30:00.000Z"
+      }
+    },
+    {
+      "id": 2005,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-6 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-6",
+      "created_at": "2025-01-01T15:00:00.000Z",
+      "updated_at": "2025-01-01T15:30:00.000Z",
+      "began_at": "2025-01-01T15:00:00.000Z",
+      "ended_at": "2025-01-01T15:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2005"
+      },
+      "latest_update": {
+        "id": 30051,
+        "content": "Synthetic unplanned notice 6: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T15:30:00.000Z",
+        "updated_at": "2025-01-01T15:30:00.000Z"
+      }
+    },
+    {
+      "id": 2006,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-7 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-7",
+      "created_at": "2025-01-01T16:00:00.000Z",
+      "updated_at": "2025-01-01T16:30:00.000Z",
+      "began_at": "2025-01-01T16:00:00.000Z",
+      "ended_at": "2025-01-01T16:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2006"
+      },
+      "latest_update": {
+        "id": 30061,
+        "content": "Synthetic unplanned notice 7: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T16:30:00.000Z",
+        "updated_at": "2025-01-01T16:30:00.000Z"
+      }
+    },
+    {
+      "id": 2007,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-8 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-8",
+      "created_at": "2025-01-01T17:00:00.000Z",
+      "updated_at": "2025-01-01T17:30:00.000Z",
+      "began_at": "2025-01-01T17:00:00.000Z",
+      "ended_at": "2025-01-01T17:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2007"
+      },
+      "latest_update": {
+        "id": 30071,
+        "content": "Synthetic unplanned notice 8: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T17:30:00.000Z",
+        "updated_at": "2025-01-01T17:30:00.000Z"
+      }
+    },
+    {
+      "id": 2008,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-9 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-9",
+      "created_at": "2025-01-01T18:00:00.000Z",
+      "updated_at": "2025-01-01T18:30:00.000Z",
+      "began_at": "2025-01-01T18:00:00.000Z",
+      "ended_at": "2025-01-01T18:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2008"
+      },
+      "latest_update": {
+        "id": 30081,
+        "content": "Synthetic unplanned notice 9: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T18:30:00.000Z",
+        "updated_at": "2025-01-01T18:30:00.000Z"
+      }
+    },
+    {
+      "id": 2009,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-10 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-10",
+      "created_at": "2025-01-01T19:00:00.000Z",
+      "updated_at": "2025-01-01T19:30:00.000Z",
+      "began_at": "2025-01-01T19:00:00.000Z",
+      "ended_at": "2025-01-01T19:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2009"
+      },
+      "latest_update": {
+        "id": 30091,
+        "content": "Synthetic unplanned notice 10: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T19:30:00.000Z",
+        "updated_at": "2025-01-01T19:30:00.000Z"
+      }
+    },
+    {
+      "id": 2010,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-11 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-11",
+      "created_at": "2025-01-01T20:00:00.000Z",
+      "updated_at": "2025-01-01T20:30:00.000Z",
+      "began_at": "2025-01-01T20:00:00.000Z",
+      "ended_at": "2025-01-01T20:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2010"
+      },
+      "latest_update": {
+        "id": 30101,
+        "content": "Synthetic unplanned notice 11: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T20:30:00.000Z",
+        "updated_at": "2025-01-01T20:30:00.000Z"
+      }
+    },
+    {
+      "id": 2011,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-12 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-12",
+      "created_at": "2025-01-01T21:00:00.000Z",
+      "updated_at": "2025-01-01T21:30:00.000Z",
+      "began_at": "2025-01-01T21:00:00.000Z",
+      "ended_at": "2025-01-01T21:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2011"
+      },
+      "latest_update": {
+        "id": 30111,
+        "content": "Synthetic unplanned notice 12: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T21:30:00.000Z",
+        "updated_at": "2025-01-01T21:30:00.000Z"
+      }
+    },
+    {
+      "id": 2012,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-13 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-13",
+      "created_at": "2025-01-01T22:00:00.000Z",
+      "updated_at": "2025-01-01T22:30:00.000Z",
+      "began_at": "2025-01-01T22:00:00.000Z",
+      "ended_at": "2025-01-01T22:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2012"
+      },
+      "latest_update": {
+        "id": 30121,
+        "content": "Synthetic unplanned notice 13: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T22:30:00.000Z",
+        "updated_at": "2025-01-01T22:30:00.000Z"
+      }
+    },
+    {
+      "id": 2013,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-14 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-14",
+      "created_at": "2025-01-01T23:00:00.000Z",
+      "updated_at": "2025-01-01T23:30:00.000Z",
+      "began_at": "2025-01-01T23:00:00.000Z",
+      "ended_at": "2025-01-01T23:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2013"
+      },
+      "latest_update": {
+        "id": 30131,
+        "content": "Synthetic unplanned notice 14: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-01T23:30:00.000Z",
+        "updated_at": "2025-01-01T23:30:00.000Z"
+      }
+    },
+    {
+      "id": 2014,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-15 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-15",
+      "created_at": "2025-01-02T00:00:00.000Z",
+      "updated_at": "2025-01-02T00:30:00.000Z",
+      "began_at": "2025-01-02T00:00:00.000Z",
+      "ended_at": "2025-01-02T00:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2014"
+      },
+      "latest_update": {
+        "id": 30141,
+        "content": "Synthetic unplanned notice 15: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T00:30:00.000Z",
+        "updated_at": "2025-01-02T00:30:00.000Z"
+      }
+    },
+    {
+      "id": 2015,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-16 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-16",
+      "created_at": "2025-01-02T01:00:00.000Z",
+      "updated_at": "2025-01-02T01:30:00.000Z",
+      "began_at": "2025-01-02T01:00:00.000Z",
+      "ended_at": "2025-01-02T01:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2015"
+      },
+      "latest_update": {
+        "id": 30151,
+        "content": "Synthetic unplanned notice 16: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T01:30:00.000Z",
+        "updated_at": "2025-01-02T01:30:00.000Z"
+      }
+    },
+    {
+      "id": 2016,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-17 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-17",
+      "created_at": "2025-01-02T02:00:00.000Z",
+      "updated_at": "2025-01-02T02:30:00.000Z",
+      "began_at": "2025-01-02T02:00:00.000Z",
+      "ended_at": "2025-01-02T02:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2016"
+      },
+      "latest_update": {
+        "id": 30161,
+        "content": "Synthetic unplanned notice 17: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T02:30:00.000Z",
+        "updated_at": "2025-01-02T02:30:00.000Z"
+      }
+    },
+    {
+      "id": 2017,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-18 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-18",
+      "created_at": "2025-01-02T03:00:00.000Z",
+      "updated_at": "2025-01-02T03:30:00.000Z",
+      "began_at": "2025-01-02T03:00:00.000Z",
+      "ended_at": "2025-01-02T03:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2017"
+      },
+      "latest_update": {
+        "id": 30171,
+        "content": "Synthetic unplanned notice 18: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T03:30:00.000Z",
+        "updated_at": "2025-01-02T03:30:00.000Z"
+      }
+    },
+    {
+      "id": 2018,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-19 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-19",
+      "created_at": "2025-01-02T04:00:00.000Z",
+      "updated_at": "2025-01-02T04:30:00.000Z",
+      "began_at": "2025-01-02T04:00:00.000Z",
+      "ended_at": "2025-01-02T04:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2018"
+      },
+      "latest_update": {
+        "id": 30181,
+        "content": "Synthetic unplanned notice 19: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T04:30:00.000Z",
+        "updated_at": "2025-01-02T04:30:00.000Z"
+      }
+    },
+    {
+      "id": 2019,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-20 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-20",
+      "created_at": "2025-01-02T05:00:00.000Z",
+      "updated_at": "2025-01-02T05:30:00.000Z",
+      "began_at": "2025-01-02T05:00:00.000Z",
+      "ended_at": "2025-01-02T05:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2019"
+      },
+      "latest_update": {
+        "id": 30191,
+        "content": "Synthetic unplanned notice 20: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T05:30:00.000Z",
+        "updated_at": "2025-01-02T05:30:00.000Z"
+      }
+    },
+    {
+      "id": 2020,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-21 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-21",
+      "created_at": "2025-01-02T06:00:00.000Z",
+      "updated_at": "2025-01-02T06:30:00.000Z",
+      "began_at": "2025-01-02T06:00:00.000Z",
+      "ended_at": "2025-01-02T06:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2020"
+      },
+      "latest_update": {
+        "id": 30201,
+        "content": "Synthetic unplanned notice 21: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T06:30:00.000Z",
+        "updated_at": "2025-01-02T06:30:00.000Z"
+      }
+    },
+    {
+      "id": 2021,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-22 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-22",
+      "created_at": "2025-01-02T07:00:00.000Z",
+      "updated_at": "2025-01-02T07:30:00.000Z",
+      "began_at": "2025-01-02T07:00:00.000Z",
+      "ended_at": "2025-01-02T07:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2021"
+      },
+      "latest_update": {
+        "id": 30211,
+        "content": "Synthetic unplanned notice 22: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T07:30:00.000Z",
+        "updated_at": "2025-01-02T07:30:00.000Z"
+      }
+    },
+    {
+      "id": 2022,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-23 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-23",
+      "created_at": "2025-01-02T08:00:00.000Z",
+      "updated_at": "2025-01-02T08:30:00.000Z",
+      "began_at": "2025-01-02T08:00:00.000Z",
+      "ended_at": "2025-01-02T08:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2022"
+      },
+      "latest_update": {
+        "id": 30221,
+        "content": "Synthetic unplanned notice 23: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T08:30:00.000Z",
+        "updated_at": "2025-01-02T08:30:00.000Z"
+      }
+    },
+    {
+      "id": 2023,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-24 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-24",
+      "created_at": "2025-01-02T09:00:00.000Z",
+      "updated_at": "2025-01-02T09:30:00.000Z",
+      "began_at": "2025-01-02T09:00:00.000Z",
+      "ended_at": "2025-01-02T09:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2023"
+      },
+      "latest_update": {
+        "id": 30231,
+        "content": "Synthetic unplanned notice 24: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T09:30:00.000Z",
+        "updated_at": "2025-01-02T09:30:00.000Z"
+      }
+    },
+    {
+      "id": 2024,
+      "type": "unplanned",
+      "subject": "synthetic-lamp-25 unplanned notice",
+      "state": "resolved",
+      "timeline_state": "past_distant",
+      "url": "https://status.example.invalid/notices/synthetic-lamp-25",
+      "created_at": "2025-01-02T10:00:00.000Z",
+      "updated_at": "2025-01-02T10:30:00.000Z",
+      "began_at": "2025-01-02T10:00:00.000Z",
+      "ended_at": "2025-01-02T10:30:00.000Z",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "incident"
+      ],
+      "impact_time": {
+        "seconds": 1800,
+        "words": "30 minutes"
+      },
+      "links": {
+        "self": "/api/v1/notices/2024"
+      },
+      "latest_update": {
+        "id": 30241,
+        "content": "Synthetic unplanned notice 25: this is the final saved update.",
+        "state": "resolved",
+        "created_at": "2025-01-02T10:30:00.000Z",
+        "updated_at": "2025-01-02T10:30:00.000Z"
+      }
+    }
+  ],
+  "meta": {
+    "count": 25,
+    "total_count": 53,
+    "next_page": "/api/v1/notices?page=2"
+  }
+}
