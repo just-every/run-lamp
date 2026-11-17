@@ -1,0 +1,195 @@
+{
+  "tag": "ct-open-points-plan-lamp-1",
+  "repository": "just-every/run-lamp",
+  "role": "read-only planner",
+  "product_head": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+  "origin_main": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+  "product_changes": false,
+  "product_commits": false,
+  "product_pushes": false,
+  "ci_dispatches": false,
+  "launches": false,
+  "model_for_delegated_audits": "gpt-6.1-sol",
+  "reasoning_effort": "high",
+  "checks": [
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "stdout": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "origin/main"
+      ],
+      "exit": 0,
+      "stdout": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "log",
+        "origin/main..HEAD",
+        "--format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "scripts/export.mjs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "scripts/installer/archive-policy.mjs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tests/e2e/helpers/phone-desk-flow.mjs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "tests/e2e/helpers/theme-flow.mjs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "limitations": [
+    "Behavior and browser suites inspected, not executed: no dependency install, build, server or product checkout mutation was authorized.",
+    "Runtime installed Node is v24.19.0; repository pins v22.20.0. Syntax and generated-document checks are not product acceptance.",
+    "Branch existence does not establish active scheduling; all extant sd overlap candidates were conservatively excluded."
+  ],
+  "initial_product_head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "read_context_refresh": {
+    "from_head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+    "to_head": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+    "reason": "current public main advanced by excluded health-ledger round",
+    "changed_paths": [
+      "OPERATIONS.md",
+      "docs/deploy.md",
+      "scripts/import.mjs",
+      "scripts/platform-ledger.mjs",
+      "scripts/setup-migrations.mjs",
+      "scripts/setup.mjs",
+      "sources.lock.json",
+      "tests/auth-adoption/setup-migrations.test.mjs",
+      "tests/e2e/export-import.test.mjs",
+      "tests/e2e/helpers/health-schema-proof.mjs",
+      "tests/helpers/fake-wrangler.mjs"
+    ],
+    "authored_product_changes": false,
+    "checkout": "detached for read-only context"
+  },
+  "terminal_provenance_checks": [
+    {
+      "command": [
+        "node",
+        "src/base/contract-docs.mjs",
+        "check"
+      ],
+      "exit": 0,
+      "stdout": "Contract prose: 0 errors, 0 warnings.\nContract documents are current.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit": 0,
+      "stdout": "c77030f1bf9501975efca38be82a33d9611a9d5a\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "log",
+        "origin/main..HEAD",
+        "--format=%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "packet_validation": {
+    "validated_at": "2026-11-17T11:16:48.688489+00:00",
+    "regular_explicit_files": [
+      "REPORT.md",
+      "planning-receipt.json",
+      "contract-inventory.json",
+      "classified-inventory.json",
+      "branch-audit.json",
+      "public-audit.md",
+      "delivery-audit.md",
+      "incident-audit.md",
+      "root-audit.md",
+      "queue-entries.json"
+    ],
+    "prohibited_token_private_key_scan": "clear",
+    "no_authored_product_changes": true,
+    "terminal_source_head": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+    "evidence_push_guard": "temporary report Git storage is checked with exact git log origin/main..HEAD format and each commit author/committer/trailer; no force push; no product refs"
+  }
+}

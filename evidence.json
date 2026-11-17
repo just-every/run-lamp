@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "3c76877329e1e3cf265de8045426dc9f09feeeb0",
+      "bytes": 528539,
+      "path": "REPORT.md",
+      "sha256": "e2ef783372822ab927efd363c5a404a4824389c83e610de69e8df1eb37f4cd1b"
+    },
+    {
+      "blob": "358b13fcb3a31a7b225d1f2a3025e4d0ec27ec9e",
+      "bytes": 232886,
+      "path": "branch-audit.json",
+      "sha256": "2625527c286e9fc582e6f38cdbc55ddc4dadcea447a5eed24a2932f577059735"
+    },
+    {
+      "blob": "ba2f02872a83a53f39889136d6039914e208489e",
+      "bytes": 340266,
+      "path": "classified-inventory.json",
+      "sha256": "27a5512327bfc2d6b3652036812ac3eca0542a52f2f274b28155e96bb81ee151"
+    },
+    {
+      "blob": "5a7070266d4be2a0cde58e59cb5cebef4484f613",
+      "bytes": 406160,
+      "path": "contract-inventory.json",
+      "sha256": "e9629cca2b7c9e29b273033c5d60c36496b02b5389a34d1dbf90d9092ce69494"
+    },
+    {
+      "blob": "235d196fe3c745e26156b86819d9bf257ad8a285",
+      "bytes": 33719,
+      "path": "delivery-audit.md",
+      "sha256": "b69f4e80e1ad0c3ebb787dcf57c2ac215a544e19d2ce62dd54c82d7c2ff10146"
+    },
+    {
+      "blob": "b6874d4d4b03a4aa28a728d9be4f0560ef370bd1",
+      "bytes": 59999,
+      "path": "incident-audit.md",
+      "sha256": "36da5397e5724036f88ead242827e7a1cfcced64e2c753797b24349829ab4f06"
+    },
+    {
+      "blob": "64467270e83dccbaffabad5616b240f9b89cf065",
+      "bytes": 4983,
+      "path": "planning-receipt.json",
+      "sha256": "65444a088eb25d7a07db83e3600ff1843f4485e97d941bf2b4b934d6030c47cb"
+    },
+    {
+      "blob": "15729e83a7c69f5ca8b6e2c64f1747015a6ec061",
+      "bytes": 37260,
+      "path": "public-audit.md",
+      "sha256": "411a4d9063e032afd198ac3889f23455e5accf7396406a2cd4a94e01e84b0c0c"
+    },
+    {
+      "blob": "92770b58549e90248dabb789961522d6b47da9ef",
+      "bytes": 13727,
+      "path": "queue-entries.json",
+      "sha256": "a7af8243a9b056f49910b874cf3bb0f325450b0d99c32777beaf7f5830ac90a1"
+    },
+    {
+      "blob": "e5b94a9bfee476530b264b17a68b72d7661f3020",
+      "bytes": 16832,
+      "path": "root-audit.md",
+      "sha256": "756aa8cd8f4773edb785f17e95d339abaf5838394c84e26a332e00e6cde0286d"
+    }
+  ],
+  "product_branch": "",
+  "product_head": "c77030f1bf9501975efca38be82a33d9611a9d5a",
+  "ref": "refs/heads/evidence/ct-open-points-plan-lamp-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "ct-open-points-plan-lamp-1"
+}
