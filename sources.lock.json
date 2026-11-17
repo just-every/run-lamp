@@ -5456,7 +5456,7 @@
       "executable": false
     },
     "src/core/features/operators/ui/operators-panel.tsx": {
-      "sha256": "8ec265e53e02dd7724edaefa76ff4a63ac805677fbaaee759ee8330b8f249d23",
+      "sha256": "e1c03fe4622252f084249d36516279a8c0a4c88b15f15a02e390eb9787d7a86e",
       "executable": false
     },
     "src/core/features/overview/follow-ups/channel.repository.ts": {

@@ -53,10 +53,13 @@ export function OperatorsPanel() {
       const result = await appApi<{ email: "sent" | "suppressed" | "demo"; displayName: string; signInUrl?: string }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName, role }) });
       setNeedsConfirmation(false);
       setEmail(""); setDisplayName(""); setRole("communicator");
-      const nextStep = result.email === "sent" ? " Ask them to open the link in their invitation email."
-        : result.signInUrl ? " No email was sent. Use the link under Pending invitations in this browser."
-        : result.email === "suppressed" ? " No email was sent." : "";
-      setMessage(`${result.displayName} is invited.${nextStep}`);
+      let guidance = "";
+      if (result.email === "sent") guidance = " Ask them to open the link in their invitation email.";
+      if (result.email === "suppressed") {
+        guidance = invited.data?.local ? " No email was sent on this computer." : " No email was sent.";
+        if (result.signInUrl) guidance += " Use the link under Pending invitations in this browser.";
+      }
+      setMessage(`${result.displayName} is invited.${guidance}`);
       invited.refresh();
     } catch (cause) {
       showError(cause, "The invitation could not be sent.");
