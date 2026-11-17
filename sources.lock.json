@@ -488,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "d5f294ce34a8152ca40b112ad830ae891994b653e1197c29eaafbb8a1d15be67",
+      "sha256": "7b1d81c1cd385e11b9073f7e00e8f1dc067af6dfb01e794acc121c16a51463ad",
       "executable": false
     },
     "BASELINE.md": {
@@ -3100,7 +3100,7 @@
       "executable": false
     },
     "scripts/delivery/base/native-export.mjs": {
-      "sha256": "5c0f90e688f5242dbc2f62416259cbb3074647298df8daa431a7022aa10d1a41",
+      "sha256": "bc673e3a65020e12c34c7a8b9b72e7d553c2edc1e5ece73353dd82b863ea3b3f",
       "executable": false
     },
     "scripts/delivery/base/package.mjs": {
@@ -7924,7 +7924,7 @@
       "executable": false
     },
     "tests/auth-adoption/dependencies.test.mjs": {
-      "sha256": "67859a2b360ffc40cdaa566b7e3a1b6aea046e5442a34cb42f32743f00f67be3",
+      "sha256": "af6db63ab04e382bcc347a38e1139637f6c7faf3fac027dde434b2505f2907e3",
       "executable": false
     },
     "tests/auth-adoption/deploy-page-host.test.mjs": {
@@ -8576,7 +8576,7 @@
       "executable": false
     },
     "tests/e2e/helpers/update-link-evidence.mjs": {
-      "sha256": "24b87b867306b31f27e5e1251cd44f228da7769d2b9877e6979aea8ff81748c4",
+      "sha256": "07a526873b6a97f721665503dd4ae19ee61431151b797b3e23c41d546566639b",
       "executable": false
     },
     "tests/e2e/helpers/update-link-surfaces.mjs": {
