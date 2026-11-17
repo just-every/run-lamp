@@ -1,0 +1,59 @@
+{
+  "notice": {
+    "id": 2039,
+    "type": "unplanned",
+    "subject": "synthetic-lamp-40 unplanned notice",
+    "state": "recovering",
+    "timeline_state": "present",
+    "url": "https://status.example.invalid/notices/synthetic-lamp-40",
+    "created_at": "2025-01-03T01:00:00.000Z",
+    "updated_at": "2025-01-03T01:30:00.000Z",
+    "began_at": "2025-01-03T01:00:00.000Z",
+    "ended_at": null,
+    "tag_list": [
+      "synthetic-lamp-1",
+      "incident"
+    ],
+    "impact_time": {
+      "seconds": 1800,
+      "words": "30 minutes"
+    },
+    "links": {
+      "self": "/api/v1/notices/2039"
+    },
+    "components": [
+      {
+        "id": 1043,
+        "name": "synthetic-lamp-44",
+        "description": "Synthetic service 44; no production data.",
+        "state": "operational",
+        "parent_id": 1003,
+        "created_at": "2025-01-01T10:00:00.000Z",
+        "updated_at": "2025-01-01T10:00:00.000Z"
+      }
+    ],
+    "updates": [
+      {
+        "id": 30390,
+        "content": "Synthetic unplanned notice 40: review is underway.",
+        "state": "investigating",
+        "created_at": "2025-01-03T01:00:00.000Z",
+        "updated_at": "2025-01-03T01:00:00.000Z"
+      },
+      {
+        "id": 30391,
+        "content": "Synthetic unplanned notice 40: this is the final saved update.",
+        "state": "recovering",
+        "created_at": "2025-01-03T01:30:00.000Z",
+        "updated_at": "2025-01-03T01:30:00.000Z"
+      }
+    ],
+    "latest_update": {
+      "id": 30391,
+      "content": "Synthetic unplanned notice 40: this is the final saved update.",
+      "state": "recovering",
+      "created_at": "2025-01-03T01:30:00.000Z",
+      "updated_at": "2025-01-03T01:30:00.000Z"
+    }
+  }
+}

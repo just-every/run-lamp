@@ -1,0 +1,18 @@
+{
+  "response": {
+    "color_state_ok": "#27ae60",
+    "color_state_warning": "#e67e22",
+    "color_state_info": "#2980b9",
+    "color_state_alert": "#f1c40f",
+    "color_navbar_background": "rgba(0,0,0,0.01)",
+    "color_navbar_links": "#2c3e50",
+    "color_header_background": "#F7F8F9",
+    "color_header_links": "#2980b9",
+    "color_header_text": "#2c3e50",
+    "color_body_background": "#FFFFFF",
+    "color_body_links": "#2980b9",
+    "color_body_text": "#2c3e50",
+    "created_at": "2025-01-01T10:00:00.000Z",
+    "updated_at": "2025-01-01T10:00:00.000Z"
+  }
+}

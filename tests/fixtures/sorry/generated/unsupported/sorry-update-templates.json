@@ -1,0 +1,20 @@
+{
+  "response": [
+    {
+      "id": "synthetic-lamp-1",
+      "name": "Synthetic progress template",
+      "content": "synthetic-lamp-1 progress template",
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    }
+  ],
+  "count": 1,
+  "pagination": {
+    "current": 1,
+    "previous": null,
+    "next": null,
+    "per_page": 25,
+    "pages": 1,
+    "count": 1
+  }
+}
