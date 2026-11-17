@@ -143,7 +143,7 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     // The same owner manages actual invitations and native sessions. Cancellation
     // invalidates the delivered link; erasure revokes access and retains an audit.
     const invite = async email => {
-      const result = await post('/api/app/operators/invite', { email, displayName: 'Recovery owner' }, proof);
+      const result = await post('/api/app/operators/invite', { email, displayName: 'Recovery owner', role: 'owner' }, proof);
       assert.equal(result.status, 202, await result.clone().text());
       const token = new URL(messages.at(-1).text.match(/https?:\/\/[^\s]+/)[0]).searchParams.get('token');
       const invited = (await (await call('/api/app/operators/invited', { cookie: proof })).json()).operators.find(row => row.email === email);

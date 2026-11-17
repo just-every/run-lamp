@@ -6,7 +6,7 @@ export async function channelDeletionFlow({ api, post, origin, nativeRequest, ru
   const since = new Date().toISOString();
   const creator = (await api('/api/app/session')).body.operator;
   const email = 'channel-deleter@example.test';
-  const invited = await post('/api/app/operators/invite', { email, displayName: 'Channel removing operator' });
+  const invited = await post('/api/app/operators/invite', { email, displayName: 'Channel removing operator', role: 'admin' });
   assert.equal(invited.status, 202, invited.text);
   const entered = await signInAs({ origin, key: devKey, as: email });
   const asDeleter = async (path, init = {}) => {
