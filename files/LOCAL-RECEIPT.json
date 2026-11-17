@@ -1,0 +1,156 @@
+{
+  "tag": "sd-lamp-maint-1-c2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-maint-1-c2",
+  "base": "77afda40065ed1a462bdbd069b0cb6ab417929af",
+  "recorded_at_utc": "2026-11-17T14:43:33Z",
+  "finding": "Case (a): obsolete 23-hour fixture expected a reminder intentionally removed by the 24-hour notice rule.",
+  "checks": [
+    {
+      "command": "node --test --test-name-pattern='AUTO-003 NOTIFY-006' tests/e2e/update-reminders.test.mjs",
+      "stage": "before",
+      "exit": 1,
+      "pass": 0,
+      "fail": 1,
+      "log": "before-follow-ups.log",
+      "failure": "follow-ups-flow.mjs:112 strictEqual actual undefined"
+    },
+    {
+      "command": "node --test --test-name-pattern='AUTO-003 NOTIFY-006' tests/e2e/update-reminders.test.mjs",
+      "stage": "after",
+      "exit": 0,
+      "pass": 1,
+      "fail": 0,
+      "log": "after-follow-ups.log"
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm run check:syntax",
+      "exit": 0,
+      "modules": 473,
+      "log": "syntax-check.log"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "stage": "after final lock regeneration",
+      "exit": 0,
+      "log": "source-check.json"
+    },
+    {
+      "command": "cloud_run node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "pass": 3,
+      "fail": 0,
+      "log": "maintenance-timezone.log",
+      "browser": "/usr/bin/chromium --no-sandbox",
+      "width": 1440
+    },
+    {
+      "command": "cloud_run node --test --test-name-pattern='DOCS-001 PAGE-020' tests/e2e/start-runtime.test.mjs",
+      "exit": 0,
+      "pass": 1,
+      "fail": 0,
+      "log": "system-chromium-runtime.log",
+      "browser": "/usr/bin/chromium --no-sandbox"
+    },
+    {
+      "command": "LAMP_VERIFY_SHARD=runtime cloud_run npx -y @runeditrun/rer verify",
+      "exit": 0,
+      "runtime": {
+        "pass": 2,
+        "fail": 0
+      },
+      "publishing": {
+        "pass": 17,
+        "fail": 0
+      },
+      "hosted_output": "passed",
+      "hydration": "passed",
+      "statement_check": "548 statements checked",
+      "log": "runtime-verify.log"
+    }
+  ],
+  "contract": {
+    "claims": 0,
+    "status_changes": [],
+    "before": {
+      "Core": {
+        "done": 60,
+        "partial": 129,
+        "missing": 50,
+        "total": 239
+      },
+      "Agent surface": {
+        "done": 0,
+        "partial": 0,
+        "missing": 5,
+        "total": 5
+      },
+      "Full target": {
+        "done": 60,
+        "partial": 129,
+        "missing": 55,
+        "total": 244
+      }
+    },
+    "after": "unchanged"
+  },
+  "network_edges": "Disposable local runtimes and synthetic mail/webhook providers; no hosted delivery proof.",
+  "ci": {
+    "parent_run": 44095306243,
+    "parent_runtime_job": 134081537475,
+    "parent_conclusion": "failure",
+    "api_calls_used": 9,
+    "run_id": 44107919732,
+    "head": "702b422888916ecb9de06e3470466ada06ec5209",
+    "last_observed_status": "completed",
+    "last_observed_conclusion": "success",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/44107919732",
+    "provider_reruns": 0,
+    "generator_failure_exception_used": false
+  },
+  "head": "702b422888916ecb9de06e3470466ada06ec5209",
+  "product_push": {
+    "exit": 0,
+    "attempts": 1,
+    "ref": "refs/heads/cloud/sd-lamp-maint-1-c2",
+    "head": "702b422888916ecb9de06e3470466ada06ec5209",
+    "log": "product-push.log",
+    "identity_scan": "all 3 candidate commits, all fleet authors and committers, no trailers"
+  },
+  "committed_helper_sha256": "fd0c2ebe8c2eda85691b93cbdea9a4bda9a880b2afe5a7788c7e4eaed4f4abb5",
+  "remote_product_head_verified": "702b422888916ecb9de06e3470466ada06ec5209",
+  "working_tree": "clean",
+  "packet_review": {
+    "regular_files_only": true,
+    "no_injected_bundle_values": true,
+    "reviewed_at_utc": "2026-11-17T14:53:41Z"
+  },
+  "pull_request": {
+    "number": 409,
+    "html_url": "https://github.com/just-every/run-lamp/pull/409",
+    "state": "open",
+    "draft": false,
+    "created_at": "2026-11-17T15:18:34Z",
+    "head": "702b422888916ecb9de06e3470466ada06ec5209",
+    "head_ref": "cloud/sd-lamp-maint-1-c2",
+    "base_ref": "main"
+  },
+  "terminal_product_custody": "READY",
+  "completed_at_utc": "2026-11-17T15:19:13Z",
+  "blockers": []
+}

@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "tests/e2e/helpers/follow-ups-flow.mjs",
+      "change": "modified",
+      "before": {
+        "sha256": "cafbab6aaba1a36c2dd7610118b3afb2cbe18114a9197b392c7af9cb29d3a52d",
+        "executable": false
+      },
+      "after": {
+        "sha256": "fd0c2ebe8c2eda85691b93cbdea9a4bda9a880b2afe5a7788c7e4eaed4f4abb5",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+

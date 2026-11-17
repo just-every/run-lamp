@@ -1,0 +1,13 @@
+702b422888916ecb9de06e3470466ada06ec5209
+Align follow-up reminder fixtures with the announcement window
+
+Keep the advance-notice reminder due at 24 hours before maintenance, and assert that a notice published inside that window creates neither a reminder obligation nor an immediate reminder after repeated reads and Cron deliveries. The 23-hour fixture previously expected deliberately removed behavior.
+
+77afda40065ed1a462bdbd069b0cb6ab417929af
+Record the repeated maintenance cancellation migration
+
+2b8e632f16dd3ff2006ae72e9c3ff3649c2ce3b9
+Make maintenance cancellation reversible and reminders timely
+
+Review cancellation and its customer notice, then reinstate the same window with its history and automation. Skip reminders covered by a recent announcement and present customer wording as separate incident-style fields.
+

@@ -1,0 +1,55 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 6f91b53..03bc7f8 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -8108,7 +8108,7 @@
+       "executable": false
+     },
+     "tests/e2e/helpers/follow-ups-flow.mjs": {
+-      "sha256": "cafbab6aaba1a36c2dd7610118b3afb2cbe18114a9197b392c7af9cb29d3a52d",
++      "sha256": "fd0c2ebe8c2eda85691b93cbdea9a4bda9a880b2afe5a7788c7e4eaed4f4abb5",
+       "executable": false
+     },
+     "tests/e2e/helpers/follow-ups-import.mjs": {
+diff --git a/tests/e2e/helpers/follow-ups-flow.mjs b/tests/e2e/helpers/follow-ups-flow.mjs
+index 14ee070..d128561 100644
+--- a/tests/e2e/helpers/follow-ups-flow.mjs
++++ b/tests/e2e/helpers/follow-ups-flow.mjs
+@@ -80,7 +80,8 @@ export async function followUpsFlow(t) {
+       assert.equal(created.status, 201, created.text);
+       return created.body.maintenance;
+     };
+-    const future = await maintenance("Synthetic Lamp upcoming window", iso(Date.now() + 23 * hour), iso(Date.now() + 24 * hour), true, true);
++    const future = await maintenance("Synthetic Lamp advance announcement", iso(Date.now() + 48 * hour), iso(Date.now() + 49 * hour), true, true);
++    const recent = await maintenance("Synthetic Lamp notice inside reminder window", iso(Date.now() + 23 * hour), iso(Date.now() + 24 * hour), true, true);
+     const startDue = await maintenance("Synthetic Lamp manual start due", iso(Date.now() - hour), iso(Date.now() + hour), false, false);
+     const overrun = await maintenance("Synthetic Lamp manual completion due", iso(Date.now() - 2 * hour), iso(Date.now() - hour), false, false);
+     assert.equal((await post(`/api/app/maintenance/${overrun.id}/start`)).status, 200);
+@@ -110,6 +111,8 @@ export async function followUpsFlow(t) {
+     assert.equal(futureStart?.dueAt, future.startsAt);
+     assert.equal(futureEnd?.dueAt, future.endsAt);
+     assert.equal(reminder?.dueAt, iso(Date.parse(future.startsAt) - 24 * hour));
++    assert.equal(reminder.failure, null, "an advance announcement owes its reminder only at the future lead boundary");
++    assert.equal(find(rows, "maintenance-reminder", recent), undefined, "a notice already inside the 24-hour window creates no reminder obligation");
+     const manualStart = find(rows, "maintenance-start", startDue);
+     assert.equal(manualStart?.dueAt, startDue.startsAt);
+     assert.equal(manualStart.failure.state, "failed", "an opted-out start stays visible when its actual start passes");
+@@ -129,6 +132,9 @@ export async function followUpsFlow(t) {
+     await tick();
+     await settleOperatorEmails(fixture);
+     assertOneOperatorEmail(fixture, operatorEmails, /maintenance.*longer than planned/i, overrun.id);
++    const recentWindow = (await api("/api/app/maintenance")).body.maintenance.find(row => row.id === recent.id);
++    assert.equal(recentWindow.notices.filter(notice => notice.kind === "reminder").length, 0, "repeated reads and Cron do not remind immediately after a recent announcement");
++    assert.equal(find(await read(), "maintenance-reminder", recent), undefined);
+     t?.diagnostic("PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window");
+     for (const report of reports) {
+       assert.equal(find(rows, "report", report)?.dueAt, iso(Date.parse(report.resolvedAt) + 7 * 24 * hour));
+@@ -146,6 +152,8 @@ export async function followUpsFlow(t) {
+     await expectAbsent([promise.id, publication.id]);
+     assert.equal((await post(`/api/app/maintenance/${future.id}/cancel`)).status, 200);
+     await expectAbsent([futureStart.id, futureEnd.id, reminder.id]);
++    assert.equal((await post(`/api/app/maintenance/${recent.id}/cancel`)).status, 200);
++    await expectAbsent([`maintenance-start:${recent.id}`, `maintenance-end:${recent.id}`, `maintenance-reminder:${recent.id}`]);
+     assert.equal((await post(`/api/app/maintenance/${startDue.id}/start`)).status, 200);
+     await expectAbsent([manualStart.id]);
+     assert.equal((await post(`/api/app/maintenance/${startDue.id}/complete`)).status, 200);
