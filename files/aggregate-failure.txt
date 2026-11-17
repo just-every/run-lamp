@@ -1,0 +1,7 @@
+Command: gh run view 44095306243 --repo just-every/run-lamp --job 134089642381 --log-failed
+Exit: 0
+
+verify	Require every planned command to succeed on this commit	2026-11-17T13:57:07.3710618Z The shard jobs did not all succeed.
+verify	Require every planned command to succeed on this commit	2026-11-17T13:57:07.3712934Z runtime: wrong shard, commit or unsuccessful completion
+verify	Require every planned command to succeed on this commit	2026-11-17T13:57:07.3714102Z Verification: 8/9 shards completed successfully for this commit.
+verify	Require every planned command to succeed on this commit	2026-11-17T13:57:07.3770386Z ##[error]Process completed with exit code 1.

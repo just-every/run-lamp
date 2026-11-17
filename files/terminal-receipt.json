@@ -1,0 +1,17 @@
+{
+  "date_utc": "2026-11-17T14:10:11.687924+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-maint-1-c1",
+  "head": "77afda40065ed1a462bdbd069b0cb6ab417929af",
+  "worktree_clean": true,
+  "product_push": "succeeded",
+  "ci_run_id": 44095306243,
+  "ci_status": "completed",
+  "ci_conclusion": "failure",
+  "ready": false,
+  "blocker": "Successful exact-SHA Verify: real maintenance follow-up reminder assertion outside migration-only lease",
+  "new_product_commits": 1,
+  "new_pr": false,
+  "original_pr": "https://github.com/just-every/run-lamp/pull/406",
+  "clause_status_changes": []
+}

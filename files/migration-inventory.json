@@ -1,0 +1,14 @@
+{
+  "currentVersion": "1.11.22",
+  "previousVersion": "1.11.21",
+  "retainedReleaseCount": 35,
+  "coreMigrationCount": 81,
+  "priorMigrationCount": 80,
+  "priorLastMigration": "0081_scheduled_work_indexes.sql",
+  "expectedCurrentMigrations": [
+    "0082_repeated_maintenance_cancellation.sql"
+  ],
+  "actualCurrentMigrations": [
+    "0082_repeated_maintenance_cancellation.sql"
+  ]
+}

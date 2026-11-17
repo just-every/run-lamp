@@ -1,0 +1,117 @@
+{
+  "date_utc": "2026-11-17T13:41:45.358951+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-maint-1-c1",
+  "head": "77afda40065ed1a462bdbd069b0cb6ab417929af",
+  "parent": "2b8e632f16dd3ff2006ae72e9c3ff3649c2ce3b9",
+  "new_commit_count": 1,
+  "changed_files": [
+    "RELEASE.json",
+    "sources.lock.json"
+  ],
+  "local_checks": {
+    "release_before": {
+      "exit": 1,
+      "missing": [
+        "0082_repeated_maintenance_cancellation.sql"
+      ]
+    },
+    "release_after": {
+      "exit": 0
+    },
+    "typecheck": {
+      "exit": 0,
+      "node": "24.19.0",
+      "pnpm": "10.12.4"
+    },
+    "source_lock": {
+      "exit": 0,
+      "regenerated_last": true,
+      "changed_entries": [
+        "RELEASE.json"
+      ]
+    },
+    "diff_check": {
+      "exit": 0
+    },
+    "full_verifier": {
+      "command": "cloud_run npx -y @runeditrun/rer verify",
+      "status": "interrupted",
+      "exit": 130,
+      "reason": "Stopped with SIGINT after exact-SHA CI established a real assertion outside the migration-only lease. All owned children stopped cleanly.",
+      "completed_shards": [
+        "build",
+        "ownership",
+        "portability"
+      ],
+      "incomplete_shards": [
+        "imports"
+      ]
+    }
+  },
+  "clause_status_changes": [],
+  "counts_before": {
+    "Core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "Agent surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "Full target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "counts_after": {
+    "Core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "Agent surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "Full target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "migration_inventory": {
+    "currentVersion": "1.11.22",
+    "previousVersion": "1.11.21",
+    "retainedReleaseCount": 35,
+    "coreMigrationCount": 81,
+    "priorMigrationCount": 80,
+    "priorLastMigration": "0081_scheduled_work_indexes.sql",
+    "expectedCurrentMigrations": [
+      "0082_repeated_maintenance_cancellation.sql"
+    ],
+    "actualCurrentMigrations": [
+      "0082_repeated_maintenance_cancellation.sql"
+    ]
+  },
+  "lease_check": {
+    "result": "pass",
+    "release_changed_fields": [
+      "migrations"
+    ],
+    "lock_changed_files": [
+      "RELEASE.json"
+    ],
+    "new_product_commit_count": 1
+  }
+}

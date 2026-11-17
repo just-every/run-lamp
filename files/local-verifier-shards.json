@@ -1,0 +1,102 @@
+[
+  {
+    "shard": "build",
+    "commit": null,
+    "runId": null,
+    "runAttempt": 0,
+    "success": true,
+    "steps": [
+      {
+        "script": "check:contract-docs",
+        "exitCode": 0,
+        "durationMs": 1531
+      },
+      {
+        "script": "source:copies",
+        "exitCode": 0,
+        "durationMs": 971
+      },
+      {
+        "script": "source:check",
+        "exitCode": 0,
+        "durationMs": 1826
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "durationMs": 35756
+      },
+      {
+        "script": "check:syntax",
+        "exitCode": 0,
+        "durationMs": 51562
+      },
+      {
+        "script": "validate:release",
+        "exitCode": 0,
+        "durationMs": 1959
+      },
+      {
+        "script": "verify:visual:source",
+        "exitCode": 0,
+        "durationMs": 654
+      },
+      {
+        "script": "build:app",
+        "exitCode": 0,
+        "durationMs": 9454
+      },
+      {
+        "script": "build:site",
+        "exitCode": 0,
+        "durationMs": 7460
+      }
+    ]
+  },
+  {
+    "shard": "imports",
+    "commit": null,
+    "runId": null,
+    "runAttempt": 0,
+    "success": false,
+    "steps": []
+  },
+  {
+    "shard": "ownership",
+    "commit": null,
+    "runId": null,
+    "runAttempt": 0,
+    "success": true,
+    "steps": [
+      {
+        "script": "test:ownership",
+        "exitCode": 0,
+        "durationMs": 474320
+      },
+      {
+        "script": "test:owner-claim",
+        "exitCode": 0,
+        "durationMs": 33090
+      },
+      {
+        "script": "test:owner-backup",
+        "exitCode": 0,
+        "durationMs": 161003
+      }
+    ]
+  },
+  {
+    "shard": "portability",
+    "commit": null,
+    "runId": null,
+    "runAttempt": 0,
+    "success": true,
+    "steps": [
+      {
+        "script": "test:portability",
+        "exitCode": 0,
+        "durationMs": 418342
+      }
+    ]
+  }
+]

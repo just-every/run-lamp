@@ -1,0 +1,148 @@
+{
+  "files": [
+    {
+      "blob": "78648d055d44228ae9e561de3bf7978fe85c598a",
+      "bytes": 1588,
+      "path": "PLAN.md",
+      "sha256": "765c10cc039d4d90a248be69e714c77d0b23bb9a5bd12cd69a826aad0febf4cb"
+    },
+    {
+      "blob": "cd3d823634ac83e0493aaf381a30e4da14815097",
+      "bytes": 7634,
+      "path": "REPORT.md",
+      "sha256": "3d48ff7a3f7eab2229d317ea6d9e425acc7ddc6a612aa77e7ec5c7d737c0564a"
+    },
+    {
+      "blob": "7bd947699c29c4826c3269ce8df20c2d16f52be1",
+      "bytes": 671,
+      "path": "aggregate-failure.txt",
+      "sha256": "644a34b33e7e21f22d7230d7046b8363318bebb0d7f6eb264a55c784c0fc6f0b"
+    },
+    {
+      "blob": "c1bec92d758b3b355c43d26c9959c51158ff2430",
+      "bytes": 592,
+      "path": "candidate-identity.txt",
+      "sha256": "66cc6fed25d341fa3a4c434195fe78525acbec2a1abc6a1181d9889829da66f7"
+    },
+    {
+      "blob": "253d5b3c81c78d449118e2ac13f6893b521c174a",
+      "bytes": 289,
+      "path": "ci-discovery.json",
+      "sha256": "e1f739d693b49a2c688c67efbb7363c810242a9c06904c10ed6ffb5c49501146"
+    },
+    {
+      "blob": "354d9ca8e6b783174c2443007c954948e44087da",
+      "bytes": 22026,
+      "path": "ci-jobs.json",
+      "sha256": "b3beb09a0aea7c5a37c43841ba3a2f932484954fcc5e29d0148584427acbf131"
+    },
+    {
+      "blob": "01057aeb434b4bca9791101294bef7c163913cf0",
+      "bytes": 174,
+      "path": "ci-poll-1.json",
+      "sha256": "dad50fe275ce4bc04c208ede2892b096cefcd1a4fa000267842a67cd9554c348"
+    },
+    {
+      "blob": "01057aeb434b4bca9791101294bef7c163913cf0",
+      "bytes": 174,
+      "path": "ci-poll-2.json",
+      "sha256": "dad50fe275ce4bc04c208ede2892b096cefcd1a4fa000267842a67cd9554c348"
+    },
+    {
+      "blob": "578bf56912df77012384c2af58516b3986e68542",
+      "bytes": 177,
+      "path": "ci-poll-3.json",
+      "sha256": "12cc53d98ac34d6ff60ebe40e9bb982782fb2c6d19745e1878f39e533ec9b69c"
+    },
+    {
+      "blob": "7d7eb25053ce17f7396c5fc249b2d8ff37e317b9",
+      "bytes": 36266,
+      "path": "ci-receipt.json",
+      "sha256": "bdfeca25fd763fddd3b4c4edca2c4024b8f927d4ad23c874547c8db3799ec557"
+    },
+    {
+      "blob": "58c3a1b848106a091b972960a923659e6dea34a3",
+      "bytes": 2590,
+      "path": "local-receipt.json",
+      "sha256": "1af5fc0368433d1cad613e0c7ff66df8a63803746df4011d677b57d7672d74fd"
+    },
+    {
+      "blob": "f252bd2178d7c9be5f7eb33e1546fcca2a97db39",
+      "bytes": 1887,
+      "path": "local-verifier-shards.json",
+      "sha256": "0f8310ea207e6c72cd0fff2765e519ba7e4c1fe883992858f6559dacf3efcdaa"
+    },
+    {
+      "blob": "5bda9ecfedae2059a91012a2d5b03a1987cc32a8",
+      "bytes": 384,
+      "path": "migration-inventory.json",
+      "sha256": "59b86efe77f8fe072c607ac0c7589ab29c04ce13a9985420c04fc4d07e880ec5"
+    },
+    {
+      "blob": "5d696b6c41bfdd82ebc0d11f783368d2e51ddb4b",
+      "bytes": 206,
+      "path": "pr406.json",
+      "sha256": "2d100b902cac06f59c708fe6670777205fc897e65f430f297d45329cc22a1933"
+    },
+    {
+      "blob": "1add483a492de2745a966b358a0a2c68da45b668",
+      "bytes": 4865,
+      "path": "product.patch",
+      "sha256": "de449a4534a56b82f294f2cd1218d259cfd44fd03fd710370a2859af72f4178a"
+    },
+    {
+      "blob": "379874e853addfe24d757e735baa9e9363d4fc28",
+      "bytes": 419,
+      "path": "push-receipt.json",
+      "sha256": "ba694c45be3b73b70e0d0b8e71972e8bed9da40b171519fff8a4c8998f161b09"
+    },
+    {
+      "blob": "e5025fc197378ea78ffb9e2d83a198885f2bd58e",
+      "bytes": 131,
+      "path": "release-after.log",
+      "sha256": "07278cb4fe1a8f28a8547202baf6d0a0ccf15c990286c661bdf7f25eb4a4e4ce"
+    },
+    {
+      "blob": "ab610811f1d6970f70dca0654cbf63969b3e99db",
+      "bytes": 241,
+      "path": "release-before.log",
+      "sha256": "c407b8aa20d96276ead7d02141188dadf5304534131c1394cc430d2bbde8b726"
+    },
+    {
+      "blob": "12e36b928406161e268ddf7df77ed7f8025360fc",
+      "bytes": 151,
+      "path": "remote-refs.txt",
+      "sha256": "659c407cee1fec5383eaae76a9a23cd267fb44a6c3f3a0434784e40d89c23b3b"
+    },
+    {
+      "blob": "99238c32a01b7ccf04c523f85ff783f5474e8045",
+      "bytes": 2857,
+      "path": "runtime-failure.txt",
+      "sha256": "1ac8eb0bb7c463b7b2ace00e7d8932a3b8f60e60c26e5288ecf0a6ba28137dd7"
+    },
+    {
+      "blob": "588ce9563a2b950ca6369c53984da15f03110c02",
+      "bytes": 204,
+      "path": "source-check.json",
+      "sha256": "a198f8a2686a629a6612dfda6cf1f555e923f732ea4306cd552d4f15e6049535"
+    },
+    {
+      "blob": "ed1656e149a693f3975b147f703c0b3d6c0b2b0f",
+      "bytes": 613,
+      "path": "terminal-receipt.json",
+      "sha256": "080987d790876e630c379dcf11a68e41ec283fd333fcfa0859e6ac3abaf77bf7"
+    },
+    {
+      "blob": "a703dc788b27f26504bd5571c647274b30b50230",
+      "bytes": 168,
+      "path": "typecheck.log",
+      "sha256": "1bcb893c47f1474f8234559b99a1cbfbdf9282d9aae888e07411b89778ead03d"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-maint-1-c1",
+  "product_head": "77afda40065ed1a462bdbd069b0cb6ab417929af",
+  "ref": "refs/heads/evidence/sd-lamp-maint-1-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-maint-1-c1"
+}
