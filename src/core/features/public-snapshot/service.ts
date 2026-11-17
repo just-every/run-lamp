@@ -13,6 +13,7 @@ import { PRELAUNCH_ROBOTS_KEY } from "../prelaunch/policy";
 import { readPrelaunch } from "../prelaunch/store";
 import { defaultPublicSnapshotPolicies, type PublicSnapshotPolicies } from "./policies";
 import { defaultPublicSnapshotEvents, type PublicSnapshotEvents } from "./events";
+import { pruneSnapshotVersions } from "./retention";
 
 const CURRENT_POINTER_KEY = "snapshots/current.json";
 const STALE_MARKER_KEY = "snapshots/stale.json";
@@ -120,8 +121,8 @@ export function createPublicSnapshotService(
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const currentObject = await blobs.getText(CURRENT_POINTER_KEY);
       const current = currentObject ? parsePointer(currentObject) : null;
-      if (current && current.generation >= pointer.generation) return false;
-      if (await blobs.putTextConditionally(CURRENT_POINTER_KEY, JSON.stringify(pointer), "application/json; charset=utf-8", { eTag: currentObject?.eTag ?? null })) return true;
+      if (current && current.generation >= pointer.generation) return { advanced: false, previous: null };
+      if (await blobs.putTextConditionally(CURRENT_POINTER_KEY, JSON.stringify(pointer), "application/json; charset=utf-8", { eTag: currentObject?.eTag ?? null })) return { advanced: true, previous: current };
     }
     throw new Error("Public snapshot pointer changed too often to advance safely.");
   }
@@ -231,6 +232,8 @@ export function createPublicSnapshotService(
         try {
         // Retry storage/replica/pointer delivery with identical generation bytes.
         const { version, rendered, bundle, logo, logoContentType, source } = prepared;
+        // Keep a small sequence fence even if delivery stops partway through.
+        await blobs.putText(`snapshots/${version}/generation.json`, JSON.stringify({ version, generation }), "application/json");
         // Cold historical pages use this generation's public presentation data.
         // They are independently cached, never added to its retained bundle.
         await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...source, history: [], corrections: [], metrics: [] }), "application/json");
@@ -248,15 +251,19 @@ export function createPublicSnapshotService(
         // this generation. A failed replica write leaves the prior pointer.
         if (retained) await retained.write(bundle);
         const replicaGeneration = retained ? await retained.generation() : generation;
-        const advanced = replicaGeneration === generation
+        const { advanced, previous } = replicaGeneration === generation
           ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
-          : false;
+          : { advanced: false, previous: null };
         const finishedAt = nowIso();
         await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
         const selected = await readPointer();
         if (selected?.version === version) await repository.completeWork(revision, finishedAt);
         if (!advanced) return;
         await events.snapshotPublished({ version, generatedAt: rendered.generatedAt });
+        if (selected?.version === version && previous) {
+          try { await pruneSnapshotVersions(blobs, version, previous); }
+          catch { console.warn("Public snapshot retention deferred until the next successful publication."); }
+        }
         return;
         } catch (cause) {
           lastError = cause;

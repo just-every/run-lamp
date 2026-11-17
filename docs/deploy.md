@@ -340,6 +340,15 @@ that none remains. In custom-domain mode there is one Worker. `rer deploy --remo
 --yes` alone does not remove the separate public page Worker of a `workers.dev`
 installation, so use this command.
 
+Lamp keeps the current and previous published snapshot versions in the files
+bucket so frequent publishing does not accumulate an unlimited archive. Cleanup
+starts only after a successful publication and pointer readback, protects newer
+concurrent builds by generation sequence, and drains older piles over successive
+publishes (up to four pages of 256 objects, with a one-second scheduling budget).
+A failed publication deletes nothing; a failed cleanup resumes on a later publish.
+Deployment removal purges all snapshot versions with the rest of that bucket.
+<!-- Run Edit Run fleet, 2026-11-17: bounded snapshot retention. -->
+
 A second run can be needed because Cloudflare may still report a just-deleted
 Worker or R2 bucket after deletion or a long object purge; if the command ends
 with `remove-incomplete`, run the same command again with the retained records.
