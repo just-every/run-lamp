@@ -461,8 +461,8 @@ application publish nothing and send no notifications. Identical imports add
 nothing; undo removes unchanged templates, preserving edited ones and anything
 that still depends on them. A conflicting local name is preserved and named.
 
-References: [notice templates](https://docs.sorryapp.com/v1/notice-templates)
-and [update templates](https://docs.sorryapp.com/v1/update-templates), checked
+References: [notice templates](https://developer.sorryapp.com/reference/get-notice-templates)
+and [update templates](https://developer.sorryapp.com/reference/get-update-templates), checked
 17 November 2026. Synthetic documented-format proof uses 27 templates of each
 kind over two pages. This does not claim verification against a real export.
 
