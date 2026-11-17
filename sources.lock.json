@@ -3980,11 +3980,11 @@
       "executable": false
     },
     "scripts/removal/owner-remove.mjs": {
-      "sha256": "bbfc405abf64be2209df2537f2190ed72f2c6273f127a7599fdea4f9d21d9f7d",
+      "sha256": "2b1006d0df5ae0db02542eafb626c4b4b39c8c4e458a7e1827c69a2d471c8f38",
       "executable": false
     },
     "scripts/remove-deployment.mjs": {
-      "sha256": "2e480ef72956229e7d9107cdc4eb8d45a8b6762c6df51a52cbf4d2b6ab88ffd6",
+      "sha256": "cf3148007a1600ea411c16a281ceb0d40f0f651030cf2541709ce11e18f370e8",
       "executable": false
     },
     "scripts/setup-migrations.mjs": {
@@ -7888,7 +7888,7 @@
       "executable": false
     },
     "tests/auth-adoption/deploy-page-host.test.mjs": {
-      "sha256": "dd3145dd5708f2e9be0429c8a0be64d653e3137063c81e873aa1acd518d1ed87",
+      "sha256": "1baac19b43c4a1aa4ac1e05ad64d12d1fe0f97318f4387d4e82a2162e974e512",
       "executable": false
     },
     "tests/auth-adoption/fixtures/prechange.sql": {

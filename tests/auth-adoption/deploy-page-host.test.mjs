@@ -241,11 +241,11 @@ async function removalFixture() {
 }
 
 test('Native removal settles deletion lag, drains multiple object batches and resumes a half-removed installation in one invocation', async () => {
-  for (const halfRemoved of [false, true]) {
+  for (const scenario of ['full', 'half', 'retired-records']) {
     const fixture = await removalFixture();
     const {edge, paths, names} = fixture;
     try {
-      if (halfRemoved) {
+      if (scenario !== 'full') {
         edge.base.workers.delete(names.publicWorker);
         edge.base.workers.delete(names.worker);
         edge.namespaces.delete(names.worker);
@@ -254,11 +254,18 @@ test('Native removal settles deletion lag, drains multiple object batches and re
         // The first target's state can already have been retired.
         await rm(paths.page);
       }
+      if (scenario === 'retired-records') {
+        edge.buckets.delete(names.bucket);
+        edge.objects.clear();
+        await rm(paths.app);
+      }
       const result = await fixture.run();
       assert.equal(result.code, 0, result.output);
       assert.match(result.output, /read back: none remains\./);
-      assert.ok(edge.objectPages.filter(rows => rows.length).length > 2, 'several object batches are needed');
-      assert.ok(edge.bucketDeletes > 1, 'a not-empty bucket delete is retried inside the same run');
+      if (scenario !== 'retired-records') {
+        assert.ok(edge.objectPages.filter(rows => rows.length).length > 2, 'several object batches are needed');
+        assert.ok(edge.bucketDeletes > 1, 'a not-empty bucket delete is retried inside the same run');
+      } else assert.deepEqual(edge.writes, [], 'retired creation records require complete readback, never fresh deletion authority');
       assert.equal(edge.objects.size, 0);
       assert.deepEqual([...edge.base.workers.keys()], ['synthetic-other']);
       assert.deepEqual([...edge.databases.values()], [edge.foreign.database]);
@@ -297,6 +304,13 @@ test('Native removal requires confirmation and refuses replaced identities befor
     assert.notEqual(wrongBucket.code, 0);
     assert.match(wrongBucket.output, /owned-resource-replaced/);
     assert.deepEqual(edge.writes, []);
+    await rm(paths.app);
+    edge.base.workers.delete(names.worker);
+    const missingRecord = await fixture.run();
+    assert.notEqual(missingRecord.code, 0);
+    assert.match(missingRecord.output, /unrecorded-resource/);
+    assert.deepEqual(edge.writes, [], 'missing creation records cannot retire the outer deployment record while named data remains');
+    assert.ok(await readFile(paths.record));
   } finally { await fixture.close(); }
 });
 

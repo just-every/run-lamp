@@ -40,7 +40,7 @@ async function confirmEmpty(api, worker, kind, name, id) {
  * everything before the first delete; a replaced or uncertain resource refuses it all,
  * except an uncertain one confirmed empty (see confirmEmpty). R2 object purges
  * additionally require the saved creation timestamp and recheck it before each delete. */
-export async function ownerRemove({api: provider, target, statePath, clock = () => performance.now(), sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), readbackMs = 60000, purgeMs = 600000}) {
+export async function ownerRemove({api: provider, target, statePath, expectedResources = {}, clock = () => performance.now(), sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), readbackMs = 60000, purgeMs = 600000}) {
   const api = withSettledLists(withScopeHints(provider), {clock, sleep, windowMs: readbackMs});
   const waitGone = async (read, resource) => {
     const start = clock();
@@ -63,7 +63,8 @@ export async function ownerRemove({api: provider, target, statePath, clock = () 
   };
   return withStateLock(statePath, async () => {
     const state = await readOwnerState(statePath, target);
-    const remaining = new Set([...(state.owned.worker ? [`worker:${target.worker}`] : []), ...KINDS.flatMap(kind => Object.keys(state.owned[kind]).map(name => `${kind}:${name}`))]);
+    const known = KINDS.flatMap(kind => [...new Set([...Object.keys(state.owned[kind]), ...(expectedResources[kind] ?? [])])].map(name => ({kind, name})));
+    const remaining = new Set([...(state.owned.worker ? [`worker:${target.worker}`] : []), ...known.map(({kind, name}) => `${kind}:${name}`)]);
     const removed = [], failed = [];
     try {
       if (await settlePendingSecret(api, target.worker, state, {preflight:true})) await writeOwnerState(statePath, state);
@@ -84,8 +85,13 @@ export async function ownerRemove({api: provider, target, statePath, clock = () 
       assert(!state.pendingSecret, 'secret-change-unsettled');
       const listed = {}, doomed = [];
       for (const kind of KINDS) {
-        if (!owned.some(item => item.kind === kind)) continue;
+        if (!known.some(item => item.kind === kind)) continue;
         listed[kind] = await resourceKinds[kind].list(api);
+        // A missing creation record never proves the installation is absent.
+        // Expected names are read-only: they grant no deletion authority.
+        for (const {name} of known.filter(item => item.kind === kind)) {
+          if (!state.owned[kind][name] && findResource(listed[kind], kind, name)) throw refuse('unrecorded-resource', kind, name);
+        }
         for (const {name, entry} of owned.filter(item => item.kind === kind)) {
           const row = findResource(listed[kind], kind, name);
           if (!row) { remaining.delete(`${kind}:${name}`); continue; }
@@ -152,7 +158,7 @@ export async function ownerRemove({api: provider, target, statePath, clock = () 
       for (const kind of KINDS) {
         if (!listed[kind]) continue;
         await readback(async () => {
-          for (const {name} of owned.filter(item => item.kind === kind)) {
+          for (const {name} of known.filter(item => item.kind === kind)) {
             await waitGone(async bounded => !findResource(await resourceKinds[kind].list(bounded), kind, name), `${kind}:${name}`);
             remaining.delete(`${kind}:${name}`);
           }
