@@ -4,7 +4,7 @@ import { renderAtomContent, renderRssDescription } from "./feed-content";
 import type { PublicSnapshotModel, SnapshotArtifact } from "./renderer";
 import type { PublicSnapshotSource } from "./repository";
 import { componentSlug, publicComponentResources } from "./component-address";
-import { DAY, escapeXml } from "./format";
+import { DAY, escapeXml, formatTime } from "./format";
 import { updateText } from "./feed-widget";
 
 interface FeedEntry {
@@ -16,6 +16,9 @@ interface FeedEntry {
   recordKind: "incident" | "maintenance";
   recordId: string;
 }
+
+const NOTICE_WORDS: Record<string, string> = { scheduled: "scheduled", rescheduled: "rescheduled", reminder: "starting soon", started: "started", completed: "completed", cancelled: "cancelled" };
+const noticeWord = (kind: string) => NOTICE_WORDS[kind.toLowerCase()] ?? kind;
 
 /** Atom and RSS deliberately share the same event IDs, order and reporting window. */
 export function publicFeedEntries(model: PublicSnapshotModel): FeedEntry[] {
@@ -31,9 +34,9 @@ export function publicFeedEntries(model: PublicSnapshotModel): FeedEntry[] {
     }))),
     ...model.maintenance.flatMap((item) => item.notices.map((notice) => ({
       id: `maintenance-notice-${notice.id}`,
-      title: `${item.reference}: ${item.title} — ${notice.kind}`,
+      title: `${item.reference}: ${item.title} — ${noticeWord(notice.kind)}`,
       publishedAt: notice.publishedAt,
-      content: [notice.kind, notice.body, item.components.join(", ")].filter(Boolean).join("\n"),
+      content: [`Maintenance ${noticeWord(notice.kind)}.`, `When: ${formatTime(item.startsAt, model.settings.timezone)} to ${formatTime(item.endsAt, model.settings.timezone)}`, item.components.length ? `Affected components: ${item.components.join(", ")}` : "", notice.body].filter(Boolean).join("\n\n"),
       path: `/maintenance/${encodeURIComponent(item.reference)}`,
       recordKind: "maintenance" as const,
       recordId: item.id,

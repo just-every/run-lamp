@@ -31,8 +31,10 @@ const navigation: NavigationItem[] = [
   { to: "/app/settings", label: "Settings", icon: "settings" },
 ];
 
-function Brand() {
-  return <Link className="app-brand" to="/app" aria-label="Lamp overview"><img className="app-brand-mark" src={badge} alt="" width="28" height="28" /><span data-rer-name>Lamp</span></Link>;
+// The owner's page name once they have set one; Lamp until then.
+function Brand({ name }: { name?: string }) {
+  const label = name?.trim() || "Lamp";
+  return <Link className="app-brand" to="/app" aria-label={`${label} overview`}><img className="app-brand-mark" src={badge} alt="" width="28" height="28" /><span className="app-brand-name" data-rer-name>{label}</span></Link>;
 }
 
 function DailyMenu({ onNavigate }: { onNavigate: () => void }) {
@@ -73,7 +75,7 @@ export function OperatorShell({ initialSession }: { initialSession: OperatorSess
 
 function OperatorWorkspace({ initialSession }: { initialSession: OperatorSessionView }) {
   const sessionRequest = useAppData<{ operator: StoredOperator; publicPageHost: string }>("/api/app/session");
-  const pageSettingsRequest = useAppData<{ settings: { timezone: string } }>("/api/app/page-settings");
+  const pageSettingsRequest = useAppData<{ settings: { timezone: string; pageName?: string } }>("/api/app/page-settings");
   useEffect(() => {
     const changed = () => pageSettingsRequest.refresh();
     window.addEventListener("lamp:page-settings-changed", changed);
@@ -134,7 +136,7 @@ function OperatorWorkspace({ initialSession }: { initialSession: OperatorSession
     <EditorLauncher authorized={operator.isSetupOperator && !sessionRequest.error} initialConfig={initialSession.data["/api/app/editor-config"]?.error ? undefined : initialSession.data["/api/app/editor-config"]?.data as EditorConfig | undefined} />
     <div className="operator-shell" data-hydrated={hydrated || undefined}>
       <aside className={`operator-rail${settings ? " is-settings" : ""}`} aria-label="Operator navigation">
-        <div className="operator-brand-row"><Brand /><button ref={menuButton} type="button" className="button button-secondary operator-menu-button" aria-expanded={menuOpen} aria-controls="operator-navigation-panel" onClick={() => setMenuOpen(open => !open)}>Menu</button></div>
+        <div className="operator-brand-row"><Brand name={pageSettingsRequest.data?.settings.pageName} /><button ref={menuButton} type="button" className="button button-secondary operator-menu-button" aria-expanded={menuOpen} aria-controls="operator-navigation-panel" onClick={() => setMenuOpen(open => !open)}>Menu</button></div>
         <div ref={panel} id="operator-navigation-panel" className={`operator-navigation-panel${menuOpen ? " is-open" : ""}`} onKeyDown={event => { if (event.key === "Escape") { setMenuOpen(false); menuButton.current?.focus(); } }}>
         {settings ? <SettingsMenu current={settings} onNavigate={closeMenu} /> : <DailyMenu onNavigate={closeMenu} />}
         <div className="operator-rail-footer">

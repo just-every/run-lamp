@@ -190,6 +190,55 @@ Statuspage webhook importer remains with MOVE-010. Maintenance carries the
 existing notices; MAINT-009's unbuilt in-window wording remains a gap. The public
 subscribe form's format chooser awaits the owner UI pass.
 
+## Verify webhook deliveries
+
+Each webhook notice is a `POST` with a JSON body and three headers:
+
+| Header | Holds |
+|---|---|
+| `webhook-id` | The delivery's ID, the same on every retry of that notice. |
+| `webhook-timestamp` | Unix seconds when Lamp signed it. |
+| `webhook-signature` | One or more space-separated `v1=<signature>` values. |
+
+The signature is HMAC-SHA256 with the installation's `WEBHOOK_SIGNING_SECRET`
+over the text `{webhook-id}.{webhook-timestamp}.{raw body}`, written as
+base64url without padding. More than one value appears while the secret is being
+rotated; accept the delivery when any one matches. The secret is the one
+`rer deploy` generated for this installation (see [Deploy](deploy.md)); give it
+to whoever builds the receiving endpoint over a private channel. Reply `2xx`
+within 30 seconds: any other status, a redirect or a timeout counts as a failed
+attempt, which Lamp retries and records in **Subscribers → Delivery log** in
+plain words.
+
+```js
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+function verify(headers, rawBody, secret) {
+  const signed = `${headers["webhook-id"]}.${headers["webhook-timestamp"]}.${rawBody}`;
+  const expected = createHmac("sha256", secret).update(signed).digest("base64url");
+  return headers["webhook-signature"].split(" ").some((value) => {
+    const given = value.replace(/^v1=/, "");
+    return given.length === expected.length && timingSafeEqual(Buffer.from(given), Buffer.from(expected));
+  });
+}
+```
+
+A Lamp-format incident body starts like this, abridged; it also carries the
+incident's published updates and affected components (a Statuspage-format
+endpoint receives Statuspage's own shape instead):
+
+```json
+{
+  "event": "incident.update.published",
+  "deliveryId": "01K…",
+  "incident": { "reference": "INC-1", "title": "Checkout is slow", "impact": "Partially unavailable" }
+}
+```
+
+There is no test button: publish a small incident update, or schedule
+maintenance, with the endpoint subscribed and confirmed, then read the outcome
+in the Delivery log.
+
 ## Import and export subscribers
 
 In **Subscribers → Import and export**, choose or paste a CSV and run its dry

@@ -8,6 +8,8 @@
 /* The landing's lockup (mark.css): mark 18 beside "Lamp" in 600 at -0.035em. */
 .app-brand { display: inline-flex; align-items: center; gap: 6px; padding: 0 8px; color: var(--ink); font-size: 26px; font-weight: 600; line-height: 1; letter-spacing: -.035em; }
 .app-brand-mark { display: block; flex: none; width: 28px; height: 28px; }
+.app-brand { min-width: 0; max-width: 100%; }
+.app-brand-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .operator-navigation { display: grid; gap: 4px; margin: 32px 0 20px; }
 .operator-nav-link { display: flex; min-height: 44px; align-items: center; gap: 12px; border-radius: 10px; color: var(--ink-2); padding: 0 12px; font-size: 15px; font-weight: 500; transition: background-color .15s ease, color .15s ease; }
 .operator-nav-link svg { flex: none; }

@@ -36,6 +36,7 @@ export function AddSubscriber({ onChanged, localMail = false }: { onChanged: () 
       {channel === "webhook" ? <label className="form-label">Endpoint URL<input type="url" required disabled={pending} value={destination} onChange={event => setDestination(event.target.value)} /></label> : null}
       {channel === "sms" ? <label className="form-label">Mobile number<input type="tel" autoComplete="tel" placeholder="+12025550100" pattern="[+][1-9][0-9]{7,14}" required disabled={pending} value={phone} onChange={event => setPhone(event.target.value)} /></label> : <label className="form-label">{channel === "email" ? "Email address" : "Contact email"}<input type="email" required disabled={pending} value={email} onChange={event => setEmail(event.target.value)} /></label>}
       {channel === "webhook" ? <WebhookFormatChoice value={webhookFormat} onChange={setWebhookFormat} disabled={pending} /> : null}
+      {channel === "webhook" ? <p>Each notice is a JSON POST with the headers webhook-id, webhook-timestamp and webhook-signature. The signature is an HMAC-SHA256 made with this installation's webhook signing secret, and your endpoint answers 2xx within 30 seconds. <a className="quiet-link" href="/docs/subscribers-and-notifications#verify-webhook-deliveries">How to verify deliveries</a></p> : null}
       <SubscriberSelection selected={componentIds} onChange={setComponentIds} disabled={pending} />
       <fieldset className="maintenance-components" disabled={pending}>
         <legend>Updates to receive</legend>
