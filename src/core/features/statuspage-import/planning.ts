@@ -1,3 +1,5 @@
+import type { SorryRead } from "./sorry/read";
+import type { SorryField } from "./sorry/schema";
 import { cutoverFromPlan, type CutoverPreview } from "./cutover";
 import { resolvePublicAddresses, sourcePublicAddresses } from "./public-addresses";
 import { canonicalJson, planD1Import, sha256, type D1ImportContext, type ImportPlan, type SourceRecord, type TargetEffect } from "../../../../modules/import-kit/src/d1/index.ts";
@@ -33,13 +35,49 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
       if (!entry.accounting.some(row => row.outcome === "rejected" || row.outcome === "skipped")) entry.accounting = [{ ...item, reason: `${entry.accounting.map(row => row.reason).join(" ")} ${item.reason}` }];
     } else mapped.push({ kind: item.kind as EntityKind, sourceId: item.sourceId, accounting: [item] });
   }
+  const sorry = namespace === "sorry" ? read as SorryRead : undefined;
+  const fields = new Map<string, SorryField[]>();
+  for (const original of sorry?.fieldLedger ?? []) {
+    const field = { ...original };
+    const owner = mapped.find(entry => entry.kind === field.kind && entry.sourceId === field.sourceId);
+    // A row skipped by consent, preferences, validation or native capacity
+    // cannot claim that any of its fields were carried into native data.
+    if (owner && !owner.value && field.outcome !== "deleted") {
+      field.outcome = "refused"; delete field.target;
+      field.reason = owner.accounting.map(item => item.reason).join(" ");
+      field.action = "Fix the source row or recreate it separately, then review a fresh dry run.";
+    }
+    if (field.kind === "group" && field.target === "component_groups.name") {
+      const full = read.data.groups.find(row => row.id === field.sourceId)?.name ?? "";
+      if (Array.from(full).length > 120) {
+        field.outcome = "changed";
+        field.reason = "The flattened group name is shortened to 120 Unicode code points; full source names remain retained.";
+        field.action = "Review the shortened group name before importing.";
+      }
+    }
+    const key = owner ? field.kind + ":" + field.sourceId : "metadata";
+    fields.set(key, [...(fields.get(key) ?? []), field]);
+  }
+  // Intern repeated explanations once. A thousand subscriber rows must not
+  // duplicate a full paragraph for every path throughout retained plan chunks.
+  const fieldFiles = sorry?.artifacts.map(file => file.name) ?? [];
+  type FieldRule = Pick<SorryField, "outcome" | "reason" | "action" | "target">;
+  const fieldRules: FieldRule[] = [], ruleIds = new Map<string, number>();
+  const packFields = (rows: SorryField[] = [], metadata = false) => rows.map(field => {
+    const { outcome, reason, action, target } = field;
+    const rule = { outcome, reason, action, ...(target ? { target } : {}) };
+    const key = JSON.stringify(rule);
+    let id = ruleIds.get(key);
+    if (id === undefined) { id = fieldRules.length; ruleIds.set(key, id); fieldRules.push(rule); }
+    return metadata ? [fieldFiles.indexOf(field.file), field.path, id, field.kind, field.sourceId] : [fieldFiles.indexOf(field.file), field.path, id];
+  });
   const raw = new Map(read.records.map((record) => [`${record.kind}:${record.sourceId}`, record.payload]));
   const records: SourceRecord[] = [];
   const effects = new Map<string, TargetEffect>();
   for (const entry of mapped) {
     const key = `${entry.kind}:${entry.sourceId}`;
     const origin = read.origins.get(key)!;
-    const payload = json({ raw: raw.get(key), accounting: entry.accounting, ...(read.publicAddresses ? { publicAddresses: read.publicAddresses[key] ?? [] } : {}) });
+    const payload = json({ raw: raw.get(key), ...(sorry ? { fieldLedger: packFields(fields.get(key)) } : {}), accounting: entry.accounting, ...(read.publicAddresses ? { publicAddresses: read.publicAddresses[key] ?? [] } : {}) });
     records.push({ namespace, kind: entry.kind, sourceId: entry.sourceId, payload, payloadHash: sha256(canonicalJson(payload)), artifactHash: origin.sha256, location: { artifact: origin.name } });
     if (entry.value) {
       const owner = Object.keys(entityTables[entry.kind])[0];
@@ -48,7 +86,7 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
   }
   // The review instant and the source's file identities, so a report can be rebuilt from the plan alone.
   const identity = sha256(canonicalJson(read.artifacts.map((artifact) => ({ name: artifact.name, sha256: artifact.sha256 })).sort((a, b) => a.name.localeCompare(b.name))));
-  const metadata = json({ raw: { asOf, subscriberCapacity:{overLimit:mapped.some(row=>row.subscriberCapacity?.overLimit),summaries:mapped.flatMap(row=>row.subscriberCapacity?.summaries ?? [])}, ...(read.sourceInfo ? { sourceInfo: read.sourceInfo } : {}) }, accounting: [] });
+  const metadata = json({ ...(sorry ? { fieldLedger: packFields(fields.get("metadata"), true), fieldLedgerDictionary: { files: fieldFiles, rules: fieldRules }, fieldMetadata: sorry.fieldMetadata } : {}), raw: { asOf, subscriberCapacity:{overLimit:mapped.some(row=>row.subscriberCapacity?.overLimit),summaries:mapped.flatMap(row=>row.subscriberCapacity?.summaries ?? [])}, ...(read.sourceInfo ? { sourceInfo: read.sourceInfo } : {}) }, accounting: [] });
   records.push({ namespace, kind: "metadata", sourceId: identity, payload: metadata, payloadHash: sha256(canonicalJson(metadata)), artifactHash: read.artifacts[0].sha256, location: { artifact: read.artifacts[0].name } });
   return planD1Import({ records, artifacts: read.artifacts, diagnostics: [] }, {
     version: "1",
@@ -68,7 +106,7 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
 
 export type CountKind = EntityKind | "postmortem";
 export type Counts = Record<CountKind, { read: number; imported: number; changed: number; skipped: number; rejected: number; "kept-private": number }>;
-export interface MoveInReport { limits:string[]; state: string; asOf: string; fingerprint: string; counts: Counts; items: Accounting[]; /** How source rows arrive as native records (Sorry parents shown as groups). */ reconciliation?: RowReconciliation; cutover: CutoverPreview; unavailableAddresses: string[] }
+export interface MoveInReport { limits:string[]; state: string; asOf: string; fingerprint: string; counts: Counts; items: Accounting[]; fieldLedger?: SorryField[]; /** How source rows arrive as native records (Sorry parents shown as groups). */ reconciliation?: RowReconciliation; cutover: CutoverPreview; unavailableAddresses: string[] }
 
 /** The dry-run report, rebuilt from the reviewed plan so a saved job reports exactly what it applied. */
 export function reportFromPlan(plan: ImportPlan, state = "dry run"): MoveInReport {
@@ -91,5 +129,16 @@ export function reportFromPlan(plan: ImportPlan, state = "dry run"): MoveInRepor
   const { unavailable: unavailableAddresses } = resolvePublicAddresses(candidates);
   const limits=metadata?.raw?.subscriberCapacity?.summaries ?? [];
   const reconciliation = sorryRowReconciliation(plan);
-  return { limits, cutover: cutoverFromPlan(plan, metadata?.raw?.asOf ?? ""), unavailableAddresses, state, asOf: metadata?.raw?.asOf ?? "", fingerprint: plan.fingerprint, counts, items, ...(reconciliation ? { reconciliation } : {}) };
+  type PackedField = [number, string, number, string?, string?];
+  const dictionary = (plan.entries.find(entry => entry.source.kind === "metadata")?.source.payload as {
+    fieldLedgerDictionary?: { files: string[]; rules: Array<Pick<SorryField, "outcome" | "reason" | "action" | "target">> }
+  } | undefined)?.fieldLedgerDictionary;
+  const fieldLedger = plan.namespace === "sorry" ? plan.entries.flatMap(entry => entry.erased ? [] :
+    ((entry.source.payload as { fieldLedger?: Array<SorryField | PackedField> }).fieldLedger ?? []).map(field => {
+      if (!Array.isArray(field)) return field; // Earlier full-row ledger format.
+      if (!dictionary?.rules[field[2]] || !dictionary.files[field[0]]) throw new Error("The saved field ledger is incomplete.");
+      return { ...dictionary.rules[field[2]], file: dictionary.files[field[0]], path: field[1],
+        kind: field[3] ?? entry.source.kind, sourceId: field[4] ?? entry.source.sourceId };
+    })) : undefined;
+  return { ...(fieldLedger ? { fieldLedger } : {}), limits, cutover: cutoverFromPlan(plan, metadata?.raw?.asOf ?? ""), unavailableAddresses, state, asOf: metadata?.raw?.asOf ?? "", fingerprint: plan.fingerprint, counts, items, ...(reconciliation ? { reconciliation } : {}) };
 }

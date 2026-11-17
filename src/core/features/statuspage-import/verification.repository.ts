@@ -4,6 +4,7 @@ import { attachmentHash } from '../../../../modules/import-kit/src/provenance/id
 import type { ProvenanceRow } from '../../../../modules/import-kit/src/types';
 import type { NativeValue } from './rows';
 import { sorryRowReconciliation } from './reconciliation';
+import { reportFromPlan } from './planning';
 import { moveInPlan } from './door-plan';
 
 /** The policy describes the real version-1 mapping; its implementation is bound
@@ -96,6 +97,7 @@ export async function readImportVerification(id: string, context: D1ImportContex
     counts: plan.counts,
     mapping: { version: plan.mappingVersion, policy: mappingPolicy, policySha256: sha256(mappingPolicy) },
     reconciliation: { rows: comparison(manifests.rows.source, manifests.rows.target), provenance: comparison(manifests.provenance.source, manifests.provenance.target), attachments: comparison(manifests.attachments.source, manifests.attachments.target) },
+    ...(plan.entries.some(entry => (entry.source.payload as { fieldLedger?: unknown }).fieldLedger) ? { fieldLedger: reportFromPlan(plan).fieldLedger } : {}),
     rowReconciliation: sorryRowReconciliation(moveInPlan(plan)) ?? null,
     unmapped: { count: items.length, itemManifestSha256: digest(items), items },
     sourceCounts: entityCounts(expectedRows), nativeCounts: entityCounts(actualRows), manifests, differences, notifications,

@@ -1,0 +1,55 @@
+{
+  "author": "Run Edit Run fleet",
+  "reviewedAt": "2026-11-17",
+  "provenance": "Documentation-derived synthetic examples; no real account, export, provider request, signature or verification promotion.",
+  "references": [
+    {
+      "url": "https://docs.sorryapp.com/v1/status-pages",
+      "facts": "REST page response object; timezone, support, metadata, locale and notification settings."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/components",
+      "facts": "REST response/count envelope; numeric component identities, recursive parent_id, order, state, description and timestamps."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/notices",
+      "facts": "REST notice types, lifecycles, timing, synopsis, tags, scheduled automation and include=components,updates."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/notice-updates",
+      "facts": "REST progress updates document content, should_publish, link and timestamps; authored lifecycle is absent."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/subscribers",
+      "facts": "REST subscribers use 500 records per page; component preferences, notification channels and profile metadata."
+    },
+    {
+      "url": "https://status.sorryapp.com/api",
+      "facts": "Documentation page only: public page/components/notices/detail envelopes, metrics summaries, pagination of at most25 and same-origin next_page."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/branding",
+      "facts": "Separate /brand response resource; explicitly refused fixture."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/custom-domain",
+      "facts": "Separate /custom_domain response resource; explicitly refused fixture."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/notice-templates",
+      "facts": "Separate notice_templates response and pagination; explicitly refused fixture."
+    },
+    {
+      "url": "https://docs.sorryapp.com/v1/update-templates",
+      "facts": "Separate update_templates response and pagination; explicitly refused fixture."
+    }
+  ],
+  "intentionalSyntheticExtensions": [
+    "future_metadata nested structures, including RFC6901 slash/tilde escaping and empty arrays/objects, are invented forward-compatibility probes; they are not documented Sorry fields.",
+    "confirmed=false and unsubscribed=true are synthetic safety probes in passthrough subscriber fields, not claims about a documented consent authority.",
+    "One subscriber preference references a missing component, one omits preferences and one email is invalid; these are refusal probes.",
+    "Unusually long documented text fields exercise visible truncation accounting rather than asserting provider size limits.",
+    "Filename conventions are Lamp saved-response upload conventions; resources and envelopes follow the cited incumbent documentation."
+  ],
+  "use": "Upload only one of authenticated/ or public/. Add each unsupported/ file separately to prove explicit refusal; expected-inventory.json, manifest.json and sources.json are independent test metadata, not provider responses."
+}
