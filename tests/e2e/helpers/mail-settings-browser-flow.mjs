@@ -84,6 +84,7 @@ export async function mailSettingsBrowserFlow(t){
       const configured = (await api('/api/app/mail-settings')).body;
       assert.equal(configured.local, false);
       assert.equal(configured.primaryProvider, bindings.MAIL_PROVIDER);
+      await expect(page.getByRole('textbox', { name: 'From email', exact: true })).toBeVisible();
       const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
       await expect(emailStatus).toHaveAttribute('data-mail-mode', 'configured');
       await expect(emailStatus).toHaveAttribute('data-provider', configured.primaryProvider);

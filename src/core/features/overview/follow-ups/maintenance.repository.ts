@@ -10,6 +10,7 @@ SELECT 'maintenance-start:' || m.id AS id,'maintenance-start' AS kind,
 FROM maintenance m LEFT JOIN maintenance_automation a ON a.maintenance_id=m.id
 LEFT JOIN oa_operators o ON o.id=m.created_by_operator_id AND o.status='active'
 CROSS JOIN follow_up_clock c WHERE m.state='Scheduled'
+  AND (COALESCE(a.auto_start,1)=0 OR julianday(m.starts_at)<=julianday(c.now))
 UNION ALL
 SELECT 'maintenance-end:' || m.id,'maintenance-end',m.reference || ': complete maintenance — ' || m.title,
   o.id,o.display_name,m.ends_at,'Complete or cancel the maintenance window.',
@@ -19,6 +20,7 @@ SELECT 'maintenance-end:' || m.id,'maintenance-end',m.reference || ': complete m
 FROM maintenance m LEFT JOIN maintenance_automation a ON a.maintenance_id=m.id
 LEFT JOIN oa_operators o ON o.id=m.created_by_operator_id AND o.status='active'
 CROSS JOIN follow_up_clock c WHERE m.state IN ('Scheduled','In progress')
+  AND (COALESCE(a.auto_complete,1)=0 OR (m.state='In progress' AND julianday(m.ends_at)<julianday(c.now)))
 UNION ALL
 SELECT 'maintenance-reminder:' || m.id,'maintenance-reminder',m.reference || ': subscriber reminder — ' || m.title,
   o.id,o.display_name,strftime('%Y-%m-%dT%H:%M:%fZ',m.starts_at,'-24 hours'),
@@ -28,6 +30,7 @@ SELECT 'maintenance-reminder:' || m.id,'maintenance-reminder',m.reference || ': 
   '/app/maintenance',json_array(m.id,m.starts_at,julianday(m.starts_at,'-24 hours')<=julianday(c.now))
 FROM maintenance m LEFT JOIN oa_operators o ON o.id=m.created_by_operator_id AND o.status='active'
 CROSS JOIN follow_up_clock c WHERE m.state='Scheduled' AND julianday(m.starts_at)>julianday(c.now)
+  AND julianday(m.starts_at,'-24 hours')<=julianday(c.now)
   AND NOT EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind='reminder')
 UNION ALL
 SELECT 'maintenance-overrun:' || m.id,'maintenance-overrun',m.reference || ': maintenance overrun — ' || m.title,

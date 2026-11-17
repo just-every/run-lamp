@@ -21,7 +21,7 @@ export async function maintenanceBrowserFlow({ page, appUrl, pageUrl, api, scree
   const maintenance = (await api('/api/app/maintenance', 'POST', input)).maintenance;
   await page.goto(`${appUrl}/app`); await operatorHydrated(page);
   const incidents = page.getByRole('region', { name: 'Active incidents', exact: true });
-  const upcoming = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Upcoming maintenance', exact: true }) });
+  const upcoming = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Scheduled', exact: true }) });
   await incidents.getByText(`${incident.reference} · ${incident.title}`, { exact: true }).waitFor();
   await upcoming.getByText(maintenance.title, { exact: true }).waitFor();
   assert.ok(!(await incidents.textContent()).includes(maintenance.title));
