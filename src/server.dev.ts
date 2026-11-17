@@ -30,7 +30,7 @@ export default {
       response = new Response(html.replace(/(<title[^>]*>)([\s\S]*?) Dev(<\/title>)/i, '$1$2$3').replace(/<style data-rer-label="Dev"[^>]*>[\s\S]*?<\/style><script>[\s\S]*?<\/script>/g, ''), { status: response.status, headers });
       if (['/signin', '/__dev/key'].includes(new URL(request.url).pathname)) {
         const page = await createPageSettingsRepository(bindings.DB).get();
-        response = installationSignIn(response, page?.pageName ?? 'Lamp', true, new URL(request.url).pathname === '/__dev/key');
+        response = await installationSignIn(response, page?.pageName ?? 'Lamp', true, new URL(request.url).pathname === '/__dev/key');
       }
     }
     return response;

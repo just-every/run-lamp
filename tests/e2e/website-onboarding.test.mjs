@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { chromium } from 'playwright';
+import { createRedaction } from '@runeditrun/rer/redaction';
 import { contract } from '../contract.mjs';
 import { nativeRequest, openNativeRuntime, origin, publicOrigin } from '../dev-ingress/runtime.mjs';
 import { devKey, devKeyHeaders } from '../helpers/dev-key.mjs';
@@ -76,7 +77,9 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
       await lost.getByRole('button', { name: "Skip, I'll fill it in", exact: true }).click();
       await lost.getByRole('button', { name: 'Open Lamp', exact: true }).click();
       await lost.waitForURL('**/app', { timeout: 120_000 });
-      assert.equal((await (await nativeRequest('/api/app/page-settings', { cookie })).json()).settings.timezone, 'UTC', 'an unresolvable zone opens Lamp on UTC');
+      // The synchronous Wrangler reset below blocks Node from processing idle-socket closure.
+      // Close this fixture connection before the reset; each following request still runs once.
+      assert.equal((await (await nativeRequest('/api/app/page-settings', { cookie, headers: { Connection: 'close' } })).json()).settings.timezone, 'UTC', 'an unresolvable zone opens Lamp on UTC');
       await unknown.close();
       freshOwner();
     }
@@ -239,6 +242,13 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     await page.waitForURL(url => url.pathname === '/app');
     await page.locator('.operator-shell[data-hydrated]').waitFor();
     assert.equal(await page.getByText('Welcome', { exact: true }).count(), 0, 'client navigation cannot reopen completed first-run setup');
+  } catch (error) {
+    const redaction = createRedaction();
+    redaction.addSecrets(Object.values(runtime.env).filter(value => typeof value === 'string' && value.length > 5));
+    const output = redaction.redact(runtime.output).replace(/https?:\/\/[^\s<>]+/g, value => value.split('?')[0]);
+    console.error('Setup runtime diagnostics:', output);
+    console.error('Setup transport cause:', error?.cause?.code ?? error?.cause?.message ?? 'none');
+    throw error;
   } finally {
     await browser?.close(); await runtime.close();
     await new Promise(resolve => site.close(resolve));
