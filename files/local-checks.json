@@ -1,0 +1,57 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/validate-release.mjs"
+    ],
+    "started_at": "2026-11-17T07:11:57.470426+00:00",
+    "finished_at": "2026-11-17T07:11:58.896667+00:00",
+    "exit_code": 0,
+    "log": "local-check-1.log"
+  },
+  {
+    "command": [
+      "pnpm",
+      "run",
+      "typecheck"
+    ],
+    "started_at": "2026-11-17T07:11:58.896831+00:00",
+    "finished_at": "2026-11-17T07:12:26.745399+00:00",
+    "exit_code": 0,
+    "log": "local-check-2.log"
+  },
+  {
+    "command": [
+      "node",
+      "src/base/contract-docs.mjs",
+      "check"
+    ],
+    "started_at": "2026-11-17T07:12:26.751602+00:00",
+    "finished_at": "2026-11-17T07:12:27.357995+00:00",
+    "exit_code": 0,
+    "log": "local-check-3.log"
+  },
+  {
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "started_at": "2026-11-17T07:12:27.358061+00:00",
+    "finished_at": "2026-11-17T07:12:28.195296+00:00",
+    "exit_code": 0,
+    "log": "local-check-4.log"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "started_at": "2026-11-17T07:12:28.195377+00:00",
+    "finished_at": "2026-11-17T07:12:28.219396+00:00",
+    "exit_code": 0,
+    "log": "local-check-5.log"
+  }
+]

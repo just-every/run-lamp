@@ -1,0 +1,46 @@
+{
+  "author": "Run Edit Run fleet",
+  "recorded_at": "2026-11-17T07:14:03.732224+00:00",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-release-1-11-22",
+  "head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+  "tree": "22f5fff0ef0da2a82fb8a4c00227e82d68e4b576",
+  "base": "e569004dcd02b3453a9dbf1c8cbdaccb5d4f5528",
+  "published_predecessor": "4d0675dbe51e2a86f69a8112b153baaf3fd91094",
+  "new_migrations": [],
+  "migration_count_before": 80,
+  "migration_count_after": 80,
+  "retained_history": [
+    {
+      "source": "v1.11.21:RELEASE.json",
+      "retained": "release-history/1.11.21.json",
+      "sha256": "179b367fb9a62f4893e147b9cee60eea6e1a66fc88a5ba6f8c06268d7cba9ee7"
+    },
+    {
+      "source": "v1.11.21:CONTRACT.md",
+      "retained": "release-history/1.11.21.CONTRACT.md",
+      "sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd"
+    }
+  ],
+  "changed_files": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.21.CONTRACT.md",
+    "release-history/1.11.21.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "diff_stat": "8 files changed, 3479 insertions(+), 12 deletions(-)",
+  "worktree_clean": true,
+  "product_push": "success",
+  "product_ref": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485\trefs/heads/cloud/sd-lamp-release-1-11-22",
+  "pr_created": false,
+  "base_refreshed": false,
+  "tag_created": false,
+  "github_release_created": false,
+  "publication_scan": "deferred to fleet Mac gate per cloud instructions",
+  "local_node": "v24.19.0",
+  "local_pnpm": "10.12.4"
+}

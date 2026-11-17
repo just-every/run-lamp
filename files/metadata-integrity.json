@@ -1,0 +1,12 @@
+{
+  "history_byte_identical": true,
+  "notes_match_changelog": true,
+  "previousVersion": "1.11.21",
+  "migrations": [],
+  "contractChanges": {},
+  "rer_package": "0.2.121",
+  "rer_lock": "0.2.121",
+  "implementation_and_tests_unchanged": true,
+  "diff_credential_shape_check": "pass",
+  "base": "e569004dcd02b3453a9dbf1c8cbdaccb5d4f5528"
+}
