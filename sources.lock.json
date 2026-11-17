@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "7daef7b748b9bb2d3bae393c01e4bbbaf9e871e6875db4fc47c1600ca115a0f9",
+      "sha256": "0e29d4b325434b2074e17e571b2b39ff4468faec4d7fa51abbffd76419dc6ac5",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -5908,7 +5908,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/routes.ts": {
-      "sha256": "266a9cf8e99662bb21fde04c0b589edc4e8b9ee5cf6a4070a8094616cfd33093",
+      "sha256": "3a25d79e498b229afc4e343e6939359ea29fd5f4995d948ab4b442b90ea08b02",
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
@@ -8624,7 +8624,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "ae670fdbf112102bd2d8c45e5e2181e9d0658f1c868d1bd52009d410c8d5355c",
+      "sha256": "b1189a942d8e2cdf01688314d2f30f8eff9b283d689ee1f1f31c463b88b6df78",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
