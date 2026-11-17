@@ -1,0 +1,51 @@
+{
+  "response": {
+    "id": 2046,
+    "type": "planned",
+    "subject": "synthetic-lamp-47 planned notice",
+    "state": "complete",
+    "timeline_state": "past_distant",
+    "link": "https://status.example.invalid/notices/synthetic-lamp-47",
+    "synopsis": "Synthetic planned notice 47: review is underway.",
+    "created_at": "2025-01-03T08:00:00.000Z",
+    "updated_at": "2025-01-03T08:30:00.000Z",
+    "began_at": "2025-01-03T08:00:00.000Z",
+    "ended_at": "2025-01-03T08:30:00.000Z",
+    "begins_at": "2025-01-03T08:00:00.000Z",
+    "ends_at": "2025-01-03T08:30:00.000Z",
+    "should_automate_schedule": true,
+    "tag_list": [
+      "synthetic-lamp-1",
+      "maintenance"
+    ],
+    "components": [
+      {
+        "id": 1050,
+        "name": "synthetic-lamp-51",
+        "description": "Synthetic service 51; no production data.",
+        "state": "operational",
+        "parent_id": 1003,
+        "created_at": "2025-01-01T10:00:00.000Z",
+        "updated_at": "2025-01-01T10:00:00.000Z"
+      }
+    ],
+    "updates": [
+      {
+        "id": 30460,
+        "content": "Synthetic planned notice 47: review is underway.",
+        "created_at": "2025-01-03T08:00:00.000Z",
+        "updated_at": "2025-01-03T08:00:00.000Z",
+        "should_publish": true,
+        "link": "https://status.example.invalid/notices/synthetic-lamp-47#update-30460"
+      },
+      {
+        "id": 30461,
+        "content": "Synthetic planned notice 47: this is the final saved update.",
+        "created_at": "2025-01-03T08:30:00.000Z",
+        "updated_at": "2025-01-03T08:30:00.000Z",
+        "should_publish": false,
+        "link": "https://status.example.invalid/notices/synthetic-lamp-47#update-30461"
+      }
+    ]
+  }
+}

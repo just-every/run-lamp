@@ -3,7 +3,7 @@ import { canonicalJson, sha256 } from "../../../../../modules/import-kit/src/d1/
 import { safeValue } from "../../../../../modules/import-kit/src/readers/records.ts";
 import type { Json, SourceArtifact } from "../../../../../modules/import-kit/src/types.ts";
 import type { SavedFile } from "../source.ts";
-import { assertSorrySafe, parseSorryJson, retainedSorry } from "./json.ts";
+import { assertSorrySafe, parseSorryJson, retainedSorry, sorryFieldInventory, SorryFieldRefusal } from "./json.ts";
 import { componentSchema, managementPageSchema, nextPublicPage, noticeSchema, object, publicPageSchema, publicUrl, sorryLimits, subscriberSchema, updateSchema, type ObjectValue } from "./schema.ts";
 
 type SavedRow = { raw: ObjectValue; origin: SourceArtifact };
@@ -26,7 +26,7 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
     if (records > sorryLimits.maxRecords || new TextEncoder().encode(JSON.stringify(value)).length > sorryLimits.maxRecordBytes) throw new Error("Sorry source record count or record size exceeds its limit; nothing was truncated.");
   };
   for (const file of files) {
-    if (envelopes.has(file.name) || !/^sorry-(?:status|page|components(?:-[1-9][0-9]*)?|notices(?:-[1-9][0-9]*)?|subscribers(?:-[1-9][0-9]*)?|notice-[0-9]+(?:-updates(?:-[1-9][0-9]*)?)?)\.json$/u.test(file.name)) throw new Error("Unsupported or duplicate Sorry saved-response filename.");
+    if (envelopes.has(file.name) || !/^sorry-(?:status|page|components(?:-[1-9][0-9]*)?|notices(?:-[1-9][0-9]*)?|subscribers(?:-[1-9][0-9]*)?|notice-[0-9]+(?:-updates(?:-[1-9][0-9]*)?)?)\.json$/u.test(file.name)) throw new Error(file.name + ":/ (all fields refused): unsupported or duplicate Sorry resource file; no fields were imported. Remove it and recreate that resource separately before reviewing again.");
     try {
       const value = object(parseSorryJson(file.text));
       const hasChannels = assertSorrySafe(value, undefined, /^sorry-subscribers(?:-[1-9][0-9]*)?\.json$/u.test(file.name));
@@ -37,7 +37,7 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
         ? { name: file.name, sha256: sha256(file.text), size: new TextEncoder().encode(file.text).length }
         : (await readFileSource({ namespace: "sorry", name: file.name, bytes: new TextEncoder().encode(file.text), format: "json", parse: () => ({ kind: "response", sourceId: file.name, payload: retainedSorry(value) }) }, { ...sorryLimits, maxRecordBytes: sorryLimits.maxBytes })).artifacts[0];
       envelopes.set(file.name, { value, origin }); artifacts.push(origin);
-    } catch { throw new Error(`${file.name}: invalid Sorry JSON, credential-bearing response or unsupported source size.`); }
+    } catch (error) { if (error instanceof SorryFieldRefusal) throw new Error(file.name + error.message); throw new Error(`${file.name}: invalid Sorry JSON, credential-bearing response or unsupported source size.`); }
   }
   const isPublic = envelopes.has("sorry-status.json");
   if (isPublic === envelopes.has("sorry-page.json")) throw new Error("Include exactly one sorry-status.json public response or sorry-page.json authenticated response.");
@@ -119,5 +119,13 @@ export async function readSorryFiles(files: SavedFile[], pageId?: string, captur
     Object.values(raw).forEach(checkPage);
   }
   for (const { raw } of [...components, ...notices, ...subscribers, ...details.values(), ...[...updates.values()].flat()]) checkPage(raw);
-  return { isPublic, page, pageUrl: sourceUrl, components, notices, subscribers, details, updates, artifacts };
+  const groupIds = new Set(components.flatMap(({ raw }) => raw.parent_id ? [String(raw.parent_id)] : []));
+  const fieldLedger = sorryFieldInventory([...envelopes].map(([name, { value }]) => ({ name, value })), groupIds);
+  // Preserve safe envelope/page fields even when channel capabilities prevent
+  // retaining original subscriber bytes. Entity bodies live in source records.
+  const fieldMetadata = Object.fromEntries([...envelopes].map(([name, { value }]) => [name,
+    retainedSorry(Object.fromEntries(Object.entries(value).filter(([key]) =>
+      !["response", "components", "notices", "subscribers", "notice"].includes(key) ||
+      name === "sorry-page.json" && key === "response")))]));
+  return { fieldLedger, fieldMetadata, isPublic, page, pageUrl: sourceUrl, components, notices, subscribers, details, updates, artifacts };
 }

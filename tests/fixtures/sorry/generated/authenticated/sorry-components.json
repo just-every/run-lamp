@@ -1,0 +1,575 @@
+{
+  "response": [
+    {
+      "id": 1000,
+      "name": "synthetic-lamp-1 group ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg",
+      "description": "Synthetic service 1; no production data.",
+      "state": "operational",
+      "parent_id": null,
+      "position": 1,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1001,
+      "name": "synthetic-lamp-2",
+      "description": "Synthetic service 2; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 2,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1002,
+      "name": "synthetic-lamp-3",
+      "description": "Synthetic service 3; no production data.",
+      "state": "operational",
+      "parent_id": null,
+      "position": 3,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1003,
+      "name": "synthetic-lamp-4",
+      "description": "Synthetic service 4; no production data.",
+      "state": "operational",
+      "parent_id": null,
+      "position": 4,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1004,
+      "name": "synthetic-lamp-5 service nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+      "description": "synthetic-lamp-5 description dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 5,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z",
+      "future_metadata": {
+        "nested": {
+          "owner/note~text": "synthetic-lamp-5 unknown field",
+          "flags": [
+            true,
+            false
+          ],
+          "empty": {}
+        }
+      }
+    },
+    {
+      "id": 1005,
+      "name": "synthetic-lamp-6",
+      "description": "Synthetic service 6; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 6,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1006,
+      "name": "synthetic-lamp-7",
+      "description": "Synthetic service 7; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 7,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1007,
+      "name": "synthetic-lamp-8",
+      "description": "Synthetic service 8; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 8,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1008,
+      "name": "synthetic-lamp-9",
+      "description": "Synthetic service 9; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 9,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1009,
+      "name": "synthetic-lamp-10",
+      "description": "Synthetic service 10; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 10,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1010,
+      "name": "synthetic-lamp-11",
+      "description": "Synthetic service 11; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 11,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1011,
+      "name": "synthetic-lamp-12",
+      "description": "Synthetic service 12; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 12,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1012,
+      "name": "synthetic-lamp-13",
+      "description": "Synthetic service 13; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 13,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1013,
+      "name": "synthetic-lamp-14",
+      "description": "Synthetic service 14; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 14,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1014,
+      "name": "synthetic-lamp-15",
+      "description": "Synthetic service 15; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 15,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1015,
+      "name": "synthetic-lamp-16",
+      "description": "Synthetic service 16; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 16,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1016,
+      "name": "synthetic-lamp-17",
+      "description": "Synthetic service 17; no production data.",
+      "state": "operational",
+      "parent_id": 1001,
+      "position": 17,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1017,
+      "name": "synthetic-lamp-18",
+      "description": "Synthetic service 18; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 18,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1018,
+      "name": "synthetic-lamp-19",
+      "description": "Synthetic service 19; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 19,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1019,
+      "name": "synthetic-lamp-20",
+      "description": "Synthetic service 20; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 20,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1020,
+      "name": "synthetic-lamp-21",
+      "description": "Synthetic service 21; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 21,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1021,
+      "name": "synthetic-lamp-22",
+      "description": "Synthetic service 22; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 22,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1022,
+      "name": "synthetic-lamp-23",
+      "description": "Synthetic service 23; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 23,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1023,
+      "name": "synthetic-lamp-24",
+      "description": "Synthetic service 24; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 24,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1024,
+      "name": "synthetic-lamp-25",
+      "description": "Synthetic service 25; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 25,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1025,
+      "name": "synthetic-lamp-26",
+      "description": "Synthetic service 26; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 26,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1026,
+      "name": "synthetic-lamp-27",
+      "description": "Synthetic service 27; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 27,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1027,
+      "name": "synthetic-lamp-28",
+      "description": "Synthetic service 28; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 28,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1028,
+      "name": "synthetic-lamp-29",
+      "description": "Synthetic service 29; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 29,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1029,
+      "name": "synthetic-lamp-30",
+      "description": "Synthetic service 30; no production data.",
+      "state": "operational",
+      "parent_id": 1000,
+      "position": 30,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1030,
+      "name": "synthetic-lamp-31",
+      "description": "Synthetic service 31; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 31,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1031,
+      "name": "synthetic-lamp-32",
+      "description": "Synthetic service 32; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 32,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1032,
+      "name": "synthetic-lamp-33",
+      "description": "Synthetic service 33; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 33,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1033,
+      "name": "synthetic-lamp-34",
+      "description": "Synthetic service 34; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 34,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1034,
+      "name": "synthetic-lamp-35",
+      "description": "Synthetic service 35; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 35,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1035,
+      "name": "synthetic-lamp-36",
+      "description": "Synthetic service 36; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 36,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1036,
+      "name": "synthetic-lamp-37",
+      "description": "Synthetic service 37; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 37,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1037,
+      "name": "synthetic-lamp-38",
+      "description": "Synthetic service 38; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 38,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1038,
+      "name": "synthetic-lamp-39",
+      "description": "Synthetic service 39; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 39,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1039,
+      "name": "synthetic-lamp-40",
+      "description": "Synthetic service 40; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 40,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1040,
+      "name": "synthetic-lamp-41",
+      "description": "Synthetic service 41; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 41,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1041,
+      "name": "synthetic-lamp-42",
+      "description": "Synthetic service 42; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 42,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1042,
+      "name": "synthetic-lamp-43",
+      "description": "Synthetic service 43; no production data.",
+      "state": "operational",
+      "parent_id": 1002,
+      "position": 43,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1043,
+      "name": "synthetic-lamp-44",
+      "description": "Synthetic service 44; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 44,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1044,
+      "name": "synthetic-lamp-45",
+      "description": "Synthetic service 45; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 45,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1045,
+      "name": "synthetic-lamp-46",
+      "description": "Synthetic service 46; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 46,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1046,
+      "name": "synthetic-lamp-47",
+      "description": "Synthetic service 47; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 47,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1047,
+      "name": "synthetic-lamp-48",
+      "description": "Synthetic service 48; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 48,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1048,
+      "name": "synthetic-lamp-49",
+      "description": "Synthetic service 49; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 49,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1049,
+      "name": "synthetic-lamp-50",
+      "description": "Synthetic service 50; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 50,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1050,
+      "name": "synthetic-lamp-51",
+      "description": "Synthetic service 51; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 51,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1051,
+      "name": "synthetic-lamp-52",
+      "description": "Synthetic service 52; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 52,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1052,
+      "name": "synthetic-lamp-53",
+      "description": "Synthetic service 53; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 53,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1053,
+      "name": "synthetic-lamp-54",
+      "description": "Synthetic service 54; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 54,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1054,
+      "name": "synthetic-lamp-55",
+      "description": "Synthetic service 55; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 55,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 1055,
+      "name": "synthetic-lamp-56",
+      "description": "Synthetic service 56; no production data.",
+      "state": "operational",
+      "parent_id": 1003,
+      "position": 56,
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    }
+  ],
+  "count": 56
+}

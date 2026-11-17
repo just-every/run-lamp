@@ -1,0 +1,61 @@
+{
+  "notice": {
+    "id": 2049,
+    "type": "planned",
+    "subject": "synthetic-lamp-50 planned notice",
+    "state": "cancelled",
+    "timeline_state": "future",
+    "url": "https://status.example.invalid/notices/synthetic-lamp-50",
+    "created_at": "2025-01-03T11:00:00.000Z",
+    "updated_at": "2025-01-03T11:30:00.000Z",
+    "began_at": null,
+    "ended_at": null,
+    "begins_at": "2099-01-01T10:00:00.000Z",
+    "ends_at": "2099-01-01T11:00:00.000Z",
+    "tag_list": [
+      "synthetic-lamp-1",
+      "maintenance"
+    ],
+    "impact_time": {
+      "seconds": 0,
+      "words": "0 seconds"
+    },
+    "links": {
+      "self": "/api/v1/notices/2049"
+    },
+    "components": [
+      {
+        "id": 1053,
+        "name": "synthetic-lamp-54",
+        "description": "Synthetic service 54; no production data.",
+        "state": "operational",
+        "parent_id": 1003,
+        "created_at": "2025-01-01T10:00:00.000Z",
+        "updated_at": "2025-01-01T10:00:00.000Z"
+      }
+    ],
+    "updates": [
+      {
+        "id": 30490,
+        "content": "Synthetic planned notice 50: review is underway.",
+        "state": "underway",
+        "created_at": "2025-01-03T11:00:00.000Z",
+        "updated_at": "2025-01-03T11:00:00.000Z"
+      },
+      {
+        "id": 30491,
+        "content": "Synthetic planned notice 50: this is the final saved update.",
+        "state": "cancelled",
+        "created_at": "2025-01-03T11:30:00.000Z",
+        "updated_at": "2025-01-03T11:30:00.000Z"
+      }
+    ],
+    "latest_update": {
+      "id": 30491,
+      "content": "Synthetic planned notice 50: this is the final saved update.",
+      "state": "cancelled",
+      "created_at": "2025-01-03T11:30:00.000Z",
+      "updated_at": "2025-01-03T11:30:00.000Z"
+    }
+  }
+}

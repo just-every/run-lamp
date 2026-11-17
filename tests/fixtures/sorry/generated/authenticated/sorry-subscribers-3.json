@@ -1,0 +1,92 @@
+{
+  "response": [
+    {
+      "id": 41000,
+      "email": "synthetic-lamp-1001@example.invalid",
+      "notify_by_email": true,
+      "phone_number": null,
+      "slack_webhook_url": null,
+      "microsoft_teams_url": null,
+      "notify_by_phone_number": false,
+      "notify_by_slack_webhook_url": false,
+      "notify_by_legacy_slack_oauth_token": false,
+      "notify_by_microsoft_teams_url": false,
+      "notify_by_google_chat_space": false,
+      "first_name": "Synthetic 1001",
+      "last_name": "Lamp",
+      "nickname": "synthetic-lamp-1001",
+      "company": "Synthetic Lamp Company",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "operations"
+      ],
+      "avatar_url": "https://assets.example.invalid/synthetic-lamp-1001.png",
+      "components": [
+        {
+          "id": 1016
+        }
+      ],
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 41001,
+      "email": "synthetic-lamp-1002@example.invalid",
+      "notify_by_email": true,
+      "phone_number": null,
+      "slack_webhook_url": null,
+      "microsoft_teams_url": null,
+      "notify_by_phone_number": false,
+      "notify_by_slack_webhook_url": false,
+      "notify_by_legacy_slack_oauth_token": false,
+      "notify_by_microsoft_teams_url": false,
+      "notify_by_google_chat_space": false,
+      "first_name": "Synthetic 1002",
+      "last_name": "Lamp",
+      "nickname": "synthetic-lamp-1002",
+      "company": "Synthetic Lamp Company",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "billing"
+      ],
+      "avatar_url": "https://assets.example.invalid/synthetic-lamp-1002.png",
+      "components": [
+        {
+          "id": 1017
+        }
+      ],
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    },
+    {
+      "id": 41002,
+      "email": "synthetic-lamp-1003@example.invalid",
+      "notify_by_email": true,
+      "phone_number": null,
+      "slack_webhook_url": null,
+      "microsoft_teams_url": null,
+      "notify_by_phone_number": false,
+      "notify_by_slack_webhook_url": false,
+      "notify_by_legacy_slack_oauth_token": false,
+      "notify_by_microsoft_teams_url": false,
+      "notify_by_google_chat_space": false,
+      "first_name": "Synthetic 1003",
+      "last_name": "Lamp",
+      "nickname": "synthetic-lamp-1003",
+      "company": "Synthetic Lamp Company",
+      "tag_list": [
+        "synthetic-lamp-1",
+        "operations"
+      ],
+      "avatar_url": "https://assets.example.invalid/synthetic-lamp-1003.png",
+      "components": [
+        {
+          "id": 1018
+        }
+      ],
+      "created_at": "2025-01-01T10:00:00.000Z",
+      "updated_at": "2025-01-01T10:00:00.000Z"
+    }
+  ],
+  "count": 3
+}

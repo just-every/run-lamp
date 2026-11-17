@@ -62,3 +62,17 @@ export function nextPublicPage(value: unknown, path: string, current: number, or
   if (params.length !== 1 || params[0][0] !== "page" || params[0][1] !== String(current + 1)) throw new SorryReadError("invalid", "Sorry pagination is incomplete, cyclic or filtered.");
   return `${path}?page=${current + 1}`;
 }
+
+/** A value-free accounting of every supplied JSON leaf (including empty
+ * containers). Paths are RFC 6901 pointers within the named response file. */
+export type SorryFieldOutcome = "mapped" | "changed" | "raw-only" | "deleted" | "refused";
+export interface SorryField {
+  file: string;
+  path: string;
+  kind: string;
+  sourceId: string;
+  outcome: SorryFieldOutcome;
+  reason: string;
+  action: string;
+  target?: string;
+}

@@ -1,0 +1,36 @@
+{
+  "response": {
+    "id": "synthetic-lamp-1",
+    "name": "Synthetic Lamp service status",
+    "endpoint": "synthetic-lamp-1.sorryapp.com",
+    "state": "operational",
+    "timezone": "America/New_York",
+    "support_email": "synthetic-lamp-1@example.invalid",
+    "support_telephone": "+12025550123",
+    "support_url": "https://help.example.invalid/synthetic-lamp-1",
+    "visible_to_search": false,
+    "meta_title": "Synthetic Lamp status",
+    "meta_description": "Generated fixture, not a real export.",
+    "google_analytics_id": null,
+    "timeline_threshold": 604800,
+    "timeline_threshold_in_days": 7,
+    "timeline_sort_order": "asc",
+    "locale": "en",
+    "send_notifications_by_email": true,
+    "send_notifications_by_sms": true,
+    "send_notifications_by_slack": true,
+    "send_notifications_by_microsoft_teams": true,
+    "send_notifications_by_twitter": false,
+    "created_at": "2025-01-01T10:00:00.000Z",
+    "updated_at": "2025-01-01T10:00:00.000Z",
+    "future_metadata": {
+      "nested": {
+        "owner": "synthetic-lamp-1",
+        "empty": {},
+        "labels": [
+          "synthetic-lamp-1"
+        ]
+      }
+    }
+  }
+}
