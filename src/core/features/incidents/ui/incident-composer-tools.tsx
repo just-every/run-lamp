@@ -4,8 +4,8 @@ import type { CheckedSuggestion } from "../../ai/service";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 
-export function PreviewCard({ title, heading, lifecycle, fields, logoUrl, logoAlt }: { title: string; heading: string; lifecycle: string | null; fields: Array<{ label: string; value: string }>; logoUrl?: string; logoAlt?: string }) {
-  return <section className="preview-card"><p className="preview-type">{title}</p>{lifecycle && <span className={`state-pill state-${lifecycle.toLowerCase()}`}>{lifecycle}</span>}{logoUrl && <img className="email-preview-logo" src={logoUrl} alt={logoAlt ?? ""} />}<h3>{heading}</h3><dl>{fields.map((field, index) => <div key={`${field.label}-${index}`}><dt>{field.label}</dt><dd>{tokenizeUpdateLinks(field.value).map(token => token.kind === "https" ? <a key={token.start} href={token.href} rel="nofollow noopener ugc">{token.text}</a> : token.text)}</dd></div>)}</dl></section>;
+export function PreviewCard({ title, heading, lifecycle, fields, logoUrl, logoAlt }: { title?: string; heading: string; lifecycle: string | null; fields: Array<{ label: string; value: string; instant?: string }>; logoUrl?: string; logoAlt?: string }) {
+  return <section className="preview-card">{title ? <p className="preview-type">{title}</p> : null}{lifecycle && <span className={`state-pill state-${lifecycle.toLowerCase()}`}>{lifecycle}</span>}{logoUrl && <img className="email-preview-logo" src={logoUrl} alt={logoAlt ?? ""} />}<h3>{heading}</h3><dl>{fields.map((field, index) => <div key={`${field.label}-${index}`}><dt>{field.label}</dt><dd>{field.instant ? <time dateTime={field.instant}>{field.value}</time> : tokenizeUpdateLinks(field.value).map(token => token.kind === "https" ? <a key={token.start} href={token.href} rel="nofollow noopener ugc">{token.text}</a> : token.text)}</dd></div>)}</dl></section>;
 }
 
 export function AiSuggestionButton({ incidentId, onSuggestion, captureUpdate }: { incidentId: string; onSuggestion: (checked: CheckedSuggestion) => void; captureUpdate: () => () => boolean }) {

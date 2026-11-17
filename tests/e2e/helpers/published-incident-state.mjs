@@ -12,6 +12,7 @@ export async function publishedIncidentState({ page, composer, component, update
   const impact = page.getByRole('region', { name: 'Impact', exact: true });
   await impact.getByRole('option', { name: 'From components (Critical)', exact: true }).waitFor({ state: 'attached' });
   assert.ok((await impact.innerText()).includes('Critical'), 'the impact panel retains the peak published component impact');
+  await composer.openDraft();
   if (resolved) {
     assert.equal(await composer.publish.count(), 1, 'a resolved incident keeps its publication composer for corrections and reopening');
     assert.equal(await composer.publish.isDisabled(), true, 'an empty resolved draft cannot publish');

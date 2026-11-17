@@ -23,6 +23,10 @@ export function incidentComposer(page) {
     publish: page.getByRole("button", { name: "Publish update", exact: true }),
     status: () => page.locator('input[name="lifecycle"]:checked').inputValue(),
     setStatus: (lifecycle) => page.getByRole("radio", { name: lifecycle, exact: true }).check(),
+    openDraft: async () => {
+      const draft = page.locator('.next-draft-toggle');
+      if (await draft.getAttribute('aria-expanded') === 'false') await draft.click();
+    },
     option: (entry) => choose(page, entry),
     row: (name) => openRow(page, name),
   };
