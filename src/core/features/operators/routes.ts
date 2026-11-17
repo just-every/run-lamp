@@ -47,13 +47,28 @@ export function registerOperatorRoutes(app:Hono<AppEnv>,auth:()=>OperatorAuth,pu
     return c.json({enabled:Boolean(managementOrigin&&installationId),managementOrigin,installationId});
   });
   app.get('/api/app/operators',async c=> {await auth().listOperators(c.req.raw);return c.json({operators:await createOperatorRepository(c.env.DB).listOperators()});});
-  app.get('/api/app/operators/invited',async c=> {await auth().listOperators(c.req.raw);return c.json({operators:await createOperatorRepository(c.env.DB).listInvitedOperators()});});
+  app.get('/api/app/operators/invited', async c => {
+    const accounts = auth();
+    await accounts.listOperators(c.req.raw);
+    const operators = await createOperatorRepository(c.env.DB).listInvitedOperators();
+    const local = options.localMail === true;
+    const people = local && operators.length && c.get('operator').role === 'owner'
+      ? await accounts.oneClick?.people(c.req.raw) : null;
+    const links = new Map(people?.map(person => [person.email, new URL(person.href, c.req.url).href]));
+    c.header('Cache-Control', 'no-store');
+    return c.json({ local, operators: operators.map(operator => ({ ...operator, signInUrl: links.get(operator.email) })) });
+  });
   app.get('/api/app/operators/former',async c=> {await auth().listOperators(c.req.raw);return c.json({operators:await createOperatorRepository(c.env.DB).listFormerOperators()});});
   app.post('/api/app/operators/invite',async c=> {
     const parsed=inviteSchema.safeParse(await c.req.json().catch(()=>null));if(!parsed.success)return c.json({error:'Enter an email and name, and choose a role.'},400);
-    await (auth() as ReturnType<typeof createLampAuth>).inviteWithRole(c.req.raw,parsed.data);await createOperatorRepository(c.env.DB).recordInvitation(parsed.data.email,c.get('operator').id);
-    // Local development suppresses mail, so the panel must not say an email went out.
-    return c.json({email:options.localMail?'suppressed':'sent'},202);
+    const invitation = await (auth() as ReturnType<typeof createLampAuth>).inviteWithRole(c.req.raw, parsed.data);
+    await createOperatorRepository(c.env.DB).recordInvitation(parsed.data.email, c.get('operator').id);
+    c.header('Cache-Control', 'no-store');
+    return c.json({
+      email: invitation.delivery === 'none' ? 'suppressed' : c.env.RER_DEMO === '1' ? 'demo' : 'sent',
+      displayName: parsed.data.displayName,
+      signInUrl: options.localMail ? invitation.signInUrl : undefined,
+    }, 202);
   });
   app.post('/api/app/operators/:operatorId/role',async c=> {
     const id=idSchema.safeParse(c.req.param('operatorId'));

@@ -24,9 +24,9 @@ export function createLampAuth(env: AppBindings, mail?: MailSender, stored?: Aut
       return true;
     },
     ...(mail?.configured ? { mailSender: { async send(message) {
-      await mail.send({ from: message.from, to: message.to[0], subject: message.subject, text: message.text,
+      const receipt = await mail.send({ from: message.from, to: message.to[0], subject: message.subject, text: message.text,
         html: message.html, headers: message.headers, idempotencyKey: `operator-auth/${message.deliveryId}` });
-      return { status: 'accepted' as const, provider: 'lamp-mail', providerMessageId: null };
+      return { status: receipt.disposition === 'suppressed' ? 'development' : 'accepted', provider: 'lamp-mail', providerMessageId: null };
     } } } : {}),
   });
   const auth = nativeAuth();

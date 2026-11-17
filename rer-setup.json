@@ -52,6 +52,14 @@
       "default": "UTC"
     },
     {
+      "name": "LAMP_ACCENT_COLOR",
+      "label": "Page accent colour",
+      "kind": "colour",
+      "required": false,
+      "default": "#163c60",
+      "group": "page"
+    },
+    {
       "name": "SETUP_OPERATOR_EMAIL",
       "label": "Your operator email",
       "kind": "email",
@@ -91,14 +99,6 @@
       "required": false,
       "group": "hosting-settings",
       "help": "Online only. Enter a hostname distinct from the operator address in Hosting & connections; both custom-domain zones must be active in your Cloudflare account."
-    },
-    {
-      "name": "LAMP_ACCENT_COLOR",
-      "label": "Page accent colour",
-      "kind": "colour",
-      "required": false,
-      "default": "#163c60",
-      "group": "hosting-settings"
     },
     {
       "name": "MAIL_PROVIDER",

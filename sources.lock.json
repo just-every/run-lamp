@@ -664,7 +664,7 @@
       "executable": false
     },
     "docs/operators-and-sign-in.md": {
-      "sha256": "9646a52b39ede9bd3392ac0b4b666c03b8812f98b708eb4c2f9b19fd9cf316b9",
+      "sha256": "318273627972990e9f666396f64a61ef307a91b1612c93df8a6d39762c235f35",
       "executable": false
     },
     "docs/overview.md": {
@@ -2940,7 +2940,7 @@
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "09950eb7a3f6a4bc426a09fc8c24d07b8a5f77e38ea8dd6bd2338fcd5d867993",
+      "sha256": "d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab",
       "executable": false
     },
     "RULINGS.md": {
@@ -3848,7 +3848,7 @@
       "executable": false
     },
     "scripts/installer/bootstrap.mjs": {
-      "sha256": "200377a52e8cb0dcbd0e8c405d7d3bf97e4de632a59980131ae4a628d3beafdb",
+      "sha256": "d3daa786913274fc7e5a8864fb449887a705eabff808c39d10412735f66e8239",
       "executable": false
     },
     "scripts/installer/deploy.mjs": {
@@ -3868,7 +3868,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "c4a9ed648488df57fd4433455bfd2eabf6bfb88d7d1e0cc2de285ac48cad4e17",
+      "sha256": "50ec855c753f59cee35754b72092419d826eb60e003c8fd40a099be8531088ef",
       "executable": false
     },
     "scripts/installer/README.md": {
@@ -5448,7 +5448,7 @@
       "executable": false
     },
     "src/core/features/operators/routes.ts": {
-      "sha256": "8167c333da77e46be6271ae2a3f3b50e100c47e70aea64522193afb2fe46db1c",
+      "sha256": "00c78119ec6955fa53c786f29fdf716f31eaf370078d1079463b5ea483653345",
       "executable": false
     },
     "src/core/features/operators/ui/operator-role-select.tsx": {
@@ -5456,7 +5456,7 @@
       "executable": false
     },
     "src/core/features/operators/ui/operators-panel.tsx": {
-      "sha256": "51213ca14c8fa92d2fcc2c0e7b114b162a495092f96a2873d50a0d6e2dc26349",
+      "sha256": "8ec265e53e02dd7724edaefa76ff4a63ac805677fbaaee759ee8330b8f249d23",
       "executable": false
     },
     "src/core/features/overview/follow-ups/channel.repository.ts": {
@@ -6792,7 +6792,7 @@
       "executable": false
     },
     "src/core/platform/auth/index.ts": {
-      "sha256": "465a5df5a645399e7072e0dee3bf9b6c2c4e6c8e454da0d3811e8dc727a18101",
+      "sha256": "cbc5e176ae7472770623779f3a4cf127f415bbcefc14c0faebc8b03d3be0b498",
       "executable": false
     },
     "src/core/platform/bindings.server.ts": {
@@ -7988,7 +7988,7 @@
       "executable": false
     },
     "tests/e2e/auth-adoption-journey.test.mjs": {
-      "sha256": "74c3f7672eee51e2653e775a68283ae25bda105c972aa146a445b8904237a2ae",
+      "sha256": "cf1ac701b9d78ea4c189882098c036c01170ac3c769b7508f03fd03ef148fd24",
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
