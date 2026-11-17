@@ -19,6 +19,7 @@ import { createResponderService } from "../features/intake/responder-service";
 import { createAvailabilityReportRepository, createAvailabilityReportService } from "../features/availability-reports";
 import { createCommunicationPerformanceRepository, createCommunicationPerformanceService } from "../features/communication-performance";
 import { createIncidentImpactRepository, createIncidentImpactService } from "../features/incident-impact";
+import { isLoopbackHostname } from "../platform/development/access";
 import { brandEmail } from "../shared/email-branding";
 import { publicPageOrigin } from "./public-origin";
 import { createRetainedSnapshotCache } from "../platform/blobs/retained";
@@ -161,7 +162,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   { trafficRecovery: trafficAlerts.recovery, events: extensions.events, formatPreviewTimestamp, formatPreviewEmail: async (email) => {
     const settings = await pageSettings.get();
     if (!settings) throw new Error("Page settings are not configured.");
-    return brandEmail(email, { branding: settings.emailBranding, pageName: settings.pageName, fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey) });
+    return { ...brandEmail(email, { branding: settings.emailBranding, pageName: settings.pageName, fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey) }), deliverySuppressed: local || !mail.configured, deliveryNotice: local || isLoopbackHostname(new URL(authOrigin(bindings)).hostname) ? "This computer does not send email. A hosted page uses your sender address." : "Email is not set up. This preview will not be sent." };
   }, afterPublished: async (update) => {
     const results = await Promise.allSettled([
       notificationOrigin(bindings).then(origin => deliveries.dispatchEvent(update.id, origin)),

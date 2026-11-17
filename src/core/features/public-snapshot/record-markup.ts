@@ -51,9 +51,11 @@ export function recordHead(kicker: string, title: string, heading: TitleHeading,
 /** Correction attribution always names the immutable original, even when a summary omits that update. */
 export function correctionMarkup(incident: PublicIncident, update: PublicIncident["updates"][number], timezone: string) {
   const original = incident.updates.find(row => row.id === update.correctsUpdateId);
-  if (!original) return "";
+  const correction = incident.updates.find(row => row.correctsUpdateId === update.id);
+  const corrected = correction ? `<p class="update-correction" data-corrected-by-update-id="${escapeHtml(correction.id)}">Corrected · <a href="/incidents/${encodeURIComponent(incident.reference)}#update-${encodeURIComponent(correction.id)}">Read corrected update</a></p>` : "";
+  if (!original) return corrected;
   const href = `/incidents/${encodeURIComponent(incident.reference)}#update-${encodeURIComponent(original.id)}`;
-  return `<p class="update-correction" data-corrects-update-id="${escapeHtml(original.id)}"><strong>Correction</strong> · Corrects <a href="${href}">${escapeHtml(original.lifecycle)} · ${timestamp(original.publishedAt, timezone)}</a></p>`;
+  return corrected + `<p class="update-correction" data-corrects-update-id="${escapeHtml(original.id)}"><strong>Correction</strong> · Corrects <a href="${href}">${escapeHtml(original.lifecycle)} · ${timestamp(original.publishedAt, timezone)}</a></p>`;
 }
 
 export function updateMarkup(incident: PublicIncident, update: PublicIncident["updates"][number], timezone: string) {

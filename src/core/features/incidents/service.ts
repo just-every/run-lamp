@@ -190,7 +190,9 @@ export function createIncidentsService(
           ? metadata?.publicState ?? "Operational"
           : current?.publishedAt ? current.state : "Operational";
       const desired = isRetroactive && current?.publishedAt && !stagedChanges.some(change => change.componentId === component.componentId) ? previousState : component.state;
-      return { componentId: component.componentId, name: component.componentName, previousState, newState: draft.lifecycle === "Resolved" ? "Operational" : desired, internal: metadata?.internal ?? true };
+      const remainingState = draft.lifecycle === "Resolved" && !isRetroactive && component.componentId
+        ? mostSevereState((await repository.previewComponentChange(incidentId, component.componentId)).remainingStates) : undefined;
+      return { componentId: component.componentId, name: component.componentName, previousState, newState: draft.lifecycle === "Resolved" ? "Operational" : desired, ...(remainingState && remainingState !== "Operational" ? { remainingState } : {}), internal: metadata?.internal ?? true };
     }));
     const componentChanges = componentSnapshot.filter(change => change.previousState !== change.newState);
     const claimEvents: ComponentClaimEventInput[] = components.flatMap((component) => component.componentId ? [{
@@ -316,12 +318,20 @@ export function createIncidentsService(
         const previousState = incident.lifecycle === "Resolved" && input.lifecycle !== "Resolved"
           ? metadata?.publicState ?? "Operational"
           : current?.publishedAt ? current.state : "Operational";
-        return componentChangeRecord(component, previousState, input.lifecycle === "Resolved" ? "Operational" : component.state, metadata?.internal ?? true);
+        const change = componentChangeRecord(component, previousState, input.lifecycle === "Resolved" ? "Operational" : component.state, metadata?.internal ?? true);
+        if (change && input.lifecycle === "Resolved" && component.componentId) {
+          const remainingState = mostSevereState((await repository.previewComponentChange(incidentId, component.componentId)).remainingStates);
+          if (remainingState !== "Operational") change.remainingState = remainingState;
+        }
+        return change;
       }))).filter((change): change is PublishedIncidentComponentChange => change !== null);
       const nextUpdateDisplay = input.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(input.nextUpdateAt) : null;
       const renderInput = { incidentReference: incident.reference, incidentTitle: incident.title, ...input, componentChanges, nextUpdateDisplay };
       const rendered = renderIncidentUpdate(renderInput);
       const peak = mostSevereState([await repository.findPeakImpact(incidentId) ?? "Operational", ...proposed.map(component => component.state)]);
+      rendered.impactExplanation = incident.impactOverride === null
+        ? "Incident impact comes from the most severe component status reported during this incident. You can change it under Impact below."
+        : "An operator chose this incident impact. You can change it under Impact below.";
       rendered.email = renderNotificationUpdate({ ...renderInput, incidentImpact: incidentImpact(peak, incident.impactOverride).effectiveImpact }).email;
       if (runtime.formatPreviewEmail) rendered.email = await runtime.formatPreviewEmail(rendered.email);
       return rendered;
@@ -335,6 +345,7 @@ export function createIncidentsService(
       const nextUpdateDisplay = update.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(update.nextUpdateAt) : null;
       const renderInput = { incidentReference: await repository.nextReference(), incidentTitle: title, ...update, componentChanges, nextUpdateDisplay };
       const rendered = renderIncidentUpdate(renderInput);
+      rendered.impactExplanation = "Incident impact comes from the component statuses you choose.";
       rendered.email = renderNotificationUpdate({ ...renderInput, incidentImpact: incidentImpact(null, null, components.map(component => component.state)).effectiveImpact }).email;
       if (runtime.formatPreviewEmail) rendered.email = await runtime.formatPreviewEmail(rendered.email);
       return rendered;
