@@ -17,10 +17,11 @@
     // names on the same port. Equal hostnames fail at startup.
     "LAMP_PAGE_HOST": "localhost",
     "LAMP_APP_HOST": "127.0.0.1",
-    // Local sample identity; without a provider key, mail requests fail explicitly.
-    // Deployment setup supplies the buyer's verified sender.
+    // Email is off by default. Deployment setup supplies an enabled provider
+    // and the buyer's verified sender only when selected.
     "MAIL_FROM_ADDRESS": "lamp@localhost.invalid",
-    "MAIL_PROVIDER": "",
+    "MAIL_PROVIDER": "none",
+    "LAMP_RESOURCE_PREFIX": "",
     "MAIL_FROM": "",
     "MAIL_RELAY_URL": ""
   },

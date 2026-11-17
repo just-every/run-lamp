@@ -126,6 +126,8 @@ async function checkSummary(result, descriptor, root) {
     if (declaredInputs.size) lines.push(`Check the values you set for these declared input names: ${[...declaredInputs].sort().join(', ')}.`);
   }
   const blockedLoops = (result.loops ?? []).filter(loop => !['ready', 'optional-disabled'].includes(loop.status));
+  const mailOff = (result.loops ?? []).filter(loop => loop.mailOff);
+  if (mailOff.length) lines.push(`Outbound mail is off for ${mailOff.map(loop => loop.id).join(', ')}. No delivery is available; select and configure a declared mail provider to enable it.`);
   if (blockedLoops.length) lines.push(`Loops needing attention: ${blockedLoops.map(loop => `${loop.id} (${loop.status})`).join(', ')}.`);
   if (result.ok) lines.push('Remote deployment, provider access, and product acceptance remain unchecked.');
   else {

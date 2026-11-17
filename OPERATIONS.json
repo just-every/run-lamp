@@ -173,7 +173,7 @@
   ],
   "authentication": {
     "deployment": "Owner-controlled Cloudflare API token and account ID.",
-    "operators": "Base operator-auth native email links with a confirmation POST; optional owner-linked OpenID Connect; keyed local owner identity in development."
+    "operators": "Base operator-auth native email links with a confirmation POST when mail is enabled; guarded rer signin for the recorded deployment owner, including MAIL_PROVIDER=none; optional owner-linked OpenID Connect; keyed local owner identity in development."
   },
   "configurationFiles": [
     "seed.json",

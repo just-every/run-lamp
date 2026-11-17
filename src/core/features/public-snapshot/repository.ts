@@ -47,6 +47,7 @@ export interface PublicSnapshotSource {
   archive?: import("./archive").ArchivePage;
   bounded?: boolean;
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
+  emailEnabled?: boolean;
   smsEnabled?: boolean;
   slackEnabled?: boolean;
   teamsEnabled?: boolean;
@@ -91,7 +92,7 @@ export interface PublicSnapshotSource {
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
 }
 
-export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false, chat: { slack: boolean; teams: boolean } = { slack: false, teams: false }): SnapshotRepository {
+export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false, chat: { slack: boolean; teams: boolean } = { slack: false, teams: false }, emailEnabled = true): SnapshotRepository {
   const database = createDatabase(binding);
 
   return {
@@ -191,6 +192,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       return {
         bounded: true,
         websiteUrl: website?.url ?? null,
+        emailEnabled,
         smsEnabled,
         slackEnabled: chat.slack,
         teamsEnabled: chat.teams,

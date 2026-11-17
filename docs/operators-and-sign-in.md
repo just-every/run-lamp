@@ -30,16 +30,25 @@ Its use is recorded in the installation's audit log.
 Keep the deploying checkout and its deployment records. If the command refuses
 a missing record, wrong installation or missing owner-sign-in table, correct that
 condition before trying again. After updating older source, redeploy to apply its
-migrations, including `0023_owner_signin.sql`. This command supports the default
-resource prefix, `lamp-<environment>`. If you set `LAMP_RESOURCE_PREFIX` to another
-value, use the compatibility command in the
+migrations, including `0023_owner_signin.sql`. `rer signin` checks the recorded
+app Worker and its live ownership receipt. It does not repair a failed owner
+claim: name a new copy with `--environment` and leave `LAMP_RESOURCE_PREFIX`
+unset, because a custom prefix and `rer deploy`'s owner claim do not mix until
+rer follows the recorded Worker. The compatibility command in the
 [technical sign-in reference](../OPERATIONS.md#shared-operator-authentication)
-with that installation's generated configuration instead. Hosted Lamp still
-requires working mail. Managed hosting includes it without an owner provider
-account or mail key: RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`,
-`MAIL_RELAY_URL` and private `MAIL_API_KEY`. Free and Assisted hosting retain
-your own Resend or SendGrid account with `MAIL_FROM_ADDRESS`,
-`MAIL_DKIM_SELECTOR` and `MAIL_PROVIDER_API_KEY`.
+can issue a link for an existing active operator; it cannot create a missing
+owner claim.
+
+Hosted Lamp can deliberately turn email off with `MAIL_PROVIDER=none`. The
+deploying owner uses `rer signin`; email links, invitations and subscriber email
+messages are unavailable. Other operators need a configured identity provider
+or enabled mail. See [mail-off setup](deploy.md#or-deliberately-turn-email-off).
+
+For enabled mail, Managed hosting includes it without an owner provider account
+or mail key: RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL`
+and private `MAIL_API_KEY`. Free and Assisted hosting retain your own Resend or
+SendGrid account with `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and
+`MAIL_PROVIDER_API_KEY`.
 
 ## Optional single sign-on
 
@@ -190,3 +199,5 @@ check a real invited-operator sign-in as above. A restored installation needs
 fresh link approval and starts with provider sign-in disabled.
 
 <!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
+
+<!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->

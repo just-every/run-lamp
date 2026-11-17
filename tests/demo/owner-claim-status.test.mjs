@@ -18,7 +18,7 @@ test('ordinary host configuration carries public Business trust into a read-only
   const issuer = 'https://business.example.com', origin = 'https://admin.example.com', kid = 'business', installationId = randomUUID();
   const inputs = { LAMP_PAGE_HOST: 'status.example.com', LAMP_APP_HOST: 'admin.example.com',
    LAMP_PAGE_NAME: 'Acme', LAMP_PAGE_TAGLINE: 'Service status', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#123456',
-   SETUP_OPERATOR_EMAIL: 'owner@example.com', OWNER_DISPLAY_NAME: 'Acme Owner', MAIL_FROM_ADDRESS: 'status@example.com', MAIL_DKIM_SELECTOR: 'mail',
+   SETUP_OPERATOR_EMAIL: 'owner@example.com', OWNER_DISPLAY_NAME: 'Acme Owner', MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: 'status@example.com', MAIL_DKIM_SELECTOR: 'mail',
    SESSION_SECRET: randomUUID()+randomUUID(), INSTALLATION_KEY: randomBytes(32).toString('hex'), SETUP_TOKEN: randomUUID()+randomUUID(),
    MAIL_PROVIDER_API_KEY: randomUUID()+randomUUID(), SUBSCRIBER_TOKEN_SECRET: randomUUID()+randomUUID(), WEBHOOK_SIGNING_SECRET: randomUUID()+randomUUID(),
    RER_OWNER_CLAIM_ISSUER: issuer, RER_OWNER_CLAIM_INSTALLATION_ID: installationId, RER_OWNER_CLAIM_APP_ORIGIN: origin,
@@ -69,7 +69,7 @@ test('ordinary host configuration carries public Business trust into a read-only
 
 // Page host route mode (Cloudflare for SaaS): rendering, refusals and the stored hostname following the binding.
 const routeInputs = { LAMP_PAGE_HOST: 'status.example.org', LAMP_APP_HOST: 'app.lamp-provider.test', LAMP_PAGE_NAME: 'Acme', LAMP_PAGE_TAGLINE: 'Service status', LAMP_PAGE_TIMEZONE: 'UTC', LAMP_ACCENT_COLOR: '#123456',
- SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_FROM_ADDRESS: 'status@example.test', MAIL_DKIM_SELECTOR: 'mail',
+ SETUP_OPERATOR_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: 'status@example.test', MAIL_DKIM_SELECTOR: 'mail',
  SESSION_SECRET: randomUUID()+randomUUID(), INSTALLATION_KEY: randomBytes(32).toString('hex'), SETUP_TOKEN: randomUUID()+randomUUID(),
  MAIL_PROVIDER_API_KEY: randomUUID()+randomUUID(), SUBSCRIBER_TOKEN_SECRET: randomUUID()+randomUUID(), WEBHOOK_SIGNING_SECRET: randomUUID()+randomUUID(),
  LAMP_PAGE_HOST_ROUTE_ZONE: 'lamp-provider.test', LAMP_PAGE_HOST_TARGET: 'domains.lamp-provider.test' };

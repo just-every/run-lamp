@@ -15,7 +15,11 @@ commands provision a real D1 database, R2 bucket and Queue by environment name,
 apply migrations, initialize the first operator and page settings, build the
 Worker and publish the emitted artifact. `rer deploy` runs all of these;
 `node scripts/setup.mjs --environment <name> --env-file <file>` runs the
-provisioning alone. Setup reads the applied migrations back from D1 and fails, naming any shipped migration that is missing, instead of reporting success; run it again to apply the rest. (`rer setup` is the local first-owner setup.)
+provisioning alone. Setup reads applied migrations back from D1 and resumes a
+partial apply within the same command, with a bounded pass budget and no retry
+without progress. If it still cannot finish, it stops and names the missing
+migrations instead of reporting success. (`rer setup` is the local first-owner
+setup.)
 
 Owner task guides are published at `/docs` on the app host. Use
 [`RUN-LOCALLY.md`](RUN-LOCALLY.md) for local launch, export, reset and restore;
@@ -30,8 +34,9 @@ installation this checkout deployed as `production`.
 ## Owner inputs
 
 Supply `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for the intended account.
-The token needs Worker deployment, D1, R2, Queues and custom-hostname access,
-including Zone Workers Routes read/write permission for both hosts’ zones.
+The token needs Account **Workers Scripts**, **D1**, **Workers R2 Storage**
+and **Queues**, each set to **Edit**. For custom hostnames it also needs Zone
+**Workers Routes: Edit** for both hosts’ zones.
 Account Worker access alone can upload the artifact but cannot attach its hosts.
 For workers.dev hosting, custom-domain zone permissions are not needed; the token
 must be able to read the account's Workers subdomain.
@@ -44,10 +49,12 @@ must be able to read the account's Workers subdomain.
 
 Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
 
-Hosted Lamp accepts deliberately disabled email with `MAIL_PROVIDER=none` on
-rer 0.2.118. No sender, sending key or DKIM input is then required. Sending
-credentials, relay settings and secondary mail providers must be removed;
-missing or deferred provider choices never mean off. Email links, invitations
+Hosted Lamp accepts deliberately disabled email with `MAIL_PROVIDER=none`
+using the checkout's pinned `@runeditrun/rer` from `package.json`. This is the
+`rer deploy` default; set it explicitly in the input file to record that choice.
+No sender, sending key or DKIM input is then required. Sending credentials,
+relay settings and secondary mail providers must be removed; deferred provider
+choices are refused. Email links, invitations
 and email alerts are unavailable. The deploying owner uses `rer signin` from
 the original checkout with its deployment records and account credentials.
 See [the mail-off deployment guide](docs/deploy.md#or-deliberately-turn-email-off).
@@ -97,9 +104,12 @@ Optionally set `OWNER_DISPLAY_NAME` to the first owner's name (1–120 character
 It is used only when setup creates the first operator; existing owners keep their
 name and access. Without it, the native command uses `Owner`.
 
-For Free, Assisted and native deployment, `MAIL_PROVIDER` selects `resend`
-(default, preserving existing deployments) or `sendgrid`. Both use
-`MAIL_PROVIDER_API_KEY`; map an existing provider-specific credential into that environment variable without writing it into source.
+For enabled direct mail on Free, Assisted and native deployment, explicitly
+select `MAIL_PROVIDER=resend` or `MAIL_PROVIDER=sendgrid`. `rer deploy` defaults
+to `none`, so retain the selected enabled provider in the private input file on
+every redeploy. Both providers use `MAIL_PROVIDER_API_KEY`; map an existing
+provider-specific credential into that environment variable without writing it
+into source.
 Likewise map the verified sender address into `MAIL_FROM_ADDRESS`. The sender
 domain must publish a DMARC policy at `_dmarc.<From-domain>` and a reachable
 DKIM key at `<selector>._domainkey.<From-domain>`; provider CNAMEs are supported.
@@ -144,8 +154,11 @@ release. The landing page is a public, indexable document on the operator name.
 ### Optional public Worker name on workers.dev
 
 Without an override, the app Worker remains `lamp-<environment>` and the public
-Worker remains `lamp-<environment>-page`. `LAMP_RESOURCE_PREFIX`, when supplied,
-continues to name the app Worker, D1, R2 and queue as before.
+Worker remains `lamp-<environment>-page`. Name another copy with
+`--environment staging`, which uses `lamp-staging` as its namespace. Leave
+`LAMP_RESOURCE_PREFIX` unset with `rer deploy`: a custom prefix and its owner
+claim do not mix until rer follows the recorded Worker. Existing native records
+retain their resource identities; do not rename a live installation.
 
 For a new workers.dev installation, optionally set `LAMP_PAGE_WORKER` in the same
 private input file used by `rer deploy`. It selects only the public Worker;
@@ -170,10 +183,12 @@ package, app Worker, D1, R2 or queue identities.
 
 Run the ordinary `rer deploy --dry-run --environment production --env-file FILE`
 to inspect both hosts and resource names and compile both Worker configurations
-without any provider request. Sign in at the operator address. On rer 0.2.118,
-`rer signin` reads the selected environment's recorded app Worker, including a
-custom app name, and verifies its live ownership receipt. The public Worker
-never becomes the owner sign-in target. Mail can be deliberately off as above.
+without any provider request. Sign in at the operator address. The checkout's
+pinned `rer signin` reads the selected environment's recorded app Worker and
+verifies its live ownership receipt. It cannot repair a failed owner claim;
+use `--environment` rather than a custom `LAMP_RESOURCE_PREFIX` for a new copy.
+The public Worker never becomes the owner sign-in target. Mail can be
+deliberately off as above.
 
 <!-- Native public Worker naming: Codex, 2026-11-15T03:50:49Z. -->
 
@@ -255,6 +270,9 @@ This removes the public Worker first in `workers-dev` mode, then the app Worker
 and resources proven created for that environment, including their data, and
 reads back their absence. Custom-domain mode has one Worker. The generic
 `rer deploy --remove --yes` alone does not remove Lamp's separate public Worker.
+Cloudflare may still report a just-deleted Worker or R2 bucket after deletion
+or a long object purge. If removal ends with `remove-incomplete`, retain the
+creation records and run the same command again.
 Native deployments retain app creation ownership at
 `.rer/deploy/<environment>.json` and public Worker ownership at
 `.rer/deploy/<environment>.page.json`. Lamp's
@@ -499,7 +517,12 @@ This does not assert complete RER automatic Durable Object export/restore.
 
 ## Native workers.dev deployment
 
-Custom domains remain the default. To use the account's existing Workers subdomain without custom DNS, set `LAMP_HOSTING=workers-dev`. Set `LAMP_RESOURCE_PREFIX` to an explicit lowercase resource namespace (letters, digits and hyphens, at most 47 characters). If omitted, it is `lamp-<environment>`; the environment defaults to `production`.
+Custom domains remain the default. To use the account's existing Workers
+subdomain without custom DNS, set `LAMP_HOSTING=workers-dev`. Name a copy with
+`--environment`: it defaults to `production`, and resources use
+`lamp-<environment>`. Leave `LAMP_RESOURCE_PREFIX` unset with `rer deploy`; a
+custom prefix and its owner claim do not mix until rer follows the recorded
+Worker. A failed claim also prevents the owner's guarded `rer signin` entry.
 
 Both `LAMP_APP_HOST` and `LAMP_PAGE_HOST` remain required in this mode. Find the
 registered account subdomain in Cloudflare's Workers & Pages settings or use the
@@ -509,18 +532,17 @@ authenticated account without changing its subdomain.
 
 The app host is exactly `<prefix>.<subdomain>.workers.dev` and the page host
 exactly `<prefix>-page.<subdomain>.workers.dev`; any other names are refused.
-For a prefix `my-status` and the Workers subdomain `my-account`, export these
-values with the other owner inputs, or put them in the private input file:
+For `--environment staging` and the Workers subdomain `my-account`, export
+these values with the other owner inputs, or put them in the private input file:
 
 ```sh
 export LAMP_HOSTING=workers-dev
-export LAMP_RESOURCE_PREFIX=my-status
-export LAMP_APP_HOST=my-status.my-account.workers.dev
-export LAMP_PAGE_HOST=my-status-page.my-account.workers.dev
+export LAMP_APP_HOST=lamp-staging.my-account.workers.dev
+export LAMP_PAGE_HOST=lamp-staging-page.my-account.workers.dev
 ```
 
-Then follow [the deploy commands](docs/deploy.md#step-7-check-then-deploy) with the same
-environment and inputs. If using `--env-file`, update the hostname values in that
+Then follow [the deploy commands](docs/deploy.md#step-7-check-then-deploy) with
+`--environment staging` and those inputs. If using `--env-file`, update the hostname values in that
 file too; they override these exports. The app Worker is named exactly the prefix; the public Worker adds `-page`. D1 adds `-db`, R2 adds `-files`, and the queue adds `-jobs`. The generated config records the supplied account ID. Deployment records preserve actual resource names for archive and sign-in commands.
 
 Both Workers serve the same compiled source and retain the configured host checks: operator paths on the public hostname return 404, and operator APIs on the app hostname require a session. The app Worker owns the scheduled jobs, queue consumer and snapshot Durable Object. The public Worker uses that same object and storage without a second scheduler or consumer. The command deploys the app Worker first, then the public Worker. Keep the prefix reserved for this installation, and remove both Workers when retiring it.
@@ -569,10 +591,17 @@ does not save it, and sends no mail. Open it privately within 15 minutes. The
 grant is single-use and its use is audited. Retain the deploying checkout and its
 deployment records. An older installation needs additive migration
 `0023_owner_signin.sql` applied by redeployment before this command can issue a
-grant. The pinned `rer signin` targets the default `lamp-<environment>` prefix; for a
-custom `LAMP_RESOURCE_PREFIX`, use the compatibility command below with that
-installation's generated configuration.
-Hosted mail remains mandatory for normal email sign-in and subscriber messages.
+grant. The pinned `rer signin` checks the recorded app Worker and its live
+ownership receipt; it does not repair an owner claim that failed because a
+custom `LAMP_RESOURCE_PREFIX` selected another Worker. For a new copy, leave
+that setting unset and use `--environment`. The compatibility command below
+can issue a link for an existing active operator using the installation's
+generated configuration; it does not create a missing owner claim.
+
+Hosted Lamp can deliberately turn email off with `MAIL_PROVIDER=none`. The
+deploying owner can use `rer signin`; other operators need a configured identity
+provider or enabled mail. Working mail is required for email sign-in,
+invitations, identity-confirmation emails and subscriber email messages.
 
 Lamp adopts Base `aa9b4d4fc6cba60411ef8d24a81323113677c370`. Migration 0019 preserves non-erased operator IDs and active/inactive status, moves setup authority only with the setup operator (when that operator erased itself, no operator gains it and the editor stays closed), retains product attribution and subscriber credentials, and physically removes old sessions and pending links. Every active operator must sign in afresh. On a local in-place upgrade, `rer setup` adds the missing `SESSION_SECRET` and `SETUP_TOKEN` to the kept `.dev.vars` and changes no saved value. The setup operator may remove themselves only while another owner remains. Changing operator access requires a recent native email confirmation; Settings provides the confirmation action.
 
@@ -736,3 +765,5 @@ invitations remain authoritative throughout.
 [Link a self-hosted Lamp to Business](docs/business-self-host.md) documents the ordinary setup/deploy trust file, native-owner verification door and existing-owner recovery. Standalone configuration leaves Business trust and its import door unconfigured.
 
 <!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
+
+<!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->

@@ -8,7 +8,8 @@
     "MAIL_PROVIDER": "rer",
     "MAIL_FROM": "proof@rer-hosted-check.invalid",
     "MAIL_FROM_ADDRESS": "proof@rer-hosted-check.invalid",
-    "MAIL_RELAY_URL": "https://mail.rer-hosted-check.invalid/api/managed-mail/send"
+    "MAIL_RELAY_URL": "https://mail.rer-hosted-check.invalid/api/managed-mail/send",
+    "LAMP_RESOURCE_PREFIX": ""
   },
   "d1": [
     {
@@ -63,9 +64,18 @@
       "environment": "MAIL_RELAY_URL",
       "verifyStandIn": "https://mail.rer-hosted-check.invalid/api/managed-mail/send",
       "optional": true
+    },
+    {
+      "binding": "LAMP_RESOURCE_PREFIX",
+      "environment": "LAMP_RESOURCE_PREFIX",
+      "optional": true
     }
   ],
   "publicSettings": [
-    "LAMP_PAGE_WORKER"
+    "LAMP_PAGE_WORKER",
+    "MAIL_PROVIDER",
+    "LAMP_RESOURCE_PREFIX",
+    "LAMP_APP_HOST",
+    "LAMP_PAGE_HOST"
   ]
 }
