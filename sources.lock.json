@@ -8099,6 +8099,10 @@
       "sha256": "eab7f1474b57c8ef07c4ace9ab671f5368905a9d4a1a4579ecbfaf3b03d3b67e",
       "executable": false
     },
+    "tests/e2e/helpers/email-preview-accessibility.mjs": {
+      "sha256": "a01446f6a8193b074366e88fbd1fa564e0f7a532a26d505448711ee457dadff1",
+      "executable": false
+    },
     "tests/e2e/helpers/follow-ups-flow.mjs": {
       "sha256": "cafbab6aaba1a36c2dd7610118b3afb2cbe18114a9197b392c7af9cb29d3a52d",
       "executable": false
@@ -8300,7 +8304,7 @@
       "executable": false
     },
     "tests/e2e/helpers/phone-desk-flow.mjs": {
-      "sha256": "a1c3f0a987d4adc06f1e5d01a4e249b6c72e46a17e22103ff67e013a3d4598f6",
+      "sha256": "4542333f0d29985f97d75776c404a5bd1501d8fae3247f99d0d49dc5ac0d3351",
       "executable": false
     },
     "tests/e2e/helpers/postmortem-template-import-flow.mjs": {
