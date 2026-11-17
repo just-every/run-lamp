@@ -1,0 +1,36 @@
+{
+  "main": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+  "candidate": "7c17a3201ef326a841d91fb4dc26c035a5b1c60a",
+  "baselineMaterialization": "git archive origin/main into an isolated temporary directory; frozen dependency installation",
+  "mainRerPin": "0.2.118",
+  "mainInstalledRer": "0.2.118",
+  "browser": "/usr/bin/chromium 154.0.8037.57",
+  "test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+  "command": "node --import=<external cloud browser preload> --test --test-concurrency=1 --test-name-pattern=THEME-001 tests/e2e/publishing-browser.test.mjs",
+  "unchangedSources": [
+    {
+      "path": "tests/e2e/helpers/theme-browser-flow.mjs",
+      "mainSha256": "d5aa63dae447dab1fafb3bc291a108cee29ab3625d989907c237e778ed5b1395",
+      "candidateSha256": "d5aa63dae447dab1fafb3bc291a108cee29ab3625d989907c237e778ed5b1395",
+      "identical": true
+    },
+    {
+      "path": "tests/e2e/helpers/theme-owner-journey.mjs",
+      "mainSha256": "692b63db82244ba7fde18fd0217f78fbbbcaf6042e713fb4072dd3c104096702",
+      "candidateSha256": "692b63db82244ba7fde18fd0217f78fbbbcaf6042e713fb4072dd3c104096702",
+      "identical": true
+    },
+    {
+      "path": "src/core/features/public-snapshot/theme-rendering.ts",
+      "mainSha256": "0aa39f76ba3efc4cce5c6ad943d1e4d4d009f2137513d196d3555fc9f35a90b5",
+      "candidateSha256": "0aa39f76ba3efc4cce5c6ad943d1e4d4d009f2137513d196d3555fc9f35a90b5",
+      "identical": true
+    }
+  ],
+  "observedPaths": {
+    "lamp-theme-budget.log": "/assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg",
+    "lamp-main-theme-budget.log": "/assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg"
+  },
+  "sameFailure": true,
+  "classification": "pre-existing local assertion failure; not introduced by this candidate"
+}

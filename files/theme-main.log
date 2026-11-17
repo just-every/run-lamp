@@ -1,0 +1,40 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ THEME-001 — owner publishes branded themes and layouts within the page budget (56244.659508ms)
+ℹ THEME-001 — owner settings reach the retained page; unsafe CSS and HTML never execute
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57970.277265
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:940:1
+✖ THEME-001 — owner publishes branded themes and layouts within the page budget (56244.659508ms)
+  Error: Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+  Client diagnostics: Failed to load resource: the server responded with a status of 400 (Bad Request)
+  Document state: {"readyState":"complete","shellHydrated":true,"settingsInert":false,"scripts":[{"type":"module","path":"/@id/virtual:tanstack-start-dev-client-entry"}],"hydration":0}
+      at themeBrowserFlow (file:///tmp/lamp-main-theme/tests/e2e/helpers/theme-browser-flow.mjs:197:11)
+      at async themeFlow (file:///tmp/lamp-main-theme/tests/e2e/helpers/theme-flow.mjs:73:5)
+      ... 3 lines matching cause stack trace ...
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    [cause]: AssertionError [ERR_ASSERTION]: Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+        at themeBrowserFlow (file:///tmp/lamp-main-theme/tests/e2e/helpers/theme-browser-flow.mjs:106:12)
+        at async themeFlow (file:///tmp/lamp-main-theme/tests/e2e/helpers/theme-flow.mjs:73:5)
+        at async themeOwnerJourney (file:///tmp/lamp-main-theme/tests/e2e/helpers/theme-owner-journey.mjs:28:3)
+        at async TestContext.<anonymous> (file:///tmp/lamp-main-theme/tests/e2e/publishing-browser.test.mjs:941:3)
+        at async Test.run (node:internal/test_runner/test:1389:7)
+        at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+      generatedMessage: false,
+      code: 'ERR_ASSERTION',
+      actual: false,
+      expected: true,
+      operator: '==',
+      diff: 'simple'
+    }
+  }

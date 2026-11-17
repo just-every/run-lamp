@@ -1,0 +1,120 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "7c17a3201ef326a841d91fb4dc26c035a5b1c60a",
+  "recordedAt": "2026-11-17T01:48:27.409962+00:00",
+  "toolchain": {
+    "shellNode": "24.19.0",
+    "rerCommandNode": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.121",
+    "chromium": "154.0.8037.57",
+    "browserPath": "/usr/bin/chromium",
+    "browserArgs": [
+      "--no-sandbox"
+    ]
+  },
+  "checks": {
+    "setup": {
+      "exit": 0
+    },
+    "workerBuild": {
+      "exit": 0
+    },
+    "siteBuild": {
+      "exit": 0,
+      "pages": 38,
+      "files": 63
+    },
+    "typecheck": {
+      "exit": 0
+    },
+    "sourceLockRegeneration": {
+      "exit": 0,
+      "changedComparedWithPreviousCandidate": false
+    },
+    "sourceLockCheck": {
+      "exit": 0
+    },
+    "contractDocuments": {
+      "exit": 0,
+      "errors": 0,
+      "warnings": 0
+    },
+    "offlineBaseCopies": {
+      "exit": 0
+    },
+    "syntax": {
+      "exit": 0,
+      "modules": 472
+    },
+    "releaseValidation": {
+      "exit": 0,
+      "version": "1.11.20",
+      "vendorSources": 20,
+      "nativeCases": 162
+    },
+    "touchedSourceTests": {
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "skipped": 0
+    },
+    "mailTests": {
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "skipped": 0
+    },
+    "initialBrowserTests": {
+      "tests": 4,
+      "pass": 3,
+      "fail": 1,
+      "skipped": 0
+    },
+    "siteJourneyRerun": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "exit": 0
+    },
+    "candidateThemeBudget": {
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0
+    },
+    "mainThemeBudget": {
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0
+    },
+    "publicationScan": {
+      "exit": 2,
+      "status": "INCOMPLETE",
+      "reason": "scan.gitleaks-unavailable",
+      "authoritativeFleetScanRequired": true
+    },
+    "finalSourceLockAndCleanTree": {
+      "exit": 0,
+      "trackedChanges": 0,
+      "cachedChanges": 0
+    }
+  },
+  "themeClassification": "Pre-existing identical main/candidate local failure; same five asset paths; assertions unchanged",
+  "clauseStatusChanges": [],
+  "affectedRegistrationResults": {
+    "passedAfterPrerequisites": 17,
+    "failedAfterPrerequisites": 0
+  },
+  "additionalThemeComparison": {
+    "candidate": {
+      "failed": 1
+    },
+    "unchangedMain": {
+      "failed": 1
+    },
+    "sameFiveRequests": true
+  }
+}

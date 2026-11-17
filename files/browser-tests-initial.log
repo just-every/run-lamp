@@ -1,0 +1,45 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out (89033.824075ms)
+ℹ Execution host: a5c8edde25d7
+ℹ Starting the built operator management Worker
+ℹ Migrating the operator management installation
+ℹ Claiming the operator management setup identity
+ℹ Confirming the setup owner and opening Settings
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+{"label":"unclaimed published page","status":200,"generatedAt":"2026-11-17T01:40:37.110Z","retained":"true","state":null}
+{"label":"past freshness bound, before scheduler","status":200,"generatedAt":"2026-11-17T01:40:37.110Z","retained":"true","state":null}
+{"label":"past freshness bound, after scheduler","status":200,"generatedAt":"2026-11-17T01:46:37.110Z","retained":"true","state":null}
+{"label":"primary snapshot unavailable","status":200,"generatedAt":"2026-11-17T01:46:37.110Z","retained":"true","state":"stale"}
+✔ ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview (9509.010985ms)
+{"publicDocs":{"sections":4,"pages":33,"markdownGuidance":"matched"}}
+{"status":"passed","artifact":"dist/server/wrangler.json","browser":{"documents":1,"stableTimeOrigin":true},"publicSnapshotReadAfterD1Failure":true}
+✔ DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation (56386.82234ms)
+✖ DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey (37041.575688ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 195593.723149
+
+✖ failing tests:
+
+test at tests/lamp-site/browser.test.mjs:82:1
+✖ DOCS-001 PAGE-020 — Lobby, public Lamp site and accessible owner documentation journey (37041.575688ms)
+  AssertionError [ERR_ASSERTION]: Build the public Lamp site before this journey: pnpm build:site
+      at TestContext.<anonymous> (file:///workspace/run-lamp/tests/lamp-site/browser.test.mjs:60:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestHook.run (node:internal/test_runner/test:1389:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

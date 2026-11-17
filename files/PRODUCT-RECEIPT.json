@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-deploy-faults-2",
+  "head": "7c17a3201ef326a841d91fb4dc26c035a5b1c60a",
+  "base": "626388fca54b18499b35b9e9c5f9cbcb51b4125b",
+  "previousCandidate": "14646dbd7d4087885cb776587aeaad2a0722bbb1",
+  "candidateCommits": 1,
+  "candidateMergeCommits": 0,
+  "candidateTree": "a1bc35d462efc25645656a3bb289b0a0211e77c4",
+  "previousCandidateTree": "a1bc35d462efc25645656a3bb289b0a0211e77c4",
+  "treeDiff": [],
+  "identities": "Run Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+  "testCounts": {
+    "before": 111,
+    "after": 111,
+    "registrations": 101,
+    "assertionScripts": 10
+  },
+  "push": {
+    "attempts": 1,
+    "status": "success",
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-lamp-deploy-faults-2"
+  },
+  "noContractClauseClaimed": true,
+  "previousCandidateCommitsAboveCurrentMain": 9,
+  "previousCandidateMergeCommitsAboveCurrentMain": 1
+}
