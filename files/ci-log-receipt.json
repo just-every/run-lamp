@@ -1,0 +1,36 @@
+[
+  {
+    "job": 134426409933,
+    "name": "build",
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "44192808371",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "134426409933",
+      "--log-failed"
+    ],
+    "exit": 0,
+    "log": "ci-build-failed.log"
+  },
+  {
+    "job": 134426584562,
+    "name": "verify",
+    "command": [
+      "gh",
+      "run",
+      "view",
+      "44192808371",
+      "--repo",
+      "just-every/run-lamp",
+      "--job",
+      "134426584562",
+      "--log-failed"
+    ],
+    "exit": 0,
+    "log": "ci-verify-failed.log"
+  }
+]

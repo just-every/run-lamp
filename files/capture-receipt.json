@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "type": "lamp.sorry.template-capture-synthetic-proof",
+  "synthetic": true,
+  "sourceClassification": "documentation-derived generated responses; no provider reads or real export",
+  "author": "Run Edit Run fleet",
+  "completedAt": "2026-11-17T22:26:55.649213+00:00",
+  "revision": "68f0e97a5f228a7de51e8a566780f26b6f3983c6",
+  "command": "node --experimental-strip-types --import tests/e2e/helpers/sorry-template-edge.mjs scripts/sorry-capture.mjs --page-id synthetic-lamp-templates --key-file <synthetic-private-key-file> --out <temporary-capture>",
+  "result": "passed",
+  "counts": {
+    "noticeTemplates": 27,
+    "updateTemplates": 27,
+    "pageSize": 25,
+    "pagesPerCollection": 2,
+    "capturedFiles": 8,
+    "normalizedTemplateSources": 54,
+    "suppliedLeafFields": 422
+  },
+  "assertions": [
+    "fixed Sorry management origin and GET-only manual redirects",
+    "every documented template pagination page captured exactly once",
+    "all eight captured response files byte-identical to supplied original synthetic responses",
+    "saved reader retains 54 normalized template sources and accounts for all422leaf fields"
+  ],
+  "localNativeApiHarness": {
+    "result": "not-run",
+    "reason": "Miniflare getD1Database waits before migrations on both Node24.19.0 and Node22.20.0, including unproxied local process; Vite browser/API proof tracked separately"
+  },
+  "logSha256": "15a821fec1c3b8c1372ec51c6d21c5577f700d56bf538c768aaa9e7a1acec8e1",
+  "savedReaderAssertions": {
+    "result": "passed",
+    "normalizedTemplates": 54,
+    "exactFields": [
+      "name",
+      "subject",
+      "body",
+      "component_id",
+      "created_at",
+      "updated_at"
+    ],
+    "ledgerRows": 422,
+    "refusalCases": 8
+  }
+}

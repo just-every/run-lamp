@@ -1,0 +1,17 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers
+ok 1 - Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers
+  ---
+  duration_ms: 37032.951499
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 39094.208766

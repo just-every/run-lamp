@@ -1,0 +1,87 @@
+{
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17T22:46:28.408350+00:00",
+  "candidate": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+  "requiredWorkflow": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44192808371",
+    "id": 44192808371,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "actualConclusion": "failure",
+  "readyUnderExplicitGeneratedViewException": true,
+  "cause": "Only src/base/contract-docs.mjs check on ACCEPTANCE.md; build receipt upload/aggregate fail and shards skip as consequences. Generated views retained whole from main as required.",
+  "plan": "success",
+  "failedJobs": [
+    {
+      "id": 134426409933,
+      "name": "build"
+    },
+    {
+      "id": 134426584562,
+      "name": "verify"
+    }
+  ],
+  "logReads": [
+    {
+      "job": 134426409933,
+      "name": "build",
+      "command": [
+        "gh",
+        "run",
+        "view",
+        "44192808371",
+        "--repo",
+        "just-every/run-lamp",
+        "--job",
+        "134426409933",
+        "--log-failed"
+      ],
+      "exit": 0,
+      "log": "ci-build-failed.log"
+    },
+    {
+      "job": 134426584562,
+      "name": "verify",
+      "command": [
+        "gh",
+        "run",
+        "view",
+        "44192808371",
+        "--repo",
+        "just-every/run-lamp",
+        "--job",
+        "134426584562",
+        "--log-failed"
+      ],
+      "exit": 0,
+      "log": "ci-verify-failed.log"
+    }
+  ],
+  "otherExactShaRunsLastObserved": [
+    {
+      "conclusion": null,
+      "event": "pull_request",
+      "head_sha": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44192976630",
+      "id": 44192976630,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "event": "dynamic",
+      "head_sha": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44192972557",
+      "id": 44192972557,
+      "name": "PR #415",
+      "status": "in_progress"
+    }
+  ],
+  "supersededVerifyRun": 44190976525,
+  "taskGitHubCalls": 8,
+  "polling": "One discovery per candidate; selected final push run already completed; no repeated polling or rerun/dispatch."
+}

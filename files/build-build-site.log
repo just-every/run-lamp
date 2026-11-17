@@ -1,0 +1,11 @@
+
+> lamp@1.11.22 build:site /home/agent/rer-consolidation/work/sd-lamp-import-sorry-3/run-lamp
+> rer build --site
+
+Heavy job admitted: Lamp build:workflow [cca550153313]
+Checking pinned pnpm
+10.12.4
+Building the run site
+{"pages":38,"assets":3,"styles":1}
+Run site written to dist/site (38 pages, 63 files): [REDACTED]/dist/site
+build: complete (exit 0)

@@ -1,0 +1,31 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: documented Sorry generator reproduces all bytes and hashes without provider reads
+ok 1 - documented Sorry generator reproduces all bytes and hashes without provider reads
+  ---
+  duration_ms: 402.285381
+  type: 'test'
+  ...
+# Synthetic Sorry authenticated: preview
+# Synthetic Sorry public: preview
+# Synthetic Sorry public: apply
+# Synthetic Sorry public: repeat
+# Synthetic Sorry public: undo
+# Subtest: documented Sorry exports account for every field through preview, saved jobs and explicit refusals
+ok 2 - documented Sorry exports account for every field through preview, saved jobs and explicit refusals
+  ---
+  duration_ms: 77137.467427
+  type: 'test'
+  ...
+# All 1003 authenticated subscriber rows and 23974 fields reviewed; full subscriber apply/repeat/undo runs in scripts/sorry-synthetic-proof.mjs outside push CI.
+# {"mode":"public","sourceRows":{"components":56,"notices":53,"updates":106,"subscribers":0},"nativeCounts":{"group":4,"component":52,"incident":43,"maintenance":10,"updates":106},"subscriberCount":0,"ledgerCount":3680,"outcomes":{"mapped":436,"changed":1199,"raw-only":2045,"deleted":0,"refused":0},"unexplainedDifferences":0,"expectedResourceGaps":["sorry-brand.json","sorry-component-1004-metrics.json","sorry-custom-domain.json"],"previewUnchanged":true,"hostileRefusalUnchanged":true,"repeatUnchanged":true,"undoRestoredExceptReservedReferences":true,"silent":true}
+# PROBE Sorry templates: capture 27 notice + 27 update across 25-row pages; 54 exact metadata/body reads; refusal, private draft, repeat, edited-template dependency undo all passed
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79220.518369
