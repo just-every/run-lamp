@@ -3351,7 +3351,16 @@
       },
       "originFiles": [
         "modules/delivery-producer/native-export.mjs"
-      ]
+      ],
+      "adapted": {
+        "scripts/delivery/base/native-export.mjs": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f"
+      },
+      "acknowledged": {
+        "scripts/delivery/base/native-export.mjs": {
+          "sha256": "bc673e3a65020e12c34c7a8b9b72e7d553c2edc1e5ece73353dd82b863ea3b3f",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "scripts/delivery/base/package.mjs",
