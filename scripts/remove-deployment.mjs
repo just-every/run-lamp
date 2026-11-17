@@ -26,7 +26,8 @@ try {
     }
     // Each pass can take a few minutes while Cloudflare confirms the data is gone.
     console.log(page ? 'Removing the public page Worker…' : 'Removing the app Worker, its database, files and queue…');
-    const result = await ownerRemove({ api: ownership.api, target: ownership.target(page), statePath: ownership.path(page) });
+    const result = await ownerRemove({ api: ownership.api, target: ownership.target(page), statePath: ownership.path(page),
+      expectedResources: page ? {} : {d1: [record.resources.database], r2: [record.resources.bucket], queues: [record.resources.queue]} });
     removed.push(...result.removed);
   }
   await rm(recordPath);
