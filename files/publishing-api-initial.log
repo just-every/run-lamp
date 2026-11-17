@@ -1,0 +1,101 @@
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 test:publishing /workspace/run-lamp
+> node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs tests/e2e/incident-brief.test.mjs tests/e2e/update-reminders.test.mjs
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails (18901.678156ms)
+ℹ PROBE DRAFT-004 acceptance 2: native component DELETE then incident and brief GET -> empty attachments and exact stable Q-components question
+ℹ PROBE DRAFT-001 2, 4 and 5: native suggestion with known, question and unknown citations plus provider lifecycle and time -> only known citations and text fields; complete saved incidents and eight settled public responses unchanged before and after explicit publication
+ℹ PROBE DRAFT-004 acceptance 5: repeated native brief GETs before and after explicit suggestion -> provider counts stay 0, 1 and 2 across explicit suggestions; saved facts, references and questions reconcile
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE HIST-002 email: native saved-field readback, public permalink in 27.0 ms, committed=2, email=2, webhook=0
+PROBE HIST-002 webhook: native saved-field readback, public permalink in 19.4 ms, committed=2, email=0, webhook=2
+PROBE HIST-002 email-webhook: native saved-field readback, public permalink in 69.8 ms, committed=4, email=2, webhook=2
+PROBE HIST-002 silent: native saved-field readback, public permalink in 26.7 ms, committed=0, email=0, webhook=0
+✔ INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion (61428.045568ms)
+✔ INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components (19735.484866ms)
+✔ INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history (11637.413302ms)
+✔ INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime (19020.7028ms)
+✔ MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history (76385.757786ms)
+✔ UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence (22070.270622ms)
+ℹ PROBE UPDATE-006 2: native schedule with confirmed email and webhook, repeated Cron through saved instant minus 1 ms -> unchanged draft, 38 populated public artifacts and generation, absent permalink, zero notification work and zero subscriber sends
+ℹ PROBE UPDATE-006 1: reviewed draft scheduled through native route, Worker Date and Cron advanced to saved instant plus 60000 ms -> exact saved update committed and read from public root and permalink after 60880 ms (deadline 240000 ms)
+ℹ PROBE UPDATE-006 2 delivery control: after eligibility the exact committed recipient set receives one captured email and one acknowledged webhook; repeated Cron adds no update or send
+✔ INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams (32735.874301ms)
+ℹ INCIDENT-012 Slack: signed identity, private draft, shared preview, explicit attributed publication and state changes
+ℹ PROBE INCIDENT-012 points 2 and 3 Slack: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+ℹ INCIDENT-012 Teams: signed identity, private draft, shared preview, explicit attributed publication and state changes
+ℹ PROBE INCIDENT-012 points 2 and 3 Teams: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+ℹ PROBE INCIDENT-012 point 4 Slack: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+ℹ PROBE INCIDENT-012 point 4 Teams: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+✔ AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text (9425.485775ms)
+ℹ PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent
+ℹ PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records
+ℹ PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report
+ℹ PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes
+✔ NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure (20564.042713ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident (15078.839911ms)
+ℹ PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner
+ℹ PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner
+✔ AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery (15547.276931ms)
+ℹ PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window
+ℹ PROBE NOTIFY-006 acceptance-4 terminal notification failure: public email subscription and owner publication receive provider HTTP 400, repeated Queue delivery and Cron -> failed subscriber delivery and exactly one captured email per active operator for that delivery
+✔ NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private (11122.345002ms)
+ℹ PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator
+ℹ PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident
+✖ HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions (44449.084407ms)
+ℹ HIST-006 starting built Worker
+ℹ HIST-006 built Worker ready
+ℹ HIST-006 real Worker bindings ready
+ℹ HIST-006 fixture schema migrated
+ℹ HIST-006 native owner sign-in starting
+ℹ HIST-006 native owner signed in
+ℹ HIST-006 production fixture started
+ℹ HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+ℹ HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+✔ AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders (29367.183508ms)
+ℹ HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+ℹ HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 417117.595844
+
+✖ failing tests:
+
+test at tests/e2e/update-reminders.test.mjs:159:1
+✖ HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions (44449.084407ms)
+  browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+  ╔════════════════════════════════════════════════════════════╗
+  ║ Looks like Playwright was just installed or updated.       ║
+  ║ Please run the following command to download new browsers: ║
+  ║                                                            ║
+  ║     pnpm exec playwright install                           ║
+  ║                                                            ║
+  ║ <3 Playwright Team                                         ║
+  ╚════════════════════════════════════════════════════════════╝
+      at trafficAlertsFlow (/workspace/run-lamp/tests/e2e/helpers/traffic-alerts-flow.mjs:197:30) {
+    name: 'Error',
+    log: []
+  }
+ ELIFECYCLE  Command failed with exit code 1.

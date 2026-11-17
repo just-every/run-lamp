@@ -1,0 +1,7 @@
+{
+  "revision": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+  "source": "git archive of the supplied parent; shared installed dependencies; separate fixture and source tree",
+  "command": "node --test --test-concurrency=1 --test-name-pattern=THEME-001 tests/e2e/publishing-browser.test.mjs",
+  "browser": "/usr/bin/chromium",
+  "exit_code": 1
+}

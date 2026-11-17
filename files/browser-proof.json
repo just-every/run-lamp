@@ -1,0 +1,21 @@
+{
+  "primary": [
+    "browser/isolated-email-1440.png",
+    "browser/isolated-email-390.png"
+  ],
+  "assertion_width": 1440,
+  "phone_journey_assertion_width": 390,
+  "visually_reviewed_primary_pair": true,
+  "files": [
+    {
+      "path": "browser/isolated-email-1440.png",
+      "bytes": 286134,
+      "sha256": "cd1feacaaa5c1e01fbd3f689a8ec8c8705ac1f06937d45f13c8facdbc9f2204e"
+    },
+    {
+      "path": "browser/isolated-email-390.png",
+      "bytes": 241764,
+      "sha256": "61c466e8b93cdf38dec143652aba4a69fbfb081bb4e14d3ebad5e42cc6fddc71"
+    }
+  ]
+}

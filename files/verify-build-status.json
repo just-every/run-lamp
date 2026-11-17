@@ -1,0 +1,4 @@
+{
+  "command": "LAMP_VERIFY_SHARD=build npx -y @runeditrun/rer verify",
+  "exit_code": 0
+}

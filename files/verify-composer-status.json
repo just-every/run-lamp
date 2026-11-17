@@ -1,0 +1,4 @@
+{
+  "command": "LAMP_VERIFY_SHARD=composer pnpm run verify:app",
+  "exit_code": 1
+}

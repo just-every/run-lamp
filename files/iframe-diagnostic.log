@@ -1,0 +1,4 @@
+{"sandbox":"allow-same-origin","result":{"timeout":true}}
+{"sandbox":"allow-same-origin allow-scripts","result":{"violations":["landmark-unique"]}}
+{"sandbox":"allow-scripts","result":{"violations":["landmark-unique"]}}
+frame parent blocked: true

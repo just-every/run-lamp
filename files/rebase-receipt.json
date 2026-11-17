@@ -1,0 +1,20 @@
+{
+  "original_parent": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+  "rebased_parent": "8bd8c8df7dcde45f3321f66355623806e1e4ff18",
+  "main": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+  "application_and_e2e_sources_unchanged_by_main_update": true,
+  "files": [
+    {
+      "path": "src/core/features/incidents/ui/incident-preview.tsx",
+      "sha256": "15ac4ffa89497417451bf7391de7b8a6f61d1d9e00aa2ef5a000ae046f22b182",
+      "identical_to_pre_rebase_tested_source": true
+    },
+    {
+      "path": "tests/e2e/publishing-browser.test.mjs",
+      "sha256": "b95c353a15ed9b9b3c0e9143b0a40c2f58d9cdfbe08d723f1838fee0ecd18eea",
+      "identical_to_pre_rebase_tested_source": true
+    }
+  ],
+  "contract_conflicts": false,
+  "generated_views_restored_from_main": true
+}

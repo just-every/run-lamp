@@ -1,0 +1,130 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index 2dc0c43..ea83d48 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -5048,7 +5048,7 @@
+       "executable": false
+     },
+     "src/core/features/incidents/ui/incident-preview.tsx": {
+-      "sha256": "5bc40d20e2d475242f0b6f7a3f96a3f239bc73cbce84b02141cf8e9aced65753",
++      "sha256": "15ac4ffa89497417451bf7391de7b8a6f61d1d9e00aa2ef5a000ae046f22b182",
+       "executable": false
+     },
+     "src/core/features/incidents/ui/incident-record.tsx": {
+@@ -8592,7 +8592,7 @@
+       "executable": false
+     },
+     "tests/e2e/publishing-browser.test.mjs": {
+-      "sha256": "dbba3fc036c4de8970aa496e5acf33797b4e39128756f2a55c15daafb6588890",
++      "sha256": "b95c353a15ed9b9b3c0e9143b0a40c2f58d9cdfbe08d723f1838fee0ecd18eea",
+       "executable": false
+     },
+     "tests/e2e/publishing-contract.test.mjs": {
+diff --git a/src/core/features/incidents/ui/incident-preview.tsx b/src/core/features/incidents/ui/incident-preview.tsx
+index d7db19d..cd37475 100644
+--- a/src/core/features/incidents/ui/incident-preview.tsx
++++ b/src/core/features/incidents/ui/incident-preview.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useRef, useState, type Ref } from "react";
++import { useLayoutEffect, useRef, useState, type Ref } from "react";
+ 
+ import type { RenderedIncidentUpdate } from "../renderer";
+ import { FormError, LoadingState } from "../../../app/client/ui/states";
+@@ -28,18 +28,24 @@ export function IncidentPreview({ preview, error, headingRef }: { preview: Rende
+   </aside>;
+ }
+ 
++/** Keep customer content in an opaque origin; only its own size crosses back. */
++const EMAIL_SIZE_SCRIPT = `<script>
++  const report = () => parent.postMessage({ type: "lamp-email-size", height: Math.ceil(document.body.getBoundingClientRect().height) }, "*");
++  new ResizeObserver(report).observe(document.body);
++  report();
++</script>`;
++
+ /** Keep the customer's document readable when the preview changes width. */
+ function EmailMessage({ html }: { html: string }) {
+-  const observer = useRef<ResizeObserver | null>(null);
+-  useEffect(() => () => observer.current?.disconnect(), []);
+-  return <iframe title="Notification email message" sandbox="allow-same-origin" srcDoc={html} onLoad={event => {
+-    const frame = event.currentTarget;
+-    observer.current?.disconnect();
+-    const body = frame.contentDocument?.body;
+-    if (!body) return;
+-    const resize = () => { frame.style.height = `${Math.ceil(body.getBoundingClientRect().height)}px`; };
+-    resize();
+-    observer.current = new ResizeObserver(resize);
+-    observer.current.observe(body);
+-  }} />;
++  const frame = useRef<HTMLIFrameElement>(null);
++  useLayoutEffect(() => {
++    const resize = (event: MessageEvent) => {
++      if (!frame.current || event.source !== frame.current.contentWindow || event.data?.type !== "lamp-email-size") return;
++      const height = event.data.height;
++      if (typeof height === "number" && Number.isFinite(height) && height > 0 && height <= 100_000) frame.current.style.height = `${height}px`;
++    };
++    window.addEventListener("message", resize);
++    return () => window.removeEventListener("message", resize);
++  }, []);
++  return <iframe ref={frame} title="Notification email message" sandbox="allow-scripts" srcDoc={html.replace("</body>", `${EMAIL_SIZE_SCRIPT}</body>`)} />;
+ }
+diff --git a/tests/e2e/publishing-browser.test.mjs b/tests/e2e/publishing-browser.test.mjs
+index 482251b..7711bdc 100644
+--- a/tests/e2e/publishing-browser.test.mjs
++++ b/tests/e2e/publishing-browser.test.mjs
+@@ -981,6 +981,55 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
+   await page.setViewportSize({width:1440,height:1000});
+ });
+ 
+-test('Owner incident communication — manual resolution, customer email and timeline correction', { timeout: 240_000 }, async () => {
++test('Owner incident communication — manual resolution, customer email, timeline correction and isolated preview', { timeout: 240_000 }, async () => {
++  await page.setViewportSize({ width: 1440, height: 1000 });
+   await (await import('./helpers/incident-owner-journey.mjs')).incidentOwnerJourney({ page, browserContext, appUrl, pageUrl, api });
++  // Keep the original owner flow: its optional manual-status warning is not a publication gate.
++  // Inspect a fresh correction through the same customer email surface that stalled the phone journey.
++  const path = `/api/app/incidents/${new URL(page.url()).pathname.split('/').at(-1)}`;
++  const before = (await api(path)).incident;
++  const target = before.updates[0];
++  await page.locator(`.timeline #update-${target.id}`).getByRole('button', { name: 'Correct', exact: true }).click();
++  const composer = incidentComposer(page);
++  const wording = 'Mobile requests have finished normally since the verified recovery time.';
++  await composer.impact.fill(wording);
++  await page.locator('.autosave-status.is-saved').waitFor();
++  assert.equal(await composer.publish.isEnabled(), true, 'a complete saved correction has no unanswered publication gate');
++  await page.getByRole('button', { name: 'Email', exact: true }).click();
++  const frame = page.frameLocator('iframe[title="Notification email message"]');
++  await frame.getByText(wording, { exact: false }).waitFor();
++  const { AxeBuilder } = await import('@axe-core/playwright');
++  const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
++  assert.deepEqual(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact)).map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], 'the customer email remains accessible');
++  assert.equal(await frame.locator('body').evaluate(() => {
++    try { return Boolean(parent.document); } catch { return false; }
++  }), false, 'email content cannot read the authenticated operator document');
++  await page.waitForFunction(() => {
++    const iframe = document.querySelector('iframe[title="Notification email message"]');
++    return Number.parseFloat(iframe?.style.height) > 280;
++  });
++  const height = await page.locator('.email-preview iframe').evaluate(element => element.style.height);
++  await page.evaluate(() => window.postMessage({ type: 'lamp-email-size', height: 100_000 }, '*'));
++  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
++  assert.equal(await page.locator('.email-preview iframe').evaluate(element => element.style.height), height, 'only the preview frame can resize its surface');
++  assert.equal(await composer.publish.isEnabled(), true, 'accessibility inspection leaves publication usable');
++  if (process.env.LAMP_INCIDENT_PROOF) {
++    await mkdir(process.env.LAMP_INCIDENT_PROOF, { recursive: true });
++    for (const width of [1440, 390]) {
++      await page.setViewportSize({ width, height: 1000 });
++      await page.locator('.email-preview iframe').scrollIntoViewIfNeeded();
++      // Paint the whole opaque frame before the full-page proof, including below the phone fold.
++      const height = await page.evaluate(() => Math.ceil(document.documentElement.scrollHeight));
++      await page.setViewportSize({ width, height });
++      await page.screenshot({ path: join(process.env.LAMP_INCIDENT_PROOF, `isolated-email-${width}.png`), fullPage: true });
++    }
++    await page.setViewportSize({ width: 1440, height: 1000 });
++  }
++  await composer.publish.click();
++  await page.waitForFunction(() => document.querySelector('.composer-panel textarea')?.value === '');
++  const after = (await api(path)).incident;
++  assert.equal(after.updates.length, before.updates.length + 1);
++  assert.equal(after.updates[0].correctsUpdateId, target.id);
++  assert.equal(after.updates[0].customerImpact, wording);
++  assert.deepEqual(after.updates.find(update => update.id === target.id), target, 'the correction keeps the original customer wording intact');
+ });

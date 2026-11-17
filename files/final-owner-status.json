@@ -1,0 +1,6 @@
+{
+  "command": "node --test --test-concurrency=1 --test-name-pattern=Owner incident communication tests/e2e/publishing-browser.test.mjs",
+  "exit_code": 0,
+  "proof_enabled": true,
+  "browser": "/usr/bin/chromium"
+}

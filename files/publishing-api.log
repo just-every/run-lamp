@@ -1,0 +1,156 @@
+
+> lamp@1.11.22 test:publishing /workspace/run-lamp
+> node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs tests/e2e/incident-brief.test.mjs tests/e2e/update-reminders.test.mjs
+
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails
+ok 1 - INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 — authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails
+  ---
+  duration_ms: 18337.850492
+  type: 'test'
+  ...
+# PROBE DRAFT-004 acceptance 2: native component DELETE then incident and brief GET -> empty attachments and exact stable Q-components question
+# PROBE DRAFT-001 2, 4 and 5: native suggestion with known, question and unknown citations plus provider lifecycle and time -> only known citations and text fields; complete saved incidents and eight settled public responses unchanged before and after explicit publication
+# PROBE DRAFT-004 acceptance 5: repeated native brief GETs before and after explicit suggestion -> provider counts stay 0, 1 and 2 across explicit suggestions; saved facts, references and questions reconcile
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# PROBE HIST-002 email: native saved-field readback, public permalink in 19.5 ms, committed=2, email=2, webhook=0
+# PROBE HIST-002 webhook: native saved-field readback, public permalink in 20.7 ms, committed=2, email=0, webhook=2
+# PROBE HIST-002 email-webhook: native saved-field readback, public permalink in 20.3 ms, committed=4, email=2, webhook=2
+# PROBE HIST-002 silent: native saved-field readback, public permalink in 21.8 ms, committed=0, email=0, webhook=0
+# Subtest: INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+ok 2 - INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+  ---
+  duration_ms: 43717.448532
+  type: 'test'
+  ...
+# Subtest: INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components
+ok 3 - INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components
+  ---
+  duration_ms: 19313.554612
+  type: 'test'
+  ...
+# Subtest: INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history
+ok 4 - INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history
+  ---
+  duration_ms: 10809.553869
+  type: 'test'
+  ...
+# Subtest: INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime
+ok 5 - INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime
+  ---
+  duration_ms: 12917.254878
+  type: 'test'
+  ...
+# Subtest: MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history
+ok 6 - MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history
+  ---
+  duration_ms: 60938.839072
+  type: 'test'
+  ...
+# Subtest: UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence
+ok 7 - UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence
+  ---
+  duration_ms: 17691.886242
+  type: 'test'
+  ...
+# PROBE UPDATE-006 2: native schedule with confirmed email and webhook, repeated Cron through saved instant minus 1 ms -> unchanged draft, 38 populated public artifacts and generation, absent permalink, zero notification work and zero subscriber sends
+# PROBE UPDATE-006 1: reviewed draft scheduled through native route, Worker Date and Cron advanced to saved instant plus 60000 ms -> exact saved update committed and read from public root and permalink after 60569 ms (deadline 240000 ms)
+# PROBE UPDATE-006 2 delivery control: after eligibility the exact committed recipient set receives one captured email and one acknowledged webhook; repeated Cron adds no update or send
+# Subtest: INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams
+ok 8 - INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams
+  ---
+  duration_ms: 36599.504108
+  type: 'test'
+  ...
+# INCIDENT-012 Slack: signed identity, private draft, shared preview, explicit attributed publication and state changes
+# PROBE INCIDENT-012 points 2 and 3 Slack: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+# INCIDENT-012 Teams: signed identity, private draft, shared preview, explicit attributed publication and state changes
+# PROBE INCIDENT-012 points 2 and 3 Teams: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+# PROBE INCIDENT-012 point 4 Slack: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+# PROBE INCIDENT-012 point 4 Teams: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+# Subtest: AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text
+ok 9 - AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text
+  ---
+  duration_ms: 11522.904731
+  type: 'test'
+  ...
+# PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent
+# PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records
+# PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report
+# PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes
+# Subtest: NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure
+ok 10 - NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure
+  ---
+  duration_ms: 21373.175401
+  type: 'test'
+  ...
+# PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+# PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+# PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+ok 11 - INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 — a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident
+  ---
+  duration_ms: 23923.268579
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-1 next-update due: owner publication with nextUpdateAt and repeated due Cron ticks -> exactly one captured email to the communication owner
+# PROBE NOTIFY-006 acceptance-2 overdue incident: owner takeover, revised publication and repeated overdue Cron ticks -> exactly one captured email to the replacement owner
+# Subtest: AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+ok 12 - AUTO-003 NOTIFY-006 — operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery
+  ---
+  duration_ms: 24432.785399
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-3 maintenance overrun: POST /api/app/maintenance, POST /start, repeated GET /api/app/maintenance and Cron -> exactly one captured email to each of two active operators for the window
+# PROBE NOTIFY-006 acceptance-4 terminal notification failure: public email subscription and owner publication receive provider HTTP 400, repeated Queue delivery and Cron -> failed subscriber delivery and exactly one captured email per active operator for that delivery
+# Subtest: NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+ok 13 - NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private
+  ---
+  duration_ms: 12632.890866
+  type: 'test'
+  ...
+# PROBE NOTIFY-006 acceptance-3 scheduled review hold: owner schedules two unreviewed drafts, advances Worker Date and repeats Cron -> each draft stays private and each event sends exactly one captured email to each active operator
+# PROBE NOTIFY-006 acceptance-3 alert-created draft: signed public POST /api/intake/:source for two firing events, exact replay, new receipt for each same incident and repeated Cron -> private drafts and exactly one captured email per operator per incident
+# Subtest: HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+ok 14 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions
+  ---
+  duration_ms: 76289.282052
+  type: 'test'
+  ...
+# HIST-006 starting built Worker
+# HIST-006 built Worker ready
+# HIST-006 real Worker bindings ready
+# HIST-006 fixture schema migrated
+# HIST-006 native owner sign-in starting
+# HIST-006 native owner signed in
+# HIST-006 production fixture started
+# HIST-006 observed baseline day 7: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 6: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 5: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 4: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 3: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 2: 2 observed minutes / 120 public page requests
+# HIST-006 observed baseline day 1: 2 observed minutes / 120 public page requests
+# HIST-009 1440px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+# HIST-009 390px Settings holds the first PUT, serializes the later choice after acknowledgement, reconciles 6 through native readback and reload, retains invalid edits, fits and passes axe and hydration
+# HIST-006: 840 public page + 420 feed baseline requests; default 3×, owner threshold, 5× exactly-once episode, incident suppression, recovery refusal, identifier-free counters and database-free reads asserted
+# HIST-006 riders: unknown baselines not tracked, historical refusal with a retained draft, private attributed immediate override with no later authority, scheduled due-time hold with a retained draft, near-baseline scheduled success
+# Subtest: AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+ok 15 - AUTO-004 HIST-003 — both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders
+  ---
+  duration_ms: 38481.022382
+  type: 'test'
+  ...
+# HIST-003: both severe incidents are absent at 2030-01-22T12:00:00.999Z and owing at 2030-01-22T12:00:01.000Z; native Overview changes from upcoming to overdue at that same instant.
+# HIST-003: published and reasoned-waiver exclusions remain absent from native owing and Overview reads after twenty-one days; weekly reminders stay stopped.
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 438902.595923

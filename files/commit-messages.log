@@ -1,0 +1,8 @@
+f4e68ea69aae8caa6f50476c0ad4be1c6a952fd9
+Keep incident email preview inspection isolated and publishable
+
+Allow preview callbacks in an opaque sandbox so accessibility inspection finishes before a later owner journey starts. Validate sizing messages and cover parent isolation and correction publication while keeping the owner helper unchanged.
+
+8bd8c8df7dcde45f3321f66355623806e1e4ff18
+Make incident resolution, email previews and corrections tell the same story
+

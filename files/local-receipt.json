@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-incident-1-c2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-incident-1-c2",
+  "recorded_at": "2026-11-17T15:23:35.310708+00:00",
+  "parent": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+  "main_observed": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "diagnosis": "Product defect; no unanswered manual-status prompt; stalled sandboxed iframe accessibility work resumes stale publication on the next case.",
+  "owner_helper_unchanged": true,
+  "owner_helper_sha256": "a2d478d557e43cca732c6624b16629c47c5db9d765bc8b5c25f0ef3ebe22b625",
+  "before_pair": {
+    "selected": 2,
+    "passed": 0,
+    "failed": 1,
+    "cancelled": 1,
+    "log": "before-pair.log"
+  },
+  "after_pair": {
+    "selected": 2,
+    "passed": 2,
+    "failed": 0,
+    "cancelled": 0,
+    "log": "after-pair.log"
+  },
+  "publishing_api": {
+    "selected": 15,
+    "passed": 15,
+    "failed": 0,
+    "log": "publishing-api.log"
+  },
+  "build_verify": {
+    "command": "LAMP_VERIFY_SHARD=build npx -y @runeditrun/rer verify",
+    "exit_code": 0
+  },
+  "typecheck": {
+    "exit_code": 0,
+    "log": "typecheck.log"
+  },
+  "contract_check": {
+    "exit_code": 0,
+    "log": "contract-check-before.log",
+    "errors": 0,
+    "warnings": 0
+  },
+  "counts_before": {
+    "core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "full_target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "clause_changes": [],
+  "pending": [],
+  "product_head": "f4e68ea69aae8caa6f50476c0ad4be1c6a952fd9",
+  "final_owner": {
+    "command": "node --test --test-concurrency=1 --test-name-pattern=Owner incident communication tests/e2e/publishing-browser.test.mjs",
+    "exit_code": 0,
+    "proof_enabled": true,
+    "browser": "/usr/bin/chromium"
+  },
+  "rebase": {
+    "original_parent": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+    "rebased_parent": "8bd8c8df7dcde45f3321f66355623806e1e4ff18",
+    "main": "a6df8fc6b186b28e1f9ac142f79c0081abdfdb8c",
+    "application_and_e2e_sources_unchanged_by_main_update": true,
+    "files": [
+      {
+        "path": "src/core/features/incidents/ui/incident-preview.tsx",
+        "sha256": "15ac4ffa89497417451bf7391de7b8a6f61d1d9e00aa2ef5a000ae046f22b182",
+        "identical_to_pre_rebase_tested_source": true
+      },
+      {
+        "path": "tests/e2e/publishing-browser.test.mjs",
+        "sha256": "b95c353a15ed9b9b3c0e9143b0a40c2f58d9cdfbe08d723f1838fee0ecd18eea",
+        "identical_to_pre_rebase_tested_source": true
+      }
+    ],
+    "contract_conflicts": false,
+    "generated_views_restored_from_main": true
+  },
+  "counts_after": {
+    "core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "full_target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "public_verification": {
+    "selected": 8,
+    "passed": 8,
+    "failed": 0,
+    "log": "verify-composer.log"
+  },
+  "broad_composer": {
+    "selected": 11,
+    "passed": 9,
+    "failed": 1,
+    "cancelled": 1,
+    "failures": [
+      "Untouched THEME-001: system Chromium counts a fifth favicon request.",
+      "Earlier optional owner proof capture timed out; synchronization fixed and final owner rerun passed."
+    ],
+    "final_owner_receipt": "final-owner-status.json",
+    "log": "verify-composer.log"
+  },
+  "overall_composer_command": {
+    "command": "LAMP_VERIFY_SHARD=composer pnpm run verify:app",
+    "exit_code": 1
+  },
+  "exact_sha_verify": {
+    "run_id": 44118900256,
+    "head": "f4e68ea69aae8caa6f50476c0ad4be1c6a952fd9",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/44118900256",
+    "observed_at": "2026-11-17T16:11:27.224058+00:00"
+  },
+  "github_calls_used": 7,
+  "github_call_budget": 10,
+  "evidence_transfer": "Reported separately by publisher output; not a product acceptance or landing signal."
+}

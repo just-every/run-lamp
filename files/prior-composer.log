@@ -1,0 +1,282 @@
+shards (composer)	Verify this product shard	﻿2026-11-17T13:59:50.6974549Z ##[group]Run # rer verify adds Base's hosted-output and hydration checks after the
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6975033Z [36;1m# rer verify adds Base's hosted-output and hydration checks after the[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6975655Z [36;1m# runtime shard has built and exercised the actual production Worker.[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6976007Z [36;1mif [ "$LAMP_VERIFY_SHARD" = runtime ]; then[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6976334Z [36;1m  pnpm verify 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6976634Z [36;1melse[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6976893Z [36;1m  pnpm run verify:app 2>&1 | tee "$RUNNER_TEMP/lamp-verification/shard.log"[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6977202Z [36;1mfi[0m
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6994081Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6994371Z env:
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6994555Z   PLAYWRIGHT_SKIP_BROWSER_GC: 1
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6994779Z   LAMP_VERIFY_SHARD: composer
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6995116Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6995937Z   LAMP_BASELINE_REPORT: /home/runner/work/_temp/lamp-verification/baseline-report.json
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.6996276Z ##[endgroup]
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.8995395Z 
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.8996191Z > lamp@1.11.22 verify:app /home/runner/work/run-lamp/run-lamp
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.8996698Z > node scripts/verification/run.mjs
+shards (composer)	Verify this product shard	2026-11-17T13:59:50.8996896Z 
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.6207931Z Verification plan: 8 test shards and one shared build, 35 routine test files, 103 registered cases (including release qualification) + 10 assertion scripts = 113 checks.
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.6283718Z 
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.6284143Z Verifying composer: test:composer
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.8332320Z 
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.8332747Z > lamp@1.11.22 test:composer /home/runner/work/run-lamp/run-lamp
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.8333633Z > node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs tests/e2e/maintenance-timezone.test.mjs tests/e2e/unsaved-work-browser.test.mjs
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.8334137Z 
+shards (composer)	Verify this product shard	2026-11-17T13:59:51.8665197Z TAP version 13
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6497730Z # Subtest: MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6520250Z ok 1 - MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6521134Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6521426Z   duration_ms: 119334.294282
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6521749Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6522018Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6522594Z # PAGE-020 1440px public status page: full-page axe and no horizontal overflow passed
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6523431Z # PAGE-020 1440px public history: full-page axe and no horizontal overflow passed
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6524322Z # PAGE-020 1440px public incident permalink: full-page axe and no horizontal overflow passed
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6525132Z # PAGE-020 1440px VPAT document: full-page axe and no horizontal overflow passed
+shards (composer)	Verify this product shard	2026-11-17T14:01:51.6526976Z # PAGE-020 1440px: full-page status, history, incident, maintenance, VPAT, subscribe result, confirmation, management and saved selection axe passed; keyboard-only subscribe/manage with visible focus and ordered controls passed
+shards (composer)	Verify this product shard	2026-11-17T14:02:10.4347632Z # Subtest: SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+shards (composer)	Verify this product shard	2026-11-17T14:02:10.4357258Z ok 2 - SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+shards (composer)	Verify this product shard	2026-11-17T14:02:10.4358055Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:02:10.4360374Z   duration_ms: 18784.620735
+shards (composer)	Verify this product shard	2026-11-17T14:02:10.4360906Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:02:10.4361827Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:02:12.6474061Z # Subtest: TEAM-002 — Local operator invitations disclose suppressed email
+shards (composer)	Verify this product shard	2026-11-17T14:02:12.6475887Z ok 3 - TEAM-002 — Local operator invitations disclose suppressed email
+shards (composer)	Verify this product shard	2026-11-17T14:02:12.6476484Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:02:12.6477373Z   duration_ms: 2213.241601
+shards (composer)	Verify this product shard	2026-11-17T14:02:12.6477837Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:02:12.6478267Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:02:55.0250734Z # Subtest: TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+shards (composer)	Verify this product shard	2026-11-17T14:02:55.0252849Z ok 4 - TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+shards (composer)	Verify this product shard	2026-11-17T14:02:55.0253738Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:02:55.0254039Z   duration_ms: 41057.308333
+shards (composer)	Verify this product shard	2026-11-17T14:02:55.0254333Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:02:55.0254604Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7663721Z # Subtest: TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7669441Z ok 5 - TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7670123Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7670400Z   duration_ms: 14742.122022
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7670701Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7670946Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7672112Z # PROBE INCIDENT-014 Slack Settings 1440: Create link code -> signed /api/chat/slack 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7673529Z # PROBE INCIDENT-014 Teams Settings 1440: Create link code -> signed /api/chat/teams 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+shards (composer)	Verify this product shard	2026-11-17T14:03:09.7674541Z # PROBE INCIDENT-014 removal 1440: both Settings Remove chat link controls -> 204, native list and storage empty after reload; axe, overflow and hydration pass
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7928323Z # Subtest: INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7950058Z ok 6 - INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7951616Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7952021Z   duration_ms: 90024.435991
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7952473Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7952891Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7954077Z # PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7955749Z # PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7957600Z # PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7970163Z # PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7972070Z # PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7973719Z # PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7975783Z # PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7980789Z # {"phase":"acknowledged","finalEdit":1794924234517,"refreshDelivered":1794924234557,"refreshReceived":1794924234561,"putDispatched":1794924235032,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794924235052,"putStatus":200,"finalEditPerformance":1585.4000000000233,"nativeAcknowledged":1794924235051,"nativeAcknowledgedPerformance":2119.600000000035,"saved":1794924235064,"savedPerformance":2132.2000000000116,"elapsedToSaved":547,"deadlinePassed":true}
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.7992692Z # {"finalEdit":1794924234517,"refreshDelivered":1794924234557,"refreshReceived":1794924234561,"putDispatched":1794924235032,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794924235052,"putStatus":200,"finalEditPerformance":1585.4000000000233,"nativeAcknowledged":1794924235051,"nativeAcknowledgedPerformance":2119.600000000035,"saved":1794924235064,"savedPerformance":2132.2000000000116,"storedDraft":{"id":"01M7MX4J8P2BR8MC2KCQ6GMDSG","incidentId":"01M7MX4G5CAGE2397E9K0J6164","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-17T14:03:52.876Z","updatedAt":"2026-11-17T14:03:55.048Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":547,"deadlinePassed":true}
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.8000369Z # {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-12,"browserAckBeforeSavedMs":12.599999999976717}
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.8006135Z # {"earlierPersisted":1794924238378,"finalEdit":1794924238405,"earlierAcknowledged":1794924239410,"latestAcknowledged":1794924239441,"finalEditPerformance":2034,"nativeAcknowledged":1794924239440,"nativeAcknowledgedPerformance":3068.899999999965,"saved":1794924239453,"savedPerformance":3081.7999999999884,"writes":[{"at":1794924238360,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794924239422,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1048,"deadlinePassed":true}
+shards (composer)	Verify this product shard	2026-11-17T14:04:39.8010574Z # {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-12,"browserAckBeforeSavedMs":12.900000000023283}
+shards (composer)	Verify this product shard	2026-11-17T14:04:49.3129989Z # Phone desk: 390 sign-in
+shards (composer)	Verify this product shard	2026-11-17T14:04:52.7843836Z # Phone desk: 390 alerts
+shards (composer)	Verify this product shard	2026-11-17T14:04:56.0666055Z # Phone desk: 390 composer
+shards (composer)	Verify this product shard	2026-11-17T14:04:56.6088234Z # Phone desk: 390 preview
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8080374Z # Subtest: INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8081922Z not ok 7 - INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8082652Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8082930Z   duration_ms: 600015.753401
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8083261Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8084177Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/publishing-browser.test.mjs:932:1'
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8084829Z   failureType: 'testTimeoutFailure'
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8085256Z   error: 'test timed out after 600000ms'
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8085806Z   code: 'ERR_TEST_FAILURE'
+shards (composer)	Verify this product shard	2026-11-17T14:14:39.8086105Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2344652Z # Subtest: THEME-001 — owner publishes branded themes and layouts within the page budget
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2347187Z ok 8 - THEME-001 — owner publishes branded themes and layouts within the page budget
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2347948Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2348484Z   duration_ms: 96427.367231
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2348794Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2348998Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2349499Z # THEME-001 — owner settings reach the retained page; unsafe CSS and HTML never execute
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2350261Z # default: 200 public components with the saved palette, uploaded font, banner and links: 34602 bytes gzipped, 4 own-origin requests
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2351321Z # calm: 200 public components with the saved palette, uploaded font, banner and links: 32738 bytes gzipped, 4 own-origin requests
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2352379Z # uptime: 200 public components with the saved palette, uploaded font, banner and links: 40211 bytes gzipped, 4 own-origin requests
+shards (composer)	Verify this product shard	2026-11-17T14:16:16.2353501Z # regions: 200 public components with the saved palette, uploaded font, banner and links: 38622 bytes gzipped, 4 own-origin requests
+shards (composer)	Verify this product shard	2026-11-17T14:16:45.7766751Z # Subtest: DEP-001 DEP-002 — owner configures upstream reports under Settings
+shards (composer)	Verify this product shard	2026-11-17T14:16:45.7767591Z ok 9 - DEP-001 DEP-002 — owner configures upstream reports under Settings
+shards (composer)	Verify this product shard	2026-11-17T14:16:45.7767919Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:16:45.7768107Z   duration_ms: 29542.013164
+shards (composer)	Verify this product shard	2026-11-17T14:16:45.7768315Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:16:45.7768598Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5716864Z # Subtest: Owner incident communication — manual resolution, customer email and timeline correction
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5718600Z not ok 10 - Owner incident communication — manual resolution, customer email and timeline correction
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5722105Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5736121Z   duration_ms: 75796.044625
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5736571Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5737179Z   location: '/home/runner/work/run-lamp/run-lamp/tests/e2e/publishing-browser.test.mjs:984:1'
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5737828Z   failureType: 'testCodeFailure'
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5738223Z   error: |-
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5738591Z     locator.click: Timeout 60000ms exceeded.
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5738965Z     Call log:
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5739480Z       - waiting for getByRole('button', { name: 'Publish update', exact: true })
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5740723Z         - locator resolved to <button disabled type="button" data-slot="button" aria-describedby="_r_1_" class="button inline-flex items-center justify-center button-primary">Publish update</button>
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5741755Z       - attempting click action
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5742387Z         2 × waiting for element to be visible, enabled and stable
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5742922Z           - element is not enabled
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5743349Z         - retrying click action
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5744044Z         - waiting 20ms
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5744580Z         2 × waiting for element to be visible, enabled and stable
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5745065Z           - element is not enabled
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5745588Z         - retrying click action
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5745954Z           - waiting 100ms
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5746497Z         109 × waiting for element to be visible, enabled and stable
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5747047Z             - element is not enabled
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5766024Z           - retrying click action
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5791515Z             - waiting 500ms
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5791855Z     
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5799058Z   code: 'ERR_TEST_FAILURE'
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5826239Z   name: 'TimeoutError'
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5847534Z   stack: |-
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5848465Z     Module.incidentOwnerJourney (/home/runner/work/run-lamp/run-lamp/tests/e2e/helpers/incident-owner-journey.mjs:66:26)
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5851761Z     async TestContext.<anonymous> (/home/runner/work/run-lamp/run-lamp/tests/e2e/publishing-browser.test.mjs:985:3)
+shards (composer)	Verify this product shard	2026-11-17T14:18:01.5852400Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.4755893Z # Subtest: A refused Impact save keeps the chosen value for Retry, and an unsaved SMS delivery draft asks before a pane switch drops it
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.4757590Z ok 11 - A refused Impact save keeps the chosen value for Retry, and an unsaved SMS delivery draft asks before a pane switch drops it
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.4759583Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.4760132Z   duration_ms: 42136.418153
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.4760637Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.4761057Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6457779Z 1..11
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6458134Z # tests 11
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6458881Z # suites 0
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6459122Z # pass 9
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6459343Z # fail 1
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6459591Z # cancelled 1
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6459849Z # skipped 0
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6460015Z # todo 0
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6460319Z # duration_ms 1132789.37948
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6605169Z  ELIFECYCLE  Command failed with exit code 1.
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6781704Z 
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.6782405Z Verifying composer: test:public
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.8750431Z 
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.8751104Z > lamp@1.11.22 test:public /home/runner/work/run-lamp/run-lamp
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.8751739Z > node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs tests/e2e/snapshot-retained.test.mjs
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.8752086Z 
+shards (composer)	Verify this product shard	2026-11-17T14:18:44.9078880Z TAP version 13
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.7953211Z # PROBE HIST-008 1: reviewed Statuspage saved responses -> script-disabled index reaches oldest 2019-12 incident
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.7954416Z # PROBE HIST-008 2: previous and next links -> all five populated months exactly once in both directions
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.7955831Z # PROBE HIST-008 3: configured-zone months -> all four resolved incidents and two completed maintenance records, with working permalinks
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.7957070Z # PROBE HIST-008 5: native month and Sorry alias -> 200 month document and 301 alias to the history index
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.8639978Z # Subtest: HIST-008 — reviewed imported history stays completely browsable without scripts
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.8644025Z ok 1 - HIST-008 — reviewed imported history stays completely browsable without scripts
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.8644890Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.8645598Z   duration_ms: 5892.746067
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.8646143Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:18:51.8646557Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7286891Z # Lamp could not rebuild its public page for this release. Error: Configured logo object is missing from object storage.
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7288057Z #     at prepare2 (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:92128:54)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7295160Z #     at async rebuildOne (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:92156:24)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7296138Z #     at async Object.retryPendingBuild (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:92328:11)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7296810Z #     at async file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:95875:60
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7300100Z #     at async publication3 (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:95218:11)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7300748Z #     at async Promise.all (index 0)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7301406Z #     at async Object.check (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:95233:40)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7302028Z #     at async Promise.all (index 0)
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7302607Z #     at async file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:95163:41
+shards (composer)	Verify this product shard	2026-11-17T14:19:00.7303372Z #     at async dispatch2 (file:///home/runner/work/run-lamp/run-lamp/script-0.mjs:52548:17)
+shards (composer)	Verify this product shard	2026-11-17T14:19:01.5169184Z # Subtest: PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+shards (composer)	Verify this product shard	2026-11-17T14:19:01.5170888Z ok 2 - PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+shards (composer)	Verify this product shard	2026-11-17T14:19:01.5171940Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:19:01.5172252Z   duration_ms: 9653.093167
+shards (composer)	Verify this product shard	2026-11-17T14:19:01.5172543Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:19:01.5172905Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:19:06.3040357Z # Subtest: UPTIME-003 — newly observed services report only their recorded coverage
+shards (composer)	Verify this product shard	2026-11-17T14:19:06.3043245Z ok 3 - UPTIME-003 — newly observed services report only their recorded coverage
+shards (composer)	Verify this product shard	2026-11-17T14:19:06.3043768Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:19:06.3044025Z   duration_ms: 4786.627991
+shards (composer)	Verify this product shard	2026-11-17T14:19:06.3044331Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:19:06.3044591Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:19:22.6836930Z # PUBLIC_SELECTION records=50 unique=50 expected=50 pages=1 private_disclosures=0
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5723410Z # Component read: opening emitted Worker
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5725946Z # Subtest: HIST-001 — completed native records retain their month, window, components and complete publication inventory
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5727364Z ok 4 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5727875Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5728095Z   duration_ms: 28266.864803
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5728356Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:19:34.5728541Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:19:36.6424596Z # Component read: owner signed in
+shards (composer)	Verify this product shard	2026-11-17T14:19:42.9487510Z # Component read: 54 native corrections committed
+shards (composer)	Verify this product shard	2026-11-17T14:19:44.4234988Z # Component read: native paging and Cron passed
+shards (composer)	Verify this product shard	2026-11-17T14:19:49.9099801Z # PROBE PAGE-019 1: native maintenance without an incident -> both floating installations visible; inactive and operational controls hide every configured variant
+shards (composer)	Verify this product shard	2026-11-17T14:19:50.9287039Z # PROBE PAGE-019 2: four served installations and populated script artifacts -> exact shared snapshot, raw and gzip size within ten KiB
+shards (composer)	Verify this product shard	2026-11-17T14:19:50.9288363Z # PROBE PAGE-019 4: native publication and polling -> floating notices appear with exact selected corners and computed colors
+shards (composer)	Verify this product shard	2026-11-17T14:19:51.3977770Z # PROBE PAGE-019 4: native resolution followed by eight actual HTTP polls -> original floating nodes remain attached and are positively hidden
+shards (composer)	Verify this product shard	2026-11-17T14:19:58.0781906Z # PROBE COMP-010 minute=0 state=Operational shown=false uptime=null downtime=0 history=1 elapsedMs=204.4
+shards (composer)	Verify this product shard	2026-11-17T14:19:58.4927078Z # PROBE COMP-010 minute=10 state=Degraded performance shown=true uptime=100.00% downtime=0 history=2 elapsedMs=304.4
+shards (composer)	Verify this product shard	2026-11-17T14:19:58.9150145Z # PROBE COMP-010 minute=20 state=Operational shown=false uptime=75.00% downtime=5 history=3 elapsedMs=296.1
+shards (composer)	Verify this product shard	2026-11-17T14:19:59.2216972Z # PROBE COMP-010 minute=30 state=Major outage shown=true uptime=83.33% downtime=5 history=4 elapsedMs=180.5
+shards (composer)	Verify this product shard	2026-11-17T14:19:59.5288172Z # PROBE COMP-010 minute=40 state=Operational shown=false uptime=62.50% downtime=15 history=5 elapsedMs=164.3
+shards (composer)	Verify this product shard	2026-11-17T14:19:59.8375848Z # PROBE COMP-010 minute=50 state=Partially unavailable shown=true uptime=70.00% downtime=15 history=6 elapsedMs=165.1
+shards (composer)	Verify this product shard	2026-11-17T14:20:00.1461724Z # PROBE COMP-010 minute=60 state=Operational shown=false uptime=58.33% downtime=25 history=7 elapsedMs=164.1
+shards (composer)	Verify this product shard	2026-11-17T14:20:00.4544870Z # PROBE COMP-010 minute=70 state=Under maintenance shown=true uptime=64.28% downtime=25 history=8 elapsedMs=190.2
+shards (composer)	Verify this product shard	2026-11-17T14:20:00.7404465Z # PROBE COMP-010 minute=80 state=Operational shown=false uptime=68.75% downtime=25 history=9 elapsedMs=176.6
+shards (composer)	Verify this product shard	2026-11-17T14:20:04.3877070Z # UPTIME_CORRECTION_DEADLINE {"template":"default","elapsedMs":206,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+shards (composer)	Verify this product shard	2026-11-17T14:20:08.0923241Z # UPTIME_CORRECTION_DEADLINE {"template":"calm","elapsedMs":184,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+shards (composer)	Verify this product shard	2026-11-17T14:20:11.8078136Z # UPTIME_CORRECTION_DEADLINE {"template":"uptime","elapsedMs":188,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+shards (composer)	Verify this product shard	2026-11-17T14:20:15.5437518Z # UPTIME_CORRECTION_DEADLINE {"template":"regions","elapsedMs":201,"limitMs":60000,"figures":["root","native components","uptime badge","2040-03 JSON","2040-03 CSV","2040-03 PDF","2040-04 JSON","2040-04 CSV","2040-04 PDF","2040-Q1 JSON","2040-Q1 CSV","2040-Q1 PDF","2040-Q2 JSON","2040-Q2 CSV","2040-Q2 PDF"]}
+shards (composer)	Verify this product shard	2026-11-17T14:23:04.7815607Z # PAGE-009 generation age at 1440: just now -> 1 minute ago; instant=2026-11-17T14:23:04.391Z; tooltip=Nov 17, 2026, 06:23 UTC-08:00
+shards (composer)	Verify this product shard	2026-11-17T14:23:04.8804067Z # PAGE-009 generation age at 390: just now -> 1 minute ago; instant=2026-11-17T14:23:04.391Z; tooltip=Nov 17, 2026, 06:23 UTC-08:00
+shards (composer)	Verify this product shard	2026-11-17T14:24:14.5691468Z # PROBE PAGE-013 acceptance2 default: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+shards (composer)	Verify this product shard	2026-11-17T14:24:14.5693130Z # PROBE PAGE-013 acceptance3 default: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+shards (composer)	Verify this product shard	2026-11-17T14:24:16.4493025Z # PROBE PAGE-013 acceptance2 calm: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+shards (composer)	Verify this product shard	2026-11-17T14:24:16.4494225Z # PROBE PAGE-013 acceptance3 calm: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+shards (composer)	Verify this product shard	2026-11-17T14:24:18.2622090Z # PROBE PAGE-013 acceptance2 uptime: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+shards (composer)	Verify this product shard	2026-11-17T14:24:18.2624076Z # PROBE PAGE-013 acceptance3 uptime: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+shards (composer)	Verify this product shard	2026-11-17T14:24:20.0998464Z # PROBE PAGE-013 acceptance2 regions: anonymous populated root, poll, native publication, reload -> no CAPTCHA or consent banner
+shards (composer)	Verify this product shard	2026-11-17T14:24:20.1000544Z # PROBE PAGE-013 acceptance3 regions: instrumented anonymous root, poll, native publication, reload -> no writes; cookies, localStorage, sessionStorage, IndexedDB and CacheStorage empty
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.6541501Z # COMP-007 public disappearance: 38.2 ms
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.9816998Z # Subtest: SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.9819830Z ok 5 - SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.9821245Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.9821468Z   duration_ms: 287408.749314
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.9821675Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:24:21.9821857Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:24:49.7425621Z # Subtest: DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+shards (composer)	Verify this product shard	2026-11-17T14:24:49.7428118Z ok 6 - DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+shards (composer)	Verify this product shard	2026-11-17T14:24:49.7428706Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:24:49.7428997Z   duration_ms: 27763.405004
+shards (composer)	Verify this product shard	2026-11-17T14:24:49.7429316Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:24:49.7429888Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.4531862Z # PROBE HIST-008 4: all four generated month routes and incident permalinks -> 200 with exact membership through throwing D1, storage failure and cold restart; zero database accesses
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.7679077Z # Subtest: THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.7680742Z ok 7 - THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.7681424Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.7681615Z   duration_ms: 8171.049102
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.7681822Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:24:58.7682060Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:25:02.6828670Z # RETENTION operator publish route: five publishes hold exactly current+previous=2
+shards (composer)	Verify this product shard	2026-11-17T14:25:04.1149987Z # RETENTION operator publish route: ten old versions drained; versionCounts=9,6,3,2
+shards (composer)	Verify this product shard	2026-11-17T14:25:05.1063609Z # RETENTION five publishes: versions=2
+shards (composer)	Verify this product shard	2026-11-17T14:25:06.5749610Z # Public snapshot retention deferred until the next successful publication.
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.6124563Z # RETENTION legacy pile: oldVersions=10 remaining=10,9,6,3,0 finalVersions=2
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8212584Z # Subtest: Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8213662Z ok 8 - Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8214107Z   ---
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8214299Z   duration_ms: 10053.785689
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8214518Z   type: 'test'
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8214693Z   ...
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8781755Z 1..8
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8782053Z # tests 8
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8782302Z # suites 0
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8782520Z # pass 8
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8782731Z # fail 0
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8782985Z # cancelled 0
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8783280Z # skipped 0
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8783478Z # todo 0
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.8783757Z # duration_ms 383980.141133
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.9093767Z  ELIFECYCLE  Command failed with exit code 1.
+shards (composer)	Verify this product shard	2026-11-17T14:25:08.9266625Z ##[error]Process completed with exit code 1.

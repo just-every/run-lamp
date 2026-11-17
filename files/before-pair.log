@@ -1,0 +1,67 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Phone desk: 390 sign-in
+Phone desk: 390 alerts
+Phone desk: 390 composer
+Phone desk: 390 preview
+Debugger listening on [local diagnostic debugger address omitted]
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on [local diagnostic debugger address omitted]
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on [local diagnostic debugger address omitted]
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on [local diagnostic debugger address omitted]
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger ending on [local diagnostic debugger address omitted]
+For help, see: https://nodejs.org/learn/getting-started/debugging
+✖ INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke (677320.30024ms)
+PUBLISH_PROBE before {"path":"/app/components"}
+PUBLISH_PROBE before {"path":"/app/incidents/01M7N113JT4J4VNXA5DCZQ176D","reason":"Publishing this update…","save":"Draft saved","warning":"Mobile apps also has a manual status of Degraded performance. Resolving this incident will leave that status in place.Set Mobile apps to AutomaticAutomatic follows any other open incidents or maintenance, and is Operational when nothing affects the component.","audience":"Customers using mobile apps.","impact":"Fixed. Mobile requests finish normally again.","lifecycle":"Resolved"}
+PUBLISH_PROBE failed {"reason":"Describe what’s happening before publishing.","save":"Not saved yet","composer":"UPDATE DRAFT\n\nNot saved yet\n\nUpdate published.\n\nSuggest update\nStatus\nInvestigating\nIdentified\nMonitoring\nResolved\nWhat’s happening?\nWho’s affected?\nMobile apps\nDegraded performance →\nMajor outage\nPartially unavailable\nDegraded performance\nEffect ends\n\nResolving closes the incident. No next update.\n\nMobile apps also has a manual status of Degraded performance. Resolving this incident will leave that status in place.\n\nSet Mobile apps to Automatic\n\nAutomatic follows any other open incidents or maintenance, and is Operational when nothing affects the component.\n\nRecovery check\n\nTracked recovery checks pass. Checked Nov 17, 2026, 07:11 UTC-08:00.\n\nNot tracked: Linked monitors and alerts (none received), Vendor dependencies, Public-page traffic baseline, Linked support tickets, Continuous monitor passing samples.\n\nCheck recovery again"}
+✖ Owner incident communication — manual resolution, customer email and timeline correction (71830.229839ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 752844.042398
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:932:1
+✖ INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke (677320.30024ms)
+  'test timed out after 600000ms'
+
+test at tests/e2e/publishing-browser.test.mjs:984:1
+✖ Owner incident communication — manual resolution, customer email and timeline correction (71830.229839ms)
+  locator.click: Timeout 60000ms exceeded.
+  Call log:
+  [2m  - waiting for getByRole('button', { name: 'Publish update', exact: true })[22m
+  [2m    - locator resolved to <button disabled type="button" data-slot="button" aria-describedby="_r_1_" class="button inline-flex items-center justify-center button-primary">Publish update</button>[22m
+  [2m  - attempting click action[22m
+  [2m    2 × waiting for element to be visible, enabled and stable[22m
+  [2m      - element is not enabled[22m
+  [2m    - retrying click action[22m
+  [2m    - waiting 20ms[22m
+  [2m    2 × waiting for element to be visible, enabled and stable[22m
+  [2m      - element is not enabled[22m
+  [2m    - retrying click action[22m
+  [2m      - waiting 100ms[22m
+  [2m    114 × waiting for element to be visible, enabled and stable[22m
+  [2m        - element is not enabled[22m
+  [2m      - retrying click action[22m
+  [2m        - waiting 500ms[22m
+  
+      at proto.click (/tmp/lamp-publish-probe.mjs:17:34)
+      at async Module.incidentOwnerJourney (/workspace/run-lamp/tests/e2e/helpers/incident-owner-journey.mjs:66:3)
+      at async TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/publishing-browser.test.mjs:985:3) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByRole('button', { name: 'Publish update', exact: true })", '    - locator resolved to <button disabled type="button" data-slot="button" aria-describedby="_r_1_" class="button inline-flex items-center justify-center button-primary">Publish update</button>', '  - attempting click action', '    2 × waiting for element to be visible, enabled and stable', '      - element is not enabled', '    - retrying click action', '    - waiting 20ms', '    2 × waiting for element to be visible, enabled and stable', '      - element is not enabled', '    - retrying click action', '      - waiting 100ms', '    114 × waiting for element to be visible, enabled and stable', '        - element is not enabled', '      - retrying click action', '        - waiting 500ms' ]
+  }

@@ -1,0 +1,10 @@
+# sd-lamp-incident-1-c2 plan
+
+1. Install fleet launcher credentials, Git identity, credential helper, push guard, commit hooks and report transport outside the product tree. Read repository requirements and landing rules.
+2. Read failed Verify 44093747254 composer job 134090900643. Clone only just-every/run-lamp; confirm the supplied parent is 92aa684cf150afdc9472a238fb08ed5cfdfb61de and branch cloud/sd-lamp-incident-1-c2 from it.
+3. Reproduce the supplied failing publishing cases before editing. Inspect actual rendered disabled reason and draft authority, comparing them with source. Decide whether a deliberate owner question requires helper changes or an unanswered-free flow reveals a product defect. Preserve customer truth assertions.
+4. Make the smallest coherent repair within the incident composer/resolve code and the leased publishing tests. Preserve the helper if the defect is in the product. Add a regression assertion that captures the demonstrated failure.
+5. Run the failing cases after the repair, all publishing and incident tests, typecheck, relevant source/contract checks and repository verification. Capture the changed journey at 1440 and 390 without placing evidence in the product tree.
+6. Regenerate sources.lock.json last if its check needs updating. Keep CONTRACT.md judgments and generated views unchanged. Commit one or two changes with explicit fleet author/committer environment and active hook; inspect every unpublished candidate identity, message and trailer.
+7. Push only cloud/sd-lamp-incident-1-c2 with the fleet guard. Discover/poll exact-SHA Verify through REST within the ten-call budget and five-minute interval. Read failed assertions once per failed job, repair real failures within scope, and never claim a different SHA's green run.
+8. Write actual reports and receipts, review explicit packet selections as public, publish via evidence/sd-lamp-incident-1-c2, then provide branch/SHA, CI IDs, counts and clause changes, diagnosis and POST line. Product READY and report custody are separate.
