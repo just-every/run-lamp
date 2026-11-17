@@ -8456,7 +8456,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sorry-template-import-flow.mjs": {
-      "sha256": "726a5062e52f7ac40279d53455428cb51eb20124c249cd52df0c12038d51da19",
+      "sha256": "6f5b1065a7c027343f9527349fb14b0333f60627cd222a44d9eb29eef03d4a48",
       "executable": false
     },
     "tests/e2e/helpers/status-journey.mjs": {
@@ -9984,7 +9984,7 @@
       "executable": false
     },
     "tests/helpers/import-notifications.mjs": {
-      "sha256": "cdb51a84e60e2c616358d12d06a75e49eedf76b9b4a3ca8374a4e4540ded1e73",
+      "sha256": "1d9dde7a1724080bc83e81a9f49cc5954c816748eb39ba24e51e49dcf0270858",
       "executable": false
     },
     "tests/helpers/incident-snapshot.mjs": {
