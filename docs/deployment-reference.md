@@ -45,12 +45,12 @@ Optional values follow the required entries in the table.
 | `SETUP_OPERATOR_EMAIL` | The first owner's email address. Supply it explicitly for Lamp's native deployment. |
 | `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`, `MAIL_PROVIDER_API_KEY` | Your provider-authenticated sender, its DKIM selector and the selected provider's API key ([step 6](deploy.md#step-6-mail)). These are required for enabled direct providers and unused with explicit `none`. |
 | `SETUP_TOKEN`, `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET`, `WEBHOOK_SIGNING_SECRET` | Required runtime secrets. `rer deploy` generates fresh random values when absent; they are not mandatory manual inputs for a first deployment. rer keeps the values it generates in `.rer/deploy/<environment>.secrets.env` and reuses them. A redeploy keeps the `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET`, `WEBHOOK_SIGNING_SECRET` and `OIDC_TRANSACTION_SECRET` each Worker already holds, so links, sessions and sign-ins in progress survive it; `LAMP_REPLACE_SECRETS=NAME` (with the new value in the file) or `rer deploy --rotate-secret NAME` replaces one on purpose. For restores into a new installation, supply and retain your original values as shown in the deployment guide. Each must be at least 32 characters. |
-| `MAIL_PROVIDER` | `none` deliberately turns email off without sending credentials; `rer` uses the managed relay; `resend` (native default), `sendgrid`, `mailgun`, `ses` and `postmark` enable direct mail with their required inputs. A missing selection never means off. |
+| `MAIL_PROVIDER` | `none` (the `rer deploy` default) turns email off without sending credentials; `rer` uses the managed relay; `resend`, `sendgrid`, `mailgun`, `ses` and `postmark` enable direct mail with their required inputs. Select an enabled provider explicitly; deferred selections are refused. |
 | `OWNER_DISPLAY_NAME` | Optional first-owner name, 1–120 characters; the native default is `Owner`. Existing owners keep their name. |
 | `LAMP_HOSTING` | `custom-domain` (default) or `workers-dev`. |
 | `LAMP_PAGE_HOST_ROUTE_ZONE`, `LAMP_PAGE_HOST_TARGET` | Optional, set together: serve `LAMP_PAGE_HOST` as a Worker route on a Cloudflare for SaaS provider zone in your account (`LAMP_PAGE_HOST_ROUTE_ZONE`) when its own DNS is elsewhere. The target is the proxied name on that zone (a CNAME to the fallback origin) that the page host's DNS points at: the zone or a name under it. Bare lowercase hostnames; the page host must be outside the zone; not valid with `LAMP_HOSTING=workers-dev`. See [a page host whose DNS is elsewhere](domains.md#a-page-host-whose-dns-is-in-another-cloudflare-account-or-elsewhere). |
 | `LAMP_PAGE_WORKER` | Optional public Worker name for `workers-dev` only: 1–63 lowercase letters, digits and internal hyphens, distinct from the app Worker. Set `LAMP_PAGE_HOST` to this name under the same account subdomain. Omit it to keep `<prefix>-page`; retain the choice on redeploy. |
-| `LAMP_RESOURCE_PREFIX` | Optional resource namespace: lowercase letters, digits and hyphens, at most 47 characters. Defaults to `lamp-<environment>`. |
+| `LAMP_RESOURCE_PREFIX` | Legacy native resource namespace: lowercase letters, digits and hyphens, at most 47 characters. Leave unset with `rer deploy`: a custom prefix and its owner claim do not mix until rer follows the recorded Worker. Name a new copy with `--environment` instead; resources default to `lamp-<environment>`. |
 | `SENDGRID_WEBHOOK_PUBLIC_KEY` or `RESEND_WEBHOOK_SECRET` | Optional at deploy time, required for accepting the selected provider's signed delivery receipts. Without a key or the optional signed SendGrid relay, feedback callbacks are rejected. The delivery log shows **Accepted by SendGrid** (or **Accepted by Resend**) as the final email status available; CSV retains the transport outcome and acceptance timestamp. |
 
 With the selected key and the provider's Event Webhook configured at
@@ -111,12 +111,14 @@ LAMP_APP_HOST=lamp-production.my-account.workers.dev
 LAMP_PAGE_HOST=lamp-production-page.my-account.workers.dev
 ```
 
-For a different namespace, add `LAMP_RESOURCE_PREFIX=my-status` and set the hosts
-to `my-status.my-account.workers.dev` and
-`my-status-page.my-account.workers.dev`. The two hostname values are still
-required; Lamp validates their exact match with the generated Worker names and
-checks the registered account subdomain during real setup. A dry run checks the
-naming pattern but does not query the account.
+For another copy, use `rer deploy --environment staging` and set the hosts to
+`lamp-staging.my-account.workers.dev` and
+`lamp-staging-page.my-account.workers.dev`. Leave `LAMP_RESOURCE_PREFIX` unset:
+a custom prefix and `rer deploy`'s owner claim do not mix until rer follows the
+recorded Worker. The two hostname values are still required; Lamp validates
+their exact match with the generated Worker names and checks the registered
+account subdomain during real setup. A dry run checks the naming pattern but
+does not query the account.
 
 To select just the public Worker for a new installation, add
 `LAMP_PAGE_WORKER=service-status` and set
@@ -128,12 +130,15 @@ provisioning. `OPERATIONS.md` documents the complete native naming policy.
 
 [//]: # (Native public Worker naming: Codex, 2026-11-15T03:50:49Z.)
 
-Use `--environment staging` for a separate installation; without an explicit
-prefix its hosts start with `lamp-staging` and `lamp-staging-page`. An explicit
-prefix replaces that environment-derived namespace, so give each installation
-a distinct prefix. The app Worker is `<prefix>`, the default public Worker is
-`<prefix>-page` (or the explicit `LAMP_PAGE_WORKER`), D1 is `<prefix>-db`, R2 is `<prefix>-files` and the Queue is
-`<prefix>-jobs`. Custom-domain hosting uses one Worker for both hosts.
+`--environment` is the supported way to name a separate installation. The app
+Worker is `lamp-<environment>`, the default public Worker is
+`lamp-<environment>-page` (or the explicit `LAMP_PAGE_WORKER`), D1 is
+`lamp-<environment>-db`, R2 is `lamp-<environment>-files` and the Queue is
+`lamp-<environment>-jobs`. Custom-domain hosting uses one Worker for both hosts.
+
+The app Worker has a one-minute cron (`* * * * *`) for scheduled status work,
+notifications and snapshot maintenance. The public Worker in `workers-dev`
+mode shares its storage and has no second scheduler.
 
 ## Removal and deployment records
 
@@ -153,7 +158,9 @@ one Worker. Removal uses separate creation records for the two Workers; it never
 infers ownership from matching names. Reused or unrecorded resources need separate
 inspection. There is no removal dry run. The generic `rer deploy --remove --yes`
 handles the app's recorded topology and does not retire Lamp's separate public
-Worker.
+Worker. Cloudflare can briefly report a deleted Worker or R2 bucket as present,
+particularly after a long object purge. If removal ends with `remove-incomplete`,
+keep the records and run the same removal command again.
 
 Lamp's native provisioning records live at `.seed/deployment/<environment>.json`.
 They identify resources for archives and recovery but are not creation-ownership
@@ -177,3 +184,5 @@ check that the selected Workers and owned storage resources are gone.
 <!-- Run Edit Run fleet (Codex), 2026-11-15: conditional mail inputs and guarded mail-off sign-in. -->
 
 <!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
+
+<!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->

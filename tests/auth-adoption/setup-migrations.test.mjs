@@ -24,7 +24,7 @@ async function setup(directory, edge, credentials, limit) {
     LAMP_FAKE_WRANGLER_STATE: join(directory, 'ledger.json'),
   };
   if (limit !== undefined) environment.LAMP_FAKE_WRANGLER_LIMIT = String(limit);
-  const child = spawn(process.execPath, [join(root, 'scripts/setup.mjs'), '--environment', 'setup-migrations'], { cwd: directory, timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'], env: environment });
+  const child = spawn('pnpm', ['run', 'setup:cloudflare', '--', '--environment', 'setup-migrations'], { cwd: directory, timeout: 120000, stdio: ['ignore', 'pipe', 'pipe'], env: environment });
   let output = '';
   child.stdout.on('data', chunk => { output += chunk; });
   child.stderr.on('data', chunk => { output += chunk; });
@@ -33,34 +33,36 @@ async function setup(directory, edge, credentials, limit) {
   return { code, output, ledger };
 }
 
-test('Setup fails naming the missing migrations when the apply comes up short, then a rerun completes them', async t => {
+test('Setup resumes a short migration apply in one command and stops safely without progress or after its budget', async t => {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-setup-migrations-'));
   const credentials = { CLOUDFLARE_ACCOUNT_ID: randomBytes(16).toString('hex'), CLOUDFLARE_API_TOKEN: `synthetic-${randomBytes(16).toString('hex')}` };
   const edge = await cloudflareEdge({ accountId: credentials.CLOUDFLARE_ACCOUNT_ID, token: credentials.CLOUDFLARE_API_TOKEN, subdomain: 'synthetic-owner', workerHost: { host: 'app.example.test', name: 'lamp-setup-migrations' }, app: () => new Response('Lamp') });
   try {
+    await writeFile(join(directory, 'package.json'), JSON.stringify({ private: true, scripts: { 'setup:cloudflare': `${JSON.stringify(process.execPath)} ${JSON.stringify(join(root, 'scripts/setup.mjs'))}` } }));
     await mkdir(join(directory, 'node_modules/wrangler/bin'), { recursive: true });
     await cp(new URL('../helpers/fake-wrangler.mjs', import.meta.url), join(directory, 'node_modules/wrangler/bin/wrangler.js'));
     await symlink(join(root, 'migrations'), join(directory, 'migrations'));
-    const cut = shipped.findIndex(name => name.startsWith('0061_'));
-    assert.ok(cut > 0, 'the shipped list still holds 0061');
-
-    const short = await setup(directory, edge, credentials, cut);
-    assert.notEqual(short.code, 0, short.output);
-    assert.doesNotMatch(short.output, /migrations and page settings are initialized/);
-    assert.match(short.output, new RegExp(`${cut} of ${shipped.length} migrations are applied`));
-    const missingRange = `${shipped[cut].slice(0, 4)}-${shipped.at(-1).slice(0, 4)}`;
-    assert.ok(short.output.includes(`(${missingRange})`), 'reports the range of unapplied migrations');
-    for (const name of shipped.slice(cut)) assert.ok(short.output.includes(name), `names ${name}`);
-    assert.equal(short.ledger.applied.length, cut);
-    assert.deepEqual(short.ledger.executed, [], 'page settings are not written onto a half-migrated database');
-    t.diagnostic(`PROBE: apply short -> setup fails naming ${missingRange} (exit ${short.code})`);
-
-    const complete = await setup(directory, edge, credentials);
+    const cut = Math.ceil(shipped.length * 0.7);
+    const complete = await setup(directory, edge, credentials, cut);
     assert.equal(complete.code, 0, complete.output);
+    assert.match(complete.output, /setup is continuing with pass/);
     assert.match(complete.output, /Provisioned lamp-setup-migrations; migrations and page settings are initialized\./);
     assert.deepEqual(complete.ledger.applied, shipped);
-    assert.equal(complete.ledger.executed.length, 1, 'page settings are written once the list is complete');
-    t.diagnostic(`PROBE: complete apply -> success message unchanged (exit ${complete.code})`);
+    assert.equal(complete.ledger.executed.length, 1, 'page settings are written only once the list is complete');
+    t.diagnostic(`PROBE: clean early return after ${cut} -> same setup command finishes ${shipped.length} migrations`);
+
+    for (const [limit, reason] of [[0, /made no progress/], [Math.max(1, Math.floor(shipped.length / 6)), /five-pass migration budget/]]) {
+      await writeFile(join(directory, 'ledger.json'), JSON.stringify({ applied: [], executed: [] }));
+      const short = await setup(directory, edge, credentials, limit);
+      assert.notEqual(short.code, 0, short.output);
+      assert.match(short.output, reason);
+      assert.doesNotMatch(short.output, /migrations and page settings are initialized/);
+      assert.deepEqual(short.ledger.executed, [], 'never writes page settings on a partial schema');
+      const missing = shipped.filter(name => !short.ledger.applied.includes(name));
+      for (const name of missing) assert.ok(short.output.includes(name), `names ${name}`);
+      t.diagnostic(`PROBE: ${reason.source} -> stops with ${short.ledger.applied.length}/${shipped.length}, no page settings`);
+    }
+
   } finally {
     await edge.close();
     await rm(directory, { recursive: true, force: true });

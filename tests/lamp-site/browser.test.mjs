@@ -45,7 +45,7 @@ before(async () => {
   viteCachePath = await mkdtemp(resolve("node_modules/.lamp-site-vite-"));
   // Wrangler and Vite load `.dev.vars` from the directory of the config they are given, and it overrides the config's vars. The fixture's
   // config therefore lives in a directory of its own, so a checkout's local secrets and origin (written by `rer setup`) cannot steer this Worker.
-  fixtureConfig = isolatedWranglerConfig((config) => ({ ...config, vars: { ...config.vars, MAIL_PROVIDER_API_KEY: "test-only-signin-presentation-no-delivery" } }));
+  fixtureConfig = isolatedWranglerConfig((config) => ({ ...config, vars: { ...config.vars, MAIL_PROVIDER: "resend", MAIL_PROVIDER_API_KEY: "test-only-signin-presentation-no-delivery" } }));
   wranglerConfig = fixtureConfig.path;
   execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", wranglerConfig, "--persist-to", statePath], { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024, stdio: "pipe" });
   worker = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {

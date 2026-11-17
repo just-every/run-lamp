@@ -7,7 +7,9 @@ import { join, resolve } from "node:path";
 // Callers can supply their child environment when inherited auth is not part of the fixture.
 export function localWranglerConfig(change = (config) => config, environment = process.env) {
   const config = JSON.parse(readFileSync(resolve("wrangler.jsonc"), "utf8").replace(/^\s*\/\/.*$/gm, ""));
-  config.vars = {...config.vars, ...Object.fromEntries(['AUTH_ORIGIN','AUTH_LOCAL','SESSION_SECRET','SETUP_OPERATOR_EMAIL'].filter(key=>environment[key]).map(key=>[key,environment[key]]))};
+  // Native browser fixtures exercise enabled email; hosted mail-off journeys
+  // override this choice explicitly instead of inheriting deployment defaults.
+  config.vars = {...config.vars, MAIL_PROVIDER: "resend", ...Object.fromEntries(['AUTH_ORIGIN','AUTH_LOCAL','SESSION_SECRET','SETUP_OPERATOR_EMAIL'].filter(key=>environment[key]).map(key=>[key,environment[key]]))};
   config.main = resolve(config.main);
   // Producers stay so code that enqueues still works; the real queue consumer does not start unless
   // LAMP_TEST_QUEUE_CONSUMERS=1, because a job a test leaves on the queue is then delivered mid-test (gr-base-215).
