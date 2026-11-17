@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.22
+
+**Published status-page snapshots no longer accumulate without limit in R2.** After a successful publication and pointer readback, Lamp keeps the current and previous snapshot generations and prunes older versions in bounded batches. An existing pile drains over successive successful publishes. A failed publication deletes nothing; deferred cleanup resumes on a later publish. Deployment removal clears snapshot objects with the rest of the files bucket.
+
+The deployment guide explains the two-generation retention policy and its bounded cleanup. The checkout keeps rer 0.2.121.
+
+Upgrading from 1.11.21: back up data and your source changes first, update the checkout to `v1.11.22`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. This version adds no migrations or contract meaning changes. Keep the backup, exercise a restored copy and check your installation's sign-in, first-run, Settings, incident and maintenance workflows and intended mail configuration. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+
+<!-- Run Edit Run fleet, 2026-11-17: release metadata for bounded R2 snapshot retention. -->
+
 ## 1.11.21
 
 **A fresh Lamp deployment completes in one command.** `rer deploy` resumes partially applied migrations while progress continues and checks that every shipped migration is recorded before writing page settings. The deployment form exposes the public app and page addresses, the optional public Worker name, the mail choice and the resource prefix.
