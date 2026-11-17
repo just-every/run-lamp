@@ -981,6 +981,55 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
   await page.setViewportSize({width:1440,height:1000});
 });
 
-test('Owner incident communication — manual resolution, customer email and timeline correction', { timeout: 240_000 }, async () => {
+test('Owner incident communication — manual resolution, customer email, timeline correction and isolated preview', { timeout: 240_000 }, async () => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await (await import('./helpers/incident-owner-journey.mjs')).incidentOwnerJourney({ page, browserContext, appUrl, pageUrl, api });
+  // Keep the original owner flow: its optional manual-status warning is not a publication gate.
+  // Inspect a fresh correction through the same customer email surface that stalled the phone journey.
+  const path = `/api/app/incidents/${new URL(page.url()).pathname.split('/').at(-1)}`;
+  const before = (await api(path)).incident;
+  const target = before.updates[0];
+  await page.locator(`.timeline #update-${target.id}`).getByRole('button', { name: 'Correct', exact: true }).click();
+  const composer = incidentComposer(page);
+  const wording = 'Mobile requests have finished normally since the verified recovery time.';
+  await composer.impact.fill(wording);
+  await page.locator('.autosave-status.is-saved').waitFor();
+  assert.equal(await composer.publish.isEnabled(), true, 'a complete saved correction has no unanswered publication gate');
+  await page.getByRole('button', { name: 'Email', exact: true }).click();
+  const frame = page.frameLocator('iframe[title="Notification email message"]');
+  await frame.getByText(wording, { exact: false }).waitFor();
+  const { AxeBuilder } = await import('@axe-core/playwright');
+  const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+  assert.deepEqual(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact)).map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], 'the customer email remains accessible');
+  assert.equal(await frame.locator('body').evaluate(() => {
+    try { return Boolean(parent.document); } catch { return false; }
+  }), false, 'email content cannot read the authenticated operator document');
+  await page.waitForFunction(() => {
+    const iframe = document.querySelector('iframe[title="Notification email message"]');
+    return Number.parseFloat(iframe?.style.height) > 280;
+  });
+  const height = await page.locator('.email-preview iframe').evaluate(element => element.style.height);
+  await page.evaluate(() => window.postMessage({ type: 'lamp-email-size', height: 100_000 }, '*'));
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  assert.equal(await page.locator('.email-preview iframe').evaluate(element => element.style.height), height, 'only the preview frame can resize its surface');
+  assert.equal(await composer.publish.isEnabled(), true, 'accessibility inspection leaves publication usable');
+  if (process.env.LAMP_INCIDENT_PROOF) {
+    await mkdir(process.env.LAMP_INCIDENT_PROOF, { recursive: true });
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.locator('.email-preview iframe').scrollIntoViewIfNeeded();
+      // Paint the whole opaque frame before the full-page proof, including below the phone fold.
+      const height = await page.evaluate(() => Math.ceil(document.documentElement.scrollHeight));
+      await page.setViewportSize({ width, height });
+      await page.screenshot({ path: join(process.env.LAMP_INCIDENT_PROOF, `isolated-email-${width}.png`), fullPage: true });
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  await composer.publish.click();
+  await page.waitForFunction(() => document.querySelector('.composer-panel textarea')?.value === '');
+  const after = (await api(path)).incident;
+  assert.equal(after.updates.length, before.updates.length + 1);
+  assert.equal(after.updates[0].correctsUpdateId, target.id);
+  assert.equal(after.updates[0].customerImpact, wording);
+  assert.deepEqual(after.updates.find(update => update.id === target.id), target, 'the correction keeps the original customer wording intact');
 });
