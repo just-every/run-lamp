@@ -1,0 +1,44 @@
+{
+  "head": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+  "eligibleUnderGeneratedViewsException": true,
+  "actualConclusion": "failure",
+  "cause": "Only generated ACCEPTANCE.md contract-docs check. Build receipt and aggregate missing-shard failures follow from that stop; other shards are skipped.",
+  "pushVerifyRun": 44080982481,
+  "pullRequestVerifyRun": 44081062726,
+  "dynamicPRRun": 44081058406,
+  "dynamicPRConclusion": "success",
+  "workflowRuns": [
+    {
+      "conclusion": "failure",
+      "event": "pull_request",
+      "head_branch": "cloud/sd-lamp-import-sorry-1",
+      "head_sha": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44081062726",
+      "id": 44081062726,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_branch": "refs/pull/404/head",
+      "head_sha": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44081058406",
+      "id": 44081058406,
+      "name": "PR #404",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "cloud/sd-lamp-import-sorry-1",
+      "head_sha": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44080982481",
+      "id": 44080982481,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "githubCalls": 10,
+  "landerAction": "Regenerate views from merged CONTRACT.md, regenerate source lock and rerun Verify before landing."
+}

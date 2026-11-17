@@ -1,0 +1,10 @@
+1: create candidate PR
+2: discover exact-SHA workflow runs
+3: inspect completed push Verify jobs
+4: poll PR Verify after at least300 seconds
+5: failed push build log, once
+6: failed push aggregate log, once
+7: inspect completed PR Verify jobs
+8: failed PR job log once: 134031814323
+9: failed PR job log once: 134032017339
+10: final exact-SHA run custody, more than300 seconds after previous status read

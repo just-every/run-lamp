@@ -1,0 +1,9 @@
+{
+  "reason": "Exclude command environment dumps from public evidence; retain actual failure diagnostics.",
+  "omittedLines": {
+    "ci-push-build-failed.log": 3,
+    "ci-push-verify-failed.log": 3,
+    "ci-pr-build-failed.log": 3,
+    "ci-pr-verify-failed.log": 3
+  }
+}

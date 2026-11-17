@@ -1,0 +1,26 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-1",
+  "head": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+  "remoteRefs": {
+    "refs/heads/cloud/sd-lamp-import-sorry-1": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+    "refs/heads/main": "cb6f9af49f440380caeca1722bac8fb7b7815699"
+  },
+  "author": {
+    "name": "Run Edit Run fleet",
+    "email": "fleet@runeditrun.com"
+  },
+  "committer": {
+    "name": "Run Edit Run fleet",
+    "email": "fleet@runeditrun.com"
+  },
+  "parents": [
+    "c77030f1bf9501975efca38be82a33d9611a9d5a"
+  ],
+  "tree": "5e22cfd7d25b679983ba2460eb5ebbb5e518dab1",
+  "clean": true,
+  "published": true,
+  "candidateCommits": 1,
+  "identityAndTrailersChecked": true,
+  "publicationScan": "fleet lander owns this; not run in cloud"
+}

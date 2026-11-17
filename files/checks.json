@@ -1,0 +1,32 @@
+{
+  "head": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+  "typecheck": "passed",
+  "sourceLock": "passed",
+  "contractWriteAndCheckBeforeViewRestore": "passed",
+  "expectedGeneratorMismatchAfterViewRestore": "ACCEPTANCE.md",
+  "build": "passed",
+  "sorryImportAndReconciliation": {
+    "passed": 7,
+    "failed": 0
+  },
+  "documentedExportCIJourney": {
+    "passed": 2,
+    "failed": 0
+  },
+  "candidateBrowser": {
+    "passed": 1,
+    "failed": 0,
+    "assertionWidth": 1440,
+    "proofWidths": [
+      1440,
+      390
+    ]
+  },
+  "candidateFullSyntheticProof": {
+    "passed": 2,
+    "failed": 0,
+    "durationMs": 696444.233536,
+    "receipt": "synthetic-receipt.json"
+  },
+  "publicationScan": "not run in cloud; fleet lander owns it"
+}

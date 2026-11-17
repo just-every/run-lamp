@@ -1,0 +1,20 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ documented Sorry generator reproduces all bytes and hashes without provider reads (228.981127ms)
+Synthetic Sorry authenticated: preview
+Synthetic Sorry public: preview
+Synthetic Sorry public: apply
+Synthetic Sorry public: repeat
+Synthetic Sorry public: undo
+✔ documented Sorry exports account for every field through preview, saved jobs and explicit refusals (41808.858455ms)
+ℹ All 1003 authenticated subscriber rows and 23974 fields reviewed; full subscriber apply/repeat/undo runs in scripts/sorry-synthetic-proof.mjs outside push CI.
+ℹ {"mode":"public","sourceRows":{"components":56,"notices":53,"updates":106,"subscribers":0},"nativeCounts":{"group":4,"component":52,"incident":43,"maintenance":10,"updates":106},"subscriberCount":0,"ledgerCount":3680,"outcomes":{"mapped":436,"changed":1199,"raw-only":2045,"deleted":0,"refused":0},"unexplainedDifferences":0,"expectedResourceGaps":["sorry-brand.json","sorry-component-1004-metrics.json","sorry-custom-domain.json","sorry-notice-templates.json","sorry-update-templates.json"],"previewUnchanged":true,"hostileRefusalUnchanged":true,"repeatUnchanged":true,"undoRestoredExceptReservedReferences":true,"silent":true}
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 43297.437157

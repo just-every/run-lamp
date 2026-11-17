@@ -1,0 +1,7 @@
+{
+  "head": "b3dbf1365fd7b79540e137d5ec8bb05c64f3730b",
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "ok": true,
+  "trackedFiles": 2431,
+  "sourceLockSha256": "bee648bcc411be9dfd96fc2efa411be2b09dc3571c877280c02d570da9ae0ca7"
+}
