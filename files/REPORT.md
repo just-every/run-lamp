@@ -7,7 +7,7 @@ Candidate: aa25410deb9a5d8597c5a63779bff8ebcd20ee74.
 Base: a6df8fc (fresh main; full base identity is in PRODUCT-RECEIPT.json).
 Pull request: https://github.com/just-every/run-lamp/pull/411.
 Exact-SHA push Verify: https://github.com/just-every/run-lamp/actions/runs/44120843965.
-CI status: pending the next permitted poll. No READY claim is made by this report while pending.
+CI status: completed / success on the exact candidate SHA, observed 17 November 2026 at 16:21 UTC. Product READY custody is reported separately from evidence transport.
 
 ## Result
 
@@ -46,7 +46,7 @@ Passed on the final source tree:
 - Existing compiled visual edits/publication browser journey, including the renamed Scheduled lookup: 1 passed, 0 failed.
 - Source lock regenerated last and checked, including a clean post-test check; contract-document check: 0 errors, 0 warnings, generated documents current. CONTRACT.md and generated views are unchanged.
 
-The initial maintenance assertion still waited for the future reminder removed by this change; it was corrected to await the empty Follow-ups state and passed. Initial local/hosted browser attempts overlapped source/build updates and encountered a connection reset and hydration timeout. The local stable-tree rerun passed. A direct full hosted rerun hung during disposal and was terminated only by its own recorded PIDs; the focused stable-output notification probe passed. The committed full hosted journey remains intact for exact-SHA CI. RECEIPTS.json retains these distinctions.
+The initial maintenance assertion still waited for the future reminder removed by this change; it was corrected to await the empty Follow-ups state and passed. Initial local/hosted browser attempts overlapped source/build updates and encountered a connection reset and hydration timeout. The local unchanged-checkout rerun passed. A direct full hosted rerun hung during disposal and was terminated only by its own recorded PIDs; the focused stable-build notification probe passed. The committed full hosted journey remains intact, and the exact-SHA Verify workflow completed successfully. RECEIPTS.json retains these distinctions.
 
 ## Custody and scope
 

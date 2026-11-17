@@ -103,5 +103,12 @@
   ],
   "productHead": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
   "branch": "cloud/sd-lamp-design-notify-1",
-  "completedAt": "2026-11-17T16:01:58.932450+00:00"
+  "completedAt": "2026-11-17T16:21:49.660338+00:00",
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "aa25410deb9a5d8597c5a63779bff8ebcd20ee74",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44120843965",
+    "status": "completed",
+    "runId": 44120843965
+  }
 }
