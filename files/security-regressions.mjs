@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
+const load = path => import(pathToFileURL(resolve(process.cwd(), path)));
+const { validateNativeExport } = await load('scripts/delivery/base/native-export.mjs');
+const { assertLinkedUpdateHtml, assertPublishedUpdateHtml, LINKED_URL, MARKDOWN_LITERAL, LABELLED_LITERAL } = await load('tests/e2e/helpers/update-link-evidence.mjs');
+const context = { resources: [], durableObjects: [{ binding: 'STATE' }] };
+const validate = path => validateNativeExport({ path, covers: ['STATE'] }, context);
+const old = /^\/(?:[A-Za-z0-9._~-]+\/?)*$/;
+let compared = 0;
+function compare(path, depth) {
+  const expected = old.test(path) && !path.split('/').some(segment => segment === '.' || segment === '..');
+  if (expected) assert.doesNotThrow(() => validate(path), path);
+  else assert.throws(() => validate(path), /Native export path/, path);
+  compared++;
+  if (depth) for (const c of ['a', '/', '.', '~', '?']) compare(path + c, depth - 1);
+}
+compare('', 6);
+for (const path of ['/', '/export', '/a/b/', '/v1/archive.json', '/' + 'a'.repeat(255)]) assert.doesNotThrow(() => validate(path));
+for (const path of ['//', '/a//b', '/./a', '/a/..', '/a?b', '/a#b', '/%2e', '/a\\b', 'https://example.test/x', '/' + 'a'.repeat(256)]) assert.throws(() => validate(path), /Native export path/);
+const started = performance.now();
+for (let i = 0; i < 1000; i++) assert.throws(() => validate('/' + 'a'.repeat(254) + '!'), /Native export path/);
+console.log(JSON.stringify({ nativeExport: 'PASS', exhaustiveShortPaths: compared, longInvalidPaths: 1000, longInvalidMilliseconds: performance.now() - started }));
+const anchor = url => `<a href="${url}" rel="nofollow noopener ugc">${url}</a>`;
+const html = `See ${anchor(LINKED_URL)}. at ${anchor(LINKED_URL)}, and the guide (${anchor(LINKED_URL)}) explains ${anchor('https://db-prod-3.internal/x')} ${anchor('https://10.0.0.5/x')} &lt;a href="https://x.test"&gt;x&lt;/a&gt; javascript:alert(1) http://example.com/x data:text/html,x ${MARKDOWN_LITERAL} ${LABELLED_LITERAL.replaceAll('<', '&lt;').replaceAll('>', '&gt;')} ${anchor('https://help.example.com/audience')} ${anchor('https://help.example.com/recovery')} synthetic-lamp-details`;
+const update = { details: 'synthetic-lamp-details', publishedAt: '2030-01-01T00:00:00.000Z' };
+const article = content => `<article class="update"><time datetime="${update.publishedAt}"></time><dd>${content}</dd></article>`;
+assertLinkedUpdateHtml(html, 'synthetic');
+assertPublishedUpdateHtml(article(html), 'synthetic', update);
+const prohibited = ['javascript:alert(1)', 'data:text/html,x', 'http://example.com/x', 'http://elsewhere.test/x', 'https://x.test', 'https://X.TEST:443/escaped', 'https://user@x.test/escaped', 'https://guide.example.test/markdown', 'https://GUIDE.EXAMPLE.TEST:443/labelled'];
+for (const href of prohibited) assert.throws(() => assertPublishedUpdateHtml(article(html + anchor(href)), 'synthetic mutation', update));
+for (const href of ['', '/relative', 'not a URL']) assert.throws(() => assertLinkedUpdateHtml(html + anchor(href), 'synthetic invalid URL'));
+assert.throws(() => assertLinkedUpdateHtml(html.replace('synthetic-lamp-details', '').replace(`See ${anchor(LINKED_URL)}.`, `See ${anchor(LINKED_URL + '.')}`), 'punctuation mutation'));
+assert.throws(() => assertPublishedUpdateHtml(article(html).replace(update.publishedAt, '2031-01-01T00:00:00.000Z'), 'publication mutation', update));
+console.log(JSON.stringify({ renderedLinks: 'PASS', prohibitedLinksRejected: prohibited.length, invalidLinksRejected: 3, preservedPunctuationAndPublicationAssertions: 'PASS' }));

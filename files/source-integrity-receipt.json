@@ -1,0 +1,32 @@
+{
+  "commands": [
+    {
+      "command": "pnpm source:copies",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "outputs": [
+    {
+      "file": "source-check.json",
+      "sha256": "dfffc3ae465e56e4035580ced83d6eb3ba480ebd1281b784d088ed7fb5a8e97b",
+      "source_files": 2300,
+      "check_ok": true,
+      "note": "Output is existing public source-lock metadata and source comparison hashes, not credential values."
+    },
+    {
+      "file": "source-lock.log",
+      "sha256": "b4b7c75456e9e477b8dd81281c6cbb88c336672f37c62664a8b1480f59c36239",
+      "source_files": 2300,
+      "check_ok": null,
+      "note": "Output is existing public source-lock metadata and source comparison hashes, not credential values."
+    }
+  ]
+}

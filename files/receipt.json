@@ -1,0 +1,193 @@
+{
+  "tag": "gr-mt-lamp-code-12",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/gr-mt-lamp-code-12",
+  "head": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+  "base": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "alerts": [
+    {
+      "id": 11,
+      "status": "fixed-in-code",
+      "path": "scripts/delivery/base/native-export.mjs",
+      "change": "Mandatory slash after repeated segments removes ambiguous character-run repartitioning; root and trailing slash stay valid."
+    },
+    {
+      "id": 13,
+      "status": "fixed-in-code",
+      "path": "tests/auth-adoption/dependencies.test.mjs",
+      "change": "Parse individual form-action CSP sources and compare URL origins exactly."
+    },
+    {
+      "id": 16,
+      "status": "fixed-in-code",
+      "path": "tests/e2e/helpers/update-link-evidence.mjs",
+      "change": "Parse anchor URLs; require HTTPS and compare prohibited markup/labelled hosts exactly."
+    }
+  ],
+  "counts": {
+    "reported_alerts": {
+      "before": 3,
+      "after_unaddressed_in_code": 0
+    },
+    "github_alert_closure": "not queried or claimed; requires CodeQL analysis",
+    "changed_test_registrations": {
+      "before": 4,
+      "after": 4
+    },
+    "clause_status_changes": 0
+  },
+  "checks": {
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    "auth": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='native identity setup' tests/auth-adoption/dependencies.test.mjs",
+      "exit": 0,
+      "pass": 1,
+      "log": "auth-test.log"
+    },
+    "build": {
+      "command": "pnpm run build:app",
+      "exit": 0,
+      "log": "build.log"
+    },
+    "public_journey_initial": {
+      "exit": 1,
+      "reason": "Missing emitted dist/server/wrangler.json; built Worker before retry",
+      "log": "public-test.log"
+    },
+    "security_regressions": {
+      "command": "node <packet>/security-regressions.mjs",
+      "exit": 0,
+      "short_path_cases": 19531,
+      "long_invalid_paths": 1000,
+      "forbidden_links": 9,
+      "invalid_links": 3,
+      "log": "security-regressions.log"
+    },
+    "source_copies": {
+      "command": "pnpm source:copies",
+      "exit": 0,
+      "log": "source-copies.log"
+    },
+    "source_lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "source-check.json"
+    },
+    "syntax": {
+      "command": "node --check <each of the three changed JavaScript files>",
+      "exit": 0
+    },
+    "public_journey": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='owner maintains a complete catalogue' tests/e2e/public-contract.test.mjs",
+      "exit": 0,
+      "pass": 1,
+      "duration_ms": 356669.988509,
+      "log": "public-test-after-build.log"
+    },
+    "candidate_identities": {
+      "exit": 0,
+      "all_candidate_commits_including_side_parents": 1,
+      "trailers": 0,
+      "log": "candidate-identities.log"
+    },
+    "publication_scan_initial": {
+      "command": "Base publish-check.mjs --repo <exact-commit-worktree> --ref 8a1b831a8f1d346bafd092350cc74ba35c7f19c6 --public-base https://github.com/just-every/run-lamp.git#main --repository just-every/run-lamp --timeout-seconds 300",
+      "exit": 2,
+      "status": "INCOMPLETE",
+      "reason": "scan.deadline-exceeded",
+      "report": "publication-scan-300.json"
+    },
+    "publication_scan_wrong_context": {
+      "exit": 1,
+      "status": "FAIL",
+      "complete": true,
+      "findings": {
+        "destination.invalid": 1
+      },
+      "reason": "Caller supplied a slug instead of the required repository URL and omitted project; no product metadata changed.",
+      "report": "publication-scan-invalid-destination.json",
+      "seconds": 351.906768
+    },
+    "publication_destination": {
+      "command": "python3 -B <Base>/scripts/publish-check/destination.py --repo <exact-commit-worktree> --ref 8a1b831a8f1d346bafd092350cc74ba35c7f19c6 --project just-every/lamp --repository https://github.com/just-every/run-lamp",
+      "exit": 0
+    },
+    "bundle_verification": {
+      "exit": 0,
+      "log": "bundle-verification.log"
+    },
+    "diff_whitespace": {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    "publication_scan": {
+      "exit": 0,
+      "status": "PASS",
+      "complete": true,
+      "blocking_findings": 0,
+      "pre_existing_findings": 50,
+      "seconds": 347.973872,
+      "source": {
+        "commit": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+        "tree": "1ed37f0c78b7c0bf8b349f29663c647a176b3b5a"
+      },
+      "implementation": {
+        "version": "0.2.121",
+        "sha256": "dace44a03ce03a9402975c82e7f6c62a84c21671674722cfa6841d2b25fd600a",
+        "python": "3.12.14"
+      },
+      "report": "publication-scan.json",
+      "command": "node <pinned-Base>/scripts/publish-check.mjs --repo <exact-commit-worktree> --ref 8a1b831a8f1d346bafd092350cc74ba35c7f19c6 --public-base https://github.com/just-every/run-lamp.git#main --project just-every/lamp --repository https://github.com/just-every/run-lamp --timeout-seconds 1800"
+    }
+  },
+  "ci": {
+    "id": 44108731182,
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44108731182",
+    "calls": 4
+  },
+  "full_local_rer_verify": "not run: task and fleet rules restrict local checks to touched tests plus typecheck; branch Verify is the full wall",
+  "contract": "No acceptance text, Status, Gap, Evidence or generated views changed.",
+  "recovery_bundle": {
+    "head": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+    "path": "/home/agent/rer-consolidation/work/push-rescue/gr-mt-lamp-code-12-8a1b831a.bundle",
+    "sha256": "05539134320509ae5775098f57da130da32968336fbf290218588d102a4f04a7",
+    "verified": true
+  },
+  "product_push": {
+    "status": "pushed",
+    "branch": "cloud/gr-mt-lamp-code-12",
+    "head": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/gr-mt-lamp-code-12",
+    "attempts": 1,
+    "log": "product-push.log"
+  },
+  "pr": {
+    "url": "https://github.com/just-every/run-lamp/pull/408",
+    "number": 408,
+    "head": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+    "base": "main",
+    "state": "open",
+    "receipt": "pr-receipt.json"
+  },
+  "custody": {
+    "status": "PUSHED",
+    "ready": false,
+    "branch": "cloud/gr-mt-lamp-code-12",
+    "head": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+    "reason": "Verify still in_progress after four REST observations spaced 300 seconds apart; task API budget is reserved rather than claiming success."
+  },
+  "blockers": [],
+  "pending": [
+    "Exact-SHA Verify completion; no READY or landing claim.",
+    "GitHub alert closure after subsequent CodeQL analysis."
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "status": "done",
+  "sha": "8a1b831a8f1d346bafd092350cc74ba35c7f19c6",
+  "summary": "Fixed tooling CodeQL alerts 11, 13 and 16 with unambiguous path segments and parsed URL comparisons; pushed cloud/gr-mt-lamp-code-12 and opened https://github.com/just-every/run-lamp/pull/408; exact-SHA Verify remains in progress, so READY is not claimed.",
+  "tests": "PASS: pnpm typecheck; native identity setup journey (1); public catalogue journey against built Worker (1); 19,531 path-equivalence cases, 1,000 maximum-length invalid paths and URL/markup/punctuation/publication mutations; syntax checks; Base-copy/source-lock checks; COMPLETE/PASS publication scan with zero blocking findings. Full local rer verify not run under touched-only rules; exact-SHA Verify run 44108731182 remains in_progress after four observations at 300-second intervals.",
+  "security": true
+}
