@@ -1,0 +1,19 @@
+{
+  "phase": "before",
+  "screens": [
+    "new-email-1440.png",
+    "new-email-390.png",
+    "resolve-manual-1440.png",
+    "resolve-manual-390.png",
+    "resolved-email-1440.png",
+    "resolved-email-390.png",
+    "public-resolved-1440.png",
+    "public-resolved-390.png",
+    "timeline-1440.png",
+    "timeline-390.png"
+  ],
+  "newEmail": "PREVIEW\nPage\nEmail\n\nNOTIFICATION EMAIL\n\nAtlas Cloud Status: [INC-1] Mobile requests are slow\nFROM\nlamp@localhost.invalid\nMESSAGE\nAtlas Cloud Status\nMESSAGE\nINC-1: Mobile requests are slow\nMESSAGE\nStatus: Investigating\nMESSAGE\nWho is affected: Customers using mobile apps.\nMESSAGE\nCustomer impact: Some mobile requests take longer to finish.\nMESSAGE\nNext update by: Sep 8, 2027, 14:00 UTC-07:00\nMESSAGE\nComponent state: Mobile apps: Operational → Degraded performance\nMESSAGE\nIncident impact: Minor",
+  "resolve": "UPDATE DRAFT\n\nDraft saved\n\nSuggest update\nStatus\nInvestigating\nIdentified\nMonitoring\nResolved\nWhat’s happening?\nWho’s affected?\nMobile apps\nDegraded performance →\nMajor outage\nPartially unavailable\nDegraded performance\nOperational\n\nResolving closes the incident. No next update.\n\nRecovery check\n\nTracked recovery checks pass. Checked Nov 17, 2026, 04:56 UTC-08:00.\n\nNot tracked: Linked monitors and alerts (none received), Vendor dependencies, Public-page traffic baseline, Linked support tickets, Continuous monitor passing samples.\n\nCheck recovery again",
+  "publicResolution": "Resolved\nResolved at Nov 17, 2026, 04:56 UTC-08:00\nWho is affected\nCustomers using mobile apps.\nCustomer impact\nFixed. Mobile requests finish normally again.\nComponent state\nMobile apps: Degraded performance → Operational",
+  "correctButtons": 0
+}

@@ -1,0 +1,26 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✖ Owner incident communication — manual resolution, customer email and timeline correction (145421.358005ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 150705.245872
+
+✖ failing tests:
+
+test at tests/e2e/publishing-browser.test.mjs:987:1
+✖ Owner incident communication — manual resolution, customer email and timeline correction (145421.358005ms)
+  locator.selectOption: Timeout 60000ms exceeded.
+  Call log:
+  [2m  - waiting for getByLabel('Service status', { exact: true })[22m
+  
+      at Module.incidentOwnerJourney (/workspace/run-lamp/tests/e2e/helpers/incident-owner-journey.mjs:29:60)
+      at async TestContext.<anonymous> (/workspace/run-lamp/tests/e2e/publishing-browser.test.mjs:988:3) {
+    name: 'TimeoutError',
+    log: [ "  - waiting for getByLabel('Service status', { exact: true })" ]
+  }

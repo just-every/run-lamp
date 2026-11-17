@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "author": "Run Edit Run fleet",
+  "date": "2026-11-17",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-incident-1",
+  "base": "cb6f9af49f440380caeca1722bac8fb7b7815699",
+  "head": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+  "local_checks": {
+    "typecheck": "passed",
+    "publishing_route_journey": "passed",
+    "existing_browser_publication_journey": "passed",
+    "focused_browser_journey": "passed",
+    "production_build": "passed",
+    "production_owner_journey": "passed",
+    "source_lock_check": "passed",
+    "diff_check": "passed"
+  },
+  "proof": {
+    "assertion_width": 1440,
+    "capture_widths": [
+      1440,
+      390
+    ],
+    "before_screens": 10,
+    "after_screens": 14,
+    "before_correct_actions": 0,
+    "after_correct_actions": 2,
+    "before_message_labels": 8,
+    "after_message_labels": 0,
+    "before_false_operational_claim": true,
+    "after_false_operational_claim": false
+  },
+  "counts": {
+    "registered_cases_before": 102,
+    "registered_cases_after": 103,
+    "assertion_scripts_before": 10,
+    "assertion_scripts_after": 10,
+    "checks_before": 112,
+    "checks_after": 113,
+    "contract_status_changes": 0
+  },
+  "product_push": {
+    "status": "pushed",
+    "attempts": 1,
+    "ref": "refs/heads/cloud/sd-lamp-incident-1"
+  },
+  "verify": {
+    "run_id": 44090247605,
+    "head_sha": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090247605",
+    "event": "push",
+    "id": 44090247605,
+    "name": "Verify"
+  },
+  "claim": "No contract clause claimed; these are owner-journey fixes (DIRECT 87).",
+  "pull_request": {
+    "base": "main",
+    "head_sha": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+    "html_url": "https://github.com/just-every/run-lamp/pull/407",
+    "number": 407
+  },
+  "verify_runs": [
+    {
+      "conclusion": null,
+      "event": "pull_request",
+      "head_sha": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44093747254",
+      "id": 44093747254,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44090247605",
+      "id": 44090247605,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "other_workflow_runs": [
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "92aa684cf150afdc9472a238fb08ed5cfdfb61de",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44093742745",
+      "id": 44093742745,
+      "name": "PR #407",
+      "status": "completed"
+    }
+  ],
+  "terminal_custody": "PUSHED",
+  "ready_claimed": false,
+  "github_api_budget": {
+    "used": 8,
+    "limit": 10,
+    "remaining": 2,
+    "reserved_for": "failure diagnosis if a terminal failure were observed"
+  },
+  "remaining_prerequisite": "Successful exact-SHA Verify; both Verify runs remain in progress.",
+  "blockers": []
+}
