@@ -2936,7 +2936,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "b0b94728bf892a5006dcb26e3c64e906425bc7f40a8b9ff7a02af01a111c5d71",
+      "sha256": "992aeba9706d1434c2bf937946714babbc28b1523fcb1db15a591f33d4e05f5a",
       "executable": false
     },
     "rer-packaging.json": {
@@ -3828,7 +3828,7 @@
       "executable": false
     },
     "scripts/export.mjs": {
-      "sha256": "4397a4fc60dbd694edc731bf845f6c83a254e76adedbe7aaf30003c5b1a1a42a",
+      "sha256": "d5d802c9d87db0aba8ec3a4e409c20f652c731b7819f31a73ee8fde300e1727d",
       "executable": false
     },
     "scripts/generate-sorry-fixture.mjs": {
@@ -3880,7 +3880,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "50ec855c753f59cee35754b72092419d826eb60e003c8fd40a099be8531088ef",
+      "sha256": "aade1b4a4e64cbad8cf3fbd009a7db0ba8c866c13641cf5ea65540164c7be59b",
       "executable": false
     },
     "scripts/installer/README.md": {
@@ -3968,7 +3968,7 @@
       "executable": false
     },
     "scripts/owner-migrations.mjs": {
-      "sha256": "03181f497eed46ebcf940288b8d54f39c5177a0f8f83106097f25b0b090be59b",
+      "sha256": "fad6498b2dc1460a132302ba9283b4d15c530244a424fe499c5b3381635faa66",
       "executable": false
     },
     "scripts/page-host-readiness.mjs": {
@@ -3976,7 +3976,7 @@
       "executable": false
     },
     "scripts/platform-ledger.mjs": {
-      "sha256": "2e2dab8cc49097b25976c4a918b8369435eef3dc1802a66f76bcf03e53f30930",
+      "sha256": "8f6689bade24888dd4498e54279af530605ec217e5ad740622f4b72ad2349619",
       "executable": false
     },
     "scripts/project-operations.mjs": {
@@ -4028,7 +4028,7 @@
       "executable": false
     },
     "scripts/sorry-receipt/runtime.mjs": {
-      "sha256": "fe354857f8dee89d4fc1ae248e18cf2da3cd457a4ede00ebe05f7eaecae4f02e",
+      "sha256": "c23d5c39798c7919a5e7eb4cd549e72f73727a3a8bc7ca40a21ede481f78f028",
       "executable": false
     },
     "scripts/sorry-synthetic-proof.mjs": {
@@ -8172,7 +8172,7 @@
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-runtime.mjs": {
-      "sha256": "a650c884f522607f4de6fb1d1bd381a5191cf39f8dc2d1a42991c374f98925cb",
+      "sha256": "fa62c95b8ce81e689baca1f26540c4f5cdb606a43670bcee8d4b89a9c065bf36",
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-worker.ts": {
