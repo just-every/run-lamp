@@ -1,0 +1,15 @@
+2026-11-18T12:50:21Z
+Advertised product branch cloud/sd-lamp-release-1-11-23-c1
+Advertised product SHA a840e307fb68d0d248ae863ff10d8e94600ea5b0
+d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab  rer-setup.json
+d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab  rer-project.json setup.sha256
+Exact pushed Git blob and declared setup hash are equal. This is the only SHA-256 declared in rer-project.json.
+f66d41b37d2001e684d241bd06a1ee084cd1ea3864ba194e6d8e60ac872d8866  release-history/1.11.22.json
+f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd  release-history/1.11.22.CONTRACT.md
+A	migrations/core/0082_repeated_maintenance_cancellation.sql
+A	migrations/core/0083_sorry_template_metadata.sql
+
+Published v1.11.22 baseline
+09950eb7a3f6a4bc426a09fc8c24d07b8a5f77e38ea8dd6bd2338fcd5d867993  rer-setup.json
+7ad0cd185d158e9fb9d0961159bf524f06f7faf8202bc32350baa544a993f1d8  rer-project.json setup.sha256
+Published manifest bytes and declared setup hash differ.

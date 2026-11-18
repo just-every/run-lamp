@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "15c646dd54359b2a99a7ff6900d1f24702cbeedf",
+      "bytes": 1195,
+      "path": "CI-RECEIPT.txt",
+      "sha256": "7eb0f2a13dd9304629674ef9fe4e7ca982ed548b95136fb20e3442059c4553ba"
+    },
+    {
+      "blob": "e171f15223516fb9b767b101d7c4ccf0d16bbaac",
+      "bytes": 1005,
+      "path": "HASH-RECEIPT.txt",
+      "sha256": "de82d20dda8ef32953853e1acd8d863a267b338eb69c4bbea28628d14b840785"
+    },
+    {
+      "blob": "38120cfbc293f714277e87f24f44b770752cc9c1",
+      "bytes": 1571,
+      "path": "LOCAL-CHECKS.txt",
+      "sha256": "249183f0c35b2cf3a4367af9dd5d101d33d54a46ff04db0f992513f0b95536b1"
+    },
+    {
+      "blob": "e57eccfb059f6bc6ab0caadd777a727668136662",
+      "bytes": 4858,
+      "path": "RELEASE-NOTES.md",
+      "sha256": "47ca814bd562893a8745c1de32ab3d11630e34698e9e129d336431e9d81ed563"
+    },
+    {
+      "blob": "aad96a409133d42e802a8a6028d4a55cf4d8cd85",
+      "bytes": 5265,
+      "path": "REPORT.md",
+      "sha256": "7cb57f95d3e12728cc471e491763770fe7d141f3fe79d649bb51f2c9b098eb21"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-release-1-11-23-c1",
+  "product_head": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-23-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-23-c1"
+}

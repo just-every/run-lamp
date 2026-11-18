@@ -1,0 +1,17 @@
+Lamp CI receipt, 2026-11-18T12:59:50Z
+
+Fresh main fd6695e358e5aa67c47c45f05591f2c33e83a930
+Verify 44291956536 completed successfully.
+Run site 44291956510 completed successfully.
+Prior builder hash fix 70404ae45742014f3e465ec395bb00ca4c633309 had Verify 44293073651 successful in its published receipt.
+
+First push 1046bf036cfc16e189d873075f208fc017ece67e
+Verify 44306142905 completed/failure https://github.com/just-every/run-lamp/actions/runs/44306142905
+Build job 134808168151 reported: Stale lock or source/tool integrity mismatch; run changes to inspect intentional edits before lock.
+The build command reported failure from source:check. Contract document check, release validation and both builds passed. Shards were skipped.
+Verify aggregate job 134808574054 reported: Verification: 0/9 shards completed successfully for this commit.
+Both failed job archives were read once. The follow-up records both tracked predecessor snapshots in the source lock.
+
+Follow-up push a840e307fb68d0d248ae863ff10d8e94600ea5b0 at 2026-11-18T12:49:08Z
+Exact-SHA Verify discovery at 2026-11-18T12:59:38Z
+Verify 44307549822 in_progress/pending https://github.com/just-every/run-lamp/actions/runs/44307549822

@@ -1,0 +1,28 @@
+Local verification, 2026-11-18T12:47:30Z to 2026-11-18T12:48:37Z
+Verified product tree 4628728010ebc528057c746b623cbf312040e30c, committed as a840e307fb68d0d248ae863ff10d8e94600ea5b0
+Node v22.20.0, pnpm 10.12.4
+Cloud rer setup --non-interactive: exit 0 before staging metadata. Local migrations and first owner succeeded.
+Verification phase	exit code
+validate-release	0
+rer-check	0
+build-shard	0
+rer-build	0
+
+Build shard step	exit code	duration (ms)
+check:contract-docs	0	668
+source:copies	0	544
+source:check	0	936
+typecheck	0	20676
+check:syntax	0	11427
+validate:release	0	1218
+verify:visual:source	0	364
+build:app	0	7617
+build:site	0	6477
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.23.
+The first source lock was generated before the predecessor snapshots were tracked. I reproduced the stale-lock rejection on the committed first push and regenerated after both paths were tracked. The follow-up contains only the two snapshot entries in the source lock. Source check then passed on the committed follow-up.
+Legacy changelog bytes, matching public notes, contract source and views, exact predecessor bytes, rer pin, clean checkout, and Git whitespace verified.
+The guard verified both candidate authors, committers and trailers before the follow-up push. The product branch advertised the follow-up SHA.
+The fleet runs the full publication scan at landing.
+Contract generator write and check completed on the follow-up. Both view files match main. Source lock check passed afterwards.
