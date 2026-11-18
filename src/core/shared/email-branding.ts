@@ -31,6 +31,7 @@ export function brandEmail(email: { subject: string; plainText: string }, input:
   const from = branding.displayName ? `"${branding.displayName}" <${fromAddress}>` : fromAddress;
   const logoUrl = branding.usePageLogo && hasLogo ? new URL("/assets/logo", origin).href : undefined;
   const plainText = [pageName, branding.header, email.plainText, branding.footer].filter(Boolean).join("\n\n");
+  const displayText = input.displayBody === undefined ? undefined : [pageName, branding.header, input.displayBody, branding.footer].filter(Boolean).join("\n\n");
   const html = renderEmailDocument(subject, `<p><a href="${escape(new URL("/", origin).href)}">${escape(pageName)}</a></p>${logoUrl ? `<img src="${escape(logoUrl)}" alt="${escape(pageName)}" width="160" style="max-width:100%;height:auto">` : ""}${branding.header ? `<p>${renderUpdateHtml(branding.header)}</p>` : ""}<h1>${escape(email.subject)}</h1><div style="white-space:pre-wrap;overflow-wrap:anywhere">${renderUpdateHtml(input.displayBody ?? email.plainText)}</div>${branding.footer ? `<p>${renderUpdateHtml(branding.footer)}</p>` : ""}${input.subscriptionLinks ? `<p><a href="${escape(input.subscriptionLinks.manageUrl)}">Manage subscription</a> · <a href="${escape(input.subscriptionLinks.unsubscribeUrl)}">Unsubscribe</a></p>` : ""}`);
-  return { subject, plainText, html, from, ...(branding.replyTo ? { replyTo: branding.replyTo } : {}), ...(logoUrl ? { logoUrl, logoAlt: pageName } : {}) };
+  return { subject, plainText, html, from, ...(displayText === undefined ? {} : { displayText }), ...(branding.replyTo ? { replyTo: branding.replyTo } : {}), ...(logoUrl ? { logoUrl, logoAlt: pageName } : {}) };
 }
