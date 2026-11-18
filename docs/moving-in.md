@@ -301,6 +301,74 @@ Source visibility, audience rules and private-page access do not transfer.
 
 Sorry shows a parent row once, as its children's group, so a page of 16 component rows arrives as 14 components + 2 groups; the dry run and the receipt state that count, name the rows shown as groups, and warn only about rows that are genuinely not carried.
 
+### Review every supplied field
+
+Sorry dry runs and saved jobs include a **Field ledger**. It names each file and
+JSON pointer (RFC 6901), including nested fields and empty containers, with one
+of these outcomes and a next action:
+
+| Outcome | Meaning |
+| --- | --- |
+| Mapped | Carried to a named native field, source identity or input validation. |
+| Changed | Translated, flattened, normalized or shortened; review the named change. |
+| Raw-only | Kept in source data, with no native mapping. Recreate it separately if needed. |
+| Deleted | Removed from sanitized source records, including unsupported channel values. |
+| Refused | The row cannot become a native record; fix its source or recreate it separately. |
+
+Search by file/path or filter an outcome. **Download field ledger** includes
+every row, without source values, for review outside the screen. Saved jobs use
+the ledger from the exact reviewed plan; job reads do not reclassify old input.
+The existing parent-as-group reconciliation still counts each parent once.
+
+Page settings, support details, search metadata, locale, notification settings,
+subscriber profile names/tags, notice tags/synopses, template fields and metrics
+summaries have no native mapping unless a ledger row explicitly says otherwise.
+In particular, a parent's description and state are raw-only: a Lamp visual
+group has neither. Component names, flattened group names, descriptions and
+notice titles name any shortening; full source text stays in retained source
+data. Incident messages stay in full imported history while the native impact
+summary is bounded. A missing authored lifecycle is a disclosed projection,
+never evidence of the original lifecycle.
+
+Separate brand, custom-domain, notice-template, update-template and component
+metrics response files are currently refused by filename, before any native
+write. Remove them to review the supported history export; recreate branding,
+domains and templates separately, and retain source metrics separately.
+Unknown resources are refused too. Unknown nested fields in accepted responses
+remain named as raw-only; credential-bearing nested fields refuse the input.
+Unsupported channel values are removed rather than presented as transferred.
+
+### Reproduce the documented-format synthetic proof
+
+No Sorry account, live provider call or signing key is used:
+
+```sh
+node scripts/generate-sorry-fixture.mjs --out /tmp/lamp-sorry-fixture
+node scripts/sorry-synthetic-proof.mjs --out /tmp/lamp-sorry-proof
+```
+
+The fixture is **generated synthetic data, not a real export**. Its source
+references, intentional extensions, byte manifest and independent field-path
+inventory live in `tests/fixtures/sorry/generated/`. Repeated generator runs
+produce identical bytes and hashes. Upload only `authenticated/` or `public/`;
+metadata and refusal samples are separate.
+
+The fixture has 56 component rows (52 native components + 4 parent groups), 53
+notices (43 incidents + 10 maintenance windows), 106 updates, and REST subscriber
+pages of 500, 500 and 3. It expects 994 held email candidates and nine refused
+subscriber rows, with each lost field named. Public collections use 25-row pages
+and have no subscribers. The proof compares the field ledger with the independent
+source inventory, verifies unchanged native/public/notification inventories on
+preview and hostile refusal, then checks silent apply, saved reads, repeat and undo. The explicit proof command runs the full 1,003-subscriber lifecycle outside push CI; push CI still reviews every authenticated row and field, and applies the full public history fixture.
+Expected resource gaps must fail explicitly until those resources are supported.
+
+The output is an **unsigned synthetic receipt**, plus the actual ledgers.
+It cannot replace the existing authorized-real-export receipt or promote an
+entry in `importers.json`. No hosted cutover, DNS, inbox or real-export proof
+is claimed.
+
+Run Edit Run fleet, 17 November 2026.
+
 ### Capture an authenticated export locally
 
 In Sorry, open **My Account → API Tokens**. Tokens are user-specific. Find the

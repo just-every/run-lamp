@@ -1,3 +1,4 @@
+import { maintenanceCancellationFlow, maintenanceReminderTimingFlow } from "./helpers/maintenance-notices-flow.mjs";
 import assert from 'node:assert/strict';
 import { admitAttributionOperator, actorAudits, assertMaintenanceActor, assertPublicationActor } from './helpers/operator-attribution.mjs';
 import { updateReachFlow } from './helpers/update-reach-flow.mjs';
@@ -67,7 +68,7 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
   const paragraphs = text.split('\n\n');
   assert.ok(paragraphs.includes(`${incident.reference}: ${incident.title}`), `${surface}: incident identity`);
   assert.ok(paragraphs.includes(`Status: ${publication.lifecycle}`), `${surface}: publication lifecycle`);
-  const labels = ['Who is affected', 'Customer impact', 'What still works', 'Next update by', 'Additional details'];
+  const labels = ['Who is affected', 'Customer impact', 'Update', 'What still works', 'Next update by', 'Additional details'];
   assert.deepEqual(paragraphs.filter(paragraph => labels.some(label => paragraph.startsWith(`${label}:`))),
     expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
 }
@@ -94,7 +95,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await j.json('/api/app/page-settings', 'PUT', { ...settings, timezone: ['Australia', 'Brisbane'].join('/') });
     assert.equal((await j.raw('/api/app/components')).status, 401);
     assert.equal((await j.raw(new URL('/api/app/components', j.publicOrigin).href)).status, 404);
-    await j.json('/api/app/operators/invite', 'POST', { email: reviewer, displayName: 'Incident reviewer' }, 202);
+    await j.json('/api/app/operators/invite', 'POST', { email: reviewer, displayName: 'Incident reviewer', role: 'admin' }, 202);
     const component = await j.component('Payments API');
     const hidden = await j.component('PRIVATE internal queue', { internal: true });
     const template = (await j.json('/api/app/incident-templates', 'POST', {
@@ -267,7 +268,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     const publicUpdates = publishedArticles.map(article => {
       const head = matchingDescendants(article, node => publishedAttribute(node, 'class') === 'update-head')[0];
       const fields = Object.fromEntries(matchingDescendants(article, node => node.tagName === 'div').filter(node => node.childNodes?.some(child => child.tagName === 'dt')).map(node => [publishedText(node.childNodes.find(child => child.tagName === 'dt')), publishedText(node.childNodes.find(child => child.tagName === 'dd'))]));
-      return { lifecycle: publishedText(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: publishedAttribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Customer impact'], details: fields['Additional details'] };
+      return { lifecycle: publishedText(matchingDescendants(head, node => node.tagName === 'strong')[0]), publishedAt: publishedAttribute(matchingDescendants(head, node => node.tagName === 'time')[0], 'datetime'), customerImpact: fields['Update'] ?? fields['Customer impact'], details: fields['Additional details'] };
     });
     assert.deepEqual(publicUpdates, [
       { ...correctedRecovery, publishedAt: corrected.publishedAt },
@@ -314,7 +315,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     await saveReviewed(incident.id, { lifecycle: 'Resolved', customerImpact: 'Payment processing has recovered.', whatStillWorks: '', details: '', nextUpdateAt: null });
     const resolution = (await j.publish(incident.id, { channels: ['email'] })).update;
     assert.equal(resolution.lifecycle, 'Resolved');
-    const resolvedFields = [['Who is affected', wording.affectedAudience], ['Customer impact', 'Payment processing has recovered.']];
+    const resolvedFields = [['Who is affected', wording.affectedAudience], ['Update', 'Payment processing has recovered.']];
     assert.equal(resolution.nextUpdateAt, null);
     assertPublicationPage(await j.visible(`/incidents/${incident.reference}`, resolution.customerImpact), resolution, resolvedFields, 'resolved permalink');
     const resolvedRoot = descendants(parse(await j.visible('/', resolution.customerImpact))).filter(node => node.tagName === 'article'
@@ -668,7 +669,7 @@ test('INCIDENT-013 — each set and clear appends the exact acting operator and 
     await j.signIn(undefined, { fresh: true });
     const owner = (await j.json('/api/app/session')).operator;
     const colleagueEmail = owner.email.replace(/^[^@]+/, 'synthetic-lamp-impact-3');
-    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator' }, 202);
+    await j.json('/api/app/operators/invite', 'POST', { email: colleagueEmail, displayName: 'Synthetic Lamp impact operator', role: 'admin' }, 202);
     await j.signIn(colleagueEmail);
     const colleague = (await j.json('/api/app/session')).operator;
     assert.notEqual(colleague.id, owner.id);
@@ -860,7 +861,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.ok(!(await j.json('/api/app/incidents')).incidents.some(row => row.id === maintenance.id));
     await j.visible(`/maintenance/${maintenance.reference}`, input.customerImpact);
     await j.tick(now + 1000); await j.tick(now + 1000);
-    assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 1);
+    assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 0, 'the recent scheduling notice replaces the reminder');
     const actualStart = new Date(now - 7200000).toISOString();
     const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
     let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
@@ -1182,3 +1183,6 @@ test('AGENT-005 HIST-002 — cited report reconciles the retained record, requir
 test('NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure', { timeout: 120_000 }, async t => {
   await updateReachFlow({ diagnostic: message => t.diagnostic(message) });
 });
+
+test("Maintenance reminders respect the lead time and skip recent announcements", maintenanceReminderTimingFlow);
+test("Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers", { timeout: 180_000 }, maintenanceCancellationFlow);

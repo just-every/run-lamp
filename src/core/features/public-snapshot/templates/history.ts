@@ -1,5 +1,5 @@
 import type { PublicSnapshotModel } from "../renderer";
-import { correctionMarkup, type PublicIncident, type PublicMaintenance } from "../record-markup";
+import { correctionMarkup, maintenanceNoticeBody, type PublicIncident, type PublicMaintenance } from "../record-markup";
 import { mostSevereState, type ComponentState } from "../../../shared/domain";
 import { escapeHtml } from "../format";
 import { lineIcon, stateGlyph } from "./icons";
@@ -32,8 +32,9 @@ export function openIncidentEntry(incident: PublicIncident, model: PublicSnapsho
 
 export function maintenanceEntry(item: PublicMaintenance, model: PublicSnapshotModel) {
   const timezone = model.settings.timezone;
-  const notices = maintenanceNotices(item, timezone);
-  return `<li class="tl tl-maint tone-maint"><span class="tl-mark">${stateGlyph("Under maintenance")}</span><article class="tl-body"><p class="tl-kicker">${item.state === "Scheduled" ? "Planned maintenance" : "Maintenance in progress"}</p><h3 class="tl-title"><a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a></h3>${maintenanceWindow(item, timezone)}${item.components.length ? `<p class="tpl-said">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${notices ? `<ol class="tl-earlier">${notices}</ol>` : ""}</article></li>`;
+  const latest = item.notices.find(notice => ["scheduled", "rescheduled", "started"].includes(notice.kind));
+  const notices = maintenanceNotices(item, timezone, latest?.id);
+  return `<li class="tl tl-maint tone-maint"><span class="tl-mark">${stateGlyph("Under maintenance")}</span><article class="tl-body"><p class="tl-kicker">${item.state === "Scheduled" ? "Planned maintenance" : "Maintenance in progress"}</p><h3 class="tl-title"><a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a></h3>${maintenanceWindow(item, timezone)}${item.components.length ? `<p class="tpl-said">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${latest ? `<div class="maintenance-notice">${maintenanceNoticeBody(latest, item)}</div>` : ""}${notices ? `<ol class="tl-earlier">${notices}</ol>` : ""}</article></li>`;
 }
 
 /** A resolved incident and its last updates. With `fold`, the updates also come folded behind a chevron, for a

@@ -1,0 +1,48 @@
+{
+  "response": {
+    "id": 2038,
+    "type": "unplanned",
+    "subject": "synthetic-lamp-39 unplanned notice",
+    "state": "false_alarm",
+    "timeline_state": "past_distant",
+    "link": "https://status.example.invalid/notices/synthetic-lamp-39",
+    "synopsis": "Synthetic unplanned notice 39: review is underway.",
+    "created_at": "2025-01-03T00:00:00.000Z",
+    "updated_at": "2025-01-03T00:30:00.000Z",
+    "began_at": "2025-01-03T00:00:00.000Z",
+    "ended_at": "2025-01-03T00:30:00.000Z",
+    "tag_list": [
+      "synthetic-lamp-1",
+      "incident"
+    ],
+    "components": [
+      {
+        "id": 1042,
+        "name": "synthetic-lamp-43",
+        "description": "Synthetic service 43; no production data.",
+        "state": "operational",
+        "parent_id": 1002,
+        "created_at": "2025-01-01T10:00:00.000Z",
+        "updated_at": "2025-01-01T10:00:00.000Z"
+      }
+    ],
+    "updates": [
+      {
+        "id": 30380,
+        "content": "Synthetic unplanned notice 39: review is underway.",
+        "created_at": "2025-01-03T00:00:00.000Z",
+        "updated_at": "2025-01-03T00:00:00.000Z",
+        "should_publish": true,
+        "link": "https://status.example.invalid/notices/synthetic-lamp-39#update-30380"
+      },
+      {
+        "id": 30381,
+        "content": "Synthetic unplanned notice 39: this is the final saved update.",
+        "created_at": "2025-01-03T00:30:00.000Z",
+        "updated_at": "2025-01-03T00:30:00.000Z",
+        "should_publish": false,
+        "link": "https://status.example.invalid/notices/synthetic-lamp-39#update-30381"
+      }
+    ]
+  }
+}

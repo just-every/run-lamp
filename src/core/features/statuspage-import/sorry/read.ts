@@ -7,7 +7,7 @@ import { retainedSorry, sorrySubscriberChannels } from "./json.ts";
 import { normalizeSorryNotice } from "./notices.ts";
 import { accessFields, agree, readSorryFiles } from "./saved.ts";
 import { SorryReadError } from "./errors.ts";
-import { noticeSchema, publicUrl, updateSchema, type ObjectValue } from "./schema.ts";
+import { noticeSchema, publicUrl, updateSchema, type ObjectValue, type SorryField } from "./schema.ts";
 
 function restricted(value: unknown): boolean {
   if (Array.isArray(value)) return value.some(restricted);
@@ -19,6 +19,8 @@ function restricted(value: unknown): boolean {
 
 export interface SorryRead extends ReadSource {
   namespace: "sorry";
+  fieldLedger: SorryField[];
+  fieldMetadata: import("../../../../../modules/import-kit/src/types.ts").Json;
   accounting: Accounting[];
   publicAddresses: Record<string, string[]>;
   sourceInfo: { label: string; pageId: string; publicUrl: string };
@@ -85,6 +87,6 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
     data.subscribers.push({ id: row.id, mode: "email", email: row.email, components: [...new Set(selected!.flatMap(id => componentScope.get(id)!))] });
     accounting.push({ kind: "subscriber", sourceId: row.id, name: "Sorry subscriber", outcome: "changed", reason: "Documented enabled email preference retained for an owner-released confirmation invitation; no active subscription or notification is created by import." + omitted });
   }
-  return { namespace: "sorry", records, artifacts: saved.artifacts, data, origins, accounting, publicAddresses,
+  return { namespace: "sorry", fieldLedger: saved.fieldLedger, fieldMetadata: saved.fieldMetadata, records, artifacts: saved.artifacts, data, origins, accounting, publicAddresses,
     sourceInfo: { label: "Sorry", pageId: saved.page.id ?? options.pageId ?? new URL(saved.pageUrl).hostname, publicUrl: saved.pageUrl } };
 }

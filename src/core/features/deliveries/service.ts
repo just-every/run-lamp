@@ -1,3 +1,4 @@
+import { maintenanceNoticeDetails } from "../../shared/maintenance-notice";
 import { resolveSlackWebhook } from "../../../../modules/integrations/slack/protocol.ts";
 import { classifySlackIncomingWebhook } from "../../../../modules/integrations/slack/classify.ts";
 import { renderSubscriberSlackMessage } from "./slack-message";
@@ -69,14 +70,14 @@ function renderMaintenanceNotice(delivery: DispatchableDelivery) {
   const ends = delivery.maintenanceEndsAt ? displayNotificationTime(delivery.maintenanceEndsAt, delivery.timezone) : "Not recorded";
   const kind = delivery.maintenanceNoticeKind[0]!.toUpperCase() + delivery.maintenanceNoticeKind.slice(1);
   const plainText = [
-    `${delivery.maintenanceReference}: ${delivery.maintenanceTitle}`,
-    `Status: ${delivery.maintenanceState}`,
+    delivery.maintenanceTitle,
+    `Status: ${{ scheduled: "Scheduled", rescheduled: "Scheduled", reminder: "Scheduled", started: "In progress", completed: "Completed", cancelled: "Cancelled" }[delivery.maintenanceNoticeKind]}`,
     `Notice: ${kind}`,
     `Start: ${starts}`,
     `End: ${ends}`,
-    delivery.maintenanceNoticeBody ?? "",
+    ...maintenanceNoticeDetails(delivery.maintenanceNoticeBody ?? "", delivery.maintenanceReference, delivery.maintenanceTitle).map(field => field.label ? `${field.label}: ${field.value}` : field.value),
   ].filter(Boolean).join("\n\n");
-  return { email: { subject: `[${delivery.maintenanceReference}] ${kind}: ${delivery.maintenanceTitle}`, plainText } };
+  return { email: { subject: `${kind}: ${delivery.maintenanceTitle}`, plainText } };
 }
 
 export function createDeliveriesService(

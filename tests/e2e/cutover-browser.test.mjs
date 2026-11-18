@@ -26,7 +26,10 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
     await fetch(publicOrigin + '/');
     const evidence = process.env.LAMP_CUTOVER_EVIDENCE;
     if (evidence) await mkdir(evidence, { recursive: true });
+    const captures = new Set();
     const capture = async name => {
+      if (captures.has(name)) return;
+      captures.add(name);
       if (evidence) for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: 1000 });
         await page.screenshot({ path: join(evidence, `${name}-${width}.png`), fullPage: true });
@@ -98,6 +101,19 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         await page.getByRole('button', { name: 'Run dry run', exact: true }).click();
         const reviewed = await reviewing; assert.equal(reviewed.status(), 200, await reviewed.text());
         await page.getByRole('heading', { name: 'Dry run', exact: true }).waitFor();
+        if (source === 'sorry') {
+          const ledger = page.locator('.move-in-field-ledger');
+          await ledger.locator('summary').click();
+          await ledger.getByLabel('Find a field path').fill('/page/name');
+          assert.ok((await ledger.innerText()).includes('sorry-status.json/page/name') && (await ledger.innerText()).includes('raw-only'));
+          const [download] = await Promise.all([page.waitForEvent('download'), ledger.getByRole('link', { name: 'Download field ledger' }).click()]);
+          const downloaded = JSON.parse(await readFile(await download.path(), 'utf8'));
+          assert.ok(downloaded.fields.length > 0);
+          assert.ok(downloaded.fields.every(field => field.file && field.path && field.reason && field.action));
+          assert.ok(downloaded.fields.some(field => field.path === '/page/name' && field.outcome === 'raw-only'));
+          await capture('sorry-field-ledger-dry-run');
+        }
+
       };
       await review();
       // A different source invalidates the reviewed upload before the owner can apply it.
@@ -116,6 +132,11 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       const result = await (await applying).json(); assert.equal(result.job.state, 'completed');
       if (source === 'sorry') {
         await page.getByRole('heading', { name: 'Imported', exact: true }).waitFor();
+        const savedLedger = page.locator('.move-in-field-ledger');
+        await savedLedger.locator('summary').click();
+        await savedLedger.getByLabel('Find a field path').fill('/page/name');
+        assert.ok((await savedLedger.innerText()).includes('sorry-status.json/page/name') && (await savedLedger.innerText()).includes('raw-only'));
+        await capture('sorry-field-ledger-saved');
         await capture('sorry-imported');
         const read = async path => (await nativeRequest(path, { cookie: entered.header })).json();
         const inventory = await read('/api/app/components');

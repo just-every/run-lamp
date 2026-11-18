@@ -736,20 +736,17 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   assert.equal((await (await fetch(`${pageUrl}/`)).text()).includes(submitted.customerImpact), false);
   await previewScreens(page, 'page-preview');
   await page.getByRole('button', { name: 'Email', exact: true }).click();
-  await page.waitForFunction(({ impact, replyTo }) => {
-    const panel = document.querySelector('.preview-panel');
-    return panel?.textContent.includes(impact) && panel.textContent.includes(replyTo);
-  }, { impact: 'Checkout retries can succeed while we restore capacity.', replyTo: 'support@journey.example' });
+  await panel.frameLocator('iframe[title="Notification email message"]').getByText(submitted.customerImpact, { exact: false }).waitFor();
+  await panel.getByText(settings.emailBranding.replyTo, { exact: true }).waitFor();
   assert.ok((await page.locator('.preview-panel h3').textContent()).startsWith('[Journey status]'));
   assert.equal(await panel.locator('.preview-type').textContent(), 'Notification email');
   assert.equal(await panel.locator('h3').textContent(), `[Journey status] Atlas Cloud Status: [${incident.reference}] Checkout requests are delayed`);
   const emailBody = ['Atlas Cloud Status', emailHeader, heading, 'Status: Identified',
     ...expectedFields.map(field => `${field.label}: ${field.value}`), 'Incident impact: Critical', emailFooter];
-  assert.deepEqual(await wordingFields(panel), [
-    { label: 'From', value: `"Journey status" <${settings.mailFromAddress}>` },
-    { label: 'Reply-To', value: settings.emailBranding.replyTo },
-    ...emailBody.map(value => ({ label: 'Message', value })),
-  ]);
+  const emailDocument = panel.frameLocator('iframe[title="Notification email message"]');
+  const customerText = (await emailDocument.locator('body').innerText()).replace(/\s+/g, ' ');
+  for (const paragraph of emailBody) assert.ok(customerText.includes(paragraph), 'the actual branded email retains every populated field');
+  assert.deepEqual(await wordingFields(panel), [{ label: 'Reply-To', value: settings.emailBranding.replyTo }]);
   await previewScreens(page, 'email-preview');
   await page.getByRole('button', { name: 'Suggest update', exact: true }).click();
   await page.locator('.ai-suggestion [role=status]').filter({ hasText: /503|intentionally unavailable/i }).waitFor();
@@ -982,4 +979,8 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
   await row.getByRole('button',{name:'Stop following',exact:true}).click();
   await row.waitFor({state:'detached'});
   await page.setViewportSize({width:1440,height:1000});
+});
+
+test('Owner incident communication — manual resolution, customer email and timeline correction', { timeout: 240_000 }, async () => {
+  await (await import('./helpers/incident-owner-journey.mjs')).incidentOwnerJourney({ page, browserContext, appUrl, pageUrl, api });
 });

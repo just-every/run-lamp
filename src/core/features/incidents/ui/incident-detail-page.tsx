@@ -1,3 +1,4 @@
+import { ResolutionStatuses } from "./resolution-statuses";
 import { RecoveryCheckPanel } from "./recovery-check";
 import { TemplateControls } from "./template-controls";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
@@ -91,6 +92,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const [publishState, setPublishState] = useState<"idle" | "publishing" | "scheduled" | "published" | "error">(arrival ? (arrival.error ? "error" : "published") : "idle");
   const [publishMessage, setPublishMessage] = useState<string | null>(arrival?.text ?? null);
   const [overrideReason, setOverrideReason] = useState("");
+  const [correcting, setCorrecting] = useState<string | null>(null);
   const [recoveryRevision, setRecoveryRevision] = useState(0);
   useEffect(() => { if (draft.lifecycle !== "Resolved") setOverrideReason(""); }, [draft.lifecycle]);
   const [appliedSuggestion, setAppliedSuggestion] = useState<AppliedSuggestion | null>(null);
@@ -140,6 +142,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     pristineKey.current = JSON.stringify(initial);
     savedKey.current = data.incident.draft ? pristineKey.current : null;
     untouchedDraft.current = !data.incident.draft;
+    setCorrecting(data.incident.draft?.correctsUpdateId ?? null);
     setDraft(initial);
     setDraftRevision((current) => current + 1);
   }, [data, loadedIncidentId]);
@@ -188,9 +191,12 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       untouchedDraft.current = false;
       activeSave.current = request;
       appApi<{ draft: { id: string } }>(`/api/app/incidents/${id}/draft`, { method: "PUT", body: draftKey, headers: { "If-Match": version.current, "X-Draft-Id": attemptedId } })
-        .then((response) => {
+        .then(async (response) => {
           if (!isCurrent()) return;
           version.current = `${response.draft.id}:${version.current.split(":")[1]}`;
+          // Saving replaces the draft. Restore the chosen correction before acknowledging it.
+          if (correcting) await appApi(`/api/app/incidents/${id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
+          if (!isCurrent()) return;
           savedKey.current = draftKey;
           setSaveState(latestDraftKey.current === draftKey ? "saved" : "saving");
           if (heldSchedule.current) { heldSchedule.current = false; setPublishState("idle"); setPublishMessage(SCHEDULE_CLEARED); }
@@ -218,7 +224,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
         });
     }, Math.max(0, pendingDraft.current.dueAt - performance.now()));
     return () => window.clearTimeout(timeout);
-  }, [loadedIncidentId, incident?.lifecycle, draftKey, draftRevision, draftEmpty, captureUpdate]);
+  }, [loadedIncidentId, incident?.lifecycle, draftKey, draftRevision, draftEmpty, correcting, captureUpdate]);
 
   useEffect(() => {
     if (!loadedIncidentId) return;
@@ -292,7 +298,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     }
     let isCurrent = captureUpdate();
     setPublishState("publishing"); setPublishMessage(null);
-    try { await appApi(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels, ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
+    try {
+      if (correcting) await appApi(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
+      if (!isCurrent()) return;
+      await appApi(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels, ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
       if (!isCurrent()) return;
       // Publication consumes one update's authority, even without navigation.
       // Suggestions, templates, previews or saves started for that update must
@@ -306,7 +315,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       const response = await appApi<IncidentResponse>(`/api/app/incidents/${incident.id}`);
       if (!isCurrent()) return;
       if (!response.incident) throw new Error("The published incident could not be refreshed.");
-      setPublishedIncident(response.incident); setAppliedSuggestion(null); setOverrideReason(""); setShownFields({ whatStillWorks: false, details: false });
+      setPublishedIncident(response.incident); setCorrecting(null); setAppliedSuggestion(null); setOverrideReason(""); setShownFields({ whatStillWorks: false, details: false });
       const next = draftFromIncident(response.incident);
       version.current = `${response.incident.draft?.id ?? "-"}:${response.incident.updates.length}`;
       pristineKey.current = JSON.stringify(next);
@@ -326,8 +335,18 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     if (blockReason || !timing.at) return;
     const isCurrent = captureUpdate();
     setPublishState("publishing"); setPublishMessage(null);
-    try { const response = await appApi<{ draft: { id: string } }>(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ publishAt: timing.at, channels }) }); if (!isCurrent()) return; version.current = `${response.draft.id}:${incident.updates.length}`; heldSchedule.current = true; setPublishState("scheduled"); setPublishMessage("Update scheduled. It stays private until then."); }
+    try {
+      if (correcting) await appApi(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
+      if (!isCurrent()) return;
+      const response = await appApi<{ draft: { id: string } }>(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ publishAt: timing.at, channels }) }); if (!isCurrent()) return; version.current = `${response.draft.id}:${incident.updates.length}`; heldSchedule.current = true; setPublishState("scheduled"); setPublishMessage("Update scheduled. It stays private until then."); }
     catch (cause) { if (!isCurrent()) return; setPublishState("error"); setPublishMessage(cause instanceof Error ? cause.message : "The update could not be scheduled."); }
+  };
+  const correctUpdate = (update: NonNullable<typeof incident>["updates"][number]) => {
+    if (draft.customerImpact.trim() && !window.confirm("Replace your current draft with this published update?")) return;
+    setCorrecting(update.id);
+    setDraft(normalizeResolvedDraft({ ...draft, lifecycle: incident.lifecycle, affectedAudience: update.affectedAudience, customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details, nextUpdateAt: incident.updates[0]?.nextUpdateAt ?? null, componentChanges: [] }));
+    setPublishMessage(null);
+    requestAnimationFrame(() => { document.getElementById(impactId)?.focus(); document.getElementById(impactId)?.scrollIntoView({ block: "center" }); });
   };
   const findings = (field: SuggestedFieldName) => <><WordingFindings findings={wordingFindings.filter(finding => finding.field === field)} /><SuggestionSources field={field} applied={appliedSuggestion} /></>;
   const slotContext = { incident: { id: incident.id, reference: incident.reference, lifecycle: incident.lifecycle } };
@@ -360,6 +379,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     <div className="incident-compose">
       <section className="composer-panel" aria-labelledby="composer-title" inert={publishState === "publishing"}>
         <div className="composer-heading"><h2 id="composer-title" className="eyebrow">{incident.updates.length ? "Update draft" : "First update"}</h2><p role="status" aria-live="polite" className={`autosave-status is-${visibleSaveState}`}>{saveLabel}</p></div>
+        {correcting ? <p role="status" className="correction-note">Correcting a published update. Edit the wording, then publish. Customers will see a correction linked to the original.</p> : null}
         <PreparedDraft preparation={incident.draft?.agentPreparation ?? null} />
         {publishMessage ? <p role="status" className={`publication-message is-${publishState}`}>{publishMessage}</p> : null}
         {saveError && <FormError>{saveError}</FormError>}
@@ -381,11 +401,12 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
           {draft.lifecycle === "Resolved" ? <p className="resolution-note" role="status">Resolving closes the incident. No next update.</p> : <NextUpdateField value={draft.nextUpdateAt} timezone={timezone} onChange={(value) => updateField("nextUpdateAt", value)} onError={(message) => setTimeErrors(current => ({ ...current, nextUpdate: message }))} />}
           <ClientExtensionSlot id="incident.composer.fields.after.v1" context={slotContext} />
         </form>
+        {draft.lifecycle === "Resolved" && <ResolutionStatuses incident={incident} draft={draft} onChanged={refresh} />}
         {draft.lifecycle === "Resolved" && <RecoveryCheckPanel key={`recovery-${recoveryRevision}`} incidentId={incident.id} overrideReason={overrideReason} onOverrideReason={setOverrideReason} />}
       </section>
       <div className="incident-side">
         <IncidentPreview preview={preview} error={previewError} />
-        <IncidentTimeline incident={incident} />
+        <IncidentTimeline incident={incident} onCorrect={correctUpdate} disabled={publishState === "publishing" || Boolean(activeSave.current)} />
       </div>
       <div className="composer-publish" inert={publishState === "publishing"}>
         <UpdateOptions publicationKey={updateGeneration.current} groups={groups}
@@ -395,7 +416,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={timing} timezone={timezone} error={timeErrors.timing} onChange={setTiming} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>
           <OptionPanel name="relationship" title="Relationship"><ComponentRelationships rows={relationships.rows} onChange={relationships.change} /></OptionPanel>
           <TemplateControls key={updateGeneration.current} draft={draft} components={[...incident.components.flatMap(component => component.componentId ? [{ componentId: component.componentId, state: draft.componentChanges?.find(change => change.componentId === component.componentId)?.state ?? component.state, relationship: component.relationship }] : []), ...(draft.componentChanges ?? []).filter(change => !incident.components.some(component => component.componentId === change.componentId)).map(change => ({ ...change, relationship: change.relationship ?? "Primary" as const }))]} onApply={applyTemplate} captureUpdate={captureUpdate} />
-          {incident.updates.length ? <OptionPanel name="correction" title="Publish as a correction"><CorrectionChoice updates={incident.updates} onCorrect={draftActions.correct} /></OptionPanel> : null}
+          {incident.updates.length ? <OptionPanel name="correction" title="Publish as a correction"><CorrectionChoice updates={incident.updates} onCorrect={id => { setCorrecting(id); draftActions.correct(id); }} /></OptionPanel> : null}
         </UpdateOptions>
       </div>
       <IncidentPanel incident={incident} briefRevision={`${incident.updates.length}:${draftSaved ? draftKey : ""}`} captureVisit={captureVisit} captureUpdate={captureUpdate} onChanged={refresh} onDeleted={() => void navigate({ to: "/app/incidents" })} />

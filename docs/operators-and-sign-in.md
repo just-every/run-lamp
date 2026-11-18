@@ -1,9 +1,6 @@
 # Operators and sign-in
 
-Operators sign in with email links and manage access in **Settings → Operators**.
-Every active operator has the same access; Lamp does not assign roles. Invite a
-colleague there, or remove an operator's access. Access changes require email
-identity confirmation.
+In **Settings → Operators**, enter your colleague’s name and email, choose a role and invite them. On your local copy, use the link in their pending invitation to open Lamp as that person in this browser. To invite someone on another computer, [put Lamp online](deploy.md) with email turned on, then invite them from the online copy.
 
 Removing access revokes sessions and sign-in links. Erasing personal data is a
 separate, irreversible action; it removes the operator's personal values while
@@ -201,3 +198,11 @@ fresh link approval and starts with provider sign-in disabled.
 <!-- Run Edit Run fleet, 2026-11-16: clarify the checkout rer pin and installed CLI version. -->
 
 <!-- Run Edit Run fleet, 2026-11-16: deploy-fault documentation follow-up. -->
+
+<!-- Run Edit Run fleet, 2026-11-17 -->
+In Settings → Operators, choose a role before inviting someone. Communicator is
+the default: they can write and publish updates without managing settings or
+other operators. The form explains every role, and pending invitations show the
+chosen role. In Settings → Look, pick an accent colour or type a value such as
+#1F3A5F; invalid text stays in the field with help, while the swatch keeps the
+saved colour until you correct it.

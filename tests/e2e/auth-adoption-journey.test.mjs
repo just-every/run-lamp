@@ -14,6 +14,7 @@ import {createRedaction} from '@runeditrun/rer/redaction';
 import {operatorManagementFlow} from './helpers/operator-management-flow.mjs';
 
 const owner='owner@example.test';
+const setupAccent='#486b51';
 const evidence=process.env.LAMP_AUTH_JOURNEY_EVIDENCE;
 async function capture(page,name){if(evidence){await mkdir(evidence,{recursive:true});await page.screenshot({path:join(evidence,name+'.png'),fullPage:true});}}
 // The journey's copy links the checkout's node_modules, so Vite serves its own client and pre-bundled modules from
@@ -50,7 +51,8 @@ async function signOut(page,origin){
 async function denied(origin,archive){for(const path of ['/cdn-cgi/local/explorer/api/local/workers','/cdn-cgi/handler/scheduled','/.rer/local/dev-key.env','/.seed/installer/secrets.json',...(archive?['/exports/probe.rer','/probe.rer','/@fs/'+archive]:[])]){const result=await fetch(origin+path,{redirect:'manual'});assert.equal((path.startsWith('/cdn-cgi/')||path.startsWith('/.rer/')||path.startsWith('/.seed/'))?result.status===404:[403,404].includes(result.status),true,'sensitive route denied: '+path);assert.equal((await result.text()).includes('auth-journey-private-sentinel'),false);}}
 
 async function setupAndProbe(root,env,port,origin){
- const process=spawn(globalThis.process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','setup','--owner-email',owner,'--non-interactive','--port',String(port)],{cwd:root,env,stdio:['ignore','pipe','pipe']});
+ await writeFile(join(root,'setup-answers.json'),JSON.stringify({LAMP_ACCENT_COLOR:setupAccent}),{mode:0o600});
+ const process=spawn(globalThis.process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','setup','--answers','setup-answers.json','--owner-email',owner,'--non-interactive','--port',String(port)],{cwd:root,env,stdio:['ignore','pipe','pipe']});
  // Capture credential-bearing output without forwarding it to the test reporter.
  process.stdout.resume();process.stderr.resume();let probed=false;
  const ended=new Promise(resolve=>process.once('exit',code=>resolve(code)));
@@ -99,11 +101,17 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
    const devSession=await devPage.request.get(origin+'/api/app/session');
    if(devSession.status()!==200){const redaction=createRedaction();redaction.addSecrets([key,...(await readFile(join(root,'.dev.vars'),'utf8')).split('\n').map(line=>line.slice(line.indexOf('=')+1)).filter(Boolean)]);t.diagnostic(redaction.redact((await devSession.text())+'\n'+output));}
    assert.equal(devSession.status(),200);
+   const installed=await (await devPage.request.get(origin+'/api/app/page-settings')).json();
+   assert.equal(installed.settings.accentColor.toLowerCase(),setupAccent);
    {await devPage.getByRole('button',{name:"Skip, I'll fill it in"}).click();await devPage.getByRole('button',{name:'Edit page name'}).click();await devPage.getByLabel('Page name',{exact:true}).fill('Auth Journey');await devPage.getByRole('button',{name:'Open Lamp',exact:true}).click();await devPage.waitForURL('**/app');}
+   await devPage.goto(origin+'/app/settings#look');await operatorHydrated(devPage);
+   assert.equal((await devPage.getByLabel('Accent colour',{exact:true}).inputValue()).toLowerCase(),setupAccent);
    await devContext.close();
    const width=1440;
    {
     const context=await journeyContext(browser,key);const page=await emailSignIn(context,origin,owner,width,key);
+    let invitationLink;
+    const colleagueEmail=`invited-${width}@example.test`;
     const pageErrors=[];page.on('pageerror',error=>pageErrors.push(error.message));
     for(const method of ['GET','HEAD']){
      const response=await page.request.fetch(origin+'/signin?returnTo=%2Fapp%2Fsettings',{method,maxRedirects:0});
@@ -123,8 +131,8 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
      await operatorHydrated(page);
      const operators=page.getByRole('region',{name:'Operators',exact:true});
      const pending=page.getByRole('region',{name:'Pending invitations'});
-     const email=`invited-${width}@example.test`,cancelledEmail=`cancelled-${width}@example.test`;
-     for(const [address,name] of [[email,'Invited operator'],[cancelledEmail,'Cancelled operator']]){
+     const cancelledEmail=`cancelled-${width}@example.test`;
+     for(const [address,name] of [[colleagueEmail,'Invited operator'],[cancelledEmail,'Cancelled operator']]){
       await operators.getByLabel('Email',{exact:true}).fill(address);
       await operators.getByLabel('Name',{exact:true}).fill(name);
       const invited=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/app/operators/invite'&&response.request().method()==='POST');
@@ -133,6 +141,11 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
       await pending.getByText(address,{exact:true}).waitFor({state:'visible'});
      }
      await accessible(page);
+     await context.grantPermissions(['clipboard-read','clipboard-write'],{origin});
+     const row=pending.locator('.operator-row').filter({hasText:colleagueEmail});
+     await row.getByRole('button',{name:'Copy link',exact:true}).click();
+     invitationLink=await page.evaluate(()=>navigator.clipboard.readText());
+     assert.equal(new URL(invitationLink).origin,origin);
      const cancelledRow=pending.locator('.operator-row').filter({hasText:cancelledEmail});
      page.once('dialog',dialog=>dialog.accept());
      await cancelledRow.getByRole('button',{name:'Erase personal data',exact:true}).click();
@@ -176,6 +189,11 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
     assert.equal((await page.request.post(origin+'/auth/confirm',{data:{token:terminalToken},headers:{Origin:origin},maxRedirects:0})).status(),400,'the terminal link is one-use');
     assert.equal((await page.request.post(origin+'/api/app/session/signout',{data:{},headers:{Origin:origin}})).status(),204);
     assert.equal((await page.request.get(origin+'/api/app/session')).status(),401);
+    await page.goto(invitationLink);
+    await page.waitForURL(url=>url.pathname==='/app');
+    const colleague=await (await page.request.get(origin+'/api/app/session')).json();
+    assert.equal(colleague.operator.email,colleagueEmail);
+    assert.equal(colleague.operator.role,'communicator');
     await context.close();
    }
    await stop();

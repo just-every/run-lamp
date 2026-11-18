@@ -2,20 +2,23 @@ import { useState, type FormEvent } from "react";
 
 import type { StoredFormerOperator, StoredOperator } from "../repository";
 import { ApiError, appApi, useAppData } from "../../../app/client/ui/api";
+import { CopyButton } from "../../../app/client/ui/copy-button";
 import { Button } from "../../../app/client/ui/button";
 import { LoadingState, FormError } from "../../../app/client/ui/states";
-import { OperatorRoleSelect, operatorRoleLabels } from "./operator-role-select";
+import { OperatorRoleSelect, operatorRoleLabels, operatorRoleDescriptions } from "./operator-role-select";
 
 type OperatorsResponse = { operators: StoredOperator[] };
+type InvitationsResponse = { local: boolean; operators: (StoredOperator & { signInUrl?: string })[] };
 type FormerOperatorsResponse = { operators: StoredFormerOperator[] };
 
 /** Operator access and personal-data controls mounted through settings.sections.v1. */
 export function OperatorsPanel() {
   const active = useAppData<OperatorsResponse>("/api/app/operators");
-  const invited = useAppData<OperatorsResponse>("/api/app/operators/invited");
+  const invited = useAppData<InvitationsResponse>("/api/app/operators/invited");
   const former = useAppData<FormerOperatorsResponse>("/api/app/operators/former");
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [role, setRole] = useState<StoredOperator["role"]>("communicator");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
@@ -47,9 +50,16 @@ export function OperatorsPanel() {
     event.preventDefault();
     setSaving(true); setMessage(null);
     try {
-      const result = await appApi<{ email: "sent" | "suppressed" }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName }) });
+      const result = await appApi<{ email: "sent" | "suppressed" | "demo"; displayName: string; signInUrl?: string }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName, role }) });
       setNeedsConfirmation(false);
-      setEmail(""); setDisplayName(""); setMessage(result.email === "suppressed" ? "Invitation created. No email was sent on this computer." : "Invitation email sent.");
+      setEmail(""); setDisplayName(""); setRole("communicator");
+      let guidance = "";
+      if (result.email === "sent") guidance = " Ask them to open the link in their invitation email.";
+      if (result.email === "suppressed") {
+        guidance = invited.data?.local ? " No email was sent on this computer." : " No email was sent.";
+        if (result.signInUrl) guidance += " Use the link under Pending invitations in this browser.";
+      }
+      setMessage(`${result.displayName} is invited.${guidance}`);
       invited.refresh();
     } catch (cause) {
       showError(cause, "The invitation could not be sent.");
@@ -92,6 +102,7 @@ export function OperatorsPanel() {
       <h2 id="operators-title">Operators</h2>
       <p>Roles control what each operator can do. Removing access signs them out. Erasing personal data removes their name and email for good.</p>
     </div>
+    {invited.data.local && <p>This copy runs only on this computer. To invite your team by email, <a className="text-link" href="/docs/deploy">put Lamp online</a> with email turned on, then invite them there.</p>}
     {needsConfirmation && <form className="page-stack" action="/auth/step-up" method="post">
       <input type="hidden" name="action" value="owner:transfer" />
       <input type="hidden" name="returnTo" value="/app/settings#operators" />
@@ -101,7 +112,15 @@ export function OperatorsPanel() {
     <form className="operators-invite-form" onSubmit={invite}>
       <label className="form-label">Email<input required type="email" value={email} placeholder="operator@example.com" onChange={(event) => setEmail(event.target.value)} /></label>
       <label className="form-label">Name<input required maxLength={120} value={displayName} placeholder="Operator name" onChange={(event) => setDisplayName(event.target.value)} /></label>
+      <label className="form-label">Invitation role
+        <select aria-label="Invitation role" value={role} disabled={saving} aria-describedby="invitation-role-help" onChange={event => setRole(event.target.value as StoredOperator["role"])}>
+          {Object.entries(operatorRoleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
       <Button disabled={saving}>{saving ? "Sending…" : "Invite operator"}</Button>
+      <div className="invitation-role-help" id="invitation-role-help">
+        {Object.entries(operatorRoleLabels).map(([value, label]) => <p key={value}><strong>{label}</strong> — {operatorRoleDescriptions[value as StoredOperator["role"]]}</p>)}
+      </div>
     </form>
     {message && <p className="save-message" role="status">{message}</p>}
     <div className="operators-list" aria-label="Active operators">
@@ -114,7 +133,7 @@ export function OperatorsPanel() {
     {invited.data.operators.length > 0 && <section className="former-operators" aria-labelledby="invited-operators-title">
       <h3 id="invited-operators-title">Pending invitations</h3>
       <p>These people have not accepted their invitation. Erasing their personal data cancels every outstanding invitation link.</p>
-      <div className="operators-list">{invited.data.operators.map((operator) => <OperatorRow key={operator.id} operator={operator} saving={controlsDisabled} onErase={() => erase(operator)} />)}</div>
+      <div className="operators-list">{invited.data.operators.map((operator) => <OperatorRow key={operator.id} operator={operator} signInUrl={operator.signInUrl} saving={controlsDisabled} onErase={() => erase(operator)} />)}</div>
     </section>}
     {former.data.operators.length > 0 && <section className="former-operators" aria-labelledby="former-operators-title">
       <h3 id="former-operators-title">Former operators</h3>
@@ -124,10 +143,13 @@ export function OperatorsPanel() {
   </section>;
 }
 
-function OperatorRow({ operator, saving, lastOwner = false, onRoleChange, onRevoke, onErase }: { operator: StoredOperator | StoredFormerOperator; saving: boolean; lastOwner?: boolean; onRoleChange?: (role: StoredOperator["role"]) => Promise<boolean>; onRevoke?: () => void; onErase?: () => void }) {
+function OperatorRow({ operator, signInUrl, saving, lastOwner = false, onRoleChange, onRevoke, onErase }: { operator: StoredOperator | StoredFormerOperator; signInUrl?: string; saving: boolean; lastOwner?: boolean; onRoleChange?: (role: StoredOperator["role"]) => Promise<boolean>; onRevoke?: () => void; onErase?: () => void }) {
   return <div className="operator-row">
-    <span><strong>{operator.displayName}</strong><small><span>{operator.email}</span> · {operatorRoleLabels[operator.role]}</small></span>
+    <span><strong>{operator.displayName}</strong><small><span>{operator.email}</span> · {operatorRoleLabels[operator.role]}</small>
+      {signInUrl && <a className="text-link" href={signInUrl}>Open as {operator.displayName} in this browser</a>}
+    </span>
     <div className="operator-actions">
+      {signInUrl && <CopyButton text={signInUrl} label="Copy link" />}
       {onRoleChange && <OperatorRoleSelect operator={operator} disabled={saving} lastOwner={lastOwner} onChange={onRoleChange} />}
       {onRevoke && <Button type="button" variant="secondary" className="table-action" disabled={saving} onClick={onRevoke}>Remove access</Button>}
       {onErase && <Button type="button" variant="secondary" className="table-action erase-operator-action" disabled={saving} onClick={onErase}>Erase personal data</Button>}

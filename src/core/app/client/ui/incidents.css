@@ -29,3 +29,10 @@
   .incident-delete-form .button { width: 100%; }
   .incident-delete-form > div { display: grid; grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Incident email preview uses the same document as subscriber delivery. */
+.email-preview iframe { display: block; width: 100%; min-height: 280px; border: 0; background: white; }
+.email-preview-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.email-impact-source, .correction-note { font-size: 14px; line-height: 1.5; }
+.resolution-statuses { margin-block: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.resolution-statuses p { margin-block: 0 12px; }

@@ -276,13 +276,15 @@ the original account and environment:
 node scripts/remove-deployment.mjs --environment production --env-file "$HOME/.config/lamp/production.env" --yes
 ```
 
-This removes the public Worker first in `workers-dev` mode, then the app Worker
-and resources proven created for that environment, including their data, and
-reads back their absence. Custom-domain mode has one Worker. The generic
-`rer deploy --remove --yes` alone does not remove Lamp's separate public Worker.
-Cloudflare may still report a just-deleted Worker or R2 bucket after deletion
-or a long object purge. If removal ends with `remove-incomplete`, retain the
-creation records and run the same command again.
+One invocation removes the public Worker first in `workers-dev` mode, then the
+app Worker and its proven resources, and reads back that none remains, including
+its Durable Object namespace. Readback retries allow up to 60 seconds each; R2
+purges bounded batches and retries a not-empty bucket delete for up to 10 minutes
+per bucket (about five minutes per GB-scale bucket can be needed). On
+`remove-incomplete` it names the survivor and keeps records so the same command
+resumes. Custom-domain mode has one Worker. The pinned rer CLI cannot yet expose
+first-party `rer remove`; `rer deploy --remove --yes` alone does not remove
+Lamp's separate public Worker. — Run Edit Run fleet, 2026-11-17.
 Native deployments retain app creation ownership at
 `.rer/deploy/<environment>.json` and public Worker ownership at
 `.rer/deploy/<environment>.page.json`. Lamp's

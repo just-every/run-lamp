@@ -47,9 +47,10 @@ export function assertHistoryRecord(html, { href, title, state, startsAt, endsAt
     const heading = article.childNodes.find(node => hasClass(node, 'update-head'));
     const lifecycle = historyText(heading.childNodes.find(node => node.tagName === 'strong'));
     const matching = [...remaining.values()].filter(update => lifecycle === (update.lifecycle ?? update.kind)
-      && historyText(article).includes(update.details ?? update.body));
+      && (update.kind ? [update.affectedAudience, update.customerImpact] : [update.details]).every(value => value && historyText(article).includes(value)));
     assert.equal(matching.length, 1, `${href}: each article belongs to one independently retained native publication`);
     const update = matching[0];
+    if (update.kind) assert.ok(!historyText(article).includes(decodeURIComponent(href.split("/").at(-1))), "customer history omits internal maintenance references");
     const published = descendants(heading).filter(node => node.tagName === 'time');
     assert.deepEqual(published.map(node => [attr(node, 'datetime'), historyText(node)]),
       [[update.publishedAt, historyTime(update.publishedAt)]], `${update.id}: exact original publication time`);

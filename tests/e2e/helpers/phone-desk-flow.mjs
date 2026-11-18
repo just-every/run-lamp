@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
-import { AxeBuilder } from '@axe-core/playwright';
+import { inspectEmailPreviewAccessibility } from './email-preview-accessibility.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { incidentComposer } from './incident-composer.mjs';
 
@@ -13,7 +13,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     process.stderr.write(`Phone desk: ${page.viewportSize().width} ${name}\n`);
     const layout = await page.evaluate(() => ({ document: document.documentElement.scrollWidth, viewport: innerWidth }));
     assert.ok(layout.document <= layout.viewport, `${name} overflows: ${JSON.stringify(layout)}`);
-    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
+    const axe = await inspectEmailPreviewAccessibility(page);
     assert.deepEqual(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact)).map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) })), [], `${name} accessibility`);
     if (proof) await page.screenshot({ path: `${proof}/${layout.viewport}-${name}.png`, fullPage: true });
   }
