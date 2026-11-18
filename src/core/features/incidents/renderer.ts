@@ -26,6 +26,7 @@ export interface RenderedIncidentUpdate {
   email: {
     subject: string;
     plainText: string;
+    displayText?: string;
     from?: string;
     replyTo?: string;
     logoUrl?: string;

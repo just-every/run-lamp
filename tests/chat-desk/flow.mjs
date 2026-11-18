@@ -37,7 +37,9 @@ export function chatTransports(getRuntime) {
         if (input.type === 'multi_static_select') {
           selected = { selected_options: value.map(id => { const option = input.options.find(option => option.value === id); assert.ok(option, `Slack offers ${id}`); return option; }) };
         } else if (input.type === 'static_select') {
-          const option = input.options.find(option => option.value === value); assert.ok(option, `Slack offers ${value}`); selected = { selected_option: option };
+          const option = value ? input.options.find(option => option.value === value) : null;
+          if (value) assert.ok(option, `Slack offers ${value}`);
+          selected = { selected_option: option };
         } else selected = { value };
         return [block.block_id, { [input.action_id]: selected }];
       })) };
@@ -175,7 +177,15 @@ export async function chatDeskNativeFlow(t) {
       assert.equal((await send(null, { code: minted.body.code })).status, 200);
       assert.equal((await send(null, { code: minted.body.code })).status, 409, 'a link code is single use');
       const composer = await send(null, { compose: true }); assert.equal(composer.status, 200, JSON.stringify(composer.body));
-      const openControls = { card: card(name, composer.body), control: 'Open draft', values: { title: open.title, ...open.update, state: 'Major outage', components: name === 'Slack' ? [componentIds[0], componentIds[2]] : componentIds[0] } };
+      const form = card(name, composer.body);
+      const stateControl = name === 'Slack' ? form.blocks.find(block => block.block_id === 'state').element : form.body.find(input => input.id === 'state');
+      const choices = name === 'Slack' ? stateControl.options.map(({ text, value }) => [text.text, value]) : stateControl.choices.map(({ title, value }) => [title, value]);
+      assert.deepEqual(Object.fromEntries(choices.map(([label, value]) => [value, label])), Object.fromEntries(Object.entries(expectedComponentLabels).filter(([value]) => value !== 'Under maintenance')));
+      const openControls = { card: form, control: 'Open draft', values: { title: open.title, ...open.update, components: name === 'Slack' ? [componentIds[0], componentIds[2]] : componentIds[0] } };
+      assert.equal((await send(null, openControls)).status, 400, `${name} requires an explicit component state`);
+      assert.equal(await count('incidents'), before);
+      const selectedState = choices.find(([label]) => label === expectedComponentLabels['Partially unavailable'])[1];
+      openControls.values.state = selectedState;
       const opened = await send(null, openControls); assert.equal(opened.status, 200, JSON.stringify(opened.body));
       if (name === 'Teams') assert.equal(opened.body.task.value.card.content.type, 'AdaptiveCard');
       let result = opened.body.result, id = result.incidentId, editorCard = card(name, opened.body);
@@ -183,10 +193,8 @@ export async function chatDeskNativeFlow(t) {
       assert.equal((await send(null, openControls)).status, 409, 'replayed open creates no second draft');
       assert.equal(await count('incidents'), before + 1);
       const claims = rows => rows.map(({ componentId, state }) => ({ componentId, state })).sort((a, b) => a.componentId.localeCompare(b.componentId));
-      if (name === 'Slack') {
-        const selected = (await r.call(`/api/app/incidents/${id}`)).body.incident.components;
-        assert.deepEqual(claims(selected), claims([0, 2].map(n => ({ componentId: componentIds[n], state: 'Major outage' }))), 'Slack opens exactly the selected components, excluding the unselected component');
-      }
+      const selected = (await r.call(`/api/app/incidents/${id}`)).body.incident.components;
+      assert.deepEqual(claims(selected), claims((name === 'Slack' ? [0, 2] : [0]).map(n => ({ componentId: componentIds[n], state: 'Partially unavailable' }))), `${name} opens exactly the selected components with the explicit partial outage`);
       const expectedClaims = name === 'Slack'
         ? [{ componentId: componentIds[0], state: 'Partially unavailable' }, { componentId: componentIds[2], state: 'Degraded performance' }]
         : componentIds.map(componentId => ({ componentId, state: 'Major outage' }));
@@ -207,7 +215,7 @@ export async function chatDeskNativeFlow(t) {
         { label: 'Who is affected', value: submitted.affectedAudience },
         { label: 'Customer impact', value: submitted.customerImpact },
         { label: 'What still works', value: submitted.whatStillWorks },
-        { label: 'Next update by', value: `${month} ${next.getUTCDate()}, ${next.getUTCFullYear()}, ${next.toISOString().slice(11, 16)} UTC+00:00`, instant: submitted.nextUpdateAt },
+        { label: 'Next update by', value: `${month} ${next.getUTCDate()}, ${next.getUTCFullYear()}, ${next.toISOString().slice(11, 16)} Universal time`, instant: submitted.nextUpdateAt },
         { label: 'Additional details', value: submitted.details },
       ];
       const expectedHeading = `${web.body.incident.reference}: ${open.title}`;
@@ -220,10 +228,11 @@ export async function chatDeskNativeFlow(t) {
       assert.deepEqual(preview.public.fields.filter(field => field.label === 'Component state').map(field => field.value).sort(), [...componentLines].sort());
       assert.equal(preview.email.subject, expectedSubject);
       const expectedEmail = ['Synthetic Lamp', expectedHeading, 'Status: Identified', ...fields.map(field => `${field.label}: ${field.value}`), ...componentLines.map(line => `Component state: ${line}`), `Incident impact: ${name === 'Slack' ? 'Major' : 'Critical'}`].join('\n\n');
-      assert.equal(preview.email.plainText, expectedEmail, `${name} email preview retains the complete independently expected message`);
+      assert.equal(preview.email.plainText, expectedEmail.replace('Universal time', 'UTC+00:00'), `${name} preview retains the complete outgoing email`);
       assert.ok(JSON.stringify(name === 'Teams' ? previewed.body.value : previewed.body.blocks).includes(open.update.customerImpact));
       const visible = name === 'Slack' ? previewed.body.blocks.filter(block => block.type === 'section').map(block => block.text.text).join('') : previewed.body.value.body.filter(block => block.type === 'TextBlock').map(block => block.text).join('\n');
-      for (const text of [web.body.preview.public.heading, `Status: ${web.body.preview.public.lifecycle}`, ...web.body.preview.public.fields.map(field => `${field.label}: ${field.value}`), `Email subject: ${web.body.preview.email.subject}`, web.body.preview.email.plainText]) assert.ok(visible.includes(text), `${name}'s visible card carries UPDATE-004 preview: ${text}`);
+      for (const text of [web.body.preview.public.heading, `Status: ${web.body.preview.public.lifecycle}`, ...web.body.preview.public.fields.map(field => `${field.label}: ${field.value}`), `Email subject: ${web.body.preview.email.subject}`, expectedEmail]) assert.ok(visible.includes(text), `${name}'s visible card carries UPDATE-004 preview: ${text}`);
+      assert.doesNotMatch(visible, /\b(?:UTC|GMT)[+-]\d/, `${name}'s visible preview names the zone`);
       const published = await send(null, { card: card(name, previewed.body), control: 'Publish update' }); assert.equal(published.status, 200, JSON.stringify(published.body));
       assert.equal((await r.call(`/api/app/incidents/${id}`)).body.incident.updates[0].authorOperatorId, r.operator);
       const html = await (await r.worker.dispatchFetch(page + '/')).text(); assert.ok(html.includes(open.title)); assert.ok(html.includes(open.update.customerImpact));
