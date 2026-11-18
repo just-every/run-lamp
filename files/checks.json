@@ -1,5 +1,5 @@
 {
-  "timestampUtc": "2026-11-18T03:19:27Z",
+  "timestampUtc": "2026-11-18T03:28:53Z",
   "repository": "just-every/run-lamp",
   "branch": "cloud/sd-lamp-design-setup-4",
   "base": "284b2b75541f298d96dae6b3703f63be17cff4ae",
@@ -289,10 +289,10 @@
     }
   ],
   "verifyLatest": {
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "ecd9b50c6af3b65bb68b231d942d6a5f51aeb43c",
     "html_url": "https://github.com/just-every/run-lamp/actions/runs/44228207380",
-    "status": "in_progress"
+    "status": "completed"
   },
   "initialReplayHistoryScan": {
     "status": "PASS",
