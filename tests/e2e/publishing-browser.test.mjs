@@ -803,7 +803,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await page.locator('.live-preview').getByText('Checkout authorizations are working normally.', { exact: true }).waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
-  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimState: 'Degraded performance', screens: previewScreens });
+  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimLabel: 'Slow', screens: previewScreens });
   assert.deepEqual(incident.updates.find(row => row.id === first.id), first, 'later publications preserve the original update');
   await waitForPublicIncident(incident.reference, 'Checkout authorizations are working normally.');
   await page.goto(`${pageUrl}/incidents/${incident.reference}`);
