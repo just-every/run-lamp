@@ -88,8 +88,9 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
           return Response.json({ messageId: `<synthetic-lamp-relay-${messages.length}@relay.example.test>` }, { status: 202 });
         }
         if (url.origin === "https://receiver.example.test" && ["/synthetic-lamp-1", "/synthetic-lamp-components"].includes(url.pathname)) {
-          const rawBody = await request.text();
-          const captured = { rawBody, body: JSON.parse(rawBody), headers: Object.fromEntries(request.headers) };
+          const wireBytes = Buffer.from(await request.arrayBuffer());
+          const rawBody = wireBytes.toString("utf8");
+          const captured = { wireBytes, rawBody, body: JSON.parse(rawBody), headers: Object.fromEntries(request.headers) };
           webhookRequests.push(captured);
           if (webhookOutage) return new Response(null, { status: 500 });
           return webhookReceiver ? await webhookReceiver(captured) : new Response(null, { status: 204 });
