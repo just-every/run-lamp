@@ -1,0 +1,22 @@
+{
+  "id": 44284873258,
+  "workflow": "Verify",
+  "event": "push",
+  "observedAt": "2026-11-18T10:51:47+00:00",
+  "conclusion": "success",
+  "head_sha": "a4a343a042fdef482aa8c4daba7476b4a67a81f7",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44284873258",
+  "status": "completed",
+  "advertisedBranch": "cloud/sd-lamp-c-f140-pc1",
+  "advertisedProductHead": "a4a343a042fdef482aa8c4daba7476b4a67a81f7",
+  "advertisedMainHead": "4e97e8985ac870576ccaf3cf3a54332140c7e7d7",
+  "mainEqualsCandidate": false,
+  "runSite": {
+    "id": null,
+    "status": "pending main landing"
+  },
+  "supplementalStandaloneHelper": {
+    "exit": 137,
+    "registeredJourneyReceipt": "CHECKS.json"
+  }
+}

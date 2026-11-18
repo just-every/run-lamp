@@ -1,0 +1,76 @@
+{
+  "savedHead": "8f5dacaffef33c1b553ee6e485dc60da03188c57",
+  "previousVerify": {
+    "run": 44252625089,
+    "attempt": 1,
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "id": 134627239979,
+        "name": "shards (composer)",
+        "conclusion": "cancelled",
+        "step": "Verify this product shard",
+        "stepStarted": "2026-11-18T06:38:35Z",
+        "stepCompleted": "2026-11-18T07:23:23Z"
+      },
+      {
+        "id": 134645856294,
+        "name": "verify",
+        "conclusion": "failure",
+        "step": "Require every planned command to succeed on this commit"
+      },
+      {
+        "id": 134627240056,
+        "name": "shards (runtime)",
+        "conclusion": "success"
+      }
+    ],
+    "failedLogInvocations": [
+      {
+        "command": "gh run view 44252625089 --repo just-every/run-lamp --job 134627239979 --log-failed",
+        "exit": 0,
+        "output": "empty"
+      },
+      {
+        "command": "gh run view 44252625089 --repo just-every/run-lamp --job 134645856294 --log-failed",
+        "exit": 0,
+        "output": "empty"
+      }
+    ],
+    "artifactDownload": {
+      "command": "gh run download 44252625089 --repo just-every/run-lamp --name lamp-evidence-44252625089-1-composer --dir <temporary-directory>",
+      "error": "Artifact blob redirect to productionresultssa2.blob.core.windows.net returned Forbidden."
+    }
+  },
+  "localSavedHeadRun": {
+    "job": "shards (composer)",
+    "command": "LAMP_VERIFY_SHARD=composer pnpm run verify:app",
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "System Chromium 154",
+    "exit": 1,
+    "test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+    "failure": "browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell",
+    "steps": [
+      {
+        "script": "test:composer",
+        "exitCode": 1,
+        "durationMs": 438511
+      },
+      {
+        "script": "test:public",
+        "exitCode": 0,
+        "durationMs": 455504
+      }
+    ]
+  },
+  "localMainThemeProbe": {
+    "head": "20780c29021042daea1b98f34c60d6caf3188f89",
+    "runner": "same cloud VM",
+    "command": "node --test --test-concurrency=1 --test-name-pattern=THEME-001 tests/e2e/publishing-browser.test.mjs",
+    "browser": "Local registry paths linked to system Chromium 154",
+    "exit": 1,
+    "test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+    "failure": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg"
+  }
+}

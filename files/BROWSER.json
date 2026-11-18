@@ -1,0 +1,34 @@
+{
+  "head": "a4a343a042fdef482aa8c4daba7476b4a67a81f7",
+  "tool": "System Chromium and Playwright",
+  "result": [
+    {
+      "phase": "started",
+      "state": "In progress",
+      "width": 1440,
+      "status": 200,
+      "screenshot": "maintenance-started-1440.png"
+    },
+    {
+      "phase": "started",
+      "state": "In progress",
+      "width": 390,
+      "status": 200,
+      "screenshot": "maintenance-started-390.png"
+    },
+    {
+      "phase": "completed",
+      "state": "Completed",
+      "width": 1440,
+      "status": 200,
+      "screenshot": "maintenance-completed-1440.png"
+    },
+    {
+      "phase": "completed",
+      "state": "Completed",
+      "width": 390,
+      "status": 200,
+      "screenshot": "maintenance-completed-390.png"
+    }
+  ]
+}
