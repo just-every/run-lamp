@@ -179,7 +179,13 @@ export async function sorryTemplateBrowserFlow({ page, appUrl, appFetch, api, sc
   }
   const beforeConflict = await templateRows();
   const conflict = await move.preview({ ...source, files: refreshFiles });
-  assert.ok(conflict.status !== 200 || conflict.body.report.items.some(row => /conflict|edit|preserv/i.test(row.reason) && ['rejected', 'skipped'].includes(row.outcome)), 'source refresh cannot replace owner edits');
+  assert.equal(conflict.status, 200, JSON.stringify(conflict.body));
+  const rejected = conflict.body.rejected.filter(row => row.kind === 'template' || row.kind === 'update-template');
+  assert.deepEqual(rejected.map(({ kind, sourceId }) => [kind, sourceId]).sort(), [
+    ['template', 'synthetic-lamp-notice-1'],
+    ['update-template', 'synthetic-lamp-update-27'],
+  ], 'catch-up rejects both changed sources whose native templates were edited');
+  for (const { reason } of rejected) assert.match(reason, /Native edit conflict/);
   assert.deepEqual(await templateRows(), beforeConflict, 'source conflict preserves both edited templates');
   const undone = await move.undo(applied.body.door);
   assert.equal(undone.status, 200, JSON.stringify(undone.body));
