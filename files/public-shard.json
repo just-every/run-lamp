@@ -1,0 +1,14 @@
+{
+  "shard": "public",
+  "commit": "f122201b30a21f033f41563a9fe31feaf03f6734",
+  "runId": null,
+  "runAttempt": 0,
+  "success": true,
+  "steps": [
+    {
+      "script": "test:delivery",
+      "exitCode": 0,
+      "durationMs": 954117
+    }
+  ]
+}

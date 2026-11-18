@@ -1,0 +1,104 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f147",
+  "head": "f122201b30a21f033f41563a9fe31feaf03f6734",
+  "date": "2026-11-18T13:43:37Z",
+  "main": {
+    "head": "fd6695e358e5aa67c47c45f05591f2c33e83a930",
+    "equalsCandidate": false,
+    "verifyRunIds": [
+      44291956536,
+      44286265388
+    ],
+    "runSiteRunId": 44291956510,
+    "conclusion": "success"
+  },
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f147",
+    "head_sha": "f122201b30a21f033f41563a9fe31feaf03f6734",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44311222239",
+    "id": 44311222239,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "local": {
+    "node": "22.20.0",
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "shard": {
+      "command": "pnpm run verify:app",
+      "name": "public",
+      "exit": 0,
+      "passingRegistrations": 7,
+      "receipt": "public-shard.json"
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "sourceLock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exits": [
+        0,
+        0
+      ]
+    },
+    "contractViews": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exits": [
+        0,
+        0
+      ],
+      "viewsWritten": 0
+    },
+    "testInventory": {
+      "registeredCases": 112,
+      "assertionScripts": 10
+    }
+  },
+  "nativeInventory": {
+    "deliveryIdentities": 132,
+    "populatedOutcomes": 6,
+    "csvScopes": 41,
+    "paginatedUpdateDestinations": 101
+  },
+  "browser": {
+    "engine": "Chromium",
+    "assertionWidth": 1440,
+    "screens": [
+      {
+        "file": "delivery-log-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "82c1332d64ccaa6c83cd7014d12917599d3894c03473423d83d62029cdcecb3d"
+      },
+      {
+        "file": "delivery-log-390.png",
+        "width": 390,
+        "height": 1770,
+        "sha256": "84ff4c908d1405c51423f3eda35b9a7006efbc612cf332e2277895a1d882ed2c"
+      }
+    ]
+  },
+  "publicationScan": {
+    "commit": "f122201b30a21f033f41563a9fe31feaf03f6734",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "pending guarded landing"
+  }
+}
