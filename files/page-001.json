@@ -1,0 +1,37 @@
+{
+  "product_head": "add81eb73e607bc57718f262387679d269f10878",
+  "test_file": "tests/e2e/public-contract.test.mjs",
+  "test_name": "PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary",
+  "passed": 1,
+  "failed": 0,
+  "assertion_surface": "anonymous initial HTML",
+  "proof": "PROBE PAGE-001 3: anonymous initial HTML generated at 2031-02-10T16:00:00.000Z -> two active windows and starts at fourteen days minus one millisecond and exactly fourteen days; the following millisecond is absent, and all five native permalinks resolve",
+  "javascript_enabled": false,
+  "browser": "system Chromium",
+  "screenshots": [
+    {
+      "path": "browser/1440-maintenance-horizon.png",
+      "width": 1440,
+      "image_height": 2961,
+      "sha256": "29d9263330c48f373eea48381f608a174f8f27d39dbf1c9363656e0a709817e9"
+    },
+    {
+      "path": "browser/1440-maintenance-permalink.png",
+      "width": 1440,
+      "image_height": 1000,
+      "sha256": "a16bcd66ac38945588c0201bfc9e27ab4e81494721790413837bb8613e5de0aa"
+    },
+    {
+      "path": "browser/390-maintenance-horizon.png",
+      "width": 390,
+      "image_height": 3189,
+      "sha256": "f5395193756ab30d9009156b955a5d056b9efbde96124015bae8753e237f54ff"
+    },
+    {
+      "path": "browser/390-maintenance-permalink.png",
+      "width": 390,
+      "image_height": 1000,
+      "sha256": "647e32b55867246dede7bc0d246c561ac07367f09572cf2d5171aff39eca7904"
+    }
+  ]
+}

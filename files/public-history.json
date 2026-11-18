@@ -1,0 +1,12 @@
+{
+  "product_head": "add81eb73e607bc57718f262387679d269f10878",
+  "test_file": "tests/e2e/public-contract.test.mjs",
+  "test_name_prefix": "SUB-019 PAGE-001 PAGE-002",
+  "passed": 1,
+  "failed": 0,
+  "probes": [
+    "PAGE-017 /history.atom: 200, 64647 bytes equal to /feed.atom; native update 01M7RAZPVZWJFWK3M3FT06SXFJ",
+    "PAGE-017 /history.rss: 200, 35701 bytes equal to /feed.rss; native update 01M7RAZPVZWJFWK3M3FT06SXFJ",
+    "PAGE-017 /history.rss: old validator received 200 for urn:lamp:synthetic-lamp-feed-1:event:update-01M7RAZW0M2QM2MYGQX1QZ9DHJ after 165 ms; retained 24 prior GUIDs; wording: API requests are working again."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "repository": "just-every/run-lamp",
+  "product_branch": "cloud/sd-lamp-c-f141-lin-1",
+  "push_utc": "2026-11-18T22:01:16Z",
+  "run_id": 44407417512,
+  "workflow": "Verify",
+  "conclusion": "success",
+  "head_sha": "add81eb73e607bc57718f262387679d269f10878",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44407417512",
+  "status": "completed",
+  "observations": [
+    {
+      "observed_utc": "2026-11-18T22:01:35Z",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "observed_utc": "2026-11-18T22:06:38Z",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "observed_utc": "2026-11-18T22:11:41Z",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "observed_utc": "2026-11-18T22:16:45Z",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "observed_utc": "2026-11-18T22:21:49Z",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}
