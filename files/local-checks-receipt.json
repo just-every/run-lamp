@@ -1,0 +1,312 @@
+{
+  "timestamp_utc": "2026-11-18T06:07:57Z",
+  "product_branch": "cloud/sd-lamp-design-calls-1-pc1",
+  "head": "6a043e506fe201c26e1929e721cf3e7f6f207897",
+  "remote_match": true,
+  "candidate_commit_count": 5,
+  "identity_checked": true,
+  "trailer_count": 0,
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4"
+  },
+  "build_steps": {
+    "check:contract-docs": {
+      "status": "pass",
+      "mode": "regenerated in the validation worktree, then restored"
+    },
+    "source:copies": {
+      "status": "pass"
+    },
+    "source:check": {
+      "status": "pass"
+    },
+    "typecheck": {
+      "status": "pass"
+    },
+    "check:syntax": {
+      "status": "pass"
+    },
+    "validate:release": {
+      "status": "pass"
+    },
+    "verify:visual:source": {
+      "status": "pass"
+    },
+    "build:app": {
+      "status": "pass"
+    },
+    "build:site": {
+      "status": "pass"
+    }
+  },
+  "verification_capacity": {
+    "registered_cases": 111,
+    "assertion_scripts": 10,
+    "total": 121
+  },
+  "local_test_batches": {
+    "fast": {
+      "totals": {
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "case": 1,
+          "name": "MAINT-009 PAGE-020 \u2014 operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard",
+          "status": "pass"
+        },
+        {
+          "case": 2,
+          "name": "TEAM-002 \u2014 Local operator invitations stay pending without email or a share action",
+          "status": "pass"
+        },
+        {
+          "case": 3,
+          "name": "SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 \u2014 owner maintains a complete catalogue and customers read, refresh, embed and retain its public story",
+          "status": "pass"
+        },
+        {
+          "case": 4,
+          "name": "INCIDENT-012 \u2014 linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams",
+          "status": "pass"
+        }
+      ]
+    },
+    "chat": {
+      "totals": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "case": 1,
+          "name": "INCIDENT-012 \u2014 linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams",
+          "status": "pass"
+        }
+      ]
+    },
+    "setup": {
+      "totals": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "case": 1,
+          "name": "ACCESS-001 SETUP-002 \u2014 a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview",
+          "status": "pass"
+        },
+        {
+          "case": 2,
+          "name": "SETUP-002 \u2014 a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see",
+          "status": "pass"
+        }
+      ]
+    },
+    "extended": {
+      "totals": {
+        "tests": 34,
+        "pass": 33,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "cases": [
+        {
+          "case": 1,
+          "name": "ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable",
+          "status": "pass"
+        },
+        {
+          "case": 2,
+          "name": "ACCESS-002 an installation linked before sealing keeps its provider key, sealed under INSTALLATION_KEY, and refuses without it",
+          "status": "pass"
+        },
+        {
+          "case": 3,
+          "name": "ACCESS-002 mail-off rer signin follows native deployment custody and rer deploy --rotate-secret INSTALLATION_KEY preserves access while retiring the old key",
+          "status": "pass"
+        },
+        {
+          "case": 4,
+          "name": "ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RESOURCE_PREFIX is refused before the key, its custody or the Worker change",
+          "status": "pass"
+        },
+        {
+          "case": 5,
+          "name": "SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out",
+          "status": "pass"
+        },
+        {
+          "case": 6,
+          "name": "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links",
+          "status": "pass"
+        },
+        {
+          "case": 7,
+          "name": "INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 \u2014 Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings",
+          "status": "pass"
+        },
+        {
+          "case": 8,
+          "name": "INTAKE-001 INTAKE-005 \u2014 Connect Another tool and send its copied sample request",
+          "status": "pass"
+        },
+        {
+          "case": 9,
+          "name": "AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence",
+          "status": "pass"
+        },
+        {
+          "case": 10,
+          "name": "Development ingress proofs are single-use and expire after five minutes",
+          "status": "pass"
+        },
+        {
+          "case": 11,
+          "name": "Development ingress refuses a forgotten proof once a full nonce set evicts it",
+          "status": "pass"
+        },
+        {
+          "case": 12,
+          "name": "Development ingress keeps serving new proofs while its nonce set is full",
+          "status": "pass"
+        },
+        {
+          "case": 13,
+          "name": "Development ingress holds exactly 10,000 nonces however many proofs it has accepted",
+          "status": "pass"
+        },
+        {
+          "case": 14,
+          "name": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 \u2014 owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover",
+          "status": "pass"
+        },
+        {
+          "case": 15,
+          "name": "TEAM-007 \u2014 audit labels identify people and subjects while filters and CSV retain machine keys",
+          "status": "pass"
+        },
+        {
+          "case": 16,
+          "name": "TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 \u2014 operator roles, permissions, audit and Settings chat identities",
+          "status": "pass"
+        },
+        {
+          "case": 17,
+          "name": "INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 \u2014 compiled visual edits and the operator publication journey",
+          "status": "pass"
+        },
+        {
+          "case": 18,
+          "name": "INCIDENT-001 AGENT-004 MOBILE-001 \u2014 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke",
+          "status": "pass"
+        },
+        {
+          "case": 19,
+          "name": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget",
+          "status": "fail"
+        },
+        {
+          "case": 20,
+          "name": "DEP-001 DEP-002 \u2014 owner configures upstream reports under Settings",
+          "status": "pass"
+        },
+        {
+          "case": 21,
+          "name": "Owner incident communication \u2014 manual resolution, customer email and timeline correction",
+          "status": "pass"
+        },
+        {
+          "case": 22,
+          "name": "INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 \u2014 reviewed incident from private template to immutable updates, recovery, report and audited deletion",
+          "status": "pass"
+        },
+        {
+          "case": 23,
+          "name": "INCIDENT-013 \u2014 every explicit impact choice overrides higher and lower derived impact and clearing restores components",
+          "status": "pass"
+        },
+        {
+          "case": 24,
+          "name": "INCIDENT-013 \u2014 each set and clear appends the exact acting operator and before and after values to private history",
+          "status": "pass"
+        },
+        {
+          "case": 25,
+          "name": "INCIDENT-013 \u2014 every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime",
+          "status": "pass"
+        },
+        {
+          "case": 26,
+          "name": "MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 \u2014 owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history",
+          "status": "pass"
+        },
+        {
+          "case": 27,
+          "name": "UPDATE-006 \u2014 reviewed scheduled publication meets its deadline after complete public and subscriber silence",
+          "status": "pass"
+        },
+        {
+          "case": 28,
+          "name": "INCIDENT-012 \u2014 linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams",
+          "status": "pass"
+        },
+        {
+          "case": 29,
+          "name": "AGENT-005 HIST-002 \u2014 cited report reconciles the retained record, requires human explanations and publishes immutable text",
+          "status": "pass"
+        },
+        {
+          "case": 30,
+          "name": "NOTIFY-015 \u2014 update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure",
+          "status": "pass"
+        },
+        {
+          "case": 31,
+          "name": "Maintenance reminders respect the lead time and skip recent announcements",
+          "status": "pass"
+        },
+        {
+          "case": 32,
+          "name": "Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers",
+          "status": "pass"
+        },
+        {
+          "case": 33,
+          "name": "THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 \u2014 a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm",
+          "status": "pass"
+        },
+        {
+          "case": 34,
+          "name": "Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications",
+          "status": "pass"
+        }
+      ]
+    }
+  },
+  "pre_existing_failure": {
+    "test": "THEME-001 public theme four-request budget",
+    "browser": "Chromium 154.0.8037.57 (system headless)",
+    "baseline_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+    "observations": {
+      "baseline": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg",
+      "candidate": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg"
+    }
+  }
+}

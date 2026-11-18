@@ -1,0 +1,107 @@
+{
+  "baseline_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "candidate_sha": "6a043e506fe201c26e1929e721cf3e7f6f207897",
+  "widths_px": [
+    1440,
+    390
+  ],
+  "browser": "Chromium headless",
+  "runtime": "Built production Worker, with local Vite development runtime for the development-mail invitation",
+  "checks": {
+    "main": {
+      "picker": {
+        "options": [
+          "Choose a state",
+          "Working",
+          "Slow or partly down",
+          "Down"
+        ],
+        "initialState": "",
+        "placeholder": "What customers see"
+      },
+      "draftPlaceholder": "What customers see now",
+      "overview": [
+        "4:00 AM",
+        "5:00 AM"
+      ],
+      "maintenance": {
+        "row": "Jul 15, 2027, 04:00 UTC+10:00 \u2013 Jul 15, 2027, 05:00 UTC+10:00",
+        "timezone": "Times in Brisbane time (GMT+10)"
+      },
+      "history": [
+        "incident \u00b7 Nov 18, 2026, 15:52 UTC+10:00",
+        "Operator status \u00b7 Nov 18, 2026, 15:52 UTC+10:00",
+        "Period in Australia/Brisbane"
+      ],
+      "settings": {
+        "label": "Brisbane (GMT+10)",
+        "offsetDetails": 0
+      },
+      "public": {
+        "visibleTimes": [
+          "Nov 18, 2026, 15:52 UTC+10:00",
+          "Jul 15, 2027, 09:00 UTC+10:00",
+          "Nov 18, 2026, 15:52 UTC+10:00"
+        ],
+        "details": 0
+      },
+      "invitation": {
+        "mail": "suppressed",
+        "text": "Brightwell Support is invited. No email was sent on this computer. Use the link under Pending invitations in this browser.",
+        "localOpen": 1,
+        "copyLink": 1
+      }
+    },
+    "candidate": {
+      "picker": {
+        "options": [
+          "Choose a state",
+          "Working",
+          "Slow",
+          "Partly down",
+          "Down"
+        ],
+        "initialState": "",
+        "placeholder": "What customers will see next"
+      },
+      "draftPlaceholder": "What customers will see next",
+      "overview": [
+        "4:00 AM",
+        "5:00 AM"
+      ],
+      "maintenance": {
+        "row": "Jul 15, 2027, 04:00 Brisbane time \u2013 Jul 15, 2027, 05:00 Brisbane time",
+        "timezone": "Times in Brisbane time"
+      },
+      "history": [
+        "Working \u2192 Partly down",
+        "incident \u00b7 Nov 18, 2026, 15:52 Brisbane time",
+        "Operator status \u00b7 Nov 18, 2026, 15:52 Brisbane time",
+        "Period in Brisbane time"
+      ],
+      "settings": {
+        "label": "Brisbane time",
+        "offsetDetails": 1,
+        "expanded": "Current offset: UTC+10:00"
+      },
+      "public": {
+        "visibleTimes": [
+          "Nov 18, 2026, 15:52 Brisbane time",
+          "Jul 15, 2027, 09:00 Brisbane time",
+          "Nov 18, 2026, 15:52 Brisbane time"
+        ],
+        "details": 2
+      },
+      "invitation": {
+        "mail": "suppressed",
+        "text": "Brightwell Support is invited. Lamp on this computer opens only in your browser, so there is no link to send yet. To send them an email, invite them from the online copy with email turned on.",
+        "localOpen": 1,
+        "copyLink": 0
+      },
+      "emailPreview": {
+        "zoneName": true,
+        "visibleOffset": false
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "conclusion": "failure",
+  "event": "push",
+  "head_sha": "6a043e506fe201c26e1929e721cf3e7f6f207897",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44247238034",
+  "id": 44247238034,
+  "name": "Verify",
+  "status": "completed",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 134609027136,
+      "name": "plan"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Build the production Worker once",
+        "Retain commit-bound build completion"
+      ],
+      "id": 134609085593,
+      "name": "build"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require every planned command to succeed on this commit"
+      ],
+      "id": 134609197688,
+      "name": "verify"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "id": 134609198720,
+      "name": "shards"
+    }
+  ],
+  "root_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "downstream": "Build stopped at contract-docs check, build completion artifact was absent, shard jobs skipped and aggregation reported missing artifacts.",
+  "disposition": "Eligible under the task\u2019s generated-view exception. The generator and its check passed locally using the regenerated view.",
+  "saved_head_verify": [
+    {
+      "id": 44241680242,
+      "head_sha": "d245ba342734095775ed5730dab1c850a841a6fb",
+      "conclusion": "failure",
+      "root_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write."
+    },
+    {
+      "id": 44244699828,
+      "head_sha": "d245ba342734095775ed5730dab1c850a841a6fb",
+      "conclusion": "failure",
+      "diagnosis": "superseded by continuation candidate"
+    }
+  ]
+}
