@@ -2,11 +2,12 @@ import { componentReadFlow } from './helpers/component-read-flow.mjs';
 import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintenanceActor } from './helpers/operator-attribution.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 import { gzipSync } from 'node:zlib';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import { parse } from 'parse5';
+import { parse, parseFragment } from 'parse5';
 import { openStatusJourney, eventually, wording } from './helpers/status-journey.mjs';
 import { literalLinkFields } from './helpers/update-link-evidence.mjs';
 import { assertUpdateLinkSurfaces, assertUpdateLinkScreens } from './helpers/update-link-surfaces.mjs';
@@ -36,6 +37,70 @@ function nodeText(node) {
 }
 function hasClass(node, name) {
   return node.attrs?.some(attr => attr.name === 'class' && attr.value.split(' ').includes(name));
+}
+
+function rssItems(xml) {
+  return [...xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/g)].map(([, item]) => ({
+    guid: item.match(/<guid\b[^>]*>([^<]+)<\/guid>/)?.[1],
+    description: item.match(/<description>([^<]*)<\/description>/)?.[1],
+  }));
+}
+
+async function readNativeHistoryFeeds(j, incident, update) {
+  let historyRss;
+  for (const format of ['atom', 'rss']) {
+    const canonicalPath = `/feed.${format}`;
+    const historyPath = `/history.${format}`;
+    const [canonical, history] = await Promise.all([canonicalPath, historyPath].map(path => j.publicResponse(path)));
+    assert.equal(canonical.status, 200, canonicalPath);
+    assert.equal(history.status, 200, historyPath);
+    assert.equal(history.headers.get('content-type'), canonical.headers.get('content-type'), historyPath);
+    const [canonicalBytes, historyBytes] = await Promise.all([canonical.bytes(), history.bytes()]);
+    assert.deepEqual(historyBytes, canonicalBytes, `${historyPath} serves the canonical bytes on a fresh native installation`);
+    const body = new TextDecoder().decode(historyBytes);
+    assert.ok(body.includes(incident.reference), `${historyPath} contains the native incident`);
+    assert.ok(body.includes(`:event:update-${update.id}</`), `${historyPath} contains the native publication`);
+    console.info(`PAGE-017 ${historyPath}: 200, ${historyBytes.length} bytes equal to ${canonicalPath}; native update ${update.id}`);
+    if (format === 'rss') historyRss = { etag: history.headers.get('etag'), items: rssItems(body) };
+  }
+  assert.ok(historyRss.etag, 'the history RSS alias supplies a validator');
+  assert.ok(historyRss.items.length && historyRss.items.every(item => item.guid), 'the history RSS contains prior item GUIDs');
+  return historyRss;
+}
+
+async function pollHistoryRss(j, baseline, updateId, impact, publishedAt) {
+  const deadline = publishedAt + 10_000;
+  // This installation's feed identity is seeded by openStatusJourney.
+  const expectedGuid = `urn:lamp:synthetic-lamp-feed-1:event:update-${updateId}`;
+  const url = new URL('/history.rss', j.publicOrigin).href;
+  const headers = { 'If-None-Match': baseline.etag };
+  const signal = AbortSignal.timeout(Math.max(1, Math.ceil(deadline - performance.now())));
+  assert.ok(!baseline.items.some(item => item.guid === expectedGuid), 'the new GUID was absent before publication');
+
+  while (performance.now() < deadline) {
+    const response = await j.raw(url, { headers, signal });
+    if (response.status !== 304) {
+      assert.equal(response.status, 200, 'the history RSS alias responds to the old validator');
+      const items = rssItems(await response.text());
+      const elapsed = performance.now() - publishedAt;
+      const published = items.filter(item => item.guid === expectedGuid);
+      if (published.length) {
+        assert.ok(elapsed <= 10_000, 'the reader observes the new GUID within ten seconds of publication');
+        assert.ok(response.headers.get('etag') && response.headers.get('etag') !== baseline.etag, 'the new RSS bytes have a new validator');
+        assert.equal(published.length, 1, 'the new publication has exactly one RSS item');
+        assert.ok(published[0].description, 'the new item has a description');
+        const html = nodeText(parseFragment(published[0].description));
+        const updateLine = nodeText(parseFragment(html)).split('\n').find(line => line.startsWith('Update: '));
+        assert.equal(updateLine, `Update: ${impact}`, 'the exact submitted resolution wording belongs to the new GUID');
+        const currentGuids = new Set(items.map(item => item.guid));
+        for (const { guid } of baseline.items) assert.ok(currentGuids.has(guid), `the history RSS retains ${guid}`);
+        console.info(`PAGE-017 /history.rss: old validator received 200 for ${expectedGuid} after ${Math.round(elapsed)} ms; retained ${baseline.items.length} prior GUIDs; wording: ${impact}`);
+        return;
+      }
+    }
+    await delay(50);
+  }
+  assert.fail(`the history RSS alias did not serve ${expectedGuid} within ten seconds of publication`);
 }
 const statedMethod = [
   'Operational counts as 0 downtime minutes',
@@ -851,9 +916,17 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await page.reload(); await loadWidget(page);
     await captureUpdate('blank-optional');
 
-    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'API requests are working again.', whatStillWorks: '', details: '', nextUpdateAt: null });
+    const historyRss = await readNativeHistoryFeeds(j, incident, linkedUpdate);
+    const historyRssUrl = new URL('/history.rss', j.publicOrigin).href;
+    const unchangedRss = await j.raw(historyRssUrl, { headers: { 'If-None-Match': historyRss.etag } });
+    assert.equal(unchangedRss.status, 304, 'the saved validator matches the history RSS before the next publication');
+
+    const resolutionImpact = 'API requests are working again.';
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: resolutionImpact, whatStillWorks: '', details: '', nextUpdateAt: null });
     const resolvedPublication = (await j.publish(incident.id)).update;
+    const resolutionReturnedAt = performance.now();
     assert.equal(resolvedPublication.nextUpdateAt, null);
+    await pollHistoryRss(j, historyRss, resolvedPublication.id, resolutionImpact, resolutionReturnedAt);
     await j.visible('/history', incident.title);
     await eventually(async () => (await j.publicResponse('/api/public/status')).json(), status => status.incident === null, 'resolved publication clears the widget incident');
     await page.clock.fastForward(30000);
