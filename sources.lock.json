@@ -8692,11 +8692,11 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "b1189a942d8e2cdf01688314d2f30f8eff9b283d689ee1f1f31c463b88b6df78",
+      "sha256": "5d2681e0a846d6dd06860eb7a5dc43e6516d3a239b194f6361fa9a1ca97d230a",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
-      "sha256": "a253f7c8b59c6830477719c084af527462daef8b357a927ff09e9f741142317d",
+      "sha256": "633690b0b9091747574b1a0d5be5c762dbbdb1748a1aaa78a3a09daf28e5fdfa",
       "executable": false
     },
     "tests/e2e/snapshot-retention.worker.ts": {
