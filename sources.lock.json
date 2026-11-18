@@ -8288,7 +8288,7 @@
       "executable": false
     },
     "tests/e2e/helpers/maintenance-notices-flow.mjs": {
-      "sha256": "b0cf31b8492de4c20807205119414ccfa50906aa34738120629bf5355bcb1d43",
+      "sha256": "53f1c7af2b11a090a72461c1dff6beda536821a08ba18c890834327fe4906a93",
       "executable": false
     },
     "tests/e2e/helpers/metric-setup-journey.mjs": {
