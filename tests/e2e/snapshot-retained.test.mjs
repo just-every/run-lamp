@@ -23,6 +23,86 @@ async function snapshotWorkerScript() {
   return built.outputFiles[0].text;
 }
 
+async function assertNativeGenerationRevalidation(j, component, incident, initialImpact) {
+  const maintenanceTitle = 'Synthetic Lamp cache maintenance';
+  const maintenanceImpact = 'Capacity maintenance briefly delayed customer requests.';
+  const now = Date.now();
+  const { maintenance } = await j.json('/api/app/maintenance', 'POST', {
+    title: maintenanceTitle, affectedAudience: 'API customers', customerImpact: maintenanceImpact,
+    startsAt: new Date(now + 3600_000).toISOString(), endsAt: new Date(now + 7200_000).toISOString(),
+    componentIds: [component.id], autoStart: false, autoComplete: false,
+  }, 201);
+  const endpoint = `/api/app/maintenance/${maintenance.id}`;
+  await j.json(`${endpoint}/start`, 'POST', {});
+  await j.json(`${endpoint}/complete`, 'POST', {});
+  const maintenancePath = `/maintenance/${maintenance.reference}`;
+  await j.visible('/history', maintenanceTitle);
+
+  const incidentPath = `/incidents/${incident.reference}`;
+  const surfaces = new Map([
+    ['/', impact => [incident.title, impact]],
+    ['/history', () => [`href="${maintenancePath}"`, maintenanceTitle, maintenanceImpact]],
+    [incidentPath, impact => [incident.title, impact]],
+    [maintenancePath, () => [maintenanceTitle, maintenanceImpact]],
+    ['/feed.atom', impact => [incident.title, incidentPath, impact]],
+    ['/widget.js', impact => [incident.title, incident.reference, impact]],
+    ['/api/public/status', () => []],
+  ]);
+  const bucket = await j.runtime.getR2Bucket('SNAPSHOTS');
+  const currentPointer = async () => (await bucket.get('snapshots/current.json'))?.json();
+  const read = (path, etag) => etag === undefined
+    ? j.publicResponse(path)
+    : j.raw(new URL(path, j.publicOrigin).href, { headers: { 'If-None-Match': etag } });
+
+  const checkGeneration = (response, generation, label) => {
+    assert.equal(response.headers.get('x-lamp-snapshot-state'), null, label);
+    assert.equal(response.headers.get('x-lamp-snapshot-version'), generation.version, label);
+    assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generation.generatedAt, label);
+  };
+  const checkContent = async (response, path, impact, generation, label) => {
+    assert.equal(response.status, 200, label);
+    checkGeneration(response, generation, label);
+    const body = await response.text();
+    for (const expected of surfaces.get(path)(impact)) assert.ok(body.includes(expected), `${label} contains ${expected}`);
+    if (path === '/api/public/status') {
+      const status = JSON.parse(body);
+      assert.equal(status.generatedAt, generation.generatedAt, label);
+      assert.equal(status.incident?.reference, incident.reference, label);
+      assert.equal(status.incident?.title, incident.title, label);
+      assert.equal(status.incident?.summary, `Identified · ${impact}`, label);
+    }
+    const etag = response.headers.get('etag');
+    assert.ok(etag, `${label} supplies a validator`);
+    return etag;
+  };
+  const checkReuse = async (path, etag, generation) => {
+    const response = await read(path, etag);
+    assert.equal(response.status, 304, `${path} reuses the current validator`);
+    checkGeneration(response, generation, path);
+    assert.equal(response.headers.get('etag'), etag, path);
+    assert.equal((await response.arrayBuffer()).byteLength, 0, path);
+  };
+
+  const initial = await currentPointer();
+  assert.ok(initial?.version && initial.generatedAt, 'the native publication has a current generation');
+  const validators = new Map();
+  for (const path of surfaces.keys()) {
+    validators.set(path, await checkContent(await read(path), path, initialImpact, initial, `warm ${path}`));
+    await checkReuse(path, validators.get(path), initial);
+  }
+
+  const updatedImpact = 'The API is recovering and queued requests are clearing.';
+  await j.save(incident.id, { customerImpact: updatedImpact });
+  await j.publish(incident.id);
+  const current = await eventually(currentPointer, pointer => pointer?.version && pointer.version !== initial.version, 'native incident publication advances the current generation');
+  for (const [path, oldValidator] of validators) {
+    const etag = await checkContent(await read(path, oldValidator), path, updatedImpact, current, `superseded validator on ${path}`);
+    assert.notEqual(etag, oldValidator, `${path} supplies a new validator`);
+    await checkReuse(path, etag, current);
+  }
+  console.info('PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304');
+}
+
 test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-resilience-'));
   let runtime, j, monitor, alarmTimer;
@@ -47,7 +127,10 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     await healthSchemaProof(j);
     const component = await j.component('Customer API during dependency outage');
     const incident = await j.incident('Known API degradation', [component]);
-    await j.save(incident.id); await j.publish(incident.id); await j.visible('/', incident.title);
+    const initialImpact = 'Customer API requests are failing intermittently.';
+    await j.save(incident.id, { customerImpact: initialImpact });
+    await j.publish(incident.id); await j.visible('/', incident.title);
+    await assertNativeGenerationRevalidation(j, component, incident, initialImpact);
     await j.tick(Date.now()); assert.ok(pings > 0 && receipt);
     await j.raw('/test/effects', { method: 'PUT', body: JSON.stringify({ paused: true }) });
     const beforePause = pings; await j.tick(Date.now()); assert.equal(pings, beforePause, 'a transferring host stops external effects');
