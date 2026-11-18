@@ -8619,6 +8619,10 @@
       "sha256": "c1e279fb05041c1d947394af1291e75e4e0487d214ccc493403917f82776676e",
       "executable": false
     },
+    "tests/e2e/helpers/wording-findings-flow.mjs": {
+      "sha256": "c9bb421762b07f85b0b9e73c3569b229a8dc624a32a07d70feea15efb33e231e",
+      "executable": false
+    },
     "tests/e2e/incident-brief.test.mjs": {
       "sha256": "c4a545a5c21e5af4bc6a3d9a74843a2f65f837e1030d3a4a904ceb83d09e6e12",
       "executable": false
@@ -8648,7 +8652,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "8a47dc6c9fc9c69c43ff2469b793ce1924bceb441084f547533708577c48a78b",
+      "sha256": "557ee6d557305190d10ca09b1f48c2224540ff57307b13b40662f0185b7e1a16",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
