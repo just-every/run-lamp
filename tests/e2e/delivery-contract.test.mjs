@@ -19,6 +19,7 @@ import { mailFailoverFlow } from './helpers/mail-failover-flow.mjs';
 import { mailSettingsBrowserFlow } from './helpers/mail-settings-browser-flow.mjs';
 import { emailCapacityFlow } from './helpers/email-capacity-flow.mjs';
 import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
+import { webhookReceiverDeadlineFlow } from './helpers/webhook-receiver-deadline-flow.mjs';
 import { subscriberFailuresFlow } from './helpers/subscriber-failures-flow.mjs';
 import { prelaunchFlow } from './helpers/prelaunch-flow.mjs';
 
@@ -38,6 +39,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await subscriberCsvFlow();
   await subscriberIntakeBrowserFlow(t);
   await statuspageWebhookFlow();
+  await webhookReceiverDeadlineFlow(t);
   await smsSubscriberFlow();
   await webhookAtMostOnceFlow();
 });
