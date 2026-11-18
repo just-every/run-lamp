@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { assertDeliveryFact, assertUntrackedNotification } from './delivery-log-flow.mjs';
+import { assertDeliveryFact, assertDeliveryFilter, assertUntrackedNotification } from './delivery-log-flow.mjs';
 import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin } from './subscriber-management-fixture.mjs';
 
 /** Only the provider and receiver edges are synthetic. Consent, publication,
@@ -102,9 +102,10 @@ export async function subscriberFailuresFlow() {
     });
   };
   const readFact = async (delivery, target, outcome, start) => {
+    const end = Date.now();
     const rows = await deliveries({ id: delivery.incidentUpdateId });
     const row = rows.find(row => row.id === delivery.id);
-    checkFact(row, delivery.incidentUpdateId, target, outcome, [start, Date.now()]);
+    checkFact(row, delivery.incidentUpdateId, target, outcome, [start, end]);
     assert.equal(row.queuedAt, delivery.queuedAt, 'recording an outcome preserves the committed queue instant');
     return row;
   };
@@ -150,14 +151,14 @@ export async function subscriberFailuresFlow() {
     const hardDelivery = await acceptedMail(hardComponent, 'hard bounce notification', hard);
     const hardAt = Date.now();
     await sendReceipt(receipt(hardDelivery, 'bounced', 'Permanent'));
-    await readFact(hardDelivery, hard, 'bounced', hardAt);
+    await assertDeliveryFilter(fixture, await readFact(hardDelivery, hard, 'bounced', hardAt));
     await deactivated(hard, 'hard bounce', hardAt);
     await noFutureMail(hardComponent, hard, 'after hard bounce');
 
     const directLinks = ['https://help.example.test/status?area=api&view=summary', 'https://status.example.test/history'];
     const details = "Operators are restoring service. See " + directLinks.join(" or ") + ".";
     const complaintDelivery = await acceptedMail(complaintComponent, 'complaint notification', complaint, details);
-    await assertUntrackedNotification(fixture, {
+    const complaintManagementLink = await assertUntrackedNotification(fixture, {
       address: complaint.address, subject: 'Synthetic Lamp complaint notification',
       impact: 'Requests are delayed: complaint notification.', details, directLinks,
     });
@@ -172,9 +173,12 @@ export async function subscriberFailuresFlow() {
     });
     assert.equal(invalid.status, 401, 'an unauthenticated complaint cannot deactivate a subscriber');
     assert.deepEqual(await subscriber(complaint.id), beforeInvalid);
+    const afterInvalid = (await deliveries({ id: complaintDelivery.incidentUpdateId })).find(row => row.id === complaintDelivery.id);
+    assert.deepEqual(afterInvalid, complaintDelivery, 'an unauthenticated complaint cannot change the delivery log');
     const complaintAt = Date.now();
     await sendReceipt(signedComplaint);
     const complained = await readFact(complaintDelivery, complaint, 'complained', complaintAt);
+    await assertDeliveryFilter(fixture, complained);
     const stoppedComplaint = await deactivated(complaint, 'spam complaint', complaintAt);
     const complaintMailCount = fixture.messagesFor(complaint.address).length;
     const suppressionAt = Date.now();
@@ -184,6 +188,7 @@ export async function subscriberFailuresFlow() {
     assert.ok(suppressedComplaint.outcomeAt);
     checkFact(suppressedComplaint, queuedComplaint.id, complaint, 'suppressed', [suppressionAt, Date.now()]);
     assert.equal(suppressedComplaint.queuedAt, committedComplaint.queuedAt);
+    await assertDeliveryFilter(fixture, suppressedComplaint);
     const healthyBefore = fixture.messagesFor(healthy.address).length;
     const freshComplaint = await noFutureMail(complaintComponent, complaint, 'fresh publication after complaint');
     assert.equal(fixture.messagesFor(healthy.address).length, healthyBefore + 1, 'the same fresh publication still reaches an active control');
@@ -244,6 +249,7 @@ export async function subscriberFailuresFlow() {
       assert.ok(failed.outcomeAt);
       checkFact(failed, update.id, webhook, 'failed', [failedAt, Date.now()]);
       assert.equal(failed.queuedAt, committed.queuedAt);
+      if (index === 0) await assertDeliveryFilter(fixture, failed);
       assert.ok(fixture.webhookRequests.some(record => record.headers['webhook-id'] === failed.id), 'each terminal outcome came from actual receiver requests');
       if (index < 9) {
         assert.equal((await subscriber(webhook.id)).state, 'active', 'retries of fewer than ten failed notifications do not deactivate the endpoint');
@@ -278,5 +284,18 @@ export async function subscriberFailuresFlow() {
     assert.equal(fixture.webhookRequests.length, requestsAtDeactivation);
     assert.equal(fixture.messagesFor(webhook.address).filter(message => /disabled a failing webhook/i.test(message.subject)).length, 1, 'scheduled replay does not duplicate the contact alert');
     assert.deepEqual(await subscriber(webhook.id), stoppedWebhook);
+
+    assert.equal((await api('/api/app/subscribers/' + complaint.id, { method: 'DELETE' })).status, 204);
+    await sendReceipt(signedComplaint);
+    assert.equal((await raw(complaintManagementLink)).status, 404, 'replay cannot restore a revoked subscription link');
+    const erasedLog = await api('/api/app/deliveries?incidentUpdateId=' + complaintDelivery.incidentUpdateId);
+    assert.equal(erasedLog.status, 200);
+    const erasedDelivery = erasedLog.body.deliveries.find(row => row.id === complaintDelivery.id);
+    assert.equal(erasedDelivery?.outcome, 'complained', 'the delivery fact survives address erasure');
+    assert.equal(erasedDelivery.destination, 'deleted:' + complaint.id);
+    const erasedCsv = await fixture.request('/api/app/deliveries.csv?incidentUpdateId=' + complaintDelivery.incidentUpdateId);
+    assert.equal(erasedCsv.status, 200);
+    assert.ok(!erasedLog.text.includes(complaint.address));
+    assert.ok(!(await erasedCsv.text()).includes(complaint.address), 'the export also omits the erased destination');
   } finally { await fixture.close(); }
 }
