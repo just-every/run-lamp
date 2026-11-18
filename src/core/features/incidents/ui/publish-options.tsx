@@ -1,5 +1,5 @@
 import { FormError } from "../../../app/client/ui/states";
-import { fromPageDateTime, toPageDateTime } from "../../../app/client/ui/timezone";
+import { TimezoneHint, fromPageDateTime, toPageDateTime } from "../../../app/client/ui/timezone";
 
 export type Channel = "email" | "webhook" | "chat" | "sms" | "social";
 /** When the update publishes: now, later (UPDATE-006, private until then) or at a past time (INCIDENT-009, notifies no one). */
@@ -50,8 +50,8 @@ export function PublishTimingField({ timing, timezone, error, onChange, onError 
   return <fieldset className="option-group publish-timing">
     <legend className="sr-only">Publish</legend>
     <div className="choice-row">{(["now", "schedule", "backdate"] as const).map(mode => <label key={mode} className="choice-pill"><input type="radio" name="publish-timing" checked={timing.mode === mode} onChange={() => { onChange({ mode, at: null }); onError(null); }} />{mode === "now" ? "Now" : mode === "schedule" ? "Schedule" : "Backdate"}</label>)}</div>
-    {timing.mode === "schedule" ? <label className="form-label"><span className="sr-only">Scheduled publication</span><input aria-label="Scheduled publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Stays private until then. Times in {timezone}.</small></label> : null}
-    {timing.mode === "backdate" ? <label className="form-label"><span className="sr-only">Past update time</span><input aria-label="Historical publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Notifies no one. Times in {timezone}.</small></label> : null}
+    {timing.mode === "schedule" ? <label className="form-label"><span className="sr-only">Scheduled publication</span><input aria-label="Scheduled publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Stays private until then. <TimezoneHint timezone={timezone} at={timing.at} />.</small></label> : null}
+    {timing.mode === "backdate" ? <label className="form-label"><span className="sr-only">Past update time</span><input aria-label="Historical publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Notifies no one. <TimezoneHint timezone={timezone} at={timing.at} />.</small></label> : null}
     {error ? <FormError>{error}</FormError> : null}
   </fieldset>;
 }

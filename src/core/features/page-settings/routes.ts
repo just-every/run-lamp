@@ -7,7 +7,7 @@ import type { AppEnv } from "../../app/types";
 import { pageSettingsSchema } from "../../shared/schemas";
 import { UnavailablePageTemplateError, UnsupportedMailIdentityError, type PageSettingsService } from "./service";
 
-const BRAND_ARTIFACTS = { mark: "assets/mark.svg", favicon: "assets/favicon.svg", social: "assets/og.svg", logo: "assets/logo" } as const;
+const BRAND_ARTIFACTS = { mark: "assets/mark.svg", icon: "assets/mark.svg", favicon: "assets/favicon.svg", social: "assets/og.svg", logo: "assets/logo" } as const;
 
 export function registerPageSettingsRoutes(app: Hono<AppEnv>, service: PageSettingsService, readArtifact: (key: string) => Promise<{ bytes: ArrayBuffer; contentType: string } | null>) {
   app.get("/api/app/page-settings/embed-preview", async (context) => {
@@ -53,7 +53,7 @@ export function registerPageSettingsRoutes(app: Hono<AppEnv>, service: PageSetti
   app.post("/api/app/page-settings/theme-assets/:kind", async context => {
     if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) return context.json({ error: "Only a page owner or admin can change theme assets." }, 403);
     const kind = context.req.param("kind");
-    if (kind !== "font" && kind !== "header") return context.json({ error: "Unknown theme asset." }, 404);
+    if (kind !== "font" && kind !== "header" && kind !== "icon") return context.json({ error: "Unknown theme asset." }, 404);
     const body = await context.req.parseBody().catch(() => null);
     const file = body?.file;
     if (!(file instanceof File)) return context.json({ error: "Choose a file to upload." }, 400);
@@ -63,7 +63,7 @@ export function registerPageSettingsRoutes(app: Hono<AppEnv>, service: PageSetti
   app.delete("/api/app/page-settings/theme-assets/:kind", async context => {
     if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) return context.json({ error: "Only a page owner or admin can remove theme assets." }, 403);
     const kind = context.req.param("kind");
-    if (kind !== "font" && kind !== "header") return context.json({ error: "Unknown theme asset." }, 404);
+    if (kind !== "font" && kind !== "header" && kind !== "icon") return context.json({ error: "Unknown theme asset." }, 404);
     return context.json({ settings: await service.removeThemeAsset(kind as ThemeAssetKind) });
   });
 

@@ -138,7 +138,8 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await drawer.getByRole("button", { name: "History", exact: true }).click();
     await (await import('./helpers/availability-download-flow.mjs')).availabilityDownloadFlow({ page, drawer, component, api, context, origin });
     await drawer.getByText("Correct a past period", { exact: true }).click();
-    assert.match(await drawer.innerText(), /Australia\/Brisbane/);
+    const timezoneLink = drawer.getByRole("link", { name: /Times in Brisbane time/ });
+    assert.equal(await timezoneLink.getAttribute("href"), "/app/settings#page-timezone");
     await drawer.getByLabel("Starts at", { exact: true }).fill("2020-07-15T09:00");
     await drawer.getByLabel("Ends at", { exact: true }).fill("2020-07-15T10:00");
     await drawer.getByLabel("Reason", { exact: true }).fill("Recorded outage interval");
@@ -147,6 +148,11 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     assert.equal((await corrected).status(), 204);
     const correction = (await api(`/api/app/components/${component.id}/history`)).corrections[0];
     assert.equal(correction.startsAt, "2020-07-14T23:00:00.000Z"); assert.equal(correction.endsAt, "2020-07-15T00:00:00.000Z");
+    await timezoneLink.click();
+    await page.waitForURL(url => url.pathname === "/app/settings" && url.hash === "#page-timezone");
+    const pageTimezone = page.locator("#page-timezone").getByRole("combobox", { name: "Time zone" });
+    await pageTimezone.waitFor();
+    assert.match(await pageTimezone.inputValue(), /^Brisbane/);
     await page.goto(`${origin}/app/incidents`);
     await operatorHydrated(page);
     await page.getByRole("heading", { name: "New incident", exact: true }).waitFor();

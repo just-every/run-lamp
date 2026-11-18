@@ -447,6 +447,18 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.equal(originalLogo.status, 200);
     assert.deepEqual(Buffer.from(await originalLogo.arrayBuffer()), png);
     for (const path of ['/assets/favicon.svg', '/assets/og.svg']) { const response = await j.publicResponse(path); assert.equal(response.status, 200); assert.ok((await response.text()).includes('data:image/png')); }
+    const iconPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNQ7poIAAISAT/YErM2AAAAAElFTkSuQmCC', 'base64');
+    const icon = new FormData(); icon.set('file', new Blob([iconPng], { type: 'image/png' }), 'icon.png');
+    const iconMultipart = new Request(j.appOrigin + '/api/app/page-settings/theme-assets/icon', { method: 'POST', body: icon });
+    const iconUpload = await j.request('/api/app/page-settings/theme-assets/icon', { method: 'POST', headers: { 'Content-Type': iconMultipart.headers.get('Content-Type') }, body: await iconMultipart.arrayBuffer() });
+    assert.equal(iconUpload.status, 200, await iconUpload.clone().text());
+    for (const path of ['/assets/favicon.svg', '/assets/mark.svg']) {
+      const response = await j.publicResponse(path);
+      assert.equal(response.status, 200);
+      const svg = await response.text();
+      assert.ok(svg.includes(`data:image/png;base64,${iconPng.toString('base64')}`), `${path} uses the separately uploaded icon`);
+      if (path === '/assets/favicon.svg') assert.ok(svg.includes('<circle '), 'the favicon keeps its overall state mark');
+    }
 
     await publicCapacityJourney(j, limits);
     // The maximum catalogue was read and load-checked above. Keep the public

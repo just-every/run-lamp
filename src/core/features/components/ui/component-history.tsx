@@ -7,7 +7,7 @@ import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { Icon } from "../../../app/client/ui/icon";
 import { FormError, LoadingState, useOperatorTime } from "../../../app/client/ui/states";
-import { fromPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
+import { TimezoneHint, fromPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
 import { AvailabilityReport } from "../../availability-reports/ui/availability-report";
 
 /** History: state changes and corrections, this component's availability report and a closed correction form. A saved
@@ -63,7 +63,7 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
     </> : null}
     <AvailabilityReport component={component} />
     <details className="component-correction"><summary>Correct a past period</summary><form className="component-correction-form" onSubmit={correct} onChange={() => setSaved(false)}>
-      <p>Earlier entries stay. Times in {timezone}.</p>
+      <p>Earlier entries stay. <TimezoneHint timezone={timezone} />.</p>
       <label className="form-label">Correct state<select value={state} onChange={(event) => setState(event.target.value as ComponentState)}>{COMPONENT_STATES.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
       <div className="component-editor-grid"><label className="form-label">Starts at<input required type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label><label className="form-label">Ends at<input required type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label></div>
       <label className="form-label">Reason<textarea required maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} /></label>

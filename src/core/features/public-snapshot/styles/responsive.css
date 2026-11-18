@@ -7,7 +7,7 @@
   .page { padding: 0 16px 32px; }
   .masthead { gap: 14px; padding: 24px 0 22px; }
   .brand { font-size: 19px; }
-  .brand-logo { width: 32px; height: 32px; border-radius: 9px; }
+  .brand-mark { width: 32px; height: 32px; border-radius: 9px; }
   .tagline { margin-left: 0; margin-top: 10px; }
   .status-utilities { width: 100%; margin-left: -10px; }
   .status-utilities a { padding-inline: 10px; }

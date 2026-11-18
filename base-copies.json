@@ -4302,7 +4302,16 @@
       },
       "originFiles": [
         "foundation/runtime/lobby.ts"
-      ]
+      ],
+      "adapted": {
+        "src/base/lobby.ts": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f"
+      },
+      "acknowledged": {
+        "src/base/lobby.ts": {
+          "sha256": "90187c5f448e14ac40ce08d24fd0cd0dc86b8f4af4133122bc18b2fd6e392858",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "src/base/page-style.ts",

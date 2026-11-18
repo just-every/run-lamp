@@ -15,6 +15,7 @@ import { ErrorState } from "../../../app/client/ui/lit-states";
 import { type AiStatus } from "./ai-assistance-card";
 import { settingsLabel, usePaneLeaveGuard, useSettingsTab, type SettingsTab } from "./settings-tabs";
 import { PublicResources } from "./public-resources";
+import { LogoCard } from "./logo-card";
 import { PageSettingsTab } from "./page-settings-tab";
 import { LookSettingsTab } from "./look-settings-tab";
 import { NotificationSettingsTab } from "./notification-settings-tab";
@@ -71,7 +72,7 @@ export function SettingsPage() {
 
   const live = overview.data?.overview.live ?? null;
   const components = (overview.data?.overview.components ?? []).filter(component => !component.internal).map(component => ({ id: component.id, name: component.name, state: component.publicState }));
-  const markSrc = saved.logoKey ? `/api/app/page-settings/brand/logo?v=${encodeURIComponent(saved.updatedAt)}` : `/api/app/page-settings/brand/mark?v=${encodeURIComponent(saved.updatedAt)}`;
+  const markSrc = `/api/app/page-settings/brand/mark?v=${encodeURIComponent(saved.updatedAt)}`;
 
   return <div className="page-stack settings-page" inert={!ready}>
     <section className="page-title-row"><div><h1>{settingsLabel(tab)}</h1>{tab === "page" && <p>Lamp version {version}</p>}{LINES[tab] && <p>{LINES[tab]}</p>}</div></section>
@@ -80,6 +81,7 @@ export function SettingsPage() {
       {tab === "page" && <>
         {live ? <YourPageFacts live={live} pageName={saved.pageName} accentColor={saved.accentColor} components={components} /> : overview.error ? <FormError>{overview.error}</FormError> : null}
         <PageSettingsTab settings={settings} live={live} markSrc={markSrc} update={update} />
+        <LogoCard settings={saved} onSettings={autosave.adoptSaved} />
       </>}
       {tab === "look" && <LookSettingsTab settings={settings} saved={saved} components={components} update={update} adoptSaved={autosave.adoptSaved} busy={brandBusy} setBusy={setBrandBusy} status={brandStatus} setStatus={setBrandStatus} />}
       {tab === "notifications" && <NotificationSettingsTab settings={settings} live={live} identityEditable={saved.mailIdentityEditable} update={update} needsConfirm={autosave.pending("mailFromAddress")} confirm={() => autosave.confirm("mailFromAddress")} onTrafficPhase={setTrafficPhase} />}
