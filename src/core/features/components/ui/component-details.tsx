@@ -6,6 +6,7 @@ import { Button } from "../../../app/client/ui/button";
 import { mayLeave } from "../../../app/client/ui/leave-guard";
 import { FormError } from "../../../app/client/ui/states";
 import { usePageTimezone } from "../../../app/client/ui/timezone";
+import { ComponentSourceMetadata } from "./source-metadata";
 import { MetricsPanel } from "../../metrics/ui/metrics-panel";
 
 type ComponentGroup = Awaited<ReturnType<ComponentsService["listGroups"]>>[number];
@@ -70,6 +71,6 @@ export function ComponentDetails({ component, groups, defaultDisplayOrder, onCan
       {!isNew && removalConfirmation && <p className="delete-confirmation">Delete this component? Its state history leaves the public page and uptime figures. Published updates keep its name.</p>}
       <div className="drawer-actions"><Button type="button" variant="secondary" onClick={onCancel} disabled={saving}>Cancel</Button>{!isNew && <Button type="button" variant="secondary" className="danger-button" onClick={remove} disabled={saving}>{removalConfirmation ? "Confirm delete" : "Delete component"}</Button>}<Button type="submit" disabled={saving}>{saving ? "Saving…" : isNew ? "Create component" : "Save component"}</Button></div>
     </form>
-    {component && <MetricsPanel componentId={component.id} />}
+    {component && <><ComponentSourceMetadata source={component.sourceMetadata} /><MetricsPanel componentId={component.id} /></>}
   </>;
 }

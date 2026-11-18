@@ -9,6 +9,7 @@ import { devKey } from '../helpers/dev-key.mjs';
 import { signInAs } from '@runeditrun/rer/internal/modules/operator-auth/dev/sign-in-as.mjs';
 import { notificationActivity, assertNoNewNotifications, moveInDoor } from '../helpers/import-notifications.mjs';
 import { reservePort } from './worker-startup.mjs';
+import { eventuallyFollowUp } from './helpers/follow-ups-runtime.mjs';
 
 // One owner migration through the actual wizard and Cutover documents. The source
 // table changes the saved export, not the behavior or the viewport under test.
@@ -82,7 +83,20 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         await context.unroute(pagesRoute);
       }
       const directory = resolve('tests/fixtures', source, source === 'sorry' ? 'public' : 'small');
+      const sourceDay = new Date(Date.now() - 2 * 86400_000).toISOString().slice(0, 10);
+      const sourceBody = '<p><b>Invoice processing has recovered.</b> Customer words remain readable.</p><p>Read <a href="https://docs.example.invalid/synthetic-lamp-1">the recovery guide</a>.</p><script>window.importedMarkupXss=true</script><img src=x onerror="window.importedMarkupXss=true">';
       const files = await Promise.all((await readdir(directory)).map(async name => {
+        if (source === 'sorry') {
+          const data = JSON.parse((await readFile(join(directory, name), 'utf8')).replaceAll('2025-04-02', sourceDay));
+          if (name === 'sorry-components.json') {
+            data.components[0].description = 'Customer-facing billing services.';
+            data.components[1].parent_id = 12;
+            data.components.splice(1, 0, { id: 12, name: 'Billing systems', description: 'Invoice processing and billing APIs.', state: 'operational', parent_id: 10, position: 2, created_at: sourceDay + 'T10:00:00.000Z', updated_at: sourceDay + 'T10:00:00.000Z' });
+            data.meta.count = data.meta.total_count = data.components.length;
+          }
+          if (name === 'sorry-notice-100.json') data.notice.updates.at(-1).content = sourceBody;
+          return { name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(data)) };
+        }
         if (source !== 'statuspage') return join(directory, name);
         const buffer = await readFile(join(directory, name));
         if (name !== 'incidents.json') return { name, mimeType: 'application/json', buffer };
@@ -142,7 +156,8 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         const inventory = await read('/api/app/components');
         assert.equal(inventory.components.filter(row => row.name === 'Customer services').length, 0, 'Sorry parent is a group only');
         const group = inventory.groups.find(row => row.name === 'Customer services');
-        assert.ok(group && inventory.components.some(row => row.name === 'Billing API' && row.groupId === group.id));
+        const nested = inventory.groups.find(row => row.name === 'Billing systems');
+        assert.ok(group && nested && nested.parentId === group.id && inventory.components.some(row => row.name === 'Billing API' && row.groupId === nested.id), 'Sorry source hierarchy survives as one row per group and leaf');
         for (const [kind, rows] of Object.entries({ group: inventory.groups, component: inventory.components, incident: (await read('/api/app/incidents')).incidents, maintenance: (await read('/api/app/maintenance')).maintenance })) assert.equal(result.report.counts[kind].imported, rows.length, `${kind} created count matches Lamp`);
         await openWizard();
         const history = page.getByRole('heading', { name: 'Your imports', exact: true }).locator('..');
@@ -164,6 +179,76 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         await page.getByRole('region', { name: 'Audit entries', exact: true }).waitFor();
         assert.ok((await page.getByRole('region', { name: 'Audit entries', exact: true }).innerText()).includes('Billing API'));
         await capture('sorry-audit');
+        const imported = (await read('/api/app/incidents')).incidents.find(row => row.title === 'Delayed invoice processing');
+        const publicPage = await context.newPage();
+        try {
+          await eventuallyFollowUp(async () => {
+            const response = await fetch(publicOrigin + '/history');
+            return response.status === 200 ? response.text() : '';
+          }, text => text.includes('Customer words remain readable.'), 'the imported readable update reaches public history');
+          await publicPage.goto(publicOrigin + '/');
+          const outer = publicPage.locator('.component-group').filter({ has: publicPage.getByRole('heading', { name: 'Customer services', exact: true }) }).first();
+          assert.equal(await outer.getByRole('heading', { name: 'Billing systems', exact: true }).count(), 1, 'public groups retain their recursive ancestry');
+          assert.ok((await outer.innerText()).includes('Billing API'));
+          if (evidence) for (const width of [1440, 390]) {
+            await publicPage.setViewportSize({ width, height: 1000 });
+            await publicPage.screenshot({ path: join(evidence, `sorry-public-hierarchy-${width}.png`), fullPage: true });
+          }
+          await publicPage.setViewportSize({ width: 1440, height: 1000 });
+          for (const [name, path] of [['history', '/history'], ['incident', '/incidents/' + encodeURIComponent(imported.reference)]]) {
+            await publicPage.goto(publicOrigin + path);
+            const update = publicPage.locator('.update').filter({ hasText: 'Customer words remain readable.' });
+            assert.equal(await update.count(), 1, path + ' reads the imported update as customer prose');
+            const words = await update.innerText();
+            assert.ok(words.includes('Invoice processing has recovered.') && words.includes('the recovery guide'));
+            assert.doesNotMatch(words, /<\/?(?:b|p|script|img|a)(?:\s|>)|onerror=|window\.importedMarkupXss/iu, 'imported source markup is never shown as literal text');
+            assert.equal(await update.locator('img, script').count(), 0);
+            assert.equal(await update.getByRole('link', { name: /https:\/\/docs\.example\.invalid\/synthetic-lamp-1/ }).getAttribute('href'), 'https://docs.example.invalid/synthetic-lamp-1');
+            assert.equal(await publicPage.evaluate(() => window.importedMarkupXss), undefined);
+            if (evidence) for (const width of [1440, 390]) {
+              await publicPage.setViewportSize({ width, height: 1000 });
+              await publicPage.screenshot({ path: join(evidence, `sorry-public-${name}-${width}.png`), fullPage: true });
+            }
+            await publicPage.setViewportSize({ width: 1440, height: 1000 });
+          }
+          for (const extension of ['rss', 'atom']) {
+            const response = await fetch(publicOrigin + '/feed.' + extension);
+            assert.equal(response.status, 200);
+            const xml = await response.text();
+            assert.ok(xml.includes('Customer words remain readable.') && xml.includes('the recovery guide'));
+            assert.doesNotMatch(xml, /(?:<|&lt;|&amp;lt;)\/?(?:b|script|img)(?:\s|>|&gt;|&amp;gt;)|onerror=|window\.importedMarkupXss/iu, 'feed entries contain readable imported prose, with no source tags');
+            assert.ok(xml.includes('https://docs.example.invalid/synthetic-lamp-1'), 'safe imported links remain in feed entries');
+            await publicPage.goto(publicOrigin + '/feed.' + extension);
+            assert.equal(await publicPage.evaluate(() => window.importedMarkupXss), undefined);
+            if (evidence) for (const width of [1440, 390]) {
+              await publicPage.setViewportSize({ width, height: 1000 });
+              await publicPage.screenshot({ path: join(evidence, `sorry-public-feed-${extension}-${width}.png`), fullPage: true });
+            }
+            await publicPage.setViewportSize({ width: 1440, height: 1000 });
+            // Feed readers render RSS description / Atom HTML text constructs.
+            // Use the actual delivered payload, rather than restating its words.
+            const readerHtml = await publicPage.evaluate(({ xml, extension }) => {
+              const document = new DOMParser().parseFromString(xml, 'application/xml');
+              if (document.querySelector('parsererror')) throw new Error('Lamp feed XML is invalid');
+              return document.querySelector(extension === 'rss' ? 'item description' : 'entry content')?.textContent;
+            }, { xml, extension });
+            assert.ok(readerHtml, 'the delivered feed has a readable entry');
+            await publicPage.setContent('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lamp feed reader</title><style>body{font:16px/1.6 system-ui,sans-serif;margin:24px;max-width:64rem}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}</style><h1>Lamp feed reader · ' + extension.toUpperCase() + '</h1><p>Actual Lamp feed entry</p><article>' + readerHtml + '</article></html>');
+            const entry = publicPage.locator('article');
+            const entryWords = await entry.innerText();
+            assert.ok(entryWords.includes('Customer words remain readable.') && entryWords.includes('the recovery guide'));
+            assert.doesNotMatch(entryWords, /<\/?(?:b|p|script|img|a)(?:\s|>)|onerror=|window\.importedMarkupXss/iu);
+            assert.equal(await entry.locator('img, script, b').count(), 0);
+            assert.equal(await entry.getByRole('link', { name: /https:\/\/docs\.example\.invalid\/synthetic-lamp-1/ }).getAttribute('href'), 'https://docs.example.invalid/synthetic-lamp-1');
+            assert.equal(await publicPage.evaluate(() => window.importedMarkupXss), undefined);
+            if (evidence) for (const width of [1440, 390]) {
+              await publicPage.setViewportSize({ width, height: 1000 });
+              await publicPage.screenshot({ path: join(evidence, `sorry-feed-reader-${extension}-${width}.png`), fullPage: true });
+            }
+            await publicPage.setViewportSize({ width: 1440, height: 1000 });
+          }
+        } finally { await publicPage.close(); }
+        console.log('PROBE MOVE-002 HIST-008: hostile Sorry update markup becomes readable paragraphs and safe links on history, incident permalinks and both actual feed reader payloads; public hierarchy remains recursive; 1440/390 screens captured');
       }
       await page.goto(origin + `/app/cutover?job=${result.job.id}`);
       await page.getByRole('heading', { name: 'Old public addresses', exact: true }).waitFor();

@@ -1,3 +1,6 @@
+import { recursiveComponentGroups } from "./component-groups";
+import { sourceMetadataMarkup } from "./source-metadata";
+import type { SourceMetadata } from "./imported-metadata.repository";
 import { themeSchema } from "../../shared/page-theme";
 import { themeChrome } from "./theme-rendering";
 import { publicMetricsSection } from "../metrics/public-chart";
@@ -46,6 +49,8 @@ export interface RenderedSnapshot {
 }
 
 interface PublicComponent {
+  groupId?: string | null;
+  sourceMetadata?: SourceMetadata | null;
   id: string;
   name: string;
   description: string;
@@ -79,8 +84,9 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
   const hiddenIds = new Set(components.filter(component => !isPublicComponentShown(component)).map(component => component.id));
   const attachedIncidentIds = new Set(source.incidentComponents.map(component => component.incidentId));
   const attachedMaintenanceIds = new Set(source.maintenanceComponents.map(component => component.maintenanceId));
+  const componentNames = new Map(source.components.map(row => [row.id, row.name]));
   const attachedByIncident = new Map<string, string[]>();
-  for (const component of source.incidentComponents.filter(component => !component.componentId || !hiddenIds.has(component.componentId))) attachedByIncident.set(component.incidentId, [...(attachedByIncident.get(component.incidentId) ?? []), component.componentName]);
+  for (const component of source.incidentComponents.filter(component => !component.componentId || !hiddenIds.has(component.componentId))) attachedByIncident.set(component.incidentId, [...(attachedByIncident.get(component.incidentId) ?? []), component.componentId ? componentNames.get(component.componentId) ?? component.componentName : component.componentName]);
   const updatesByIncident = new Map<string, PublicIncident["updates"]>();
   for (const update of source.updates) updatesByIncident.set(update.incidentId, [...(updatesByIncident.get(update.incidentId) ?? []), publicUpdate(source, update)]);
   const reportsByIncident = new Map(source.reports.map((report) => [report.incidentId, report]));
@@ -90,15 +96,15 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
     components: attachedByIncident.get(incident.id) ?? [],
     updates: updatesByIncident.get(incident.id) ?? [],
     report: reportsByIncident.get(incident.id) ?? null,
-  })).filter((incident) => incident.updates.length > 0 && attachedIncidentIds.has(incident.id));
+  })).filter((incident) => incident.updates.length > 0 && (attachedIncidentIds.has(incident.id) || incident.sourceMetadata?.type === "general"));
   const attachedByMaintenance = new Map<string, string[]>();
-  for (const component of source.maintenanceComponents.filter(component => !component.componentId || !hiddenIds.has(component.componentId))) attachedByMaintenance.set(component.maintenanceId, [...(attachedByMaintenance.get(component.maintenanceId) ?? []), component.componentName]);
+  for (const component of source.maintenanceComponents.filter(component => !component.componentId || !hiddenIds.has(component.componentId))) attachedByMaintenance.set(component.maintenanceId, [...(attachedByMaintenance.get(component.maintenanceId) ?? []), component.componentId ? componentNames.get(component.componentId) ?? component.componentName : component.componentName]);
   const noticesByMaintenance = new Map<string, PublicMaintenance["notices"]>();
   for (const notice of source.maintenanceNotices) noticesByMaintenance.set(notice.maintenanceId, [...(noticesByMaintenance.get(notice.maintenanceId) ?? []), notice]);
   const maintenance: PublicMaintenance[] = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
     .filter((item) => attachedMaintenanceIds.has(item.id));
-  return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, emailEnabled: source.emailEnabled !== false, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
+  return { componentGroups: source.componentGroups ?? [], bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, emailEnabled: source.emailEnabled !== false, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
 export type PublicSnapshotModel = ReturnType<typeof toPublicModel>;
@@ -140,7 +146,7 @@ function pageShell(title: string, body: string, model: ReturnType<typeof toPubli
 }
 
 function componentMarkup(component: PublicComponent & { hideUptime?: boolean }, timezone: string, generatedAt: string) {
-  return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state")}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}</div><div class="component-status">${uptimeMarkup(component, timezone, generatedAt)}</div></article>`;
+  return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state")}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}${sourceMetadataMarkup(component.sourceMetadata)}</div><div class="component-status">${uptimeMarkup(component, timezone, generatedAt)}</div></article>`;
 }
 
 function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
@@ -149,7 +155,7 @@ function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
   // take the shared heading only beside named groups; a page without groups
   // lists its components with no invented heading.
   const named = components.some((component) => component.groupName !== null);
-  const charts = groupComponentsByHeading(components).map(([heading, values]) => {
+  const charts = model.componentGroups.length ? recursiveComponentGroups(components, model.componentGroups, members => members.map(component => componentMarkup(component, settings.timezone, generatedAt)).join(""), model.theme.groupsCollapsed) : groupComponentsByHeading(components).map(([heading, values]) => {
     const rows = values.map((component) => componentMarkup(component, settings.timezone, generatedAt)).join("");
     return !named
       ? `<div class="component-group">${rows}</div>`

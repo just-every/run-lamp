@@ -1,26 +1,33 @@
 import type { ComponentsService } from "../service";
 import { ClientExtensionSlot } from "../../../app/client/extensions";
+import { ComponentSourceMetadata } from "./source-metadata";
 import { publicStateSource } from "./public-state-source";
 
 type Component = Awaited<ReturnType<ComponentsService["list"]>>[number];
 type Group = Awaited<ReturnType<ComponentsService["listGroups"]>>[number];
-type Section = { key: string; name: string; components: Component[] };
-
-/** Each group is a plain heading with its count over one white plate of rows; "Ungrouped" is named only beside named
- * groups. Groups, their names and order are edited in Edit all. */
+/** Each source group appears once under its actual parent; components remain
+ * leaves, so selecting a group never invents a duplicate parent component. */
 export function ComponentGroups({ groups, components, openId, onOpen }: { groups: Group[]; components: Component[]; openId: string | null; onOpen: (component: Component) => void }) {
   const ungrouped = components.filter((component) => component.groupId === null);
-  const sections: Section[] = [
-    ...groups.map((group) => ({ key: group.id, name: group.name, components: components.filter((component) => component.groupId === group.id) })),
-    ...(ungrouped.length ? [{ key: "ungrouped", name: "Ungrouped", components: ungrouped }] : []),
-  ];
-  if (!sections.length) return null;
-  return <div className="component-groups">{sections.map((section) => <div key={section.key} className="component-group">
-    {groups.length > 0 && <h2 className="component-group-heading">{section.name} <span className="component-group-count">{section.components.length}<span className="sr-only"> {section.components.length === 1 ? "component" : "components"}</span></span></h2>}
-    {section.components.length
-      ? <ul className="data-card component-rows">{section.components.map((component) => <ComponentRow key={component.id} component={component} open={component.id === openId} onOpen={() => onOpen(component)} />)}</ul>
-      : <p className="data-card empty-component-group">No components in this group yet.</p>}
-  </div>)}</div>;
+  const members = (id: string) => components.filter(component => component.groupId === id);
+  const children = (id: string | null) => groups.filter(group => group.parentId === id);
+  const count = (id: string): number => members(id).length + children(id).reduce((total, child) => total + count(child.id), 0);
+  const rows = (items: Component[]) => <ul className="data-card component-rows">{items.map(component => <ComponentRow key={component.id} component={component} open={component.id === openId} onOpen={() => onOpen(component)} />)}</ul>;
+  const renderGroup = (group: Group, depth: number) => {
+    const leaves = members(group.id), descendants = children(group.id), total = count(group.id);
+    return <div key={group.id} className="component-group" style={depth ? { marginInlineStart: Math.min(depth, 4) * 12 } : undefined}>
+      <h2 className="component-group-heading">{group.name} <span className="component-group-count">{total}<span className="sr-only"> {total === 1 ? "component" : "components"}</span></span></h2>
+      {group.description && <p>{group.description}</p>}
+      <ComponentSourceMetadata source={group.sourceMetadata} kind="group" />
+      {leaves.length ? rows(leaves) : !descendants.length ? <p className="data-card empty-component-group">No components in this group yet.</p> : null}
+      {descendants.map(child => renderGroup(child, depth + 1))}
+    </div>;
+  };
+  if (!groups.length && !ungrouped.length) return null;
+  return <div className="component-groups">
+    {children(null).map(group => renderGroup(group, 0))}
+    {ungrouped.length > 0 && <div className="component-group">{groups.length > 0 && <h2 className="component-group-heading">Ungrouped</h2>}{rows(ungrouped)}</div>}
+  </div>;
 }
 
 /** One button per row opens the component's drawer; the extension slot sits beside it, never inside it. */
