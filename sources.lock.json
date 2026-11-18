@@ -8044,7 +8044,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "60b53a219b56cec061ad694dd3a44a43a4c1de5e10d06c1ea82d85a9da73c8b2",
+      "sha256": "9288d9805dc745634ebe9b001e1c59d2d1285637ce97f224beb21ad1210ceb06",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -8148,7 +8148,7 @@
       "executable": false
     },
     "tests/e2e/helpers/delivery-log-flow.mjs": {
-      "sha256": "f310fa213c5f26081a1fd221401a17dbde6c61b3c958e5fae707524b3c93c8a7",
+      "sha256": "c742c19a8b4f4a8876aed00afc77ed61fade50ba8350d1cea233d1a8d10686c0",
       "executable": false
     },
     "tests/e2e/helpers/email-capacity-flow.mjs": {
@@ -8288,7 +8288,7 @@
       "executable": false
     },
     "tests/e2e/helpers/mail-settings-browser-flow.mjs": {
-      "sha256": "83dd302ff7bd7be27b6f18d54f945dcca175b586c618f485ba072de74b6b2c9a",
+      "sha256": "30448be969df338a93fd5618e5b19c79ec1decb9224f30f11c5fdda5ee21956a",
       "executable": false
     },
     "tests/e2e/helpers/maintenance-browser-flow.mjs": {
@@ -8532,7 +8532,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-failures-flow.mjs": {
-      "sha256": "99ae54f450fd13e61860f097cf2d7e745cfc2ecaf98c8712fe2b4640f70b85ee",
+      "sha256": "85779a0b45c027684f3123aef6837e7cd0fef980e53667e62da629eaf241e80f",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
