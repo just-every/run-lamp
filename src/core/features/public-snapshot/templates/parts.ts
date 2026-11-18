@@ -1,3 +1,4 @@
+import { sourceMetadataMarkup } from "../source-metadata";
 import { maintenanceNoticeBody } from "../record-markup";
 import { maintenanceTimeRange } from "../format";
 import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
@@ -148,7 +149,7 @@ export function dayBar(component: Component, className: string, labelled = true)
 }
 
 export function componentNote(component: Component) {
-  return `${component.note ? `<p class="tpl-note">${escapeHtml(component.note)}</p>` : ""}${component.description ? `<details class="tpl-about"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}`;
+  return `${component.note ? `<p class="tpl-note">${escapeHtml(component.note)}</p>` : ""}${component.description ? `<details class="tpl-about"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${sourceMetadataMarkup(component.sourceMetadata)}`;
 }
 
 /** What the history of a template lists: everything PAGE-001 requires, then the latest resolved incidents. */

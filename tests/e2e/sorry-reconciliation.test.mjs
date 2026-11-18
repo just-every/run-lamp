@@ -100,14 +100,60 @@ test('MOVE-001 Move in explains how Sorry component rows arrive as components an
 
     t.diagnostic('PROBE: mixed parent/child selection affects only listed children; parent alone includes its group; malformed end uses latest authored resolution and discloses it; absent or pre-start resolution still refuses');
 
-    // A row that is genuinely lost still warns: a grandchild flattens the hierarchy, which no parent-as-group rule explains.
-    const nested = await moveIn.preview({ ...source, files: withComponents(rows, [row(90, 'Billing detail', 11)]) });
+    // A recursive source keeps each parent once, retaining its actual name,
+    // description, original state and timestamps independently of Lamp edits.
+    const fullName = 'Billing API ' + 'source-label '.repeat(20);
+    const fullDescription = 'Nested source description. '.repeat(30);
+    const sourceEditedAt = '2025-04-03T08:15:00.000Z';
+    const nestedRows = rows.map(item => item.id === 11 ? { ...item, name: fullName, description: fullDescription, state: 'partially-degraded', updated_at: sourceEditedAt } : item);
+    const nestedFiles = withComponents(nestedRows, [row(90, 'Billing detail', 11)]);
+    const nested = await moveIn.preview({ ...source, files: nestedFiles });
     assert.equal(nested.status, 200, JSON.stringify(nested.body));
-    const warnings = nested.body.diagnostics.filter(item => item.code === 'UNMAPPED');
-    assert.deepEqual(warnings.map(item => [item.kind, item.sourceId]), [['group', '11']], 'only the flattened nested group warns');
-    assert.match(warnings[0].message, /Nested Sorry component grouping/);
-    assert.equal(nested.body.counts.unmapped, 1);
+    assert.equal(nested.body.counts.unmapped, 0, 'recursive parents are retained instead of flattened or dropped');
     assert.equal(nested.body.report.reconciliation.statement, "17 source component rows -> 14 components + 3 groups (a parent row is shown once, as its children's group)");
-    t.diagnostic('PROBE: genuinely unmapped row -> still warns (1 warning, nested group 11)');
+    const nestedApplied = await moveIn.apply(nested.body);
+    assert.equal(nestedApplied.status, 200, JSON.stringify(nestedApplied.body));
+    const catalogue = (await owner('/api/app/components')).body;
+    assert.deepEqual([catalogue.components.length, catalogue.groups.length], [14, 3], 'every source row becomes one native group or leaf');
+    const parent = catalogue.groups.find(group => group.sourceMetadata?.id === '10');
+    const child = catalogue.groups.find(group => group.sourceMetadata?.id === '11');
+    const leaf = catalogue.components.find(component => component.sourceMetadata?.id === '90');
+    assert.equal(child.parentId, parent.id);
+    assert.equal(leaf.groupId, child.id);
+    assert.equal(child.sourceMetadata.name, fullName);
+    assert.equal(child.sourceMetadata.description, fullDescription);
+    assert.deepEqual(child.sourceMetadata.ancestorIds, ['10']);
+    assert.equal(child.sourceMetadata.state, 'partially-degraded');
+    assert.equal(child.sourceMetadata.position, 11);
+    assert.equal(Date.parse(child.sourceMetadata.createdAt), Date.parse(nestedRows.find(row => row.id === 11).created_at));
+    assert.equal(Date.parse(child.sourceMetadata.updatedAt), Date.parse(sourceEditedAt));
+    const bulk = await owner('/api/app/components/bulk');
+    assert.equal(bulk.status, 200, JSON.stringify(bulk.body));
+    assert.equal(bulk.body.catalogue.groups.find(group => group.id === child.id).parentId, parent.id, 'bulk editing reads the same hierarchy');
+    const repeat = await moveIn.preview({ ...source, files: nestedFiles });
+    assert.equal(repeat.status, 200, JSON.stringify(repeat.body));
+    assert.equal((await moveIn.apply(repeat.body)).status, 200);
+    assert.deepEqual((await owner('/api/app/components')).body, catalogue, 'repeat import does not duplicate groups, leaves or source metadata');
+    const rootFiles = withComponents(nestedRows.map(item => item.id === 11 ? { ...item, parent_id: null, description: null } : item), [row(90, 'Billing detail', 11)]);
+    const rootPlan = await moveIn.preview({ ...source, files: rootFiles });
+    assert.equal(rootPlan.status, 200, JSON.stringify(rootPlan.body));
+    const rootApplied = await moveIn.apply(rootPlan.body);
+    assert.equal(rootApplied.status, 200, JSON.stringify(rootApplied.body));
+    const rootGroup = (await owner('/api/app/components')).body.groups.find(group => group.id === child.id);
+    assert.equal(rootGroup.parentId, null, 'catch-up can remove a former source parent');
+    assert.equal(rootGroup.description, '', 'catch-up can remove the former source description');
+    assert.equal((await moveIn.undo(rootApplied.body.door)).status, 200);
+    assert.deepEqual((await owner('/api/app/components')).body, catalogue, 'undo restores the complete child and metadata inventory');
+    const ownerLeaf = await owner('/api/app/components', { name: 'Owner child', groupId: child.id, description: '', internal: false, displayOrder: 100, note: '' });
+    assert.equal(ownerLeaf.status, 201, JSON.stringify(ownerLeaf.body));
+    assert.equal((await owner(`/api/app/component-groups/${child.id}`, { name: 'Owner group name' }, 'PUT')).status, 204);
+    const undone = await moveIn.undo(nestedApplied.body.door);
+    assert.equal(undone.status, 200, JSON.stringify(undone.body));
+    const remaining = (await owner('/api/app/components')).body;
+    assert.ok(remaining.components.some(component => component.id === ownerLeaf.body.component.id));
+    assert.ok(remaining.groups.some(group => group.id === child.id && group.name === 'Owner group name'), 'undo keeps owner edits');
+    assert.ok(remaining.groups.some(group => group.id === parent.id), 'undo retains the ancestry of a preserved child group');
+    t.diagnostic('PROBE: recursive groups reconcile once with full original metadata; repeat is stable; undo keeps edited groups, their ancestry and an owner-created child');
+
   } finally { await runtime.close(); }
 });
