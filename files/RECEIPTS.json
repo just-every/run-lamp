@@ -1,0 +1,508 @@
+{
+  "recordedAt": "2026-11-18T08:49:41Z",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-install-faults-2",
+  "baseHead": "71ab9b43f5069cd612bf998d3a2bf8a32691393b",
+  "previousRoundHead": "aa9af0f0cbac513772dd12670985e1a705871d7b",
+  "previousRoundVerifyRun": 44247850522,
+  "productHead": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+  "productCommits": [
+    "48ff8882f647a16328fa7b5c97c3c2d2edc2f321 Prove native backup and restore retains existing owner migration history",
+    "3ca99d6b0b940c8fa8305468d5edcfb2a865dccb Fix Lamp dev startup, owner ledger and disposable migrations [skip ci]"
+  ],
+  "candidateIdentitiesAndTrailers": [
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "",
+    "Run Edit Run fleet <fleet@runeditrun.com>",
+    "Run Edit Run fleet <fleet@runeditrun.com>"
+  ],
+  "mergeCommits": [],
+  "migration": "0086_owner_migration_ledger_text.sql",
+  "reservedNumbers": [
+    "0084",
+    "0085"
+  ],
+  "contractCounts": {
+    "before": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "after": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    },
+    "clauseStatusChanges": [],
+    "testRegistrationDelta": 0
+  },
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.121",
+    "browser": "system Chromium"
+  },
+  "dev": {
+    "slow-old": {
+      "label": "slow-old",
+      "source": "71ab9b43f5069cd612bf998d3a2bf8a32691393b",
+      "durationSeconds": 69.1,
+      "exit": 1,
+      "ready": false,
+      "readinessDeadline": true,
+      "lastHttp": "404",
+      "readyHealth": null,
+      "injectedDelaySeconds": 70
+    },
+    "slow-new": {
+      "label": "slow-new",
+      "source": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+      "durationSeconds": 118.3,
+      "exit": null,
+      "ready": true,
+      "readinessDeadline": false,
+      "lastHttp": null,
+      "readyHealth": 200,
+      "injectedDelaySeconds": 70
+    },
+    "dead-new": {
+      "label": "dead-new",
+      "source": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+      "durationSeconds": 908.4,
+      "exit": 1,
+      "ready": false,
+      "readinessDeadline": true,
+      "lastHttp": "404",
+      "readyHealth": null,
+      "injectedDelaySeconds": null
+    }
+  },
+  "nativePortability": {
+    "before": {
+      "ownerHistory": [
+        {
+          "id": 1,
+          "name": "9000_synthetic_owner.sql",
+          "applied_at": "2026-11-18 08:10:48",
+          "storage": "text"
+        }
+      ],
+      "ownerData": [
+        {
+          "step": "synthetic-lamp-owner-1",
+          "evidence_key": "owner-migration-retained"
+        }
+      ],
+      "sorryData": [
+        {
+          "id": "synthetic-lamp-sorry-1",
+          "revision": "synthetic-lamp-revision-1"
+        }
+      ],
+      "declaredType": "TIMESTAMP"
+    },
+    "failedExport": {
+      "status": 1,
+      "failure": "row_type"
+    },
+    "after": {
+      "ownerHistory": [
+        {
+          "id": 1,
+          "name": "9000_synthetic_owner.sql",
+          "applied_at": "2026-11-18 08:10:48",
+          "storage": "text"
+        }
+      ],
+      "ownerData": [
+        {
+          "step": "synthetic-lamp-owner-1",
+          "evidence_key": "owner-migration-retained"
+        }
+      ],
+      "sorryData": [
+        {
+          "id": "synthetic-lamp-sorry-1",
+          "revision": "synthetic-lamp-revision-1"
+        }
+      ],
+      "declaredType": "TEXT"
+    },
+    "successfulExport": {
+      "status": 0
+    },
+    "restore": {
+      "status": 0
+    },
+    "restored": {
+      "ownerHistory": [
+        {
+          "id": 1,
+          "name": "9000_synthetic_owner.sql",
+          "applied_at": "2026-11-18 08:10:48",
+          "storage": "text"
+        }
+      ],
+      "ownerData": [
+        {
+          "step": "synthetic-lamp-owner-1",
+          "evidence_key": "owner-migration-retained"
+        }
+      ],
+      "sorryData": [
+        {
+          "id": "synthetic-lamp-sorry-1",
+          "revision": "synthetic-lamp-revision-1"
+        }
+      ],
+      "declaredType": "TEXT"
+    },
+    "bytes": 296725,
+    "sha256": "58e4a3a82f1366b9f8e2484f7d2b57617af182c73a6d335d8d390a9d88620d06",
+    "migration": "0086_owner_migration_ledger_text.sql",
+    "noReplay": true,
+    "reExport": [
+      {
+        "verb": "export",
+        "event": "result",
+        "exitCode": 0,
+        "ok": true,
+        "contentHash": "d0034ad6bb2b2a2e8b1b8c92411b025d103983303128dc5b30b2316a451d3acb",
+        "archiveHash": "2954349c431b0119d706e8d0ca08f3e5eacb7a5e18df27886359de3832ec9411"
+      }
+    ]
+  },
+  "schemaChangingOwnerSql": {
+    "export": [
+      {
+        "verb": "export",
+        "event": "result",
+        "exitCode": 0,
+        "ok": true,
+        "contentHash": "01f6f6c173aa40a0be675afbe0bc0f0f150c9b7ca4d19241375beb8cbb5124f9",
+        "archiveHash": "0328964510b9d0b56fd8c2d68f092d0236af27b2f20bfe26e4b60057e5aba4b5"
+      }
+    ],
+    "import": [
+      {
+        "verb": "import",
+        "event": "error",
+        "exitCode": 4,
+        "code": "restore_refused",
+        "reason": "schema_mismatch"
+      },
+      {
+        "verb": "import",
+        "event": "result",
+        "exitCode": 4,
+        "ok": false
+      }
+    ]
+  },
+  "runtimeOwnerSql": {
+    "before": {
+      "statusJourneyAppliedOwnerSql": false,
+      "sorryReceiptAppliedOwnerSql": false
+    },
+    "after": {
+      "statusJourneyAppliedOwnerSql": true,
+      "sorryReceiptAppliedOwnerSql": true
+    }
+  },
+  "orderedBuild": {
+    "shard": "build",
+    "commit": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+    "runId": null,
+    "runAttempt": 0,
+    "success": true,
+    "steps": [
+      {
+        "script": "check:contract-docs",
+        "exitCode": 0,
+        "durationMs": 550
+      },
+      {
+        "script": "source:copies",
+        "exitCode": 0,
+        "durationMs": 425
+      },
+      {
+        "script": "source:check",
+        "exitCode": 0,
+        "durationMs": 586
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "durationMs": 18582
+      },
+      {
+        "script": "check:syntax",
+        "exitCode": 0,
+        "durationMs": 9479
+      },
+      {
+        "script": "validate:release",
+        "exitCode": 0,
+        "durationMs": 1101
+      },
+      {
+        "script": "verify:visual:source",
+        "exitCode": 0,
+        "durationMs": 302
+      },
+      {
+        "script": "build:app",
+        "exitCode": 0,
+        "durationMs": 7073
+      },
+      {
+        "script": "build:site",
+        "exitCode": 0,
+        "durationMs": 4985
+      }
+    ]
+  },
+  "suites": {
+    "portabilityGrouped": {
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/portability.test.mjs tests/e2e/page-data.test.mjs tests/e2e/prior-backup.test.mjs",
+      "cases": [
+        {
+          "outcome": "not ok",
+          "number": 1,
+          "title": "SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 2,
+          "title": "Page data restores verified consent and holds unverified addresses until confirmation",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 3,
+          "title": "HIST-004 \u2014 a previous-release backup upgrades through rer import with its original history, consent and image bytes",
+          "nested": false
+        }
+      ],
+      "summary": {
+        "tests": 3,
+        "pass": 2,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 442971.635267
+      }
+    },
+    "portabilityRetry": {
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/portability.test.mjs",
+      "cases": [
+        {
+          "outcome": "ok",
+          "number": 1,
+          "title": "SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority",
+          "nested": false
+        }
+      ],
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 233072.910198
+      }
+    },
+    "sorry": {
+      "command": "node --test --test-concurrency=1 tests/e2e/sorry-import.test.mjs tests/e2e/sorry-reconciliation.test.mjs tests/e2e/sorry-documented-export.test.mjs",
+      "cases": [
+        {
+          "outcome": "ok",
+          "number": 1,
+          "title": "documented Sorry generator reproduces all bytes and hashes without provider reads",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 2,
+          "title": "documented Sorry exports account for every field through preview, saved jobs and explicit refusals",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 1,
+          "title": "unchanged Business plan skips preparation",
+          "nested": true
+        },
+        {
+          "outcome": "ok",
+          "number": 2,
+          "title": "apply answers before rebuilding the public page",
+          "nested": true
+        },
+        {
+          "outcome": "ok",
+          "number": 3,
+          "title": "undo answers before rebuilding the public page",
+          "nested": true
+        },
+        {
+          "outcome": "ok",
+          "number": 3,
+          "title": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 \u2014 Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 4,
+          "title": "MOVE-001 \u2014 Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 5,
+          "title": "MAINT-015 \u2014 Sorry maintenance labels use authored source states and keep missing states neutral",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 6,
+          "title": "MOVE-001 Move in explains how Sorry component rows arrive as components and groups",
+          "nested": false
+        }
+      ],
+      "summary": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 218747.019679
+      }
+    },
+    "public": {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "cases": [
+        {
+          "outcome": "ok",
+          "number": 1,
+          "title": "HIST-008 \u2014 reviewed imported history stays completely browsable without scripts",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 2,
+          "title": "PAGE-005 \u2014 a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 3,
+          "title": "UPTIME-003 \u2014 newly observed services report only their recorded coverage",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 4,
+          "title": "HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 5,
+          "title": "SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 \u2014 owner maintains a complete catalogue and customers read, refresh, embed and retain its public story",
+          "nested": false
+        },
+        {
+          "outcome": "ok",
+          "number": 6,
+          "title": "DEP-001 DEP-002 \u2014 scheduled vendor reports retain attribution and buyer control",
+          "nested": false
+        }
+      ],
+      "summary": {
+        "tests": 6,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 615574.439404
+      }
+    },
+    "technical": {
+      "command": "node --test --test-concurrency=1 tests/e2e/export-import.test.mjs",
+      "cases": [
+        {
+          "outcome": "ok",
+          "number": 1,
+          "title": "HIST-004 PORT-001 \u2014 owner SQL rolls back a failed upgrade, recovers once, and travels through a clean technical backup and restore",
+          "nested": false
+        }
+      ],
+      "summary": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 138667.376236
+      }
+    }
+  },
+  "groupedPortabilityFailure": "Transient native ERR_ASSERTION during restored checkout re-export. Same exact SHA passed alone.",
+  "verify": {
+    "discovery": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44266529596",
+        "id": 44266529596,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "discoveryAt": "2026-11-18T08:24:23Z",
+    "polls": [
+      {
+        "conclusion": null,
+        "head_sha": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44266529596",
+        "status": "in_progress",
+        "observedAt": "2026-11-18T08:29:24Z"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44266529596",
+        "status": "in_progress",
+        "observedAt": "2026-11-18T08:34:25Z"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44266529596",
+        "status": "in_progress",
+        "observedAt": "2026-11-18T08:39:26Z"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44266529596",
+        "status": "in_progress",
+        "observedAt": "2026-11-18T08:44:27Z"
+      },
+      {
+        "conclusion": null,
+        "head_sha": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44266529596",
+        "status": "in_progress",
+        "observedAt": "2026-11-18T08:49:28Z"
+      }
+    ]
+  }
+}

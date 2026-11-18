@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "11b2c212f414f18d8b1d481ac45bf2c6ba23f47d",
+      "bytes": 1988,
+      "path": "PLAN.md",
+      "sha256": "b1ded8c7749969bb775e33ce8a0ee6edd7e46d8b35bd6db79e7a699495743d83"
+    },
+    {
+      "blob": "3449caf9408d0e3f91e17c9dc9c2773d133d7c96",
+      "bytes": 15026,
+      "path": "RECEIPTS.json",
+      "sha256": "18b754ee74ff1d0889605b45c77f0f1157594f1d873df55c9d8a1faafa9f5ecb"
+    },
+    {
+      "blob": "8537fe754b678193515d0292eb50411565f86a02",
+      "bytes": 3889,
+      "path": "REPORT.md",
+      "sha256": "b36578e27235ca93a233e7b425cd016f293ef890e1b674c48525419188bd11f3"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-install-faults-2",
+  "product_head": "48ff8882f647a16328fa7b5c97c3c2d2edc2f321",
+  "ref": "refs/heads/evidence/sd-lamp-install-faults-2",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-install-faults-2"
+}
