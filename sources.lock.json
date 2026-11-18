@@ -6480,7 +6480,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/target-digest.ts": {
-      "sha256": "12aac5d21750929788127d4113399fec40f635be2eb6b075944ac90641f2d9c2",
+      "sha256": "7ed3b649d18ac1e9ac0feaa2d9b4b0650fb0e4efa97b537ed4105a9b01402fc8",
       "executable": false
     },
     "src/core/features/statuspage-import/targets.ts": {
@@ -8464,7 +8464,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sorry-template-browser-flow.mjs": {
-      "sha256": "7f105a4f3d29f561242101c9f95f32ae7657a4a6e0b65fdc496dba135861b8e5",
+      "sha256": "7e1515094db7a4ec7da1d9962fb78e6d833ccfefadb0b1f4992caccbfc4d3dd4",
       "executable": false
     },
     "tests/e2e/helpers/sorry-template-edge.mjs": {
@@ -8476,7 +8476,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sorry-template-import-flow.mjs": {
-      "sha256": "6f5b1065a7c027343f9527349fb14b0333f60627cd222a44d9eb29eef03d4a48",
+      "sha256": "e84f1537a88712f8e5068cfe333e167160f8df23a28e3a9b2ccc175220f2e1d5",
       "executable": false
     },
     "tests/e2e/helpers/status-journey.mjs": {

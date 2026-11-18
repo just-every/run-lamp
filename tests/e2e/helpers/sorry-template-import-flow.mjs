@@ -99,6 +99,12 @@ export async function sorryTemplateImportFlow({ runtime, move, send, t }) {
     const applied = await move.apply(fresh.body);
     assert.equal(applied.status, 200, JSON.stringify(applied.body));
     assert.equal(applied.body.job.state, 'completed');
+
+    const reconciliation = await move.door('sorry', 'reconcile', { planId: fresh.body.planId });
+    assert.equal(reconciliation.status, 200, JSON.stringify(reconciliation.body));
+    assert.equal(reconciliation.body.ok, true, JSON.stringify(reconciliation.body));
+    assert.equal(reconciliation.body.counts.byKind.template, 27);
+    assert.equal(reconciliation.body.counts.byKind['update-template'], 27);
     const templates = await templateRows();
     assert.equal(templates.length, before.templates.length + 54);
     assert.deepEqual(templates.filter(row => before.templates.some(prior => prior.id === row.id)), before.templates, 'import preserves every existing template');
@@ -187,7 +193,13 @@ export async function sorryTemplateImportFlow({ runtime, move, send, t }) {
     }
     const beforeConflict = await templateRows();
     const conflict = await move.preview({ ...source, files: changedFiles });
-    assert.ok(conflict.status !== 200 || conflict.body.report.items.some(row => /conflict|edit|preserv/i.test(row.reason) && ['rejected', 'skipped'].includes(row.outcome)), 'source refresh cannot overwrite edited templates');
+    assert.equal(conflict.status, 200, JSON.stringify(conflict.body));
+    const rejected = conflict.body.rejected.filter(row => row.kind === 'template' || row.kind === 'update-template');
+    assert.deepEqual(rejected.map(({ kind, sourceId }) => [kind, sourceId]).sort(), [
+      ['template', 'synthetic-lamp-notice-27'],
+      ['update-template', 'synthetic-lamp-update-27'],
+    ], 'catch-up rejects both changed sources whose native templates were edited');
+    for (const { reason } of rejected) assert.match(reason, /Native edit conflict/);
     assert.deepEqual(await templateRows(), beforeConflict);
     const undone = await move.undo(applied.body.door);
     assert.equal(undone.status, 200, JSON.stringify(undone.body));
