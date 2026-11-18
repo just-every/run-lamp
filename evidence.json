@@ -1,0 +1,136 @@
+{
+  "files": [
+    {
+      "blob": "d3c7e306c768faa55d22b0b3f69b8e0e0e624547",
+      "bytes": 6144,
+      "path": "REPORT.md",
+      "sha256": "55753664a2e4feadb16924817e2dcac3f7caab410be2c0449a1a7b0f9ef48994"
+    },
+    {
+      "blob": "0466e2148d136fad74758c88c6454c0d809b67d4",
+      "bytes": 100441,
+      "path": "browser/component-history-timezone-1440.png",
+      "sha256": "494132f99e161d24861d8433fdef28d96f4e16eccc154d6e3777c5cb864129a2"
+    },
+    {
+      "blob": "4e6367f35b8c091012a8b50abcfcccdb72a01071",
+      "bytes": 48853,
+      "path": "browser/component-history-timezone-390.png",
+      "sha256": "23428fcdd3c82ecec28e28b40df17aae67cdac6b2054d647c2d60a70f89064e5"
+    },
+    {
+      "blob": "0f2f6b2a159538c8010358aea01f1c9f7ce4627f",
+      "bytes": 97348,
+      "path": "browser/incident-timezone-1440.png",
+      "sha256": "8d53f854e1d98e72ff4f4206336bf1b3acda3faaec5a55f797886676f4999c68"
+    },
+    {
+      "blob": "c8a04f47bccc18ab695c1d7ab17fb760697e2370",
+      "bytes": 101072,
+      "path": "browser/incident-timezone-390.png",
+      "sha256": "e79e993256a9158f71ed5cf493ca07e50af3481d67879c4d4eee00dc3850d022"
+    },
+    {
+      "blob": "f779a2a77de25c28c02edfd75404708ca842ac2c",
+      "bytes": 134967,
+      "path": "browser/maintenance-local-time-1440.png",
+      "sha256": "23de467a97886d5c05d7610a6480ebb60f71e3b4e377682a7ce3c06fa79e5917"
+    },
+    {
+      "blob": "cf02865e4989a7667159a3c8f8b2949884f283c4",
+      "bytes": 102460,
+      "path": "browser/maintenance-local-time-390.png",
+      "sha256": "ed273fb8ac1b3c0010e0dffc15ffd2ee9b363947663471619c3aa0d00a9ff1d3"
+    },
+    {
+      "blob": "6e849db6318a6cf30e1212bc5f7cf01406e1926c",
+      "bytes": 379884,
+      "path": "browser/public-branding-1440.png",
+      "sha256": "67c842ea72d311bcdf47b46c040044ebdd0dd4ec1d6b3e726220f7306a88dfa7"
+    },
+    {
+      "blob": "7ee8e2542dc0359ff0a065452769a6ca5ad0fe4b",
+      "bytes": 250756,
+      "path": "browser/public-branding-390.png",
+      "sha256": "9f6888efa254ddd7024765f02e575c9becbbb5b5213a2512b517ef5b2a9dddc3"
+    },
+    {
+      "blob": "80722bbdc2b9d110b1da7e275185426fc081bd33",
+      "bytes": 223467,
+      "path": "browser/public-maintenance-timezone-1440.png",
+      "sha256": "1ce67cca0714ca19163d46f57301b42d82d410d1007043f5f7944a948c7a887c"
+    },
+    {
+      "blob": "07c46a53ca0c741d99a9435d874fbd23067795ac",
+      "bytes": 113894,
+      "path": "browser/public-maintenance-timezone-390.png",
+      "sha256": "ef52e782f19c99ee896b3c3b0a16fcaf9b2827dae685f013f0de2427f45e1064"
+    },
+    {
+      "blob": "da1eb7cf037ce33eeb453c0dba17e531594870da",
+      "bytes": 203604,
+      "path": "browser/settings-page-1440.png",
+      "sha256": "743a1d0c69a19f4382b9160015e2830501143a7fbd6c103c16a4a62230990a4a"
+    },
+    {
+      "blob": "c2242fe6cad8e94d71d516a8cdebfbad5688a2d6",
+      "bytes": 160366,
+      "path": "browser/settings-page-390.png",
+      "sha256": "33c664788b626038a1d3eb449af45c270339549b21e1ba77f0d41dce59c9d7f7"
+    },
+    {
+      "blob": "5f047e74c843212e34427ea381ee4b324f64e85c",
+      "bytes": 357546,
+      "path": "browser/setup-details-1440.png",
+      "sha256": "d37fd59d10f5b5c38406b7ca4d762fc2f8a9d8d3d32b42021d35f3e5fd557553"
+    },
+    {
+      "blob": "b3224b0204ea0e2af8c43d6488263a5f0f9237e3",
+      "bytes": 231369,
+      "path": "browser/setup-details-390.png",
+      "sha256": "a1d257ac7d36775e3f9c4156ddf1f21dfd9e98e73f49f08a3570e2530f0e46fd"
+    },
+    {
+      "blob": "9e4332da7d66f8dd3b85b46c10cd06d6cf3a5e63",
+      "bytes": 41967,
+      "path": "browser/sign-in-name-1440.png",
+      "sha256": "b00916601a679905c7377c64fd4287dc6b705abe189393eea8b10e1feb9e64c9"
+    },
+    {
+      "blob": "6eb17b93cd286c1ca83dc00b7cc49fa9ed2af7b0",
+      "bytes": 34481,
+      "path": "browser/sign-in-name-390.png",
+      "sha256": "1b20f5ce4a45249b4b7793b7842542f9031780772b087519d68f5a1a8cdfc120"
+    },
+    {
+      "blob": "e770ceaaa74ad1ed6ab5a9ea530a844f6573c020",
+      "bytes": 983,
+      "path": "build.json",
+      "sha256": "b44597f0fd3e32e2deef23e16ec01c15992b56dc58d1c850d527ad650d2244cc"
+    },
+    {
+      "blob": "04e6a54382d5bae01a0b24abddf0aa05ac9da478",
+      "bytes": 72618,
+      "path": "checks.json",
+      "sha256": "759b5f483cad044b754f60f247055367fcf16cbd5cc98c9f4887bcd6529cdd52"
+    },
+    {
+      "blob": "aab3f49efac543d7fd94dbf7596770119170d19c",
+      "bytes": 362,
+      "path": "favicon.json",
+      "sha256": "b834f724fbccb99ac4695eace4deb110ff5584df39b912119d9ed328b9209d87"
+    },
+    {
+      "blob": "f756bfed901b0ea85420120879f76a0c101eb515",
+      "bytes": 174,
+      "path": "verify.json",
+      "sha256": "11438fe291ac2aa2fc24f5c08978bec95249369be10d9fc5c8848f2ddafceade"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-design-setup-4",
+  "product_head": "ecd9b50c6af3b65bb68b231d942d6a5f51aeb43c",
+  "ref": "refs/heads/evidence/sd-lamp-design-setup-4",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-design-setup-4"
+}

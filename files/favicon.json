@@ -1,0 +1,9 @@
+{
+  "commit": "ecd9b50c6af3b65bb68b231d942d6a5f51aeb43c",
+  "success": true,
+  "checks": [
+    "Default: letter and Operational state mark",
+    "Logo only: main-branch crop and opacity, Operational state mark and logo in Open Graph",
+    "Square icon: image bytes take precedence, state mark updates to Major outage, and Open Graph keeps logo and status"
+  ]
+}
