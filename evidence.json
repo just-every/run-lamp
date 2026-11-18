@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "7ce647e51996730a1e83cbf03b928a479a24c13a",
+      "bytes": 404486,
+      "path": "1440-maintenance-horizon.png",
+      "sha256": "29d9263330c48f373eea48381f608a174f8f27d39dbf1c9363656e0a709817e9"
+    },
+    {
+      "blob": "59849bf89d37cf6bb7be8724f114290db5eba605",
+      "bytes": 201677,
+      "path": "1440-maintenance-permalink.png",
+      "sha256": "a16bcd66ac38945588c0201bfc9e27ab4e81494721790413837bb8613e5de0aa"
+    },
+    {
+      "blob": "a463b5f22779ecb5894e56b58b44070ad6bc5e48",
+      "bytes": 268403,
+      "path": "390-maintenance-horizon.png",
+      "sha256": "f5395193756ab30d9009156b955a5d056b9efbde96124015bae8753e237f54ff"
+    },
+    {
+      "blob": "4519939b882797692e15f9da839be89dbe2847ba",
+      "bytes": 101947,
+      "path": "390-maintenance-permalink.png",
+      "sha256": "647e32b55867246dede7bc0d246c561ac07367f09572cf2d5171aff39eca7904"
+    },
+    {
+      "blob": "a65dbe21191d616a85bf9f1a8cd9c975f0c8f9f9",
+      "bytes": 5869,
+      "path": "RECEIPT.json",
+      "sha256": "92ccc53cb91006803066d4d192d031f49c5e042c867b965a693b0aecbddd513b"
+    },
+    {
+      "blob": "074ad4ebc05eb7f211e3c0152fe5405ad9a47950",
+      "bytes": 7512,
+      "path": "REPORT.md",
+      "sha256": "f12102ea0191789c1ad5c685685cdaaf0f0c89b23f7614c5aac6f1586f60ad09"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f141-pc1",
+  "product_head": "f6138a6eb6cbe223968819b0f8a426997d97cb41",
+  "ref": "refs/heads/evidence/sd-lamp-c-f141-pc1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f141-pc1"
+}

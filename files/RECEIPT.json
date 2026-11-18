@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-lamp",
+  "task": "sd-lamp-c-f141-pc1",
+  "branch": "cloud/sd-lamp-c-f141-pc1",
+  "head": "f6138a6eb6cbe223968819b0f8a426997d97cb41",
+  "parents": [
+    "a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03",
+    "4e97e8985ac870576ccaf3cf3a54332140c7e7d7"
+  ],
+  "recorded_utc": "2026-11-18T10:47:22.917280+00:00",
+  "claim": {
+    "id": "PAGE-001",
+    "status": "PARTIAL",
+    "proven_points": [
+      3
+    ],
+    "held_points": [
+      1,
+      2,
+      4
+    ]
+  },
+  "counts": {
+    "before": {
+      "done": 62,
+      "partial": 127,
+      "missing": 55,
+      "total": 244
+    },
+    "after": {
+      "done": 62,
+      "partial": 127,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "test_inventory": {
+    "before": 112,
+    "after": 113,
+    "assertion_scripts": 10
+  },
+  "local_toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "browser": "system Chromium"
+  },
+  "local_checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "head": "f6138a6eb6cbe223968819b0f8a426997d97cb41",
+      "exit": 0,
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0
+    }
+  ],
+  "point_probe": {
+    "head": "f6138a6eb6cbe223968819b0f8a426997d97cb41",
+    "utc_started": "2026-11-18T10:21:50Z",
+    "command": "node --test --test-name-pattern='^PAGE-001 — initial HTML' tests/e2e/public-contract.test.mjs",
+    "test": "PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary",
+    "exit": 0,
+    "observed": "PROBE PAGE-001 3: anonymous initial HTML generated at 2031-02-10T16:00:00.000Z -> two active windows and starts at fourteen days minus one millisecond and exactly fourteen days; the following millisecond is absent, and all five native permalinks resolve",
+    "earlier_generation": "2031-02-10T15:59:00.000Z",
+    "candidate_generation": "2031-02-10T16:00:00.000Z",
+    "horizon_controls": [
+      {
+        "starts_at": "2031-02-24T15:59:59.999Z",
+        "in_initial_html": true,
+        "permalink_http": 200
+      },
+      {
+        "starts_at": "2031-02-24T16:00:00.000Z",
+        "in_initial_html": true,
+        "permalink_http": 200
+      },
+      {
+        "starts_at": "2031-02-24T16:00:00.001Z",
+        "in_initial_html": false,
+        "permalink_http": 200
+      }
+    ],
+    "script_disabled_screens": [
+      {
+        "file": "1440-maintenance-horizon.png",
+        "width": 1440,
+        "height": 2961,
+        "sha256": "29d9263330c48f373eea48381f608a174f8f27d39dbf1c9363656e0a709817e9"
+      },
+      {
+        "file": "1440-maintenance-permalink.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "a16bcd66ac38945588c0201bfc9e27ab4e81494721790413837bb8613e5de0aa"
+      },
+      {
+        "file": "390-maintenance-horizon.png",
+        "width": 390,
+        "height": 3189,
+        "sha256": "f5395193756ab30d9009156b955a5d056b9efbde96124015bae8753e237f54ff"
+      },
+      {
+        "file": "390-maintenance-permalink.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "647e32b55867246dede7bc0d246c561ac07367f09572cf2d5171aff39eca7904"
+      }
+    ]
+  },
+  "existing_verify": [
+    {
+      "id": 44252464395,
+      "event": "push",
+      "head_sha": "a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03",
+      "conclusion": "cancelled",
+      "jobs": [
+        {
+          "id": 134626709777,
+          "conclusion": "cancelled"
+        },
+        {
+          "id": 134645288642,
+          "conclusion": "failure"
+        }
+      ],
+      "job_log_archives": "Both requested commands exited 0 with empty output."
+    },
+    {
+      "id": 44279625303,
+      "event": "push",
+      "head_sha": "a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "local_original_composer_replay": {
+    "head": "a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03",
+    "job": "shards (composer)",
+    "command": "LAMP_VERIFY_SHARD=composer pnpm run verify:app",
+    "test": "THEME-001 — owner publishes branded themes and layouts within the page budget",
+    "exit": 1,
+    "failure": "default exceeds the four-request budget with these observed asset paths /assets/status-page.css, /assets/theme-header, /assets/mark.svg, /assets/status-page.js and /assets/favicon.svg",
+    "step_exits": {
+      "test:composer": 1,
+      "test:public": 0
+    },
+    "main_comparison": {
+      "head": "20780c29021042daea1b98f34c60d6caf3188f89",
+      "exit": 1,
+      "same_failure": true
+    }
+  },
+  "candidate_verify": {
+    "conclusion": "success",
+    "head_sha": "f6138a6eb6cbe223968819b0f8a426997d97cb41",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44284726458",
+    "status": "completed",
+    "id": 44284726458,
+    "event": "push",
+    "observed_at": "2026-11-18T10:47:06.439520+00:00"
+  },
+  "publication_scan": {
+    "commit": "f6138a6eb6cbe223968819b0f8a426997d97cb41",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Exact-tree full-history scan remains with the guarded Mac lander."
+  },
+  "main_equals_product": false,
+  "candidate_run_site": null
+}
