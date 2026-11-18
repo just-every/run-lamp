@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { Hono } from 'hono';
@@ -26,9 +26,28 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     // Initialize the source through the edition's ordinary migration command;
     // an extra empty archive is not part of the owner's backup journey.
     const { RER_LOCAL_OPERATION, RER_STATE_DIR, ...environment } = fixtureProcessEnv();
-    execFileSync('pnpm', ['run', 'migrate:local'], { cwd: source, env: { ...environment, LAMP_WORKERS_STATE_PATH: join(source, '.wrangler/state') }, stdio: 'pipe' });
+    const migrate = cwd => execFileSync('pnpm', ['run', 'migrate:local'], {
+      cwd, env: { ...environment, LAMP_WORKERS_STATE_PATH: join(cwd, '.wrangler/state') }, stdio: 'pipe',
+    });
+    // Recreate a stopped installation whose first owner SQL ran before the
+    // ledger fix. Keep the same owner SQL in the fresh restore checkout.
+    const ledgerUpgrade = 'migrations/core/0083_owner_migration_ledger_text.sql';
+    const ownerFile = '9000_synthetic_owner.sql';
+    for (const installation of [source, target]) {
+      const owners = join(installation, 'migrations/ext');
+      await mkdir(owners, { recursive: true });
+      await writeFile(join(owners, ownerFile), `
+        INSERT INTO setup_readiness(step,evidence_key,checked_at)
+        VALUES ('synthetic-lamp-owner-1','owner-migration-retained','2026-11-18');
+      `);
+    }
+    await rm(join(source, ledgerUpgrade));
+    migrate(source);
+    await copyFile(join(root, ledgerUpgrade), join(source, ledgerUpgrade));
     current = await proxy(source);
     const db = current.env.DB, native = authFixture(db);
+    const ownerLedgerEntry = await db.prepare('SELECT id, name, applied_at FROM lamp_ext_migrations').first();
+    assert.equal(ownerLedgerEntry.name, ownerFile);
     await db.prepare("INSERT INTO oc_owner_claims(singleton,jti,installation_id,email,issued_at,expires_at,consumed_at,operator_id,session_id,completed) VALUES(1,'consumed-portable-claim','portable-installation','owner@example.test',1,10,2,'opaque-owner','opaque-session',1)").run();
     const bootstrap = await native.handle(native.request('/auth/bootstrap', { method: 'POST', body: { token: setupToken, displayName: 'Portable owner' } }));
     assert.equal(bootstrap.status, 303);
@@ -117,10 +136,13 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     await writeFile(damagedPath, damaged, { mode: 0o600 });
     await assert.rejects(command(target, 'import', '--input', damagedPath, '--yes'), /failed/i, 'a damaged backup is refused before a valid restore');
     await command(target, 'import', '--input', join(directory, 'installation.rer'), '--yes');
+    migrate(target); // Reapplying the owner SQL would collide with its restored row.
     await command(target, 'export', '--output', join(directory, 'restored.rer'));
     assert.deepEqual(await archivedProduct(join(directory, 'restored.rer')), await archivedProduct(join(directory, 'installation.rer')), 'clean restore and re-export preserve every archived entity and original object byte');
     current = await proxy(target);
     const restored = current.env.DB, fresh = authFixture(restored);
+    assert.deepEqual(await restored.prepare('SELECT id, name, applied_at FROM lamp_ext_migrations').first(), ownerLedgerEntry);
+    assert.equal((await restored.prepare("SELECT evidence_key FROM setup_readiness WHERE step='synthetic-lamp-owner-1'").first()).evidence_key, 'owner-migration-retained');
     assert.equal((await fresh.handle(fresh.request('/auth/bootstrap', { method: 'POST', body: { token: setupToken, displayName: 'Replacement' } }))).status, 409);
     assert.equal(await fresh.auth.getSession(fresh.request('/auth/session', { cookie: oldCookie })), null);
     const cookie = await fresh.signIn();

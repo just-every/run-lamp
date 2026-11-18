@@ -7940,7 +7940,7 @@
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {
-      "sha256": "91e607858b740567ec5313e291196c850e93cccb352af9fc43ac97f54e29493b",
+      "sha256": "6c1088edaf46bc008b0f9ea5c3bfc3cb554965deb6190ab1751adc3d9e7af825",
       "executable": false
     },
     "tests/auth-adoption/role-portability.mjs": {
