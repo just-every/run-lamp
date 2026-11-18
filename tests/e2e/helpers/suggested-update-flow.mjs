@@ -63,8 +63,8 @@ export async function suggestedUpdateFlow({ page, appUrl, api, configureSuggesti
     await saved();
   };
   const targets = {
-    C1: ['Suggestion checkout: Major outage (primary)'],
-    C2: ['Suggestion catalogue: Degraded performance (dependent)'],
+    C1: ['Suggestion checkout: Down (primary)'],
+    C2: ['Suggestion catalogue: Slow (dependent)'],
     U1: ['Identified update published', 'Published checkout shoppers.', 'Published payment attempts are delayed.', 'Published browsing is available.', 'Published responders are restoring payment capacity.'],
   };
   async function openSources(key, expected) {
