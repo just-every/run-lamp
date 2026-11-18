@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "9fc8646af65e13633016c32421409e8a97e04722c5a8b4ee586dd80c67a97a12",
+      "sha256": "8fcd236693a0338d56f1e2b85249805a961c55e53f82cc8197c548f80b1abe0f",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "6d90cb0d8ba0cc1aa180329933ac3310ec072146de93ad7fc219c260ea4bac9a",
+      "sha256": "bc95afd841340a0389cb0a9c879743ca6709e7711434adc36e5dccfb4483eb3f",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2616,7 +2616,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "4944b432918f456400a8f191f2bb4efb05636056650290abc306f8e46fbc2160",
+      "sha256": "3e2435cbea2e33f0373bd3a7f7a353b6d2d5769a7cdc817f5220ff430b22b125",
       "executable": false
     },
     "patches/picomatch@4.0.7.patch": {
@@ -2787,6 +2787,14 @@
       "sha256": "179b367fb9a62f4893e147b9cee60eea6e1a66fc88a5ba6f8c06268d7cba9ee7",
       "executable": false
     },
+    "release-history/1.11.22.CONTRACT.md": {
+      "sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
+      "executable": false
+    },
+    "release-history/1.11.22.json": {
+      "sha256": "f66d41b37d2001e684d241bd06a1ee084cd1ea3864ba194e6d8e60ac872d8866",
+      "executable": false
+    },
     "release-history/1.11.3.CONTRACT.md": {
       "sha256": "99464caae4306e9c520f25d02a71689f9b72ce5ed611140d91ab8cac190497f4",
       "executable": false
@@ -2940,7 +2948,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "b0b94728bf892a5006dcb26e3c64e906425bc7f40a8b9ff7a02af01a111c5d71",
+      "sha256": "737d8d46af88e7bf37d8076b6961807e6c3693a520152918a81ebd03a41ee43f",
       "executable": false
     },
     "rer-packaging.json": {
@@ -2948,7 +2956,7 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "ec6e8a25206b255f5fec50ffa91c8cd3f4ea583e981af9cefa22efbcd6ee7b52",
+      "sha256": "c3e13c59118afea240a71575f00e756414c827bff3623b118c6caad77349371e",
       "executable": false
     },
     "rer-setup.json": {
@@ -4076,7 +4084,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "e081143171f5a0d210d6d63fe4cd86fe331a67ec8c794aea29d2f14bd527cee2",
+      "sha256": "da15eb8e8db73044a9848fe8de5ae12c8a288f48e9da11469a030376876cbd54",
       "executable": false
     },
     "src/base/actor.ts": {
