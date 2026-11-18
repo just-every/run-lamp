@@ -64,7 +64,7 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
         element.append('<section aria-labelledby="mail-off-signin"><h2 id="mail-off-signin">Email is turned off</h2><p>Email links and invitations are unavailable. The deployment owner can run <code>rer signin</code> from the checkout that deployed this environment, with the same Cloudflare account credentials and deployment record.</p><p>Other operators need a configured sign-in provider or an administrator to enable mail.</p></section>', { html: true });
       } }).transform(response);
     }
-    if (url.pathname === '/signin') response = installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp');
+    if (url.pathname === '/signin') response = await installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp');
     if (url.pathname === '/auth/owner-signin' && response.status >= 400) return ownerSignInRefused(response);
     const test = await testFailureOnPane(request, response, auth, config.origin);
     if (test) return test;

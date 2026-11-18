@@ -6804,7 +6804,7 @@
       "executable": false
     },
     "src/core/platform/auth/http.ts": {
-      "sha256": "449e8b808648b01dad2a3f56ebd89ba85d73d5a7f36644f2bd30fbc4787e08c4",
+      "sha256": "169ce9b3b06034af06f5cbb31855f1ee4c49f922dd88753c60a567fc07e4a852",
       "executable": false
     },
     "src/core/platform/auth/identity-provider-guides.ts": {
@@ -6820,7 +6820,7 @@
       "executable": false
     },
     "src/core/platform/auth/installation-presentation.ts": {
-      "sha256": "f960c6cb14988c71aded4d413dc46f5018dc4d2dad0e3e55801380da392d012e",
+      "sha256": "5d8993cd46c5bc2bc9e61fb06cf915bb08465bf8100315e1d10617b832b8f087",
       "executable": false
     },
     "src/core/platform/bindings.server.ts": {
@@ -7300,7 +7300,7 @@
       "executable": false
     },
     "src/server.dev.ts": {
-      "sha256": "38ac55ed700667b541ad19e86f98fa17207cc09fb10dab8d0ca9205a046b6368",
+      "sha256": "ff668dd405c528bfa05f380eecaa43d125f220118cf8ca426c4477b412d687dc",
       "executable": false
     },
     "src/server.ts": {
@@ -8740,7 +8740,7 @@
       "executable": false
     },
     "tests/e2e/website-onboarding.test.mjs": {
-      "sha256": "75634033f0670cb1d33042d50dfb662604c9c3f2565b2681939da39b17a931a4",
+      "sha256": "7f7bfadc638aff08ca3eaa4449a0a1cdcc1ff1191caa6fc7c5f8762f04554a02",
       "executable": false
     },
     "tests/e2e/worker-startup.mjs": {
