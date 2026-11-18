@@ -1,0 +1,10 @@
+2026-11-18T05:23:12Z
+Local generation result and build-lock hash
+ACCEPTANCE.md
+6c4190a1a40d5c54c2f78dc27de1a0d4b98a8286e582cbce49a3134586753f55  ACCEPTANCE.md
+81012202cbbe77ad65bc06cd01af763a8d34d20cc421071e7ec4e66ba43f21db  docs/CLAIMS.md
+d662eec19fedc1b132748541ef1d1f51abebd8dc544c2cd82b8c6e476e6b6df9  sources.lock.json
+PASS source:check with committed views
+8f41c12c1ae2c646de688d5ae82a7a09eca63b75a8b4b9422ca5944baa6c6218  ACCEPTANCE.md
+81012202cbbe77ad65bc06cd01af763a8d34d20cc421071e7ec4e66ba43f21db  docs/CLAIMS.md
+b3988e3ceaaa6b8a0294ab950084d821719f7145640eef5da14004bad619fa1c  sources.lock.json

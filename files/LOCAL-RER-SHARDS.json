@@ -1,0 +1,81 @@
+{
+  "shards": [
+    {
+      "shard": "build",
+      "success": true,
+      "steps": [
+        {
+          "script": "check:contract-docs",
+          "exitCode": 0,
+          "durationMs": 851
+        },
+        {
+          "script": "source:copies",
+          "exitCode": 0,
+          "durationMs": 1181
+        },
+        {
+          "script": "source:check",
+          "exitCode": 0,
+          "durationMs": 1496
+        },
+        {
+          "script": "typecheck",
+          "exitCode": 0,
+          "durationMs": 28871
+        },
+        {
+          "script": "check:syntax",
+          "exitCode": 0,
+          "durationMs": 15336
+        },
+        {
+          "script": "validate:release",
+          "exitCode": 0,
+          "durationMs": 2309
+        },
+        {
+          "script": "verify:visual:source",
+          "exitCode": 0,
+          "durationMs": 356
+        },
+        {
+          "script": "build:app",
+          "exitCode": 0,
+          "durationMs": 12784
+        },
+        {
+          "script": "build:site",
+          "exitCode": 0,
+          "durationMs": 7437
+        }
+      ]
+    },
+    {
+      "shard": "ownership",
+      "success": true,
+      "steps": [
+        {
+          "script": "test:ownership",
+          "exitCode": 0,
+          "durationMs": 370366
+        },
+        {
+          "script": "test:owner-claim",
+          "exitCode": 0,
+          "durationMs": 29526
+        },
+        {
+          "script": "test:owner-backup",
+          "exitCode": 0,
+          "durationMs": 109963
+        }
+      ]
+    },
+    {
+      "shard": "portability",
+      "success": false,
+      "steps": []
+    }
+  ]
+}

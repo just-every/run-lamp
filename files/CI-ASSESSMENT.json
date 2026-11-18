@@ -1,0 +1,49 @@
+{
+  "recordedAt": "2026-11-18T05:33:14Z",
+  "candidate": "945b67f0f86820ade33827df2a05532f310ce129",
+  "verifyRuns": [
+    {
+      "event": "push",
+      "conclusion": "failure",
+      "head_sha": "945b67f0f86820ade33827df2a05532f310ce129",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44244289501",
+      "id": 44244289501,
+      "status": "completed",
+      "jobs": {
+        "plan": "success",
+        "build": "failure",
+        "verify": "failure",
+        "shards": "skipped"
+      },
+      "failedBuildJob": 134599404018,
+      "failedBuildLog": "CI-job-134599404018.log"
+    },
+    {
+      "event": "pull_request",
+      "conclusion": "failure",
+      "head_sha": "945b67f0f86820ade33827df2a05532f310ce129",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44244319410",
+      "id": 44244319410,
+      "status": "completed",
+      "jobs": {
+        "plan": "success",
+        "build": "failure",
+        "verify": "failure",
+        "shards": "skipped"
+      },
+      "failedBuildJob": 134599704081,
+      "failedBuildLog": "CI-job-134599704081.log"
+    }
+  ],
+  "primaryFailure": {
+    "command": "node src/base/contract-docs.mjs check",
+    "file": "ACCEPTANCE.md"
+  },
+  "downstreamEffect": "The build artifact was absent, all eight test matrix jobs were skipped, and the final job could not collect nine planned completion records.",
+  "githubCompletedRecords": 0,
+  "githubExpectedRecords": 9,
+  "localOrderedBuild": true,
+  "viewOnlyRuleApplies": true,
+  "githubApiCommandBudgetUsed": 10,
+  "reruns": 0
+}

@@ -1,0 +1,108 @@
+{
+  "recordedAt": "2026-11-18T05:44:33Z",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2-c2",
+  "head": "945b67f0f86820ade33827df2a05532f310ce129",
+  "base": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "productPushes": 1,
+  "remoteHead": "945b67f0f86820ade33827df2a05532f310ce129",
+  "pullRequest": {
+    "base_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+    "head_sha": "945b67f0f86820ade33827df2a05532f310ce129",
+    "html_url": "https://github.com/just-every/run-lamp/pull/417",
+    "number": 417,
+    "state": "open"
+  },
+  "mergeCommits": 0,
+  "productIdentity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "clauses": {
+    "COMP-002": "partial \u2192 partial",
+    "MAINT-015": "missing \u2192 missing"
+  },
+  "contractBefore": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "contractAfter": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "generatedViewsCommitted": [],
+  "sourceLockCheckedWithCommittedViews": true,
+  "orderedLocalBuild": [
+    {
+      "name": "check:contract-docs",
+      "exitCode": 0
+    },
+    {
+      "name": "source:copies",
+      "exitCode": 0
+    },
+    {
+      "name": "source:check",
+      "exitCode": 0
+    },
+    {
+      "name": "typecheck",
+      "exitCode": 0
+    },
+    {
+      "name": "check:syntax",
+      "exitCode": 0
+    },
+    {
+      "name": "validate:release",
+      "exitCode": 0
+    },
+    {
+      "name": "verify:visual:source",
+      "exitCode": 0
+    },
+    {
+      "name": "build:app",
+      "exitCode": 0
+    },
+    {
+      "name": "build:site",
+      "exitCode": 0
+    }
+  ],
+  "focusedTests": {
+    "imports": {
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "log": "IMPORTS.log"
+    },
+    "cutover": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "log": "CUTOVER.log"
+    },
+    "public": {
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "log": "PUBLIC.log"
+    },
+    "pageDataRestore": {
+      "pass": 1,
+      "log": "PUBLIC-PORTABILITY.log"
+    },
+    "fullScaleSynthetic": {
+      "receipt": "synthetic/synthetic-receipt.json",
+      "log": "SYNTHETIC.log",
+      "completed": true
+    }
+  },
+  "fullLocalRerVerify": "Build and ownership passed. Supplemental run stopped during portability after requested local checks passed, exit 143.",
+  "browserReceipt": "BROWSER-RECEIPT.json",
+  "githubVerify": "CI-ASSESSMENT.json",
+  "candidateCustody": "READY under the cloud generated-view-only rule",
+  "landing": "Fleet publication scan, generated views, and green landing Verify pending"
+}

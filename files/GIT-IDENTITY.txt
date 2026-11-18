@@ -1,0 +1,10 @@
+2026-11-18T05:26:32Z
+945b67f0f86820ade33827df2a05532f310ce129 e437a337ebcaa0edfa695628ad917e3219dc9fb8 Run Edit Run fleet <fleet@runeditrun.com> | Run Edit Run fleet <fleet@runeditrun.com> | Keep nested Sorry affected scope within selected subgroups
+e437a337ebcaa0edfa695628ad917e3219dc9fb8 177378a989a7496a2e3dc00ac9a43947efd7c031 Run Edit Run fleet <fleet@runeditrun.com> | Run Edit Run fleet <fleet@runeditrun.com> | Preserve recursive Sorry groups and original notice meaning
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+
+PASS two linear commits, no generated view differences, fresh main 177378a989a7496a2e3dc00ac9a43947efd7c031

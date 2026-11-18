@@ -1,0 +1,49 @@
+build	Build the production Worker once	﻿2026-11-18T05:27:47.1588925Z ##[group]Run pnpm run verify:app
+build	Build the production Worker once	2026-11-18T05:27:47.1589296Z [36;1mpnpm run verify:app[0m
+build	Build the production Worker once	2026-11-18T05:27:47.1589759Z [36;1mtar -czf "$RUNNER_TEMP/lamp-built-worker.tar.gz" dist .wrangler/deploy/config.json[0m
+build	Build the production Worker once	2026-11-18T05:27:47.1610422Z shell: /usr/bin/bash -e {0}
+build	Build the production Worker once	2026-11-18T05:27:47.1610685Z env:
+build	Build the production Worker once	2026-11-18T05:27:47.1610889Z   LAMP_VERIFY_SHARD: build
+build	Build the production Worker once	2026-11-18T05:27:47.1611290Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+build	Build the production Worker once	2026-11-18T05:27:47.1611712Z ##[endgroup]
+build	Build the production Worker once	2026-11-18T05:27:47.4441916Z 
+build	Build the production Worker once	2026-11-18T05:27:47.4443029Z > lamp@1.11.22 verify:app /home/runner/work/run-lamp/run-lamp
+build	Build the production Worker once	2026-11-18T05:27:47.4444464Z > node scripts/verification/run.mjs
+build	Build the production Worker once	2026-11-18T05:27:47.4445020Z 
+build	Build the production Worker once	2026-11-18T05:27:48.5794670Z Verification plan: 8 test shards and one shared build, 36 routine test files, 111 registered cases (including release qualification) + 10 assertion scripts = 121 checks.
+build	Build the production Worker once	2026-11-18T05:27:48.7027826Z Contract prose: 0 errors, 0 warnings.
+build	Build the production Worker once	2026-11-18T05:27:48.8056406Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Build the production Worker once	2026-11-18T05:27:48.8307813Z node:internal/errors:983
+build	Build the production Worker once	2026-11-18T05:27:48.8308442Z   const err = new Error(message);
+build	Build the production Worker once	2026-11-18T05:27:48.8308892Z               ^
+build	Build the production Worker once	2026-11-18T05:27:48.8309129Z 
+build	Build the production Worker once	2026-11-18T05:27:48.8309598Z Error: Command failed: /opt/hostedtoolcache/node/22.20.0/x64/bin/node src/base/contract-docs.mjs check
+build	Build the production Worker once	2026-11-18T05:27:48.8310198Z     at genericNodeError (node:internal/errors:983:15)
+build	Build the production Worker once	2026-11-18T05:27:48.8310580Z     at wrappedFn (node:internal/errors:537:14)
+build	Build the production Worker once	2026-11-18T05:27:48.8310953Z     at checkExecSyncError (node:child_process:916:11)
+build	Build the production Worker once	2026-11-18T05:27:48.8311324Z     at execFileSync (node:child_process:952:15)
+build	Build the production Worker once	2026-11-18T05:27:48.8311815Z     at file:///home/runner/work/run-lamp/run-lamp/scripts/verification/run.mjs:10:3 {
+build	Build the production Worker once	2026-11-18T05:27:48.8312228Z   status: 1,
+build	Build the production Worker once	2026-11-18T05:27:48.8312431Z   signal: null,
+build	Build the production Worker once	2026-11-18T05:27:48.8312679Z   output: [ null, null, null ],
+build	Build the production Worker once	2026-11-18T05:27:48.8312939Z   pid: 2478,
+build	Build the production Worker once	2026-11-18T05:27:48.8313162Z   stdout: null,
+build	Build the production Worker once	2026-11-18T05:27:48.8313373Z   stderr: null
+build	Build the production Worker once	2026-11-18T05:27:48.8313584Z }
+build	Build the production Worker once	2026-11-18T05:27:48.8314918Z 
+build	Build the production Worker once	2026-11-18T05:27:48.8315161Z Node.js v22.20.0
+build	Build the production Worker once	2026-11-18T05:27:48.8544527Z  ELIFECYCLE  Command failed with exit code 1.
+build	Build the production Worker once	2026-11-18T05:27:48.8752705Z ##[error]Process completed with exit code 1.
+build	Retain commit-bound build completion	﻿2026-11-18T05:27:48.8859372Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8860063Z with:
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8860396Z   name: lamp-shard-44244319410-1-build
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8861005Z   path: /home/runner/work/_temp/lamp-verification/ci-shards/build.json
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8861635Z   if-no-files-found: error
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8862017Z   retention-days: 7
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8862365Z   compression-level: 6
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8862727Z   overwrite: false
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8863087Z   include-hidden-files: false
+build	Retain commit-bound build completion	2026-11-18T05:27:48.8863483Z ##[endgroup]
+build	Retain commit-bound build completion	2026-11-18T05:27:49.0789857Z (node:2486) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+build	Retain commit-bound build completion	2026-11-18T05:27:49.0791680Z (Use `node --trace-deprecation ...` to show where the warning was created)
+build	Retain commit-bound build completion	2026-11-18T05:27:49.0822360Z ##[error]No files were found with the provided path: /home/runner/work/_temp/lamp-verification/ci-shards/build.json. No artifacts will be uploaded.

@@ -1,0 +1,116 @@
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: Page data restores verified consent and holds unverified addresses until confirmation
+ok 1 - Page data restores verified consent and holds unverified addresses until confirmation
+  ---
+  duration_ms: 18093.317434
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: HIST-008 — reviewed imported history stays completely browsable without scripts
+not ok 2 - HIST-008 — reviewed imported history stays completely browsable without scripts
+  ---
+  duration_ms: 4717.856785
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/public-contract.test.mjs:24:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    TestContext.browsableHistoryFlow (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/helpers/browsable-history-flow.mjs:75:30)
+  ...
+# Lamp could not rebuild its public page for this release. Error: Configured logo object is missing from object storage.
+#     at prepare2 (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:92394:54)
+#     at async rebuildOne (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:92425:24)
+#     at async Object.retryPendingBuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:92594:11)
+#     at async file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:96201:60
+#     at async publication3 (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:95533:11)
+#     at async Promise.all (index 0)
+#     at async Object.check (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:95548:40)
+#     at async Promise.all (index 0)
+#     at async file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:95478:41
+#     at async dispatch2 (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/script-0.mjs:61751:15)
+# Subtest: PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+ok 3 - PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+  ---
+  duration_ms: 14040.360864
+  type: 'test'
+  ...
+# Subtest: UPTIME-003 — newly observed services report only their recorded coverage
+not ok 4 - UPTIME-003 — newly observed services report only their recorded coverage
+  ---
+  duration_ms: 3817.761854
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/public-contract.test.mjs:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    TestContext.shortHistoryFlow (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/helpers/short-history-flow.mjs:29:30)
+  ...
+# PUBLIC_SELECTION records=50 unique=50 expected=50 pages=1 private_disclosures=0
+# Component read: opening emitted Worker
+# Subtest: HIST-001 — completed native records retain their month, window, components and complete publication inventory
+ok 5 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+  ---
+  duration_ms: 37539.013851
+  type: 'test'
+  ...
+# Component read: owner signed in
+# Component read: 54 native corrections committed
+# Component read: native paging and Cron passed
+# Subtest: SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+not ok 6 - SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+  ---
+  duration_ms: 36968.310347
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/public-contract.test.mjs:303:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    widgetVariantsJourney (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/public-contract.test.mjs:173:30)
+    async TestContext.<anonymous> (/home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c2/run-lamp/tests/e2e/public-contract.test.mjs:305:3)
+  ...
+# Subtest: DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+ok 7 - DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+  ---
+  duration_ms: 39945.273591
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 4
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 157984.530367
