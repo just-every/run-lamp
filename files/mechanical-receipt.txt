@@ -1,0 +1,29 @@
+Candidate dcb14a1094e29a42a966c624fe1214c6a4ea66c9
+Candidate base 177378a989a7496a2e3dc00ac9a43947efd7c031
+Node v22.20.0; pnpm 10.12.4
+Tracked paths changed
+sources.lock.json
+tests/e2e/cutover-browser.test.mjs
+Counts before
+| All | 60 | 129 | 55 | 244 |
+Counts on candidate
+| All | 60 | 129 | 55 | 244 |
+Wrote 0 contract documents.
+Contract generator write exit=0
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Contract generator check exit=0
+Edition lock was regenerated after the final test edit and included in the candidate commit.
+Source lock check exit=0; ok=true
+Edition manifest 51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf
+Verification plan: 8 test shards and one shared build, 36 routine test files, 111 registered cases (including release qualification) + 10 assertion scripts = 121 checks.
+
+> lamp@1.11.22 typecheck /workspace/sd-lamp-c-f138
+> tsc --noEmit
+
+Typecheck exit=0
+rer check --profile first-party exit=0
+git diff --check exit=0
+Changed test text check found no email-shaped values or bare repository-like tokens.
+Fleet identity and trailers verified for 1 candidate commit(s), including side parents.
+Checkout clean

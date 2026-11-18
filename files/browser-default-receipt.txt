@@ -1,0 +1,24 @@
+Commit dcb14a1094e29a42a966c624fe1214c6a4ea66c9
+Node v22.20.0; pnpm 10.12.4
+Command node --test --test-concurrency=1 tests/e2e/cutover-browser.test.mjs
+Regular 1440px test path with browser recording disabled.
+TAP version 13
+# PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording
+# PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible
+# PROBE MOVE-006 3 (1440px): native bookmark opened its imported incident; both hops omitted cookies; wrong address, plain text, HTTP 404 and unreachable origin left its row visibly failed
+# Subtest: MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover
+ok 1 - MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover
+  ---
+  duration_ms: 110564.441425
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111143.278433
+Browser exit=0

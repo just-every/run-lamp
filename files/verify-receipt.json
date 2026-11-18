@@ -1,0 +1,65 @@
+{
+  "repository": "just-every/run-lamp",
+  "candidate_head": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+  "base_checks": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44244896491",
+      "id": 44244896491,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44242052319",
+      "id": 44242052319,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "candidate_discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44253042743",
+    "id": 44253042743,
+    "name": "Verify",
+    "status": "in_progress",
+    "checked_at": "2026-11-18T06:40:40+00:00"
+  },
+  "candidate_polls": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44253042743",
+      "id": 44253042743,
+      "status": "in_progress",
+      "checked_at": "2026-11-18T06:45:42Z"
+    },
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44253042743",
+      "id": 44253042743,
+      "status": "in_progress",
+      "checked_at": "2026-11-18T06:51:13Z"
+    }
+  ],
+  "branch_refs": {
+    "refs/heads/cloud/sd-lamp-c-f138": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+    "refs/heads/main": "177378a989a7496a2e3dc00ac9a43947efd7c031"
+  },
+  "candidate_run_site": "pending guarded landing",
+  "publication_scan": {
+    "commit": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  }
+}

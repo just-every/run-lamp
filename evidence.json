@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "1dc65bd78cb9b9c9316109dbfbef0b2cee3f3a4a",
+      "bytes": 7370,
+      "path": "REPORT.md",
+      "sha256": "39fce9b8ce7dce0a46454d7b7b8df0845946ad007a1654028331e1f02cbc2f4f"
+    },
+    {
+      "blob": "71702d1baa690c2395391d59e8ef5f5c76e8e091",
+      "bytes": 1293,
+      "path": "browser-default-receipt.txt",
+      "sha256": "9a45219b3979e229ca770bc125d49a51042e6485f9a5c75db19ba335960f4502"
+    },
+    {
+      "blob": "5ef5b7b4080d43e2a3595dd923cd1671ac797989",
+      "bytes": 1587,
+      "path": "browser-receipt.txt",
+      "sha256": "a191b6303c88c63af883a3d005fcf0e5d112cddd0819349dc6314114be379ed6"
+    },
+    {
+      "blob": "3aa97242f3717855686b5a4727f06794ef1aa555",
+      "bytes": 1181,
+      "path": "mechanical-receipt.txt",
+      "sha256": "14af828bf190a122dccd9c5aacf2dd75fd5b01d43676f132495d2d69e3718781"
+    },
+    {
+      "blob": "c184550dcb10b33cd37eb5ea5e6dcbdc0b8cec75",
+      "bytes": 130,
+      "path": "product-refs.txt",
+      "sha256": "87a6ad76e0092cdb30f959c0f3a3d3c8d9fefb5a255b61edde4be90efb43336b"
+    },
+    {
+      "blob": "c4a27c20b790c7dfa9efa08d099091e2a4808ac8",
+      "bytes": 141068,
+      "path": "screens/bookmark-failed-1440.png",
+      "sha256": "3f7bf6f981e5f25ab7756cfdf360c191c0e89d196cdf61716c3a5aae3b972376"
+    },
+    {
+      "blob": "c062d2a83346d3c3cc832190b95b3660605f491a",
+      "bytes": 60024,
+      "path": "screens/bookmark-failed-390.png",
+      "sha256": "72138ce025ee10ba7fc529dd44f7da748d2b446d7ee28e8d681359dd571009f5"
+    },
+    {
+      "blob": "6b6f093fab59245e472a50a20740ce0365cb21b8",
+      "bytes": 197,
+      "path": "screenshot-sha256.txt",
+      "sha256": "c68b9d519f537f4e2827d55352834da168302ad1134e1fe1ddf896b6e069e7eb"
+    },
+    {
+      "blob": "acc9f0b7ef0d7a743d24ab85299d52cc399f21d4",
+      "bytes": 2078,
+      "path": "verify-receipt.json",
+      "sha256": "da92aababaff78e5f0bec16205b6a67f41bac9569470ef40624b69a957fb4c9c"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f138",
+  "product_head": "dcb14a1094e29a42a966c624fe1214c6a4ea66c9",
+  "ref": "refs/heads/evidence/sd-lamp-c-f138",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f138"
+}
