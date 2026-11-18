@@ -310,7 +310,7 @@ of these outcomes and a next action:
 | Outcome | Meaning |
 | --- | --- |
 | Mapped | Carried to a named native field, source identity or input validation. |
-| Changed | Translated, flattened, normalized or shortened; review the named change. |
+| Changed | Translated, normalized or shortened; review the named change. |
 | Raw-only | Kept in source data, with no native mapping. Recreate it separately if needed. |
 | Deleted | Removed from sanitized source records, including unsupported channel values. |
 | Refused | The row cannot become a native record; fix its source or recreate it separately. |
@@ -321,14 +321,33 @@ the ledger from the exact reviewed plan; job reads do not reclassify old input.
 The existing parent-as-group reconciliation still counts each parent once.
 
 Page settings, support details, search metadata, locale, notification settings,
-subscriber profile names/tags, notice tags/synopses, template fields and metrics
-summaries have no native mapping unless a ledger row explicitly says otherwise.
-In particular, a parent's description and state are raw-only: a Lamp visual
-group has neither. Component names, flattened group names, descriptions and
-notice titles name any shortening; full source text stays in retained source
-data. Incident messages stay in full imported history while the native impact
-summary is bounded. A missing authored lifecycle is a disclosed projection,
-never evidence of the original lifecycle.
+subscriber profile names/tags and template fields have no native mapping unless
+a ledger row explicitly says otherwise. Recursive parents remain groups, once
+per source row, with native parent links and descriptions. Original full labels,
+descriptions, source order/state and creation/edit times remain labeled source
+metadata. Native authoring limits still bound summaries; public reads show the
+full imported label/text while the native summary is unchanged, and owner edits
+win. Group state is source metadata, not a duplicated component or an authored
+Lamp state observation.
+
+Notice metadata preserves planned/unplanned/general and false-alarm meaning,
+tags/synopsis, original edit times, actual and scheduled dates, historical update
+publication choices and source URLs. Optional supplied aggregate metrics are
+labeled source metadata, never measured Lamp uptime. Unsupported separate metrics
+resources still refuse as described below. Missing authored lifecycle states are
+explicitly unavailable; any display lifecycle is a disclosed projection.
+
+Imported update HTML is converted to plain paragraphs and safe HTTPS links.
+Script/style contents and image/event attributes are discarded from the readable
+message. Original markup stays only in retained raw source records, never in
+rendered HTML. Both the incident page/history and feeds use the same readable
+message. Future/running Sorry windows carry should_automate_schedule; false and
+an absent choice keep automatic start/completion off. Past/canceled imports never
+replay lifecycle notices. Normal owner reminders remain part of operating Lamp.
+These native fields and automation choices participate in repeat/catch-up,
+conditional undo and the native archive/erasure boundaries.
+
+Run Edit Run fleet, 2026-11-17.
 
 Separate brand, custom-domain, notice-template, update-template and component
 metrics response files are currently refused by filename, before any native

@@ -1,3 +1,4 @@
+import { projectSnapshotMetadata } from "./imported-metadata.repository";
 import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql } from "drizzle-orm";
 import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import { createDatabase } from "../../platform/db/client";
@@ -12,7 +13,7 @@ type RecordKey = { id: string; at: string; kind: "incident" | "maintenance" };
 type EventKey = { id: string; at: string; recordId: string; kind: "incident-update" | "maintenance-notice" };
 // Only records with a published public attachment can enter the archive. Keep
 // detached public names while excluding deleted, private and draft-only rows.
-export const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
+export const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND (json_extract(i.source_metadata_json,'$.type')='general' OR EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0)))`;
 export const publicMaintenance = `EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
 const compare = (a: { at: string; id: string; kind: string }, b: { at: string; id: string; kind: string }) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id) || b.kind.localeCompare(a.kind);
 function seek(column: string, id: string, kind: string, cursor: ArchiveCursor | null, values: unknown[]) {
@@ -130,5 +131,5 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     incidentIds.length ? binding.prepare(`SELECT id,peak_impact AS impact FROM incidents WHERE id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<{id: string;impact: PublicSnapshotSource["claims"][number]["state"] | null}>().then(rows => rows.results) : [],
   ]);
   const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
-  return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates: await projectImportedIncidentUpdates(binding, updates), maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
+  return projectSnapshotMetadata(binding, { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates: await projectImportedIncidentUpdates(binding, updates), maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) });
 }

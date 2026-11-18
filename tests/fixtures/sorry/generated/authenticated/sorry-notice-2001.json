@@ -6,7 +6,7 @@
     "state": "resolved",
     "timeline_state": "past_distant",
     "link": "https://status.example.invalid/notices/synthetic-lamp-2",
-    "synopsis": "Synthetic unplanned notice 2: review is underway.",
+    "synopsis": "<p><b>Synthetic customer words remain readable.</b></p><p>Read <a href=\"https://docs.example.invalid/synthetic-lamp-1\">the recovery guide</a>.</p><script>window.importedMarkupXss=true</script><img src=x onerror=\"window.importedMarkupXss=true\">",
     "created_at": "2025-01-01T11:00:00.000Z",
     "updated_at": "2025-01-01T11:30:00.000Z",
     "began_at": "2025-01-01T11:00:00.000Z",
@@ -29,7 +29,7 @@
     "updates": [
       {
         "id": 30010,
-        "content": "Synthetic unplanned notice 2: review is underway.",
+        "content": "<p><b>Synthetic customer words remain readable.</b></p><p>Read <a href=\"https://docs.example.invalid/synthetic-lamp-1\">the recovery guide</a>.</p><script>window.importedMarkupXss=true</script><img src=x onerror=\"window.importedMarkupXss=true\">",
         "created_at": "2025-01-01T11:00:00.000Z",
         "updated_at": "2025-01-01T11:00:00.000Z",
         "should_publish": true,

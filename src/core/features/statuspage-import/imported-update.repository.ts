@@ -1,3 +1,4 @@
+import { sorryUpdateText } from "./sorry/notices";
 import { loadPlans } from "../../../../modules/import-kit/src/d1/plans";
 import { canonicalJson, sha256 } from "../../../../modules/import-kit/src/d1/index";
 import type { Json } from "../../../../modules/import-kit/src/types";
@@ -32,7 +33,8 @@ function retainedBodies(namespace: string, sourceId: string, raw: Record<string,
     const sourceUpdateId = namespace === "statuspage" ? update.id : `${sourceId}:${update.id ?? `at-${sha256(canonicalJson({ created_at: update.created_at, state: update.state ?? null, content: update.content } as Json))}`}`;
     if (typeof sourceUpdateId !== "string") return [];
     const fallback = namespace === "statuspage" ? raw.name : raw.subject;
-    const body = (typeof content === "string" ? content.trim() : "") || (typeof fallback === "string" ? fallback : "");
+    const text = typeof content === "string" ? content : "";
+    const body = (namespace === "sorry" ? sorryUpdateText(text) : text.trim()) || (typeof fallback === "string" ? fallback : "");
     return [{ id: stableId(`incident-update:${sourceUpdateId}`, instant, namespace), body: body.toWellFormed() }];
   });
 }
@@ -42,6 +44,19 @@ function retainedBodies(namespace: string, sourceId: string, raw: Record<string,
  * undo preserves an owner's incident. Only unchanged imported updates receive
  * that read projection; this never changes native rows or sealed undo values. */
 export async function projectImportedIncidentUpdates<T extends UpdateWording>(db: D1Database, updates: T[]): Promise<T[]> {
+  const metadata = updates.length ? (await db.prepare("SELECT id,source_metadata_json FROM incident_updates WHERE id IN (SELECT value FROM json_each(?)) AND source_metadata_json IS NOT NULL").bind(JSON.stringify(updates.map(update => update.id))).all<{ id: string; source_metadata_json: string }>()).results : [];
+  const source = new Map(metadata.map(row => [row.id, JSON.parse(row.source_metadata_json) as Record<string, unknown>]));
+  updates = updates.map(update => {
+    const value = source.get(update.id);
+    if (!value) return update;
+    const { body, nativeWording, ...sourceMetadata } = value;
+    const expected = nativeWording && typeof nativeWording === "object" ? nativeWording as Record<string, unknown> : null;
+    const unchanged = expected && (["affectedAudience", "customerImpact", "whatStillWorks", "details", "nextUpdateAt", "publishedAt", "correctsUpdateId", "lifecycle"] as const).every(field => update[field] === expected[field]);
+    // This native, sanitized copy travels in page-data archives, which omit
+    // import journals. The original source markup remains raw-only there.
+    return { ...update, sourceMetadata, ...(update.isRetroactive && unchanged && typeof body === "string" ? { customerImpact: body, details: "" } : {}) };
+  });
+
   const ids = [...new Set(updates.filter(update => update.isRetroactive).map(update => update.incidentId))];
   if (!ids.length) return updates;
   const applied = (await db.prepare(`SELECT p.job_id,p.ordinal,p.target_id
@@ -75,5 +90,22 @@ export async function projectImportedIncidentUpdates<T extends UpdateWording>(db
     ] as const).every(([field, column]) => update[field] === source.expected[column]);
     return source && unchanged && update.isRetroactive && update.incidentId === source.incidentId
       ? { ...update, customerImpact: source.body, details: "" } : update;
+  });
+}
+
+/** Source labels may exceed native editor bounds. Keep the complete original
+ * available as metadata, and project it as the title only while the native
+ * value is still the imported summary. An owner's replacement always wins. */
+export async function projectImportedRecordMetadata<T extends { id: string; title: string }>(db: D1Database, table: "incidents" | "maintenance", rows: T[]): Promise<Array<T & { sourceMetadata?: Record<string, unknown> }>> {
+  if (!rows.length) return rows;
+  const metadata = (await db.prepare(`SELECT id,source_metadata_json FROM ${table} WHERE id IN (SELECT value FROM json_each(?)) AND source_metadata_json IS NOT NULL`).bind(JSON.stringify(rows.map(row => row.id))).all<{ id: string; source_metadata_json: string }>()).results;
+  const source = new Map(metadata.map(row => [row.id, JSON.parse(row.source_metadata_json) as Record<string, unknown>]));
+  return rows.map(row => {
+    const value = source.get(row.id);
+    if (!value) return row;
+    const label = typeof value.label === "string" ? value.label : null;
+    const points = label ? Array.from(label) : [];
+    const bounded = points.length > 250 ? points.slice(0, 249).join("") + "…" : label;
+    return { ...row, ...(label && bounded === row.title ? { title: label } : {}), sourceMetadata: value };
   });
 }

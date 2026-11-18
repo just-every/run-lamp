@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
@@ -14,6 +14,7 @@ const { Miniflare, convertV4MiniflareOptions } = workerRequire("miniflare");
 import { legacyApiFixtureSql } from "./fixtures/legacy-api-fixture.mjs";
 import { reservePort } from "./worker-startup.mjs";
 import { fixtureFetch as fetch } from "../public-snapshots/fixture-fetch.mjs";
+import { moveInDoor } from "../helpers/import-notifications.mjs";
 
 const logo = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Jm4kAAAAASUVORK5CYII=", "base64");
 
@@ -96,6 +97,39 @@ async function startPage(seedSql, vars = signingSecret) {
 const json = (body) => ({ method: "POST", body: JSON.stringify(body), headers: { "Content-Type": "application/json", Accept: "application/json" } });
 const withoutTime = ({ exportedAt: _time, integrity: _integrity, ...file }) => file;
 
+const portableSorryBody = 'synthetic-lamp portable words. ' + 'The billing queue keeps every original customer update paragraph available. '.repeat(30) + 'synthetic-lamp portable tail.';
+
+// Use the owner's real Move in upload/plan/apply door, with a synthetic public
+// Sorry export. Nested source rows, original metadata and both notice kinds
+// must travel in the ordinary page file, without an import journal dependency.
+async function importSorryMetadata(source) {
+  const files = await Promise.all((await readdir('tests/fixtures/sorry/public')).map(async name => ({ name, text: await readFile(`tests/fixtures/sorry/public/${name}`, 'utf8') })));
+  const componentFile = files.find(file => file.name === 'sorry-components.json');
+  const components = JSON.parse(componentFile.text);
+  const root = components.components.find(row => row.id === 10);
+  root.description = 'synthetic-lamp source group description';
+  components.components.push({ ...root, id: 12, name: 'synthetic-lamp nested service group', parent_id: 10, position: 2 });
+  components.components.find(row => row.id === 11).parent_id = 12;
+  components.meta.count = components.components.length;
+  components.meta.total_count = components.components.length;
+  componentFile.text = JSON.stringify(components);
+  const noticeFile = files.find(file => file.name === 'sorry-notice-100.json');
+  const notice = JSON.parse(noticeFile.text);
+  notice.notice.updates[0].content = `<p><b>${portableSorryBody}</b></p><script>window.syntheticPortable=1</script>`;
+  noticeFile.text = JSON.stringify(notice);
+  const owner = async (path, body, headers) => {
+    const response = await source.request(path, body === undefined ? { headers } : { ...json(body), headers: { ...json(body).headers, ...headers } });
+    return { status: response.status, body: response.status === 204 ? null : await response.json() };
+  };
+  const moveIn = moveInDoor(owner);
+  const plan = await moveIn.preview({ source: 'sorry', pageId: 'synthpage01', publicAccessAcknowledged: true, files });
+  assert.equal(plan.status, 200, JSON.stringify(plan.body));
+  const applied = await moveIn.apply(plan.body);
+  assert.equal(applied.status, 200, JSON.stringify(applied.body));
+  assert.equal(applied.body.job.state, 'completed');
+}
+
+
 test("Page data restores verified consent and holds unverified addresses until confirmation", async () => {
   const source = await startPage(`${legacyApiFixtureSql()}\n${ownerHistorySql}`);
   let exported;
@@ -117,11 +151,23 @@ test("Page data restores verified consent and holds unverified addresses until c
     assert.equal((await source.request("/api/app/page-settings", { ...json({ ...input, emailBranding, widgetAppearance }), method: "PUT" })).status, 200);
     // Older callers omit tag choices; their next settings write must retain them.
     assert.equal((await source.request("/api/app/page-settings", { ...json(input), method: "PUT" })).status, 200);
+    await importSorryMetadata(source);
     const download = await source.request("/api/app/page-data");
     assert.equal(download.status, 200);
     assert.match(download.headers.get("content-disposition") ?? "", /attachment; filename=lamp-page-data-\d{4}-\d{2}-\d{2}\.json/);
     exported = await download.json();
     assert.equal(exported.format, "lamp-page-data");
+    for (const table of ['component_groups', 'components', 'incidents', 'incident_updates', 'maintenance', 'import_maintenance_updates']) {
+      assert.ok(exported.records[table].some(row => row.source_metadata_json && ['provider', 'source'].some(key => JSON.parse(row.source_metadata_json)[key] === 'Sorry')), `${table} retains original source metadata in the portable file`);
+    }
+    const portableUpdate = exported.records.incident_updates.find(row => row.source_metadata_json && JSON.parse(row.source_metadata_json).body === portableSorryBody);
+    assert.ok(portableUpdate, 'the full sanitized message travels independently of the private import journal');
+    assert.ok(!JSON.stringify(exported).includes('window.syntheticPortable=1'), 'the private original HTML does not leak into native page data');
+    const sourceGroups = exported.records.component_groups.filter(row => row.source_metadata_json);
+    const nestedGroup = sourceGroups.find(row => JSON.parse(row.source_metadata_json).id === '12');
+    const sourceRoot = sourceGroups.find(row => JSON.parse(row.source_metadata_json).id === '10');
+    assert.equal(nestedGroup.parent_id, sourceRoot.id);
+    assert.equal(nestedGroup.description, 'synthetic-lamp source group description');
     assert.deepEqual(exported.page.emailBranding, emailBranding);
     assert.deepEqual(exported.page.widgetAppearance, widgetAppearance);
     assert.equal(exported.page.logo.base64, logo.toString("base64"));
@@ -161,10 +207,32 @@ test("Page data restores verified consent and holds unverified addresses until c
     const again = await (await destination.request("/api/app/page-data")).json();
     assert.deepEqual(withoutTime(again), withoutTime(exported));
 
+    const restoredIncidents = await (await destination.request('/api/app/incidents')).json();
+    const restoredIncident = restoredIncidents.incidents.find(row => row.title === 'Delayed invoice processing');
+    const restoredDetail = await (await destination.request(`/api/app/incidents/${restoredIncident.id}`)).json();
+    assert.ok(restoredDetail.incident.updates.some(update => update.customerImpact === portableSorryBody && update.details === ''), 'restored native APIs read the whole source message without an import journal');
+    const publicHistory = await (await fetch(`${destination.page}/history/2025-04`)).text();
+    assert.ok(publicHistory.includes('synthetic-lamp portable tail.'), 'the restored public calendar history retains the full customer message');
+    assert.ok(!publicHistory.includes('&lt;b&gt;') && !publicHistory.includes('window.syntheticPortable=1'), 'restored readers receive words without original tags or script');
     const publicPage = await (await fetch(`${destination.page}/`)).text();
     assert.match(publicPage, /Elevated API error rates/);
     const repeat = await destination.request("/api/app/page-data/restore", json(exported));
     assert.equal(repeat.status, 409, "a second restore must not duplicate the page");
+    const catalogue = await (await destination.request('/api/app/components')).json();
+    const importedLeaves = catalogue.components.filter(component => component.sourceMetadata?.provider === 'Sorry');
+    for (const component of importedLeaves) {
+      const deleted = await destination.request(`/api/app/components/${component.id}`, { method: 'DELETE' });
+      assert.equal(deleted.status, 204, await deleted.clone().text());
+    }
+    // Delete descendants first through the same owner API as the catalogue.
+    const importedGroups = catalogue.groups.filter(group => group.sourceMetadata?.provider === 'Sorry').sort((a, b) => b.sourceMetadata.ancestorIds.length - a.sourceMetadata.ancestorIds.length);
+    for (const group of importedGroups) {
+      const deleted = await destination.request(`/api/app/component-groups/${group.id}`, { method: 'DELETE' });
+      assert.equal(deleted.status, 204, await deleted.clone().text());
+    }
+    const afterRemoval = await (await destination.request('/api/app/page-data')).json();
+    for (const table of ['component_groups', 'components']) assert.ok(afterRemoval.records[table].every(row => !row.source_metadata_json), `removed ${table} leave no source metadata in the portable file`);
+
   } finally {
     await destination.stop();
   }
