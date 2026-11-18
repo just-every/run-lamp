@@ -5272,7 +5272,7 @@
       "executable": false
     },
     "src/core/features/intake/ui/operations-form.tsx": {
-      "sha256": "4e28c580df52987fe6bdb4e2cc7484a39b95c604d050a742a2a1536539baced0",
+      "sha256": "17b6e8f2a1342d525e0c1cc717e5327281cb0bf7ce6484b4064ec97b2c930d45",
       "executable": false
     },
     "src/core/features/intake/ui/pagerduty-form.tsx": {
@@ -8036,7 +8036,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "fe2bf0653ce2989843cda60c77e85bef47b6f24b6319830c2255f77c740b6839",
+      "sha256": "da20158c64ee4b254f0421595a6abc371f4aa5acf5348fe627ff60fec0d1e65c",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
@@ -8320,7 +8320,11 @@
       "executable": false
     },
     "tests/e2e/helpers/operations-alerts-flow.mjs": {
-      "sha256": "70d3c1461bd1faae8fc7f8ea86f0f0302673fbf5757373c7e85f3660a29e828b",
+      "sha256": "4a30bbad7506aefa1add1f469a30a035d88c14dfc46fc55678f1cfb214da794b",
+      "executable": false
+    },
+    "tests/e2e/helpers/operations-credentials-browser-flow.mjs": {
+      "sha256": "1fd73f3c1cbded231c8c3d8d24d138f1431fc8591be19e3310cdf71eced1d187",
       "executable": false
     },
     "tests/e2e/helpers/operator-attribution.mjs": {
