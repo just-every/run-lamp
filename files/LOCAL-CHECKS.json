@@ -1,0 +1,90 @@
+{
+  "candidate": "ddadc768d2039405b5dd35a425fd54270ee83ec4",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs",
+      "exit": 0,
+      "failed": 0,
+      "passed": 2,
+      "receipt": "snapshot-journey.tap"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generated_files_changed": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "clause_status": "partial",
+  "contract_counts_before_and_after": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129,
+    "total": 244
+  },
+  "first_snapshot": {
+    "after_http": 200,
+    "before_http": 503,
+    "generated_at": "2026-11-18T05:34:26.753Z",
+    "generation": 1,
+    "routes": [
+      "/",
+      "/feed.atom",
+      "/widget.js"
+    ],
+    "state": "Major outage",
+    "version": "01M7PJCDE05HZWEM61SCVJT8CC"
+  },
+  "held_points": [
+    1,
+    3
+  ],
+  "leased_points_proven_locally": [
+    2
+  ],
+  "migration_ledger": "not_applicable",
+  "new_test_registrations": 0,
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "publication_scan": {
+    "authority": "guarded Mac lander",
+    "commit": "ddadc768d2039405b5dd35a425fd54270ee83ec4",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "not_run_in_cloud"
+  },
+  "pushed_refs_observed_by_git": {
+    "refs/heads/cloud/sd-lamp-c-f134": "ddadc768d2039405b5dd35a425fd54270ee83ec4",
+    "refs/heads/main": "177378a989a7496a2e3dc00ac9a43947efd7c031"
+  },
+  "repository": "just-every/run-lamp"
+}
