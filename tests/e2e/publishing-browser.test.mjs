@@ -25,6 +25,7 @@ import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
 import { suggestedUpdateFlow } from "./helpers/suggested-update-flow.mjs";
+import { wordingFindingsFlow } from "./helpers/wording-findings-flow.mjs";
 import { emptyAudienceReason, publishedIncidentState } from "./helpers/published-incident-state.mjs";
 
 let appUrl = "";
@@ -929,7 +930,12 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await activeSection.locator('a.incident-list-row').first().click();
   await page.waitForURL(`${appUrl}/app/incidents/${firstListPage.incidents[0].id}`);
   await operatorHydrated(page);
-
+  const suggestionRequests = aiRequests.length;
+  await wordingFindingsFlow({
+    page, browser, appUrl, pageUrl, api, component, nextUpdate: await localInput(60 * 60 * 1000),
+    screens: previewScreens, waitForPublicIncident,
+  });
+  assert.equal(aiRequests.length, suggestionRequests, 'wording checks do not request a model');
 });
 
 test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async () => {
