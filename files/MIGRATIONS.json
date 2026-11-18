@@ -1,0 +1,20 @@
+{
+  "coreMigrationCount": 83,
+  "reserved": "0083_owner_migration_ledger_text.sql",
+  "migrations": [
+    {
+      "c2": "0083_sorry_component_hierarchy.sql",
+      "c3": "0084_sorry_component_hierarchy.sql",
+      "bytes": 489,
+      "sha256": "21c50195af1f3ede73f7fcd0d69126140e054897c01916168132938f4bdd4413"
+    },
+    {
+      "c2": "0084_sorry_notice_metadata.sql",
+      "c3": "0085_sorry_notice_metadata.sql",
+      "bytes": 502,
+      "sha256": "c55cfa8e7be93bfa1d633e334bc60943872105fb790a6d5e331240ffa4701720"
+    }
+  ],
+  "componentClause": "COMP-002",
+  "migrationConsumers": "Discover and sort SQL filenames from migrations/core"
+}

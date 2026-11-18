@@ -1,0 +1,20 @@
+{
+  "checkedClauses": 244,
+  "statusChanges": [],
+  "gapChanges": [],
+  "evidenceChanges": [],
+  "revisedRequirementsOrAcceptance": [
+    {
+      "id": "COMP-002",
+      "kind": "published",
+      "before": "partial",
+      "after": "partial"
+    },
+    {
+      "id": "MAINT-015",
+      "kind": "target",
+      "before": "missing",
+      "after": "missing"
+    }
+  ]
+}

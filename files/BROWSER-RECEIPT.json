@@ -1,0 +1,218 @@
+{
+  "candidate": "268d121c326aeb65deefd7c1db06609ede6679d6",
+  "test": "tests/e2e/cutover-browser.test.mjs",
+  "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+  "assertionViewport": 1440,
+  "screens": {
+    "sorry-audit": [
+      {
+        "path": "browser/sorry-audit-1440.png",
+        "width": 1440,
+        "height": 4329,
+        "sha256": "f6caa8e362ac46f891a3ab153b5a8ec1a4f58ccfdb0c564a8270e41f6633bbd4"
+      },
+      {
+        "path": "browser/sorry-audit-390.png",
+        "width": 390,
+        "height": 12298,
+        "sha256": "6f987ac1eb575ad4017dd22189b80397613543cb146d5996b17d3235b85effca"
+      }
+    ],
+    "sorry-components": [
+      {
+        "path": "browser/sorry-components-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "9a45834575549f839aee2bf2ab851dd99d2a7a990e131620a9aab36dfbc665b3"
+      },
+      {
+        "path": "browser/sorry-components-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "4a964d23733edd8901c112ea28f49cc0fd09e4b7d279e9b4c9604d52b3d56804"
+      }
+    ],
+    "sorry-cutover": [
+      {
+        "path": "browser/sorry-cutover-1440.png",
+        "width": 1440,
+        "height": 2218,
+        "sha256": "688096af5a117ce2f278139eb6be28ea4caddaec7ca81560514fa42a3c0fec0c"
+      },
+      {
+        "path": "browser/sorry-cutover-390.png",
+        "width": 390,
+        "height": 3465,
+        "sha256": "a5f5eaaf8c3bec9cba313de7bed276f237f364bd9aa27061e2b0881d59b747f4"
+      }
+    ],
+    "sorry-feed-reader-atom": [
+      {
+        "path": "browser/sorry-feed-reader-atom-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "6fe58d263b2bd95f792806b4948348086fcf04bc397835334685d1c61bde3617"
+      },
+      {
+        "path": "browser/sorry-feed-reader-atom-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "a13f764663fe2b45b7b9516d6841180f519578b5321982c0a41fec24183e06c8"
+      }
+    ],
+    "sorry-feed-reader-rss": [
+      {
+        "path": "browser/sorry-feed-reader-rss-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "2eb33feac1792421af2d04b33436adc53fd236d31bdc509daa50c9cd7d6e79f2"
+      },
+      {
+        "path": "browser/sorry-feed-reader-rss-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "e3e469393bf0ab8767da40f76b1425d44e9345f58cded0f9cdd4f1cd03701fdc"
+      }
+    ],
+    "sorry-field-ledger-dry-run": [
+      {
+        "path": "browser/sorry-field-ledger-dry-run-1440.png",
+        "width": 1440,
+        "height": 3145,
+        "sha256": "80ccae0b2836d498992659994b973413d0a614890e5439d689dcf95f8ee1d25d"
+      },
+      {
+        "path": "browser/sorry-field-ledger-dry-run-390.png",
+        "width": 390,
+        "height": 4299,
+        "sha256": "aab2b6410038de60a316f8de970b24a2ccec49d6d615fd48899abe339b84d487"
+      }
+    ],
+    "sorry-field-ledger-saved": [
+      {
+        "path": "browser/sorry-field-ledger-saved-1440.png",
+        "width": 1440,
+        "height": 3056,
+        "sha256": "3c50e835e9a34069ad23019247039f588ba8465a63091c31ff9a3434f46e44c0"
+      },
+      {
+        "path": "browser/sorry-field-ledger-saved-390.png",
+        "width": 390,
+        "height": 4189,
+        "sha256": "fab1726c0769e918e0816366f521ee363f1599fe2ad09594444ab1197fdf8d7a"
+      }
+    ],
+    "sorry-history": [
+      {
+        "path": "browser/sorry-history-1440.png",
+        "width": 1440,
+        "height": 1544,
+        "sha256": "87be4e8751bd423ecb720e50dea6122732187f222a99cdba1de650422f871967"
+      },
+      {
+        "path": "browser/sorry-history-390.png",
+        "width": 390,
+        "height": 2059,
+        "sha256": "707c286b811f61f7d02c0804d0db81960d050b276ebead34e348483c8a6ae428"
+      }
+    ],
+    "sorry-imported": [
+      {
+        "path": "browser/sorry-imported-1440.png",
+        "width": 1440,
+        "height": 3056,
+        "sha256": "f34595fb029b7d1185f58983363819c37f82792b294bb985bf99ab3def23733d"
+      },
+      {
+        "path": "browser/sorry-imported-390.png",
+        "width": 390,
+        "height": 4189,
+        "sha256": "fab1726c0769e918e0816366f521ee363f1599fe2ad09594444ab1197fdf8d7a"
+      }
+    ],
+    "sorry-public-feed-atom": [
+      {
+        "path": "browser/sorry-public-feed-atom-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "b522ee8fb9964ef92cb879fc1d76295a3e6951d0cb485b71fb936bc2dbf8f90f"
+      },
+      {
+        "path": "browser/sorry-public-feed-atom-390.png",
+        "width": 390,
+        "height": 1406,
+        "sha256": "dedf0e64460e9f0abb0352284aa6cce910e7f0622b7ad64de5e2d133ec1ed5a3"
+      }
+    ],
+    "sorry-public-feed-rss": [
+      {
+        "path": "browser/sorry-public-feed-rss-1440.png",
+        "width": 1440,
+        "height": 1000,
+        "sha256": "69d8b327177aa959452d3bb42ba57665fd0400673c9b5463329eb758954ff901"
+      },
+      {
+        "path": "browser/sorry-public-feed-rss-390.png",
+        "width": 390,
+        "height": 1000,
+        "sha256": "a393047e8a56da4a30c795f1e6a6d43656d4d92e79199dc7996c2ff52b7877a5"
+      }
+    ],
+    "sorry-public-hierarchy": [
+      {
+        "path": "browser/sorry-public-hierarchy-1440.png",
+        "width": 1440,
+        "height": 1800,
+        "sha256": "7669cd4c5b6718467622fced91dc6cc225ef22ba010286d8df15939df1751798"
+      },
+      {
+        "path": "browser/sorry-public-hierarchy-390.png",
+        "width": 390,
+        "height": 1947,
+        "sha256": "c4ef72a46a1c45d047b3406d1d669fc9785ba48cbc6d966ec9ea0eaefe1e7fec"
+      }
+    ],
+    "sorry-public-history": [
+      {
+        "path": "browser/sorry-public-history-1440.png",
+        "width": 1440,
+        "height": 1472,
+        "sha256": "08a56a8e8ce2ca227430f9bbdb85e0adc052de6a0e016e01640d7ec99cc12f44"
+      },
+      {
+        "path": "browser/sorry-public-history-390.png",
+        "width": 390,
+        "height": 1709,
+        "sha256": "a447498e2400d3a7acf1ca1dac4db3102066420731b0d238bda08b81e8ad0738"
+      }
+    ],
+    "sorry-public-incident": [
+      {
+        "path": "browser/sorry-public-incident-1440.png",
+        "width": 1440,
+        "height": 1428,
+        "sha256": "db2ea242185be12c0220457d825d88123f01fa5a2e8398aa1abb368f62454704"
+      },
+      {
+        "path": "browser/sorry-public-incident-390.png",
+        "width": 390,
+        "height": 1944,
+        "sha256": "b97c9802b45c43217b29f0fc518d8c44946b827dc5145005927b3ba5b09bec61"
+      }
+    ],
+    "sorry-undone": [
+      {
+        "path": "browser/sorry-undone-1440.png",
+        "width": 1440,
+        "height": 2191,
+        "sha256": "83f1fd86f52f6da27e3b1fcc29df010ad79ab7133fa7d0c873a29ba1caeeb781"
+      },
+      {
+        "path": "browser/sorry-undone-390.png",
+        "width": 390,
+        "height": 2883,
+        "sha256": "9f085240f8367e7d3e8fcba79e8baa9ef2c146f7fa6139c5335631baf0bfc563"
+      }
+    ]
+  }
+}

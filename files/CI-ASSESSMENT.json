@@ -1,0 +1,77 @@
+{
+  "recordedAt": "2026-11-18T07:17:17Z",
+  "candidate": "268d121c326aeb65deefd7c1db06609ede6679d6",
+  "verifyRuns": [
+    {
+      "conclusion": "failure",
+      "event": "pull_request",
+      "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44255005311",
+      "id": 44255005311,
+      "name": "Verify",
+      "status": "completed",
+      "jobs": {
+        "plan": "success",
+        "build": "failure",
+        "verify": "failure",
+        "shards": "skipped"
+      },
+      "archives": {
+        "build": {
+          "jobId": 134634529174,
+          "file": "CI-job-134634529174.log"
+        },
+        "verify": {
+          "jobId": 134634641859,
+          "file": "CI-job-134634641859.log"
+        }
+      }
+    },
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44254900494",
+      "id": 44254900494,
+      "name": "Verify",
+      "status": "completed",
+      "jobs": {
+        "plan": "success",
+        "build": "failure",
+        "verify": "failure",
+        "shards": "skipped"
+      },
+      "archives": {
+        "build": {
+          "jobId": 134634156585,
+          "file": "CI-job-134634156585.log"
+        },
+        "verify": {
+          "jobId": 134634297556,
+          "file": "CI-job-134634297556.log"
+        }
+      }
+    }
+  ],
+  "otherExactShaRuns": [
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44255002112",
+      "id": 44255002112,
+      "name": "PR #418",
+      "status": "completed"
+    }
+  ],
+  "primaryFailure": {
+    "command": "node src/base/contract-docs.mjs check",
+    "file": "ACCEPTANCE.md"
+  },
+  "downstreamEffect": "The failed check predated the build receipt, so all eight matrix jobs were skipped and the aggregate had zero of nine completion records.",
+  "githubCompletedRecords": 0,
+  "githubExpectedRecords": 9,
+  "localBuildChecksPassed": 9,
+  "viewOnlyCloudHandoffRuleApplies": true,
+  "gitHubCliCalls": 9
+}

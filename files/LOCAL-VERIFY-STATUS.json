@@ -1,0 +1,11 @@
+{
+  "candidate": "268d121c326aeb65deefd7c1db06609ede6679d6",
+  "command": "CI=true pnpm exec rer verify --non-interactive --no-queue",
+  "completed": [
+    "build",
+    "ownership",
+    "portability"
+  ],
+  "status": "stopped during repeat imports after candidate-scoped checks completed",
+  "independentTaskChecksComplete": true
+}

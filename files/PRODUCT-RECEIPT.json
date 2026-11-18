@@ -1,0 +1,207 @@
+{
+  "recordedAt": "2026-11-18T07:17:17Z",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-import-sorry-2-c3",
+  "head": "268d121c326aeb65deefd7c1db06609ede6679d6",
+  "base": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "historicalHead": "564366bf4c4dfe477e841d82dd7a409564fa9c7e",
+  "c2Head": "945b67f0f86820ade33827df2a05532f310ce129",
+  "productCommits": [
+    "a11b01a3676253fc199c52378a9e042982e7b2d1",
+    "268d121c326aeb65deefd7c1db06609ede6679d6"
+  ],
+  "remoteHead": "268d121c326aeb65deefd7c1db06609ede6679d6",
+  "pushedAt": "2026-11-18T06:55:12Z",
+  "pullRequest": {
+    "base_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+    "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+    "html_url": "https://github.com/just-every/run-lamp/pull/418",
+    "number": 418,
+    "state": "open"
+  },
+  "mergeCommits": "0",
+  "productIdentity": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "migrations": {
+    "coreMigrationCount": 83,
+    "reserved": "0083_owner_migration_ledger_text.sql",
+    "migrations": [
+      {
+        "c2": "0083_sorry_component_hierarchy.sql",
+        "c3": "0084_sorry_component_hierarchy.sql",
+        "bytes": 489,
+        "sha256": "21c50195af1f3ede73f7fcd0d69126140e054897c01916168132938f4bdd4413"
+      },
+      {
+        "c2": "0084_sorry_notice_metadata.sql",
+        "c3": "0085_sorry_notice_metadata.sql",
+        "bytes": 502,
+        "sha256": "c55cfa8e7be93bfa1d633e334bc60943872105fb790a6d5e331240ffa4701720"
+      }
+    ],
+    "componentClause": "COMP-002",
+    "migrationConsumers": "Discover and sort SQL filenames from migrations/core"
+  },
+  "clauseJudgments": {
+    "checkedClauses": 244,
+    "statusChanges": [],
+    "gapChanges": [],
+    "evidenceChanges": [],
+    "revisedRequirementsOrAcceptance": [
+      {
+        "id": "COMP-002",
+        "kind": "published",
+        "before": "partial",
+        "after": "partial"
+      },
+      {
+        "id": "MAINT-015",
+        "kind": "target",
+        "before": "missing",
+        "after": "missing"
+      }
+    ]
+  },
+  "contractBefore": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "contractAfter": [
+    "| Core | 60 | 129 | 50 | 239 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 60 | 129 | 55 | 244 |"
+  ],
+  "generatedViewsCommitted": [],
+  "sourceLockCheckedWithCommittedViews": true,
+  "sourceLockSha256": "f9075b2f74fbd5e3a6e6a57cfd13dc0b797f0388bd3c2364372bebc2c6d17b62",
+  "orderedLocalBuild": [
+    "check:contract-docs",
+    "source:copies",
+    "source:check",
+    "typecheck",
+    "check:syntax",
+    "validate:release",
+    "verify:visual:source",
+    "build:app",
+    "build:site"
+  ],
+  "localTests": {
+    "IMPORTS.log": {
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "CUTOVER.log": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "PUBLIC-PORTABILITY.log": {
+      "tests": 7,
+      "pass": 7,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "SYNTHETIC.log": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "browserScreens": 15,
+  "browserWidths": [
+    1440,
+    390
+  ],
+  "syntheticReceipt": "synthetic/synthetic-receipt.json",
+  "ci": {
+    "recordedAt": "2026-11-18T07:17:17Z",
+    "candidate": "268d121c326aeb65deefd7c1db06609ede6679d6",
+    "verifyRuns": [
+      {
+        "conclusion": "failure",
+        "event": "pull_request",
+        "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44255005311",
+        "id": 44255005311,
+        "name": "Verify",
+        "status": "completed",
+        "jobs": {
+          "plan": "success",
+          "build": "failure",
+          "verify": "failure",
+          "shards": "skipped"
+        },
+        "archives": {
+          "build": {
+            "jobId": 134634529174,
+            "file": "CI-job-134634529174.log"
+          },
+          "verify": {
+            "jobId": 134634641859,
+            "file": "CI-job-134634641859.log"
+          }
+        }
+      },
+      {
+        "conclusion": "failure",
+        "event": "push",
+        "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44254900494",
+        "id": 44254900494,
+        "name": "Verify",
+        "status": "completed",
+        "jobs": {
+          "plan": "success",
+          "build": "failure",
+          "verify": "failure",
+          "shards": "skipped"
+        },
+        "archives": {
+          "build": {
+            "jobId": 134634156585,
+            "file": "CI-job-134634156585.log"
+          },
+          "verify": {
+            "jobId": 134634297556,
+            "file": "CI-job-134634297556.log"
+          }
+        }
+      }
+    ],
+    "otherExactShaRuns": [
+      {
+        "conclusion": "success",
+        "event": "dynamic",
+        "head_sha": "268d121c326aeb65deefd7c1db06609ede6679d6",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44255002112",
+        "id": 44255002112,
+        "name": "PR #418",
+        "status": "completed"
+      }
+    ],
+    "primaryFailure": {
+      "command": "node src/base/contract-docs.mjs check",
+      "file": "ACCEPTANCE.md"
+    },
+    "downstreamEffect": "The failed check predated the build receipt, so all eight matrix jobs were skipped and the aggregate had zero of nine completion records.",
+    "githubCompletedRecords": 0,
+    "githubExpectedRecords": 9,
+    "localBuildChecksPassed": 9,
+    "viewOnlyCloudHandoffRuleApplies": true,
+    "gitHubCliCalls": 9
+  }
+}

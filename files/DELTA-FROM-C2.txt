@@ -1,0 +1,4 @@
+M	RELEASE.json
+R100	migrations/core/0083_sorry_component_hierarchy.sql	migrations/core/0084_sorry_component_hierarchy.sql
+R100	migrations/core/0084_sorry_notice_metadata.sql	migrations/core/0085_sorry_notice_metadata.sql
+M	sources.lock.json

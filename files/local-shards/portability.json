@@ -1,0 +1,14 @@
+{
+  "shard": "portability",
+  "commit": "268d121c326aeb65deefd7c1db06609ede6679d6",
+  "runId": null,
+  "runAttempt": 0,
+  "success": true,
+  "steps": [
+    {
+      "script": "test:portability",
+      "exitCode": 0,
+      "durationMs": 349567
+    }
+  ]
+}

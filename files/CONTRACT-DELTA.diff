@@ -1,0 +1,19 @@
+diff --git a/CONTRACT.md b/CONTRACT.md
+index c0e0c83..6975221 100644
+--- a/CONTRACT.md
++++ b/CONTRACT.md
+@@ -338 +338 @@ The primary journey: An operator sets up the page and components, accepts eviden
+-**Requirement.** Operators organize public components into ordered groups.
++**Requirement.** Operators organize public components into ordered groups, including recursive imported Sorry groups represented once per source parent.
+@@ -341,2 +341,2 @@ The primary journey: An operator sets up the page and components, accepts eviden
+-1. A component belongs to at most one group.
+-2. Operators set group order and order within each group, and public rendering preserves both orders.
++1. A component belongs to at most one group; imported Sorry groups preserve their recursive parent ancestry without duplicating parent components, and retain descriptions, full source labels, original state and creation/edit times as labeled source facts.
++2. Operators set group order and order within each group, and public rendering preserves both orders and recursive imported ancestry. Source aggregate metrics remain labeled metadata, never measured Lamp uptime.
+@@ -1831,3 +1831,3 @@ The primary journey: An operator sets up the page and components, accepts eviden
+-1. Future and running Statuspage windows retain their automatic-start/completion choices.
+-2. Each source message becomes a maintenance update with its original time and lifecycle.
+-3. A two-message fixture imports both silently under MOVE-002.
++1. Future and running Statuspage windows retain their automatic-start/completion choices; Sorry windows retain should_automate_schedule, with false remaining off and past/canceled windows staying silent.
++2. Each source message becomes a maintenance update with its original publication time and authored lifecycle where supplied; missing authored states are disclosed projections. Sorry notice type, original state, full labels, tags/synopsis, actual versus scheduled times, edit times, historical publication flags/URLs and optional source aggregates remain labeled metadata. Imported markup becomes readable plain paragraphs and safe links; original markup remains raw-only and is never rendered as HTML.
++3. A two-message fixture imports both silently under MOVE-002, and added source metadata and automation choices join repeat/catch-up, conditional undo, portability and erasure.
