@@ -1,0 +1,260 @@
+{
+  "command": "pnpm verify",
+  "commit": "de69743bb4b5d41127577a5e95ee64666c54333b",
+  "testedTree": "candidate with contract-docs write and source lock regenerated locally",
+  "exitCode": null,
+  "interrupted": true,
+  "shards": [
+    {
+      "shard": "build",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "check:contract-docs",
+          "exitCode": 0,
+          "durationMs": 991
+        },
+        {
+          "script": "source:copies",
+          "exitCode": 0,
+          "durationMs": 735
+        },
+        {
+          "script": "source:check",
+          "exitCode": 0,
+          "durationMs": 1464
+        },
+        {
+          "script": "typecheck",
+          "exitCode": 0,
+          "durationMs": 23465
+        },
+        {
+          "script": "check:syntax",
+          "exitCode": 0,
+          "durationMs": 12462
+        },
+        {
+          "script": "validate:release",
+          "exitCode": 0,
+          "durationMs": 1338
+        },
+        {
+          "script": "verify:visual:source",
+          "exitCode": 0,
+          "durationMs": 396
+        },
+        {
+          "script": "build:app",
+          "exitCode": 0,
+          "durationMs": 8675
+        },
+        {
+          "script": "build:site",
+          "exitCode": 0,
+          "durationMs": 5545
+        }
+      ]
+    },
+    {
+      "shard": "imports",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": false,
+      "steps": [
+        {
+          "script": "test:imports",
+          "exitCode": 0,
+          "durationMs": 531224
+        },
+        {
+          "script": "test:mail",
+          "exitCode": 0,
+          "durationMs": 72052
+        }
+      ]
+    },
+    {
+      "shard": "ownership",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:ownership",
+          "exitCode": 0,
+          "durationMs": 412672
+        },
+        {
+          "script": "test:owner-claim",
+          "exitCode": 0,
+          "durationMs": 42030
+        },
+        {
+          "script": "test:owner-backup",
+          "exitCode": 0,
+          "durationMs": 183891
+        }
+      ]
+    },
+    {
+      "shard": "portability",
+      "commit": null,
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:portability",
+          "exitCode": 0,
+          "durationMs": 340727
+        }
+      ]
+    }
+  ],
+  "tapSummaries": [
+    {
+      "shard": "build",
+      "step": "check:contract-docs"
+    },
+    {
+      "shard": "build",
+      "step": "source:copies"
+    },
+    {
+      "shard": "build",
+      "step": "source:check"
+    },
+    {
+      "shard": "build",
+      "step": "typecheck"
+    },
+    {
+      "shard": "build",
+      "step": "check:syntax"
+    },
+    {
+      "shard": "build",
+      "step": "validate:release"
+    },
+    {
+      "shard": "build",
+      "step": "verify:visual:source"
+    },
+    {
+      "shard": "build",
+      "step": "build:app"
+    },
+    {
+      "shard": "build",
+      "step": "build:site"
+    },
+    {
+      "shard": "ownership",
+      "step": "test:ownership",
+      "tests": 23,
+      "pass": 23,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "shard": "ownership",
+      "step": "test:owner-claim",
+      "tests": 4,
+      "pass": 4,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "shard": "ownership",
+      "step": "test:owner-backup",
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "shard": "portability",
+      "step": "test:portability",
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "shard": "imports",
+      "step": "test:imports",
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "shard": "imports",
+      "step": "test:mail",
+      "tests": 5,
+      "pass": 5,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    {
+      "shard": "imports",
+      "step": "test:site"
+    }
+  ],
+  "failedTests": [
+    "not ok 3 - SETUP-002 \u2014 a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see"
+  ],
+  "recordedAtUtc": "2026-11-18T00:07:20.963026+00:00",
+  "interruption": "The cloud executor reattached and discarded the running process session. The suite did not write an exit receipt, and the worktree still had temporary generated files.",
+  "isolatedWebsiteOnboarding": {
+    "command": "node --test --test-concurrency=1 tests/e2e/website-onboarding.test.mjs with a loopback error-code diagnostic preload",
+    "candidate": {
+      "commit": "de69743bb4b5d41127577a5e95ee64666c54333b",
+      "startedUtc": "2026-11-18T00:02:18Z",
+      "endedUtc": "2026-11-18T00:03:43Z",
+      "exitCode": 1,
+      "transportCauses": [
+        "UND_ERR_SOCKET",
+        "ECONNREFUSED"
+      ],
+      "failureLocations": [
+        "website-onboarding.test.mjs:85:23"
+      ],
+      "tapTotals": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1
+      }
+    },
+    "main": {
+      "commit": "2490c9fefe5e3bee30d2d1a49441d90a4ebe6ca3",
+      "startedUtc": "2026-11-18T00:05:07Z",
+      "endedUtc": "2026-11-18T00:06:50Z",
+      "exitCode": 1,
+      "transportCauses": [
+        "UND_ERR_SOCKET",
+        "ECONNREFUSED"
+      ],
+      "failureLocations": [
+        "website-onboarding.test.mjs:85:23"
+      ],
+      "tapTotals": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+Wed Nov 18 00:04:31 UTC 2026
+de69743bb4b5d41127577a5e95ee64666c54333b
+## cloud/sd-lamp-import-sorry-2-c1
+5991d3a4d8d358795af306201e210971e031b554350745a770468a7f3ffb7b0f  CONTRACT.md
+8f41c12c1ae2c646de688d5ae82a7a09eca63b75a8b4b9422ca5944baa6c6218  ACCEPTANCE.md
+81012202cbbe77ad65bc06cd01af763a8d34d20cc421071e7ec4e66ba43f21db  docs/CLAIMS.md
+2339ed027a85fbf9a8b3b43c1d9614563dd98df6db8d44d2926e4656c530a7b1  sources.lock.json
+{
+  "ok": true,
+  "edition": "just-every/lamp",
+  "manifest": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf"
+}

@@ -85,6 +85,12 @@
       "sha256": "cc5375101784abc01b84689b9ad429cf1768d44d11c17a9edb2b1588416bde49"
     },
     {
+      "blob": "ed7acd6a8001e54c3058c0c05ba3933e2cd7340f",
+      "bytes": 559,
+      "path": "FINAL-CLEAN-CHECK.txt",
+      "sha256": "ce7aecdef0a6636d80ad56f8e414f9d26c09ccd9a86a05ea73e5c0b140f40d9c"
+    },
+    {
       "blob": "f1d8ea3282cc8fb17b09ad834c429ef755a0bef7",
       "bytes": 3382,
       "path": "FOCUSED-VERIFY.log",
@@ -95,6 +101,12 @@
       "bytes": 170,
       "path": "GIT-IDENTITY.txt",
       "sha256": "c9f719ac04ee5a87f887bd38a32e08c08cd63abd5a2deb8c3e01856328b8b56d"
+    },
+    {
+      "blob": "f00f5a782a749ca5f22b2985d261f33806cc3f38",
+      "bytes": 5803,
+      "path": "LOCAL-VERIFY.json",
+      "sha256": "7c979f316aeb20ce0f06c27c7f7759a025704446adb013da9a44ce901b0984af"
     },
     {
       "blob": "a8345e8203454fb0f0a8488aae2dbec4996f0310",
@@ -145,10 +157,10 @@
       "sha256": "1f2e8796b0fd308fffdeba7d4f5d5bcf3d96756e7f386c05690fb864a1ae707d"
     },
     {
-      "blob": "364a3228f56ae8dc9b42fa6b1e137c85156dfd36",
-      "bytes": 7836,
+      "blob": "0d1a1b653daa4e08e8430258a63dddbf297a9294",
+      "bytes": 8527,
       "path": "REPORT.md",
-      "sha256": "d7ac43d988e348f15afa62964b7df423315385758971c0db9c69f3d0928e8e83"
+      "sha256": "8c660d40e96a52c7beafa64258bc9dd6f3258a9bd56bfcb1a225ca4c82215bb1"
     },
     {
       "blob": "4927b5f6af50802dd200cd29e1b20863a5bddea8",
