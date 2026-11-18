@@ -13,14 +13,26 @@ export async function maintenanceReminderTimingFlow() {
     const now = Date.now() + 60_000;
     await j.json('/test/clock', 'PUT', { now }, 204);
     const component = await j.component('synthetic-maintenance-timing');
+    const otherComponent = await j.component('synthetic-maintenance-unrelated');
     const create = async (title, starts) => (await j.json('/api/app/maintenance', 'POST', {
       title, affectedAudience: 'Account owners', customerImpact: 'Updates will pause.',
       startsAt: iso(starts), endsAt: iso(starts + hour), componentIds: [component.id], autoStart: true, autoComplete: true,
     }, 201)).maintenance;
-    const reader = 'synthetic-reminder-reader@example.test';
-    assert.equal((await j.raw(j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: reader, componentId: component.id }) })).status, 202);
-    const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(reader)), Boolean, 'reminder subscriber confirmation');
-    assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
+    const reader = ['synthetic-lamp-1', 'example.test'].join('@');
+    const otherReader = ['synthetic-lamp-2', 'example.test'].join('@');
+    for (const [email, selected] of [[reader, component], [otherReader, otherComponent]]) {
+      assert.equal((await j.raw(j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email, componentId: selected.id }) })).status, 202);
+      const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(email)), Boolean, 'reminder subscriber confirmation');
+      assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
+    }
+    const subscribers = (await j.json('/api/app/subscribers')).subscribers;
+    const selectedReader = subscribers.find(row => row.destination === reader);
+    for (const [subscriber, selected] of [[selectedReader, component], [subscribers.find(row => row.destination === otherReader), otherComponent]]) {
+      assert.ok(subscriber, 'confirmed subscriber is in the native directory');
+      assert.equal(subscriber.state, 'active');
+      assert.equal(subscriber.selectionMode, 'selected');
+      assert.deepEqual(subscriber.componentSelections.map(row => row.componentId), [selected.id]);
+    }
     const early = await create('Advance notice', now + 48 * hour);
     const tonight = await create('Tonight’s upgrade', now + 6 * hour);
     const atBoundary = await create('Tomorrow’s upgrade', now + 24 * hour);
@@ -30,22 +42,74 @@ export async function maintenanceReminderTimingFlow() {
     const read = async item => (await j.json('/api/app/maintenance')).maintenance.find(row => row.id === item.id);
     const reminders = async item => (await read(item)).notices.filter(row => row.kind === 'reminder');
     const tick = async time => { await j.json('/test/clock', 'PUT', { now: time }, 204); await j.tick(time); };
+    const earlyDeliveries = async () => (await j.json('/api/app/deliveries')).deliveries.filter(row => row.maintenanceId === early.id);
+    const earlyMail = () => j.messages.filter(mail => mail.subject.endsWith(early.title));
+    const assertNoticeDelivery = async (kind, state, subjectPrefix) => {
+      const window = await read(early);
+      assert.equal(window.state, state);
+      const notices = window.notices.filter(row => row.kind === kind);
+      assert.equal(notices.length, 1, `one ${kind} notice for the advance window`);
+      const [notice] = notices;
+      assert.equal(notice.maintenanceId, early.id);
+      const [delivery] = await eventually(async () => (await earlyDeliveries()).filter(row => row.maintenanceNoticeKind === kind),
+        rows => rows.length === 1 && Boolean(rows[0].providerAcceptedAt), `the ${kind} notice reaches its confirmed subscriber`);
+      assert.deepEqual(
+        [delivery.subscriberId, delivery.destination, delivery.channel, delivery.maintenanceReference, delivery.queuedAt],
+        [selectedReader.id, reader, 'email', early.reference, notice.publishedAt],
+      );
+      // The delivery log exposes the notice kind. Read the stored event link to
+      // distinguish this notice from another publication of the same kind.
+      const event = await j.db.prepare('SELECT notification_event_id, notification_event_type FROM notification_delivery_records WHERE id = ?').bind(delivery.id).first();
+      assert.deepEqual(event, { notification_event_id: notice.id, notification_event_type: 'maintenance-notice' });
+      const receipts = j.mailReceipts.filter(row => row.idempotencyKey === `notification/${delivery.id}`);
+      const submissions = earlyMail().filter(mail => mail.subject.endsWith(`: ${subjectPrefix}: ${early.title}`));
+      assert.equal(receipts.length, 1, `one captured provider request for the ${kind} delivery`);
+      const { results: attempts } = await j.db.prepare('SELECT provider_message_id FROM notification_attempt_records WHERE delivery_id = ?').bind(delivery.id).all();
+      assert.deepEqual(attempts, [{ provider_message_id: receipts[0].id }]);
+      assert.equal(submissions.length, 1);
+      assert.deepEqual(submissions[0].to, [reader]);
+      assert.equal(submissions[0].headers['Message-ID'], `<lamp-notification-${delivery.id}@${new URL(j.publicOrigin).host}>`);
+      assert.ok(submissions[0].text.split('\n\n').includes(`Status: ${state}`));
+      return notice;
+    };
     await tick(now + 2 * 60_000);
     for (const item of [early, tonight, atBoundary, changed, cancelled]) assert.equal((await reminders(item)).length, 0, `${item.title}: no reminder minutes after scheduling`);
+    await assertNoticeDelivery('scheduled', 'Scheduled', 'Scheduled');
     const followUps = (await j.json('/api/app/overview/follow-ups')).followUps;
     assert.ok(!followUps.some(row => row.kind === 'maintenance-reminder' && [tonight.id, atBoundary.id].some(id => row.id.endsWith(id))), 'a notice inside the lead window creates no reminder debt');
     await tick(now + 24 * hour - 1);
     assert.equal((await reminders(early)).length, 0, 'the reminder cannot precede the lead boundary');
     await tick(now + 24 * hour);
     assert.equal((await reminders(early)).length, 1, 'an advance announcement gets its reminder at the lead boundary');
-    const reminderDeliveries = await eventually(async () => (await j.json('/api/app/deliveries')).deliveries.filter(row => row.maintenanceReference === early.reference && row.maintenanceNoticeKind === 'reminder'), rows => rows.length === 1 && Boolean(rows[0].providerAcceptedAt), 'due reminder reaches its confirmed subscriber');
-    assert.equal(reminderDeliveries[0].destination, reader);
+    await assertNoticeDelivery('reminder', 'Scheduled', 'Reminder');
     assert.equal((await reminders(cancelled)).length, 0, 'cancelled work never reminds');
     await j.json(`/api/app/maintenance/${changed.id}/window`, 'PUT', { startsAt: iso(now + 48 * hour), endsAt: iso(now + 49 * hour) });
     await tick(now + 26 * hour);
     assert.equal((await reminders(changed)).length, 0, 'a change notice inside the lead window replaces the reminder');
     await tick(now + 27 * hour);
     assert.equal((await reminders(early)).length, 1, 'repeated scheduled runs cannot repeat a reminder');
+
+    for (const [time, kind, state, subjectPrefix] of [
+      [Date.parse(early.startsAt), 'started', 'In progress', 'Started'],
+      [Date.parse(early.endsAt), 'completed', 'Completed', 'Completed'],
+    ]) {
+      await tick(time);
+      const notice = await assertNoticeDelivery(kind, state, subjectPrefix);
+      assert.equal(notice.publishedAt, iso(time));
+      assert.equal(notice.authorOperatorId, null, 'Cron publishes the transition without an operator');
+      const window = await read(early);
+      const deliveries = await earlyDeliveries();
+      const submissions = [...earlyMail()];
+      const receiptCount = j.mailReceipts.length;
+      await j.tick(time);
+      await tick(time + 60_000);
+      assert.deepEqual(await read(early), window, `repeating Cron at ${kind} retains the exact notices and state`);
+      assert.deepEqual(await earlyDeliveries(), deliveries, `repeating Cron at ${kind} retains the exact deliveries`);
+      assert.deepEqual(earlyMail(), submissions, `repeating Cron at ${kind} sends no more window mail`);
+      assert.equal(j.mailReceipts.length, receiptCount, `repeating Cron at ${kind} makes no additional provider requests`);
+    }
+    assert.deepEqual((await earlyDeliveries()).map(row => row.maintenanceNoticeKind), ['scheduled', 'reminder', 'started', 'completed']);
+    assert.equal(earlyMail().length, 4, 'each of the four notices reached only the selected subscriber once');
   } finally { await j.close(); }
 }
 
