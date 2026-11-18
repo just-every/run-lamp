@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "d92171a40c833a1a2ded531a8f599dc6ebbafc8c",
+      "bytes": 7543,
+      "path": "REPORT.md",
+      "sha256": "8c0750480fac667dac4e1a0d54258282b08731be2448888bb6100891116f01b1"
+    },
+    {
+      "blob": "ed6cc713fcbd7eacb2683341b6c783f87481ec51",
+      "bytes": 2088,
+      "path": "exact-sha-verify.txt",
+      "sha256": "13c57272e142972ad6e51e177b2fd24f236fbf310b318f3a5da6241759197d8c"
+    },
+    {
+      "blob": "ff0417e7dc6cac5f32c3de4e4e706f66d83377cd",
+      "bytes": 724,
+      "path": "local-checks.txt",
+      "sha256": "c0cf2dd1858bcf8d7d1654ac2247500cfba23577f0cec359e49fee1d77a8eb79"
+    },
+    {
+      "blob": "8fd6ff72a4c9046d68a8450724f9c38ba39d5059",
+      "bytes": 659,
+      "path": "page-001-journey.txt",
+      "sha256": "d63f84320f674362c25f1b21163789b309d3a37cedd8641062e6d899876bec95"
+    },
+    {
+      "blob": "7f392774dbff314a8c20b6aec5712d16e86cf127",
+      "bytes": 1646,
+      "path": "public-contract.txt",
+      "sha256": "896fbacb2b13132b548e657a68fd4fa436a39ccf13008c701c534bc666005d6f"
+    },
+    {
+      "blob": "7ce647e51996730a1e83cbf03b928a479a24c13a",
+      "bytes": 404486,
+      "path": "screens/1440-maintenance-horizon.png",
+      "sha256": "29d9263330c48f373eea48381f608a174f8f27d39dbf1c9363656e0a709817e9"
+    },
+    {
+      "blob": "59849bf89d37cf6bb7be8724f114290db5eba605",
+      "bytes": 201677,
+      "path": "screens/1440-maintenance-permalink.png",
+      "sha256": "a16bcd66ac38945588c0201bfc9e27ab4e81494721790413837bb8613e5de0aa"
+    },
+    {
+      "blob": "a463b5f22779ecb5894e56b58b44070ad6bc5e48",
+      "bytes": 268403,
+      "path": "screens/390-maintenance-horizon.png",
+      "sha256": "f5395193756ab30d9009156b955a5d056b9efbde96124015bae8753e237f54ff"
+    },
+    {
+      "blob": "4519939b882797692e15f9da839be89dbe2847ba",
+      "bytes": 101947,
+      "path": "screens/390-maintenance-permalink.png",
+      "sha256": "647e32b55867246dede7bc0d246c561ac07367f09572cf2d5171aff39eca7904"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f141",
+  "product_head": "a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03",
+  "ref": "refs/heads/evidence/sd-lamp-c-f141",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f141"
+}

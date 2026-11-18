@@ -1,0 +1,19 @@
+Command: node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs
+Commit: a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03
+Exit: 0
+✔ HIST-008 — reviewed imported history stays completely browsable without scripts (9959.407498ms)
+✔ PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch (12937.33523ms)
+✔ UPTIME-003 — newly observed services report only their recorded coverage (7539.204753ms)
+✔ HIST-001 — completed native records retain their month, window, components and complete publication inventory (20064.805826ms)
+PROBE PAGE-001 3: anonymous initial HTML generated at 2031-02-10T16:00:00.000Z -> two active windows and starts at fourteen days minus one millisecond and exactly fourteen days; the following millisecond is absent, and all five native permalinks resolve
+✔ PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary (3730.076285ms)
+✔ SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story (337198.662536ms)
+✔ DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control (30045.235348ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 423302.413483

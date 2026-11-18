@@ -1,0 +1,17 @@
+Commit: a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03
+pnpm typecheck exit=0
+pnpm exec rer check --profile first-party exit=0
+node src/base/contract-docs.mjs write exit=0
+Wrote 0 contract documents.
+node src/base/contract-docs.mjs check exit=0
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Generated views restored from origin/main.
+node scripts/edition-authoring/cli.mjs lock exit=0
+node scripts/edition-authoring/cli.mjs check exit=0
+  "ok": true,
+Browser: Chromium headless, scripting disabled. Native HTTP. Root and boundary permalink at 1440 and 390.
+Exact committed tree: source lock ok=true
+Pinned Node 22.20.0 confirmation on the exact commit.
+Focused PAGE-001 journey exit=0
+pnpm typecheck exit=0

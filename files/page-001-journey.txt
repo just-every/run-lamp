@@ -1,0 +1,13 @@
+Command: node --test --test-name-pattern=initial HTML lists all active maintenance tests/e2e/public-contract.test.mjs
+Commit: a0aa52ef4b8c3e76cd560a1fc2286b9ed80fad03
+Exit: 0
+PROBE PAGE-001 3: anonymous initial HTML generated at 2031-02-10T16:00:00.000Z -> two active windows and starts at fourteen days minus one millisecond and exactly fourteen days; the following millisecond is absent, and all five native permalinks resolve
+✔ PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary (7072.073976ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8846.514856
