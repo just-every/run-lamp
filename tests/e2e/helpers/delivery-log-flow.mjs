@@ -108,6 +108,10 @@ export async function addDeliveryLogEmails(add) {
 }
 
 export async function assertDeliveryInventory(t, fixture, expected, bulkUpdateId) {
+  const limit = 100;
+  const bulk = expected.filter(row => row.incidentUpdateId === bulkUpdateId && row.channel === 'email');
+  assert.ok(bulk.length > limit, 'one publication must span at least two pages of email deliveries');
+  assert.equal(new Set(bulk.map(row => row.destination)).size, bulk.length);
   const byIdentity = new Map(expected.map(row => [deliveryIdentity(row), row]));
   assert.equal(byIdentity.size, expected.length, 'the independent recipient inventory has no duplicates');
   const outcomes = ['queued', 'delivered', 'bounced', 'complained', 'suppressed', 'failed'];
@@ -122,7 +126,6 @@ export async function assertDeliveryInventory(t, fixture, expected, bulkUpdateId
     { incidentUpdateId: bulkUpdateId, channel: 'webhook', outcome: 'queued' },
   ];
   const unfiltered = new Map();
-  const limit = 100;
   for (const filter of filters) {
     const matching = expected.filter(row => Object.entries(filter).every(([field, value]) => row[field] === value));
     const rows = [];
@@ -158,5 +161,5 @@ export async function assertDeliveryInventory(t, fixture, expected, bulkUpdateId
     await assertDeliveryCsv(fixture, query, rows);
   }
   t.diagnostic('NOTIFY-004 reconciled ' + expected.length + ' deliveries, all six nonempty outcome filters and '
-    + filters.length + ' complete CSV scopes, including 101 distinct recipients across two pages of one update.');
+    + filters.length + ' complete CSV scopes, including ' + bulk.length + ' distinct recipients across pages of one update.');
 }
