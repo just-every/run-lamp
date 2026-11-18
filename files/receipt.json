@@ -1,0 +1,204 @@
+{
+  "baseline": {
+    "counts": {
+      "Agent surface": {
+        "done": 0,
+        "missing": 5,
+        "partial": 0,
+        "total": 5
+      },
+      "Core": {
+        "done": 63,
+        "missing": 50,
+        "partial": 126,
+        "total": 239
+      },
+      "Full target": {
+        "done": 63,
+        "missing": 55,
+        "partial": 126,
+        "total": 244
+      },
+      "Later": {
+        "done": 0,
+        "missing": 0,
+        "partial": 0,
+        "total": 0
+      }
+    },
+    "head": "fd6695e358e5aa67c47c45f05591f2c33e83a930",
+    "ref": "refs/heads/main",
+    "version": "1.11.22"
+  },
+  "candidate_commits": [
+    "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+    "1046bf036cfc16e189d873075f208fc017ece67e"
+  ],
+  "clause_changes": [],
+  "local_verifier": {
+    "exit_code": 241,
+    "result": "The supplemental full local verifier was stopped after both exact-SHA GitHub Verify runs passed."
+  },
+  "predecessor": {
+    "head": "4c90e6c8f35775e2a0287ab24ccba87d7a8d8485",
+    "snapshots": [
+      {
+        "path": "release-history/1.11.22.json",
+        "sha256": "f66d41b37d2001e684d241bd06a1ee084cd1ea3864ba194e6d8e60ac872d8866",
+        "tagged_path": "RELEASE.json"
+      },
+      {
+        "path": "release-history/1.11.22.CONTRACT.md",
+        "sha256": "f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd",
+        "tagged_path": "CONTRACT.md"
+      }
+    ],
+    "tag": "v1.11.22"
+  },
+  "product": {
+    "counts": {
+      "Agent surface": {
+        "done": 0,
+        "missing": 5,
+        "partial": 0,
+        "total": 5
+      },
+      "Core": {
+        "done": 63,
+        "missing": 50,
+        "partial": 126,
+        "total": 239
+      },
+      "Full target": {
+        "done": 63,
+        "missing": 55,
+        "partial": 126,
+        "total": 244
+      },
+      "Later": {
+        "done": 0,
+        "missing": 0,
+        "partial": 0,
+        "total": 0
+      }
+    },
+    "head": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+    "ref": "refs/heads/cloud/sd-lamp-release-1-11-23-c2",
+    "version": "1.11.23"
+  },
+  "product_commit_created": false,
+  "product_files_edited": false,
+  "pull_request_created": false,
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "setup": {
+    "computed_sha256": "d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab",
+    "declared_sha256": "d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab"
+  },
+  "source": {
+    "head": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+    "ref": "refs/heads/cloud/sd-lamp-release-1-11-23-c1"
+  },
+  "tag": "sd-lamp-release-1-11-23-c2",
+  "touched_checks": {
+    "contract_and_views_match_main": true,
+    "contract_documents": true,
+    "edition_source_lock": true,
+    "git_diff_whitespace": true,
+    "release_metadata_schema": true,
+    "retained_source_copies_offline": true
+  },
+  "verify_discovery": {
+    "total_count": 2,
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "created_at": "2026-11-18T13:21:23Z",
+        "event": "push",
+        "head_branch": "cloud/sd-lamp-release-1-11-23-c2",
+        "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44312867398",
+        "id": 44312867398,
+        "name": "Verify",
+        "run_attempt": 1,
+        "status": "in_progress",
+        "updated_at": "2026-11-18T13:21:38Z"
+      },
+      {
+        "conclusion": "success",
+        "created_at": "2026-11-18T12:49:09Z",
+        "event": "push",
+        "head_branch": "cloud/sd-lamp-release-1-11-23-c1",
+        "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44307549822",
+        "id": 44307549822,
+        "name": "Verify",
+        "run_attempt": 1,
+        "status": "completed",
+        "updated_at": "2026-11-18T13:08:17Z"
+      }
+    ]
+  },
+  "verify_polls": [
+    {
+      "checked_at": "2026-11-18T13:26:40.007341+00:00",
+      "conclusion": null,
+      "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44312867398",
+      "run_id": 44312867398,
+      "status": "in_progress"
+    },
+    {
+      "checked_at": "2026-11-18T13:31:41.001399+00:00",
+      "conclusion": null,
+      "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44312867398",
+      "run_id": 44312867398,
+      "status": "in_progress"
+    },
+    {
+      "checked_at": "2026-11-18T13:36:42.002252+00:00",
+      "conclusion": null,
+      "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44312867398",
+      "run_id": 44312867398,
+      "status": "in_progress"
+    },
+    {
+      "checked_at": "2026-11-18T13:41:43.001417+00:00",
+      "conclusion": "success",
+      "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44312867398",
+      "run_id": 44312867398,
+      "status": "completed"
+    }
+  ],
+  "verify_runs": [
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-18T13:21:23Z",
+      "event": "push",
+      "head_branch": "cloud/sd-lamp-release-1-11-23-c2",
+      "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44312867398",
+      "id": 44312867398,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed",
+      "updated_at": "2026-11-18T13:21:38Z"
+    },
+    {
+      "conclusion": "success",
+      "created_at": "2026-11-18T12:49:09Z",
+      "event": "push",
+      "head_branch": "cloud/sd-lamp-release-1-11-23-c1",
+      "head_sha": "a840e307fb68d0d248ae863ff10d8e94600ea5b0",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44307549822",
+      "id": 44307549822,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed",
+      "updated_at": "2026-11-18T13:08:17Z"
+    }
+  ]
+}
