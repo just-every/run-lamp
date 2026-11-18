@@ -959,7 +959,7 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
   assert.ok((await row.innerText()).includes('Reported by AWS'));
   assert.equal(await row.getByRole('link',{name:'AWS',exact:true}).getAttribute('href'),'https://status.aws.amazon.com/');
   await row.getByText('State mapping',{exact:true}).click();
-  assert.ok((await row.innerText()).includes('Down'));
+  assert.ok((await row.innerText()).includes('Major outage'));
   await row.getByLabel('Dependency behavior',{exact:true}).selectOption('draft');
   await row.getByLabel('Upstream-provider template',{exact:true}).selectOption(template.id);
   await row.getByLabel(buyer.name,{exact:true}).check();
