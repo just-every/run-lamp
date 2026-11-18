@@ -8147,6 +8147,10 @@
       "sha256": "78e8cb2d336aa7891bd76059b8fbeb6055a165d8c111f58065048612302f8ec8",
       "executable": false
     },
+    "tests/e2e/helpers/delivery-log-flow.mjs": {
+      "sha256": "f310fa213c5f26081a1fd221401a17dbde6c61b3c958e5fae707524b3c93c8a7",
+      "executable": false
+    },
     "tests/e2e/helpers/email-capacity-flow.mjs": {
       "sha256": "eab7f1474b57c8ef07c4ace9ab671f5368905a9d4a1a4579ecbfaf3b03d3b67e",
       "executable": false
@@ -8528,7 +8532,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-failures-flow.mjs": {
-      "sha256": "7ebb845c3661c49a2bceed7cc0c2a7fc47a53befcdbe8504230387525cdb3d38",
+      "sha256": "99ae54f450fd13e61860f097cf2d7e745cfc2ecaf98c8712fe2b4640f70b85ee",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {

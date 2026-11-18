@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { assertDeliveryFact, assertUntrackedNotification } from './delivery-log-flow.mjs';
 import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin } from './subscriber-management-fixture.mjs';
 
 /** Only the provider and receiver edges are synthetic. Consent, publication,
@@ -24,7 +25,8 @@ export async function subscriberFailuresFlow() {
     assert.equal(response.status, 200, response.text);
     return response.body.deliveries;
   };
-  const publish = async (component, label, channels) => {
+  const publicationWindows = new Map();
+  const publish = async (component, label, channels, details = 'Operators are restoring service.') => {
     const created = await post('/api/app/incidents', {
       title: `Synthetic Lamp ${label}`,
       components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }],
@@ -34,11 +36,14 @@ export async function subscriberFailuresFlow() {
     const draft = await api(`/api/app/incidents/${id}/draft`, {
       method: 'PUT', body: JSON.stringify({ lifecycle: 'Identified', affectedAudience: 'Synthetic Lamp readers',
         customerImpact: `Requests are delayed: ${label}.`, whatStillWorks: 'The dashboard is available.',
-        details: 'Operators are restoring service.', nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() }),
+        details, nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() }),
     });
     assert.equal(draft.status, 200, draft.text);
+    const start = Date.now();
     const published = await post(`/api/app/incidents/${id}/publish`, { channels });
+    const end = Date.now();
     assert.equal(published.status, 200, published.text);
+    publicationWindows.set(published.body.update.id, [start, end]);
     return published.body.update;
   };
   let dispatchNumber = 0;
@@ -69,7 +74,8 @@ export async function subscriberFailuresFlow() {
     assert.equal(response.body.subscriber.state, 'pending');
     await fixture.confirm(address);
     assert.equal((await subscriber(response.body.subscriber.id)).state, 'active');
-    return { id: response.body.subscriber.id, address };
+    return { id: response.body.subscriber.id, address, channel,
+      destination: channel === 'email' ? address : 'https://receiver.example.test/synthetic-lamp-1' };
   };
   let receiptNumber = 0;
   const receipt = (delivery, type, bounceType) => {
@@ -89,13 +95,27 @@ export async function subscriberFailuresFlow() {
     const response = await raw(`${pageOrigin}/api/intake/mail-events`, request);
     assert.equal(response.status, 200, await response.text());
   };
-  const acceptedMail = async (component, label, target) => {
-    const update = await publish(component, label, ['email']);
+  const checkFact = (row, updateId, target, outcome, outcomeBetween) => {
+    assertDeliveryFact(row, {
+      subscriberId: target.id, destination: target.destination, channel: target.channel, updateId,
+      queuedBetween: publicationWindows.get(updateId), outcome, outcomeBetween,
+    });
+  };
+  const readFact = async (delivery, target, outcome, start) => {
+    const rows = await deliveries({ id: delivery.incidentUpdateId });
+    const row = rows.find(row => row.id === delivery.id);
+    checkFact(row, delivery.incidentUpdateId, target, outcome, [start, Date.now()]);
+    assert.equal(row.queuedAt, delivery.queuedAt, 'recording an outcome preserves the committed queue instant');
+    return row;
+  };
+  const acceptedMail = async (component, label, target, details) => {
+    const update = await publish(component, label, ['email'], details);
     assert.equal((await dispatch(update)).outcome, 'ok');
     const rows = await eventuallySubscriber(() => deliveries(update),
       rows => rows.some(row => row.subscriberId === target.id && row.providerAcceptedAt), 'native delivery records provider acceptance');
     const row = rows.find(row => row.subscriberId === target.id);
     assert.equal(row.outcome, 'queued', 'provider acceptance alone does not claim delivery');
+    checkFact(row, update.id, target, 'queued');
     assert.ok(fixture.messagesFor(target.address).some(message => message.text.includes(`Requests are delayed: ${label}.`)));
     return row;
   };
@@ -130,10 +150,17 @@ export async function subscriberFailuresFlow() {
     const hardDelivery = await acceptedMail(hardComponent, 'hard bounce notification', hard);
     const hardAt = Date.now();
     await sendReceipt(receipt(hardDelivery, 'bounced', 'Permanent'));
+    await readFact(hardDelivery, hard, 'bounced', hardAt);
     await deactivated(hard, 'hard bounce', hardAt);
     await noFutureMail(hardComponent, hard, 'after hard bounce');
 
-    const complaintDelivery = await acceptedMail(complaintComponent, 'complaint notification', complaint);
+    const directLinks = ['https://help.example.test/status?area=api&view=summary', 'https://status.example.test/history'];
+    const details = "Operators are restoring service. See " + directLinks.join(" or ") + ".";
+    const complaintDelivery = await acceptedMail(complaintComponent, 'complaint notification', complaint, details);
+    await assertUntrackedNotification(fixture, {
+      address: complaint.address, subject: 'Synthetic Lamp complaint notification',
+      impact: 'Requests are delayed: complaint notification.', details, directLinks,
+    });
     const queuedComplaint = await publish(complaintComponent, 'queued before complaint', ['email']);
     const committedComplaint = (await deliveries(queuedComplaint)).find(row => row.subscriberId === complaint.id);
     assert.equal(committedComplaint.outcome, 'queued');
@@ -147,18 +174,24 @@ export async function subscriberFailuresFlow() {
     assert.deepEqual(await subscriber(complaint.id), beforeInvalid);
     const complaintAt = Date.now();
     await sendReceipt(signedComplaint);
+    const complained = await readFact(complaintDelivery, complaint, 'complained', complaintAt);
     const stoppedComplaint = await deactivated(complaint, 'spam complaint', complaintAt);
     const complaintMailCount = fixture.messagesFor(complaint.address).length;
+    const suppressionAt = Date.now();
     assert.equal((await dispatch(queuedComplaint)).outcome, 'ok');
     const suppressedComplaint = (await deliveries(queuedComplaint)).find(row => row.id === committedComplaint.id);
     assert.equal(suppressedComplaint.outcome, 'suppressed');
     assert.ok(suppressedComplaint.outcomeAt);
+    checkFact(suppressedComplaint, queuedComplaint.id, complaint, 'suppressed', [suppressionAt, Date.now()]);
+    assert.equal(suppressedComplaint.queuedAt, committedComplaint.queuedAt);
     const healthyBefore = fixture.messagesFor(healthy.address).length;
     const freshComplaint = await noFutureMail(complaintComponent, complaint, 'fresh publication after complaint');
     assert.equal(fixture.messagesFor(healthy.address).length, healthyBefore + 1, 'the same fresh publication still reaches an active control');
     assert.ok((await deliveries(freshComplaint)).some(row => row.subscriberId === healthy.id && row.providerAcceptedAt));
     await sendReceipt(signedComplaint);
     await sendReceipt(receipt(complaintDelivery, 'delivered'));
+    assert.deepEqual(await readFact(complaintDelivery, complaint, 'complained', complaintAt), complained,
+      'replayed complaints and late delivery receipts preserve the direct delivery readback');
     assert.deepEqual(await subscriber(complaint.id), stoppedComplaint, 'replayed complaints and late delivery receipts cannot restore consent or rewrite the reason');
     assert.equal(fixture.messagesFor(complaint.address).length, complaintMailCount, 'queued and fresh complaint suppression make zero additional transport requests');
 
@@ -178,8 +211,11 @@ export async function subscriberFailuresFlow() {
     await noFutureMail(softComponent, soft, 'after five soft bounces');
 
     const control = await publish(webhookComponent, 'healthy webhook control', ['webhook']);
+    const deliveredAt = Date.now();
     assert.equal((await dispatch(control)).outcome, 'ok');
-    assert.equal((await deliveries(control))[0].outcome, 'delivered', 'the confirmed endpoint accepts a real publication');
+    const [delivered] = await deliveries(control);
+    assert.equal(delivered.outcome, 'delivered', 'the confirmed endpoint accepts a real publication');
+    checkFact(delivered, control.id, webhook, 'delivered', [deliveredAt, Date.now()]);
     receiverStatus = 503;
     const failedUpdates = [];
     for (let index = 0; index < 10; index++) failedUpdates.push(await publish(webhookComponent, `failed webhook ${index}`, ['webhook']));
@@ -196,6 +232,8 @@ export async function subscriberFailuresFlow() {
       const update = failedUpdates[index];
       const [committed] = await deliveries(update);
       assert.equal(committed.outcome, 'queued');
+      checkFact(committed, update.id, webhook, 'queued');
+      const failedAt = Date.now();
       for (let attempt = 0; (await deliveries(update))[0].outcome === 'queued'; attempt++) {
         assert.ok(attempt < 10, 'native Queue retries terminate this failed notification');
         await dispatch(update);
@@ -204,6 +242,8 @@ export async function subscriberFailuresFlow() {
       assert.equal(failed.id, committed.id);
       assert.equal(failed.outcome, 'failed');
       assert.ok(failed.outcomeAt);
+      checkFact(failed, update.id, webhook, 'failed', [failedAt, Date.now()]);
+      assert.equal(failed.queuedAt, committed.queuedAt);
       assert.ok(fixture.webhookRequests.some(record => record.headers['webhook-id'] === failed.id), 'each terminal outcome came from actual receiver requests');
       if (index < 9) {
         assert.equal((await subscriber(webhook.id)).state, 'active', 'retries of fewer than ten failed notifications do not deactivate the endpoint');
