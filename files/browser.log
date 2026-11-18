@@ -1,0 +1,21 @@
+Candidate 8f5dacaffef33c1b553ee6e485dc60da03188c57
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Built Worker ready
+# Native Cron started and completed the window
+# Assertions at 1440. Delivery log and maintenance permalink captured at 1440 and 390.
+# Subtest: Built maintenance start and completion delivery rows
+ok 1 - Built maintenance start and completion delivery rows
+  ---
+  duration_ms: 10049.437045
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11668.117169

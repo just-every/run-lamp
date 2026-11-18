@@ -1,0 +1,10 @@
+{
+  "conclusion": null,
+  "head_sha": "8f5dacaffef33c1b553ee6e485dc60da03188c57",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44252625089",
+  "status": "in_progress",
+  "id": 44252625089,
+  "name": "Verify",
+  "event": "push",
+  "checked_at": "2026-11-18T07:22:41Z"
+}

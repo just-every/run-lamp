@@ -1,0 +1,10 @@
+Candidate 8f5dacaffef33c1b553ee6e485dc60da03188c57
+Node v22.20.0
+
+> lamp@1.11.22 typecheck /workspace/scratch/sd-lamp-c-f140
+> tsc --noEmit
+
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Edition source lock check passed.
+{"cases":111,"assertionScripts":10}

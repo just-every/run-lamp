@@ -1,0 +1,88 @@
+{
+  "files": [
+    {
+      "blob": "c95baaf86b9dc3c2229dfae0d16b59ec1118546a",
+      "bytes": 9444,
+      "path": "REPORT.md",
+      "sha256": "7db53c11711b9e4104e4eced97b14cdce6c15d0c32e7cca993648aaaf628f37e"
+    },
+    {
+      "blob": "9a6766e2e1248cf62648f3f6af5bdc595cbaf6fc",
+      "bytes": 642,
+      "path": "browser.log",
+      "sha256": "1c65d43ae1546d547c6f959c775d191dd138451610cdbe42d4e985ea8ddb1a64"
+    },
+    {
+      "blob": "70c3a2da47c573b87c0c8bbf35562dd45e2cdb2a",
+      "bytes": 152074,
+      "path": "delivery-log-1440.png",
+      "sha256": "e760132f39c37dff1db457ce9ad4dafedc63c048e246f9ff5c1483bfcca2a4a9"
+    },
+    {
+      "blob": "03411848dc2581e70cfe6fd9dc3490e5f40042e5",
+      "bytes": 135194,
+      "path": "delivery-log-390.png",
+      "sha256": "dd2c953438c098e4fa9eed27230629bb1b99740328b444b3e2ed27497056e99e"
+    },
+    {
+      "blob": "ad9754b0a122a73093134296c47e7fbf9a60d810",
+      "bytes": 571,
+      "path": "maintenance-browser.tap",
+      "sha256": "e60f00c85c3611ef006603b0539f692984e1d6fad90fe85fe19eb1fc7a9af1c7"
+    },
+    {
+      "blob": "c8251809aa395dd7ea14ebb12f359aa9f888ae6a",
+      "bytes": 226320,
+      "path": "maintenance-permalink-1440.png",
+      "sha256": "f005e4fffac6594800678f3a9c8bcad0afd6676349b0a417e450088b90e48d77"
+    },
+    {
+      "blob": "13e5f13daa16569def12cc4b5ef380124d19174f",
+      "bytes": 124047,
+      "path": "maintenance-permalink-390.png",
+      "sha256": "ee576569ebc0b3eb6512ec4bc06a5aa98ffa5d613de980d24a4970a08b8decaf"
+    },
+    {
+      "blob": "e27740e8ee65b2e37f65a1e6e20863d5528e6ff7",
+      "bytes": 281,
+      "path": "mechanical.log",
+      "sha256": "c55398965185118971eab361f9ee48ee6c419c6979cb17f9a6fa35f8524166d1"
+    },
+    {
+      "blob": "a2169852599182a6ae9fd9fcc22615480317219a",
+      "bytes": 529,
+      "path": "notify-001.tap",
+      "sha256": "8f44c0ecb8f351bd6e2727f027a81895988069bfc0d41247db82b5b46c74bd59"
+    },
+    {
+      "blob": "335690e5f8afde991841ff5fa69829dc35fcfcc9",
+      "bytes": 130,
+      "path": "product-refs.tsv",
+      "sha256": "5580f5d65865ff9451dfb329aa8a227943829d3780930ffce2e7fd551cba9cf8"
+    },
+    {
+      "blob": "3fd940c9a6c5fae1e670d0ae57241e6a04a85b37",
+      "bytes": 8172,
+      "path": "publishing-contract.tap",
+      "sha256": "828d5d6a16a335794b690279643314a46e7d7589b629d49412e7087b57f01ced"
+    },
+    {
+      "blob": "10e732e13ce55cd020d946c5a5484ea91faf1be0",
+      "bytes": 2142,
+      "path": "verify-jobs.json",
+      "sha256": "1c0900aaabb5a8e4448648f14796e0bb51efa62299d6b712e2b46785e3baf75e"
+    },
+    {
+      "blob": "51709639bf82605d173e90e8c1ee6bff7debf41f",
+      "bytes": 291,
+      "path": "verify.json",
+      "sha256": "6d33fbaeeded0bed638b7a9ac69fb18d20e6ac27cd9af56953cff25d9c360031"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f140",
+  "product_head": "8f5dacaffef33c1b553ee6e485dc60da03188c57",
+  "ref": "refs/heads/evidence/sd-lamp-c-f140",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f140"
+}
