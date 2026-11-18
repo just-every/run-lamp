@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "6cab8f5c89235dcd175aa57d07e46abe5179f213",
+      "bytes": 3462,
+      "path": "REPORT.md",
+      "sha256": "9b8dd60f2bbd67cd84e8420e1242c16f247beddafc84cb2aa2c15f6330feda7c"
+    },
+    {
+      "blob": "6a8a790e346313c20b1074f60bc25206b2b4b6ad",
+      "bytes": 336,
+      "path": "lobby-acknowledgement.json",
+      "sha256": "df837e85b5fc2f56c3426dc118b5a7921c52febfb6830f98dda7223b9cd2d976"
+    },
+    {
+      "blob": "876e4ea0394845b6cf3c5a27e60f9d2c1a820d73",
+      "bytes": 2901,
+      "path": "receipt.json",
+      "sha256": "bad563fbacef6e244e9edba2d10f48f0d7328d9383b88ea108716dd1c07f6718"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-design-setup-3",
+  "product_head": "e1590cb8c9b8efe7537034897623ec91f54330dc",
+  "ref": "refs/heads/evidence/sd-lamp-design-setup-3",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-design-setup-3"
+}

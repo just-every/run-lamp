@@ -1,0 +1,103 @@
+{
+  "tag": "sd-lamp-design-setup-3",
+  "recorded_at_utc": "2026-11-18T02:29:42Z",
+  "repository": "just-every/run-lamp",
+  "product_branch": "cloud/sd-lamp-design-setup-3",
+  "product_head": "e1590cb8c9b8efe7537034897623ec91f54330dc",
+  "base": "d67ebd9edde4f39afd80fed797b3364f944894b5",
+  "commits": [
+    "27ea09d8e6b3d8058ebbf2e897cea8548a998cc6 Restore setup design fixes with declared lobby adaptation",
+    "e1590cb8c9b8efe7537034897623ec91f54330dc Preserve branded sign-in across native auth handlers"
+  ],
+  "merge_count": 0,
+  "identity": {
+    "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+    "trailers": []
+  },
+  "source_refs": {
+    "cloud/sd-lamp-design-setup-1": "aab0f2e95fae28ff7c968ace7321f26a85664991",
+    "cloud/sd-lamp-design-setup-2-c1": "8863365f299cc5202384df08e4bd0b49e2ef1531"
+  },
+  "build": {
+    "started_at_utc": "2026-11-18T02:25:46Z",
+    "completed_at_utc": "2026-11-18T02:26:46Z",
+    "node": "v22.20.0",
+    "pnpm": "10.12.4",
+    "checks": [
+      {
+        "step": "check:contract-docs",
+        "result": "pass"
+      },
+      {
+        "step": "source:copies",
+        "result": "pass"
+      },
+      {
+        "step": "source:check",
+        "result": "pass"
+      },
+      {
+        "step": "typecheck",
+        "result": "pass"
+      },
+      {
+        "step": "check:syntax",
+        "result": "pass"
+      },
+      {
+        "step": "validate:release",
+        "result": "pass"
+      },
+      {
+        "step": "verify:visual:source",
+        "result": "pass"
+      },
+      {
+        "step": "build:app",
+        "result": "pass"
+      },
+      {
+        "step": "build:site",
+        "result": "pass"
+      }
+    ]
+  },
+  "contract_counts_before_and_after": {
+    "core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "agent_surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "full_target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "contract_status_changes": [],
+  "blocker": {
+    "clause": "PAGE-012",
+    "acceptance_point": 4,
+    "decision_required": "Preserve the configured logo in the fallback favicon or authorize a revised release clause for an independent optional tab icon."
+  },
+  "candidate_push": "stopped at release contract gate",
+  "candidate_verify_run_ids": [],
+  "browser_journeys": "stopped at release contract gate",
+  "browser_captures": [],
+  "recovery_bundle": {
+    "path": "/home/agent/rer-consolidation/work/sd-lamp-design-setup-3/sd-lamp-design-setup-3-e1590cb8c9b8.bundle",
+    "head": "e1590cb8c9b8efe7537034897623ec91f54330dc",
+    "prerequisite": "d67ebd9edde4f39afd80fed797b3364f944894b5",
+    "sha256": "859f748d6f87366bc2d61f0f0718aacf68d3f47bd33a996848ccb4aa349b78b6",
+    "verified": true
+  }
+}
