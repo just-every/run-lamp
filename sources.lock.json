@@ -4348,7 +4348,7 @@
       "executable": false
     },
     "src/core/app/client/ui/settings.css": {
-      "sha256": "4a7bbf1f1734eeeba306ed16351341c05cbc92a3e47b9cba71c786d6fc1f7349",
+      "sha256": "f0de18e33553fa1cd93ae2d67548874cb0deb1ba62e5ae4e9a31cfe9cc7b497c",
       "executable": false
     },
     "src/core/app/client/ui/setup-guides.css": {
@@ -5724,7 +5724,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/page-settings-tab.tsx": {
-      "sha256": "4d8ed34d2c255655f121ab385c8f255acad564a23e32529fb6ebb3ba7e3f4a28",
+      "sha256": "8297e7360d7c7d8d73da5e0f05ed4173a9371cf30a46f5f05356345f2a0dfb2c",
       "executable": false
     },
     "src/core/features/page-settings/ui/prelaunch-settings.tsx": {
