@@ -1,0 +1,62 @@
+{
+  "runtime": "rer preview production Worker",
+  "assertions": [
+    "new incident state unset",
+    "four displayed incident options",
+    "Partly down chosen without a template and published",
+    "draft placeholder on new and existing incidents",
+    "Brisbane time on public page and in incident preview",
+    "offset inside expanded Time details",
+    "overview and public page omit offsets in ordinary display"
+  ],
+  "captures": [
+    {
+      "name": "incident-unselected-state",
+      "width": 1440
+    },
+    {
+      "name": "incident-unselected-state",
+      "width": 390
+    },
+    {
+      "name": "incident-page-preview",
+      "width": 1440
+    },
+    {
+      "name": "incident-page-preview",
+      "width": 390
+    },
+    {
+      "name": "incident-next-draft",
+      "width": 1440
+    },
+    {
+      "name": "incident-next-draft",
+      "width": 390
+    },
+    {
+      "name": "owner-overview",
+      "width": 1440
+    },
+    {
+      "name": "owner-overview",
+      "width": 390
+    },
+    {
+      "name": "public-status",
+      "width": 1440
+    },
+    {
+      "name": "public-status",
+      "width": 390
+    },
+    {
+      "name": "public-time-details",
+      "width": 1440
+    },
+    {
+      "name": "public-time-details",
+      "width": 390
+    }
+  ]
+}

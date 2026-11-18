@@ -1,0 +1,14 @@
+{
+  "runtime": "rer preview production Worker",
+  "directHashOpenedLook": true,
+  "componentStateColours": [
+    "Working",
+    "Slow",
+    "Partly down",
+    "Down"
+  ],
+  "widths": [
+    1440,
+    390
+  ]
+}

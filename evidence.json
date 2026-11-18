@@ -1,0 +1,172 @@
+{
+  "files": [
+    {
+      "blob": "e063a9ad5f44295e8b1b91b96a23b5f9bb1f7584",
+      "bytes": 20613,
+      "path": "CHECKS.json",
+      "sha256": "5f2491e9af555dea3bb256791e92b1e42aabc38239c1624eae03e4a115b71643"
+    },
+    {
+      "blob": "8f8f63c9bdee301d4f36fa23fa06187db4eda3b4",
+      "bytes": 7082,
+      "path": "REPORT.md",
+      "sha256": "d7acb1bc75f8fcfb7d09af9ec6330cd8fd7dccf2f5e97bd748a49bf54ee63d08"
+    },
+    {
+      "blob": "e0d188bab4b8b8cb73d27b19aa8f45a7a2a455ec",
+      "bytes": 787,
+      "path": "VERIFY.md",
+      "sha256": "7514bbbe009ea40b6f771fb7108d81c94885c5b0c0690642b1d0f82123ed205b"
+    },
+    {
+      "blob": "ab63571c5d0554f627548fcada562d8389a86004",
+      "bytes": 1272,
+      "path": "browser/built-browser.json",
+      "sha256": "e5f595b6049b6759a12354e75f3bbccd1e0b6123b5f6ffa5a3f4ff6cfec3dfbc"
+    },
+    {
+      "blob": "90a0130a28521184adb46a1b03036ff34ac2f81a",
+      "bytes": 125202,
+      "path": "browser/component-history-1440.png",
+      "sha256": "846a226f875237626c67bb02d6f8d7621cd3f8f141dbf7abfd474e8aebc4b77a"
+    },
+    {
+      "blob": "15093a81028556ec2831ea216ce001fd83dacb12",
+      "bytes": 70666,
+      "path": "browser/component-history-390.png",
+      "sha256": "9183332d401e74d543dc8cd4a7fc57bf87ecea432e0db2f079061c694b118397"
+    },
+    {
+      "blob": "6f5594b62254d5958a1b06a6a2d5ccaa02a9a795",
+      "bytes": 273766,
+      "path": "browser/email-preview-1440.png",
+      "sha256": "2b57b703f12a5a1b3a090f38f8e578f5809d6293e1011efb254972959b8f85a3"
+    },
+    {
+      "blob": "c768b0e656d0a9f7d70336df4ff591b5f7dc13ba",
+      "bytes": 236754,
+      "path": "browser/email-preview-390.png",
+      "sha256": "fc17cc58589fdb1c09fdbf1437564d0c53c409573420762989ec5f552a58b1b0"
+    },
+    {
+      "blob": "0047eb5b71bb5c72dd2a87987594c15041b4e58c",
+      "bytes": 201826,
+      "path": "browser/incident-next-draft-1440.png",
+      "sha256": "0ffc1f77f613a799750a304da9895c2cf7e2bd6b34b973069c9132daaaa93b63"
+    },
+    {
+      "blob": "c489aac64a0605473802ab918f5ae1634cbf407d",
+      "bytes": 177028,
+      "path": "browser/incident-next-draft-390.png",
+      "sha256": "3aede468747c08b6a8eb458864887f2dd2f8e7ee3ca441e712e1f6304fb95d4b"
+    },
+    {
+      "blob": "fa95279495779b1b7217b72a8ce93937e655838e",
+      "bytes": 125213,
+      "path": "browser/incident-page-preview-1440.png",
+      "sha256": "fac7e93f6098ea61bf9a91a567cbd697aee90f407accea3b274e9fbab1eac135"
+    },
+    {
+      "blob": "6b698ec14e055032bbc0b674ed5d34f76f9a9a3e",
+      "bytes": 103893,
+      "path": "browser/incident-page-preview-390.png",
+      "sha256": "1422cdabc0e4d7785b980889684bde5242e76840f020f9a8c0c88210d4bbe9ae"
+    },
+    {
+      "blob": "282d5c7b4341ec594f02a3cd823621fe72e0a4fe",
+      "bytes": 95246,
+      "path": "browser/incident-unselected-state-1440.png",
+      "sha256": "38dadb909eec5daf1fcb003a14d28931d9510250c098b43826dfabb8a1b6869e"
+    },
+    {
+      "blob": "105a6c213387dda3efc5c473c8352d6440a255f3",
+      "bytes": 72468,
+      "path": "browser/incident-unselected-state-390.png",
+      "sha256": "19928b3ef79f47ea58a66013720952fc943e6a742d53625b7c250a13e7f4ce3b"
+    },
+    {
+      "blob": "804c579831b5e42d9a74d65def59153afee1e4b9",
+      "bytes": 157766,
+      "path": "browser/local-operator-invitation-1440.png",
+      "sha256": "f8765916d2056ae45a168bba7674b3050152df00e1db96392a9c4a3b17b077b8"
+    },
+    {
+      "blob": "229385e8280ceb61d712d78468455656470f8964",
+      "bytes": 115226,
+      "path": "browser/local-operator-invitation-390.png",
+      "sha256": "2065c265b9c2d092eb1915bb7334b74d0e3a7232c974a79f52cba5e917a9ac7f"
+    },
+    {
+      "blob": "4e6a82db9e7ca0c75ef22dab92258fd197905a3e",
+      "bytes": 156156,
+      "path": "browser/owner-overview-1440.png",
+      "sha256": "102befde13dc47faac354f3c9d56c9662b0ef447a852f497b15b6cfedf2f58da"
+    },
+    {
+      "blob": "437ba4da2fe8024e78c15fef92ece7e4d5c89337",
+      "bytes": 131754,
+      "path": "browser/owner-overview-390.png",
+      "sha256": "69e73c229d78406fcbb0164f0ea6f9c0021e18afb773f7ee32997c2ebffab148"
+    },
+    {
+      "blob": "067aa6a21c174f48dcf2667d31bf5664f253b682",
+      "bytes": 338098,
+      "path": "browser/public-status-1440.png",
+      "sha256": "efcb86feab11330a9916e407f31c042cca6d333886be458e36b7ab74fdf5c57a"
+    },
+    {
+      "blob": "8d8f6b90a720d4662513cd8788bfba3b382ef484",
+      "bytes": 209113,
+      "path": "browser/public-status-390.png",
+      "sha256": "6390bac9a0c52dc443ee6ca576875ca550c0c08f76b727ece17e1647d0aa03eb"
+    },
+    {
+      "blob": "e3b8d2dfbc806b3b7b7be65432d9b6571091e6c8",
+      "bytes": 5196,
+      "path": "browser/public-time-details-1440.png",
+      "sha256": "844bc1521529abeb85f03031233f4413d697b0a660244f8e02c3840478868891"
+    },
+    {
+      "blob": "c41e85f92cb491e3b9e43983df35e091837f3b72",
+      "bytes": 5093,
+      "path": "browser/public-time-details-390.png",
+      "sha256": "db81756812cdf6350088c1632d4a06d018ac22d825ab40c0e90122e6ec7e2235"
+    },
+    {
+      "blob": "1cff09d61ccab28e45d4cc15e8509a35bd9df8ac",
+      "bytes": 117289,
+      "path": "browser/scheduled-overview-1440.png",
+      "sha256": "0e956a1eb042f3a9da610205fb66174909e20a4435c1edcc193aa0fb6adffa6f"
+    },
+    {
+      "blob": "0e3f0049e4a0248ed98aa8338e1f77d2b873ca08",
+      "bytes": 95778,
+      "path": "browser/scheduled-overview-390.png",
+      "sha256": "e722df979cea884794160f60d7a78eaec6d3524c46fd330669e3e3a23d5bb4e2"
+    },
+    {
+      "blob": "e34829b97b4d43090621b74923e39aa0f1965346",
+      "bytes": 58693,
+      "path": "browser/theme-colours-1440.png",
+      "sha256": "5a7cd57e6f7d3e8c05186c47ff5109e1024d0f353f27c7bd00b667cf88e686ed"
+    },
+    {
+      "blob": "ef329ecb727e2e95b2162951b1c63a1d0bd381cb",
+      "bytes": 60215,
+      "path": "browser/theme-colours-390.png",
+      "sha256": "4030fc79f8759bea878e1cb85b593d2a528b3bcc6aba4a83e0050708a771ef22"
+    },
+    {
+      "blob": "d4292e1728b3fcbf4af111ce5ea7b7bca201a96d",
+      "bytes": 209,
+      "path": "browser/theme-colours.json",
+      "sha256": "960aa45c22d4b6bbff2ea4315e6cba1b933eacd092f0373dd8c1fb709f5aec1b"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-design-calls-2",
+  "product_head": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+  "ref": "refs/heads/evidence/sd-lamp-design-calls-2",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-design-calls-2"
+}

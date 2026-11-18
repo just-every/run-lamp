@@ -1,0 +1,539 @@
+{
+  "tag": "sd-lamp-design-calls-2",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-design-calls-2",
+  "head": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+  "main": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "utc": "2026-11-18T07:26:31.729602+00:00",
+  "local_build_steps_passed": [
+    "check:contract-docs (generated views)",
+    "source:copies",
+    "source:check",
+    "typecheck",
+    "check:syntax",
+    "validate:release",
+    "verify:visual:source",
+    "build:app",
+    "build:site"
+  ],
+  "candidate_commits": [
+    "a2c0c583629c0870798cf6e5f242f71eeff11d0b Apply Lamp invitation, component state and time display rulings [skip ci]",
+    "290add840dd95de0469708f41fc5db55f5feb847 Preserve vendor state mapping assertion inside Details [skip ci]",
+    "0b5360145234afca9b1a64c9b8957927dd0beedf Verify visible component states in incident evidence [skip ci]",
+    "8e9d772a54f6aa01f8ff3aa4f2806447c1a40131 Use familiar state names in component visibility settings [skip ci]",
+    "b39e82f55c6ec44f99006ce21a269e943ef7960a Apply Lamp component state and time rulings in chat previews"
+  ],
+  "candidate_merges": [],
+  "ci": {
+    "discovery": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44256779165",
+        "id": 44256779165,
+        "name": "Verify",
+        "status": "in_progress"
+      }
+    ],
+    "final": {
+      "conclusion": "failure",
+      "head_sha": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44256779165",
+      "status": "completed"
+    },
+    "jobs": [
+      {
+        "conclusion": "success",
+        "head_sha": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+        "id": 134640254513,
+        "name": "plan",
+        "steps": []
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+        "id": 134640298569,
+        "name": "build",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Build the production Worker once"
+          },
+          {
+            "conclusion": "failure",
+            "name": "Retain commit-bound build completion"
+          }
+        ]
+      },
+      {
+        "conclusion": "failure",
+        "head_sha": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+        "id": 134640452547,
+        "name": "verify",
+        "steps": [
+          {
+            "conclusion": "failure",
+            "name": "Require every planned command to succeed on this commit"
+          }
+        ]
+      },
+      {
+        "conclusion": "skipped",
+        "head_sha": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+        "id": 134640454471,
+        "name": "shards",
+        "steps": []
+      }
+    ]
+  },
+  "tests": {
+    "touched": {
+      "complete": false,
+      "reported": {
+        "passed": 33,
+        "failed": 5
+      },
+      "cases": [
+        {
+          "passed": true,
+          "name": "[baseline:BASE-ACCESS-001] [baseline:BASE-ACCESS-002] [baseline:BASE-ACCESS-003] [baseline:BASE-ACCESS-004] [baseline:BASE-INPUT-001] [baseline:BASE-INPUT-002] [baseline:BASE-INPUT-003] [baseline:BASE-SECRET-001] [baseline:BASE-DATA-002] [baseline:BASE-DATA-003] [baseline:BASE-DATA-004] [baseline:BASE-DATA-005] [baseline:BASE-PUBLIC-001] [baseline:BASE-PUBLIC-002] An owner publishes private installation data safely, then erases identities and signs out"
+        },
+        {
+          "passed": true,
+          "name": "[baseline:BASE-SECRET-002] [baseline:BASE-DATA-001] [baseline:BASE-OPS-001] [baseline:BASE-OPS-002] [baseline:BASE-OPS-003] [baseline:BASE-OPS-004] [baseline:BASE-OPS-005] An installation restores and upgrades its data, exposes failed work and recovers without duplicate delivery"
+        },
+        {
+          "passed": true,
+          "name": "SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out"
+        },
+        {
+          "passed": false,
+          "name": "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links"
+        },
+        {
+          "passed": true,
+          "name": "INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 \u2014 Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings"
+        },
+        {
+          "passed": true,
+          "name": "INTAKE-001 INTAKE-005 \u2014 Connect Another tool and send its copied sample request"
+        },
+        {
+          "passed": false,
+          "name": "AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence"
+        },
+        {
+          "passed": true,
+          "name": "Development ingress proofs are single-use and expire after five minutes"
+        },
+        {
+          "passed": true,
+          "name": "Development ingress refuses a forgotten proof once a full nonce set evicts it"
+        },
+        {
+          "passed": true,
+          "name": "Development ingress keeps serving new proofs while its nonce set is full"
+        },
+        {
+          "passed": true,
+          "name": "Development ingress holds exactly 10,000 nonces however many proofs it has accepted"
+        },
+        {
+          "passed": true,
+          "name": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 \u2014 owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover"
+        },
+        {
+          "passed": true,
+          "name": "ACCESS-001 SETUP-002 \u2014 a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview"
+        },
+        {
+          "passed": true,
+          "name": "MAINT-009 PAGE-020 \u2014 operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard"
+        },
+        {
+          "passed": true,
+          "name": "SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 \u2014 Local owner confirms public subscribers and inspects unsent incident notifications"
+        },
+        {
+          "passed": true,
+          "name": "TEAM-002 \u2014 Local operator invitations stay pending without email or a share action"
+        },
+        {
+          "passed": true,
+          "name": "HIST-008 \u2014 reviewed imported history stays completely browsable without scripts"
+        },
+        {
+          "passed": true,
+          "name": "PAGE-005 \u2014 a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch"
+        },
+        {
+          "passed": true,
+          "name": "UPTIME-003 \u2014 newly observed services report only their recorded coverage"
+        },
+        {
+          "passed": true,
+          "name": "HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory"
+        },
+        {
+          "passed": false,
+          "name": "tests/e2e/public-contract.test.mjs"
+        },
+        {
+          "passed": true,
+          "name": "TEAM-007 \u2014 audit labels identify people and subjects while filters and CSV retain machine keys"
+        },
+        {
+          "passed": true,
+          "name": "TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 \u2014 operator roles, permissions, audit and Settings chat identities"
+        },
+        {
+          "passed": false,
+          "name": "INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 \u2014 compiled visual edits and the operator publication journey"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-001 AGENT-004 MOBILE-001 \u2014 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke"
+        },
+        {
+          "passed": false,
+          "name": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget"
+        },
+        {
+          "passed": true,
+          "name": "DEP-001 DEP-002 \u2014 owner configures upstream reports under Settings"
+        },
+        {
+          "passed": true,
+          "name": "Owner incident communication \u2014 manual resolution, customer email and timeline correction"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 \u2014 reviewed incident from private template to immutable updates, recovery, report and audited deletion"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-013 \u2014 every explicit impact choice overrides higher and lower derived impact and clearing restores components"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-013 \u2014 each set and clear appends the exact acting operator and before and after values to private history"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-013 \u2014 every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime"
+        },
+        {
+          "passed": true,
+          "name": "MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 \u2014 owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history"
+        },
+        {
+          "passed": true,
+          "name": "UPDATE-006 \u2014 reviewed scheduled publication meets its deadline after complete public and subscriber silence"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-012 \u2014 linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams"
+        },
+        {
+          "passed": true,
+          "name": "AGENT-005 HIST-002 \u2014 cited report reconciles the retained record, requires human explanations and publishes immutable text"
+        },
+        {
+          "passed": true,
+          "name": "NOTIFY-015 \u2014 update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure"
+        },
+        {
+          "passed": true,
+          "name": "Maintenance reminders respect the lead time and skip recent announcements"
+        }
+      ]
+    },
+    "maintenance": {
+      "complete": true,
+      "reported": {
+        "passed": 3
+      },
+      "cases": [
+        {
+          "passed": true,
+          "name": "MAINT-009 PAGE-020 \u2014 operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard"
+        },
+        {
+          "passed": true,
+          "name": "SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 \u2014 Local owner confirms public subscribers and inspects unsent incident notifications"
+        },
+        {
+          "passed": true,
+          "name": "TEAM-002 \u2014 Local operator invitations stay pending without email or a share action"
+        }
+      ]
+    },
+    "channels-retry": {
+      "complete": true,
+      "reported": {
+        "passed": 1
+      },
+      "cases": [
+        {
+          "passed": true,
+          "name": "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links"
+        }
+      ]
+    },
+    "priority": {
+      "complete": true,
+      "reported": {
+        "failed": 1,
+        "passed": 2
+      },
+      "cases": [
+        {
+          "passed": false,
+          "name": "tests/e2e/public-contract.test.mjs"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 \u2014 reviewed incident from private template to immutable updates, recovery, report and audited deletion"
+        },
+        {
+          "passed": true,
+          "name": "INCIDENT-012 \u2014 linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams"
+        }
+      ]
+    },
+    "helper-touched": {
+      "complete": false,
+      "reported": {
+        "failed": 7,
+        "passed": 7
+      },
+      "cases": [
+        {
+          "passed": false,
+          "name": "SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure"
+        },
+        {
+          "passed": false,
+          "name": "NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 \u2014 Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts"
+        },
+        {
+          "passed": false,
+          "name": "Scoped incident subscriptions \u2014 native and Statuspage API consent, private reads and revoked writes"
+        },
+        {
+          "passed": false,
+          "name": "NOTIFY-002 \u2014 Every eligible capacity recipient reaches provider acceptance within five minutes"
+        },
+        {
+          "passed": false,
+          "name": "Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications"
+        },
+        {
+          "passed": false,
+          "name": "SUB-024 \u2014 A page that has not launched offers no subscription, sends nothing to strangers and stays out of search"
+        },
+        {
+          "passed": false,
+          "name": "SUB-001 \u2014 Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary"
+        },
+        {
+          "passed": true,
+          "name": "INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 \u2014 authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails"
+        },
+        {
+          "passed": true,
+          "name": "documented Sorry generator reproduces all bytes and hashes without provider reads"
+        },
+        {
+          "passed": true,
+          "name": "documented Sorry exports account for every field through preview, saved jobs and explicit refusals"
+        },
+        {
+          "passed": true,
+          "name": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 \u2014 Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow"
+        },
+        {
+          "passed": true,
+          "name": "MOVE-001 \u2014 Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers"
+        },
+        {
+          "passed": true,
+          "name": "MAINT-015 \u2014 Sorry maintenance labels use authored source states and keep missing states neutral"
+        },
+        {
+          "passed": true,
+          "name": "MOVE-001 Move in explains how Sorry component rows arrive as components and groups"
+        }
+      ]
+    },
+    "delivery-retry": {
+      "complete": false,
+      "reported": {
+        "failed": 2,
+        "passed": 1
+      },
+      "cases": [
+        {
+          "passed": false,
+          "name": "SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure"
+        },
+        {
+          "passed": false,
+          "name": "NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 \u2014 Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts"
+        },
+        {
+          "passed": true,
+          "name": "Scoped incident subscriptions \u2014 native and Statuspage API consent, private reads and revoked writes"
+        }
+      ]
+    },
+    "monitor-retry": {
+      "complete": true,
+      "reported": {
+        "failed": 1
+      },
+      "cases": [
+        {
+          "passed": false,
+          "name": "AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence"
+        }
+      ]
+    }
+  },
+  "browser_files": [
+    {
+      "file": "browser/component-history-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1000
+    },
+    {
+      "file": "browser/component-history-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 1000
+    },
+    {
+      "file": "browser/email-preview-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 2005
+    },
+    {
+      "file": "browser/email-preview-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 3623
+    },
+    {
+      "file": "browser/incident-next-draft-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1689
+    },
+    {
+      "file": "browser/incident-next-draft-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 2754
+    },
+    {
+      "file": "browser/incident-page-preview-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1000
+    },
+    {
+      "file": "browser/incident-page-preview-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 1745
+    },
+    {
+      "file": "browser/incident-unselected-state-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1000
+    },
+    {
+      "file": "browser/incident-unselected-state-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 1336
+    },
+    {
+      "file": "browser/local-operator-invitation-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1099
+    },
+    {
+      "file": "browser/local-operator-invitation-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 1747
+    },
+    {
+      "file": "browser/owner-overview-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1247
+    },
+    {
+      "file": "browser/owner-overview-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 1866
+    },
+    {
+      "file": "browser/public-status-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 2134
+    },
+    {
+      "file": "browser/public-status-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 2508
+    },
+    {
+      "file": "browser/public-time-details-1440.png",
+      "viewport": 1440,
+      "image_width": 960,
+      "image_height": 45
+    },
+    {
+      "file": "browser/public-time-details-390.png",
+      "viewport": 390,
+      "image_width": 358,
+      "image_height": 45
+    },
+    {
+      "file": "browser/scheduled-overview-1440.png",
+      "viewport": 1440,
+      "image_width": 1440,
+      "image_height": 1032
+    },
+    {
+      "file": "browser/scheduled-overview-390.png",
+      "viewport": 390,
+      "image_width": 390,
+      "image_height": 1413
+    },
+    {
+      "file": "browser/theme-colours-1440.png",
+      "viewport": 1440,
+      "image_width": 1111,
+      "image_height": 877
+    },
+    {
+      "file": "browser/theme-colours-390.png",
+      "viewport": 390,
+      "image_width": 358,
+      "image_height": 1404
+    }
+  ],
+  "product_push": true
+}
