@@ -38,7 +38,7 @@ export async function themeBrowserFlow({ appUrl, pageUrl, sessionId, cookieName,
     const open = async title => { const detail = page.locator("details").filter({ has: page.locator(":scope > summary", { hasText: title }) }).first(); if (!await detail.getAttribute("open")) await detail.locator(":scope > summary").click(); };
     await open("Colours");
     await page.getByLabel("Use a custom colour palette").check();
-    const labels = { background: "Background", surface: "Surface", text: "Text", link: "Links", operational: "Operational", degraded: "Degraded performance", partial: "Partially unavailable", major: "Major outage", maintenance: "Maintenance" };
+    const labels = { background: "Background", surface: "Surface", text: "Text", link: "Links", operational: "Working", degraded: "Slow", partial: "Partly down", major: "Down", maintenance: "Maintenance" };
     for (const [key, label] of Object.entries(labels)) await page.getByRole("textbox", { name: `${label} hex colour`, exact: true }).fill(theme.palette[key]);
     await saved();
     const textColour = page.getByRole("textbox", { name: "Text hex colour", exact: true });

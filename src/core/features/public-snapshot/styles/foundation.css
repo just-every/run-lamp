@@ -106,3 +106,6 @@ footer:empty { display: none; }
 
 /* A retained snapshot served while the current state cannot be verified. */
 .snapshot-stale { margin: 0; background: var(--amber-wash); box-shadow: inset 0 -1px 0 rgb(138 90 6 / .18); padding: 12px 24px; color: var(--amber-ink); font-size: 14px; font-weight: 500; line-height: 1.45; text-align: center; overflow-wrap: anywhere; }
+
+.time-details { color: var(--ink-3); font-size: 13px; overflow-wrap: anywhere; }
+.time-details summary { display: list-item; width: fit-content; min-height: 24px; line-height: 24px; cursor: pointer; }

@@ -101,8 +101,8 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
     observations.publicResolution = await entry.innerText();
     const current = (await api('/api/app/components')).components.find(row => row.id === component.id);
     assert.equal(current.publicState, 'Degraded performance');
-    assert.equal((await entry.innerText()).includes('→ Operational'), false, 'a manual degradation must not be announced as recovered');
-    assert.ok((await entry.innerText()).includes('Degraded performance'));
+    assert.equal((await entry.innerText()).includes('→ Working'), false, 'a manual degradation must not be announced as recovered');
+    assert.ok((await entry.innerText()).includes('remains slow'));
     await capture(publicPage, 'public-resolved');
     observations.correctButtons = await page.locator('.timeline').getByRole('button', { name: 'Correct', exact: true }).count();
     await capture(page, 'timeline');

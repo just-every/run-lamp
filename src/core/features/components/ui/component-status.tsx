@@ -1,7 +1,9 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
-import { COMPONENT_STATES, type ComponentState } from "../../../shared/domain";
+import type { ComponentState } from "../../../shared/domain";
+import { ComponentStateSelect } from "../../../app/client/ui/component-state-select";
 import type { ComponentView } from "../service";
 import { appApi } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -35,8 +37,8 @@ export function ComponentStatus({ component, onSaved }: { component: ComponentVi
   }
 
   return <div className="component-status">
-    <dl className="component-public-state"><dt>Current public state</dt><dd>{component.publicState}{source === "incident" ? " · from an incident" : source === "maintenance" ? " · from maintenance" : ""}</dd></dl>
-    <label className="form-label">Service status<select value={state} onChange={(event) => { setState(event.target.value as ComponentState | ""); setSaved(false); }}><option value="">Automatic (Operational unless affected)</option>{COMPONENT_STATES.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
+    <dl className="component-public-state"><dt>Current public state</dt><dd>{componentStateLabel(component.publicState)}{source === "incident" ? " · from an incident" : source === "maintenance" ? " · from maintenance" : ""}</dd></dl>
+    <ComponentStateSelect label="Service status" state={state} automatic disabled={saving} onChange={value => { setState(value); setSaved(false); }} />
     <p className="component-status-note">The public state is the most severe of this, open incidents and maintenance in progress.</p>
     {error && <FormError>{error}</FormError>}
     <div className="drawer-actions">{saved && <p className="settings-save-note" role="status"><Icon name="check" width={16} height={16} />Status saved</p>}<Button ref={saveButton} type="button" onClick={() => void save()} disabled={saving}>{saving ? "Saving…" : "Save status"}</Button></div>
