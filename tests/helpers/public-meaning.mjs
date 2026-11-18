@@ -27,14 +27,15 @@ function calendar(text) {
 }
 
 // Read displayed components; never let Date.parse invent a clock or roll a date over.
-export function assertVisibleTime(text, instant, timeZone) {
+export function assertVisibleTime(text, instant, timeZone, zoneName) {
   const visible = visibleText(text);
+  if (zoneName) assert.ok(visible.endsWith(zoneName), "visible time names the configured zone");
   const offsets = [...visible.matchAll(/\b(?:UTC|GMT)(?:\s*([+−-])\s*(\d{1,2})(?::?(\d{2}))?)?(?![\d:]|\s*[+−-])/gi)];
-  assert.equal(offsets.length, 1, "visible time supplies one readable UTC offset");
+  assert.equal(offsets.length, zoneName ? 0 : 1, zoneName ? "ordinary display has no UTC offset" : "time details supply one readable UTC offset");
   const offset = offsets[0];
-  assert.ok(Number(offset[2] ?? 0) <= 23 && Number(offset[3] ?? 0) < 60, "visible UTC offset has valid components");
-  const offsetMinutes = (offset[1] === "+" ? 1 : -1) * (Number(offset[2] ?? 0) * 60 + Number(offset[3] ?? 0));
-  const wallText = visible.slice(0, offset.index) + visible.slice(offset.index + offset[0].length);
+  if (offset) assert.ok(Number(offset[2] ?? 0) <= 23 && Number(offset[3] ?? 0) < 60, "visible UTC offset has valid components");
+  const offsetMinutes = offset && (offset[1] === "+" ? 1 : -1) * (Number(offset[2] ?? 0) * 60 + Number(offset[3] ?? 0));
+  const wallText = offset ? visible.slice(0, offset.index) + visible.slice(offset.index + offset[0].length) : visible.slice(0, -zoneName.length);
   const clocks = [...wallText.matchAll(/(?<!\d)(\d{1,2}):(\d{2})(?::(\d{2})(?:\.(\d+))?)?\s*([ap]\.?\s*m\.?)?(?![\d:.])/gi)];
   assert.equal(clocks.length, 1, "visible date includes an explicit clock time");
   const clock = clocks[0];
@@ -60,5 +61,13 @@ export function assertVisibleTime(text, instant, timeZone) {
     assert.equal(clock[4], fraction, "visible fractional seconds match their precision");
   }
   date.setUTCSeconds(value("second"), 0);
-  assert.equal(offsetMinutes || 0, (date.getTime() - Math.floor(epoch / 1000) * 1000) / 60000, "visible UTC offset matches this instant in the configured zone");
+  if (offset) assert.equal(offsetMinutes || 0, (date.getTime() - Math.floor(epoch / 1000) * 1000) / 60000, "visible UTC offset matches this instant in the configured zone");
 }
+
+export const expectedComponentLabels = {
+  "Operational": "Working",
+  "Degraded performance": "Slow",
+  "Partially unavailable": "Partly down",
+  "Major outage": "Down",
+  "Under maintenance": "Maintenance",
+};

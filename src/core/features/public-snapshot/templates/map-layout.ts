@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { COMPONENT_STATES } from "../../../shared/domain";
 import { MAP_WIDTH, mapHeight, project, type MapView } from "./world";
 import { textWidth } from "./text-width";
@@ -77,7 +78,7 @@ function translate(placement: Placement, pin: Pin) {
 /** Reserve every state label so an incident changes content without moving the map layout. */
 function cardWidth(marker: MapMarker, style: MapStyle) {
   const { card } = style;
-  return Math.max(textWidth(marker.name, card.name, 600), card.dot + Math.max(...COMPONENT_STATES.map(state => textWidth(state, card.state, 400)))) + 2 * card.padX + 2;
+  return Math.max(textWidth(marker.name, card.name, 600), card.dot + Math.max(...COMPONENT_STATES.map(state => textWidth(componentStateLabel(state), card.state, 400)))) + 2 * card.padX + 2;
 }
 
 /** A box on a map m pixels wide: its left edge at x + dx·m, its top at y + dy·m. */

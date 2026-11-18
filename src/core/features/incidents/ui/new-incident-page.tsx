@@ -64,7 +64,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
           <fieldset className="impact-field">
             <legend>What’s happening?</legend>
             <input aria-label="Incident title" required maxLength={250} placeholder="Title customers will see" value={form.title} onChange={(event) => setForm(current => ({ ...current, title: event.target.value }))} />
-            <textarea aria-label="Customer impact" required rows={2} maxLength={250} placeholder="What customers see" value={update.customerImpact} onChange={(event) => setUpdate("customerImpact", event.target.value)} />
+            <textarea aria-label="Customer impact" required rows={2} maxLength={250} placeholder="What customers will see next" value={update.customerImpact} onChange={(event) => setUpdate("customerImpact", event.target.value)} />
           </fieldset>
           <fieldset className="impact-field">
             <legend>Who’s affected?</legend>
@@ -73,7 +73,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
           </fieldset>
           <OptionalText id={stillWorksId} label="What still works" value={update.whatStillWorks} max={250} shown={shownFields.whatStillWorks} onChange={(value) => setUpdate("whatStillWorks", value)} />
           <OptionalText id={detailsId} label="Details" value={update.details} max={500} shown={shownFields.details} onChange={(value) => setUpdate("details", value)} />
-          <div className="form-label option-text" hidden={!shownFields.openedAt && !form.openedAt && !openedAtError}><label htmlFor={openedAtId}>Opened at</label><input id={openedAtId} type="datetime-local" value={toPageDateTime(form.openedAt, timezone)} onChange={(event) => { try { setForm(current => ({ ...current, openedAt: fromPageDateTime(event.target.value, timezone) })); setOpenedAtError(null); } catch (cause) { setOpenedAtError((cause as Error).message); } }} /><small>When it started, if earlier. <TimezoneHint timezone={timezone} at={form.openedAt} />.</small>{openedAtError ? <FormError>{openedAtError}</FormError> : null}</div>
+          <div className="form-label option-text" hidden={!shownFields.openedAt && !form.openedAt && !openedAtError}><label htmlFor={openedAtId}>Opened at</label><input id={openedAtId} type="datetime-local" value={toPageDateTime(form.openedAt, timezone)} onChange={(event) => { try { setForm(current => ({ ...current, openedAt: fromPageDateTime(event.target.value, timezone) })); setOpenedAtError(null); } catch (cause) { setOpenedAtError((cause as Error).message); } }} /><small>When it started, if earlier. <TimezoneHint timezone={timezone} />.</small>{openedAtError ? <FormError>{openedAtError}</FormError> : null}</div>
           {update.lifecycle === "Resolved" ? <p className="resolution-note" role="status">Resolved: no next update.</p> : <NextUpdateField value={update.nextUpdateAt} timezone={timezone} onChange={(value) => setUpdate("nextUpdateAt", value)} onError={(message) => setTimeErrors(current => ({ ...current, nextUpdate: message }))} />}
           {error ? <FormError>{error}</FormError> : null}
         </form>

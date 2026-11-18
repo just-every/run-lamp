@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { useState } from "react";
 import type { IncidentDraftInput } from "../../../shared/schemas";
 import type { IncidentView } from "../service";
@@ -12,7 +13,10 @@ export function ResolutionStatuses({ incident, draft, onChanged }: { incident: I
   const [saving, setSaving] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const attached = new Set([...incident.components.map(component => component.componentId), ...(draft.componentChanges ?? []).map(component => component.componentId)]);
-  const manual = data?.components.filter(component => attached.has(component.id) && component.standingClaimState && component.standingClaimState !== "Operational") ?? [];
+  const manual = (data?.components ?? []).flatMap(component => {
+    const state = component.standingClaimState;
+    return attached.has(component.id) && state && state !== "Operational" ? [{ component, state }] : [];
+  });
   if (error) return <FormError>Component statuses could not be checked. {error}</FormError>;
   if (!manual.length) return null;
   const automatic = async (component: ComponentView) => {
@@ -24,8 +28,8 @@ export function ResolutionStatuses({ incident, draft, onChanged }: { incident: I
     finally { setSaving(null); }
   };
   return <section className="resolution-statuses" aria-label="Component statuses after resolution">
-    {manual.map(component => <div key={component.id}><p><strong>{component.name}</strong> also has a manual status of {component.standingClaimState}. Resolving this incident will leave that status in place.</p><Button type="button" variant="secondary" disabled={saving !== null} onClick={() => void automatic(component)}>Set {component.name} to Automatic</Button></div>)}
-    <p>Automatic follows any other open incidents or maintenance, and is Operational when nothing affects the component.</p>
+    {manual.map(({ component, state }) => <div key={component.id}><p><strong>{component.name}</strong> also has a manual status of {componentStateLabel(state)}. Resolving this incident will leave that status in place.</p><Button type="button" variant="secondary" disabled={saving !== null} onClick={() => void automatic(component)}>Set {component.name} to Automatic</Button></div>)}
+    <p>Automatic follows any other open incidents or maintenance, and shows Working when nothing affects the component.</p>
     {saveError ? <FormError>{saveError}</FormError> : null}
   </section>;
 }
