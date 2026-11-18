@@ -2616,11 +2616,15 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "6520322f2a4e6121b48862ba1905c099b7222b570f7fbf5532215ccac3f64e0a",
+      "sha256": "4944b432918f456400a8f191f2bb4efb05636056650290abc306f8e46fbc2160",
+      "executable": false
+    },
+    "patches/picomatch@4.0.7.patch": {
+      "sha256": "35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b",
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "f3d4e47b6a6ebebafd78792cd1ae70d6d79ce439d31fad22f69542a2c453076d",
+      "sha256": "a6529f4a5e33cd4acdb8b74444de5bc58cce1f28203c9284e1ab48e9b7bd94e1",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
