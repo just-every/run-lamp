@@ -1,0 +1,107 @@
+{
+  "advertised_main_at_receipt": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "base_main_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "base_workflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44244896491",
+      "id": 44244896491,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44242052319",
+      "id": 44242052319,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-lamp-c-f142",
+  "candidate_run_site": {
+    "status": "pending landing"
+  },
+  "counts_after": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129,
+    "total": 244
+  },
+  "counts_before": {
+    "done": 60,
+    "missing": 55,
+    "partial": 129,
+    "total": 244
+  },
+  "head": "5430997af13af31e06aaf514d7b51e16727bc4d3",
+  "local_checks": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "summary": "Wrote 0 contract documents."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "summary": "Contract prose: 0 errors, 0 warnings.\nContract documents are current."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs",
+      "exit": 0,
+      "failed": 0,
+      "output": "JOURNEY.txt",
+      "passed": 2
+    }
+  ],
+  "local_node": "22.20.0",
+  "local_pnpm": "10.12.4",
+  "main_equals_candidate": false,
+  "page_007": {
+    "claim": "PARTIAL",
+    "held_points": [
+      2,
+      3
+    ],
+    "points": [
+      1
+    ]
+  },
+  "product_push": "confirmed",
+  "publication_scan": {
+    "findings": null,
+    "historyScanned": null,
+    "status": "pending lander"
+  },
+  "recorded_at": "2026-11-18T06:43:13+00:00",
+  "repository": "just-every/run-lamp",
+  "tag": "sd-lamp-c-f142",
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "5430997af13af31e06aaf514d7b51e16727bc4d3",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44252046136",
+    "id": 44252046136,
+    "name": "Verify",
+    "status": "in_progress"
+  }
+}

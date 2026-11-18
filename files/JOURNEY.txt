@@ -1,0 +1,35 @@
+Candidate 5430997af13af31e06aaf514d7b51e16727bc4d3
+Node v22.20.0 · pnpm 10.12.4
+Command: node --test --test-concurrency=1 tests/e2e/snapshot-retained.test.mjs
+Exit: 0
+
+TAP version 13
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304
+# PROBE HIST-008 4: all four generated month routes and incident permalinks -> 200 with exact membership through throwing D1, storage failure and cold restart; zero database accesses
+# Subtest: THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+ok 1 - THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+  ---
+  duration_ms: 11091.46272
+  type: 'test'
+  ...
+# RETENTION operator publish route: five publishes hold exactly current+previous=2
+# RETENTION operator publish route: ten old versions drained; versionCounts=9,6,3,2
+# RETENTION five publishes: versions=2
+# Public snapshot retention deferred until the next successful publication.
+# RETENTION legacy pile: oldVersions=10 remaining=10,9,6,3,0 finalVersions=2
+# Subtest: Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+ok 2 - Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+  ---
+  duration_ms: 12551.359348
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 24718.928637
