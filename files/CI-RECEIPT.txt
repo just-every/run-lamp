@@ -1,0 +1,9 @@
+Product head=70404ae45742014f3e465ec395bb00ca4c633309 Verify run=44293073651
+Fresh main=fd6695e358e5aa67c47c45f05591f2c33e83a930 Verify 44291956536 completed/success; Run site 44291956510 completed/success.
+2026-11-18T11:16:14Z in_progress/pending https://github.com/just-every/run-lamp/actions/runs/44293073651
+2026-11-18T11:21:14Z in_progress/pending https://github.com/just-every/run-lamp/actions/runs/44293073651
+2026-11-18T11:26:14Z in_progress/pending https://github.com/just-every/run-lamp/actions/runs/44293073651
+2026-11-18T11:31:14Z in_progress/pending https://github.com/just-every/run-lamp/actions/runs/44293073651
+2026-11-18T11:36:15Z in_progress/pending https://github.com/just-every/run-lamp/actions/runs/44293073651
+Pull request lookup: []
+GitHub API budget: ten calls used, including latest release and tag collision checks.

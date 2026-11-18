@@ -1,0 +1,14 @@
+2026-11-18T11:16:58Z
+head=70404ae45742014f3e465ec395bb00ca4c633309
+v22.20.0
+10.12.4
+pnpm typecheck: exit 0
+pnpm run source:copies: exit 0 (checked local bytes against recorded Base hashes)
+node src/base/contract-docs.mjs check: exit 0 (zero errors and warnings, generated views current)
+node scripts/edition-authoring/cli.mjs check: exit 0
+git diff --check origin/main..HEAD: exit 0
+Changed paths: rer-project.json, sources.lock.json
+Build: cloud_run npx -y @runeditrun/rer build completed before commit with the same manifest hash and application source.
+Native setup on the exact pushed commit: exit 0.
+The non-interactive setup reported the database up to date and the first owner set up.
+Setup used localhost. Hosted Business approval remains a release gate.

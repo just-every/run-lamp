@@ -1,0 +1,14 @@
+2026-11-18T11:16:07Z
+Scope-compliant release draft (predecessor snapshots absent, expected exit 1):
+Vendor catalog: 20 sources and 162 native state cases validated.
+ENOENT: no such file or directory, open 'release-history/1.11.22.json'
+Isolated copy with the exact predecessor tag files (exit 0):
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.23.
+RELEASE-DRAFT.patch applies to the product head and keeps the source pin.
+Tag predecessor files, SHA-256:
+f66d41b37d2001e684d241bd06a1ee084cd1ea3864ba194e6d8e60ac872d8866  release-history/1.11.22.json
+f9cb0b8a5bd46d6937005eccfd7b290d1ac6c3c512da4e973c0771bc3256cfdd  release-history/1.11.22.CONTRACT.md
+New migration paths (no previous migration bytes changed):
+A	migrations/core/0082_repeated_maintenance_cancellation.sql
+A	migrations/core/0083_sorry_template_metadata.sql
