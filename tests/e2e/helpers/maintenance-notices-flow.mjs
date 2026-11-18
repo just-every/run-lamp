@@ -8,7 +8,19 @@ const hour = 3_600_000;
 const iso = value => new Date(value).toISOString();
 
 export async function maintenanceReminderTimingFlow() {
-  const j = await openStatusJourney({ workerEntry: "tests/e2e/helpers/automation-clock-worker.ts" });
+  const providerRequests = [];
+  const j = await openStatusJourney({
+    workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts',
+    providerEdge: async request => {
+      const url = new URL(request.url);
+      if (url.origin === 'https://api.resend.com' && url.pathname === '/emails') {
+        providerRequests.push({
+          idempotencyKey: request.headers.get('Idempotency-Key'),
+          message: await request.clone().json(),
+        });
+      }
+    },
+  });
   try {
     const now = Date.now() + 60_000;
     await j.json('/test/clock', 'PUT', { now }, 204);
@@ -61,16 +73,20 @@ export async function maintenanceReminderTimingFlow() {
       // distinguish this notice from another publication of the same kind.
       const event = await j.db.prepare('SELECT notification_event_id, notification_event_type FROM notification_delivery_records WHERE id = ?').bind(delivery.id).first();
       assert.deepEqual(event, { notification_event_id: notice.id, notification_event_type: 'maintenance-notice' });
-      const receipts = j.mailReceipts.filter(row => row.idempotencyKey === `notification/${delivery.id}`);
+      const idempotencyKey = `notification/${delivery.id}`;
+      const requests = providerRequests.filter(request => request.idempotencyKey === idempotencyKey);
+      const receipts = j.mailReceipts.filter(row => row.idempotencyKey === idempotencyKey);
       const submissions = earlyMail().filter(mail => mail.subject.endsWith(`: ${subjectPrefix}: ${early.title}`));
-      assert.equal(receipts.length, 1, `one captured provider request for the ${kind} delivery`);
+      assert.equal(requests.length, 1, `one captured provider request for the ${kind} delivery`);
+      assert.equal(receipts.length, 1, 'the same request receives one provider acceptance');
       const { results: attempts } = await j.db.prepare('SELECT provider_message_id FROM notification_attempt_records WHERE delivery_id = ?').bind(delivery.id).all();
       assert.deepEqual(attempts, [{ provider_message_id: receipts[0].id }]);
-      assert.equal(submissions.length, 1);
-      assert.deepEqual(submissions[0].to, [reader]);
-      assert.equal(submissions[0].headers['Message-ID'], `<lamp-notification-${delivery.id}@${new URL(j.publicOrigin).host}>`);
-      assert.ok(submissions[0].text.split('\n\n').includes(`Status: ${state}`));
-      return notice;
+      const [{ message }] = requests;
+      assert.deepEqual(submissions, [message]);
+      assert.deepEqual(message.to, [reader]);
+      assert.equal(message.headers['Message-ID'], `<lamp-notification-${delivery.id}@${new URL(j.publicOrigin).host}>`);
+      assert.ok(message.text.split('\n\n').includes(`Status: ${state}`));
+      return { notice, delivery };
     };
     await tick(now + 2 * 60_000);
     for (const item of [early, tonight, atBoundary, changed, cancelled]) assert.equal((await reminders(item)).length, 0, `${item.title}: no reminder minutes after scheduling`);
@@ -89,24 +105,33 @@ export async function maintenanceReminderTimingFlow() {
     await tick(now + 27 * hour);
     assert.equal((await reminders(early)).length, 1, 'repeated scheduled runs cannot repeat a reminder');
 
-    for (const [time, kind, state, subjectPrefix] of [
-      [Date.parse(early.startsAt), 'started', 'In progress', 'Started'],
-      [Date.parse(early.endsAt), 'completed', 'Completed', 'Completed'],
+    for (const [time, kind, previousState, state, subjectPrefix] of [
+      [Date.parse(early.startsAt), 'started', 'Scheduled', 'In progress', 'Started'],
+      [Date.parse(early.endsAt), 'completed', 'In progress', 'Completed', 'Completed'],
     ]) {
+      const before = await read(early);
+      const priorDeliveries = await earlyDeliveries();
+      assert.equal(before.state, previousState);
+      assert.ok(!before.notices.some(row => row.kind === kind));
+      assert.ok(!priorDeliveries.some(row => row.maintenanceNoticeKind === kind));
       await tick(time);
-      const notice = await assertNoticeDelivery(kind, state, subjectPrefix);
+      const { notice, delivery } = await assertNoticeDelivery(kind, state, subjectPrefix);
       assert.equal(notice.publishedAt, iso(time));
       assert.equal(notice.authorOperatorId, null, 'Cron publishes the transition without an operator');
       const window = await read(early);
       const deliveries = await earlyDeliveries();
+      assert.deepEqual(window.notices.filter(row => row.id !== notice.id), before.notices);
+      assert.deepEqual(deliveries.filter(row => row.id !== delivery.id), priorDeliveries);
       const submissions = [...earlyMail()];
+      const requestCount = providerRequests.length;
       const receiptCount = j.mailReceipts.length;
       await j.tick(time);
       await tick(time + 60_000);
       assert.deepEqual(await read(early), window, `repeating Cron at ${kind} retains the exact notices and state`);
       assert.deepEqual(await earlyDeliveries(), deliveries, `repeating Cron at ${kind} retains the exact deliveries`);
       assert.deepEqual(earlyMail(), submissions, `repeating Cron at ${kind} sends no more window mail`);
-      assert.equal(j.mailReceipts.length, receiptCount, `repeating Cron at ${kind} makes no additional provider requests`);
+      assert.equal(providerRequests.length, requestCount, `repeating Cron at ${kind} makes no additional provider requests`);
+      assert.equal(j.mailReceipts.length, receiptCount, `repeating Cron at ${kind} yields no new provider acceptances`);
     }
     assert.deepEqual((await earlyDeliveries()).map(row => row.maintenanceNoticeKind), ['scheduled', 'reminder', 'started', 'completed']);
     assert.equal(earlyMail().length, 4, 'each of the four notices reached only the selected subscriber once');
