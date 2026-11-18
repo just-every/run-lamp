@@ -1,0 +1,56 @@
+[
+  {
+    "width": 1440,
+    "draft": {
+      "placeholder": "What customers will see next",
+      "state": "",
+      "options": [
+        "Choose a state",
+        "Working",
+        "Slow",
+        "Partly down",
+        "Down"
+      ]
+    },
+    "update": {
+      "placeholder": "What customers will see next",
+      "currentState": "Major outage"
+    },
+    "overview": [
+      "Live at localhost:33247·published Nov 18, 2026, 14:31 Brisbane time·Review page·Change address",
+      "Opened Nov 18, 2026, 14:31 Brisbane time · Down"
+    ],
+    "public": {
+      "state": "Down",
+      "time": "just now",
+      "generatedTooltip": "Nov 18, 2026, 14:31 Brisbane time"
+    }
+  },
+  {
+    "width": 390,
+    "draft": {
+      "placeholder": "What customers will see next",
+      "state": "",
+      "options": [
+        "Choose a state",
+        "Working",
+        "Slow",
+        "Partly down",
+        "Down"
+      ]
+    },
+    "update": {
+      "placeholder": "What customers will see next",
+      "currentState": "Major outage"
+    },
+    "overview": [
+      "Live at localhost:33247·published Nov 18, 2026, 14:31 Brisbane time·Review page·Change address",
+      "Opened Nov 18, 2026, 14:31 Brisbane time · Down"
+    ],
+    "public": {
+      "state": "Down",
+      "time": "just now",
+      "generatedTooltip": "Nov 18, 2026, 14:31 Brisbane time"
+    }
+  }
+]

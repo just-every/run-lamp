@@ -1,0 +1,60 @@
+[
+  {
+    "width": 1440,
+    "draft": {
+      "placeholder": "What customers see",
+      "state": "",
+      "options": [
+        "Choose a state",
+        "Working",
+        "Slow or partly down",
+        "Down"
+      ]
+    },
+    "update": {
+      "placeholder": "What customers see now"
+    },
+    "overview": [
+      "Live at localhost:38969\u00b7published Nov 18, 2026, 04:24 UTC+00:00\u00b7Review page\u00b7Change address",
+      "Opened Nov 18, 2026, 04:24 UTC+00:00 \u00b7 Major outage"
+    ],
+    "public": {
+      "state": "Major outage",
+      "time": "just now",
+      "generatedTooltip": "Nov 18, 2026, 04:24 UTC+00:00"
+    },
+    "localInvitation": {
+      "proof": "main-invite-1440.png",
+      "fixture": "Local operator invitations disclose suppressed email"
+    }
+  },
+  {
+    "width": 390,
+    "draft": {
+      "placeholder": "What customers see",
+      "state": "",
+      "options": [
+        "Choose a state",
+        "Working",
+        "Slow or partly down",
+        "Down"
+      ]
+    },
+    "update": {
+      "placeholder": "What customers see now"
+    },
+    "overview": [
+      "Live at localhost:38969\u00b7published Nov 18, 2026, 04:24 UTC+00:00\u00b7Review page\u00b7Change address",
+      "Opened Nov 18, 2026, 04:24 UTC+00:00 \u00b7 Major outage"
+    ],
+    "public": {
+      "state": "Major outage",
+      "time": "just now",
+      "generatedTooltip": "Nov 18, 2026, 04:24 UTC+00:00"
+    },
+    "localInvitation": {
+      "proof": "main-invite-390.png",
+      "fixture": "Local operator invitations disclose suppressed email"
+    }
+  }
+]

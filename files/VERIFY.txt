@@ -1,0 +1,32 @@
+GitHub Actions job 134584326933
+build	Build the production Worker once	2026-11-18T04:47:32.0479708Z Contract prose: 0 errors, 0 warnings.
+build	Build the production Worker once	2026-11-18T04:47:32.1424513Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Retain commit-bound build completion	2026-11-18T04:47:32.4052768Z ##[error]No files were found with the provided path: /home/runner/work/_temp/lamp-verification/ci-shards/build.json. No artifacts will be uploaded.
+
+GitHub Actions job 134584470710
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9335527Z build: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9335903Z ownership: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9338144Z portability: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9338585Z imports: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9338991Z composer: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9339391Z delivery: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9339766Z public: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9340139Z runtime: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:47:40.9340447Z demo: missing shard artifact
+
+GitHub Actions job 134585869001
+build	Build the production Worker once	2026-11-18T04:51:36.8501775Z Contract prose: 0 errors, 0 warnings.
+build	Build the production Worker once	2026-11-18T04:51:36.9226582Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Retain commit-bound build completion	2026-11-18T04:51:37.1272218Z ##[error]No files were found with the provided path: /home/runner/work/_temp/lamp-verification/ci-shards/build.json. No artifacts will be uploaded.
+
+GitHub Actions job 134585999630
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6812297Z build: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6812704Z ownership: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6813127Z portability: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6813540Z imports: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6813955Z composer: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6814397Z delivery: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6814922Z public: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6815412Z runtime: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T04:51:45.6816189Z demo: missing shard artifact
+

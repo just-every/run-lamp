@@ -1,0 +1,268 @@
+{
+  "files": [
+    {
+      "blob": "7bb5d379eb2c566daa09320489eb246c8dd5527f",
+      "bytes": 15175,
+      "path": "RECEIPTS.json",
+      "sha256": "8c431ecb38fc78807363d7c4df2ccd0b987e31744fe89768b4d2636f10c45a72"
+    },
+    {
+      "blob": "11dc066f43f37b58513c04d8fd5d74887254a075",
+      "bytes": 5487,
+      "path": "REPORT.md",
+      "sha256": "de4c9afb08d527db268833cad19d5c07324a9399acc8f1fe140a21a35d6e0913"
+    },
+    {
+      "blob": "fa09f78ecb182e3986f9bb3f316863d066a6783d",
+      "bytes": 3290,
+      "path": "VERIFY.txt",
+      "sha256": "d28c529798cef2eed81e838f9d63f167644b5eea8124e11f2537f9a2f0782854"
+    },
+    {
+      "blob": "7d4090b3c68dbd3f0ac624c5d57019794caf86e0",
+      "bytes": 233701,
+      "path": "candidate-brief-1440.png",
+      "sha256": "0001609214b1185913a4c910e9fc769da7e30af31dae22ffa8050fc567d17477"
+    },
+    {
+      "blob": "135ddc93a2e823ab649869c5ca7dfb34eef9ddfb",
+      "bytes": 196873,
+      "path": "candidate-brief-390.png",
+      "sha256": "3d9efc18b379235141081598325fa2095c668448d10d221d2075f7d86525713c"
+    },
+    {
+      "blob": "51a462fa400bfd91711e3fb927f2e9582c411f96",
+      "bytes": 1368,
+      "path": "candidate-browser.json",
+      "sha256": "82b0f8ce92774d2bd790d7f7c820b27694c0fc9d1fb7004a4e833c585f4e6089"
+    },
+    {
+      "blob": "cfa530725660d0b9cca4f3af9006653e136ea77d",
+      "bytes": 92329,
+      "path": "candidate-draft-1440.png",
+      "sha256": "4c8cffcb6be6e860f461a09fee8a5e3af8f917ce335928b331cea23208adde53"
+    },
+    {
+      "blob": "698ac3c3400c0a25c2d44d3be917ef32ac9477d7",
+      "bytes": 46863,
+      "path": "candidate-draft-390.png",
+      "sha256": "139c78405a2d3dc5c88fe6cef74c863fea4d76dd3de37e61eef195d62ef2fe72"
+    },
+    {
+      "blob": "2ab004b8490833e7e10d434d4a441f65b1e888b5",
+      "bytes": 274580,
+      "path": "candidate-email-preview-1440.png",
+      "sha256": "291e6e4abf5224eb4f3a632b41d212dbd92aebde322561c4e6fc00a7e72ae592"
+    },
+    {
+      "blob": "5c9ae808147175fef904a64ca39e5b453a3065e7",
+      "bytes": 237347,
+      "path": "candidate-email-preview-390.png",
+      "sha256": "3295ea6fd44037b34bcef3d7d014efa5b6b5a686200ec24e9b03672069ef82db"
+    },
+    {
+      "blob": "804c579831b5e42d9a74d65def59153afee1e4b9",
+      "bytes": 157766,
+      "path": "candidate-invite-1440.png",
+      "sha256": "f8765916d2056ae45a168bba7674b3050152df00e1db96392a9c4a3b17b077b8"
+    },
+    {
+      "blob": "801477321efb56d99b9efbe88f655a0549bef8a9",
+      "bytes": 114539,
+      "path": "candidate-invite-390.png",
+      "sha256": "692f55377b487c9f56e516a5bae7d15aa7ef8a5a10939bc77ce2046683c121f6"
+    },
+    {
+      "blob": "a4f3e422c679c515d24d36949ce22d1e16170523",
+      "bytes": 89035,
+      "path": "candidate-maintenance-1440.png",
+      "sha256": "f7cd5eb953d54ec25ceff7b87c7bfe1893b65888bc0b9e0c4a703f18ae8b2854"
+    },
+    {
+      "blob": "0365e21876eb2b5d9593d12c91c97832a0599bab",
+      "bytes": 36020,
+      "path": "candidate-maintenance-390.png",
+      "sha256": "d958ebe13bfc3466d28858918913b7f62bf11887479fc0310d1926a52932f612"
+    },
+    {
+      "blob": "060ab68135cde30d021cb0137cc28aa6f22111d6",
+      "bytes": 111940,
+      "path": "candidate-overview-1440.png",
+      "sha256": "86f0ab9ed05c6a8ee7ef1f4b8feb8a11180e801c5c1004ea73bfb7584141e40d"
+    },
+    {
+      "blob": "7f43687552272e05437d88907bb5a101aac93821",
+      "bytes": 58456,
+      "path": "candidate-overview-390.png",
+      "sha256": "fd014fcb4fda6e0539aae8892f9be30a96bdb8e0afc0c2052f57c9e182b5d225"
+    },
+    {
+      "blob": "7ba3a5c86e9e87bc0e7b8a431b768c6522d547bd",
+      "bytes": 206732,
+      "path": "candidate-page-preview-1440.png",
+      "sha256": "f4e304de854adacc3a73f8e089b373b32c8101ea4ff6f1415f2a3801f83cbe24"
+    },
+    {
+      "blob": "a8d60c885fa8f07d0bc86635800f8995eb21f06f",
+      "bytes": 176071,
+      "path": "candidate-page-preview-390.png",
+      "sha256": "4c295fbe86556d9dbddb451cf59a43d5905b8e8efbeac1afd86711407691f15b"
+    },
+    {
+      "blob": "968c8dd84afb375fa3fcb74524480272c57d36c2",
+      "bytes": 214777,
+      "path": "candidate-public-1440.png",
+      "sha256": "ef41e1fdf5a0e49bbe8d6db52eeff6c247e4b14b378f8bc2aebe6d90d4689036"
+    },
+    {
+      "blob": "c010494af22d33cf65d047d20d051c8a322f2c9d",
+      "bytes": 92984,
+      "path": "candidate-public-390.png",
+      "sha256": "f85bdd00d5d8103c161b1b162e83dd361246eb288726c5932b8e458ec8d03648"
+    },
+    {
+      "blob": "e0977b2eca2f8992e1915dc7c871ba1dadcb84b5",
+      "bytes": 123469,
+      "path": "candidate-scheduled-overview-1440.png",
+      "sha256": "e1bf8a38cf657a436c4a03dc2ffc377cb345b1c71e4ee04c042d8ddb77663dc5"
+    },
+    {
+      "blob": "7888a1a007d14264c29c014f4bc8e55f34e3a35d",
+      "bytes": 98551,
+      "path": "candidate-scheduled-overview-390.png",
+      "sha256": "2937eda1dede8c956726ff05d8e355341f70c88a1b090f6aa909020ccbe3fd83"
+    },
+    {
+      "blob": "4e0a25d28a30688e5b4939f3c5a82f8f28974a22",
+      "bytes": 234359,
+      "path": "candidate-suggestions-1440.png",
+      "sha256": "f8e9a93066fcfc620ea91b61fdb6b68cc1f10f2bae697e05bca6c7f58526b965"
+    },
+    {
+      "blob": "aa835f4d5fc43007c41559e930599e56d5b67f44",
+      "bytes": 200155,
+      "path": "candidate-suggestions-390.png",
+      "sha256": "cef036759f8d8f005f2204c13e22d86a12467ae46d11186274097eb549f1f7c6"
+    },
+    {
+      "blob": "3cafe0936acb732cee5d80fbff417f8c1034e83d",
+      "bytes": 218001,
+      "path": "candidate-timezone-details-1440.png",
+      "sha256": "0b602ded2f833c9e809caef89b3ef2f55204663c2dfb4e49570f928d2429553b"
+    },
+    {
+      "blob": "04bc0b5f1a45f9b36dc22e0ec90c5be7f4459ada",
+      "bytes": 94838,
+      "path": "candidate-timezone-details-390.png",
+      "sha256": "3a1a40febe7a6d7f1f3908ccb46d0ea6a3915b3a396a2b5331442719c7fcaf7c"
+    },
+    {
+      "blob": "cfa2c1bd06ea73797733d28b510c019659932418",
+      "bytes": 118132,
+      "path": "candidate-timezone-settings-1440.png",
+      "sha256": "45053499f06c1994e01206dcf6bf21fbeda274b2baeb0272b82552da2b1e438a"
+    },
+    {
+      "blob": "ae6c7b9d041960f9747943117f207fd447737efe",
+      "bytes": 44613,
+      "path": "candidate-timezone-settings-390.png",
+      "sha256": "1817fd9f14dd66304ff405f8d9b8d0314765d03cbe53634dd44cb60f7c25237c"
+    },
+    {
+      "blob": "22e029989256701a0a193ab24d75a3370b88200c",
+      "bytes": 120091,
+      "path": "candidate-timezone-settings-details-1440.png",
+      "sha256": "e9a0368177e9d7bbcf4f5871699fc3fbbbbc87ea608b7f3c49f43673309f888a"
+    },
+    {
+      "blob": "f462dff7a7b89039a436e564cce9a4233051d4cd",
+      "bytes": 45989,
+      "path": "candidate-timezone-settings-details-390.png",
+      "sha256": "9723bce8566cbb17d0cfb90f5ac066b2ab8220d1cdeb9cd2347ae045713bd6fb"
+    },
+    {
+      "blob": "3de1e556b9f371dea39ca9ffbe6a04733fbaa8e7",
+      "bytes": 134727,
+      "path": "candidate-update-1440.png",
+      "sha256": "0c2b09287db9de44c5d036759ee0934b4b2269db62f70a4ccfc02aff3eef0684"
+    },
+    {
+      "blob": "d57e0b83d92c4dee85b1974ebee7ad3cdafc88af",
+      "bytes": 52854,
+      "path": "candidate-update-390.png",
+      "sha256": "224f96ac1fc30441394b384add9954f95f76dd60b0ba45c119c3ce299bbcc509"
+    },
+    {
+      "blob": "44742b2978c57002bd777b92ec7cd1440c1307cd",
+      "bytes": 1569,
+      "path": "main-browser.json",
+      "sha256": "b44f534455d65940a149448e8fe5057f3d536ee27c62eac36ead416487903921"
+    },
+    {
+      "blob": "4fa91fc0d6dec6b480c6c3992b71553fc489c89a",
+      "bytes": 82799,
+      "path": "main-draft-1440.png",
+      "sha256": "411526e221ca436c5017626b5332c40436d922edf0148e856f7a09b6a0966e89"
+    },
+    {
+      "blob": "5fc1c00b1e60d46bdda7b490ec2cca1dec01f606",
+      "bytes": 46117,
+      "path": "main-draft-390.png",
+      "sha256": "9045865eb72ffd0d9a7d6bcb7af82931bdf6b695a6b21126fa7c747efa336205"
+    },
+    {
+      "blob": "414b24f899774abfb1d68b71868309733f68a0c3",
+      "bytes": 151966,
+      "path": "main-invite-1440.png",
+      "sha256": "99f7891ac4769965d1668a44367fd0db33d811bb55bffac7e16704882ef02146"
+    },
+    {
+      "blob": "497caa09df732cb6e4dafe6ff63883be2ac59cf2",
+      "bytes": 109953,
+      "path": "main-invite-390.png",
+      "sha256": "8daf417d9d9219a68c0208a32cca93e7ec88472350b0431334484ebd70169942"
+    },
+    {
+      "blob": "956820ab66c9cad4fc4b79de63c9ef464cacb4f6",
+      "bytes": 124373,
+      "path": "main-overview-1440.png",
+      "sha256": "24e9622e3dedb36ab560bdb53e8a46fb22279d3988f1c0c047fd607ede363955"
+    },
+    {
+      "blob": "4a9f9e829535f9228243075f93471c6d1bd17415",
+      "bytes": 60234,
+      "path": "main-overview-390.png",
+      "sha256": "4dc3c6973ad970bc0db0926b0f7f52672e23a7bf8e5c0fad1365cbd9e31ea47a"
+    },
+    {
+      "blob": "da325cbee9934da564ff513db58a6c3b0f2e9862",
+      "bytes": 218026,
+      "path": "main-public-1440.png",
+      "sha256": "d0108d25770d62280056468ee0945767ffe07bf18fc38692c993dd8fa099fe14"
+    },
+    {
+      "blob": "aa8d826d1849ca604ecfd4dfe8f9ac3419d4f489",
+      "bytes": 93770,
+      "path": "main-public-390.png",
+      "sha256": "140e4418375fb0b34a63f9ce532b68c68f892d80283dc7ee280d7370c7156c4b"
+    },
+    {
+      "blob": "9675883f10262ef0770ffb0adc591f7f425ce796",
+      "bytes": 135929,
+      "path": "main-update-1440.png",
+      "sha256": "52a5ed71837e74ac8a08562f4d9f8268d1c502d8b82d93b92ef1affc0ac195c3"
+    },
+    {
+      "blob": "bf99d2b9d990745aa1d53a2dca0b3c6817d2a248",
+      "bytes": 53816,
+      "path": "main-update-390.png",
+      "sha256": "1842342ef60013126b76010b08c56f05c0a041848d7e686c3529b7d1cb4f9e7d"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-design-calls-1",
+  "product_head": "d245ba342734095775ed5730dab1c850a841a6fb",
+  "ref": "refs/heads/evidence/sd-lamp-design-calls-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-design-calls-1"
+}
