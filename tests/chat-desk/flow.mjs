@@ -1,3 +1,4 @@
+import { expectedComponentLabels } from '../helpers/public-meaning.mjs';
 import assert from 'node:assert/strict';
 import { createHmac, generateKeyPairSync, sign, randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -215,7 +216,7 @@ export async function chatDeskNativeFlow(t) {
       assert.equal(preview.public.heading, expectedHeading);
       assert.equal(preview.public.lifecycle, 'Identified');
       assert.deepEqual(preview.public.fields.filter(field => field.label !== 'Component state'), fields, `${name} preview independently retains every UPDATE-001 field and submitted value`);
-      const componentLines = expectedClaims.map(({ componentId, state }) => `synthetic-lamp-${componentIds.indexOf(componentId) + 1}: Operational → ${state}`);
+      const componentLines = expectedClaims.map(({ componentId, state }) => `synthetic-lamp-${componentIds.indexOf(componentId) + 1}: Working → ${expectedComponentLabels[state]}`);
       assert.deepEqual(preview.public.fields.filter(field => field.label === 'Component state').map(field => field.value).sort(), [...componentLines].sort());
       assert.equal(preview.email.subject, expectedSubject);
       const expectedEmail = ['Synthetic Lamp', expectedHeading, 'Status: Identified', ...fields.map(field => `${field.label}: ${field.value}`), ...componentLines.map(line => `Component state: ${line}`), `Incident impact: ${name === 'Slack' ? 'Major' : 'Critical'}`].join('\n\n');

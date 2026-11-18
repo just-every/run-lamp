@@ -2,12 +2,15 @@ import { useEffect, useId, useRef, useState, type Ref } from "react";
 
 import { renderIncidentUpdate, type RenderedIncidentUpdate } from "../renderer";
 import type { IncidentView } from "../service";
-import { useCommittedTime } from "./update-due-notice";
 import { FormError, LoadingState } from "../../../app/client/ui/states";
+import { usePageTimezone } from "../../../app/client/ui/timezone";
+import { formatTime } from "../../public-snapshot/format";
 import { PreviewCard } from "./incident-composer-tools";
 
 /** UPDATE-004: the draft as the public page and as the notification email render it, one view at a time. */
 export function IncidentPreview({ preview, error, headingRef, hidden }: { hidden?: boolean; preview: RenderedIncidentUpdate | null; error: string | null; headingRef?: Ref<HTMLHeadingElement> }) {
+  const timezone = usePageTimezone();
+  const nextUpdate = preview?.public.fields.find(field => field.instant)?.instant;
   const [view, setView] = useState<"page" | "email">("page");
   return <aside id="draft-preview" hidden={hidden} className="preview-panel" aria-labelledby="preview-title">
     <div className="preview-heading">
@@ -25,6 +28,7 @@ export function IncidentPreview({ preview, error, headingRef, hidden }: { hidden
         <dl>{preview.email.from && !preview.email.deliverySuppressed ? <div><dt>From</dt><dd>{preview.email.from}</dd></div> : null}{preview.email.replyTo ? <div><dt>Reply-To</dt><dd>{preview.email.replyTo}</dd></div> : null}</dl>
         <h3>{preview.email.subject}</h3>
         {preview.email.html ? <EmailMessage key={preview.email.html} html={preview.email.html} /> : <div className="email-preview-text">{preview.email.plainText}</div>}
+        {nextUpdate ? <details><summary>Time details</summary><time dateTime={nextUpdate}>{formatTime(nextUpdate, timezone)}</time></details> : null}
         {preview.impactExplanation ? <p className="email-impact-source">{preview.impactExplanation}</p> : null}
       </section>}
   </aside>;
@@ -34,7 +38,6 @@ export function IncidentPreview({ preview, error, headingRef, hidden }: { hidden
 export function PublishedIncidentPreview({ incident, publishedUpdateId, publicOrigin }: { incident: IncidentView; publishedUpdateId: string; publicOrigin: string }) {
   const headingId = useId();
   const confirmation = useRef<HTMLParagraphElement>(null);
-  const formatTime = useCommittedTime();
   const latest = incident.updates[0];
   const href = `${publicOrigin}/incidents/${encodeURIComponent(incident.reference)}`;
   const [confirmedUpdateId, setConfirmedUpdateId] = useState<string>();
@@ -67,7 +70,6 @@ export function PublishedIncidentPreview({ incident, publishedUpdateId, publicOr
     ...latest,
     incidentReference: incident.reference,
     incidentTitle: incident.title,
-    nextUpdateDisplay: latest.nextUpdateAt ? formatTime(latest.nextUpdateAt) : null,
   });
   return <div className="published-update">
     <div className="publication-confirmation">

@@ -1,4 +1,4 @@
-import { zoneLabel } from "../../shared/timezone-label";
+import { zoneLabel, zoneOffset } from "../../shared/timezone-label";
 export const MINUTE = 60_000;
 
 export const DAY = 86_400_000;
@@ -47,13 +47,19 @@ function dateTimeText(date: Date, timezone: string) {
   return `${part("month")} ${part("day")}, ${part("year")}, ${part("hour")}:${part("minute")}`;
 }
 
+/** Technical timestamp for delivery, feeds and expanded time details. */
 export function formatTime(value: string, timezone: string) {
   const date = validDate(value);
-  const zoneName = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "longOffset" }).formatToParts(date).find((part) => part.type === "timeZoneName")?.value;
-  if (zoneName === "GMT") return `${dateTimeText(date, timezone)} UTC+00:00`;
-  const offset = /^GMT([+-]\d{2}:\d{2})$/.exec(zoneName ?? "")?.[1];
-  if (!offset) throw new Error("A public timezone offset is invalid.");
-  return `${dateTimeText(date, timezone)} UTC${offset}`;
+  return `${dateTimeText(date, timezone)} ${zoneOffset(timezone, date)}`;
+}
+
+export function formatPageTime(value: string, timezone: string) {
+  return `${dateTimeText(validDate(value), timezone)} ${zoneLabel(timezone)}`;
+}
+
+export function timestampDetails(timezone: string, ...entries: Array<[label: string, instant: string]>) {
+  return `<details class="time-details"><summary>Time details</summary>${entries.map(([label, instant]) =>
+    `<div>${escapeHtml(label)}: <time datetime="${escapeHtml(instant)}">${escapeHtml(formatTime(instant, timezone))}</time></div>`).join("")}</details>`;
 }
 
 export function timezoneLabel(timezone: string) {
@@ -61,7 +67,7 @@ export function timezoneLabel(timezone: string) {
 }
 
 export function timestamp(value: string, timezone: string) {
-  return `<time datetime="${escapeHtml(value)}" data-local-time>${escapeHtml(formatTime(value, timezone))}</time>`;
+  return `<time datetime="${escapeHtml(value)}" data-local-time>${escapeHtml(formatPageTime(value, timezone))}</time>`;
 }
 
 export function dateLabel(value: string, timezone: string) {
@@ -102,9 +108,8 @@ export function maintenanceTimeRange(startsAt: string, endsAt: string, timezone:
   const universal = ["UTC", "Etc/UTC", "Etc/GMT"].includes(timezone);
   const date = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric" }).format(at);
   const clock = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "2-digit", minute: "2-digit", ...(universal ? { hourCycle: "h23" } as const : { hour12: true }) }).format(at);
-  const zone = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "short" }).formatToParts(at).find(part => part.type === "timeZoneName")!.value;
   const sameDay = dayKey(start.getTime(), timezone) === dayKey(end.getTime(), timezone);
-  const startText = `${date(start)}, ${clock(start)}${zone(start) !== zone(end) ? ` ${zone(start)}` : ""}`;
-  const endText = `${sameDay ? "" : `${date(end)}, `}${clock(end)} ${universal ? "UTC" : zone(end)}`;
+  const startText = `${date(start)}, ${clock(start)}`;
+  const endText = `${sameDay ? "" : `${date(end)}, `}${clock(end)} ${zoneLabel(timezone)}`;
   return `<time datetime="${escapeHtml(startsAt)}">${escapeHtml(startText)}</time> – <time datetime="${escapeHtml(endsAt)}">${escapeHtml(endText)}</time>`;
 }

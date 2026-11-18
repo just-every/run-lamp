@@ -2,7 +2,7 @@ import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenanc
 import { ARCHIVE_PAGE_SIZE, encodeArchiveCursor, type ArchivePage } from "./archive";
 import type { PublicIncident, PublicMaintenance } from "./record-markup";
 import { noticeMarkup, recordHead, updateMarkup } from "./record-markup";
-import { DAY, durationText, escapeHtml, timestamp } from "./format";
+import { DAY, durationText, escapeHtml, timestamp, timestampDetails } from "./format";
 
 interface HistoryModel {
   bounded?: boolean;
@@ -20,11 +20,11 @@ function historyRecords(model: HistoryModel): HistoryRecord[] {
   return [
     ...model.incidents.filter(incident => incident.lifecycle === "Resolved" && incident.resolvedAt).map(incident => ({
       id: incident.id, kind: "incident" as const, timestamp: incident.resolvedAt!,
-      html: () => `<article class="history-item" data-incident-impact="${incident.effectiveImpact}">${recordHead("Incident", `<a href="/incidents/${encodeURIComponent(incident.reference)}">${escapeHtml(incident.title)}</a>`, "h3", incident.lifecycle)}<p class="incident-meta">Opened ${timestamp(incident.openedAt, timezone)} · Resolved ${timestamp(incident.resolvedAt!, timezone)} · ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt!))}${incident.components.length ? ` · affected ${escapeHtml(incident.components.join(", "))}` : ""}</p><div class="updates">${incident.updates.map(update => updateMarkup(incident, update, timezone)).join("")}</div></article>`,
+      html: () => `<article class="history-item" data-incident-impact="${incident.effectiveImpact}">${recordHead("Incident", `<a href="/incidents/${encodeURIComponent(incident.reference)}">${escapeHtml(incident.title)}</a>`, "h3", incident.lifecycle)}<p class="incident-meta">Opened ${timestamp(incident.openedAt, timezone)} · Resolved ${timestamp(incident.resolvedAt!, timezone)} · ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt!))}${incident.components.length ? ` · affected ${escapeHtml(incident.components.join(", "))}` : ""}</p>${timestampDetails(timezone, ["Opened", incident.openedAt], ["Resolved", incident.resolvedAt!])}<div class="updates">${incident.updates.map(update => updateMarkup(incident, update, timezone)).join("")}</div></article>`,
     })),
     ...model.maintenance.filter(item => item.state === "Completed" || item.state === "Cancelled").map(item => ({
       id: item.id, kind: "maintenance" as const, timestamp: item.completedAt ?? item.endsAt,
-      html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p><div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone, item)).join("")}</div></article>`,
+      html: () => `<article class="history-item">${recordHead("Maintenance", `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, "h3", item.state)}<p class="incident-meta">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)} · ${escapeHtml(durationText(item.startsAt, item.endsAt))}${item.components.length ? ` · affected ${escapeHtml(item.components.join(", "))}` : ""}</p>${timestampDetails(timezone, ["Starts", item.startsAt], ["Ends", item.endsAt])}<div class="updates">${[...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((left, right) => right.publishedAt.localeCompare(left.publishedAt)).map(notice => noticeMarkup(notice, timezone, item)).join("")}</div></article>`,
     })),
   ].sort((left, right) => right.timestamp.localeCompare(left.timestamp) || right.id.localeCompare(left.id) || right.kind.localeCompare(left.kind));
 }

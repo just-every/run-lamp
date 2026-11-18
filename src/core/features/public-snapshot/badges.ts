@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../shared/component-state-label";
 import type { ComponentState } from "../../shared/domain";
 import type { PublicSnapshotModel, SnapshotArtifact } from "./renderer";
 import { publicComponentResources } from "./component-address";
@@ -20,13 +21,13 @@ function badge(label: string, message: string, color: string): string {
 export function renderBadges(model: PublicSnapshotModel): SnapshotArtifact[] {
   const svg = (key: string, label: string, message: string, color: string): SnapshotArtifact => ({ key, body: badge(label, message, color), contentType: "image/svg+xml; charset=utf-8" });
   const artifacts: SnapshotArtifact[] = [
-    svg("badge.svg", "status", model.overall, STATE_COLORS[model.overall]),
-    { key: "badge.json", body: JSON.stringify({ schemaVersion: 1, label: "status", message: model.overall, color: STATE_COLORS[model.overall], isError: false }), contentType: "application/json; charset=utf-8" },
+    svg("badge.svg", "status", componentStateLabel(model.overall), STATE_COLORS[model.overall]),
+    { key: "badge.json", body: JSON.stringify({ schemaVersion: 1, label: "status", message: componentStateLabel(model.overall), color: STATE_COLORS[model.overall], isError: false }), contentType: "application/json; charset=utf-8" },
   ];
   for (const component of model.visibleComponents) {
     const paths = publicComponentResources(component);
     artifacts.push(
-      svg(paths.badge.slice(1), component.name, component.state, STATE_COLORS[component.state]),
+      svg(paths.badge.slice(1), component.name, componentStateLabel(component.state), STATE_COLORS[component.state]),
       svg(paths.uptime.slice(1), `${REPORTING_DAYS}-day uptime`, component.uptime.percentage ?? "No data", component.uptime.percentage === null ? "#5f6d66" : STATE_COLORS[component.state]),
     );
   }

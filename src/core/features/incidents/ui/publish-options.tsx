@@ -50,8 +50,8 @@ export function PublishTimingField({ timing, timezone, error, onChange, onError 
   return <fieldset className="option-group publish-timing">
     <legend className="sr-only">Publish</legend>
     <div className="choice-row">{(["now", "schedule", "backdate"] as const).map(mode => <label key={mode} className="choice-pill"><input type="radio" name="publish-timing" checked={timing.mode === mode} onChange={() => { onChange({ mode, at: null }); onError(null); }} />{mode === "now" ? "Now" : mode === "schedule" ? "Schedule" : "Backdate"}</label>)}</div>
-    {timing.mode === "schedule" ? <label className="form-label"><span className="sr-only">Scheduled publication</span><input aria-label="Scheduled publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Stays private until then. <TimezoneHint timezone={timezone} at={timing.at} />.</small></label> : null}
-    {timing.mode === "backdate" ? <label className="form-label"><span className="sr-only">Past update time</span><input aria-label="Historical publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Notifies no one. <TimezoneHint timezone={timezone} at={timing.at} />.</small></label> : null}
+    {timing.mode === "schedule" ? <label className="form-label"><span className="sr-only">Scheduled publication</span><input aria-label="Scheduled publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Stays private until then. <TimezoneHint timezone={timezone} />.</small></label> : null}
+    {timing.mode === "backdate" ? <label className="form-label"><span className="sr-only">Past update time</span><input aria-label="Historical publication date and time" type="datetime-local" value={toPageDateTime(timing.at, timezone)} onChange={(event) => setAt(event.target.value)} /><small>Notifies no one. <TimezoneHint timezone={timezone} />.</small></label> : null}
     {error ? <FormError>{error}</FormError> : null}
   </fieldset>;
 }
