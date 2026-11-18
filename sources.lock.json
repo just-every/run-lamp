@@ -4628,7 +4628,7 @@
       "executable": false
     },
     "src/core/features/chat-desk/slack/blocks.ts": {
-      "sha256": "b2181535fcf80e15cfe3a3d7d940381ee4e76b4e208e23a2d99374f92f3dd308",
+      "sha256": "d8ff6c3dc113cc1c814555cf9f05dcd1959eb8ee5eac88b80ca9c4a3cf54bc40",
       "executable": false
     },
     "src/core/features/chat-desk/slack/response.ts": {
@@ -4644,7 +4644,7 @@
       "executable": false
     },
     "src/core/features/chat-desk/teams/cards.ts": {
-      "sha256": "217345c063f3146eb46e73571a23379441845c780abdc2d51827ba2b88f3d5d8",
+      "sha256": "c5508b01848ceace3bf96cee12f45d502c9bc1e64c376d41e3d5387c2098e0a8",
       "executable": false
     },
     "src/core/features/chat-desk/teams/verify.ts": {
@@ -5004,7 +5004,7 @@
       "executable": false
     },
     "src/core/features/incidents/renderer.ts": {
-      "sha256": "a507e1a7cfdcc2d5b5ee8fea0e587528cfb97e71e7a6e44b2479a2fb11354ec9",
+      "sha256": "b63bf29cc516cefd654b5f3a9f155dc985c8b50fcd566d4881c579d66ee2cb52",
       "executable": false
     },
     "src/core/features/incidents/repository.ts": {
@@ -5016,7 +5016,7 @@
       "executable": false
     },
     "src/core/features/incidents/service.ts": {
-      "sha256": "6b5030dc30acda9911fd28094655fc2f059e2a0fab4118932df65a608de1326b",
+      "sha256": "53cbe77e67f4e085a0916e306eef4d8edf5a9f0dd6f72032be851fd516d97ffe",
       "executable": false
     },
     "src/core/features/incidents/template-fields.ts": {
@@ -7088,7 +7088,7 @@
       "executable": false
     },
     "src/core/shared/email-branding.ts": {
-      "sha256": "b2d3d9bd44707a18621f9f61af7a5f3475399eb96f2a68eccc6ea21611d6a3e0",
+      "sha256": "b96aa1fd27543dab7a0e4ff947d7d4bcd1c27232de73b41ac5250bb0475ab9a9",
       "executable": false
     },
     "src/core/shared/ids.ts": {
@@ -7992,7 +7992,7 @@
       "executable": false
     },
     "tests/chat-desk/flow.mjs": {
-      "sha256": "eedcf035a9ce26c5177731e1cfa719292e6b5d8edda4c7b2fb0c2409dfd5fc4c",
+      "sha256": "2c2c2497c2feca677c7e7565324a96119a6ec047c2ca743540534ec1f4164ca1",
       "executable": false
     },
     "tests/chat-desk/roles.mjs": {
