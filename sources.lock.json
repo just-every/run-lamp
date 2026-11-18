@@ -8036,7 +8036,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "7e54f20fa05a781a1b4c6d37592a0e08bc3cfade513666b100132f9db35e6104",
+      "sha256": "60b53a219b56cec061ad694dd3a44a43a4c1de5e10d06c1ea82d85a9da73c8b2",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -8613,6 +8613,10 @@
     },
     "tests/e2e/helpers/webhook-format-browser-flow.mjs": {
       "sha256": "c492ae8e737d9913b946ce5f547d2492e5aac954a96d0899c8cd3d539805f65d",
+      "executable": false
+    },
+    "tests/e2e/helpers/webhook-receiver-deadline-flow.mjs": {
+      "sha256": "09d598478518cd288afa17eb8a64aa69503a53e45145b620116f8d11e3b38141",
       "executable": false
     },
     "tests/e2e/helpers/widget-privacy-flow.mjs": {
