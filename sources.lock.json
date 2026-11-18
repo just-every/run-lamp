@@ -8060,7 +8060,7 @@
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
-      "sha256": "1525ab2bddaaec25dde1c36579e4c8b83fcbb101eceb2abdc82b4c6f0f6cbd67",
+      "sha256": "9145cc4b9f71d0ed927a31991725ee9c12a645783314fd2412912fc8f48382da",
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
