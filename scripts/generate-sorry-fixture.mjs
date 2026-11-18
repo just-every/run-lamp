@@ -51,6 +51,7 @@ function notice(index, rows, isPublic) {
   const updateRows = [0, 1].map((step) => ({
     id: 30000 + index * 10 + step,
     content: index === 0 && step === 0 ? `Synthetic long update ${'message '.repeat(1600)}`
+      : index === 1 && step === 0 ? '<p><b>Synthetic customer words remain readable.</b></p><p>Read <a href="https://docs.example.invalid/synthetic-lamp-1">the recovery guide</a>.</p><script>window.importedMarkupXss=true</script><img src=x onerror="window.importedMarkupXss=true">'
       : step === 0 ? `Synthetic ${type} notice ${index + 1}: review is underway.` : `Synthetic ${type} notice ${index + 1}: this is the final saved update.`,
     ...(isPublic && !general ? { state: step === 0 ? planned ? 'underway' : 'investigating' : state } : {}),
     created_at: iso(index * 60 + step * 30), updated_at: iso(index * 60 + step * 30),
@@ -213,7 +214,7 @@ export function expectedSorryInventory(files = documentedSorryFixture()) {
       { file: 'authenticated/sorry-notice-2000.json', path: '/response/subject', expected: 'changed', reason: 'Incident title exceeds native length.' },
       { file: 'authenticated/sorry-subscribers.json', path: '/response/0/phone_number', expected: 'deleted', reason: 'Phone channel value must not be retained.' },
       { file: 'authenticated/sorry-subscribers.json', path: '/response/2/slack_webhook_url', expected: 'deleted', reason: 'Chat access capability must not be retained.' },
-      { file: 'public/sorry-components.json', path: '/components/4/metrics_summary/percentage_uptime/percent', expected: 'raw-only', reason: 'Source metrics summary is not native availability history.' },
+      { file: 'public/sorry-components.json', path: '/components/4/metrics_summary/percentage_uptime/percent', expected: 'changed', reason: 'Source metrics remain labeled metadata, never native availability history.' },
     ],
     resourceGaps: [
       { file: 'sorry-brand.json', resource: 'branding', expected: 'refused', nextAction: 'Recreate branding in Lamp Settings.' },

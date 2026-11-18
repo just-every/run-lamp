@@ -69,12 +69,18 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
   const identify = (key: string, at: string) => stableId(key, at, namespace);
   const results: Mapped[] = [];
   const groupIds = new Map<string, string>();
-  [...data.groups].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id)).forEach((group, index) => {
-    const id = identify(`group:${group.id}`, group.created_at);
-    groupIds.set(group.id, id);
+  // Allocate every identity before wiring ancestry; a source may list its
+  // descendants before its parents. Writes follow ancestry, display order does not.
+  for (const group of data.groups) groupIds.set(group.id, identify(`group:${group.id}`, group.created_at));
+  const orderedGroups = [...data.groups].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
+  const groupOrder = new Map(orderedGroups.map((group, index) => [group.id, snapshot.orders.get(groupIds.get(group.id)!) ?? snapshot.maxGroupOrder + index + 1]));
+  const depth = (group: SourceData["groups"][number]) => Array.isArray(group.source_metadata?.ancestorIds) ? group.source_metadata.ancestorIds.length : 0;
+  [...orderedGroups].sort((a, b) => depth(a) - depth(b) || groupOrder.get(a.id)! - groupOrder.get(b.id)!).forEach((group) => {
+    const id = groupIds.get(group.id)!;
     const name = clip(group.name, 120);
-    results.push({ kind: "group", sourceId: group.id, value: { tables: { component_groups: [{ id, name, display_order: snapshot.orders.get(id) ?? snapshot.maxGroupOrder + index + 1, created_at: asOf, updated_at: asOf }] } },
-      accounting: [{ kind: "group", sourceId: group.id, name: group.name, outcome: name === group.name ? "imported" : "changed", reason: name === group.name ? "Group and its order carried over." : "Group name shortened to 120 characters." }] });
+    results.push({ kind: "group", sourceId: group.id, value: { tables: { component_groups: [{ id, name, display_order: groupOrder.get(group.id)!,
+      ...(namespace === "sorry" ? { ...(group.parent_id ? { parent_id: groupIds.get(group.parent_id)! } : {}), ...(group.description ? { description: clip(group.description, 500) } : {}), source_metadata_json: JSON.stringify(group.source_metadata ?? null), created_at: iso(group.created_at), updated_at: iso(group.updated_at ?? group.created_at) } : { created_at: asOf, updated_at: asOf }) }] } },
+      accounting: [{ kind: "group", sourceId: group.id, name: group.name, outcome: "imported", reason: namespace === "sorry" ? "Recursive group, description, order and original source metadata carried over once." : name === group.name ? "Group and its order carried over." : "Group name shortened to 120 characters." }] });
   });
 
   const components = new Map<string, { id: string; name: string; created: string }>();
@@ -122,7 +128,7 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
     const created = [native.created, ...own.map((claim) => claim.changedAt)].sort()[0];
     const history = deriveHistory(native.id, created, own, operatorId, asOf, identify);
     componentResults.push({ kind: "component", sourceId: component.id, accounting: componentAccounting.get(component.id)!, value: { tables: {
-      components: [{ id: native.id, group_id: component.group_id ? groupIds.get(component.group_id) ?? null : null, name: native.name, description: clip(component.description ?? "", 500), internal: 0, ...(component.only_show_if_degraded ? { only_show_if_degraded: 1 } : {}), display_order: snapshot.orders.get(native.id) ?? snapshot.maxComponentOrder + index + 1, note: "", created_at: created, updated_at: asOf }],
+      components: [{ id: native.id, group_id: component.group_id ? groupIds.get(component.group_id) ?? null : null, name: native.name, description: clip(component.description ?? "", 500), internal: 0, ...(component.only_show_if_degraded ? { only_show_if_degraded: 1 } : {}), display_order: snapshot.orders.get(native.id) ?? snapshot.maxComponentOrder + index + 1, note: "", created_at: created, updated_at: asOf, ...(namespace === "sorry" ? { source_metadata_json: JSON.stringify(component.source_metadata ?? null) } : {}) }],
       ...(namespace !== "statuspage" && component.status && component.status !== "operational" ? { component_standing_claims: [{ id: identify(`standing:${component.id}`, asOf), component_id: native.id, state: componentStates[component.status], operator_id: operatorId, created_at: asOf, updated_at: asOf }] } : {}),
       component_claim_events: history.events,
       component_state_history: history.history,
@@ -197,7 +203,11 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
     if (!wholeSourceText && points.length > 749) notes.add("long update text was shortened to Lamp's update fields");
     const stated = [...current.keys()].map((code) => components.get(code)!.name);
     const names = stated.length ? stated : listedNames;
-    rows.push({ id: identify(`incident-update:${update.id}`, publishedAt), incident_id: id, lifecycle, affected_audience: clip(names.length ? `Customers using ${names.join(", ")}` : "All customers", 250), customer_impact: impact, what_still_works: "", details, next_update_at: null, published_at: publishedAt, author_operator_id: operatorId, corrects_update_id: null, is_retroactive: 1, created_at: asOf, updated_at: asOf });
+    const audience = clip(names.length ? `Customers using ${names.join(", ")}` : "All customers", 250);
+    const sourceMetadata = update.source_metadata ? { ...update.source_metadata, body,
+      nativeWording: { affectedAudience: audience, customerImpact: impact, whatStillWorks: "", details, nextUpdateAt: null,
+        publishedAt, correctsUpdateId: null, lifecycle } } : undefined;
+    rows.push({ id: identify(`incident-update:${update.id}`, publishedAt), incident_id: id, lifecycle, affected_audience: audience, customer_impact: impact, what_still_works: "", details, next_update_at: null, published_at: publishedAt, author_operator_id: operatorId, corrects_update_id: null, is_retroactive: 1, created_at: asOf, updated_at: asOf, ...(sourceMetadata ? { source_metadata_json: JSON.stringify(sourceMetadata) } : {}) });
   }
   if (reopenedByLateUpdate) { lifecycle = "Resolved"; resolvedAt = sourceResolvedAt; }
   if (claimEndsAt) for (const code of current.keys()) claims.push({ componentId: components.get(code)!.id, causeType: "incident", causeId: id, state: null, changedAt: claimEndsAt });
@@ -208,7 +218,7 @@ function mapIncident(incident: SourceIncident, components: Map<string, { id: str
   const title = clip(name, 250);
   if (title !== name) notes.add("the title was shortened to 250 characters");
   return { kind: "incident", sourceId: incident.id, value: { tables: {
-    incidents: [{ id, reference: reference(id), title, lifecycle, opened_at: iso(incident.created_at), resolved_at: lifecycle === "Resolved" ? (incident.resolved_at ? iso(incident.resolved_at) : resolvedAt) : null, created_by_operator_id: operatorId, deleted_at: null, deletion_reason: null, created_at: asOf, updated_at: asOf, peak_impact: mostSevereState(peak), ...(independentImpact && ["none", "minor", "major", "critical"].includes(incident.impact ?? "") ? { impact_override: incident.impact! } : {}) }],
+    incidents: [{ id, reference: reference(id), title, lifecycle, ...(incident.source_metadata ? { source_metadata_json: JSON.stringify(incident.source_metadata) } : {}), opened_at: iso(incident.created_at), resolved_at: lifecycle === "Resolved" ? (incident.resolved_at ? iso(incident.resolved_at) : resolvedAt) : null, created_by_operator_id: operatorId, deleted_at: null, deletion_reason: null, created_at: asOf, updated_at: asOf, peak_impact: mostSevereState(peak), ...(independentImpact && ["none", "minor", "major", "critical"].includes(incident.impact ?? "") ? { impact_override: incident.impact! } : {}) }],
     incident_components: attached,
     incident_updates: rows,
   } }, accounting: [{ kind: "incident", sourceId: incident.id, name, outcome: notes.size ? "changed" : "imported", reason: `${updates.length} update${updates.length === 1 ? "" : "s"} at their original times, notifying no one${notes.size ? `; ${[...notes].join("; ")}` : ""}.` }] };
@@ -223,19 +233,31 @@ function mapMaintenance(window: SourceIncident, components: Map<string, { id: st
   if (!attached.length) return { kind: "maintenance", sourceId: window.id, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: "rejected", reason: "It names no component in the saved responses." }] };
   // A window already over is history, whatever its source status: importing it
   // as Scheduled would make Lamp announce its start and end now.
-  const state = window.status === "cancelled" ? "Cancelled" : endsAt <= asOf || window.status === "completed" ? "Completed" : startsAt <= asOf ? "In progress" : "Scheduled";
+  const state = window.status === "cancelled" ? "Cancelled" : endsAt <= asOf || window.status === "completed" ? "Completed"
+    : window.source_automation === false ? window.status === "in_progress" ? "In progress" : "Scheduled"
+    : startsAt <= asOf ? "In progress" : "Scheduled";
   const completedAt = state === "Completed" ? (window.resolved_at ? iso(window.resolved_at) : endsAt) : null;
+  // Sorry's begins_at is a schedule, not evidence of when work actually
+  // started. An underway source without began_at is observed at import; a
+  // completed source without it cannot establish a historical claim interval.
+  const sorry = window.source_metadata?.source === "Sorry";
+  const claimStartsAt = sorry ? window.source_began_at ? iso(window.source_began_at) : state === "In progress" ? asOf : null : startsAt;
+  const timingExplanation = sorry && !window.source_began_at && ["In progress", "Completed"].includes(state)
+    ? state === "In progress" ? " Actual source start is unavailable; its running state is observed at import, not backdated to the schedule."
+      : " Actual source start is unavailable; no historical component claim is inferred from its schedule."
+    : "";
   for (const code of attached) {
-    if (state === "Scheduled" || state === "Cancelled") continue;
-    claims.push({ componentId: components.get(code)!.id, causeType: "maintenance", causeId: id, state: "Under maintenance", changedAt: startsAt });
+    if (state === "Scheduled" || state === "Cancelled" || !claimStartsAt) continue;
+    claims.push({ componentId: components.get(code)!.id, causeType: "maintenance", causeId: id, state: "Under maintenance", changedAt: claimStartsAt });
     if (completedAt) claims.push({ componentId: components.get(code)!.id, causeType: "maintenance", causeId: id, state: null, changedAt: completedAt });
   }
   const sourceState = ({ scheduled: "Scheduled", in_progress: "In progress", verifying: "In progress", completed: "Completed", cancelled: "Cancelled" } as Record<string, string>)[window.status];
   return { kind: "maintenance", sourceId: window.id, value: { tables: {
-    maintenance: [{ id, reference: reference(id), title: clip(name, 250), state, starts_at: startsAt, ends_at: endsAt, completed_at: completedAt, created_by_operator_id: operatorId, created_at: asOf, updated_at: asOf }],
-    ...(window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), source_states: JSON.stringify({ status: update.authored_status === null ? null : update.status, components: update.affected_components ?? [] }) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
+    maintenance: [{ id, reference: reference(id), title: clip(name, 250), state, ...(window.source_metadata ? { source_metadata_json: JSON.stringify(window.source_metadata) } : {}), starts_at: startsAt, ends_at: endsAt, completed_at: completedAt, created_by_operator_id: operatorId, created_at: asOf, updated_at: asOf }],
+    ...(window.source_automation !== undefined ? { maintenance_automation: [{ maintenance_id: id, auto_start: Number(window.source_automation), auto_complete: Number(window.source_automation) }] } : {}),
+    ...(window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), ...(update.source_metadata ? { source_metadata_json: JSON.stringify(update.source_metadata) } : {}), source_states: JSON.stringify({ status: update.authored_status === null ? null : update.status, components: update.affected_components ?? [] }) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
     maintenance_components: attached.map((code) => ({ id: identify(`maintenance-component:${window.id}:${code}`, startsAt), maintenance_id: id, component_id: components.get(code)!.id, component_name: components.get(code)!.name, state: "Under maintenance", created_at: asOf, updated_at: asOf })),
-  } }, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: sourceState === state ? "imported" : "changed", reason: sourceState === state ? `${state} window carried over; no notice is sent for it.` : `Imported as ${state} because its window is ${state === "Completed" ? "over" : "under way"}; no notice is sent for it.` }] };
+  } }, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: sourceState === state ? "imported" : "changed", reason: (sourceState === state ? `${state} window carried over; no notice is sent for it.` : `Imported as ${state} because its window is ${state === "Completed" ? "over" : "under way"}; no notice is sent for it.`) + timingExplanation }] };
 }
 
 function mapSubscriber(subscriber: SourceSubscriber, components: Map<string, { id: string }>, snapshot: Snapshot, asOf: string, identify: typeof stableId, namespace: string): Mapped {

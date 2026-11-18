@@ -44,7 +44,7 @@ function settle(tables: NativeValue["tables"], table: string, rows: Row[]) {
   // an owner edit. Non-default values remain visible to custody and undo.
   for (const [column, value] of Object.entries(sealedDefaults[table] ?? {})) for (const row of rows) if (row[column] === value) delete row[column];
   // Legacy journals have no history key: empty additions must not change their revision value.
-  if (!["import_maintenance_updates", "component_standing_claims", "incident_reports", "incident_subscriptions"].includes(table) || rows.length) tables[table] = rows;
+  if (!["import_maintenance_updates", "maintenance_automation", "component_standing_claims", "incident_reports", "incident_subscriptions"].includes(table) || rows.length) tables[table] = rows;
 }
 
 /** Imported targets (every one, or those wanted) with their owned tables, in
@@ -74,7 +74,7 @@ async function readTargets(db: D1Database, destination: string, wanted?: Readonl
 }
 
 /** Native records that cite an imported target, by cited id, in one query per citing table. */
-const citingTables = (kind: string) => kind === "group" ? [["components", "group_id"]] : kind === "component" ? [["incident_components", "component_id"], ["maintenance_components", "component_id"], ["subscriber_components", "component_id"], ["component_standing_claims", "component_id"], ["incident_template_components", "component_id"]] : kind === "incident" ? [["incident_subscriptions", "incident_id"]] : ["template", "update-template"].includes(kind) ? [["vendor_dependencies", "template_id"]] : [];
+const citingTables = (kind: string) => kind === "group" ? [["components", "group_id"], ["component_groups", "parent_id"]] : kind === "component" ? [["incident_components", "component_id"], ["maintenance_components", "component_id"], ["subscriber_components", "component_id"], ["component_standing_claims", "component_id"], ["incident_template_components", "component_id"]] : kind === "incident" ? [["incident_subscriptions", "incident_id"]] : ["template", "update-template"].includes(kind) ? [["vendor_dependencies", "template_id"]] : [];
 const citerIdentity = (table: string) => table === "incident_subscriptions" ? "subscriber_id" : "id";
 async function readCiting(db: D1Database, effects: D1UndoEffect[]) {
   const cited = new Map<string, string[]>();
@@ -125,7 +125,7 @@ export const statuspageTargets: D1TargetAdapter = {
       if (columns.some((key) => !/^\w+$/u.test(key)) || records.some((record) => Object.keys(record).length !== columns.length || columns.some((key) => !(key in record)))) throw new Error("Invalid native columns.");
       const inserts = insertJsonRows(table, columns, records);
       if (table === owner) for (const statement of inserts) {
-        const suffix = ` WHERE true ON CONFLICT(id) DO UPDATE SET ${columns.filter((column) => column !== "id").map((column) => `${column}=excluded.${column}`).join(",")}`;
+        const suffix = ` WHERE true ON CONFLICT(id) DO UPDATE SET ${[...columns.filter((column) => column !== "id"), ...(table === "component_groups" ? ["parent_id", "description"].filter(column => !columns.includes(column)) : [])].map((column) => `${column}=excluded.${column}`).join(",")}`;
         statement.sql += suffix;
         // Retained-value transport rebuilds SQL from these same parts.
         if (statement.retainedValues) statement.retainedValues.parts[statement.retainedValues.parts.length - 1] += suffix;
@@ -159,7 +159,7 @@ export const statuspageTargets: D1TargetAdapter = {
       guards.push(...this.matchesParts!(current ?? null, destination, kind, id));
       // An imported target stays while a native record still cites it.
       // Saving a vendor template is an owner choice, outside the import.
-      for (const [table, column] of citingTables(kind)) {
+      for (const [table, column] of effect.provenance.before ? [] : citingTables(kind)) {
         const citers = citing(table, id);
         guards.push({ sql: `(SELECT json_group_array(id) FROM (SELECT ${citerIdentity(table)} AS id FROM ${table} WHERE ${column}=? ORDER BY id))=?`, params: [id, JSON.stringify(citers)] });
         for (const cited of citers) {

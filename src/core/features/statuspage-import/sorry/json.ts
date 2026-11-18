@@ -109,12 +109,13 @@ export function sorryFieldInventory(
         if (relative.length === 1 && ["id", "url", "endpoint"].includes(key)) mapped("sourceInfo", false, "Retained as source page identity or public origin; not applied as Lamp settings.");
       } else if (["component", "group"].includes(kind) && relative.length === 1) {
         if (key === "id") mapped("provenance.sourceId", true, "Source identity derives a stable Lamp identity.");
-        if (key === "name") mapped(kind === "group" ? "component_groups.name" : "components.name", kind === "group" && groupIds.has(sourceId), kind === "group" ? "Parent is represented once as a visual group; nested ancestor names are flattened." : undefined);
-        if (key === "description" && kind === "component") mapped("components.description");
-        if (key === "parent_id") mapped(kind === "group" ? "component_groups.name" : "components.group_id", true, "Parent becomes a visual group; nested hierarchy is flattened.");
+        if (key === "name") mapped(kind === "group" ? "component_groups.name" : "components.name", false, kind === "group" ? "Parent is represented once as a recursive group; original full label remains source metadata." : undefined);
+        if (key === "description") mapped(kind === "group" ? "component_groups.description" : "components.description");
+        if (key === "parent_id") mapped(kind === "group" ? "component_groups.parent_id" : "components.group_id", true, "Parent becomes a recursive group; ancestry is preserved without duplicating parent components.");
         if (key === "position") mapped(kind === "group" ? "component_groups.display_order" : "components.display_order", true, "Source relative order is appended after existing Lamp records.");
         if (key === "state" && kind === "component") mapped("component_standing_claims.state", true, "Source state is translated to a Lamp standing claim; Operational needs no extra claim.");
-        if (key === "created_at" && kind === "component") mapped("components.created_at", true, "Native history starts at the earliest source creation or derived claim instant.");
+        if (key === "created_at") mapped(kind === "group" ? "component_groups.created_at" : "components.created_at", kind === "component", "Original source creation is retained; component history starts at the earliest source creation or derived claim instant.");
+        if (key === "updated_at" || key === "state" && kind === "group") mapped((kind === "group" ? "component_groups" : "components") + ".source_metadata_json", false, "Original source state and edit time are labeled metadata, not a new Lamp observation.");
       } else if (["template", "update-template"].includes(kind) && relative.length === 1) {
         if (key === "id") mapped("provenance.sourceId", true, "Source identity derives a stable Lamp template identity.");
         if (key === "name") mapped("incident_templates.name");
@@ -145,6 +146,16 @@ export function sorryFieldInventory(
         }
         if (!update && (key === "component_ids" && relative.length === 2 || key === "components" && relative.length === 3 && last === "id" || ["component_ids", "components"].includes(key) && relative.length === 1 && Array.isArray(value))) mapped(table + "_components", true, "Affected leaves are resolved against parent groups and explicit children; a parent alongside a child does not add siblings.");
       }
+      if (["component", "group"].includes(kind) && ["metrics_summary", "metrics"].includes(key)) mapped((kind === "group" ? "component_groups" : "components") + ".source_metadata_json", true, "Source aggregate metrics remain labeled metadata; they are not measured Lamp uptime.");
+      if (["incident", "maintenance"].includes(kind)) {
+        const update = key === "updates";
+        const property = update ? last : key;
+        const direct = update ? relative.length === 3 : relative.length === 1;
+        const table = kind === "maintenance" ? "maintenance" : "incidents";
+        if (!update && ["tag_list", "synopsis", "updated_at", "should_automate_schedule", "metrics_summary"].includes(key)) mapped(table + ".source_metadata_json", key === "synopsis" || key === "metrics_summary", key === "metrics_summary" ? "Source aggregate metrics remain labeled metadata, not measured Lamp uptime." : "Original source facts remain labeled metadata; schedule automation also controls the native switches.");
+        if (update && direct && ["updated_at", "should_publish", "published", "url", "link"].includes(property!)) mapped((kind === "maintenance" ? "import_maintenance_updates" : "incident_updates") + ".source_metadata_json", false, "Historical source publication choices, URLs and edit times are retained as labeled metadata.");
+        if (update && direct && property === "content") mapped(kind === "maintenance" ? "import_maintenance_updates.body" : "imported incident timeline", true, "Full source message is converted to readable plain paragraphs and safe HTTPS links; original HTML remains raw-only and never renders.");
+      }
       // This mirrors retainedSorry, including empty/null capability fields.
       // A field path and its disposition survive; its capability value never does.
       if (relative.some(part => Object.hasOwn(sorrySubscriberChannels, part) || capability.test(decodedCredentialText(part)))) {
@@ -152,10 +163,10 @@ export function sorryFieldInventory(
         field.reason = "This channel or capability field is removed from sanitized source records and is never imported. Original byte custody is withheld when a response contains channel capabilities.";
         field.action = "Configure a fresh supported channel separately; keep any original response private.";
       }
-      const limit = field.target?.endsWith(".name") ? 120 : field.target === "components.description" ? 500 : field.target?.endsWith(".title") ? 250 : undefined;
+      const limit = field.target?.endsWith(".name") ? 120 : ["components.description", "component_groups.description"].includes(field.target ?? "") ? 500 : field.target?.endsWith(".title") ? 250 : undefined;
       if (limit && typeof value === "string" && Array.from(value).length > limit && field.outcome !== "deleted") {
         field.outcome = "changed";
-        field.reason = "Native text is shortened to " + limit + " Unicode code points; full source text remains retained.";
+        field.reason = "Native text is shortened to " + limit + " Unicode code points; full source text remains in labeled source metadata and is projected while the native summary is unchanged.";
         field.action = "Review the shortened native text; copy any needed detail from the source export.";
       } else if (typeof value === "string" && value.toWellFormed() !== value && field.outcome === "mapped") {
         field.outcome = "changed"; field.reason = "Invalid Unicode is replaced with U+FFFD for native storage.";

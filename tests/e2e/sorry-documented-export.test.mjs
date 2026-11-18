@@ -5,6 +5,7 @@ import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
+import { loadPlans } from '../../modules/import-kit/src/d1/plans.ts';
 import { generateSorryFixture } from '../../scripts/generate-sorry-fixture.mjs';
 import { sorryTemplateImportFlow } from './helpers/sorry-template-import-flow.mjs';
 import { openStatusJourney } from './helpers/status-journey.mjs';
@@ -83,7 +84,7 @@ test('documented Sorry exports account for every field through preview, saved jo
       assert.equal(find(componentFile, componentRoot + '/4/future_metadata/nested/owner~1note~0text').outcome, 'raw-only');
       for (const path of ['/4/name', '/4/description', '/0/name']) assert.equal(find(componentFile, componentRoot + path).outcome, 'changed', 'every bounded long field is named');
       assert.match(find(componentFile, componentRoot + '/4/description').reason, /shortened/);
-      assert.equal(find(componentFile, componentRoot + '/0/description').outcome, 'raw-only', 'a parent group has no native description');
+      assert.equal(find(componentFile, componentRoot + '/0/description').outcome, 'mapped', 'parent group descriptions are retained natively');
       const longMessage = mode === 'public' ? find('sorry-notice-2000.json', '/notice/updates/0/content') : find('sorry-notice-2000-updates.json', '/response/0/content');
       assert.equal(longMessage.outcome, 'changed');
       assert.match(longMessage.reason, /full source message|Full source message/i);
@@ -97,7 +98,7 @@ test('documented Sorry exports account for every field through preview, saved jo
         assert.equal(find('sorry-subscribers.json', '/response/0/phone_number').outcome, 'deleted');
         assert.equal(find('sorry-subscribers.json', '/response/0/first_name').outcome, 'raw-only');
         assert.ok(!JSON.stringify(fields).includes('synthetic-lamp-1@example.invalid'), 'ledger never copies subscriber values');
-      } else assert.equal(find('sorry-components.json', '/components/4/metrics_summary/percentage_uptime/percent').outcome, 'raw-only');
+      } else assert.equal(find('sorry-components.json', '/components/4/metrics_summary/percentage_uptime/percent').outcome, 'changed');
 
       assert.deepEqual(await importedRecordInventory(runtime), before.native, 'preview writes no native record');
       assert.deepEqual(await publicAliasInventory(runtime), before.public, 'preview changes no public inventory');
@@ -143,6 +144,35 @@ test('documented Sorry exports account for every field through preview, saved jo
       const inventory = await importedRecordInventory(runtime);
       assert.equal(inventory.subscribers.length, mode === 'authenticated' ? census.eligibleHeldEmailSubscribers : 0);
       assert.ok(inventory.subscribers.every(row => row.state === 'deactivated'));
+      for (const [sourceId, type, state] of [['2038', 'unplanned', 'false_alarm'], ['2050', 'general', null]]) {
+        const native = inventory.incidents.find(row => JSON.parse(row.source_metadata_json ?? 'null')?.sourceId === sourceId);
+        assert.ok(native, 'source notice exists once with its original identity');
+        const incident = (await send('/api/app/incidents/' + native.id)).body.incident;
+        assert.equal(incident.sourceMetadata.type, type);
+        assert.equal(incident.sourceMetadata.state, state);
+        assert.equal(incident.lifecycle, 'Resolved');
+        if (state === 'false_alarm') assert.ok(incident.components.every(component => component.state === 'Operational'), 'a false alarm does not fabricate a component outage');
+        const html = await runtime.visible('/incidents/' + incident.reference, incident.sourceMetadata.label);
+        assert.ok(html.includes(type === 'general' ? 'general' : 'false_alarm'), 'public metadata preserves source meaning');
+      }
+      const hostileNative = inventory.incidents.find(row => JSON.parse(row.source_metadata_json ?? 'null')?.sourceId === '2001');
+      const hostileIncident = (await send('/api/app/incidents/' + hostileNative.id)).body.incident;
+      const hostileUpdate = hostileIncident.updates.find(update => update.customerImpact.includes('Synthetic customer words'));
+      assert.ok(hostileUpdate);
+      assert.equal(hostileUpdate.customerImpact, 'Synthetic customer words remain readable.\n\nRead the recovery guide (https://docs.example.invalid/synthetic-lamp-1).');
+      assert.ok(!hostileUpdate.customerImpact.includes('importedMarkupXss'));
+      const journalRows = (await runtime.db.prepare('SELECT id,plan_json FROM ik_jobs WHERE id=?').bind(applied.body.job.id).all()).results;
+      const plans = await loadPlans(journalRows, runtime.db);
+      const retained = plans.get(applied.body.job.id).entries.find(entry => entry.source.sourceId === '2001').source.payload.raw;
+      const sourceDetail = JSON.parse(files.find(file => file.name === 'sorry-notice-2001.json').text);
+      assert.equal(retained.updates[0].content, (sourceDetail.response ?? sourceDetail.notice).updates[0].content, 'private source record keeps the exact original markup');
+
+      for (const path of ['/history/2025-01', '/incidents/' + hostileIncident.reference]) {
+        const html = await runtime.visible(path, 'Synthetic customer words remain readable.');
+        assert.ok(!html.includes('window.importedMarkupXss'), 'executable source content never reaches public wording');
+        assert.ok(!html.includes('&lt;b&gt;') && !html.includes('&lt;script&gt;') && !html.includes('&lt;img'), 'readers never see raw source tags');
+      }
+
       const rawSummary = {
         mode, sourceRows: { components: census.sourceComponentRows, notices: census.sourceNotices, updates: census.sourceUpdates, subscribers: mode === 'authenticated' ? census.sourceSubscribers : 0 },
         nativeCounts: verification.body.nativeCounts, subscriberCount: inventory.subscribers.length,

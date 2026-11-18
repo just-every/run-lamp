@@ -1,3 +1,4 @@
+import { recursiveComponentGroups } from "../component-groups";
 import type { PublicSnapshotModel } from "../renderer";
 import { groupComponentsByHeading } from "../../../shared/component-order";
 import { escapeHtml } from "../format";
@@ -15,7 +16,7 @@ function componentRow(component: Component, heading: "h3" | "h4") {
 function components(model: PublicSnapshotModel, parts: TemplateParts) {
   if (!model.visibleComponents.length) return "";
   const named = model.visibleComponents.some((component) => component.groupName !== null);
-  const groups = groupComponentsByHeading(model.visibleComponents).map(([heading, list]) => {
+  const groups = model.componentGroups.length ? recursiveComponentGroups(model.visibleComponents, model.componentGroups, members => `<ul class="calm-list">${members.map(component => componentRow(component, "h4")).join("")}</ul>`, model.theme.groupsCollapsed) : groupComponentsByHeading(model.visibleComponents).map(([heading, list]) => {
     const rows = `<ul class="calm-list">${list.map(component => componentRow(component, named ? "h4" : "h3")).join("")}</ul>`;
     return model.theme.groupsCollapsed ? `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${rows}</details>` : `${named ? `<h3 class="calm-group">${escapeHtml(heading)}</h3>` : ""}${rows}`;
   }).join("");

@@ -25,11 +25,15 @@ export function normalizeSorryComponents(rows: SorryComponent[], accounting: Acc
   const groups: SourceData["groups"] = [], components: SourceData["components"] = [];
   for (const row of rows) {
     const parents = ancestors(row);
+    const source_metadata = { provider: "Sorry", id: row.id, name: row.name, description: row.description ?? null, state: row.state,
+      position: row.position ?? null, parentId: row.parent_id ?? null, ancestorIds: parents.map(parent => parent.id),
+      createdAt: row.created_at, updatedAt: row.updated_at ?? null,
+      ...(row.metrics_summary != null ? { aggregateMetrics: row.metrics_summary } : row.metrics != null ? { aggregateMetrics: row.metrics } : {}) };
     if (parentIds.has(row.id)) {
-      groups.push({ id: row.id, name: [...parents.map((parent) => parent.name), row.name].join(" / "), description: row.description, components: rows.filter((child) => child.parent_id === row.id).map((child) => child.id), position: row.position ?? rows.indexOf(row), created_at: row.created_at });
-      accounting.push({ kind: "group", sourceId: row.id, name: row.name, outcome: "changed", reason: parents.length ? "Nested Sorry component grouping is represented as a named flat group." : SORRY_PARENT_AS_GROUP });
+      groups.push({ id: row.id, name: row.name, parent_id: row.parent_id, source_metadata, description: row.description, components: rows.filter((child) => child.parent_id === row.id).map((child) => child.id), position: row.position ?? rows.indexOf(row), created_at: row.created_at, updated_at: row.updated_at });
+      accounting.push({ kind: "group", sourceId: row.id, name: row.name, outcome: "changed", reason: SORRY_PARENT_AS_GROUP });
     }
-    else components.push({ id: row.id, name: row.name, description: row.description, group_id: row.parent_id, position: row.position ?? rows.indexOf(row), status: states[row.state], created_at: row.created_at });
+    else components.push({ id: row.id, name: row.name, source_metadata, description: row.description, group_id: row.parent_id, position: row.position ?? rows.indexOf(row), status: states[row.state], created_at: row.created_at, updated_at: row.updated_at });
   }
   return { groups, components };
 }

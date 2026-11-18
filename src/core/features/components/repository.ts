@@ -1,7 +1,7 @@
 import { componentNotificationStatements } from "../deliveries/component-notifications.repository";
 import { currentStateHistoryStatement } from "./state-history-repository";
 import { deletionAudit } from "./deletion-audit";
-import { and, desc, eq, isNull, lte, ne, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, isNull, lte, ne, sql } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
 import { createUlid } from "../../shared/ids";
@@ -20,10 +20,18 @@ import {
 import type { ComponentState } from "../../shared/domain";
 import type { ComponentGroupUpdateInput, ComponentUpdateInput } from "../../shared/schemas";
 
-export type StoredComponent = typeof components.$inferSelect;
+export interface ImportedComponentMetadata {
+  provider: "Sorry"; id: string; name: string; description: string | null; state: string; position: number | null;
+  parentId: string | null; ancestorIds: string[]; createdAt: string; updatedAt: string | null;
+  aggregateMetrics?: unknown;
+}
+export function readComponentSourceMetadata(value: string | null): ImportedComponentMetadata | null {
+  return value ? JSON.parse(value) as ImportedComponentMetadata : null;
+}
+export type StoredComponent = typeof components.$inferSelect & { sourceMetadata: ImportedComponentMetadata | null };
 export type CurrentComponentClaim = { componentId: string; state: ComponentState; causeType: "standing-claim" | "incident" | "maintenance" | "vendor" };
 export type StateClaimCause = { type: "standing-claim" | "incident" | "maintenance" | "correction"; id: string | null; operatorId: string | null };
-export type StoredComponentGroup = typeof componentGroups.$inferSelect;
+export type StoredComponentGroup = typeof componentGroups.$inferSelect & { parentId: string | null; description: string; sourceMetadata: ImportedComponentMetadata | null };
 export type ComponentHistoryEntry = Pick<typeof componentStateHistory.$inferSelect, "id" | "previousState" | "newState" | "causeType" | "causeId" | "operatorId" | "changedAt" | "createdAt" | "sourceName" | "sourceUrl">;
 export type ComponentHistoryCorrection = Pick<typeof componentStateCorrections.$inferSelect, "id" | "historyId" | "state" | "startsAt" | "endsAt" | "reason" | "operatorId" | "createdAt">;
 export type ComponentClaimEvent = Pick<typeof componentClaimEvents.$inferSelect, "id" | "componentId" | "causeType" | "causeId" | "state" | "changedAt" | "createdAt">;
@@ -68,8 +76,9 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
 
   return {
     async listComponents() {
-      return database
+      const rows = await database
         .select({
+          sourceMetadataJson: sql<string | null>`components.source_metadata_json`,
           id: components.id,
           groupId: components.groupId,
           name: components.name,
@@ -88,6 +97,7 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         .leftJoin(componentGroups, eq(components.groupId, componentGroups.id))
         .orderBy(componentGroups.displayOrder, components.displayOrder, components.id)
         .all();
+      return rows.map(({ sourceMetadataJson, ...row }) => ({ ...row, sourceMetadata: readComponentSourceMetadata(sourceMetadataJson) }));
     },
     async listCurrentClaims(componentIds) {
       if (!componentIds.length) return [];
@@ -135,11 +145,15 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
       catch (cause) { if (cause instanceof Error && cause.message.includes("malformed JSON")) throw new Error("Ordering changed in another tab. Refresh and try again."); throw cause; }
     },
     async listGroups() {
-      return database.select().from(componentGroups).orderBy(componentGroups.displayOrder, componentGroups.id).all();
+      const rows = await binding.prepare("SELECT id,name,display_order AS displayOrder,parent_id AS parentId,description,source_metadata_json AS sourceMetadataJson,created_at AS createdAt,updated_at AS updatedAt FROM component_groups ORDER BY display_order,id")
+        .all<Omit<StoredComponentGroup, "sourceMetadata"> & { sourceMetadataJson: string | null }>();
+      return rows.results.map(({ sourceMetadataJson, ...row }) => ({ ...row, sourceMetadata: readComponentSourceMetadata(sourceMetadataJson) }));
     },
     async findComponent(componentId) {
-      const component = await database.select().from(components).where(eq(components.id, componentId)).get();
-      return component ?? null;
+      const component = await database.select({ ...getTableColumns(components), sourceMetadataJson: sql<string | null>`components.source_metadata_json` }).from(components).where(eq(components.id, componentId)).get();
+      if (!component) return null;
+      const { sourceMetadataJson, ...row } = component;
+      return { ...row, sourceMetadata: readComponentSourceMetadata(sourceMetadataJson) };
     },
     async findStandingClaimState(componentId) {
       const claim = await database

@@ -9,6 +9,15 @@
       "summary": "Sorry dry runs and saved jobs count exposed notice and update templates and account for every supplied field path, with reasons and next actions; unknown nested fields, shortened wording and unsupported resource files cannot be silently ignored.",
       "was": "Move in previews a switch from Statuspage, Better Stack, Instatus or Sorry before writing Lamp records, and applies only the exact source and page state the owner reviewed. 1. The owner can supply a source API key and page identity or saved responses; source credentials are read once from the source's fixed origin and never stored. 2. The dry run counts every component, group, incident and its updates, maintenance window and subscriber as imported, changed, skipped or refused, with reasons, and writes no record. 3. Changing either the source or Lamp page after review refuses application and requires a fresh dry run. 4. A dry run names each excess subscriber over a SUB-020 channel capacity and refuses excess rows; an over-limit apply writes nothing until a narrowed review fits.",
       "now": "Move in previews a switch from Statuspage, Better Stack, Instatus or Sorry before writing Lamp records, and applies only the exact source and page state the owner reviewed. **Acceptance.** 1. The owner can supply a source API key and page identity or saved responses; source credentials are read once from the source's fixed origin and never stored. 2. The dry run counts every component, group, incident and its updates, maintenance window, subscriber and exposed notice or update template as imported, changed, skipped or refused, with reasons, and writes no record. For Sorry, the dry run and saved job also account for every supplied field path as mapped, changed, raw-only, deleted or refused, with a reason and next action; unknown nested fields, shortened text and unsupported resource files cannot be silently ignored. 3. Changing either the source or Lamp page after review refuses application and requires a fresh dry run. 4. A dry run names each excess subscriber over a SUB-020 channel capacity and refuses excess rows; an over-limit apply writes nothing until a narrowed review fits."
+    },
+    "COMP-002": {
+      "change": "changed",
+      "summary": "Preserves recursive Sorry component groups once per source parent, including descriptions, full source labels, ancestry, order and labeled original state/times.",
+      "was": "Operators organize public components into ordered groups. **Acceptance.** 1. A component belongs to at most one group. 2. Operators set group order and order within each group, and public rendering preserves both orders.",
+      "now": "Operators organize public components into ordered groups, including recursive imported Sorry groups represented once per source parent. **Acceptance.** 1. A component belongs to at most one group; imported Sorry groups preserve their recursive parent ancestry without duplicating parent components, and retain descriptions, full source labels, original state and creation/edit times as labeled source facts. 2. Operators set group order and order within each group, and public rendering preserves both orders and recursive imported ancestry. Source aggregate metrics remain labeled metadata, never measured Lamp uptime.",
+      "migrationIds": [
+        "0084_sorry_component_hierarchy.sql"
+      ]
     }
   },
   "extensionPointChanges": [],
@@ -20,6 +29,14 @@
     {
       "id": "0083_sorry_template_metadata.sql",
       "buyerSteps": "Back up data and owner source before updating. Apply this additive migration after 0082 with rer deploy. Existing templates keep their kind and choices. Sorry notice and update templates retain source metadata and private wording; review status, audience and affected services in the composer before publication. No provider account or new credential is required. Run Edit Run fleet, 17 November 2026."
+    },
+    {
+      "id": "0084_sorry_component_hierarchy.sql",
+      "buyerSteps": "Back up data and owner source before updating. Apply migrations in order through rer deploy or local setup. Adds recursive component-group parent links, group descriptions and original Sorry component/group source metadata without rewriting existing rows. Check the recursive catalogue, imported history and source automation choices after updating; existing owner edits and publication history remain protected. Run Edit Run fleet, 2026-11-17."
+    },
+    {
+      "id": "0085_sorry_notice_metadata.sql",
+      "buyerSteps": "Back up data and owner source before updating. Apply migrations in order through rer deploy or local setup. Adds labeled original Sorry notice and update metadata to incident and maintenance records without replaying history. Check the recursive catalogue, imported history and source automation choices after updating; existing owner edits and publication history remain protected. Run Edit Run fleet, 2026-11-17."
     }
   ],
   "breaking": false,

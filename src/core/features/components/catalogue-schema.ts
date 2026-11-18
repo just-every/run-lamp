@@ -8,13 +8,25 @@ export const catalogueComponentSchema = componentSchema.extend({
   uptimeStartDate: z.iso.date().nullable().default(null),
 });
 export const catalogueSchema = z.object({
-  groups: z.array(componentGroupSchema.extend({ id: ulidSchema })).max(1000),
+  groups: z.array(componentGroupSchema.extend({ id: ulidSchema, parentId: ulidSchema.nullable().default(null), description: z.string().max(500).default("") })).max(1000),
   components: z.array(catalogueComponentSchema).max(1000),
 }).strict().superRefine((catalogue, context) => {
   const groupIds = new Set(catalogue.groups.map(group => group.id));
   if (groupIds.size !== catalogue.groups.length) context.addIssue({ code: "custom", message: "Group identifiers must be unique.", path: ["groups"] });
   if (new Set(catalogue.groups.map(group => group.displayOrder)).size !== catalogue.groups.length) context.addIssue({ code: "custom", message: "Group positions must be unique.", path: ["groups"] });
   if (new Set(catalogue.components.map(component => component.id)).size !== catalogue.components.length) context.addIssue({ code: "custom", message: "Component identifiers must be unique.", path: ["components"] });
+  const groups = new Map(catalogue.groups.map(group => [group.id, group]));
+  catalogue.groups.forEach((group, index) => {
+    const seen = new Set([group.id]);
+    let parent = group.parentId;
+    while (parent) {
+      if (!groups.has(parent) || seen.has(parent) || seen.size > 32) {
+        context.addIssue({ code: "custom", message: "Choose a group parent without a cycle, within 32 levels.", path: ["groups", index, "parentId"] });
+        break;
+      }
+      seen.add(parent); parent = groups.get(parent)!.parentId;
+    }
+  });
   catalogue.components.forEach((component, index) => {
     if (component.groupId && !groupIds.has(component.groupId)) context.addIssue({ code: "custom", message: "Choose a group in this catalogue.", path: ["components", index, "groupId"] });
   });
