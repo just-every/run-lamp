@@ -17,7 +17,13 @@ export function PageSettingsTab({ settings, live, markSrc, update }: {
       <p className="card-kicker" id="page-card-title">Page</p>
       <label className="form-label">Page name<input required maxLength={120} value={settings.pageName} onChange={event => update("pageName", event.target.value)} /></label>
       <label className="form-label">Tagline<textarea required maxLength={280} value={settings.tagline} onChange={event => update("tagline", event.target.value)} /></label>
-      <div id="page-timezone"><TimezoneField value={settings.timezone} onChange={zone => update("timezone", zone, true)} /><details><summary>Time zone details</summary><p>Current offset: {zoneOffset(settings.timezone, new Date())}</p></details></div>
+      <div id="page-timezone">
+        <TimezoneField value={settings.timezone} onChange={zone => update("timezone", zone, true)} />
+        <details className="timezone-details">
+          <summary>Time zone details</summary>
+          <p>Current offset: {zoneOffset(settings.timezone, new Date())}</p>
+        </details>
+      </div>
     </section>
     <ClientExtensionSlot id="settings.sections.v1" context={{}} />
   </>;

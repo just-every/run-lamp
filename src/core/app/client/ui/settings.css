@@ -45,6 +45,7 @@
 }
 
 .timezone-field { position: relative; display: grid; gap: 6px; }
+.timezone-details > summary { min-height: 44px; align-content: center; cursor: pointer; }
 .timezone-choices { max-height: 240px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--column, #fff); }
 .timezone-choices button { display: block; width: 100%; border: 0; padding: 9px 12px; background: none; text-align: left; font: inherit; color: var(--ink); }
 .timezone-choices button:hover, .timezone-choices button:focus-visible { background: var(--stage); }
