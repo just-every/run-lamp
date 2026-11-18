@@ -1,3 +1,4 @@
+import { projectImportedRecordMetadata } from "../statuspage-import/imported-update.repository";
 import { automationStatement, createMaintenanceAutomationRepository, type MaintenanceAutomation } from "./automation.repository";
 import { asc, eq } from "drizzle-orm";
 
@@ -6,12 +7,12 @@ import { allocateReference, type AllocatedReference } from "../../shared/referen
 import { createUlid } from "../../shared/ids";
 import { maintenance, maintenanceComponents } from "../../shared/schema";
 
-export type StoredMaintenance = typeof maintenance.$inferSelect;
+export type StoredMaintenance = typeof maintenance.$inferSelect & { sourceMetadata?: Record<string, unknown> | null };
 export type MaintenanceWording = Pick<StoredMaintenance, "affectedAudience" | "customerImpact">;
 export type StoredMaintenanceComponent = typeof maintenanceComponents.$inferSelect;
 export interface MaintenanceNotice { id: string; maintenanceId: string; kind: "scheduled" | "rescheduled" | "reminder" | "started" | "completed" | "cancelled"; body: string; publishedAt: string; authorOperatorId: string | null; createdAt: string; updatedAt: string; }
 
-export interface ImportedMaintenanceUpdate { id: string; body: string; publishedAt: string; sourceStates: string }
+export interface ImportedMaintenanceUpdate { id: string; body: string; publishedAt: string; sourceStates: string; sourceMetadata?: Record<string, unknown> | null }
 
 export interface MaintenanceCollectionDetails {
   components: StoredMaintenanceComponent[];
@@ -41,6 +42,10 @@ export interface MaintenanceRepository {
 
 export function createMaintenanceRepository(binding: D1Database): MaintenanceRepository {
   const database = createDatabase(binding);
+  const sourceMetadata = <T extends { sourceMetadataJson?: string | null }>(row: T) => {
+    const { sourceMetadataJson, ...value } = row;
+    return sourceMetadataJson ? { ...value, sourceMetadata: JSON.parse(sourceMetadataJson) as Record<string, unknown> } : value;
+  };
   const noticeStatement = (notice: MaintenanceNotice) => binding.prepare(`INSERT OR IGNORE INTO maintenance_notices (id,maintenance_id,kind,body,published_at,author_operator_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)`)
     .bind(notice.id, notice.maintenanceId, notice.kind, notice.body, notice.publishedAt, notice.authorOperatorId, notice.createdAt, notice.updatedAt);
   const writeMutationWithNotice = async (mutation: D1PreparedStatement, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], automation?: Partial<MaintenanceAutomation>) => {
@@ -67,22 +72,22 @@ export function createMaintenanceRepository(binding: D1Database): MaintenanceRep
     automation: createMaintenanceAutomationRepository(binding),
     async allocateMaintenanceReference() { return allocateReference(binding, "SCH"); },
     async listMaintenance() {
-      return database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all();
+      return projectImportedRecordMetadata(binding, "maintenance", await database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all());
     },
     async listCollectionDetails() {
       const [components, notices, importedUpdates] = await Promise.all([
         database.select().from(maintenanceComponents).orderBy(maintenanceComponents.maintenanceId).all(),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance_notices ORDER BY maintenance_id, published_at DESC`).all<MaintenanceNotice>(),
-        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, body, published_at AS publishedAt, source_states AS sourceStates FROM import_maintenance_updates ORDER BY maintenance_id, published_at DESC, id`).all<ImportedMaintenanceUpdate & { maintenanceId: string }>(),
+        binding.prepare(`SELECT id, maintenance_id AS maintenanceId, body, published_at AS publishedAt, source_states AS sourceStates,source_metadata_json AS sourceMetadataJson FROM import_maintenance_updates ORDER BY maintenance_id, published_at DESC, id`).all<ImportedMaintenanceUpdate & { maintenanceId: string; sourceMetadataJson: string | null }>(),
       ]);
-      return { components, notices: notices.results, importedUpdates: importedUpdates.results };
+      return { components, notices: notices.results, importedUpdates: importedUpdates.results.map(sourceMetadata) };
     },
     async listComponents(maintenanceId) {
       return database.select().from(maintenanceComponents).where(eq(maintenanceComponents.maintenanceId, maintenanceId)).all();
     },
     async find(maintenanceId) {
       const item = await database.select().from(maintenance).where(eq(maintenance.id, maintenanceId)).get();
-      return item ?? null;
+      return item ? (await projectImportedRecordMetadata(binding, "maintenance", [item]))[0] : null;
     },
     async create(input, attached, notice, notificationStatements, automation = {}) {
       await binding.batch([
@@ -151,7 +156,7 @@ export function createMaintenanceRepository(binding: D1Database): MaintenanceRep
       return results[0].meta.changes === 1;
     },
     async listImportedUpdates(maintenanceId) {
-      return (await binding.prepare("SELECT id,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id=? ORDER BY published_at DESC,id").bind(maintenanceId).all<ImportedMaintenanceUpdate>()).results;
+      return (await binding.prepare("SELECT id,body,published_at AS publishedAt,source_states AS sourceStates,source_metadata_json AS sourceMetadataJson FROM import_maintenance_updates WHERE maintenance_id=? ORDER BY published_at DESC,id").bind(maintenanceId).all<ImportedMaintenanceUpdate & { sourceMetadataJson: string | null }>()).results.map(sourceMetadata);
     },
     async listNotices(maintenanceId) {
       const result = await binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance_notices WHERE maintenance_id = ? ORDER BY published_at DESC`).bind(maintenanceId).all<MaintenanceNotice>();

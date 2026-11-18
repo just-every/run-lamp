@@ -1,3 +1,4 @@
+import { projectSnapshotMetadata, type PublicComponentGroup, type SourceMetadata } from "./imported-metadata.repository";
 import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
 import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import { createUlid } from "../../shared/ids";
@@ -62,7 +63,9 @@ export interface PublicSnapshotSource {
   importedNamespaces?: string[];
   importedPublicRecords?: ImportedPublicRecord[];
   settings: typeof pageSettings.$inferSelect;
+  componentGroups?: PublicComponentGroup[];
   components: Array<{
+    sourceMetadata?: SourceMetadata | null;
     id: string;
     name: string;
     description: string;
@@ -82,13 +85,13 @@ export interface PublicSnapshotSource {
   claims: Array<{ componentId: string; state: typeof componentStandingClaims.$inferSelect.state }>;
   history: Array<typeof componentStateHistory.$inferSelect>;
   corrections: Array<typeof componentStateCorrections.$inferSelect>;
-  incidents: Array<typeof incidents.$inferSelect>;
+  incidents: Array<typeof incidents.$inferSelect & { sourceMetadata?: SourceMetadata | null }>;
   incidentComponents: Array<typeof incidentComponents.$inferSelect>;
-  updates: Array<typeof incidentUpdates.$inferSelect>;
-  maintenance: Array<typeof maintenance.$inferSelect>;
+  updates: Array<typeof incidentUpdates.$inferSelect & { sourceMetadata?: SourceMetadata | null }>;
+  maintenance: Array<typeof maintenance.$inferSelect & { sourceMetadata?: SourceMetadata | null }>;
   maintenanceComponents: Array<typeof maintenanceComponents.$inferSelect>;
   reports: Array<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>;
-  importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates?: string }>;
+  importedMaintenanceUpdates?: Array<{ id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates?: string; sourceMetadata?: SourceMetadata | null }>;
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
 }
 
@@ -189,7 +192,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
 
       const website = await createWebsiteRepository(binding).get();
       const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
-      return {
+      return projectSnapshotMetadata(binding, {
         bounded: true,
         websiteUrl: website?.url ?? null,
         emailEnabled,
@@ -214,7 +217,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         maintenanceComponents: attachedMaintenanceComponents,
         reports,
         maintenanceNotices, importedMaintenanceUpdates, metrics: await createMetricsRepository(binding).publicSeries(),
-      };
+      });
     },
     loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, context, key, generatedAt),
     async startBuild(input) {

@@ -28072,8 +28072,8 @@
     {
       "file": "public/sorry-components.json",
       "path": "/components/4/metrics_summary/percentage_uptime/percent",
-      "expected": "raw-only",
-      "reason": "Source metrics summary is not native availability history."
+      "expected": "changed",
+      "reason": "Source metrics remain labeled metadata, never native availability history."
     }
   ],
   "resourceGaps": [

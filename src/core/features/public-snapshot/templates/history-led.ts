@@ -1,3 +1,4 @@
+import { recursiveComponentGroups } from "../component-groups";
 import { groupComponentsByHeading } from "../../../shared/component-order";
 import type { PublicSnapshotModel } from "../renderer";
 import type { PublicIncident } from "../record-markup";
@@ -133,7 +134,7 @@ function heatmapFrame(model: PublicSnapshotModel, titleId: string) {
 }
 
 function heatmap(model: PublicSnapshotModel, parts: TemplateParts) {
-  const content = model.theme.groupsCollapsed
+  const content = model.componentGroups.length ? recursiveComponentGroups(model.visibleComponents, model.componentGroups, members => members.length ? heatmapFrame({ ...model, visibleComponents: members }, `heatmap-${members[0]!.id}`) : "", model.theme.groupsCollapsed) : model.theme.groupsCollapsed
     ? groupComponentsByHeading(model.visibleComponents).map(([heading, members], index) =>
       `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${heatmapFrame({ ...model, visibleComponents: members }, `heatmap-group-${index}`)}</details>`).join("")
     : heatmapFrame(model, "heatmap-title");
@@ -166,7 +167,7 @@ function componentList(model: PublicSnapshotModel) {
     return `<details class="up-row"><summary><span class="up-dot tone-${tone}" aria-hidden="true"></span><span class="up-name">${escapeHtml(component.name)}</span><span class="up-state tone-${tone}">${escapeHtml(component.state)}</span><span class="up-pct">${escapeHtml(uptimeValue(component.uptime))}</span>${lineIcon("chevron", "up-chevron")}</summary><div class="up-detail"><p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "up-bar", false)}${componentNote(component)}</div></details>`;
   });
   const rows = renderedRows.join("");
-  const content = model.theme.groupsCollapsed ? groupComponentsByHeading(components).map(([heading, members]) => {
+  const content = model.componentGroups.length ? recursiveComponentGroups(components, model.componentGroups, members => { const ids = new Set(members.map(member => member.id)); return components.flatMap((component, index) => ids.has(component.id) ? [renderedRows[index]] : []).join(""); }, model.theme.groupsCollapsed) : model.theme.groupsCollapsed ? groupComponentsByHeading(components).map(([heading, members]) => {
     const memberIds = new Set(members.map(member => member.id));
     return `<details class="theme-component-group"><summary>${escapeHtml(heading)}</summary>${components.flatMap((component, index) => memberIds.has(component.id) ? [renderedRows[index]] : []).join("")}</details>`;
   }).join("") : rows;

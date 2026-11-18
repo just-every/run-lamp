@@ -11,7 +11,7 @@ export function createCatalogueRepository(binding: D1Database) {
     async read(): Promise<CatalogueSnapshot> {
       const results = await binding.batch<Record<string, unknown>>([
         binding.prepare("SELECT requested_revision AS revision FROM public_snapshot_work WHERE id = 'default'"),
-        binding.prepare("SELECT id,name,display_order AS displayOrder FROM component_groups ORDER BY display_order,id"),
+        binding.prepare("SELECT id,name,parent_id AS parentId,description,display_order AS displayOrder FROM component_groups ORDER BY display_order,id"),
         binding.prepare("SELECT id,group_id AS groupId,name,description,region,internal,only_show_if_degraded AS onlyShowIfDegraded,uptime_start_date AS uptimeStartDate,display_order AS displayOrder,note FROM components ORDER BY display_order,id"),
       ]);
       const revision = results[0].results[0]?.revision;
@@ -33,9 +33,15 @@ export function createCatalogueRepository(binding: D1Database) {
       const previousGroups = new Map(previous.catalogue.groups.map(group => [group.id, group]));
       const groupsChanged = JSON.stringify(previous.catalogue.groups) !== JSON.stringify(catalogue.groups);
       if (groupsChanged) statements.push(binding.prepare("UPDATE component_groups SET display_order = -rowid - 1"));
-      for (const group of catalogue.groups) {
+      const groups = new Map(catalogue.groups.map(group => [group.id, group]));
+      const depth = (group: ComponentCatalogue["groups"][number]) => {
+        let result = 0, parent = group.parentId;
+        while (parent && groups.has(parent)) { result += 1; parent = groups.get(parent)!.parentId; }
+        return result;
+      };
+      for (const group of [...catalogue.groups].sort((a, b) => depth(a) - depth(b))) {
         if (!groupsChanged && previousGroups.has(group.id)) continue;
-        statements.push(binding.prepare("INSERT INTO component_groups (id,name,display_order,created_at,updated_at) VALUES (?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,display_order=excluded.display_order,updated_at=excluded.updated_at").bind(group.id, group.name, group.displayOrder, now, now));
+        statements.push(binding.prepare("INSERT INTO component_groups (id,name,parent_id,description,display_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,parent_id=excluded.parent_id,description=excluded.description,display_order=excluded.display_order,updated_at=excluded.updated_at").bind(group.id, group.name, group.parentId, group.description, group.displayOrder, now, now));
       }
       for (const component of catalogue.components) {
         const existing = previousComponents.get(component.id);
