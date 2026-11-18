@@ -1,0 +1,403 @@
+{
+  "baseHead": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "clauses": {
+    "after": {
+      "done": 60,
+      "missing": 55,
+      "partial": 129,
+      "total": 244
+    },
+    "before": {
+      "done": 60,
+      "missing": 55,
+      "partial": 129,
+      "total": 244
+    }
+  },
+  "dev": {
+    "dead-new": "dead-new elapsed=954.8s exit=1 deadline=True last_health=HTTP 404",
+    "slow-new": "slow-new elapsed=189.3s ready=true health=HTTP_200",
+    "slow-old": "slow-old elapsed=79.3s exit=1 deadline=True last_health=HTTP 404"
+  },
+  "nativePortability": {
+    "dataOnly": {
+      "before": [
+        {
+          "code": "transfer_failed",
+          "event": "error",
+          "exitCode": 1,
+          "reason": "row_type",
+          "verb": "export"
+        },
+        {
+          "event": "result",
+          "exitCode": 1,
+          "ok": false,
+          "verb": "export"
+        }
+      ],
+      "export": [
+        {
+          "archiveHash": "48af9d6eaa015dd9acfb04c90ad0c9a434229b112278eda691476d4ac5e82838",
+          "bytes": 295863,
+          "contentHash": "75ada0491f4b2619d09725bead4b82eaa1b8498815d4c00a40a4f197e9ed692b",
+          "event": "result",
+          "exitCode": 0,
+          "fixtureTableCounts": {
+            "lamp_ext_migrations": 1
+          },
+          "ok": true,
+          "verb": "export"
+        }
+      ],
+      "ledgerAndOwnerDataAfter": [
+        [
+          {
+            "applied_at": "2026-11-18 05:40:13",
+            "id": 1,
+            "name": "9000_synthetic_data_owner.sql",
+            "storage": "text"
+          }
+        ],
+        [
+          {
+            "type": "TEXT"
+          }
+        ],
+        [
+          {
+            "evidence_key": "owner-migration-retained",
+            "step": "synthetic-lamp-owner-1"
+          }
+        ]
+      ],
+      "ledgerAndOwnerDataBefore": [
+        [
+          {
+            "applied_at": "2026-11-18 05:40:13",
+            "id": 1,
+            "name": "9000_synthetic_data_owner.sql",
+            "storage": "text"
+          }
+        ],
+        [
+          {
+            "type": "TIMESTAMP"
+          }
+        ],
+        [
+          {
+            "evidence_key": "owner-migration-retained",
+            "step": "synthetic-lamp-owner-1"
+          }
+        ]
+      ],
+      "ledgerAndOwnerDataRestored": [
+        [
+          {
+            "applied_at": "2026-11-18 05:40:13",
+            "id": 1,
+            "name": "9000_synthetic_data_owner.sql",
+            "storage": "text"
+          }
+        ],
+        [
+          {
+            "type": "TEXT"
+          }
+        ],
+        [
+          {
+            "evidence_key": "owner-migration-retained",
+            "step": "synthetic-lamp-owner-1"
+          }
+        ]
+      ],
+      "ledgerRowAndOwnerRecordRetained": true,
+      "restore": [
+        {
+          "archiveHash": "48af9d6eaa015dd9acfb04c90ad0c9a434229b112278eda691476d4ac5e82838",
+          "contentHash": "75ada0491f4b2619d09725bead4b82eaa1b8498815d4c00a40a4f197e9ed692b",
+          "event": "result",
+          "exitCode": 0,
+          "fixtureTableCounts": {
+            "lamp_ext_migrations": 1
+          },
+          "ok": true,
+          "verb": "import"
+        }
+      ]
+    },
+    "schemaChanging": {
+      "before": [
+        {
+          "code": "transfer_failed",
+          "event": "error",
+          "exitCode": 1,
+          "reason": "row_type",
+          "verb": "export"
+        },
+        {
+          "event": "result",
+          "exitCode": 1,
+          "ok": false,
+          "verb": "export"
+        }
+      ],
+      "containerBuild": "HTMLRewriter rejected by container import boundary",
+      "export": [
+        {
+          "archiveHash": "cae6b370ba269fbe6f390aabdf4aa1d5151e2848b33c3ff2eaa22d0eb15b2fff",
+          "bytes": 296305,
+          "contentHash": "83d0f76c71c6954c75b3c5fcda5e901069526ab2de659620e5693785fc23fabe",
+          "event": "result",
+          "exitCode": 0,
+          "fixtureTableCounts": {
+            "lamp_ext_migrations": 1,
+            "owner_labels": 1
+          },
+          "ok": true,
+          "verb": "export"
+        }
+      ],
+      "restore": [
+        {
+          "code": "restore_refused",
+          "event": "error",
+          "exitCode": 4,
+          "reason": "schema_mismatch",
+          "verb": "import"
+        },
+        {
+          "event": "result",
+          "exitCode": 4,
+          "ok": false,
+          "verb": "import"
+        }
+      ]
+    }
+  },
+  "orderedBuild": {
+    "commit": "aa9af0f0cbac513772dd12670985e1a705871d7b",
+    "steps": [
+      {
+        "durationMs": 878,
+        "exitCode": 0,
+        "script": "check:contract-docs"
+      },
+      {
+        "durationMs": 986,
+        "exitCode": 0,
+        "script": "source:copies"
+      },
+      {
+        "durationMs": 1331,
+        "exitCode": 0,
+        "script": "source:check"
+      },
+      {
+        "durationMs": 25804,
+        "exitCode": 0,
+        "script": "typecheck"
+      },
+      {
+        "durationMs": 15362,
+        "exitCode": 0,
+        "script": "check:syntax"
+      },
+      {
+        "durationMs": 1710,
+        "exitCode": 0,
+        "script": "validate:release"
+      },
+      {
+        "durationMs": 455,
+        "exitCode": 0,
+        "script": "verify:visual:source"
+      },
+      {
+        "durationMs": 9403,
+        "exitCode": 0,
+        "script": "build:app"
+      },
+      {
+        "durationMs": 7634,
+        "exitCode": 0,
+        "script": "build:site"
+      }
+    ],
+    "success": true
+  },
+  "productBranch": "cloud/sd-lamp-install-faults-1",
+  "productHead": "aa9af0f0cbac513772dd12670985e1a705871d7b",
+  "pushedAt": "2026-11-18T05:57:44Z",
+  "recordedAt": "2026-11-18T06:14:32.436971+00:00",
+  "runtimeProbe": {
+    "after": [
+      "status journey serves owner migration result = true",
+      "sorry receipt serves owner migration result = true"
+    ],
+    "before": [
+      "status journey serves owner migration result = false",
+      "sorry receipt serves owner migration result = false"
+    ]
+  },
+  "suites": {
+    "portability": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority"
+        }
+      ],
+      "summary": {}
+    },
+    "prior": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "HIST-004 \u2014 a previous-release backup upgrades through rer import with its original history, consent and image bytes"
+        }
+      ],
+      "summary": {
+        "cancelled": "0",
+        "duration_ms": "130157.452275",
+        "fail": "0",
+        "pass": "1",
+        "skipped": "0",
+        "tests": "1"
+      }
+    },
+    "public": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "HIST-008 \u2014 reviewed imported history stays completely browsable without scripts"
+        },
+        {
+          "number": 2,
+          "status": "ok",
+          "title": "PAGE-005 \u2014 a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch"
+        },
+        {
+          "number": 3,
+          "status": "ok",
+          "title": "UPTIME-003 \u2014 newly observed services report only their recorded coverage"
+        },
+        {
+          "number": 4,
+          "status": "ok",
+          "title": "HIST-001 \u2014 completed native records retain their month, window, components and complete publication inventory"
+        }
+      ],
+      "summary": {}
+    },
+    "public-catalogue": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 \u2014 owner maintains a complete catalogue and customers read, refresh, embed and retain its public story"
+        }
+      ],
+      "summary": {
+        "cancelled": "0",
+        "duration_ms": "567883.239832",
+        "fail": "0",
+        "pass": "1",
+        "skipped": "0",
+        "tests": "1"
+      }
+    },
+    "public-vendor": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "DEP-001 DEP-002 \u2014 scheduled vendor reports retain attribution and buyer control"
+        }
+      ],
+      "summary": {
+        "cancelled": "0",
+        "duration_ms": "45864.951775",
+        "fail": "0",
+        "pass": "1",
+        "skipped": "0",
+        "tests": "1"
+      }
+    },
+    "sorry": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "documented Sorry generator reproduces all bytes and hashes without provider reads"
+        },
+        {
+          "number": 2,
+          "status": "ok",
+          "title": "documented Sorry exports account for every field through preview, saved jobs and explicit refusals"
+        },
+        {
+          "number": 3,
+          "status": "ok",
+          "title": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 \u2014 Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow"
+        },
+        {
+          "number": 4,
+          "status": "ok",
+          "title": "MOVE-001 \u2014 Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers"
+        },
+        {
+          "number": 5,
+          "status": "ok",
+          "title": "MAINT-015 \u2014 Sorry maintenance labels use authored source states and keep missing states neutral"
+        },
+        {
+          "number": 6,
+          "status": "ok",
+          "title": "MOVE-001 Move in explains how Sorry component rows arrive as components and groups"
+        }
+      ],
+      "summary": {
+        "cancelled": "0",
+        "duration_ms": "325379.937393",
+        "fail": "0",
+        "pass": "9",
+        "skipped": "0",
+        "tests": "9"
+      }
+    },
+    "technical": {
+      "cases": [
+        {
+          "number": 1,
+          "status": "ok",
+          "title": "HIST-004 PORT-001 \u2014 owner SQL rolls back a failed upgrade, recovers once, and travels through a clean technical backup and restore"
+        }
+      ],
+      "summary": {
+        "cancelled": "0",
+        "duration_ms": "192589.427369",
+        "fail": "0",
+        "pass": "1",
+        "skipped": "0",
+        "tests": "1"
+      }
+    }
+  },
+  "verifyRuns": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "aa9af0f0cbac513772dd12670985e1a705871d7b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44247850522",
+      "id": 44247850522,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ]
+}
