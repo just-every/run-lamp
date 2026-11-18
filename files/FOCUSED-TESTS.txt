@@ -1,0 +1,11 @@
+head=ddb1932d50ffa87a2d48ccaf7411bbb0045b78ee
+exit=0
+command=node --test --test-concurrency=1 --test-name-pattern='Owner-selected provider fallback|Failing subscriber destinations' tests/e2e/delivery-contract.test.mjs
+ok 1 - NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+# NOTIFY-013 1440px default-off owner choice persists; real Resend acceptance names its provider in Deliveries
+ok 2 - Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications
+# NOTIFY-004 reconciled 132 deliveries, all six nonempty outcome filters and 41 complete CSV scopes, including 101 distinct recipients across pages of one update.
+# tests 2
+# pass 2
+# fail 0
+# cancelled 0

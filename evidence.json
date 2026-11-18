@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "82c38beccd93096f917b0d607fefa298ca36bada",
+      "bytes": 2258,
+      "path": "COMPOSER-DIAGNOSTIC.json",
+      "sha256": "0d92943389c6bdb0bd9ba0586303799137cd3e6ed63dc144d9f4d45613dcdb66"
+    },
+    {
+      "blob": "2d8a1541538e7a700b57f9e711de1b3ff25b821b",
+      "bytes": 246,
+      "path": "DELIVERY-SHARD.json",
+      "sha256": "a850e720aae97a4f2135b032f28f9ede46218bedaf1149bee09d296746bccb71"
+    },
+    {
+      "blob": "48adb351f1d111a3cee1dc529fa0ad905f0c236a",
+      "bytes": 865,
+      "path": "FOCUSED-TESTS.txt",
+      "sha256": "9fa1f2d7b36392ec422abf7743885ca4a413c0c7332be34fd59f8e3a2b5d03c8"
+    },
+    {
+      "blob": "82c6fab4a12401926b1043126b110bbca6012a23",
+      "bytes": 10271,
+      "path": "REPORT.md",
+      "sha256": "4658b7fb79244c2de282b2ded42708263df6d1b37d7978da419cc963beeb8a2f"
+    },
+    {
+      "blob": "f3ebb252067f78a6d4de51823e372295c69d142b",
+      "bytes": 311,
+      "path": "VERIFY.json",
+      "sha256": "e07d2dc1f5157f110d2603c7627710b821090795f5ba19cefa3f074231576fc6"
+    },
+    {
+      "blob": "c4756659144667e7ea4b2bf9cbc7e6a8c8095e1d",
+      "bytes": 136266,
+      "path": "browser/1440-mail-deliveries.png",
+      "sha256": "4796ce8a38c2d93bfc9645079fd4ff094514b83da96616874226548b9cc1db17"
+    },
+    {
+      "blob": "dbea51721c9fc2a9ffe0400b43351de03968d997",
+      "bytes": 323702,
+      "path": "browser/1440-mail-settings.png",
+      "sha256": "660ee6b185802a60f89e05668301d8b988d2709f7a35764179a74bb7b69c70af"
+    },
+    {
+      "blob": "89b616e7be71f3f500e9193ce32191758f476734",
+      "bytes": 117587,
+      "path": "browser/390-mail-deliveries.png",
+      "sha256": "55f2cd889782295213741d8cc2a7bb622db8f75d3655873365171937886b329b"
+    },
+    {
+      "blob": "70b4a72c48919cda54853335afac2e26456a5846",
+      "bytes": 282747,
+      "path": "browser/390-mail-settings.png",
+      "sha256": "1a33ec6fb2ecf0479ed6b3b57484cff35e910a3649087a4e883cb1c1f4437d43"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f147-pc1",
+  "product_head": "ddb1932d50ffa87a2d48ccaf7411bbb0045b78ee",
+  "ref": "refs/heads/evidence/sd-lamp-c-f147-pc1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f147-pc1"
+}

@@ -1,0 +1,74 @@
+{
+  "priorVerify": {
+    "runId": 44311222239,
+    "attempt": 1,
+    "head": "f122201b30a21f033f41563a9fe31feaf03f6734",
+    "composerJob": 134826392808,
+    "composerConclusion": "cancelled",
+    "composerStepStartedAt": "2026-11-18T13:13:36Z",
+    "composerStepCompletedAt": "2026-11-18T13:58:20Z",
+    "aggregateJob": 134853348508,
+    "aggregateConclusion": "failure",
+    "archiveCommandsExit": 0,
+    "archiveOutputBytes": 0
+  },
+  "priorLocal": {
+    "command": "pnpm run verify:app",
+    "record": {
+      "shard": "composer",
+      "commit": "f122201b30a21f033f41563a9fe31feaf03f6734",
+      "runId": "44311222239",
+      "runAttempt": 1,
+      "success": false,
+      "steps": [
+        {
+          "script": "test:composer",
+          "exitCode": 1,
+          "durationMs": 461938
+        },
+        {
+          "script": "test:public",
+          "exitCode": 0,
+          "durationMs": 446251
+        }
+      ]
+    },
+    "exit": 1,
+    "test": "THEME-001 — owner publishes branded themes and layouts within the page budget",
+    "failure": "browserType.launch: Executable does not exist at the default Playwright executable path"
+  },
+  "candidateLocalRetry": {
+    "command": "pnpm run verify:app",
+    "record": {
+      "shard": "composer",
+      "commit": "ddb1932d50ffa87a2d48ccaf7411bbb0045b78ee",
+      "runId": null,
+      "runAttempt": 0,
+      "success": false,
+      "steps": [
+        {
+          "script": "test:composer",
+          "exitCode": 1,
+          "durationMs": 518326
+        },
+        {
+          "script": "test:public",
+          "exitCode": 0,
+          "durationMs": 451944
+        }
+      ]
+    },
+    "exit": 1,
+    "test": "THEME-001 — owner publishes branded themes and layouts within the page budget",
+    "failure": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg"
+  },
+  "sameRunnerMain": {
+    "head": "ee4f9e01762dd11ad3df31bb7842b336ce9443a8",
+    "test": "THEME-001 — owner publishes branded themes and layouts within the page budget",
+    "originalBrowserSetupExit": 1,
+    "systemChromiumExit": 1,
+    "systemChromiumRequests": 5,
+    "budget": 4,
+    "extraAsset": "/assets/favicon.svg"
+  }
+}
