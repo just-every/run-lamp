@@ -1,4 +1,4 @@
-function widgetRuntime(initial, allowedOrigins, defaultVariant) {
+function widgetRuntime(initial, allowedOrigins, defaultVariant, stateLabels) {
   const script = document.currentScript;
   if (!script || !allowedOrigins.includes(window.location.origin)) return;
   const variant = ["banner", "floating", "dot"].includes(script.dataset.variant ?? "")
@@ -48,7 +48,8 @@ function widgetRuntime(initial, allowedOrigins, defaultVariant) {
     root.style.display = (variant === "floating" && !active) || (hideOperational && data.overall === "Operational")
       ? "none" : variant === "dot" ? "inline-flex" : "flex";
     dot.style.backgroundColor = ({ Operational: "#19865a", "Under maintenance": "#4f6fa8", "Degraded performance": "#c98a12" })[data.overall] ?? "#b44432";
-    if (label.textContent !== data.overall) label.textContent = data.overall;
+    const stateLabel = Object.hasOwn(stateLabels, data.overall) ? stateLabels[data.overall] : data.overall;
+    if (label.textContent !== stateLabel) label.textContent = stateLabel;
     const message = variant === "dot" ? "" : incident ? incident.message.replace(/\n\n+/g, "\n")
       : maintenance ? `${maintenance.reference}: ${maintenance.title}\n${maintenance.state}` : "";
     detail.style.cssText = message ? "flex:1 1 100%;min-width:0;margin-top:2px;border-top:1px solid rgba(24,45,36,.1);padding-top:10px;color:#44544c;white-space:pre-line" : "display:none";

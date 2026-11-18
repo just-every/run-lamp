@@ -1,6 +1,6 @@
 import type { ComponentState } from "./domain";
 
-export const INCIDENT_CLAIM_STATES = ["Major outage", "Partially unavailable", "Degraded performance", "Operational"] as const;
+export const INCIDENT_CLAIM_STATES = ["Operational", "Degraded performance", "Partially unavailable", "Major outage"] as const;
 export type IncidentClaimState = typeof INCIDENT_CLAIM_STATES[number];
 
 export interface IncidentComponentChoice {

@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { useEffect, useRef } from "react";
 import type { IncidentBrief as Brief } from "../build";
 import { useAppData } from "../../../app/client/ui/api";
@@ -38,7 +39,7 @@ export function IncidentBrief({ brief, error }: { brief: Brief | null; error: st
         {alerts.length + updates.length + components.length ? <ul className="brief-list">
           {alerts.map((alert) => <li key={alert.ref} id={`brief-${alert.ref}`}><details><summary style={{ minHeight: 44 }}><b>{alert.ref}</b> {alert.state === "recovered" ? "Recovery" : "Alert"} from {alert.source} at {formatOperatorTime(alert.receivedAt)}{alert.title ? `: ${alert.title}` : ""}</summary>{alert.evidenceSummary && <p>{alert.evidenceSummary}</p>}<pre tabIndex={0} aria-label={`Alert ${alert.ref} payload`}>{JSON.stringify(alert.payload, null, 2)}</pre></details></li>)}
           {updates.map((update) => <li key={update.ref} id={`brief-${update.ref}`}><details><summary style={{ minHeight: 44 }}><b>{update.ref}</b> {update.lifecycle} update published {formatOperatorTime(update.publishedAt)}</summary><dl><dt>Who is affected</dt><dd>{update.affectedAudience}</dd><dt>Impact</dt><dd>{update.customerImpact}</dd>{update.whatStillWorks ? <><dt>What still works</dt><dd>{update.whatStillWorks}</dd></> : null}{update.details ? <><dt>Details</dt><dd>{update.details}</dd></> : null}{update.nextUpdateAt ? <><dt>Next update by</dt><dd>{formatOperatorTime(update.nextUpdateAt)}</dd></> : null}</dl></details></li>)}
-          {components.map((component) => <li key={component.ref} id={`brief-${component.ref}`}><b>{component.ref}</b> {component.name}: {component.state} ({component.relationship.toLowerCase()})</li>)}
+          {components.map((component) => <li key={component.ref} id={`brief-${component.ref}`}><b>{component.ref}</b> {component.name}: {componentStateLabel(component.state)} ({component.relationship.toLowerCase()})</li>)}
         </ul> : <p>No details yet.</p>}
       </div>
       <div>

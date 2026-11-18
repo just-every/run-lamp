@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import type { PageTheme } from "../../../shared/page-theme";
 import type { PageSettingsView } from "../service";
 import { ThemeLinks } from "./theme-links";
@@ -9,8 +10,9 @@ const initialPalette: NonNullable<PageTheme["palette"]> = {
 };
 const colors: Array<[keyof NonNullable<PageTheme["palette"]>, string]> = [
   ["background", "Background"], ["surface", "Surface"], ["text", "Text"], ["link", "Links"],
-  ["operational", "Operational"], ["degraded", "Degraded performance"], ["partial", "Partially unavailable"],
-  ["major", "Major outage"], ["maintenance", "Maintenance"],
+  ["operational", componentStateLabel("Operational")], ["degraded", componentStateLabel("Degraded performance")],
+  ["partial", componentStateLabel("Partially unavailable")], ["major", componentStateLabel("Major outage")],
+  ["maintenance", componentStateLabel("Under maintenance")],
 ];
 
 export function ThemeSettings({ value, saved, components, onChange, onSettings, busy, setBusy }: {

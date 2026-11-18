@@ -5,15 +5,16 @@ import { Button } from "../../../app/client/ui/button";
 import { useLeaveGuard } from "../../../app/client/ui/leave-guard";
 import { FormError, LoadingState, useOperatorTime } from "../../../app/client/ui/states";
 import { ErrorState } from "../../../app/client/ui/lit-states";
-import { COMPONENT_STATES, type ComponentState } from "../../../shared/domain";
+import type { ComponentState } from "../../../shared/domain";
+import { ComponentStateSelect } from "../../../app/client/ui/component-state-select";
 import type { IncidentTemplate } from "../../incidents/template-repository";
 import { TemplateEditor } from "../../incidents/ui/template-editor";
 import type { ComponentOption, Source } from "./tools";
 import type { RuleView, RuleRun } from "../rule-schema";
 
 type RuleMode = RuleView["mode"];
-type Fields = { name: string; mode: RuleMode; state: ComponentState; templateId: string; firingDelaySeconds: number; recoveryHoldSeconds: number };
-const defaults = (): Fields => ({ name: "", mode: "draft", state: "Degraded performance", templateId: "", firingDelaySeconds: 120, recoveryHoldSeconds: 300 });
+type Fields = { name: string; mode: RuleMode; state: ComponentState | ""; templateId: string; firingDelaySeconds: number; recoveryHoldSeconds: number };
+const defaults = (): Fields => ({ name: "", mode: "draft", state: "", templateId: "", firingDelaySeconds: 120, recoveryHoldSeconds: 300 });
 const modeLabel = (mode: RuleMode) => mode === "claim-and-publish" ? "Claim and publish" : mode === "claim" ? "Claim" : "Draft";
 
 export function AlertRulesSettings() {
@@ -63,10 +64,10 @@ export function AlertRules({ sources, components }: { sources: Source[]; compone
     if (key === "templateId" || key === "mode") { visit.current++; setTemplateDirty(false); setEditedTemplate(null); }
   }
   async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (busy || templateDirty) return;
+    event.preventDefault(); if (busy || templateDirty || (fields.mode !== "draft" && !fields.state)) return;
     setBusy(true); setError(null); setMessage(null);
     try {
-      await appApi(`/api/app/intake/rules/${sourceId}/${componentId}`, { method: "PUT", body: JSON.stringify({ ...fields, templateId: fields.mode === "claim-and-publish" ? fields.templateId : null }) });
+      await appApi(`/api/app/intake/rules/${sourceId}/${componentId}`, { method: "PUT", body: JSON.stringify({ ...fields, state: fields.state || "Degraded performance", templateId: fields.mode === "claim-and-publish" ? fields.templateId : null }) });
       setDirty(false); rules.refresh(); setMessage("Rule saved. Your approval is recorded in the audit log.");
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The rule could not be saved."); }
     finally { setBusy(false); }
@@ -89,7 +90,7 @@ export function AlertRules({ sources, components }: { sources: Source[]; compone
     } catch (cause) { setError(cause instanceof Error ? cause.message : "The automatic change could not be undone."); }
     finally { setBusy(false); }
   }
-  const complete = sourceId && componentId && fields.name.trim() && (fields.mode !== "claim-and-publish" || fields.templateId);
+  const complete = sourceId && componentId && fields.name.trim() && (fields.mode === "draft" || fields.state) && (fields.mode !== "claim-and-publish" || fields.templateId);
   return <section className="data-card alert-rules" aria-labelledby="alert-rules-title">
     <div className="card-heading"><div><h2 id="alert-rules-title">Alert rules</h2><p className="card-support">Choose what alerts may do for each component and source. Without a saved rule, alerts create private drafts.</p></div></div>
     {rules.error ? <FormError>{rules.error} <Button type="button" variant="secondary" onClick={rules.refresh}>Retry rules</Button></FormError> : null}
@@ -107,7 +108,7 @@ export function AlertRules({ sources, components }: { sources: Source[]; compone
       {currentRule?.degradationReason ? <p role="alert">Draft only: {currentRule.degradationReason}</p> : null}
       <label className="form-label">Rule name<input aria-label="Rule name" required maxLength={120} value={fields.name} disabled={busy} onChange={event => change("name", event.target.value)} placeholder="API availability" /></label>
       <label className="form-label">When this source fires<select aria-label="Alert action" value={fields.mode} disabled={busy} onChange={event => change("mode", event.target.value as RuleMode)}><option value="draft">Draft</option><option value="claim">Claim</option><option value="claim-and-publish">Claim and publish</option></select><small>{fields.mode === "draft" ? "Creates a private draft. Nothing public changes." : fields.mode === "claim" ? "Claims this component's state while firing, then releases on recovery. No update or notification is sent." : "Claims this component and publishes only the saved template wording. Recovery publishes its saved Resolved update."}</small></label>
-      {fields.mode !== "draft" ? <label className="form-label">Claimed state<select aria-label="Claimed state" disabled={busy} value={fields.state} onChange={event => change("state", event.target.value as ComponentState)}>{COMPONENT_STATES.map(state => <option key={state}>{state}</option>)}</select></label> : null}
+      {fields.mode !== "draft" ? <ComponentStateSelect label="Claimed state" state={fields.state} disabled={busy} onChange={value => change("state", value)} /> : null}
       {fields.mode !== "draft" ? <>
         <label className="form-label">Firing delay (seconds)<input aria-label="Firing delay (seconds)" type="number" min={0} max={86400} required disabled={busy} value={fields.firingDelaySeconds} onChange={event => change("firingDelaySeconds", Number(event.target.value))} /></label>
         <label className="form-label">Recovery hold (seconds)<input aria-label="Recovery hold (seconds)" type="number" min={0} max={86400} required disabled={busy} value={fields.recoveryHoldSeconds} onChange={event => change("recoveryHoldSeconds", Number(event.target.value))} /></label>

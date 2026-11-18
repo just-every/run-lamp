@@ -95,7 +95,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await inspect('claim');
     await drawer.getByLabel('Service status').selectOption('Degraded performance');
     await drawer.getByRole('button', { name: 'Save status', exact: true }).click();
-    await row.getByText('Degraded performance', { exact: true }).waitFor();
+    await row.getByText('Slow', { exact: true }).waitFor();
     await inspect('components');
     await page.goto(`${appUrl}/app/maintenance`);
     await operatorHydrated(page);

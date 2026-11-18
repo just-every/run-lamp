@@ -1,3 +1,4 @@
+import { expectedComponentLabels } from '../../helpers/public-meaning.mjs';
 import { admitAttributionOperator } from './operator-attribution.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
@@ -47,7 +48,7 @@ export function rootFigures(html, template, target, control, expected, daily, wo
     const records = find(tree, node => attr(node, 'role') === 'list' && attr(node, 'aria-label')?.endsWith(`-day uptime record for ${component.name}`));
     assert.equal(records.length, 1, 'each component has its own labeled daily record');
     for (const day of affectedDays) {
-      const label = component === target ? `${day}: Downtime ${daily} minutes (weighted); worst state: ${worst}` : `${day}: no downtime`;
+      const label = component === target ? `${day}: Downtime ${daily} minutes (weighted); worst state: ${expectedComponentLabels[worst]}` : `${day}: no downtime`;
       assert.equal(find(records[0], node => attr(node, 'aria-label') === label).length, 1, `${template}: ${component.name} ${day}`);
     }
   }

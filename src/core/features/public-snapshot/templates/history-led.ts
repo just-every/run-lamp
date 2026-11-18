@@ -1,8 +1,8 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { groupComponentsByHeading } from "../../../shared/component-order";
 import type { PublicSnapshotModel } from "../renderer";
 import type { PublicIncident } from "../record-markup";
 import { publicComponentOrder } from "../../../shared/component-order";
-import { COMPONENT_STATES } from "../../../shared/domain";
 import { REPORTING_DAYS, dayKey, escapeHtml } from "../format";
 import { uptimeMarkLabel } from "../uptime";
 import { uptimeMethod } from "../uptime-method";
@@ -115,7 +115,7 @@ function heatmapFrame(model: PublicSnapshotModel, titleId: string) {
   const timezone = model.settings.timezone;
   const spans = model.incidents.map((incident) => ({ incident, ...incidentDays(incident, timezone, model.generatedAt) }));
   const seen = new Set<string>();
-  const labels = components.map((component) => `<li class="hm-label tone-${toneOf(component.state)}">${stateGlyph(component.state)}<span class="hm-name">${escapeHtml(component.name)}</span><span class="hm-state">${escapeHtml(component.state)}</span><span class="hm-pct">${escapeHtml(uptimeValue(component.uptime))}</span></li>`).join("");
+  const labels = components.map((component) => `<li class="hm-label tone-${toneOf(component.state)}">${stateGlyph(component.state)}<span class="hm-name">${escapeHtml(component.name)}</span><span class="hm-state">${escapeHtml(componentStateLabel(component.state))}</span><span class="hm-pct">${escapeHtml(uptimeValue(component.uptime))}</span></li>`).join("");
   const rows = components.map((component) => {
     const cells = (component.hideUptime ? [] : recordDays(component)).map((mark) => {
       const kind = dayClass(mark);
@@ -126,7 +126,13 @@ function heatmapFrame(model: PublicSnapshotModel, titleId: string) {
     }).join("");
     return `<div class="hm-cells" role="list" aria-label="${model.theme.historyDays}-day uptime record for ${escapeHtml(component.name)}">${cells}</div>`;
   }).join("");
-  const legendStates = [["ok", COMPONENT_STATES[0]], ["degraded", "Degraded performance"], ["partial", "Partially unavailable"], ["major", "Major outage"], ["none", "No data"]].filter(([kind]) => kind === "ok" || seen.has(kind!));
+  const legendStates = [
+    ["ok", componentStateLabel("Operational")],
+    ["degraded", componentStateLabel("Degraded performance")],
+    ["partial", componentStateLabel("Partially unavailable")],
+    ["major", componentStateLabel("Major outage")],
+    ["none", "No data"],
+  ].filter(([kind]) => kind === "ok" || seen.has(kind!));
   const legend = `<ul class="hm-legend" aria-label="Legend">${legendStates.map(([kind, name]) => `<li><i class="cell ${kind}"></i>${name}</li>`).join("")}</ul>`;
   const notes = components.filter((component) => component.note || component.description).map((component) => `<li><strong>${escapeHtml(component.name)}</strong>${componentNote(component)}</li>`).join("");
   return `<div class="hm-frame"><div class="hm-head"><h2 id="${titleId}">Components</h2>${legend}</div><div class="hm-body"><ul class="hm-labels">${labels}</ul><div class="hm-scroll" role="group" aria-label="Daily history, last ${model.theme.historyDays} days"><div class="hm-track"><div class="hm-callouts">${callouts(model, components, days)}</div>${rows}${axisMarkup(days)}</div></div></div>${notes ? `<ul class="hm-notes">${notes}</ul>` : ""}<details class="hm-method"><summary>How these figures are calculated</summary><p>Each square is one calendar day in ${escapeHtml(timezone)}. A component's percentage covers the last ${model.theme.historyDays} days of observed time; the overall figure averages the components, weighted by observed time. ${escapeHtml(uptimeMethod(model.theme.historyDays, model.policies))}</p></details></div>`;
@@ -163,7 +169,7 @@ function componentList(model: PublicSnapshotModel) {
   if (!components.length) return "";
   const renderedRows = components.map((component) => {
     const tone = toneOf(component.state);
-    return `<details class="up-row"><summary><span class="up-dot tone-${tone}" aria-hidden="true"></span><span class="up-name">${escapeHtml(component.name)}</span><span class="up-state tone-${tone}">${escapeHtml(component.state)}</span><span class="up-pct">${escapeHtml(uptimeValue(component.uptime))}</span>${lineIcon("chevron", "up-chevron")}</summary><div class="up-detail"><p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "up-bar", false)}${componentNote(component)}</div></details>`;
+    return `<details class="up-row"><summary><span class="up-dot tone-${tone}" aria-hidden="true"></span><span class="up-name">${escapeHtml(component.name)}</span><span class="up-state tone-${tone}">${escapeHtml(componentStateLabel(component.state))}</span><span class="up-pct">${escapeHtml(uptimeValue(component.uptime))}</span>${lineIcon("chevron", "up-chevron")}</summary><div class="up-detail"><p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "up-bar", false)}${componentNote(component)}</div></details>`;
   });
   const rows = renderedRows.join("");
   const content = model.theme.groupsCollapsed ? groupComponentsByHeading(components).map(([heading, members]) => {
@@ -178,7 +184,7 @@ export function historyLedPage(model: PublicSnapshotModel, parts: TemplateParts)
   const text = situation(model);
   const figure = overallUptime(model.visibleComponents);
   const band = `<header class="up-band"><div class="wrap up-band-row"><div class="up-brand">${brand(model)}${tagline(model)}</div><div class="up-actions">${subscribeForm(model, "subscribe-email", "on-dark")}${model.prelaunch ? "" : '<a class="up-band-subscribe" href="#subscribe">Subscribe</a>'}${feedLinks("on-dark")}</div></div></header>`;
-  const hero = `<section class="up-hero wrap" aria-labelledby="overall-status"><div class="up-figure" data-live="figure"><p class="tpl-kicker">Overall uptime (last ${model.theme.historyDays} days)</p><p class="up-number">${figure ?? "No data yet"}</p></div><div class="up-situation"><div class="tpl-live" id="status-live" role="status" aria-live="polite" aria-atomic="true" data-live="status"><h1 id="overall-status">${escapeHtml(text)}</h1><span class="sr-only">${escapeHtml(model.overall)}</span></div>${updatedLine(model)}</div></section>`;
+  const hero = `<section class="up-hero wrap" aria-labelledby="overall-status"><div class="up-figure" data-live="figure"><p class="tpl-kicker">Overall uptime (last ${model.theme.historyDays} days)</p><p class="up-number">${figure ?? "No data yet"}</p></div><div class="up-situation"><div class="tpl-live" id="status-live" role="status" aria-live="polite" aria-atomic="true" data-live="status"><h1 id="overall-status">${escapeHtml(text)}</h1><span class="sr-only">${escapeHtml(componentStateLabel(model.overall))}</span></div>${updatedLine(model)}</div></section>`;
   const incidents = `<section class="up-incidents" aria-labelledby="incidents-title" data-live="history"><h2 id="incidents-title">${shown.maintenance.length ? "Incidents and maintenance" : "Incidents"}</h2>${incidentGroups(model, parts, shown)}${quietLine(shown, "tpl-quiet")}</section>`;
   const subscribe = model.prelaunch ? "" : `<section id="subscribe" class="up-subscribe" aria-labelledby="subscribe-title"><h2 id="subscribe-title">Subscribe</h2><p>Get notified about incidents and updates from ${escapeHtml(model.settings.pageName)}.</p>${subscribeForm(model, "subscribe-email-card")}${feedLinks("", "Subscribe by feed")}</section>`;
   return `${band}${parts.slot("status-page.header.after.v1")}${hero}${heatmap(model, parts)}<div class="up-lower wrap">${incidents}${componentList(model)}${subscribe}</div>`;

@@ -1,3 +1,4 @@
+import { zoneLabel } from "../../../shared/timezone-label";
 import { useState } from "react";
 import { Button } from "../../../app/client/ui/button";
 import { FormError, useOperatorTime } from "../../../app/client/ui/states";
@@ -15,7 +16,7 @@ export function CommunicationPerformance() {
   const path = `/api/app/communication-performance${selectedMonth ? `?month=${encodeURIComponent(selectedMonth)}` : ""}`;
   const { element, data, error, loading, refresh } = usePanelRead<PerformanceResponse>(path);
   const month = selectedMonth ?? data?.month ?? "";
-  const monthPicker = <label className="form-label communication-month" htmlFor="communication-performance-month">Month<input id="communication-performance-month" aria-label="Communication performance month" type="month" required value={month} onChange={event => { if (event.target.value) setMonth(event.target.value); }} /><small>Times in {timezone}.</small></label>;
+  const monthPicker = <label className="form-label communication-month" htmlFor="communication-performance-month">Month<input id="communication-performance-month" aria-label="Communication performance month" type="month" required value={month} onChange={event => { if (event.target.value) setMonth(event.target.value); }} /><small>Times in {zoneLabel(timezone)}.</small></label>;
   return <section className="data-card communication-panel" aria-label="Communication performance" ref={element}>
     <div className="card-heading"><h2>Communication performance</h2>{data && data.summary.incidentCount > 0 ? <Button asChild variant="secondary"><a href={`${path}${selectedMonth ? "&" : "?"}format=csv`} download={`communication-performance-${month}.csv`}>Download CSV</a></Button> : null}</div>
     {error ? <FormError>{error}</FormError> : null}

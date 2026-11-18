@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { useEffect, useState, type FormEvent } from "react";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -49,8 +50,8 @@ function DependencyRow({ dependency, components, templates, mapping, refresh }: 
   }
   return <article className="data-card" aria-label={dependency.name}>
     <h3>{dependency.name}</h3>
-    <p>Reported by <a href={dependency.statusPageUrl} target="_blank" rel="noreferrer" style={{ overflowWrap: "anywhere" }}>{dependency.vendorName}</a> · {dependency.unavailableAt ? "Vendor status unavailable" : dependency.state ?? "Waiting for first read"}</p>
-    {dependency.unavailableAt && <p role="status">Vendor status became unavailable at {formatTime(dependency.unavailableAt)}. The last reported state is {dependency.state ?? "not yet known"}.</p>}
+    <p>Reported by <a href={dependency.statusPageUrl} target="_blank" rel="noreferrer" style={{ overflowWrap: "anywhere" }}>{dependency.vendorName}</a> · {dependency.unavailableAt ? "Vendor status unavailable" : dependency.state ? componentStateLabel(dependency.state) : "Waiting for first read"}</p>
+    {dependency.unavailableAt && <p role="status">Vendor status became unavailable at {formatTime(dependency.unavailableAt)}. The last reported state is {dependency.state ? componentStateLabel(dependency.state) : "not yet known"}.</p>}
     <p>{dependency.lastReadAt === null ? "This source has not been read yet." : `Last read ${formatTime(new Date(dependency.lastReadAt).toISOString())}.`} Reads are at least two minutes apart.</p>
     {mapping && <StateMapping mapping={mapping} />}
     <form className="channel-form" onSubmit={save}>
@@ -123,7 +124,7 @@ export function DependencySettings() {
           <label className="form-label">State path<input required value={statePath} disabled={saving} onChange={event => setStatePath(event.target.value)} /></label>
           <label className="form-label">Incident path (optional)<input value={incidentPath} disabled={saving} onChange={event => setIncidentPath(event.target.value)} /></label>
           <label className="form-label">Summary path (optional)<input value={summaryPath} disabled={saving} onChange={event => setSummaryPath(event.target.value)} /></label>
-          <label className="form-label full-width">JSON state mapping<textarea required rows={4} value={mappingText} disabled={saving} onChange={event => setMappingText(event.target.value)} /></label>
+          <details className="full-width"><summary>Details</summary><label className="form-label">JSON state mapping<textarea required rows={4} value={mappingText} disabled={saving} onChange={event => setMappingText(event.target.value)} /></label></details>
         </>}
         <label className="checkbox-label full-width"><input type="checkbox" checked={internal} disabled={saving} onChange={event => setInternal(event.target.checked)} />Keep this vendor component internal</label>
         <Button type="submit" disabled={saving || resource.loading}>{saving ? "Saving…" : "Follow vendor status"}</Button>
