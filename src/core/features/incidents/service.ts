@@ -334,7 +334,7 @@ export function createIncidentsService(
       }))).filter((change): change is PublishedIncidentComponentChange => change !== null);
       const time = input.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(input.nextUpdateAt) : null;
       const renderInput = { incidentReference: incident.reference, incidentTitle: incident.title, ...input, componentChanges, nextUpdateDisplay: time?.offset };
-      const rendered = renderIncidentUpdate(renderInput);
+      const rendered = renderIncidentUpdate({ ...renderInput, nextUpdateDisplay: time?.name });
       const peak = mostSevereState([await repository.findPeakImpact(incidentId) ?? "Operational", ...proposed.map(component => component.state)]);
       rendered.impactExplanation = incident.impactOverride === null
         ? "Incident impact comes from the most severe component status reported during this incident. You can change it under Impact below."
@@ -350,7 +350,7 @@ export function createIncidentsService(
         .filter((change) => change.previousState !== change.newState);
       const time = update.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(update.nextUpdateAt) : null;
       const renderInput = { incidentReference: await repository.nextReference(), incidentTitle: title, ...update, componentChanges, nextUpdateDisplay: time?.offset };
-      const rendered = renderIncidentUpdate(renderInput);
+      const rendered = renderIncidentUpdate({ ...renderInput, nextUpdateDisplay: time?.name });
       rendered.impactExplanation = "Incident impact comes from the component statuses you choose.";
       rendered.email = await previewEmail({ ...renderInput, incidentImpact: incidentImpact(null, null, components.map(component => component.state)).effectiveImpact }, time?.name);
       return rendered;
