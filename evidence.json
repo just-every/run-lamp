@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "78905c7dcbbe55845cf9c60bf67bc8afb4580004",
+      "bytes": 13909,
+      "path": "BASELINE-RECEIPT.json",
+      "sha256": "d411cef3200322df6ae267ba4f7ba44d1b21489ad6081932ba278102ed54ffaf"
+    },
+    {
+      "blob": "5f33f5559d60638746d221a58fa4bf22ed6167bf",
+      "bytes": 5463,
+      "path": "CI-RECEIPT.json",
+      "sha256": "24313f8652f8fdc90410b6436379a67d5fcfcc65cbebe7b64b0bfbccff3bd746"
+    },
+    {
+      "blob": "56badb214d417c1319fc957ed00d7418345cfe00",
+      "bytes": 13169,
+      "path": "RECEIPT.json",
+      "sha256": "91db1068e0e4943d3aae321ace16c64220c948260066f32742c557fc883108d7"
+    },
+    {
+      "blob": "3a843ba8056a426465319ac95391430072f4befe",
+      "bytes": 6148,
+      "path": "REPORT.md",
+      "sha256": "8153e3aadb401da7f14eb7e002a272e08eb399322cfa4d1965831bb549419afd"
+    },
+    {
+      "blob": "6e761273bd18cc86605cf513006ec424e9827e19",
+      "bytes": 126072,
+      "path": "browser/component-history-1440.png",
+      "sha256": "ccf1b456da17cde9354a203a9eac4e36008c48ef0a31851f3888f6c1ca962719"
+    },
+    {
+      "blob": "1d7844e6cdbb126a9a62fbe38db040216d92bb26",
+      "bytes": 69490,
+      "path": "browser/component-history-390.png",
+      "sha256": "d0d3c1a742daac801c9d13d81666c0f9750213f5137b21ed3f6fa8250013b4b6"
+    },
+    {
+      "blob": "1615b3a72a88af43b00766a0fc49829a9e3558f0",
+      "bytes": 9407,
+      "path": "browser/components-1440.png",
+      "sha256": "b1cbd58fd425171085c90ab3cc652c0357b24ffb999a4116c4fce8aba7705ed9"
+    },
+    {
+      "blob": "5eb4cd7b2d74cf08be70e595b1a20c5acb958784",
+      "bytes": 8972,
+      "path": "browser/components-390.png",
+      "sha256": "12e03927a3a98ddaf0546b7225a085a3225c3d6737185b4172bd46a747add08b"
+    },
+    {
+      "blob": "c6f141b67a71595977891c8ea072df950853dbdc",
+      "bytes": 28911,
+      "path": "browser/composer-1440.png",
+      "sha256": "5727907218dd9ee702993d12f0dc6a6f5a94a15c3c3c88d316d873b8d198f78e"
+    },
+    {
+      "blob": "a20301336db29f411b521713d0aa844f6065f7f2",
+      "bytes": 29441,
+      "path": "browser/composer-390.png",
+      "sha256": "9edac5fe09ab0d5348684023a2965418b0c4da91360899b82784a934ab1f11ae"
+    },
+    {
+      "blob": "12c7c99f92e90655cbcda24ded1fc983dd8cf5c4",
+      "bytes": 11970,
+      "path": "browser/local-operator-invitation-1440.png",
+      "sha256": "5954e8a238ccb185a49f57fcd49f5fb73ef0f2a2c8d2d50238e7719ba03653b7"
+    },
+    {
+      "blob": "921787d20b296607ac8ed1127bf910c5122df993",
+      "bytes": 11502,
+      "path": "browser/local-operator-invitation-390.png",
+      "sha256": "47d02a352490f9e80e19ca45347075fa98f1a1e67308dd315f96c30d4ce46cb1"
+    },
+    {
+      "blob": "8972c20e05fc72862c45d1fcf3a3b276cffdd12e",
+      "bytes": 196063,
+      "path": "browser/public-1440.png",
+      "sha256": "8b98f01d55e8d76f64c9c323682b39802c77c1e5d4f00e03afc606c093686e8c"
+    },
+    {
+      "blob": "2f52671873c433be0ce63928c1f637d36c343bed",
+      "bytes": 155222,
+      "path": "browser/public-390.png",
+      "sha256": "43dfc3739e3c7ebec02945e53728930e63c2f2e43e71efb1d616be3b2956bd98"
+    },
+    {
+      "blob": "a38499aba0eb87759513c8bde9d21edfaff0d7c4",
+      "bytes": 17411,
+      "path": "browser/scheduled-overview-1440.png",
+      "sha256": "e6ed6103e188eb6f065e02539305dbfb676bd2a490dcadfacea1f8c06c38a5c6"
+    },
+    {
+      "blob": "0bf46bc7e21cb642d52953370cd07a7eea4f98da",
+      "bytes": 17041,
+      "path": "browser/scheduled-overview-390.png",
+      "sha256": "34c89b23ca38a7d5268fbad2c4fc744bcec19f5bdf20ae3c4d284374f4e01b46"
+    },
+    {
+      "blob": "43ba09cc9abb48ae137d6669e524a5a8b689221e",
+      "bytes": 4976,
+      "path": "browser/settings-time-details-1440.png",
+      "sha256": "5484efdb4f13e18db5abbabd6b22fa4d927e56a66fd19562e6161a117a28d8b9"
+    },
+    {
+      "blob": "2a81d30d14f441019524820b723d962726bf5c0f",
+      "bytes": 4505,
+      "path": "browser/settings-time-details-390.png",
+      "sha256": "1b340ca26037b30170e61c9aa5e43b738a47c37f0bb8cb0a860c8a851ac84088"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-design-calls-3",
+  "product_head": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+  "ref": "refs/heads/evidence/sd-lamp-design-calls-3",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-design-calls-3"
+}

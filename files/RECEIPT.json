@@ -1,0 +1,418 @@
+{
+  "base": "ee4f9e01762dd11ad3df31bb7842b336ce9443a8",
+  "parent_round": "b39e82f55c6ec44f99006ce21a269e943ef7960a",
+  "reproduction": "1a409b72265af59afac541c25ff8dd3f423fc0d6",
+  "product_head": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+  "product_branch": "cloud/sd-lamp-design-calls-3",
+  "test_inventory": {
+    "before": 122,
+    "after": 122
+  },
+  "contract_counts": {
+    "before": [
+      64,
+      125,
+      55
+    ],
+    "after": [
+      64,
+      125,
+      55
+    ],
+    "order": [
+      "done",
+      "partial",
+      "missing"
+    ]
+  },
+  "build": [
+    "2026-11-18T20:58:38Z PASS check:contract-docs (regenerated view)",
+    "2026-11-18T20:58:38Z PASS source:copies",
+    "2026-11-18T20:58:39Z PASS source:check",
+    "2026-11-18T20:59:00Z PASS typecheck",
+    "2026-11-18T20:59:10Z PASS check:syntax",
+    "2026-11-18T20:59:11Z PASS validate:release",
+    "2026-11-18T20:59:12Z PASS verify:visual:source",
+    "2026-11-18T20:59:18Z PASS build:app",
+    "2026-11-18T20:59:24Z PASS build:site"
+  ],
+  "axe": {
+    "main": [
+      []
+    ],
+    "replay": [
+      [
+        {
+          "id": "target-size",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "summary"
+              ],
+              "html": "<summary>Time zone details</summary>",
+              "failureSummary": "Fix any of the following:\\n  Target has insufficient size (1061px by 23.3px, should be at least 24px by 24px)\\n  Target has insufficient space to its closest neighbors. Safe clickable space has a diameter of 23.2px instead of at least 24px."
+            }
+          ]
+        }
+      ]
+    ],
+    "candidate": [
+      []
+    ]
+  },
+  "browser": {
+    "main": [
+      {
+        "width": 1440,
+        "placeholder": "What customers see",
+        "componentStateOptions": [
+          "Choose a state",
+          "Working",
+          "Slow or partly down",
+          "Down"
+        ],
+        "initialComponentState": "",
+        "settingsTimeZone": {
+          "chosen": null,
+          "details": null
+        },
+        "catalogueRow": "Accessibility test service\\nA real component created only by the local accessibility fixture.\\nOperational",
+        "publicScreen": {
+          "selectedText": [
+            "Operational",
+            "Accessibility test service",
+            "Operational",
+            "About Accessibility test service",
+            "History since Nov 18, 2026, 12:55 UTC-08:00.",
+            "Downtime",
+            "Resolved Nov 18, 2026, 12:55 UTC-08:00 · lasted 0m · Affected Accessibility test service"
+          ],
+          "details": [],
+          "visibleOffsets": [
+            "UTC-08:00",
+            "UTC-08:00"
+          ]
+        }
+      },
+      {
+        "width": 390,
+        "placeholder": "What customers see",
+        "componentStateOptions": [
+          "Choose a state",
+          "Working",
+          "Slow or partly down",
+          "Down"
+        ],
+        "initialComponentState": "",
+        "settingsTimeZone": {
+          "chosen": null,
+          "details": null
+        },
+        "catalogueRow": "Accessibility test service\\nA real component created only by the local accessibility fixture.\\nOperational",
+        "publicScreen": {
+          "selectedText": [
+            "Operational",
+            "Accessibility test service",
+            "Operational",
+            "About Accessibility test service",
+            "History since Nov 18, 2026, 12:55 UTC-08:00.",
+            "Downtime",
+            "Resolved Nov 18, 2026, 12:55 UTC-08:00 · lasted 0m · Affected Accessibility test service"
+          ],
+          "details": [],
+          "visibleOffsets": [
+            "UTC-08:00",
+            "UTC-08:00"
+          ]
+        }
+      }
+    ],
+    "candidate": [
+      {
+        "width": 1440,
+        "placeholder": "What customers will see next",
+        "componentStateOptions": [
+          "Choose a state",
+          "Working",
+          "Slow",
+          "Partly down",
+          "Down"
+        ],
+        "initialComponentState": "",
+        "reachablePartlyDown": "Partially unavailable",
+        "settingsTimeZone": {
+          "chosen": "Los Angeles time",
+          "details": "Time zone detailsCurrent offset: UTC-08:00",
+          "targetHeight": 44,
+          "initiallyClosed": true,
+          "opensWithEnter": true
+        },
+        "catalogueRow": "Accessibility test service\\nA real component created only by the local accessibility fixture.\\nWorking",
+        "publicScreen": {
+          "selectedText": [
+            "Working",
+            "Accessibility test service",
+            "Working",
+            "About Accessibility test service",
+            "Downtime",
+            "Resolved Nov 18, 2026, 13:02 Los Angeles time · lasted 0m · Affected Accessibility test service"
+          ],
+          "details": [
+            "Time detailsUpdated: Nov 18, 2026, 13:02 UTC-08:00"
+          ],
+          "visibleOffsets": []
+        }
+      },
+      {
+        "width": 390,
+        "placeholder": "What customers will see next",
+        "componentStateOptions": [
+          "Choose a state",
+          "Working",
+          "Slow",
+          "Partly down",
+          "Down"
+        ],
+        "initialComponentState": "",
+        "reachablePartlyDown": "Partially unavailable",
+        "settingsTimeZone": {
+          "chosen": "Los Angeles time",
+          "details": "Time zone detailsCurrent offset: UTC-08:00",
+          "targetHeight": 44,
+          "initiallyClosed": true,
+          "opensWithEnter": true
+        },
+        "catalogueRow": "Accessibility test service\\nA real component created only by the local accessibility fixture.\\nWorking",
+        "publicScreen": {
+          "selectedText": [
+            "Working",
+            "Accessibility test service",
+            "Working",
+            "About Accessibility test service",
+            "Downtime",
+            "Resolved Nov 18, 2026, 13:02 Los Angeles time · lasted 0m · Affected Accessibility test service"
+          ],
+          "details": [
+            "Time detailsUpdated: Nov 18, 2026, 13:02 UTC-08:00"
+          ],
+          "visibleOffsets": []
+        }
+      }
+    ],
+    "main_invitation": [
+      {
+        "width": 1440,
+        "confirmation": "Synthetic Lamp local operator is invited. No email was sent on this computer.",
+        "copyButtons": 0,
+        "invitationLinkStaysLocal": null
+      },
+      {
+        "width": 390,
+        "confirmation": "Synthetic Lamp local operator is invited. No email was sent on this computer.",
+        "copyButtons": 0,
+        "invitationLinkStaysLocal": null
+      }
+    ],
+    "candidate_invitation": [
+      {
+        "width": 1440,
+        "confirmation": "Brightwell Support is invited. Lamp on this computer opens only in your browser, so there is no link to send yet. To send them an email, invite them from the online copy with email turned on.",
+        "copyButtons": 0,
+        "invitationLinkStaysLocal": null
+      },
+      {
+        "width": 390,
+        "confirmation": "Brightwell Support is invited. Lamp on this computer opens only in your browser, so there is no link to send yet. To send them an email, invite them from the online copy with email turned on.",
+        "copyButtons": 0,
+        "invitationLinkStaysLocal": null
+      }
+    ],
+    "candidate_overview": [
+      {
+        "width": 1440,
+        "scheduled": "Scheduled\\nSCH-1\\nConfigured-zone window\\nScheduled · Jul 15, 2027, 09:00 Brisbane time\\nLamp starts this at 9:00 AM and finishes it at 10:00 AM. Nothing for you to do.\\nView maintenance"
+      },
+      {
+        "width": 390,
+        "scheduled": "Scheduled\\nSCH-1\\nConfigured-zone window\\nScheduled · Jul 15, 2027, 09:00 Brisbane time\\nLamp starts this at 9:00 AM and finishes it at 10:00 AM. Nothing for you to do.\\nView maintenance"
+      }
+    ]
+  },
+  "local_shards": {
+    "ownership": {
+      "shard": "ownership",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:ownership",
+          "exitCode": 0,
+          "durationMs": 592453
+        },
+        {
+          "script": "test:owner-claim",
+          "exitCode": 0,
+          "durationMs": 34804
+        },
+        {
+          "script": "test:owner-backup",
+          "exitCode": 0,
+          "durationMs": 151370
+        }
+      ]
+    },
+    "portability": {
+      "shard": "portability",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:portability",
+          "exitCode": 0,
+          "durationMs": 541051
+        }
+      ]
+    },
+    "imports": {
+      "shard": "imports",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": false,
+      "steps": [
+        {
+          "script": "test:imports",
+          "exitCode": 1,
+          "durationMs": 520258
+        },
+        {
+          "script": "test:mail",
+          "exitCode": 0,
+          "durationMs": 92787
+        },
+        {
+          "script": "test:site",
+          "exitCode": 0,
+          "durationMs": 197082
+        }
+      ]
+    },
+    "composer": {
+      "shard": "composer",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": false,
+      "steps": [
+        {
+          "script": "test:composer",
+          "exitCode": 1,
+          "durationMs": 839399
+        },
+        {
+          "script": "test:public",
+          "exitCode": 0,
+          "durationMs": 759588
+        }
+      ]
+    },
+    "delivery": {
+      "shard": "delivery",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:channels",
+          "exitCode": 0,
+          "durationMs": 937070
+        }
+      ]
+    },
+    "public": {
+      "shard": "public",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:delivery",
+          "exitCode": 0,
+          "durationMs": 1083090
+        }
+      ]
+    },
+    "runtime": {
+      "shard": "runtime",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:runtime",
+          "exitCode": 0,
+          "durationMs": 99878
+        },
+        {
+          "script": "test:publishing",
+          "exitCode": 0,
+          "durationMs": 490800
+        }
+      ]
+    },
+    "demo": {
+      "shard": "demo",
+      "commit": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "runId": null,
+      "runAttempt": 0,
+      "success": true,
+      "steps": [
+        {
+          "script": "test:demo",
+          "exitCode": 0,
+          "durationMs": 254329
+        },
+        {
+          "script": "test:baseline",
+          "exitCode": 0,
+          "durationMs": 379700
+        }
+      ]
+    }
+  },
+  "runtime_postchecks": [
+    "INCOMPLETE hosted-output follow-on probe exceeded ten minutes without a result"
+  ],
+  "cutover_retry": {
+    "original_port_collision": true,
+    "isolated_pass": true
+  },
+  "theme_diagnostic": {
+    "main_heading_timeout": true,
+    "candidate_heading_timeout": true,
+    "main_assets_budget_after_waiting_for_hydration": true,
+    "candidate_assets_budget_after_waiting_for_hydration": true
+  },
+  "publication": {
+    "summary": "The guarded push advertised the exact candidate on cloud/sd-lamp-design-calls-3. Exact-SHA Verify 44401819949 completed with the generated ACCEPTANCE.md difference as its only originating failure. The build produced no shard artifacts and the remote test matrix was skipped. The cloud-generated-view exemption applies. The demo shard, including BASE-PUBLIC-003, passed locally on the advertised commit.",
+    "product_push": "succeeded",
+    "local_test_summary": "All eight local shards ran. Demo, ownership, portability, delivery, public and runtime passed. In Composer, test:public passed. THEME-001 timed out before the Theme heading appeared on both main and the candidate. Diagnostic retries in disposable worktrees waited for hydration and reached the same five public asset requests against the four-request budget on both heads. The other Composer cases passed. In Imports, the Cutover journey initially hit a local port collision and passed in a separate run on the exact same head. Mail and site passed in the Imports shard. A supplemental hosted-output probe yielded no result in ten minutes and was stopped.",
+    "verify": {
+      "conclusion": "failure",
+      "head_branch": "cloud/sd-lamp-design-calls-3",
+      "head_sha": "dcc2302592fa2c9fa05817235f695a4fcce8097c",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44401819949",
+      "id": 44401819949,
+      "status": "completed"
+    },
+    "linear_candidate_commits": 6
+  }
+}

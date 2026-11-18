@@ -1,0 +1,573 @@
+{
+  "status": {
+    "BASE-ACCESS-001": {
+      "state": "satisfied",
+      "title": "Sign-in",
+      "baselineLine": 20,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-ACCESS-001",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-ACCESS-002": {
+      "state": "satisfied",
+      "title": "Sessions",
+      "baselineLine": 21,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-ACCESS-002",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-ACCESS-003": {
+      "state": "satisfied",
+      "title": "Public endpoints",
+      "baselineLine": 22,
+      "supersededBy": [
+        {
+          "contractId": "PAGE-008",
+          "scope": "those paths only",
+          "line": 266
+        }
+      ],
+      "results": [
+        {
+          "id": "BASE-ACCESS-003",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-ACCESS-004": {
+      "state": "satisfied",
+      "title": "Server-side authorisation",
+      "baselineLine": 23,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-ACCESS-004",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-INPUT-001": {
+      "state": "satisfied",
+      "title": "Validation",
+      "baselineLine": 27,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-INPUT-001",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-INPUT-002": {
+      "state": "satisfied",
+      "title": "HTML",
+      "baselineLine": 28,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-INPUT-002",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-INPUT-003": {
+      "state": "satisfied",
+      "title": "Uploads",
+      "baselineLine": 29,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-INPUT-003",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-SECRET-001": {
+      "state": "satisfied",
+      "title": "No leakage",
+      "baselineLine": 33,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-SECRET-001",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-SECRET-002": {
+      "state": "satisfied",
+      "title": "Startup",
+      "baselineLine": 34,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-SECRET-002",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-DATA-001": {
+      "state": "satisfied",
+      "title": "Export and import",
+      "baselineLine": 38,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-DATA-001",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-DATA-002": {
+      "state": "satisfied",
+      "title": "Retention",
+      "baselineLine": 39,
+      "supersededBy": [
+        {
+          "contractId": "SUB-003",
+          "scope": "pending subscriptions because the submitting visitor may not own the address",
+          "line": 698
+        }
+      ],
+      "results": [
+        {
+          "id": "BASE-DATA-002",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-DATA-003": {
+      "state": "satisfied",
+      "title": "Erasure",
+      "baselineLine": 40,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-DATA-003",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-DATA-004": {
+      "state": "satisfied",
+      "title": "Outbound flows",
+      "baselineLine": 41,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-DATA-004",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-DATA-005": {
+      "state": "satisfied",
+      "title": "Independence",
+      "baselineLine": 42,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-DATA-005",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-PUBLIC-001": {
+      "state": "satisfied",
+      "title": "Privacy",
+      "baselineLine": 46,
+      "supersededBy": [
+        {
+          "contractId": "SUB-005",
+          "scope": "only for those token-addressed paths",
+          "line": 715
+        }
+      ],
+      "results": [
+        {
+          "id": "BASE-PUBLIC-001",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-PUBLIC-002": {
+      "state": "satisfied",
+      "title": "Origins",
+      "baselineLine": 47,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-PUBLIC-002",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-PUBLIC-003": {
+      "state": "satisfied",
+      "title": "Accessibility",
+      "baselineLine": 48,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-PUBLIC-003",
+          "status": "passed",
+          "path": "tests/e2e/accessibility.test.mjs"
+        }
+      ]
+    },
+    "BASE-OPS-001": {
+      "state": "satisfied",
+      "title": "Health",
+      "baselineLine": 52,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-OPS-001",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-OPS-002": {
+      "state": "satisfied",
+      "title": "Migrations",
+      "baselineLine": 53,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-OPS-002",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-OPS-003": {
+      "state": "satisfied",
+      "title": "Idempotency",
+      "baselineLine": 54,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-OPS-003",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-OPS-004": {
+      "state": "satisfied",
+      "title": "Failure is visible",
+      "baselineLine": 55,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-OPS-004",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-OPS-005": {
+      "state": "satisfied",
+      "title": "Audit",
+      "baselineLine": 56,
+      "supersededBy": [],
+      "results": [
+        {
+          "id": "BASE-OPS-005",
+          "status": "passed",
+          "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs"
+        }
+      ]
+    },
+    "BASE-ROLE-001": {
+      "state": "planned",
+      "title": "Roles through every door",
+      "baselineLine": 62,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AUDIT-001": {
+      "state": "planned",
+      "title": "Searchable, durable audit",
+      "baselineLine": 69,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-BACKUP-001": {
+      "state": "planned",
+      "title": "Independent backup, restore and rollback",
+      "baselineLine": 77,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-DATA-006": {
+      "state": "planned",
+      "title": "Erasure respects retention and legal hold",
+      "baselineLine": 84,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-SIGNIN-001": {
+      "state": "planned",
+      "title": "Standards-based SSO and lifecycle",
+      "baselineLine": 91,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-SIGNIN-002": {
+      "state": "planned",
+      "title": "Native multi-factor authentication",
+      "baselineLine": 99,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-INSTALL-001": {
+      "state": "planned",
+      "title": "Free self-host and removal",
+      "baselineLine": 107,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-MAIL-001": {
+      "state": "planned",
+      "title": "Truthful mail outcomes",
+      "baselineLine": 114,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-ACCESSIBILITY-001": {
+      "state": "planned",
+      "title": "One accessibility bar",
+      "baselineLine": 121,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-DOCS-001": {
+      "state": "planned",
+      "title": "On-site docs from one contract",
+      "baselineLine": 128,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-001": {
+      "state": "planned",
+      "title": "One MCP door per seed",
+      "baselineLine": 181,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-002": {
+      "state": "planned",
+      "title": "The seed's jobs are tools, through the UI's own actions",
+      "baselineLine": 184,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-003": {
+      "state": "planned",
+      "title": "Records are resources",
+      "baselineLine": 187,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-004": {
+      "state": "planned",
+      "title": "Business identity and short-lived, audience-bound tokens",
+      "baselineLine": 190,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-005": {
+      "state": "planned",
+      "title": "An agent acts as a person in a role, never more",
+      "baselineLine": 193,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-006": {
+      "state": "planned",
+      "title": "Every action declares its risk class",
+      "baselineLine": 196,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-007": {
+      "state": "planned",
+      "title": "The company's policy decides, at one chokepoint",
+      "baselineLine": 199,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-008": {
+      "state": "planned",
+      "title": "Truthful attribution",
+      "baselineLine": 202,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-009": {
+      "state": "planned",
+      "title": "Every agent action is audited with its class and decision",
+      "baselineLine": 205,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-010": {
+      "state": "planned",
+      "title": "Agents can follow changes",
+      "baselineLine": 208,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-011": {
+      "state": "planned",
+      "title": "Limits are policy, and Pause stops everything",
+      "baselineLine": 211,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-012": {
+      "state": "planned",
+      "title": "Writes are idempotent and conflict-safe",
+      "baselineLine": 214,
+      "supersededBy": [],
+      "results": []
+    },
+    "BASE-AGENT-013": {
+      "state": "planned",
+      "title": "Manifest, docs and the conformance journey",
+      "baselineLine": 217,
+      "supersededBy": [],
+      "results": []
+    }
+  },
+  "issues": [],
+  "success": true,
+  "executions": [
+    {
+      "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs",
+      "exitCode": 0,
+      "results": [
+        {
+          "id": "BASE-ACCESS-001",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-ACCESS-002",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-ACCESS-003",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-ACCESS-004",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-INPUT-001",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-INPUT-002",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-INPUT-003",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-SECRET-001",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-DATA-002",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-DATA-003",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-DATA-004",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-DATA-005",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-PUBLIC-001",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-PUBLIC-002",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-SECRET-002",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-DATA-001",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-OPS-001",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-OPS-002",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-OPS-003",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-OPS-004",
+          "status": "passed"
+        },
+        {
+          "id": "BASE-OPS-005",
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "path": "tests/e2e/accessibility.test.mjs",
+      "exitCode": 0,
+      "results": [
+        {
+          "id": "BASE-PUBLIC-003",
+          "status": "passed"
+        }
+      ]
+    }
+  ]
+}
