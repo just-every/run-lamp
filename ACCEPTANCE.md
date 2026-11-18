@@ -149,11 +149,11 @@ Core · published · **partial** · Cites BASE-ACCESS-003
 
 Core · published · **partial**
 
-**Requirement.** Public timestamps and notifications use the configured time zone and offset. Under RL-1, the owner’s S4 exception permits a relative generation label while scripting runs.
+**Requirement.** Public timestamps use the configured time zone, named on the page with exact UTC offsets available in Time details. Feeds and notifications retain absolute timestamps with the configured offset. Under RL-1, the owner’s S4 exception permits a relative generation label while scripting runs.
 
 **Acceptance.**
-1. Every public and notification timestamp displays the configured time zone and UTC offset; page timestamps retain their exact ISO instant as machine-readable data.
-2. With scripting available, the generation label is relative and refreshes while the page stays open; its tooltip retains the absolute configured-zone time and offset and its machine-readable value retains the instant.
+1. Public page timestamps use the configured zone’s local time and name, with exact UTC offsets in Time details and ISO instants as machine-readable data. Feed and notification timestamps retain the configured UTC offset.
+2. With scripting available, the generation label is relative and refreshes while the page stays open. Its tooltip gives the absolute configured-zone time, Time details gives the offset, and its machine-readable value retains the instant.
 3. Initial HTML and script-disabled readers see the absolute generation time; incident, maintenance, feed and notification timestamps remain absolute.
 
 **Evidence.** `tests/e2e/public-contract.test.mjs`. The PAGE-014/PAGE-009 journey finds the relative generation label with the absolute zone-and-offset tooltip and ISO datetime (`tests/e2e/public-contract.test.mjs`, lines 622-627). Changed in 1.11.0 by the owner's S4 exception (DIVERGENCE.md "Public page clarity"): the generation time shows a relative label while script runs; RELEASE.json records the change.
