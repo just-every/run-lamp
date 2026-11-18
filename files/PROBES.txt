@@ -1,0 +1,12 @@
+Candidate 9f4b16685fd19139677bd3f45a01c690b02d1670
+
+PROBE INTAKE-014 3 jsm: repeat Create after operator draft save -> same title, wording and exact 2026-11-18T06:29:36.779Z commitment
+PROBE INTAKE-014 2 jsm: unmatched Create -> 400 and returned receipt identifies its source and mapping refusal
+PROBE INTAKE-014 6 jsm: Close -> matching recovered receipt at 2026-11-18T05:29:37.401Z, published lifecycle and update rows unchanged
+PROBE INTAKE-014 4 jsm: brief and cited report -> exact Acknowledge and Escalate fixture times with their responder role before and after resolution
+PROBE INTAKE-014 3 opsgenie: repeat Create after operator draft save -> same title, wording and exact 2026-11-18T06:29:39.547Z commitment
+PROBE INTAKE-014 2 opsgenie: unmatched Create -> 400 and returned receipt identifies its source and mapping refusal
+PROBE INTAKE-014 6 opsgenie: Close -> matching recovered receipt at 2026-11-18T05:29:40.046Z, published lifecycle and update rows unchanged
+PROBE INTAKE-014 4 opsgenie: brief and cited report -> exact Acknowledge and Escalate fixture times with their responder role before and after resolution
+PROBE INTAKE-014 8 jsm: Settings autosaved compound mapping and close choice with the old key intact; explicit Save sealed and redacted the replacement; the next provider note used the replacement key.
+PROBE INTAKE-014 8 opsgenie: Settings autosaved compound mapping and close choice with the old key intact; explicit Save sealed and redacted the replacement; the next provider note used the replacement key.

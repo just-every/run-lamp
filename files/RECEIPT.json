@@ -1,0 +1,117 @@
+{
+  "advertisedMain": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "advertisedProductHead": "9f4b16685fd19139677bd3f45a01c690b02d1670",
+  "branch": "cloud/sd-lamp-c-f133",
+  "captures": [
+    {
+      "file": "browser/jsm-credentials-1440.png",
+      "sha256": "2177b95978071d8b6116279ba226066536ce2fc9b49f4642be97acf32b6e6b08"
+    },
+    {
+      "file": "browser/jsm-credentials-390.png",
+      "sha256": "47bc4322d02632643d398da39d087cc41de60d69f5e63b0610923c04cf9d0ecc"
+    },
+    {
+      "file": "browser/opsgenie-credentials-1440.png",
+      "sha256": "b8141be80aadc8a49b807923f2b717b66d06eea8dfd3997b59b0e4ce4ec40088"
+    },
+    {
+      "file": "browser/opsgenie-credentials-390.png",
+      "sha256": "89b14f184cd07c46da32ff4b93ec6bfe69ac4fe88d9e5807e2b03d51b94c1607"
+    }
+  ],
+  "fullHistoryClone": true,
+  "head": "9f4b16685fd19139677bd3f45a01c690b02d1670",
+  "local": {
+    "archive": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"native rer backup restores the whole product\" tests/auth-adoption/portability.test.mjs",
+      "exit": 0,
+      "tap": [
+        "# Subtest: SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority",
+        "ok 1 - SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 227865.596307"
+      ]
+    },
+    "browserOperations": {
+      "assertionViewport": 1440,
+      "captureViewports": [
+        1440,
+        390
+      ],
+      "exit": 0,
+      "providerProbes": 2
+    },
+    "build": {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "chromium": "/usr/bin/chromium",
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "generatedViews": {
+      "checkExit": 0,
+      "checkOutput": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "Contract documents are current."
+      ],
+      "restoredCheckExit": 0,
+      "writeExit": 0
+    },
+    "migrationLedger": "No migration changes",
+    "nativeOperations": {
+      "exit": 0,
+      "providerProbes": 8
+    },
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "registeredDelivery": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"Connect monitors, review private alert drafts\" tests/e2e/channels-and-presets.test.mjs",
+      "exit": 0,
+      "tap": [
+        "# Subtest: AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence",
+        "ok 1 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 \u2014 Connect monitors, review private alert drafts, publish and recover with durable integration evidence",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 408367.520884"
+      ]
+    },
+    "sourceLock": {
+      "exactCommitCheckExit": 0,
+      "regenerateExit": 0,
+      "sha256": "9baeca4199ad037058c2d2ae35b37c494803c13fcf1bb1dd501b8549c6dfacdd"
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    }
+  },
+  "publicationScan": {
+    "commit": "9f4b16685fd19139677bd3f45a01c690b02d1670",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null
+  },
+  "recordedAt": "2026-11-18T06:00:52.174243+00:00",
+  "repository": "just-every/run-lamp",
+  "runSite": {
+    "id": null,
+    "status": "pending landing"
+  },
+  "startingMain": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "stash": "none",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "9f4b16685fd19139677bd3f45a01c690b02d1670",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44245194397",
+    "id": 44245194397,
+    "name": "Verify",
+    "status": "completed"
+  }
+}
