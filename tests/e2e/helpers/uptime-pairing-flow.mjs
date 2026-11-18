@@ -170,7 +170,7 @@ export async function uptimePairingFlow({ api, component, origin, cookie, post, 
         await page.setViewportSize({ width: proofWidth, height: proofWidth === 390 ? 844 : 1000 });
         await openFresh(page, `${origin}/app/incidents/${incident.id}`);
         await page.getByRole('heading', { name: 'Brief', exact: true }).waitFor();
-        assert.deepEqual(await page.locator('.brief-list > li[id^="brief-C"]').allTextContents(), ['C1 Storefront: Major outage (primary)'], `${proofWidth}: reloaded draft lists exactly its mapped component`);
+        assert.deepEqual(await page.locator('.brief-list > li[id^="brief-C"]').allTextContents(), ['C1 Storefront: Down (primary)'], `${proofWidth}: reloaded draft lists exactly its mapped component`);
         await page.locator('#brief-A1 summary').click();
         assert.ok(await page.locator('#brief-A1').getByText(summary, { exact: true }).isVisible(), `${proofWidth}: reloaded draft shows its exact vantages and confirmed evidence`);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${proofWidth}: private draft fits`);

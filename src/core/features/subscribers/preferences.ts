@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../shared/component-state-label";
 import { z } from "zod";
 
 export const eventKinds = ["incidents", "maintenance", "components"] as const;
@@ -20,5 +21,5 @@ export function formPreferences(body: Record<string, unknown>): SubscriberPrefer
 }
 export function renderPreferenceFields(preferences: SubscriberPreferences = defaultPreferences("email")): string {
   const labels: Record<SubscriberEventKind, string> = { incidents: "Incidents", maintenance: "Maintenance", components: "Component status changes" };
-  return `<input type="hidden" name="preferencesPresent" value="1"><fieldset class="subscription-preferences"><legend>Updates to receive</legend>${eventKinds.map(kind => `<label><input type="checkbox" name="eventKind" value="${kind}"${preferences.eventKinds.includes(kind) ? " checked" : ""}> ${labels[kind]}</label>`).join("")}<label><input type="checkbox" name="minimumImpact" value="Partially unavailable"${preferences.minimumImpact ? " checked" : ""}> Only incidents reaching Partially unavailable or worse</label></fieldset>`;
+  return `<input type="hidden" name="preferencesPresent" value="1"><fieldset class="subscription-preferences"><legend>Updates to receive</legend>${eventKinds.map(kind => `<label><input type="checkbox" name="eventKind" value="${kind}"${preferences.eventKinds.includes(kind) ? " checked" : ""}> ${labels[kind]}</label>`).join("")}<label><input type="checkbox" name="minimumImpact" value="Partially unavailable"${preferences.minimumImpact ? " checked" : ""}> Only incidents reaching ${componentStateLabel("Partially unavailable")} or worse</label></fieldset>`;
 }

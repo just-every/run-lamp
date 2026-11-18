@@ -12,7 +12,7 @@ import { createUlid, nowIso } from "../../shared/ids";
 import type { IncidentDraftInput, IncidentFirstUpdateInput } from "../../shared/schemas";
 import type { LampEventDispatcher } from "../../api/extensions";
 import type { ComponentClaimEventInput, ComponentsService, ComponentStateHistoryInput } from "../components";
-import { renderIncidentUpdate, type RenderedIncidentUpdate } from "./renderer";
+import { renderIncidentUpdate, type IncidentUpdateRenderInput, type RenderedIncidentUpdate } from "./renderer";
 import { defaultUpdateDuePolicy, defaultUpdateReviewPolicy, type UpdateDuePolicy, type UpdateReviewPolicy } from "./policies";
 import { updateDueState } from "./reminders";
 import { DraftConflictError } from "./repository";
@@ -88,8 +88,8 @@ export interface IncidentRuntimeHooks {
   events?: Pick<LampEventDispatcher, "incidentOpened" | "incidentUpdatePublished" | "incidentResolved">;
   /** After publication: dispatch its durable subscriber and channel notifications. */
   afterPublished?: (update: StoredIncidentUpdate) => Promise<void>;
-  formatPreviewEmail?: (email: RenderedIncidentUpdate["email"]) => Promise<RenderedIncidentUpdate["email"]>;
-  formatPreviewTimestamp?: (timestamp: string) => Promise<string> | string;
+  formatPreviewEmail?: (email: RenderedIncidentUpdate["email"], displayBody: string) => Promise<RenderedIncidentUpdate["email"]>;
+  formatPreviewTimestamp?: (timestamp: string) => Promise<{ offset: string; name: string }>;
 }
 
 export interface ScheduledReviewAlertEvent {
@@ -219,6 +219,13 @@ export function createIncidentsService(
     return update;
   };
 
+  const previewEmail = async (input: IncidentUpdateRenderInput & { incidentImpact: IncidentImpact }, displayTime?: string) => {
+    const { email } = renderNotificationUpdate(input);
+    if (!runtime.formatPreviewEmail) return email;
+    const displayBody = displayTime ? renderNotificationUpdate({ ...input, nextUpdateDisplay: displayTime }).email.plainText : email.plainText;
+    return runtime.formatPreviewEmail(email, displayBody);
+  };
+
   return {
     communicationOwners: repository.communicationOwners,
     async recoveryCheck(incidentId) {
@@ -325,15 +332,14 @@ export function createIncidentsService(
         }
         return change;
       }))).filter((change): change is PublishedIncidentComponentChange => change !== null);
-      const nextUpdateDisplay = input.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(input.nextUpdateAt) : null;
-      const renderInput = { incidentReference: incident.reference, incidentTitle: incident.title, ...input, componentChanges, nextUpdateDisplay };
+      const time = input.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(input.nextUpdateAt) : null;
+      const renderInput = { incidentReference: incident.reference, incidentTitle: incident.title, ...input, componentChanges, nextUpdateDisplay: time?.offset };
       const rendered = renderIncidentUpdate(renderInput);
       const peak = mostSevereState([await repository.findPeakImpact(incidentId) ?? "Operational", ...proposed.map(component => component.state)]);
       rendered.impactExplanation = incident.impactOverride === null
         ? "Incident impact comes from the most severe component status reported during this incident. You can change it under Impact below."
         : "An operator chose this incident impact. You can change it under Impact below.";
-      rendered.email = renderNotificationUpdate({ ...renderInput, incidentImpact: incidentImpact(peak, incident.impactOverride).effectiveImpact }).email;
-      if (runtime.formatPreviewEmail) rendered.email = await runtime.formatPreviewEmail(rendered.email);
+      rendered.email = await previewEmail({ ...renderInput, incidentImpact: incidentImpact(peak, incident.impactOverride).effectiveImpact }, time?.name);
       return rendered;
     },
     async previewNew({ title, components, update }) {
@@ -342,12 +348,11 @@ export function createIncidentsService(
       // Every attachment is new, so each one changes from Operational unless it is released on publication.
       const componentChanges = matched.map(({ claim, component }) => ({ componentId: component!.id, name: component!.name, previousState: "Operational" as const, newState: update.lifecycle === "Resolved" ? "Operational" as const : claim.state, internal: component!.internal }))
         .filter((change) => change.previousState !== change.newState);
-      const nextUpdateDisplay = update.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(update.nextUpdateAt) : null;
-      const renderInput = { incidentReference: await repository.nextReference(), incidentTitle: title, ...update, componentChanges, nextUpdateDisplay };
+      const time = update.nextUpdateAt ? await runtime.formatPreviewTimestamp?.(update.nextUpdateAt) : null;
+      const renderInput = { incidentReference: await repository.nextReference(), incidentTitle: title, ...update, componentChanges, nextUpdateDisplay: time?.offset };
       const rendered = renderIncidentUpdate(renderInput);
       rendered.impactExplanation = "Incident impact comes from the component statuses you choose.";
-      rendered.email = renderNotificationUpdate({ ...renderInput, incidentImpact: incidentImpact(null, null, components.map(component => component.state)).effectiveImpact }).email;
-      if (runtime.formatPreviewEmail) rendered.email = await runtime.formatPreviewEmail(rendered.email);
+      rendered.email = await previewEmail({ ...renderInput, incidentImpact: incidentImpact(null, null, components.map(component => component.state)).effectiveImpact }, time?.name);
       return rendered;
     },
     async create(input, operatorId) {

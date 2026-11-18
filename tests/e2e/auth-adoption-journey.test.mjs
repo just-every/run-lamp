@@ -141,11 +141,13 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
       await pending.getByText(address,{exact:true}).waitFor({state:'visible'});
      }
      await accessible(page);
-     await context.grantPermissions(['clipboard-read','clipboard-write'],{origin});
      const row=pending.locator('.operator-row').filter({hasText:colleagueEmail});
-     await row.getByRole('button',{name:'Copy link',exact:true}).click();
-     invitationLink=await page.evaluate(()=>navigator.clipboard.readText());
-     assert.equal(new URL(invitationLink).origin,origin);
+     const openLocally=row.getByRole('link',{name:'Open as Invited operator in this browser',exact:true});
+     await openLocally.waitFor({state:'visible'});
+     const href=await openLocally.getAttribute('href');
+     assert.ok(href);
+     invitationLink=new URL(href,origin).href;
+     assert.equal(new URL(invitationLink).origin,origin,'the local invitation stays on the same installation');
      const cancelledRow=pending.locator('.operator-row').filter({hasText:cancelledEmail});
      page.once('dialog',dialog=>dialog.accept());
      await cancelledRow.getByRole('button',{name:'Erase personal data',exact:true}).click();

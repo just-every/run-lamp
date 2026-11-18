@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import type { IncidentBrief } from "../../brief/build";
 import { Icon } from "../../../app/client/ui/icon";
 import { useOperatorTime } from "../../../app/client/ui/states";
@@ -14,7 +15,7 @@ function describe(ref: string, brief: IncidentBrief, formatTime: (iso: string | 
   const update = updates.find((item) => item.ref === ref);
   if (update) return `${update.lifecycle} update published ${formatTime(update.publishedAt)}`;
   const component = components.find((item) => item.ref === ref);
-  if (component) return `${component.name}: ${component.state}`;
+  if (component) return `${component.name}: ${componentStateLabel(component.state)}`;
   return brief.whatWeDoNotKnowYet.find((item) => item.ref === ref)?.question ?? ref;
 }
 

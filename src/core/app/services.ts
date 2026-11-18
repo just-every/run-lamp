@@ -45,6 +45,7 @@ import { createLampAuth } from "../platform/auth";
 import { createOperatorRepository } from "../features/operators/repository";
 import { createSignInService } from "../features/sign-in-providers/service";
 import { createSubscriberRepository, createSubscribersService } from "../features/subscribers";
+import { formatPageTime } from "../features/public-snapshot/format";
 import { createPublicSnapshotService, createSnapshotRepository, formatTime, runningReleaseIdentity } from "../features/public-snapshot";
 import { createReportRepository, createReportsService } from "../features/reports";
 import { createAiService } from "../features/ai";
@@ -85,7 +86,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   const formatPreviewTimestamp = async (timestamp: string) => {
     const settings = await pageSettings.get();
     if (!settings) throw new Error("Lamp cannot render an update preview before page settings are configured.");
-    return formatTime(timestamp, settings.timezone);
+    return { offset: formatTime(timestamp, settings.timezone), name: formatPageTime(timestamp, settings.timezone) };
   };
   const operators = createOperatorRepository(bindings.DB);
   let authority: ReturnType<typeof createLampAuth> | undefined;
@@ -159,10 +160,10 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   }, extensions.updateReviewPolicy,
   async ({ incidentId, draftId, scheduledPublishAt }) => deliveries.queueOperatorAlert({ eventId: `scheduled-review/${draftId}/${scheduledPublishAt}`, title: "Lamp held a scheduled incident update for review", text: `Scheduled update for incident ${incidentId} requires review by another operator before it can publish.` }),
   extensions.updateDuePolicy,
-  { trafficRecovery: trafficAlerts.recovery, events: extensions.events, formatPreviewTimestamp, formatPreviewEmail: async (email) => {
+  { trafficRecovery: trafficAlerts.recovery, events: extensions.events, formatPreviewTimestamp, formatPreviewEmail: async (email, displayBody) => {
     const settings = await pageSettings.get();
     if (!settings) throw new Error("Page settings are not configured.");
-    return { ...brandEmail(email, { branding: settings.emailBranding, pageName: settings.pageName, fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey) }), deliverySuppressed: local || !mail.configured, deliveryNotice: local || isLoopbackHostname(new URL(authOrigin(bindings)).hostname) ? "This computer does not send email. A hosted page uses your sender address." : "Email is not set up. This preview will not be sent." };
+    return { ...brandEmail(email, { branding: settings.emailBranding, pageName: settings.pageName, fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey), displayBody }), deliverySuppressed: local || !mail.configured, deliveryNotice: local || isLoopbackHostname(new URL(authOrigin(bindings)).hostname) ? "This computer does not send email. A hosted page uses your sender address." : "Email is not set up. This preview will not be sent." };
   }, afterPublished: async (update) => {
     const results = await Promise.allSettled([
       notificationOrigin(bindings).then(origin => deliveries.dispatchEvent(update.id, origin)),
@@ -178,7 +179,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   const briefs = createBriefService(createBriefRepository(bindings.DB));
   // INCIDENT-010 and NOTIFY-006: one operator email per committed time and kind, sent by the scheduled trigger.
   const updateReminders = createUpdateReminders(bindings.DB, extensions.updateDuePolicy, async ({ kind, incidentId, reference, title, updateId, nextUpdateAt, recipients, draftId }) => {
-    const committed = await formatPreviewTimestamp(nextUpdateAt);
+    const { offset: committed } = await formatPreviewTimestamp(nextUpdateAt);
     const link = `${authOrigin(bindings)}/app/incidents/${incidentId}${draftId ? "#prepared-draft" : ""}`;
     await deliveries.queueOperatorAlert(kind === "due-soon"
       ? { eventId: `incident-due-soon/${updateId}`, recipients, title: `Lamp update due at ${committed}: ${reference}`, text: `${reference} ${title}: the next update you committed to customers is due at ${committed}. Nothing reaches customers until an operator publishes it. Write it here: ${link}` }

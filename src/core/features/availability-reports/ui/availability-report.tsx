@@ -1,3 +1,4 @@
+import { zoneLabel } from "../../../shared/timezone-label";
 import { useId, useState } from "react";
 import { Button } from "../../../app/client/ui/button";
 import { FormError } from "../../../app/client/ui/states";
@@ -36,7 +37,7 @@ export function AvailabilityReport({ component }: { component: { id: string } })
   return <section className="availability-report" aria-labelledby={`${id}-heading`}>
     <h3 id={`${id}-heading`}>Availability report</h3>
     <div className="availability-report-fields">
-      <label className="form-label" htmlFor={`${id}-period`}><span>Period <span className="field-hint">in {timezone}</span></span><select id={`${id}-period`} value={kind} onChange={event => setKind(event.target.value)}><option value="month">Month</option><option value="quarter">Quarter</option></select></label>
+      <label className="form-label" htmlFor={`${id}-period`}><span>Period <span className="field-hint">in {zoneLabel(timezone)}</span></span><select id={`${id}-period`} value={kind} onChange={event => setKind(event.target.value)}><option value="month">Month</option><option value="quarter">Quarter</option></select></label>
       {kind === "month" ? <label className="form-label" htmlFor={`${id}-month`}>Month<input id={`${id}-month`} type="month" min="1000-01" max="9998-12" required value={month} onChange={event => setMonth(event.target.value)} /></label> : <>
         <label className="form-label" htmlFor={`${id}-year`}>Year<input id={`${id}-year`} type="number" min="1000" max="9998" required value={year} onChange={event => setYear(event.target.value)} /></label>
         <label className="form-label" htmlFor={`${id}-quarter`}>Quarter<select aria-label="Quarter" id={`${id}-quarter`} value={quarter} onChange={event => setQuarter(event.target.value)}>{[1, 2, 3, 4].map(number => <option key={number} value={number}>Q{number}</option>)}</select></label>

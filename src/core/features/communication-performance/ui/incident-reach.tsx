@@ -1,3 +1,4 @@
+import { zoneLabel } from "../../../shared/timezone-label";
 import { Button } from "../../../app/client/ui/button";
 import { FormError, useOperatorTime } from "../../../app/client/ui/states";
 import type { IncidentReachResponse, ReachSummary } from "../types";
@@ -39,7 +40,7 @@ export function ReachDetails({ path, data, onRefresh, error }: { path: string; d
     <h4>Whole incident</h4><ReachCounts reach={data.incident} />
     <details className="communication-updates"><summary>Reach of each update ({data.updates.length})</summary>{data.updates.map(update => <article className="communication-update" key={update.updateId} data-update-id={update.updateId}><h4>{time(update.publishedAt)}</h4><p>{update.retainedImport ? "Imported history; source delivery unknown." : `Subscriber channels selected: ${update.selectedChannels.join(", ") || "none"}.`}</p><ReachCounts reach={update} /></article>)}</details>
     <details className="communication-definitions"><summary>How these figures are measured</summary>{Object.entries(data.definitions).map(([key, definition]) => <p key={key}>{definition}</p>)}</details>
-    <p className="communication-note">Measured {time(data.measuredAt)} · {data.timezone}</p>
+    <p className="communication-note">Measured {time(data.measuredAt)} · {zoneLabel(data.timezone)}</p>
     <Button variant="secondary" type="button" disabled={csv.downloading} onClick={() => csv.download(`${path}?format=csv`, "incident-reach.csv")}>{csv.downloading ? "Downloading…" : "Download CSV"}</Button>
   </div>;
 }
