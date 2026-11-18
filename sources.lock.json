@@ -8308,7 +8308,7 @@
       "executable": false
     },
     "tests/e2e/helpers/mail-settings-browser-flow.mjs": {
-      "sha256": "106fd099bfdf67babe598652e21392d45aa19f4a2997bedcbaa349b943b6456d",
+      "sha256": "aabf4c16940aff15e017a22ce7a9e18892bf97db266877409a748404f0377026",
       "executable": false
     },
     "tests/e2e/helpers/maintenance-browser-flow.mjs": {

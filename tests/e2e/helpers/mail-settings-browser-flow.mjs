@@ -111,9 +111,9 @@ export async function mailSettingsBrowserFlow(t){
     const subscribed=await runtime.dispatchFetch(`${pageOrigin}/subscribe`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email:address,componentId:component.id})});assert.equal(subscribed.status,202,await subscribed.text());
     const invitationMail=messages.find(message=>message.to.includes(address)&&message.text.includes('/confirm-subscription/'));assert.ok(invitationMail);
     assert.equal((await runtime.dispatchFetch(invitationMail.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status,200);
-    const subscribers = await api('/api/app/subscribers?channel=email');
+    const subscribers = await api('/api/app/subscribers');
     assert.equal(subscribers.status, 200, subscribers.text);
-    const subscriber = subscribers.body.subscribers.find(record => record.destination === address);
+    const subscriber = subscribers.body.subscribers.find(record => record.destination === address && record.channel === 'email');
     assert.equal(subscriber?.state, 'active', 'the exact recipient confirmed through the public door');
     // Selecting a secondary wraps routing even while it remains off; the primary
     // still records its real acceptance and its unchanged frozen envelope.
@@ -200,7 +200,7 @@ async function assertComplaintLog({ page, origin, pageOrigin, api, raw, messages
   const time = iso => {
     const value = new Date(iso);
     const date = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', dateStyle: 'medium' }).format(value);
-    return date + ', ' + value.toISOString().slice(11, 16) + ' UTC+00:00';
+    return date + ', ' + value.toISOString().slice(11, 16) + ' Universal time';
   };
   await expect(row.locator('[data-label="Queued"]')).toHaveText(time(delivery.queuedAt));
   await expect(row.locator('[data-label="Outcome time"]')).toHaveText(time(delivery.outcomeAt));
