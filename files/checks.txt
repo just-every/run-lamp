@@ -1,0 +1,11 @@
+Head: fe66086cbaeae8d6cf407d0582d6c16c984ff939
+Node: v22.20.0
+pnpm: 10.12.4
+pnpm run typecheck exit=0
+pnpm exec rer check --profile first-party exit=0
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+node src/base/contract-docs.mjs check exit=0
+source lock ok=true
+node scripts/edition-authoring/cli.mjs check exit=0
+git diff --check exit=0

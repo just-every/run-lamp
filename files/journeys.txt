@@ -1,0 +1,13 @@
+Head: fe66086cbaeae8d6cf407d0582d6c16c984ff939
+Node v22.20.0, Chromium at /usr/bin/chromium for the existing subscriber browser steps.
+Command: node --test --test-concurrency=1 --test-name-pattern='Maintenance reminders respect|Subscriber consent, selected publication' tests/e2e/publishing-contract.test.mjs tests/e2e/delivery-contract.test.mjs
+ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+ok 2 - Maintenance reminders respect the lead time and skip recent announcements
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 327054.507017
