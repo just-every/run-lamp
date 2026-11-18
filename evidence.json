@@ -7,16 +7,16 @@
       "sha256": "78a196c96294cd1b31f47b443efdf8493afd6842a976aae942e0e66dd8e61d07"
     },
     {
-      "blob": "4cd533d08140f77eb019b560212c4bc40c93360a",
-      "bytes": 10999,
+      "blob": "1f12173e1e625808ae4143e0acb5f6c1a68c67f7",
+      "bytes": 11412,
       "path": "RECEIPTS.json",
-      "sha256": "74cd4cfb584a88ca32adf5cbd7a9db9ca1dddf7755966795e5922149c657057c"
+      "sha256": "95e741871928d3955c8398426e50f113ea95c0c054c8ac3a8c9d1fa54e9e0ba7"
     },
     {
-      "blob": "1d347a6b86ab40123f2c0a7c07ffaaca0f33a0b0",
-      "bytes": 3942,
+      "blob": "c9af6ecdc12cd8c55ce89a9ebe0aae0d000e4604",
+      "bytes": 3964,
       "path": "REPORT.md",
-      "sha256": "81f1b5bb9852e3302757e0642120c18ebb183cfca6c5993c4a6d2d005b787a11"
+      "sha256": "76179aaaac41115ab871853b473c54cd649765138bc2ee57f39f5984f8d53e91"
     }
   ],
   "product_branch": "cloud/sd-lamp-install-faults-1",

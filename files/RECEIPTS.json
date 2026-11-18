@@ -231,7 +231,7 @@
   "productBranch": "cloud/sd-lamp-install-faults-1",
   "productHead": "aa9af0f0cbac513772dd12670985e1a705871d7b",
   "pushedAt": "2026-11-18T05:57:44Z",
-  "recordedAt": "2026-11-18T06:14:32.436971+00:00",
+  "recordedAt": "2026-11-18T06:19:52.270301+00:00",
   "runtimeProbe": {
     "after": [
       "status journey serves owner migration result = true",
@@ -342,6 +342,21 @@
           "title": "documented Sorry exports account for every field through preview, saved jobs and explicit refusals"
         },
         {
+          "number": 1,
+          "status": "ok",
+          "title": "unchanged Business plan skips preparation"
+        },
+        {
+          "number": 2,
+          "status": "ok",
+          "title": "apply answers before rebuilding the public page"
+        },
+        {
+          "number": 3,
+          "status": "ok",
+          "title": "undo answers before rebuilding the public page"
+        },
+        {
           "number": 3,
           "status": "ok",
           "title": "MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 \u2014 Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow"
@@ -391,13 +406,13 @@
   },
   "verifyRuns": [
     {
-      "conclusion": null,
+      "conclusion": "success",
       "event": "push",
       "head_sha": "aa9af0f0cbac513772dd12670985e1a705871d7b",
       "html_url": "https://github.com/just-every/run-lamp/actions/runs/44247850522",
       "id": 44247850522,
       "name": "Verify",
-      "status": "in_progress"
+      "status": "completed"
     }
   ]
 }

@@ -20,4 +20,4 @@ Contract totals before and after are 60 done, 129 partial and 55 missing, for 24
 
 ## GitHub Verify
 
-The pushed product branch is `cloud/sd-lamp-install-faults-1` at `aa9af0f0cbac513772dd12670985e1a705871d7b`. The most recent exact-SHA REST observation showed Verify 44247850522 in progress. The lane retains PR custody. [https://github.com/just-every/run-lamp/actions/runs/44247850522](https://github.com/just-every/run-lamp/actions/runs/44247850522)
+The pushed product branch is `cloud/sd-lamp-install-faults-1` at `aa9af0f0cbac513772dd12670985e1a705871d7b`. The most recent exact-SHA REST observation showed Verify 44247850522 completed with conclusion success. The lane retains PR custody. [https://github.com/just-every/run-lamp/actions/runs/44247850522](https://github.com/just-every/run-lamp/actions/runs/44247850522)
