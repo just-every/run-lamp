@@ -1,0 +1,12 @@
+{
+  "branch": "cloud/sd-lamp-c-f136",
+  "conclusion": "success",
+  "event": "push",
+  "head_sha": "2b52a97df43e97224b62a303e105d97e63c1b870",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44245454910",
+  "id": 44245454910,
+  "name": "Verify",
+  "observed_at": "2026-11-18T05:57:13.698322+00:00",
+  "repository": "just-every/run-lamp",
+  "status": "completed"
+}
