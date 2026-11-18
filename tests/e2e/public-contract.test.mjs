@@ -11,7 +11,7 @@ import { parse, parseFragment } from 'parse5';
 import { openStatusJourney, eventually, wording } from './helpers/status-journey.mjs';
 import { literalLinkFields } from './helpers/update-link-evidence.mjs';
 import { assertUpdateLinkSurfaces, assertUpdateLinkScreens } from './helpers/update-link-surfaces.mjs';
-import { assertVisibleTime } from '../helpers/public-meaning.mjs';
+import { assertVisibleTime, expectedComponentLabels } from '../helpers/public-meaning.mjs';
 import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
 import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
 import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
@@ -256,7 +256,7 @@ async function widgetVariantsJourney() {
     const reconcile = async (expected, active) => {
       for (const { installation, hide, root } of installed) {
         const floating = Boolean(installation.position);
-        assert.equal(await root.locator('strong').textContent(), expected.overall, `${installation.id} exact snapshot state`);
+        assert.equal(await root.locator('strong').textContent(), expectedComponentLabels[expected.overall], `${installation.id} exact snapshot state`);
         assert.equal(await root.evaluate(node => getComputedStyle(node).display), (floating && !active) || (hide && expected.overall === 'Operational') ? 'none' : installation.display, `${installation.id} operational and event visibility`);
         const style = await root.evaluate(node => {
           const css = getComputedStyle(node);
@@ -294,7 +294,7 @@ async function widgetVariantsJourney() {
         await page.clock.fastForward(30000);
         await eventually(() => replies.length, count => count === installed.length, 'every installed variant receives an actual polling response');
         for (const response of replies) { assert.equal(response.status(), 200); assert.deepEqual(await response.json(), expected); }
-        await page.waitForFunction(overall => [...document.querySelectorAll('section[role=status] strong')].every(node => node.textContent === overall), expected.overall);
+        await page.waitForFunction(overall => [...document.querySelectorAll('section[role=status] strong')].every(node => node.textContent === overall), expectedComponentLabels[expected.overall]);
       } finally { page.off('response', capture); }
     };
     const screen = async name => {
@@ -409,7 +409,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     // an empty catalogue or a resource that never existed.
     await j.json(`/api/app/components/${hidden.id}/standing-claim`, 'PUT', { state: 'Major outage' });
     const exposed = await j.visible('/', hidden.name);
-    assert.match(exposed, /id="overall-status"[^>]*>Major outage<\/h1>/);
+    assert.match(exposed, /id="overall-status"[^>]*>Down<\/h1>/);
     assert.ok(exposed.includes(hidden.note));
     const exposedComponent = (await (await j.publicResponse('/api/public/v1/components')).json()).data.find(row => row.id === hidden.id);
     assert.equal(exposedComponent.state, 'Major outage');
@@ -438,10 +438,10 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(!html.includes(other.name), 'a healthy conditional component stays out of the public catalogue');
     assert.ok(html.includes(main.note));
     assert.ok(!html.includes(hidden.name) && !html.includes('PRIVATE topology'));
-    assert.match(html, /id="overall-status"[^>]*>Operational<\/h1>/, 'the only severe claim is internal');
+    assert.match(html, /id="overall-status"[^>]*>Working<\/h1>/, 'the only severe claim is internal');
     assert.equal((await (await j.publicResponse('/api/public/status')).json()).overall, 'Operational');
-    assert.equal((await (await j.publicResponse('/badge.json')).json()).message, 'Operational');
-    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Operational<\/text>/);
+    assert.equal((await (await j.publicResponse('/badge.json')).json()).message, 'Working');
+    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Working<\/text>/);
     const published = [], cursors = new Set();
     let cursor;
     do {
@@ -644,7 +644,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await page.clock.install();
     await page.clock.pauseAt(new Date());
     await page.goto(j.publicOrigin);
-    assert.equal(await page.locator('#overall-status').innerText(), 'Operational');
+    assert.equal(await page.locator('#overall-status').innerText(), 'Working');
     assert.equal(await page.getByText(hidden.name, { exact: true }).count(), 0);
     assert.equal(await page.locator('.uptime').count(), 1, 'only the visible healthy component has uptime on the representative page');
     if (process.env.LAMP_SCREENSHOTS) {
@@ -687,7 +687,11 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         if (otherState !== 'Operational') assert.equal(visible.find(component => component.id === other.id).state, otherState);
         await page.reload();
         assert.equal(await page.locator('#overall-status').count(), 1);
-        assert.equal(await page.locator('#overall-status').innerText(), expected);
+        assert.equal(await page.locator('#overall-status').innerText(), expectedComponentLabels[expected]);
+        for (const component of visible) {
+          const row = page.locator('article.component').filter({ has: page.getByRole('heading', { name: component.name, exact: true }) });
+          assert.equal(await row.locator('.component-state').innerText(), expectedComponentLabels[component.state], `${component.name} shows its own published state`);
+        }
         assert.ok(await page.locator('#overall-status').evaluate(label => Boolean(label.closest('[aria-labelledby="overall-status"]'))), 'the single label remains in the top status section');
         assert.ok(!(await page.locator('body').innerText()).includes(hidden.name));
         if (process.env.LAMP_PAGE004_SCREENSHOTS && ordered[0].id === other.id && expected === 'Partially unavailable') {
@@ -711,7 +715,11 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const liveNode = await live.elementHandle();
     const zoneLabel = await page.locator('[data-timezone-label]').innerText();
     const generation = page.locator('[data-generated-at] time');
-    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles', 'Los Angeles time');
+    const generationDetails = page.locator('[data-generation-details] details');
+    assert.equal(await generationDetails.locator('time').isVisible(), false, 'the exact offset is hidden until requested');
+    await generationDetails.locator('summary').click();
+    assertVisibleTime(await generationDetails.locator('time').innerText(), await generation.getAttribute('datetime'), 'America/Los_Angeles');
     // Age one retained publication without any operator write. The browser's
     // own zone differs from Settings, so the tooltip must keep the page zone.
     const retainedDocument = await j.publicResponse('/');
@@ -721,7 +729,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       && node.parentNode?.attrs?.some(attr => attr.name === 'data-generated-at'));
     assert.equal(initialTimes.length, 1);
     assert.equal(initialTimes[0].attrs.find(attr => attr.name === 'datetime').value, retainedInstant);
-    assertVisibleTime(nodeText(initialTimes[0]), retainedInstant, 'America/Los_Angeles');
+    assertVisibleTime(nodeText(initialTimes[0]), retainedInstant, 'America/Los_Angeles', 'Los Angeles time');
     const ageContext = await browser.newContext({ timezoneId: 'America/New_York' });
     const agePage = await ageContext.newPage();
     try {
@@ -738,7 +746,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         assert.equal(await age.innerText(), 'just now', 'the retained generation initially has a relative age below one minute');
         assert.equal(await age.getAttribute('datetime'), retainedInstant);
         const absoluteTitle = await age.getAttribute('title');
-        assertVisibleTime(absoluteTitle, retainedInstant, 'America/Los_Angeles');
+        assertVisibleTime(absoluteTitle, retainedInstant, 'America/Los_Angeles', 'Los Angeles time');
         const documentNode = await agePage.locator('html').elementHandle();
         await agePage.clock.runFor(30_000);
         await agePage.waitForFunction(() => document.querySelector('[data-generated-at] time')?.textContent === '1 minute ago');
@@ -746,7 +754,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         assert.ok(await age.isVisible(), 'the changed relative age stays visible to the reader');
         assert.equal(await age.getAttribute('datetime'), retainedInstant, 'aging does not replace the generation instant');
         assert.equal(await age.getAttribute('title'), absoluteTitle, 'aging retains the absolute tooltip');
-        assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles');
+        assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles', 'Los Angeles time');
         assert.ok(await documentNode.evaluate(node => node === document.documentElement), 'the document stays open while its label ages');
         assert.equal((await (await j.publicResponse('/api/public/status')).json()).generatedAt, retainedInstant, 'no new generation was published');
         console.info('PAGE-009 generation age at ' + width + ': just now -> 1 minute ago; instant=' + retainedInstant + '; tooltip=' + absoluteTitle);
@@ -794,8 +802,8 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(firstStatus.incident.message.includes(publishedUpdate.customerImpact));
     assert.ok((await j.publicText('/')).includes(other.name), 'a degraded conditional component becomes public');
     const badge = await (await j.publicResponse('/badge.json')).json();
-    assert.ok(JSON.stringify(badge).includes('Major outage'));
-    assert.ok((await j.publicText('/badge.svg')).includes('Major outage'));
+    assert.equal(badge.message, 'Down');
+    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Down<\/text>/);
     let refreshRequests = 0, documentNavigations = 0;
     page.on('request', request => { if (new URL(request.url()).pathname === '/api/public/status') refreshRequests++; });
     page.on('framenavigated', frame => { if (frame === page.mainFrame()) documentNavigations++; });
@@ -812,8 +820,9 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(await liveNode.evaluate(node => node === document.querySelector('#status-live')), 'the assistive live region remains the same node');
     assert.equal(await page.locator('[data-timezone-label]').innerText(), zoneLabel);
     assert.equal(await page.locator('[data-timezone-label]').getAttribute('data-timezone'), 'America/Los_Angeles');
-    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
-    assert.ok((await page.locator('#status-live').innerText()).includes('Major outage'));
+    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles', 'Los Angeles time');
+    assertVisibleTime(await generationDetails.locator('time').innerText(), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    assert.equal(await page.locator('#overall-status').innerText(), 'Down');
     // Later widget and accessibility checks use ordinary browser timers.
     await page.clock.resume();
     if (process.env.LAMP_SCREENSHOTS) {
@@ -865,7 +874,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await loadWidget(page); await page.locator('section[role=status]').waitFor();
     const banner = page.locator('section[role=status]');
     assert.equal(await banner.count(), 1, 'one script tag installs one banner');
-    assert.equal(await banner.locator('strong').innerText(), 'Major outage', 'the banner shows the exact aggregate state');
+    assert.equal(await banner.locator('strong').innerText(), 'Down', 'the banner shows the exact aggregate state');
     const bannerMessage = await banner.locator('span').last().innerText();
     assert.ok(bannerMessage.includes(incident.reference), 'the banner identifies the unresolved incident');
     assert.ok(bannerMessage.includes('Synthetic Lamp API outage under investigation'), 'the banner retains its submitted title');
@@ -877,7 +886,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(bannerMessage.split('\n').includes('Status: Identified'));
     assert.deepEqual(bannerFields(bannerMessage), [
       `Who is affected: ${widgetWording.affectedAudience}`, `Customer impact: ${widgetWording.customerImpact}`,
-      `What still works: ${widgetWording.whatStillWorks}`, 'Next update by: Feb 10, 2031, 11:47 UTC-08:00',
+      `What still works: ${widgetWording.whatStillWorks}`, 'Next update by: Feb 10, 2031, 11:47 Los Angeles time',
       `Additional details: ${widgetWording.details}`,
     ], 'the installed widget retains the complete populated wording and independently expected configured-zone commitment');
     const captureUpdate = async name => {
@@ -911,7 +920,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await page.waitForFunction(text => document.querySelector('section[role=status] span:last-child').textContent.includes(text), blankWording.customerImpact);
     assert.deepEqual(bannerFields(await banner.locator('span').last().innerText()), [
       `Who is affected: ${blankWording.affectedAudience}`, `Customer impact: ${blankWording.customerImpact}`,
-      'Next update by: Feb 10, 2031, 12:48 UTC-08:00',
+      'Next update by: Feb 10, 2031, 12:48 Los Angeles time',
     ], 'the same installed widget replaces the prior publication and omits both absent optional fields');
     await page.reload(); await loadWidget(page);
     await captureUpdate('blank-optional');
@@ -982,8 +991,12 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(initialGeneration);
     const plainGeneration = plain.locator('[data-generated-at] time');
     assert.equal(await plainGeneration.getAttribute('datetime'), initialGeneration);
+    const plainDetails = plain.locator('[data-generation-details] details');
+    await plainDetails.locator('summary').click();
+    assertVisibleTime(await plainDetails.locator('time').innerText(), initialGeneration, 'America/Los_Angeles');
+    await plainDetails.locator('summary').click();
     const absoluteGeneration = await plainGeneration.innerText();
-    assertVisibleTime(absoluteGeneration, initialGeneration, 'America/Los_Angeles');
+    assertVisibleTime(absoluteGeneration, initialGeneration, 'America/Los_Angeles', 'Los Angeles time');
     assert.ok((await plain.locator('body').innerText()).includes(main.name));
     const initialContent = await plain.content();
     const initialDocumentNode = await plain.locator('html').elementHandle();
@@ -1007,7 +1020,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.equal(await plain.content(), initialContent, 'the complete initial document remains unchanged after a new publication and two refresh intervals');
     assert.equal(await plainGeneration.getAttribute('datetime'), initialGeneration);
     assert.equal(await plainGeneration.innerText(), absoluteGeneration);
-    assertVisibleTime(await plainGeneration.innerText(), initialGeneration, 'America/Los_Angeles');
+    assertVisibleTime(await plainGeneration.innerText(), initialGeneration, 'America/Los_Angeles', 'Los Angeles time');
     if (process.env.LAMP_SCREENSHOTS) {
       await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
       for (const width of [1440, 390]) {

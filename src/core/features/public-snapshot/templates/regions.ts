@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { groupComponentsByHeading } from "../../../shared/component-order";
 import type { PublicSnapshotModel } from "../renderer";
 import { mostSevereState, type ComponentState } from "../../../shared/domain";
@@ -70,11 +71,11 @@ export function regionsMapStyles(model: PublicSnapshotModel) {
 function regionsMap(model: PublicSnapshotModel) {
   const { groups, markers, keyed, signature } = regionsMapFor(model);
   const pins = markers.map((marker, index) => `<span class="rg-pin m${index} tone-${toneOf(marker.group.state)}" aria-hidden="true">${pinIcon()}<b>${index + 1}</b></span>`).join("");
-  const label = (marker: (typeof markers)[number], className: string, number = "") => `<a class="${className}" href="#components-title" data-region-choice="${marker.group.key}">${number}<strong>${escapeHtml(marker.name)}</strong> <span class="rg-card-state tone-${toneOf(marker.group.state)}">${escapeHtml(marker.state)}</span><span class="sr-only">, ${plural(marker.group.components.length, "component")}</span></a>`;
+  const label = (marker: (typeof markers)[number], className: string, number = "") => `<a class="${className}" href="#components-title" data-region-choice="${marker.group.key}">${number}<strong>${escapeHtml(marker.name)}</strong> <span class="rg-card-state tone-${toneOf(marker.group.state)}">${escapeHtml(componentStateLabel(marker.group.state))}</span><span class="sr-only">, ${plural(marker.group.components.length, "component")}</span></a>`;
   const cards = markers.map((marker, index) => label(marker, `rg-card m${index}`)).join("");
   const key = keyed ? `<ol class="rg-key">${markers.map((marker, index) => `<li>${label(marker, `rg-key-item tone-${toneOf(marker.group.state)}`, `<b aria-hidden="true">${index + 1}</b>`)}</li>`).join("")}</ol>` : "";
   const unmapped = groups.filter((group) => !group.place);
-  const elsewhere = unmapped.length ? `<p class="rg-elsewhere">Not on the map: ${unmapped.map((group) => `<span>${escapeHtml(group.name)} <span class="rg-card-state tone-${toneOf(group.state)}">${escapeHtml(group.state)}</span></span>`).join("")}</p>` : "";
+  const elsewhere = unmapped.length ? `<p class="rg-elsewhere">Not on the map: ${unmapped.map((group) => `<span>${escapeHtml(group.name)} <span class="rg-card-state tone-${toneOf(group.state)}">${escapeHtml(componentStateLabel(group.state))}</span></span>`).join("")}</p>` : "";
   const world = (view: "wide" | "narrow") => `<svg class="rg-world rg-world-${view}" viewBox="0 0 ${MAP_WIDTH} ${mapHeight(view).toFixed(2)}" aria-hidden="true" focusable="false"><path d="${worldDots(view)}"/></svg>`;
   return `<div class="rg-map" data-map="${signature}">${world("wide")}${world("narrow")}${pins}${cards}</div>${key}${elsewhere}`;
 }
@@ -87,7 +88,7 @@ function componentRow(component: Component, groups: RegionGroup[]) {
   const key = regionKey(component.region);
   const region = groups.find((group) => group.key === key);
   const tone = toneOf(component.state);
-  return `<details class="rg-row" data-region="${key}"><summary>${componentIcon(component.name)}<span class="rg-name"><span class="rg-name-text">${escapeHtml(component.name)}</span>${region ? "" : '<span class="rg-everywhere">All regions</span>'}</span><span class="rg-status tone-${tone}">${stateGlyph(component.state)}<span>${escapeHtml(component.state)}</span></span><span class="rg-uptime"><span>${escapeHtml(uptimeValue(component.uptime))}</span><span class="rg-uptime-caption">${escapeHtml(uptimeCaption(component.uptime))}</span></span>${lineIcon("chevron", "rg-chevron")}</summary><div class="rg-detail">${region ? `<p class="tpl-meta">Region: ${escapeHtml(region.name)}</p>` : ""}<p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "rg-bar")}${componentNote(component)}</div></details>`;
+  return `<details class="rg-row" data-region="${key}"><summary>${componentIcon(component.name)}<span class="rg-name"><span class="rg-name-text">${escapeHtml(component.name)}</span>${region ? "" : '<span class="rg-everywhere">All regions</span>'}</span><span class="rg-status tone-${tone}">${stateGlyph(component.state)}<span>${escapeHtml(componentStateLabel(component.state))}</span></span><span class="rg-uptime"><span>${escapeHtml(uptimeValue(component.uptime))}</span><span class="rg-uptime-caption">${escapeHtml(uptimeCaption(component.uptime))}</span></span>${lineIcon("chevron", "rg-chevron")}</summary><div class="rg-detail">${region ? `<p class="tpl-meta">Region: ${escapeHtml(region.name)}</p>` : ""}<p class="tpl-meta">${escapeHtml(uptimeCaption(component.uptime))}: ${escapeHtml(uptimeValue(component.uptime))}</p>${dayBar(component, "rg-bar")}${componentNote(component)}</div></details>`;
 }
 
 export function regionsPage(model: PublicSnapshotModel, parts: TemplateParts) {
@@ -96,7 +97,7 @@ export function regionsPage(model: PublicSnapshotModel, parts: TemplateParts) {
   const text = situation(model);
   const components = publicComponentOrder(model.visibleComponents);
   const head = `<header class="rg-head wrap"><div class="rg-head-row"><div class="rg-brand">${brand(model)}${tagline(model)}</div><div class="rg-actions">${subscribeForm(model, "subscribe-email")}${feedLinks()}</div></div></header>`;
-  const status = `<section class="rg-status-line wrap" aria-labelledby="overall-status"><div class="tpl-live"><span class="rg-status-icon tone-${toneOf(model.overall)}" data-live="status-icon">${stateGlyph(model.overall)}</span><div><div id="status-live" role="status" aria-live="polite" aria-atomic="true" data-live="status"><h1 id="overall-status">${escapeHtml(text)}</h1><span class="sr-only">${escapeHtml(model.overall)}</span></div>${updatedLine(model)}</div></div></section>`;
+  const status = `<section class="rg-status-line wrap" aria-labelledby="overall-status"><div class="tpl-live"><span class="rg-status-icon tone-${toneOf(model.overall)}" data-live="status-icon">${stateGlyph(model.overall)}</span><div><div id="status-live" role="status" aria-live="polite" aria-atomic="true" data-live="status"><h1 id="overall-status">${escapeHtml(text)}</h1><span class="sr-only">${escapeHtml(componentStateLabel(model.overall))}</span></div>${updatedLine(model)}</div></div></section>`;
   const map = `<section class="rg-regions wrap" aria-labelledby="regions-title" data-live="map"><h2 id="regions-title" class="sr-only">Regions</h2>${regionsMap(model)}${filters(groups)}</section>`;
   const current = [...history.open.map((incident) => openIncidentEntry(incident, model, parts)), ...history.maintenance.map((item) => maintenanceEntry(item, model))].join("");
   const past = history.resolved.map((incident) => resolvedEntry(incident, model)).join("");

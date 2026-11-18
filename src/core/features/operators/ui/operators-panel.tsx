@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 
 import type { StoredFormerOperator, StoredOperator } from "../repository";
 import { ApiError, appApi, useAppData } from "../../../app/client/ui/api";
-import { CopyButton } from "../../../app/client/ui/copy-button";
 import { Button } from "../../../app/client/ui/button";
 import { LoadingState, FormError } from "../../../app/client/ui/states";
 import { OperatorRoleSelect, operatorRoleLabels, operatorRoleDescriptions } from "./operator-role-select";
@@ -50,14 +49,15 @@ export function OperatorsPanel() {
     event.preventDefault();
     setSaving(true); setMessage(null);
     try {
-      const result = await appApi<{ email: "sent" | "suppressed" | "demo"; displayName: string; signInUrl?: string }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName, role }) });
+      const result = await appApi<{ email: "sent" | "suppressed" | "demo"; displayName: string }>("/api/app/operators/invite", { method: "POST", body: JSON.stringify({ email, displayName, role }) });
       setNeedsConfirmation(false);
       setEmail(""); setDisplayName(""); setRole("communicator");
       let guidance = "";
       if (result.email === "sent") guidance = " Ask them to open the link in their invitation email.";
       if (result.email === "suppressed") {
-        guidance = invited.data?.local ? " No email was sent on this computer." : " No email was sent.";
-        if (result.signInUrl) guidance += " Use the link under Pending invitations in this browser.";
+        guidance = invited.data?.local
+          ? " Lamp on this computer opens only in your browser, so there is no link to send yet. To send them an email, invite them from the online copy with email turned on."
+          : " No email was sent.";
       }
       setMessage(`${result.displayName} is invited.${guidance}`);
       invited.refresh();
@@ -149,7 +149,6 @@ function OperatorRow({ operator, signInUrl, saving, lastOwner = false, onRoleCha
       {signInUrl && <a className="text-link" href={signInUrl}>Open as {operator.displayName} in this browser</a>}
     </span>
     <div className="operator-actions">
-      {signInUrl && <CopyButton text={signInUrl} label="Copy link" />}
       {onRoleChange && <OperatorRoleSelect operator={operator} disabled={saving} lastOwner={lastOwner} onChange={onRoleChange} />}
       {onRevoke && <Button type="button" variant="secondary" className="table-action" disabled={saving} onClick={onRevoke}>Remove access</Button>}
       {onErase && <Button type="button" variant="secondary" className="table-action erase-operator-action" disabled={saving} onClick={onErase}>Erase personal data</Button>}

@@ -27,7 +27,7 @@
 .incident-summary dl div { border-top: 1px solid var(--line); padding: 10px 0; }
 .incident-summary dt { color: var(--ink-3); font-size: 13px; }
 .incident-summary dd { margin: 2px 0 0; font-size: 14px; overflow-wrap: anywhere; }
-.incident-summary .text-link { margin: 0; }
+.incident-summary .text-link { min-height: 24px; margin: 0; }
 
 /* Subscriber pages, reached from an emailed link: one centred plate under the business's mark. */
 .subscriber-document { max-width: 592px; margin-inline: auto; }

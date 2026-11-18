@@ -205,7 +205,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
           await notice.waitFor({ state: 'visible' });
           assert.equal(await notice.count(), 1, 'the old tag creates one visible notice');
           assert.deepEqual(await notice.evaluate(element => ({ position: getComputedStyle(element).position, bottom: getComputedStyle(element).bottom, right: getComputedStyle(element).right })), { position: 'fixed', bottom: '16px', right: '16px' }, 'the compatibility tag selects the floating notice by default');
-          assert.equal(await notice.locator('strong').innerText(), 'Partially unavailable', 'the notice reflects the imported partial-outage claim');
+          assert.equal(await notice.locator('strong').innerText(), 'Partly down', 'the notice reflects the imported partial-outage claim');
           const content = await notice.innerText();
           for (const value of [imported.reference, 'Elevated API errors', 'Status: Investigating', 'We are investigating elevated error rates on the API.']) assert.ok(content.includes(value), `the old tag renders the imported incident content: ${value}`);
           if (evidence) for (const width of [1440, 390]) {

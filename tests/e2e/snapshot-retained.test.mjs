@@ -205,7 +205,9 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
         assert.ok(text.includes('Known service status &lt;synthetic-lamp&gt; &amp; $&'));
         assert.ok(text.includes(`content generated at ${generation.pointer.generatedAt}`));
       }
-      assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
+      if (path === '/badge.json') assert.equal(JSON.parse(text).message, 'Down', 'the endpoint badge keeps the known outage');
+      else if (path === '/badge.svg') assert.match(text, /id="value"[^>]*>Down<\/text>/);
+      else assert.ok(text.includes('Major outage') || text.includes('major-outage'), `${path} keeps the known outage`);
       if (path === '/') for (const component of source.components) assert.ok(text.includes(`/components/${component.id}/feed.atom`), 'storage failure preserves every component resource in the shared footer');
       // Badge protocols retain their consumer schema; every surface carries
       // the stale/generated-at HTTP headers checked above. Human and status

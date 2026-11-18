@@ -1,3 +1,4 @@
+import { expectedComponentLabels } from '../../helpers/public-meaning.mjs';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
@@ -59,7 +60,7 @@ export async function widgetPrivacyFlow(fixture) {
         page.on('request', request => requests.push(request));
         const root = await installWidget(page, fixture.pageUrl, installation);
         assert.equal(await page.locator('section[role=status]').count(), 1, `${installation.id} is independently installed`);
-        assert.equal(await root.locator('strong').textContent(), snapshot.overall);
+        assert.equal(await root.locator('strong').textContent(), expectedComponentLabels[snapshot.overall]);
         const polled = page.waitForResponse(response => new URL(response.url()).pathname === '/api/public/status' && response.status() === 200);
         await page.clock.fastForward(30000);
         assert.deepEqual(await (await polled).json(), snapshot, `${installation.id} polls the same public snapshot`);

@@ -2,7 +2,7 @@ import { impactLabel, type IncidentImpact } from "../../shared/incident-impact";
 import type { PublishedIncidentComponentChange } from "../../shared/incident-component-changes";
 import { renderIncidentUpdate } from "../incidents/renderer";
 
-import { formatTime } from "./format";
+import { formatPageTime, formatTime } from "./format";
 
 export interface PublicFeedUpdate {
   componentChanges?: PublishedIncidentComponentChange[];
@@ -24,7 +24,7 @@ export interface PublicFeedIncident {
   updates: PublicFeedUpdate[];
 }
 
-export function renderedUpdate(incident: PublicFeedIncident, update: PublicFeedUpdate, timezone: string) {
+export function renderedUpdate(incident: PublicFeedIncident, update: PublicFeedUpdate, timezone: string, format = formatTime) {
   return renderIncidentUpdate({
     incidentReference: incident.reference,
     incidentTitle: incident.title,
@@ -35,7 +35,7 @@ export function renderedUpdate(incident: PublicFeedIncident, update: PublicFeedU
     details: update.details,
     componentChanges: update.componentChanges,
     nextUpdateAt: update.nextUpdateAt || null,
-    nextUpdateDisplay: update.nextUpdateAt ? formatTime(update.nextUpdateAt, timezone) : null,
+    nextUpdateDisplay: update.nextUpdateAt ? format(update.nextUpdateAt, timezone) : null,
   });
 }
 
@@ -63,7 +63,7 @@ export function statusPayload(input: { incidents: Array<PublicFeedIncident & { e
       impact: newest.incident.effectiveImpact,
       publishedAt: newest.update.publishedAt,
       summary: updateSummary(newest.incident, newest.update),
-      message: `Incident impact: ${impactLabel(newest.incident.effectiveImpact)}\n\n${updateText(newest.incident, newest.update, input.settings.timezone)}`,
+      message: `Incident impact: ${impactLabel(newest.incident.effectiveImpact)}\n\n${renderedUpdate(newest.incident, newest.update, input.settings.timezone, formatPageTime).email.plainText}`,
     } : null,
   };
 }

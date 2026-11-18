@@ -41,7 +41,9 @@ export async function automationRulesBrowserFlow({ origin, publicOrigin, cookie,
     assert.equal(await rules.getByLabel("Alert action", { exact: true }).inputValue(), "draft", "a new component/source pair defaults to draft");
     await rules.getByLabel("Rule name", { exact: true }).fill("Prepared API availability");
     await rules.getByLabel("Alert action", { exact: true }).selectOption("claim");
-    await rules.getByLabel("Claimed state", { exact: true }).selectOption("Degraded performance");
+    const claimedState = rules.getByLabel("Claimed state", { exact: true });
+    assert.equal(await claimedState.inputValue(), "", "claim mode starts without a severity");
+    await claimedState.selectOption("Degraded performance");
     assert.equal(await rules.getByLabel("Firing delay (seconds)", { exact: true }).inputValue(), "120");
     assert.equal(await rules.getByLabel("Recovery hold (seconds)", { exact: true }).inputValue(), "300");
     await rules.getByLabel("Firing delay (seconds)", { exact: true }).fill("0");

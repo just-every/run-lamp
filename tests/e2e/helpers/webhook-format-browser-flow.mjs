@@ -46,7 +46,7 @@ export async function webhookFormatBrowserFlow() {
           assert.equal(await form.getByRole('checkbox', { name: 'Incidents', exact: true }).isChecked(), true);
           assert.equal(await form.getByRole('checkbox', { name: 'Maintenance', exact: true }).isChecked(), true);
           assert.equal(await form.getByRole('checkbox', { name: 'Component status changes', exact: true }).isChecked(), false);
-          assert.equal(await form.getByRole('checkbox', { name: 'Only incidents reaching Partially unavailable or worse', exact: true }).isChecked(), false);
+          assert.equal(await form.getByRole('checkbox', { name: 'Only incidents reaching Partly down or worse', exact: true }).isChecked(), false);
           await form.getByRole('checkbox', { name: 'Synthetic subscription component', exact: true }).check();
           await form.getByRole('checkbox', { name: 'Component status changes', exact: true }).check();
           assert.equal(await form.getByRole('checkbox', { name: 'Component status changes', exact: true }).isChecked(), true);
@@ -72,7 +72,7 @@ export async function webhookFormatBrowserFlow() {
         await management.getByRole('checkbox', { name: 'Incidents', exact: true }).uncheck();
         await management.getByRole('checkbox', { name: 'Maintenance', exact: true }).check();
         await management.getByRole('checkbox', { name: 'Component status changes', exact: true }).uncheck();
-        await management.getByRole('checkbox', { name: 'Only incidents reaching Partially unavailable or worse', exact: true }).check();
+        await management.getByRole('checkbox', { name: 'Only incidents reaching Partly down or worse', exact: true }).check();
         await Promise.all([page.waitForNavigation(), management.getByRole('button', { name: 'Save selection', exact: true }).click()]);
         await page.getByRole('heading', { name: 'Subscription updated', exact: true }).waitFor();
         await page.goto(url);
@@ -80,7 +80,7 @@ export async function webhookFormatBrowserFlow() {
         assert.equal(await management.getByRole('checkbox', { name: 'Incidents', exact: true }).isChecked(), false);
         assert.equal(await management.getByRole('checkbox', { name: 'Maintenance', exact: true }).isChecked(), true);
         assert.equal(await management.getByRole('checkbox', { name: 'Component status changes', exact: true }).isChecked(), false);
-        assert.equal(await management.getByRole('checkbox', { name: 'Only incidents reaching Partially unavailable or worse', exact: true }).isChecked(), true);
+        assert.equal(await management.getByRole('checkbox', { name: 'Only incidents reaching Partly down or worse', exact: true }).isChecked(), true);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `management selector fits ${width}`);
         const managedAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
         assert.deepEqual(managedAxe.violations.filter(row => ['serious', 'critical'].includes(row.impact)).map(row => row.id), [], `management preferences axe ${width}`);

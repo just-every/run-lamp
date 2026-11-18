@@ -100,6 +100,8 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await page.goto(`${origin}/app`); await operatorHydrated(page);
     const scheduled = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Scheduled', exact: true }) });
     await scheduled.getByText(window.title, { exact: true }).waitFor();
+    assert.match(await scheduled.innerText(), /Jul 15, 2027, 09:00 Brisbane time/);
+    assert.doesNotMatch(await scheduled.innerText(), /\b(?:UTC|GMT)[+-]\d/);
     const automationTimes = await scheduled.locator('time').evaluateAll(nodes => nodes.map(node => node.dateTime));
     assert.deepEqual(automationTimes, [window.startsAt, window.endsAt], 'the automatic plan uses the actual saved window');
     const followUps = page.getByRole('region', { name: 'Follow-ups', exact: true });
@@ -140,6 +142,9 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await drawer.getByText("Correct a past period", { exact: true }).click();
     const timezoneLink = drawer.getByRole("link", { name: /Times in Brisbane time/ });
     assert.equal(await timezoneLink.getAttribute("href"), "/app/settings#page-timezone");
+    const correctionState = drawer.getByLabel("Correct state", { exact: true });
+    assert.equal(await correctionState.inputValue(), "");
+    await correctionState.selectOption("Operational");
     await drawer.getByLabel("Starts at", { exact: true }).fill("2020-07-15T09:00");
     await drawer.getByLabel("Ends at", { exact: true }).fill("2020-07-15T10:00");
     await drawer.getByLabel("Reason", { exact: true }).fill("Recorded outage interval");
@@ -147,12 +152,17 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await drawer.getByRole("button", { name: "Save correction", exact: true }).click();
     assert.equal((await corrected).status(), 204);
     const correction = (await api(`/api/app/components/${component.id}/history`)).corrections[0];
+    assert.equal(correction.state, "Operational");
     assert.equal(correction.startsAt, "2020-07-14T23:00:00.000Z"); assert.equal(correction.endsAt, "2020-07-15T00:00:00.000Z");
     await timezoneLink.click();
     await page.waitForURL(url => url.pathname === "/app/settings" && url.hash === "#page-timezone");
     const pageTimezone = page.locator("#page-timezone").getByRole("combobox", { name: "Time zone" });
     await pageTimezone.waitFor();
     assert.match(await pageTimezone.inputValue(), /^Brisbane/);
+    const timezoneDetails = page.locator("#page-timezone details");
+    assert.equal(await timezoneDetails.locator("p").isVisible(), false);
+    await timezoneDetails.locator("summary").click();
+    assert.match(await timezoneDetails.locator("p").innerText(), /UTC\+10:00/);
     await page.goto(`${origin}/app/incidents`);
     await operatorHydrated(page);
     await page.getByRole("heading", { name: "New incident", exact: true }).waitFor();
@@ -204,17 +214,25 @@ test("SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public su
 });
 
 
-test("TEAM-002 — Local operator invitations disclose suppressed email", { timeout: 120_000 }, async () => {
+test("TEAM-002 — Local operator invitations stay pending without email or a share action", { timeout: 120_000 }, async () => {
   const localContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   await localContext.addCookies([{ name: sessionCookieName(origin), value: sessionId, url: origin }]);
   try {
     const localPage = await localContext.newPage();
     await localPage.goto(origin + '/app/settings#operators'); await operatorHydrated(localPage);
     const panel = localPage.getByRole('region', { name: 'Operators', exact: true });
-    await panel.getByLabel('Email', { exact: true }).fill('synthetic-lamp-local-operator@example.test');
-    await panel.getByLabel('Name', { exact: true }).fill('Synthetic Lamp local operator');
+    const email = 'synthetic-lamp-local-operator@example.test';
+    await panel.getByLabel('Email', { exact: true }).fill(email);
+    await panel.getByLabel('Name', { exact: true }).fill('Brightwell Support');
+    const invitation = localPage.waitForResponse(response => new URL(response.url()).pathname === '/api/app/operators/invite' && response.request().method() === 'POST');
     await panel.getByRole('button', { name: 'Invite operator', exact: true }).click();
-    await panel.getByRole('status').filter({ hasText: 'No email was sent on this computer.' }).waitFor();
+    const response = await invitation;
+    assert.equal(response.status(), 202);
+    assert.equal((await response.json()).email, 'suppressed');
+    await panel.getByRole('status').waitFor();
+    const row = panel.getByRole('region', { name: 'Pending invitations' }).locator('.operator-row').filter({ hasText: email });
+    await row.waitFor();
+    assert.equal(await row.getByRole('button', { name: 'Copy link', exact: true }).count(), 0);
     if (process.env.LAMP_LOCAL_SUBSCRIBERS_EVIDENCE) {
       await mkdir(process.env.LAMP_LOCAL_SUBSCRIBERS_EVIDENCE, { recursive: true });
       for (const width of [1440, 390]) {

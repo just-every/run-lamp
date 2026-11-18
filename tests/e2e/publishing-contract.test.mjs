@@ -32,10 +32,10 @@ function publicUpdate(html, details) {
 }
 // Brisbane has a fixed ten-hour offset. Compute the expected calendar date
 // independently of Lamp's formatter, including a possible UTC date rollover.
-function brisbaneTime(instant) {
+function brisbaneTime(instant, zoneName = 'UTC+10:00') {
   const local = new Date(Date.parse(instant) + 10 * 3600_000);
   const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][local.getUTCMonth()];
-  return `${month} ${local.getUTCDate()}, ${local.getUTCFullYear()}, ${local.toISOString().slice(11, 16)} UTC+10:00`;
+  return `${month} ${local.getUTCDate()}, ${local.getUTCFullYear()}, ${local.toISOString().slice(11, 16)} ${zoneName}`;
 }
 function brisbaneMonth(instant) {
   return new Date(Date.parse(instant) + 10 * 3600_000).toISOString().slice(0, 7);
@@ -47,8 +47,10 @@ function assertPublicationPage(html, publication, expectedFields, surface) {
   assert.equal(nodeText(heading.childNodes.find(node => node.tagName === 'strong')), publication.lifecycle, surface);
   assert.equal(descendants(heading).find(node => node.tagName === 'time').attrs.find(attr => attr.name === 'datetime').value, publication.publishedAt, surface);
   const fields = descendants(update).filter(node => node.tagName === 'div' && node.childNodes.some(child => child.tagName === 'dt'));
+  const expectedPageFields = expectedFields.map(([label, value]) =>
+    [label, label === 'Next update by' ? brisbaneTime(publication.nextUpdateAt, 'Brisbane time') : value]);
   assert.deepEqual(fields.map(field => [nodeText(field.childNodes.find(node => node.tagName === 'dt')), nodeText(field.childNodes.find(node => node.tagName === 'dd'))])
-    .filter(([label]) => label !== 'Component state'), expectedFields, `${surface}: the complete wording belongs to this publication`);
+    .filter(([label]) => label !== 'Component state'), expectedPageFields, `${surface}: the complete wording belongs to this publication`);
   if (publication.nextUpdateAt) {
     const commitment = fields.find(field => nodeText(field.childNodes.find(node => node.tagName === 'dt')) === 'Next update by');
     assert.equal(descendants(commitment).find(node => node.tagName === 'time').attrs.find(attr => attr.name === 'datetime').value, publication.nextUpdateAt, `${surface}: exact commitment instant`);
@@ -287,7 +289,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
       const times = descendants(value).filter(node => node.tagName === 'time');
       assert.equal(times.length, 1, `${path}: the commitment has one semantic timestamp`);
       assert.equal(times[0].attrs.find(attr => attr.name === 'datetime')?.value, committedTime, `${path}: the committed instant is unchanged`);
-      assert.equal(nodeText(value), brisbaneTime(committedTime), `${path}: the commitment stays in the configured zone`);
+      assert.equal(nodeText(value), brisbaneTime(committedTime, 'Brisbane time'), `${path}: the commitment stays in the configured zone`);
       assert.doesNotMatch(nodeText(parse(html)), /overdue/i, `${path}: no public overdue label`);
     }
 
@@ -355,7 +357,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
 
     await saveReviewed(incident.id, { lifecycle: 'Investigating', customerImpact: 'Payments need another investigation.', componentChanges: [{ componentId: component.id, state: 'Partially unavailable' }] });
     const reopenPreview = (await j.json(endpoint)).preview;
-    assert.ok(JSON.stringify(reopenPreview).includes(`${component.name}: Operational → Partially unavailable`), 'reopening preview uses the recovered public state');
+    assert.ok(JSON.stringify(reopenPreview).includes(`${component.name}: Working → Partly down`), 'reopening preview uses the recovered public state');
     const reopening = (await j.publish(incident.id)).update;
     const reopenedComponent = reopening.componentChanges.find(change => change.componentId === component.id);
     assert.deepEqual([reopenedComponent?.previousState, reopenedComponent?.newState], ['Operational', 'Partially unavailable']);
@@ -426,8 +428,8 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     for (const path of [`/incidents/${historical.reference}`, `/history/${start.slice(0, 7)}`]) {
       const html = await j.visible(path, resolutionDetails);
       for (const [details, lifecycle, instant, display] of [
-        [originalDetails, 'Investigating', start, 'Jun 15, 2024, 23:04 UTC+10:00'],
-        [resolutionDetails, 'Resolved', end, 'Jun 16, 2024, 00:04 UTC+10:00'],
+        [originalDetails, 'Investigating', start, 'Jun 15, 2024, 23:04 Brisbane time'],
+        [resolutionDetails, 'Resolved', end, 'Jun 16, 2024, 00:04 Brisbane time'],
       ]) {
         const update = publicUpdate(html, details);
         const heading = update.childNodes.find(node => node.tagName === 'div' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'update-head'));

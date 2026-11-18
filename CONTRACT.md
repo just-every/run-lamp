@@ -271,11 +271,11 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 #### PAGE-009 — Time display
 
-**Requirement.** Public timestamps and notifications use the configured time zone and offset. Under RL-1, the owner’s S4 exception permits a relative generation label while scripting runs.
+**Requirement.** Public timestamps use the configured time zone, named on the page with exact UTC offsets available in Time details. Feeds and notifications retain absolute timestamps with the configured offset. Under RL-1, the owner’s S4 exception permits a relative generation label while scripting runs.
 
 **Acceptance.**
-1. Every public and notification timestamp displays the configured time zone and UTC offset; page timestamps retain their exact ISO instant as machine-readable data.
-2. With scripting available, the generation label is relative and refreshes while the page stays open; its tooltip retains the absolute configured-zone time and offset and its machine-readable value retains the instant.
+1. Public page timestamps use the configured zone’s local time and name, with exact UTC offsets in Time details and ISO instants as machine-readable data. Feed and notification timestamps retain the configured UTC offset.
+2. With scripting available, the generation label is relative and refreshes while the page stays open. Its tooltip gives the absolute configured-zone time, Time details gives the offset, and its machine-readable value retains the instant.
 3. Initial HTML and script-disabled readers see the absolute generation time; incident, maintenance, feed and notification timestamps remain absolute.
 
 #### PAGE-010 — Atom feed

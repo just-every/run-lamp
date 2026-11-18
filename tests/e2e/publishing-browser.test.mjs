@@ -627,7 +627,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await form.title.fill('Checkout requests are delayed');
   await form.impact.fill('Card authorizations are timing out.');
   await form.addComponent(component.name);
-  await form.componentState(component.name, 'Degraded performance');
+  const componentState = page.getByLabel(`${component.name} state with this update`, { exact: true });
+  assert.equal(await componentState.inputValue(), '', 'adding a component does not choose a state');
+  await componentState.selectOption({ label: 'Partly down' });
   await form.audience.fill('Customers checking out in the US.');
   await form.nextUpdate.fill('2027-09-08T14:00');
   await form.option('Details');
@@ -638,6 +640,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await saved();
   let incident = await readIncident(id);
   assert.equal(incident.updates.length, 0, 'saving does not publish');
+  assert.equal(incident.components.find(row => row.componentId === component.id)?.state, 'Partially unavailable');
   const composer = incidentComposer(page);
   await page.reload(); await operatorHydrated(page); await saved();
   assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
@@ -721,9 +724,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
     { label: 'Who is affected', value: submitted.affectedAudience },
     { label: 'Customer impact', value: submitted.customerImpact },
     { label: 'What still works', value: submitted.whatStillWorks },
-    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 UTC-07:00' },
+    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 Los Angeles time' },
     { label: 'Additional details', value: submitted.details },
-    { label: 'Component state', value: 'Journey checkout API: Operational → Major outage' },
+    { label: 'Component state', value: 'Journey checkout API: Working → Down' },
   ];
   const panel = page.locator('.preview-panel');
   await page.getByRole('button', { name: 'Page', exact: true }).click();
@@ -962,7 +965,7 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
   assert.ok((await row.innerText()).includes('Reported by AWS'));
   assert.equal(await row.getByRole('link',{name:'AWS',exact:true}).getAttribute('href'),'https://status.aws.amazon.com/');
   await row.getByText('State mapping',{exact:true}).click();
-  assert.ok((await row.innerText()).includes('Major outage'));
+  assert.ok((await row.innerText()).includes('Down'));
   await row.getByLabel('Dependency behavior',{exact:true}).selectOption('draft');
   await row.getByLabel('Upstream-provider template',{exact:true}).selectOption(template.id);
   await row.getByLabel(buyer.name,{exact:true}).check();
