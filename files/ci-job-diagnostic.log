@@ -1,0 +1,14 @@
+argv: gh run view 44253753115 --repo just-every/run-lamp --job 134630825838 --log-failed
+exit=0
+shards (runtime)	Verify this product shard	2026-11-18T06:47:34.4811487Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+shards (runtime)	Verify this product shard	2026-11-18T06:48:34.4386331Z not ok 2 - DOCS-001 PAGE-020 — the built single Worker preserves public docs, Hono and R2, Start auth, dispatch, 404s, and client navigation
+shards (runtime)	Verify this product shard	2026-11-18T06:48:34.4402569Z   code: 'ERR_ASSERTION'
+shards (runtime)	Verify this product shard	2026-11-18T06:48:34.4402981Z   name: 'AssertionError'
+shards (runtime)	Verify this product shard	2026-11-18T06:48:34.4403329Z   expected:
+shards (runtime)	Verify this product shard	2026-11-18T06:48:34.4448970Z   actual:
+shards (runtime)	Verify this product shard	2026-11-18T06:48:34.5072493Z # fail 1
+shards (runtime)	Verify this product shard	2026-11-18T06:53:07.4102466Z # fail 0
+shards (runtime)	Verify this product shard	2026-11-18T06:53:07.5176211Z # fail 0
+shards (runtime)	Verify this product shard	2026-11-18T06:53:07.5572534Z ##[error]Process completed with exit code 1.
+Failed assertion in tests/e2e/start-runtime.test.mjs:148: contract/intake-details: the published chapters correspond to repository Markdown.
+The rendered page omitted the heading Original daily-use status notes.

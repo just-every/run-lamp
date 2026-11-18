@@ -1,0 +1,131 @@
+{
+  "baseline_docs_assertion": {
+    "exit": 0,
+    "head": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+    "passed": 1,
+    "test": "DOCS-001 PAGE-020 in tests/e2e/start-runtime.test.mjs"
+  },
+  "browser": "system Chromium 154.0.8037.57",
+  "checks": [
+    {
+      "shard": "build",
+      "steps": [
+        {
+          "durationMs": 977,
+          "exitCode": 0,
+          "script": "check:contract-docs"
+        },
+        {
+          "durationMs": 882,
+          "exitCode": 0,
+          "script": "source:copies"
+        },
+        {
+          "durationMs": 1484,
+          "exitCode": 0,
+          "script": "source:check"
+        },
+        {
+          "durationMs": 29036,
+          "exitCode": 0,
+          "script": "typecheck"
+        },
+        {
+          "durationMs": 16144,
+          "exitCode": 0,
+          "script": "check:syntax"
+        },
+        {
+          "durationMs": 1936,
+          "exitCode": 0,
+          "script": "validate:release"
+        },
+        {
+          "durationMs": 529,
+          "exitCode": 0,
+          "script": "verify:visual:source"
+        },
+        {
+          "durationMs": 17341,
+          "exitCode": 0,
+          "script": "build:app"
+        },
+        {
+          "durationMs": 7075,
+          "exitCode": 0,
+          "script": "build:site"
+        }
+      ],
+      "success": true
+    },
+    {
+      "shard": "imports",
+      "steps": [
+        {
+          "durationMs": 848320,
+          "exitCode": 0,
+          "script": "test:imports"
+        },
+        {
+          "durationMs": 119882,
+          "exitCode": 0,
+          "script": "test:mail"
+        }
+      ],
+      "success": false
+    },
+    {
+      "shard": "ownership",
+      "steps": [
+        {
+          "durationMs": 490784,
+          "exitCode": 0,
+          "script": "test:ownership"
+        },
+        {
+          "durationMs": 39462,
+          "exitCode": 0,
+          "script": "test:owner-claim"
+        },
+        {
+          "durationMs": 201270,
+          "exitCode": 0,
+          "script": "test:owner-backup"
+        }
+      ],
+      "success": true
+    },
+    {
+      "shard": "portability",
+      "steps": [
+        {
+          "durationMs": 513687,
+          "exitCode": 0,
+          "script": "test:portability"
+        }
+      ],
+      "success": true
+    }
+  ],
+  "focused_runtime": {
+    "commit": null,
+    "runAttempt": 0,
+    "runId": null,
+    "shard": "runtime",
+    "steps": [
+      {
+        "durationMs": 146595,
+        "exitCode": 0,
+        "script": "test:runtime"
+      },
+      {
+        "durationMs": 523103,
+        "exitCode": 0,
+        "script": "test:publishing"
+      }
+    ],
+    "success": true
+  },
+  "full_local_verify_completion": "stopped after focused runtime follow-up passed",
+  "head": "cb7779bb1e2556de27fc7e6e21bbdcb0ec1bec11"
+}

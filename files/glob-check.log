@@ -1,0 +1,12 @@
+LOCK @tanstack/start-plugin-core 4.0.7 -> 4.0.7(patch_hash=35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b)
+LOCK fdir 4.0.7 -> 4.0.7(patch_hash=35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b)
+LOCK tinyglobby 4.0.7 -> 4.0.7(patch_hash=35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b)
+LOCK unplugin 4.0.7 -> 4.0.7(patch_hash=35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b)
+LOCK vite 4.0.7 -> 4.0.7(patch_hash=35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b)
+GLOB @tanstack/start-plugin-core 4 ordinary matching assertions passed
+GLOB fdir 4 ordinary matching assertions passed
+GLOB tinyglobby 4 ordinary matching assertions passed
+GLOB unplugin 4 ordinary matching assertions passed
+GLOB vite 4 ordinary matching assertions passed
+PATCH installed parser contains the patch hunks
+GLOB tinyglobby filesystem include/exclude assertion passed

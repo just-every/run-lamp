@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "b90d459bf3908182844ef5b8ec15f8aa90e94647",
+      "bytes": 3481,
+      "path": "CHECKS.json",
+      "sha256": "d942a74c8d5d978d612738d77be9e705b68a667e0a32d55d38dd9c2f5a26221d"
+    },
+    {
+      "blob": "f3a9cc9f95ea949b7668f7ee95c8ea933f4ed696",
+      "bytes": 1258,
+      "path": "GITHUB-VERIFY-JOBS.json",
+      "sha256": "5574f1ade95776021768a3012c041f62781da88852a015c56543220dd458c0a3"
+    },
+    {
+      "blob": "a227863295676fed1e2d58e4733c4288e0fee835",
+      "bytes": 235,
+      "path": "GITHUB-VERIFY.json",
+      "sha256": "7844546cfdc8fa14401838177507ec53e7ec7ba3fcb3ec5a23c54629179794e0"
+    },
+    {
+      "blob": "4a02d129b02744d0d11d002b90b4e09a7e51c55d",
+      "bytes": 2808,
+      "path": "LOCAL-VERIFY.json",
+      "sha256": "850102dc17db396cf1abc51d647177cac034f9300d87c8f0e14eae35cbe04f42"
+    },
+    {
+      "blob": "eb98a69e2ac1417645d0c59ca8184932d2fefa36",
+      "bytes": 3647,
+      "path": "REPORT.md",
+      "sha256": "c9f0c86a07bf92ee33c8659bf1821e494a11158ff7b0bc50903955ba26a53c2e"
+    },
+    {
+      "blob": "29e9819ce408c0c53ce81ccb5cb120120d34e14a",
+      "bytes": 1373,
+      "path": "ci-job-diagnostic.log",
+      "sha256": "ba5f7dd29395e37b84a781522c887c603c149150f4920647b022189470ab96d9"
+    },
+    {
+      "blob": "34bdb0fccbb0a1ddd0edca9d16bf5afaa65aa45b",
+      "bytes": 924,
+      "path": "glob-check.log",
+      "sha256": "30985dbbde470835ec0c8fbd68ab765f7575f29a743f105ed0fce3e3288519bb"
+    },
+    {
+      "blob": "ce2eff8463a762cb23446be7d294ea727e052419",
+      "bytes": 547,
+      "path": "publication-scan.log",
+      "sha256": "310b46bbbc807e9bc5e268f0226081f0237d93d848b0206f59497597ee98ffde"
+    }
+  ],
+  "product_branch": "cloud/gr-lamp-picomatch-1",
+  "product_head": "cb7779bb1e2556de27fc7e6e21bbdcb0ec1bec11",
+  "ref": "refs/heads/evidence/gr-lamp-picomatch-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "gr-lamp-picomatch-1"
+}

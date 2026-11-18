@@ -1,0 +1,80 @@
+{
+  "acceptance": {
+    "after": {
+      "done": 60,
+      "missing": 55,
+      "partial": 129,
+      "total": 244
+    },
+    "before": {
+      "done": 60,
+      "missing": 55,
+      "partial": 129,
+      "total": 244
+    },
+    "claim": null,
+    "clause_changes": []
+  },
+  "base": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "branch": "cloud/gr-lamp-picomatch-1",
+  "checks": {
+    "candidate identity and trailer audit": "passed",
+    "exact-SHA Verify": "Verify run 44253753115 completed with failure at the candidate SHA. Runtime job 134630825838 failed the DOCS-001 PAGE-020 assertion in tests/e2e/start-runtime.test.mjs:148. The published contract/intake-details page omitted the Original daily-use status notes heading. The build and seven other product shards passed. The final required job 134638577884 also failed because the runtime shard failed.",
+    "focused glob proof": {
+      "filesystem_assertions": 1,
+      "installed_patch_hunks_verified": true,
+      "matching_assertions": 20,
+      "status": "passed"
+    },
+    "fresh full-history clone": {
+      "head": "cb7779bb1e2556de27fc7e6e21bbdcb0ec1bec11",
+      "passed": [
+        "frozen install",
+        "focused glob proof",
+        "source-lock check",
+        "contract document check"
+      ]
+    },
+    "full local verifier": "The fresh candidate clone passed both commands in the local runtime shard using system Chromium. The failing docs assertion passed locally on both the candidate and a freshly built origin/main control. Both built Worker assets contain the heading. The documentation, renderer and test sources are byte-identical between main and the candidate. The additional full local rer verify completed build, ownership and portability before being stopped after the targeted runtime shard passed. No exact-SHA GitHub success was observed.",
+    "git diff --check": "passed",
+    "node scripts/edition-authoring/cli.mjs check": "passed",
+    "node src/base/contract-docs.mjs check": "passed",
+    "npx -y @runeditrun/rer build": "passed",
+    "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive": "passed",
+    "pnpm install --frozen-lockfile": "passed",
+    "pnpm typecheck": "passed",
+    "product push": "pushed on attempt 1",
+    "publication scan": {
+      "attempt_log": "publication-scan.log",
+      "status": "The single attempt used a fresh full-history clone of the pushed SHA and exited 127 because the VM lacks the fleet scanner. No COMPLETE report was produced. The exact argument vector and error are in publication-scan.log."
+    }
+  },
+  "head": "cb7779bb1e2556de27fc7e6e21bbdcb0ec1bec11",
+  "lock": {
+    "after": {
+      "patched": 5,
+      "resolved": 5
+    },
+    "before": {
+      "patched": 0,
+      "resolved": 5
+    },
+    "consumers": [
+      "@tanstack/start-plugin-core",
+      "fdir",
+      "tinyglobby",
+      "unplugin",
+      "vite"
+    ],
+    "locked_sha256": {
+      "package.json": "4944b432918f456400a8f191f2bb4efb05636056650290abc306f8e46fbc2160",
+      "patches/picomatch@4.0.7.patch": "35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b",
+      "pnpm-lock.yaml": "a6529f4a5e33cd4acdb8b74444de5bc58cce1f28203c9284e1ab48e9b7bd94e1"
+    },
+    "source_lock_sha256": "9965a800befdc8e9f539543298f6d8211ee4d518f073bc1c049ae2b322444c89"
+  },
+  "node": "22.20.0",
+  "patch_source": "just-every/run-uptime@4e76f8a0841a4224b5c7eaa57419a85b82d0905a",
+  "pnpm": "10.12.4",
+  "repository": "just-every/run-lamp"
+}

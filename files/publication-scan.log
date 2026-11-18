@@ -1,0 +1,4 @@
+head=cb7779bb1e2556de27fc7e6e21bbdcb0ec1bec11 full_history=true commits=1184
+argv: /home/agent/rer-consolidation/.tools/publish-check.sh --repo /home/agent/rer-consolidation/work/gr-lamp-picomatch-1/lamp-publication-clone --ref cb7779bb1e2556de27fc7e6e21bbdcb0ec1bec11 --project just-every/run-lamp --repository https://github.com/just-every/run-lamp --public-base https://github.com/just-every/run-lamp#main --timeout-seconds 4800
+/bin/bash: line 22: /home/agent/rer-consolidation/.tools/publish-check.sh: No such file or directory
+scan_exit=127
