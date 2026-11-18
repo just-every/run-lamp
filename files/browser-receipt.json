@@ -1,0 +1,54 @@
+{
+  "product_head": "70ce322ff4376f5c210ad04010358158ff12577a",
+  "test_exit": 0,
+  "screens": [
+    {
+      "file": "browser/1440-sorry-notice-new-composer.png",
+      "width": 1440,
+      "height": 1558,
+      "sha256": "8abea1872c77e270cdb4b73a9f907eb77da22caf7846f9284193ec57dc3c271a"
+    },
+    {
+      "file": "browser/1440-sorry-notice-settings.png",
+      "width": 1440,
+      "height": 1699,
+      "sha256": "a1a759ff8c730fddb266c4850826b24a1befd00332e28a4af859b5082d7208ce"
+    },
+    {
+      "file": "browser/1440-sorry-update-existing-composer.png",
+      "width": 1440,
+      "height": 2100,
+      "sha256": "9e3186bc17145bb5b4c66b5fd9ece067fc6a92cb5ef960333b94bf20c29801b9"
+    },
+    {
+      "file": "browser/1440-sorry-update-settings.png",
+      "width": 1440,
+      "height": 1699,
+      "sha256": "2f1bdfc34960d2141133e04aab9ce5db7c6a8413f4ac417651e6fcced0cb6d4d"
+    },
+    {
+      "file": "browser/390-sorry-notice-new-composer.png",
+      "width": 390,
+      "height": 2250,
+      "sha256": "924b8fb15bf2b1906ad73f3099f8a6a6a57d0ce9f7958182bd741cc311737edd"
+    },
+    {
+      "file": "browser/390-sorry-notice-settings.png",
+      "width": 390,
+      "height": 1821,
+      "sha256": "82d45d916132c7a0449441b7a599822c7a7ac0f47a975fdd32ebc0e50a0a98de"
+    },
+    {
+      "file": "browser/390-sorry-update-existing-composer.png",
+      "width": 390,
+      "height": 3044,
+      "sha256": "fedf2c8866c847048a66a5e2b336208fac8d5565b79d1b5715ee6d00f3293ee0"
+    },
+    {
+      "file": "browser/390-sorry-update-settings.png",
+      "width": 390,
+      "height": 1821,
+      "sha256": "58d986eef59ca021995c5f1a403538e43c830b409ed6f51222e758b49ee906ef"
+    }
+  ]
+}

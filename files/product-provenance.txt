@@ -1,0 +1,15 @@
+Wed Nov 18 00:21:07 UTC 2026
+MAIN=2490c9fefe5e3bee30d2d1a49441d90a4ebe6ca3
+HEAD=70ce322ff4376f5c210ad04010358158ff12577a
+BRANCH=cloud/sd-lamp-import-sorry-3-c2
+REMOTE=70ce322ff4376f5c210ad04010358158ff12577a	refs/heads/cloud/sd-lamp-import-sorry-3-c2
+AUTHOR=Run Edit Run fleet <fleet@runeditrun.com>
+COMMITTER=Run Edit Run fleet <fleet@runeditrun.com>
+
+CANDIDATE_MERGES=0
+GENERATED_VIEW_COMMITS=0
+SOURCE_LOCK_CHECK=0
+sources.lock.json
+src/core/features/statuspage-import/target-digest.ts
+tests/e2e/helpers/sorry-template-browser-flow.mjs
+tests/e2e/helpers/sorry-template-import-flow.mjs

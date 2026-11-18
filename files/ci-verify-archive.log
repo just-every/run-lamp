@@ -1,0 +1,23 @@
+Wed Nov 18 00:41:39 UTC 2026
+COMMAND=gh run view 44207105019 --repo just-every/run-lamp --job 134475961599 --log-failed
+EXIT=0
+verify	Require every planned command to succeed on this commit	﻿2026-11-18T00:21:41.7868824Z ##[group]Run node scripts/verification/aggregate.mjs
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7869273Z [36;1mnode scripts/verification/aggregate.mjs[0m
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7869606Z [36;1mtest "$SHARDS_RESULT" = success[0m
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7889869Z shell: /usr/bin/bash -e {0}
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7890123Z env:
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7890320Z   SHARDS_RESULT: skipped
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7890718Z   LAMP_VERIFICATION_DIRECTORY: /home/runner/work/_temp/lamp-verification/ci-shards
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:41.7891143Z ##[endgroup]
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0345953Z The shard jobs did not all succeed.
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0347277Z build: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0348080Z ownership: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0348865Z portability: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0349735Z imports: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0350540Z composer: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0351299Z delivery: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0352057Z public: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0352971Z runtime: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0354096Z demo: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0357840Z Verification: 0/9 shards completed successfully for this commit.
+verify	Require every planned command to succeed on this commit	2026-11-18T00:21:44.0457162Z ##[error]Process completed with exit code 1.

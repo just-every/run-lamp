@@ -1,0 +1,34 @@
+Wed Nov 18 00:14:39 UTC 2026
+TAP version 13
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# Subtest: Sorry templates — both collections stay complete in Settings and private composers
+not ok 1 - Sorry templates — both collections stay complete in Settings and private composers
+  ---
+  duration_ms: 118656.399614
+  type: 'test'
+  location: '/home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c2/run-lamp/tests/e2e/publishing-browser.test.mjs:988:1'
+  failureType: 'testCodeFailure'
+  error: 'source refresh cannot replace owner edits'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    Module.sorryTemplateBrowserFlow (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c2/run-lamp/tests/e2e/helpers/sorry-template-browser-flow.mjs:182:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-3-c2/run-lamp/tests/e2e/publishing-browser.test.mjs:989:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 122663.089752
+EXIT=1
+Wed Nov 18 00:16:42 UTC 2026

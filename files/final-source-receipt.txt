@@ -1,0 +1,14 @@
+Wed Nov 18 00:27:30 UTC 2026
+ sources.lock.json                                    |  6 +++---
+ src/core/features/statuspage-import/target-digest.ts | 13 ++++++++-----
+ tests/e2e/helpers/sorry-template-browser-flow.mjs    |  8 +++++++-
+ tests/e2e/helpers/sorry-template-import-flow.mjs     | 14 +++++++++++++-
+ 4 files changed, 31 insertions(+), 10 deletions(-)
+repair-diff-check=passed
+tests/e2e/helpers/sorry-template-browser-flow.mjs:208: new blank line at EOF.
+range-diff-check=reported-inherited-whitespace
+contract-status-section=byte-identical-to-main
+generated-views=byte-identical-to-main
+v22.20.0
+10.12.4
+Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)

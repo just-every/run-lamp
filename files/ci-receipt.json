@@ -1,0 +1,29 @@
+{
+  "recorded_at": "2026-11-18T00:41:46Z",
+  "run_id": 44207105019,
+  "verification": {
+    "conclusion": "failure",
+    "head_sha": "70ce322ff4376f5c210ad04010358158ff12577a",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44207105019",
+    "status": "completed"
+  },
+  "candidate_head": "70ce322ff4376f5c210ad04010358158ff12577a",
+  "verified_product_shards": 0,
+  "planned_product_shards": 9,
+  "test_matrix": "skipped",
+  "root_failure": "ACCEPTANCE.md: generated content differs; run contract-docs write.",
+  "readiness_basis": "generated-view-only exception",
+  "build_archive": {
+    "job_id": 134475801961,
+    "exit": 0,
+    "log": "ci-build-archive.log"
+  },
+  "aggregate_archive": {
+    "job_id": 134475961599,
+    "exit": 0,
+    "log": "ci-verify-archive.log"
+  },
+  "prior_real_failure_run_id": 44197129871,
+  "local_ordered_build_steps_passed": 9,
+  "local_import_shard_passed": true
+}

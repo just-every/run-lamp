@@ -1,0 +1,16 @@
+[
+  {
+    "file": "prior-round-report.md",
+    "sha256": "f6e6c1ac63d4f9bd808a39f919b3a92b916c1d04db3bf8729990b76a863ab76a",
+    "evidence_ref": "refs/heads/evidence/sd-lamp-import-sorry-3",
+    "evidence_head": "11ceffe15f7fc7394d939250d68f3a04f21a553c",
+    "product_head": "8b94d56ba4cd6a2e727a182adac6af6f19b147e3"
+  },
+  {
+    "file": "prior-c1-ci-assertion.log",
+    "sha256": "12d702aef2d3a1798a66f32a3f216f22ce26d15e5fe2153ea57b681e7182ed34",
+    "evidence_ref": "refs/heads/evidence/sd-lamp-import-sorry-3-c1",
+    "evidence_head": "ebdc59b1128ac55743a15405ff226a814de830cf",
+    "product_head": "bb0d352045ccee4a350678dc61bfcdf6e91f6f2b"
+  }
+]

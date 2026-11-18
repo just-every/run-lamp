@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "type": "lamp.sorry.template-synthetic-proof",
+  "synthetic": true,
+  "signed": false,
+  "author": "Run Edit Run fleet",
+  "completedAt": "2026-11-18T00:17:54.171Z",
+  "revision": "3788388b90bc68703d4e4584ce2e171900201a0c",
+  "counts": {
+    "notice": 27,
+    "update": 27,
+    "capturedOriginalFiles": 8,
+    "imported": 54,
+    "unchangedRemovedByUndo": 50,
+    "editedRetainedByUndo": 4
+  },
+  "originalBytesPreserved": true,
+  "metadataPreserved": true,
+  "scopeDoesNotClaimComponents": true,
+  "noPublication": true,
+  "silent": true,
+  "nameConflictsPreserved": true,
+  "oversizedSubjectPreservedAndShortened": true,
+  "missingPageRefused": true,
+  "conflictingWordingRefused": true,
+  "crossPageScopeRefused": true,
+  "repeatUnchanged": true,
+  "editedDependenciesRetained": true
+}

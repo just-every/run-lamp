@@ -1,0 +1,19 @@
+CLAIM MOVE-001 PARTIAL points=1,2,3 tests=tests/e2e/sorry-documented-export.test.mjs#documented Sorry exports account for every field through preview, saved jobs and explicit refusals
+CLAIM MOVE-014 PARTIAL points=1,2,3,4,5,6 tests=tests/e2e/publishing-browser.test.mjs#Sorry templates — both collections stay complete in Settings and private composers; tests/e2e/sorry-documented-export.test.mjs#documented Sorry exports account for every field through preview, saved jobs and explicit refusals
+CLAIM UPDATE-009 PARTIAL points=2 tests=tests/e2e/publishing-browser.test.mjs#Sorry templates — both collections stay complete in Settings and private composers
+CLAIM MOVE-002 PARTIAL points=3 tests=tests/e2e/publishing-browser.test.mjs#Sorry templates — both collections stay complete in Settings and private composers
+CLAIM MOVE-003 PARTIAL points=1 tests=tests/e2e/publishing-browser.test.mjs#Sorry templates — both collections stay complete in Settings and private composers
+CLAIM MOVE-004 PARTIAL points=1,2,3 tests=tests/e2e/publishing-browser.test.mjs#Sorry templates — both collections stay complete in Settings and private composers
+DEFAULT MOVE-001: Owner-only review; complete supplied template chains are mandatory; historic captures may omit entire template collections.
+DEFAULT MOVE-014: Collection scope never invents affected services; lifecycle, audience, service and timing choices remain private operator decisions.
+DEFAULT UPDATE-009: Apply wording privately, preserving current lifecycle, component choices, channel selection and next-update promise.
+DEFAULT MOVE-002: No outbound provider action or customer mail during import, review, private application or undo.
+DEFAULT MOVE-003: Preserve existing names and source ownership; identical repeats add nothing.
+DEFAULT MOVE-004: Preserve native edits and needed dependencies with named undo explanations.
+GAP MOVE-001: No real-export verification claimed; broader clause/door coverage remains independently judged.
+GAP MOVE-014: No real-export verification or independent gate claimed; all fixtures are synthetic and documentation-derived.
+GAP UPDATE-009: This round proves Sorry wording application; the complete clause's other inherited template fields/doors retain their prior judgment.
+GAP MOVE-002: This round proves the template flow's silence, not a new judgment on every inherited source door.
+GAP MOVE-003: Identical Sorry repeats are proved; all cross-source ownership guarantees retain their existing judgment.
+GAP MOVE-004: Both template kinds and their native dependencies are proved; the broader unchanged-record/other-kind obligations retain their existing partial judgment.
+EVIDENCE sd-lamp-import-sorry-3: Actual build, capture, HTTP, browser, regression and CI receipts plus eight screenshots are explicitly selected in the report-only evidence publication.
