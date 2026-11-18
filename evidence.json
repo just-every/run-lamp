@@ -1,10 +1,10 @@
 {
   "files": [
     {
-      "blob": "7bb5d379eb2c566daa09320489eb246c8dd5527f",
-      "bytes": 15175,
+      "blob": "585c73ea39e01612381355d6ee13b1a6887ebd3a",
+      "bytes": 15243,
       "path": "RECEIPTS.json",
-      "sha256": "8c431ecb38fc78807363d7c4df2ccd0b987e31744fe89768b4d2636f10c45a72"
+      "sha256": "d034085991fa58610e24496cfa031d62f5abd9f0c13cfee4e43cbda5bedac21a"
     },
     {
       "blob": "11dc066f43f37b58513c04d8fd5d74887254a075",
@@ -35,6 +35,18 @@
       "bytes": 1368,
       "path": "candidate-browser.json",
       "sha256": "82b0f8ce92774d2bd790d7f7c820b27694c0fc9d1fb7004a4e833c585f4e6089"
+    },
+    {
+      "blob": "5c1aeb8a773f73c320aaf21f074868587ba8f297",
+      "bytes": 127756,
+      "path": "candidate-component-history-1440.png",
+      "sha256": "947866ce4e3cd5d8abb08d6448884995e27e7bf3c25ad8b5974f29a1f3018f4b"
+    },
+    {
+      "blob": "462a15db06d1d191b6d959f4274912d30352da52",
+      "bytes": 70967,
+      "path": "candidate-component-history-390.png",
+      "sha256": "ce0011794f5aa79108cdcdef5fa4f28e4b9857df461b9ea4578b55d255613e7d"
     },
     {
       "blob": "cfa530725660d0b9cca4f3af9006653e136ea77d",

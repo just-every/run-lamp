@@ -1,5 +1,5 @@
 {
-  "recorded_utc": "2026-11-18T05:04:54+00:00",
+  "recorded_utc": "2026-11-18T05:06:00+00:00",
   "repository": "just-every/run-lamp",
   "branch": "cloud/sd-lamp-design-calls-1",
   "base_sha": "ecd9b50c6af3b65bb68b231d942d6a5f51aeb43c",
@@ -63,7 +63,8 @@
     ],
     "baseline": "main-browser.json",
     "candidate": "candidate-browser.json",
-    "local_invitation": "main-invite-{width}.png and candidate-invite-{width}.png"
+    "local_invitation": "main-invite-{width}.png and candidate-invite-{width}.png",
+    "component_history": "candidate-component-history-{width}.png"
   },
   "local_test_runs": {
     "fresh_main_local_invitation": [
