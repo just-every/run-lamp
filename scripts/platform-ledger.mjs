@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-import { ownerMigrationFiles } from "./owner-migrations.mjs";
+import { ownerMigrationFiles, ownerMigrationLedger } from "./owner-migrations.mjs";
 
 // RER Managed installs Lamp through Platform's migration runner, which keeps its
 // own trusted ledger, rer_migrations(name, sha256, applied_at): one row per file
@@ -60,7 +60,7 @@ export async function platformLedgerRows(database) {
 // tables: an unknown table on either side, including any other rer_ name, stops.
 export async function assertNewManagedDestination(database, destinationTables, archiveTables) {
   await assertPlatformLedger(await platformLedgerRows(database));
-  const destination = destinationTables.filter((name) => name !== platformLedger).sort();
+  const destination = destinationTables.filter((name) => name !== platformLedger && name !== ownerMigrationLedger).sort();
   const archived = archiveTables.map((table) => table.name).sort();
   const differ = [...destination.filter((name) => !archived.includes(name)), ...archived.filter((name) => !destination.includes(name))];
   if (differ.length) throw new Error(`The RER Managed destination's tables differ from the archive (${differ.join(", ")}). Restore with the source revision that created this archive into a new installation.`);

@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createServer } from 'node:net';
 import { setupPageSettingsStatement } from '../ops-config.mjs';
+import { ownerMigrationFiles } from '../owner-migrations.mjs';
 
 const require = createRequire(import.meta.url);
 const wrangler = require('wrangler');
@@ -59,6 +60,9 @@ export async function openReceiptInstall() {
     };
     for (const file of (await readdir('migrations/core')).filter(name => name.endsWith('.sql')).sort()) {
       await execute(await readFile(join('migrations/core', file), 'utf8'));
+    }
+    for (const file of await ownerMigrationFiles()) {
+      await execute(await readFile(join('migrations/ext', file), 'utf8'));
     }
     await execute(setupPageSettingsStatement({ pageName: 'Disposable receipt verification', pageTagline: 'Test installation',
       pageAccentColor: '#2563eb', pageTimezone: 'UTC', pageHost: 'localhost', mailFromAddress: 'lamp@localhost.invalid' }));

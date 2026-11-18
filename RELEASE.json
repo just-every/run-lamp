@@ -16,6 +16,10 @@
     {
       "id": "0082_repeated_maintenance_cancellation.sql",
       "buyerSteps": "Back up data and owner source before deployment. After updating the checkout and installing frozen dependencies, rer deploy applies this migration after 0081 before starting the updated Worker. It allows reinstated maintenance to be cancelled again while retaining the unique scheduled, reminder, started and completed notices. Existing maintenance and notice history is preserved. Check cancellation, reinstatement and a second cancellation after updating. No new account or credential is required."
+    },
+    {
+      "id": "0083_owner_migration_ledger_text.sql",
+      "buyerSteps": "Back up the stopped installation and preserve its owner SQL files. Apply the update through normal setup or deployment. Existing owner migration IDs, names and timestamps are preserved, and timestamp text uses the declared TEXT type."
     }
   ],
   "breaking": false,

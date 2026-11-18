@@ -3,6 +3,7 @@ import { readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { applyOwnerMigrations as apply, ownerMigrationFiles as files } from './deployment/owner-migrations.mjs';
 
+export const ownerMigrationLedger = 'lamp_ext_migrations';
 export const ownerMigrationFiles = () => files('migrations/ext');
 
 // The shared owner-migration runner reads a generated single-database TOML. A
@@ -28,6 +29,6 @@ async function tomlFor(configPath) {
 export async function applyOwnerMigrations(configPath, databaseFlags) {
   const config = await tomlFor(configPath);
   try {
-    await apply({ configPath: config.path, databaseFlags, directory: 'migrations/ext', binding: 'DB', ledger: 'lamp_ext_migrations' });
+    await apply({ configPath: config.path, databaseFlags, directory: 'migrations/ext', binding: 'DB', ledger: ownerMigrationLedger });
   } finally { await config.remove(); }
 }
