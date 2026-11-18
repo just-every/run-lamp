@@ -102,6 +102,137 @@ async function pollHistoryRss(j, baseline, updateId, impact, publishedAt) {
   }
   assert.fail(`the history RSS alias did not serve ${expectedGuid} within ten seconds of publication`);
 }
+test('PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary', async () => {
+  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    const generation = Date.parse('2031-02-10T16:00:00.000Z');
+    const horizon = generation + 14 * 24 * 60 * 60 * 1000;
+    const beforeGeneration = generation - 60_000;
+    const setClock = now => j.json('/test/clock', 'PUT', { now }, 204);
+    const rootAt = instant => {
+      const expectedAt = new Date(instant).toISOString();
+      return eventually(async () => {
+        const response = await j.publicResponse('/');
+        return { status: response.status, generatedAt: response.headers.get('x-lamp-snapshot-generated-at'), html: await response.text() };
+      }, response => response.status === 200 && response.generatedAt === expectedAt, 'the root serves the expected publication generation');
+    };
+    const attribute = (node, name) => node?.attrs?.find(attr => attr.name === name)?.value;
+    const links = elements => elements.filter(node => node.tagName === 'a' && attribute(node, 'href')?.startsWith('/maintenance/'));
+    await setClock(beforeGeneration);
+    await j.signIn(undefined, { fresh: true });
+    const componentName = 'Synthetic Lamp maintenance service';
+    const component = await j.component(componentName);
+    const affectedAudience = 'Service customers';
+    const fixture = [
+      { title: 'Search index migration', start: generation - 3_600_000, state: 'In progress', listed: true },
+      { title: 'Message relay rotation', start: generation - 1_800_000, state: 'In progress', listed: true },
+      { title: 'Storage capacity expansion', start: horizon - 1, state: 'Scheduled', listed: true },
+      { title: 'Traffic gateway upgrade', start: horizon, state: 'Scheduled', listed: true },
+      { title: 'Reporting index rebuild', start: horizon + 1, state: 'Scheduled', listed: false },
+    ];
+    const records = [];
+    for (const { title, start, state, listed } of fixture) {
+      const startsAt = new Date(start).toISOString();
+      const endsAt = new Date(start + 7_200_000).toISOString();
+      const customerImpact = `${title} may briefly delay requests.`;
+      const { maintenance: created } = await j.json('/api/app/maintenance', 'POST', {
+        title, startsAt, endsAt, customerImpact, affectedAudience,
+        componentIds: [component.id], autoStart: false, autoComplete: false,
+      }, 201);
+      records.push({ id: created.id, href: `/maintenance/${encodeURIComponent(created.reference)}`, title, startsAt, endsAt, state, listed, customerImpact });
+    }
+    const startWindow = record => j.json(`/api/app/maintenance/${record.id}/start`, 'POST', {});
+    await startWindow(records[0]);
+    const earlier = await rootAt(beforeGeneration);
+    const earlierLinks = links(descendants(parse(earlier.html))).map(link => attribute(link, 'href'));
+    assert.ok(earlierLinks.includes(records[0].href), 'the earlier generation serves real maintenance');
+    for (const scheduled of records.slice(2)) {
+      assert.ok(!earlierLinks.includes(scheduled.href), scheduled.title + ' is outside the earlier horizon');
+    }
+    await setClock(generation);
+    await startWindow(records[1]);
+
+    const saved = (await j.json('/api/app/maintenance')).maintenance;
+    const windowFields = ({ title, startsAt, endsAt, state }) => ({ title, startsAt, endsAt, state });
+    const inventory = rows => rows.map(row => ({ id: row.id, ...windowFields(row), customerImpact: row.customerImpact }))
+      .sort((left, right) => left.id.localeCompare(right.id));
+    assert.deepEqual(inventory(saved), inventory(records), 'native readback contains exactly the five submitted windows');
+
+    const snapshot = await rootAt(generation);
+    const { generatedAt } = snapshot;
+    const nodes = descendants(parse(snapshot.html));
+    const generationLabel = nodes.find(node => attribute(node, 'data-generated-at') !== undefined);
+    assert.equal(attribute(descendants(generationLabel).find(node => node.tagName === 'time'), 'datetime'), generatedAt);
+    const maintenanceArticles = elements => elements.filter(node => node.tagName === 'article' && hasClass(node, 'maintenance'));
+    const windowDetails = article => {
+      const elements = descendants(article);
+      const times = descendants(elements.find(node => hasClass(node, 'maintenance-window')))
+        .filter(node => node.tagName === 'time').map(node => attribute(node, 'datetime'));
+      assert.equal(times.length, 2, 'each entry presents exactly one start and one end');
+      const [startsAt, endsAt] = times;
+      return { startsAt, endsAt, state: nodeText(elements.find(node => hasClass(node, 'lifecycle-pill'))) };
+    };
+    const assertWindowWording = (article, record) => {
+      const elements = descendants(article);
+      const affected = elements.find(node => hasClass(node, 'incident-meta'));
+      assert.equal(nodeText(affected), 'Affects ' + componentName, record.title);
+      const hasImpact = elements.some(node =>
+        node.tagName === 'dt' && nodeText(node) === 'Customer impact' &&
+        node.parentNode.childNodes.some(value => value.tagName === 'dd' && nodeText(value) === record.customerImpact));
+      assert.ok(hasImpact, record.title + ' shows its own published customer impact');
+    };
+    const listed = records.filter(record => record.listed);
+    const byTitle = (left, right) => left.title.localeCompare(right.title);
+    const articles = maintenanceArticles(nodes);
+    assert.deepEqual(articles.map(article => {
+      const entryLinks = links(descendants(article));
+      assert.equal(entryLinks.length, 1, 'each maintenance entry has one native permalink');
+      const [link] = entryLinks;
+      return { title: nodeText(link), href: attribute(link, 'href'), ...windowDetails(article) };
+    }).sort(byTitle), listed.map(record => ({ ...windowFields(record), href: record.href })).sort(byTitle));
+    for (const article of articles) {
+      const [link] = links(descendants(article));
+      assertWindowWording(article, listed.find(record => record.href === attribute(link, 'href')));
+    }
+    assert.deepEqual(links(nodes).map(link => attribute(link, 'href')).sort(), listed.map(record => record.href).sort(),
+      'the complete initial HTML has exactly the four expected maintenance links');
+    const outside = records.find(record => !record.listed);
+    assert.ok(!snapshot.html.includes(outside.title), 'the scheduled window one millisecond outside is absent');
+
+    for (const record of records) {
+      const response = await j.publicResponse(record.href);
+      assert.equal(response.status, 200, record.href);
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generatedAt, record.href);
+      const [article, ...extra] = maintenanceArticles(descendants(parse(await response.text())));
+      assert.ok(article, record.href);
+      assert.equal(extra.length, 0, record.href);
+      const title = nodeText(descendants(article).find(node => node.tagName === 'h1'));
+      assert.deepEqual({ title, ...windowDetails(article) }, windowFields(record), record.href);
+      assertWindowWording(article, record);
+    }
+    console.log(`PROBE PAGE-001 3: anonymous initial HTML generated at ${generatedAt} -> two active windows and starts at fourteen days minus one millisecond and exactly fourteen days; the following millisecond is absent, and all five native permalinks resolve`);
+
+    if (process.env.LAMP_SCREENSHOTS) {
+      const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, headless: true, args: ['--no-sandbox'] });
+      try {
+        await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+        for (const width of [1440, 390]) {
+          const page = await browser.newPage({ javaScriptEnabled: false, viewport: { width, height: 1000 } });
+          await page.goto(j.publicOrigin);
+          await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-maintenance-horizon.png`, fullPage: true });
+          await page.getByRole('link', { name: records[3].title, exact: true }).click();
+          await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-maintenance-permalink.png`, fullPage: true });
+          await page.close();
+        }
+      } finally {
+        await browser.close();
+      }
+    }
+  } finally {
+    await j.close();
+  }
+});
+
 const statedMethod = [
   'Operational counts as 0 downtime minutes',
   'Under maintenance counts as 0 downtime minutes',
