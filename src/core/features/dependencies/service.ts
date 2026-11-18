@@ -32,7 +32,7 @@ export function createDependenciesService(db:D1Database, components:ComponentsSe
     // Recovery never resolves that buyer incident.
     if(row.incidentId && row.state!=="Operational")return;
     const template=await templates.findTemplate(row.templateId);
-    if(!template || template.lifecycle==="Resolved")return;
+    if(!template || template.requiresReview || template.lifecycle==="Resolved")return;
     const selected=await Promise.all(row.dependentComponentIds.map(id=>components.get(id)));
     if(!selected.length || selected.some(component=>!component))return;
     const incident=await incidents.create({title:template.title || `${row.name}: upstream provider issue`,components:selected.map(component=>({componentId:component!.id,state:template.components.find(saved=>saved.componentId===component!.id)?.state??value.state,relationship:"Dependent"})),update:{lifecycle:template.lifecycle,affectedAudience:template.affectedAudience,customerImpact:template.customerImpact,whatStillWorks:template.whatStillWorks,details:template.details,nextUpdateAt:template.nextUpdateOffsetMinutes===null?null:new Date(Date.now()+template.nextUpdateOffsetMinutes*60_000).toISOString()}},row.createdByOperatorId);
@@ -61,7 +61,7 @@ export function createDependenciesService(db:D1Database, components:ComponentsSe
       for(const componentId of input.dependentComponentIds)if(!await components.get(componentId))throw new Error("A dependent component no longer exists.");
       if(input.mode==="draft") {
         const template=input.templateId?await templates.findTemplate(input.templateId):null;
-        if(!input.dependentComponentIds.length||!template||template.lifecycle==="Resolved")throw new Error("Draft mode needs dependent components and a saved upstream-provider template.");
+        if(!input.dependentComponentIds.length||!template||template.requiresReview||template.lifecycle==="Resolved")throw new Error("Draft mode needs dependent components and a saved upstream-provider template.");
       }
       await repository.configure(id,input,actor);await rebuild();return repository.get(id);
     },

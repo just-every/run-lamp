@@ -8,6 +8,7 @@ import { metricSetupJourney } from "./helpers/metric-setup-journey.mjs";
 import { monitorSetupJourney } from "./helpers/monitor-setup-journey.mjs";
 import { anotherToolSetupJourney } from "./helpers/another-tool-setup-journey.mjs";
 import { operationsAlertsFlow } from "./helpers/operations-alerts-flow.mjs";
+import { operationsCredentialsBrowserFlow } from "./helpers/operations-credentials-browser-flow.mjs";
 import { selfServeChatFlow } from "./helpers/self-serve-chat-flow.mjs";
 import { channelDeletionFlow } from "./helpers/channel-deletion-flow.mjs";
 import { channelsBrowserFlow } from "./helpers/channels-browser-flow.mjs";
@@ -491,6 +492,7 @@ test("AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008
   await automationRulesBrowserFlow({ origin, publicOrigin, cookie, component, api, post });
   await pagerDutyFlow({ runtime, t });
   await operationsAlertsFlow({ t });
+  await operationsCredentialsBrowserFlow({ t });
   await automationRulesFlow({ t });
   await automationFlapFlow({ t });
   await metricsFlow({ t });

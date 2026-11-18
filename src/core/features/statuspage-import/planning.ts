@@ -112,7 +112,7 @@ export interface MoveInReport { limits:string[]; state: string; asOf: string; fi
 export function reportFromPlan(plan: ImportPlan, state = "dry run"): MoveInReport {
   plan = moveInPlan(plan);
   const items = plan.entries.flatMap((entry) => entry.erased ? [] : ((entry.source.payload as { accounting?: Accounting[] }).accounting ?? []));
-  const kinds = Object.keys(entityTables).filter(kind => kind !== "template" || plan.namespace === "statuspage" || items.some(item => item.kind === kind));
+  const kinds = Object.keys(entityTables).filter(kind => !["template", "update-template"].includes(kind) || kind === "template" && plan.namespace === "statuspage" || items.some(item => item.kind === kind));
   if (plan.namespace === "statuspage" || items.some(item => item.kind === "postmortem")) kinds.push("postmortem");
   const counts = Object.fromEntries((kinds as CountKind[]).map((kind) => [kind, { read: 0, imported: 0, changed: 0, skipped: 0, rejected: 0, "kept-private": 0 }])) as Counts;
   for (const item of items) { counts[item.kind as CountKind].read += 1; counts[item.kind as CountKind][item.outcome] += 1; }

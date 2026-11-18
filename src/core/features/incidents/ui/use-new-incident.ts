@@ -84,17 +84,20 @@ export function useNewIncident() {
 
   // UPDATE-009: a template fills the form and attaches its components with their states; nothing publishes.
   const applyTemplate = (template: IncidentTemplate) => {
+    if (template.title.length > 250 || template.fieldsToShorten.length) return "Shorten this template in Settings before applying.";
+    const wordingOnly = template.kind === "notice" || template.kind === "update";
     const claims = template.components.flatMap(component => component.componentId && (INCIDENT_CLAIM_STATES as readonly string[]).includes(component.state) ? [{ componentId: component.componentId, state: component.state as IncidentClaimState, relationship: component.relationship }] : []);
-    if (template.lifecycle === "Resolved") setTimeErrors(current => ({ ...current, nextUpdate: null }));
+    if (!wordingOnly && template.lifecycle === "Resolved") setTimeErrors(current => ({ ...current, nextUpdate: null }));
     if (template.shouldSendNotifications !== null) touchedChannels.current = true;
     setForm(current => ({
       ...current,
       title: current.title.trim() || template.title,
       claims: [...current.claims.filter(claim => !claims.some(next => next.componentId === claim.componentId)), ...claims],
-      update: { lifecycle: template.lifecycle, affectedAudience: template.affectedAudience, customerImpact: template.customerImpact, whatStillWorks: template.whatStillWorks, details: template.details, nextUpdateAt: template.lifecycle === "Resolved" || template.nextUpdateOffsetMinutes === null ? null : new Date(Date.now() + template.nextUpdateOffsetMinutes * 60_000).toISOString() },
+      update: { lifecycle: wordingOnly ? current.update.lifecycle : template.lifecycle, affectedAudience: wordingOnly && !template.affectedAudience ? current.update.affectedAudience : template.affectedAudience, customerImpact: template.customerImpact, whatStillWorks: template.whatStillWorks, details: template.details, nextUpdateAt: wordingOnly ? current.update.nextUpdateAt : template.lifecycle === "Resolved" || template.nextUpdateOffsetMinutes === null ? null : new Date(Date.now() + template.nextUpdateOffsetMinutes * 60_000).toISOString() },
       channels: template.shouldSendNotifications === null ? current.channels : template.shouldSendNotifications ? ["email", "webhook", ...(hasChat ? ["chat" as const] : []), ...(current.channels.includes("social") ? ["social" as const] : [])] : [],
     }));
     const skipped = template.components.filter(component => !claims.some(claim => claim.componentId === component.componentId)).map(component => component.componentName);
+    if (wordingOnly) return "Template filled the private draft. Choose status and affected services before publishing.";
     return skipped.length ? `Template applied. Not attached: ${skipped.join(", ")}.` : template.nextUpdateOffsetMinutes === null && template.lifecycle !== "Resolved" ? "Template applied. Choose the next update time." : "Template applied.";
   };
 
