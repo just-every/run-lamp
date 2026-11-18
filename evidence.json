@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "cb175848c227bf531cbecc5de2deb8ee7b419c67",
+      "bytes": 474390,
+      "path": "1440-wording-findings.png",
+      "sha256": "ad96a923a51c8bb1628f4d81c9e52d2b41441b606c44a287b1708fe7e9df3327"
+    },
+    {
+      "blob": "42a3ee8b90d93ff8b1fa25e001d3bd5829f18f1c",
+      "bytes": 321334,
+      "path": "1440-wording-publication.png",
+      "sha256": "ff0f0e47bd4a0e821f854e82d57a290cadc70b90d183523de6494cad07e3ab3b"
+    },
+    {
+      "blob": "1a7b4beb970073ae08a0898f5324ceda0d717abb",
+      "bytes": 124330,
+      "path": "1440-wording-settings.png",
+      "sha256": "af5781ce9dc1f170e69ee6b3a42be68665355784215296c2da4ab469b74ef716"
+    },
+    {
+      "blob": "bdb5adf8d209c4b0b5720e1f74e316457d2e2768",
+      "bytes": 390974,
+      "path": "390-wording-findings.png",
+      "sha256": "abce51f401c6fbbf8529062a9de4640d91d1b8e4cae89b15764ec2df12e758d3"
+    },
+    {
+      "blob": "4bea89486bcbde40d97b27b038085529b2a0dcf5",
+      "bytes": 181939,
+      "path": "390-wording-publication.png",
+      "sha256": "f26b4ab03ef7c921e0053e10eb6b07e3eb8c0892e7d843f97328968bd8b4717a"
+    },
+    {
+      "blob": "f43a797f470330086aa0efec548a625f3773e5aa",
+      "bytes": 82982,
+      "path": "390-wording-settings.png",
+      "sha256": "aefb3801ee0a80b2990a8cac4ed448fcb2ee8acd58f2255c9780f57be0684e9e"
+    },
+    {
+      "blob": "85b9799e45f5aea139dd55b85bafddf716b966cb",
+      "bytes": 3846,
+      "path": "RECEIPT.md",
+      "sha256": "07fafcc5bf42c8e326380eca197fc6d780aa59a473a3762a68fef7399571e62f"
+    },
+    {
+      "blob": "4540a68b71b24d6e8cb0957014cce0ea995bcd56",
+      "bytes": 8186,
+      "path": "REPORT.md",
+      "sha256": "07922638c66786e50dd6113b7bfaa95dd5d4750ec801c665cc48220fe30d2b7c"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f135",
+  "product_head": "ab2220b826a95332655ed162450d592c917d4963",
+  "ref": "refs/heads/evidence/sd-lamp-c-f135",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f135"
+}
