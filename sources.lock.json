@@ -1103,6 +1103,10 @@
       "sha256": "2137e9abaf24b2d16de1c97367bcc85eaf0005cf333e698b5aa71ce6f86c6037",
       "executable": false
     },
+    "migrations/core/0086_owner_migration_ledger_text.sql": {
+      "sha256": "feff6690604c11951f73433fd25b7a8ac2137666c4e38b54a10ef8303806cec3",
+      "executable": false
+    },
     "migrations/README.md": {
       "sha256": "8aa6d22bcfab1ec1d279f128961286b0654cbc3f7c327da1aeb535793dd874e9",
       "executable": false
@@ -7944,7 +7948,7 @@
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {
-      "sha256": "91e607858b740567ec5313e291196c850e93cccb352af9fc43ac97f54e29493b",
+      "sha256": "44e389617814c341439e9cde472382d3ee03c80e9b76688f04885afe4d52f88a",
       "executable": false
     },
     "tests/auth-adoption/role-portability.mjs": {
