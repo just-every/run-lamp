@@ -155,8 +155,9 @@ function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
   // take the shared heading only beside named groups; a page without groups
   // lists its components with no invented heading.
   const named = components.some((component) => component.groupName !== null);
-  const charts = model.componentGroups.length ? recursiveComponentGroups(components, model.componentGroups, members => members.map(component => componentMarkup(component, settings.timezone, generatedAt)).join(""), model.theme.groupsCollapsed) : groupComponentsByHeading(components).map(([heading, values]) => {
-    const rows = values.map((component) => componentMarkup(component, settings.timezone, generatedAt)).join("");
+  const rowsFor = (members: typeof components) => members.map(component => componentMarkup(component, settings.timezone, generatedAt)).join("");
+  const charts = model.componentGroups.length ? recursiveComponentGroups(components, model.componentGroups, rowsFor, model.theme.groupsCollapsed, "component-group") : groupComponentsByHeading(components).map(([heading, values]) => {
+    const rows = rowsFor(values);
     return !named
       ? `<div class="component-group">${rows}</div>`
       : model.theme.groupsCollapsed ? `<details class="component-group"><summary>${escapeHtml(heading)}</summary>${rows}</details>` : `<section class="component-group"><h3>${escapeHtml(heading)}</h3>${rows}</section>`;

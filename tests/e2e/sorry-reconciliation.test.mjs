@@ -106,7 +106,14 @@ test('MOVE-001 Move in explains how Sorry component rows arrive as components an
     const fullDescription = 'Nested source description. '.repeat(30);
     const sourceEditedAt = '2025-04-03T08:15:00.000Z';
     const nestedRows = rows.map(item => item.id === 11 ? { ...item, name: fullName, description: fullDescription, state: 'partially-degraded', updated_at: sourceEditedAt } : item);
-    const nestedFiles = withComponents(nestedRows, [row(90, 'Billing detail', 11)]);
+    const nestedFiles = withComponents(nestedRows, [row(90, 'Billing detail', 11)]).map(file => {
+      if (!['sorry-notices.json', 'sorry-notice-100.json'].includes(file.name)) return file;
+      const data = JSON.parse(file.text);
+      const affected = { components: [{ id: 10 }, { id: 11 }] };
+      if (data.notices) data.notices = data.notices.map(notice => notice.id === 100 ? { ...notice, ...affected } : notice);
+      else data.notice = { ...data.notice, ...affected };
+      return { ...file, text: JSON.stringify(data) };
+    });
     const nested = await moveIn.preview({ ...source, files: nestedFiles });
     assert.equal(nested.status, 200, JSON.stringify(nested.body));
     assert.equal(nested.body.counts.unmapped, 0, 'recursive parents are retained instead of flattened or dropped');
@@ -120,6 +127,15 @@ test('MOVE-001 Move in explains how Sorry component rows arrive as components an
     const leaf = catalogue.components.find(component => component.sourceMetadata?.id === '90');
     assert.equal(child.parentId, parent.id);
     assert.equal(leaf.groupId, child.id);
+    const nestedIncident = (await owner('/api/app/incidents')).body.incidents.find(item => item.title === 'Delayed invoice processing');
+    const nestedDetail = (await owner(`/api/app/incidents/${nestedIncident.id}`)).body.incident;
+    assert.deepEqual(nestedDetail.components.map(item => item.componentName), ['Billing detail'], 'a listed parent beside its nested subgroup is context, not evidence that unrelated sibling leaves were affected');
+    const publicNested = await eventually(async () => {
+      const response = await runtime.raw(runtime.publicOrigin + '/api/public/v1/incidents');
+      return response.status === 200 ? (await response.json()).data.find(item => item.id === nestedIncident.id) : null;
+    }, value => value?.components?.includes('Billing detail'), 'nested affected scope reaches the public snapshot');
+    assert.deepEqual(publicNested.components, ['Billing detail'], 'public readers see exactly the selected nested leaves');
+
     assert.equal(child.sourceMetadata.name, fullName);
     assert.equal(child.sourceMetadata.description, fullDescription);
     assert.deepEqual(child.sourceMetadata.ancestorIds, ['10']);
