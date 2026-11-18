@@ -4780,11 +4780,11 @@
       "executable": false
     },
     "src/core/features/components/ui/catalogue-tables.tsx": {
-      "sha256": "b827f98901745fdebe90b57eaaa785acd6b8f2aa525babf068fd0a274395da37",
+      "sha256": "f5ab0e3c0c5a9c765ee62a4587673fabdf1cf92da9aa634416bd65e3e9fecbf5",
       "executable": false
     },
     "src/core/features/components/ui/component-details.tsx": {
-      "sha256": "c07e81d273a5b95d51b0bc923fc7d61e947d32d1331138ced3b7a65d0a4b090f",
+      "sha256": "b24d87d5149aa76a3f2eafd34e01e1e14e540d9cfbe41f208afa72f46ae8944c",
       "executable": false
     },
     "src/core/features/components/ui/component-drawer.tsx": {
@@ -5380,7 +5380,7 @@
       "executable": false
     },
     "src/core/features/maintenance/ui/maintenance-page.tsx": {
-      "sha256": "3256376c56329c50808b0f0279f9e5fa7151c3d91f60145e392050829a37afb0",
+      "sha256": "1aaf9b3305cd5ab5a9d9e95a54d1a6bb1cb8b8cae598bace8c39eed1a2963c3c",
       "executable": false
     },
     "src/core/features/maintenance/ui/window-time.ts": {
@@ -5732,7 +5732,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/public-resources.tsx": {
-      "sha256": "21b4a422b394e3279b9784270d5fcb7377c0bfc84feab87ca802047fdecfbba1",
+      "sha256": "24901197e763faa8568468cc20d1fb9e54437ab655eb36c8ac6da615062b590d",
       "executable": false
     },
     "src/core/features/page-settings/ui/reports-settings-tab.tsx": {
