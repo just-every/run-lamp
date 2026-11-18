@@ -1,0 +1,249 @@
+{
+  "branch": "cloud/sd-lamp-c-f137",
+  "browser": {
+    "assetPath": "dist/server/app-assets/app.subscribers-BZTRgb-o.js",
+    "candidateAssetSha256": "242332d634fecef2a667fca78067bdbfdf1037c1ff0b82f748d558c022a71544",
+    "mainAssetSha256": "242332d634fecef2a667fca78067bdbfdf1037c1ff0b82f748d558c022a71544",
+    "screens": [
+      {
+        "candidateFile": "candidate-1440-deliveries.png",
+        "candidateSha256": "e2273d108ea7442ae980ee29260bcea0f15e9abc4b918f15d0a1c152d4475996",
+        "changedPixelBounds": [
+          594,
+          334,
+          1330,
+          848
+        ],
+        "changedRowRanges": [
+          [
+            334,
+            342
+          ],
+          [
+            395,
+            435
+          ],
+          [
+            440,
+            448
+          ],
+          [
+            691,
+            701
+          ],
+          [
+            764,
+            774
+          ],
+          [
+            837,
+            847
+          ]
+        ],
+        "height": 1000,
+        "mainFile": "main-1440-deliveries.png",
+        "mainSha256": "33637a9015f5b543f06bcc330ea314a80c405bcce165fd80623cdbed44c32984",
+        "width": 1440
+      },
+      {
+        "candidateFile": "candidate-390-deliveries.png",
+        "candidateSha256": "a55f5f0078f4104b843cca62f7bf82a830e7e5386166b6ecc5b99d6a3c39fe33",
+        "changedPixelBounds": [
+          150,
+          794,
+          345,
+          1712
+        ],
+        "changedRowRanges": [
+          [
+            794,
+            802
+          ],
+          [
+            825,
+            835
+          ],
+          [
+            859,
+            869
+          ],
+          [
+            1294,
+            1304
+          ],
+          [
+            1498,
+            1508
+          ],
+          [
+            1701,
+            1711
+          ]
+        ],
+        "height": 1770,
+        "mainFile": "main-390-deliveries.png",
+        "mainSha256": "a8ea97f321288aa63e4199a3dcc2bb0eaad8c93c91ed9c7fd0389294ece937be",
+        "width": 390
+      }
+    ]
+  },
+  "candidateRunSite": {
+    "id": null,
+    "status": "pending landing"
+  },
+  "doneRiders": {
+    "1": [
+      "PASS",
+      "All four native outcomes in the registered failure and browser journeys. See the acceptance rows and exact-head Verify."
+    ],
+    "2": [
+      "PASS",
+      "103 independently expected recipients, nonempty disjoint filters, and refused unauthenticated reads. See delivery-log-flow.mjs:193."
+    ],
+    "3": [
+      "PASS",
+      "Push Verify 44247579944 at the candidate SHA. The public shard invokes test:delivery from scripts/verification/plan.mjs:10."
+    ],
+    "4": [
+      "PASS",
+      "Candidate build, seven passing delivery registrations, and 1440px and 390px screenshots bound to this candidate."
+    ],
+    "5": [
+      "PASS",
+      "The receiving clause cites BASE-MAIL-001 and separates a queued accepted submission from receipt outcomes. See CONTRACT.md:149 and :815."
+    ],
+    "6": [
+      "PASS, LANDER STATUS UPDATE PENDING",
+      "Contract generator write and check passed. The lander records the claim, new provenance, and cleared gap."
+    ],
+    "7": [
+      "PASS",
+      "The candidate has no acceptance, Status, Gap or Evidence delta."
+    ],
+    "8": [
+      "PASS",
+      "Anonymous reads receive HTTP 401. The invalid complaint preserves the delivery. Erasure revokes the prior link, and replay leaves the address absent from log and CSV. See subscriber-failures-flow.mjs:171 and :287."
+    ],
+    "9": [
+      "PASS",
+      "Synthetic Resend, Twilio, and webhook edge only. Provider and hosted dependencies stay with their own clauses."
+    ],
+    "10": [
+      "PASS",
+      "The test exercises existing consent, privacy and authority semantics."
+    ],
+    "11": [
+      "PENDING GUARDED LANDING",
+      "The branch head matches the candidate. Main equality, exact-main Run site, and full-history publication scanning are lander gates."
+    ]
+  },
+  "exactHeadVerify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "edfa0888d8aaddc36bfb6bfa376e34006ce4cccc",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44247579944",
+    "id": 44247579944,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "generatedAt": "2026-11-18T06:16:39.486974+00:00",
+  "inventory": {
+    "csvScopes": 14,
+    "distinctDestinations": 103,
+    "pageSize": 100
+  },
+  "localChecks": {
+    "git diff --check": {
+      "exit": 0
+    },
+    "node scripts/edition-authoring/cli.mjs check": {
+      "exit": 0
+    },
+    "node scripts/edition-authoring/cli.mjs lock": {
+      "exit": 0
+    },
+    "node src/base/contract-docs.mjs check": {
+      "exit": 0
+    },
+    "node src/base/contract-docs.mjs write": {
+      "exit": 0,
+      "filesWritten": 0
+    },
+    "npx -y @runeditrun/rer build": {
+      "exit": 0
+    },
+    "pnpm exec rer check --profile first-party": {
+      "exit": 0
+    },
+    "pnpm run test:delivery": {
+      "exit": 0,
+      "failed": 0,
+      "passed": 7,
+      "receipt": "DELIVERY-TEST.txt",
+      "tests": 7
+    },
+    "pnpm run typecheck": {
+      "exit": 0
+    }
+  },
+  "mainBaselineRuns": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44244896491",
+      "id": 44244896491,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44243288507",
+      "id": 44243288507,
+      "name": "Verify",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44242051847",
+      "id": 44242051847,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44242052319",
+      "id": 44242052319,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44239330282",
+      "id": 44239330282,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "mainEqualsProductHead": false,
+  "mainHead": "177378a989a7496a2e3dc00ac9a43947efd7c031",
+  "productHead": "edfa0888d8aaddc36bfb6bfa376e34006ce4cccc",
+  "publicationScan": {
+    "commit": "edfa0888d8aaddc36bfb6bfa376e34006ce4cccc",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "Mac lander pending"
+  },
+  "remoteHead": "edfa0888d8aaddc36bfb6bfa376e34006ce4cccc",
+  "repository": "just-every/run-lamp",
+  "tag": "sd-lamp-c-f137"
+}

@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "660cabd9c12e6c6d0c6142330b0bbac5a65c7d5f",
+      "bytes": 7106,
+      "path": "DELIVERY-TEST.txt",
+      "sha256": "13a1e242da52ee805c2d6e585cbcb3a045a1375c1e569500fbb4a9c5895575ad"
+    },
+    {
+      "blob": "2910db12eeec97547819b0674caa044a501616f1",
+      "bytes": 7061,
+      "path": "RECEIPT.json",
+      "sha256": "b58b581436e59eed6d77432981de1b1ec40d8f33b1ced88a9e94c2400811ccab"
+    },
+    {
+      "blob": "018899ac0d25caf712e486bfdde62653122f3ba3",
+      "bytes": 10278,
+      "path": "REPORT.md",
+      "sha256": "c1aaefef01a3558077365b90f54a6b02d74b95f6688fc33f38bf6ae4d9f3873f"
+    },
+    {
+      "blob": "6cc1d720da1ce94eb371605edb76774822e805e2",
+      "bytes": 145203,
+      "path": "candidate-1440-deliveries.png",
+      "sha256": "e2273d108ea7442ae980ee29260bcea0f15e9abc4b918f15d0a1c152d4475996"
+    },
+    {
+      "blob": "3c6718af303bfd2dd6c6caa8d763d0c76693ee84",
+      "bytes": 124660,
+      "path": "candidate-390-deliveries.png",
+      "sha256": "a55f5f0078f4104b843cca62f7bf82a830e7e5386166b6ecc5b99d6a3c39fe33"
+    },
+    {
+      "blob": "36b674f4ce0679baac19d792c71e6994fd088e98",
+      "bytes": 144802,
+      "path": "main-1440-deliveries.png",
+      "sha256": "33637a9015f5b543f06bcc330ea314a80c405bcce165fd80623cdbed44c32984"
+    },
+    {
+      "blob": "ed8a3667bc1dfba43b751536a3087dd91aaaed11",
+      "bytes": 124813,
+      "path": "main-390-deliveries.png",
+      "sha256": "a8ea97f321288aa63e4199a3dcc2bb0eaad8c93c91ed9c7fd0389294ece937be"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f137",
+  "product_head": "edfa0888d8aaddc36bfb6bfa376e34006ce4cccc",
+  "ref": "refs/heads/evidence/sd-lamp-c-f137",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f137"
+}
