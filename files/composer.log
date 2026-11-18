@@ -1,0 +1,73 @@
+2026-11-18T08:28:16Z
+head=9b5ba66360536dabf23be730e4eddc3e15371e65
+v24.19.0
+10.12.4
+Google Chrome for Testing 153.0.8010.12
+pnpm run test:composer 
+ WARN  Unsupported engine: wanted: {"node":"22.20.0"} (current: {"node":"v24.19.0","pnpm":"10.12.4"})
+
+> lamp@1.11.22 test:composer /home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c5/run-lamp
+> node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs tests/e2e/maintenance-timezone.test.mjs tests/e2e/unsaved-work-browser.test.mjs
+
+✔ MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard (109597.948531ms)
+ℹ PAGE-020 1440px public status page: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px public history: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px public incident permalink: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px VPAT document: full-page axe and no horizontal overflow passed
+ℹ PAGE-020 1440px: full-page status, history, incident, maintenance, VPAT, subscribe result, confirmation, management and saved selection axe passed; keyboard-only subscribe/manage with visible focus and ordered controls passed
+✔ SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications (39859.898073ms)
+✔ TEAM-002 — Local operator invitations disclose suppressed email (5864.683578ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys (128790.851448ms)
+✔ TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities (45560.943432ms)
+ℹ PROBE INCIDENT-014 Slack Settings 1440: Create link code -> signed /api/chat/slack 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+ℹ PROBE INCIDENT-014 Teams Settings 1440: Create link code -> signed /api/chat/teams 200; Refresh and reload retain the exact operator binding; same/new-actor replay 409 with unchanged native identities
+ℹ PROBE INCIDENT-014 removal 1440: both Settings Remove chat link controls -> 204, native list and storage empty after reload; axe, overflow and hydration pass
+✔ INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey (165158.457795ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+ℹ PROBE DRAFT-001 1 and 2: composer Suggest update with mixed nonempty, empty and uncited fields -> suggested wording, preserved impact and visible assistant authorship
+ℹ PROBE DRAFT-001 3: source links beside all four fields -> exact C1 and C2 components and expanded U1 published update in the Brief row
+ℹ PROBE DRAFT-001 1 and 4: edit all four suggested fields, then request all-empty results -> exact operator text survives save and reload; lifecycle and commitment unchanged
+ℹ PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request
+ℹ {"phase":"acknowledged","finalEdit":1794990916172,"refreshDelivered":1794990916238,"refreshReceived":1794990916244,"putDispatched":1794990916712,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794990916760,"putStatus":200,"finalEditPerformance":2730.100000000093,"nativeAcknowledged":1794990916759,"nativeAcknowledgedPerformance":3317.600000000093,"saved":1794990916780,"savedPerformance":3338.3000000000466,"elapsedToSaved":608,"deadlinePassed":true}
+ℹ {"finalEdit":1794990916172,"refreshDelivered":1794990916238,"refreshReceived":1794990916244,"putDispatched":1794990916712,"putBytes":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]},"putAcknowledged":1794990916760,"putStatus":200,"finalEditPerformance":2730.100000000093,"nativeAcknowledged":1794990916759,"nativeAcknowledgedPerformance":3317.600000000093,"saved":1794990916780,"savedPerformance":3338.3000000000466,"storedDraft":{"id":"01M7PWQH2SMVBJ3ZXKKXRZNMZT","incidentId":"01M7PWQDTCK6562VD6SKV8A281","lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","authorOperatorId":"01J00000000000000000000001","createdAt":"2026-11-18T08:35:13.356Z","updatedAt":"2026-11-18T08:35:16.753Z","scheduledPublishAt":null,"scheduledChannelsJson":null,"reviewedByOperatorId":null,"reviewedAt":null,"correctsUpdateId":null,"componentChangesJson":"[]","agentPreparationJson":null,"agentPreparation":null,"componentChanges":[],"scheduledChannels":[]},"reloadedDraft":{"lifecycle":"Investigating","affectedAudience":"Latest audience while the private note refresh is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T07:00"},"elapsedToSaved":608,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-20,"browserAckBeforeSavedMs":20.699999999953434}
+ℹ {"earlierPersisted":1794990925514,"finalEdit":1794990925588,"earlierAcknowledged":1794990926640,"latestAcknowledged":1794990926751,"finalEditPerformance":4497.90000000014,"nativeAcknowledged":1794990926747,"nativeAcknowledgedPerformance":5656.600000000093,"saved":1794990926777,"savedPerformance":5686.800000000047,"writes":[{"at":1794990925428,"body":{"lifecycle":"Investigating","affectedAudience":"Earlier audience awaiting its native acknowledgement","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}},{"at":1794990926672,"body":{"lifecycle":"Investigating","affectedAudience":"Latest audience edited while the earlier save is pending","customerImpact":"Service delays","whatStillWorks":"Other services","details":"Private draft","nextUpdateAt":"2027-09-08T14:00:00.000Z","componentChanges":[]}}],"elapsedToSaved":1189,"deadlinePassed":true}
+ℹ {"phase":"acknowledgement-observers","nodeEventAfterSavedMs":-26,"browserAckBeforeSavedMs":30.199999999953434}
+Phone desk: 390 sign-in
+Phone desk: 390 alerts
+Phone desk: 390 composer
+Phone desk: 390 preview
+Phone desk: 390 resolve
+Phone desk: 390 resolved
+Phone desk: 390 claim
+Phone desk: 390 components
+Phone desk: 390 schedule
+Phone desk: 390 scheduled
+✔ INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke (37700.271759ms)
+✔ THEME-001 — owner publishes branded themes and layouts within the page budget (132117.043078ms)
+ℹ THEME-001 — owner settings reach the retained page; unsafe CSS and HTML never execute
+ℹ default: 200 public components with the saved palette, uploaded font, banner and links: 34633 bytes gzipped, 4 own-origin requests
+ℹ calm: 200 public components with the saved palette, uploaded font, banner and links: 31902 bytes gzipped, 4 own-origin requests
+ℹ uptime: 200 public components with the saved palette, uploaded font, banner and links: 42394 bytes gzipped, 4 own-origin requests
+ℹ regions: 200 public components with the saved palette, uploaded font, banner and links: 37878 bytes gzipped, 4 own-origin requests
+✔ DEP-001 DEP-002 — owner configures upstream reports under Settings (45589.590586ms)
+✔ Owner incident communication — manual resolution, customer email and timeline correction (42944.853619ms)
+✔ Sorry templates — both collections stay complete in Settings and private composers (70375.697959ms)
+✔ A refused Impact save keeps the chosen value for Retry, and an unsaved SMS delivery draft asks before a pane switch drops it (78452.985214ms)
+✔ An invalid accent colour preserves the saved colour and recovers through typing or the picker (7001.098783ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 916905.537077
+
+exit=0
+2026-11-18T08:43:34Z

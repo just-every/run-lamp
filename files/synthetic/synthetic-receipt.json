@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "type": "lamp.sorry.synthetic-proof",
+  "synthetic": true,
+  "signed": false,
+  "sourceClassification": "documentation-derived generated fixtures; not a real export",
+  "author": "Run Edit Run fleet",
+  "completedAt": "2026-11-18T08:32:08.511Z",
+  "revision": "9b5ba66360536dabf23be730e4eddc3e15371e65",
+  "generatorReproducible": true,
+  "results": [
+    {
+      "mode": "public",
+      "sourceRows": {
+        "components": 56,
+        "notices": 53,
+        "updates": 106,
+        "subscribers": 0
+      },
+      "nativeCounts": {
+        "group": 4,
+        "component": 52,
+        "incident": 43,
+        "maintenance": 10,
+        "updates": 106
+      },
+      "subscriberCount": 0,
+      "ledgerCount": 3680,
+      "outcomes": {
+        "mapped": 826,
+        "changed": 1361,
+        "raw-only": 1493,
+        "deleted": 0,
+        "refused": 0
+      },
+      "unexplainedDifferences": 0,
+      "expectedResourceGaps": [
+        "sorry-brand.json",
+        "sorry-component-1004-metrics.json",
+        "sorry-custom-domain.json"
+      ],
+      "previewUnchanged": true,
+      "hostileRefusalUnchanged": true,
+      "repeatUnchanged": true,
+      "undoRestoredExceptReservedReferences": true,
+      "silent": true
+    }
+  ],
+  "initialInventoryCounts": {
+    "component_groups": 0,
+    "components": 0,
+    "component_standing_claims": 0,
+    "component_claim_events": 0,
+    "component_state_history": 0,
+    "incidents": 0,
+    "incident_components": 0,
+    "incident_updates": 0,
+    "incident_drafts": 0,
+    "incident_attachments": 0,
+    "incident_reports": 0,
+    "maintenance": 0,
+    "maintenance_components": 0,
+    "maintenance_notices": 0,
+    "import_maintenance_updates": 0,
+    "subscribers": 0,
+    "subscriber_components": 0,
+    "incident_subscriptions": 0,
+    "incident_templates": 0,
+    "incident_template_components": 0,
+    "statuspage_import_targets": 0,
+    "statuspage_import_template_targets": 0,
+    "statuspage_import_update_template_targets": 0,
+    "reference_allocations": 0,
+    "reference_counters": 2
+  }
+}

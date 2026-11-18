@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "tag": "sd-lamp-import-sorry-2-c5",
+  "repository": "just-every/run-lamp",
+  "productBranch": "cloud/sd-lamp-import-sorry-2-c5",
+  "productHead": "9b5ba66360536dabf23be730e4eddc3e15371e65",
+  "base": "71ab9b43f5069cd612bf998d3a2bf8a32691393b",
+  "carriedHead": "94589132c192c811a6629ff7f2bf32638959d8e8",
+  "candidateCommits": [
+    "cfa3a055e8cf3ce874b144c02fb95109c2910fb5",
+    "9b5ba66360536dabf23be730e4eddc3e15371e65"
+  ],
+  "mergeCommits": [],
+  "verifiedRemoteBranch": true,
+  "status": "READY",
+  "builtAt": "2026-11-18T08:28:09Z",
+  "buildSteps": [
+    {
+      "command": "check:contract-docs",
+      "passedAt": "2026-11-18T08:26:52Z"
+    },
+    {
+      "command": "source:copies",
+      "passedAt": "2026-11-18T08:26:53Z"
+    },
+    {
+      "command": "source:check",
+      "passedAt": "2026-11-18T08:26:54Z"
+    },
+    {
+      "command": "typecheck",
+      "passedAt": "2026-11-18T08:27:14Z"
+    },
+    {
+      "command": "check:syntax",
+      "passedAt": "2026-11-18T08:27:50Z"
+    },
+    {
+      "command": "validate:release",
+      "passedAt": "2026-11-18T08:27:51Z"
+    },
+    {
+      "command": "verify:visual:source",
+      "passedAt": "2026-11-18T08:27:52Z"
+    },
+    {
+      "command": "build:app",
+      "passedAt": "2026-11-18T08:28:01Z"
+    },
+    {
+      "command": "build:site",
+      "passedAt": "2026-11-18T08:28:09Z"
+    }
+  ],
+  "localSuites": {
+    "composer": {
+      "tests": 13,
+      "pass": 13,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 916905.537077,
+      "exit": 0,
+      "theme001": true
+    },
+    "public": {
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 708521.860488,
+      "exit": 0
+    },
+    "cutover": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 222433.832987,
+      "exit": 0
+    },
+    "sorry": {
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 268598.120854,
+      "exit": 0
+    },
+    "page-data": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "duration_ms": 40868.596523,
+      "exit": 0
+    }
+  },
+  "localRuntime": {
+    "shard": "runtime",
+    "commit": null,
+    "runId": null,
+    "runAttempt": 0,
+    "success": true,
+    "steps": [
+      {
+        "script": "test:runtime",
+        "exitCode": 0,
+        "durationMs": 87840
+      },
+      {
+        "script": "test:publishing",
+        "exitCode": 0,
+        "durationMs": 314277
+      }
+    ],
+    "commandExit": 0,
+    "revision": "9b5ba66360536dabf23be730e4eddc3e15371e65"
+  },
+  "contractCounts": {
+    "before": {
+      "Core": {
+        "done": 60,
+        "partial": 129,
+        "missing": 50,
+        "total": 239
+      },
+      "Agent surface": {
+        "done": 0,
+        "partial": 0,
+        "missing": 5,
+        "total": 5
+      },
+      "Later": {
+        "done": 0,
+        "partial": 0,
+        "missing": 0,
+        "total": 0
+      },
+      "Full target": {
+        "done": 60,
+        "partial": 129,
+        "missing": 55,
+        "total": 244
+      }
+    },
+    "after": {
+      "Core": {
+        "done": 60,
+        "partial": 129,
+        "missing": 50,
+        "total": 239
+      },
+      "Agent surface": {
+        "done": 0,
+        "partial": 0,
+        "missing": 5,
+        "total": 5
+      },
+      "Later": {
+        "done": 0,
+        "partial": 0,
+        "missing": 0,
+        "total": 0
+      },
+      "Full target": {
+        "done": 60,
+        "partial": 129,
+        "missing": 55,
+        "total": 244
+      }
+    },
+    "statusChanges": [],
+    "requirementAndAcceptanceText": [
+      "COMP-002",
+      "MAINT-015"
+    ]
+  },
+  "ci": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_sha": "9b5ba66360536dabf23be730e4eddc3e15371e65",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44269485145",
+    "id": 44269485145,
+    "name": "Verify",
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "ciDiscovery": [
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "9b5ba66360536dabf23be730e4eddc3e15371e65",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44269485145",
+      "id": 44269485145,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed"
+    }
+  ],
+  "ciViewOnly": true,
+  "pullRequests": []
+}

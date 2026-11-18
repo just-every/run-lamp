@@ -1,0 +1,24 @@
+2026-11-18T08:28:48Z
+head=9b5ba66360536dabf23be730e4eddc3e15371e65
+v24.19.0
+10.12.4
+Google Chrome for Testing 153.0.8010.12
+node --test --test-concurrency=1 tests/e2e/cutover-browser.test.mjs 
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording
+PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible
+PROBE MOVE-002 HIST-008: hostile Sorry update markup becomes readable paragraphs and safe links on history, incident permalinks and both actual feed reader payloads; public hierarchy remains recursive; 1440/390 screens captured
+✔ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner reviews four providers, checks surviving public addresses, deliberately invites and undoes through Cutover (220022.253839ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 222433.832987
+
+exit=0
+2026-11-18T08:32:31Z

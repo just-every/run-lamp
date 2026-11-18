@@ -1,0 +1,59 @@
+{
+  "before": {
+    "Core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "Agent surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "Later": {
+      "done": 0,
+      "partial": 0,
+      "missing": 0,
+      "total": 0
+    },
+    "Full target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "after": {
+    "Core": {
+      "done": 60,
+      "partial": 129,
+      "missing": 50,
+      "total": 239
+    },
+    "Agent surface": {
+      "done": 0,
+      "partial": 0,
+      "missing": 5,
+      "total": 5
+    },
+    "Later": {
+      "done": 0,
+      "partial": 0,
+      "missing": 0,
+      "total": 0
+    },
+    "Full target": {
+      "done": 60,
+      "partial": 129,
+      "missing": 55,
+      "total": 244
+    }
+  },
+  "statusChanges": [],
+  "requirementAndAcceptanceText": [
+    "COMP-002",
+    "MAINT-015"
+  ]
+}

@@ -1,0 +1,5 @@
+archive_exit=0
+build	Build the production Worker once	2026-11-18T08:44:07.9998427Z Contract prose: 0 errors, 0 warnings.
+build	Build the production Worker once	2026-11-18T08:44:08.0505809Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Build the production Worker once	2026-11-18T08:44:08.0683742Z Error: Command failed: /opt/hostedtoolcache/node/22.20.0/x64/bin/node src/base/contract-docs.mjs check
+build	Build the production Worker once	2026-11-18T08:44:08.1024337Z ##[error]Process completed with exit code 1.

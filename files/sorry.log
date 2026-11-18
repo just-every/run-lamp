@@ -1,0 +1,58 @@
+2026-11-18T08:30:06Z
+head=9b5ba66360536dabf23be730e4eddc3e15371e65
+v24.19.0
+10.12.4
+Google Chrome for Testing 153.0.8010.12
+node --test --test-concurrency=1 tests/e2e/sorry-import.test.mjs tests/e2e/sorry-reconciliation.test.mjs tests/e2e/sorry-documented-export.test.mjs 
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ documented Sorry generator reproduces all bytes and hashes without provider reads (1110.383736ms)
+Synthetic Sorry authenticated: preview
+Synthetic Sorry public: preview
+Synthetic Sorry public: apply
+Synthetic Sorry public: repeat
+Synthetic Sorry public: undo
+✔ documented Sorry exports account for every field through preview, saved jobs and explicit refusals (118228.66012ms)
+ℹ All 1003 authenticated subscriber rows and 23974 fields reviewed; full subscriber apply/repeat/undo runs in scripts/sorry-synthetic-proof.mjs outside push CI.
+ℹ {"mode":"public","sourceRows":{"components":56,"notices":53,"updates":106,"subscribers":0},"nativeCounts":{"group":4,"component":52,"incident":43,"maintenance":10,"updates":106},"subscriberCount":0,"ledgerCount":3680,"outcomes":{"mapped":826,"changed":1361,"raw-only":1493,"deleted":0,"refused":0},"unexplainedDifferences":0,"expectedResourceGaps":["sorry-brand.json","sorry-component-1004-metrics.json","sorry-custom-domain.json"],"previewUnchanged":true,"hostileRefusalUnchanged":true,"repeatUnchanged":true,"undoRestoredExceptReservedReferences":true,"silent":true}
+ℹ PROBE Sorry templates: capture 27 notice + 27 update across 25-row pages; 54 exact metadata/body reads; refusal, private draft, repeat, edited-template dependency undo all passed
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+▶ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow
+  ✔ unchanged Business plan skips preparation (1.074342ms)
+  ✔ apply answers before rebuilding the public page (2104.823597ms)
+Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+    at runtime.services.publicSnapshots.rebuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c5/run-lamp/script-0.mjs:96578:67)
+  ✔ undo answers before rebuilding the public page (715.151417ms)
+Lamp could not rebuild after an import; Cron retries it. Error: Test-injected import snapshot failure
+    at runtime.services.publicSnapshots.rebuild (file:///home/agent/rer-consolidation/work/sd-lamp-import-sorry-2-c5/run-lamp/script-0.mjs:96578:67)
+✔ MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, Business approval, bounded catch-up, original archive, cutover and erasure remain one recoverable owner flow (80413.974546ms)
+ℹ PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+ℹ PROBE MOVE-003 1 sorry: repeat saved review and apply, then native scheduled tick -> already imported, same complete records, aliases and notification inventory
+ℹ PROBE move-in deadline: first/unchanged Business plans prepare 1/0 times
+ℹ PROBE move-in deadline: changed Business bundle prepares 1 time
+ℹ PROBE move-in deadline: apply answered with the rebuild held; injected background failure recovered through native scheduled retry
+ℹ PROBE move-in deadline: undo answered with the rebuild held; injected background failure recovered through native scheduled retry
+✔ MOVE-001 — Business reads a public Sorry page through Lamp, keylessly, and the door plans what it answers (31377.17978ms)
+✔ MAINT-015 — Sorry maintenance labels use authored source states and keep missing states neutral (10382.872568ms)
+ℹ PROBE MAINT-015: Sorry scheduled/underway/complete labels and a neutral state-less management message survive silent import and both public history doors
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+✔ MOVE-001 Move in explains how Sorry component rows arrive as components and groups (20929.259323ms)
+ℹ PROBE: 16 source component rows -> 14 components + 2 groups (a parent row is shown once, as its children's group); unmapped warnings 0
+ℹ PROBE: mixed parent/child selection affects only listed children; parent alone includes its group; malformed end uses latest authored resolution and discloses it; absent or pre-start resolution still refuses
+ℹ PROBE: recursive groups reconcile once with full original metadata; repeat is stable; undo keeps edited groups, their ancestry and an owner-created child
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 268598.120854
+
+exit=0
+2026-11-18T08:34:35Z

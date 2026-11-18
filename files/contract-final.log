@@ -1,0 +1,10 @@
+2026-11-18T08:26:47Z
+Wrote 1 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+ ACCEPTANCE.md | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+| Core | 60 | 129 | 50 | 239 |
+| Agent surface | 0 | 0 | 5 | 5 |
+| Later | 0 | 0 | 0 | 0 |
+| Full target | 60 | 129 | 55 | 244 |

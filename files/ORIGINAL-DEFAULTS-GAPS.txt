@@ -1,0 +1,7 @@
+DEFAULT COMP-002: Preserve one native group per source parent; original source state is labeled metadata, not a duplicate monitored component.
+DEFAULT MAINT-015: Missing Sorry automation is off; unavailable authored lifecycle and actual start remain unavailable. Normal native owner reminders remain separate from silent customer history import.
+DEFAULT MOVE-002: Import never activates an outbound customer notification or replays a source publication.
+GAP MAINT-015: The pre-existing Statuspage automatic-start/completion preservation gap remains outside this Sorry round; no whole-clause DONE claim.
+GAP MOVE-001: Full-scale authenticated 1003 subscriber apply is not rerun here; authenticated full preview and generated public apply/repeat/undo are proven, with existing small subscriber erasure/catch-up tested.
+GAP external: None held; no real account/export/provider assertion is fabricated.
+EVIDENCE: Actual complete selected packet is published only on evidence/sd-lamp-import-sorry-2; product custody is independent and recorded separately.
