@@ -14,7 +14,7 @@ export function mapTemplates(data: SourceData, components: Map<string, { id: str
     folders.set(template.group.id, template.group.name);
   }
   const names = new Map(snapshot.templateNames ?? []);
-  return (data.templates ?? []).map<Mapped>(source => {
+  const mapped = (data.templates ?? []).map<Mapped>(source => {
     const item = { kind: "template", sourceId: source.id, name: source.name };
     const refuse = (reason: string): Mapped => ({ kind: "template", sourceId: source.id, accounting: [{ ...item, outcome: "rejected", reason }] });
     if (!source.name.trim()) return refuse("The template has no name.");
@@ -40,4 +40,27 @@ export function mapTemplates(data: SourceData, components: Map<string, { id: str
       incident_template_components: [...selected.values()].map(component => ({ id: identify(`template-component:${source.id}:${component.id}`, source.created_at ?? "1970-01-01T00:00:00.000Z"), template_id: id, component_id: components.get(component.id)!.id, component_name: components.get(component.id)!.name, state: states[component.status], relationship: "Primary", created_at: asOf, updated_at: asOf })).sort((a, b) => a.id.localeCompare(b.id)),
     } }, accounting: [{ ...item, outcome: fields.length || (groupId && !folders.has(groupId)) ? "changed" : "imported", reason: `Template wording, title, lifecycle, components and notification default carried over; no publication or notification.${fields.length ? ` Shorten ${fields.map(field => `${field} (${TEMPLATE_WORDING_FIELDS[field as keyof typeof TEMPLATE_WORDING_FIELDS].label})`).join(", ")} before applying; the entire text is retained.` : ""}${groupId && !folders.has(groupId) ? " The folder name was not supplied; its source group ID is retained as the folder." : ""}` }] };
   });
+  for (const source of data.sorryTemplates ?? []) {
+    const kind = source.kind === "notice" ? "template" : "update-template";
+    const item = { kind, sourceId: source.id, name: source.name };
+    const refuse = (reason: string) => mapped.push({ kind, sourceId: source.id, accounting: [{ ...item, outcome: "rejected", reason }] });
+    if (!source.name.trim()) { refuse("The template has no name."); continue; }
+    const id = identify(`${kind}:${source.id}`, source.created_at);
+    if (names.has(source.name) && names.get(source.name) !== id) { refuse("A template with this name already exists; it was not replaced."); continue; }
+    // Paragraph boundaries and whitespace are kept exactly; no rich-text or
+    // truncation pass may present a shortened source as complete wording.
+    const boundary = /\n[ \t]*\n/u.exec(source.body);
+    const wording = { title: source.subject ?? "", affectedAudience: "", customerImpact: boundary ? source.body.slice(0, boundary.index) : source.body, whatStillWorks: "", details: boundary ? source.body.slice(boundary.index + boundary[0].length) : "" };
+    const overflow: Record<string, string> = {};
+    for (const [field, { max }] of Object.entries(TEMPLATE_WORDING_FIELDS)) if (wording[field as keyof typeof wording].length > max) overflow[field] = wording[field as keyof typeof wording];
+    const fields = Object.keys(overflow);
+    const shortening = [...fields.map(field => `${field} (${TEMPLATE_WORDING_FIELDS[field as keyof typeof TEMPLATE_WORDING_FIELDS].label})`), ...(wording.title.length > 250 ? ["title (Template title)"] : [])];
+    names.set(source.name, id);
+    const metadata = { provider: "sorry", id: source.id, ...(source.subject === undefined ? {} : { subject: source.subject }), ...(source.component_id === undefined ? {} : { componentId: source.component_id }), body: source.body, createdAt: source.created_at, ...(source.updated_at === undefined ? {} : { updatedAt: source.updated_at }), needsLifecycle: true, needsComponents: true };
+    mapped.push({ kind, sourceId: source.id, value: { tables: {
+      incident_templates: [{ id, kind: source.kind, name: source.name, title: fields.includes("title") ? "" : wording.title, folder: "", lifecycle: "Investigating", affected_audience: "", customer_impact: fields.includes("customerImpact") ? "" : wording.customerImpact, what_still_works: "", details: fields.includes("details") ? "" : wording.details, next_update_offset_minutes: null, should_send_notifications: null, imported_fields_json: fields.length ? JSON.stringify(overflow) : null, source_metadata_json: JSON.stringify(metadata), created_by_operator_id: operatorId, created_at: asOf, updated_at: asOf }],
+      incident_template_components: [],
+    } }, accounting: [{ ...item, outcome: "changed", reason: `Sorry ${source.kind} template retained with its complete wording, subject, scope and source timestamps. Choose lifecycle, audience and affected services in the private draft; no source defaults or component impact were invented. No publication or notification.${shortening.length ? ` Shorten ${shortening.join(", ")} before applying; the entire text is retained.` : ""}` }] });
+  }
+  return mapped;
 }

@@ -7,7 +7,23 @@ import { statuspageWebhookMaintenance } from "./statuspage-webhook-maintenance.m
 import { webhookFormatBrowserFlow } from "./webhook-format-browser-flow.mjs";
 
 const LINKED_IMPACT = "See https://help.example.com/kb/123.";
-const signingSecret = "synthetic-lamp-webhook-1".repeat(4);
+const currentSecret = "synthetic-lamp-webhook-2".repeat(4);
+const retiringSecret = "synthetic-lamp-webhook-1".repeat(4);
+
+function verifyRotation({ headers, wireBytes }) {
+  const deliveryId = headers["webhook-id"], timestamp = headers["webhook-timestamp"];
+  assert.ok(deliveryId, "the authenticated envelope identifies the delivery");
+  assert.match(timestamp ?? "", /^\d+$/);
+  const signatures = (headers["webhook-signature"] ?? "").split(/\s+/);
+  const signature = (secret, bytes) => "v1=" + createHmac("sha256", secret)
+    .update(`${deliveryId}.${timestamp}.`).update(bytes).digest("base64url");
+  const changed = Buffer.concat([wireBytes, Buffer.from("\n")]);
+  for (const [label, secret] of [["current", currentSecret], ["retiring", retiringSecret]]) {
+    assert.ok(signatures.includes(signature(secret, wireBytes)), `the ${label} secret authenticates the complete received bytes`);
+    assert.ok(!signatures.includes(signature(secret, changed)), `the ${label} secret rejects the same JSON with an extra wire byte`);
+  }
+  return deliveryId;
+}
 
 /** The frozen independent receiver runs at the paid network boundary and
  * returns 204 only after field-by-field acceptance of the actual wire bytes. */
@@ -19,11 +35,9 @@ export async function statuspageWebhookFlow() {
   let fixture;
   const webhookReceiver = async record => {
     try {
+      const deliveryId = verifyRotation(record);
       const value = JSON.parse(record.rawBody);
       if (typeof value.event === "string" || Array.isArray(value.blocks)) {
-        const timestamp = record.headers["webhook-timestamp"], deliveryId = record.headers["webhook-id"];
-        const expected = createHmac("sha256", signingSecret).update(`${deliveryId}.${timestamp}.${record.rawBody}`).digest("base64url");
-        assert.ok(record.headers["webhook-signature"].split(/\s+/).includes(`v1=${expected}`), "Lamp and Slack webhook carriers authenticate the complete wire bytes");
         if (Array.isArray(value.blocks)) {
           assert.ok(!slackAccepted.some(previous => previous.deliveryId === deliveryId));
           slackAccepted.push({ body: value, deliveryId });
@@ -31,10 +45,10 @@ export async function statuspageWebhookFlow() {
         }
         assert.equal(value.deliveryId, deliveryId, "the signed Lamp envelope names its own native delivery");
         assert.ok(!lampAccepted.some(previous => previous.deliveryId === deliveryId));
-        lampAccepted.push({ body: value, deliveryId });
+        lampAccepted.push({ body: value, deliveryId, wireBytes: record.wireBytes });
         return new Response(null, { status: 204 });
       }
-      const received = receiveStatuspageWebhook(record, signingSecret);
+      const received = receiveStatuspageWebhook(record, currentSecret);
       const statusResponse = await fixture.raw(`${pageOrigin}/api/v2/status.json`);
       assert.equal(statusResponse.status, 200);
       const state = await statusResponse.json();
@@ -70,10 +84,12 @@ export async function statuspageWebhookFlow() {
     }
   };
   fixture = await openSubscriberManagementFixture({
+    extraBindings: { WEBHOOK_SIGNING_SECRET: [currentSecret, retiringSecret].join(",") },
     webhookReceiver,
     providerEdge: async request => {
       if (request.url !== slackDestination) return;
-      return webhookReceiver({ rawBody: await request.text(), headers: Object.fromEntries(request.headers) });
+      const wireBytes = Buffer.from(await request.arrayBuffer());
+      return webhookReceiver({ wireBytes, rawBody: wireBytes.toString("utf8"), headers: Object.fromEntries(request.headers) });
     },
   });
   fixture.recoverWebhook();
@@ -86,6 +102,9 @@ export async function statuspageWebhookFlow() {
     assert.equal(added.body.subscriber.state, "pending");
     assert.equal(fixture.messagesFor(contact).length, 1);
     await fixture.confirm(contact);
+    const active = (await fixture.list()).filter(row => row.id === added.body.subscriber.id);
+    assert.equal(active.length, 1);
+    assert.equal(active[0].state, "active");
     const message = fixture.messagesFor(contact)[0];
     const manageUrl = message.text.match(/https?:\/\/\S+\/manage\/\S+/)?.[0];
     assert.ok(manageUrl, "the real confirmation message supplies the subscriber's scoped management link");
