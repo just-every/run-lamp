@@ -4,6 +4,12 @@ import { basename, join } from "node:path";
 import { ownerMigrationFiles } from "./owner-migrations.mjs";
 import { assertPlatformLedger, platformLedger } from "./platform-ledger.mjs";
 
+export function isRerBookkeepingTable(name) {
+  const normalized = name.toLowerCase();
+  // Older portability schemas also have bookkeeping without the leading underscore.
+  return normalized.startsWith("_rer_") || normalized.startsWith("rer_portability_");
+}
+
 export function digest(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
@@ -36,10 +42,8 @@ export async function readArchive(input) {
   // Lamp 1.8.0 and earlier archived a Managed installation's ledger as data.
   // It must still describe this revision; restore never writes it.
   const ledger = entities.tables.find((table) => table.name === platformLedger);
-  if (ledger) {
-    await assertPlatformLedger(ledger.rows);
-    entities.tables = entities.tables.filter((table) => table !== ledger);
-  }
+  if (ledger) await assertPlatformLedger(ledger.rows);
+  entities.tables = entities.tables.filter((table) => table !== ledger && !isRerBookkeepingTable(table.name));
   const migrations = new Set();
   const available = (await readdir("migrations/core")).filter((name) => name.endsWith(".sql")).sort();
   if (manifest.migrations.length !== available.length || manifest.migrations.some((migration, index) => migration.file !== available[index])) throw new Error("Restore requires the archive's exact core migration inventory. Use the source revision that created this archive, restore it, then update normally.");

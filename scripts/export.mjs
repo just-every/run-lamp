@@ -4,6 +4,7 @@ import { basename, join, resolve } from "node:path";
 
 import { parseArgs } from "./ops-config.mjs";
 import { openArchivePlatform } from "./archive-runtime.mjs";
+import { isRerBookkeepingTable } from "./archive-validation.mjs";
 import { ownerMigrationFiles } from "./owner-migrations.mjs";
 import { assertPlatformLedger, platformLedger, platformLedgerRows } from "./platform-ledger.mjs";
 
@@ -28,7 +29,7 @@ async function listAll(bucket) {
 
 async function tableNames(database) {
   const result = await database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations', 'lamp_ext_migrations', ?) ORDER BY name").bind(platformLedger).all();
-  return result.results.map((row) => String(row.name));
+  return result.results.map((row) => String(row.name)).filter((name) => !isRerBookkeepingTable(name));
 }
 
 async function dependencies(database, table) {
