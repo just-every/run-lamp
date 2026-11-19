@@ -1,0 +1,74 @@
+{
+  "branch": "cloud/sd-lamp-c-f151",
+  "broaderLocalDelivery": {
+    "command": "pnpm run test:delivery",
+    "counts": {
+      "cancelled": 1,
+      "fail": 2,
+      "pass": 4,
+      "skipped": 0,
+      "tests": 7
+    },
+    "exit": 1,
+    "failures": [
+      {
+        "failure": "'fetch failed'",
+        "journey": "SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure"
+      },
+      {
+        "failure": "'fetch failed'",
+        "journey": "NOTIFY-002 \u2014 Every eligible capacity recipient reaches provider acceptance within five minutes"
+      },
+      {
+        "failure": "'test timed out after 300000ms'",
+        "journey": "Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications"
+      }
+    ],
+    "scope": "full delivery file on the pre-final local fixture revision"
+  },
+  "firstPartyCheckExit": 0,
+  "focusedJourney": {
+    "browser": "system Chromium",
+    "command": "node --test --test-concurrency=1 --test-name-pattern=SUB-024 tests/e2e/delivery-contract.test.mjs",
+    "exit": 0,
+    "failed": 0,
+    "helperSha256": "fca19b23dbed200205e200919a73b882052af544dc5e111d7d8ff9672d1ccf98",
+    "node": "22.20.0",
+    "passed": 1,
+    "receipt": "prelaunch-exact.tap"
+  },
+  "generatedViewsCheckExit": 0,
+  "generatedViewsWriteExit": 0,
+  "head": "61df7ba2085d6b215e7019452327eaf7e6f753ac",
+  "main": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+  "mainCapacityComparison": {
+    "exit": 1,
+    "failure": "'test timed out after 360000ms'"
+  },
+  "mainComparison": {
+    "command": "node --test --test-concurrency=1 --test-name-pattern=\"Subscriber consent, selected publication\" tests/e2e/delivery-contract.test.mjs",
+    "exit": 1,
+    "failure": "TypeError: fetch failed",
+    "head": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b"
+  },
+  "publicationScan": {
+    "complete": null,
+    "findings": null,
+    "head": "61df7ba2085d6b215e7019452327eaf7e6f753ac",
+    "historyScanned": null
+  },
+  "recordedAt": "2026-11-19T15:46:05.526103+00:00",
+  "repo": "just-every/run-lamp",
+  "sourceLockExit": 0,
+  "typecheckExit": 0,
+  "verificationPlanExit": 0,
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "61df7ba2085d6b215e7019452327eaf7e6f753ac",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44554998794",
+    "id": 44554998794,
+    "name": "Verify",
+    "status": "in_progress"
+  }
+}
