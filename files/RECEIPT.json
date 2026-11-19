@@ -1,0 +1,139 @@
+{
+  "blocker": null,
+  "branch": "cloud/gr-mt-lamp-issue-1",
+  "counts": {
+    "checksAfter": 124,
+    "checksBefore": 123,
+    "clausesAfter": [
+      65,
+      124,
+      55,
+      244
+    ],
+    "clausesBefore": [
+      65,
+      124,
+      55,
+      244
+    ]
+  },
+  "head": "26af59286994b5690050cbd6a4fab394b07e81df",
+  "localChecks": {
+    "contractWriteCheck": "pass",
+    "correctedSubscriberDeactivation": {
+      "fail": 0,
+      "pass": 1,
+      "skipped": 0,
+      "tests": 1
+    },
+    "delivery": {
+      "fail": 0,
+      "pass": 8,
+      "skipped": 0,
+      "tests": 8
+    },
+    "finalHeadMailAndFollowUps": {
+      "fail": 0,
+      "pass": 2,
+      "skipped": 0,
+      "tests": 2
+    },
+    "firstDelivery": {
+      "fail": 1,
+      "pass": 7,
+      "skipped": 0,
+      "tests": 8
+    },
+    "followUps": {
+      "fail": 0,
+      "pass": 1,
+      "skipped": 0,
+      "tests": 1
+    },
+    "frozenInstall": "pass",
+    "incidentReachAfter": {
+      "fail": 0,
+      "pass": 1,
+      "skipped": 0,
+      "tests": 1
+    },
+    "incidentReachBefore": {
+      "fail": 1,
+      "pass": 0,
+      "skipped": 0,
+      "tests": 1
+    },
+    "incidentReachBrowser": "passed",
+    "mail": {
+      "fail": 0,
+      "pass": 5,
+      "skipped": 0,
+      "tests": 5
+    },
+    "rerBuild": "pass",
+    "rerSetup": "pass",
+    "sourceLockCheck": "pass",
+    "typecheck": "pass",
+    "verificationPlan": "pass"
+  },
+  "mainBase": "b3af16fb7270dc281f80112a21e1b1aa07c66e6f",
+  "productCustody": "PUSHED",
+  "repository": "just-every/run-lamp",
+  "reproduction": {
+    "correctedFixture": "pass for RER, Resend, SendGrid",
+    "earlyCronSubmissions": 0,
+    "originalFixture": "ERR_ASSERTION: assert.ok(accepted.providerAcceptedAt)",
+    "originalVerifyRun": 41427562151,
+    "retryOffsetsMs": [
+      0,
+      116129,
+      348387,
+      812903,
+      1741935,
+      3600000
+    ]
+  },
+  "scan": {
+    "complete": true,
+    "findingCount": 0,
+    "findingRuleCounts": {},
+    "gitleaks": "8.30.1",
+    "implementationCommit": "1a105183898155edc231d8024a23d06fd634ecc6",
+    "preExistingCount": 50,
+    "source": {
+      "commit": "26af59286994b5690050cbd6a4fab394b07e81df",
+      "tree": "868af4d3a30dfe14c4c61b214896ee8484f600d3"
+    },
+    "status": "PASS"
+  },
+  "supersededVerify": {
+    "composerArchive": "The operator publication case timed out in update-reach-flow.mjs while the final webhook retry was pending.",
+    "conclusion": "failure",
+    "created_at": "2026-11-19T10:46:13Z",
+    "failedJobs": [
+      {
+        "id": 135507748409,
+        "name": "shards (composer)"
+      },
+      {
+        "id": 135507748435,
+        "name": "shards (runtime)"
+      },
+      {
+        "id": 135507748450,
+        "name": "shards (public)"
+      },
+      {
+        "id": 135515467164,
+        "name": "verify"
+      }
+    ],
+    "head_sha": "0e4273b150cd7171caf43d24b4541ef7b1f39f2f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44508717546",
+    "id": 44508717546,
+    "status": "completed"
+  },
+  "task": "gr-mt-lamp-issue-1",
+  "tree": "868af4d3a30dfe14c4c61b214896ee8484f600d3",
+  "verify": {}
+}

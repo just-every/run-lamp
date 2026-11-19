@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "90be71c9f6493cce49e6e65fc686f91d90d6044e",
+      "bytes": 3126,
+      "path": "RECEIPT.json",
+      "sha256": "35d952ea0dd854401ba5f39c1aaec5d0d27e542473d01125ec9c60e837a96158"
+    },
+    {
+      "blob": "11a08ad3e785fd6c55ba790ab3d682113639b473",
+      "bytes": 5892,
+      "path": "REPORT.md",
+      "sha256": "391edd0d93c67d4642e72f44028d9bd17e4035ed92c28908430d358eeb1e4628"
+    },
+    {
+      "blob": "1e5eae3fa4ca21ee5ac80f31391355943cba12bf",
+      "bytes": 683,
+      "path": "result.json",
+      "sha256": "922ebfd90db1ba73960d364a4017dfe94eb9bd012c3f7cd7ad5ec4ef46970834"
+    }
+  ],
+  "product_branch": "cloud/gr-mt-lamp-issue-1",
+  "product_head": "26af59286994b5690050cbd6a4fab394b07e81df",
+  "ref": "refs/heads/evidence/gr-mt-lamp-issue-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "gr-mt-lamp-issue-1"
+}
