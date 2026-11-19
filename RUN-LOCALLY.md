@@ -48,6 +48,7 @@ On first launch, `rer dev` installs locked dependencies and prepares a local
 owner automatically. When ready, it prints `RER_READY` with the app address and
 `RER_OPEN` with your private one-click owner entry link. Open the `RER_OPEN`
 link to work as the owner; no email is needed. Keep that link private.
+The development server has up to 15 minutes to become ready before rer reports a startup timeout.
 
 Local mail is not sent or retained, and there is no local inbox. Test emailed sign-in and subscriber delivery on a hosted installation
 with its real mail provider and mailbox.

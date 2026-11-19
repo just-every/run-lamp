@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { unstable_splitSqlQuery } from "wrangler";
+import { ownerMigrationFiles } from "../../../scripts/owner-migrations.mjs";
 import { withDraftVersion } from "../draft-version-helper.mjs";
 import { reservePort } from "../worker-startup.mjs";
 
@@ -114,6 +115,9 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
     for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) await execute(await readFile(join("migrations/core", migration), "utf8"));
+    for (const migration of await ownerMigrationFiles()) {
+      await execute(await readFile(join("migrations/ext", migration), "utf8"));
+    }
     // Installation identity/settings are fixture prerequisites. Every obligation
     // below is created through an ordinary operator or public HTTP request.
     await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES ('01J00000000000000000000091','synthetic-lamp-owner@example.test','Synthetic Lamp owner','owner','active',${Date.now()});

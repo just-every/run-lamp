@@ -2992,7 +2992,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "aac45c20e8f1b99fbcca49bf237a268bda9ddb4a36e22a48c9debfb25033fd52",
+      "sha256": "4fb270dbb3f8bdb25d8141f4de7ba59efd1b90b074dd27d9c766c324dc0cb72e",
       "executable": false
     },
     "schema/business-field-inputs.mjs": {
@@ -3924,7 +3924,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "50ec855c753f59cee35754b72092419d826eb60e003c8fd40a099be8531088ef",
+      "sha256": "aade1b4a4e64cbad8cf3fbd009a7db0ba8c866c13641cf5ea65540164c7be59b",
       "executable": false
     },
     "scripts/installer/README.md": {
@@ -4072,7 +4072,7 @@
       "executable": false
     },
     "scripts/sorry-receipt/runtime.mjs": {
-      "sha256": "fe354857f8dee89d4fc1ae248e18cf2da3cd457a4ede00ebe05f7eaecae4f02e",
+      "sha256": "c23d5c39798c7919a5e7eb4cd549e72f73727a3a8bc7ca40a21ede481f78f028",
       "executable": false
     },
     "scripts/sorry-synthetic-proof.mjs": {
@@ -8240,7 +8240,7 @@
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-runtime.mjs": {
-      "sha256": "0245dff06bd05c63c413dc53c9a62d7878529d2cde9704821a2a48fd2c54397c",
+      "sha256": "dde50741562bc8323c1c64ec858ceeebe72ea7ce0bc1dd92004b07ec0b058c61",
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-worker.ts": {
