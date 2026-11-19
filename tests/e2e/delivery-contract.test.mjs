@@ -1,5 +1,6 @@
 import { subscriberPublicConsentFlow } from './helpers/subscriber-public-consent-flow.mjs';
 import { perUpdateChannelsFlow } from './helpers/per-update-channels-flow.mjs';
+import { deliveryRetryFlow } from './helpers/delivery-retry-flow.mjs';
 import { incidentSubscriptionApiFlow } from './helpers/incident-subscription-api-flow.mjs';
 import { incidentFollowFlow } from './helpers/incident-follow-flow.mjs';
 import { test } from 'node:test';
@@ -65,3 +66,5 @@ test('Failing subscriber destinations deactivate with reasons, alert the webhook
 test('SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search', { timeout: 300_000 }, prelaunchFlow);
 
 test('SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary', { timeout: 120_000 }, subscriberPublicConsentFlow);
+
+test('NOTIFY-003 — Durable exponential retry eligibility, exhaustion and replay silence', { timeout: 120_000 }, deliveryRetryFlow);
