@@ -8444,7 +8444,7 @@
       "executable": false
     },
     "tests/e2e/helpers/prelaunch-flow.mjs": {
-      "sha256": "c56f5f85d271de6a255af80bc9f36378196a8e9d31a42c7d74736b2dd3943ee9",
+      "sha256": "fca19b23dbed200205e200919a73b882052af544dc5e111d7d8ff9672d1ccf98",
       "executable": false
     },
     "tests/e2e/helpers/preset-recovery-flow.mjs": {
