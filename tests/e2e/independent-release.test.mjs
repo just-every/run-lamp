@@ -159,7 +159,7 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
     assert.equal(result.status, 200, 'a published page remains available before its owner claims it');
     assert.equal(result.retained, 'true');
     const html = await response.text();
-    assert.ok(html.includes(ferry.name) && html.includes('Operational'));
+    assert.ok(html.includes(ferry.name) && />Working<\/h1>/.test(html));
     return result;
   };
   assert.equal((await probe('unclaimed published page')).generatedAt, generatedAt);

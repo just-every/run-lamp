@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { maintenanceNoticeBody } from "../record-markup";
 import { maintenanceTimeRange } from "../format";
 import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
@@ -6,7 +7,7 @@ import type { PublicSnapshotModel } from "../renderer";
 import type { PublicIncident, PublicMaintenance } from "../record-markup";
 import { mostSevereState, type ComponentState } from "../../../shared/domain";
 import { renderUpdateHtml } from "../../../shared/update-links";
-import { DAY, REPORTING_DAYS, dayKey, escapeHtml, formatTime, timezoneLabel } from "../format";
+import { DAY, REPORTING_DAYS, dayKey, escapeHtml, formatPageTime, timestampDetails, timezoneLabel } from "../format";
 import { uptimeMarkLabel, type Uptime } from "../uptime";
 import { lampMark, lineIcon } from "./icons";
 
@@ -24,10 +25,10 @@ export function templateShell(template: TemplateName, model: PublicSnapshotModel
   const { settings, overall } = model;
   const title = /\bstatus\s*$/i.test(settings.pageName.trim()) ? settings.pageName : `${settings.pageName} status`;
   const website = model.websiteUrl ? new URL(model.websiteUrl) : null;
-  const meta = `<p class="tpl-foot-meta">${website ? `<a href="${escapeHtml(website.href)}">${escapeHtml(website.hostname)}</a>` : ""}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span><a data-lamp-signin href="/signin">Sign in</a></p>`;
+  const meta = `<p class="tpl-foot-meta">${website ? `<a href="${escapeHtml(website.href)}">${escapeHtml(website.hostname)}</a>` : ""}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}" data-zone-name="${escapeHtml(timezoneLabel(settings.timezone))}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span><a data-lamp-signin href="/signin">Sign in</a></p>`;
   const credit = settings.footerCreditEnabled ? `<p class="tpl-credit">${template === "calm" ? "" : lampMark()}<span>Powered by <span class="tpl-credit-name">Lamp</span></span></p>` : "";
   const footer = `<footer class="tpl-foot"><div class="wrap">${themeChrome(model.theme, "footer")}${parts.slot("status-page.footer.before.v1")}<div class="tpl-foot-row">${credit}${meta}</div>${parts.footerResources}</div></footer>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${overall}`)}"><meta property="og:image" content="${escapeHtml(`${model.origin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${overall}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/template.css"></head><body class="lamp-public" data-template="${template}"><main class="tpl tpl-${template}">${themeChrome(model.theme, "header")}${body}${footer}</main><script src="/assets/template.js" defer></script></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><meta property="og:image" content="${escapeHtml(`${model.origin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/template.css"></head><body class="lamp-public" data-template="${template}"><main class="tpl tpl-${template}">${themeChrome(model.theme, "header")}${body}${footer}</main><script src="/assets/template.js" defer></script></body></html>`;
 }
 
 export function brand(model: PublicSnapshotModel) {
@@ -50,9 +51,9 @@ export function feedLinks(className = "", label = "Status feeds") {
   return `<nav class="tpl-feeds${className ? ` ${className}` : ""}" aria-label="${label}"><a href="/feed.rss">${lineIcon("rss")}RSS</a><a href="/feed.atom">${lineIcon("atom")}Atom</a></nav>`;
 }
 
-/** A timestamp in the page's zone with its UTC offset (PAGE-009); the date is left out on the day given. */
+/** A timestamp in the page's zone with its zone name; the date is omitted on the day given. */
 export function when(value: string, timezone: string, sameDayAs?: string) {
-  const full = formatTime(value, timezone);
+  const full = formatPageTime(value, timezone);
   const shown = sameDayAs && dayKey(Date.parse(value), timezone) === dayKey(Date.parse(sameDayAs), timezone) ? full.replace(/^[A-Z][a-z]{2} \d{1,2}, \d{4}, /, "") : full;
   return `<time datetime="${escapeHtml(value)}" data-local-time>${escapeHtml(shown)}</time>`;
 }
@@ -77,14 +78,6 @@ function names(components: Component[]) {
   return components.length === 1 ? components[0]!.name : components.length === 2 ? `${components[0]!.name} and ${components[1]!.name}` : `${components.length} services`;
 }
 
-const how: Record<ComponentState, string> = {
-  "Operational": "working",
-  "Degraded performance": "slower than usual",
-  "Partially unavailable": "partly unavailable",
-  "Major outage": "unavailable",
-  "Under maintenance": "under maintenance",
-};
-
 /** One plain situational sentence: what customers notice and what still works, from the newest published update;
  *  otherwise what is in maintenance or affected right now; otherwise that everything works. */
 export function situation(model: PublicSnapshotModel) {
@@ -102,7 +95,8 @@ export function situation(model: PublicSnapshotModel) {
   const worst = mostSevereState(affected.map((component) => component.state));
   const lead = affected.filter((component) => component.state === worst);
   const rest = affected.length - lead.length;
-  return `${names(lead)} ${lead.length === 1 ? "is" : "are"} ${how[worst]}.${rest ? ` ${rest} other service${rest === 1 ? " is" : "s are"} affected.` : ""}${affected.length < model.visibleComponents.length ? " Everything else is working." : ""}`;
+  const state = worst === "Under maintenance" ? "in maintenance" : componentStateLabel(worst).toLowerCase();
+  return `${names(lead)} ${lead.length === 1 ? "is" : "are"} ${state}.${rest ? ` ${rest} other service${rest === 1 ? " is" : "s are"} affected.` : ""}${affected.length < model.visibleComponents.length ? " Everything else is working." : ""}`;
 }
 
 export function sentenceSize(text: string) {
@@ -111,7 +105,7 @@ export function sentenceSize(text: string) {
 
 /** The overall state as one labelled state (PAGE-004) and the instant the content was generated (PAGE-014). */
 export function updatedLine(model: PublicSnapshotModel, className = "tpl-updated") {
-  return `<p class="${className}"><span class="tpl-state tone-${toneOf(model.overall)}" data-live="overall">${escapeHtml(model.overall)}</span><span class="tpl-sep" aria-hidden="true">·</span><span data-generated-at data-live="generation">Updated ${when(model.generatedAt, model.settings.timezone)}</span></p>`;
+  return `<p class="${className}"><span class="tpl-state tone-${toneOf(model.overall)}" data-live="overall">${escapeHtml(componentStateLabel(model.overall))}</span><span class="tpl-sep" aria-hidden="true">·</span><span data-generated-at data-live="generation">Updated ${when(model.generatedAt, model.settings.timezone)}</span></p><div data-live="generation-details">${timestampDetails(model.settings.timezone, ["Updated", model.generatedAt])}</div>`;
 }
 
 export function uptimeCaption(uptime: Uptime) {
@@ -192,7 +186,7 @@ export function resolvedSpan(incident: PublicIncident, timezone: string) {
 
 /** A maintenance window's times in the markup the public routes use to flag an overrun as it happens. */
 export function maintenanceWindow(item: PublicMaintenance, timezone: string) {
-  return `<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${item.state === "Scheduled" ? "Planned" : "In progress"} · ${maintenanceTimeRange(item.startsAt, item.endsAt, timezone)}</p>`;
+  return `<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${item.state === "Scheduled" ? "Planned" : "In progress"} · ${maintenanceTimeRange(item.startsAt, item.endsAt, timezone)}</p>${timestampDetails(timezone, ["Starts", item.startsAt], ["Ends", item.endsAt])}`;
 }
 
 export function maintenanceNotices(item: PublicMaintenance, timezone: string, currentNoticeId?: string) {

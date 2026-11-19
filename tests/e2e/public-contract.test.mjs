@@ -2,15 +2,16 @@ import { componentReadFlow } from './helpers/component-read-flow.mjs';
 import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintenanceActor } from './helpers/operator-attribution.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
+import { setTimeout as delay } from 'node:timers/promises';
 import { gzipSync } from 'node:zlib';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
-import { parse } from 'parse5';
+import { parse, parseFragment } from 'parse5';
 import { openStatusJourney, eventually, wording } from './helpers/status-journey.mjs';
 import { literalLinkFields } from './helpers/update-link-evidence.mjs';
 import { assertUpdateLinkSurfaces, assertUpdateLinkScreens } from './helpers/update-link-surfaces.mjs';
-import { assertVisibleTime } from '../helpers/public-meaning.mjs';
+import { assertVisibleTime, expectedComponentLabels } from '../helpers/public-meaning.mjs';
 import { publicCapacityJourney } from './helpers/public-capacity-journey.mjs';
 import { shortHistoryFlow } from './helpers/short-history-flow.mjs';
 import { browsableHistoryFlow } from './helpers/browsable-history-flow.mjs';
@@ -37,6 +38,201 @@ function nodeText(node) {
 function hasClass(node, name) {
   return node.attrs?.some(attr => attr.name === 'class' && attr.value.split(' ').includes(name));
 }
+
+function rssItems(xml) {
+  return [...xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/g)].map(([, item]) => ({
+    guid: item.match(/<guid\b[^>]*>([^<]+)<\/guid>/)?.[1],
+    description: item.match(/<description>([^<]*)<\/description>/)?.[1],
+  }));
+}
+
+async function readNativeHistoryFeeds(j, incident, update) {
+  let historyRss;
+  for (const format of ['atom', 'rss']) {
+    const canonicalPath = `/feed.${format}`;
+    const historyPath = `/history.${format}`;
+    const [canonical, history] = await Promise.all([canonicalPath, historyPath].map(path => j.publicResponse(path)));
+    assert.equal(canonical.status, 200, canonicalPath);
+    assert.equal(history.status, 200, historyPath);
+    assert.equal(history.headers.get('content-type'), canonical.headers.get('content-type'), historyPath);
+    const [canonicalBytes, historyBytes] = await Promise.all([canonical.bytes(), history.bytes()]);
+    assert.deepEqual(historyBytes, canonicalBytes, `${historyPath} serves the canonical bytes on a fresh native installation`);
+    const body = new TextDecoder().decode(historyBytes);
+    assert.ok(body.includes(incident.reference), `${historyPath} contains the native incident`);
+    assert.ok(body.includes(`:event:update-${update.id}</`), `${historyPath} contains the native publication`);
+    console.info(`PAGE-017 ${historyPath}: 200, ${historyBytes.length} bytes equal to ${canonicalPath}; native update ${update.id}`);
+    if (format === 'rss') historyRss = { etag: history.headers.get('etag'), items: rssItems(body) };
+  }
+  assert.ok(historyRss.etag, 'the history RSS alias supplies a validator');
+  assert.ok(historyRss.items.length && historyRss.items.every(item => item.guid), 'the history RSS contains prior item GUIDs');
+  return historyRss;
+}
+
+async function pollHistoryRss(j, baseline, updateId, impact, publishedAt) {
+  const deadline = publishedAt + 10_000;
+  // This installation's feed identity is seeded by openStatusJourney.
+  const expectedGuid = `urn:lamp:synthetic-lamp-feed-1:event:update-${updateId}`;
+  const url = new URL('/history.rss', j.publicOrigin).href;
+  const headers = { 'If-None-Match': baseline.etag };
+  const signal = AbortSignal.timeout(Math.max(1, Math.ceil(deadline - performance.now())));
+  assert.ok(!baseline.items.some(item => item.guid === expectedGuid), 'the new GUID was absent before publication');
+
+  while (performance.now() < deadline) {
+    const response = await j.raw(url, { headers, signal });
+    if (response.status !== 304) {
+      assert.equal(response.status, 200, 'the history RSS alias responds to the old validator');
+      const items = rssItems(await response.text());
+      const elapsed = performance.now() - publishedAt;
+      const published = items.filter(item => item.guid === expectedGuid);
+      if (published.length) {
+        assert.ok(elapsed <= 10_000, 'the reader observes the new GUID within ten seconds of publication');
+        assert.ok(response.headers.get('etag') && response.headers.get('etag') !== baseline.etag, 'the new RSS bytes have a new validator');
+        assert.equal(published.length, 1, 'the new publication has exactly one RSS item');
+        assert.ok(published[0].description, 'the new item has a description');
+        const html = nodeText(parseFragment(published[0].description));
+        const updateLine = nodeText(parseFragment(html)).split('\n').find(line => line.startsWith('Update: '));
+        assert.equal(updateLine, `Update: ${impact}`, 'the exact submitted resolution wording belongs to the new GUID');
+        const currentGuids = new Set(items.map(item => item.guid));
+        for (const { guid } of baseline.items) assert.ok(currentGuids.has(guid), `the history RSS retains ${guid}`);
+        console.info(`PAGE-017 /history.rss: old validator received 200 for ${expectedGuid} after ${Math.round(elapsed)} ms; retained ${baseline.items.length} prior GUIDs; wording: ${impact}`);
+        return;
+      }
+    }
+    await delay(50);
+  }
+  assert.fail(`the history RSS alias did not serve ${expectedGuid} within ten seconds of publication`);
+}
+test('PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary', async () => {
+  const j = await openStatusJourney({ pageHost: 'localhost', workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
+  try {
+    const generation = Date.parse('2031-02-10T16:00:00.000Z');
+    const horizon = generation + 14 * 24 * 60 * 60 * 1000;
+    const beforeGeneration = generation - 60_000;
+    const setClock = now => j.json('/test/clock', 'PUT', { now }, 204);
+    const rootAt = instant => {
+      const expectedAt = new Date(instant).toISOString();
+      return eventually(async () => {
+        const response = await j.publicResponse('/');
+        return { status: response.status, generatedAt: response.headers.get('x-lamp-snapshot-generated-at'), html: await response.text() };
+      }, response => response.status === 200 && response.generatedAt === expectedAt, 'the root serves the expected publication generation');
+    };
+    const attribute = (node, name) => node?.attrs?.find(attr => attr.name === name)?.value;
+    const links = elements => elements.filter(node => node.tagName === 'a' && attribute(node, 'href')?.startsWith('/maintenance/'));
+    await setClock(beforeGeneration);
+    await j.signIn(undefined, { fresh: true });
+    const componentName = 'Synthetic Lamp maintenance service';
+    const component = await j.component(componentName);
+    const affectedAudience = 'Service customers';
+    const fixture = [
+      { title: 'Search index migration', start: generation - 3_600_000, state: 'In progress', listed: true },
+      { title: 'Message relay rotation', start: generation - 1_800_000, state: 'In progress', listed: true },
+      { title: 'Storage capacity expansion', start: horizon - 1, state: 'Scheduled', listed: true },
+      { title: 'Traffic gateway upgrade', start: horizon, state: 'Scheduled', listed: true },
+      { title: 'Reporting index rebuild', start: horizon + 1, state: 'Scheduled', listed: false },
+    ];
+    const records = [];
+    for (const { title, start, state, listed } of fixture) {
+      const startsAt = new Date(start).toISOString();
+      const endsAt = new Date(start + 7_200_000).toISOString();
+      const customerImpact = `${title} may briefly delay requests.`;
+      const { maintenance: created } = await j.json('/api/app/maintenance', 'POST', {
+        title, startsAt, endsAt, customerImpact, affectedAudience,
+        componentIds: [component.id], autoStart: false, autoComplete: false,
+      }, 201);
+      records.push({ id: created.id, href: `/maintenance/${encodeURIComponent(created.reference)}`, title, startsAt, endsAt, state, listed, customerImpact });
+    }
+    const startWindow = record => j.json(`/api/app/maintenance/${record.id}/start`, 'POST', {});
+    await startWindow(records[0]);
+    const earlier = await rootAt(beforeGeneration);
+    const earlierLinks = links(descendants(parse(earlier.html))).map(link => attribute(link, 'href'));
+    assert.ok(earlierLinks.includes(records[0].href), 'the earlier generation serves real maintenance');
+    for (const scheduled of records.slice(2)) {
+      assert.ok(!earlierLinks.includes(scheduled.href), scheduled.title + ' is outside the earlier horizon');
+    }
+    await setClock(generation);
+    await startWindow(records[1]);
+
+    const saved = (await j.json('/api/app/maintenance')).maintenance;
+    const windowFields = ({ title, startsAt, endsAt, state }) => ({ title, startsAt, endsAt, state });
+    const inventory = rows => rows.map(row => ({ id: row.id, ...windowFields(row), customerImpact: row.customerImpact }))
+      .sort((left, right) => left.id.localeCompare(right.id));
+    assert.deepEqual(inventory(saved), inventory(records), 'native readback contains exactly the five submitted windows');
+
+    const snapshot = await rootAt(generation);
+    const { generatedAt } = snapshot;
+    const nodes = descendants(parse(snapshot.html));
+    const generationLabel = nodes.find(node => attribute(node, 'data-generated-at') !== undefined);
+    assert.equal(attribute(descendants(generationLabel).find(node => node.tagName === 'time'), 'datetime'), generatedAt);
+    const maintenanceArticles = elements => elements.filter(node => node.tagName === 'article' && hasClass(node, 'maintenance'));
+    const windowDetails = article => {
+      const elements = descendants(article);
+      const times = descendants(elements.find(node => hasClass(node, 'maintenance-window')))
+        .filter(node => node.tagName === 'time').map(node => attribute(node, 'datetime'));
+      assert.equal(times.length, 2, 'each entry presents exactly one start and one end');
+      const [startsAt, endsAt] = times;
+      return { startsAt, endsAt, state: nodeText(elements.find(node => hasClass(node, 'lifecycle-pill'))) };
+    };
+    const assertWindowWording = (article, record) => {
+      const elements = descendants(article);
+      const affected = elements.find(node => hasClass(node, 'incident-meta'));
+      assert.equal(nodeText(affected), 'Affects ' + componentName, record.title);
+      const hasImpact = elements.some(node =>
+        node.tagName === 'dt' && nodeText(node) === 'Customer impact' &&
+        node.parentNode.childNodes.some(value => value.tagName === 'dd' && nodeText(value) === record.customerImpact));
+      assert.ok(hasImpact, record.title + ' shows its own published customer impact');
+    };
+    const listed = records.filter(record => record.listed);
+    const byTitle = (left, right) => left.title.localeCompare(right.title);
+    const articles = maintenanceArticles(nodes);
+    assert.deepEqual(articles.map(article => {
+      const entryLinks = links(descendants(article));
+      assert.equal(entryLinks.length, 1, 'each maintenance entry has one native permalink');
+      const [link] = entryLinks;
+      return { title: nodeText(link), href: attribute(link, 'href'), ...windowDetails(article) };
+    }).sort(byTitle), listed.map(record => ({ ...windowFields(record), href: record.href })).sort(byTitle));
+    for (const article of articles) {
+      const [link] = links(descendants(article));
+      assertWindowWording(article, listed.find(record => record.href === attribute(link, 'href')));
+    }
+    assert.deepEqual(links(nodes).map(link => attribute(link, 'href')).sort(), listed.map(record => record.href).sort(),
+      'the complete initial HTML has exactly the four expected maintenance links');
+    const outside = records.find(record => !record.listed);
+    assert.ok(!snapshot.html.includes(outside.title), 'the scheduled window one millisecond outside is absent');
+
+    for (const record of records) {
+      const response = await j.publicResponse(record.href);
+      assert.equal(response.status, 200, record.href);
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generatedAt, record.href);
+      const [article, ...extra] = maintenanceArticles(descendants(parse(await response.text())));
+      assert.ok(article, record.href);
+      assert.equal(extra.length, 0, record.href);
+      const title = nodeText(descendants(article).find(node => node.tagName === 'h1'));
+      assert.deepEqual({ title, ...windowDetails(article) }, windowFields(record), record.href);
+      assertWindowWording(article, record);
+    }
+    console.log(`PROBE PAGE-001 3: anonymous initial HTML generated at ${generatedAt} -> two active windows and starts at fourteen days minus one millisecond and exactly fourteen days; the following millisecond is absent, and all five native permalinks resolve`);
+
+    if (process.env.LAMP_SCREENSHOTS) {
+      const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, headless: true, args: ['--no-sandbox'] });
+      try {
+        await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+        for (const width of [1440, 390]) {
+          const page = await browser.newPage({ javaScriptEnabled: false, viewport: { width, height: 1000 } });
+          await page.goto(j.publicOrigin);
+          await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-maintenance-horizon.png`, fullPage: true });
+          await page.getByRole('link', { name: records[3].title, exact: true }).click();
+          await page.screenshot({ path: `${process.env.LAMP_SCREENSHOTS}/${width}-maintenance-permalink.png`, fullPage: true });
+          await page.close();
+        }
+      } finally {
+        await browser.close();
+      }
+    }
+  } finally {
+    await j.close();
+  }
+});
+
 const statedMethod = [
   'Operational counts as 0 downtime minutes',
   'Under maintenance counts as 0 downtime minutes',
@@ -191,7 +387,7 @@ async function widgetVariantsJourney() {
     const reconcile = async (expected, active) => {
       for (const { installation, hide, root } of installed) {
         const floating = Boolean(installation.position);
-        assert.equal(await root.locator('strong').textContent(), expected.overall, `${installation.id} exact snapshot state`);
+        assert.equal(await root.locator('strong').textContent(), expectedComponentLabels[expected.overall], `${installation.id} exact snapshot state`);
         assert.equal(await root.evaluate(node => getComputedStyle(node).display), (floating && !active) || (hide && expected.overall === 'Operational') ? 'none' : installation.display, `${installation.id} operational and event visibility`);
         const style = await root.evaluate(node => {
           const css = getComputedStyle(node);
@@ -229,7 +425,7 @@ async function widgetVariantsJourney() {
         await page.clock.fastForward(30000);
         await eventually(() => replies.length, count => count === installed.length, 'every installed variant receives an actual polling response');
         for (const response of replies) { assert.equal(response.status(), 200); assert.deepEqual(await response.json(), expected); }
-        await page.waitForFunction(overall => [...document.querySelectorAll('section[role=status] strong')].every(node => node.textContent === overall), expected.overall);
+        await page.waitForFunction(overall => [...document.querySelectorAll('section[role=status] strong')].every(node => node.textContent === overall), expectedComponentLabels[expected.overall]);
       } finally { page.off('response', capture); }
     };
     const screen = async name => {
@@ -344,7 +540,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     // an empty catalogue or a resource that never existed.
     await j.json(`/api/app/components/${hidden.id}/standing-claim`, 'PUT', { state: 'Major outage' });
     const exposed = await j.visible('/', hidden.name);
-    assert.match(exposed, /id="overall-status"[^>]*>Major outage<\/h1>/);
+    assert.match(exposed, /id="overall-status"[^>]*>Down<\/h1>/);
     assert.ok(exposed.includes(hidden.note));
     const exposedComponent = (await (await j.publicResponse('/api/public/v1/components')).json()).data.find(row => row.id === hidden.id);
     assert.equal(exposedComponent.state, 'Major outage');
@@ -373,10 +569,10 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(!html.includes(other.name), 'a healthy conditional component stays out of the public catalogue');
     assert.ok(html.includes(main.note));
     assert.ok(!html.includes(hidden.name) && !html.includes('PRIVATE topology'));
-    assert.match(html, /id="overall-status"[^>]*>Operational<\/h1>/, 'the only severe claim is internal');
+    assert.match(html, /id="overall-status"[^>]*>Working<\/h1>/, 'the only severe claim is internal');
     assert.equal((await (await j.publicResponse('/api/public/status')).json()).overall, 'Operational');
-    assert.equal((await (await j.publicResponse('/badge.json')).json()).message, 'Operational');
-    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Operational<\/text>/);
+    assert.equal((await (await j.publicResponse('/badge.json')).json()).message, 'Working');
+    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Working<\/text>/);
     const published = [], cursors = new Set();
     let cursor;
     do {
@@ -579,7 +775,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await page.clock.install();
     await page.clock.pauseAt(new Date());
     await page.goto(j.publicOrigin);
-    assert.equal(await page.locator('#overall-status').innerText(), 'Operational');
+    assert.equal(await page.locator('#overall-status').innerText(), 'Working');
     assert.equal(await page.getByText(hidden.name, { exact: true }).count(), 0);
     assert.equal(await page.locator('.uptime').count(), 1, 'only the visible healthy component has uptime on the representative page');
     if (process.env.LAMP_SCREENSHOTS) {
@@ -622,7 +818,11 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         if (otherState !== 'Operational') assert.equal(visible.find(component => component.id === other.id).state, otherState);
         await page.reload();
         assert.equal(await page.locator('#overall-status').count(), 1);
-        assert.equal(await page.locator('#overall-status').innerText(), expected);
+        assert.equal(await page.locator('#overall-status').innerText(), expectedComponentLabels[expected]);
+        for (const component of visible) {
+          const row = page.locator('article.component').filter({ has: page.getByRole('heading', { name: component.name, exact: true }) });
+          assert.equal(await row.locator('.component-state').innerText(), expectedComponentLabels[component.state], `${component.name} shows its own published state`);
+        }
         assert.ok(await page.locator('#overall-status').evaluate(label => Boolean(label.closest('[aria-labelledby="overall-status"]'))), 'the single label remains in the top status section');
         assert.ok(!(await page.locator('body').innerText()).includes(hidden.name));
         if (process.env.LAMP_PAGE004_SCREENSHOTS && ordered[0].id === other.id && expected === 'Partially unavailable') {
@@ -646,7 +846,11 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const liveNode = await live.elementHandle();
     const zoneLabel = await page.locator('[data-timezone-label]').innerText();
     const generation = page.locator('[data-generated-at] time');
-    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles', 'Los Angeles time');
+    const generationDetails = page.locator('[data-generation-details] details');
+    assert.equal(await generationDetails.locator('time').isVisible(), false, 'the exact offset is hidden until requested');
+    await generationDetails.locator('summary').click();
+    assertVisibleTime(await generationDetails.locator('time').innerText(), await generation.getAttribute('datetime'), 'America/Los_Angeles');
     // Age one retained publication without any operator write. The browser's
     // own zone differs from Settings, so the tooltip must keep the page zone.
     const retainedDocument = await j.publicResponse('/');
@@ -656,7 +860,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
       && node.parentNode?.attrs?.some(attr => attr.name === 'data-generated-at'));
     assert.equal(initialTimes.length, 1);
     assert.equal(initialTimes[0].attrs.find(attr => attr.name === 'datetime').value, retainedInstant);
-    assertVisibleTime(nodeText(initialTimes[0]), retainedInstant, 'America/Los_Angeles');
+    assertVisibleTime(nodeText(initialTimes[0]), retainedInstant, 'America/Los_Angeles', 'Los Angeles time');
     const ageContext = await browser.newContext({ timezoneId: 'America/New_York' });
     const agePage = await ageContext.newPage();
     try {
@@ -673,7 +877,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         assert.equal(await age.innerText(), 'just now', 'the retained generation initially has a relative age below one minute');
         assert.equal(await age.getAttribute('datetime'), retainedInstant);
         const absoluteTitle = await age.getAttribute('title');
-        assertVisibleTime(absoluteTitle, retainedInstant, 'America/Los_Angeles');
+        assertVisibleTime(absoluteTitle, retainedInstant, 'America/Los_Angeles', 'Los Angeles time');
         const documentNode = await agePage.locator('html').elementHandle();
         await agePage.clock.runFor(30_000);
         await agePage.waitForFunction(() => document.querySelector('[data-generated-at] time')?.textContent === '1 minute ago');
@@ -681,7 +885,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
         assert.ok(await age.isVisible(), 'the changed relative age stays visible to the reader');
         assert.equal(await age.getAttribute('datetime'), retainedInstant, 'aging does not replace the generation instant');
         assert.equal(await age.getAttribute('title'), absoluteTitle, 'aging retains the absolute tooltip');
-        assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles');
+        assertVisibleTime(await age.getAttribute('title'), retainedInstant, 'America/Los_Angeles', 'Los Angeles time');
         assert.ok(await documentNode.evaluate(node => node === document.documentElement), 'the document stays open while its label ages');
         assert.equal((await (await j.publicResponse('/api/public/status')).json()).generatedAt, retainedInstant, 'no new generation was published');
         console.info('PAGE-009 generation age at ' + width + ': just now -> 1 minute ago; instant=' + retainedInstant + '; tooltip=' + absoluteTitle);
@@ -729,8 +933,8 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(firstStatus.incident.message.includes(publishedUpdate.customerImpact));
     assert.ok((await j.publicText('/')).includes(other.name), 'a degraded conditional component becomes public');
     const badge = await (await j.publicResponse('/badge.json')).json();
-    assert.ok(JSON.stringify(badge).includes('Major outage'));
-    assert.ok((await j.publicText('/badge.svg')).includes('Major outage'));
+    assert.equal(badge.message, 'Down');
+    assert.match(await j.publicText('/badge.svg'), /id="value"[^>]*>Down<\/text>/);
     let refreshRequests = 0, documentNavigations = 0;
     page.on('request', request => { if (new URL(request.url()).pathname === '/api/public/status') refreshRequests++; });
     page.on('framenavigated', frame => { if (frame === page.mainFrame()) documentNavigations++; });
@@ -747,8 +951,9 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(await liveNode.evaluate(node => node === document.querySelector('#status-live')), 'the assistive live region remains the same node');
     assert.equal(await page.locator('[data-timezone-label]').innerText(), zoneLabel);
     assert.equal(await page.locator('[data-timezone-label]').getAttribute('data-timezone'), 'America/Los_Angeles');
-    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles');
-    assert.ok((await page.locator('#status-live').innerText()).includes('Major outage'));
+    assertVisibleTime(await generation.getAttribute('title'), await generation.getAttribute('datetime'), 'America/Los_Angeles', 'Los Angeles time');
+    assertVisibleTime(await generationDetails.locator('time').innerText(), await generation.getAttribute('datetime'), 'America/Los_Angeles');
+    assert.equal(await page.locator('#overall-status').innerText(), 'Down');
     // Later widget and accessibility checks use ordinary browser timers.
     await page.clock.resume();
     if (process.env.LAMP_SCREENSHOTS) {
@@ -800,7 +1005,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await loadWidget(page); await page.locator('section[role=status]').waitFor();
     const banner = page.locator('section[role=status]');
     assert.equal(await banner.count(), 1, 'one script tag installs one banner');
-    assert.equal(await banner.locator('strong').innerText(), 'Major outage', 'the banner shows the exact aggregate state');
+    assert.equal(await banner.locator('strong').innerText(), 'Down', 'the banner shows the exact aggregate state');
     const bannerMessage = await banner.locator('span').last().innerText();
     assert.ok(bannerMessage.includes(incident.reference), 'the banner identifies the unresolved incident');
     assert.ok(bannerMessage.includes('Synthetic Lamp API outage under investigation'), 'the banner retains its submitted title');
@@ -812,7 +1017,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(bannerMessage.split('\n').includes('Status: Identified'));
     assert.deepEqual(bannerFields(bannerMessage), [
       `Who is affected: ${widgetWording.affectedAudience}`, `Customer impact: ${widgetWording.customerImpact}`,
-      `What still works: ${widgetWording.whatStillWorks}`, 'Next update by: Feb 10, 2031, 11:47 UTC-08:00',
+      `What still works: ${widgetWording.whatStillWorks}`, 'Next update by: Feb 10, 2031, 11:47 Los Angeles time',
       `Additional details: ${widgetWording.details}`,
     ], 'the installed widget retains the complete populated wording and independently expected configured-zone commitment');
     const captureUpdate = async name => {
@@ -846,14 +1051,22 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     await page.waitForFunction(text => document.querySelector('section[role=status] span:last-child').textContent.includes(text), blankWording.customerImpact);
     assert.deepEqual(bannerFields(await banner.locator('span').last().innerText()), [
       `Who is affected: ${blankWording.affectedAudience}`, `Customer impact: ${blankWording.customerImpact}`,
-      'Next update by: Feb 10, 2031, 12:48 UTC-08:00',
+      'Next update by: Feb 10, 2031, 12:48 Los Angeles time',
     ], 'the same installed widget replaces the prior publication and omits both absent optional fields');
     await page.reload(); await loadWidget(page);
     await captureUpdate('blank-optional');
 
-    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: 'API requests are working again.', whatStillWorks: '', details: '', nextUpdateAt: null });
+    const historyRss = await readNativeHistoryFeeds(j, incident, linkedUpdate);
+    const historyRssUrl = new URL('/history.rss', j.publicOrigin).href;
+    const unchangedRss = await j.raw(historyRssUrl, { headers: { 'If-None-Match': historyRss.etag } });
+    assert.equal(unchangedRss.status, 304, 'the saved validator matches the history RSS before the next publication');
+
+    const resolutionImpact = 'API requests are working again.';
+    await j.save(incident.id, { lifecycle: 'Resolved', customerImpact: resolutionImpact, whatStillWorks: '', details: '', nextUpdateAt: null });
     const resolvedPublication = (await j.publish(incident.id)).update;
+    const resolutionReturnedAt = performance.now();
     assert.equal(resolvedPublication.nextUpdateAt, null);
+    await pollHistoryRss(j, historyRss, resolvedPublication.id, resolutionImpact, resolutionReturnedAt);
     await j.visible('/history', incident.title);
     await eventually(async () => (await j.publicResponse('/api/public/status')).json(), status => status.incident === null, 'resolved publication clears the widget incident');
     await page.clock.fastForward(30000);
@@ -909,8 +1122,12 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.ok(initialGeneration);
     const plainGeneration = plain.locator('[data-generated-at] time');
     assert.equal(await plainGeneration.getAttribute('datetime'), initialGeneration);
+    const plainDetails = plain.locator('[data-generation-details] details');
+    await plainDetails.locator('summary').click();
+    assertVisibleTime(await plainDetails.locator('time').innerText(), initialGeneration, 'America/Los_Angeles');
+    await plainDetails.locator('summary').click();
     const absoluteGeneration = await plainGeneration.innerText();
-    assertVisibleTime(absoluteGeneration, initialGeneration, 'America/Los_Angeles');
+    assertVisibleTime(absoluteGeneration, initialGeneration, 'America/Los_Angeles', 'Los Angeles time');
     assert.ok((await plain.locator('body').innerText()).includes(main.name));
     const initialContent = await plain.content();
     const initialDocumentNode = await plain.locator('html').elementHandle();
@@ -934,7 +1151,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.equal(await plain.content(), initialContent, 'the complete initial document remains unchanged after a new publication and two refresh intervals');
     assert.equal(await plainGeneration.getAttribute('datetime'), initialGeneration);
     assert.equal(await plainGeneration.innerText(), absoluteGeneration);
-    assertVisibleTime(await plainGeneration.innerText(), initialGeneration, 'America/Los_Angeles');
+    assertVisibleTime(await plainGeneration.innerText(), initialGeneration, 'America/Los_Angeles', 'Los Angeles time');
     if (process.env.LAMP_SCREENSHOTS) {
       await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
       for (const width of [1440, 390]) {

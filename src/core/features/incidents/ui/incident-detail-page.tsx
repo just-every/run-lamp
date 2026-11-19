@@ -408,7 +408,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
         <form inert={publishState === "publishing"} className="impact-form" onSubmit={(event) => event.preventDefault()}>
           <StatusChoice value={draft.lifecycle} onChange={changeLifecycle} />
           {/* A separate label keeps the field's name to its question; a wrapping label would also read the text. */}
-          <div className="impact-field"><label className="field-label" htmlFor={impactId}>What’s happening?</label><textarea id={impactId} required aria-invalid={!draft.customerImpact.trim() || undefined} rows={2} placeholder="What customers see now" value={draft.customerImpact} maxLength={250} onChange={(event) => updateField("customerImpact", event.target.value)} /></div>
+          <div className="impact-field"><label className="field-label" htmlFor={impactId}>What’s happening?</label><textarea id={impactId} required aria-invalid={!draft.customerImpact.trim() || undefined} rows={2} placeholder="What customers will see next" value={draft.customerImpact} maxLength={250} onChange={(event) => updateField("customerImpact", event.target.value)} /></div>
           {findings("customerImpact")}
           <fieldset className="impact-field">
             <legend>Who’s affected?</legend>

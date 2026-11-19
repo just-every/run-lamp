@@ -83,7 +83,9 @@ export async function scheduleLocalMaintenance(page, origin, context, publicOrig
   try {
     await reader.goto(publicOrigin + '/maintenance/' + maintenance.reference);
     const visible = await reader.locator('.maintenance-window').innerText();
-    const zone = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Toronto', timeZoneName: 'short' }).formatToParts(new Date(maintenance.endsAt)).find(part => part.type === 'timeZoneName').value;
-    assert.match(visible, new RegExp(`10:00 PM.*11:00 PM ${zone}`));
+    assert.match(visible, /10:00 PM.*11:00 PM Toronto time/);
+    const details = reader.locator('article.maintenance > .time-details');
+    await details.locator('summary').click();
+    assert.match(await details.innerText(), /22:00 UTC-05:00.*23:00 UTC-05:00/s);
   } finally { await reader.close(); }
 }

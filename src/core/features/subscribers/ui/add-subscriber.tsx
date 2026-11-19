@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { useState, type FormEvent } from "react";
 import { appApi } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -40,7 +41,7 @@ export function AddSubscriber({ onChanged, localMail = false }: { onChanged: () 
       <fieldset className="maintenance-components" disabled={pending}>
         <legend>Updates to receive</legend>
         {eventKinds.map(kind => <label className="checkbox-label" key={kind}><input type="checkbox" checked={selectedEvents.includes(kind)} onChange={() => setSelectedEvents(selectedEvents.includes(kind) ? selectedEvents.filter(value => value !== kind) : [...selectedEvents, kind])} />{kind === "incidents" ? "Incidents" : kind === "maintenance" ? "Maintenance" : "Component status changes"}</label>)}
-        <label className="checkbox-label"><input type="checkbox" checked={minimumImpact !== null} onChange={event => setMinimumImpact(event.target.checked ? "Partially unavailable" : null)} />Only incidents reaching Partially unavailable or worse</label>
+        <label className="checkbox-label"><input type="checkbox" checked={minimumImpact !== null} onChange={event => setMinimumImpact(event.target.checked ? "Partially unavailable" : null)} />Only incidents reaching {componentStateLabel("Partially unavailable")} or worse</label>
       </fieldset>
       {error ? <FormError>{error}</FormError> : null}
       {result ? <p role="status">{result}</p> : null}

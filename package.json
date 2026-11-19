@@ -1,6 +1,6 @@
 {
   "name": "lamp",
-  "version": "1.11.22",
+  "version": "1.11.23",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.12.4",
@@ -109,6 +109,9 @@
     "node": "22.20.0"
   },
   "pnpm": {
+    "patchedDependencies": {
+      "picomatch@4.0.7": "patches/picomatch@4.0.7.patch"
+    },
     "onlyBuiltDependencies": [
       "esbuild",
       "workerd"

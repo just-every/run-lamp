@@ -21,7 +21,7 @@ export function NextUpdateField({ value, timezone, onChange, onError }: { value:
       {QUICK.map(choice => <button key={choice.minutes} type="button" className="choice-pill" aria-pressed={chosen === choice.minutes && Boolean(value)} onClick={() => choose(choice.minutes)}>{choice.label}</button>)}
       <input aria-label="Next update date and time" type="datetime-local" value={toPageDateTime(value, timezone)} onChange={(event) => { setChosen(null); try { onChange(fromPageDateTime(event.target.value, timezone)); report(null); } catch (cause) { onChange(null); report((cause as Error).message); } }} />
     </div>
-    <small><TimezoneHint timezone={timezone} at={value} />.</small>
+    <small><TimezoneHint timezone={timezone} />.</small>
     {value && Date.parse(value) > Date.now() + 86_400_000 ? <p role="status" className="time-warning">More than 24 hours away.</p> : null}
     {error ? <FormError>{error}</FormError> : null}
   </fieldset>;
