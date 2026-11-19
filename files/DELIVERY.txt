@@ -1,0 +1,14 @@
+ok 1 - NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+  duration_ms: 98179.381871
+# NOTIFY-013 1440px default-off owner choice persists; real Resend acceptance names its provider in Deliveries
+ok 2 - Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications
+  duration_ms: 47031.369062
+# NOTIFY-004 reconciled 132 deliveries, all six nonempty outcome filters and 41 complete CSV scopes, including 101 distinct recipients across pages of one update.
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 148061.920324

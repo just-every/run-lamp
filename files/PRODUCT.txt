@@ -1,0 +1,7 @@
+Product head 0969500eae4f537d6c5a32be6a8bc85af41d13ec
+Base 9302c0a0f25b07950f2aa7fb84193e21cbf33703
+Pushed at 2026-11-19T07:10:07Z
+ed9b0b846ba5ebadf9e14a0bc99ec40fce54088a Reconcile delivery records and complete CSV across populated filters [skip ci]
+0969500eae4f537d6c5a32be6a8bc85af41d13ec Read the confirmed browser recipient from the native subscriber list
+Both commits passed the fleet identity and trailer audit. Merge count 0.
+Advertised ref refs/heads/cloud/sd-lamp-c-f147-lin-1

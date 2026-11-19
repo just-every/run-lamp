@@ -1,0 +1,15 @@
+Product head 0969500eae4f537d6c5a32be6a8bc85af41d13ec
+Candidate browser proof completed 2026-11-19T07:12:52Z.
+Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)
+ok 1 - NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts
+# NOTIFY-013 1440px default-off owner choice persists; real Resend acceptance names its provider in Deliveries
+# tests 1
+# pass 1
+# fail 0
+# skipped 0
+# duration_ms 92087.651443
+Browser assertions ran at 1440. Settings and Deliveries were captured at 1440 and 390. Synthetic address fields were masked in the browser before capture; the four images passed the address OCR check.
+20a78501367acae52f5c88fca0d132543fc76d3480abe26f3e536aa8bf2a1b72  proof/1440-mail-settings.png
+64e929520acf53d89585cb80927bc27711202182292ed994bacd49328212324d  proof/1440-mail-deliveries.png
+2ccf5e0995f58e51d14956f11b0eb91a76b14dbf68eadd9f905d504eed8f3361  proof/390-mail-settings.png
+06c5e7c01bf7c349f0884e7ac38d9122e5480de4883b6076ad3f8b9996525258  proof/390-mail-deliveries.png

@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "012d85bfac56ffe2cccb04f7c61da05f396edb77",
+      "bytes": 1128,
+      "path": "BROWSER.txt",
+      "sha256": "3a106136c99e1f8c7cd63192cdeb0bb481a936403c19b031583149292f0a5280"
+    },
+    {
+      "blob": "3764286d59492aa601af4c02648932d0bcfef3a9",
+      "bytes": 982,
+      "path": "BUILD.json",
+      "sha256": "cc6fe37bb0a3bf3b0922af2f92764665952afd90c6b2d0c48d5d65c2c29307aa"
+    },
+    {
+      "blob": "b5127b3d73307f1927e6759915ff6b5771c1eee5",
+      "bytes": 763,
+      "path": "DELIVERY.txt",
+      "sha256": "e8a9041e71549acdc91af396fe9493ae158088510af57f40fbb5d02aa537381f"
+    },
+    {
+      "blob": "a58b11dd81897f591403bad74240f0df33b8cf11",
+      "bytes": 487,
+      "path": "PRODUCT.txt",
+      "sha256": "a97fff7377de3ad1015abef2e7e3f6525e77beebbc2e17cb28e235198d449440"
+    },
+    {
+      "blob": "b3e6ba7f99af027e6268698b08f2098e52d7697f",
+      "bytes": 5994,
+      "path": "REPORT.md",
+      "sha256": "566fae0aaf25ef3d1c0c048d4a1472cdc991b3c63d980952ef6db3f7cbd4ddf2"
+    },
+    {
+      "blob": "437727017a9b9b21817572c0ee681cbe9ef023fc",
+      "bytes": 1191,
+      "path": "VERIFY.json",
+      "sha256": "5ed55db1a037960c681a9f0bb9f73d9866de646a757e30f7832b2232bc9f2f71"
+    },
+    {
+      "blob": "e8200d4e328dbfe8218784c328f1271581eb2a30",
+      "bytes": 135930,
+      "path": "proof/1440-mail-deliveries.png",
+      "sha256": "64e929520acf53d89585cb80927bc27711202182292ed994bacd49328212324d"
+    },
+    {
+      "blob": "d67e8abe5e0461b2ca3ad5bacf85ae73bf3fb8c5",
+      "bytes": 277996,
+      "path": "proof/1440-mail-settings.png",
+      "sha256": "20a78501367acae52f5c88fca0d132543fc76d3480abe26f3e536aa8bf2a1b72"
+    },
+    {
+      "blob": "ed1e4f5d269bd07b9a276b1bb7d307501a7e834d",
+      "bytes": 119835,
+      "path": "proof/390-mail-deliveries.png",
+      "sha256": "06c5e7c01bf7c349f0884e7ac38d9122e5480de4883b6076ad3f8b9996525258"
+    },
+    {
+      "blob": "1259ee9adbd248521b18720c4db59a92d2c8e3e1",
+      "bytes": 223381,
+      "path": "proof/390-mail-settings.png",
+      "sha256": "2ccf5e0995f58e51d14956f11b0eb91a76b14dbf68eadd9f905d504eed8f3361"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f147-lin-1",
+  "product_head": "0969500eae4f537d6c5a32be6a8bc85af41d13ec",
+  "ref": "refs/heads/evidence/sd-lamp-c-f147-lin-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f147-lin-1"
+}
