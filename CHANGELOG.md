@@ -1,5 +1,26 @@
 # Changelog
 
+## 1.11.24
+
+- **Maintenance notices follow the transition.** Starting a window sends its start notice and completing it sends its completion notice. The public status page lists upcoming maintenance through the fourteen-day boundary.
+- **Component states and times are easier to read.** Lamp uses Working, Slow, Partly down, Down and Maintenance for component states. Times show a familiar zone name, such as New York time. Open Time details on the public page for exact UTC offsets. Settings → Page gives Time zone details a full-size control.
+- **The public status page starts with the first published snapshot.** The page, Atom feed and widget report that status is unavailable until Lamp has published its first snapshot. After an operator publishes a new update, a request carrying the previous snapshot’s cache validator gets the current content.
+- **Technical archives restore into an empty local installation.** Lamp skips rer’s internal bookkeeping tables when exporting and restoring, so those tables no longer prevent a local restore.
+- **Verify old bookmarks during Cutover.** Lamp checks that each legacy bookmark redirects to the expected Lamp page and reports an unexpected destination, an unavailable page or an unreachable address.
+- **Reconcile notifications in the Delivery log.** The CSV covers the full set of deliveries matching the active filters. If a subscriber delivery fails and can be retried, Lamp schedules up to five retries over one hour.
+- **Local invitation guidance explains where links work.** An operator can open a pending invitation in the same browser. To send a teammate an invitation they can open elsewhere, invite them from the online copy with email enabled.
+- **The checkout uses rer 0.2.125.**
+
+### Upgrading from 1.11.23
+
+Back up data and your source changes first. Update the checkout to `v1.11.24`, run `pnpm install --frozen-lockfile` and run `rer deploy` with the same environment and input file. This version adds no migrations. Keep the backup and exercise a restored copy. Check sign-in, first-run setup, Settings, incident publication, maintenance notices and your intended mail configuration. Review imported Sorry templates before using them. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+
+### Known limits
+
+Use the source revision that created a technical archive for the initial restore, then update the restored copy normally. Restore into an empty destination. The existing accessibility evaluation covers selected journeys and leaves some WCAG 2.2 AA criteria unevaluated.
+
+<!-- Run Edit Run fleet, 2026-11-19: Lamp 1.11.24 release metadata. -->
+
 ## 1.11.23
 
 **The install description's declared hash matched an older file: approving Lamp on the platform said it could not be installed yet; fixed.**
