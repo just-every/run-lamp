@@ -7,7 +7,9 @@ import type { BriefFacts } from "./repository";
 
 export interface BriefAlert { ref: string; receivedAt: string; source: string; state: "firing" | "recovered"; title: string | null; evidenceSummary?: string; payload: unknown }
 export interface BriefUpdate { ref: string; publishedAt: string; lifecycle: IncidentLifecycle; affectedAudience: string; customerImpact: string; whatStillWorks: string; details: string; nextUpdateAt: string | null }
-export interface BriefComponent { ref: string; name: string; state: ComponentState; relationship: string }
+/** `staged`: attached by the saved draft, not yet published. `historical`: the incident is resolved, so `state` is the
+ * last state this incident claimed for the component, not what the component shows now. */
+export interface BriefComponent { ref: string; name: string; state: ComponentState; relationship: string; staged?: boolean; historical?: boolean }
 export interface BriefQuestion { ref: string; question: string; at?: string }
 
 /** What the operator reads and, unchanged, what an assistant is sent. */
@@ -29,7 +31,8 @@ export function buildIncidentBrief(facts: BriefFacts, now: Date): IncidentBrief 
     return { ref: `A${index + 1}`, receivedAt: alert.receivedAt, source: alert.source, state: alert.state, title: alertTitle(alert, payload), ...(isOperationsPreset(alert.preset) ? { evidenceSummary: operationsEvidence(alert.preset, payload, alert.receivedAt) } : alert.preset === "uptime" ? { evidenceSummary: uptimeEvidence(payload) } : alert.preset === "pagerduty" ? { evidenceSummary: pagerDutyEvidence(payload) } : {}), payload };
   });
   const updates = facts.updates.map((update, index): BriefUpdate => ({ ref: `U${index + 1}`, ...update }));
-  const components = facts.components.map((component, index): BriefComponent => ({ ref: `C${index + 1}`, ...component }));
+  const resolved = facts.incident.lifecycle === "Resolved";
+  const components = facts.components.map((component, index): BriefComponent => ({ ref: `C${index + 1}`, ...component, ...(resolved && !component.staged ? { historical: true } : {}) }));
   const open = facts.incident.lifecycle !== "Resolved";
   const latest = updates.at(-1);
   const latestAlert = alerts.at(-1);

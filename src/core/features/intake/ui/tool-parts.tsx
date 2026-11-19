@@ -74,3 +74,12 @@ export function NewKey({ what, replace }: { what: string; replace: () => Promise
     {error && <FormError>{error}</FormError>}
   </div>;
 }
+
+const localHost = (host: string) => host === "localhost" || host.endsWith(".localhost") || host === "127.0.0.1" || host === "::1" || host === "[::1]";
+
+/** Hosted monitoring tools call Lamp over the internet, so an address on this computer can never receive their alerts.
+ * Said before the address is made, with the way to a reachable one. */
+export function LocalAddressNotice({ tool }: { tool: string }) {
+  if (typeof window === "undefined" || !localHost(window.location.hostname)) return null;
+  return <p className="tool-note" role="note">This copy of Lamp runs only on this computer. {tool} sends alerts from the internet, so it needs a public HTTPS address that it can reach. You can still connect it here to see the steps, but its alerts will arrive only after you <a className="text-link" href="/docs/deploy">put Lamp online</a> and connect {tool} there.</p>;
+}

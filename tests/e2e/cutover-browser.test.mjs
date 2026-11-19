@@ -148,6 +148,8 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         const history = page.getByRole('heading', { name: 'Your imports', exact: true }).locator('..');
         const job = history.getByRole('listitem').filter({ hasText: result.job.id.slice(0, 12) });
         await job.getByRole('button', { name: 'Undo', exact: true }).waitFor();
+        assert.match(await job.innerText(), /Sorry import · /, 'an import is named by its tool and date, not its id');
+        await job.getByText('Technical details', { exact: true }).click();
         assert.match(await job.innerText(), /approved by operator@ingress.example.test at /);
         const approval = (await read('/api/app/statuspage-import/jobs')).jobs.find(row => row.id === result.job.id);
         assert.ok(Date.parse(approval.approvedAt) >= approvedAfter);

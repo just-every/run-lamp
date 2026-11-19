@@ -5,17 +5,18 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { EmptyState } from "../../../app/client/ui/lit-states";
-import { FormError } from "../../../app/client/ui/states";
+import { FormError, useOperatorTime } from "../../../app/client/ui/states";
 import type { MoveInReport } from "../planning";
 import { HELD_SORRY_DAYS } from "../held-sorry";
 import { moveInDoor } from "./door-client";
+import { importLabel, type ImportIdentity } from "./import-label";
 import type { WebsiteRecord } from "../../website/repository";
 
 type SavedFile = { name: string; text: string };
 type Preview = { report: MoveInReport; jobId?: string; files?: SavedFile[]; planId: string; fingerprint: string };
 /** A door import carries its plan; an import from before the door has none. */
 type DoorPlan = { planId?: string | null; fingerprint?: string | null; namespace?: string };
-type Job = DoorPlan & { approvalCaption?: string; id: string; state: string; checkpoint: number; total: number };
+type Job = DoorPlan & ImportIdentity & { approvalCaption?: string; id: string; state: string; checkpoint: number; total: number };
 type Result = { job: Job; door: DoorPlan | null; report: MoveInReport; invites: { sent: number; remaining: number }; undo?: { dispositions: Array<{ disposition: string; targetKind?: string; reason?: string }>; expiredSubscribers: number } };
 
 const kindLabels: Record<string, string> = { group: "Component groups", component: "Components", incident: "Incidents", maintenance: "Maintenance", subscriber: "Subscribers", postmortem: "Postmortems", template: "Incident templates" };
@@ -79,6 +80,7 @@ function FieldLedger({ report }: { report: MoveInReport }) {
 
 /** Settings → Move in: a dry run first, then the import, then undo. */
 export function MoveInPage() {
+  const formatOperatorTime = useOperatorTime();
   const jobs = useAppData<{ jobs: Job[] }>("/api/app/statuspage-import/jobs");
   const website = useAppData<{ website: WebsiteRecord | null }>("/api/app/website");
   const [source, setSource] = useState<"statuspage" | "betterstack" | "instatus" | "sorry">(website.data?.website?.statusPage?.source ?? "statuspage");
@@ -195,7 +197,7 @@ export function MoveInPage() {
       {result.job.state === "undoing" && <Button type="button" disabled={busy} onClick={() => act({ id: result.job.id, ...result.door }, "undo")}>Continue undo</Button>}
     </section>}
     <section className="data-card" id="import-history" aria-labelledby="move-in-history"><h2 id="move-in-history">Your imports</h2>
-      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
+      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{importLabel(job, formatOperatorTime)} · {job.state} · {job.checkpoint}/{job.total}<details><summary>Technical details</summary><small style={{display:"block",overflowWrap:"anywhere"}}>Import {job.id}{job.approvalCaption ? ` · ${job.approvalCaption}` : ""}</small></details></span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
     </section>
   </div>;
 }

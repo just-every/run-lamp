@@ -1,3 +1,4 @@
+import { useAppData } from "../../../app/client/ui/api";
 import { FormError } from "../../../app/client/ui/states";
 import { TimezoneHint, fromPageDateTime, toPageDateTime } from "../../../app/client/ui/timezone";
 
@@ -22,12 +23,18 @@ export function publishTime(iso: string, timezone: string) {
   return new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hourCycle: "h23", ...(day(at) === day(new Date()) ? {} : { month: "short", day: "numeric" }) }).format(at);
 }
 
+/** True on a local installation, where mail is never sent: a publication records local suppression instead. */
+export function useLocalMail() {
+  return useAppData<{ local: boolean }>("/api/app/mail-mode").data?.local === true;
+}
+
 /** What the options changed, said next to the publish button: when the update goes out and who hears about it.
- * Webhooks are named when left out, so an email-only update is never read as reaching every integration. */
-export function publishHint(channels: Channel[], timing: PublishTiming, timezone: string) {
+ * Webhooks are named when left out, so an email-only update is never read as reaching every integration.
+ * On a local installation email is named as recorded locally, so it is never read as sent. */
+export function publishHint(channels: Channel[], timing: PublishTiming, timezone: string, localMail = false) {
   if (timing.mode === "backdate") return "Historical: notifies no one";
   const when = timing.mode === "schedule" ? timing.at ? `schedules for ${publishTime(timing.at, timezone)}` : "choose when it publishes" : null;
-  const who = channels.length ? [...ordered(channels).map(channel => channel.sends), ...(channels.includes("webhook") ? [] : ["no webhooks"])] : ["notifies no one"];
+  const who = channels.length ? [...ordered(channels).map(channel => channel.value === "email" && localMail ? "records local email suppression, nothing is sent" : channel.sends), ...(channels.includes("webhook") ? [] : ["no webhooks"])] : ["notifies no one"];
   return sentence([when, ...who].filter(Boolean).join(" · "));
 }
 

@@ -146,7 +146,7 @@ export function OperatorsPanel() {
 function OperatorRow({ operator, signInUrl, saving, lastOwner = false, onRoleChange, onRevoke, onErase }: { operator: StoredOperator | StoredFormerOperator; signInUrl?: string; saving: boolean; lastOwner?: boolean; onRoleChange?: (role: StoredOperator["role"]) => Promise<boolean>; onRevoke?: () => void; onErase?: () => void }) {
   return <div className="operator-row">
     <span><strong>{operator.displayName}</strong><small><span>{operator.email}</span> · {operatorRoleLabels[operator.role]}</small>
-      {signInUrl && <a className="text-link" href={signInUrl}>Open as {operator.displayName} in this browser</a>}
+      {signInUrl && <><a className="text-link" href={signInUrl}>Open as {operator.displayName} in this browser</a><small>Works only in this browser while you are signed in as owner. Its address is not a link to send: anyone else who opens it gets a not-found page.</small></>}
     </span>
     <div className="operator-actions">
       {onRoleChange && <OperatorRoleSelect operator={operator} disabled={saving} lastOwner={lastOwner} onChange={onRoleChange} />}

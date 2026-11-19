@@ -8,7 +8,7 @@ import type { ComponentState, IncidentLifecycle } from "../../shared/domain";
  * can see (as the public page does), and counts every attached one so it can still ask when none is. */
 export interface BriefFacts {
   incident: { reference: string; title: string; lifecycle: IncidentLifecycle; openedAt: string };
-  components: Array<{ name: string; state: ComponentState; relationship: string }>;
+  components: Array<{ name: string; state: ComponentState; relationship: string; staged?: boolean }>;
   attachedComponents: number;
   updates: Array<{ lifecycle: IncidentLifecycle; affectedAudience: string; customerImpact: string; whatStillWorks: string; details: string; nextUpdateAt: string | null; publishedAt: string }>;
   alerts: Array<{ source: string; preset: AlertPreset | null; titlePath: string; state: "firing" | "recovered"; receivedAt: string; payloadJson: string }>;
@@ -27,14 +27,20 @@ export function createBriefRepository(binding: D1Database): BriefRepository {
         binding.prepare(`SELECT ic.component_name AS name, ic.state, ic.relationship, COALESCE(c.internal, 0) AS internal FROM incident_components ic LEFT JOIN components c ON c.id = ic.component_id WHERE ic.incident_id = ? ORDER BY ic.created_at ASC, ic.id ASC`).bind(incidentId).all<BriefFacts["components"][number] & { internal: number }>(),
         binding.prepare(`SELECT lifecycle, affected_audience AS affectedAudience, customer_impact AS customerImpact, what_still_works AS whatStillWorks, details, next_update_at AS nextUpdateAt, published_at AS publishedAt FROM incident_updates WHERE incident_id = ? ORDER BY published_at ASC, id ASC`).bind(incidentId).all<BriefFacts["updates"][number]>(),
         binding.prepare(`SELECT s.name AS source, COALESCE(s.vendor_preset,s.responder_preset,s.uptime_preset,s.grouped_preset,s.preset) AS preset, s.title_path AS titlePath, r.state, r.received_at AS receivedAt, r.payload_json AS payloadJson FROM alert_receipts r JOIN alert_sources s ON s.id = r.source_id WHERE r.incident_id = ? AND r.state IN ('firing', 'recovered') AND NOT (COALESCE(s.vendor_preset,'') IN ('jsm','opsgenie') AND json_extract(r.payload_json,'$.action') = 'AddNote') ORDER BY r.received_at ASC, r.id ASC`).bind(incidentId).all<BriefFacts["alerts"][number]>(),
-        binding.prepare(`SELECT lifecycle, affected_audience <> '' AS hasAffectedAudience, customer_impact <> '' AS hasCustomerImpact, next_update_at AS nextUpdateAt FROM incident_drafts WHERE incident_id = ?`).bind(incidentId).first<{ lifecycle: IncidentLifecycle; hasAffectedAudience: number; hasCustomerImpact: number; nextUpdateAt: string | null }>(),
+        binding.prepare(`SELECT lifecycle, affected_audience <> '' AS hasAffectedAudience, customer_impact <> '' AS hasCustomerImpact, next_update_at AS nextUpdateAt, component_changes_json AS componentChangesJson FROM incident_drafts WHERE incident_id = ?`).bind(incidentId).first<{ lifecycle: IncidentLifecycle; hasAffectedAudience: number; hasCustomerImpact: number; nextUpdateAt: string | null; componentChangesJson: string }>(),
         binding.prepare(`SELECT ai_tone_instructions AS tone FROM page_settings WHERE id = 'default'`).first<{ tone: string | null }>(),
       ]);
       const vendorEvidence = await binding.prepare(`SELECT source, state, source_state AS sourceState, summary, source_url AS sourceUrl, observed_at AS observedAt FROM vendor_evidence WHERE incident_id=? ORDER BY observed_at,id`).bind(incidentId).all<{source:string;state:ComponentState;sourceState:string;summary:string;sourceUrl:string;observedAt:string}>();
+      // Components staged in the saved draft are attached as far as the operator is concerned: publishing attaches them.
+      const attachedNames = new Set(components.results.map(component => component.name));
+      const staged = stagedChanges(draft?.componentChangesJson).filter(change => change.attachmentId === null && !attachedNames.has(change.componentName));
       return {
         incident,
-        components: components.results.filter((component) => !component.internal).map(({ name, state, relationship }) => ({ name, state, relationship })),
-        attachedComponents: components.results.length,
+        components: [
+          ...components.results.filter((component) => !component.internal).map(({ name, state, relationship }) => ({ name, state, relationship })),
+          ...staged.filter(change => !change.internal).map(change => ({ name: change.componentName, state: change.state, relationship: change.relationship, staged: true })),
+        ],
+        attachedComponents: components.results.length + staged.length,
         updates: updates.results,
         alerts: [...alerts.results, ...vendorEvidence.results.map(row => ({source:row.source,preset:null,titlePath:"summary",state:row.state === "Operational" ? "recovered" as const : "firing" as const,receivedAt:row.observedAt,payloadJson:JSON.stringify({summary:row.summary,sourceState:row.sourceState,sourceUrl:row.sourceUrl})}))],
         draft: draft ? { lifecycle: draft.lifecycle, hasAffectedAudience: Boolean(draft.hasAffectedAudience), hasCustomerImpact: Boolean(draft.hasCustomerImpact), nextUpdateAt: draft.nextUpdateAt } : null,
@@ -42,4 +48,13 @@ export function createBriefRepository(binding: D1Database): BriefRepository {
       };
     },
   };
+}
+
+interface StagedChange { componentName: string; state: ComponentState; relationship: string; attachmentId: string | null; internal: boolean }
+
+function stagedChanges(json: string | undefined): StagedChange[] {
+  if (!json) return [];
+  const parsed: unknown = JSON.parse(json);
+  if (!Array.isArray(parsed)) throw new Error("Draft component changes are malformed.");
+  return parsed as StagedChange[];
 }

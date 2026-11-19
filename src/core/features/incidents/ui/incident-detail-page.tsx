@@ -34,7 +34,7 @@ import { NextUpdateField } from "./next-update-field";
 import { ComponentRelationships, DraftComponentChips, componentChoiceReason, relationshipSummary, useDraftRelationships, type PendingComponent } from "./affected-components";
 import { OptionalText } from "./optional-text";
 import { OptionPanel, UpdateOptions, type OptionGroup } from "./update-options";
-import { NotifyChannels, PublishTimingField, channelSummary, publishHint, publishTime, type Channel, type PublishTiming } from "./publish-options";
+import { NotifyChannels, PublishTimingField, channelSummary, publishHint, publishTime, useLocalMail, type Channel, type PublishTiming } from "./publish-options";
 import { publishBlockReason } from "./publish-readiness";
 
 type IncidentResponse = { wordingChecks?: { blockedTerms: string[]; friendlyLength: number }; incident: Awaited<ReturnType<IncidentsService["get"]>>; hasChatChannels: boolean; previewError?: string | null; preview?: RenderedIncidentUpdate | null };
@@ -65,6 +65,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const initialPreviewTimezone = useRef(timezone);
   const { data, error, loading, refresh } = useAppData<IncidentResponse>(`/api/app/incidents/${incidentId}`);
   const { data: socialData } = useAppData<{ postByDefault: boolean }>("/api/app/social");
+  const localMail = useLocalMail();
   const navigate = useNavigate();
   // What the new-incident screen reports after it created this incident and published (or failed to). It belongs to
   // this visit: read once here, then dropped from the history entry, so a reload or a return never replays it.
@@ -430,7 +431,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       </div>
       <div className="composer-publish" id={draftActionsId} hidden={!draftOpen} inert={publishState === "publishing"}>
         <UpdateOptions publicationKey={updateGeneration.current} groups={groups}
-          footer={<><span className="publish-hint">{publishHint(channels, timing, timezone)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
+          footer={<><span className="publish-hint">{publishHint(channels, timing, timezone, localMail)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
           message={<>{draftActions.message ? <p role="status" className="option-message">{draftActions.message}</p> : null}{draftActions.error ? <FormError>{draftActions.error}</FormError> : null}</>}>
           <OptionPanel name="notify" title="Notify"><NotifyChannels channels={channels} onChange={next => { touchedSocialSelection.current = true; setChannels(next); }} /></OptionPanel>
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={timing} timezone={timezone} error={timeErrors.timing} onChange={setTiming} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>

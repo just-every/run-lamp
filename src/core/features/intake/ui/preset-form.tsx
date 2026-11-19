@@ -5,7 +5,7 @@ import { Button } from "../../../app/client/ui/button";
 import { FormError } from "../../../app/client/ui/states";
 import { createOpaqueToken } from "../../../platform/security/opaque-tokens";
 import { datadogPayloadTemplate, uptimeRobotPayloadTemplate, newRelicPayloadTemplate } from "../presets";
-import { ComponentOptions, NewKey, SaveNote, ShownOnce, ToolHeading, type Copyable } from "./tool-parts";
+import { ComponentOptions, LocalAddressNotice, NewKey, SaveNote, ShownOnce, ToolHeading, type Copyable } from "./tool-parts";
 import { keyedAddress, toolDoes, toolLabel, type ComponentOption, type Source } from "./tools";
 import { useSourceAutosave } from "./use-source-autosave";
 
@@ -49,6 +49,7 @@ function ConnectPreset({ tool, name, components, onConnected, onClose }: { tool:
   return <section className="data-card tool-form" aria-labelledby="tool-form-title">
     <ToolHeading title={`Connect ${toolLabel(tool)}`} does={toolDoes(tool)} close={{ label: address ? "Close" : "Back", onClick: onClose }} />
     {address ? <ShownOnce fields={setupFields(tool, address)} onDone={onClose}>{SETUP[tool]}</ShownOnce> : <form className="tool-fields" onSubmit={event => { event.preventDefault(); void connect(); }}>
+      <LocalAddressNotice tool={toolLabel(tool)} />
       <label className="form-label">Component<select required value={componentId} onChange={event => setComponentId(event.target.value)}><ComponentOptions components={components} empty="Choose a component" /></select></label>
       <div className="form-actions"><Button disabled={busy || !componentId}>{busy ? "Connecting…" : `Connect ${toolLabel(tool)}`}</Button></div>
     </form>}

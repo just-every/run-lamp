@@ -41,6 +41,7 @@ export function registerDeliveryRoutes(app: Hono<AppEnv>, service: DeliveriesSer
     :provider==='ses'?Boolean(options.sesEventTopicArn?.trim())
     :provider==='postmark'?Boolean(options.postmarkWebhookSecret?.trim()):false)]));
   const receiptsConfigured=receiptProviders[mailProvider]??false;
+  app.get("/api/app/mail-mode", (context) => context.json({ local: options.localMail === true }));
   app.get("/api/app/deliveries", async (context) => {
     const parsed = deliveriesQuerySchema.safeParse(context.req.query());
     if (!parsed.success) return context.json({ error: "Invalid delivery query.", issues: parsed.error.issues }, 400);

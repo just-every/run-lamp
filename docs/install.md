@@ -28,8 +28,10 @@ Managed hosting includes mail without a provider account or mail key from you.
 RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and private
 `MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
 authenticated sender and key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and
-`MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail for operator
-sign-in and subscriber messages; terminal recovery links do not replace it.
+`MAIL_PROVIDER_API_KEY`. Enabled mail gives operators emailed sign-in and sends subscriber
+messages. You can instead deliberately set `MAIL_PROVIDER=none`: the owner signs in with
+`rer signin` from the terminal, and email sign-in, invitations and email subscriptions are
+unavailable ([mail-off setup](deploy.md#or-deliberately-turn-email-off)).
 
 Choose two distinct hostnames for the public status page and operator app. Use
 custom domains in your Cloudflare account, or use that account's existing

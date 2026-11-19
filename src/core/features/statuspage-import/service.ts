@@ -64,6 +64,12 @@ function doorPreparationContext(db: D1Database, principalId: string, namespace: 
   };
 }
 
+/** What names an import to the owner: the page it came from and when it was read. */
+function importIdentity(plan: ImportPlan | undefined): { sourcePage: string | null; reviewedAt: string | null } {
+  const raw = (plan?.entries.find(entry => entry.source.kind === "metadata")?.source.payload as { raw?: { asOf?: string; sourceInfo?: { publicUrl?: string } } } | undefined)?.raw;
+  return { sourcePage: raw?.sourceInfo?.publicUrl ?? null, reviewedAt: raw?.asOf ?? null };
+}
+
 /** Up to three records as the dry run names them, so the owner can find them. */
 function recordNames(plan: ImportPlan, records: OwnedRecord[]) {
   const named = new Map(plan.entries.map(entry => [`${entry.source.kind}:${entry.source.sourceId}`,
@@ -349,10 +355,12 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
     async list(actor: MoveInActor) {
       const context = importContext(db, actor);
       await assertAuthority(context);
-      const rows = (await db.prepare(`SELECT j.id,coalesce(d.namespace,j.namespace) AS namespace,j.state,j.checkpoint,j.total,d.id AS planId,d.fingerprint,a.plan_id AS approved,a.owner,a.approved_at,a.approval_id,a.reviewer,f.reason_code AS failure FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id LEFT JOIN ik_door_approvals a ON a.plan_id=d.id LEFT JOIN ik_door_apply_failures f ON f.plan_id=d.id WHERE j.destination=? AND ((d.id IS NULL AND j.principal_id=? AND j.namespace IN ${SOURCES}) OR d.namespace IN ${SOURCES}) ORDER BY j.rowid DESC LIMIT 30`).bind(DESTINATION, actor.operator.id).all<Record<string, unknown>>()).results;
+      const rows = (await db.prepare(`SELECT j.id,j.plan_json,coalesce(d.namespace,j.namespace) AS namespace,j.state,j.checkpoint,j.total,d.id AS planId,d.fingerprint,a.plan_id AS approved,a.owner,a.approved_at,a.approval_id,a.reviewer,f.reason_code AS failure FROM ik_jobs j LEFT JOIN ik_door_plans d ON d.job_id=j.id LEFT JOIN ik_door_approvals a ON a.plan_id=d.id LEFT JOIN ik_door_apply_failures f ON f.plan_id=d.id WHERE j.destination=? AND ((d.id IS NULL AND j.principal_id=? AND j.namespace IN ${SOURCES}) OR d.namespace IN ${SOURCES}) ORDER BY j.rowid DESC LIMIT 30`).bind(DESTINATION, actor.operator.id).all<Record<string, unknown>>()).results;
       await assertAuthority(context);
       // An owner's approval reads "approved by …", Business's "approved via Business by …", and a failed apply says so.
-      return rows.map(({ approved, owner, approved_at, approval_id, reviewer, failure, ...job }) => ({ ...job, approver: owner ?? null, approvedAt: approved_at ?? null, approvalCaption: approved === null ? null : approvalCaption({ owner, approved_at, approval_id, reviewer }, job.fingerprint, failure) }));
+      // The source page and review instant the owner recognises an import by live in its plan's metadata record.
+      const plans = await loadPlans(rows.map(({ id, plan_json }) => ({ id, plan_json })), db as never);
+      return rows.map(({ approved, owner, approved_at, approval_id, reviewer, failure, plan_json: _plan, ...job }) => ({ ...job, ...importIdentity(plans.get(String(job.id))), approver: owner ?? null, approvedAt: approved_at ?? null, approvalCaption: approved === null ? null : approvalCaption({ owner, approved_at, approval_id, reviewer }, job.fingerprint, failure) }));
     },
   };
 }

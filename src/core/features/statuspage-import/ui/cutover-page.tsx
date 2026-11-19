@@ -2,13 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { getRouteApi } from '@tanstack/react-router';
 import { appApi, useAppData } from '../../../app/client/ui/api';
 import { Button } from '../../../app/client/ui/button';
-import { FormError } from '../../../app/client/ui/states';
+import { FormError, useOperatorTime } from '../../../app/client/ui/states';
 import type { CutoverPreview } from '../cutover';
 import { HELD_SORRY_DAYS } from '../held-sorry';
 import { statuspageOperatingNotes } from '../operating-notes';
 import { readCutoverDraft } from './cutover-draft';
+import { importLabel, type ImportIdentity } from './import-label';
 
-type Job = { id: string; state: string };
+type Job = ImportIdentity & { id: string; state: string };
 type Result = { job: Job; report: { cutover: CutoverPreview }; invites: { sent: number; remaining: number } };
 const operatorRoute = getRouteApi('/app');
 const domainGuide = '/docs/domains';
@@ -42,6 +43,7 @@ function AddressCheck({ row, origin }: { row: CutoverPreview['rows'][number]; or
 }
 
 export function CutoverPage() {
+  const formatOperatorTime = useOperatorTime();
   const jobs = useAppData<{ jobs: Job[] }>('/api/app/statuspage-import/jobs');
   const publicOrigin = operatorRoute.useLoaderData().publicPageOrigin;
   const [jobId, setJobId] = useState('');
@@ -89,7 +91,7 @@ export function CutoverPage() {
   }
   return <div className="page-stack move-in-page cutover-page">
     <section className="page-title-row"><div><p className="eyebrow">Settings</p><h1>Cutover</h1><p>Review old links and subscriptions before moving your public hostname.</p><a className="text-link" href="/app/move-in">Move in</a></div></section>
-    <section className="data-card"><label className="form-label">Preview<select value={jobId} disabled={busy} onChange={event => { setJobId(event.target.value); setMessage(null); }}><option value="">Latest dry run in this tab</option>{jobs.data?.jobs.map(job => <option key={job.id} value={job.id}>{job.id.slice(0, 12)} · {job.state}</option>)}</select></label>{jobs.error && <FormError>{jobs.error}</FormError>}
+    <section className="data-card"><label className="form-label">Preview<select value={jobId} disabled={busy} onChange={event => { setJobId(event.target.value); setMessage(null); }}><option value="">Latest dry run in this tab</option>{jobs.data?.jobs.map(job => <option key={job.id} value={job.id}>{importLabel(job, formatOperatorTime)} · {job.state}</option>)}</select></label>{jobs.error && <FormError>{jobs.error}</FormError>}
       {!preview && <p>{jobId ? 'Loading import preview…' : 'Run a dry run in Move in, or select an import.'}</p>}
     </section>
     {error && <FormError>{error}</FormError>}

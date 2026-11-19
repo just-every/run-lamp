@@ -10,6 +10,13 @@ function receiptLabel(receipt: Receipt) {
   return receipt.state === "firing" ? "Accepted" : receipt.state === "recovered" ? "Recovered" : "Rejected";
 }
 
+/** The incident's own name and what customers can see of it now, so a published incident is never called a draft. */
+function incidentLinkLabel(incident: Receipt["incident"]) {
+  if (!incident) return "Open incident";
+  if (!incident.published) return "Open draft";
+  return `Open ${incident.reference} (published, ${incident.lifecycle === "Resolved" ? "resolved" : incident.lifecycle.toLowerCase()})`;
+}
+
 function receiptClass(state: Receipt["state"]) {
   return state === "firing" ? "state-active" : state === "recovered" ? "state-monitoring" : "state-failed";
 }
@@ -25,7 +32,7 @@ export function ReceiptsCard({ receipts, linked = "" }: { receipts: Receipt[]; l
         <td data-label="Received">{formatOperatorTime(receipt.receivedAt)}</td>
         <td data-label="From"><strong>{receipt.sourceName}</strong></td>
         <td data-label="Result"><span className={`state-pill ${receiptClass(receipt.state)}`}>{receiptLabel(receipt)}</span></td>
-        <td data-label="Incident">{receipt.incidentId ? <Link className="text-link" to="/app/incidents/$incidentId" params={{ incidentId: receipt.incidentId }}>Open draft</Link> : "—"}</td>
+        <td data-label="Incident">{receipt.incidentId ? <Link className="text-link" to="/app/incidents/$incidentId" params={{ incidentId: receipt.incidentId }}>{incidentLinkLabel(receipt.incident)}</Link> : "—"}</td>
         <td data-label="Reason">{receipt.error ?? (receipt.direction === "note" ? "Publication note sent to PagerDuty." : "Received.")}</td>
       </tr>)}</tbody>
     </table></div>

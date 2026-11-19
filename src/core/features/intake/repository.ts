@@ -34,7 +34,9 @@ export interface AlertSourceRow {
 }
 
 export interface AlertReceiptRow { sourceVersion?: string; id: string; sourceId: string; requestHash: string; deduplicationKey: string | null; incidentId: string | null; state: "firing" | "recovered" | "invalid"; receivedAt: string; recoveredAt: string | null; payloadJson: string; error: string | null; createdAt: string; updatedAt: string; }
-export interface AlertReceiptView extends Omit<AlertReceiptRow, "requestHash" | "payloadJson" | "sourceVersion"> { sourceName: string; direction?: "inbound" | "note"; }
+/** The incident a receipt opened or updated, as the operator reads it: its reference, title and whether customers can see it yet (any published update). */
+export interface ReceiptIncident { reference: string; title: string; lifecycle: "Investigating" | "Identified" | "Monitoring" | "Resolved"; published: boolean }
+export interface AlertReceiptView extends Omit<AlertReceiptRow, "requestHash" | "payloadJson" | "sourceVersion"> { sourceName: string; direction?: "inbound" | "note"; incident: ReceiptIncident | null; }
 export interface AlertReceiptWriteResult { receipt: AlertReceiptRow; incidentCreated: boolean; replayed: boolean; }
 /** What has arrived through each source: its last delivery, and each Uptime monitor its own events named. */
 export interface AlertSourceActivity { deliveries: Array<{ sourceId: string; lastReceivedAt: string }>; monitors: Array<{ sourceId: string; monitorId: string; monitorName: string; lastSeenAt: string }>; }
@@ -67,8 +69,10 @@ function receiptRow(value: Record<string, unknown>): AlertReceiptRow {
 function receiptViewRow(value: Record<string, unknown>): AlertReceiptView {
   const receipt = receiptRow(value);
   const { requestHash: _requestHash, payloadJson: _payloadJson, ...view } = receipt;
-  return { ...view, sourceName: String(value.sourceName) };
+  const incident = value.incidentReference == null ? null : { reference: String(value.incidentReference), title: String(value.incidentTitle), lifecycle: value.incidentLifecycle as ReceiptIncident["lifecycle"], published: Boolean(value.incidentPublished) };
+  return { ...view, sourceName: String(value.sourceName), incident };
 }
+const incidentFields = (incidentId: string) => `incidents.reference AS incidentReference, incidents.title AS incidentTitle, incidents.lifecycle AS incidentLifecycle, EXISTS(SELECT 1 FROM incident_updates WHERE incident_updates.incident_id = ${incidentId}) AS incidentPublished`;
 
 export function createIntakeRepository(binding: D1Database): IntakeRepository {
   const sourceFields = "id, name, credential_kind AS credentialKind, signing_secret AS signingSecret, responder_sealed_credentials AS responderSealedCredentials, responder_connected AS responderConnected, close_alert_on_resolve AS closeAlertOnResolve, bearer_token_hash AS bearerTokenHash, timestamp_header AS timestampHeader, signature_header AS signatureHeader, deduplication_path AS deduplicationPath, title_path AS titlePath, state_path AS statePath, recovered_value AS recoveredValue, COALESCE(vendor_preset,responder_preset,uptime_preset,grouped_preset,preset) AS preset, label_matchers_json AS labelMatchersJson, monitor_mappings_json AS monitorMappingsJson, component_id AS componentId, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt";
@@ -94,8 +98,8 @@ export function createIntakeRepository(binding: D1Database): IntakeRepository {
       };
     },
     async listReceipts(limit, receiptId) {
-      const values = await binding.prepare(`SELECT ${receiptFields}, alert_sources.name AS sourceName FROM alert_receipts INNER JOIN alert_sources ON alert_sources.id = alert_receipts.source_id WHERE (? IS NULL OR alert_receipts.id=?) ORDER BY alert_receipts.received_at DESC LIMIT ?`).bind(receiptId ?? null,receiptId ?? null,limit).all<Record<string, unknown>>();
-      const outbound = await binding.prepare(`SELECT p.id, p.source_id AS sourceId, s.name AS sourceName, p.external_id AS deduplicationKey, u.incident_id AS incidentId, CASE WHEN p.state = 'sent' THEN 'firing' ELSE 'invalid' END AS state, p.created_at AS receivedAt, p.error FROM alert_responder_posts p JOIN alert_sources s ON s.id = p.source_id JOIN incident_updates u ON u.id = p.incident_update_id WHERE p.state IN ('sent','failed') AND (? IS NULL OR p.id=?) ORDER BY p.created_at DESC LIMIT ?`).bind(receiptId ?? null,receiptId ?? null,limit).all<Record<string, unknown>>();
+      const values = await binding.prepare(`SELECT ${receiptFields}, alert_sources.name AS sourceName, ${incidentFields("alert_receipts.incident_id")} FROM alert_receipts INNER JOIN alert_sources ON alert_sources.id = alert_receipts.source_id LEFT JOIN incidents ON incidents.id = alert_receipts.incident_id WHERE (? IS NULL OR alert_receipts.id=?) ORDER BY alert_receipts.received_at DESC LIMIT ?`).bind(receiptId ?? null,receiptId ?? null,limit).all<Record<string, unknown>>();
+      const outbound = await binding.prepare(`SELECT p.id, p.source_id AS sourceId, s.name AS sourceName, p.external_id AS deduplicationKey, u.incident_id AS incidentId, CASE WHEN p.state = 'sent' THEN 'firing' ELSE 'invalid' END AS state, p.created_at AS receivedAt, p.error, ${incidentFields("u.incident_id")} FROM alert_responder_posts p JOIN alert_sources s ON s.id = p.source_id JOIN incident_updates u ON u.id = p.incident_update_id LEFT JOIN incidents ON incidents.id = u.incident_id WHERE p.state IN ('sent','failed') AND (? IS NULL OR p.id=?) ORDER BY p.created_at DESC LIMIT ?`).bind(receiptId ?? null,receiptId ?? null,limit).all<Record<string, unknown>>();
       return [...values.results.map(receiptViewRow), ...outbound.results.map(value => ({ ...receiptViewRow({ ...value, recoveredAt: null, createdAt: value.receivedAt, updatedAt: value.receivedAt }), direction: "note" as const }))].sort((a, b) => b.receivedAt.localeCompare(a.receivedAt)).slice(0, limit);
     },
     async deleteSource(sourceId, operatorId, at) {
