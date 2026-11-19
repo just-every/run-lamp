@@ -3012,7 +3012,7 @@
       "executable": false
     },
     "scripts/archive-validation.mjs": {
-      "sha256": "575a44a14aa93b43a7a0b8e78bacdfea780f4d5ca60f03f44f5fe4cac0fcebd5",
+      "sha256": "464d3f5b526eba2ed1994ccc2fb0ad138ee4e9acf65c556b50899ba9e3b0890b",
       "executable": false
     },
     "scripts/baseline/catalog.mjs": {
@@ -3840,7 +3840,7 @@
       "executable": false
     },
     "scripts/export.mjs": {
-      "sha256": "4397a4fc60dbd694edc731bf845f6c83a254e76adedbe7aaf30003c5b1a1a42a",
+      "sha256": "e0bc7a623fa325a330a40e7e83040ca056261a772bfc60b14cef60c623a0d4e3",
       "executable": false
     },
     "scripts/generate-sorry-fixture.mjs": {
@@ -3848,7 +3848,7 @@
       "executable": false
     },
     "scripts/import.mjs": {
-      "sha256": "4df731139186b05c4966a4cf2aab37eaeaee763938ee5c57b6e05468abab6334",
+      "sha256": "0f000d27a331cc29eba3313aac4c3e80a4807fd9df2c6e09aa0dcbe0280dec05",
       "executable": false
     },
     "scripts/independent-build-setup.sh": {
@@ -8064,7 +8064,7 @@
       "executable": false
     },
     "tests/e2e/export-import.test.mjs": {
-      "sha256": "c2d12fce3852de0c2069b9c1afe3fe10c5d55d22463cdc641d67a42c5cd9f365",
+      "sha256": "1a48e09e35156d804c9cd898f178f83aa0a837f2ce4edf80fb1ae0794b0f9d0b",
       "executable": false
     },
     "tests/e2e/fixtures/grafana-webhook-v1.json": {
