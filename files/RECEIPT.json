@@ -1,0 +1,126 @@
+{
+  "added_test_registrations": 0,
+  "advertised_main": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+  "base": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+  "base_workflows": {
+    "conclusion": "success",
+    "head_sha": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+    "run_site": 44548523753,
+    "verify": 44548523701
+  },
+  "branch": "cloud/sd-lamp-c-f148",
+  "candidate_is_main": false,
+  "candidate_run_site": "pending guarded landing",
+  "contract_counts": {
+    "after": {
+      "done": 65,
+      "missing": 55,
+      "partial": 124,
+      "total": 244
+    },
+    "before": {
+      "done": 65,
+      "missing": 55,
+      "partial": 124,
+      "total": 244
+    }
+  },
+  "contract_status": {
+    "after": "PARTIAL",
+    "before": "PARTIAL",
+    "clause": "SETUP-001",
+    "locally_proven_points": [
+      7
+    ]
+  },
+  "local": {
+    "browser_proof": {
+      "assertion_width": 1440,
+      "capture_mask": "subscriber destination text only",
+      "snapshots": [
+        {
+          "filename": "Notifications-1440.png",
+          "sha256": "e26ee339e9892794aa33048b50845fdd4a92e747400da8835feac3d3fd992fa4",
+          "width": 1440
+        },
+        {
+          "filename": "Notifications-390.png",
+          "sha256": "a0d18bcbce5dc0b8d705f29e711203a7076c4520e3b4918cbea33ce611595e82",
+          "width": 390
+        }
+      ]
+    },
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "contract_check": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "contract_write": {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generated_changes": 0
+    },
+    "exact_head_probe": {
+      "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"Local owner confirms public subscribers\" tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "node": "v22.20.0",
+      "outcome": "Both exact active subscribers have one suppressed email delivery for the committed update with no provider acceptance time, identity or outcome.",
+      "pnpm": "10.12.4",
+      "summary": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 1,
+        "skipped": 0,
+        "tests": 1
+      }
+    },
+    "first_party": {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    "full_touched_file": {
+      "command": "node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "node": "v24.19.0",
+      "summary": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 3,
+        "skipped": 0,
+        "tests": 3
+      }
+    },
+    "source_lock": {
+      "check": "node scripts/edition-authoring/cli.mjs check",
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    }
+  },
+  "product_head": "69af4dfce9acc31f4f224589fbde2c1b39fee20b",
+  "publication_scan": {
+    "complete": null,
+    "findings": null,
+    "head_sha": "69af4dfce9acc31f4f224589fbde2c1b39fee20b",
+    "historyScanned": null,
+    "status": "pending guarded landing"
+  },
+  "repository": "just-every/run-lamp",
+  "tag": "sd-lamp-c-f148",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "69af4dfce9acc31f4f224589fbde2c1b39fee20b",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44554172864",
+    "id": 44554172864,
+    "name": "Verify",
+    "status": "completed"
+  }
+}
