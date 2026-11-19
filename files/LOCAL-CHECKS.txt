@@ -1,0 +1,49 @@
+Exact commit 846642aa7fba5def53977c81669fe71082836a37
+UTC started 2026-11-19T03:45:27Z
+Node v22.20.0
+pnpm 10.12.4
+PASS check:contract-docs
+PASS source:copies
+PASS source:check
+PASS typecheck
+PASS check:syntax
+PASS validate:release
+PASS verify:visual:source
+PASS build:app
+PASS build:site
+PASS publishing-contract
+Source lock check ok=true, files=2461
+Maintenance helper SHA-256 15b409f8932868d5091bd39b9e5e6b1765150d75933f972fd6a96fc6a0bfc963
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+PASS exact-SHA focused maintenance journey
+ok 1 - Maintenance reminders respect the lead time and skip recent announcements
+# tests 1
+# pass 1
+# fail 0
+# skipped 0
+Publishing contract file results
+# tests 11
+# pass 11
+# fail 0
+# skipped 0
+Test registration counts by ref and file
+origin/main tests/e2e/publishing-contract.test.mjs 11
+origin/main tests/e2e/delivery-contract.test.mjs 7
+HEAD tests/e2e/publishing-contract.test.mjs 11
+HEAD tests/e2e/delivery-contract.test.mjs 7
+Focused NOTIFY-001 publishing and delivery journeys
+ok 1 - SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure
+ok 2 - INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+ok 3 - Maintenance reminders respect the lead time and skip recent announcements
+# tests 3
+# pass 3
+# fail 0
+# skipped 0
+Complete delivery contract file results
+PASS delivery-contract
+UTC finished 2026-11-19T04:08:07Z
+# tests 7
+# pass 7
+# fail 0
+# skipped 0

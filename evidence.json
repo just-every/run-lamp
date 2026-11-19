@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "2feeac715a884a7ee101e9dcae9b6d014bb2b28a",
+      "bytes": 651,
+      "path": "BROWSER.txt",
+      "sha256": "6cb006fbb2a9ca6bd7211b5abd3b231ecbe3ea8313131b5b1ae8ddbbea900d5f"
+    },
+    {
+      "blob": "e439f3302b594417ca60215f8504d58603566013",
+      "bytes": 2059,
+      "path": "LOCAL-CHECKS.txt",
+      "sha256": "855ce75d7e54c2664b7b510040687b2fffc0fd36250b178293b1c35d113a0d98"
+    },
+    {
+      "blob": "9f4bce79acb7e7ea173098bdfe98a267694497b8",
+      "bytes": 481,
+      "path": "PRODUCT.txt",
+      "sha256": "7a8a3b55bdf21ff1474eafa6f66c7d2b97ffe3390885f0880e4fe006005e87ef"
+    },
+    {
+      "blob": "025273bea9d3e7c2c5087347209fd0519b889125",
+      "bytes": 5679,
+      "path": "REPORT.md",
+      "sha256": "a458c19a216b22041de755be151b553669fe8ebcfccb83479450b6abbbd64a78"
+    },
+    {
+      "blob": "8c39baaffa60b5d99db9c97de03e9f97b20b4233",
+      "bytes": 573,
+      "path": "VERIFY.txt",
+      "sha256": "a3df0a16b400aaafb3a4c109db594587ba953fda4cad351b6d6b11fde1916874"
+    },
+    {
+      "blob": "6d563d8aaabb7065995da5b66eb24ce3a9721275",
+      "bytes": 227923,
+      "path": "browser/completed-1440.png",
+      "sha256": "2b96aedbc8c091bcdc6bdfa5e8cbf3be9fd79cf34a5566698f707c56dd21fe40"
+    },
+    {
+      "blob": "189286d7eaab0e583585c1831bc810c69d4c9ca6",
+      "bytes": 127875,
+      "path": "browser/completed-390.png",
+      "sha256": "596a013699e28c7bd48982743bf29086f386a25aef9883dbc24ca5131716f040"
+    },
+    {
+      "blob": "ae1382724e73d3b64bbbb1c735eb514cac82dfcb",
+      "bytes": 211498,
+      "path": "browser/started-1440.png",
+      "sha256": "5e90e1bc8ff490b24dc33d9d5ed7fe3b208496ba27cb016e982b0aef18be7585"
+    },
+    {
+      "blob": "9010715b399718e2f2628c313d5f3a6cb15bd475",
+      "bytes": 112214,
+      "path": "browser/started-390.png",
+      "sha256": "9009524045f401ae3d2df12e0612dfff542073e08941269f4bdaae34c38f784f"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f140-lin-1",
+  "product_head": "846642aa7fba5def53977c81669fe71082836a37",
+  "ref": "refs/heads/evidence/sd-lamp-c-f140-lin-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f140-lin-1"
+}

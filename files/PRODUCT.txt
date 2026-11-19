@@ -1,0 +1,11 @@
+Candidate 846642aa7fba5def53977c81669fe71082836a37
+Base 579466148ad2fa1e6cea795c1e8331d2fc8da984
+Product branch cloud/sd-lamp-c-f140-lin-1
+Published UTC 2026-11-19T03:50:34Z
+Candidate commits 1
+Candidate merge commits 0
+Fleet identity and trailers checked for 1 candidate commit(s), including side parents.
+PASS git diff --check
+1	1	sources.lock.json
+3	1	tests/e2e/helpers/maintenance-notices-flow.mjs
+846642aa7fba5def53977c81669fe71082836a37	refs/heads/cloud/sd-lamp-c-f140-lin-1

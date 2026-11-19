@@ -1,0 +1,15 @@
+Exact candidate 846642aa7fba5def53977c81669fe71082836a37
+Node v22.20.0 and system Chromium
+# CAPTURE started 1440
+# CAPTURE started 390
+# CAPTURE completed 1440
+# CAPTURE completed 390
+ok 1 - Public maintenance permalink at start and completion
+# tests 1
+# pass 1
+# fail 0
+# skipped 0
+5e90e1bc8ff490b24dc33d9d5ed7fe3b208496ba27cb016e982b0aef18be7585  browser/started-1440.png
+9009524045f401ae3d2df12e0612dfff542073e08941269f4bdaae34c38f784f  browser/started-390.png
+2b96aedbc8c091bcdc6bdfa5e8cbf3be9fd79cf34a5566698f707c56dd21fe40  browser/completed-1440.png
+596a013699e28c7bd48982743bf29086f386a25aef9883dbc24ca5131716f040  browser/completed-390.png

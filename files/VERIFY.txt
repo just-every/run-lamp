@@ -1,0 +1,13 @@
+Main exact-SHA Verify 44433464637 completed successfully at 579466148ad2fa1e6cea795c1e8331d2fc8da984.
+Historical gated continuation Verify 44284873258 at a4a343a042fdef482aa8c4daba7476b4a67a81f7 was recorded in the assignment.
+
+Candidate exact-SHA REST receipt observed 2026-11-19T04:16:14Z
+{
+  "conclusion": "success",
+  "head_branch": "cloud/sd-lamp-c-f140-lin-1",
+  "head_sha": "846642aa7fba5def53977c81669fe71082836a37",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44454230186",
+  "id": 44454230186,
+  "name": "Verify",
+  "status": "completed"
+}
