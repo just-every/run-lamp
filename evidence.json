@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "156cdbff8a486741d9fbfad287e6e7f3f79da96d",
+      "bytes": 163314,
+      "path": "1440-draft-deadline.png",
+      "sha256": "5b143fd34345fe621c37e5c8cd98379cb202c51e322a6125f546d2625d19460f"
+    },
+    {
+      "blob": "c885f3636e9b49b85501b32ef93f5e7070967c7f",
+      "bytes": 239978,
+      "path": "1440-draft-published.png",
+      "sha256": "6e1f093185ad9b67656d20a5e9f87b6e895f1af59fc9c83ed1d305356b0a5a8e"
+    },
+    {
+      "blob": "f131e1516e38eb52ddcf7c0c4d3ec706b033b835",
+      "bytes": 63612,
+      "path": "390-draft-deadline.png",
+      "sha256": "4a15e5c8ee13bb594b01b9687ea0694472d8162cdf1988b9ad7950eed76e9905"
+    },
+    {
+      "blob": "49dd4ae863f82a70688e6ff468663e6b2b14da54",
+      "bytes": 101011,
+      "path": "390-draft-published.png",
+      "sha256": "2d370e41521bf4c7dd25a31b1ef5b0f97188b1194186ea00d087427ca1f189ff"
+    },
+    {
+      "blob": "3ba35bc1959b1fc30af1bb5e3f43cfc99b28cdbf",
+      "bytes": 2903,
+      "path": "RECEIPT.txt",
+      "sha256": "50185fc19908e02882ce1daf12be264c3830f6e2dd66a21255ed449f068588bb"
+    },
+    {
+      "blob": "e2aadb0d57d03cfb8b805f6cff90bdebda71a3da",
+      "bytes": 6898,
+      "path": "REPORT.md",
+      "sha256": "3056cb28a76d06aba74eef7000a9557f5b6e8da7cdc3b5630f5385bf31db9452"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f152",
+  "product_head": "4cca771f52fb49828681d9d899d784f8f40efd46",
+  "ref": "refs/heads/evidence/sd-lamp-c-f152",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f152"
+}

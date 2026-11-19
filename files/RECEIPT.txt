@@ -1,0 +1,36 @@
+Lamp DRAFT-003 runtime and mechanical receipt
+Date 2026-11-19 UTC
+Product branch cloud/sd-lamp-c-f152
+Product SHA 4cca771f52fb49828681d9d899d784f8f40efd46
+Base main 8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b
+Advertised main at handoff 8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b
+Runtime Node 22.20.0 and pnpm 10.12.4
+Browser Chromium 154.0.8037.57 at the VM system path
+
+Exact-head public-door timing and publication replay
+Command: node --test --test-concurrency=1 --test-name-pattern='the operator publication journey|390-wide owner sign-in' tests/e2e/publishing-browser.test.mjs
+Result: exit 0, two selected journeys passed; 1200-second outer deadline
+PROBE DRAFT-003 2: 1440-wide Suggest update reached the unanswered provider and showed the composer deadline error in 18539 ms
+PROBE DRAFT-003 3: 1440-wide Publish update committed the unchanged draft and its update ID, wording and times matched the unauthenticated incident permalink
+PROBE DRAFT-003 2: 390-wide Suggest update reached the unanswered provider and showed the composer deadline error in 18602 ms
+PROBE DRAFT-003 3: 390-wide Publish update committed the unchanged draft and its update ID, wording and times matched the unauthenticated incident permalink
+
+Broader touched browser run
+Command: node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs
+Result: exit 1, seven passed and one failed. Both DRAFT-003 journeys passed.
+Baseline command: node --test --test-concurrency=1 --test-name-pattern='^THEME-001' tests/e2e/publishing-browser.test.mjs
+Result: exit 1 on 8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b. Same failure in both runs.
+Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and node scripts/edition-authoring/cli.mjs check exit=0; views=node src/base/contract-docs.mjs write and node src/base/contract-docs.mjs check exit=0; ledger=none exit=0
+Generated document check after restoring main views: exit 0. The source generator wrote zero changed views.
+Pinned typecheck: pnpm typecheck exit=0
+First-party structural profile: pnpm exec rer check --profile first-party exit=0
+Syntax: node --check tests/e2e/publishing-browser.test.mjs exit=0
+Verification registration inventory: node scripts/verification/check-plan.mjs exit=0, 113 registered cases and 10 assertion scripts
+Whitespace, contract source and generated-view diff checks: exit 0
+Product commit identity and complete trailer inspection: passed for the sole candidate commit
+Exact branch Verify via REST: id=44556904355 event=push status=in_progress conclusion=pending head=4cca771f52fb49828681d9d899d784f8f40efd46
+https://github.com/just-every/run-lamp/actions/runs/44556904355
+Candidate Run site: pending guarded main landing.
+Candidate full-history publication scan: pending guarded landing.
