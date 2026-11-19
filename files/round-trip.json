@@ -1,0 +1,1067 @@
+{
+  "head": "b1e4f00aada502de1d4ca246292ef903f25c0765",
+  "archive_entity_sha256": "8368eb78f7c4ec3fd5c75766c6f86431a5f577925fe773995ed7b6ef808d1312",
+  "database_tables": 205,
+  "legacy_archive_platform_tables": [
+    "_rer_portability_migrations",
+    "rer_portability_epochs",
+    "rer_portability_guard",
+    "rer_portability_import_leases",
+    "rer_portability_jobs",
+    "rer_portability_journal",
+    "rer_portability_object_inventory",
+    "rer_portability_owned",
+    "rer_portability_parts",
+    "rer_portability_segments",
+    "rer_portability_state"
+  ],
+  "object_count": 49,
+  "spot_row": {
+    "source": {
+      "id": "default",
+      "page_name": "Status"
+    },
+    "fresh_restore": {
+      "id": "default",
+      "page_name": "Status"
+    },
+    "main_archive_restore": {
+      "id": "default",
+      "page_name": "Status"
+    }
+  },
+  "counts": {
+    "alert_group_members": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_receipts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_responder_posts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_rule_evidence": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_rule_runs": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_rule_windows": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_rule_work": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_rules": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "alert_sources": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "audit_entries": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "channel_destination_components": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "channel_destinations": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "channel_posts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "channel_subscriber_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "chat_link_codes": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "chat_links": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "chat_previews": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "chat_requests": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_claim_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_delivery_attempts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_groups": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_notification_deliveries": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_notification_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_standing_claims": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_state_corrections": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "component_state_history": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "components": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "follow_up_dismissals": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_batches": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_assertions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_creation_plans": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_custody_revisions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_custody_states": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_entries": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_erased_sources": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_erased_targets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_erasure_journal": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_erasure_progress": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_erasure_tally": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_history": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_indexed_jobs": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_native_staging": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_native_staging_index": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_native_staging_values": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_original_chunks": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_plan_chunks": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_plan_index": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_preparation_receipts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_preparation_steps": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_publication_fences": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_retirements": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_reversal_fences": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_reversal_reports": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_staging": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_staging_chunks": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_staging_headers": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_staging_index": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_staging_originals": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_staging_pages": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_stream_origins": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_stream_pages": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_stream_revisions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_stream_sources": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_d1_streams": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_apply_failures": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_approvals": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_archive_chunks": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_archives": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_chunks": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_grants": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_namespaces": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_plan_chunks": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_plans": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_revoked_keys": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_scopes": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_settings": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_door_uploads": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_jobs": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_original_sets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_originals": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_provenance": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_sources": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_stages": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "ik_targets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "import_maintenance_updates": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_agent_draft_preparations": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_attachments": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_communication_owners": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_components": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_drafts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_follow_settings": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "incident_impact_changes": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_internal_notes": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_list_counts": {
+      "source": 4,
+      "fresh_restore": 4,
+      "main_archive_restore": 4
+    },
+    "incident_report_reminder_work": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_reports": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_subscriptions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_template_components": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_templates": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_update_escalations": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_update_reminder_work": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_update_reminders": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incident_updates": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "incidents": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_attempts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_deliveries": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_replays": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_resolutions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_token_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_token_usage": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "integration_tokens": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "mail_provider_routes": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "mail_provider_settings": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "mail_provider_webhook_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "mail_send_ledger": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "maintenance": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "maintenance_automation": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "maintenance_automation_defaults": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "maintenance_components": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "maintenance_notices": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "management_tokens": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "metric_points": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "notification_channel_selections": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "notification_deliveries": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "notification_delivery_attempts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "notification_outbox": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_auth_audit": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_auth_settings": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "oa_bootstrap": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "oa_credentials": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_dev_credentials": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_domain_rules": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_external_identities": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_identity_provider_health": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_identity_providers": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_invitation_cancellations": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_limits": {
+      "source": 3,
+      "fresh_restore": 3,
+      "main_archive_restore": 3
+    },
+    "oa_logout_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_oidc_limits": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_oidc_transactions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_operators": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "oa_owner_signins": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_provider_session_pins": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_provider_sessions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_sessions": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "oa_setup_links": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_step_up_challenges": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oa_tokens": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "oc_idp_grants": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "oc_owner_claims": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "operator_roles": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "operators": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "page_settings": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "public_metrics": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "public_snapshot_work": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "reference_allocations": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "reference_counters": {
+      "source": 2,
+      "fresh_restore": 2,
+      "main_archive_restore": 2
+    },
+    "report_delivery_attempts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "report_notification_deliveries": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "report_reminders": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "report_waivers": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "request_rate_windows": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "rer_dependency_codes": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "rer_dependency_installation": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "rer_dependency_keys": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "rer_dependency_link": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "rer_dependency_pending": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "scheduled_work_initialization": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "setup_readiness": {
+      "source": 3,
+      "fresh_restore": 3,
+      "main_archive_restore": 3
+    },
+    "sign_in_people": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sign_in_providers": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sms_consents": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sms_deliveries": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sms_inbound_events": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sms_reporting_daily": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sms_settings": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "sms_subscriptions": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "snapshot_build_control": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "snapshot_builds": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "social_accounts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "social_posts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "social_settings": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "sorry_import_releases": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "statuspage_import_invites": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "statuspage_import_source_targets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "statuspage_import_sources": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "statuspage_import_targets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "statuspage_import_template_targets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "statuspage_import_update_template_targets": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_channel_posts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_chat_destinations": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_chat_reporting_daily": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_components": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_confirmation_attempts": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_intake": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_limit_counts": {
+      "source": 5,
+      "fresh_restore": 5,
+      "main_archive_restore": 5
+    },
+    "subscriber_oauth_states": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_reporting_baseline": {
+      "source": 2,
+      "fresh_restore": 2,
+      "main_archive_restore": 2
+    },
+    "subscriber_reporting_daily": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscriber_reporting_tracking": {
+      "source": 1,
+      "fresh_restore": 1,
+      "main_archive_restore": 1
+    },
+    "subscriber_tokens": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "subscribers": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "vendor_dependencies": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "vendor_evidence": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    },
+    "vendor_source_reads": {
+      "source": 0,
+      "fresh_restore": 0,
+      "main_archive_restore": 0
+    }
+  },
+  "commands": [
+    "pnpm run export:cloudflare --out ../round-trip-archive --persist-to .wrangler/state",
+    "pnpm run import:cloudflare --from ../round-trip-archive --persist-to ../round-trip-empty",
+    "pnpm run import:cloudflare --from ../main-archive --persist-to ../main-archive-empty",
+    "pnpm run export:cloudflare --out ../round-trip-reexport --persist-to ../round-trip-empty",
+    "pnpm run export:cloudflare --out ../main-archive-reexport --persist-to ../main-archive-empty"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "main": "579466148ad2fa1e6cea795c1e8331d2fc8da984",
+  "source": "Local rer dev state in .wrangler/state. A native rer export initialized portability bookkeeping before the technical export.",
+  "health_http_status": 200,
+  "commands": [
+    "pnpm exec rer dev --foreground --direct --host 127.0.0.1 --port 8899 --non-interactive",
+    "pnpm exec rer export --non-interactive --output <absolute scratch path>/native-source.rer",
+    "pnpm run export:cloudflare --out ../main-archive --persist-to .wrangler/state",
+    "pnpm run import:cloudflare --from ../main-archive --persist-to ../baseline-empty"
+  ],
+  "technical_export_tables": 216,
+  "technical_export_objects": 49,
+  "technical_export_sha256": "361d48cc57e9da3aa1b94a412b86dcb8649c97d34387af04ac25ceda22947689",
+  "technical_import_exit_code": 1,
+  "technical_import_stderr": "Restore stopped before completion: Unknown archived columns in _rer_portability_migrations: name, sha256, state. Keep the source archive and restore into a new empty database and bucket. Do not route traffic to this partial destination."
+}

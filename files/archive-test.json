@@ -1,0 +1,18 @@
+{
+  "commit": "b1e4f00aada502de1d4ca246292ef903f25c0765",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "commands": [
+    {
+      "command": "pnpm run test:owner-backup",
+      "exit_code": 0,
+      "case": "HIST-004 PORT-001 \u2014 owner SQL rolls back a failed upgrade, recovers once, and travels through a clean technical backup and restore",
+      "tests": 1,
+      "passed": 1
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit_code": 0
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "product_branch": "cloud/sd-lamp-s5-import-portability-1",
+  "product_head": "b1e4f00aada502de1d4ca246292ef903f25c0765",
+  "advertised_ref": "refs/heads/cloud/sd-lamp-s5-import-portability-1",
+  "main_head": "579466148ad2fa1e6cea795c1e8331d2fc8da984",
+  "commit_count": 1,
+  "changed_files": [
+    "scripts/archive-validation.mjs",
+    "scripts/export.mjs",
+    "scripts/import.mjs",
+    "sources.lock.json",
+    "tests/e2e/export-import.test.mjs"
+  ],
+  "source_lock_sha256": "3a9f9137f778c263ec840b1ad5b16ffaed615e69cf86120a90eb631a0f2076c6",
+  "contract_counts": {
+    "before": {
+      "Core": {
+        "done": 65,
+        "partial": 124,
+        "missing": 50,
+        "total": 239
+      },
+      "Agent surface": {
+        "done": 0,
+        "partial": 0,
+        "missing": 5,
+        "total": 5
+      },
+      "Later": {
+        "done": 0,
+        "partial": 0,
+        "missing": 0,
+        "total": 0
+      },
+      "Full target": {
+        "done": 65,
+        "partial": 124,
+        "missing": 55,
+        "total": 244
+      }
+    },
+    "after": {
+      "Core": {
+        "done": 65,
+        "partial": 124,
+        "missing": 50,
+        "total": 239
+      },
+      "Agent surface": {
+        "done": 0,
+        "partial": 0,
+        "missing": 5,
+        "total": 5
+      },
+      "Later": {
+        "done": 0,
+        "partial": 0,
+        "missing": 0,
+        "total": 0
+      },
+      "Full target": {
+        "done": 65,
+        "partial": 124,
+        "missing": 55,
+        "total": 244
+      }
+    }
+  },
+  "verification_inventory": {
+    "before": {
+      "registered": 112,
+      "assertionScripts": 10
+    },
+    "after": {
+      "registered": 112,
+      "assertionScripts": 10
+    }
+  },
+  "contract_generator": {
+    "write_exit_code": 0,
+    "changed_views": 0,
+    "check_exit_code": 0
+  },
+  "source_lock": {
+    "write_exit_code": 0,
+    "check_exit_code": 0
+  }
+}

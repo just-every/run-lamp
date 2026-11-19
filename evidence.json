@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "1afeb4b6aa1a16062637e1c4704d5e741eed2777",
+      "bytes": 4412,
+      "path": "REPORT.md",
+      "sha256": "2a96c581621d834cc0155a931b9b9851505351202d02160c13cb5c1962d56e2c"
+    },
+    {
+      "blob": "63a3ee087ce9b14cd8616e5c432371133069b25a",
+      "bytes": 465,
+      "path": "archive-test.json",
+      "sha256": "5583a50995a4c5b45d71bf7706bc3e197ac4aeb37a0791eb5479d2314d6648a4"
+    },
+    {
+      "blob": "6c5e8454cbb8c881138957d8df8495bfaf613f23",
+      "bytes": 1079,
+      "path": "baseline.json",
+      "sha256": "6b446b9ccf157f5ad16930dbad33309269af1fa3950f4d851baad80d90d80a0f"
+    },
+    {
+      "blob": "173d66a4034f5af41a1c75d65106a9d304f5ff8f",
+      "bytes": 980,
+      "path": "build.json",
+      "sha256": "ce6207bd1021d4fc675ea80b0bd1b9ba375cf8d5d0f98855d91ae5d079a5e3b4"
+    },
+    {
+      "blob": "bc9b6262f79b5fe5ae4c5b3d03a7eb7badfa5f0d",
+      "bytes": 1902,
+      "path": "product.json",
+      "sha256": "1fb5d2129583e4551dfacb471688df37200345225af8446816a54e8bc15fe290"
+    },
+    {
+      "blob": "cdbf173863420eda32204edbe6a648ab2b6394fe",
+      "bytes": 24622,
+      "path": "round-trip.json",
+      "sha256": "3276bc4bdab3a3b66f440fc34b03d715725a2e1c7145e276e99bda3cb050ee67"
+    },
+    {
+      "blob": "abedc17e035d57a2ff6d5ba28f0d62fb416efcd7",
+      "bytes": 1447,
+      "path": "verify-ci.json",
+      "sha256": "3039c769a7820a3500d7afdffcb84e1d9868d88db6fbbd067b04f497ff55206e"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-s5-import-portability-1",
+  "product_head": "b1e4f00aada502de1d4ca246292ef903f25c0765",
+  "ref": "refs/heads/evidence/sd-lamp-s5-import-portability-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-s5-import-portability-1"
+}
