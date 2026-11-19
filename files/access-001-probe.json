@@ -1,0 +1,12 @@
+{
+  "child_session_secret_present": false,
+  "door": "node scripts/signin-link.mjs --remote",
+  "exit_code": 1,
+  "fixture": "Private local installation settings with a synthetic value and an existing test identity",
+  "head": "3db51500377b756a4d5a06f7b7b076f00e2e7b0c",
+  "missing_variable_named": true,
+  "origin": "https://operator.example.test",
+  "stderr_contains_link": false,
+  "stdout_bytes": 0,
+  "wrangler_invoked": false
+}
