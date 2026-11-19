@@ -8296,7 +8296,7 @@
       "executable": false
     },
     "tests/e2e/helpers/local-subscribers-flow.mjs": {
-      "sha256": "14052fe614427515d8a04da2e79f1b047e21ddad9c35403777adff3b7badfa79",
+      "sha256": "93a5180e129370ae1e016f78e15491944c26eab050c84cc4402e7869ac57e59b",
       "executable": false
     },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
