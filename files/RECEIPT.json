@@ -1,0 +1,122 @@
+{
+  "task": "sd-lamp-c-f150",
+  "repository": "just-every/run-lamp",
+  "product_branch": "cloud/sd-lamp-c-f150",
+  "product_head": "c0063db3f3316e04af782b9bd62ada581259fd2c",
+  "fetched_main": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+  "advertised_main": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+  "contract_counts_before": {
+    "done": 65,
+    "partial": 124,
+    "missing": 55,
+    "total": 244
+  },
+  "contract_counts_after": {
+    "done": 65,
+    "partial": 124,
+    "missing": 55,
+    "total": 244
+  },
+  "local_checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='390-wide owner sign-in' tests/e2e/publishing-browser.test.mjs",
+      "exit": 0,
+      "passed": 1
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs",
+      "results": {
+        "tests": 8,
+        "pass": 7,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "tested_head": "c0063db3f3316e04af782b9bd62ada581259fd2c",
+      "exit": 1,
+      "failure": "THEME-001 could not launch the Playwright registry headless executable"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='owner publishes branded themes' tests/e2e/publishing-browser.test.mjs",
+      "exit": 1,
+      "tested_head": "c0063db3f3316e04af782b9bd62ada581259fd2c",
+      "browser": "system Chromium via temporary Playwright browser registry",
+      "failure": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='owner publishes branded themes' tests/e2e/publishing-browser.test.mjs",
+      "exit": 1,
+      "tested_head": "8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b",
+      "browser": "system Chromium via temporary Playwright browser registry",
+      "failure": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg",
+      "matches_candidate_failure": true
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node --check tests/e2e/helpers/phone-desk-flow.mjs",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "browser_proof": [
+    {
+      "file": "390-components.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "sha256": "5b44dbed5724cf1fba68bc2ec32ed9923c7305a458072e5a0efb0eb43330b434"
+    },
+    {
+      "file": "1440-components.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "sha256": "3104fe3eca00c52e945df2bea609b402b3392b01f3cfd497713a546c29c394a9"
+    }
+  ],
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "c0063db3f3316e04af782b9bd62ada581259fd2c",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44554671811",
+    "id": 44554671811,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "product_pushed": true,
+  "publication_scan": {
+    "commit": "c0063db3f3316e04af782b9bd62ada581259fd2c",
+    "status": "pending Mac lander",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null
+  },
+  "run_site_candidate": {
+    "status": "pending landing",
+    "run_id": null
+  }
+}
