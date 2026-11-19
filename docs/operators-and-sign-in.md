@@ -89,10 +89,10 @@ connection yet, so Settings says so and Save is refused there.
 
 Microsoft Entra and Run Edit Run Auth are still set up on the identity settings
 page (`/auth/settings/identity`, linked at the foot of the Sign-in pane) and as
-described below. Microsoft Entra cannot be finished from that page: Lamp links each Microsoft
-person by the subject Microsoft issues to the app, which the Entra admin center
-does not show. Use the steps below only if your identity administrator can give you
-each operator's subject.
+described below. Lamp links each Microsoft person by the sign-in ID (`sub`)
+Microsoft issues to the app, which the Entra admin center does not show. The
+Microsoft guide on that page makes a link that shows each person's ID in Microsoft's
+own token viewer, jwt.ms, so the owner can copy it into the deploy file.
 
 ### Register Google, Microsoft or Okta in the deploy file
 
@@ -117,7 +117,8 @@ identity provider and change Lamp's private deployment inputs.
    the identity administrator for the operator's exact OIDC **subject** (`sub`)
    for this application. Add it to `subjectEmails`, mapped to that person's
    already invited Lamp email. Do not substitute the display name or assume a
-   directory object ID is the application's subject.
+   directory object ID is the application's subject. For Microsoft, the guide on
+   `/auth/settings/identity` shows how to read it.
 
 | Provider | Registration and values |
 | --- | --- |

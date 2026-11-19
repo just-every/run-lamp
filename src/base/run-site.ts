@@ -76,7 +76,7 @@ export const PATHS = {
     copy: { idle: 'Copy', done: 'Copied', ms: 1600 },
     alt: 'Have Node 22 or later?',
     requirements: `macOS, Linux or Windows with WSL2. ${runRequirements}`,
-    email: 'This free copy runs only on your computer: nobody else can open it, and it sends no email until you set up a mail provider.',
+    email: 'This free copy runs only on your computer: nobody else can open it, and it sends no email.',
     guide: { label: 'Walk me through it', href: '/docs/getting-started' },
     start: 'You paste the line',
     steps: (n: string) => ['rer installs itself', `Gets ${n}`, 'Sets up its database', `Starts ${n} and prints a link that signs you in`],

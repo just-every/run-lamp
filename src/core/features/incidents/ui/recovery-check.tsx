@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { FormError, useOperatorTime } from "../../../app/client/ui/states";
@@ -7,12 +8,22 @@ import { trafficSurfaceNames, type TrafficSurface } from "../../traffic-alerts/s
 
 /** The server repeats this check at publication; this is the operator's view
  * of the evidence, never permission to bypass a newer failing receipt. */
-export function RecoveryCheckPanel({ incidentId, overrideReason, onOverrideReason }: {
+export function RecoveryCheckPanel({ incidentId, overrideReason, onOverrideReason, onRechecked }: {
   incidentId: string; overrideReason: string; onOverrideReason: (reason: string) => void;
+  /** Called when the operator's own "Check recovery again" finishes with every tracked check passing, so an earlier warning can clear. */
+  onRechecked?: () => void;
 }) {
   const { data, error, loading, refresh } = useAppData<{ recovery: RecoveryCheck }>(`/api/app/incidents/${incidentId}/recovery-check`);
   const time = useOperatorTime();
   const check = data?.recovery;
+  const recheck = useRef<"idle" | "waiting" | "loading">("idle");
+  useEffect(() => {
+    if (recheck.current === "waiting" && loading) recheck.current = "loading";
+    else if (recheck.current === "loading" && !loading) {
+      recheck.current = "idle";
+      if (check?.passed) onRechecked?.();
+    }
+  }, [loading, check, onRechecked]);
   return <section className="context-section" aria-labelledby="recovery-check-title">
     <h3 id="recovery-check-title">Recovery check</h3>
     {loading && <p role="status">Checking linked monitors…</p>}
@@ -30,6 +41,6 @@ export function RecoveryCheckPanel({ incidentId, overrideReason, onOverrideReaso
         <small>Required to publish while a tracked check fails. It stays in the private timeline and audit log; scheduled resolutions are checked again when due.</small>
       </label>}
     </>}
-    <Button type="button" variant="secondary" disabled={loading} onClick={refresh}>Check recovery again</Button>
+    <Button type="button" variant="secondary" disabled={loading} onClick={() => { recheck.current = "waiting"; refresh(); }}>Check recovery again</Button>
   </section>;
 }

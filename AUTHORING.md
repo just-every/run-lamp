@@ -153,3 +153,11 @@ sanitized derivative, never the original immutable Git snapshot. The archive's
 it is not claimed to exist in the public repository. Missing projections fail
 closed without a fetch. Their member digest and full archive hash remain bound
 in `sources.lock.json` like other retained comparisons.
+
+## Checking a Sorry capture (maintainers)
+
+After `pnpm build`, `pnpm sorry:receipt --capture /unchanged/capture --key-file /private/test.pem --out /new/output`
+(reading the request metadata from `/unchanged/capture.metadata.json`) verifies a public
+capture in a disposable test installation and signs its receipt. Reviewed receipts live in
+`docs/receipts/`; their public keys belong only in the consumer's test trust store. Owners
+importing from Sorry do not need this; see `docs/moving-in.md`.

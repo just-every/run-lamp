@@ -31,7 +31,7 @@ function assertReport(input: ReportInput, complete = false) {
   }
 }
 
-export function createReportsService(repository: ReportRepository, onPublicDataChanged: () => Promise<void>, duePolicy: PostmortemDuePolicy = defaultPostmortemDuePolicy, notificationStatements: ReportsNotificationStatements | null = null, briefs: BriefService | null = null, remind: ((input: { incidentId: string; reference: string; title: string; week: number }) => Promise<void>) | null = null): ReportsService {
+export function createReportsService(repository: ReportRepository, onPublicDataChanged: () => Promise<void>, duePolicy: PostmortemDuePolicy = defaultPostmortemDuePolicy, notificationStatements: ReportsNotificationStatements | null = null, briefs: BriefService | null = null, remind: ((input: { incidentId: string; reference: string; title: string; week: number }) => Promise<void>) | null = null, pageTimezone: (() => Promise<string>) | null = null): ReportsService {
   return {
     async draft(incidentId, operatorId) {
       if (!briefs) throw new Error("Post-incident report drafting requires incident brief wiring.");
@@ -39,7 +39,8 @@ export function createReportsService(repository: ReportRepository, onPublicDataC
       if (!brief) throw new ReportDraftError("Incident not found.", 404);
       if (brief.incident.lifecycle !== "Resolved") throw new ReportDraftError("Resolve the incident before drafting a report.", 409);
       if (await repository.find(incidentId)) throw new ReportDraftError("A report already exists. Edit the saved report; drafting never replaces it.", 409);
-      const input = draftIncidentReport(brief);
+      if (!pageTimezone) throw new Error("Post-incident report drafting requires the page time zone.");
+      const input = draftIncidentReport(brief, await pageTimezone());
       const timestamp = nowIso();
       const report: IncidentReportRow = { id: createUlid(), incidentId, ...input, publishedAt: null, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
       if (!(await repository.createDraft(report))) throw new ReportDraftError("A report already exists or the incident is no longer resolved. Reload before editing.", 409);

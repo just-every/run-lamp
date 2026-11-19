@@ -125,7 +125,11 @@ Managed hosting includes mail: you need no provider account or mail key. RER
 fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and the private
 `MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
 authenticated sender and API key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`
-and `MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail.
+and `MAIL_PROVIDER_API_KEY`. A hosted installation either has working mail or
+deliberately turns it off with `MAIL_PROVIDER=none`; with mail off the owner signs in
+from the deployment checkout with `rer signin`, and email sign-in, invitations and
+email subscriptions are unavailable
+([Step 6](docs/deploy.md#step-6-mail)).
 [Deploy to Cloudflare](docs/deploy.md) is one guided page: it explains each input
 in the order the dry run asks for it, including how to authenticate a sending
 domain at SendGrid or Resend, and keeps them in a private

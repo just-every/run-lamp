@@ -24,10 +24,10 @@ export function publishTime(iso: string, timezone: string) {
 
 /** What the options changed, said next to the publish button: when the update goes out and who hears about it.
  * Webhooks are named when left out, so an email-only update is never read as reaching every integration. */
-export function publishHint(channels: Channel[], timing: PublishTiming, timezone: string) {
+export function publishHint(channels: Channel[], timing: PublishTiming, timezone: string, emailSuppressed = false) {
   if (timing.mode === "backdate") return "Historical: notifies no one";
   const when = timing.mode === "schedule" ? timing.at ? `schedules for ${publishTime(timing.at, timezone)}` : "choose when it publishes" : null;
-  const who = channels.length ? [...ordered(channels).map(channel => channel.sends), ...(channels.includes("webhook") ? [] : ["no webhooks"])] : ["notifies no one"];
+  const who = channels.length ? [...ordered(channels).map(channel => channel.value === "email" && emailSuppressed ? "email is not sent from this computer" : channel.sends), ...(channels.includes("webhook") ? [] : ["no webhooks"])] : ["notifies no one"];
   return sentence([when, ...who].filter(Boolean).join(" · "));
 }
 

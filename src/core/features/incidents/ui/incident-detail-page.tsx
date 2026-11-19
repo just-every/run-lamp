@@ -12,6 +12,8 @@ import type { RenderedIncidentUpdate } from "../renderer";
 import type { AppliedIncidentTemplate } from "../template-service";
 import { ClientExtensionSlot } from "../../../app/client/extensions";
 import { ApiError, appApi, useAppData } from "../../../app/client/ui/api";
+import { publishes, type OperatorRole } from "../../operators/permissions";
+import { operatorRoleLabels } from "../../operators/ui/operator-role-select";
 import { Button } from "../../../app/client/ui/button";
 import { LoadingState, FormError } from "../../../app/client/ui/states";
 import { EmptyState, ErrorState } from "../../../app/client/ui/lit-states";
@@ -120,7 +122,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const draftSaved = savedKey.current === draftKey && !activeSave.current && saveState !== "error";
   const draftEmpty = untouchedDraft.current && pristineKey.current === draftKey;
   const pendingComponent = pendingComponents[0];
-  const blockReason = draft.lifecycle !== "Resolved" && pendingComponent ? componentChoiceReason(pendingComponent.name) : publishBlockReason({ draft, hasComponents: Boolean(incident?.components.some(component => component.componentId) || draft.componentChanges?.length), timing, timeError: timeErrors.nextUpdate ?? timeErrors.timing, saved: draftSaved, saveFailed: saveState === "error", publishing: publishState === "publishing" });
+  const session = useAppData<{ operator: { role: OperatorRole } }>("/api/app/session");
+  const role = session.data?.operator.role;
+  const roleReason = role && !publishes(role) ? `Your role (${operatorRoleLabels[role]}) can save drafts but cannot publish updates. Ask an Owner, Admin or Communicator to publish.` : null;
+  const blockReason = roleReason ?? (draft.lifecycle !== "Resolved" && pendingComponent ? componentChoiceReason(pendingComponent.name) : publishBlockReason({ draft, hasComponents: Boolean(incident?.components.some(component => component.componentId) || draft.componentChanges?.length), timing, timeError: timeErrors.nextUpdate ?? timeErrors.timing, saved: draftSaved, saveFailed: saveState === "error", publishing: publishState === "publishing" }));
   const visibleSaveState = draftEmpty ? "empty" : draftSaved ? "saved" : saveState === "error" && failedKey.current === draftKey ? "error" : "saving";
   const updateField = <K extends keyof IncidentDraftInput>(field: K, value: IncidentDraftInput[K]) => {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -422,7 +427,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
           <ClientExtensionSlot id="incident.composer.fields.after.v1" context={slotContext} />
         </form>
         {draft.lifecycle === "Resolved" && <ResolutionStatuses incident={incident} draft={draft} onChanged={refresh} />}
-        {draft.lifecycle === "Resolved" && <RecoveryCheckPanel key={`recovery-${recoveryRevision}`} incidentId={incident.id} overrideReason={overrideReason} onOverrideReason={setOverrideReason} />}
+        {draft.lifecycle === "Resolved" && <RecoveryCheckPanel key={`recovery-${recoveryRevision}`} incidentId={incident.id} overrideReason={overrideReason} onOverrideReason={setOverrideReason} onRechecked={() => { if (publishState === "error") { setPublishState("idle"); setPublishMessage(null); } }} />}
       </section>
       <div className="incident-side">
         <IncidentPreview preview={preview} error={previewError} hidden={!draftOpen} />
@@ -430,7 +435,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       </div>
       <div className="composer-publish" id={draftActionsId} hidden={!draftOpen} inert={publishState === "publishing"}>
         <UpdateOptions publicationKey={updateGeneration.current} groups={groups}
-          footer={<><span className="publish-hint">{publishHint(channels, timing, timezone)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
+          footer={<><span className="publish-hint">{publishHint(channels, timing, timezone, preview?.email?.deliverySuppressed)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
           message={<>{draftActions.message ? <p role="status" className="option-message">{draftActions.message}</p> : null}{draftActions.error ? <FormError>{draftActions.error}</FormError> : null}</>}>
           <OptionPanel name="notify" title="Notify"><NotifyChannels channels={channels} onChange={next => { touchedSocialSelection.current = true; setChannels(next); }} /></OptionPanel>
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={timing} timezone={timezone} error={timeErrors.timing} onChange={setTiming} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>

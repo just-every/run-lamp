@@ -10,7 +10,12 @@ export { isPublicAddress } from "./address.ts";
 /** "example.com", "www.example.com/about" or a full http(s) URL. */
 export function normaliseWebsite(input: string): URL {
   const text = input.trim();
-  return checkedUrl(/^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`);
+  const url = checkedUrl(/^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`);
+  const host = url.hostname.toLowerCase().replace(/^www\./, "");
+  // The reserved example names (RFC 2606) are the address field's own placeholder: nobody's real site, so say so
+  // instead of reporting a failed connection.
+  if (/^example\.(com|net|org)$/.test(host)) throw new SiteReadError("invalid-url", `${host} is a placeholder, not a real website. Enter your own website's address.`);
+  return url;
 }
 
 /** Read one public website: its page, its web manifest if it declares one, and one icon. */

@@ -132,7 +132,6 @@ when left out).
 
 ## Step 6: Mail
 
-<!-- Run Edit Run fleet (Codex), 2026-11-15: deliberate mail-off adoption. -->
 ### Or deliberately turn email off
 
 `rer deploy` defaults `MAIL_PROVIDER` to `none`; set `MAIL_PROVIDER=none` in
@@ -288,7 +287,6 @@ partial apply. `/health` reports that observed inventory separately from
 liveness, with the complete-file count and deterministic inventory hash; an
 existing empty ledger reports count zero, while a missing ledger is unavailable.
 
-<!-- Run Edit Run fleet, 2026-11-17: installed-health ledger follow-up. -->
 
 Deploy again with the same command after you change inputs or update Lamp
 ([Update Lamp](updating.md) shows the backup to take first). A redeploy keeps the
@@ -361,7 +359,6 @@ concurrent builds by generation sequence, and drains older piles over successive
 publishes (up to four pages of 256 objects, with a one-second scheduling budget).
 A failed publication deletes nothing; a failed cleanup resumes on a later publish.
 Deployment removal purges all snapshot versions with the rest of that bucket.
-<!-- Run Edit Run fleet, 2026-11-17: bounded snapshot retention. -->
 
 If a provider refusal or exhausted budget leaves a resource unverified, the
 command stops with `remove-incomplete`, names the remaining resource and keeps
@@ -371,4 +368,3 @@ Removal only touches what its creation records prove this environment created;
 it never matches by name. If an older installation has no creation records, the
 command refuses; see the [removal limits](deployment-reference.md#removal-and-deployment-records).
 
-<!-- Run Edit Run fleet, 2026-11-17: single-invocation removal follow-up. -->

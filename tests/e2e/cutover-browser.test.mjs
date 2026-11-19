@@ -146,9 +146,11 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         for (const [kind, rows] of Object.entries({ group: inventory.groups, component: inventory.components, incident: (await read('/api/app/incidents')).incidents, maintenance: (await read('/api/app/maintenance')).maintenance })) assert.equal(result.report.counts[kind].imported, rows.length, `${kind} created count matches Lamp`);
         await openWizard();
         const history = page.getByRole('heading', { name: 'Your imports', exact: true }).locator('..');
-        const job = history.getByRole('listitem').filter({ hasText: result.job.id.slice(0, 12) });
+        const job = history.getByRole('listitem').filter({ hasText: 'Sorry · Applied' });
         await job.getByRole('button', { name: 'Undo', exact: true }).waitFor();
-        assert.match(await job.innerText(), /approved by operator@ingress.example.test at /);
+        const row = await job.innerText();
+        assert.match(row, /Sorry · Applied · \d+ of \d+ records · Approved /);
+        assert.ok(!/fingerprint|T\d\d:\d\d:\d\d/.test(row), 'the row shows no import id, ISO time or hash');
         const approval = (await read('/api/app/statuspage-import/jobs')).jobs.find(row => row.id === result.job.id);
         assert.ok(Date.parse(approval.approvedAt) >= approvedAfter);
         const audit = (await read(`/api/app/audit-log?from=${encodeURIComponent(new Date(approvedAfter).toISOString())}&limit=100`)).entries;
@@ -234,7 +236,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       await assertNoNewNotifications(runtime, quiet, 'navigation, checks and history reads remain silent');
       if (source === 'sorry') {
         await openWizard();
-        await page.getByRole('listitem').filter({ hasText: result.job.id.slice(0, 12) }).getByRole('button', { name: 'Undo', exact: true }).click();
+        await page.getByRole('listitem').filter({ hasText: 'Sorry · Applied' }).getByRole('button', { name: 'Undo', exact: true }).click();
         await page.getByRole('heading', { name: 'Undone', exact: true }).waitFor();
         assert.equal((await moveIn.read(result.job.id)).body.job.state, 'undone');
         await capture('sorry-undone');

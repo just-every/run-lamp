@@ -3,8 +3,6 @@
 Lamp can bring components, incident history, scheduled maintenance and eligible
 email subscribers into your page.
 
-After building the candidate, `pnpm sorry:receipt --capture /unchanged/capture --key-file /private/test.pem --out /new/output` (reading the request metadata from `/unchanged/capture.metadata.json`) verifies a public capture in a disposable test installation and signs its receipt; reviewed receipts live in `docs/receipts/` and their public keys belong only in the consumer's test trust store.
-
 ## Common workflow
 
 1. Sign in and open **Settings → Move in** (`/app/move-in`). Choose the matching
@@ -175,6 +173,11 @@ removed. Undo sends no mail.
 
 Moving from another Lamp page? Download your page data from **Settings → Export and restore** there and
 restore the file on the new page; see [Backups and recovery](backups-and-recovery.md#export-your-page-data-from-the-app).
+
+An archive restore brings back the components, incidents and history an import
+created, but not the import's own record: **Your imports** starts empty and Undo
+is not offered for an earlier import, because its uploads, plan and approvals stay
+with the installation that ran it.
 
 Undo applies to one move-in job; it is not a full installation restore. To
 restore a complete Lamp installation from an archive, follow [Backups and

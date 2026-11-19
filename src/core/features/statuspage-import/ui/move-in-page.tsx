@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { EmptyState } from "../../../app/client/ui/lit-states";
-import { FormError } from "../../../app/client/ui/states";
+import { FormError, useOperatorTime } from "../../../app/client/ui/states";
 import type { MoveInReport } from "../planning";
 import { HELD_SORRY_DAYS } from "../held-sorry";
 import { moveInDoor } from "./door-client";
@@ -15,10 +15,20 @@ type SavedFile = { name: string; text: string };
 type Preview = { report: MoveInReport; jobId?: string; files?: SavedFile[]; planId: string; fingerprint: string };
 /** A door import carries its plan; an import from before the door has none. */
 type DoorPlan = { planId?: string | null; fingerprint?: string | null; namespace?: string };
-type Job = DoorPlan & { approvalCaption?: string; id: string; state: string; checkpoint: number; total: number };
+type Job = DoorPlan & { approvalCaption?: string; approvalFailed?: boolean; approvalViaBusiness?: boolean; approvedAt?: string | null; id: string; state: string; checkpoint: number; total: number };
 type Result = { job: Job; door: DoorPlan | null; report: MoveInReport; invites: { sent: number; remaining: number }; undo?: { dispositions: Array<{ disposition: string; targetKind?: string; reason?: string }>; expiredSubscribers: number } };
 
 const kindLabels: Record<string, string> = { group: "Component groups", component: "Components", incident: "Incidents", maintenance: "Maintenance", subscriber: "Subscribers", postmortem: "Postmortems", template: "Incident templates" };
+
+const sourceNames: Record<string, string> = { statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" };
+const stateNames: Record<string, string> = { completed: "Applied", applying: "Applying", undoing: "Undoing", undone: "Undone" };
+/** One import as the owner reads it: the source, what became of it and when it was approved. */
+function jobSummary(job: Job, time: (iso: string | null) => string) {
+  const state = job.approvalFailed ? "Failed" : stateNames[job.state] ?? job.state.charAt(0).toUpperCase() + job.state.slice(1);
+  const count = job.total ? ` · ${job.checkpoint} of ${job.total} records` : "";
+  const approved = job.approvedAt ? ` · Approved${job.approvalViaBusiness ? " via Business" : ""} ${time(job.approvedAt)}` : "";
+  return `${sourceNames[job.namespace ?? "statuspage"]} · ${state}${count}${approved}`;
+}
 
 function ReportTable({ report }: { report: MoveInReport }) {
   return <><Reconciliation report={report} />{report.limits.length ? <div role="status"><ul>{report.limits.map(summary=><li key={summary}>{summary}</li>)}</ul><p>Leave out subscriber channels or excess subscriber rows and run a fresh dry run.</p></div> : null}{report.unavailableAddresses?.length > 0 && <div role="status"><p>Some old public addresses are unavailable:</p><ul>{report.unavailableAddresses.map((reason) => <li key={reason}>{reason}</li>)}</ul></div>}<div className="table-scroll" tabIndex={0} role="region" aria-label="Move-in counts"><table><thead><tr><th scope="col">Records</th><th scope="col">Read</th><th scope="col">Imported</th><th scope="col">Kept private</th><th scope="col">Changed</th><th scope="col">Skipped</th><th scope="col">Refused</th></tr></thead><tbody>{Object.entries(report.counts).map(([kind, count]) => <tr key={kind}><th scope="row">{kindLabels[kind] ?? kind}</th><td>{count.read}</td><td>{count.imported}</td><td>{count["kept-private"] ?? 0}</td><td>{count.changed}</td><td>{count.skipped}</td><td>{count.rejected}</td></tr>)}</tbody></table></div></>;
@@ -79,6 +89,7 @@ function FieldLedger({ report }: { report: MoveInReport }) {
 
 /** Settings → Move in: a dry run first, then the import, then undo. */
 export function MoveInPage() {
+  const time = useOperatorTime();
   const jobs = useAppData<{ jobs: Job[] }>("/api/app/statuspage-import/jobs");
   const website = useAppData<{ website: WebsiteRecord | null }>("/api/app/website");
   const [source, setSource] = useState<"statuspage" | "betterstack" | "instatus" | "sorry">(website.data?.website?.statusPage?.source ?? "statuspage");
@@ -195,7 +206,7 @@ export function MoveInPage() {
       {result.job.state === "undoing" && <Button type="button" disabled={busy} onClick={() => act({ id: result.job.id, ...result.door }, "undo")}>Continue undo</Button>}
     </section>}
     <section className="data-card" id="import-history" aria-labelledby="move-in-history"><h2 id="move-in-history">Your imports</h2>
-      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
+      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{jobSummary(job, time)}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports on this copy yet. If you restored this page from an archive, the records an earlier import created are here, but its Undo stays with the copy that ran it.</EmptyState>}
     </section>
   </div>;
 }

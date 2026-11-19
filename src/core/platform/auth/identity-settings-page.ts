@@ -23,7 +23,7 @@ export async function identitySettingsPage(response: Response, input: { origin: 
   const saved = input.saved ? `<p class="notice" role="status">Saved.${configured ? ' Check it with the sign-in test below.' : ' No provider is set up yet, so nobody can sign in with one until you set one up.'}</p>` : '';
   const guide = { origin: input.origin, local: input.local, identityProvider: input.identityProvider };
   const test = `<p>Keep this window signed in. In a private browser window, open <a href="/signin" target="_blank" rel="noreferrer">${escapeHtml(input.origin)}/signin</a>.</p>`;
-  const body = `<p>Google and Okta are set up in <a href="/app/settings#sign-in">Settings › Sign-in</a>.</p>${microsoftGuide()}${authGuide(guide)}
+  const body = `<p>Google and Okta are set up in <a href="/app/settings#sign-in">Settings › Sign-in</a>.</p>${microsoftGuide(guide)}${authGuide(guide)}
     <h2>Test sign-in</h2>${test}
     <p>Choose <strong>Continue with</strong> your provider as an invited person. Success: you land in the Lamp workspace as that person. A refusal after the provider usually means the redirect URI does not match exactly, or the person is not invited.</p>`;
   const section = `<style>${css}</style><section class="lamp-identity" aria-labelledby="lamp-identity-title"><h2 id="lamp-identity-title">Sign in with Google, Okta or Run Edit Run Auth</h2>${saved || status}${body}</section><script>${guideScript}</script>`;

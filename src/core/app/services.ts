@@ -227,7 +227,11 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
     recipients: await createCommunicationOwnerRepository(bindings.DB).recipients(incidentId),
     title: `Lamp report follow-up: ${reference}`,
     text: `${reference} ${title} is owing a post-incident report. Write or waive it here: ${authOrigin(bindings)}/app/incidents/${incidentId}#post-incident-report`,
-  }));
+  }), async () => {
+    const settings = await pageSettings.get();
+    if (!settings) throw new Error("Page settings are not configured.");
+    return settings.timezone;
+  });
   const intakeRepository=createIntakeRepository(bindings.DB);
   const alertRules = createAlertRuleService(createAlertRuleRepository(bindings.DB),incidents,publicSnapshots.rebuild,{repository:createRuleWorkRepository(bindings.DB),guard:createRuleGuardRepository(bindings.DB),findSource:intakeRepository.findSource});
   const intake = createIntakeService(intakeRepository, extensions.alertIntakePolicy, async (incidentId) => {

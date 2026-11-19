@@ -5,7 +5,7 @@ import type { LinkResult } from './links.ts';
 import { inlineCode } from './inline-code.ts';
 import { decodeHtml } from './source.ts';
 
-// One page's tokens to static HTML, at build time. Raw HTML in the Markdown is shown as text, never passed through. The
+// One page's tokens to static HTML, at build time. Raw HTML in the Markdown is shown as text, never passed through; a comment is maintainer notes and is dropped. The
 // page's h2s and h3s become its contents list. Inline code is kept whole by inline-code.ts. Code blocks become a card labelled with their language. Tables scroll inside
 // a focusable region when they cannot fit. Links are resolved by the caller (links.ts); images are not published.
 
@@ -43,6 +43,7 @@ export function renderPage(tokens: Token[], ids: WeakMap<Tokens.Heading, string>
         return inlineCode(text);
       },
       html({ text }) {
+        if (/^\s*<!--[\s\S]*-->\s*$/.test(text)) return '';
         return escapeHtml(text);
       },
       link({ href, title, tokens: inline }) {

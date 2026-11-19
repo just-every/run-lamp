@@ -1,3 +1,4 @@
+import { formatPageTime } from "../public-snapshot/format";
 import { briefReferences, type IncidentBrief } from "../brief/build";
 
 export const REPORT_PROMPTS = {
@@ -20,7 +21,9 @@ export interface ReportReview {
 /** Flatten source text so an embedded newline cannot create an uncited timeline line. */
 const line = (text: string) => text.replace(/\s+/g, " ").trim();
 
-export function draftIncidentReport(brief: IncidentBrief) {
+/** The draft's times read as the operator timeline does: the page's zone, never raw UTC. */
+export function draftIncidentReport(brief: IncidentBrief, timezone: string) {
+  const time = (iso: string) => formatPageTime(iso, timezone);
   const { alerts, updates } = brief.whatWeKnow;
   const resolution = updates.findLast((update) => update.lifecycle === "Resolved");
   if (!resolution) throw new ReportDraftError("A published resolution is required to draft a report.", 409);
@@ -30,10 +33,10 @@ export function draftIncidentReport(brief: IncidentBrief) {
     ...updates.map((update) => ({ at: update.publishedAt, ref: update.ref, text: `Published ${update.lifecycle}. ${[update.affectedAudience, update.customerImpact, update.whatStillWorks, update.details].filter(Boolean).map(line).join(" ")}` })),
   ].sort((a, b) => Date.parse(a.at) - Date.parse(b.at) || a.ref.localeCompare(b.ref));
   // These are publication timestamps, not a monitor-measured outage interval.
-  const summary = `${line(brief.incident.reference)}: ${line(brief.incident.title)}. Recorded incident window: ${brief.incident.openedAt} to published resolution ${resolution.publishedAt} [${resolution.ref}]. This window is not a measurement of customer downtime. Latest resolved update: ${line(resolution.customerImpact)} [${resolution.ref}]`;
+  const summary = `${line(brief.incident.reference)}: ${line(brief.incident.title)}. Recorded incident window: ${time(brief.incident.openedAt)} to published resolution ${time(resolution.publishedAt)} [${resolution.ref}]. This window is not a measurement of customer downtime. Latest resolved update: ${line(resolution.customerImpact)} [${resolution.ref}]`;
   const timeline = events.map((event) => {
     if (!references.has(event.ref)) throw new ReportInputError("A report source reference is unavailable.");
-    return `${event.at} — ${event.text} [${event.ref}]`;
+    return `${time(event.at)} — ${event.text} [${event.ref}]`;
   }).join("\n");
   if (summary.length > 10_000 || timeline.length > 10_000) throw new ReportInputError("The source record exceeds the report's 10,000-character field limit. Write and save a reviewed report manually.");
   return { summary, timeline, cause: "", remediation: "" };
