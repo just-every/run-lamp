@@ -1,18 +1,19 @@
 import assert from 'node:assert/strict';
 import { parse } from 'parse5';
-import { openSubscriberManagementFixture, eventuallySubscriber, subscriberCsvRows } from './subscriber-management-fixture.mjs';
-import { smsBindings, smsProviderEdge, smsSignature } from './sms-subscriber-flow.mjs';
+import { subscriberCsvRows } from './subscriber-management-fixture.mjs';
 
 function boundedTime(value, [start, end], label) {
   const instant = typeof value === 'string' ? Date.parse(value) : NaN;
   assert.ok(instant >= start && instant <= end, label);
 }
 
-export function assertDeliveryFact(row, { subscriberId, destination, channel, updateId, queuedBetween, outcome, outcomeBetween }) {
+export const deliveryIdentity = row => JSON.stringify([row.subscriberId, row.channel, row.incidentUpdateId]);
+
+export function assertDeliveryFact(row, { subscriberId, destination, channel, incidentUpdateId, queuedBetween, outcome, outcomeBetween }) {
   assert.ok(row, 'the operator log contains the expected delivery');
   assert.deepEqual(
-    { subscriberId: row.subscriberId, destination: row.destination, channel: row.channel, updateId: row.incidentUpdateId, outcome: row.outcome },
-    { subscriberId, destination, channel, updateId, outcome },
+    { subscriberId: row.subscriberId, destination: row.destination, channel: row.channel, incidentUpdateId: row.incidentUpdateId, outcome: row.outcome },
+    { subscriberId, destination, channel, incidentUpdateId, outcome },
   );
   boundedTime(row.queuedAt, queuedBetween, 'queue time falls within the successful publication request');
   if (outcomeBetween) {
@@ -31,7 +32,8 @@ export async function assertUntrackedNotification(fixture, { address, subject, i
   assert.match(message.html, /^<!doctype html>/i, 'the provider captures a complete HTML document');
   assert.match(message.html, /<\/body><\/html>\s*$/i);
   const { 'List-Help': manage, 'List-Unsubscribe': unsubscribeHeader } = message.headers;
-  const unsubscribe = unsubscribeHeader.match(/<([^<>]+)>$/)[1];
+  const unsubscribe = unsubscribeHeader?.match(/<([^<>]+)>$/)?.[1];
+  assert.ok(manage && unsubscribe, 'the captured notification names both native subscription links');
   const origin = new URL(fixture.publicOrigin).origin;
   for (const [url, path] of [[manage, 'manage'], [unsubscribe, 'unsubscribe']]) {
     const direct = new URL(url);
@@ -76,7 +78,7 @@ const csvFields = [
   'acceptingProvider', 'maintenanceReference', 'maintenanceTitle', 'maintenanceNoticeKind', 'providerOutcome',
 ];
 
-async function assertCsvParity(fixture, query, rows) {
+export async function assertDeliveryCsv(fixture, query, rows) {
   const response = await fixture.request('/api/app/deliveries.csv?' + query);
   assert.equal(response.status, 200);
   assert.match(response.headers.get('content-type'), /^text\/csv\b/i);
@@ -93,144 +95,71 @@ export async function assertDeliveryFilter(fixture, row) {
   assert.equal(result.status, 200, result.text);
   assert.equal(result.body.hasMore, false);
   assert.deepEqual(result.body.deliveries, [row], 'this update and channel contain exactly one delivery with the named outcome');
-  await assertCsvParity(fixture, query, [row]);
+  await assertDeliveryCsv(fixture, query, [row]);
 }
 
-async function publishDeliveryUpdate(fixture, component, title, channels) {
-  const created = await fixture.post('/api/app/incidents', {
-    title, components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }],
-  });
-  assert.equal(created.status, 201, created.text);
-  const { id } = created.body.incident;
-  const draft = await fixture.api('/api/app/incidents/' + id + '/draft', {
-    method: 'PUT',
-    body: JSON.stringify({
-      lifecycle: 'Identified', affectedAudience: 'Synthetic Lamp readers', customerImpact: 'Requests are delayed.',
-      whatStillWorks: 'Reads continue.', details: '', nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString(),
-    }),
-  });
-  assert.equal(draft.status, 200, draft.text);
-  const start = Date.now();
-  const published = await fixture.post('/api/app/incidents/' + id + '/publish', { channels });
-  const end = Date.now();
-  assert.equal(published.status, 200, published.text);
-  return { updateId: published.body.update.id, queuedBetween: [start, end] };
-}
-
-export async function deliveryLogInventoryFlow(t) {
-  const smsMessages = [];
-  const fixture = await openSubscriberManagementFixture({
-    workerEntry: 'tests/e2e/helpers/status-journey.worker.ts',
-    extraBindings: smsBindings, providerEdge: smsProviderEdge(smsMessages),
-  });
-  const read = async search => {
-    const response = await fixture.api('/api/app/deliveries?' + search);
-    assert.equal(response.status, 200, response.text);
-    return response.body;
-  };
-  const add = async (channel, destination, component, contact) => {
-    const input = channel === 'email' ? { email: destination }
-      : channel === 'webhook' ? { destination, contactEmail: contact } : { phone: destination };
-    const result = await fixture.post('/api/app/subscribers', {
-      ...input, channel, componentIds: [component.id], eventKinds: ['incidents'],
-    });
-    assert.equal(result.status, 201, result.text);
-    assert.equal(result.body.subscriber.state, 'pending');
-    const subscriberId = result.body.subscriber.id;
-    if (channel === 'sms') {
-      const url = fixture.publicOrigin + '/api/public/sms/inbound';
-      const fields = { From: destination, To: smsBindings.TWILIO_FROM_NUMBER, Body: 'YES', MessageSid: 'synthetic-lamp-log-consent' };
-      const reply = await fixture.raw(url, {
-        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Twilio-Signature': smsSignature(url, fields) },
-        body: new URLSearchParams(fields).toString(),
-      });
-      assert.equal(reply.status, 200, await reply.text());
-    } else {
-      await fixture.confirm(contact ?? destination);
-    }
-    return { subscriberId, destination, channel };
-  };
-  const key = (row, updateId = row.updateId) => JSON.stringify([row.subscriberId, row.channel, updateId]);
-  try {
-    fixture.recoverWebhook();
-    const bulk = await fixture.createComponent('Synthetic Lamp paginated delivery inventory');
-    const control = await fixture.createComponent('Synthetic Lamp other channel inventory');
-    const emails = [];
-    for (let index = 0; index < 101; index++) {
-      const destination = ['synthetic-lamp-log-' + index, 'example.test'].join('@');
-      emails.push(await add('email', destination, bulk));
-    }
-    const webhook = await add('webhook', 'https://receiver.example.test/synthetic-lamp-1', control,
-      ['synthetic-lamp-log-contact', 'example.test'].join('@'));
-    const sms = await add('sms', '+12025550109', control);
-
-    const other = await publishDeliveryUpdate(fixture, control, 'Synthetic Lamp control publication', ['webhook', 'sms']);
-    const worker = await fixture.runtime.getWorker();
-    assert.equal((await worker.scheduled({ cron: '* * * * *' })).outcome, 'ok');
-    const controls = await eventuallySubscriber(
-      async () => (await read(new URLSearchParams({ incidentUpdateId: other.updateId }))).deliveries,
-      rows => rows.some(row => row.channel === 'webhook' && row.outcome === 'delivered') &&
-        rows.some(row => row.channel === 'sms' && row.acceptingProvider === 'twilio'),
-      'the webhook acknowledgement and synthetic SMS acceptance reach the operator log',
-    );
-    assert.equal(controls.length, 2);
-    assert.ok(smsMessages.some(message => message.To === sms.destination && message.Body.includes('Requests are delayed.')));
-
-    const pause = await fixture.raw('/test/effects', { method: 'PUT', body: JSON.stringify({ paused: true }) });
-    assert.equal(pause.status, 204);
-    const publication = await publishDeliveryUpdate(fixture, bulk, 'Synthetic Lamp paginated publication', ['email']);
-    const expected = [
-      ...emails.map(recipient => ({ ...recipient, ...publication, outcome: 'queued' })),
-      { ...sms, ...other, outcome: 'queued' },
-      { ...webhook, ...other, outcome: 'delivered', outcomeBetween: [other.queuedBetween[0], Date.now()] },
-    ];
-    assert.equal(new Set(expected.map(row => row.destination)).size, 103);
-    const expectByKey = new Map(expected.map(row => [key(row), row]));
-
-    assert.equal((await fixture.raw('/api/app/deliveries')).status, 401, 'the log is private');
-    assert.equal((await fixture.raw('/api/app/deliveries.csv')).status, 401, 'the export is private');
-    const inventoryIds = new Map();
-    const scopes = [
-      {}, { channel: 'email' }, { channel: 'webhook' }, { channel: 'sms' },
-      ...['queued', 'delivered', 'bounced', 'complained', 'suppressed', 'failed'].map(outcome => ({ outcome })),
-      { incidentUpdateId: publication.updateId }, { incidentUpdateId: other.updateId },
-      { incidentUpdateId: publication.updateId, channel: 'email', outcome: 'queued' },
-      { incidentUpdateId: publication.updateId, channel: 'webhook', outcome: 'queued' },
-    ];
-    for (const filter of scopes) {
-      const matching = expected.filter(row => Object.entries(filter).every(([field, value]) =>
-        (field === 'incidentUpdateId' ? row.updateId : row[field]) === value));
-      const rows = [];
-      const limit = 100;
-      const query = new URLSearchParams(filter);
-      const pageCount = Math.max(1, Math.ceil(matching.length / limit));
-      for (let page = 0; page < pageCount; page++) {
-        const offset = page * limit;
-        const result = await read(new URLSearchParams({ ...filter, limit, offset }));
-        assert.equal(result.limit, limit);
-        assert.equal(result.offset, offset);
-        assert.equal(result.hasMore, page + 1 < pageCount);
-        assert.equal(result.deliveries.length, Math.min(limit, matching.length - offset));
-        rows.push(...result.deliveries);
-      }
-      assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'each delivery identity appears once across pages');
-      assert.deepEqual(rows.map(row => key(row, row.incidentUpdateId)).sort(), matching.map(row => key(row)).sort(),
-        'each filter returns exactly the independently expected subscriber, channel and update identities');
-      for (const row of rows) {
-        const identity = key(row, row.incidentUpdateId);
-        assertDeliveryFact(row, expectByKey.get(identity));
-        if (query.size === 0) inventoryIds.set(identity, row.id);
-        assert.equal(row.id, inventoryIds.get(identity), 'filtering preserves the ID of the same delivery');
-      }
-      if (pageCount > 1) {
-        // The export ignores the current page, even if called from a later page.
-        query.set('limit', String(limit));
-        query.set('offset', String(limit));
-      }
-      await assertCsvParity(fixture, query, rows);
-    }
-    t.diagnostic('NOTIFY-004 reconciled 103 distinct delivery destinations, the second page after the 100-row limit, and 14 complete CSV scopes');
-  } finally {
-    await fixture.close();
+export async function addDeliveryLogEmails(add) {
+  const recipients = [];
+  for (let index = 0; index < 101; index++) {
+    recipients.push(await add('delivery-log-' + index));
   }
+  assert.equal(new Set(recipients.map(row => row.destination)).size, 101);
+  return recipients;
+}
+
+export async function assertDeliveryInventory(t, fixture, expected, bulkUpdateId) {
+  const limit = 100;
+  const bulk = expected.filter(row => row.incidentUpdateId === bulkUpdateId && row.channel === 'email');
+  assert.ok(bulk.length > limit, 'one publication must span at least two pages of email deliveries');
+  assert.equal(new Set(bulk.map(row => row.destination)).size, bulk.length);
+  const byIdentity = new Map(expected.map(row => [deliveryIdentity(row), row]));
+  assert.equal(byIdentity.size, expected.length, 'the independent recipient inventory has no duplicates');
+  const outcomes = ['queued', 'delivered', 'bounced', 'complained', 'suppressed', 'failed'];
+  for (const outcome of outcomes) {
+    assert.ok(expected.some(row => row.outcome === outcome), 'every outcome has a populated filter control');
+  }
+  const filters = [
+    {}, ...['email', 'webhook', 'sms'].map(channel => ({ channel })),
+    ...outcomes.map(outcome => ({ outcome })),
+    ...[...new Set(expected.map(row => row.incidentUpdateId))].map(incidentUpdateId => ({ incidentUpdateId })),
+    { incidentUpdateId: bulkUpdateId, channel: 'email', outcome: 'queued' },
+    { incidentUpdateId: bulkUpdateId, channel: 'webhook', outcome: 'queued' },
+  ];
+  const unfiltered = new Map();
+  for (const filter of filters) {
+    const matching = expected.filter(row => Object.entries(filter).every(([field, value]) => row[field] === value));
+    const rows = [];
+    const pageCount = Math.max(1, Math.ceil(matching.length / limit));
+    for (let page = 0; page < pageCount; page++) {
+      const offset = page * limit;
+      const query = new URLSearchParams({ ...filter, limit, offset });
+      const result = await fixture.api('/api/app/deliveries?' + query);
+      assert.equal(result.status, 200, result.text);
+      const { deliveries, ...pagination } = result.body;
+      assert.equal(pagination.limit, limit);
+      assert.equal(pagination.offset, offset);
+      assert.equal(pagination.hasMore, page + 1 < pageCount);
+      assert.equal(deliveries.length, Math.min(limit, matching.length - offset));
+      rows.push(...deliveries);
+    }
+    assert.ok(rows.every(row => typeof row.id === 'string' && row.id.length));
+    assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'each delivery ID appears once across pages');
+    assert.deepEqual(rows.map(deliveryIdentity).sort(), matching.map(deliveryIdentity).sort(),
+      'each filter returns exactly the independently expected subscriber, channel and update identities');
+    for (const row of rows) {
+      const identity = deliveryIdentity(row);
+      assertDeliveryFact(row, byIdentity.get(identity));
+      if (Object.keys(filter).length === 0) unfiltered.set(identity, row);
+      assert.deepEqual(row, unfiltered.get(identity), 'the same delivery and its full facts survive filtering');
+    }
+    const query = new URLSearchParams(filter);
+    if (pageCount > 1) {
+      // An export from the second page still includes the entire result.
+      query.set('limit', String(limit));
+      query.set('offset', String(limit));
+    }
+    await assertDeliveryCsv(fixture, query, rows);
+  }
+  t.diagnostic('NOTIFY-004 reconciled ' + expected.length + ' deliveries, all six nonempty outcome filters and '
+    + filters.length + ' complete CSV scopes, including ' + bulk.length + ' distinct recipients across pages of one update.');
 }

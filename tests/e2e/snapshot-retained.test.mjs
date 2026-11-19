@@ -14,6 +14,8 @@ const wranglerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = wranglerRequire('miniflare');
 const { build } = wranglerRequire('esbuild');
 
+const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
+
 async function snapshotWorkerScript() {
   const built = await build({ entryPoints: ['tests/e2e/snapshot-retained.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false, external: ['cloudflare:workers'], plugins: [{ name: 'vite-assets', setup(builder) {
     builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: args.path.endsWith('?raw') ? 'raw' : 'inline' }));
@@ -21,6 +23,86 @@ async function snapshotWorkerScript() {
     builder.onLoad({ filter: /.*/, namespace: 'inline' }, async args => ({ contents: `export default ${JSON.stringify('data:application/octet-stream;base64,' + (await readFile(args.path)).toString('base64'))}`, loader: 'js' }));
   } }] });
   return built.outputFiles[0].text;
+}
+
+async function assertNativeGenerationRevalidation(j, component, incident, initialImpact) {
+  const maintenanceTitle = 'Synthetic Lamp cache maintenance';
+  const maintenanceImpact = 'Capacity maintenance briefly delayed customer requests.';
+  const now = Date.now();
+  const { maintenance } = await j.json('/api/app/maintenance', 'POST', {
+    title: maintenanceTitle, affectedAudience: 'API customers', customerImpact: maintenanceImpact,
+    startsAt: new Date(now + 3600_000).toISOString(), endsAt: new Date(now + 7200_000).toISOString(),
+    componentIds: [component.id], autoStart: false, autoComplete: false,
+  }, 201);
+  const endpoint = `/api/app/maintenance/${maintenance.id}`;
+  await j.json(`${endpoint}/start`, 'POST', {});
+  await j.json(`${endpoint}/complete`, 'POST', {});
+  const maintenancePath = `/maintenance/${maintenance.reference}`;
+  await j.visible('/history', maintenanceTitle);
+
+  const incidentPath = `/incidents/${incident.reference}`;
+  const surfaces = new Map([
+    ['/', impact => [incident.title, impact]],
+    ['/history', () => [`href="${maintenancePath}"`, maintenanceTitle, maintenanceImpact]],
+    [incidentPath, impact => [incident.title, impact]],
+    [maintenancePath, () => [maintenanceTitle, maintenanceImpact]],
+    ['/feed.atom', impact => [incident.title, incidentPath, impact]],
+    ['/widget.js', impact => [incident.title, incident.reference, impact]],
+    ['/api/public/status', () => []],
+  ]);
+  const bucket = await j.runtime.getR2Bucket('SNAPSHOTS');
+  const currentPointer = async () => (await bucket.get('snapshots/current.json'))?.json();
+  const read = (path, etag) => etag === undefined
+    ? j.publicResponse(path)
+    : j.raw(new URL(path, j.publicOrigin).href, { headers: { 'If-None-Match': etag } });
+
+  const checkGeneration = (response, generation, label) => {
+    assert.equal(response.headers.get('x-lamp-snapshot-state'), null, label);
+    assert.equal(response.headers.get('x-lamp-snapshot-version'), generation.version, label);
+    assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generation.generatedAt, label);
+  };
+  const checkContent = async (response, path, impact, generation, label) => {
+    assert.equal(response.status, 200, label);
+    checkGeneration(response, generation, label);
+    const body = await response.text();
+    for (const expected of surfaces.get(path)(impact)) assert.ok(body.includes(expected), `${label} contains ${expected}`);
+    if (path === '/api/public/status') {
+      const status = JSON.parse(body);
+      assert.equal(status.generatedAt, generation.generatedAt, label);
+      assert.equal(status.incident?.reference, incident.reference, label);
+      assert.equal(status.incident?.title, incident.title, label);
+      assert.equal(status.incident?.summary, `Identified · ${impact}`, label);
+    }
+    const etag = response.headers.get('etag');
+    assert.ok(etag, `${label} supplies a validator`);
+    return etag;
+  };
+  const checkReuse = async (path, etag, generation) => {
+    const response = await read(path, etag);
+    assert.equal(response.status, 304, `${path} reuses the current validator`);
+    checkGeneration(response, generation, path);
+    assert.equal(response.headers.get('etag'), etag, path);
+    assert.equal((await response.arrayBuffer()).byteLength, 0, path);
+  };
+
+  const initial = await currentPointer();
+  assert.ok(initial?.version && initial.generatedAt, 'the native publication has a current generation');
+  const validators = new Map();
+  for (const path of surfaces.keys()) {
+    validators.set(path, await checkContent(await read(path), path, initialImpact, initial, `warm ${path}`));
+    await checkReuse(path, validators.get(path), initial);
+  }
+
+  const updatedImpact = 'The API is recovering and queued requests are clearing.';
+  await j.save(incident.id, { customerImpact: updatedImpact });
+  await j.publish(incident.id);
+  const current = await eventually(currentPointer, pointer => pointer?.version && pointer.version !== initial.version, 'native incident publication advances the current generation');
+  for (const [path, oldValidator] of validators) {
+    const etag = await checkContent(await read(path, oldValidator), path, updatedImpact, current, `superseded validator on ${path}`);
+    assert.notEqual(etag, oldValidator, `${path} supplies a new validator`);
+    await checkReuse(path, etag, current);
+  }
+  console.info('PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304');
 }
 
 test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm', async () => {
@@ -47,7 +129,10 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     await healthSchemaProof(j);
     const component = await j.component('Customer API during dependency outage');
     const incident = await j.incident('Known API degradation', [component]);
-    await j.save(incident.id); await j.publish(incident.id); await j.visible('/', incident.title);
+    const initialImpact = 'Customer API requests are failing intermittently.';
+    await j.save(incident.id, { customerImpact: initialImpact });
+    await j.publish(incident.id); await j.visible('/', incident.title);
+    await assertNativeGenerationRevalidation(j, component, incident, initialImpact);
     await j.tick(Date.now()); assert.ok(pings > 0 && receipt);
     await j.raw('/test/effects', { method: 'PUT', body: JSON.stringify({ paused: true }) });
     const beforePause = pings; await j.tick(Date.now()); assert.equal(pings, beforePause, 'a transferring host stops external effects');
@@ -70,6 +155,34 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const options = { bindings: { LAMP_APP_HOST: 'app.example' }, name: 'lamp-retained-journey', resourcePersistencePath: join(directory, 'storage'), modules: true, script: await snapshotWorkerScript(), compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'] };
     runtime = new Miniflare(convertV4MiniflareOptions(options));
     const read = (path, init) => runtime.dispatchFetch(`https://page.example${path}`, init);
+    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
+    const firstPublicationPaths = new Map([
+      ['/', /^text\/html\b/],
+      ['/feed.atom', /^application\/atom\+xml\b/],
+      ['/widget.js', /^application\/javascript\b/],
+    ]);
+    const cacheQuery = new URLSearchParams();
+    for (const path of firstPublicationPaths.keys()) cacheQuery.append('path', path);
+    const emptyCache = { replicaGeneration: null, cachedPaths: [] };
+    const snapshotCache = async () => {
+      const response = await read(`/test/snapshot-cache?${cacheQuery}`);
+      assert.equal(response.status, 200);
+      return response.json();
+    };
+    assert.deepEqual((await bucket.list()).objects, [], 'object storage starts empty');
+    assert.deepEqual(await snapshotCache(), emptyCache, 'the replica and edge cache start empty');
+    for (const path of firstPublicationPaths.keys()) {
+      const response = await read(path);
+      assert.equal(response.status, 503, `${path} is unavailable before the first publication`);
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), null, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), null, path);
+      assert.ok((await response.text()).includes('snapshot is unavailable'), path);
+    }
+    assert.equal((await read('/?storage=down')).status, 503, 'a fresh installation never invents an all-clear');
+    assert.deepEqual(await snapshotCache(), emptyCache, 'unavailable responses do not seed a fallback');
+    assert.deepEqual((await bucket.list({ prefix: 'snapshots/' })).objects, [], 'public reads do not publish a snapshot');
+    console.info('FIRST SNAPSHOT GET / /feed.atom /widget.js → 503; no snapshot or cached status');
+
     const publishedAt = new Date().toISOString();
     const source = {
       settings: { pageName: 'Known service status <synthetic-lamp> & $&', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
@@ -107,14 +220,19 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const image = themeHeaderImage();
     const font = await readFile('src/core/features/public-snapshot/fonts/inter-latin.woff2');
     const themeAssets = { header: { key: 'branding/theme-image', contentType: 'image/png' }, font: { key: 'branding/theme-font', contentType: 'font/woff2' } };
-    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
     await bucket.put(themeAssets.header.key, image);
     await bucket.put(themeAssets.font.key, font);
     source.settings.themeAssets = JSON.stringify(themeAssets);
     source.settings.theme = JSON.stringify({ headerImage: true, font: 'uploaded' });
     const rebuild = async input => (await read('/test/rebuild', { method: 'POST', body: JSON.stringify({ source, ...input }) })).json();
-    assert.equal((await read('/?storage=down')).status, 503, 'a fresh installation never invents an all-clear');
-    const generation = await rebuild({ generation: 1 }); assert.equal(generation.failure, null);
+    const generation = await rebuild({ generation: 1 });
+    assert.equal(generation.failure, null);
+    assert.equal(generation.completed, true);
+    assert.equal(generation.pointer.generation, 1);
+    assert.equal(generation.replica.generation, 1);
+    assert.ok(generation.pointer.version);
+    assert.equal(generation.pointer.version, generation.replica.version);
+    assert.equal(generation.pointer.generatedAt, generation.replica.generatedAt);
     const pageKey = `snapshots/${generation.pointer.version}/page.html`;
     const pageObject = await bucket.get(pageKey);
     await bucket.put(pageKey, (await pageObject.text()).replace('<body', '<body data-synthetic-note="a > b"'), { httpMetadata: { contentType: 'text/html; charset=utf-8' } });
@@ -151,10 +269,28 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       assert.equal(response.headers.get('x-lamp-snapshot-version'), generation.pointer.version, path);
       assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generation.pointer.generatedAt, path);
       coldBodies.set(path, Buffer.from(await response.arrayBuffer()));
+      if (firstPublicationPaths.has(path)) {
+        assert.match(response.headers.get('content-type') ?? '', firstPublicationPaths.get(path), path);
+      }
       validators.set(path, response.headers.get('etag'));
       assert.ok(validators.get(path), `${path} supplies a validator`);
       assert.equal((await blobReads()).getBytes[key], 1, `${path} reads its immutable artifact once when cold`);
     }
+    const firstPage = descendants(parse(coldBodies.get('/').toString()));
+    const headline = firstPage.find(node => node.attrs?.some(attr => attr.name === 'id' && attr.value === 'overall-status'));
+    assert.equal(headline?.childNodes[0]?.value, 'Down');
+    const time = firstPage.find(node => node.attrs?.some(attr => attr.name === 'data-generated-at'))?.childNodes.find(node => node.tagName === 'time');
+    assert.equal(time?.attrs.find(attr => attr.name === 'datetime')?.value, generation.pointer.generatedAt);
+    const atom = coldBodies.get('/feed.atom').toString();
+    assert.equal(atom.split('<entry>')[0].match(/<updated>([^<]+)<\/updated>/)?.[1], generation.pointer.generatedAt);
+    const entry = atom.match(/<entry>.*?<\/entry>/gs)?.find(value => value.includes('<title>INC-1: Known API outage</title>'));
+    assert.ok(entry?.includes('Major outage affects customer requests.'), 'the Atom incident entry carries the known outage');
+    const widget = coldBodies.get('/widget.js').toString();
+    assert.ok(widget.includes('"overall":"Major outage"'), 'the widget starts with the known outage');
+    assert.ok(widget.includes('"reference":"INC-1","title":"Known API outage"'), 'the widget carries the published incident');
+    assert.ok(widget.includes(`"generatedAt":"${generation.pointer.generatedAt}"`), 'the widget starts with the published generation instant');
+    console.info(`FIRST SNAPSHOT GET / /feed.atom /widget.js → 200; Major outage; generation=1; version=${generation.pointer.version}; generatedAt=${generation.pointer.generatedAt}`);
+
     const afterCold = await blobReads();
     assert.equal(afterCold.getText['snapshots/current.json'] - (beforeCold.getText['snapshots/current.json'] ?? 0), paths.length, 'every cold read validates the current pointer');
     assert.equal(afterCold.getText['snapshots/stale.json'] - (beforeCold.getText['snapshots/stale.json'] ?? 0), paths.length, 'every cold read checks snapshot freshness');
@@ -186,7 +322,6 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const edgeFallback = await read('/?storage=down&replica=down');
     assert.equal(edgeFallback.status, 200);
     assert.equal(edgeFallback.headers.get('x-lamp-snapshot-state'), 'stale');
-    const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
     const body = descendants(parse(await edgeFallback.text())).find(node => node.tagName === 'body');
     assert.equal(body.attrs.find(attr => attr.name === 'data-synthetic-note')?.value, 'a > b', 'stale labeling preserves quoted body attributes');
     const banner = body.childNodes.find(node => node.tagName === 'aside' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'snapshot-stale'));
