@@ -8088,7 +8088,7 @@
       "executable": false
     },
     "tests/e2e/auth-adoption-journey.test.mjs": {
-      "sha256": "9d4b36697b98b22cebec5fb72ca468729ee6ae9f7bfca2484db0f24fdea68692",
+      "sha256": "9d6a1ef0949b0e12baddbca9be4bb4b77a2245b629049a7a2324d1847dc64616",
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
