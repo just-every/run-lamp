@@ -1,0 +1,57 @@
+{
+  "workflow": "Verify",
+  "run_id": 44585751260,
+  "discovered": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "c264dd9930542f9d5ea4c35852e4a473e12a81a0",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44585751260",
+    "id": 44585751260,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "completed": {
+    "conclusion": "failure",
+    "head_sha": "c264dd9930542f9d5ea4c35852e4a473e12a81a0",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44585751260",
+    "status": "completed"
+  },
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44585751260/job/135778079369",
+      "id": 135778079369,
+      "name": "plan"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Build the production Worker once"
+      ],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44585751260/job/135778158571",
+      "id": 135778158571,
+      "name": "build"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require every planned command to succeed on this commit"
+      ],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44585751260/job/135778838622",
+      "id": 135778838622,
+      "name": "verify"
+    },
+    {
+      "conclusion": "skipped",
+      "failed_steps": [],
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44585751260/job/135778840592",
+      "id": 135778840592,
+      "name": "shards"
+    }
+  ],
+  "log_findings": [
+    "Build validated contract views, then validate:release rejected docs/accessibility/vpat.md because Product version 1.11.23 differs from release version 1.11.24.",
+    "Shards skipped after build failure. The verify job rejected the unsuccessful build receipt and reported 0 of 10 shards completed successfully."
+  ]
+}

@@ -1,0 +1,13 @@
+branch=cloud/sd-lamp-release-1-11-24
+head=c264dd9930542f9d5ea4c35852e4a473e12a81a0
+main=1b3578b39a1e0166cbd0714f8d7d463210d7a190
+prior_release_commit=199a635758939ab54b12f3a76dabeee68ab74b8f
+utc=2026-11-19T18:15:10Z
+setup.sha256 path=rer-setup.json declared=d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab actual=d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab
+Migration count: 82 before and 82 after. Added: none. Changed: none. Removed: none.
+Product worktree was clean and its exact head was advertised on the named remote branch.
+Exact candidate metadata: release/seed schemas, manifest/package/seed versions, changelog parity, unchanged pnpm lock, rer 0.2.125 and inventories passed.
+Inventory check used the exact predecessor RELEASE.json and CONTRACT.md from v1.11.23 in memory.
+Local exact-checkout validate:release failed at VPAT Product version 1.11.23 vs 1.11.24.
+Local release upgrade test stopped at missing release-history/1.11.23.json.
+Source lock check, offline Base copy check, contract view check, TypeScript and Git whitespace check passed.
