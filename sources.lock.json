@@ -620,7 +620,7 @@
       "executable": false
     },
     "docs/contract/public-details.md": {
-      "sha256": "4a11e76b442e5ad2e586332e8731550d709d02280ee222011de4b58762fef0a5",
+      "sha256": "1199ff5c4ecf0383ae2fe502dcca4c19ae4274194be176b56a4b7cb668196302",
       "executable": false
     },
     "docs/contract/publishing-details.md": {
@@ -5096,7 +5096,7 @@
       "executable": false
     },
     "src/core/features/dependencies/repository.ts": {
-      "sha256": "165213f5abff45292ffeab78eac1c95a649776d160c9a6492b746678e09cf436",
+      "sha256": "9baabbe38481b3be0798d0a5a4d6163344f44ad67481ddf42194c99167585b8f",
       "executable": false
     },
     "src/core/features/dependencies/routes.ts": {
@@ -6192,7 +6192,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "bab1ae2a0d31cf94b45f7c9542f94ce39ec77b05623ffcd2c301ec4dcec79cff",
+      "sha256": "e5d8bcf7e5ba0a6c9ce9baf3a35c0f25c06474ad306dd5e8afaab6cd7f8c4aa3",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -6216,7 +6216,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "bbb10d98904199f9237a9ece878a1f4d34f17b37538692af83deadb2cd0cfedd",
+      "sha256": "096b6421b507add37cc014d18d7f1528ac7002b2a23ba95a9effee5729279825",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -9032,7 +9032,7 @@
       "executable": false
     },
     "tests/e2e/helpers/vendor-dependencies-flow.mjs": {
-      "sha256": "33674e161e1d4d4e20caee0c9049a6f6e2a5ab3b06f019fc654037ea7ae8199c",
+      "sha256": "f5e287f565fa7bacbd4bc56e2dbd2315192f8675790094e167aabf8d5ed50bb4",
       "executable": false
     },
     "tests/e2e/helpers/webhook-at-most-once-flow.mjs": {
