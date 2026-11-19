@@ -1,0 +1,72 @@
+{
+  "candidate_commits": 1,
+  "candidate_trailers": 0,
+  "changed_paths": [
+    "CHANGELOG.md",
+    "RELEASE.json",
+    "docs/accessibility/vpat.md",
+    "package.json",
+    "release-history/1.11.23.CONTRACT.md",
+    "release-history/1.11.23.json",
+    "seed.json",
+    "sources.lock.json"
+  ],
+  "checked_utc": "2026-11-19T18:44:10+00:00",
+  "clause_status_changes": [],
+  "contract_counts": {
+    "after": {
+      "done": 65,
+      "missing": 55,
+      "partial": 124,
+      "total": 244
+    },
+    "before": {
+      "done": 65,
+      "missing": 55,
+      "partial": 124,
+      "total": 244
+    }
+  },
+  "main_base": "337435bb0de5c300e6c0ad8846608d0ac089a94e",
+  "merge_commits": 0,
+  "migration_count": 82,
+  "migration_tree_listing_sha256": "6101d1ff88bd67086f2d0fefe8dacf3b6670213f56661e8028328b3ff5b8e612",
+  "migrations_byte_identical": true,
+  "new_migrations": 0,
+  "predecessor": "v1.11.23",
+  "predecessor_commit": "199a635758939ab54b12f3a76dabeee68ab74b8f",
+  "previous_version": "1.11.23",
+  "prior_candidate": "c264dd9930542f9d5ea4c35852e4a473e12a81a0",
+  "prior_candidate_base": "1b3578b39a1e0166cbd0714f8d7d463210d7a190",
+  "product_head": "08ef2ecad69d9c5828e4fb95ec93415b00502f54",
+  "product_push_observed_utc": "2026-11-19T18:42:34Z",
+  "product_ref": "refs/heads/cloud/sd-lamp-release-1-11-24-c1",
+  "release_notes_changed_from_prior_candidate": false,
+  "release_notes_match_changelog": true,
+  "repository": "just-every/run-lamp",
+  "rer_version": "0.2.125",
+  "retained_snapshots": [
+    {
+      "bytes": 10201,
+      "path": "release-history/1.11.23.json",
+      "sha256": "737d8d46af88e7bf37d8076b6961807e6c3693a520152918a81ebd03a41ee43f",
+      "source": "v1.11.23:RELEASE.json"
+    },
+    {
+      "bytes": 440805,
+      "path": "release-history/1.11.23.CONTRACT.md",
+      "sha256": "a00a9a5c6c935c51f1116c77b37e7cc09720f80648aff5d18ef3dd42ffeee84c",
+      "source": "v1.11.23:CONTRACT.md"
+    }
+  ],
+  "source_lock_sha256": "009761d50a8a5c391ee0abde65bc5a37de3b7e03fbf9f55130bf35e9b04874a8",
+  "tracked_project_hashes": [
+    {
+      "actual": "d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab",
+      "declared": "d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab",
+      "key": "setup.sha256",
+      "path": "rer-setup.json"
+    }
+  ],
+  "version": "1.11.24"
+}

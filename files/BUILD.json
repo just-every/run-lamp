@@ -1,0 +1,54 @@
+{
+  "commit": "08ef2ecad69d9c5828e4fb95ec93415b00502f54",
+  "runAttempt": 0,
+  "runId": null,
+  "shard": "build",
+  "steps": [
+    {
+      "durationMs": 795,
+      "exitCode": 0,
+      "script": "check:contract-docs"
+    },
+    {
+      "durationMs": 575,
+      "exitCode": 0,
+      "script": "source:copies"
+    },
+    {
+      "durationMs": 943,
+      "exitCode": 0,
+      "script": "source:check"
+    },
+    {
+      "durationMs": 20104,
+      "exitCode": 0,
+      "script": "typecheck"
+    },
+    {
+      "durationMs": 12294,
+      "exitCode": 0,
+      "script": "check:syntax"
+    },
+    {
+      "durationMs": 1499,
+      "exitCode": 0,
+      "script": "validate:release"
+    },
+    {
+      "durationMs": 383,
+      "exitCode": 0,
+      "script": "verify:visual:source"
+    },
+    {
+      "durationMs": 7466,
+      "exitCode": 0,
+      "script": "build:app"
+    },
+    {
+      "durationMs": 6396,
+      "exitCode": 0,
+      "script": "build:site"
+    }
+  ],
+  "success": true
+}

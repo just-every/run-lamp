@@ -1,0 +1,16 @@
+{
+  "command": "pnpm run verify:release --from v1.11.23",
+  "commit": "08ef2ecad69d9c5828e4fb95ec93415b00502f54",
+  "completed_utc": "2026-11-19T18:46:43Z",
+  "duration_ms": 200310.602758,
+  "first_attempt": "The shallow partial checkout lacked reachable blobs needed by the internal shared clone.",
+  "outcome": "passed",
+  "previous_commit": "199a635758939ab54b12f3a76dabeee68ab74b8f",
+  "recovery": "Fetched missing reachable objects in the same checkout, keeping the same candidate commit.",
+  "started_utc": "2026-11-19T18:43:22Z",
+  "tap": {
+    "fail": 0,
+    "pass": 1,
+    "tests": 1
+  }
+}

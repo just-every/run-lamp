@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "1a37e6fa39db8378bf16f82b1360f55826aeb931",
+      "bytes": 980,
+      "path": "BUILD.json",
+      "sha256": "d8473d9dff62ef9d910416d0aa109fb56a84f4478907b8003eb017729cf8752e"
+    },
+    {
+      "blob": "743b73b290351b439d63318bb65ae65aab320e36",
+      "bytes": 2323,
+      "path": "METADATA.json",
+      "sha256": "7d49374f19199c9b84edfff4fdc6b1ce99eb79c3db575b55b3e2bb0b5df1e609"
+    },
+    {
+      "blob": "f8f276606ee140de6728264694559f6af2f9c5fd",
+      "bytes": 3812,
+      "path": "REPORT.md",
+      "sha256": "671e0012b17c15717886cee80e7d2386115d0dc5a28991391a3d9b58f3f812fb"
+    },
+    {
+      "blob": "c207a11cc2e4ffecad4fb4448598248530bce1b2",
+      "bytes": 599,
+      "path": "UPGRADE.json",
+      "sha256": "1a1dfd84e34dd0ace64202064f7a870a44f908c48009567fbfd09af1e6e5488f"
+    },
+    {
+      "blob": "37740a5b478280d79ba22251fca96df0e711c090",
+      "bytes": 686,
+      "path": "VERIFY.json",
+      "sha256": "9396208e255bd6a0f5941791b599252321529f8dd645073f6b40b9f4e8b882ee"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-release-1-11-24-c1",
+  "product_head": "08ef2ecad69d9c5828e4fb95ec93415b00502f54",
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-24-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-24-c1"
+}

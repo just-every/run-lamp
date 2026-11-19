@@ -1,0 +1,21 @@
+{
+  "branch": "cloud/sd-lamp-release-1-11-24-c1",
+  "checked_utc": "2026-11-19T19:03:05Z",
+  "conclusion": "success",
+  "discovered": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-release-1-11-24-c1",
+    "head_sha": "08ef2ecad69d9c5828e4fb95ec93415b00502f54",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44590666278",
+    "id": 44590666278,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "event": "push",
+  "head_sha": "08ef2ecad69d9c5828e4fb95ec93415b00502f54",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44590666278",
+  "id": 44590666278,
+  "status": "completed",
+  "workflow": "Verify"
+}
