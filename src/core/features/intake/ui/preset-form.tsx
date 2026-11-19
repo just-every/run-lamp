@@ -9,7 +9,7 @@ import { ComponentOptions, NewKey, SaveNote, ShownOnce, ToolHeading, type Copyab
 import { keyedAddress, toolDoes, toolLabel, type ComponentOption, type Source } from "./tools";
 import { useSourceAutosave } from "./use-source-autosave";
 
-export type SingleTool = "newrelic" | "datadog" | "uptimerobot" | "betterstack" | "pingdom";
+export type SingleTool = "newrelic" | "datadog" | "uptimerobot" | "betterstack" | "pingdom" | "uptime-kuma";
 
 // Each tool takes Lamp's key in the address, so the address is the one thing to paste (with the body the tool must send).
 const SETUP: Record<SingleTool, string> = {
@@ -18,6 +18,7 @@ const SETUP: Record<SingleTool, string> = {
   uptimerobot: "In UptimeRobot, add a Webhook with this address as URL to Notify, tick Send as JSON and paste the body. Then add it to each monitor's alert contacts.",
   betterstack: "In Better Stack, add an incident webhook with this address.",
   pingdom: "In Pingdom, add a webhook integration with this address and attach it to the check.",
+  "uptime-kuma": "In Uptime Kuma, add a Webhook notification with this Post URL. Use POST and the preset application/json body, then enable the notification on your monitor.",
 };
 function setupFields(tool: SingleTool, address: string): Copyable[] {
   const fields: Copyable[] = [{ label: `${toolLabel(tool)} address`, value: address, copy: "Copy address" }];
@@ -28,7 +29,7 @@ function setupFields(tool: SingleTool, address: string): Copyable[] {
 }
 const body = (source: Pick<Source, "name">, tool: SingleTool, componentId: string, entities = "") => ({ name: source.name, preset: tool, componentId, credentialKind: "bearer-token", ...(tool === "newrelic" ? { labelMatchers: [...new Set(entities.split("\n").map(name => name.trim()).filter(Boolean))].map(entity_name => ({ componentId, labels: { entity_name } })) } : {}) });
 
-/** Datadog, UptimeRobot, Better Stack and Pingdom: one component, chosen once; Lamp makes the key. */
+/** Single-component presets use a component selected in Lamp and a generated key. */
 export function PresetForm({ tool, source, components, name, onConnected, onSaved, onClose }: { tool: SingleTool; source: Source | null; components: ComponentOption[]; name: string; onConnected: () => void; onSaved: () => void; onClose: () => void }) {
   return source ? <EditPreset tool={tool} source={source} components={components} onSaved={onSaved} onClose={onClose} /> : <ConnectPreset tool={tool} name={name} components={components} onConnected={onConnected} onClose={onClose} />;
 }

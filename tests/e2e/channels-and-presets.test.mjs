@@ -476,6 +476,64 @@ test("INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evide
   await runtime.start();
 });
 
+test("INTAKE-001 INTAKE-006 INTAKE-007 — Uptime Kuma deduplicates down and up webhooks by monitor ID", async () => {
+  const target = await component("Checkout API (Kuma)");
+  const created = await post("/api/app/intake/sources", {
+    name: "Checkout monitoring", preset: "uptime-kuma", componentId: target.id, credentialKind: "bearer-token",
+  });
+  assert.equal(created.status, 201, created.text);
+  const { id, token, endpointUrl } = created.body.source;
+  const monitor = { id: 42, name: "Checkout API", type: "http", url: "https://shop.example.test/checkout" };
+  const down = { heartbeat: { status: 0, monitorID: monitor.id, msg: "503 Service Unavailable" }, monitor, msg: "[Checkout API] [🔴 Down] 503 Service Unavailable" };
+  const send = (payload, authorization, url = endpointUrl) => fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...(authorization ? { Authorization: authorization } : {}) },
+    body: JSON.stringify(payload),
+  });
+
+  const before = await intakeInventory(sql);
+  const denied = await send(down, "Bearer synthetic-lamp-wrong");
+  assert.equal(denied.status, 401);
+  await denied.arrayBuffer();
+  assert.deepEqual(await intakeInventory(sql), before);
+  for (const nonTransition of [
+    { heartbeat: null, monitor: null, msg: "Testing Uptime Kuma notifications" },
+    { ...down, heartbeat: { ...down.heartbeat, status: 2 } },
+  ]) {
+    const ignored = await send(nonTransition, `Bearer ${token}`);
+    assert.equal(ignored.status, 400);
+    assert.equal((await ignored.json()).incidentId, null);
+  }
+
+  const firing = await send(down, `Bearer ${token}`);
+  assert.equal(firing.status, 202);
+  const { incidentId, receiptId } = await firing.json();
+  const opened = (await api(`/api/app/incidents/${incidentId}`)).body.incident;
+  assert.equal(opened.title, monitor.name);
+  assert.deepEqual(opened.components.map(row => row.componentId), [target.id]);
+  assert.ok(opened.draft);
+  assert.equal(opened.updates.length, 0);
+  const brief = (await api(`/api/app/incidents/${incidentId}/brief`)).body.brief;
+  assert.equal(brief.whatWeKnow.alerts.find(alert => alert.source === created.body.source.name)?.title, monitor.name);
+
+  const renamedMonitor = { ...monitor, name: "Checkout origin" };
+  const repeated = await send({ ...down, monitor: renamedMonitor, msg: "[Checkout origin] [🔴 Down] Timeout" }, `Bearer ${token}`);
+  assert.equal(repeated.status, 202);
+  const repeat = await repeated.json();
+  assert.equal(repeat.incidentId, incidentId);
+  assert.notEqual(repeat.receiptId, receiptId);
+  const up = { heartbeat: { status: 1, monitorID: monitor.id, msg: "200 OK" }, monitor: renamedMonitor, msg: "[Checkout origin] [🟢 Up] 200 OK" };
+  const recovery = await send(up, undefined, `${endpointUrl}/${token}`);
+  assert.equal(recovery.status, 202);
+  const recovered = await recovery.json();
+  assert.equal(recovered.incidentId, incidentId);
+  const receipt = (await api(`/api/app/intake/receipts?receipt=${recovered.receiptId}`)).body.receipts[0];
+  assert.deepEqual([receipt.sourceId, receipt.deduplicationKey, receipt.state], [id, String(monitor.id), "recovered"]);
+  const closed = (await api(`/api/app/incidents/${incidentId}`)).body.incident;
+  assert.equal(closed.lifecycle, "Resolved");
+  assert.equal(closed.updates.length, 0);
+});
+
 test("INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request", { timeout: 180_000 }, async () => {
   await anotherToolSetupJourney({ origin, cookie, api });
 });

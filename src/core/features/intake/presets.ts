@@ -10,8 +10,9 @@ import type { ComponentState } from "../../shared/domain";
  * Shapes: Datadog webhook variables (docs.datadoghq.com/integrations/webhooks),
  * UptimeRobot webhook JSON variables (help.uptimerobot.com, webhook integration),
  * Better Stack incident webhook (betterstack.com/docs/uptime/webhooks, incident object),
- * Pingdom state change webhook (pingdom.com state change webhooks). */
-export const ALERT_PRESETS = ["pagerduty", "uptime", "datadog", "uptimerobot", "betterstack", "pingdom", ...GROUPED_PRESETS, ...VENDOR_PRESETS] as const;
+ * Pingdom state change webhook (pingdom.com state change webhooks),
+ * Uptime Kuma Webhook notification with the default JSON body. */
+export const ALERT_PRESETS = ["pagerduty", "uptime", "datadog", "uptimerobot", "betterstack", "pingdom", "uptime-kuma", ...GROUPED_PRESETS, ...VENDOR_PRESETS] as const;
 export type AlertPreset = (typeof ALERT_PRESETS)[number];
 export type PresetReading = { key: string; title: string; recovered: boolean; state: ComponentState; monitorId?: string; entityNames?: string[] } | { refused: string };
 
@@ -23,6 +24,11 @@ const datadogFiring = new Set(["Triggered", "Re-Triggered", "No Data", "Re-No Da
 const uptimerobot = z.object({ monitorID: id, alertType: z.union([z.string(), z.number()]).transform(String), monitorFriendlyName: text.optional(), alertDetails: text.optional() }).passthrough();
 const betterstack = z.object({ data: z.object({ id, type: z.literal("incident"), attributes: z.object({ name: text.nullable().optional(), cause: text.nullable().optional(), status: z.string(), resolved_at: z.string().nullable().optional() }).passthrough() }).passthrough() }).passthrough();
 const pingdom = z.object({ check_id: id, check_name: text, current_state: z.string(), previous_state: z.string().optional(), description: text.optional() }).passthrough();
+const uptimeKuma = z.object({
+  heartbeat: z.object({ status: z.union([z.literal(0), z.literal(1)]) }),
+  monitor: z.object({ id: z.number().int().positive().transform(String), name: text }),
+  msg: z.string(),
+});
 
 const title = (value: string | null | undefined, fallback: string) => (value ?? "").trim().slice(0, 250) || fallback;
 
@@ -54,6 +60,12 @@ export function readPreset(preset: AlertPreset, payload: unknown): PresetReading
     if (!["Started", "Acknowledged", "Resolved"].includes(status)) return { refused: `Better Stack status '${status.slice(0, 40)}' is not an incident state.` };
     return { key: parsed.data.data.id, title: title(name && cause ? `${name}: ${cause}` : name, "Better Stack incident"), recovered: status === "Resolved" || Boolean(resolved_at), state: "Major outage" };
   }
+  if (preset === "uptime-kuma") {
+    const parsed = uptimeKuma.safeParse(payload);
+    if (!parsed.success) return { refused: "Expected an Uptime Kuma JSON webhook with a monitor and an UP or DOWN heartbeat." };
+    const { heartbeat, monitor, msg } = parsed.data;
+    return { key: monitor.id, title: title(monitor.name.trim() || msg, "Uptime Kuma monitor alert"), recovered: heartbeat.status === 1, state: "Major outage" };
+  }
   const parsed = pingdom.safeParse(payload);
   if (!parsed.success) return { refused: "Not a Pingdom state change webhook." };
   if (!["UP", "DOWN"].includes(parsed.data.current_state)) return { refused: `Pingdom state '${parsed.data.current_state.slice(0, 40)}' is not UP or DOWN.` };
@@ -64,7 +76,7 @@ export function readPreset(preset: AlertPreset, payload: unknown): PresetReading
 export const datadogPayloadTemplate = JSON.stringify({ alert_id: "$ALERT_ID", alert_cycle_key: "$ALERT_CYCLE_KEY", alert_transition: "$ALERT_TRANSITION", alert_title: "$ALERT_TITLE", event_title: "$EVENT_TITLE", date: "$DATE", link: "$LINK" }, null, 2);
 // UptimeRobot replaces each *variable* in its webhook's "POST value (JSON format)" before sending.
 export const uptimeRobotPayloadTemplate = JSON.stringify({ monitorID: "*monitorID*", monitorFriendlyName: "*monitorFriendlyName*", monitorURL: "*monitorURL*", alertType: "*alertType*", alertDetails: "*alertDetails*" }, null, 2);
-export const presetLabels: Record<AlertPreset, string> = { jsm: "Jira Service Management", opsgenie: "Opsgenie", newrelic: "New Relic", pagerduty: "PagerDuty", uptime: "Uptime", datadog: "Datadog", uptimerobot: "UptimeRobot", betterstack: "Better Stack", pingdom: "Pingdom", alertmanager: "Prometheus Alertmanager", grafana: "Grafana Alerting" };
+export const presetLabels: Record<AlertPreset, string> = { jsm: "Jira Service Management", opsgenie: "Opsgenie", newrelic: "New Relic", pagerduty: "PagerDuty", uptime: "Uptime", datadog: "Datadog", uptimerobot: "UptimeRobot", betterstack: "Better Stack", pingdom: "Pingdom", "uptime-kuma": "Uptime Kuma", alertmanager: "Prometheus Alertmanager", grafana: "Grafana Alerting" };
 
 /** New Relic workflow webhook custom payload; New Relic expands its template values. */
 export const newRelicPayloadTemplate = '{\n  "issueId": {{json issueId}},\n  "title": {{json issueTitle}},\n  "state": {{json state}},\n  "entityNames": {{json entitiesData.names}}\n}';

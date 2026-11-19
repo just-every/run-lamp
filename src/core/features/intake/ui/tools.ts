@@ -14,6 +14,7 @@ export const TOOLS: Array<{ id: ToolId; pick: string; does: string }> = [
   { id: "newrelic", pick: "New Relic", does: "Workflow alerts open drafts on one component." },
   { id: "datadog", pick: "Datadog", does: "Datadog monitor alerts open drafts on one component." },
   { id: "uptimerobot", pick: "UptimeRobot", does: "UptimeRobot alerts open drafts on one component." },
+  { id: "uptime-kuma", pick: "Uptime Kuma", does: "Uptime Kuma alerts open drafts on one component." },
   { id: "betterstack", pick: "Better Stack", does: "Better Stack incidents open drafts on one component." },
   { id: "pingdom", pick: "Pingdom", does: "Pingdom check alerts open drafts on one component." },
   { id: "alertmanager", pick: "Alertmanager", does: "Each alert group opens one draft on the components its labels match." },

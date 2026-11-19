@@ -556,7 +556,7 @@
       "executable": false
     },
     "docs/alerts-from-monitoring-tools.md": {
-      "sha256": "9f2175c06eccadeefc1f29a514e3b29df6805ed02d5c187a27da2213d175cb20",
+      "sha256": "231dc9f6725890c101b4eff3feef4660807ae795f6f273f5f78d91d455ab6f2e",
       "executable": false
     },
     "docs/backups-and-recovery.md": {
@@ -1101,6 +1101,10 @@
     },
     "migrations/core/0083_sorry_template_metadata.sql": {
       "sha256": "2137e9abaf24b2d16de1c97367bcc85eaf0005cf333e698b5aa71ce6f86c6037",
+      "executable": false
+    },
+    "migrations/core/0084_uptime_kuma_preset.sql": {
+      "sha256": "72123c9c0c39eaccf6730f5ec9611f1b4d77231d2bebf9935c72e1d28487006a",
       "executable": false
     },
     "migrations/README.md": {
@@ -2948,7 +2952,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "edc5141d87b0d1430d56e4c2f7b0eb61f036a56e15b1fc4b7cb409f7dc488f9d",
+      "sha256": "9234b2a5ad0930c16a333c369ab612c5f2a66d1406a00661373cc379360e22f1",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4536,7 +4540,7 @@
       "executable": false
     },
     "src/core/features/brief/repository.ts": {
-      "sha256": "89dac20755a20f187e99d6a19d52fc263f2f2de057d18db1b96e9f40680d8027",
+      "sha256": "7ccf7bc48b2ae08cd3fb437bdefb1b5d41e0284dcaa92dcea31a763909566249",
       "executable": false
     },
     "src/core/features/brief/routes.ts": {
@@ -5220,11 +5224,11 @@
       "executable": false
     },
     "src/core/features/intake/presets.ts": {
-      "sha256": "637f7dd16d961c0ee6c0df8c2e4f124b5c9d244c2eef24641dafaeba8ef0fdf2",
+      "sha256": "8385f5cbbea825dc197519176675c2fce012ff2a455d3c1708fa3a5b01f59ac9",
       "executable": false
     },
     "src/core/features/intake/repository.ts": {
-      "sha256": "80bb75efdad4ee17dbbb096e3611015f0cf602c6eea88a7c36e4df7816c8016c",
+      "sha256": "db3bddf89dc59c997ea1f3d7b39a1a593ffb98da158131d1b789d250c0880b9d",
       "executable": false
     },
     "src/core/features/intake/responder-repository.ts": {
@@ -5296,7 +5300,7 @@
       "executable": false
     },
     "src/core/features/intake/ui/preset-form.tsx": {
-      "sha256": "727d0c1a5100fd06bb8999fae8a6f4eb720e29f35eac88766a15ae8f13ecef54",
+      "sha256": "320d7aae9e17340b4a5f3a9cd272560573de08ce89593098224c013b70a6229d",
       "executable": false
     },
     "src/core/features/intake/ui/receipts-card.tsx": {
@@ -5316,7 +5320,7 @@
       "executable": false
     },
     "src/core/features/intake/ui/tools.ts": {
-      "sha256": "92b33f84cba5f82ad54fa7f365262cf9806dcd2cfac46c03ca5839fa91ef7b0c",
+      "sha256": "967054747e369672992b15d673540dd78edf4ab2f79c01e03e2ebb589c869796",
       "executable": false
     },
     "src/core/features/intake/ui/uptime-form.tsx": {
@@ -8056,7 +8060,7 @@
       "executable": false
     },
     "tests/e2e/channels-and-presets.test.mjs": {
-      "sha256": "da20158c64ee4b254f0421595a6abc371f4aa5acf5348fe627ff60fec0d1e65c",
+      "sha256": "a84eaf20ddf93e303a7f8af512198e3659be0bea4b277ef5fc9107b600aeb3ae",
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {

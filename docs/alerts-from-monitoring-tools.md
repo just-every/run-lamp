@@ -1,7 +1,7 @@
 # Alerts from monitoring tools
 
 Open **Settings → Connected tools** and choose a tool under **Connect a tool**: Uptime, PagerDuty,
-Datadog, UptimeRobot, Better Stack, Pingdom, Alertmanager, Grafana, or
+Datadog, UptimeRobot, Uptime Kuma, Better Stack, Pingdom, Alertmanager, Grafana, or
 **Another tool** for any tool that posts JSON. Only that tool's form opens. It
 asks only for what the tool needs, and Lamp makes the key the tool posts with.
 Presets can carry the key in the address Lamp shows once; copy that address into
@@ -47,6 +47,15 @@ Choose the component the tool's alerts belong to and connect. Lamp shows the
 address, with its key, and for Datadog and UptimeRobot the body to paste. Each
 preset reads its tool's documented alert payload and uses a deduplication key to
 keep repeated alerts on the same unresolved incident.
+
+## Uptime Kuma
+
+Choose **Uptime Kuma**, select a component and connect. In Kuma, add a **Webhook**
+notification, paste Lamp's address into **Post URL**, choose **POST** and
+**Preset - application/json**, and enable the notification on the monitor. Lamp
+groups alerts by monitor ID. Verify the connection with a test monitor changing
+state. Kuma's **Test** button sends a message without a monitor or heartbeat,
+which Lamp records as refused.
 
 ## Prometheus Alertmanager and Grafana Alerting
 

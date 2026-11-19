@@ -26,6 +26,10 @@
     {
       "id": "0083_sorry_template_metadata.sql",
       "buyerSteps": "Back up data and owner source before updating. Apply this additive migration after 0082 with rer deploy. Existing templates keep their kind and choices. Sorry notice and update templates retain source metadata and private wording; review status, audience and affected services in the composer before publication. No provider account or new credential is required. Run Edit Run fleet, 18 November 2026."
+    },
+    {
+      "id": "0084_uptime_kuma_preset.sql",
+      "buyerSteps": "Apply after 0083 with rer deploy. The new column enables Uptime Kuma alert sources and preserves existing sources and receipts."
     }
   ],
   "breaking": false,
