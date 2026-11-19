@@ -1,0 +1,14 @@
+{
+  "shard": "public-pages",
+  "commit": null,
+  "runId": null,
+  "runAttempt": 0,
+  "success": true,
+  "steps": [
+    {
+      "script": "test:public",
+      "exitCode": 0,
+      "durationMs": 479912
+    }
+  ]
+}

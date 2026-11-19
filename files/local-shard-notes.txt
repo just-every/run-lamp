@@ -1,0 +1,9 @@
+2026-11-19 UTC
+Product checkout: 10521ddf507d798ad271c11b3a160dd72c7c498f
+Browser executable: /usr/bin/chromium (Chromium 154.0.8037.57)
+Public pages: 9 passed, 0 failed; command duration 479912 ms.
+Composer, first local attempt: 12 passed, 1 failed; command duration 477315 ms.
+THEME-001 used Playwright's default launch path, where no managed Chromium shell was installed.
+Composer, system Chromium fallback: 12 passed, 1 failed; command duration 494632 ms.
+THEME-001 observed five theme requests, including the extra /assets/favicon.svg request, against its four-request budget.
+The same package command, test files, and assertions are present on main and this candidate.

@@ -1,0 +1,285 @@
+{
+  "ciShardNames": [
+    "ownership",
+    "portability",
+    "imports",
+    "composer",
+    "public-pages",
+    "delivery",
+    "public",
+    "runtime",
+    "demo"
+  ],
+  "verificationPlan": {
+    "build": [
+      "check:contract-docs",
+      "source:copies",
+      "source:check",
+      "typecheck",
+      "check:syntax",
+      "validate:release",
+      "verify:visual:source",
+      "build:app",
+      "build:site"
+    ],
+    "ownership": [
+      "test:ownership",
+      "test:owner-claim",
+      "test:owner-backup"
+    ],
+    "portability": [
+      "test:portability"
+    ],
+    "imports": [
+      "test:imports",
+      "test:mail",
+      "test:site"
+    ],
+    "composer": [
+      "test:composer"
+    ],
+    "public-pages": [
+      "test:public"
+    ],
+    "delivery": [
+      "test:channels"
+    ],
+    "public": [
+      "test:delivery"
+    ],
+    "runtime": [
+      "test:runtime",
+      "test:publishing"
+    ],
+    "demo": [
+      "test:demo",
+      "test:baseline"
+    ]
+  },
+  "commands": [
+    "build:app",
+    "build:site",
+    "check:contract-docs",
+    "check:syntax",
+    "source:check",
+    "source:copies",
+    "test:baseline",
+    "test:channels",
+    "test:composer",
+    "test:delivery",
+    "test:demo",
+    "test:imports",
+    "test:mail",
+    "test:owner-backup",
+    "test:owner-claim",
+    "test:ownership",
+    "test:portability",
+    "test:public",
+    "test:publishing",
+    "test:runtime",
+    "test:site",
+    "typecheck",
+    "validate:release",
+    "verify:visual:source"
+  ],
+  "routineTestFiles": [
+    "tests/auth-adoption/dependencies.test.mjs",
+    "tests/auth-adoption/deploy-page-host.test.mjs",
+    "tests/auth-adoption/portability.test.mjs",
+    "tests/auth-adoption/setup-migrations.test.mjs",
+    "tests/auth-adoption/sign-in-providers.test.mjs",
+    "tests/auth-adoption/upgrade.test.mjs",
+    "tests/baseline/e2e-baseline/core-baseline.test.mjs",
+    "tests/demo/journey.test.mjs",
+    "tests/demo/owner-claim-status.test.mjs",
+    "tests/demo/owner-claim.test.mjs",
+    "tests/e2e/accessibility.test.mjs",
+    "tests/e2e/auth-adoption-journey.test.mjs",
+    "tests/e2e/channels-and-presets.test.mjs",
+    "tests/e2e/cutover-browser.test.mjs",
+    "tests/e2e/delivery-contract.test.mjs",
+    "tests/e2e/export-import.test.mjs",
+    "tests/e2e/incident-brief.test.mjs",
+    "tests/e2e/independent-release.test.mjs",
+    "tests/e2e/maintenance-timezone.test.mjs",
+    "tests/e2e/page-data.test.mjs",
+    "tests/e2e/prior-backup.test.mjs",
+    "tests/e2e/public-contract.test.mjs",
+    "tests/e2e/publishing-browser.test.mjs",
+    "tests/e2e/publishing-contract.test.mjs",
+    "tests/e2e/rer-mail.test.mjs",
+    "tests/e2e/site-reader-security.test.mjs",
+    "tests/e2e/snapshot-retained.test.mjs",
+    "tests/e2e/sorry-documented-export.test.mjs",
+    "tests/e2e/sorry-import.test.mjs",
+    "tests/e2e/sorry-reconciliation.test.mjs",
+    "tests/e2e/start-runtime.test.mjs",
+    "tests/e2e/statuspage-import.test.mjs",
+    "tests/e2e/unsaved-work-browser.test.mjs",
+    "tests/e2e/update-reminders.test.mjs",
+    "tests/e2e/website-onboarding.test.mjs",
+    "tests/lamp-site/browser.test.mjs"
+  ],
+  "inventory": [
+    {
+      "path": "tests/auth-adoption/dependencies.test.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/auth-adoption/deploy-page-host.test.mjs",
+      "count": 10
+    },
+    {
+      "path": "tests/auth-adoption/portability.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/auth-adoption/setup-migrations.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/auth-adoption/sign-in-providers.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/auth-adoption/upgrade.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/baseline/e2e-baseline/core-baseline.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/demo/journey.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/demo/owner-claim-status.test.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/demo/owner-claim.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/accessibility.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/auth-adoption-journey.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/channels-and-presets.test.mjs",
+      "count": 8
+    },
+    {
+      "path": "tests/e2e/cutover-browser.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/delivery-contract.test.mjs",
+      "count": 7
+    },
+    {
+      "path": "tests/e2e/export-import.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/incident-brief.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/independent-release.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/maintenance-timezone.test.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/e2e/page-data.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/prior-backup.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/public-contract.test.mjs",
+      "count": 7
+    },
+    {
+      "path": "tests/e2e/publishing-browser.test.mjs",
+      "count": 8
+    },
+    {
+      "path": "tests/e2e/publishing-contract.test.mjs",
+      "count": 11
+    },
+    {
+      "path": "tests/e2e/rer-mail.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/e2e/site-reader-security.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/e2e/snapshot-retained.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/e2e/sorry-documented-export.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/e2e/sorry-import.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/e2e/sorry-reconciliation.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/start-runtime.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/e2e/statuspage-import.test.mjs",
+      "count": 3
+    },
+    {
+      "path": "tests/e2e/unsaved-work-browser.test.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/e2e/update-reminders.test.mjs",
+      "count": 5
+    },
+    {
+      "path": "tests/e2e/website-onboarding.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/lamp-site/browser.test.mjs",
+      "count": 1
+    },
+    {
+      "path": "tests/release/upgrade.test.mjs",
+      "count": 1
+    }
+  ],
+  "assertionScripts": [
+    "scripts/edition-authoring/cli.mjs",
+    "scripts/check-syntax.mjs",
+    "scripts/validate-release.mjs",
+    "scripts/verify-visual-edit.mjs",
+    "src/base/contract-docs.mjs",
+    "scripts/verification/check-plan.mjs",
+    "scripts/chromium-probe.mjs",
+    "scripts/verification/aggregate.mjs",
+    "scripts/baseline/run.mjs",
+    "scripts/baseline/reporter-probes.mjs"
+  ]
+}

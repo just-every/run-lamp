@@ -1,0 +1,5 @@
+Test shards 8 -> 9, shared build 1 -> 1.
+Planned package commands 24 -> 24, unique and identical.
+Routine test files 36 -> 36, identical.
+Registered cases 113 and assertion scripts 10, identical.
+All other shard names and command assignments are identical.

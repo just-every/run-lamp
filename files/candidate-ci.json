@@ -1,0 +1,1416 @@
+{
+  "discovery": {
+    "conclusion": null,
+    "created_at": "2026-11-19T16:07:02Z",
+    "head_branch": "cloud/sd-lamp-ci-composer-split-2",
+    "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44562436254",
+    "id": 44562436254,
+    "run_attempt": 1,
+    "status": "in_progress",
+    "updated_at": "2026-11-19T16:07:16Z"
+  },
+  "observations": [
+    {
+      "conclusion": null,
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44562436254",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44562436254",
+      "status": "completed"
+    }
+  ],
+  "jobs": [
+    {
+      "completed_at": "2026-11-19T16:07:13Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695059989,
+      "name": "plan",
+      "started_at": "2026-11-19T16:07:06Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:07:07Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:07:06Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:09Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:07:07Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:09Z",
+          "conclusion": "success",
+          "name": "Reuse only verified push evidence",
+          "started_at": "2026-11-19T16:07:09Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:11Z",
+          "conclusion": "success",
+          "name": "Read the shared local and CI verification plan",
+          "started_at": "2026-11-19T16:07:09Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:11Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:07:11Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:11Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:07:11Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:08:18Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695174171,
+      "name": "build",
+      "started_at": "2026-11-19T16:07:15Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:07:17Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:07:16Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:20Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:07:17Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:26Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:07:20Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:27Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:07:26Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:07:31Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:07:27Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:08Z",
+          "conclusion": "success",
+          "name": "Build the production Worker once",
+          "started_at": "2026-11-19T16:07:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:09Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound build completion",
+          "started_at": "2026-11-19T16:08:08Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:11Z",
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "started_at": "2026-11-19T16:08:09Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:15Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:11Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:15Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:15Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:15Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:15Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:15Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:08:15Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:13:02Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695907872,
+      "name": "shards (portability)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:25Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:22Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:29Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:25Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:29Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:41Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:41Z",
+          "conclusion": "skipped",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:41Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:43Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:41Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:43Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:43Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:54Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:43Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:56Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:12:54Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:57Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:12:56Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:57Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:12:57Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:58Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:12:57Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:58Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:12:58Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:58Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:12:58Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:12:58Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:12:58Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:17:33Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695907884,
+      "name": "shards (public-pages)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:24Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:22Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:29Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:24Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:29Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:41Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:50Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:41Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:51Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:50Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:51Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:51Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:25Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:51Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:26Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:17:25Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:28Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:17:26Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:30Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:17:28Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:30Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:17:30Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:31Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:17:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:31Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:17:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:31Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:17:31Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:17:20Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695907965,
+      "name": "shards (imports)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:23Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:25Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:23Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:30Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:25Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:30Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:40Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:47Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:40Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:48Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:47Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:48Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:12Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:13Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:17:12Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:15Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:17:13Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:16Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:17:15Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:17:16Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:17:17Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:17Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:17:17Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:17Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:17:17Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:18:00Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695907974,
+      "name": "shards (delivery)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:23Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:25Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:23Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:31Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:25Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:34Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:34Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:34Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:34Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:34Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:34Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:34Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:41Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:34Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:51Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:41Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:52Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:51Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:52Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:52Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:51Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:52Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:53Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:17:51Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:54Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:17:53Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:56Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:17:54Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:56Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:17:56Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:56Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:17:56Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:57Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:17:56Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:17:57Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:17:57Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:16:09Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695908018,
+      "name": "shards (runtime)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:23Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:25Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:23Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:30Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:25Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:30Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:33Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:41Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:33Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:52Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:41Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:53Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:52Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:53Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:53Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:15:59Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:53Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:00Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:15:59Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:03Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:16:00Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:05Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:16:03Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:06Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:16:05Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:06Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:16:06Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:06Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:16:06Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:16:06Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:16:06Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:13:51Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695908019,
+      "name": "shards (ownership)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:20Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:24Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:22Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:28Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:24Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:30Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:28Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:31Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:30Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:31Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:31Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:36Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:31Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:42Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:36Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:43Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:42Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:43Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:43Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:44Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:43Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:45Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:13:44Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:46Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:13:45Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:13:46Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:13:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:13:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:13:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:13:48Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:22:13Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695908052,
+      "name": "shards (public)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:23Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:26Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:23Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:30Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:26Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:34Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:30Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:35Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:34Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:35Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:35Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:35Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:35Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:43Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:35Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:53Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:43Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:55Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:53Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:55Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:55Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:03Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:55Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:04Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:22:03Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:07Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:22:04Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:09Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:22:07Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:09Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:22:09Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:10Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:22:09Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:10Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:22:10Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:10Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:22:10Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:19:09Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695908089,
+      "name": "shards (composer)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:24Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:22Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:29Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:24Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:29Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "skipped",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:41Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:50Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:41Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:51Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:50Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:51Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:51Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:01Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:51Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:02Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:19:01Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:04Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:19:02Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:06Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:19:04Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:06Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:19:06Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:06Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:19:06Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:07Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:19:06Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:19:07Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:19:07Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:13:51Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135695908204,
+      "name": "shards (demo)",
+      "started_at": "2026-11-19T16:08:20Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:08:22Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:08:20Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:24Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:08:22Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:30Z",
+          "conclusion": "success",
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:08:24Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:08:30Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Reserve disk for native runtime journeys",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:32Z",
+          "conclusion": "success",
+          "name": "Prepare verification logs",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:38Z",
+          "conclusion": "success",
+          "name": "Install pinned tools and dependencies",
+          "started_at": "2026-11-19T16:08:32Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:46Z",
+          "conclusion": "success",
+          "name": "Install Chromium only for browser shards",
+          "started_at": "2026-11-19T16:08:38Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:47Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:08:46Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:08:47Z",
+          "conclusion": "success",
+          "name": "Restore the shared production Worker",
+          "started_at": "2026-11-19T16:08:47Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:43Z",
+          "conclusion": "success",
+          "name": "Verify this product shard",
+          "started_at": "2026-11-19T16:08:47Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:44Z",
+          "conclusion": "success",
+          "name": "Retain commit-bound shard completion",
+          "started_at": "2026-11-19T16:13:43Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:44Z",
+          "conclusion": "success",
+          "name": "Retain actual verification logs and browser evidence",
+          "started_at": "2026-11-19T16:13:44Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Cache Chromium and its system packages",
+          "started_at": "2026-11-19T16:13:44Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/cache@5a3ec84eff668545956fd18022155c47e93e2684",
+          "started_at": "2026-11-19T16:13:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:48Z",
+          "conclusion": "success",
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "started_at": "2026-11-19T16:13:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:49Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:13:48Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:13:49Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:13:49Z"
+        }
+      ]
+    },
+    {
+      "completed_at": "2026-11-19T16:22:23Z",
+      "conclusion": "success",
+      "head_sha": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+      "id": 135705303964,
+      "name": "verify",
+      "started_at": "2026-11-19T16:22:15Z",
+      "status": "completed",
+      "steps": [
+        {
+          "completed_at": "2026-11-19T16:22:17Z",
+          "conclusion": "success",
+          "name": "Set up job",
+          "started_at": "2026-11-19T16:22:16Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:17Z",
+          "conclusion": "success",
+          "name": "Require a successful plan",
+          "started_at": "2026-11-19T16:22:17Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:19Z",
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:22:17Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:20Z",
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+          "started_at": "2026-11-19T16:22:19Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:20Z",
+          "conclusion": "success",
+          "name": "Require every planned command to succeed on this commit",
+          "started_at": "2026-11-19T16:22:20Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:21Z",
+          "conclusion": "success",
+          "name": "Retain combined verification verdict",
+          "started_at": "2026-11-19T16:22:20Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:21Z",
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262",
+          "started_at": "2026-11-19T16:22:21Z"
+        },
+        {
+          "completed_at": "2026-11-19T16:22:21Z",
+          "conclusion": "success",
+          "name": "Complete job",
+          "started_at": "2026-11-19T16:22:21Z"
+        }
+      ]
+    }
+  ],
+  "shard_results": {
+    "portability": {
+      "id": 135695907872,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 282,
+      "verification_step_seconds": 251
+    },
+    "public-pages": {
+      "id": 135695907884,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 553,
+      "verification_step_seconds": 514
+    },
+    "imports": {
+      "id": 135695907965,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 540,
+      "verification_step_seconds": 504
+    },
+    "delivery": {
+      "id": 135695907974,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 580,
+      "verification_step_seconds": 539
+    },
+    "runtime": {
+      "id": 135695908018,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 469,
+      "verification_step_seconds": 426
+    },
+    "ownership": {
+      "id": 135695908019,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 331,
+      "verification_step_seconds": 301
+    },
+    "public": {
+      "id": 135695908052,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 833,
+      "verification_step_seconds": 788
+    },
+    "composer": {
+      "id": 135695908089,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 649,
+      "verification_step_seconds": 610
+    },
+    "demo": {
+      "id": 135695908204,
+      "status": "completed",
+      "conclusion": "success",
+      "job_seconds": 331,
+      "verification_step_seconds": 296
+    }
+  },
+  "longest_completed_shard": [
+    "public",
+    833
+  ],
+  "exact_sha_completed_success": true,
+  "wall_seconds_through_aggregate": 921,
+  "mean_completed_shard_seconds": 507.55555555555554,
+  "recorded_at": "2026-11-19T16:42:20+00:00"
+}

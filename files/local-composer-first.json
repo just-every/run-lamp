@@ -1,0 +1,14 @@
+{
+  "shard": "composer",
+  "commit": null,
+  "runId": null,
+  "runAttempt": 0,
+  "success": false,
+  "steps": [
+    {
+      "script": "test:composer",
+      "exitCode": 1,
+      "durationMs": 477315
+    }
+  ]
+}

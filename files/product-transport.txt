@@ -1,0 +1,10 @@
+Repository: just-every/run-lamp
+Branch: cloud/sd-lamp-ci-composer-split-2
+Product HEAD: 10521ddf507d798ad271c11b3a160dd72c7c498f
+Origin main at candidate push: 8a2d2e8963f4ae9a84fe17cc6b1b6f7e2bafc64b
+Candidate push UTC: 2026-11-19T16:07:01Z
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/sd-lamp-ci-composer-split-2
+Identity and trailer check passed for 1 candidate commit(s), including side parents.
+*	HEAD:refs/heads/cloud/sd-lamp-ci-composer-split-2	[new branch]
+PUSH_OK branch=cloud/sd-lamp-ci-composer-split-2
+10521ddf507d798ad271c11b3a160dd72c7c498f	refs/heads/cloud/sd-lamp-ci-composer-split-2

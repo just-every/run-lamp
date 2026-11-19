@@ -1,0 +1,88 @@
+{
+  "files": [
+    {
+      "blob": "f3a2af646005fcec1377b4fe4a176aac4cf98e0c",
+      "bytes": 5086,
+      "path": "REPORT.md",
+      "sha256": "3ef655ac6b5cda597e776dd689313487fbe84a392d7518c45c11eadbcba92b3e"
+    },
+    {
+      "blob": "e62c4309bd181c70b0eb89798f8b3484673cfc06",
+      "bytes": 137,
+      "path": "aggregate-probe.txt",
+      "sha256": "eaf2451d5333378dbb1dcaf91abeb78f296b6a7be3b09c01d6a1e33f5fcb45a2"
+    },
+    {
+      "blob": "679872b05dbf5c17fc75fc24da5c6153474f2db9",
+      "bytes": 9272,
+      "path": "baseline-ci.json",
+      "sha256": "8c9811be74e3f851f0cbefded7099c36e7bf29bd88cedd24b17b6e8c6bd9d45a"
+    },
+    {
+      "blob": "f19b5a8434ad565ed482c0ba088ad935e94fcbfc",
+      "bytes": 6643,
+      "path": "baseline-plan.json",
+      "sha256": "cfe6b83dafbddcff8206727e18fc895e8eba870dacb75a2495db87e6941434cf"
+    },
+    {
+      "blob": "635eaba04180546b629073a2bd4a4a7bad740f95",
+      "bytes": 49610,
+      "path": "candidate-ci.json",
+      "sha256": "cd47edaead181f4b9be8b7c56398b5b4720a3e36121f75c4ec083252f7f51f50"
+    },
+    {
+      "blob": "0a98e945a718599bb775ea4c10b11110c84477e7",
+      "bytes": 6691,
+      "path": "candidate-plan.json",
+      "sha256": "96ce4328d89c064feb613b0d81204c9f7b4ca06176889adfe638ab1272fa2955"
+    },
+    {
+      "blob": "cb79341e1579a578526c8ec3b1c35cb54de48cef",
+      "bytes": 940,
+      "path": "local-build.json",
+      "sha256": "ae702ee7948dd30ddd9cab7ae1a6dcb3ff59c1b25b4c147d913abd22debe55e7"
+    },
+    {
+      "blob": "ba349cca6089201d099adfe57ecc9ce6fe44923d",
+      "bytes": 211,
+      "path": "local-composer-first.json",
+      "sha256": "e27715bca4a4254c929660b62715de351cf5c3fd79a3fe22e3ada8d6ee41b637"
+    },
+    {
+      "blob": "bdcce175fe1493c62468f501bbf1f3879c887e8f",
+      "bytes": 211,
+      "path": "local-composer-retry.json",
+      "sha256": "805ece483c66edad897f76f3128ef8d73259472c86a0784c5680386ef393cec4"
+    },
+    {
+      "blob": "7cd091a8d3caed7eaa67f7eae284d4c37fc09b89",
+      "bytes": 212,
+      "path": "local-public-pages.json",
+      "sha256": "52f99be3c88189b0d77f14f5c40b48beaef0e10f6773bb9669b301e881c2fbcb"
+    },
+    {
+      "blob": "435823bf816edd8db8c33f68396e2da32d524308",
+      "bytes": 675,
+      "path": "local-shard-notes.txt",
+      "sha256": "447a74d4ccaa54649958df451a9da383d8bb6ab7521c3153365570e54c8f59f8"
+    },
+    {
+      "blob": "21bf80ef43cc1e0e4cab5e1f857da2ba8f44e756",
+      "bytes": 257,
+      "path": "plan-comparison.txt",
+      "sha256": "f8b97746c04d52d3baa8eea2fd313679b13a9174ee32cc817486c228a9a90ec2"
+    },
+    {
+      "blob": "4badc2811ad5300da0e6c460992f46142f3edf78",
+      "bytes": 630,
+      "path": "product-transport.txt",
+      "sha256": "1a47e1b54018f4b70b6155861a02ba84eea9d82139c92e9753f8d12f632fa770"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-ci-composer-split-2",
+  "product_head": "10521ddf507d798ad271c11b3a160dd72c7c498f",
+  "ref": "refs/heads/evidence/sd-lamp-ci-composer-split-2",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-ci-composer-split-2"
+}
