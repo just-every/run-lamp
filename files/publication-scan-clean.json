@@ -1,0 +1,39 @@
+{
+  "schema": "rer.publish-check/v3",
+  "status": "PASS",
+  "complete": true,
+  "source": {
+    "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+    "tree": "16c1903a4b1f9412868a4f285721aebb7e591aec"
+  },
+  "scanner": {
+    "name": "gitleaks",
+    "version": "8.30.1"
+  },
+  "publicBase": {
+    "ref": "https://github.com/just-every/run-lamp.git#main",
+    "commit": "ec46d417f2e2aeacc8fc1ebf3147af38704c6e78"
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": false
+  },
+  "findings": [],
+  "history": {
+    "scope": "selected-and-public-base",
+    "commits": 1228,
+    "trees": 1211,
+    "blobs": 9436,
+    "commitMessages": 1228,
+    "tagMessages": 34,
+    "hydration": {
+      "missingBefore": 16,
+      "missingAfter": 0,
+      "fetches": 1,
+      "seconds": 0.802839
+    }
+  },
+  "preExistingCount": 50,
+  "elapsedSeconds": 451.497231
+}

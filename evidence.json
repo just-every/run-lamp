@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "0619fd105ece36bcb857e836f5cfa0b01ba380ef",
+      "bytes": 4618,
+      "path": "REPORT.md",
+      "sha256": "fc3f0d06cf48742ebc44221ba21be00c84715cd983f1a455021b9e2f1ea7f94d"
+    },
+    {
+      "blob": "f473fb9541b541930c2f0757a0280419ae8b28dc",
+      "bytes": 945,
+      "path": "build.json",
+      "sha256": "0a85f02f4a238944c396997cad39f4567872007b60eace20fe61d1df23146e54"
+    },
+    {
+      "blob": "375e1ef0e80bd622b37511482b4c97e6de40bcf6",
+      "bytes": 674,
+      "path": "github-verify.json",
+      "sha256": "b0ee06547dd823aab3ecc3b43bd7d969df46039c2d4314fff0772b599109fa50"
+    },
+    {
+      "blob": "996ff143d958781c051cfc7a709e3fdf99b88fa0",
+      "bytes": 5157,
+      "path": "local-gates.md",
+      "sha256": "365a2018c9d4ac2e0231cd25a61141aac8deafc2559700576b0834cc7b12060f"
+    },
+    {
+      "blob": "2307b31c9415bf9df3973f6ea775fb6b7a9d6734",
+      "bytes": 3810,
+      "path": "owner-restore-receipt.md",
+      "sha256": "056ef50fb32411299171ec1eb8cec122783fdb23cb7b82c533a078611eb1c1c9"
+    },
+    {
+      "blob": "6003ed450d38bf7b8b76f7a63c586ac12ff41bba",
+      "bytes": 254,
+      "path": "portability.json",
+      "sha256": "e0381e3d72fc7bf343a105506ecdca4faa1fcb7829beb12d86162cc93d672649"
+    },
+    {
+      "blob": "61f01be4a3b3fac6bd0633adc209712fad362fe7",
+      "bytes": 906,
+      "path": "publication-scan-clean.json",
+      "sha256": "5785d6447aba5716bb9d8f392434798da9e5e77ff422c2bce90119d84e76ccf4"
+    },
+    {
+      "blob": "c00c2ddcf9902ef2e9bd696ff474a7cc21b7d0c6",
+      "bytes": 565,
+      "path": "publication-scan-incomplete.json",
+      "sha256": "fd364d21379217f048ddc905261f2cfaf4254dfe4bf2dd515d6b7b1422cd3ff2"
+    },
+    {
+      "blob": "3743a52affba3f3409666cd43e14eeb43b23fffe",
+      "bytes": 3834,
+      "path": "publication-scan-working-tree.json",
+      "sha256": "c096455734dbb58fe37e2525c134f85f0ea4a888eba5edea418df1c9c731baa8"
+    },
+    {
+      "blob": "b628a631dd5fe8986c458476b678672405d87027",
+      "bytes": 342,
+      "path": "runtime.json",
+      "sha256": "4b59cb6265fa9765db4163d98e7c59f0fb766e7a14c4004036a323bbf5f59911"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-rer-pin-125-1",
+  "product_head": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+  "ref": "refs/heads/evidence/sd-lamp-rer-pin-125-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-rer-pin-125-1"
+}

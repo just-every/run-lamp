@@ -1,0 +1,150 @@
+{
+  "schema": "rer.publish-check/v3",
+  "status": "FAIL",
+  "complete": true,
+  "source": {
+    "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+    "tree": "16c1903a4b1f9412868a4f285721aebb7e591aec"
+  },
+  "scanner": {
+    "name": "gitleaks",
+    "version": "8.30.1"
+  },
+  "publicBase": {
+    "ref": "https://github.com/just-every/run-lamp.git#main",
+    "commit": "69af4dfce9acc31f4f224589fbde2c1b39fee20b"
+  },
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": false
+  },
+  "findings": [
+    {
+      "rule": "hygiene.local-path",
+      "path": "dist/server/wrangler.json",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "hygiene.email",
+      "path": "dist/server/index.js",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "hygiene.email",
+      "path": "dist/server/app-assets/manifest-8yGZYr17.js",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "hygiene.email",
+      "path": "dist/server/app-assets/button-fvYi7Ujk.js",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "hygiene.local-path",
+      "path": "dist/server/app-assets/_tanstack-start-manifest_v-MX10A2Wh.js",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "hygiene.local-path",
+      "path": "dist/server/.vite/manifest.json",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "hygiene.local-path",
+      "path": ".seed/installer/install.log",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ]
+    },
+    {
+      "rule": "SEC-3",
+      "path": ".wrangler/local-operation/active.json",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ],
+      "line": 1
+    },
+    {
+      "rule": "secret.assignment",
+      "path": ".wrangler/local-operation/active.json",
+      "commit": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+      "commits": [
+        "839eda0645af8bcb8a9d7d548d60311ed86fd273"
+      ],
+      "scope": "working-tree",
+      "scopes": [
+        "working-tree"
+      ],
+      "scannerRule": "generic-api-key"
+    }
+  ],
+  "history": {
+    "scope": "selected-and-public-base",
+    "commits": 1226,
+    "trees": 1209,
+    "blobs": 9419,
+    "commitMessages": 1226,
+    "tagMessages": 34,
+    "hydration": {
+      "missingBefore": 0,
+      "missingAfter": 0,
+      "fetches": 0,
+      "seconds": 0.095026
+    }
+  },
+  "preExistingCount": 50,
+  "nonWorkingTreeFindingCount": 0
+}

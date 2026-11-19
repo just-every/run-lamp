@@ -1,0 +1,23 @@
+{
+  "runId": 44571255306,
+  "workflow": "Verify",
+  "event": "push",
+  "restCalls": 4,
+  "discovery": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44571255306",
+    "id": 44571255306,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "discoveredAt": "2026-11-19T16:54:37Z",
+  "finalObservedAt": "2026-11-19T17:09:37Z",
+  "final": {
+    "conclusion": "success",
+    "head_sha": "839eda0645af8bcb8a9d7d548d60311ed86fd273",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44571255306",
+    "status": "completed"
+  }
+}
