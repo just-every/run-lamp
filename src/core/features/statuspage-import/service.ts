@@ -298,8 +298,10 @@ export function createStatuspageImportService(db: D1Database, hooks: MoveInHooks
         if (!options.capturePublicFeeds) throw new Error("Lamp can't read public status pages here.");
         return options.capturePublicFeeds(input.source, input.publicUrl).catch(() => { throw new Error("That status page's public feeds could not be read."); });
       }
-      if (!input.pageId || !input.apiKey) throw new Error(`Choose saved ${sourceAdapter(input.source).label} responses, or enter a page ID and API key.`);
-      return sourceAdapter(input.source).fetch({ pageId: input.pageId, apiKey: input.apiKey }, options.apiOrigin);
+      const adapter = sourceAdapter(input.source);
+      if (!adapter.fetch) throw new Error(`Choose saved ${adapter.label} responses.`);
+      if (!input.pageId || !input.apiKey) throw new Error(`Choose saved ${adapter.label} responses, or enter a page ID and API key.`);
+      return adapter.fetch({ pageId: input.pageId, apiKey: input.apiKey }, options.apiOrigin);
     },
     /** The dry-run report of a door plan, from the plan the owner reviews. A
      * plan whose import already finished reads as already imported. */

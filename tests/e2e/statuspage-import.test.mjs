@@ -12,6 +12,7 @@ import { postmortemTemplateImportFlow } from './helpers/postmortem-template-impo
 import { invitationFiles, importInvitationFlow, unsentExpiredImportFlow } from './helpers/import-invitation-flow.mjs';
 import { subscriberMoveInCapacityFlow } from './helpers/subscriber-limits-flow.mjs';
 import { historyCatchupFlow } from './helpers/history-catchup-flow.mjs';
+import { statusIoMoveInFlow } from './helpers/statusio-move-in-flow.mjs';
 
 const fixtures = source => readdirSync(`tests/fixtures/${source}/small`).map(name => ({ name, text: readFileSync(`tests/fixtures/${source}/small/${name}`, 'utf8') }));
 const parsed = (files, name) => JSON.parse(files.find(file => file.name === name).text);
@@ -391,6 +392,19 @@ test('MAINT-015 — imported maintenance messages retain their own source lifecy
     await assertNoNewNotifications(runtime, quiet);
     t.diagnostic('PROBE MAINT-015: scheduled, in_progress and completed source messages survive review/apply, native read, public permalink and monthly history at original times without notifications');
   } finally { await runtime.close(); }
+});
+
+test('MOVE-007 — owner reviews, silently applies and undoes saved Status.io history', { timeout: 180_000 }, async () => {
+  const runtime = await openStatusJourney();
+  const api = async (path, body, headers) => {
+    const response = await runtime.request(path, { ...(body === undefined ? {} : { method: 'POST', body: JSON.stringify(body) }), headers });
+    return { status: response.status, body: await response.json() };
+  };
+  try {
+    await statusIoMoveInFlow({ runtime, api, moveIn: moveInDoor(api) });
+  } finally {
+    await runtime.close();
+  }
 });
 
 test('Imported incident wording stays whole beyond native field limits', { timeout: 180_000 }, async t => {

@@ -1,5 +1,5 @@
 import { rememberCutover, clearCutover } from "./cutover-draft";
-import { AccountHelp, PageFinder, SavedResponsesHelp } from "./source-help";
+import { AccountHelp, PageFinder, SavedResponsesHelp, sourceLabelFor } from "./source-help";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 
 import { appApi, useAppData } from "../../../app/client/ui/api";
@@ -10,6 +10,7 @@ import type { MoveInReport } from "../planning";
 import { HELD_SORRY_DAYS } from "../held-sorry";
 import { moveInDoor } from "./door-client";
 import type { WebsiteRecord } from "../../website/repository";
+import type { ImportSource } from "../adapters";
 
 type SavedFile = { name: string; text: string };
 type Preview = { report: MoveInReport; jobId?: string; files?: SavedFile[]; planId: string; fingerprint: string };
@@ -81,8 +82,8 @@ function FieldLedger({ report }: { report: MoveInReport }) {
 export function MoveInPage() {
   const jobs = useAppData<{ jobs: Job[] }>("/api/app/statuspage-import/jobs");
   const website = useAppData<{ website: WebsiteRecord | null }>("/api/app/website");
-  const [source, setSource] = useState<"statuspage" | "betterstack" | "instatus" | "sorry">(website.data?.website?.statusPage?.source ?? "statuspage");
-  const sourceLabel = source === "sorry" ? "Sorry" : source === "instatus" ? "Instatus" : source === "betterstack" ? "Better Stack" : "Statuspage";
+  const [source, setSource] = useState<ImportSource>(website.data?.website?.statusPage?.source ?? "statuspage");
+  const sourceLabel = sourceLabelFor(source);
   const [publicAccessAcknowledged, setPublicAccessAcknowledged] = useState(false);
   const [publicUrl, setPublicUrl] = useState("");
   const [pageId, setPageId] = useState(website.data?.website?.statusPage?.pageId ?? "");
@@ -157,10 +158,10 @@ export function MoveInPage() {
   const saved = preview?.files ? URL.createObjectURL(new Blob([JSON.stringify(preview.files)], { type: "application/json" })) : null;
 
   return <div className="page-stack move-in-page">
-    <section className="page-title-row"><div><a className="text-link" href="/app/settings#data">← Your data</a><h1>Move in from {sourceLabel}</h1><p>Bring your components, history and subscribers. Review a dry run before importing. Past incidents send no notifications; subscribers wait for your invitation. {source === "sorry" && `Public pages supply history only. Subscribers need an API key and wait up to ${HELD_SORRY_DAYS} days for an invitation after cutover.`}</p>{detected && <p>Moving from <a className="text-link" href={detected.url} target="_blank" rel="noreferrer">{new URL(detected.url).host}</a></p>}</div></section>
+    <section className="page-title-row"><div><a className="text-link" href="/app/settings#data">← Your data</a><h1>Move in from {sourceLabel}</h1>{source === "statusio" ? <p>Bring your components, incidents and maintenance from saved responses. Review a dry run before importing. Subscriber migration is pending.</p> : <p>Bring your components, history and subscribers. Review a dry run before importing. Past incidents send no notifications; subscribers wait for your invitation. {source === "sorry" && `Public pages supply history only. Subscribers need an API key and wait up to ${HELD_SORRY_DAYS} days for an invitation after cutover.`}</p>}{detected && <p>Moving from <a className="text-link" href={detected.url} target="_blank" rel="noreferrer">{new URL(detected.url).host}</a></p>}</div></section>
     <section className="data-card"><form className="move-in-form" onSubmit={dryRun}>
-      <label className="form-label">Source<select value={source} disabled={busy || !hydrated} onChange={event => { detectionApplied.current = true; setSource(event.target.value as typeof source); setPreview(null); setResult(null); setFiles([]); setPageId(""); setPublicUrl(""); setApiKey(""); setAcknowledged(false); setPublicAccessAcknowledged(false); setError(null); clearCutover(); }}><option value="statuspage">Statuspage</option><option value="betterstack">Better Stack</option><option value="instatus">Instatus</option><option value="sorry">Sorry</option></select></label>
-      <fieldset><legend>From your {sourceLabel} account</legend><AccountHelp source={source} />
+      <label className="form-label">Source<select value={source} disabled={busy || !hydrated} onChange={event => { detectionApplied.current = true; setSource(event.target.value as typeof source); setPreview(null); setResult(null); setFiles([]); setPageId(""); setPublicUrl(""); setApiKey(""); setAcknowledged(false); setPublicAccessAcknowledged(false); setError(null); clearCutover(); }}><option value="statuspage">Statuspage</option><option value="betterstack">Better Stack</option><option value="instatus">Instatus</option><option value="sorry">Sorry</option><option value="statusio">Status.io</option></select></label>
+      {source !== "statusio" && <fieldset><legend>From your {sourceLabel} account</legend><AccountHelp source={source} />
         {source === "betterstack" || source === "instatus" || source === "sorry" ? <>
           <label className="form-label">{source === "instatus" ? "API key" : "API token"}<input type="password" value={apiKey} autoComplete="off" onChange={(event) => setApiKey(event.target.value.trim())} /></label>
           <PageFinder key={source} source={source} apiKey={apiKey} onChoose={setPageId} />
@@ -169,14 +170,16 @@ export function MoveInPage() {
           <label className="form-label">{sourceLabel} page ID<input value={pageId} autoComplete="off" onChange={(event) => { detectionApplied.current = true; setPageId(event.target.value.trim()); }} /></label>
           <label className="form-label">API key<input type="password" value={apiKey} autoComplete="off" onChange={(event) => setApiKey(event.target.value.trim())} /></label>
         </>}
-        <small className="field-note">Lamp only reads from your {sourceLabel} account. The key is used for this dry run and never saved.</small></fieldset>
+        <small className="field-note">Lamp only reads from your {sourceLabel} account. The key is used for this dry run and never saved.</small></fieldset>}
       {source === "sorry" && <fieldset><legend>Or from the public status page</legend><p>No key is needed. Read published components and full notice history, including maintenance. Public pages never supply subscribers.</p><label className="form-label">Sorry public page URL<input type="url" value={publicUrl} autoComplete="off" placeholder="https://status.example.com" onChange={event => { setPublicUrl(event.target.value.trim()); setPreview(null); setFiles([]); }} /></label></fieldset>}
-      <fieldset><legend>Or from saved API responses</legend><SavedResponsesHelp source={source} />
+      <fieldset><legend>{source === "statusio" ? "Saved API responses" : "Or from saved API responses"}</legend><SavedResponsesHelp source={source} />
+        {source === "statusio" && <label className="form-label">Status.io page ID<input value={pageId} autoComplete="off" onChange={(event) => { setPageId(event.target.value.trim()); setPreview(null); clearCutover(); }} /></label>}
         <label className="form-label">Saved responses<input ref={fileInput} key={source} type="file" multiple accept="application/json,.json" onChange={(event) => void chooseFiles(event.target.files)} /></label>{files.length > 0 && <p>{files.length} file{files.length === 1 ? "" : "s"} selected.</p>}</fieldset>
       {source === "betterstack" && <label className="checkbox-label"><input type="checkbox" checked={publicAccessAcknowledged} onChange={event => { setPublicAccessAcknowledged(event.target.checked); setPreview(null); }} /> This Better Stack page is public, with no password, IP allow-list or visitor sign-in. Lamp cannot carry those restrictions over.</label>}
       {source === "instatus" && <label className="checkbox-label"><input type="checkbox" checked={publicAccessAcknowledged} onChange={event => { setPublicAccessAcknowledged(event.target.checked); setPreview(null); }} /> This Instatus page and its history are public, with no private, allow-list or audience restrictions. Lamp cannot carry those restrictions over.</label>}
       {source === "sorry" && <label className="checkbox-label"><input type="checkbox" checked={publicAccessAcknowledged} onChange={event => { setPublicAccessAcknowledged(event.target.checked); setPreview(null); }} /> This Sorry page and supplied history are published and unrestricted. Lamp cannot preserve private-page access rules.</label>}
-      <Button disabled={busy || (source === "instatus" && !pageId) || (source !== "statuspage" && !publicAccessAcknowledged) || (!files.length && !(source === "sorry" && publicUrl) && (!pageId || !apiKey))}>{busy && !preview ? "Reading…" : "Run dry run"}</Button>
+      {source === "statusio" && <label className="checkbox-label"><input type="checkbox" checked={publicAccessAcknowledged} onChange={event => { setPublicAccessAcknowledged(event.target.checked); setPreview(null); clearCutover(); }} /> This Status.io page and all supplied history are published and unrestricted.</label>}
+      <Button disabled={busy || (source === "statusio" && (!pageId || !files.length)) || (source === "instatus" && !pageId) || (source !== "statuspage" && !publicAccessAcknowledged) || (!files.length && !(source === "sorry" && publicUrl) && (!pageId || !apiKey))}>{busy && !preview ? "Reading…" : "Run dry run"}</Button>
     </form></section>
     {error && <FormError>{error}</FormError>}
     {preview && !result && <section className="data-card" aria-labelledby="move-in-dry-run"><h2 id="move-in-dry-run">{preview.report.state === "already imported" ? "Already imported" : "Dry run"}</h2>
@@ -187,15 +190,15 @@ export function MoveInPage() {
         <Button type="button" disabled={busy || !acknowledged || preview.report.limits.length > 0} onClick={apply}>{busy ? "Importing…" : "Import"}</Button></>}
     </section>}
     {result && <section className="data-card" aria-labelledby="move-in-result"><h2 id="move-in-result">{result.job.state === "completed" ? "Imported" : result.job.state === "undone" ? "Undone" : result.job.state === "undoing" ? "Undo in progress" : "Import in progress"}</h2>
-      <p><a className="text-link" href={`/app/cutover?job=${encodeURIComponent(result.job.id)}`}>Read Cutover and send invitations</a>{result.job.state === "completed" && <> · <a className="text-link" href="#import-history">Undo this import in Your imports</a></>}</p><ReportTable report={result.report} /><ReportItems report={result.report} /><FieldLedger report={result.report} />
-      {result.job.state === "completed" && <p>{result.invites.remaining ? `${result.invites.remaining} subscriber invitations still to send.` : "No eligible invitations remain. Read Cutover for subscription and expiry details."}</p>}
+      <p><a className="text-link" href={`/app/cutover?job=${encodeURIComponent(result.job.id)}`}>{result.report.cutover.source === "statusio" ? "Read Cutover" : "Read Cutover and send invitations"}</a>{result.job.state === "completed" && <> · <a className="text-link" href="#import-history">Undo this import in Your imports</a></>}</p><ReportTable report={result.report} /><ReportItems report={result.report} /><FieldLedger report={result.report} />
+      {result.job.state === "completed" && result.report.cutover.source !== "statusio" && <p>{result.invites.remaining ? `${result.invites.remaining} subscriber invitations still to send.` : "No eligible invitations remain. Read Cutover for subscription and expiry details."}</p>}
       {result.undo && <p>{result.undo.dispositions.filter((item) => item.disposition === "retained").length} record(s) changed since the import stayed.</p>}
       {result.undo?.expiredSubscribers ? <p>{result.undo.expiredSubscribers} held subscriber(s) had already expired and were deleted before this undo.</p> : null}
       {(result.job.state === "applying") && <Button type="button" disabled={busy} onClick={() => act({ id: result.job.id, ...result.door }, "resume")}>Continue</Button>}
       {result.job.state === "undoing" && <Button type="button" disabled={busy} onClick={() => act({ id: result.job.id, ...result.door }, "undo")}>Continue undo</Button>}
     </section>}
     <section className="data-card" id="import-history" aria-labelledby="move-in-history"><h2 id="move-in-history">Your imports</h2>
-      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
+      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{sourceLabelFor(job.namespace)} · {job.id.slice(0, 12)} · {job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
     </section>
   </div>;
 }

@@ -693,6 +693,39 @@ incident and maintenance paths redirect to surviving Lamp records. The source's
 to Lamp's native `/api/public/v1/` format. The source hostname
 remains outside Lamp's control.
 
+## Status.io
+
+Choose **Status.io** in Move in and enter the page ID from your Status.io
+dashboard. Save the original JSON bodies from the [Status.io Developer API v2](https://developer.status.io/).
+Use your API ID and key with Status.io when saving the files. Upload only the
+response bodies to Lamp.
+
+| Read from Status.io | Save as |
+| --- | --- |
+| `GET /component/list/{page_id}` | `statusio-components.json` |
+| `GET /incident/list/active/{page_id}?page=1` | `statusio-incidents-active.json` |
+| `GET /incident/list/resolved/{page_id}?page=1` | `statusio-incidents-resolved.json` |
+| `GET /maintenance/list/pending/{page_id}?page=1` | `statusio-maintenances-pending.json` |
+| `GET /maintenance/list/active/{page_id}?page=1` | `statusio-maintenances-active.json` |
+| `GET /maintenance/list/closed/{page_id}?page=1` | `statusio-maintenances-closed.json` |
+
+Include the first page of each list, even when it is empty. Name later pages
+with their page number, for example `statusio-incidents-resolved-2.json`. If you
+already saved the older combined lists, upload `statusio-incidents.json` and
+`statusio-maintenances.json` in place of the corresponding separate lists. The
+provider limits the combined endpoints to 100 results each.
+
+Confirm the page and every supplied notice are public and unrestricted. The dry
+run shows each container as a group and each component–container pair as a
+component, such as **API (US-East)**. A component without a container stays
+ungrouped. Lamp preserves incident publication times and scheduled maintenance
+windows. Review any refused rows before applying.
+
+After the move, the old `/pages/incident/{page_id}/{incident_id}` and
+`/pages/maintenance/{page_id}/{maintenance_id}` paths on the moved hostname
+redirect to their Lamp records. Undo removes the redirects for records it removes.
+Subscriber migration, postmortem text and templates are pending.
+
 ## Business import door (opt-in)
 
 An installation with RER's owner-claim trust configured can enable **Allow

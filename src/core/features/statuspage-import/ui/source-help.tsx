@@ -3,8 +3,13 @@ import { useState } from "react";
 import { appApi } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import type { SourcePage } from "../page-finder";
+import type { ImportSource } from "../adapters";
 
-type Source = "statuspage" | "betterstack" | "instatus" | "sorry";
+export const sourceLabels: Record<ImportSource, string> = {
+  statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry", statusio: "Status.io",
+};
+export const sourceLabelFor = (source = "statuspage") => Object.hasOwn(sourceLabels, source) ? sourceLabels[source as ImportSource] : source;
+type Source = Exclude<ImportSource, "statusio">;
 
 const external = { target: "_blank", rel: "noreferrer" } as const;
 
@@ -48,7 +53,8 @@ export function PageFinder({ source, apiKey, onChoose }: { source: "betterstack"
   </div>;
 }
 
-export function SavedResponsesHelp({ source }: { source: Source }) {
+export function SavedResponsesHelp({ source }: { source: ImportSource }) {
+  if (source === "statusio") return <p className="setup-guide">Select the component, incident and maintenance responses together. Use the <a href="/docs/moving-in#statusio" {...external}>Status.io moving-in guide</a> for the API endpoints and filenames.</p>;
   return <div className="setup-guide">
     <p>Only if you already have them: unchanged JSON files saved from the {source === "betterstack" ? "Better Stack" : source === "instatus" ? "Instatus" : source === "sorry" ? "Sorry" : "Statuspage"} API. Most people use the account option above instead. Select all the files together, then choose <strong>Run dry run</strong>.{source === "instatus" && " Enter your Instatus page ID above as well."}</p>
     <details><summary>See required files</summary><p>{source === "sorry"

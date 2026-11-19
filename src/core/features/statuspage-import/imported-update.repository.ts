@@ -22,6 +22,15 @@ interface UpdateWording {
 /** These are the source formats already retained by both import doors. Using
  * their source update identities also supports journals made before this fix. */
 function retainedBodies(namespace: string, sourceId: string, raw: Record<string, unknown>): Array<{ id: string; body: string }> {
+  if (namespace === "statusio" && Array.isArray(raw.messages)) {
+    return raw.messages.flatMap(message => {
+      if (typeof message?._id !== "string" || typeof message.datetime !== "string" || typeof message.details !== "string") return [];
+      return [{
+        id: stableId(`incident-update:${sourceId}:${message._id}`, message.datetime, namespace),
+        body: (message.details.trim() || String(raw.name ?? "")).toWellFormed(),
+      }];
+    });
+  }
   const updates = namespace === "statuspage" ? raw.incident_updates : namespace === "sorry" ? raw.updates : undefined;
   if (!Array.isArray(updates)) return [];
   return updates.flatMap((update: Record<string, unknown>) => {

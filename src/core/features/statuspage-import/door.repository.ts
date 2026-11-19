@@ -63,7 +63,7 @@ export function createImportDoorRepository(db: D1Database) {
       await db.prepare(`INSERT OR IGNORE INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
         SELECT 'import-approval/'||p.id,'import',p.id,'import-approved',
           (SELECT id FROM oa_operators WHERE email=a.owner),
-          json_object('recordName',CASE p.namespace WHEN 'sorry' THEN 'Sorry' WHEN 'statuspage' THEN 'Statuspage' WHEN 'betterstack' THEN 'Better Stack' WHEN 'instatus' THEN 'Instatus' ELSE p.namespace END||' import','approvedAt',a.approved_at),
+          json_object('recordName',CASE p.namespace WHEN 'sorry' THEN 'Sorry' WHEN 'statuspage' THEN 'Statuspage' WHEN 'betterstack' THEN 'Better Stack' WHEN 'instatus' THEN 'Instatus' WHEN 'statusio' THEN 'Status.io' ELSE p.namespace END||' import','approvedAt',a.approved_at),
           strftime('%Y-%m-%dT%H:%M:%fZ','now'),strftime('%Y-%m-%dT%H:%M:%fZ','now')
         FROM ik_door_plans p JOIN ik_door_approvals a ON a.plan_id=p.id AND a.fingerprint=p.fingerprint
         WHERE p.job_id=? AND (${authority.sql})`).bind(jobId,...authority.params ?? []).run();

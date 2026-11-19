@@ -67,6 +67,7 @@ interface Claim { componentId: string; causeType: "standing-claim" | "incident" 
  * here queues a notification. */
 export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: string, asOf: string, namespace = "statuspage"): Mapped[] {
   const identify = (key: string, at: string) => stableId(key, at, namespace);
+  const statusIo = namespace === "statusio";
   const results: Mapped[] = [];
   const groupIds = new Map<string, string>();
   [...data.groups].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id)).forEach((group, index) => {
@@ -80,8 +81,8 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
   const components = new Map<string, { id: string; name: string; created: string }>();
   const componentAccounting = new Map<string, Accounting[]>();
   [...data.components].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id)).forEach((component) => {
-    // A public feed may not say when a component began: its identity stays stable, and Lamp's record of it begins with this import.
-    const begins = data.publicFeed === true && !component.created_at;
+    // With no creation date, the identity stays stable and history begins with the first saved claim or this import.
+    const begins = (data.publicFeed === true || statusIo) && !component.created_at;
     components.set(component.id, { id: identify(`component:${component.id}`, begins ? "1970-01-01T00:00:00.000Z" : component.created_at), name: clip(component.name, 120), created: iso(begins ? asOf : component.created_at) });
     const notes: string[] = [];
     if (component.group_id && !groupIds.has(component.group_id)) notes.push("its group was not in the saved responses, so it is ungrouped");
@@ -102,9 +103,8 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
     };
   };
   const nextIncident = references("INC"), nextMaintenance = references("SCH");
-
   for (const incident of [...data.incidents].sort((a, b) => a.created_at.localeCompare(b.created_at) || a.id.localeCompare(b.id))) {
-    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || data.publicFeed === true, data.publicFeed === true, ["statuspage", "sorry"].includes(namespace));
+    const mapped = mapIncident(incident, components, claims, operatorId, asOf, nextIncident, identify, ["betterstack", "sorry", "statusio"].includes(namespace) ? incident.resolved_at : undefined, (namespace === "sorry" && incident.impact === "none") || data.publicFeed === true, namespace === "statuspage" || statusIo || data.publicFeed === true, statusIo || data.publicFeed === true, ["statuspage", "sorry", "statusio"].includes(namespace));
     attachPostmortem(mapped, incident, operatorId, asOf, identify);
     results.push(mapped);
   }
