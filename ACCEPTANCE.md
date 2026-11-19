@@ -954,7 +954,7 @@ Core · published · **done**
 2. Scheduled maintenance notifies according to MAINT-005.
 3. A component change outside incident or maintenance notifies nobody unless the subscriber opted into NOTIFY-017.
 
-**Evidence.** `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/delivery-contract.test.mjs` (SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure); `tests/e2e/publishing-contract.test.mjs` (Maintenance reminders respect the lead time and skip recent announcements)
+**Evidence.** `tests/e2e/delivery-contract.test.mjs`; `tests/e2e/delivery-contract.test.mjs` (SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure); `tests/e2e/publishing-contract.test.mjs` (Maintenance reminders respect the lead time and skip recent announcements); `tests/e2e/publishing-contract.test.mjs` (INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-007 UPDATE-008 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion)
 **Gap.** None.
 
 #### NOTIFY-002 — Delivery time
