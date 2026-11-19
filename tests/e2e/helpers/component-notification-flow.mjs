@@ -101,14 +101,29 @@ export async function componentNotificationFlow({ fixture, component, subscriber
   const erasedComponent=await fixture.db.prepare("SELECT outcome,mail_payload_json FROM component_notification_deliveries WHERE id=?").bind(emailDelivery.id).first();
   assert.equal(erasedComponent.outcome,"delivered");assert.ok(!erasedComponent.mail_payload_json.includes(componentEmail),"erasure scrubs the component partition's frozen recipient while retaining its outcome");
 
-  // Only component events were selected. An incident first publish and its
-  // resolution each emit one old-to-new body without an incident carrier.
-  const created = await post("/api/app/incidents", { title: "Synthetic Lamp component-only incident", components: [{ componentId: component.id, state: "Partially unavailable", relationship: "Primary" }] });
+  // The component-only subscriber receives a separate transition on first
+  // publication and resolution. Lamp's incident carrier includes every attachment.
+  const unchanged = await fixture.createComponent("Synthetic Lamp unaffected attachment");
+  const title = "Synthetic Lamp component-only incident";
+  const created = await post("/api/app/incidents", { title, components: [
+    { componentId: component.id, state: "Partially unavailable", relationship: "Primary" },
+    { componentId: unchanged.id, state: "Operational", relationship: "Dependent" },
+    { componentId: internal.id, state: "Degraded performance", relationship: "Dependent" },
+  ] });
   assert.equal(created.status, 201, created.text);
   let incident = created.body.incident;
-  const publish = async (lifecycle, expectLampUpdate = false) => {
+  const expectedUpdates = [];
+  const publishedComponents = async state => {
+    const response = await raw(`${pageOrigin}/api/public/v1/components`);
+    assert.equal(response.status, 200);
+    const { data } = await response.json();
+    assert.equal(data.find(row => row.id === component.id)?.state, state);
+    assert.equal(data.find(row => row.id === unchanged.id)?.state, "Operational");
+    assert.ok(!data.some(row => row.id === internal.id), "the internal attachment stays outside the public catalogue");
+  };
+  const publish = async (lifecycle, componentTransition) => {
     const submitted = {
-      ...(expectLampUpdate
+      ...(componentTransition
         ? Object.fromEntries(Object.entries(UPDATE_LINK_FIELDS).map(([field, text]) => [field, `${incident.reference} ${lifecycle}: ${text}`]))
         : { affectedAudience: "Synthetic customers", customerImpact: "See https://help.example.com/kb/123.", whatStillWorks: "", details: "Synthetic operator update" }),
       lifecycle,
@@ -124,7 +139,7 @@ export async function componentNotificationFlow({ fixture, component, subscriber
       assert.equal(deliveries.status, 200, deliveries.text);
       return deliveries.body.deliveries;
     }, rows => rows.every(row => row.outcome === "delivered"), "the incident's own after-publication dispatcher finishes before component dispatch is requested");
-    if (expectLampUpdate) {
+    if (componentTransition) {
       const delivery = deliveries.find(row => row.subscriberId === lampAdded.body.subscriber.id);
       assert.ok(delivery, "the selected Lamp subscriber has a delivery for this publication");
       const received = lampAccepted.find(record => record.deliveryId === delivery.id);
@@ -139,6 +154,38 @@ export async function componentNotificationFlow({ fixture, component, subscriber
       assert.equal(update.lifecycle, submitted.lifecycle, "Lamp preserves the submitted lifecycle");
       assert.equal(update.nextUpdateAt, submitted.nextUpdateAt, "Lamp preserves the submitted next-update commitment, including resolution's null");
       assert.equal(update.publishedAt, response.body.update.publishedAt);
+      const [previousState, newState] = componentTransition;
+      const changes = previousState === newState ? [] : [
+        { componentId: component.id, name: component.name, previousState, newState, internal: false },
+      ];
+      expectedUpdates.push({
+        id: response.body.update.id, ...submitted,
+        publishedAt: response.body.update.publishedAt, componentChanges: changes,
+      });
+      const readback = await api(`/api/app/incidents/${incident.id}`);
+      assert.equal(readback.status, 200, readback.text);
+      const retained = readback.body.incident.updates;
+      assert.deepEqual(retained.map(row => row.id).sort(), expectedUpdates.map(row => row.id).sort(),
+        "the expected update inventory matches the native incident readback");
+      assert.ok(retained.at(-1).componentChanges.some(change => change.componentId === internal.id),
+        "the first retained update contains a real internal change to exclude");
+      assert.ok(readback.body.incident.components.some(row => row.componentId === internal.id),
+        "the internal component really is attached to this incident");
+      const byId = (left, right) => left.id.localeCompare(right.id);
+      assert.deepEqual({ ...received.body, components: [...received.body.components].sort(byId) }, {
+        event: "incident.update.published",
+        deliveryId: delivery.id,
+        incident: { reference: incident.reference, title, impact: "major" },
+        updates: expectedUpdates,
+        components: [
+          { id: component.id, name: component.name, previousState, newState },
+          { id: unchanged.id, name: unchanged.name, previousState: "Operational", newState: "Operational" },
+        ].sort(byId),
+      }, "the event contains all retained wording and transitions, plus every public attachment including unchanged ones");
+      for (const excluded of [internal.id, internal.name, lampContact]) {
+        assert.ok(!received.wireBytes.includes(excluded), "the complete wire body excludes internal component identity and subscriber contact");
+      }
+      await publishedComponents(newState);
       const slackDelivery = deliveries.find(row => row.subscriberId === slackAdded.body.subscriber.id);
       assert.ok(slackDelivery, "the Slack incoming-webhook subscriber has this publication's delivery");
       const slack = slackAccepted.find(record => record.deliveryId === slackDelivery.id);
@@ -156,9 +203,10 @@ export async function componentNotificationFlow({ fixture, component, subscriber
     }
     return response.body.update;
   };
-  await publish("Identified", true); await flush(3, 2);
-  await publish("Monitoring", true); await flush(3, 2);
-  await publish("Resolved", true); await flush(4, 2);
+  await publishedComponents("Operational");
+  await publish("Identified", ["Operational", "Partially unavailable"]); await flush(3, 2);
+  await publish("Monitoring", ["Partially unavailable", "Partially unavailable"]); await flush(3, 2);
+  await publish("Resolved", ["Partially unavailable", "Operational"]); await flush(4, 2);
   assert.equal((await api(`/api/app/subscribers/${slackAdded.body.subscriber.id}`, { method: "DELETE" })).status, 204);
   assert.equal(componentBodies()[2].body.component_update.old_status, "operational");
   assert.equal(componentBodies()[2].body.component_update.new_status, "partial_outage");

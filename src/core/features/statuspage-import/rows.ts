@@ -6,7 +6,7 @@ import { sha256 } from "../../../../modules/import-kit/src/d1/index.ts";
 import type { SourceData, SourceIncident, SourceSubscriber } from "./source";
 
 export type Row = Record<string, string | number | null>;
-export type EntityKind = "group" | "component" | "incident" | "maintenance" | "subscriber" | "template";
+export type EntityKind = "group" | "component" | "incident" | "maintenance" | "subscriber" | "template" | "update-template";
 export interface NativeValue { tables: Record<string, Row[]> }
 export interface Accounting { kind: string; sourceId: string; name: string; outcome: "imported" | "changed" | "skipped" | "rejected" | "kept-private"; reason: string }
 export interface Snapshot {
@@ -34,6 +34,7 @@ export const entityTables: Record<EntityKind, Record<string, string>> = {
   incident: { incidents: "id", incident_components: "incident_id", incident_updates: "incident_id", incident_reports: "incident_id" },
   maintenance: { maintenance: "id", maintenance_components: "maintenance_id" },
   template: { incident_templates: "id", incident_template_components: "template_id" },
+  "update-template": { incident_templates: "id", incident_template_components: "template_id" },
   subscriber: { subscribers: "id", subscriber_components: "subscriber_id", incident_subscriptions: "subscriber_id" },
 };
 
@@ -144,7 +145,7 @@ export function mapSource(data: SourceData, snapshot: Snapshot, operatorId: stri
     if(subscriberResults.length) subscriberResults[0].subscriberCapacity={overLimit:capacity.refused.size>0,summaries:capacity.summaries};
   }
   const templates = mapTemplates(data, components, snapshot, operatorId, asOf, identify);
-  const order: EntityKind[] = ["group", "component", "incident", "maintenance", "template", "subscriber"];
+  const order: EntityKind[] = ["group", "component", "incident", "maintenance", "template", "update-template", "subscriber"];
   return [...results, ...componentResults, ...templates, ...subscriberResults].sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
 }
 

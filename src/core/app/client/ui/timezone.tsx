@@ -1,4 +1,4 @@
-import { zoneCity, zoneAbbreviation } from "../../../shared/timezone-label";
+import { zoneLabel } from "../../../shared/timezone-label";
 import { createContext, useContext } from "react";
 
 export const PageTimezoneContext = createContext<string | null>(null);
@@ -33,7 +33,6 @@ export function fromPageDateTime(value: string, timezone: string): string | null
   return new Date([...candidates][0]).toISOString();
 }
 
-export function TimezoneHint({ timezone, at }: { timezone: string; at?: string | null }) {
-  const instant = at ? new Date(at) : new Date();
-  return <a className="timezone-hint" href="/app/settings#page-timezone">Times in {zoneCity(timezone)} time{["UTC", "Etc/UTC", "Etc/GMT"].includes(timezone) ? "" : ` (${zoneAbbreviation(timezone, Number.isNaN(instant.getTime()) ? new Date() : instant)})`}</a>;
+export function TimezoneHint({ timezone }: { timezone: string }) {
+  return <a className="timezone-hint" href="/app/settings#page-timezone">Times in {zoneLabel(timezone)}</a>;
 }

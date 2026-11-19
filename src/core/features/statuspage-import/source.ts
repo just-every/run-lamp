@@ -49,7 +49,12 @@ export type SourceIncident = Omit<z.infer<z.ZodObject<typeof shapes.incident>>, 
 export type SourceSubscriber = z.infer<z.ZodObject<typeof shapes.subscriber>>;
 export type SourceTemplate = z.infer<z.ZodObject<typeof shapes.template>>;
 export type SourceTemplateGroup = z.infer<z.ZodObject<typeof shapes.templateGroup>>;
+export interface SorrySourceTemplate {
+  id: string; kind: "notice" | "update"; name: string; subject?: string; body: string;
+  component_id?: string | null; created_at: string; updated_at?: string;
+}
 export interface SourceData {
+  sorryTemplates?: SorrySourceTemplate[];
   templates?: SourceTemplate[]; templateGroups?: SourceTemplateGroup[]; groups: SourceGroup[]; components: SourceComponent[]; incidents: SourceIncident[]; maintenance: SourceIncident[]; subscribers: SourceSubscriber[];
   /** Read from the page's public feeds: an incident's listed components state nothing themselves, so only an update's
    * explicit states make claims, and an incident with none stays history that names its listed components. A component

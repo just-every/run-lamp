@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../shared/component-state-label";
 import type { IncidentLifecycle } from "../../shared/domain";
 import type { PublishedIncidentComponentChange } from "../../shared/incident-component-changes";
 
@@ -25,6 +26,7 @@ export interface RenderedIncidentUpdate {
   email: {
     subject: string;
     plainText: string;
+    displayText?: string;
     from?: string;
     replyTo?: string;
     logoUrl?: string;
@@ -37,8 +39,8 @@ export interface RenderedIncidentUpdate {
 
 export function componentChangeLines(changes: PublishedIncidentComponentChange[] = []): string[] {
   return changes.filter(change => !change.internal && change.previousState !== change.newState).map(change => change.remainingState && change.remainingState !== "Operational"
-    ? `${change.name}: remains ${change.remainingState} after this incident was resolved.`
-    : `${change.name}: ${change.previousState} → ${change.newState}`);
+    ? `${change.name}: remains ${change.remainingState === "Under maintenance" ? "in maintenance" : componentStateLabel(change.remainingState).toLowerCase()} after this incident was resolved.`
+    : `${change.name}: ${componentStateLabel(change.previousState)} → ${componentStateLabel(change.newState)}`);
 }
 
 /** UPDATE-002 uses the same plain wording fields for incident and maintenance notices. */

@@ -13,7 +13,7 @@ export const tablesOf = (kind: string): Record<string, string> => {
 };
 export const nativeKinds = [...Object.keys(entityTables), "source"];
 /** Kinds newer than the shared marker table's kind check keep their own. */
-const ownMarkers: Record<string, string> = { template: "statuspage_import_template_targets", source: "statuspage_import_source_targets" };
+const ownMarkers: Record<string, string> = { template: "statuspage_import_template_targets", "update-template": "statuspage_import_update_template_targets", source: "statuspage_import_source_targets" };
 export const markerTable = (kind: string) => ownMarkers[kind] ?? "statuspage_import_targets";
 export const markerWhere = (kind: string) => kind in ownMarkers ? { sql: "id=?", params: [] as string[] } : { sql: "kind=? AND id=?", params: [kind] };
 /** Every import marker as (kind, id, revision). */
@@ -33,7 +33,7 @@ export const sealedDefaults: Record<string, Row> = {
   // migration defaults are not an operator edit; real published changes are.
   incident_updates: { component_changes_json: "[]", component_snapshot_json: "[]", automation_attribution: null, automation_receipt_id: null },
   // Unapproved automation defaults do not turn imported templates into edits.
-  incident_templates: { channels_json: "[]", resolved_update_json: null },
+  incident_templates: { channels_json: "[]", resolved_update_json: null, kind: "incident", source_metadata_json: null },
   incidents: { impact_override: null },
   incident_components: { detached_internal: 0 },
   maintenance: { affected_audience: null, customer_impact: null },

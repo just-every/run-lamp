@@ -321,7 +321,7 @@ the ledger from the exact reviewed plan; job reads do not reclassify old input.
 The existing parent-as-group reconciliation still counts each parent once.
 
 Page settings, support details, search metadata, locale, notification settings,
-subscriber profile names/tags, notice tags/synopses, template fields and metrics
+subscriber profile names/tags, notice tags/synopses, unknown template fields and metrics
 summaries have no native mapping unless a ledger row explicitly says otherwise.
 In particular, a parent's description and state are raw-only: a Lamp visual
 group has neither. Component names, flattened group names, descriptions and
@@ -330,10 +330,10 @@ data. Incident messages stay in full imported history while the native impact
 summary is bounded. A missing authored lifecycle is a disclosed projection,
 never evidence of the original lifecycle.
 
-Separate brand, custom-domain, notice-template, update-template and component
-metrics response files are currently refused by filename, before any native
-write. Remove them to review the supported history export; recreate branding,
-domains and templates separately, and retain source metrics separately.
+Separate brand, custom-domain and component metrics response files are refused
+by filename before any native write. Remove them to review the supported export;
+recreate branding and domains separately, and retain source metrics separately.
+Both documented template collections are supported as described below.
 Unknown resources are refused too. Unknown nested fields in accepted responses
 remain named as raw-only; credential-bearing nested fields refuse the input.
 Unsupported channel values are removed rather than presented as transferred.
@@ -388,7 +388,7 @@ environment credentials. See Sorry's [authentication reference](https://docs.sor
 
 The command makes fixed-origin `GET` requests to
 `https://api.sorryapp.com/v1/pages/PAGE_ID` and its components, notices, notice
-details and subscribers. Notice reads request `include=components,updates`;
+details, subscribers, `notice_templates` and `update_templates`. Notice reads request `include=components,updates`;
 subscriber reads include component preferences. Subscriber pages use
 `page=N&per_page=500` and continue until a short page. Supplied pagination must
 be complete; unsupported or inconsistent pagination is refused. The capture
@@ -419,11 +419,54 @@ Upload the files together in Move in:
 - `sorry-notice-ID.json` for every notice, including full components and updates
 - `sorry-subscribers.json`, with later subscriber pages named
   `sorry-subscribers-2.json`, `sorry-subscribers-3.json` and so on
+- `sorry-notice-templates.json` and `sorry-update-templates.json`; later pages
+  use `sorry-notice-templates-2.json` and `sorry-update-templates-2.json`
 
 The reader also accepts documented separate update-list exports as
 `sorry-notice-ID-updates.json`. Keep original envelopes intact. It refuses an
 incomplete timeline, missing required files or input over 8 MiB, 5,000 records
 or 200 files; the dry run names unsupported records rather than inventing them.
+
+### Sorry notice and update templates
+
+The authenticated capture reads every page of both documented collections using
+`page=N&per_page=25`. Keep their original `count`, `response` and `pagination`
+envelopes intact. Counts, current/next/previous page, total pages and page size
+must agree across the collection. Missing pages, repeated identities, changed
+pagination and scope belonging outside the selected page refuse the input.
+Older saved history captures may omit the template collections; supplying any
+collection page requires that collection's complete chain.
+
+Notice templates accept `initial_comment` and the documented `content` variant;
+update templates accept `content` or `initial_comment`. If both are present their
+values must match exactly. The field ledger accounts for both kinds, including
+name, subject, complete body, creation/update timestamps and `component_id`.
+An update template's optional subject survives as source metadata and template
+title. Unknown fields remain named in the ledger and retained source records.
+
+`component_id` scopes availability to a page in a Sorry Collection. It does not
+supply an affected service or component state. Lamp retains that source scope,
+shows it beside the wording in the composer and Settings → Templates, and does
+not create a component impact from it. Collection-wide templates retain their
+unscoped state. Original body and timestamps remain readable there as well.
+
+Both kinds import as private saved templates. The first paragraph fills customer
+impact and subsequent wording fills details without truncation. Oversized
+fields stay complete and are named in the dry run; shorten them in Settings
+before applying. Original wording remains available after shortening. Sorry
+promises no lifecycle, audience, affected-service or notification defaults.
+Applying its wording preserves current draft choices and asks the operator to
+review status, audience and services before preview/publication. Import and
+application publish nothing and send no notifications. Identical imports add
+nothing; undo removes unchanged templates, preserving edited ones and anything
+that still depends on them. A conflicting local name is preserved and named.
+
+References: [notice templates](https://developer.sorryapp.com/reference/get-notice-templates)
+and [update templates](https://developer.sorryapp.com/reference/get-update-templates), checked
+17 November 2026. Synthetic documented-format proof uses 27 templates of each
+kind over two pages. This does not claim verification against a real export.
+
+Run Edit Run fleet, 17 November 2026.
 
 ### Public JSON and feeds
 

@@ -1,7 +1,7 @@
 import type { SavedFile } from "../source.ts";
 import { SorryReadError } from "./errors.ts";
 import { assertSorrySafe, parseSorryJson, retainedSorry } from "./json.ts";
-import { managementPageSchema, nextPublicPage, object, publicPageSchema, publicUrl, recordId, sorryId, sorryLimits } from "./schema.ts";
+import { managementPageSchema, nextPublicPage, object, publicPageSchema, publicUrl, recordId, sorryId, sorryLimits, noticeTemplateSchema, updateTemplateSchema, templatePagination } from "./schema.ts";
 import { reflectedCredentialMatcher } from "../../../../../modules/import-kit/src/provenance/credentials.ts";
 import { safeValue } from "../../../../../modules/import-kit/src/readers/records.ts";
 
@@ -107,9 +107,31 @@ export async function fetchSorryResponses(input: { pageId: string; apiKey: strin
     }
     throw new SorryReadError("too_large", "Sorry authenticated collection exceeds 50 pages; nothing was truncated.");
   }
-  await collection("components");
+  const components = await collection("components");
   const notices = await collection("notices");
   await collection("subscribers", 500);
+  for (const resource of ["notice_templates", "update_templates"] as const) {
+    const stem = resource.replaceAll("_", "-");
+    let before = 0, pagination: ReturnType<typeof templatePagination> | undefined;
+    const seenTemplates = new Set<string>();
+    for (let number = 1; number <= sorryLimits.pages; number++) {
+      const url = new URL(`${base}/${resource}`);
+      url.searchParams.set("page", String(number));
+      url.searchParams.set("per_page", "25");
+      const value = await transport.get(url, `sorry-${stem}${number === 1 ? "" : `-${number}`}.json`);
+      pagination = templatePagination(value, number, before, pagination);
+      for (const raw of value.response as unknown[]) {
+        const row = (resource === "notice_templates" ? noticeTemplateSchema : updateTemplateSchema).parse(raw);
+        if (seenTemplates.has(row.id)) throw new SorryReadError("invalid", "Sorry repeats a template across collection pages.");
+        if (row.page_id !== undefined && row.page_id !== input.pageId) throw new SorryReadError("invalid", "A Sorry template belongs to another page.");
+        if (row.component_id != null && !components.some(component => component.id === row.component_id)) throw new SorryReadError("invalid", `Sorry template ${row.name} has a collection-page scope outside the selected page; no scope was broadened.`);
+        seenTemplates.add(row.id);
+      }
+      before += (value.response as unknown[]).length;
+      if (!pagination.next) break;
+      if (number === sorryLimits.pages) throw new SorryReadError("too_large", "Sorry template collection exceeds 50 pages; nothing was truncated.");
+    }
+  }
   const seen = new Set<string>();
   for (const notice of notices) {
     const id = recordId.parse(notice.id);

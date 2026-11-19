@@ -2,6 +2,17 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { openFollowUpsRuntime, eventuallyFollowUp } from "./follow-ups-runtime.mjs";
 
+const RESPONDER_TIMES = {
+  Acknowledge: "2026-10-24T01:03:00.000Z",
+  Escalate: "2026-10-24T01:04:00.000Z",
+  AddNote: "2026-10-24T01:05:00.000Z",
+};
+const LATE_RESPONDER_TIMES = {
+  AddNote: "2026-10-24T01:07:00.000Z",
+  Acknowledge: "2026-10-24T01:08:00.000Z",
+  Escalate: "2026-10-24T01:09:00.000Z",
+};
+
 /** Real application HTTP/Queue doors; only documented vendor hosts are fake. */
 export async function operationsAlertsFlow({ t }) {
   const outbound = [];
@@ -22,6 +33,14 @@ export async function operationsAlertsFlow({ t }) {
     }
   } });
   const { api, post, raw, publicOrigin } = fixture;
+  const readReceipt = async receiptId => {
+    assert.ok(receiptId, "the webhook returns a receipt ID");
+    const response = await api("/api/app/intake/receipts?receipt=" + receiptId);
+    assert.equal(response.status, 200, response.text);
+    assert.deepEqual(response.body.receipts.map(row => row.id), [receiptId]);
+    return response.body.receipts[0];
+  };
+  const publishedRows = async () => (await fixture.db.prepare("SELECT * FROM incident_updates ORDER BY id").all()).results;
   const component = async name => {
     const response = await post("/api/app/components", { name, groupId: null, description: "", internal: false, displayOrder: 0, note: "" });
     assert.equal(response.status, 201, response.text); return response.body.component;
@@ -75,24 +94,48 @@ export async function operationsAlertsFlow({ t }) {
       assert.equal(incident.updates.length, 0);
       assert.equal(incident.title, refreshedTitle, "repeat Create refreshes the existing private draft");
       assert.notEqual(incident.draft.id, firstVersion, "title refresh invalidates the prior composer version");
-      const authored = await api(`/api/app/incidents/${id}/draft`, { method: "PUT", body: JSON.stringify({ lifecycle: "Investigating", affectedAudience: "synthetic-lamp-operator-authored-audience", customerImpact: "synthetic-lamp-operator-authored-impact", whatStillWorks: "", details: "synthetic-lamp-operator-authored-details", nextUpdateAt: new Date(Date.now() + 3600000).toISOString() }) });
+      const authoredFields = {
+        affectedAudience: "synthetic-lamp-operator-authored-audience",
+        customerImpact: "synthetic-lamp-operator-authored-impact",
+        whatStillWorks: "synthetic-lamp-operator says existing sessions still work",
+        details: "synthetic-lamp-operator-authored-details",
+        nextUpdateAt: new Date(Date.now() + 3600000).toISOString(),
+      };
+      const authored = await api(`/api/app/incidents/${id}/draft`, { method: "PUT", body: JSON.stringify({ lifecycle: "Investigating", ...authoredFields }) });
       assert.equal(authored.status, 200, authored.text);
-      assert.equal((await send({ ...recorded, alert: { ...recorded.alert, message: "synthetic-lamp-third-source-title" }, timestamp: "2026-10-24T01:01:30.000Z" })).body.incidentId, id);
+      const afterEditing = await send({ ...recorded, alert: { ...recorded.alert, message: "synthetic-lamp-third-source-title" }, timestamp: "2026-10-24T01:01:30.000Z" });
+      assert.equal(afterEditing.status, 202);
+      assert.equal(afterEditing.body.incidentId, id);
       const preserved = (await api(`/api/app/incidents/${id}`)).body.incident;
       assert.equal(preserved.title, refreshedTitle, "operator-authored draft keeps its reviewed context");
-      assert.equal(preserved.draft.affectedAudience, "synthetic-lamp-operator-authored-audience");
-      assert.equal(preserved.draft.customerImpact, "synthetic-lamp-operator-authored-impact");
-      assert.equal(preserved.draft.details, "synthetic-lamp-operator-authored-details");
-      assert.equal((await send({ ...recorded, alert: { ...recorded.alert, tags: [], entity: "other", affectedServices: [] }, timestamp: "2026-10-24T01:02:00.000Z" })).status, 400);
+      for (const [field, value] of Object.entries(authoredFields)) assert.equal(preserved.draft[field], value, `${preset}: repeat Create preserves ${field}`);
+      t.diagnostic(`PROBE INTAKE-014 3 ${preset}: repeat Create after operator draft save -> same title, wording and exact ${authoredFields.nextUpdateAt} commitment`);
+
+      const refused = await send({ ...recorded, alert: { ...recorded.alert, tags: [], entity: "other", affectedServices: [] }, timestamp: "2026-10-24T01:02:00.000Z" });
+      assert.equal(refused.status, 400);
+      const unmapped = await readReceipt(refused.body.receiptId);
+      assert.equal(unmapped.sourceId, source.id);
+      assert.equal(unmapped.sourceName, input.name);
+      assert.equal(unmapped.state, "invalid");
+      assert.equal(unmapped.incidentId, null);
+      assert.equal(unmapped.error, "Unmapped alert. Add a tag, entity or affected-service component matcher.");
+      t.diagnostic(`PROBE INTAKE-014 2 ${preset}: unmatched Create -> 400 and returned receipt identifies its source and mapping refusal`);
+
       const privateNote = `synthetic-lamp-${preset}-private-note`;
-      for (const action of ["Acknowledge", "Escalate", "AddNote"]) {
-        const sent = await send({ ...recorded, action, timestamp: `2026-10-24T01:0${action === "Acknowledge" ? 3 : action === "Escalate" ? 4 : 5}:00.000Z`, ...(action === "AddNote" ? { alert: { ...recorded.alert, note: privateNote } } : {}) }); assert.equal(sent.status, 202);
+      for (const [action, timestamp] of Object.entries(RESPONDER_TIMES)) {
+        const sent = await send({ ...recorded, action, timestamp, ...(action === "AddNote" ? { alert: { ...recorded.alert, note: privateNote } } : {}) }); assert.equal(sent.status, 202);
       }
+      const readResponder = (brief, action, timestamp) => {
+        const entry = brief.whatWeKnow.alerts.find(row => row.payload?.action === action && row.payload.timestamp === timestamp);
+        assert.ok(entry, `${preset}: ${action} at ${timestamp} appears in the brief`);
+        const event = entry.evidenceSummary?.match(/\b(Acknowledge|Escalate) at (\S+)/);
+        assert.deepEqual(event?.slice(1), [action, timestamp]);
+        assert.ok(entry.evidenceSummary.includes("Primary responder"));
+        assert.ok(entry.evidenceSummary.includes(recorded.source.name));
+        return entry;
+      };
       const brief = (await api(`/api/app/incidents/${id}/brief`)).body.brief;
-      for (const action of ["Acknowledge", "Escalate"]) {
-        const entry = brief.whatWeKnow.alerts.find(row => row.payload?.action === action);
-        assert.ok(entry, `${action} appears in the brief`); assert.match(entry.evidenceSummary, /Primary responder/); assert.match(entry.evidenceSummary, /2026-10-24T01:0[34]:00/);
-      }
+      for (const action of ["Acknowledge", "Escalate"]) readResponder(brief, action, RESPONDER_TIMES[action]);
       assert.ok(!JSON.stringify(brief).includes(privateNote), "internal note never reaches DRAFT-004's brief");
       assert.ok(!brief.whatWeKnow.alerts.some(row => row.payload?.action === "AddNote"));
       assert.ok((await api(`/api/app/incidents/${id}`)).body.incident.internalNotes.some(note => note.body === privateNote), "AddNote is an internal operator note");
@@ -111,8 +154,22 @@ export async function operationsAlertsFlow({ t }) {
       assert.ok(outbound.at(-1).body.note.includes(incident.reference)); assert.ok(outbound.at(-1).body.note.includes("synthetic-lamp-1 requests interrupted")); assert.ok(outbound.at(-1).body.note.includes(`${publicOrigin}/incidents/${incident.reference}`));
       for (const field of [incident.title, "Identified", "synthetic-lamp-1 API customers", "synthetic-lamp-1 requests interrupted", "synthetic-lamp-1 dashboard remains available", "synthetic-lamp-1 update", identified.nextUpdateAt]) assert.ok(outbound.at(-1).body.note.includes(field), `vendor note retains the published ${field}`);
       assert.ok(!JSON.stringify(outbound).includes(privateNote));
+      const publishedBeforeClose = (await api(`/api/app/incidents/${id}`)).body.incident.updates;
+      assert.equal(publishedBeforeClose.length, 1);
+      const rowsBeforeClose = await publishedRows();
+      const closeStarted = Date.now();
       const closed = await send({ ...recorded, action: "Close", timestamp: "2026-10-24T01:06:00.000Z" }); assert.equal(closed.status, 202); assert.equal(closed.body.incidentId, id);
-      assert.equal((await api(`/api/app/incidents/${id}`)).body.incident.lifecycle, "Identified", "provider Close leaves a published incident with operators");
+      const closeFinished = Date.now();
+      const recovery = await readReceipt(closed.body.receiptId);
+      assert.deepEqual([recovery.sourceId, recovery.deduplicationKey, recovery.incidentId, recovery.state], [source.id, recorded.alert.alertId, id, "recovered"]);
+      assert.equal(recovery.recoveredAt, recovery.receivedAt, "Close records recovery at intake");
+      const recoveredAt = Date.parse(recovery.recoveredAt);
+      assert.ok(recoveredAt >= closeStarted && recoveredAt <= closeFinished, "the recorded recovery happened during the Close request");
+      const afterClose = (await api(`/api/app/incidents/${id}`)).body.incident;
+      assert.equal(afterClose.lifecycle, "Identified", "provider Close leaves a published incident with operators");
+      assert.deepEqual(afterClose.updates, publishedBeforeClose);
+      assert.deepEqual(await publishedRows(), rowsBeforeClose, "provider Close preserves every published update row");
+      t.diagnostic(`PROBE INTAKE-014 6 ${preset}: Close -> matching recovered receipt at ${recovery.recoveredAt}, published lifecycle and update rows unchanged`);
       await update("Resolved");
       await eventuallyFollowUp(() => outbound.length, count => count === before + 3, "resolved publication adds one note and one close");
       const resolvedRequests = outbound.slice(before + 1);
@@ -129,8 +186,8 @@ export async function operationsAlertsFlow({ t }) {
       for (const path of publicPaths) { const response = await raw(publicOrigin + path); assert.equal(response.status, 200, path); publicBeforeLate.set(path, await response.text()); }
       const lateNote = `synthetic-lamp-${preset}-late-private-note`;
       const mailBeforeLate = fixture.messages.length, postsBeforeLate = outbound.length;
-      for (const [index, action] of ["AddNote", "Acknowledge", "Escalate"].entries()) {
-        const late = await send({ ...recorded, action, timestamp: `2026-10-24T01:${String(7 + index).padStart(2, "0")}:00.000Z`, ...(action === "AddNote" ? { alert: { ...recorded.alert, note: lateNote } } : {}) });
+      for (const [action, timestamp] of Object.entries(LATE_RESPONDER_TIMES)) {
+        const late = await send({ ...recorded, action, timestamp, ...(action === "AddNote" ? { alert: { ...recorded.alert, note: lateNote } } : {}) });
         assert.equal(late.status, 202); assert.equal(late.body.incidentId, id, "late responder evidence stays linked to its resolved incident");
       }
       const afterLate = (await api(`/api/app/incidents/${id}`)).body.incident;
@@ -138,7 +195,7 @@ export async function operationsAlertsFlow({ t }) {
       assert.ok(afterLate.internalNotes.some(note => note.body === lateNote));
       const lateBrief = (await api(`/api/app/incidents/${id}/brief`)).body.brief;
       assert.ok(!JSON.stringify(lateBrief).includes(lateNote), "late AddNote stays out of model input too");
-      for (const action of ["Acknowledge", "Escalate"]) assert.ok(lateBrief.whatWeKnow.alerts.some(row => row.payload?.action === action && row.payload.timestamp === `2026-10-24T01:${action === "Acknowledge" ? "08" : "09"}:00.000Z`));
+      for (const action of ["Acknowledge", "Escalate"]) readResponder(lateBrief, action, LATE_RESPONDER_TIMES[action]);
       assert.equal(fixture.messages.length, mailBeforeLate, "late actions send no subscriber or operator mail");
       assert.equal(outbound.length, postsBeforeLate, "late actions send no provider notes or closes");
       for (const [path, before] of publicBeforeLate) {
@@ -149,14 +206,14 @@ export async function operationsAlertsFlow({ t }) {
       const reportDraft = await post(`/api/app/incidents/${id}/report/draft`, {});
       assert.equal(reportDraft.status, 200, reportDraft.text);
       const reportBrief = (await api(`/api/app/incidents/${id}/brief`)).body.brief;
-      for (const action of ["Acknowledge", "Escalate"]) {
-        const evidence = reportBrief.whatWeKnow.alerts.find(row => row.payload?.action === action);
-        assert.ok(evidence);
-        const citedLine = reportDraft.body.report.timeline.split("\n").find(line => line.includes(`[${evidence.ref}]`));
-        assert.ok(citedLine, `${preset} report timeline cites ${action}`);
-        assert.ok(citedLine.includes(evidence.payload.timestamp));
-        assert.ok(citedLine.includes(action)); assert.ok(citedLine.includes("Primary responder"));
+      for (const times of [RESPONDER_TIMES, LATE_RESPONDER_TIMES]) {
+        for (const action of ["Acknowledge", "Escalate"]) {
+          const evidence = readResponder(reportBrief, action, times[action]);
+          const citedLine = reportDraft.body.report.timeline.split("\n").find(line => line.includes(`[${evidence.ref}]`));
+          assert.ok(citedLine?.includes(evidence.evidenceSummary), `${preset} report cites ${action} with its exact time ${times[action]} and responder role`);
+        }
       }
+      t.diagnostic(`PROBE INTAKE-014 4 ${preset}: brief and cited report -> exact Acknowledge and Escalate fixture times with their responder role before and after resolution`);
       for (const note of [privateNote, lateNote]) assert.ok(!JSON.stringify(reportDraft.body).includes(note), "cited report drafts never include responder notes");
       assert.ok(!reportDraft.body.review.limitations.some(line => /Jira Service Management|Opsgenie/.test(line)), "connected vendor timeline evidence is not reported missing");
       await raw(`${fixture.appOrigin}/cdn-cgi/handler/scheduled?cron=${encodeURIComponent("* * * * *")}&time=${Date.now()}`);

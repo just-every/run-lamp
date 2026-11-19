@@ -5,6 +5,7 @@ import type { IncidentTemplate } from "../template-repository";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { OptionPanel } from "./update-options";
+import { TemplateSource, templateLabel } from "./template-source";
 
 type TemplateComponent = { componentId: string; state: string; relationship: "Primary" | "Dependent" };
 
@@ -32,19 +33,20 @@ export function TemplateControls({ draft, components, onApply, captureUpdate }: 
     } catch (cause) { if (isCurrent()) setMessage({ panel: "save", text: cause instanceof Error ? cause.message : "Template could not be saved." }); }
   };
   const apply = async () => {
-    if (!selectedTemplate || selectedTemplate.fieldsToShorten.length || applying) return;
+    if (!selectedTemplate || (selectedTemplate.fieldsToShorten.length || selectedTemplate.title.length > 250) || applying) return;
     const isCurrent = captureUpdate(); setApplying(true);
     try {
       const result = await onApply(selectedTemplate, isCurrent);
-      if (result !== null && isCurrent()) setMessage({ panel: "use", text: result });
+      if (result !== null && isCurrent()) setMessage({ panel: "use", text: selectedTemplate.kind === "notice" || selectedTemplate.kind === "update" ? `${result} Review status and affected services before publishing.` : result });
     } catch (cause) { if (isCurrent()) setMessage({ panel: "use", text: cause instanceof Error ? cause.message : "Template could not be applied." }); }
     finally { if (isCurrent()) setApplying(false); }
   };
   return <>
     <OptionPanel name="template-use" title="Use a template">
       <div className="template-controls">
-        {data?.templates.length ? <div className="template-form"><label className="form-label">Saved update template<select aria-label="Saved update template" value={selected} onChange={event => { setSelected(event.target.value); setMessage(null); }}><option value="">Choose a saved template</option>{data.templates.map(template => <option key={template.id} value={template.id}>{template.folder ? `${template.folder} / ` : ""}{template.name}</option>)}</select></label><Button type="button" variant="secondary" disabled={!selectedTemplate || Boolean(selectedTemplate.fieldsToShorten.length) || applying} onClick={apply}>Apply template</Button></div> : <p>No saved templates yet. Save an update as a template to reuse it here.</p>}
-        {selectedTemplate?.fieldsToShorten.length ? <p>This template is too long to apply. <Link className="text-link" to="/app/settings" hash="templates">Shorten it in Settings › Templates</Link>.</p> : null}
+        {data?.templates.length ? <div className="template-form"><label className="form-label">Saved update template<select aria-label="Saved update template" value={selected} onChange={event => { setSelected(event.target.value); setMessage(null); }}><option value="">Choose a saved template</option>{data.templates.map(template => <option key={template.id} value={template.id}>{templateLabel(template)}</option>)}</select></label><Button type="button" variant="secondary" disabled={!selectedTemplate || Boolean(selectedTemplate.fieldsToShorten.length || selectedTemplate.title.length > 250) || applying} onClick={apply}>Apply template</Button></div> : <p>No saved templates yet. Save an update as a template to reuse it here.</p>}
+        {selectedTemplate ? <TemplateSource template={selectedTemplate} /> : null}
+        {selectedTemplate && (selectedTemplate.fieldsToShorten.length || selectedTemplate.title.length > 250) ? <p>This template is too long to apply. <Link className="text-link" to="/app/settings" hash="templates">Shorten it in Settings › Templates</Link>.</p> : null}
         {message?.panel === "use" ? <p role="status">{message.text}</p> : null}
       </div>
     </OptionPanel>

@@ -25,6 +25,7 @@ import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
 import { suggestedUpdateFlow } from "./helpers/suggested-update-flow.mjs";
+import { wordingFindingsFlow } from "./helpers/wording-findings-flow.mjs";
 import { emptyAudienceReason, publishedIncidentState } from "./helpers/published-incident-state.mjs";
 
 let appUrl = "";
@@ -626,7 +627,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await form.title.fill('Checkout requests are delayed');
   await form.impact.fill('Card authorizations are timing out.');
   await form.addComponent(component.name);
-  await form.componentState(component.name, 'Degraded performance');
+  const componentState = page.getByLabel(`${component.name} state with this update`, { exact: true });
+  assert.equal(await componentState.inputValue(), '', 'adding a component does not choose a state');
+  await componentState.selectOption({ label: 'Partly down' });
   await form.audience.fill('Customers checking out in the US.');
   await form.nextUpdate.fill('2027-09-08T14:00');
   await form.option('Details');
@@ -637,6 +640,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await saved();
   let incident = await readIncident(id);
   assert.equal(incident.updates.length, 0, 'saving does not publish');
+  assert.equal(incident.components.find(row => row.componentId === component.id)?.state, 'Partially unavailable');
   const composer = incidentComposer(page);
   await page.reload(); await operatorHydrated(page); await saved();
   assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
@@ -720,9 +724,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
     { label: 'Who is affected', value: submitted.affectedAudience },
     { label: 'Customer impact', value: submitted.customerImpact },
     { label: 'What still works', value: submitted.whatStillWorks },
-    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 UTC-07:00' },
+    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 Los Angeles time' },
     { label: 'Additional details', value: submitted.details },
-    { label: 'Component state', value: 'Journey checkout API: Operational → Major outage' },
+    { label: 'Component state', value: 'Journey checkout API: Working → Down' },
   ];
   const panel = page.locator('.preview-panel');
   await page.getByRole('button', { name: 'Page', exact: true }).click();
@@ -800,7 +804,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await page.locator('.live-preview').getByText('Checkout authorizations are working normally.', { exact: true }).waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
-  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimState: 'Degraded performance', screens: previewScreens });
+  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimLabel: 'Slow', screens: previewScreens });
   assert.deepEqual(incident.updates.find(row => row.id === first.id), first, 'later publications preserve the original update');
   await waitForPublicIncident(incident.reference, 'Checkout authorizations are working normally.');
   await page.goto(`${pageUrl}/incidents/${incident.reference}`);
@@ -929,7 +933,12 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await activeSection.locator('a.incident-list-row').first().click();
   await page.waitForURL(`${appUrl}/app/incidents/${firstListPage.incidents[0].id}`);
   await operatorHydrated(page);
-
+  const suggestionRequests = aiRequests.length;
+  await wordingFindingsFlow({
+    page, browser, appUrl, pageUrl, api, component, nextUpdate: await localInput(60 * 60 * 1000),
+    screens: previewScreens, waitForPublicIncident,
+  });
+  assert.equal(aiRequests.length, suggestionRequests, 'wording checks do not request a model');
 });
 
 test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async () => {
@@ -986,4 +995,8 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
 
 test('Owner incident communication — manual resolution, customer email and timeline correction', { timeout: 240_000 }, async () => {
   await (await import('./helpers/incident-owner-journey.mjs')).incidentOwnerJourney({ page, browserContext, appUrl, pageUrl, api });
+});
+
+test('Sorry templates — both collections stay complete in Settings and private composers', { timeout: 600_000 }, async () => {
+  await (await import('./helpers/sorry-template-browser-flow.mjs')).sorryTemplateBrowserFlow({ page, appUrl, appFetch, api, screens: previewScreens });
 });

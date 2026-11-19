@@ -4,11 +4,11 @@
 (() => {
   const label = document.querySelector('[data-timezone-label]');
   const zone = (label && label.getAttribute('data-timezone')) || 'UTC';
+  const zoneName = label?.getAttribute('data-zone-name') || 'Universal time';
   const format = (iso) => {
     const date = new Date(iso);
     const shown = new Intl.DateTimeFormat('en-US', { timeZone: zone, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(date);
-    const name = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' }).formatToParts(date).find((part) => part.type === 'timeZoneName')?.value;
-    return `${shown} UTC${name === 'GMT' ? '+00:00' : (/^GMT([+-]\d{2}:\d{2})$/.exec(name || '') || [])[1] || ''}`;
+    return `${shown} ${zoneName}`;
   };
   const relative = () => {
     for (const time of document.querySelectorAll('[data-generated-at] time')) {
@@ -67,7 +67,10 @@
         part.className = fresh.className;
         // A new generation can carry the same public facts. Keep the persistent
         // live region quiet unless its customer-facing content changes.
-        if (part.innerHTML !== fresh.innerHTML) part.replaceChildren(...[...fresh.childNodes].map((node) => document.importNode(node, true)));
+        if (part.innerHTML !== fresh.innerHTML) {
+          if (part.getAttribute('data-live') === 'generation-details' && part.querySelector('details')?.open) fresh.querySelector('details').open = true;
+          part.replaceChildren(...[...fresh.childNodes].map((node) => document.importNode(node, true)));
+        }
       }
       if (complete) shownAt = status.generatedAt;
       relative();
