@@ -1,15 +1,21 @@
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { assertDeliveryFact, assertDeliveryFilter, assertUntrackedNotification } from './delivery-log-flow.mjs';
+import {
+  addDeliveryLogEmails, assertDeliveryFact, assertDeliveryFilter,
+  assertUntrackedNotification, deliveryIdentity,
+} from './delivery-log-flow.mjs';
 import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin } from './subscriber-management-fixture.mjs';
+import { smsBindings, smsProviderEdge, smsSignature } from './sms-subscriber-flow.mjs';
 
 /** Only the provider and receiver edges are synthetic. Consent, publication,
  * signed receipts, Queue dispatch and Cron all use the migrated Worker. */
-export async function subscriberFailuresFlow() {
+export async function subscriberFailuresFlow(t, reconcileLog) {
   let receiverStatus = 204;
+  const smsMessages = [];
   const fixture = await openSubscriberManagementFixture({
     workerEntry: 'tests/e2e/helpers/status-journey.worker.ts',
     webhookReceiver: () => new Response(null, { status: receiverStatus }),
+    extraBindings: smsBindings, providerEdge: smsProviderEdge(smsMessages),
   });
   const { api, post, raw } = fixture;
   const pause = async paused => assert.equal((await raw('/test/effects', {
@@ -73,9 +79,25 @@ export async function subscriberFailuresFlow() {
     assert.equal(response.status, 201, response.text);
     assert.equal(response.body.subscriber.state, 'pending');
     await fixture.confirm(address);
-    assert.equal((await subscriber(response.body.subscriber.id)).state, 'active');
     return { id: response.body.subscriber.id, address, channel,
       destination: channel === 'email' ? address : 'https://receiver.example.test/synthetic-lamp-1' };
+  };
+  const addSms = async component => {
+    const destination = '+12025550109';
+    const added = await post('/api/app/subscribers', {
+      channel: 'sms', phone: destination, componentIds: [component.id], eventKinds: ['incidents'],
+    });
+    assert.equal(added.status, 201, added.text);
+    assert.equal(added.body.subscriber.state, 'pending');
+    const url = fixture.publicOrigin + '/api/public/sms/inbound';
+    const fields = { From: destination, To: smsBindings.TWILIO_FROM_NUMBER, Body: 'YES', MessageSid: 'synthetic-lamp-log-consent' };
+    const confirmed = await raw(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Twilio-Signature': smsSignature(url, fields) },
+      body: new URLSearchParams(fields).toString(),
+    });
+    assert.equal(confirmed.status, 200, await confirmed.text());
+    return { id: added.body.subscriber.id, destination, channel: 'sms' };
   };
   let receiptNumber = 0;
   const receipt = (delivery, type, bounceType) => {
@@ -95,12 +117,17 @@ export async function subscriberFailuresFlow() {
     const response = await raw(`${pageOrigin}/api/intake/mail-events`, request);
     assert.equal(response.status, 200, await response.text());
   };
-  const checkFact = (row, updateId, target, outcome, outcomeBetween) => {
-    assertDeliveryFact(row, {
-      subscriberId: target.id, destination: target.destination, channel: target.channel, updateId,
+  const expected = new Map();
+  const expectFact = (updateId, target, outcome, outcomeBetween) => {
+    const fact = {
+      subscriberId: target.id, destination: target.destination, channel: target.channel, incidentUpdateId: updateId,
       queuedBetween: publicationWindows.get(updateId), outcome, outcomeBetween,
-    });
+    };
+    expected.set(deliveryIdentity(fact), fact);
+    return fact;
   };
+  const checkFact = (row, updateId, target, outcome, outcomeBetween) =>
+    assertDeliveryFact(row, expectFact(updateId, target, outcome, outcomeBetween));
   const readFact = async (delivery, target, outcome, start) => {
     const end = Date.now();
     const rows = await deliveries({ id: delivery.incidentUpdateId });
@@ -146,7 +173,27 @@ export async function subscriberFailuresFlow() {
     const healthy = await add(complaintComponent, 'healthy');
     const soft = await add(softComponent, 'soft-bounce');
     const webhook = await add(webhookComponent, 'webhook-contact', 'webhook');
+    const sms = await addSms(webhookComponent);
+    for (const target of [hard, complaint, healthy, soft, webhook, sms]) {
+      assert.equal((await subscriber(target.id)).state, 'active');
+    }
+    const bulkComponent = await fixture.createComponent('Synthetic Lamp paginated delivery inventory');
+    const recipients = await addDeliveryLogEmails(label => add(bulkComponent, label));
     await pause(true);
+
+    const control = await publish(webhookComponent, 'healthy webhook control', ['webhook', 'sms']);
+    const dispatchedAt = Date.now();
+    assert.equal((await dispatch(control)).outcome, 'ok');
+    await scheduled();
+    const controls = await eventuallySubscriber(() => deliveries(control),
+      rows => rows.some(row => row.channel === 'sms' && row.acceptingProvider === 'twilio'),
+      'the synthetic SMS acknowledgement reaches the operator log');
+    assert.equal(controls.length, 2);
+    const delivered = controls.find(row => row.channel === 'webhook');
+    assert.equal(delivered.outcome, 'delivered', 'the confirmed endpoint accepts a real publication');
+    checkFact(delivered, control.id, webhook, 'delivered', [dispatchedAt, Date.now()]);
+    checkFact(controls.find(row => row.channel === 'sms'), control.id, sms, 'queued');
+    assert.ok(smsMessages.some(message => message.To === sms.destination && message.Body.includes('Requests are delayed: healthy webhook control.')));
 
     const hardDelivery = await acceptedMail(hardComponent, 'hard bounce notification', hard);
     const hardAt = Date.now();
@@ -162,10 +209,13 @@ export async function subscriberFailuresFlow() {
       address: complaint.address, subject: 'Synthetic Lamp complaint notification',
       impact: 'Requests are delayed: complaint notification.', details, directLinks,
     });
+    expectFact(complaintDelivery.incidentUpdateId, healthy, 'queued');
     const queuedComplaint = await publish(complaintComponent, 'queued before complaint', ['email']);
     const committedComplaint = (await deliveries(queuedComplaint)).find(row => row.subscriberId === complaint.id);
     assert.equal(committedComplaint.outcome, 'queued');
     assert.equal(committedComplaint.providerAcceptedAt, null);
+    checkFact(committedComplaint, queuedComplaint.id, complaint, 'queued');
+    expectFact(queuedComplaint.id, healthy, 'queued');
     const signedComplaint = receipt(complaintDelivery, 'complained');
     const beforeInvalid = await subscriber(complaint.id);
     const invalid = await raw(`${pageOrigin}/api/intake/mail-events`, {
@@ -193,6 +243,7 @@ export async function subscriberFailuresFlow() {
     const freshComplaint = await noFutureMail(complaintComponent, complaint, 'fresh publication after complaint');
     assert.equal(fixture.messagesFor(healthy.address).length, healthyBefore + 1, 'the same fresh publication still reaches an active control');
     assert.ok((await deliveries(freshComplaint)).some(row => row.subscriberId === healthy.id && row.providerAcceptedAt));
+    expectFact(freshComplaint.id, healthy, 'queued');
     await sendReceipt(signedComplaint);
     await sendReceipt(receipt(complaintDelivery, 'delivered'));
     assert.deepEqual(await readFact(complaintDelivery, complaint, 'complained', complaintAt), complained,
@@ -202,25 +253,22 @@ export async function subscriberFailuresFlow() {
 
     // A successful notification breaks the earlier bounce streak. Only the
     // subsequent completed outcomes count, even with newer queued recipients.
+    let softBacklog;
     for (let index = 0; index < 10; index++) {
       const delivery = await acceptedMail(softComponent, `soft bounce sequence ${index}`, soft);
       const softAt = Date.now();
       if (index === 9) {
-        const backlog = await publish(softComponent, 'newer queued soft bounce control', ['email']);
-        assert.equal((await deliveries(backlog))[0].outcome, 'queued');
+        softBacklog = await publish(softComponent, 'newer queued soft bounce control', ['email']);
+        assert.equal((await deliveries(softBacklog))[0].outcome, 'queued');
       }
-      await sendReceipt(receipt(delivery, index === 4 ? 'delivered' : 'bounced', index === 4 ? undefined : 'Transient'));
+      const outcome = index === 4 ? 'delivered' : 'bounced';
+      await sendReceipt(receipt(delivery, outcome, index === 4 ? undefined : 'Transient'));
+      await readFact(delivery, soft, outcome, softAt);
       if (index < 9) assert.equal((await subscriber(soft.id)).state, 'active', 'fewer than five consecutive soft-bounced notifications retain the subscription');
       else await deactivated(soft, 'five consecutive soft bounces', softAt);
     }
     await noFutureMail(softComponent, soft, 'after five soft bounces');
 
-    const control = await publish(webhookComponent, 'healthy webhook control', ['webhook']);
-    const deliveredAt = Date.now();
-    assert.equal((await dispatch(control)).outcome, 'ok');
-    const [delivered] = await deliveries(control);
-    assert.equal(delivered.outcome, 'delivered', 'the confirmed endpoint accepts a real publication');
-    checkFact(delivered, control.id, webhook, 'delivered', [deliveredAt, Date.now()]);
     receiverStatus = 503;
     const failedUpdates = [];
     for (let index = 0; index < 10; index++) failedUpdates.push(await publish(webhookComponent, `failed webhook ${index}`, ['webhook']));
@@ -264,13 +312,17 @@ export async function subscriberFailuresFlow() {
       assert.ok(!fixture.webhookRequests.some(record => record.headers['webhook-id'] === delivery.id));
     }
     const requestsAtDeactivation = fixture.webhookRequests.length;
+    const scheduledAt = Date.now();
     await scheduled();
+    const scheduledBetween = [scheduledAt, Date.now()];
+    checkFact((await deliveries(softBacklog))[0], softBacklog.id, soft, 'suppressed', scheduledBetween);
     for (const { update, delivery } of backlog) {
       const [suppressed] = await deliveries(update);
       assert.equal(suppressed.id, delivery.id, 'Cron preserves the original committed recipient identity');
       assert.equal(suppressed.outcome, 'suppressed');
       assert.ok(suppressed.outcomeAt);
       assert.equal(suppressed.providerAcceptedAt, null);
+      checkFact(suppressed, update.id, webhook, 'suppressed', scheduledBetween);
       assert.equal((await dispatch(update)).outcome, 'ok', 'Queue replay consumes the already-suppressed backlog');
     }
     assert.equal(fixture.webhookRequests.length, requestsAtDeactivation, 'Cron and Queue make zero additional receiver requests after automatic deactivation');
@@ -284,6 +336,12 @@ export async function subscriberFailuresFlow() {
     assert.equal(fixture.webhookRequests.length, requestsAtDeactivation);
     assert.equal(fixture.messagesFor(webhook.address).filter(message => /disabled a failing webhook/i.test(message.subject)).length, 1, 'scheduled replay does not duplicate the contact alert');
     assert.deepEqual(await subscriber(webhook.id), stoppedWebhook);
+
+    const bulk = await publish(bulkComponent, 'paginated publication', ['email']);
+    for (const recipient of recipients) expectFact(bulk.id, recipient, 'queued');
+    assert.equal((await raw('/api/app/deliveries')).status, 401, 'the log is private');
+    assert.equal((await raw('/api/app/deliveries.csv')).status, 401, 'the export is private');
+    await reconcileLog(t, fixture, [...expected.values()], bulk.id);
 
     assert.equal((await api('/api/app/subscribers/' + complaint.id, { method: 'DELETE' })).status, 204);
     await sendReceipt(signedComplaint);

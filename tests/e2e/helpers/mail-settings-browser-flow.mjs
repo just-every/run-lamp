@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { subscriberCsvRows } from './subscriber-management-fixture.mjs';
+import { assertDeliveryFact } from './delivery-log-flow.mjs';
 import { createRequire } from 'node:module';
 import { mkdir,readdir } from 'node:fs/promises';
 import { dirname,resolve,join } from 'node:path';
@@ -100,25 +101,27 @@ export async function mailSettingsBrowserFlow(t){
       await page.reload();await operatorHydrated(page);await expect(select).toHaveValue('mailgun');
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}px Settings has no overflow`);
       assert.deepEqual((await new AxeBuilder({page}).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
-      if(process.env.LAMP_BROWSER_EVIDENCE){
-        await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,`${width}-mail-settings.png`),fullPage:true});
-        await page.setViewportSize({width:390,height:844});
-        await page.screenshot({path:join(process.env.LAMP_BROWSER_EVIDENCE,'390-mail-settings.png'),fullPage:true});
-        await page.setViewportSize({width,height:1000});
-      }
+      await captureDeliveryScreen(page, 'mail-settings', [page.getByRole('textbox', { name: 'From email', exact: true })]);
       const disabled=page.waitForResponse(response=>response.url()===`${origin}/api/app/mail-settings`&&response.request().method()==='PATCH');
       await select.selectOption('');assert.equal((await disabled).status(),200);await expect(select).toBeEnabled();assert.equal((await api('/api/app/mail-settings')).body.secondaryProvider,null);
     }
     const componentResponse=await post('/api/app/components',{groupId:null,name:'Synthetic Lamp UI API',description:'',internal:false,displayOrder:0,note:''});assert.equal(componentResponse.status,201,componentResponse.text);
-    const component=componentResponse.body.component,address='synthetic-lamp-ui-1@example.test';
+    const component = componentResponse.body.component;
+    const address = ['synthetic-lamp-ui-1', 'example.test'].join('@');
     const subscribed=await runtime.dispatchFetch(`${pageOrigin}/subscribe`,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams({email:address,componentId:component.id})});assert.equal(subscribed.status,202,await subscribed.text());
     const invitationMail=messages.find(message=>message.to.includes(address)&&message.text.includes('/confirm-subscription/'));assert.ok(invitationMail);
     assert.equal((await runtime.dispatchFetch(invitationMail.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status,200);
+    const subscribers = await api('/api/app/subscribers?channel=email');
+    assert.equal(subscribers.status, 200, subscribers.text);
+    const subscriber = subscribers.body.subscribers.find(record => record.destination === address);
+    assert.equal(subscriber?.state, 'active', 'the exact recipient confirmed through the public door');
     // Selecting a secondary wraps routing even while it remains off; the primary
     // still records its real acceptance and its unchanged frozen envelope.
     const incident=await post('/api/app/incidents',{title:'Synthetic Lamp provider log',components:[{componentId:component.id,state:'Partially unavailable',relationship:'Primary'}]});assert.equal(incident.status,201,incident.text);
     const draft=await api(`/api/app/incidents/${incident.body.incident.id}/draft`,{method:'PUT',body:JSON.stringify({lifecycle:'Investigating',affectedAudience:'Synthetic readers',customerImpact:'Requests are delayed.',whatStillWorks:'Reads continue.',details:'The operator is investigating.',nextUpdateAt:new Date(Date.now()+3600000).toISOString()})});assert.equal(draft.status,200,draft.text);
+    const queuedAt = Date.now();
     const published=await post(`/api/app/incidents/${incident.body.incident.id}/publish`,{channels:['email']});assert.equal(published.status,200,published.text);
+    const queuedBetween = [queuedAt, Date.now()];
     await expect.poll(async()=>{const log=await api(`/api/app/deliveries?incidentUpdateId=${published.body.update.id}`);assert.equal(log.status,200,log.text);return log.body.deliveries.find(row=>row.destination===address)?.acceptingProvider;}).toBe('resend');
     for(const width of [1440]){
       await page.setViewportSize({width,height:width===390?844:1000});
@@ -127,16 +130,8 @@ export async function mailSettingsBrowserFlow(t){
       assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}px Deliveries has no overflow`);
       assert.deepEqual((await new AxeBuilder({page}).analyze()).violations.filter(row=>['serious','critical'].includes(row.impact)),[]);
       await assertComplaintLog({ page, origin, pageOrigin, api, raw, messages, address, title: incident.body.incident.title,
-        updateId: published.body.update.id, row });
-      if (process.env.LAMP_BROWSER_EVIDENCE) {
-        for (const captureWidth of [1440, 390]) {
-          await page.setViewportSize({ width: captureWidth, height: captureWidth === 390 ? 844 : 1000 });
-          await page.screenshot({
-            path: join(process.env.LAMP_BROWSER_EVIDENCE, captureWidth + '-mail-deliveries.png'),
-            fullPage: true, animations: 'disabled',
-          });
-        }
-      }
+        subscriberId: subscriber.id, updateId: published.body.update.id, queuedBetween, row });
+      await captureDeliveryScreen(page, 'mail-deliveries');
       assert.deepEqual(errors,[],`${width}px mail Settings and Deliveries have no hydration or page errors`);
       t.diagnostic(`NOTIFY-013 ${width}px default-off owner choice persists; real Resend acceptance names its provider in Deliveries`);
     }
@@ -144,36 +139,84 @@ export async function mailSettingsBrowserFlow(t){
   }finally{await browser?.close();await runtime?.dispose();}
 }
 
-async function assertComplaintLog({ page, origin, pageOrigin, api, raw, messages, address, title, updateId, row }) {
+async function captureDeliveryScreen(page, name, mask = []) {
+  const directory = process.env.LAMP_BROWSER_EVIDENCE;
+  if (!directory) return;
+  const viewport = page.viewportSize();
+  const addresses = page.getByText(/@example\.test/i);
+  try {
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+      await page.screenshot({ path: join(directory, width + '-' + name + '.png'),
+        fullPage: true, animations: 'disabled', mask: [addresses, ...mask] });
+    }
+  } finally {
+    await page.setViewportSize(viewport);
+  }
+}
+
+async function assertComplaintLog({ page, origin, pageOrigin, api, raw, messages, address, title, subscriberId, updateId, queuedBetween, row }) {
+  const initial = await api('/api/app/deliveries?incidentUpdateId=' + updateId);
+  assert.equal(initial.status, 200, initial.text);
+  assert.equal(initial.body.deliveries.length, 1);
+  const [queued] = initial.body.deliveries;
+  assertDeliveryFact(queued, {
+    subscriberId, destination: address, channel: 'email', incidentUpdateId: updateId,
+    queuedBetween, outcome: 'queued',
+  });
   const message = messages.find(mail => mail.to.includes(address) && mail.subject.includes(title));
   assert.ok(message, 'the complaint refers to the actual accepted email');
   const providerId = 'synthetic-lamp-ui-receipt-' + (messages.indexOf(message) + 1);
-  const id = 'synthetic-lamp-ui-log-complaint', at = String(Math.floor(Date.now() / 1000));
+  const id = 'synthetic-lamp-ui-log-complaint';
+  const complaintAt = Date.now();
+  const at = String(Math.floor(complaintAt / 1000));
   const body = JSON.stringify({ type: 'email.complained', data: { email_id: providerId } });
   const signature = createHmac('sha256', incidentBrowserReceiptKey).update([id, at, body].join('.')).digest('base64url');
   const receipt = await raw(pageOrigin + '/api/intake/mail-events', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'svix-id': id, 'svix-timestamp': at, 'svix-signature': 'v1,' + signature },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'svix-id': id, 'svix-timestamp': at, 'svix-signature': 'v1,' + signature },
     body,
   });
   assert.equal(receipt.status, 200, await receipt.text());
+  const outcomeBetween = [complaintAt, Date.now()];
+
+  const stored = await api('/api/app/deliveries?incidentUpdateId=' + updateId);
+  assert.equal(stored.status, 200, stored.text);
+  assert.equal(stored.body.deliveries.length, 1);
+  const [delivery] = stored.body.deliveries;
+  assert.equal(delivery.id, queued.id);
+  assert.equal(delivery.queuedAt, queued.queuedAt);
+  assertDeliveryFact(delivery, {
+    subscriberId, destination: address, channel: 'email', incidentUpdateId: updateId,
+    queuedBetween, outcome: 'complained', outcomeBetween,
+  });
 
   await page.getByRole('combobox', { name: 'Channel', exact: true }).selectOption('email');
   await page.getByRole('combobox', { name: 'Outcome', exact: true }).selectOption('complained');
   const table = page.getByRole('region', { name: 'Delivery records', exact: true });
   await expect(row.getByRole('cell', { name: 'Complained', exact: false })).toBeVisible();
   await expect(row.getByRole('cell', { name: 'Email', exact: true })).toBeVisible();
+  await expect(row.getByRole('cell').first()).toContainText(title);
+  const time = iso => {
+    const value = new Date(iso);
+    const date = new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', dateStyle: 'medium' }).format(value);
+    return date + ', ' + value.toISOString().slice(11, 16) + ' UTC+00:00';
+  };
+  await expect(row.locator('[data-label="Queued"]')).toHaveText(time(delivery.queuedAt));
+  await expect(row.locator('[data-label="Outcome time"]')).toHaveText(time(delivery.outcomeAt));
   await expect(table.locator('tbody tr')).toHaveCount(1);
 
-  const stored = await api('/api/app/deliveries?incidentUpdateId=' + updateId);
-  assert.equal(stored.status, 200, stored.text);
-  const [delivery] = stored.body.deliveries;
-  assert.equal(delivery.outcome, 'complained');
   const link = page.getByRole('link', { name: 'Export CSV' });
   const url = new URL(await link.getAttribute('href'), origin);
   assert.deepEqual(Object.fromEntries(url.searchParams), { channel: 'email', outcome: 'complained' });
-  const downloaded = await page.request.get(url.href);
-  assert.equal(downloaded.status(), 200);
-  const [csv, ...extra] = subscriberCsvRows(await downloaded.text());
+  const [download] = await Promise.all([page.waitForEvent('download', { timeout: 15_000 }), link.click()]);
+  const chunks = [];
+  try {
+    for await (const chunk of await download.createReadStream()) chunks.push(chunk);
+  } finally {
+    await download.delete();
+  }
+  const [csv, ...extra] = subscriberCsvRows(Buffer.concat(chunks).toString('utf8'));
   assert.ok(csv, 'the exported file contains the complained delivery');
   assert.deepEqual(extra, []);
   assert.deepEqual(
