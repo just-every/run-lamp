@@ -147,10 +147,14 @@ export async function updateReachFlow({ observe = async () => {}, diagnostic = (
     const hooksBefore = fixture.webhookRequests.filter(row => row.body.deliveryId === updates[1].frozen.find(row => row.subscriberId === recipients[10].id).id).length;
     reject = true;
     await dispatch(second, 'exception');
-    // Exercise normal scheduled retries at later instants. Do not change retry
-    // configuration, stored attempts or outcomes to manufacture a failure.
+    // Advance the isolated clock to each durable deadline. Cron still owns
+    // dispatch, and the recorded attempts and outcomes come from real sends.
     for (let attempt = 0; attempt < 5; attempt++) {
-      now = Math.max(now, Date.now()) + 21 * 60_000;
+      const job = await fixture.db.prepare("SELECT available_at FROM notification_outbox WHERE kind = 'delivery-dispatch' AND aggregate_id = ? AND completed_at IS NULL")
+        .bind(second.id).first();
+      const deadline = Date.parse(job?.available_at);
+      assert.ok(deadline > now, 'the next Cron retry has a future persisted deadline');
+      now = deadline;
       assert.equal((await raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) })).status, 204);
       const result = await (await fixture.runtime.getWorker()).scheduled({ cron: '* * * * *', scheduledTime: now });
       assert.equal(result.outcome, 'ok', JSON.stringify(result));
