@@ -111,6 +111,7 @@ export async function maintenanceReminderTimingFlow() {
     ]) {
       const before = await read(early);
       const priorDeliveries = await earlyDeliveries();
+      const priorMailCount = earlyMail().length;
       assert.equal(before.state, previousState);
       assert.ok(!before.notices.some(row => row.kind === kind));
       assert.ok(!priorDeliveries.some(row => row.maintenanceNoticeKind === kind));
@@ -122,7 +123,8 @@ export async function maintenanceReminderTimingFlow() {
       const deliveries = await earlyDeliveries();
       assert.deepEqual(window.notices.filter(row => row.id !== notice.id), before.notices);
       assert.deepEqual(deliveries.filter(row => row.id !== delivery.id), priorDeliveries);
-      const submissions = [...earlyMail()];
+      const submissions = earlyMail();
+      assert.equal(submissions.length, priorMailCount + 1, `Cron sends only the ${kind} message for this window`);
       const requestCount = providerRequests.length;
       const receiptCount = j.mailReceipts.length;
       await j.tick(time);
