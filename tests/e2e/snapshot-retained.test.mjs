@@ -14,6 +14,8 @@ const wranglerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = wranglerRequire('miniflare');
 const { build } = wranglerRequire('esbuild');
 
+const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
+
 async function snapshotWorkerScript() {
   const built = await build({ entryPoints: ['tests/e2e/snapshot-retained.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false, external: ['cloudflare:workers'], plugins: [{ name: 'vite-assets', setup(builder) {
     builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: args.path.endsWith('?raw') ? 'raw' : 'inline' }));
@@ -70,6 +72,34 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const options = { bindings: { LAMP_APP_HOST: 'app.example' }, name: 'lamp-retained-journey', resourcePersistencePath: join(directory, 'storage'), modules: true, script: await snapshotWorkerScript(), compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'] };
     runtime = new Miniflare(convertV4MiniflareOptions(options));
     const read = (path, init) => runtime.dispatchFetch(`https://page.example${path}`, init);
+    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
+    const firstPublicationPaths = new Map([
+      ['/', /^text\/html\b/],
+      ['/feed.atom', /^application\/atom\+xml\b/],
+      ['/widget.js', /^application\/javascript\b/],
+    ]);
+    const cacheQuery = new URLSearchParams();
+    for (const path of firstPublicationPaths.keys()) cacheQuery.append('path', path);
+    const emptyCache = { replicaGeneration: null, cachedPaths: [] };
+    const snapshotCache = async () => {
+      const response = await read(`/test/snapshot-cache?${cacheQuery}`);
+      assert.equal(response.status, 200);
+      return response.json();
+    };
+    assert.deepEqual((await bucket.list()).objects, [], 'object storage starts empty');
+    assert.deepEqual(await snapshotCache(), emptyCache, 'the replica and edge cache start empty');
+    for (const path of firstPublicationPaths.keys()) {
+      const response = await read(path);
+      assert.equal(response.status, 503, `${path} is unavailable before the first publication`);
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), null, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), null, path);
+      assert.ok((await response.text()).includes('snapshot is unavailable'), path);
+    }
+    assert.equal((await read('/?storage=down')).status, 503, 'a fresh installation never invents an all-clear');
+    assert.deepEqual(await snapshotCache(), emptyCache, 'unavailable responses do not seed a fallback');
+    assert.deepEqual((await bucket.list({ prefix: 'snapshots/' })).objects, [], 'public reads do not publish a snapshot');
+    console.info('FIRST SNAPSHOT GET / /feed.atom /widget.js → 503; no snapshot or cached status');
+
     const publishedAt = new Date().toISOString();
     const source = {
       settings: { pageName: 'Known service status <synthetic-lamp> & $&', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
@@ -107,14 +137,19 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const image = themeHeaderImage();
     const font = await readFile('src/core/features/public-snapshot/fonts/inter-latin.woff2');
     const themeAssets = { header: { key: 'branding/theme-image', contentType: 'image/png' }, font: { key: 'branding/theme-font', contentType: 'font/woff2' } };
-    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
     await bucket.put(themeAssets.header.key, image);
     await bucket.put(themeAssets.font.key, font);
     source.settings.themeAssets = JSON.stringify(themeAssets);
     source.settings.theme = JSON.stringify({ headerImage: true, font: 'uploaded' });
     const rebuild = async input => (await read('/test/rebuild', { method: 'POST', body: JSON.stringify({ source, ...input }) })).json();
-    assert.equal((await read('/?storage=down')).status, 503, 'a fresh installation never invents an all-clear');
-    const generation = await rebuild({ generation: 1 }); assert.equal(generation.failure, null);
+    const generation = await rebuild({ generation: 1 });
+    assert.equal(generation.failure, null);
+    assert.equal(generation.completed, true);
+    assert.equal(generation.pointer.generation, 1);
+    assert.equal(generation.replica.generation, 1);
+    assert.ok(generation.pointer.version);
+    assert.equal(generation.pointer.version, generation.replica.version);
+    assert.equal(generation.pointer.generatedAt, generation.replica.generatedAt);
     const pageKey = `snapshots/${generation.pointer.version}/page.html`;
     const pageObject = await bucket.get(pageKey);
     await bucket.put(pageKey, (await pageObject.text()).replace('<body', '<body data-synthetic-note="a > b"'), { httpMetadata: { contentType: 'text/html; charset=utf-8' } });
@@ -151,10 +186,28 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       assert.equal(response.headers.get('x-lamp-snapshot-version'), generation.pointer.version, path);
       assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), generation.pointer.generatedAt, path);
       coldBodies.set(path, Buffer.from(await response.arrayBuffer()));
+      if (firstPublicationPaths.has(path)) {
+        assert.match(response.headers.get('content-type') ?? '', firstPublicationPaths.get(path), path);
+      }
       validators.set(path, response.headers.get('etag'));
       assert.ok(validators.get(path), `${path} supplies a validator`);
       assert.equal((await blobReads()).getBytes[key], 1, `${path} reads its immutable artifact once when cold`);
     }
+    const firstPage = descendants(parse(coldBodies.get('/').toString()));
+    const headline = firstPage.find(node => node.attrs?.some(attr => attr.name === 'id' && attr.value === 'overall-status'));
+    assert.equal(headline?.childNodes[0]?.value, 'Down');
+    const time = firstPage.find(node => node.attrs?.some(attr => attr.name === 'data-generated-at'))?.childNodes.find(node => node.tagName === 'time');
+    assert.equal(time?.attrs.find(attr => attr.name === 'datetime')?.value, generation.pointer.generatedAt);
+    const atom = coldBodies.get('/feed.atom').toString();
+    assert.equal(atom.split('<entry>')[0].match(/<updated>([^<]+)<\/updated>/)?.[1], generation.pointer.generatedAt);
+    const entry = atom.match(/<entry>.*?<\/entry>/gs)?.find(value => value.includes('<title>INC-1: Known API outage</title>'));
+    assert.ok(entry?.includes('Major outage affects customer requests.'), 'the Atom incident entry carries the known outage');
+    const widget = coldBodies.get('/widget.js').toString();
+    assert.ok(widget.includes('"overall":"Major outage"'), 'the widget starts with the known outage');
+    assert.ok(widget.includes('"reference":"INC-1","title":"Known API outage"'), 'the widget carries the published incident');
+    assert.ok(widget.includes(`"generatedAt":"${generation.pointer.generatedAt}"`), 'the widget starts with the published generation instant');
+    console.info(`FIRST SNAPSHOT GET / /feed.atom /widget.js → 200; Major outage; generation=1; version=${generation.pointer.version}; generatedAt=${generation.pointer.generatedAt}`);
+
     const afterCold = await blobReads();
     assert.equal(afterCold.getText['snapshots/current.json'] - (beforeCold.getText['snapshots/current.json'] ?? 0), paths.length, 'every cold read validates the current pointer');
     assert.equal(afterCold.getText['snapshots/stale.json'] - (beforeCold.getText['snapshots/stale.json'] ?? 0), paths.length, 'every cold read checks snapshot freshness');
@@ -186,7 +239,6 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const edgeFallback = await read('/?storage=down&replica=down');
     assert.equal(edgeFallback.status, 200);
     assert.equal(edgeFallback.headers.get('x-lamp-snapshot-state'), 'stale');
-    const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
     const body = descendants(parse(await edgeFallback.text())).find(node => node.tagName === 'body');
     assert.equal(body.attrs.find(attr => attr.name === 'data-synthetic-note')?.value, 'a > b', 'stale labeling preserves quoted body attributes');
     const banner = body.childNodes.find(node => node.tagName === 'aside' && node.attrs.some(attr => attr.name === 'class' && attr.value === 'snapshot-stale'));
