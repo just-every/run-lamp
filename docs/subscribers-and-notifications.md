@@ -158,6 +158,9 @@ narrowed follows every visible component, including components added later.
 During update composition, choose which available channels receive that update;
 the public page, Atom feed and widget always receive it.
 
+In **Subscribers**, open a subscriber's selected component count to see the
+names. Use **Filter components** to find a name in a longer selection.
+
 Subscription requests are limited to 5 per minute from a requester network
 address. Separately, one email address receives at most one confirmation message
 in 24 hours.

@@ -79,13 +79,17 @@ export async function subscriberIntakeBrowserFlow(t) {
     page.on('pageerror', error => errors.push(error.message));
     const evidence = process.env.LAMP_BROWSER_EVIDENCE || 'test-results/subscriber-intake';
     await mkdir(evidence, { recursive: true });
-    async function screens(name) {
+    async function screens(name, record) {
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: no horizontal overflow at the assertion width`);
       const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
       assert.deepEqual(audit.violations.filter(row => ['serious', 'critical'].includes(row.impact)).map(row => row.id), [], `${name}: accessible existing controls`);
       for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-        await page.screenshot({ path: join(evidence, `${name}-${width}.png`), fullPage: true });
+        const path = join(evidence, `${name}-${width}.png`);
+        if (record) {
+          assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${name}: no document overflow at ${width}px`);
+          await record.screenshot({ path });
+        } else await page.screenshot({ path, fullPage: true });
       }
       await page.setViewportSize({ width: 1440, height: 1000 });
     }
@@ -116,8 +120,32 @@ export async function subscriberIntakeBrowserFlow(t) {
       const visible = page.getByRole('region', { name: 'Subscriber records', exact: true }).getByRole('row').filter({ hasText: destination });
       await expect(visible).toContainText('pending'); await expect(visible).toContainText('Added by Synthetic Lamp owner');
       const selection = visible.locator('[data-label="Selection"]');
-      for (const component of selected) await expect(selection).toContainText(component.name);
-      for (const component of components.filter(component => !selected.includes(component))) await expect(selection).not.toContainText(component.name);
+      const disclosure = selection.locator('summary');
+      await expect(disclosure).toContainText(String(selected.length));
+      for (const component of selected) await expect(selection.getByText(component.name, { exact: true })).toBeHidden();
+      await disclosure.press('Enter');
+      for (const component of selected) await expect(selection.getByText(component.name, { exact: true })).toBeVisible();
+      for (const component of components.filter(component => !selected.includes(component))) {
+        await expect(selection.getByText(component.name, { exact: true })).toHaveCount(0);
+      }
+      if (selected.length > 1) {
+        await screens('subscriber-selection-open', visible);
+        const filter = selection.getByRole('textbox', { name: /filter/i });
+        await disclosure.press('Tab');
+        await expect(filter).toBeFocused();
+        await page.keyboard.type(' FIRST ');
+        await expect(selection.getByRole('listitem')).toHaveText([selected[0].name]);
+        await screens('subscriber-selection-match', visible);
+        await filter.fill('excluded');
+        await expect(selection.getByRole('listitem')).toHaveCount(0);
+        await expect(selection.getByRole('status')).toBeVisible();
+        await screens('subscriber-selection-no-match', visible);
+        await filter.fill('');
+        await expect(selection.getByRole('listitem')).toHaveCount(selected.length);
+        await disclosure.press('Space');
+        await expect(filter).toBeHidden();
+        await screens('subscriber-selection-closed', visible);
+      }
       if (channel === 'webhook') await expect(visible).toContainText(contact);
       const sent = messages.slice(start); assert.equal(sent.length, 1); assert.deepEqual(sent[0].to, [contact]);
       const confirmation = sent[0].text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0];

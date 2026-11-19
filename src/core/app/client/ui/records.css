@@ -47,7 +47,15 @@
 
 .subscriber-directory-card td:first-child strong { font-family: inherit; font-size: 14px; font-weight: 500; }
 .subscriber-directory-card td { overflow-wrap: anywhere; }
+.subscriber-component-details { width: 14rem; min-width: 0; }
+.subscriber-component-details > summary { align-content: center; color: var(--ink); cursor: pointer; font-weight: 500; }
+.subscriber-component-details[open] > summary { margin-bottom: 8px; }
+.subscriber-component-filter { display: grid; gap: 4px; font-size: var(--text-small); }
+.subscriber-component-filter input:focus { outline: 2px solid var(--ink); outline-offset: -2px; box-shadow: none; }
+.subscriber-component-list { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; }
+.subscriber-component-details [role="status"]:not(:empty) { margin-top: 8px; }
 @media (max-width: 620px) {
+  .subscriber-component-details { width: auto; }
   .subscriber-directory-card .table-scroll { overflow: visible; contain: none; }
   .subscriber-directory-card table { min-width: 0; }
   .subscriber-directory-card thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

@@ -22,12 +22,14 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const response = await context.request.get(origin + path);
     return { status: response.status(), json: () => response.json() };
   }
-  async function screens(name) {
+  async function screens(name, record) {
     if (!evidence) return;
     await mkdir(evidence, { recursive: true });
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-      await page.screenshot({ path: join(evidence, `${name}-${width}.png`), fullPage: true });
+      const path = join(evidence, `${name}-${width}.png`);
+      if (record) await record.screenshot({ path });
+      else await page.screenshot({ path, fullPage: true });
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
@@ -146,8 +148,9 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const selectedRows = page.getByRole('region', { name: 'Subscriber records', exact: true });
     for (const [email, followed, excluded] of [[pageEmail, component, orders], [addedEmail, orders, component]]) {
       const selection = selectedRows.getByRole('row').filter({ hasText: email }).locator('[data-label="Selection"]');
-      await expect(selection).toContainText(followed.name);
-      await expect(selection).not.toContainText(excluded.name);
+      await selection.locator('summary').press('Enter');
+      await expect(selection.getByText(followed.name, { exact: true })).toBeVisible();
+      await expect(selection.getByText(excluded.name, { exact: true })).toHaveCount(0);
     }
     await screens('local-subscriber-component-names');
 
@@ -169,7 +172,12 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     assert.ok(!label.includes(batch.batchId) && !label.includes(batch.batchId.slice(-6)), 'the batch label exposes no internal identifier');
     assert.match(label, /CSV/i);
     assert.ok(label.includes(String(importedEmails.length)) && /\d{4}/.test(label), 'the batch retains its remaining count and import time');
-    for (const email of importedEmails) await expect(selectedRows.getByRole('row').filter({ hasText: email }).locator('[data-label="Selection"]')).toContainText(/All components/i);
+    for (const email of importedEmails) {
+      const selection = selectedRows.getByRole('row').filter({ hasText: email }).locator('[data-label="Selection"]');
+      await expect(selection.getByText(/All components/i)).toBeVisible();
+      await expect(selection.locator('summary')).toHaveCount(0);
+    }
+    await screens('local-subscriber-all-components', selectedRows.getByRole('row').filter({ hasText: importedEmails[0] }));
     const invited = page.waitForResponse(response => response.url().endsWith(`/${batch.batchId}/send-invitations`) && response.request().method() === 'POST');
     await imports.getByRole('button', { name: 'Send invitations', exact: true }).click();
     const inviteResponse = await invited;

@@ -696,7 +696,7 @@
       "executable": false
     },
     "docs/subscribers-and-notifications.md": {
-      "sha256": "b2f9b4b41f965b60910deff6ef29237ab8b63797c930d62645f1e8fb6ed1b7fb",
+      "sha256": "b748365514a8a2137323c3825bf8fd7eec5cd5ee054b84bea8f47254667b10f8",
       "executable": false
     },
     "docs/updating.md": {
@@ -4336,7 +4336,7 @@
       "executable": false
     },
     "src/core/app/client/ui/records.css": {
-      "sha256": "be812faaecd6946d1523f01e7d64f74d1c2c81ca0efb533cfc879648ebe09230",
+      "sha256": "96a53f9fc1d38684179f4a6fdd1d6189b24d8b5ed3f10d7ada7d8c1b76cf87a5",
       "executable": false
     },
     "src/core/app/client/ui/relative-time.ts": {
@@ -6711,6 +6711,10 @@
       "sha256": "ab22d47911d91680c0ae766bd75e331061b82cd0663e6c3481c25b5a86a4bc9d",
       "executable": false
     },
+    "src/core/features/subscribers/ui/subscriber-component-details.tsx": {
+      "sha256": "c7e583f813b472137cba59f543455dc2620984e61f4d4692340ed08b6badd145",
+      "executable": false
+    },
     "src/core/features/subscribers/ui/subscriber-import-export.tsx": {
       "sha256": "e36b34abc0f7a010326dcceb776472ed092d4ca5752279408e36e758f9eec66e",
       "executable": false
@@ -6720,7 +6724,7 @@
       "executable": false
     },
     "src/core/features/subscribers/ui/subscribers-page.tsx": {
-      "sha256": "29ddbca999e4e71a4593da2daed7324225560cc15f07da6b0252f6070b441a72",
+      "sha256": "98e8148aa3da48f5e47ef0da7d87f9d31c670f2f77e7b350f41b976109aa80b1",
       "executable": false
     },
     "src/core/features/subscribers/ui/subscribers-views.tsx": {
@@ -8296,7 +8300,7 @@
       "executable": false
     },
     "tests/e2e/helpers/local-subscribers-flow.mjs": {
-      "sha256": "14052fe614427515d8a04da2e79f1b047e21ddad9c35403777adff3b7badfa79",
+      "sha256": "8cf5afef8a2243ddc896afd4b508380423757cb051f53ee390457de47f3e141c",
       "executable": false
     },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
@@ -8556,7 +8560,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
-      "sha256": "f78d4a43aa9784e0c0676edd003298ceb4eb12e83accc5825f54b85e3ee2fc0a",
+      "sha256": "e100d594b38aa5850ad1653ea5333e4bde319bc15f87a0fb867b384c4f19c819",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-limits-flow.mjs": {
