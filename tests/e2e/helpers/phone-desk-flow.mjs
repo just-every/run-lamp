@@ -88,15 +88,41 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await inspect('resolved');
     await page.goto(`${appUrl}/app/components`);
     await operatorHydrated(page);
-    const row = page.locator('.component-row').filter({ hasText: component.name });
-    await row.getByRole('button', { name: component.name }).click();
+    const row = page.locator('.component-row').filter({ has: page.getByText(component.name, { exact: true }) });
+    const openComponent = row.getByRole('button', { name: component.name });
+    await openComponent.click();
     const drawer = page.getByRole('dialog', { name: component.name, exact: true });
-    await drawer.getByRole('button', { name: 'Status', exact: true }).click();
+    const statusTab = drawer.getByRole('button', { name: 'Status', exact: true });
+    const serviceStatus = drawer.getByLabel('Service status');
+    await statusTab.click();
     await inspect('claim');
-    await drawer.getByLabel('Service status').selectOption('Degraded performance');
+    const selectedClaim = 'Degraded performance';
+    await serviceStatus.selectOption(selectedClaim);
     await drawer.getByRole('button', { name: 'Save status', exact: true }).click();
-    await row.getByText('Slow', { exact: true }).waitFor();
+    const visibleStatus = row.getByText('Slow', { exact: true });
+    await visibleStatus.waitFor();
+
+    const componentsResponse = await page.request.get(`${appUrl}/api/app/components`);
+    assert.equal(componentsResponse.status(), 200);
+    const { components } = await componentsResponse.json();
+    const savedComponent = components.find(({ id }) => id === component.id);
+    assert.ok(savedComponent, 'the component edited on the phone is in the authenticated catalogue');
+    assert.equal(savedComponent.name, component.name);
+    assert.equal(savedComponent.standingClaimState, selectedClaim);
+
+    await page.reload();
+    await operatorHydrated(page);
+    await visibleStatus.waitFor();
     await inspect('components');
+    if (proof) {
+      const phoneViewport = page.viewportSize();
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.screenshot({ path: `${proof}/1440-components.png`, fullPage: true });
+      await page.setViewportSize(phoneViewport);
+    }
+    await openComponent.click();
+    await statusTab.click();
+    assert.equal(await serviceStatus.inputValue(), savedComponent.standingClaimState);
     await page.goto(`${appUrl}/app/maintenance`);
     await operatorHydrated(page);
     await page.getByLabel('Title', { exact: true }).fill(`Payments database index rollout ${width}`);
