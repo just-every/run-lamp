@@ -8,10 +8,21 @@ import { openSubscriberManagementFixture, eventuallySubscriber, pageOrigin } fro
 export async function subscriberFailuresFlow() {
   let receiverStatus = 204;
   const fixture = await openSubscriberManagementFixture({
-    workerEntry: 'tests/e2e/helpers/status-journey.worker.ts',
+    workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts',
     webhookReceiver: () => new Response(null, { status: receiverStatus }),
   });
-  const { api, post, raw } = fixture;
+  const { api, post, raw, db } = fixture;
+  let clock;
+  const now = () => clock ?? Date.now();
+  const advanceToNextRetry = async updateId => {
+    const job = await db.prepare("SELECT available_at FROM notification_outbox WHERE kind = 'delivery-dispatch' AND aggregate_id = ? AND completed_at IS NULL")
+      .bind(updateId).first();
+    const deadline = Date.parse(job?.available_at);
+    assert.ok(deadline > now(), 'the next Queue retry has a future persisted deadline');
+    const response = await raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: deadline }) });
+    assert.equal(response.status, 204);
+    clock = deadline;
+  };
   const pause = async paused => assert.equal((await raw('/test/effects', {
     method: 'PUT', body: JSON.stringify({ paused }),
   })).status, 204);
@@ -36,12 +47,12 @@ export async function subscriberFailuresFlow() {
     const draft = await api(`/api/app/incidents/${id}/draft`, {
       method: 'PUT', body: JSON.stringify({ lifecycle: 'Identified', affectedAudience: 'Synthetic Lamp readers',
         customerImpact: `Requests are delayed: ${label}.`, whatStillWorks: 'The dashboard is available.',
-        details, nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() }),
+        details, nextUpdateAt: new Date(now() + 3_600_000).toISOString() }),
     });
     assert.equal(draft.status, 200, draft.text);
-    const start = Date.now();
+    const start = now();
     const published = await post(`/api/app/incidents/${id}/publish`, { channels });
-    const end = Date.now();
+    const end = now();
     assert.equal(published.status, 200, published.text);
     publicationWindows.set(published.body.update.id, [start, end]);
     return published.body.update;
@@ -51,7 +62,7 @@ export async function subscriberFailuresFlow() {
     await pause(false);
     try {
       return await (await fixture.runtime.getWorker()).queue('lamp-follow-ups-jobs', [{
-        id: `synthetic-lamp-failure-dispatch-${++dispatchNumber}`, timestamp: new Date(), attempts: dispatchNumber,
+        id: `synthetic-lamp-failure-dispatch-${++dispatchNumber}`, timestamp: new Date(now()), attempts: dispatchNumber,
         body: { type: 'delivery-dispatch', eventId: update.id },
       }]);
     } finally { await pause(true); }
@@ -59,7 +70,7 @@ export async function subscriberFailuresFlow() {
   const scheduled = async () => {
     await pause(false);
     try {
-      const result = await (await fixture.runtime.getWorker()).scheduled({ scheduledTime: Date.now(), cron: '* * * * *' });
+      const result = await (await fixture.runtime.getWorker()).scheduled({ scheduledTime: now(), cron: '* * * * *' });
       assert.equal(result.outcome, 'ok', 'the actual scheduled entry point drains due work');
     } finally { await pause(true); }
   };
@@ -77,19 +88,22 @@ export async function subscriberFailuresFlow() {
     return { id: response.body.subscriber.id, address, channel,
       destination: channel === 'email' ? address : 'https://receiver.example.test/synthetic-lamp-1' };
   };
+  const signReceipt = (id, body) => {
+    const timestamp = String(Math.floor(now() / 1000));
+    const signature = createHmac('sha256', Buffer.from('synthetic-lamp-subscriber-receipts'))
+      .update(`${id}.${timestamp}.${body}`).digest('base64url');
+    return { method: 'POST', body, headers: { 'Content-Type': 'application/json',
+      'svix-id': id, 'svix-timestamp': timestamp, 'svix-signature': `v1,${signature}` } };
+  };
   let receiptNumber = 0;
   const receipt = (delivery, type, bounceType) => {
     const accepted = fixture.mailReceipts.find(row => row.idempotencyKey === `notification/${delivery.id}`);
     assert.ok(accepted, 'the receipt identifies the actual accepted notification');
     const id = `synthetic-lamp-failure-receipt-${++receiptNumber}`;
-    const timestamp = String(Math.floor(Date.now() / 1000));
     const body = JSON.stringify({ type: `email.${type}`, data: {
       email_id: accepted.id, ...(bounceType ? { bounce: { type: bounceType } } : {}),
     } });
-    const signature = createHmac('sha256', Buffer.from('synthetic-lamp-subscriber-receipts'))
-      .update(`${id}.${timestamp}.${body}`).digest('base64url');
-    return { method: 'POST', body, headers: { 'Content-Type': 'application/json',
-      'svix-id': id, 'svix-timestamp': timestamp, 'svix-signature': `v1,${signature}` } };
+    return signReceipt(id, body);
   };
   const sendReceipt = async request => {
     const response = await raw(`${pageOrigin}/api/intake/mail-events`, request);
@@ -102,7 +116,7 @@ export async function subscriberFailuresFlow() {
     });
   };
   const readFact = async (delivery, target, outcome, start) => {
-    const end = Date.now();
+    const end = now();
     const rows = await deliveries({ id: delivery.incidentUpdateId });
     const row = rows.find(row => row.id === delivery.id);
     checkFact(row, delivery.incidentUpdateId, target, outcome, [start, end]);
@@ -124,7 +138,7 @@ export async function subscriberFailuresFlow() {
     const row = await subscriber(target.id);
     assert.equal(row.state, 'deactivated');
     assert.equal(row.deactivationReason, reason);
-    assert.ok(Date.parse(row.deactivatedAt) >= earliest && Date.parse(row.deactivatedAt) <= Date.now(), 'the operator sees the actual bounded deactivation instant');
+    assert.ok(Date.parse(row.deactivatedAt) >= earliest && Date.parse(row.deactivatedAt) <= now(), 'the operator sees the actual bounded deactivation instant');
     return row;
   };
   const noFutureMail = async (component, target, label) => {
@@ -149,7 +163,7 @@ export async function subscriberFailuresFlow() {
     await pause(true);
 
     const hardDelivery = await acceptedMail(hardComponent, 'hard bounce notification', hard);
-    const hardAt = Date.now();
+    const hardAt = now();
     await sendReceipt(receipt(hardDelivery, 'bounced', 'Permanent'));
     await assertDeliveryFilter(fixture, await readFact(hardDelivery, hard, 'bounced', hardAt));
     await deactivated(hard, 'hard bounce', hardAt);
@@ -175,18 +189,18 @@ export async function subscriberFailuresFlow() {
     assert.deepEqual(await subscriber(complaint.id), beforeInvalid);
     const afterInvalid = (await deliveries({ id: complaintDelivery.incidentUpdateId })).find(row => row.id === complaintDelivery.id);
     assert.deepEqual(afterInvalid, complaintDelivery, 'an unauthenticated complaint cannot change the delivery log');
-    const complaintAt = Date.now();
+    const complaintAt = now();
     await sendReceipt(signedComplaint);
     const complained = await readFact(complaintDelivery, complaint, 'complained', complaintAt);
     await assertDeliveryFilter(fixture, complained);
     const stoppedComplaint = await deactivated(complaint, 'spam complaint', complaintAt);
     const complaintMailCount = fixture.messagesFor(complaint.address).length;
-    const suppressionAt = Date.now();
+    const suppressionAt = now();
     assert.equal((await dispatch(queuedComplaint)).outcome, 'ok');
     const suppressedComplaint = (await deliveries(queuedComplaint)).find(row => row.id === committedComplaint.id);
     assert.equal(suppressedComplaint.outcome, 'suppressed');
     assert.ok(suppressedComplaint.outcomeAt);
-    checkFact(suppressedComplaint, queuedComplaint.id, complaint, 'suppressed', [suppressionAt, Date.now()]);
+    checkFact(suppressedComplaint, queuedComplaint.id, complaint, 'suppressed', [suppressionAt, now()]);
     assert.equal(suppressedComplaint.queuedAt, committedComplaint.queuedAt);
     await assertDeliveryFilter(fixture, suppressedComplaint);
     const healthyBefore = fixture.messagesFor(healthy.address).length;
@@ -204,7 +218,7 @@ export async function subscriberFailuresFlow() {
     // subsequent completed outcomes count, even with newer queued recipients.
     for (let index = 0; index < 10; index++) {
       const delivery = await acceptedMail(softComponent, `soft bounce sequence ${index}`, soft);
-      const softAt = Date.now();
+      const softAt = now();
       if (index === 9) {
         const backlog = await publish(softComponent, 'newer queued soft bounce control', ['email']);
         assert.equal((await deliveries(backlog))[0].outcome, 'queued');
@@ -216,11 +230,11 @@ export async function subscriberFailuresFlow() {
     await noFutureMail(softComponent, soft, 'after five soft bounces');
 
     const control = await publish(webhookComponent, 'healthy webhook control', ['webhook']);
-    const deliveredAt = Date.now();
+    const deliveredAt = now();
     assert.equal((await dispatch(control)).outcome, 'ok');
     const [delivered] = await deliveries(control);
     assert.equal(delivered.outcome, 'delivered', 'the confirmed endpoint accepts a real publication');
-    checkFact(delivered, control.id, webhook, 'delivered', [deliveredAt, Date.now()]);
+    checkFact(delivered, control.id, webhook, 'delivered', [deliveredAt, now()]);
     receiverStatus = 503;
     const failedUpdates = [];
     for (let index = 0; index < 10; index++) failedUpdates.push(await publish(webhookComponent, `failed webhook ${index}`, ['webhook']));
@@ -232,22 +246,23 @@ export async function subscriberFailuresFlow() {
       assert.equal(delivery.outcome, 'queued');
       backlog.push({ update, delivery });
     }
-    const webhookAt = Date.now();
+    const webhookAt = now();
     for (let index = 0; index < failedUpdates.length; index++) {
       const update = failedUpdates[index];
       const [committed] = await deliveries(update);
       assert.equal(committed.outcome, 'queued');
       checkFact(committed, update.id, webhook, 'queued');
-      const failedAt = Date.now();
+      const failedAt = now();
       for (let attempt = 0; (await deliveries(update))[0].outcome === 'queued'; attempt++) {
         assert.ok(attempt < 10, 'native Queue retries terminate this failed notification');
+        if (attempt > 0) await advanceToNextRetry(update.id);
         await dispatch(update);
       }
       const [failed] = await deliveries(update);
       assert.equal(failed.id, committed.id);
       assert.equal(failed.outcome, 'failed');
       assert.ok(failed.outcomeAt);
-      checkFact(failed, update.id, webhook, 'failed', [failedAt, Date.now()]);
+      checkFact(failed, update.id, webhook, 'failed', [failedAt, now()]);
       assert.equal(failed.queuedAt, committed.queuedAt);
       if (index === 0) await assertDeliveryFilter(fixture, failed);
       assert.ok(fixture.webhookRequests.some(record => record.headers['webhook-id'] === failed.id), 'each terminal outcome came from actual receiver requests');
@@ -286,7 +301,7 @@ export async function subscriberFailuresFlow() {
     assert.deepEqual(await subscriber(webhook.id), stoppedWebhook);
 
     assert.equal((await api('/api/app/subscribers/' + complaint.id, { method: 'DELETE' })).status, 204);
-    await sendReceipt(signedComplaint);
+    await sendReceipt(signReceipt(signedComplaint.headers['svix-id'], signedComplaint.body));
     assert.equal((await raw(complaintManagementLink)).status, 404, 'replay cannot restore a revoked subscription link');
     const erasedLog = await api('/api/app/deliveries?incidentUpdateId=' + complaintDelivery.incidentUpdateId);
     assert.equal(erasedLog.status, 200);

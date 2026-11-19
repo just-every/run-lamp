@@ -8159,6 +8159,10 @@
       "sha256": "64817e863119d3fdf862bc45f8d3ef1f123a129f2279c96a5cf914729ad54cf1",
       "executable": false
     },
+    "tests/e2e/helpers/clocked-status-journey.worker.ts": {
+      "sha256": "d79dff3def9bb8b0b0ae11c9585df9f60d6b934f75014edce2148ea118ec587d",
+      "executable": false
+    },
     "tests/e2e/helpers/component-notification-flow.mjs": {
       "sha256": "7b73553b4f9106ad16ba968c9735485f5a1f4586fc7435c7dbbbd35223295ec3",
       "executable": false
@@ -8560,7 +8564,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-failures-flow.mjs": {
-      "sha256": "f46c15c02d0276618b031c6c555f80d792078a71c85e037712b169f8b77b78e1",
+      "sha256": "4841d1c1bad317dd810fddf329e58b9ab1f6f0fcd46bea4ab874bf93d50be8ff",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
@@ -8648,7 +8652,7 @@
       "executable": false
     },
     "tests/e2e/helpers/update-reach-flow.mjs": {
-      "sha256": "beb844f99c32c0b9332306413bd62a2300144dc3e8fde09f93f9343896e30fe0",
+      "sha256": "ed0c62a04dacf3204f9e1f125477c15bc2572f382c3775d4cb1c152f3d0cb6ed",
       "executable": false
     },
     "tests/e2e/helpers/uptime-correction-journey.mjs": {
