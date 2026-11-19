@@ -4,7 +4,7 @@ import { join, resolve } from "node:path";
 
 import { parseArgs } from "./ops-config.mjs";
 import { archivePersistence, openArchivePlatform } from "./archive-runtime.mjs";
-import { readArchive } from "./archive-validation.mjs";
+import { isRerBookkeepingTable, readArchive } from "./archive-validation.mjs";
 import { applyOwnerMigrations } from "./owner-migrations.mjs";
 import { assertNewManagedDestination, platformLedgerRows } from "./platform-ledger.mjs";
 
@@ -42,7 +42,8 @@ async function main() {
   // must be empty and is migrated here.
   let managed, keepConfig = false;
   try {
-    const existingTables = (await platform.env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations')").all()).results.map((row) => String(row.name));
+    const existingTables = (await platform.env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND lower(substr(name, 1, 7)) <> 'sqlite_' AND lower(substr(name, 1, 4)) <> '_cf_' AND name NOT IN ('d1_migrations')").all()).results
+      .map((row) => String(row.name)).filter((name) => !isRerBookkeepingTable(name));
     managed = Boolean(await platformLedgerRows(platform.env.DB));
     if (managed) await assertNewManagedDestination(platform.env.DB, existingTables, tables);
     const existingObjects = await platform.env.SNAPSHOTS.list({ limit: 1 });
