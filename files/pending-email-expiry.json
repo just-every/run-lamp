@@ -1,0 +1,73 @@
+{
+  "candidate": "2d49a4617e43cc910a99ec7ab3d1074684b62f58",
+  "helperBlob": "7eb6b158e3137958900e3564718f4106e6471a55",
+  "node": "22.20.0",
+  "exit": 0,
+  "origin": "Existing Worker journey with trace-only logging added to a scratch copy outside the product tree",
+  "observations": [
+    {
+      "kind": "pendingEmailExpiry",
+      "dayBefore": "2026-11-20",
+      "dayAfter": "2026-11-20",
+      "before": {
+        "eligible": 3,
+        "leaves": []
+      },
+      "after": {
+        "eligible": 2,
+        "leaves": [
+          {
+            "day": "2026-11-20",
+            "channel": "email",
+            "left": 1
+          }
+        ]
+      },
+      "repeated": {
+        "eligible": 2,
+        "leaves": [
+          {
+            "day": "2026-11-20",
+            "channel": "email",
+            "left": 1
+          }
+        ]
+      }
+    },
+    {
+      "kind": "pendingEmailExpiry",
+      "dayBefore": "2026-11-20",
+      "dayAfter": "2026-11-20",
+      "before": {
+        "eligible": 2,
+        "leaves": [
+          {
+            "day": "2026-11-20",
+            "channel": "email",
+            "left": 1
+          }
+        ]
+      },
+      "after": {
+        "eligible": 1,
+        "leaves": [
+          {
+            "day": "2026-11-20",
+            "channel": "email",
+            "left": 2
+          }
+        ]
+      },
+      "repeated": {
+        "eligible": 1,
+        "leaves": [
+          {
+            "day": "2026-11-20",
+            "channel": "email",
+            "left": 2
+          }
+        ]
+      }
+    }
+  ]
+}
