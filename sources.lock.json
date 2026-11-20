@@ -8760,7 +8760,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "b5de275cfe95c6d683b6372f0da530694a3ec549f4a00866da6701a0b00730bc",
+      "sha256": "b3cc4c6367c426f39a64043b7c5b5cf91c63182e9ae3a16c96e7ad3dfbfea0d6",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {

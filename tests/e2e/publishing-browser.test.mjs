@@ -395,6 +395,24 @@ async function assertPublicationAfterAiTimeout(width, t) {
   const [update] = updates;
   for (const [key, value] of Object.entries(wording)) assert.equal(update[key], value, `published ${key}`);
 
+  const { settings } = await api('/api/app/page-settings');
+  const timeZone = 'America/Los_Angeles';
+  assert.equal(settings.timezone, timeZone);
+  assert.equal(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), 'Australia/Brisbane');
+  const publicationInstant = new Date(update.publishedAt);
+  const date = new Intl.DateTimeFormat('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' }).format(publicationInstant);
+  const time = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(publicationInstant);
+  const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
+  const timestamp = timeline.locator(`li[data-update-id="${update.id}"] > span`);
+  await timestamp.waitFor({ state: 'visible' });
+  const displayed = await timestamp.innerText();
+  assert.equal(displayed, `${date}, ${time} Los Angeles time`, 'the committed update shows its publication time in the page zone');
+  t.diagnostic(`PROBE PAGE-002 3: ${width}-wide Brisbane browser Timeline update ${update.id} at ${update.publishedAt} displays ${displayed}`);
+  if (process.env.LAMP_SCREENSHOTS) {
+    await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+    await timeline.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-operator-publication-time.png`) });
+  }
+
   await waitForPublicIncident(reference, wording.customerImpact);
   const publicPage = await browser.newPage({ viewport });
   try {
