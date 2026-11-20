@@ -1,0 +1,23 @@
+TAP version 13
+# Receipt sd-lamp-c-f157-standing-claim-timing
+# Exact commit 9e74c634bfb20b08536ec79de37ed46f265ad075
+# Node v22.20.0
+# Command: node --test --test-reporter=tap --test-name-pattern='a visible component reflects standing claim changes' tests/e2e/public-contract.test.mjs
+# ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+# Subtest: COMP-006 — a visible component reflects standing claim changes within ten seconds
+ok 1 - COMP-006 — a visible component reflects standing claim changes within ten seconds
+  ---
+  duration_ms: 3508.350357
+  type: 'test'
+  ...
+# Standing claim set for 01M7WZQNH1FJZ8YRCV2YX7VKN6: operator Degraded performance, public Degraded performance, 21 ms after acknowledgement
+# Standing claim clear for 01M7WZQNH1FJZ8YRCV2YX7VKN6: operator null, public Operational, 19 ms after acknowledgement
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4925.613874

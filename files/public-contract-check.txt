@@ -1,0 +1,20 @@
+Candidate: 9e74c634bfb20b08536ec79de37ed46f265ad075
+Node v22.20.0, pnpm 10.12.4, system Chromium.
+Touched file: node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs
+Exit: 0
+ok 1 - HIST-008 — reviewed imported history stays completely browsable without scripts
+ok 2 - PAGE-005 — a new release rebuilds the stored public page once, retries pending work, advances past a reset database and keeps pre-launch
+ok 3 - UPTIME-003 — newly observed services report only their recorded coverage
+ok 4 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+ok 5 - COMP-006 — a visible component reflects standing claim changes within ten seconds
+ok 6 - PAGE-001 — initial HTML lists all active maintenance and includes the fourteen-day boundary
+ok 7 - SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story
+ok 8 - DEP-001 DEP-002 — scheduled vendor reports retain attribution and buyer control
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 408008.289025

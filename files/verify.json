@@ -1,0 +1,10 @@
+{
+  "conclusion": "success",
+  "head_sha": "9e74c634bfb20b08536ec79de37ed46f265ad075",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44782942259",
+  "status": "completed",
+  "id": 44782942259,
+  "event": "push",
+  "name": "Verify",
+  "head_branch": "cloud/sd-lamp-c-f157"
+}

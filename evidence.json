@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "e9c67b5179531527c1edce103b4df9845b78450c",
+      "bytes": 7970,
+      "path": "REPORT.md",
+      "sha256": "7c1b261a8b0cfdfbb596158570d99b18271ef4b415bcc63227f4ea73dca3eedd"
+    },
+    {
+      "blob": "0e8cf090473837c9b4894ac22adb6ab28e9e4444",
+      "bytes": 1426,
+      "path": "public-contract-check.txt",
+      "sha256": "08e26063b8b51e262e71442f531644b2f9eb40b6a842395a89960880e067735a"
+    },
+    {
+      "blob": "300317a75248df6bf84e5aa97abe5b545a0698dc",
+      "bytes": 985,
+      "path": "standing-claim-timing.tap",
+      "sha256": "e43ce164ffcec23d1c93c081d8b6cebd9831d82983afe29314b32ffdaa37c9e3"
+    },
+    {
+      "blob": "77237664e3326ff40e834917b1ad0b8a4de24acc",
+      "bytes": 295,
+      "path": "verify.json",
+      "sha256": "3f2d1e63bd8ce739892784a72d1e7e51781e97ef133b1a958d4cfa8aef2a8efe"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f157",
+  "product_head": "9e74c634bfb20b08536ec79de37ed46f265ad075",
+  "ref": "refs/heads/evidence/sd-lamp-c-f157",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f157"
+}
