@@ -34,6 +34,7 @@ test('COMP-006 — a visible component reflects standing claim changes within te
   const j = await openStatusJourney();
   try {
     const { id } = await j.component('Synthetic standing claim service');
+    const standingPath = `/api/app/components/${id}/standing-claim`;
     const publicUrl = new URL('/api/public/v1/components', j.publicOrigin).href;
     const readStates = async signal => {
       const [operator, reader] = await Promise.all([
@@ -51,14 +52,23 @@ test('COMP-006 — a visible component reflects standing claim changes within te
       };
     };
     const operational = { standingClaim: null, operatorState: 'Operational', publicState: 'Operational' };
-    assert.deepEqual(await readStates(), operational, 'the new component is visible and has no standing claim');
+    const baseline = await readStates();
+    assert.deepEqual(baseline, operational, 'the new component is visible and has no standing claim');
+    t.diagnostic(`Component ${id} before writes: ${JSON.stringify(baseline)}`);
 
     const propagationLimitMs = 10_000;
-    for (const [change, state] of [['set', 'Degraded performance'], ['clear', null]]) {
-      const expected = state === null ? operational : { standingClaim: state, operatorState: state, publicState: state };
-      const { component } = await j.json(`/api/app/components/${id}/standing-claim`, 'PUT', { state });
+    const writes = [
+      { change: 'set', state: 'Degraded performance', expected: {
+        standingClaim: 'Degraded performance', operatorState: 'Degraded performance', publicState: 'Degraded performance',
+      } },
+      { change: 'clear', state: null, expected: operational },
+    ];
+    for (const { change, state, expected } of writes) {
+      const response = await j.request(standingPath, { method: 'PUT', body: JSON.stringify({ state }) });
       const acknowledgedAt = performance.now();
       const signal = AbortSignal.timeout(propagationLimitMs);
+      assert.equal(response.status, 200, `standing claim ${change} was accepted`);
+      const { component } = await response.json();
       assert.equal(component.id, id);
 
       let observed;
@@ -72,7 +82,7 @@ test('COMP-006 — a visible component reflects standing claim changes within te
 
       assert.ok(elapsed <= propagationLimitMs, `standing claim ${change} readback took ${Math.round(elapsed)} ms`);
       assert.deepEqual(observed, expected, `standing claim ${change} reaches both readers within ten seconds`);
-      t.diagnostic(`Standing claim ${change} for ${id}: operator ${String(observed.standingClaim)}, public ${observed.publicState}, ${Math.round(elapsed)} ms after acknowledgement`);
+      t.diagnostic(`Standing claim ${change} for ${id}: ${JSON.stringify(observed)}, ${elapsed.toFixed(1)} ms after HTTP acknowledgement`);
     }
   } finally {
     await j.close();
