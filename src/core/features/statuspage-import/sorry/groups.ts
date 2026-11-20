@@ -1,13 +1,15 @@
+import { UNGROUPED_COMPONENTS_HEADING } from "../../../shared/component-order.ts";
 import type { Accounting } from "../rows.ts";
 import type { SourceData } from "../source.ts";
 import type { SorryComponent } from "./schema.ts";
 
 /** A Sorry parent row is deliberately shown once, as a group; Move in explains it as a reconciliation, not a warning. */
 export const SORRY_PARENT_AS_GROUP = "Sorry parent is represented once as its children's visual group.";
+export const SORRY_UNGROUPED_ORDER_CHANGED = "Lamp lists groups first; this component moves to " + UNGROUPED_COMPONENTS_HEADING + " after the groups.";
 
 const states = { operational: "operational", degraded: "degraded_performance", "partially-degraded": "partial_outage", "under-maintenance": "under_maintenance" } as const;
 
-export function normalizeSorryComponents(rows: SorryComponent[], accounting: Accounting[]): Pick<SourceData, "groups" | "components"> {
+export function normalizeSorryComponents(rows: SorryComponent[], accounting: Accounting[]) {
   const byId = new Map(rows.map((row) => [row.id, row]));
   const parentIds = new Set(rows.flatMap((row) => row.parent_id ? [row.parent_id] : []));
   function ancestors(row: SorryComponent): SorryComponent[] {
@@ -23,13 +25,24 @@ export function normalizeSorryComponents(rows: SorryComponent[], accounting: Acc
     return result;
   }
   const groups: SourceData["groups"] = [], components: SourceData["components"] = [];
-  for (const row of rows) {
+  const positioned = rows.map((row, index) => ({ row, position: row.position ?? index }));
+  // A group occupies its heading and its members. Use response order for ties
+  // and preserve the input order of the normalized records below.
+  const sourceOrder = [...positioned].sort((left, right) => left.position - right.position);
+  const lastGroupedIndex = sourceOrder.findLastIndex(({ row }) => row.parent_id || parentIds.has(row.id));
+  const movedUngrouped = new Set(sourceOrder.slice(0, Math.max(0, lastGroupedIndex))
+    .filter(({ row }) => !row.parent_id && !parentIds.has(row.id)).map(({ row }) => row.id));
+  for (const { row, position } of positioned) {
     const parents = ancestors(row);
     if (parentIds.has(row.id)) {
-      groups.push({ id: row.id, name: [...parents.map((parent) => parent.name), row.name].join(" / "), description: row.description, components: rows.filter((child) => child.parent_id === row.id).map((child) => child.id), position: row.position ?? rows.indexOf(row), created_at: row.created_at });
+      groups.push({ id: row.id, name: [...parents.map((parent) => parent.name), row.name].join(" / "), description: row.description, components: rows.filter((child) => child.parent_id === row.id).map((child) => child.id), position, created_at: row.created_at });
       accounting.push({ kind: "group", sourceId: row.id, name: row.name, outcome: "changed", reason: parents.length ? "Nested Sorry component grouping is represented as a named flat group." : SORRY_PARENT_AS_GROUP });
+    } else {
+      components.push({ id: row.id, name: row.name, description: row.description, group_id: row.parent_id, position, status: states[row.state], created_at: row.created_at });
+      if (movedUngrouped.has(row.id)) {
+        accounting.push({ kind: "component", sourceId: row.id, name: row.name, outcome: "changed", reason: SORRY_UNGROUPED_ORDER_CHANGED });
+      }
     }
-    else components.push({ id: row.id, name: row.name, description: row.description, group_id: row.parent_id, position: row.position ?? rows.indexOf(row), status: states[row.state], created_at: row.created_at });
   }
-  return { groups, components };
+  return { groups, components, movedUngrouped };
 }

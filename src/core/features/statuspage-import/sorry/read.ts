@@ -2,7 +2,7 @@ import { canonicalJson, sha256 } from "../../../../../modules/import-kit/src/d1/
 import type { SourceArtifact, SourceRecord } from "../../../../../modules/import-kit/src/types.ts";
 import type { Accounting } from "../rows.ts";
 import type { ReadSource, SavedFile, SourceData } from "../source.ts";
-import { normalizeSorryComponents } from "./groups.ts";
+import { normalizeSorryComponents, SORRY_UNGROUPED_ORDER_CHANGED } from "./groups.ts";
 import { retainedSorry, sorrySubscriberChannels } from "./json.ts";
 import { normalizeSorryNotice } from "./notices.ts";
 import { accessFields, agree, readSorryFiles } from "./saved.ts";
@@ -36,8 +36,13 @@ export async function readSorryResponses(files: SavedFile[], options: SorryReadO
   const records: SourceRecord[] = [], accounting: Accounting[] = [];
   const origins = new Map<string, SourceArtifact>();
   const publicAddresses: Record<string, string[]> = {};
-  const normalized = normalizeSorryComponents(saved.components.map(({ raw }) => raw), accounting);
-  const data: SourceData = { ...normalized, incidents: [], maintenance: [], subscribers: [], sorryTemplates: [] };
+  const { groups, components: normalizedComponents, movedUngrouped } = normalizeSorryComponents(saved.components.map(({ raw }) => raw), accounting);
+  for (const field of saved.fieldLedger) {
+    if (field.kind === "component" && field.target === "components.display_order" && movedUngrouped.has(field.sourceId)) {
+      field.reason = SORRY_UNGROUPED_ORDER_CHANGED;
+    }
+  }
+  const data: SourceData = { groups, components: normalizedComponents, incidents: [], maintenance: [], subscribers: [], sorryTemplates: [] };
   const components = new Set(data.components.map((row) => row.id));
   const children = new Map(data.groups.map(group => [group.id, group.components]));
   const leaves = (id: string): string[] => components.has(id) ? [id] : (children.get(id) ?? []).flatMap(leaves);
