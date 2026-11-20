@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "blob": "2ac1284f51f9ac4e7faa35c88e0e1c892b45c202",
+      "bytes": 2415,
+      "path": "REPORT.md",
+      "sha256": "54ec6af5b003a9b641a947424f31d4b8ffacb39f907818f889d438b5cdda1598"
+    },
+    {
+      "blob": "76f985b2ebeed284d5d86f69a4d77e5912833655",
+      "bytes": 4138,
+      "path": "receipt.json",
+      "sha256": "0f9122f26bbc71acb9b8bdeaffc8a8627884dc33faeda89f9547e06aa56c395d"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-hist006-time-race-1-c1",
+  "product_head": "6c6eb9761ea048372bc0e692c161e9f03eac1733",
+  "ref": "refs/heads/evidence/sd-lamp-hist006-time-race-1-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-hist006-time-race-1-c1"
+}

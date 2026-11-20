@@ -1,0 +1,174 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-hist006-time-race-1-c1",
+  "head": "6c6eb9761ea048372bc0e692c161e9f03eac1733",
+  "checked_utc": "2026-11-20T20:04:08Z",
+  "source_commit": "83d90e1e19777f1b4407e28fac11772401c1da4c",
+  "main_base": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+  "candidate_tree_matches_source": true,
+  "candidate_commit_count": 1,
+  "merge_commit_count": 0,
+  "author_and_committer_audited": true,
+  "trailers": 0,
+  "build": {
+    "shard": "build",
+    "commit": "6c6eb9761ea048372bc0e692c161e9f03eac1733",
+    "runId": null,
+    "runAttempt": 0,
+    "success": true,
+    "steps": [
+      {
+        "script": "check:contract-docs",
+        "exitCode": 0,
+        "durationMs": 659
+      },
+      {
+        "script": "source:copies",
+        "exitCode": 0,
+        "durationMs": 388
+      },
+      {
+        "script": "source:check",
+        "exitCode": 0,
+        "durationMs": 769
+      },
+      {
+        "script": "typecheck",
+        "exitCode": 0,
+        "durationMs": 17272
+      },
+      {
+        "script": "check:syntax",
+        "exitCode": 0,
+        "durationMs": 10314
+      },
+      {
+        "script": "validate:release",
+        "exitCode": 0,
+        "durationMs": 971
+      },
+      {
+        "script": "verify:visual:source",
+        "exitCode": 0,
+        "durationMs": 329
+      },
+      {
+        "script": "build:app",
+        "exitCode": 0,
+        "durationMs": 7101
+      },
+      {
+        "script": "build:site",
+        "exitCode": 0,
+        "durationMs": 5538
+      }
+    ]
+  },
+  "repeats": [
+    {
+      "run": 1,
+      "started_utc": "2026-11-20T19:41:01Z",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "hist006_reads": [
+        {
+          "generated_at": "2026-11-20T19:29:00.000Z",
+          "read_at": "2026-11-20T19:31:00.000Z"
+        },
+        {
+          "generated_at": "2026-11-20T19:34:00.000Z",
+          "read_at": "2026-11-20T19:34:00.000Z"
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "started_utc": "2026-11-20T19:42:31Z",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "hist006_reads": [
+        {
+          "generated_at": "2026-11-20T19:29:00.000Z",
+          "read_at": "2026-11-20T19:31:00.000Z"
+        },
+        {
+          "generated_at": "2026-11-20T19:34:00.000Z",
+          "read_at": "2026-11-20T19:34:00.000Z"
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "started_utc": "2026-11-20T19:43:56Z",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "hist006_reads": [
+        {
+          "generated_at": "2026-11-20T19:29:00.000Z",
+          "read_at": "2026-11-20T19:31:00.000Z"
+        },
+        {
+          "generated_at": "2026-11-20T19:34:00.000Z",
+          "read_at": "2026-11-20T19:34:00.000Z"
+        }
+      ]
+    },
+    {
+      "run": 4,
+      "started_utc": "2026-11-20T19:45:22Z",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "hist006_reads": [
+        {
+          "generated_at": "2026-11-20T19:29:00.000Z",
+          "read_at": "2026-11-20T19:31:00.000Z"
+        },
+        {
+          "generated_at": "2026-11-20T19:34:00.000Z",
+          "read_at": "2026-11-20T19:34:00.000Z"
+        }
+      ]
+    },
+    {
+      "run": 5,
+      "started_utc": "2026-11-20T19:46:47Z",
+      "tests": 5,
+      "passed": 5,
+      "failed": 0,
+      "hist006_reads": [
+        {
+          "generated_at": "2026-11-20T19:29:00.000Z",
+          "read_at": "2026-11-20T19:31:00.000Z"
+        },
+        {
+          "generated_at": "2026-11-20T19:34:00.000Z",
+          "read_at": "2026-11-20T19:34:00.000Z"
+        }
+      ]
+    }
+  ],
+  "status_summary": {
+    "done": 65,
+    "partial": 124,
+    "missing": 56,
+    "total": 245
+  },
+  "touched_file_test_count": {
+    "before": 5,
+    "after": 5
+  },
+  "lock_and_check_pass": true,
+  "contract_generation_and_check_pass": true,
+  "remote_product_push": true,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "6c6eb9761ea048372bc0e692c161e9f03eac1733",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44805539571",
+    "status": "completed",
+    "id": 44805539571
+  }
+}
