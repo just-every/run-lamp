@@ -1,0 +1,134 @@
+{
+  "branch": "cloud/sd-lamp-c-f159",
+  "candidate_run_site": {
+    "id": null,
+    "status": "pending main landing"
+  },
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "a044290f5467382dad631d860ca9f9b78250853d",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44794778932",
+    "id": 44794778932,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "head": "a044290f5467382dad631d860ca9f9b78250853d",
+  "local": {
+    "browser_executable": "/usr/bin/chromium",
+    "browser_focused": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"compiled visual edits and the operator publication journey|390-wide owner sign-in\" tests/e2e/publishing-browser.test.mjs",
+      "exit": 0,
+      "passed": 2
+    },
+    "browser_full_file": {
+      "command": "node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs",
+      "exit": 1,
+      "failed": 1,
+      "passed": 7,
+      "unrelated_error": "THEME-001 could not find the default Playwright headless shell"
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "migration_ledger": "not applicable",
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "source_lock": {
+      "check": "node scripts/edition-authoring/cli.mjs check",
+      "check_exit": 0,
+      "lock": "node scripts/edition-authoring/cli.mjs lock",
+      "lock_exit": 0
+    },
+    "theme_same_environment": {
+      "candidate_exit": 1,
+      "command": "node --test --test-concurrency=1 --test-name-pattern=\"THEME-001 \u2014 owner publishes branded themes\" tests/e2e/publishing-browser.test.mjs",
+      "error": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg",
+      "main_exit": 1
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "views": {
+      "check": "node src/base/contract-docs.mjs check",
+      "check_exit": 0,
+      "restored": [
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "write": "node src/base/contract-docs.mjs write",
+      "write_exit": 0
+    }
+  },
+  "main_at_push": {
+    "conclusion": "success",
+    "head": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+    "run_site": 44671292988,
+    "verify_runs": [
+      44671292824,
+      44666249683
+    ]
+  },
+  "probes": [
+    {
+      "browser_zone": "Australia/Brisbane",
+      "page_zone": "America/Los_Angeles",
+      "published_at": "2026-11-20T18:34:21.106Z",
+      "screenshot": "1440-operator-publication-time.png",
+      "screenshot_dimensions": [
+        1109,
+        189
+      ],
+      "screenshot_sha256": "3782ab372c62e316119cf2ae0a6ed3d5ca5cabe060d490cd16ed5d0382082bab",
+      "update_id": "01M7X3SA14RV66TSZY6JKJYWN6",
+      "viewport": 1440,
+      "visible": "Nov 20, 2026, 10:34 Los Angeles time"
+    },
+    {
+      "browser_zone": "Australia/Brisbane",
+      "page_zone": "America/Los_Angeles",
+      "published_at": "2026-11-20T18:35:12.635Z",
+      "screenshot": "390-operator-publication-time.png",
+      "screenshot_dimensions": [
+        356,
+        226
+      ],
+      "screenshot_sha256": "8c9633c741d2a51c20ff6c8ecd6f9723aa92c474e0fe7ac19f5f9f349ecd169e",
+      "update_id": "01M7X3TVN1S9BB48FVPBWE9GNM",
+      "viewport": 390,
+      "visible": "Nov 20, 2026, 10:35 Los Angeles time"
+    }
+  ],
+  "product_push": {
+    "advertised_head": "a044290f5467382dad631d860ca9f9b78250853d",
+    "attempt": 1,
+    "ref": "refs/heads/cloud/sd-lamp-c-f159"
+  },
+  "publication_scan": {
+    "commit": "a044290f5467382dad631d860ca9f9b78250853d",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "pending Mac lander"
+  },
+  "repository": "just-every/run-lamp",
+  "status": {
+    "after": "PARTIAL",
+    "before": "PARTIAL",
+    "clause": "PAGE-002",
+    "counts_after": {
+      "done": 65,
+      "missing": 56,
+      "partial": 124
+    },
+    "counts_before": {
+      "done": 65,
+      "missing": 56,
+      "partial": 124
+    },
+    "operator_timeline_subpoint_of": 3
+  },
+  "tag": "sd-lamp-c-f159"
+}
