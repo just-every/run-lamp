@@ -32,7 +32,11 @@ export async function planMoveIn(read: ReadSource, snapshot: Snapshot, context: 
   for (const item of read.accounting ?? []) {
     const entry = mapped.find(row => row.kind === item.kind && row.sourceId === item.sourceId);
     if (entry) {
-      if (!entry.accounting.some(row => row.outcome === "rejected" || row.outcome === "skipped")) entry.accounting = [{ ...item, reason: `${entry.accounting.map(row => row.reason).join(" ")} ${item.reason}` }];
+      if (entry.accounting.some(row => row.outcome === "rejected" || row.outcome === "skipped")) continue;
+      // A source-specific order change supersedes the generic component order claim.
+      const reason = namespace === "sorry" && item.kind === "component" && entry.accounting.every(row => row.outcome === "imported")
+        ? item.reason : [...entry.accounting.map(row => row.reason), item.reason].join(" ");
+      entry.accounting = [{ ...item, reason }];
     } else mapped.push({ kind: item.kind as EntityKind, sourceId: item.sourceId, accounting: [item] });
   }
   const sorry = namespace === "sorry" ? read as SorryRead : undefined;
