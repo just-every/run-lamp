@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "dd4fde7df7a56aa40c0d1091de8b1f3bd527f236",
+      "bytes": 2016,
+      "path": "LOCAL-RECEIPT.txt",
+      "sha256": "6ce8fad71eed265d1553ece17565b87f48f0103474ea1b035f1be5e55ef8f070"
+    },
+    {
+      "blob": "06a1b72c1921f2d7270fc081c19a54fbb10c1003",
+      "bytes": 5840,
+      "path": "REPORT.md",
+      "sha256": "5378f553d9fb7aebc2829580caa4f59d06a7a5e53db3e1a1613f470ca4c4bd97"
+    },
+    {
+      "blob": "8b0d92704274384fcd873ee20517fbf6ad23b40b",
+      "bytes": 300,
+      "path": "VERIFY.json",
+      "sha256": "b658a9eabb47b398aa8af512cdae06f449b1c3e5a1804bee19de7bbc5d4b9f77"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f155",
+  "product_head": "4726942a074c4a1855c084034e53b1d2e175f7b8",
+  "ref": "refs/heads/evidence/sd-lamp-c-f155",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f155"
+}

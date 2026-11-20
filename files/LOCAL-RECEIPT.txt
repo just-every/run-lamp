@@ -1,0 +1,32 @@
+Candidate 4726942a074c4a1855c084034e53b1d2e175f7b8
+v22.20.0
+10.12.4
+TAP version 13
+# FIRST SNAPSHOT GET / /feed.atom /widget.js → 503; no snapshot or cached status
+# FIRST SNAPSHOT GET / /feed.atom /widget.js → 200; Major outage; generation=1; version=01M7WZCWF9H27WTV2EQ19JAAYN; generatedAt=2026-11-20T17:17:20.233Z
+# PROBE PAGE-018 4: GET /components/customer-api/badge.svg and /components/customer-api/uptime.svg after cold restart with storage down and a throwing repository -> 200, identical SVG bytes, media types and generation, zero database accesses
+# Subtest: THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+ok 1 - THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+# Subtest: Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+ok 2 - Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 24994.679249
+> tsc --noEmit
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Exact SHA test, typecheck, contract document check, source-lock check and first-party check completed with exit 0.
+Test registration inventory: 115 cases plus 10 assertion scripts; total 125 before and after.
+Main: 173e93d259f968daffd0148365c2b9a26c62e3e6
+Advertised product branch: 4726942a074c4a1855c084034e53b1d2e175f7b8
+Product custody: PUSH_OK branch=cloud/sd-lamp-c-f155
+
+Negative controls via the existing replica fault, enabled for one cold badge read per run:
+/components/customer-api/badge.svg: exit 1, 503 !== 200, one failed assertion as expected.
+/components/customer-api/uptime.svg: exit 1, 503 !== 200, one failed assertion as expected.
