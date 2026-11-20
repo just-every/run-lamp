@@ -1,0 +1,184 @@
+{
+  "observedAtUtc": "2026-11-20T00:29:00.158006+00:00",
+  "base": "30a345772f5e4c0aa613060120b83f62599a41aa",
+  "branch": "cloud/sd-lamp-l9-sorry-order-1",
+  "head": "32002fea2df5112d3b296134cb6ddfbb5bd3e83a",
+  "checkedTree": "ae277e3589b6209e3ed3d6d177b4f0e5cc211d93",
+  "baseline": {
+    "components": {
+      "read": 14,
+      "imported": 14,
+      "changed": 0,
+      "skipped": 0,
+      "rejected": 0,
+      "kept-private": 0
+    },
+    "standalone": [
+      {
+        "kind": "component",
+        "name": "Website",
+        "outcome": "imported",
+        "reason": "Component, description and order carried over.",
+        "sourceId": "40"
+      },
+      {
+        "kind": "component",
+        "name": "Mobile app",
+        "outcome": "imported",
+        "reason": "Component, description and order carried over.",
+        "sourceId": "41"
+      }
+    ],
+    "publicOrder": [
+      "Customer services",
+      "Billing API",
+      "Platform",
+      "Platform part 26",
+      "Other services",
+      "Website",
+      "Mobile app"
+    ]
+  },
+  "candidate": {
+    "components": {
+      "read": 14,
+      "imported": 14,
+      "changed": 2,
+      "skipped": 0,
+      "rejected": 0,
+      "kept-private": 0
+    },
+    "standalone": [
+      {
+        "kind": "component",
+        "name": "Website",
+        "outcome": "changed",
+        "reason": "Lamp lists groups first; this component moves to Other services after the groups.",
+        "sourceId": "40"
+      },
+      {
+        "kind": "component",
+        "name": "Mobile app",
+        "outcome": "changed",
+        "reason": "Lamp lists groups first; this component moves to Other services after the groups.",
+        "sourceId": "41"
+      }
+    ],
+    "publicOrder": [
+      "Customer services",
+      "Billing API",
+      "Platform",
+      "Platform part 26",
+      "Other services",
+      "Website",
+      "Mobile app"
+    ]
+  },
+  "controls": {
+    "allStandaloneRowsAfterGroups": "no standalone order change",
+    "beforeFirstGroupWithMissingPosition": "Website changed; trailing Mobile app imported",
+    "savedJob": "the two changed rows match dry-run review"
+  },
+  "fullImports": {
+    "tests": 13,
+    "suites": 0,
+    "pass": 13,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "exactHeadReconciliation": {
+    "tests": 1,
+    "suites": 0,
+    "pass": 1,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "build": [
+    {
+      "script": "check:contract-docs",
+      "exitCode": 0,
+      "durationMs": 586
+    },
+    {
+      "script": "source:copies",
+      "exitCode": 0,
+      "durationMs": 679
+    },
+    {
+      "script": "source:check",
+      "exitCode": 0,
+      "durationMs": 1100
+    },
+    {
+      "script": "typecheck",
+      "exitCode": 0,
+      "durationMs": 20660
+    },
+    {
+      "script": "check:syntax",
+      "exitCode": 0,
+      "durationMs": 10852
+    },
+    {
+      "script": "validate:release",
+      "exitCode": 0,
+      "durationMs": 1229
+    },
+    {
+      "script": "verify:visual:source",
+      "exitCode": 0,
+      "durationMs": 418
+    },
+    {
+      "script": "build:app",
+      "exitCode": 0,
+      "durationMs": 8673
+    },
+    {
+      "script": "build:site",
+      "exitCode": 0,
+      "durationMs": 6784
+    }
+  ],
+  "rerBuild": {
+    "head": "32002fea2df5112d3b296134cb6ddfbb5bd3e83a",
+    "result": "pass"
+  },
+  "contract": {
+    "clause": "MOVE-001",
+    "acceptancePoint": 2,
+    "previousStatus": "partial",
+    "currentStatus": "partial",
+    "done": 65,
+    "partial": 124,
+    "missing": 55,
+    "total": 244,
+    "viewWriteAndCheck": "pass",
+    "sourceLockCheck": "pass"
+  },
+  "browser": {
+    "head": "32002fea2df5112d3b296134cb6ddfbb5bd3e83a",
+    "screen": "Move in dry run, changed records",
+    "assertedWidth": 1440,
+    "screenshots": [
+      1440,
+      390
+    ],
+    "changed": [
+      "Website",
+      "Mobile app"
+    ],
+    "result": "pass"
+  },
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "32002fea2df5112d3b296134cb6ddfbb5bd3e83a",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44644090478",
+    "id": 44644090478,
+    "status": "completed"
+  }
+}
