@@ -1,0 +1,22 @@
+Run sd-lamp-c-f158
+Product SHA e5f19b806298f48a4476406deecb59a9a14a5042
+Full touched file command node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs
+Full touched file exit 0 (Node v24.19.0; system Chromium)
+ℹ tests 8
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ duration_ms 445598.978519
+Pinned Node v22.20.0 checks
+pnpm run typecheck exit 0
+pnpm exec rer check --profile first-party exit 0
+node src/base/contract-docs.mjs write exit 0
+node src/base/contract-docs.mjs check exit 0
+node scripts/edition-authoring/cli.mjs lock exit 0
+node scripts/edition-authoring/cli.mjs check exit 0
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Verification plan: 9 test shards and one shared build, 36 routine test files, 116 registered cases (including release qualification) + 10 assertion scripts = 126 checks.
+cloud_run npx -y @runeditrun/rer build exit 0 (Node v22.20.0)
+PUSH_OK branch=cloud/sd-lamp-c-f158

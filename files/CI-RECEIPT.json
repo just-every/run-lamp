@@ -1,0 +1,188 @@
+{
+  "candidate": "e5f19b806298f48a4476406deecb59a9a14a5042",
+  "branch": "cloud/sd-lamp-c-f158",
+  "verify": {
+    "conclusion": "failure",
+    "head_sha": "e5f19b806298f48a4476406deecb59a9a14a5042",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44791792937",
+    "status": "completed",
+    "id": 44791792937,
+    "event": "push",
+    "observedAt": "2026-11-20T18:35:45Z"
+  },
+  "jobs": [
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481077802,
+      "name": "plan",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481162676,
+      "name": "build",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481688986,
+      "name": "shards (public-pages)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Verify this product shard"
+      ],
+      "id": 136481689008,
+      "name": "shards (runtime)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689042,
+      "name": "shards (portability)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689104,
+      "name": "shards (public)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689117,
+      "name": "shards (demo)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689118,
+      "name": "shards (composer)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689184,
+      "name": "shards (ownership)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689419,
+      "name": "shards (delivery)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "failed_steps": [],
+      "id": 136481689433,
+      "name": "shards (imports)",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "failed_steps": [
+        "Require every planned command to succeed on this commit"
+      ],
+      "id": 136488815914,
+      "name": "verify",
+      "status": "completed"
+    }
+  ],
+  "ciFailure": {
+    "job": "shards (runtime)",
+    "jobId": 136481689008,
+    "command": "pnpm verify",
+    "shard": "runtime",
+    "test": "HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions",
+    "assertion": "traffic alerts publish no customer-facing incident or content",
+    "location": "tests/e2e/helpers/traffic-alerts-flow.mjs:111",
+    "archiveCommand": "gh run view 44791792937 --repo just-every/run-lamp --job 136481689008 --log-failed",
+    "archiveExit": 0,
+    "output": [
+      "traffic alerts publish no customer-facing incident or content",
+      "code: 'ERR_ASSERTION'",
+      "expected: '{\"version\":1,\"generatedAt\":\"2026-11-20T18:26:41.180Z\",\"overall\":\"Operational\",\"maintenance\":null,\"incident\":null}'",
+      "actual: '{\"version\":1,\"generatedAt\":\"2026-11-20T18:32:00.000Z\",\"overall\":\"Operational\",\"maintenance\":null,\"incident\":null}'",
+      "##[error]Process completed with exit code 1."
+    ]
+  },
+  "ciAggregateLog": {
+    "jobId": 136488815914,
+    "archiveCommand": "gh run view 44791792937 --repo just-every/run-lamp --job 136488815914 --log-failed",
+    "archiveExit": 0,
+    "output": "SHARDS_RESULT: failure. Process completed with exit code 1."
+  },
+  "localCandidateReproduction": {
+    "head": "e5f19b806298f48a4476406deecb59a9a14a5042",
+    "command": "pnpm verify",
+    "shard": "runtime",
+    "node": "22.20.0",
+    "browser": "/usr/bin/chromium",
+    "exit": 0,
+    "output": [
+      "# tests 2",
+      "# pass 2",
+      "# fail 0",
+      "ok 16 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions",
+      "# tests 17",
+      "# pass 17",
+      "# fail 0",
+      "verify: complete (exit 0)"
+    ]
+  },
+  "localMainControl": {
+    "head": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+    "command": "node --test --test-concurrency=1 --test-name-pattern='HIST-006 — independent public readership' tests/e2e/update-reminders.test.mjs",
+    "node": "22.20.0",
+    "browser": "/usr/bin/chromium",
+    "exit": 0,
+    "output": [
+      "ok 1 - HIST-006 — independent public readership produces private traffic alerts and recoverable owner actions",
+      "# tests 1",
+      "# pass 1",
+      "# fail 0"
+    ]
+  },
+  "mainRuns": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44671292824",
+      "id": 44671292824,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44671292988",
+      "id": 44671292988,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44666249683",
+      "id": 44666249683,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "repair": "Blocked by the unreproduced exact-SHA CI assertion. No repair commit or Actions rerun."
+}

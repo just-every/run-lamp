@@ -1,0 +1,16 @@
+Run sd-lamp-c-f158
+Product SHA e5f19b806298f48a4476406deecb59a9a14a5042
+Branch cloud/sd-lamp-c-f158
+Runtime Node v22.20.0
+Command node --test --test-name-pattern=a visible component reflects standing claim tests/e2e/public-contract.test.mjs
+Exit 0
+# Subtest: COMP-006 — a visible component reflects standing claim changes within ten seconds
+ok 1 - COMP-006 — a visible component reflects standing claim changes within ten seconds
+# Component 01M7X2X6FZW6RMPQWER0XNVMVQ before writes: {"standingClaim":null,"operatorState":"Operational","publicState":"Operational"}
+# Standing claim set for 01M7X2X6FZW6RMPQWER0XNVMVQ: {"standingClaim":"Degraded performance","operatorState":"Degraded performance","publicState":"Degraded performance"}, 30.0 ms after HTTP acknowledgement
+# Standing claim clear for 01M7X2X6FZW6RMPQWER0XNVMVQ: {"standingClaim":null,"operatorState":"Operational","publicState":"Operational"}, 41.8 ms after HTTP acknowledgement
+# tests 1
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
