@@ -1,0 +1,30 @@
+{
+  "base_main": {
+    "head": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+    "run_site_conclusion": "success",
+    "run_site_id": 44671292988,
+    "verify_conclusion": "success",
+    "verify_id": 44671292824
+  },
+  "candidate_run_site": "pending guarded landing",
+  "product_branch": "cloud/sd-lamp-c-f153",
+  "product_head": "a16d8b260b0fa9e6c0b90aab306d9dbcd2878718",
+  "publication_scan": {
+    "commit": "a16d8b260b0fa9e6c0b90aab306d9dbcd2878718",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "pending Mac lander"
+  },
+  "remote_main": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "a16d8b260b0fa9e6c0b90aab306d9dbcd2878718",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44784196691",
+    "id": 44784196691,
+    "name": "Verify",
+    "observed_at": "2026-11-20T17:42:33+00:00",
+    "status": "in_progress"
+  }
+}

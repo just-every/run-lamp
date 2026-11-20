@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "9acefe9dd1d40c93066864d5daf56e01976aa25b",
+      "bytes": 15710,
+      "path": "1440-operator-publication-time.png",
+      "sha256": "a8744e4b538f934676a45ffb2d163f6a1d1155c4dd73868f5fc0ae134a1ba90a"
+    },
+    {
+      "blob": "c2acf977bb86a29c895f7449a82dfad55b17603b",
+      "bytes": 14706,
+      "path": "390-operator-publication-time.png",
+      "sha256": "6c11959612d38ef668622e7f16af3ad0dfe52d5ced3ae796e28727ff47c686fb"
+    },
+    {
+      "blob": "d83c8f1ae67fc22723cb050e96765a82326fe51f",
+      "bytes": 956,
+      "path": "CI-RECEIPT.json",
+      "sha256": "63afe6b15ad8d71f94e16efbe0b0cb9e4a6f0af3d52be3f1379016139d9ce17f"
+    },
+    {
+      "blob": "b7a1eb33e372e80260a302e0479e053f7daafe89",
+      "bytes": 2731,
+      "path": "LOCAL-RECEIPT.md",
+      "sha256": "1342ca8bedd518fdf2739bcf3bfe2e0a61ecf5d4c24527f1fc0e75f34f62c8aa"
+    },
+    {
+      "blob": "f26cf65f0d76430fef7588620ea494dffbf374e5",
+      "bytes": 6560,
+      "path": "REPORT.md",
+      "sha256": "1618521bef537b0bdebbd8949a1b9157b1756904c7bc7b0f891ce098f0216ae9"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f153",
+  "product_head": "a16d8b260b0fa9e6c0b90aab306d9dbcd2878718",
+  "ref": "refs/heads/evidence/sd-lamp-c-f153",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f153"
+}
