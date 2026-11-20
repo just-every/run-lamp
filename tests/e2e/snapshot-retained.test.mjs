@@ -161,8 +161,12 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       ['/feed.atom', /^application\/atom\+xml\b/],
       ['/widget.js', /^application\/javascript\b/],
     ]);
+    const componentBadges = new Map([
+      ['/components/customer-api/badge.svg', /id="value"[^>]*>Down<\/text>/],
+      ['/components/customer-api/uptime.svg', /id="value"[^>]*>0\.00%<\/text>/],
+    ]);
     const cacheQuery = new URLSearchParams();
-    for (const path of firstPublicationPaths.keys()) cacheQuery.append('path', path);
+    for (const path of [...firstPublicationPaths.keys(), ...componentBadges.keys()]) cacheQuery.append('path', path);
     const emptyCache = { replicaGeneration: null, cachedPaths: [] };
     const snapshotCache = async () => {
       const response = await read(`/test/snapshot-cache?${cacheQuery}`);
@@ -184,10 +188,13 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     console.info('FIRST SNAPSHOT GET / /feed.atom /widget.js → 503; no snapshot or cached status');
 
     const publishedAt = new Date().toISOString();
+    const outageStartedAt = new Date(Date.parse(publishedAt) - 3_600_000).toISOString();
     const source = {
       settings: { pageName: 'Known service status <synthetic-lamp> & $&', tagline: 'Current customer facts', accentColor: '#16794C', timezone: 'America/Los_Angeles', hostname: 'page.example', footerCreditEnabled: false, logoKey: null, logoContentType: null, widgetAllowedOrigins: '[]', feedId: 'synthetic-lamp-resilience' },
       components: [{ id: 'customer-api', name: 'Customer API', groupName: null, groupOrder: null, displayOrder: 0, note: '' }],
-      claims: [{ componentId: 'customer-api', state: 'Major outage' }], history: [], corrections: [],
+      claims: [{ componentId: 'customer-api', state: 'Major outage' }],
+      history: [{ id: 'customer-api-outage', componentId: 'customer-api', previousState: 'Operational', newState: 'Major outage', causeType: 'standing-claim', changedAt: outageStartedAt, createdAt: outageStartedAt, updatedAt: outageStartedAt }],
+      corrections: [],
       incidents: [{ id: 'incident', reference: 'INC-1', title: 'Known API outage', lifecycle: 'Identified', openedAt: publishedAt, resolvedAt: null }],
       incidentComponents: [{ incidentId: 'incident', componentId: 'customer-api', componentName: 'Customer API', state: 'Major outage', relationship: 'Primary', publishedAt }],
       updates: [{ id: 'outage-update', incidentId: 'incident', lifecycle: 'Identified', affectedAudience: 'API customers', customerImpact: 'Major outage affects customer requests.', whatStillWorks: 'Status information remains available.', details: 'The operator is restoring service.', nextUpdateAt: new Date(Date.parse(publishedAt) + 3600000).toISOString(), publishedAt }],
@@ -319,6 +326,27 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     const afterConditional = await blobReads();
     assert.deepEqual(afterConditional.getBytes, afterCold.getBytes, 'conditional warm reads also reuse cached artifact bytes');
     assert.equal(afterConditional.getText['snapshots/current.json'] - beforeConditional.getText['snapshots/current.json'], paths.length, 'conditional responses validate the pointer before accepting old bytes');
+
+    const readComponentBadge = async (path, query, state) => {
+      const response = await read(path + query);
+      assert.equal(response.status, 200, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-state'), state, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-retained'), 'true', path);
+      const contentType = response.headers.get('content-type');
+      const version = response.headers.get('x-lamp-snapshot-version');
+      const generatedAt = response.headers.get('x-lamp-snapshot-generated-at');
+      assert.equal(contentType, 'image/svg+xml; charset=utf-8', path);
+      assert.equal(version, generation.pointer.version, path);
+      assert.equal(generatedAt, generation.pointer.generatedAt, path);
+      return { contentType, version, generatedAt, body: Buffer.from(await response.arrayBuffer()) };
+    };
+    const healthyBadges = new Map();
+    for (const [path, expectedValue] of componentBadges) {
+      const healthy = await readComponentBadge(path, '?cacheWrites=down', null);
+      assert.match(healthy.body.toString(), expectedValue, path);
+      healthyBadges.set(path, healthy);
+    }
+
     const edgeFallback = await read('/?storage=down&replica=down');
     assert.equal(edgeFallback.status, 200);
     assert.equal(edgeFallback.headers.get('x-lamp-snapshot-state'), 'stale');
@@ -351,6 +379,14 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     }
     for (const path of monthPaths) await checkMonth(path, '?storage=down');
     await runtime.dispose(); runtime = new Miniflare(convertV4MiniflareOptions(options));
+    const { replicaGeneration, cachedPaths } = await snapshotCache();
+    assert.equal(replicaGeneration, generation.pointer.generation, 'the published replica survives restart');
+    for (const [path, healthy] of healthyBadges) {
+      assert.ok(!cachedPaths.includes(path), `${path} starts cold at the edge`);
+      assert.deepEqual(await readComponentBadge(path, '?storage=down&cold=1', 'stale'), healthy, `${path} retains the exact published SVG and generation`);
+    }
+    assert.equal((await (await read('/test/database-touches')).json()).accesses, 0, 'cold retained component badges never access the database');
+    console.info('PROBE PAGE-018 4: GET /components/customer-api/badge.svg and /components/customer-api/uptime.svg after cold restart with storage down and a throwing repository -> 200, identical SVG bytes, media types and generation, zero database accesses');
     for (const path of paths) assert.equal((await read(path + '?storage=down&cold=1')).status, 200, `cold retained read ${path}`);
     for (const path of monthPaths) await checkMonth(path, '?storage=down&cold=1');
     for (const row of archived.filter(row => row.kind === 'incident')) {
