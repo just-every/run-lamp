@@ -123,9 +123,17 @@ Compare them on [Run Edit Run plans](https://runeditrun.com/pricing).
 
 Managed hosting includes mail: you need no provider account or mail key. RER
 fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and the private
-`MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
-authenticated sender and API key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`
-and `MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail.
+`MAIL_API_KEY`. With mail enabled, Free and Assisted hosting use your own Resend
+or SendGrid account, authenticated sender and API key, using `MAIL_FROM_ADDRESS`,
+`MAIL_DKIM_SELECTOR` and `MAIL_PROVIDER_API_KEY`.
+
+<!-- Run Edit Run fleet (Codex), 2026-11-21: document email-off self-hosting. -->
+Free self-hosting can run with email off. Set `MAIL_PROVIDER=none` using the
+[email-off setup steps](docs/deploy.md#or-deliberately-turn-email-off).
+Email sign-in and email subscriptions require a configured mail provider. The
+deployment owner can [sign in from the terminal](docs/deploy.md#step-8-sign-in)
+with `rer signin`.
+
 [Deploy to Cloudflare](docs/deploy.md) is one guided page: it explains each input
 in the order the dry run asks for it, including how to authenticate a sending
 domain at SendGrid or Resend, and keeps them in a private
