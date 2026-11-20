@@ -8600,7 +8600,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-expiry-flow.mjs": {
-      "sha256": "ded4ded5d68c759908a02d699bb2e4108704b43e61e1545aff69ab2af63a2db3",
+      "sha256": "831c16d213817c00abccf56d66973449a0c6fdc1ee87ffedd2e6ee02fe9de3c1",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-failures-flow.mjs": {
