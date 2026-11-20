@@ -3,6 +3,7 @@ import { admitAttributionOperator, actorAudits, assertActorAudit, assertMaintena
 import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
+import { isDeepStrictEqual } from 'node:util';
 import { gzipSync } from 'node:zlib';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
@@ -28,6 +29,55 @@ test('PAGE-005 — a new release rebuilds the stored public page once, retries p
 
 test('UPTIME-003 — newly observed services report only their recorded coverage', shortHistoryFlow);
 test('HIST-001 — completed native records retain their month, window, components and complete publication inventory', publicHistoryFlow);
+
+test('COMP-006 — a visible component reflects standing claim changes within ten seconds', async t => {
+  const j = await openStatusJourney();
+  try {
+    const { id } = await j.component('Synthetic standing claim service');
+    const publicUrl = new URL('/api/public/v1/components', j.publicOrigin).href;
+    const readStates = async signal => {
+      const [operator, reader] = await Promise.all([
+        j.request('/api/app/components', { signal }),
+        j.raw(publicUrl, { signal }),
+      ]);
+      assert.equal(operator.status, 200);
+      assert.equal(reader.status, 200);
+      const [{ components }, { data }] = await Promise.all([operator.json(), reader.json()]);
+      const native = components.find(row => row.id === id);
+      return {
+        standingClaim: native?.standingClaimState,
+        operatorState: native?.publicState,
+        publicState: data.find(row => row.id === id)?.state,
+      };
+    };
+    const operational = { standingClaim: null, operatorState: 'Operational', publicState: 'Operational' };
+    assert.deepEqual(await readStates(), operational, 'the new component is visible and has no standing claim');
+
+    const propagationLimitMs = 10_000;
+    for (const [change, state] of [['set', 'Degraded performance'], ['clear', null]]) {
+      const expected = state === null ? operational : { standingClaim: state, operatorState: state, publicState: state };
+      const { component } = await j.json(`/api/app/components/${id}/standing-claim`, 'PUT', { state });
+      const acknowledgedAt = performance.now();
+      const signal = AbortSignal.timeout(propagationLimitMs);
+      assert.equal(component.id, id);
+
+      let observed;
+      let elapsed;
+      do {
+        observed = await readStates(signal);
+        elapsed = performance.now() - acknowledgedAt;
+        if (isDeepStrictEqual(observed, expected)) break;
+        await delay(50);
+      } while (performance.now() - acknowledgedAt < propagationLimitMs);
+
+      assert.ok(elapsed <= propagationLimitMs, `standing claim ${change} readback took ${Math.round(elapsed)} ms`);
+      assert.deepEqual(observed, expected, `standing claim ${change} reaches both readers within ten seconds`);
+      t.diagnostic(`Standing claim ${change} for ${id}: operator ${String(observed.standingClaim)}, public ${observed.publicState}, ${Math.round(elapsed)} ms after acknowledgement`);
+    }
+  } finally {
+    await j.close();
+  }
+});
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
