@@ -53,10 +53,12 @@ export async function trafficAlertsFlow(t) {
       const result = await api('/api/app/traffic-alerts', { method: 'PUT', body: JSON.stringify({ multiple }) });
       assert.equal(result.status, 200, result.text); assert.deepEqual(result.body, { settings: { multiple } });
     };
+    const target = Math.floor(Date.now() / HOUR) * HOUR + 30 * MINUTE;
+    // Start the publication on the fixture clock so the alert ticks cross its refresh interval.
+    await fixture.clock(target - MINUTE);
     const componentResult = await post('/api/app/components', { groupId: null, name: 'Synthetic Lamp traffic API', description: '', internal: false, displayOrder: 0, note: '' });
     assert.equal(componentResult.status, 201, componentResult.text);
     const component = componentResult.body.component;
-    const target = Math.floor(Date.now() / HOUR) * HOUR + 30 * MINUTE;
     const readAt = async (at, count, path = '/', surface = 'page') => {
       await fixture.clock(at);
       const before = await minuteCount(surface, at);
@@ -87,9 +89,19 @@ export async function trafficAlertsFlow(t) {
     await fixture.tick(target + 2 * MINUTE);
     assert.equal((await trafficAlerts()).length, 0, 'the owner’s 6× multiple suppresses a 5× burst');
     await configure(3);
+    const readPublicContent = async readTime => {
+      const response = await runtime.dispatchFetch(`${publicOrigin}/api/public/status`);
+      assert.equal(response.status, 200);
+      const { generatedAt, ...content } = await response.json();
+      const publishedAt = Date.parse(generatedAt);
+      assert.ok(Number.isFinite(publishedAt) && new Date(publishedAt).toISOString() === generatedAt, 'status reports an ISO publication instant');
+      assert.ok(publishedAt <= readTime, 'status is not published after it was read');
+      t?.diagnostic(`HIST-006 public status generated at ${generatedAt}, read at ${new Date(readTime).toISOString()}`);
+      return content;
+    };
     const burst = target + MINUTE;
     await readAt(burst, 10);
-    const publicBefore = await (await runtime.dispatchFetch(`${publicOrigin}/api/public/status`)).text();
+    const publicBefore = await readPublicContent(burst);
     await fixture.tick(burst + 2 * MINUTE);
     const [pageAlert] = await eventually(() => sent('page:'), value => value.length === 1, 'a 5× burst sends exactly one real operator-provider request');
     assert.equal((await trafficAlerts()).length, 1, 'this page burst creates exactly one operator alert across all surfaces');
@@ -105,10 +117,12 @@ export async function trafficAlertsFlow(t) {
     await fixture.tick(burst + 2 * MINUTE);
     assert.equal((await trafficAlerts()).length, 1, 'repeated Cron delivery does not resend the alert');
     await readAt(burst + MINUTE, 10);
-    await fixture.tick(burst + 3 * MINUTE);
+    const afterBurst = burst + 3 * MINUTE;
+    await fixture.clock(afterBurst);
+    await fixture.tick(afterBurst);
     assert.equal((await trafficAlerts()).length, 1, 'the same consecutive burst remains one episode');
     assert.equal(fixture.messages.length, providerRequests, 'no further provider request');
-    assert.equal(await (await runtime.dispatchFetch(`${publicOrigin}/api/public/status`)).text(), publicBefore, 'traffic alerts publish no customer-facing incident or content');
+    assert.deepEqual(await readPublicContent(afterBurst), publicBefore, 'traffic alerts publish no customer-facing incident or content');
 
     // A quiet minute ends the first episode; an unresolved incident suppresses
     // an otherwise identical fresh 5× episode through the native incident door.
