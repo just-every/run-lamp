@@ -388,11 +388,19 @@ async function assertPublicationAfterAiTimeout(width, t) {
   assert.deepEqual(afterTimeout.updates, before.updates, 'the timeout leaves publication to the operator');
   assert.equal(await composer.impact.inputValue(), wording.customerImpact);
   assert.equal(await composer.publish.isEnabled(), true);
+  const publication = page.waitForResponse(response =>
+    response.url() === `${appUrl}/api/app/incidents/${id}/publish` && response.request().method() === 'POST');
   await composer.publish.click();
+  const publicationResponse = await publication;
+  assert.equal(publicationResponse.status(), 200);
+  const { update: committed } = await publicationResponse.json();
   await page.locator('.publication-confirmation').getByText('Published.', { exact: true }).waitFor();
+
   const { updates } = await readIncident(id);
   assert.equal(updates.length, 1, 'the operator committed one immediate update');
   const [update] = updates;
+  assert.equal(update.id, committed.id, 'native readback contains the committed update');
+  assert.equal(update.publishedAt, committed.publishedAt, 'native readback preserves the committed publication instant');
   for (const [key, value] of Object.entries(wording)) assert.equal(update[key], value, `published ${key}`);
 
   const { settings } = await api('/api/app/page-settings');
@@ -403,7 +411,8 @@ async function assertPublicationAfterAiTimeout(width, t) {
   const date = new Intl.DateTimeFormat('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' }).format(publicationInstant);
   const time = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(publicationInstant);
   const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
-  const timestamp = timeline.locator(`li[data-update-id="${update.id}"] > span`);
+  const publishedRow = timeline.locator(`li[data-update-id="${committed.id}"]`);
+  const timestamp = publishedRow.locator(':scope > span');
   await timestamp.waitFor({ state: 'visible' });
   const displayed = await timestamp.innerText();
   assert.equal(displayed, `${date}, ${time} Los Angeles time`, 'the committed update shows its publication time in the page zone');
