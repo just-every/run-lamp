@@ -1,0 +1,102 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f154",
+  "head": "8f5e831c4bff0508cbf46bdc000312de11a6bd70",
+  "remoteRefsAtPush": {
+    "refs/heads/cloud/sd-lamp-c-f154": "8f5e831c4bff0508cbf46bdc000312de11a6bd70",
+    "refs/heads/main": "173e93d259f968daffd0148365c2b9a26c62e3e6"
+  },
+  "nativeJourney": {
+    "node": "22.20.0",
+    "browser": "/usr/bin/chromium",
+    "command": "node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs",
+    "exit": 0,
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "durationMs": 180060.46538,
+    "passedCases": [
+      "SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes",
+      "MAINT-015 — imported maintenance messages retain their own source lifecycle labels",
+      "Imported incident wording stays whole beyond native field limits"
+    ],
+    "reportProbe": "PROBE MOVE-011 2: first native report read matches the complete expected plain text, including all boundaries, decoded entities, link URLs, image label and URL, and the full tail"
+  },
+  "localChecks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "mainWorkflowReceipts": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44671292824",
+      "id": 44671292824,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "173e93d259f968daffd0148365c2b9a26c62e3e6",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44671292988",
+      "id": 44671292988,
+      "name": "Run site",
+      "status": "completed"
+    }
+  ],
+  "candidateDiscovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "8f5e831c4bff0508cbf46bdc000312de11a6bd70",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44781838226",
+      "id": 44781838226,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "publicationScan": {
+    "commit": "8f5e831c4bff0508cbf46bdc000312de11a6bd70",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Mac lander gate pending"
+  },
+  "candidateVerify": {
+    "conclusion": null,
+    "head_sha": "8f5e831c4bff0508cbf46bdc000312de11a6bd70",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44781838226",
+    "status": "in_progress",
+    "runId": 44781838226,
+    "event": "push",
+    "checkedAt": "2026-11-20T17:22:37+00:00"
+  }
+}
