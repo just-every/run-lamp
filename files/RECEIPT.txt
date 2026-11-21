@@ -1,0 +1,38 @@
+Candidate a5d0a4e2d7ab37d075818942cc7566897f08883a
+Base 820ff8267db256927f5d95bad703f604b07197b5
+
+Node 22.20.0 and pnpm 10.12.4
+npx -y @runeditrun/rer setup, noninteractive, exit 0
+npx -y @runeditrun/rer build exit 0
+pnpm run typecheck exit 0
+> tsc --noEmit
+pnpm exec rer check --profile first-party exit 0
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0
+git diff --check origin/main exit 0
+
+node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs exit 0
+# tests 8
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+PROBE PAGE-012 4: logo upload and native standing claim -> Working to Down; /assets/favicon.svg retained the upload bytes and changed mark; the same-origin /assets/og.svg text and Open Graph title matched each public label
+
+Chromium capture exit 0
+default Operational chromium width=1440 label=Working snapshot=01M7Y56MZX49S3GSAVQBMP4B4E
+default Operational chromium width=390 label=Working snapshot=01M7Y56MZX49S3GSAVQBMP4B4E
+calm Operational chromium width=1440 label=Working snapshot=01M7Y56PKPG2K0GF5DDMPMZPAG
+calm Operational chromium width=390 label=Working snapshot=01M7Y56PKPG2K0GF5DDMPMZPAG
+default Major outage chromium width=1440 label=Down snapshot=01M7Y56QZJDWAVB6TBCQR6VR71
+default Major outage chromium width=390 label=Down snapshot=01M7Y56QZJDWAVB6TBCQR6VR71
+calm Major outage chromium width=1440 label=Down snapshot=01M7Y56SBRFK2GH7781DJQBK89
+calm Major outage chromium width=390 label=Down snapshot=01M7Y56SBRFK2GH7781DJQBK89
+
+calm-major-outage-1440.png sha256=35f5f24b87f7c49f343db8ab0e7cf579d89e35f238afdf4b5efd92c906eb462e
+calm-major-outage-390.png sha256=b5dce3a18407bc31860f2a5ba2f600c68ac6fcd581bbe05a29634160c7cfefae
+calm-operational-1440.png sha256=0b4ea140ff137909a70c54a01a7bfa82b267efcce26632f10698b6c48f9c9ec8
+calm-operational-390.png sha256=bf956cd4df0277879af7a5a396ede3f9e6d109f9c696eab07c8cef6e58e9ff0d
+default-major-outage-1440.png sha256=f61ac3baf692667aebf96d2559e6708fe3c61c88171bffe28ef1a7253ad3d63c
+default-major-outage-390.png sha256=befa0fa3e062062d1a767d9963ebbcec83148d54454d4963b47352b150d3ffaa
+default-operational-1440.png sha256=fd203c8f8906baf4111224dde39e0f8e445d99ac9ef4cbd821d4cfe0a0bb7460
+default-operational-390.png sha256=a393efba99f2f15d9f18e77b2e83c595157412d49e7ad0b9a1156c85abf8ba9b

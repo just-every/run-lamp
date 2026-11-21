@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "blob": "89b11ae0970a0188caf4afde512d24e12fca8ea5",
+      "bytes": 2373,
+      "path": "RECEIPT.txt",
+      "sha256": "3acb71c687fe2f45900c7afc9cc252e59b63261276c475ef2ff7912f77693eb9"
+    },
+    {
+      "blob": "f1b74a290890574ace2afdaba6195ff14b65353d",
+      "bytes": 8225,
+      "path": "REPORT.md",
+      "sha256": "ef774821e2cfb6ae03411ccc8a5b50bc8105a5d258513eb594e583b4068c781c"
+    },
+    {
+      "blob": "cf3daf69e1e0afb7b13ab2d6b0d2e153059c8261",
+      "bytes": 51077,
+      "path": "calm-major-outage-1440.png",
+      "sha256": "35f5f24b87f7c49f343db8ab0e7cf579d89e35f238afdf4b5efd92c906eb462e"
+    },
+    {
+      "blob": "ea6c348fe285173838b86e5dea9bf2f27083ef9d",
+      "bytes": 37680,
+      "path": "calm-major-outage-390.png",
+      "sha256": "b5dce3a18407bc31860f2a5ba2f600c68ac6fcd581bbe05a29634160c7cfefae"
+    },
+    {
+      "blob": "35684f33e8a03bf06babf17913bec4b2b3dd1a3c",
+      "bytes": 58073,
+      "path": "calm-operational-1440.png",
+      "sha256": "0b4ea140ff137909a70c54a01a7bfa82b267efcce26632f10698b6c48f9c9ec8"
+    },
+    {
+      "blob": "575b7ebb6964d7ee5d62f83fd9d0fdd8ab42b62d",
+      "bytes": 41941,
+      "path": "calm-operational-390.png",
+      "sha256": "bf956cd4df0277879af7a5a396ede3f9e6d109f9c696eab07c8cef6e58e9ff0d"
+    },
+    {
+      "blob": "ecb7321b9da4c2b30c49838b81b475b9cf6c687f",
+      "bytes": 148206,
+      "path": "default-major-outage-1440.png",
+      "sha256": "f61ac3baf692667aebf96d2559e6708fe3c61c88171bffe28ef1a7253ad3d63c"
+    },
+    {
+      "blob": "b18f6339c9a33576c147b39ed50f20e6915112f0",
+      "bytes": 88433,
+      "path": "default-major-outage-390.png",
+      "sha256": "befa0fa3e062062d1a767d9963ebbcec83148d54454d4963b47352b150d3ffaa"
+    },
+    {
+      "blob": "9d767c93e4abdce2d5907cd7609e043d01f2bd00",
+      "bytes": 148709,
+      "path": "default-operational-1440.png",
+      "sha256": "fd203c8f8906baf4111224dde39e0f8e445d99ac9ef4cbd821d4cfe0a0bb7460"
+    },
+    {
+      "blob": "8d9fc7bccc3624d59a0a76f8ebb4e6a2f0516332",
+      "bytes": 89389,
+      "path": "default-operational-390.png",
+      "sha256": "a393efba99f2f15d9f18e77b2e83c595157412d49e7ad0b9a1156c85abf8ba9b"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f171",
+  "product_head": "a5d0a4e2d7ab37d075818942cc7566897f08883a",
+  "ref": "refs/heads/evidence/sd-lamp-c-f171",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f171"
+}
