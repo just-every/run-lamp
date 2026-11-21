@@ -89,7 +89,7 @@ test('remote terminal sign-in refuses a missing environment secret before invoki
   await assert.rejects(access(invocation), { code: 'ENOENT' }, 'Wrangler never runs');
 });
 
-test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out',{timeout:1200000},async t=>{
+test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, invitations and deliberate sign-out',{timeout:1200000},async t=>{
  t.diagnostic('Execution host: '+hostname());
  const root=await mkdtemp(join(tmpdir(),'lamp-auth-journey-')),servers=await mkdtemp(join(tmpdir(),'lamp-auth-servers-'));
  const cache=await mkdtemp(join(resolve('node_modules'),'.lamp-auth-vite-'));
@@ -222,7 +222,7 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
     await context.close();
    }
    await stop();
-   await operatorManagementFlow({browser,capture,diagnostic:message=>t.diagnostic(message)});
+   await operatorManagementFlow({browser,capture,proof:evidence?capture:undefined,diagnostic:message=>t.diagnostic(message)});
    await rm(join(root,'exports/probe.rer'));await rm(join(root,'probe.rer'));
  }finally{await browser?.close();await stop();await rm(root,{recursive:true,force:true});await rm(servers,{recursive:true,force:true});await rm(cache,{recursive:true,force:true});}
 });

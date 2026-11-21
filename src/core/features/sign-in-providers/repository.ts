@@ -1,3 +1,4 @@
+import type { ProviderLink, Session } from "@runeditrun/rer/modules/operator-auth";
 import { createUlid, nowIso } from "../../shared/ids";
 import type { PersonInput, SignInProviderId, StoredPerson, StoredRegistration } from "./types";
 
@@ -14,6 +15,41 @@ export function createSignInRepository(db: D1Database) {
     ...people.map(person => db.prepare("INSERT INTO sign_in_people(provider_id,subject,operator_id,created_at) SELECT ?,?,id,? FROM oa_operators WHERE id=? AND status IN ('active','invited')").bind(id, person.subject, now, person.operatorId)),
   ];
   return {
+    async requiredProvider() {
+      const row = await db.prepare("SELECT required_provider AS id FROM oa_auth_settings WHERE singleton=1").first<{ id: string | null }>();
+      return row?.id ?? null;
+    },
+    async setRequiredProvider(actor: Session, previous: string | null, provider: ProviderLink | null) {
+      const now = Date.now();
+      const id = provider?.id ?? null;
+      const auditId = createUlid();
+      const timestamp = new Date(now).toISOString();
+      const ready = provider ? `AND a.idp_sign_in=1 AND EXISTS (
+        SELECT 1 FROM oa_identity_providers p WHERE p.provider_id=? AND p.issuer=? AND p.client_id=?
+        AND p.linked_at=? AND p.status='linked' AND p.pending_at IS NULL
+      )` : "";
+      const [saved] = await db.batch<{ singleton: number }>([
+        db.prepare(`UPDATE oa_auth_settings AS a SET required_provider=?
+          WHERE a.singleton=1 AND a.required_provider IS ? AND EXISTS (
+            SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id
+            WHERE s.id=? AND o.id=? AND o.version=? AND s.operator_version=o.version
+            AND s.revoked_at IS NULL AND s.expires_at>? AND o.id=(
+              SELECT q.id FROM oa_operators q LEFT JOIN oa_bootstrap b ON b.claim_id=q.id
+              WHERE q.role='owner' AND q.status='active' ORDER BY b.claim_id IS NULL,q.created_at,q.id LIMIT 1
+            ) AND (s.kind!='oidc' OR EXISTS (
+              SELECT 1 FROM oa_provider_sessions p WHERE p.session_id=s.id
+              AND a.idp_sign_in=1 AND p.generation=a.generation
+            ))
+          ) ${ready} RETURNING singleton`).bind(id, previous, actor.id, actor.operator.id, actor.operator.version, now,
+            ...(provider ? [provider.id, provider.issuer, provider.clientId, provider.linkedAt] : [])),
+        db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
+          SELECT ?,'sign-in','policy',?,?,?,?,? WHERE changes()=1`).bind(auditId,
+            id ? "require-provider" : "allow-email", actor.operator.id, JSON.stringify({ providerId: id }), timestamp, timestamp),
+        db.prepare(`UPDATE oa_tokens SET revoked_at=? WHERE kind='magic' AND consumed_at IS NULL AND revoked_at IS NULL
+          AND EXISTS (SELECT 1 FROM audit_entries WHERE id=? AND action='require-provider')`).bind(now, auditId),
+      ]);
+      return saved.results.length === 1;
+    },
     async registrations() {
       return (await db.prepare("SELECT provider_id AS id,client_id AS clientId,issuer,sealed_secret AS sealedSecret,updated_at AS updatedAt FROM sign_in_providers ORDER BY provider_id").all<StoredRegistration>()).results;
     },

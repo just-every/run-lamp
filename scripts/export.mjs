@@ -59,7 +59,14 @@ async function main() {
     }));
     const snapshot = tables.length ? await platform.env.DB.batch(tables.map((name, index) => platform.env.DB.prepare(`SELECT * FROM ${quotedIdentifier(name)} ORDER BY ${ordering[index]}`))) : [];
     for (const [index, name] of tables.entries()) {
-      entities.push({ name, dependsOn: await dependencies(platform.env.DB, name), rows: snapshot[index].results.map(row => name === "public_metrics" ? { ...row, sealed_credentials: null, pull_lease_until: null, pull_after: 0 } : name === "alert_sources" && "responder_sealed_credentials" in row ? { ...row, responder_sealed_credentials: null } : name === "sign_in_providers" ? { ...row, sealed_secret: null } : row) });
+      const rows = snapshot[index].results.map(row => {
+        if (name === "public_metrics") return { ...row, sealed_credentials: null, pull_lease_until: null, pull_after: 0 };
+        if (name === "alert_sources" && "responder_sealed_credentials" in row) return { ...row, responder_sealed_credentials: null };
+        if (name === "sign_in_providers") return { ...row, sealed_secret: null };
+        if (name === "oa_auth_settings") return { ...row, required_provider: null };
+        return row;
+      });
+      entities.push({ name, dependsOn: await dependencies(platform.env.DB, name), rows });
     }
     const entitiesPath = join(output, "entities.json");
     const entitiesBytes = Buffer.from(`${JSON.stringify({ version: 1, tables: entities }, null, 2)}\n`);

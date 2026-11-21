@@ -33,6 +33,9 @@ export function failureText(code: string, provider: SignInProviderId | null, una
   const name = provider ? PROVIDER_COPY[provider].name : "Sign-in";
   switch (code) {
     case "owner_required": return "Only the owner can change sign-in.";
+    case "provider_not_qualified": return "Turn on provider sign-in and complete a test sign-in with this provider first.";
+    case "provider_in_use": return "Allow email sign-in before turning off the required provider.";
+    case "authority_changed": return "Sign-in settings or your session changed. Reload and try again.";
     case "step_up_required": return "Confirm it's you first.";
     case "provider_unreachable": return provider === "okta" ? "Lamp couldn't reach that Okta domain. Check it and try again." : "Lamp couldn't reach Google. Try again.";
     case "issuer_mismatch": return "Okta answered with a different address. Use the domain from your Okta admin console.";
