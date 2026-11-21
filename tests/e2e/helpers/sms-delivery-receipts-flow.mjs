@@ -3,7 +3,7 @@ import { smsBindings, smsSignature } from './sms-subscriber-flow.mjs';
 import { subscriberCsvRows } from './subscriber-management-fixture.mjs';
 
 /** Public publish/callback/log doors; only the Twilio HTTP edge is replaced. */
-export async function smsDeliveryReceiptsFlow({ api, post, raw, request = raw, db, flush, messages, pageOrigin }) {
+export async function smsDeliveryReceiptsFlow({ api, post, raw, request = raw, db, databaseState, flush, messages, pageOrigin }) {
   const created = await post('/api/app/components', { groupId: null, name: 'synthetic-lamp-501', description: '', internal: false, displayOrder: 0, note: '' });
   assert.equal(created.status, 201, created.text);
   const phones = ['+12025550171', '+12025550172', '+12025550173'];
@@ -63,7 +63,8 @@ export async function smsDeliveryReceiptsFlow({ api, post, raw, request = raw, d
     assert.equal(row.providerOutcome, 'delivered');
   }
   assert.equal((await log('&outcome=failed')).length, 0);
-  const csv = await request(`/api/app/deliveries.csv?channel=sms&outcome=delivered&incidentUpdateId=${updateId}`);
+  const deliveredFilter = `channel=sms&outcome=delivered&incidentUpdateId=${updateId}`;
+  const csv = await request(`/api/app/deliveries.csv?${deliveredFilter}`);
   assert.equal(csv.status, 200);
   const exported = subscriberCsvRows(await csv.text());
   assert.equal(exported.length, 3);
@@ -102,6 +103,44 @@ export async function smsDeliveryReceiptsFlow({ api, post, raw, request = raw, d
     const records = failedExport.filter(record => record.destination === `'${row.destination}` && record.queuedAt === row.queuedAt);
     assert.equal(records.length, 1, `${row.providerOutcome} text exports once`);
     for (const key of ['channel', 'outcome', 'incidentUpdateId', 'outcomeAt', 'providerOutcome']) assert.equal(records[0][key], row[key], `${row.providerOutcome} export ${key}`);
+  }
+
+  const [erasedPhone] = phones;
+  const deliveredRow = delivered.find(row => row.destination === erasedPhone);
+  const exportedRow = exported.find(row => row.destination === `'${erasedPhone}`);
+  const sentMessage = sent.find(message => message.To === erasedPhone);
+  assert.ok(deliveredRow?.id && exportedRow && sentMessage?.sid, 'match a delivered receipt to its real subscriber and provider send');
+  assert.equal(deliveredRow.acceptingProvider, 'twilio');
+  assert.equal(exportedRow.acceptingProvider, 'twilio');
+  const deliveryStorage = async () => (await db.prepare('SELECT * FROM sms_deliveries WHERE incident_update_id = ? ORDER BY id').bind(updateId).all()).results;
+  const storedBeforeErasure = await deliveryStorage();
+  assert.equal(storedBeforeErasure.find(row => row.id === deliveredRow.id)?.provider_message_id, sentMessage.sid);
+
+  const erased = await api(`/api/app/subscribers/${deliveredRow.subscriberId}`, { method: 'DELETE' });
+  assert.equal(erased.status, 204, erased.text);
+  const destination = `deleted:${deliveredRow.subscriberId}`;
+  const anonymizedLog = await api(`/api/app/deliveries?${deliveredFilter}`);
+  assert.equal(anonymizedLog.status, 200, anonymizedLog.text);
+  assert.ok(!anonymizedLog.text.includes(erasedPhone), 'the erased phone is absent from the delivery JSON');
+  assert.deepEqual(anonymizedLog.body.deliveries, delivered.map(row => row.id === deliveredRow.id
+    ? { ...row, destination, subscriberState: 'deactivated', acceptingProvider: null }
+    : row), 'the same delivered receipt remains anonymized and the other recipients are unchanged');
+
+  const anonymizedCsv = await request(`/api/app/deliveries.csv?${deliveredFilter}`);
+  assert.equal(anonymizedCsv.status, 200);
+  const anonymizedCsvText = await anonymizedCsv.text();
+  assert.ok(!anonymizedCsvText.includes(erasedPhone), 'the erased phone is absent from the delivery CSV');
+  // The CSV has no delivery ID column. Reconcile its matching row by the
+  // destination and the publication and receipt fields captured before erasure.
+  assert.deepEqual(subscriberCsvRows(anonymizedCsvText), exported.map(record => record === exportedRow
+    ? { ...record, destination, acceptingProvider: '' }
+    : record), 'the CSV retains the delivery facts and changes only the erased recipient');
+
+  assert.deepEqual(await deliveryStorage(), storedBeforeErasure.map(row => row.id === deliveredRow.id
+    ? { ...row, provider_message_id: null }
+    : row), 'the stored receipt loses its provider SID and retains its outcome and timestamp');
+  for (const [table, data] of await databaseState()) {
+    assert.ok(!data.includes(erasedPhone), `subscriber erasure removes the number from ${table}`);
   }
   return { phones, incident, updateId };
 }
