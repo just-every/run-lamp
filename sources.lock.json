@@ -8772,7 +8772,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "fd244ae6d9a11e6c5f14373ab095233b3c3b02a823bdf3b8d6dda935346111d5",
+      "sha256": "d9975c27af71c9aaa7029a51f642dd97b24d36422cafee9e9388840be1d614e8",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
