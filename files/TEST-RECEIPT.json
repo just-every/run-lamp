@@ -1,0 +1,118 @@
+{
+  "repository": "just-every/run-lamp",
+  "tag": "sd-lamp-c-f179",
+  "branch": "cloud/sd-lamp-c-f179",
+  "head_sha": "a97a162759fed8cdd80b9614209428928ffc0b64",
+  "base_sha": "bafb632174ace2da2191b88bb186d0364e1415c7",
+  "remote_main_sha": "96b1d1ca2deb70b9e225ee217a3431ad7d16acc1",
+  "product_ref_advertised": true,
+  "candidate_is_main": false,
+  "app_checks": [
+    {
+      "command": "pnpm run test:channels",
+      "exit": 0,
+      "passed": 8,
+      "duration_ms": 638196.712356,
+      "diagnostic": "API-001: 60 component reads admitted before quota exhaustion. Metric reads returned 429 with Retry-After 23, left usage unchanged, admitted the second token and restored the first at the next minute.",
+      "results": [
+        "ok 1 - INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 — Private channels deliver the selected publication once with literal text and punctuated links",
+        "ok 2 - INTAKE-005 INTAKE-006 INTAKE-007 INTAKE-008 — Authenticate monitor evidence, retain private drafts and reconcile saved Uptime mappings",
+        "ok 3 - INTAKE-001 INTAKE-005 — Connect Another tool and send its copied sample request",
+        "ok 4 - AUTO-001 INTAKE-014 INTAKE-011 INTAKE-016 INTAKE-010 INTAKE-009 INTAKE-008 INTAKE-005 INTAKE-006 INTAKE-007 UPTIME-008 UPTIME-009 — Connect monitors, review private alert drafts, publish and recover with durable integration evidence",
+        "ok 5 - Development ingress proofs are single-use and expire after five minutes",
+        "ok 6 - Development ingress refuses a forgotten proof once a full nonce set evicts it",
+        "ok 7 - Development ingress keeps serving new proofs while its nonce set is full",
+        "ok 8 - Development ingress holds exactly 10,000 nonces however many proofs it has accepted"
+      ]
+    },
+    {
+      "command": "node /tmp/lamp-metrics-probe.mjs",
+      "exit": 0,
+      "head_sha": "a97a162759fed8cdd80b9614209428928ffc0b64",
+      "diagnostic": "API-001: 60 component reads admitted before quota exhaustion. Metric reads returned 429 with Retry-After 23, left usage unchanged, admitted the second token and restored the first at the next minute.",
+      "description": "Called the same metricsFlow helper directly on the clean, committed candidate."
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "documents_written": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "prose_errors": 0,
+      "prose_warnings": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    }
+  ],
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "chromium_executable": "/usr/bin/chromium"
+  },
+  "sha256": {
+    "tests/e2e/helpers/metrics-flow.mjs": "5c196cbcbccef250b9b6111c66692e8b0a2d5bbb552d976e4d7952408c4551d8",
+    "sources.lock.json": "b51eda257f8a08f98ef8bd84136eab0daf6132cd9abdfd82efc0830a61640379"
+  },
+  "main_checks": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "bafb632174ace2da2191b88bb186d0364e1415c7",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44876986189",
+      "id": 44876986189,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "bafb632174ace2da2191b88bb186d0364e1415c7",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44876986360",
+      "id": 44876986360,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "bafb632174ace2da2191b88bb186d0364e1415c7",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44875448330",
+      "id": 44875448330,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "a97a162759fed8cdd80b9614209428928ffc0b64",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44880505744",
+    "id": 44880505744,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "verify_observed_at_utc": "2026-11-21T07:45:49+00:00",
+  "publication_scan": {
+    "commit": "a97a162759fed8cdd80b9614209428928ffc0b64",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  }
+}
