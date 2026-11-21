@@ -75,7 +75,7 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
     expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
 }
 
-test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
+test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async t => {
   const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
   const linkedWording = literalLinkFields(wording);
   const reviewer = ['synthetic-lamp-reviewer', 'example.test'].join('@');
@@ -176,16 +176,37 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(identifiedUpdates.length, 1);
 
     await owner();
-    const originalRecovery = { lifecycle: 'Monitoring', customerImpact: 'Payments are recovering.', details: 'The original recovery estimate is based on the first restored payment queue.' };
-    await j.save(incident.id, { ...originalRecovery, componentChanges: [
-      { componentId: component.id, state: 'Degraded performance' },
-      { componentId: hidden.id, state: 'Degraded performance' },
-    ] });
+    const optionalAtLimit = {
+      whatStillWorks: 'Saved receipts remain available. '.repeat(9).slice(0, 249) + '.',
+      details: ('The original recovery estimate is based on the first restored payment queue. ' +
+        'Queued payment requests will retry as processing capacity returns. ').repeat(4).slice(0, 499) + '.',
+    };
+    const monitoringWording = {
+      ...wording, ...optionalAtLimit, lifecycle: 'Monitoring', customerImpact: 'Payments are recovering.',
+      nextUpdateAt: new Date(Date.now() + 3600_000).toISOString(),
+      componentChanges: [
+        { componentId: component.id, state: 'Degraded performance' },
+        { componentId: hidden.id, state: 'Degraded performance' },
+      ],
+    };
+    await j.save(incident.id, monitoringWording);
     const savedMonitoring = await j.read(incident.id);
+    assert.equal(savedMonitoring.draft.whatStillWorks, optionalAtLimit.whatStillWorks);
+    assert.equal(savedMonitoring.draft.details, optionalAtLimit.details);
     assert.equal(savedMonitoring.draft.lifecycle, 'Monitoring');
     assert.equal(savedMonitoring.lifecycle, 'Identified');
     assert.deepEqual(savedMonitoring.updates, identified.updates);
     assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+
+    for (const field of ['whatStillWorks', 'details']) {
+      const refused = await j.json(`${endpoint}/draft`, 'PUT', {
+        ...monitoringWording, [field]: optionalAtLimit[field] + '!',
+      }, 400);
+      assert.equal(refused.error, 'Invalid incident draft.');
+      assert.deepEqual(refused.issues.map(issue => issue.path), [[field]]);
+      assert.deepEqual(await j.read(incident.id), savedMonitoring, `Exceeding the limit for ${field} preserves the saved draft and updates`);
+      assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+    }
 
     for (const lifecycle of [['Identified', 'Monitoring'], 'Identified, Monitoring']) {
       const refused = await j.json(`${endpoint}/draft`, 'PUT', { ...wording, lifecycle }, 400);
@@ -202,16 +223,24 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.deepEqual(reviewedMonitoring.updates, identified.updates);
     assert.deepEqual(await publishedUpdates(), identifiedUpdates);
     const monitoring = (await j.publish(incident.id)).update;
+    assert.equal(monitoring.id, savedMonitoring.draft.id);
     assert.equal(monitoring.lifecycle, 'Monitoring');
     const publishedMonitoring = await j.read(incident.id);
     assert.equal(publishedMonitoring.lifecycle, 'Monitoring');
     assert.equal(publishedMonitoring.draft, null);
-    assert.deepEqual(publishedMonitoring.updates.find(row => row.id === monitoring.id), monitoring);
+    const committedMonitoring = publishedMonitoring.updates.find(row => row.id === monitoring.id);
+    assert.deepEqual(committedMonitoring, monitoring);
+    assert.equal(committedMonitoring.whatStillWorks, optionalAtLimit.whatStillWorks);
+    assert.equal(committedMonitoring.details, optionalAtLimit.details);
     assert.deepEqual(publishedMonitoring.updates.find(row => row.id === first.id), first);
     const monitoringUpdates = await publishedUpdates();
     assert.equal(monitoringUpdates.length, identifiedUpdates.length + 1);
     assert.deepEqual(monitoringUpdates.filter(row => row.id !== monitoring.id), identifiedUpdates);
-    assert.equal(monitoringUpdates.find(row => row.id === monitoring.id).lifecycle, 'Monitoring');
+    const storedMonitoring = monitoringUpdates.find(row => row.id === monitoring.id);
+    assert.equal(storedMonitoring.lifecycle, 'Monitoring');
+    assert.equal(storedMonitoring.what_still_works, optionalAtLimit.whatStillWorks);
+    assert.equal(storedMonitoring.details, optionalAtLimit.details);
+    t.diagnostic('PROBE UPDATE-001 3: native draft accepts 250 and 500 characters, refuses 251 and 501 independently with HTTP 400 and unchanged draft and updates, then retains both exact reviewed fields by committed update ID');
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Degraded performance');
     assert.equal((await j.read(incident.id)).impact, 'Major outage');
     const impact = (await j.json(`${endpoint}/impact`, 'PUT', { impactOverride: 'minor' })).impact;
@@ -274,7 +303,7 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     });
     assert.deepEqual(publicUpdates, [
       { ...correctedRecovery, publishedAt: corrected.publishedAt },
-      { ...originalRecovery, publishedAt: monitoring.publishedAt },
+      { lifecycle: monitoringWording.lifecycle, customerImpact: monitoringWording.customerImpact, details: monitoringWording.details, publishedAt: monitoring.publishedAt },
       { lifecycle: linkedWording.lifecycle, customerImpact: linkedWording.customerImpact, details: linkedWording.details, publishedAt: first.publishedAt },
     ], 'the public timeline associates each complete original and correction with its exact publication instant, newest first');
     assert.equal(correctedView.overdue, true);
