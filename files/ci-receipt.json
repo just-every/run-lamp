@@ -1,0 +1,75 @@
+{
+  "verified_utc": "2026-11-21T09:57:21+00:00",
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f184",
+    "head_sha": "35e766f177caa0d6b6a9cd40acc0e561709984fc",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44890412769",
+    "id": 44890412769,
+    "status": "completed"
+  },
+  "parent_runs": [
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_sha": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44888108703",
+      "id": 44888108703,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44888108898",
+      "id": 44888108898,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44888108728",
+      "id": 44888108728,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44888108552",
+      "id": 44888108552,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44886865207",
+      "id": 44886865207,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "advertised_refs": [
+    [
+      "35e766f177caa0d6b6a9cd40acc0e561709984fc",
+      "refs/heads/cloud/sd-lamp-c-f184"
+    ],
+    [
+      "bae6596ccf21e8c6a905b0e708c9a76c4f85c4db",
+      "refs/heads/main"
+    ]
+  ],
+  "full_publication_scan": {
+    "commit": "35e766f177caa0d6b6a9cd40acc0e561709984fc",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  }
+}
