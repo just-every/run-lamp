@@ -8776,7 +8776,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "b3cc4c6367c426f39a64043b7c5b5cf91c63182e9ae3a16c96e7ad3dfbfea0d6",
+      "sha256": "a22994aa751a4447d8a49f5512d3a4733b699759319a9bb3dcd5a77bd488db01",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -8796,7 +8796,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "3fb4c9fab08512778b398a8dbbba37d9a7034a769e3dbc2f27950acc7fd29a6e",
+      "sha256": "a4f03548b2db4065f60465826037d6bad1e5fc7d328f4b7fe94e8320cd49a4ec",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

@@ -258,13 +258,15 @@ const wordingFields = locator => locator.locator('dl > div').evaluateAll(rows =>
   value: row.querySelector('dd').textContent,
 })));
 
-async function previewScreens(screen, name) {
+async function previewScreens(screen, name, { region, mask = [] } = {}) {
   if (!process.env.LAMP_SCREENSHOTS) return;
   await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
   try {
     for (const width of [1440, 390]) {
       await screen.setViewportSize({ width, height: 1000 });
-      await screen.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-${name}.png`), fullPage: true });
+      const path = join(process.env.LAMP_SCREENSHOTS, `${width}-${name}.png`);
+      if (region) await region.screenshot({ path, mask });
+      else await screen.screenshot({ path, fullPage: true });
     }
   } finally { await screen.setViewportSize({ width: 1440, height: 1000 }); }
 }
@@ -723,12 +725,24 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await page.getByLabel('Reply-to address', { exact: true }).fill('support@journey.example');
   await page.getByLabel('Subject prefix', { exact: true }).fill('[Journey status]');
   const emailHeader = 'A customer service update from the checkout response team.';
-  const emailFooter = 'Keep this update for the next checkout recovery briefing.';
+  const emailFooter = '482 Synthetic Lantern Way, Suite 19, Example City, ZZ 00000';
   await page.getByRole('textbox', { name: /^Email header/ }).fill(emailHeader);
-  await page.getByRole('textbox', { name: /^Email footer/ }).fill(emailFooter);
+  const branding = page.getByRole('region', { name: 'Notification email', exact: true });
+  const footerField = branding.locator('label').filter({ has: page.getByRole('textbox', { name: /^Email footer/ }) });
+  const footer = footerField.getByRole('textbox');
+  await footerField.getByText(/\b(?:[Cc]an|[Mm]ay) (?:add|include)\b.*\bpostal address\b/).waitFor({ state: 'visible' });
+  const footerSaved = page.waitForResponse(response => response.url() === appUrl + '/api/app/page-settings'
+    && response.request().method() === 'PUT' && response.request().postDataJSON().emailBranding?.footer === emailFooter);
+  await footer.fill(emailFooter);
+  assert.equal((await footerSaved).status(), 200);
   await page.getByRole('status').filter({ hasText: /^Saved · live$/ }).waitFor();
+  assert.equal((await api('/api/app/page-settings')).settings.emailBranding.footer, emailFooter);
   await page.reload(); await operatorHydrated(page);
   assert.equal(await page.getByLabel('Reply-to address', { exact: true }).inputValue(), 'support@journey.example');
+  assert.equal(await footer.inputValue(), emailFooter);
+  await previewScreens(page, 'notification-email-settings', {
+    region: branding, mask: [branding.getByLabel('Reply-to address', { exact: true })],
+  });
   await settingsMenu.getByRole('link', { name: 'Overview', exact: true }).click();
   await page.waitForURL(url => url.pathname === '/app');
   await rail.getByRole('navigation', { name: 'Workspace sections', exact: true }).waitFor();
@@ -879,7 +893,10 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   const customerText = (await emailDocument.locator('body').innerText()).replace(/\s+/g, ' ');
   for (const paragraph of emailBody) assert.ok(customerText.includes(paragraph), 'the actual branded email retains every populated field');
   assert.deepEqual(await wordingFields(panel), [{ label: 'Reply-To', value: settings.emailBranding.replyTo }]);
-  await previewScreens(page, 'email-preview');
+  await emailDocument.getByText(emailFooter, { exact: true }).waitFor({ state: 'visible' });
+  await previewScreens(page, 'email-preview', {
+    region: panel, mask: [panel.getByText(settings.emailBranding.replyTo, { exact: true })],
+  });
   await page.getByRole('button', { name: 'Suggest update', exact: true }).click();
   await page.locator('.ai-suggestion [role=status]').filter({ hasText: /503|intentionally unavailable/i }).waitFor();
   assert.equal(await composer.publish.isEnabled(), true, 'a failed suggestion leaves ordinary publication usable');
