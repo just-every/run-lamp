@@ -1,0 +1,147 @@
+{
+  "base": "224a64b472f11c2d9d8b7c8d8bde8812aa0286a7",
+  "branch": "cloud/sd-lamp-notify-aud-1",
+  "browser_proof": [
+    {
+      "path": "notification-email-1440.png",
+      "sha256": "79e1237c73062f4708fd27744841565c9356bb97e25634862d32aa1fc087013e",
+      "viewport_width": 1440
+    },
+    {
+      "path": "notification-email-390.png",
+      "sha256": "a00e39f6cf49b8d54c1a37fcde1b509d48de0f4223a478d2f70b2db27f1147c0",
+      "viewport_width": 390
+    }
+  ],
+  "head": "2e4b6592ea289b60b990ecbf5767bddae950503b",
+  "local_checks": [
+    {
+      "name": "Typecheck",
+      "status": "pass"
+    },
+    {
+      "name": "Production application build",
+      "status": "pass"
+    },
+    {
+      "name": "Scoped Settings and deployment fallback in the AUD-001 browser journey",
+      "status": "pass",
+      "viewport_width": 1440
+    },
+    {
+      "name": "Public update and scoped Settings through fake managed relay, Resend and SendGrid",
+      "status": "pass"
+    },
+    {
+      "name": "Existing public incident Email preview and composer journey",
+      "status": "pass"
+    },
+    {
+      "name": "Contract generation and check before restoring main views",
+      "status": "pass"
+    },
+    {
+      "name": "Committed source lock including the new migration",
+      "status": "pass"
+    },
+    {
+      "name": "Full candidate-range author, committer and trailer check",
+      "status": "pass"
+    }
+  ],
+  "repository": "just-every/run-lamp",
+  "status_counts": {
+    "after": {
+      "done": 66,
+      "missing": 56,
+      "partial": 123
+    },
+    "before": {
+      "done": 66,
+      "missing": 56,
+      "partial": 123
+    }
+  },
+  "tag": "sd-lamp-notify-aud-1",
+  "time_utc": "2026-11-21T20:44:37+00:00",
+  "verify": {
+    "candidate": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "2e4b6592ea289b60b990ecbf5767bddae950503b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44947379507",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "failedSteps": [],
+          "id": 136977564100,
+          "name": "plan"
+        },
+        {
+          "conclusion": "failure",
+          "failedSteps": [
+            "Build the production Worker once",
+            "Retain commit-bound build completion"
+          ],
+          "id": 136977593447,
+          "name": "build"
+        },
+        {
+          "conclusion": "failure",
+          "failedSteps": [
+            "Require every planned command to succeed on this commit"
+          ],
+          "id": 136977685808,
+          "name": "verify"
+        },
+        {
+          "conclusion": "skipped",
+          "failedSteps": [],
+          "id": 136977687459,
+          "name": "shards"
+        }
+      ],
+      "run_id": 44947379507,
+      "status": "completed"
+    },
+    "checkpoint": {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "70a09cb1df1b4d0a1ef5f29d5af68dc383497387",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44947061024",
+      "jobs": [
+        {
+          "conclusion": "success",
+          "failedSteps": [],
+          "id": 136976574493,
+          "name": "plan"
+        },
+        {
+          "conclusion": "failure",
+          "failedSteps": [
+            "Build the production Worker once",
+            "Retain commit-bound build completion"
+          ],
+          "id": 136976611969,
+          "name": "build"
+        },
+        {
+          "conclusion": "failure",
+          "failedSteps": [
+            "Require every planned command to succeed on this commit"
+          ],
+          "id": 136976690439,
+          "name": "verify"
+        },
+        {
+          "conclusion": "skipped",
+          "failedSteps": [],
+          "id": 136976691764,
+          "name": "shards"
+        }
+      ],
+      "run_id": 44947061024,
+      "status": "completed"
+    }
+  }
+}

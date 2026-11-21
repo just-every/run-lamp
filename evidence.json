@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "e6dd0bf41400a60cf5f40dc42c5a4a8fca22a0ab",
+      "bytes": 3865,
+      "path": "RECEIPT.json",
+      "sha256": "9464380cdb1178ac35a2c4db80caa4d21a50ea849b0c1a8752056a4993ffc5b2"
+    },
+    {
+      "blob": "31eda84e96715100ec37a03bf3445a5bba4c0211",
+      "bytes": 6125,
+      "path": "REPORT.md",
+      "sha256": "bdda66ad24a47e06293b26f82c54a1d2b373dea16ba89d1e50271ef6de2238cc"
+    },
+    {
+      "blob": "d05cec75cdf683c0d8fb7d68bed59434c6fe4f43",
+      "bytes": 63250,
+      "path": "notification-email-1440.png",
+      "sha256": "79e1237c73062f4708fd27744841565c9356bb97e25634862d32aa1fc087013e"
+    },
+    {
+      "blob": "08630143dbf96c61d61b8ab5f4eb93c22e0c35be",
+      "bytes": 60699,
+      "path": "notification-email-390.png",
+      "sha256": "a00e39f6cf49b8d54c1a37fcde1b509d48de0f4223a478d2f70b2db27f1147c0"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-notify-aud-1",
+  "product_head": "2e4b6592ea289b60b990ecbf5767bddae950503b",
+  "ref": "refs/heads/evidence/sd-lamp-notify-aud-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-notify-aud-1"
+}
