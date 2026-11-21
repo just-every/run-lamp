@@ -1,0 +1,64 @@
+{
+  "files": [
+    {
+      "blob": "38ccfae9da624ce0057d91a8cee81752158905c2",
+      "bytes": 2467,
+      "path": "RECEIPT.json",
+      "sha256": "78f49940ff8b1a123943cdbff42aa22c9b591db953f9abee1dd45e8b38a8c736"
+    },
+    {
+      "blob": "0c8c374f70557b9f31a9e115e05c0cd885eb8dbd",
+      "bytes": 6589,
+      "path": "REPORT.md",
+      "sha256": "14d7907b3470a939492c2b379969dce72db9937ed44ccc76c054bfd900749f30"
+    },
+    {
+      "blob": "224a58b3a4a0f4bfa8de7af422624e4af39c08bf",
+      "bytes": 110300,
+      "path": "palette-custom-1440.png",
+      "sha256": "aa6dfdc4bdb2c5bbb4061ae5b13e97393bafec6ae33c09aad4a920ffa05526fb"
+    },
+    {
+      "blob": "67cd74c21014a3efacd045ec959061e5803c2253",
+      "bytes": 94938,
+      "path": "palette-custom-390.png",
+      "sha256": "9c267df6fb0053c9816e24aad5206bcac5bdb202ab8e065a057f12ff69e89851"
+    },
+    {
+      "blob": "cc63125b6b27c5517767a00b2b9fe2572cedc4d6",
+      "bytes": 267494,
+      "path": "palette-restored-1440.png",
+      "sha256": "2ce9674e117a21387512add8d1898e71e3707f366822c299b849ae4cc6cb2fd6"
+    },
+    {
+      "blob": "759664c99fd4e55432de6596814136918d3d1ef8",
+      "bytes": 145778,
+      "path": "palette-restored-390.png",
+      "sha256": "f3261962ffbccae7e19c71fee407862b1e241fbee156126c1dc72ed860a49a32"
+    },
+    {
+      "blob": "bf0c4d529efe3bbf1b1d78c6b1b5f7138e8f5f7d",
+      "bytes": 113950,
+      "path": "palette-settings-off-1440.png",
+      "sha256": "f72f41a0c95c5feffad3629878175265dd31ef4cb2e602a7620eb65a1278d7a8"
+    },
+    {
+      "blob": "34ff12247245194397fe9f5df5e6c9ee2ec257f1",
+      "bytes": 71952,
+      "path": "palette-settings-off-390.png",
+      "sha256": "e14e473eb864398368155aac55ba8be24414a31828bebe434f049a8cd76e9497"
+    },
+    {
+      "blob": "108549768ac9e099703ecc8c785836c087da789d",
+      "bytes": 726,
+      "path": "palette-toggle.json",
+      "sha256": "37c42e6aa6fce63b8cfc1b9224cee7e8e53b9a7d155200356147f4f151098ce1"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f186",
+  "product_head": "bb65d93d81f41499a9319ee5e5a22ace164b3901",
+  "ref": "refs/heads/evidence/sd-lamp-c-f186",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f186"
+}

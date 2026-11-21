@@ -1,0 +1,29 @@
+{
+  "defaults": {
+    "version": "01M7YQ29HQT22J9X6KQ621ZM3P",
+    "colors": {
+      "background": "rgb(248, 246, 240)",
+      "surface": "rgb(255, 255, 255)",
+      "text": "rgb(24, 45, 36)",
+      "operational": "rgb(25, 134, 90)"
+    }
+  },
+  "custom": {
+    "version": "01M7YQ2JMA3E4FYMR3MBSEY2A8",
+    "colors": {
+      "background": "rgb(244, 244, 244)",
+      "surface": "rgb(233, 242, 236)",
+      "text": "rgb(23, 45, 36)",
+      "operational": "rgb(24, 90, 59)"
+    }
+  },
+  "restored": {
+    "version": "01M7YQ2M1R252ANKBFQ6H3J60V",
+    "colors": {
+      "background": "rgb(248, 246, 240)",
+      "surface": "rgb(255, 255, 255)",
+      "text": "rgb(24, 45, 36)",
+      "operational": "rgb(25, 134, 90)"
+    }
+  }
+}

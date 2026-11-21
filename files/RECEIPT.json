@@ -1,0 +1,95 @@
+{
+  "product": {
+    "repository": "just-every/run-lamp",
+    "branch": "cloud/sd-lamp-c-f186",
+    "head": "bb65d93d81f41499a9319ee5e5a22ace164b3901",
+    "base": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+    "pushed": true,
+    "observedMain": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+    "landed": false
+  },
+  "contract": {
+    "before": {
+      "done": 66,
+      "partial": 123,
+      "missing": 56
+    },
+    "after": {
+      "done": 66,
+      "partial": 123,
+      "missing": 56
+    },
+    "recorded": "missing",
+    "claim": "partial",
+    "points": [
+      2
+    ]
+  },
+  "checks": {
+    "theme": {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='owner publishes branded themes' tests/e2e/publishing-browser.test.mjs",
+      "exit": 0,
+      "durationMs": 187426.054768,
+      "node": "22.20.0",
+      "browser": "Playwright Chromium Headless Shell 153.0.8010.12",
+      "measuredWidth": 1440,
+      "screenshotWidths": [
+        1440,
+        390
+      ]
+    },
+    "systemChrome": {
+      "candidateExit": 1,
+      "baseExit": 1,
+      "issue": "Existing theme asset budget counts a fifth request for the favicon"
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "contractViews": {
+      "writeExit": 0,
+      "checkExit": 0,
+      "filesWritten": 0
+    },
+    "sourceLock": {
+      "lockExit": 0,
+      "checkExit": 0
+    },
+    "publicationScan": {
+      "commit": "bb65d93d81f41499a9319ee5e5a22ace164b3901",
+      "status": "pending guarded lander",
+      "complete": null,
+      "historyScanned": null,
+      "findings": null
+    }
+  },
+  "github": {
+    "candidateVerify": {
+      "id": 44890077225,
+      "head": "bb65d93d81f41499a9319ee5e5a22ace164b3901",
+      "event": "push",
+      "conclusion": null,
+      "head_sha": "bb65d93d81f41499a9319ee5e5a22ace164b3901",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44890077225",
+      "status": "in_progress",
+      "checkedAt": "2026-11-21T09:48:27Z"
+    },
+    "baseVerify": {
+      "id": 44888108728,
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1"
+    },
+    "baseRunSite": {
+      "id": 44888108898,
+      "status": "completed",
+      "conclusion": "success",
+      "head": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1"
+    }
+  }
+}
