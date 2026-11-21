@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHmac } from "node:crypto";
-import { eventuallySubscriber, pageOrigin } from "./subscriber-management-fixture.mjs";
+import { eventuallySubscriber, openSubscriberManagementFixture, pageOrigin } from "./subscriber-management-fixture.mjs";
 import { UPDATE_LINK_FIELDS } from "./update-component-flow.mjs";
 import { assertLinkedSlackText } from "./update-link-evidence.mjs";
 
@@ -258,4 +258,141 @@ export async function componentNotificationFlow({ fixture, component, subscriber
   assert.equal(componentBodies().at(-1).body.component_update.old_status, "major_outage");
   assert.equal(componentBodies().at(-1).body.component_update.new_status, "operational");
   assert.equal((await fixture.list()).find(row => row.id === subscriber.id).state, "active");
+}
+
+/** Exercise internal silence with an independently verified, eligible webhook. */
+export async function internalStandingClaimSilenceFlow() {
+  const signingKey = "synthetic-lamp-internal-claim".repeat(4);
+  const fixture = await openSubscriberManagementFixture({
+    workerEntry: "tests/e2e/helpers/status-journey.worker.ts",
+    extraBindings: { WEBHOOK_SIGNING_SECRET: signingKey },
+  });
+  const { api, db, post, raw, webhookRequests } = fixture;
+  try {
+    fixture.recoverWebhook();
+    const visible = await fixture.createComponent("Synthetic Lamp visible service");
+    const internal = await fixture.createComponent("Synthetic Lamp private service", true);
+    assert.equal(visible.internal, false);
+    assert.equal(internal.internal, true);
+
+    const contact = ["synthetic-lamp-internal-claim", "example.test"].join("@");
+    const destination = "https://receiver.example.test/synthetic-lamp-components";
+    const added = await post("/api/app/subscribers", {
+      channel: "webhook", destination, contactEmail: contact, componentIds: [], webhookFormat: "lamp", eventKinds: ["components"],
+    });
+    assert.equal(added.status, 201, added.text);
+    assert.equal(added.body.subscriber.state, "pending");
+    const subscriberId = added.body.subscriber.id;
+    await fixture.confirm(contact);
+    const [choice] = await fixture.list();
+    assert.deepEqual({
+      id: choice.id, destination: choice.destination, channel: choice.channel, state: choice.state,
+      mode: choice.selectionMode, selections: choice.componentSelections, kinds: choice.preferences.eventKinds,
+    }, {
+      id: subscriberId, destination, channel: "webhook", state: "active",
+      mode: "all", selections: [], kinds: ["components"],
+    });
+
+    const session = await api("/api/app/session");
+    assert.equal(session.status, 200, session.text);
+    const operatorId = session.body.operator.id;
+    assert.ok(operatorId);
+    const history = async component => {
+      const result = await api(`/api/app/components/${component.id}/history`);
+      assert.equal(result.status, 200, result.text);
+      assert.equal(result.body.historyPage.nextCursor, null);
+      return result.body.history;
+    };
+    const commitClaim = async (component, state) => {
+      const before = await history(component);
+      assert.deepEqual(before.map(row => row.newState), ["Operational"]);
+      const started = Date.now();
+      const changed = await api(`/api/app/components/${component.id}/standing-claim`, {
+        method: "PUT", body: JSON.stringify({ state }),
+      });
+      const finished = Date.now();
+      assert.equal(changed.status, 200, changed.text);
+      assert.equal(changed.body.component.id, component.id);
+      assert.equal(changed.body.component.standingClaimState, state);
+      assert.equal(changed.body.component.publicState, state);
+      const after = await history(component);
+      assert.deepEqual(after.filter(row => row.id === before[0].id), before);
+      const appended = after.filter(row => row.id !== before[0].id);
+      assert.equal(appended.length, 1, "the standing claim appends exactly one native history transition");
+      const [transition] = appended;
+      assert.ok(transition.id);
+      const changedAt = Date.parse(transition.changedAt);
+      assert.ok(changedAt >= started && changedAt <= finished, "the transition instant belongs to this claim request");
+      assert.deepEqual(transition, {
+        id: transition.id, previousState: "Operational", newState: state, causeType: "standing-claim",
+        causeId: null, operatorId, changedAt: new Date(changedAt).toISOString(), createdAt: transition.changedAt,
+        sourceName: null, sourceUrl: null,
+      });
+      return transition;
+    };
+
+    const rows = async sql => (await db.prepare(sql).all()).results;
+    const inventory = async () => ({
+      events: await rows("SELECT * FROM component_notification_events ORDER BY id"),
+      deliveries: await rows("SELECT id, subscriber_id, channel, notification_event_id, component_event_id, outcome FROM notification_delivery_records ORDER BY id"),
+      outbox: await rows("SELECT * FROM notification_outbox ORDER BY id"),
+      receiver: webhookRequests.map(({ rawBody, headers }) => ({ rawBody, headers })),
+    });
+    const tick = async () => {
+      const worker = await fixture.runtime.getWorker();
+      assert.equal((await worker.scheduled({ cron: "* * * * *" })).outcome, "ok");
+    };
+    const pauseEffects = async paused => {
+      const result = await raw("/test/effects", { method: "PUT", body: JSON.stringify({ paused }) });
+      assert.equal(result.status, 204);
+    };
+
+    assert.deepEqual(await inventory(), { events: [], deliveries: [], outbox: [], receiver: [] });
+    const visibleTransition = await commitClaim(visible, "Degraded performance");
+    await tick();
+    const control = await eventuallySubscriber(inventory, result =>
+      result.deliveries.some(row => row.outcome === "delivered") &&
+      result.outbox.some(row => row.completed_at !== null), "ordinary dispatch completes the visible control");
+    assert.deepEqual(control.events, [{
+      id: visibleTransition.id, component_id: visible.id, component_name: visible.name,
+      component_created_at: visible.createdAt, previous_state: "Operational", new_state: "Degraded performance",
+      changed_at: visibleTransition.changedAt, claimant_kind: "standing-claim",
+    }]);
+    assert.equal(control.deliveries.length, 1);
+    const [{ id: deliveryId }] = control.deliveries;
+    assert.ok(deliveryId);
+    assert.deepEqual(control.deliveries, [{
+      id: deliveryId, subscriber_id: subscriberId, channel: "webhook",
+      notification_event_id: visibleTransition.id, component_event_id: visibleTransition.id, outcome: "delivered",
+    }]);
+    assert.equal(control.outbox.length, 1);
+    const [command] = control.outbox;
+    assert.equal(command.kind, "delivery-dispatch");
+    assert.equal(command.aggregate_id, visibleTransition.id);
+    assert.deepEqual(JSON.parse(command.payload_json), { eventId: visibleTransition.id, eventType: "component-change" });
+    assert.ok(command.completed_at);
+    assert.equal(control.receiver.length, 1);
+    const [received] = webhookRequests;
+    assert.equal(received.headers["webhook-id"], deliveryId);
+    const timestamp = received.headers["webhook-timestamp"];
+    assert.match(timestamp ?? "", /^\d+$/);
+    const signature = createHmac("sha256", signingKey)
+      .update(`${deliveryId}.${timestamp}.`).update(received.wireBytes).digest("base64url");
+    assert.equal(received.headers["webhook-signature"], `v1=${signature}`);
+    assert.deepEqual(received.body, {
+      event: "component.changed", deliveryId, component: {
+        id: visible.id, name: visible.name, previousState: "Operational", state: "Degraded performance",
+        changedAt: visibleTransition.changedAt, claimantKind: "standing-claim",
+      },
+    });
+
+    await pauseEffects(true);
+    await commitClaim(internal, "Major outage");
+    assert.deepEqual(await inventory(), control, "the committed internal transition creates no event, delivery, outbox entry or receiver request");
+    await pauseEffects(false);
+    await tick();
+    assert.deepEqual(await inventory(), control, "ordinary dispatch leaves the internal transition silent at every layer");
+  } finally {
+    await fixture.close();
+  }
 }
