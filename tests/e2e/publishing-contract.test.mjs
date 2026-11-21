@@ -75,7 +75,7 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
     expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
 }
 
-test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
+test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async t => {
   const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
   const linkedWording = literalLinkFields(wording);
   const reviewer = ['synthetic-lamp-reviewer', 'example.test'].join('@');
@@ -201,7 +201,10 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(reviewedMonitoring.lifecycle, 'Identified');
     assert.deepEqual(reviewedMonitoring.updates, identified.updates);
     assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+    const consumedDraftId = reviewedMonitoring.draft.id;
+    const priorUpdateCount = reviewedMonitoring.updates.length;
     const monitoring = (await j.publish(incident.id)).update;
+    assert.equal(monitoring.id, consumedDraftId);
     assert.equal(monitoring.lifecycle, 'Monitoring');
     const publishedMonitoring = await j.read(incident.id);
     assert.equal(publishedMonitoring.lifecycle, 'Monitoring');
@@ -225,6 +228,18 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(stale.status, 409);
 
     await owner();
+    const staleSave = await j.api(`${endpoint}/draft`, {
+      method: 'PUT',
+      headers: { 'If-Match': `${consumedDraftId}:${priorUpdateCount}` },
+      body: JSON.stringify({ ...wording, ...originalRecovery, nextUpdateAt: reviewedMonitoring.draft.nextUpdateAt }),
+    });
+    assert.equal(staleSave.status, 409, staleSave.text);
+    const afterStaleSave = await j.read(incident.id);
+    assert.equal(afterStaleSave.draft, null, 'a consumed draft cannot be revived by a stale save');
+    assert.deepEqual(afterStaleSave.updates, publishedMonitoring.updates, 'the native read returns the same committed updates');
+    assert.deepEqual(await publishedUpdates(), monitoringUpdates, 'the stale save changes no persisted publication fields');
+    t.diagnostic('PROBE UPDATE-005 4: save the prior Monitoring wording with the consumed draft version -> HTTP 409, no draft and identical committed updates');
+
     const originalUpdates = (await j.read(incident.id)).updates;
     const storedUpdates = async () => (await j.db.prepare('SELECT * FROM incident_updates WHERE incident_id = ? ORDER BY id').bind(incident.id).all()).results;
     const originalRows = await storedUpdates();
