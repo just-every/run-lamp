@@ -44,32 +44,55 @@ async function buildMailWorker(input = { entryPoints: ['tests/e2e/rer-mail.worke
   });
 }
 
-// Each row is the same business journey through a supported transport. Only
-// provider responses are synthetic; app routes, migrations and Cron are real.
-test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async () => {
-  // The isolated Worker gets a test-only clock: Date keeps flowing but can be advanced
-  // through /test/clock; every product route, Cron entry, D1 query and retry rule is real.
-  const clockedWorker = `import worker from './tests/e2e/rer-mail.worker.ts';
-    export { SnapshotCache } from './tests/e2e/rer-mail.worker.ts';
-    const RealDate = Date; let offset = 0;
-    globalThis.Date = new Proxy(RealDate, {
-      construct(target, args) { return Reflect.construct(target, args.length ? args : [RealDate.now() + offset]); },
-      get(target, key) { return key === 'now' ? () => RealDate.now() + offset : Reflect.get(target, key); },
+async function hostedMailWorkerOptions() {
+  const { externalWorkers, ...built } = await reachBuiltWorkerOptions();
+  // Restore the request host after dispatchFetch traverses loopback ingress.
+  built.modules[0].contents = built.modules[0].contents.replace('return worker.fetch(request, bindings(env), context);',
+    "request = new Request(request); request.headers.set('Host', new URL(request.url).host); return worker.fetch(request, bindings(env), context);");
+  return { ...built, externalWorkers };
+}
+
+async function clearSavedFooter(browser, raw, cookie, savedFooter, proofDirectory) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  try {
+    const session = cookie.slice(cookie.indexOf('=') + 1);
+    await context.addCookies([{ name: '__Host-operator_session', value: session, url: appOrigin, secure: true, httpOnly: true, sameSite: 'Lax' }]);
+    await context.route(`${appOrigin}/**`, async route => {
+      const request = route.request();
+      const response = await raw(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postDataBuffer() ?? undefined });
+      await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
     });
-    export default { ...worker, async fetch(request, env, context) {
-      if (new URL(request.url).pathname === '/test/clock' && request.method === 'PUT') {
-        const { now } = await request.json(); const shifted = now - RealDate.now();
-        if (!Number.isFinite(now) || shifted < offset) return new Response('Clock must advance', { status: 400 });
-        offset = shifted; return new Response(null, { status: 204 });
-      }
-      return worker.fetch(request, env, context);
-    } };`;
-  const built = await buildMailWorker({ stdin: { contents: clockedWorker, resolveDir: process.cwd(), sourcefile: 'rer-mail-clocked-worker.ts', loader: 'ts' } });
+    const page = await context.newPage();
+    await page.goto(appOrigin + '/app/settings#notifications');
+    await operatorHydrated(page);
+    const branding = page.getByRole('region', { name: 'Notification email', exact: true });
+    const footer = branding.getByRole('textbox', { name: /^Email footer/ });
+    assert.equal(await footer.inputValue(), savedFooter);
+
+    const saved = page.waitForResponse(response => response.url() === appOrigin + '/api/app/page-settings' && response.request().method() === 'PUT');
+    await footer.fill('');
+    assert.equal((await saved).status(), 200);
+    await page.getByRole('status').filter({ hasText: /^Saved · live$/ }).waitFor();
+    if (proofDirectory) {
+      await mkdir(proofDirectory, { recursive: true });
+      await branding.screenshot({ path: join(proofDirectory, 'notification-email-1440.png') });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await branding.screenshot({ path: join(proofDirectory, 'notification-email-390.png') });
+    }
+  } finally { await context.close(); }
+}
+
+// Each row is the same business journey through a supported transport. Only
+// provider responses and the runtime clock are synthetic.
+test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async t => {
+  const { externalWorkers, ...built } = await hostedMailWorkerOptions();
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+  t.after(() => browser.close());
   for (const provider of ['rer', 'resend', 'sendgrid']) {
     const state = await mkdtemp(join(tmpdir(), `lamp-mail-${provider}-`));
     const submissions = [];
     const keys = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
-    let runtime, cookie, responseStatus = 202;
+    let runtime, cookie, scheduledAt, responseStatus = 202;
     const wire = body => provider === 'sendgrid' ? {
       to: body.personalizations[0].to[0].email,
       text: body.content.find(part => part.type === 'text/plain')?.value,
@@ -77,8 +100,8 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       subject: body.subject, headers: body.headers,
     } : body;
     try {
-      runtime = new Miniflare(convertV4MiniflareOptions({ name: `lamp-mail-${provider}`, modules: true, script: built.outputFiles[0].text,
-        port: 0, inspectorPort: 0, compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'],
+      runtime = new Miniflare(convertV4MiniflareOptions({ port: 0, inspectorPort: 0, resourcePersistencePath: join(state, 'storage'),
+        workers: [{ ...built, queueConsumers: [],
         bindings: { LAMP_PAGE_HOST: 'status.example.test', LAMP_APP_HOST: 'app.example.test', AUTH_ORIGIN: appOrigin,
           SETUP_OPERATOR_EMAIL: owner, SESSION_SECRET: 'synthetic-lamp-session-secret-aaaaaaaaaaaa',
           SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-secret-bbbbbbbb', MAIL_PROVIDER: provider,
@@ -87,18 +110,18 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
           RESEND_WEBHOOK_SECRET: `whsec_${receiptKey.toString('base64url')}`,
           SENDGRID_WEBHOOK_PUBLIC_KEY: keys.publicKey.export({ type: 'spki', format: 'der' }).toString('base64') },
         d1Databases: ['DB'], r2Buckets: ['SNAPSHOTS'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } },
-        queueProducers: { JOBS: 'lamp-mail-jobs' }, resourcePersistencePath: join(state, 'storage'),
+        queueProducers: { JOBS: 'lamp-mail-jobs' },
         outboundService: async request => {
           const expected = provider === 'rer' ? 'https://relay.example.test/api/managed-mail/send' : provider === 'resend' ? 'https://api.resend.com/emails' : 'https://api.sendgrid.com/v3/mail/send';
           assert.equal(request.url, expected, 'mail submission stays at the configured provider');
           const body = await request.json();
-          submissions.push({ body, id: `provider-${submissions.length + 1}` });
+          submissions.push({ body, id: `provider-${submissions.length + 1}`, idempotencyKey: request.headers.get('Idempotency-Key') });
           if (responseStatus !== 202) return new Response(null, { status: responseStatus, headers: { 'Retry-After': '1', Location: 'https://elsewhere.example.test/' } });
           const id = submissions.at(-1).id;
           return provider === 'rer' ? Response.json({ messageId: `<${id}@relay.example.test>` }, { status: 202 })
             : provider === 'resend' ? Response.json({ id }) : new Response(null, { status: 202, headers: { 'x-message-id': id } });
         },
-      }));
+      }, ...externalWorkers] }));
       const db = await runtime.getD1Database('DB');
       const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
       for (const name of (await readdir('migrations/core')).filter(n => n.endsWith('.sql')).sort()) await execute(await readFile(join('migrations/core', name), 'utf8'));
@@ -111,7 +134,13 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         const init = await withDraftVersion(path, { method, ...(body ? { body: JSON.stringify(body) } : {}), headers: { Origin: appOrigin, ...(cookie ? { Cookie: cookie } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}) } }, read => raw(read, { headers: { Cookie: cookie ?? '' } }));
         return raw(path, init);
       };
-      const tick = async (expected = 204) => { assert.equal((await call('/__test/tick')).status, expected, `${provider}: scheduled work result`); };
+      const worker = await runtime.getWorker();
+      const tick = async () => {
+        const result = await worker.scheduled({ cron: '* * * * *', scheduledTime: scheduledAt ?? Date.now() });
+        assert.equal(result.outcome, 'ok', `${provider}: scheduled work result`);
+      };
+      // Disable request-driven dispatch by recording a real Cron run first.
+      await tick();
       const deliveries = async () => (await (await call('/api/app/deliveries')).json()).deliveries;
       const sentTo = email => submissions.filter(row => {
         const to = provider === 'sendgrid' ? row.body.personalizations[0].to.map(person => person.email) : row.body.to;
@@ -163,10 +192,14 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal(sentTo(pending).length, 1, 'unconfirmed readers receive only confirmation');
       const queued = (await deliveries()).find(row => row.incidentUpdateId === update.id);
       assert.equal(queued.outcome, 'queued'); assert.equal(queued.providerAcceptedAt, null);
-      const firstAttempt = sentTo(reader).at(-1).body;
+      const { body: firstAttempt, idempotencyKey: firstKey } = sentTo(reader).at(-1);
       const settings = (await (await call('/api/app/page-settings')).json()).settings;
       const savedFooter = 'Contact the payment recovery desk for case Orchid.';
-      const edited = await call('/api/app/page-settings', { ...editableSettings(settings), emailBranding: { subjectPrefix: '[Changed after submission]', header: 'Operations will continue monitoring payments.', footer: savedFooter } }, 'PUT');
+      const editedIdentity = provider === 'rer' ? {} : { displayName: 'Payments recovery desk', replyTo: ['recovery-desk', 'example.test'].join('@') };
+      const edited = await call('/api/app/page-settings', { ...editableSettings(settings), emailBranding: {
+        ...settings.emailBranding, ...editedIdentity, subjectPrefix: '[Changed after submission]',
+        header: 'Operations will continue monitoring payments.', footer: savedFooter,
+      } }, 'PUT');
       assert.equal(edited.status, 200, await edited.clone().text());
       responseStatus = 202;
       const beforeEarlyReplay = submissions.length;
@@ -174,11 +207,16 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal(submissions.length, beforeEarlyReplay, `${provider}: early Cron replay must send nothing`);
       // Advance the Worker's clock past the subscriber's first durable retry interval (about two
       // minutes); the ordinary Cron entry then performs the retry.
-      assert.equal((await call('/test/clock', { now: Date.now() + 180_000 }, 'PUT')).status, 204);
+      scheduledAt = Date.now() + 180_000;
+      assert.equal((await call('/test/clock', { now: scheduledAt }, 'PUT')).status, 204);
       await tick();
       const accepted = (await deliveries()).find(row => row.id === queued.id);
       assert.ok(accepted.providerAcceptedAt); assert.equal(accepted.outcome, 'queued', 'provider acceptance does not claim inbox delivery');
       assert.deepEqual(sentTo(reader).at(-1).body, firstAttempt, 'retry preserves the entire submitted envelope after settings change');
+      if (provider === 'resend') {
+        assert.equal(firstKey, `notification/${queued.id}`);
+        assert.equal(sentTo(reader).at(-1).idempotencyKey, firstKey);
+      }
       const notification = wire(firstAttempt);
       assert.ok(notification.subject.startsWith(branding.subjectPrefix));
       assert.ok(typeof notification.html === 'string' && notification.html.includes(branding.footer), 'subscriber mail retains its complete branded HTML part');
@@ -210,19 +248,28 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       }
       const prior = sentTo(reader).at(-1);
       const populatedImpact = 'Payment processing has improved.';
+      const beforePopulatedDelivery = submissions.length;
       const populatedUpdate = await publish(populatedImpact); await tick();
-      const populatedBody = sentTo(reader).at(-1).body;
+      const populatedCaptures = submissions.slice(beforePopulatedDelivery);
+      assert.equal(populatedCaptures.length, 1);
+      assert.equal(populatedCaptures[0], sentTo(reader).at(-1), 'the branded baseline reached the confirmed reader');
+      const populatedBody = populatedCaptures[0].body;
       const threaded = wire(populatedBody);
       const firstMessageId = provider === 'rer' ? `<${prior.id}@relay.example.test>` : notification.headers['Message-ID'];
-      assert.equal(provider === 'rer' ? threaded.inReplyTo : threaded.headers['In-Reply-To'], firstMessageId);
-      assert.equal(provider === 'rer' ? threaded.references : threaded.headers.References, firstMessageId);
+      if (provider === 'sendgrid') {
+        assert.equal(populatedBody.from.name, editedIdentity.displayName);
+        assert.equal(populatedBody.reply_to.email, editedIdentity.replyTo);
+      } else if (provider === 'resend') {
+        assert.ok(populatedBody.from.includes(editedIdentity.displayName));
+        assert.equal(populatedBody.reply_to, editedIdentity.replyTo);
+      }
 
       const populatedSettings = (await (await call('/api/app/page-settings')).json()).settings;
       assert.equal(populatedSettings.emailBranding.footer, savedFooter);
       assert.ok(threaded.text.includes(savedFooter) && threaded.html.includes(savedFooter));
       const clearedBranding = { ...populatedSettings.emailBranding, footer: '' };
-      const cleared = await call('/api/app/page-settings', { ...editableSettings(populatedSettings), emailBranding: clearedBranding }, 'PUT');
-      assert.equal(cleared.status, 200, await cleared.clone().text());
+      const proofDirectory = provider === 'rer' ? process.env.LAMP_FOOTER_PROOF_DIR : undefined;
+      await clearSavedFooter(browser, raw, cookie, savedFooter, proofDirectory);
       const readback = await call('/api/app/page-settings');
       assert.equal(readback.status, 200);
       assert.deepEqual((await readback.json()).settings.emailBranding, clearedBranding);
@@ -244,16 +291,19 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.ok(clearedDelivery.providerAcceptedAt);
       const captured = submissions.slice(beforeClearDelivery);
       assert.equal(captured.length, 1, 'only the confirmed reader gets the fresh update');
-      const clearedBody = captured[0].body;
+      const [{ body: clearedBody, idempotencyKey }] = captured;
       const clearedMail = wire(clearedBody);
       const host = new URL(pageOrigin).host;
       const messageId = `<lamp-notification-${clearedDelivery.id}@${host}>`;
       if (provider === 'rer') {
         assert.equal(clearedMail.to, reader);
+        assert.equal(Object.hasOwn(clearedMail, 'from'), false);
+        assert.equal(Object.hasOwn(clearedMail, 'reply_to'), false);
         assert.equal(clearedMail.messageKey, `lamp:${createHash('sha256').update(messageId).digest('hex')}`);
       } else {
         assert.deepEqual(provider === 'sendgrid' ? clearedBody.personalizations[0].to.map(person => person.email) : clearedMail.to, [reader]);
         assert.equal(clearedMail.headers['Message-ID'], messageId);
+        if (provider === 'resend') assert.equal(idempotencyKey, `notification/${clearedDelivery.id}`);
         assert.deepEqual(clearedBody.from, populatedBody.from);
         assert.deepEqual(clearedBody.reply_to, populatedBody.reply_to);
         assert.equal(clearedMail.headers['Auto-Submitted'], 'auto-generated');
@@ -268,19 +318,26 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       const unsubscribeUrl = notification.text.match(/^Unsubscribe: (\S+)$/m)?.[1];
       assert.match(manageUrl, /^https:\/\/status\.example\.test\/manage\/[^/?#]+$/);
       assert.match(unsubscribeUrl, /^https:\/\/status\.example\.test\/unsubscribe\/[^/?#]+$/);
-      assert.equal((await raw(manageUrl)).status, 200);
+      const management = await raw(manageUrl);
+      assert.equal(management.status, 200);
+      const unsubscribePath = (await management.text()).match(/<form method="post" action="(\/unsubscribe\/[^"]+)">/)?.[1];
+      assert.equal(unsubscribePath, new URL(unsubscribeUrl).pathname, 'the public management page offers the same unsubscribe destination');
       for (const mail of [threaded, clearedMail]) {
         assert.ok(mail.text.endsWith(`\n\nManage this subscription: ${manageUrl}\nUnsubscribe: ${unsubscribeUrl}\nReturn to status: ${pageOrigin}/`));
         assert.ok(mail.html.includes(`<a href="${pageOrigin}/">${populatedSettings.pageName}</a>`));
         assert.ok(mail.html.includes(`<a href="${manageUrl}">Manage subscription</a>`));
         assert.ok(mail.html.includes(`<a href="${unsubscribeUrl}">Unsubscribe</a>`));
         if (provider === 'rer') {
+          assert.equal(mail.inReplyTo, firstMessageId);
+          assert.equal(mail.references, firstMessageId);
           assert.equal(mail.listUnsubscribe, `<mailto:${settings.mailFromAddress}>, <${unsubscribeUrl}>`);
           assert.equal(mail.listUnsubscribePost, true);
           assert.equal(mail.listId, `<${host}>`);
           assert.equal(mail.listArchive, `<${pageOrigin}/history>`);
           assert.equal(mail.listHelp, `<${manageUrl}>`);
         } else {
+          assert.equal(mail.headers['In-Reply-To'], firstMessageId);
+          assert.equal(mail.headers.References, firstMessageId);
           assert.equal(mail.headers['List-Unsubscribe'], `<mailto:${settings.mailFromAddress}?subject=unsubscribe>, <${unsubscribeUrl}>`);
           assert.equal(mail.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
           assert.equal(mail.headers['List-Id'], `<${host}>`);
@@ -576,11 +633,7 @@ test('Mail-off keeps email unavailable, operator alerts pending and status work 
 
 
 test('The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact', { timeout: 120_000 }, async () => {
-  const { externalWorkers, ...built } = await reachBuiltWorkerOptions();
-  // dispatchFetch traverses loopback ingress; restore the actual request's Host
-  // before the built Worker's host and native authentication guards.
-  built.modules[0].contents = built.modules[0].contents.replace('return worker.fetch(request, bindings(env), context);',
-    "request = new Request(request); request.headers.set('Host', new URL(request.url).host); return worker.fetch(request, bindings(env), context);");
+  const { externalWorkers, ...built } = await hostedMailWorkerOptions();
   const requests = [];
   let browser;
   try {
