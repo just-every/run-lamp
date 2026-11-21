@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "5e06194dc349fdfd184a47a8fb4727ba7826f7cc",
+      "bytes": 7117,
+      "path": "CHECKS.json",
+      "sha256": "0029535c28e2c48248733f390167bedfb2654a5562f8aacef722ecf39fa8f8dd"
+    },
+    {
+      "blob": "833a9c8077a2a23a96d7f38a031c38ba08649107",
+      "bytes": 8929,
+      "path": "REPORT.md",
+      "sha256": "de68f3355044533bb5e384f6d0d162e2758e0f3689dcbaf2087578fc5de363a4"
+    },
+    {
+      "blob": "39cbf79f547f27342f9753862d121ac8960ea421",
+      "bytes": 194269,
+      "path": "slack-1440.png",
+      "sha256": "499c0f2c376a11171fc9368544fab5b3167d9c95b36ca631c45227175e28710f"
+    },
+    {
+      "blob": "7ebe3fe5c592d72d3e2b0edb381c0c93caf8b922",
+      "bytes": 86706,
+      "path": "slack-390.png",
+      "sha256": "74227776046c45aee8f4de0220444d5e5675465e1c105198f411f92d210205ed"
+    },
+    {
+      "blob": "894abcd40a005819ed12d5ccc6926ee4b9d90527",
+      "bytes": 194108,
+      "path": "teams-1440.png",
+      "sha256": "7fc832bb3eb9d41f706123c99391c3f057e3fa98acc85d5e467065b8cb5630b9"
+    },
+    {
+      "blob": "632343bd9136678eed688289f5bb14fb394b40e5",
+      "bytes": 86535,
+      "path": "teams-390.png",
+      "sha256": "0ba7e07290236b84a0433fd37fbaedf48b679d1e547b94a3d1633ae92404f122"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f189",
+  "product_head": "5a0f235ae252c0d597300eb4569684de919749dc",
+  "ref": "refs/heads/evidence/sd-lamp-c-f189",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f189"
+}

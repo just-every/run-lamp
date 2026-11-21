@@ -1,0 +1,259 @@
+{
+  "base": "9ea011e0fe99033bc4e3d09fd6b6f96252c55324",
+  "base_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "9ea011e0fe99033bc4e3d09fd6b6f96252c55324",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44899481252",
+      "id": 44899481252,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "9ea011e0fe99033bc4e3d09fd6b6f96252c55324",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44899481148",
+      "id": 44899481148,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "9ea011e0fe99033bc4e3d09fd6b6f96252c55324",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44897965626",
+      "id": 44897965626,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-lamp-c-f189",
+  "candidate_run_site": {
+    "status": "awaits main"
+  },
+  "candidate_scan": {
+    "head": "5a0f235ae252c0d597300eb4569684de919749dc",
+    "status": "awaits guarded lander"
+  },
+  "chromium": "/usr/bin/chromium",
+  "counts": {
+    "after": {
+      "done": 66,
+      "missing": 56,
+      "partial": 123,
+      "total": 245
+    },
+    "before": {
+      "done": 66,
+      "missing": 56,
+      "partial": 123,
+      "total": 245
+    }
+  },
+  "exact_candidate_verify": {
+    "conclusion": "failure",
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f189",
+    "head_sha": "5a0f235ae252c0d597300eb4569684de919749dc",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44900105475",
+    "id": 44900105475,
+    "name": "Verify",
+    "selected_jobs": [
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136834035597,
+        "name": "build",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "failed_steps": [],
+        "id": 136834307621,
+        "name": "shards (delivery)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Verify this product shard"
+        ],
+        "id": 136834307634,
+        "name": "shards (imports)",
+        "status": "completed"
+      },
+      {
+        "conclusion": "failure",
+        "failed_steps": [
+          "Require every planned command to succeed on this commit"
+        ],
+        "id": 136837518608,
+        "name": "verify",
+        "status": "completed"
+      }
+    ],
+    "status": "completed",
+    "test_failure": {
+      "archive_reads": [
+        {
+          "exit": 0,
+          "job": 136834307634
+        },
+        {
+          "exit": 0,
+          "job": 136837518608
+        }
+      ],
+      "error": "route.fulfill: Route is already handled!",
+      "line": 677,
+      "path": "tests/e2e/rer-mail.test.mjs",
+      "test": "The built hosted mail-off owner signs in, finishes native first-run after Skip or Read website and saves Settings; enabled sender validation stays intact"
+    }
+  },
+  "focused_public_door_probe": {
+    "assertion_width": 1440,
+    "channels": {
+      "slack": {
+        "channel_display": "slack",
+        "component_status_changes": false,
+        "incidents": true,
+        "maintenance": true,
+        "status": 200
+      },
+      "teams": {
+        "channel_display": "teams",
+        "component_status_changes": false,
+        "incidents": true,
+        "maintenance": true,
+        "status": 200
+      }
+    },
+    "exit": 0,
+    "provider_edge": "recorded fixtures"
+  },
+  "head": "5a0f235ae252c0d597300eb4569684de919749dc",
+  "mechanical": {
+    "candidate_commits_inspected": 1,
+    "diff_whitespace_check": "passed",
+    "first_party_check": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "ledger": {
+      "reason": "No migration changed",
+      "required": false
+    },
+    "lock_check": {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    "lock_write": {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "views_check": {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    "views_write": {
+      "command": "node src/base/contract-docs.mjs write",
+      "documents_written": 0,
+      "exit": 0
+    }
+  },
+  "negative_controls": {
+    "slack_missing_component_checkbox": "expected assertion failed",
+    "teams_checked_component_checkbox": "expected assertion failed"
+  },
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "proof_source": {
+    "base_diff": [
+      "sources.lock.json",
+      "tests/e2e/publishing-contract.test.mjs"
+    ],
+    "file": "tests/e2e/helpers/self-serve-chat-flow.mjs",
+    "sha256": "2427bba37e431072b760569322bfe5183c177aefc6e2fe639a013fb04e11cc8e"
+  },
+  "recorded_utc": "2026-11-21T12:13:45+00:00",
+  "repository": "just-every/run-lamp",
+  "screens": [
+    {
+      "channel": "slack",
+      "filename": "slack-1440.png",
+      "sha256": "499c0f2c376a11171fc9368544fab5b3167d9c95b36ca631c45227175e28710f",
+      "width": 1440
+    },
+    {
+      "channel": "slack",
+      "filename": "slack-390.png",
+      "sha256": "74227776046c45aee8f4de0220444d5e5675465e1c105198f411f92d210205ed",
+      "width": 390
+    },
+    {
+      "channel": "teams",
+      "filename": "teams-1440.png",
+      "sha256": "7fc832bb3eb9d41f706123c99391c3f057e3fa98acc85d5e467065b8cb5630b9",
+      "width": 1440
+    },
+    {
+      "channel": "teams",
+      "filename": "teams-390.png",
+      "sha256": "0ba7e07290236b84a0433fd37fbaedf48b679d1e547b94a3d1633ae92404f122",
+      "width": 390
+    }
+  ],
+  "touched_suite": {
+    "cancelled": 0,
+    "command": "pnpm test:channels",
+    "fail": 0,
+    "pass": 8,
+    "registration": "INTEG-002 SUB-014 SUB-015 NOTIFY-011 NOTIFY-012 UPDATE-013 \u2014 Private channels deliver the selected publication once with literal text and punctuated links",
+    "required_registration_passed": true,
+    "status": "finished",
+    "tests": 8
+  },
+  "verify_reproduction": {
+    "base_main": {
+      "command": "pnpm run test:mail",
+      "exit": 0,
+      "head": "9ea011e0fe99033bc4e3d09fd6b6f96252c55324",
+      "hosted_mail_off_test": "passed",
+      "same_route_error_reproduced": false
+    },
+    "candidate": {
+      "command": "pnpm run verify:app",
+      "exit": 0,
+      "head": "5a0f235ae252c0d597300eb4569684de919749dc",
+      "hosted_mail_off_test": "passed",
+      "same_route_error_reproduced": false,
+      "shard": "imports",
+      "steps": [
+        {
+          "durationMs": 576438,
+          "exitCode": 0,
+          "script": "test:imports"
+        },
+        {
+          "durationMs": 73434,
+          "exitCode": 0,
+          "script": "test:mail"
+        },
+        {
+          "durationMs": 289383,
+          "exitCode": 0,
+          "script": "test:site"
+        }
+      ]
+    },
+    "ci_platform": "Ubuntu 24.04",
+    "local_chromium": "154.0.8037.57",
+    "local_platform": "Debian 13"
+  }
+}
