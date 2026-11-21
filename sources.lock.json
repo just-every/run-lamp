@@ -8844,7 +8844,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "b81320207aa0b7f57fa5888cf736a967398c39dee099c26176c5ec9bb2270a55",
+      "sha256": "189d794f596e86ea700c6dc8aa09fd643658da1db2d19e48fa834ac5cb434e06",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
