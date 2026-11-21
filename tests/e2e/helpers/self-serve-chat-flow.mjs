@@ -1,8 +1,38 @@
 import { chatPreferencesFlow } from './chat-preferences-flow.mjs';
 import assert from 'node:assert/strict';
+import { chromium } from 'playwright';
 import { openFollowUpsRuntime, eventuallyFollowUp } from './follow-ups-runtime.mjs';
 import { recordedSlackExchange, recordedSlackEvents, recordedSlackOAuth, RECORDED_SLACK_WEBHOOK, prepareSlackSubscription,verifySlackPublication,removeSlackSubscription } from '../slack-subscriptions-helper.mjs';
 import { subscriberTeamsUrl, prepareTeamsSubscription,verifyTeamsPublication } from '../teams-subscriptions-helper.mjs';
+
+async function assertInitialChatPreferences(manageUrls) {
+  const browser = await chromium.launch({
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+    headless: true,
+    args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'],
+  });
+  try {
+    for (const [channel, url] of Object.entries(manageUrls)) {
+      assert.ok(url, `${channel} consent supplies a management URL`);
+      const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+      const response = await page.goto(url);
+      assert.equal(response?.status(), 200, `${channel} management opens without an operator session`);
+      assert.ok(await page.getByText(`Channel: ${channel}`, { exact: true }).isVisible());
+      const preferences = page.getByRole('group', { name: 'Updates to receive' });
+      for (const [name, checked] of [['Incidents', true], ['Maintenance', true], ['Component status changes', false]]) {
+        const checkbox = preferences.getByRole('checkbox', { name, exact: true });
+        assert.ok(await checkbox.isVisible(), `${channel} offers ${name}`);
+        assert.ok(await checkbox.isEnabled(), `${channel} allows changing ${name}`);
+        assert.equal(await checkbox.isChecked(), checked, `${channel} initial selection for ${name}`);
+      }
+      const selectedKinds = await preferences.evaluate(fieldset => new FormData(fieldset.form).getAll('eventKind'));
+      assert.deepEqual(selectedKinds.sort(), ['incidents', 'maintenance'], `${channel} form submits the initial event selection`);
+      await page.close();
+    }
+  } finally {
+    await browser.close();
+  }
+}
 
 /** Complete public and authenticated application doors, with only the Slack
  * OAuth/webhook and Teams Workflows network edges replaced by synthetic replies. */
@@ -35,6 +65,7 @@ export async function selfServeChatFlow(t){
     let slackManageUrl,teamsManageUrl;
     const id=await prepareSlackSubscription({componentId:component.id,componentIds:[component.id,secondComponent.body.component.id],excludedComponentId:unrelated.body.component.id,publicOrigin,sql,onManage:url=>{slackManageUrl=url;}});
     await prepareTeamsSubscription({componentId:component.id,publicOrigin,received,sql,onManage:url=>{teamsManageUrl=url;}});
+    await assertInitialChatPreferences({ slack: slackManageUrl, teams: teamsManageUrl });
     const incident=await runtime.post('/api/app/incidents',{title:'Self-serve channel incident',components:[{componentId:component.id,state:'Partially unavailable',relationship:'Primary'}]});
     assert.equal(incident.status,201,incident.text);
     const incidentId=incident.body.incident.id;
