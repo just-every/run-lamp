@@ -89,7 +89,14 @@ export async function trafficAlertsFlow(t) {
     await configure(3);
     const burst = target + MINUTE;
     await readAt(burst, 10);
-    const publicBefore = await (await runtime.dispatchFetch(`${publicOrigin}/api/public/status`)).text();
+    const publicStatusContent = async () => {
+      const response = await runtime.dispatchFetch(`${publicOrigin}/api/public/status`);
+      assert.equal(response.status, 200);
+      // Scheduled snapshot refresh can advance this timestamp independently of the alert.
+      const { generatedAt, ...content } = await response.json();
+      return content;
+    };
+    const publicBefore = await publicStatusContent();
     await fixture.tick(burst + 2 * MINUTE);
     const [pageAlert] = await eventually(() => sent('page:'), value => value.length === 1, 'a 5× burst sends exactly one real operator-provider request');
     assert.equal((await trafficAlerts()).length, 1, 'this page burst creates exactly one operator alert across all surfaces');
@@ -108,7 +115,7 @@ export async function trafficAlertsFlow(t) {
     await fixture.tick(burst + 3 * MINUTE);
     assert.equal((await trafficAlerts()).length, 1, 'the same consecutive burst remains one episode');
     assert.equal(fixture.messages.length, providerRequests, 'no further provider request');
-    assert.equal(await (await runtime.dispatchFetch(`${publicOrigin}/api/public/status`)).text(), publicBefore, 'traffic alerts publish no customer-facing incident or content');
+    assert.deepEqual(await publicStatusContent(), publicBefore, 'traffic alerts publish no customer-facing incident or content');
 
     // A quiet minute ends the first episode; an unresolved incident suppresses
     // an otherwise identical fresh 5× episode through the native incident door.
