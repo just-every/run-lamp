@@ -1,0 +1,71 @@
+Lamp test receipt for sd-lamp-c-f191
+Product HEAD: 50a14ac41d5af6d925b44f3fe1ece53319582f2a
+Parent at candidate push: 9ea011e0fe99033bc4e3d09fd6b6f96252c55324
+Product ref: refs/heads/cloud/sd-lamp-c-f191
+Test blob: c07f04416c3d138ac3d23f639967222ad8f6473f
+Source lock blob: 85796159875aa5f0adc56a5b78fc8c3799ac2c05
+
+Checks
+- node --test --test-concurrency=1 --test-name-pattern='reviewed incident from private template' tests/e2e/publishing-contract.test.mjs: exit 0 after rebasing to candidate parent, 1 passed.
+- pnpm run typecheck: exit 0.
+- npx -y @runeditrun/rer build: exit 0 on candidate.
+- pnpm exec rer check --profile first-party: exit 0.
+- node src/base/contract-docs.mjs write: exit 0, wrote 0 documents.
+- node src/base/contract-docs.mjs check: exit 0 on candidate, 0 prose errors or warnings.
+- node scripts/edition-authoring/cli.mjs lock: exit 0.
+- node scripts/edition-authoring/cli.mjs check: exit 0 on candidate.
+- git diff --check origin/main...HEAD: exit 0.
+- Candidate identity and message check passed on all commits in the candidate range.
+- Exact candidate ref verified by git ls-remote.
+- No migration change. Generated views and Status cells match candidate parent.
+- Local VM ran Node v24.19.0, pnpm 10.12.4, and system Chromium for the existing maintenance browser case.
+
+Candidate touched file
+Command: node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs
+Exit: 0
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+PROBE HIST-002 email: native saved-field readback, public permalink in 13.9 ms, committed=2, email=2, webhook=0
+PROBE HIST-002 webhook: native saved-field readback, public permalink in 15.0 ms, committed=2, email=0, webhook=2
+PROBE HIST-002 email-webhook: native saved-field readback, public permalink in 13.8 ms, committed=4, email=2, webhook=2
+PROBE HIST-002 silent: native saved-field readback, public permalink in 13.0 ms, committed=0, email=0, webhook=0
+✔ INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion (36697.539819ms)
+ℹ PROBE UPDATE-015 1: review saved public and internal changes and publish to email -> preview, committed update and captured email agree on the submitted wording and public step-down, with the internal component excluded from customer content
+ℹ PROBE UPDATE-005 4: save the prior Monitoring wording with the consumed draft version -> HTTP 409, no draft and identical committed updates
+ℹ PROBE UPDATE-012 5: publish a reviewed draft after native detachment with its current revision -> attachment-specific HTTP 409 and unchanged inventories; attached control -> HTTP 200, committed staged claim and one email recipient
+✔ INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components (12545.434109ms)
+✔ INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history (5524.979294ms)
+✔ INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime (8523.434715ms)
+✔ MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history (57318.215857ms)
+✔ UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence (10220.523736ms)
+ℹ PROBE UPDATE-006 2: native schedule with confirmed email and webhook, repeated Cron through saved instant minus 1 ms -> unchanged draft, 38 populated public artifacts and generation, absent permalink, zero notification work and zero subscriber sends
+ℹ PROBE UPDATE-006 1: reviewed draft scheduled through native route, Worker Date and Cron advanced to saved instant plus 60000 ms -> exact saved update committed and read from public root and permalink after 60400 ms (deadline 240000 ms)
+ℹ PROBE UPDATE-006 2 delivery control: after eligibility the exact committed recipient set receives one captured email and one acknowledged webhook; repeated Cron adds no update or send
+✔ INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams (19566.927908ms)
+ℹ INCIDENT-012 Slack: signed identity, private draft, shared preview, explicit attributed publication and state changes
+ℹ PROBE INCIDENT-012 points 2 and 3 Slack: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+ℹ INCIDENT-012 Teams: signed identity, private draft, shared preview, explicit attributed publication and state changes
+ℹ PROBE INCIDENT-012 points 2 and 3 Teams: signed composer selection, save, preview and publish -> exact staged and committed claims, five narrative fields, lifecycle, commitment and complete email matched
+ℹ PROBE INCIDENT-012 point 4 Slack: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+ℹ PROBE INCIDENT-012 point 4 Teams: signed save, review and Publish actions -> overlength, incomplete, self-review and no-review refused with unchanged records; distinct linked review and attributed publication succeeded; replay refused
+✔ AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text (5875.66775ms)
+ℹ PROBE AGENT-005 1-3: signed responder intake, brief and report draft -> all four responder alerts and three publications cited once, recorded opening-to-resolution window, empty flagged explanations; private notes absent
+ℹ PROBE AGENT-005 4: report save then publish with each empty field and each untouched prompt while its counterpart is complete -> four HTTP 400 refusals and identical complete persisted and public records
+ℹ PROBE AGENT-005 5: redraft generated and manually authored reports; read saved draft anonymously -> HTTP 409 with unchanged reports and no public report
+ℹ PROBE AGENT-005 6: publish complete report then edit, redraft and republish -> exact four public fields, HTTP 409 refusals, identical persisted provenance and public bytes
+✔ NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure (12862.793558ms)
+ℹ PROBE NOTIFY-015 1: ordinary publication to ten emails and two webhooks, signed receipts and one hard bounce -> email committed=10 delivered=9 bounced=1; webhook committed=2 delivered=2
+ℹ PROBE NOTIFY-015 1: queued unsubscribe on both channels and permanent rejection -> email skipped=1 failed=1; webhook skipped=1 failed=1; delivery identities unchanged
+ℹ PROBE NOTIFY-015 2: three updates, replayed dispatch and signed receipts -> 27 email sends for 10 selected and 9 reached recipients; 5 webhook sends for 2 selected and reached recipients, 3 delivered, 1 skipped, 1 failed
+✔ Maintenance reminders respect the lead time and skip recent announcements (22275.306979ms)
+✔ Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers (30461.780587ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 223679.654783
