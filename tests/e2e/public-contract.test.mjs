@@ -96,17 +96,25 @@ function hasClass(node, name) {
 }
 
 async function assertPublicBranding(j, { state, pageName, logoBytes, previousVersion }) {
-  const version = await eventually(async () => {
+  const attribute = (node, name) => node?.attrs?.find(attr => attr.name === name)?.value;
+  const isCurrent = response => response.ok && response.headers.get('x-lamp-snapshot-state') !== 'stale';
+  const { version, html } = await eventually(async () => {
     const response = await j.publicResponse('/api/public/status');
-    if (!response.ok || response.headers.get('x-lamp-snapshot-state') === 'stale') {
+    if (!isCurrent(response)) {
       await response.text();
       return;
     }
     const { overall } = await response.json();
-    if (overall === state) return response.headers.get('x-lamp-snapshot-version');
-  }, current => Boolean(current && current !== previousVersion), `a current ${state} snapshot is published`);
+    const version = response.headers.get('x-lamp-snapshot-version');
+    if (overall !== state || !version || version === previousVersion) return;
 
-  const attribute = (node, name) => node?.attrs?.find(attr => attr.name === name)?.value;
+    const document = await j.publicResponse('/');
+    const html = await document.text();
+    if (!isCurrent(document) || document.headers.get('x-lamp-snapshot-version') !== version) return;
+    assert.match(document.headers.get('content-type') ?? '', /^text\/html\b/);
+    return { version, html };
+  }, Boolean, `a current ${state} snapshot is published`);
+
   const readArtifact = async (url, type) => {
     assert.equal(url.origin, j.publicOrigin, `${url.pathname} is first-party`);
     const response = await j.publicResponse(url);
@@ -117,7 +125,6 @@ async function assertPublicBranding(j, { state, pageName, logoBytes, previousVer
     return response.text();
   };
 
-  const html = await readArtifact(new URL(j.publicOrigin), /^text\/html\b/);
   const elements = descendants(parse(html));
   const label = elements.find(node => attribute(node, 'id') === 'overall-status');
   assert.ok(label, 'the public page shows its overall state');
@@ -128,8 +135,15 @@ async function assertPublicBranding(j, { state, pageName, logoBytes, previousVer
   const metadata = property => attribute(head.childNodes.find(node => node.tagName === 'meta' && attribute(node, 'property') === property), 'content');
   assert.equal(metadata('og:title'), expectedTitle);
   const icon = head.childNodes.find(node => node.tagName === 'link' && attribute(node, 'rel') === 'icon');
-  const faviconUrl = new URL(attribute(icon, 'href'), j.publicOrigin);
-  const socialUrl = new URL(metadata('og:image'));
+  const faviconHref = attribute(icon, 'href');
+  const socialHref = metadata('og:image');
+  const stylesheet = head.childNodes.find(node => node.tagName === 'link' && attribute(node, 'rel') === 'stylesheet');
+  const stylesheetHref = attribute(stylesheet, 'href');
+  assert.ok(faviconHref, 'the public document advertises a favicon');
+  assert.ok(socialHref, 'the public document advertises an Open Graph image');
+  assert.ok(stylesheetHref, 'the public document advertises its stylesheet');
+  const faviconUrl = new URL(faviconHref, j.publicOrigin);
+  const socialUrl = new URL(socialHref);
 
   const readArtwork = async url => {
     const svg = parseFragment(await readArtifact(url, /^image\/svg\+xml\b/)).childNodes.find(node => node.tagName === 'svg');
@@ -141,10 +155,12 @@ async function assertPublicBranding(j, { state, pageName, logoBytes, previousVer
     return svg.childNodes;
   };
   const favicon = await readArtwork(faviconUrl);
-  const stateMark = attribute(favicon.find(node => node.tagName === 'circle'), 'fill');
-  const stylesheet = await j.publicText('/assets/status-page.css');
+  const mark = favicon.find(node => node.tagName === 'circle');
+  assert.ok(Number(attribute(mark, 'r')) > 0, 'the favicon draws a state mark over the logo');
+  const stateMark = attribute(mark, 'fill');
+  const css = await readArtifact(new URL(stylesheetHref, j.publicOrigin), /^text\/css\b/);
   const stateColor = state === 'Operational' ? '--ok' : '--down';
-  const publicColor = stylesheet.match(new RegExp(`${stateColor}:\\s*(#[a-fA-F0-9]+)`))?.[1];
+  const publicColor = css.match(new RegExp(`${stateColor}:\\s*(#[a-fA-F0-9]+)`))?.[1];
   assert.ok(publicColor, `the public stylesheet exposes the ${state} color`);
   assert.equal(stateMark, publicColor, `the favicon mark matches the public ${state} color`);
 
@@ -757,10 +773,15 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const originalLogo = await j.publicResponse('/assets/logo');
     assert.equal(originalLogo.status, 200);
     assert.deepEqual(Buffer.from(await originalLogo.arrayBuffer()), png);
-    const workingBrand = await assertPublicBranding(j, { state: 'Operational', pageName, logoBytes: png });
+    const branding = { pageName, logoBytes: png };
+    const workingBrand = await assertPublicBranding(j, {
+      ...branding, state: 'Operational', previousVersion: initial.headers.get('x-lamp-snapshot-version'),
+    });
     const brandingClaimPath = `/api/app/components/${main.id}/standing-claim`;
     await j.json(brandingClaimPath, 'PUT', { state: 'Major outage' });
-    const outageBrand = await assertPublicBranding(j, { state: 'Major outage', pageName, logoBytes: png, previousVersion: workingBrand.version });
+    const outageBrand = await assertPublicBranding(j, {
+      ...branding, state: 'Major outage', previousVersion: workingBrand.version,
+    });
     assert.notEqual(outageBrand.stateMark, workingBrand.stateMark, 'the standing claim changes the favicon mark while retaining the logo');
     await j.json(brandingClaimPath, 'PUT', { state: null });
     console.info(`PROBE PAGE-012 4: logo upload and native standing claim -> ${workingBrand.labelText} to ${outageBrand.labelText}; ${outageBrand.faviconPath} retained the upload bytes and changed mark; the same-origin ${outageBrand.socialPath} text and Open Graph title matched each public label`);
