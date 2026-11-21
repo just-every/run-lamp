@@ -1,0 +1,2 @@
+{"channel":"slack","widths":[1440,390],"form":[{"value":"incidents","checked":true,"enabled":true},{"value":"maintenance","checked":true,"enabled":true},{"value":"components","checked":false,"enabled":true}],"mobileTextPx":15,"mobileOverflow":false,"iconOnlyButtons":0}
+{"channel":"teams","widths":[1440,390],"form":[{"value":"incidents","checked":true,"enabled":true},{"value":"maintenance","checked":true,"enabled":true},{"value":"components","checked":false,"enabled":true}],"mobileTextPx":15,"mobileOverflow":false,"iconOnlyButtons":0}
