@@ -8860,7 +8860,7 @@
       "executable": false
     },
     "tests/e2e/website-onboarding.test.mjs": {
-      "sha256": "7f7bfadc638aff08ca3eaa4449a0a1cdcc1ff1191caa6fc7c5f8762f04554a02",
+      "sha256": "848a1780d2dc74632281a56da8bcbe1c30cce057ea7e2b98f966a1af1c3955e6",
       "executable": false
     },
     "tests/e2e/worker-startup.mjs": {
