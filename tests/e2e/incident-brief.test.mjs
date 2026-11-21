@@ -5,6 +5,14 @@ import { eventually, openStatusJourney } from './helpers/status-journey.mjs';
 
 const aiEndpoint = 'https://ai.example.test/v1/chat/completions';
 
+function signedAlert(payload, signingSecret, at = new Date().toISOString()) {
+  const body = JSON.stringify(payload);
+  return { method: 'POST', headers: {
+    'Content-Type': 'application/json', 'x-lamp-timestamp': at,
+    'x-lamp-signature': createHmac('sha256', signingSecret).update(`${at}.${body}`).digest('base64url'),
+  }, body };
+}
+
 async function settledPublicStory(j, { reference, published }) {
   await j.publicText('/');
   for (let attempt = 0; ; attempt++) {
@@ -33,8 +41,9 @@ test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002
   try {
     const component = await j.component('Checkout API');
     const hidden = await j.component('PRIVATE internal service', { internal: true });
+    const signingSecret = 'synthetic-lamp-source-secret';
     const source = (await j.json('/api/app/intake/sources', 'POST', {
-      name: 'Customer API alerts', credentialKind: 'hmac-sha256', signingSecret: 'synthetic-lamp-source-secret',
+      name: 'Customer API alerts', credentialKind: 'hmac-sha256', signingSecret,
       deduplicationPath: '$.monitor.identity.key', titlePath: '$.monitor.presentation.summary', statePath: '$.monitor.health.phase', recoveredValue: 'service-restored', componentId: component.id,
     }, 201)).source;
     const savedSource = (await j.json('/api/app/intake/sources')).sources.find(row => row.id === source.id);
@@ -52,20 +61,13 @@ test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002
       return rows[0];
     };
     const endpoint = new URL(`/api/intake/${source.id}`, j.publicOrigin).href;
-    const signedAlert = payload => {
-      const body = JSON.stringify(payload), at = new Date().toISOString();
-      return { method: 'POST', headers: {
-        'Content-Type': 'application/json', 'x-lamp-timestamp': at,
-        'x-lamp-signature': createHmac('sha256', 'synthetic-lamp-source-secret').update(`${at}.${body}`).digest('base64url'),
-      }, body };
-    };
-    const alert = payload => j.raw(endpoint, signedAlert(payload));
+    const alert = payload => j.raw(endpoint, signedAlert(payload, signingSecret));
     assert.equal((await j.raw(new URL(`/api/intake/${source.id}`, j.publicOrigin).href, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).status, 401);
     const payload = {
       alert: { id: 'unmapped-key', title: 'PRIVATE unmapped title', state: 'recovered' },
       monitor: { identity: { key: 'checkout-outage' }, presentation: { summary: 'PRIVATE monitor wording' }, health: { phase: 'service-unhealthy' } },
     };
-    const originalRequest = signedAlert(payload);
+    const originalRequest = signedAlert(payload, signingSecret);
     const accepted = await j.raw(endpoint, originalRequest); assert.equal(accepted.status, 202);
     const original = await accepted.json(), id = original.incidentId;
     assert.ok(id); assert.ok(original.receiptId); assert.equal(original.replayed, false);
@@ -297,7 +299,7 @@ test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002
     assert.ok(!(await j.publicText(`/incidents/${before.reference}`)).includes(reason));
     await j.visible(`/incidents/${before.reference}`, 'Checkout has recovered.');
   } finally { await j.close(); }
-  const without = await openStatusJourney();
+  const without = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
     const component = await without.component('Provider-free API');
     const incident = await without.incident('Provider-free recovery', [component]);
@@ -305,5 +307,131 @@ test('INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002
     await without.json(`/api/app/incidents/${incident.id}/ai-suggestion`, 'POST', {}, 404);
     await without.save(incident.id); await without.publish(incident.id);
     assert.ok((await without.json(`/api/app/incidents/${incident.id}/brief`)).brief);
+    await singleWebhookRecoveryHold(without, t);
   } finally { await without.close(); }
 });
+
+async function singleWebhookRecoveryHold(j, t) {
+  const firingTime = Date.parse('2040-04-02T12:00:00.000Z');
+  const recoveryTime = firingTime + 60_000;
+  const boundary = recoveryTime + 300_000;
+  const at = time => new Date(time).toISOString();
+  const setClock = now => j.json('/test/clock', 'PUT', { now }, 204);
+  await setClock(firingTime);
+  await j.signIn(undefined, { fresh: true });
+
+  const component = await j.component('Checkout recovery hold API');
+  const sourceName = 'Checkout recovery hold monitor';
+  const signingSecret = 'synthetic-lamp-hold-1';
+  const { source } = await j.json('/api/app/intake/sources', 'POST', {
+    name: sourceName, credentialKind: 'hmac-sha256', signingSecret,
+    deduplicationPath: '$.key', titlePath: '$.title', statePath: '$.state',
+  }, 201);
+  const key = 'checkout-recovery-hold';
+  const send = async (state, time) => {
+    const response = await j.raw(source.endpointUrl, signedAlert({ key, title: sourceName, state }, signingSecret, at(time)));
+    assert.equal(response.status, 202, await response.clone().text());
+    const accepted = await response.json();
+    assert.ok(accepted.receiptId);
+    assert.ok(accepted.incidentId);
+    assert.equal(accepted.replayed, false);
+    return accepted;
+  };
+  const firing = await send('firing', firingTime);
+  const id = firing.incidentId;
+  const path = `/api/app/incidents/${id}`;
+  const receipt = async receiptId => {
+    const { receipts } = await j.json(`/api/app/intake/receipts?receipt=${receiptId}`);
+    assert.equal(receipts.length, 1);
+    return receipts[0];
+  };
+  const receiptFields = {
+    sourceId: source.id, sourceName, deduplicationKey: key, incidentId: id, error: null,
+  };
+  const firingReceipt = await receipt(firing.receiptId);
+  assert.deepEqual(firingReceipt, {
+    ...receiptFields, id: firing.receiptId, state: 'firing', recoveredAt: null,
+    receivedAt: at(firingTime), createdAt: at(firingTime), updatedAt: at(firingTime),
+  });
+
+  await j.json(`${path}/components`, 'POST', { componentId: component.id, state: 'Major outage', relationship: 'Primary' }, 201);
+  await j.save(id, {
+    affectedAudience: 'Checkout customers', customerImpact: 'Checkout requests are failing.',
+    whatStillWorks: 'Browsing remains available.', details: '', nextUpdateAt: at(firingTime + 3_600_000),
+  });
+  const { update: identified } = await j.publish(id);
+  const resolvedWording = {
+    lifecycle: 'Resolved', affectedAudience: 'Customers checking out',
+    customerImpact: 'Checkout requests are succeeding again.',
+    whatStillWorks: 'Browsing remains available throughout recovery.',
+    details: 'The checkout incident has ended.', nextUpdateAt: null,
+  };
+  const { draft: acknowledged } = await j.save(id, resolvedWording);
+  const saved = await j.read(id);
+  const { draft } = saved;
+  assert.equal(draft.id, acknowledged.id);
+  for (const [field, value] of Object.entries(resolvedWording)) {
+    assert.equal(draft[field], value, `saved ${field}`);
+  }
+  assert.deepEqual(saved.updates, [identified]);
+  assert.equal(saved.lifecycle, 'Identified');
+
+  await setClock(recoveryTime);
+  const recovered = await send('recovered', recoveryTime);
+  assert.equal(recovered.incidentId, id);
+  assert.notEqual(recovered.receiptId, firing.receiptId);
+  const recoveredReceipt = await receipt(recovered.receiptId);
+  assert.deepEqual(recoveredReceipt, {
+    ...receiptFields, id: recovered.receiptId, state: 'recovered', recoveredAt: at(recoveryTime),
+    receivedAt: at(recoveryTime), createdAt: at(recoveryTime), updatedAt: at(recoveryTime),
+  });
+  const linkedFiringReceipt = await receipt(firing.receiptId);
+  assert.deepEqual(linkedFiringReceipt, { ...firingReceipt, updatedAt: at(recoveryTime), recoveredAt: at(recoveryTime) });
+
+  const evidence = { source: sourceName, key, evidenceAt: recoveredReceipt.receivedAt, recoveredAt: recoveredReceipt.recoveredAt };
+  const check = async () => (await j.json(`${path}/recovery-check`)).recovery;
+  const publishRequest = {
+    method: 'POST', headers: { 'If-Match': `${draft.id}:${saved.updates.length}` },
+    body: JSON.stringify({ channels: [] }),
+  };
+  await setClock(boundary - 1);
+  const holding = await check();
+  assert.equal(holding.checkedAt, at(boundary - 1));
+  assert.equal(holding.passed, false);
+  assert.deepEqual(holding.items, [{ ...evidence, state: 'holding' }]);
+
+  const early = await j.api(`${path}/publish`, publishRequest);
+  assert.equal(early.status, 409);
+  assert.deepEqual(early.body.recovery, holding, 'publication refuses on the same linked recovery evidence');
+  const refused = await j.read(id);
+  assert.deepEqual(refused.draft, draft, 'the refusal retains the exact saved draft');
+  assert.deepEqual(refused.updates, saved.updates, 'the refusal leaves all committed updates unchanged');
+  assert.equal(refused.lifecycle, saved.lifecycle);
+
+  await setClock(boundary);
+  const passed = await check();
+  assert.equal(passed.checkedAt, at(boundary));
+  assert.equal(passed.passed, true);
+  assert.deepEqual(passed.items, [{ ...evidence, state: 'recovered' }]);
+
+  const published = await j.api(`${path}/publish`, publishRequest);
+  assert.equal(published.status, 200, published.text);
+  const { update } = published.body;
+  assert.equal(update.id, draft.id);
+  assert.equal(update.incidentId, id);
+  assert.equal(update.publishedAt, at(boundary));
+  for (const [field, value] of Object.entries(resolvedWording)) {
+    assert.equal(update[field], value, `published ${field}`);
+  }
+  const committed = await j.read(id);
+  assert.equal(committed.lifecycle, 'Resolved');
+  assert.equal(committed.draft, null);
+  assert.deepEqual(committed.updates, [update, ...saved.updates]);
+  assert.deepEqual(committed.internalNotes, saved.internalNotes);
+  await j.visible(`/incidents/${committed.reference}`, resolvedWording.customerImpact);
+  t.diagnostic('AGENT-004 webhook hold receipt ' + JSON.stringify({
+    firing, firingReceipt, recovered, recoveredReceipt, linkedFiringReceipt, draft,
+    beforeBoundary: { check: holding, status: early.status, response: early.body, draft: refused.draft, updates: refused.updates },
+    atBoundary: { check: passed, status: published.status, update, draft: committed.draft, updates: committed.updates },
+  }));
+}
