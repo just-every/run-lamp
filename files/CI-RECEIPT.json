@@ -1,0 +1,16 @@
+{
+  "candidate": "08f3288e856d154feefdbbd66e56d919dc73904d",
+  "branch": "cloud/sd-lamp-c-f162",
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f162",
+    "head_sha": "08f3288e856d154feefdbbd66e56d919dc73904d",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44842171850",
+    "id": 44842171850,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "main_base": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+  "main_candidate_equal_at_publication": false
+}

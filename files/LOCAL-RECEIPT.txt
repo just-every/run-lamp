@@ -1,0 +1,36 @@
+candidate=08f3288e856d154feefdbbd66e56d919dc73904d
+branch=cloud/sd-lamp-c-f162
+base=3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb
+node=22.20.0
+command=node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs
+chromium=/usr/bin/chromium
+exit=0
+ok 1 - INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+# PROBE UPDATE-001 3: native draft accepts 250 and 500 characters, refuses 251 and 501 independently with HTTP 400 and unchanged draft and updates, then retains both exact reviewed fields by committed update ID
+ok 2 - INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components
+ok 3 - INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history
+ok 4 - INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime
+ok 5 - MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history
+ok 6 - UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence
+ok 7 - INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams
+ok 8 - AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text
+ok 9 - NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure
+ok 10 - Maintenance reminders respect the lead time and skip recent announcements
+ok 11 - Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 181624.971762
+command=pnpm run typecheck exit=0
+command=pnpm exec rer check --profile first-party exit=0
+command=node src/base/contract-docs.mjs write exit=0
+command=node src/base/contract-docs.mjs check exit=0
+restored=ACCEPTANCE.md docs/CLAIMS.md from origin/main
+command=node scripts/edition-authoring/cli.mjs lock exit=0
+command=node scripts/edition-authoring/cli.mjs check exit=0
+Verify 44842171850, event push, status in_progress, conclusion pending. https://github.com/just-every/run-lamp/actions/runs/44842171850
+Main base 3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb: Verify 44839596494 and Run site 44839596465 completed successfully.
