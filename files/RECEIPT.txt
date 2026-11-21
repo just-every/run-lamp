@@ -1,0 +1,39 @@
+Lamp exact-tree verification receipt
+product_branch=cloud/sd-lamp-c-f187 product_head=3f4be8e7165ad4009e3ed9a798cbfac1108e0d8e
+base_main=f95b99b87f0ab98c8ad15c8e842a77baf30c95b1 main_equals_product=false
+Fetched main, confirmed the candidate parent matches it, and pushed one product commit.
+All range commit identities and messages passed. Product files are limited to the existing journey helper and sources.lock.json.
+
+Exact candidate targeted run with Node 22.20.0, pnpm 10.12.4, system Chromium.
+node --test --test-concurrency=1 --test-name-pattern='HIST-001' tests/e2e/public-contract.test.mjs
+# PUBLIC_SELECTION records=50 unique=50 expected=50 pages=1 private_disclosures=0
+# PROBE PAGE-016 3: anonymous native incident cursors -> 52 unique public incidents across 2 pages, exact ordered timelines and report fields, private control absent; generatedAt=2031-04-20T12:10:00.000Z
+ok 1 - HIST-001 — completed native records retain their month, window, components and complete publication inventory
+# tests 1
+# pass 1
+# fail 0
+# duration_ms 27084.943617
+exit=0
+
+Exact candidate local public-pages command with Node 24.19.0, pnpm 10.12.4, system Chromium.
+pnpm run test:public exit=1 (stopped during the existing capacity journey after the targeted test passed)
+ℹ tests 8
+ℹ pass 6
+ℹ fail 0
+ℹ skipped 0
+ℹ duration_ms 321629.137234
+
+Exact candidate typecheck and source checks under Node 22.20.0.
+pnpm typecheck exit=0
+pnpm exec rer check --profile first-party exit=0
+git diff --check exit=0
+Contract prose: 0 errors, 0 warnings. Contract documents are current.
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0
+Generated views restored to origin/main after write and check. Generator wrote zero documents.
+
+GitHub exact-SHA observations.
+candidate Verify 44889742588 event=push status=in_progress conclusion=pending head=3f4be8e7165ad4009e3ed9a798cbfac1108e0d8e https://github.com/just-every/run-lamp/actions/runs/44889742588
+baseline Run site 44888108898 event=push head=f95b99b87f0ab98c8ad15c8e842a77baf30c95b1 completed/success
+baseline Verify 44888108728 event=push head=f95b99b87f0ab98c8ad15c8e842a77baf30c95b1 completed/success
+Candidate Run site pending guarded landing.
+Publication scan commit=3f4be8e7165ad4009e3ed9a798cbfac1108e0d8e complete=unestablished historyScanned=unestablished findings=unestablished. Guarded lander owns the scan.
