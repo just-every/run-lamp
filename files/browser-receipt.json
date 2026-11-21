@@ -1,0 +1,41 @@
+{
+  "head": "a7bddce3ddb8f72db57a80232344962f6b301d7a",
+  "rows": [
+    {
+      "state": "Operational",
+      "label": "Working",
+      "title": "Customer service status: Working",
+      "width": 1440,
+      "file": "operational-1440.png",
+      "imagePath": "/assets/og.svg",
+      "status": 200
+    },
+    {
+      "state": "Operational",
+      "label": "Working",
+      "title": "Customer service status: Working",
+      "width": 390,
+      "file": "operational-390.png",
+      "imagePath": "/assets/og.svg",
+      "status": 200
+    },
+    {
+      "state": "Major outage",
+      "label": "Down",
+      "title": "Customer service status: Down",
+      "width": 1440,
+      "file": "major-outage-1440.png",
+      "imagePath": "/assets/og.svg",
+      "status": 200
+    },
+    {
+      "state": "Major outage",
+      "label": "Down",
+      "title": "Customer service status: Down",
+      "width": 390,
+      "file": "major-outage-390.png",
+      "imagePath": "/assets/og.svg",
+      "status": 200
+    }
+  ]
+}

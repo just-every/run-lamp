@@ -1,0 +1,90 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f167",
+  "head": "a7bddce3ddb8f72db57a80232344962f6b301d7a",
+  "main_observed": "2939f22d0549be77fcc94315b2747667f8796e66",
+  "main_workflows": {
+    "Verify": {
+      "id": 44861397097,
+      "conclusion": "success"
+    },
+    "Run site": {
+      "id": 44861397172,
+      "conclusion": "success"
+    }
+  },
+  "verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f167",
+    "head_sha": "a7bddce3ddb8f72db57a80232344962f6b301d7a",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44863408551",
+    "id": 44863408551,
+    "name": "Verify",
+    "status": "in_progress",
+    "observed_at_utc": "2026-11-21T03:59:10+00:00"
+  },
+  "tests": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "node": "24.19.0",
+      "pass": 8,
+      "fail": 0,
+      "provenance": "Same test and application bytes as the candidate"
+    },
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern 'owner maintains a complete catalogue' tests/e2e/public-contract.test.mjs",
+      "node": "22.20.0",
+      "head": "a7bddce3ddb8f72db57a80232344962f6b301d7a",
+      "pass": 1,
+      "fail": 0
+    }
+  ],
+  "probe": "PROBE PAGE-012 4: logo upload and native standing claim -> Working to Down; /assets/favicon.svg retained the upload bytes and changed mark; the same-origin /assets/og.svg text and Open Graph title matched each public label",
+  "mechanicals": [
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generated_changes": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "product_push": {
+    "attempts": 1,
+    "outcome": "published"
+  },
+  "publication_scan": {
+    "commit": "a7bddce3ddb8f72db57a80232344962f6b301d7a",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "pending guarded lander"
+  }
+}
