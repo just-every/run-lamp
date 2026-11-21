@@ -624,6 +624,79 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(afterDelete.total, activePage.total - 1, 'deletion updates the full visible count immediately');
     for (const query of ['limit=0', 'limit=101', 'limit=1.5', 'cursor=broken', 'group=unknown', 'group=active&lifecycle=Resolved']) await j.json(`/api/app/incidents?${query}`, 'GET', undefined, 400);
 
+    // Keep asynchronous consumers paused while comparing persisted notification work.
+    await j.json('/test/effects', 'PUT', { paused: true }, 204);
+    const stagedComponent = await j.component('Settlement processing');
+    const stageRecovery = async title => {
+      await owner();
+      const candidate = await j.incident(title, [component, stagedComponent]);
+      await saveReviewed(candidate.id, { lifecycle: 'Investigating' });
+      const opening = (await j.publish(candidate.id)).update;
+      await saveReviewed(candidate.id, {
+        lifecycle: 'Monitoring',
+        customerImpact: 'Settlement processing is recovering.',
+        componentChanges: [{ componentId: stagedComponent.id, state: 'Degraded performance' }],
+      });
+      const reviewed = await j.read(candidate.id);
+      const stagedAttachment = reviewed.components.find(row => row.componentId === stagedComponent.id);
+      const retainedAttachment = reviewed.components.find(row => row.componentId === component.id);
+      assert.equal(reviewed.components.length, 2);
+      assert.ok(stagedAttachment && retainedAttachment);
+      assert.deepEqual(reviewed.updates, [opening]);
+      assert.ok(reviewed.draft.reviewedAt);
+      assert.deepEqual(reviewed.draft.componentChanges.map(change => [change.componentId, change.attachmentId, change.state]),
+        [[stagedComponent.id, stagedAttachment.id, 'Degraded performance']]);
+      return { reviewed, retainedAttachment, version: `${reviewed.draft.id}:${reviewed.updates.length}` };
+    };
+    const publishRecovery = ({ reviewed, version }) => j.api(`/api/app/incidents/${reviewed.id}/publish`, {
+      method: 'POST', headers: { 'If-Match': version }, body: JSON.stringify({ channels: ['email'] }),
+    });
+    const inventory = async () => {
+      const tables = [
+        'incident_drafts', 'incident_updates', 'incident_components', 'audit_entries',
+        'component_claim_events', 'component_state_history', 'component_notification_events',
+        'component_notification_deliveries', 'component_delivery_attempts', 'notification_deliveries', 'notification_outbox',
+        'notification_delivery_attempts',
+      ];
+      const results = await j.db.batch([
+        ...tables.map(table => j.db.prepare(`SELECT * FROM ${table} ORDER BY id`)),
+        j.db.prepare('SELECT * FROM notification_channel_selections ORDER BY incident_update_id, channel'),
+      ]);
+      return Object.fromEntries([...tables, 'notification_channel_selections'].map((table, index) => [table, results[index].results]));
+    };
+
+    const conflict = await stageRecovery('Settlement recovery with a removed attachment');
+    const conflictPath = `/api/app/incidents/${conflict.reviewed.id}`;
+    assert.deepEqual(await j.json(`${conflictPath}/components/${stagedComponent.id}`, 'DELETE'), { detached: true });
+    const afterDetach = await j.read(conflict.reviewed.id);
+    assert.deepEqual(afterDetach.components, [conflict.retainedAttachment]);
+    assert.deepEqual(afterDetach.draft, conflict.reviewed.draft, 'detachment leaves the exact reviewed draft intact');
+    assert.deepEqual(afterDetach.updates, conflict.reviewed.updates);
+    assert.equal(`${afterDetach.draft.id}:${afterDetach.updates.length}`, conflict.version, 'the saved precondition is still current');
+    const beforeRefusal = await inventory();
+    const refused = await publishRecovery(conflict);
+    assert.equal(refused.status, 409, refused.text);
+    assert.deepEqual(refused.body, { error: 'An affected component changed after this draft was staged. Reload and review the component changes.' });
+    assert.deepEqual(await j.read(conflict.reviewed.id), afterDetach, 'the native incident is unchanged after refusal');
+    const afterRefusal = await inventory();
+    for (const [table, rows] of Object.entries(beforeRefusal)) {
+      assert.deepEqual(afterRefusal[table], rows, `refused publication leaves every ${table} row unchanged`);
+    }
+
+    const control = await stageRecovery('Settlement recovery with both attachments retained');
+    const accepted = await publishRecovery(control);
+    assert.equal(accepted.status, 200, accepted.text);
+    const committed = await j.read(control.reviewed.id);
+    assert.equal(committed.draft, null);
+    assert.deepEqual(committed.updates, [accepted.body.update, ...control.reviewed.updates]);
+    assert.equal(accepted.body.update.id, control.reviewed.draft.id);
+    assert.equal(accepted.body.update.customerImpact, control.reviewed.draft.customerImpact);
+    assert.equal(committed.components.length, 2);
+    assert.equal(committed.components.find(row => row.componentId === stagedComponent.id).state, 'Degraded performance');
+    const controlReach = await j.json(`/api/app/incidents/${control.reviewed.id}/reach?updateId=${accepted.body.update.id}`);
+    assert.equal(controlReach.updates[0].channels.find(row => row.channel === 'email').committed, 1);
+    t.diagnostic('PROBE UPDATE-012 5: publish a reviewed draft after native detachment with its current revision -> attachment-specific HTTP 409 and unchanged inventories; attached control -> HTTP 200, committed staged claim and one email recipient');
+
   } finally { await j.close(); }
   await reportPublicationFlow();
 });
@@ -1153,6 +1226,47 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await advanceAndTick(completionDeadline + 60000);
     assert.deepEqual(await readBounded(), finished, 'repeated completion ticks retain exactly one notice for each transition');
     await assertMaintenanceAvailabilityDownloads(j, operatorComponent);
+
+    const automationPath = '/api/app/maintenance/automation';
+    const readDefaults = async () => (await j.json(automationPath)).automation;
+    const switches = ({ autoStart, autoComplete }) => ({ autoStart, autoComplete });
+    assert.deepEqual(await readDefaults(), { autoStart: true, autoComplete: true });
+
+    const futureStart = new Date(boundedEnd + 24 * 3600000).toISOString();
+    const futureEnd = new Date(boundedEnd + 25 * 3600000).toISOString();
+    const retainedWindows = [{ id: maintenance.id, title: maintenance.title, expected: { autoStart: true, autoComplete: false } }];
+    for (const defaults of [
+      { autoStart: false, autoComplete: true },
+      { autoStart: true, autoComplete: false },
+    ]) {
+      await j.json(automationPath, 'PUT', defaults);
+      assert.deepEqual(await readDefaults(), defaults, 'saved defaults are returned by a separate read');
+
+      const overrideStart = { autoStart: !defaults.autoStart };
+      const overrideComplete = { autoComplete: !defaults.autoComplete };
+      for (const [title, overrides] of [
+        ['Inherit both switches', {}],
+        ['Override start and inherit completion', overrideStart],
+        ['Inherit start and override completion', overrideComplete],
+      ]) {
+        const expected = { ...defaults, ...overrides };
+        const window = (await j.json('/api/app/maintenance', 'POST', {
+          title, affectedAudience: input.affectedAudience, customerImpact: input.customerImpact,
+          startsAt: futureStart, endsAt: futureEnd,
+          componentIds: [internal.id], ...overrides,
+        }, 201)).maintenance;
+        assert.deepEqual(switches(window), expected, title);
+        retainedWindows.push({ id: window.id, title, expected });
+      }
+
+      const collection = await j.json('/api/app/maintenance');
+      assert.deepEqual(collection.automation, defaults);
+      for (const { id, title, expected } of retainedWindows) {
+        const saved = collection.maintenance.find(window => window.id === id);
+        assert.ok(saved, `${title}: the created window is listed`);
+        assert.deepEqual(switches(saved), expected, `${title}: saved choices survive changes to defaults`);
+      }
+    }
   } finally { await j.close(); }
 });
 
