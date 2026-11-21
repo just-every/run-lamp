@@ -1,0 +1,113 @@
+{
+  "contract": {
+    "after": "PARTIAL",
+    "before": "PARTIAL",
+    "counts_after": {
+      "done": 66,
+      "missing": 56,
+      "partial": 123,
+      "total": 245
+    },
+    "counts_before": {
+      "done": 66,
+      "missing": 56,
+      "partial": 123,
+      "total": 245
+    },
+    "held_points": [
+      1,
+      3
+    ],
+    "locally_proven_points": [
+      2
+    ],
+    "target": "NOTIFY-022"
+  },
+  "local": {
+    "browser_images": [
+      {
+        "file": "notification-email-1440.png",
+        "sha256": "b27c03f05550192358da05ef0645152345c9797570d5fa4f14a7f20bb34bb161",
+        "viewport_width": 1440
+      },
+      {
+        "file": "notification-email-390.png",
+        "sha256": "746e9865df816fc837c5c18bd0851790d5e27bb2511a875b299348e538478d3a",
+        "viewport_width": 390
+      }
+    ],
+    "build": {
+      "command": "pnpm exec rer build",
+      "exit": 0
+    },
+    "candidate_commit_audit": {
+      "commits": 2,
+      "verified": true
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "mail": {
+      "command": "pnpm run test:mail",
+      "exit": 0,
+      "fail": 0,
+      "pass": 5,
+      "skipped": 0,
+      "tests": 5
+    },
+    "migration_ledger": {
+      "status": "not applicable"
+    },
+    "runtime": {
+      "browser": "System Chromium, headless",
+      "node": "22.20.0",
+      "pnpm": "10.12.4"
+    },
+    "source_lock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "views": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0
+    }
+  },
+  "product": {
+    "base_before_push": "b1b29dd0b0dcaf6db7c8507d1d6b579469a96b70",
+    "branch": "cloud/sd-lamp-c-f182",
+    "full_history": true,
+    "head": "6102465816baeab9e5a9d76ed8d5ba883b5044e4",
+    "main_equals_candidate": false
+  },
+  "publication_scan": {
+    "commit": "6102465816baeab9e5a9d76ed8d5ba883b5044e4",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "pending guarded landing"
+  },
+  "run_site": {
+    "status": "pending guarded landing"
+  },
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "6102465816baeab9e5a9d76ed8d5ba883b5044e4",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44882823132",
+    "id": 44882823132,
+    "name": "Verify",
+    "observed_at_utc": "2026-11-21T08:20:49Z",
+    "status": "completed"
+  }
+}
