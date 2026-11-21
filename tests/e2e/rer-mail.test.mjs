@@ -1,3 +1,4 @@
+import { completeRoute } from './helpers/complete-route.mjs';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign, createHmac, createHash, randomBytes } from 'node:crypto';
 import { test } from 'node:test';
@@ -60,7 +61,8 @@ async function clearSavedFooter(browser, raw, cookie, savedFooter, proofDirector
     await context.route(`${appOrigin}/**`, async route => {
       const request = route.request();
       const response = await raw(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postDataBuffer() ?? undefined });
-      await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+      const body = Buffer.from(await response.arrayBuffer());
+      await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
     });
     const page = await context.newPage();
     await page.goto(appOrigin + '/app/settings#notifications');
@@ -674,7 +676,8 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
         await context.route('**/*', async route => {
           const request = route.request();
           const response = await raw(request.url(), { method: request.method(), headers: await request.allHeaders(), body: request.postDataBuffer() ?? undefined });
-          await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+          const body = Buffer.from(await response.arrayBuffer());
+          await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
         });
         const page = await context.newPage(); await page.goto(appOrigin + '/signin');
         if (provider === 'none') {

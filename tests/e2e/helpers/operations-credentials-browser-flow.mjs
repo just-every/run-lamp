@@ -1,3 +1,4 @@
+import { completeRoute } from "./complete-route.mjs";
 import assert from "node:assert/strict";
 import { mkdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -117,7 +118,7 @@ export async function operationsCredentialsBrowserFlow({ t } = {}) {
           edits.push(body);
           if (edits.length === 1) await holdChoices;
         }
-        await route.continue();
+        await completeRoute(() => route.continue());
       };
       await page.route(appOrigin + sourcePath, observeWrite);
       try {

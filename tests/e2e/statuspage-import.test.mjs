@@ -1,3 +1,4 @@
+import { completeRoute } from './helpers/complete-route.mjs';
 import { incidentSnapshot } from '../helpers/incident-snapshot.mjs';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
@@ -407,7 +408,8 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
             if (new URL(route.request().url()).pathname === '/synthetic-lamp-client.js') return route.fulfill({ contentType: 'application/javascript', body: readFileSync('tests/fixtures/statuspage-public/se-v2.js', 'utf8') });
             const response = await fetch(route.request().url());
             reads.push(new URL(route.request().url()).pathname);
-            await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+            const body = Buffer.from(await response.arrayBuffer());
+            await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
           });
           const page = await context.newPage();
           await page.goto(publicOrigin + '/');
