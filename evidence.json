@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "6951cca4605c65801d81a36dd520fd496a81c157",
+      "bytes": 1876,
+      "path": "BROWSER-RECEIPT.txt",
+      "sha256": "d588700f9034da75d23b39d270d071c59ba0438ac6633358c5eca84457089510"
+    },
+    {
+      "blob": "998df423fe80a05715282ffaa899db9e5b14d24d",
+      "bytes": 1523,
+      "path": "CUSTODY-RECEIPT.txt",
+      "sha256": "6e50c30559b5ba5003cd0ba8fa2a4cde3f4133598a27033b3cbfabc71e037061"
+    },
+    {
+      "blob": "c99329924018b93dde6a92b5b7c74e5bbca8d70d",
+      "bytes": 7569,
+      "path": "REPORT.md",
+      "sha256": "90543c5f86000071c197c42df93aba6a365d98f32ab010ad8655d019a17b9078"
+    },
+    {
+      "blob": "7ecb4adadc065f1a6cbe89454393951dffb09d93",
+      "bytes": 74086,
+      "path": "public-1440.png",
+      "sha256": "e5d0e6e6496d56066c3181e7e34a34d3008f27c705714c32015d697f6cffc96c"
+    },
+    {
+      "blob": "2262ccf633d4360f75850888343979124704b6d2",
+      "bytes": 50918,
+      "path": "public-390.png",
+      "sha256": "b6fc9cbbdefbd441930fbaf6680aedd87ec71724d2e32b02833548ec93b1d65e"
+    },
+    {
+      "blob": "2421c70a97b909bc86828882cf33b45ce2377d2a",
+      "bytes": 117519,
+      "path": "settings-1440.png",
+      "sha256": "af7d0fd18a0f9fcd891f13b58f7418c0160f46908f129b9d61cebd2777ec4ff6"
+    },
+    {
+      "blob": "601cb63799a9ea4b6f0816e4da4b5d5504d47ef7",
+      "bytes": 35216,
+      "path": "settings-390.png",
+      "sha256": "eacee257524c554a850e698205ae3f6273248043a037980f5c332d8e355098bb"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f192",
+  "product_head": "1c55d6b6f4e7e0f94d1015c4cbe5b03e0a9f786f",
+  "ref": "refs/heads/evidence/sd-lamp-c-f192",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f192"
+}

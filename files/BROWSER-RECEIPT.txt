@@ -1,0 +1,29 @@
+Candidate browser receipt
+Head 1c55d6b6f4e7e0f94d1015c4cbe5b03e0a9f786f
+Node v22.20.0. Chromium Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie).
+Command: node --test --test-concurrency=1 --test-name-pattern=owner\ saves\ readable\ dark\ status\ card\ colours tests/e2e/publishing-browser.test.mjs
+ok 1 - owner saves readable dark status card colours and a rejected edit stays private
+# THEME-004 at 1440 px: computed {"text":"rgb(163, 163, 163)","surface":"rgb(58, 58, 58)","background":"rgb(17, 17, 17)"}; saved text on card 4.5092:1; proposed text on page 7.3969:1 and on card 4.4556:1
+# THEME-004 at 390 px: computed {"text":"rgb(163, 163, 163)","surface":"rgb(58, 58, 58)","background":"rgb(17, 17, 17)"}; saved text on card 4.5092:1; proposed text on page 7.3969:1 and on card 4.4556:1
+# THEME-004: native Settings refused the edit with HTTP 400; all nine colours survived reload and signed-out computed colours stayed the same at both widths
+# tests 1
+# pass 1
+# fail 0
+
+Earlier full touched-file run at 6b0155d3065a1b3512c11e4c098b961ae9284320
+    Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+# tests 9
+# pass 8
+# fail 1
+
+Existing THEME-001 isolated on main 9ea011e0fe99033bc4e3d09fd6b6f96252c55324
+    Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg
+# tests 1
+# pass 0
+# fail 1
+
+Browser captures and SHA-256 digests
+af7d0fd18a0f9fcd891f13b58f7418c0160f46908f129b9d61cebd2777ec4ff6  settings-1440.png
+eacee257524c554a850e698205ae3f6273248043a037980f5c332d8e355098bb  settings-390.png
+e5d0e6e6496d56066c3181e7e34a34d3008f27c705714c32015d697f6cffc96c  public-1440.png
+b6fc9cbbdefbd441930fbaf6680aedd87ec71724d2e32b02833548ec93b1d65e  public-390.png

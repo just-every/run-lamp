@@ -1,0 +1,25 @@
+Lamp branch, CI and mechanical receipt
+Task sd-lamp-c-f192
+
+Product branch cloud/sd-lamp-c-f192
+Advertised product head 1c55d6b6f4e7e0f94d1015c4cbe5b03e0a9f786f
+Fetched main parent 9ea011e0fe99033bc4e3d09fd6b6f96252c55324
+The first receive-pack rejected the ref with status "failed" and supplied no HTTP status. A guarded retry after launcher refresh published the same commit. Git ls-remote confirmed the branch head.
+Candidate identity and message check passed for every commit above origin/main. No trailers present.
+Candidate main equality pending guarded landing.
+Main parent Verify 44899481148 completed success on push.
+Main parent Run site 44899481252 completed success on push.
+Candidate publication-scan receipt pending guarded landing. No scan coverage or finding count is claimed.
+Candidate Run site is main-only and awaits landing.
+
+Final candidate focused Chromium journey exit 0. See BROWSER-RECEIPT.txt.
+Final candidate pnpm typecheck exit 0.
+Final candidate node src/base/contract-docs.mjs write and check exit 0.
+Generated views restored from the fetched main without a candidate diff.
+Final candidate node scripts/edition-authoring/cli.mjs lock and check exit 0.
+Final candidate pnpm exec rer check --profile first-party exit 0.
+Migration ledger check does not apply.
+
+Remote main observed at b6d1d051f754d8bc331658d496566450562de8ac.
+Candidate Verify 44900560306, push event, completed success on 1c55d6b6f4e7e0f94d1015c4cbe5b03e0a9f786f.
+https://github.com/just-every/run-lamp/actions/runs/44900560306
