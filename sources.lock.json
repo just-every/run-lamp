@@ -8772,7 +8772,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "f82061ff67669bc0f32e2f94191e4a8cc4f72274a0818d53d80d78c2a1291095",
+      "sha256": "8fe96d3e3fb1d7a57d76d5258065cc7a9f759bed500a54f6d8b98383b346f151",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
