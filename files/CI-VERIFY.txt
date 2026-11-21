@@ -1,0 +1,21 @@
+Observed at 2026-11-21T01:21:29Z
+Exact-SHA Verify run 44848376476
+{"conclusion":"failure","head_sha":"ac3972b416ba736a32d34aec31631cde1b6b3cfd","html_url":"https://github.com/just-every/run-lamp/actions/runs/44848376476","status":"completed"}
+[{"conclusion":"success","failed_steps":[],"id":136673612364,"name":"plan","status":"completed"},{"conclusion":"failure","failed_steps":["Build the production Worker once"],"id":136673655255,"name":"build","status":"completed"},{"conclusion":"failure","failed_steps":["Require every planned command to succeed on this commit"],"id":136673966019,"name":"verify","status":"completed"},{"conclusion":"skipped","failed_steps":[],"id":136673967039,"name":"shards","status":"completed"}]
+job=136673655255 gh_exit=0
+job=136673966019 gh_exit=0
+build	Build the production Worker once	2026-11-21T01:09:43.8662795Z docs/accessibility/vpat.md must describe RELEASE.json version 1.11.25.
+build	Build the production Worker once	2026-11-21T01:09:43.8663472Z + '1.11.24'
+build	Build the production Worker once	2026-11-21T01:09:43.8663633Z - '1.11.25'
+build	Build the production Worker once	2026-11-21T01:09:19.3233917Z Verification plan: 9 test shards and one shared build, 36 routine test files, 115 registered cases (including release qualification) + 10 assertion scripts = 125 checks.
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9138348Z build: wrong shard, commit or unsuccessful completion
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9138753Z ownership: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9139065Z portability: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9139382Z imports: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9139823Z composer: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9141930Z public-pages: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9142425Z delivery: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9142771Z public: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9143056Z runtime: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9143269Z demo: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-21T01:10:03.9145444Z Verification: 0/10 shards completed successfully for this commit.

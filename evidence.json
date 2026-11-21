@@ -1,0 +1,34 @@
+{
+  "files": [
+    {
+      "blob": "2bcaafb51e75de6d61d75ab45ea9bfb19b827fea",
+      "bytes": 2745,
+      "path": "CI-VERIFY.txt",
+      "sha256": "4b117e47edf08da7be4d6994730a7efe56355f026a3285a09d3db5800d48eece"
+    },
+    {
+      "blob": "d87f3d032abb3b56c18b97c9f3f7c1f002c764c0",
+      "bytes": 232,
+      "path": "DECLARED-HASHES.txt",
+      "sha256": "9e91f105431387600324f3d81734ccc9da9ff02e3f4f0ae5dd90adf48aaae6a2"
+    },
+    {
+      "blob": "f5c066333d35b9cfce5eba713a455684dcc7c7dc",
+      "bytes": 4670,
+      "path": "REPORT.md",
+      "sha256": "4a9946b065512dc25f669f49e0e0f02833432ee62bec3fee70a064361c9a54f5"
+    },
+    {
+      "blob": "1d8ce23f6c22f583c95d4220535deb178d10e8ba",
+      "bytes": 1417,
+      "path": "VERIFICATION.txt",
+      "sha256": "feeeee0a7fced7b399add9a80384e61854ccf53b75ed9e6ef110be99284f5da8"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-release-1-11-25",
+  "product_head": "ac3972b416ba736a32d34aec31631cde1b6b3cfd",
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-25",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-25"
+}
