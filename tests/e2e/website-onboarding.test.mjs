@@ -60,8 +60,9 @@ async function withOnboardingRuntime(site, journey) {
 async function confirmWebsiteWithBrowserZone(runtime, browser) {
   const invalidZone = 'Etc/Unknown';
   const browserZone = 'America/New_York';
+  const summaryPath = '/api/public/v1/summary.json';
   const readPublicPage = async () => {
-    const response = await nativeRequest('/api/public/v1/summary.json', { host: publicOrigin, headers: { Connection: 'close' } });
+    const response = await nativeRequest(summaryPath, { host: publicOrigin, headers: { Connection: 'close' } });
     assert.equal(response.status, 200);
     return (await response.json()).page;
   };
@@ -107,9 +108,11 @@ async function confirmWebsiteWithBrowserZone(runtime, browser) {
   await page.getByRole('region', { name: 'Your public page' }).waitFor();
   const settings = await readSettings();
   assert.equal(settings.timezone, browserZone, 'confirmation saves the unedited suggestion');
-  const published = await readPublicPage();
+  const summary = await nativeRequest(summaryPath, { host: publicOrigin });
+  assert.equal(summary.status, 200);
+  const { page: published } = await summary.json();
   assert.equal(published.name, 'Acme Tracking Status');
-  assert.equal(published.timezone, settings.timezone, 'the public page uses the saved zone');
+  assert.equal(published.timezone, browserZone, 'the public page uses the confirmed browser zone');
 
   await page.goto(origin + '/app/settings#page');
   const savedZone = page.getByRole('combobox', { name: 'Time zone', exact: true });

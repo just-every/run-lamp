@@ -14,7 +14,7 @@ import { fileRecords } from '@runeditrun/rer/internal/modules/portability/files.
 import { authFixture, secret, setupToken } from './runtime.mjs';
 import { load } from '../operator-readiness/runtime.mjs';
 import { checkout, command, proxy } from '../helpers/native-transfer.mjs';
-import { populateArchiveHistory } from '../helpers/archive-history.mjs';
+import { assertArchiveHistory, captureArchiveHistory, populateArchiveHistory } from '../helpers/archive-history.mjs';
 import { fixtureProcessEnv } from '../helpers/worker-environment.mjs';
 
 test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority', async t => {
@@ -77,8 +77,12 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     const portableIncidentSubscribers=await preparePortableIncidentSubscribers({db,codec,now});
     const portableMetrics=await preparePortableMetrics({env:current.env,native,cookie:oldCookie});
     const portableRules = await preparePortableAlertRules({ env: current.env, native, cookie: oldCookie });
+    const sourceHistory = await captureArchiveHistory(current.env);
     await current.dispose(); current = null;
-    await command(source, 'export', '--output', join(directory, 'installation.rer'));
+    const archivePath = join(directory, 'installation.rer');
+    await command(source, 'export', '--output', archivePath);
+    const firstExport = await archivedProduct(archivePath);
+    assertArchiveHistory(sourceHistory, firstExport);
     for await (const record of fileRecords(join(directory, 'installation.rer'))) {
       if (record.kind !== 'manifest') continue;
       assert.equal(record.tables.find(table => table.name === 'incident_subscriptions')?.count, 2);
@@ -118,7 +122,7 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     await assert.rejects(command(target, 'import', '--input', damagedPath, '--yes'), /failed/i, 'a damaged backup is refused before a valid restore');
     await command(target, 'import', '--input', join(directory, 'installation.rer'), '--yes');
     await command(target, 'export', '--output', join(directory, 'restored.rer'));
-    assert.deepEqual(await archivedProduct(join(directory, 'restored.rer')), await archivedProduct(join(directory, 'installation.rer')), 'clean restore and re-export preserve every archived entity and original object byte');
+    assert.deepEqual(await archivedProduct(join(directory, 'restored.rer')), firstExport, 'clean restore and re-export preserve every archived entity and original object byte');
     current = await proxy(target);
     const restored = current.env.DB, fresh = authFixture(restored);
     assert.equal((await fresh.handle(fresh.request('/auth/bootstrap', { method: 'POST', body: { token: setupToken, displayName: 'Replacement' } }))).status, 409);
