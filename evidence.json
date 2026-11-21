@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "6316377cc93b660f92e1376c5a8b498469f78699",
+      "bytes": 111679,
+      "path": "1440-email-preview.png",
+      "sha256": "636df3b8541b984fcc884d40a86f92c3d82381cd20b1d4f99c7e50e47fc7d9a5"
+    },
+    {
+      "blob": "f49894c7fbeb75e21a29a76e5f6980d8fc3730e7",
+      "bytes": 59894,
+      "path": "1440-notification-email-settings.png",
+      "sha256": "0473dea0de1be59103739e4b2711e6141d609855222b6d4ce4226cafa455ecfb"
+    },
+    {
+      "blob": "735d3c14c30ccde0758286ca4909813a07d2b2a3",
+      "bytes": 109762,
+      "path": "390-email-preview.png",
+      "sha256": "12d098b4059207baed6f48dc0886a77d786a553377a700e26e8afbbc432ada13"
+    },
+    {
+      "blob": "8f862f31b32c3dde1dffcb6ad0f657d4ff51e3ef",
+      "bytes": 57359,
+      "path": "390-notification-email-settings.png",
+      "sha256": "280ff46441e4c5e480c8181690bbb2db8672f895ae2c00a6e96535f8ab4c5059"
+    },
+    {
+      "blob": "314ae28aa1b61ddf6cae449c118f20bcbc9f1f47",
+      "bytes": 4629,
+      "path": "CHECKS-RECEIPT.json",
+      "sha256": "098da088dc3830a4e5f8834f952a029fca80f42967a9b23226ea671f29ec2c5a"
+    },
+    {
+      "blob": "3e68a350fc75d63f8cbd17272e5a7ec6464e5a8d",
+      "bytes": 8706,
+      "path": "REPORT.md",
+      "sha256": "ceeb43e46ce6c4c76bb12605a69b779b67baad0fb623019580bd58da107dc7d4"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f183",
+  "product_head": "18fced5578d603b7791e31ec81beb6fd7d6098ff",
+  "ref": "refs/heads/evidence/sd-lamp-c-f183",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f183"
+}

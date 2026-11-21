@@ -1,0 +1,149 @@
+{
+  "baseMain": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+  "browser": {
+    "command": "node --test --test-concurrency=1 tests/e2e/publishing-browser.test.mjs",
+    "exit": 1,
+    "journeyDurationMs": 151372.592561,
+    "observedJourney": "INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 \u2014 compiled visual edits and the operator publication journey",
+    "totals": {
+      "cancelled": 0,
+      "duration_ms": 327458.945977,
+      "fail": 1,
+      "pass": 7,
+      "skipped": 0,
+      "tests": 8,
+      "todo": 0
+    },
+    "unrelatedLocalFailure": {
+      "baselineCommand": "node --test --test-concurrency=1 --test-name-pattern='THEME-001' tests/e2e/publishing-browser.test.mjs",
+      "baselineExit": 1,
+      "error": "Theme assets stay in the four-request budget: /assets/status-page.css,/assets/theme-header,/assets/mark.svg,/assets/status-page.js,/assets/favicon.svg",
+      "reproducedOnBase": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+      "test": "THEME-001 \u2014 owner publishes branded themes and layouts within the page budget"
+    }
+  },
+  "checked": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generatedFilesChanged": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "chromium": "154.0.8037.57",
+  "clauseCounts": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123,
+    "total": 245
+  },
+  "exactVerify": {
+    "conclusion": "success",
+    "created_at": "2026-11-21T09:39:42Z",
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f183",
+    "head_sha": "18fced5578d603b7791e31ec81beb6fd7d6098ff",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44890625227",
+    "id": 44890625227,
+    "name": "Verify",
+    "run_started_at": "2026-11-21T09:39:42Z",
+    "status": "completed"
+  },
+  "mail": {
+    "command": "pnpm run test:mail",
+    "exit": 0,
+    "journeyDurationMs": 24013.226859,
+    "observedJourney": "BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 \u2014 Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out",
+    "totals": {
+      "cancelled": 0,
+      "duration_ms": 62637.639074,
+      "fail": 0,
+      "pass": 5,
+      "skipped": 0,
+      "tests": 5,
+      "todo": 0
+    }
+  },
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "productBranch": "cloud/sd-lamp-c-f183",
+  "productHead": "18fced5578d603b7791e31ec81beb6fd7d6098ff",
+  "remoteMain": "bae6596ccf21e8c6a905b0e708c9a76c4f85c4db",
+  "repository": "just-every/run-lamp",
+  "scan": {
+    "complete": null,
+    "findings": null,
+    "historyScanned": null
+  },
+  "shots": [
+    {
+      "imageHeight": 781,
+      "imageWidth": 1111,
+      "path": "1440-notification-email-settings.png",
+      "sha256": "0473dea0de1be59103739e4b2711e6141d609855222b6d4ce4226cafa455ecfb",
+      "viewportWidth": 1440
+    },
+    {
+      "imageHeight": 1391,
+      "imageWidth": 462,
+      "path": "1440-email-preview.png",
+      "sha256": "636df3b8541b984fcc884d40a86f92c3d82381cd20b1d4f99c7e50e47fc7d9a5",
+      "viewportWidth": 1440
+    },
+    {
+      "imageHeight": 963,
+      "imageWidth": 358,
+      "path": "390-notification-email-settings.png",
+      "sha256": "280ff46441e4c5e480c8181690bbb2db8672f895ae2c00a6e96535f8ab4c5059",
+      "viewportWidth": 390
+    },
+    {
+      "imageHeight": 1655,
+      "imageWidth": 356,
+      "path": "390-email-preview.png",
+      "sha256": "12d098b4059207baed6f48dc0886a77d786a553377a700e26e8afbbc432ada13",
+      "viewportWidth": 390
+    }
+  ],
+  "syntheticProviderEdges": [
+    "managed relay",
+    "Resend",
+    "SendGrid"
+  ],
+  "tag": "sd-lamp-c-f183",
+  "verificationInventory": {
+    "assertionScripts": 10,
+    "registered": 116
+  }
+}
