@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.11.25
+
+- **See which ungrouped components move in a Sorry dry run.** Lamp names each ungrouped component that moves below the groups, marks it as changed and explains that Lamp lists groups first.
+- **Lamp uses rer 0.2.126.** The pinned tool supports the local startup, owner entry and archive restore steps in RUN-LOCALLY.md. Local port inspection now stops at its deadline if the inspection process hangs.
+
+### Upgrading from 1.11.24
+
+Back up data and your source changes first. Update the checkout to `v1.11.25`, run `pnpm install --frozen-lockfile` and run `rer deploy` with the same environment and input file. This version adds no migrations. Keep the backup and exercise a restored copy. Check sign-in, first-run setup, Settings, incident publication, maintenance notices and your intended mail configuration. Review imported Sorry templates before using them. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+
+### Known limits
+
+Use the source revision that created a technical archive for the initial restore, then update the restored copy normally. Restore into an empty destination. The existing accessibility evaluation covers selected journeys and leaves some WCAG 2.2 AA criteria unevaluated.
+
+<!-- Run Edit Run fleet, 2026-11-21: Lamp 1.11.25 release metadata. -->
+
 ## 1.11.24
 
 - **Maintenance notices follow the transition.** Starting a window sends its start notice and completing it sends its completion notice. The public status page lists upcoming maintenance through the fourteen-day boundary.
