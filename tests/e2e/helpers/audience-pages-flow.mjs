@@ -63,7 +63,12 @@ async function representation(j, page, path, privateRead = true) {
     assert.match(response.headers.get('cache-control') ?? '', /\bno-store\b/);
     assert.equal(response.headers.get('access-control-allow-origin'), null);
   }
-  return { body: await response.text(), version: response.headers.get('x-lamp-snapshot-version'), etag: response.headers.get('etag') };
+  return {
+    body: await response.text(),
+    version: response.headers.get('x-lamp-snapshot-version'),
+    etag: response.headers.get('etag'),
+    objectReads: Number(response.headers.get('x-test-r2-reads')),
+  };
 }
 
 async function waitFor(j, page, path, marker) {
@@ -99,6 +104,40 @@ async function deniedWithoutLookup(j, url, marker, validator, revokedCookie) {
   assert.equal(response.headers.get('x-lamp-snapshot-version'), null);
   assert.equal(response.headers.get('etag'), null);
   assert.doesNotMatch(await response.text(), new RegExp(marker));
+}
+
+async function assertPublicHostRefusesArtifacts(j, page, artifacts) {
+  assert.ok(j.cookie, 'the operator has an active session');
+  for (const [path, markers] of artifacts) {
+    const operatorUrl = privateStatusUrl(page, path);
+    const publicUrl = new URL(new URL(operatorUrl).pathname, j.publicOrigin);
+    const label = `${page.path} ${path}`;
+    const served = await representation(j, page, path);
+    requireBody(served.body, markers, [], `populated ${label}`);
+    assert.ok(served.version, `${label} has a protected snapshot version`);
+    assert.ok(served.objectReads > 0, `${label} reads the protected object store`);
+    // Protected responses carry a snapshot version without a cache ETag.
+    const validator = served.etag ?? `W/"${served.version}"`;
+
+    for (const [credentials, headers] of [
+      ['protected validator', { 'If-None-Match': validator }],
+      ['operator cookie', { Cookie: j.cookie }],
+      ['protected validator and operator cookie', { 'If-None-Match': validator, Cookie: j.cookie }],
+    ]) {
+      for (const method of ['GET', 'HEAD']) {
+        const request = `${method} public ${label} with ${credentials}`;
+        const refused = await j.raw(publicUrl.href, { method, headers });
+        assert.equal(refused.status, 404, request);
+        assert.equal(refused.headers.get('x-test-r2-reads'), '0', `${request} never reads object storage`);
+        assert.equal(refused.headers.get('etag'), null, `${request} has no validator`);
+        assert.deepEqual([...refused.headers.keys()].filter(name => name.startsWith('x-lamp-snapshot-')), [], `${request} has no snapshot metadata`);
+        const body = await refused.text();
+        if (method === 'HEAD') assert.equal(body, '', request);
+        assert.ok(!body.includes(served.body), `${request} excludes the protected artifact`);
+        requireBody(body, [], [...markers, served.version], request);
+      }
+    }
+  }
 }
 
 export async function audiencePagesFlow() {
@@ -284,13 +323,38 @@ export async function audiencePagesFlow() {
     const acmeImpact = 'Acme-only wording: Connector sync needs a retry.';
     await j.save(acmeIncident.id, { customerImpact: acmeImpact });
     const { update: acmeUpdate } = await j.publish(acmeIncident.id, { pagePaths: [audiencePath] });
+    const acmeWorkImpact = 'Acme-only wording: the connector has a scheduled upgrade.';
+    const { maintenance: acmeWork } = await schedule('Acme connector upgrade', acmeWorkImpact, b.id, [audiencePath]);
     await waitFor(j, audience, '/', acmeImpact);
+    await waitFor(j, audience, '/api/public/v1/maintenance', acmeWorkImpact);
     requireBody((await representation(j, audience, '/api/public/v1/incidents')).body, [acmeIncident.title, acmeImpact, acmeUpdate.id], staffOnly, 'Acme includes only selected publications');
     requireBody((await representation(j, staff, '/feed.atom')).body, [confidentialUpdate.id], [acmeIncident.title, acmeImpact, acmeUpdate.id], 'Staff excludes Acme-only publication');
     requireBody(await j.publicText('/feed.atom'), [sharedUpdate.id], [...staffOnly, acmeUpdate.id], 'Public feed retains only public events');
 
+    const componentPath = `/components/${consoleService.slug}`;
+    for (const { page, name, incident, update, impact, work, workImpact, feed } of [
+      { page: staff, name: renamed.pageName, incident: confidential, update: confidentialUpdate, impact: confidentialImpact, work: privateWork, workImpact: privateWorkImpact, feed: staffFeed },
+      { page: audience, name: audienceSettings.pageName, incident: acmeIncident, update: acmeUpdate, impact: acmeImpact, work: acmeWork, workImpact: acmeWorkImpact, feed: audienceFeed },
+    ]) {
+      const event = [feed, incident.title, update.id];
+      await assertPublicHostRefusesArtifacts(j, page, [
+        ['/', [name, impact]],
+        ...['/feed.atom', '/feed.rss', '/history.atom', '/history.rss', `${componentPath}/feed.atom`, `${componentPath}/feed.rss`].map(path => [path, event]),
+        ['/badge.svg', ['>Down</text>']],
+        ['/badge.json', ['"message":"Down"']],
+        [`${componentPath}/badge.svg`, [b.name, '>Down</text>']],
+        [`${componentPath}/uptime.svg`, ['-day uptime</text>']],
+        ['/api/public/status', [incident.title, impact]],
+        ['/api/public/v1', [name, new URL(page.url).pathname.replace(/\/$/, '') + '/api/public/v1/incidents']],
+        ['/api/public/v1/components', [b.id, b.name, 'Major outage']],
+        ['/api/public/v1/incidents', [incident.id, impact, update.id]],
+        ['/api/public/v1/maintenance', [work.id, workImpact]],
+      ]);
+    }
+    console.info('PROBE AUD-005 2: populated Staff and Acme artifacts on the operator host -> public GET and HEAD return 404 without artifact bytes, snapshot metadata or object reads with the validator, the operator cookie, or both');
+
     const privateEvents = [confidentialUpdate.id, acmeUpdate.id];
-    for (const { id } of (await j.db.prepare('SELECT id FROM maintenance_notices WHERE maintenance_id = ? ORDER BY id').bind(privateWork.id).all()).results) privateEvents.push(id);
+    for (const { id } of (await j.db.prepare('SELECT id FROM maintenance_notices WHERE maintenance_id IN (?, ?) ORDER BY id').bind(privateWork.id, acmeWork.id).all()).results) privateEvents.push(id);
     assert.ok(privateEvents.length > 2, 'real private maintenance notices were published');
     await j.tick(Date.now());
     for (const id of privateEvents) {
