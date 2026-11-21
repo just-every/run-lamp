@@ -13,6 +13,10 @@
     {
       "id": "0085_status_page_email_branding.sql",
       "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration adds storage for email branding overrides on individual status pages."
+    },
+    {
+      "id": "0086_required_sign_in.sql",
+      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. Required sign-in starts off on existing installations."
     }
   ],
   "breaking": false,
