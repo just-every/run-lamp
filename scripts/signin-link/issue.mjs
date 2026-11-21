@@ -1,16 +1,32 @@
-import {createOperatorAuth} from '@runeditrun/rer/modules/operator-auth';
-import {createUlid} from '../ops-config.mjs';
-import {sqlDatabase} from './database.mjs';
-export const refusal='A sign-in link could not be created. Check the operator address and installation.';
-export async function issueSignInLink({email,origin,execute,sessionSecret,now=Date.now()}) {
- const db=sqlDatabase(execute);let link;
- const auth=createOperatorAuth({db,clock:()=>now,config:{origin,local:new URL(origin).protocol==='http:',OWNER_EMAIL:email,SESSION_SECRET:sessionSecret,MAIL_FROM:'terminal@operator.invalid',linkSeconds:1200,branding:{productName:'Lamp'}},clientIp:()=> 'owner-terminal',
-  mailSender:{async send(message){
-   const candidate=message.text.match(/https?:\/\/[^\s]+/)?.[0];if(!candidate)throw Error(refusal);
-   const timestamp=new Date(now).toISOString();
-   await db.prepare("INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at) SELECT ?,'operator',operator_id,'sign-in link created from the command line',operator_id,'{}',?,? FROM oa_tokens WHERE id=?").bind(createUlid(),timestamp,timestamp,message.deliveryId).run();
-   link=candidate;return {status:'accepted',provider:'owner-terminal',providerMessageId:null};
-  }} });
- await auth.requestMagicLink(new Request(origin+'/auth/magic-link',{method:'POST',headers:{Origin:origin,Host:new URL(origin).host}}),{email});
- if(!link)throw Error(refusal);return link;
+import { normalizeEmail } from '@runeditrun/rer/modules/operator-auth';
+import { hashToken, opaqueToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
+import { emailDomain } from '@runeditrun/rer/internal/modules/operator-auth/policy.mjs';
+import { createUlid } from '../ops-config.mjs';
+import { bindSql } from './database.mjs';
+
+export const refusal = 'A sign-in link could not be created. Check the operator address and installation.';
+
+export async function issueSignInLink({ email, origin, execute, sessionSecret, now = Date.now() }) {
+  if (typeof sessionSecret !== 'string' || sessionSecret.length < 32 || sessionSecret.length > 1024) throw new Error(refusal);
+  const address = normalizeEmail(email);
+  const token = opaqueToken();
+  const id = crypto.randomUUID();
+  const hash = await hashToken(sessionSecret, 'link', token);
+  const timestamp = new Date(now).toISOString();
+  const auditId = createUlid();
+  // Issue a native magic link with terminal provenance. The audit insert
+  // witnesses issuance in the same D1 batch, including when a trigger refuses it.
+  const rows = await execute(bindSql(`
+    INSERT INTO oa_tokens(id,token_hash,kind,operator_id,operator_version,return_to,created_at,expires_at,terminal_issued)
+      SELECT ?,?,'magic',id,version,'/app',?,?,1 FROM oa_operators
+      WHERE email=? AND status='active'
+      AND (role='owner' OR NOT EXISTS (SELECT 1 FROM oa_domain_rules WHERE domain=?));
+    INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
+      SELECT ?,'operator',operator_id,'sign-in link created from the command line',operator_id,'{}',?,?
+      FROM oa_tokens WHERE id=? RETURNING id;
+  `, id, hash, now, now + 20 * 60_000, address, emailDomain(address), auditId, timestamp, timestamp, id));
+  if (!rows.some(row => row.id === auditId)) throw new Error(refusal);
+  const link = new URL('/auth/confirm', origin);
+  link.searchParams.set('token', token);
+  return link.href;
 }

@@ -1,6 +1,7 @@
 import { installationSignIn } from "./installation-presentation";
 import { createOperatorRolesRepository } from '../../features/operators/roles.repository';
 import { AuthError, createAuthHandler, createSignInHandler, securityHeaders } from '@runeditrun/rer/modules/operator-auth';
+import { hashToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
 import { createDependencies } from '@runeditrun/rer/modules/dependencies';
 import { createIdpOwnerClaimHandler, createOwnerClaimHandler } from '@runeditrun/rer/modules/owner-claim';
 import { authConfig } from './config';
@@ -27,7 +28,8 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
     // The signed claim exists only on its own route, and only while the platform still holds SETUP_TOKEN. The trust stays bound after the
     // claim (the import door reads it), but the platform then retires the token: every other route must not build the handler.
     const required = url.pathname === '/auth/owner-signin' ? null : await services.signIn.requiredProvider();
-    const publicAuth = required ? requireProvider(auth, required) : auth;
+    const publicAuth = required ? requireProvider(auth, required, async token =>
+      services.signIn.hasTerminalOwnerLink(await hashToken(config.SESSION_SECRET, 'link', token))) : auth;
     const trust = url.pathname === '/auth/owner-claim' ? ownerClaimConfig(env) : null;
     let response = !trust ? null : !env.SETUP_TOKEN ? Response.json({ error: 'claim_unavailable' }, { status: 409, headers: securityHeaders() })
       : await createOwnerClaimHandler({ db: env.DB, authConfig: config,
@@ -81,11 +83,17 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
 
 type LampAuth = Awaited<ReturnType<AppServices['signInAuth']>>;
 
-function requireProvider(auth: LampAuth, required: string): LampAuth {
+function requireProvider(auth: LampAuth, required: string, isTerminalOwnerLink: (token: string) => Promise<boolean>): LampAuth {
   const providers = auth.providers;
   const refuse = () => new Response(null, {
     status: 303, headers: { ...securityHeaders(), Location: '/signin?notice=provider_required' },
   });
+  async function permittedLink(request: Request, token: string) {
+    const preview = await auth.previewLink(request, token);
+    // Step-up stays bound to the existing session. A terminal link can open an Owner session.
+    if (preview?.kind === 'step_up' || (preview?.kind === 'magic' && await isTerminalOwnerLink(token))) return preview;
+    return null;
+  }
   return {
     ...auth,
     emailSignInAvailable: false,
@@ -97,14 +105,11 @@ function requireProvider(auth: LampAuth, required: string): LampAuth {
       callback: (request, provider) => provider === required ? providers.callback(request, provider) : Promise.resolve(refuse()),
     },
     async requestMagicLink() { throw new AuthError('provider_required', 403); },
-    async previewLink(request, token) {
-      const preview = await auth.previewLink(request, token);
-      return preview?.kind === 'step_up' ? preview : null;
-    },
+    previewLink: permittedLink,
     async confirmLink(request, input) {
-      // Email step-up belongs to an existing session and never starts one.
-      const preview = await auth.previewLink(new Request(request.url, { headers: request.headers }), input.token);
-      if (preview?.kind !== 'step_up') throw new AuthError('provider_required', 403);
+      if (!await permittedLink(new Request(request.url, { headers: request.headers }), input.token)) {
+        throw new AuthError('provider_required', 403);
+      }
       return auth.confirmLink(request, input);
     },
     async issueReviewSession() { throw new AuthError('provider_required', 403); },

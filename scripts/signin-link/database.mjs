@@ -26,10 +26,13 @@ export function wranglerDatabase({ config, remote, persistence }) {
 // Adapt Wrangler's transactional SQL query API to Base's D1 interface. Tokens
 // are generated and hashed exclusively by operator-auth; bound SQL has no raw credentials.
 const literal=value=>value===null?'NULL':typeof value==='number'?String(value):`'${String(value).replaceAll("'","''")}'`;
+export function bindSql(sql, ...values) {
+ let index=0;
+ return sql.replace(/\?/g,()=>literal(values[index++]));
+}
 export function sqlDatabase(execute) {
  function statement(sql,args=[]) {
-  let index=0;
-  const text=()=>sql.replace(/\?/g,()=>literal(args[index++]));
+  const text=()=>bindSql(sql,...args);
   return {bind:(...values)=>statement(sql,values),sql:text,
    async first(){return (await execute(text()))[0]??null;},
    async all(){return {results:await execute(text()),meta:{changes:0}};},
