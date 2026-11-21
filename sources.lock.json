@@ -1107,6 +1107,10 @@
       "sha256": "26ba97e05c0730f0f58842c813322ac4694d841a17bbf3f680f03c6df0722137",
       "executable": false
     },
+    "migrations/core/0085_status_page_email_branding.sql": {
+      "sha256": "f599af17908bdb23abeede7995b96449411be613bf1772148196fb31b95bd959",
+      "executable": false
+    },
     "migrations/README.md": {
       "sha256": "8aa6d22bcfab1ec1d279f128961286b0654cbc3f7c327da1aeb535793dd874e9",
       "executable": false
@@ -8836,7 +8840,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "10e450c887d687b8daee1ffb580b0765aaba353e078e638657bdad36540e110f",
+      "sha256": "5bc495256e2ce2a29c7a675278659e6ce9bdaf096712e5d94aa122dd4b24ba8e",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {

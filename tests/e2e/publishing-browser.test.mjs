@@ -1080,6 +1080,10 @@ test('AUD-001 — an operator configures status pages and publishes to the selec
   await operatorHydrated(page);
   const email = page.getByRole('region', { name: 'Notification email', exact: true });
   const pageSetting = email.getByRole('combobox', { name: 'Status page', exact: true });
+  const publicPrefix = '[Dispatch public]';
+  const publicSaved = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/page-settings' && response.request().method() === 'PUT');
+  await email.getByLabel('Subject prefix', { exact: true }).fill(publicPrefix);
+  assert.equal((await publicSaved).status(), 200);
   await pageSetting.selectOption('staff-browser');
   const inherit = email.getByRole('checkbox', { name: 'Use deployment branding' });
   assert.equal(await inherit.isChecked(), true);
@@ -1092,7 +1096,7 @@ test('AUD-001 — an operator configures status pages and publishes to the selec
   assert.equal(await inherit.isChecked(), true);
   await email.getByRole('button', { name: 'Preview saved branding' }).click();
   const sample = email.getByRole('region', { name: 'Sample email' });
-  await sample.getByRole('heading', { name: /Partner operations:/ }).waitFor();
+  await sample.getByRole('heading', { name: `${publicPrefix} Partner operations: Service update`, exact: true }).waitFor();
   assert.ok(!(await sample.innerText()).includes('[Dispatch staff]'));
 
   await page.reload();
@@ -1116,7 +1120,7 @@ test('AUD-001 — an operator configures status pages and publishes to the selec
   await email.getByText('Email branding saved.', { exact: true }).waitFor();
   const restored = await api('/api/app/status-pages/staff-browser/email-branding');
   assert.equal(restored.branding, null);
-  assert.ok(!restored.preview.subject.startsWith('[Dispatch staff]'));
+  assert.ok(restored.preview.subject.startsWith(publicPrefix));
 });
 
 test('THEME-001 — owner publishes branded themes and layouts within the page budget', { timeout: 600_000 }, async t => {
