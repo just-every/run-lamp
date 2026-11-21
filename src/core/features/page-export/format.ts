@@ -61,7 +61,11 @@ export const AUTHOR_COLUMNS: Record<string, string> = {
 };
 
 /** Kept out of the file: a subscriber's legacy token hash is an installation credential. */
-export const OMITTED_COLUMNS: Partial<Record<PageDataTable, string[]>> = { subscribers: ["token_hash"] };
+export const OMITTED_COLUMNS: Partial<Record<PageDataTable, string[]>> = {
+  subscribers: ["token_hash"],
+  // Page data can move between installations. The destination owner sets network access there.
+  status_pages: ["allowed_cidrs_json"],
+};
 
 /** Derived per subscriber: when they confirmed, from their used confirmation link. */
 export const SUBSCRIBER_CONSENT_COLUMN = "confirmed_at";

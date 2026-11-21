@@ -5676,7 +5676,7 @@
       "executable": false
     },
     "src/core/features/page-export/format.ts": {
-      "sha256": "ec3d60acf02bf0e84ff292ba477c2195912e242ce9c0e1e040d2f8f67d539165",
+      "sha256": "12c9f97de260e923ffaed773e275eec0bcbc2e1424e35d677fddfbb7cd1f714b",
       "executable": false
     },
     "src/core/features/page-export/index.ts": {
@@ -8580,7 +8580,7 @@
       "executable": false
     },
     "tests/e2e/helpers/self-serve-chat-flow.mjs": {
-      "sha256": "2427bba37e431072b760569322bfe5183c177aefc6e2fe639a013fb04e11cc8e",
+      "sha256": "b2bcadf92b368d2645cde20ea0514a60da6e2ee8417314954649426c8f3324a7",
       "executable": false
     },
     "tests/e2e/helpers/setup-page-branding.mjs": {
@@ -8828,7 +8828,7 @@
       "executable": false
     },
     "tests/e2e/page-data.test.mjs": {
-      "sha256": "ef4848e52a62e943c3b198dc149b6e97046ececf260c91b517de05ccabcbb176",
+      "sha256": "9c2ad91e0f6a0241f050e3d83eb702a7abdcd2a2d7ca602b0548647c8f97c885",
       "executable": false
     },
     "tests/e2e/prior-backup.test.mjs": {

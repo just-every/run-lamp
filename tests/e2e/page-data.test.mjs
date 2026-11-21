@@ -122,8 +122,10 @@ test("Page data restores verified consent and holds unverified addresses until c
     assert.equal((await source.request("/api/app/page-settings", { ...json(input), method: "PUT" })).status, 200);
     const componentId = "01J00000000000000000000011";
     const staffSettings = { path: "staff", kind: "staff", pageName: "Synthetic Lamp staff operations", tagline: "Maintenance desk", accentColor: "#428260", timezone: "UTC", componentIds: [componentId], footerCreditEnabled: false };
-    const staff = await source.request("/api/app/status-pages", json(staffSettings));
+    const allowedCidrs = ["192.0.2.0/24", "2001:db8::/32"];
+    const staff = await source.request("/api/app/status-pages", json({ ...staffSettings, allowedCidrs }));
     assert.equal(staff.status, 201, await staff.clone().text());
+    assert.deepEqual((await staff.json()).page.allowedCidrs, allowedCidrs);
     const staffBrand = new FormData();
     staffBrand.set("logo", new Blob([staffLogo], { type: "image/png" }), "staff.png");
     assert.equal((await source.request("/api/app/status-pages/staff/logo", { method: "POST", body: staffBrand })).status, 200);
@@ -159,6 +161,7 @@ test("Page data restores verified consent and holds unverified addresses until c
     assert.deepEqual(exported.records.incident_status_pages, [{ incident_id: staffIncident.id, page_path: "staff" }]);
     assert.deepEqual(exported.records.maintenance_status_pages, [{ maintenance_id: staffMaintenance.id, page_path: "staff" }]);
     assert.ok(exported.records.status_pages.every(row => !("logo_key" in row)));
+    assert.ok(exported.records.status_pages.every(row => !("allowed_cidrs_json" in row)), "network grants stay with the source installation");
     assert.deepEqual(exported.people.map((person) => person.email), ["former@example.test", "operator@example.test"]);
     const subscribers = Object.fromEntries(exported.records.subscribers.map((row) => [row.destination, row]));
     assert.equal(subscribers["ops-team@atlascloud.example"].confirmed_at, "2026-09-08T00:05:00.000Z");
@@ -193,12 +196,18 @@ test("Page data restores verified consent and holds unverified addresses until c
     const unsafe = structuredClone(exported);
     unsafe.records.status_pages[0].logo_key = "snapshots/current.json";
     assert.equal((await destination.request("/api/app/page-data/restore", json(unsafe))).status, 409, "restored logos cannot name storage keys");
+    const foreignAccess = structuredClone(exported);
+    foreignAccess.records.status_pages[0].allowed_cidrs_json = JSON.stringify(["192.0.2.0/24"]);
+    assert.equal((await destination.request("/api/app/page-data/restore", json(foreignAccess))).status, 409, "portable data cannot grant network access");
     const missingScope = structuredClone(exported);
     delete missingScope.records.incidents.find(row => row.id === staffIncident.id).public_hidden;
     assert.equal((await destination.request("/api/app/page-data/restore", json(missingScope))).status, 409, "a missing flag cannot make a private record public");
 
     const restored = await destination.request("/api/app/page-data/restore", json(exported));
     assert.equal(restored.status, 200, JSON.stringify(await restored.clone().json()));
+    const { pages } = await (await destination.request("/api/app/status-pages")).json();
+    assert.deepEqual(pages.find(page => page.path === "staff").allowedCidrs, []);
+
     const again = await (await destination.request("/api/app/page-data")).json();
     assert.deepEqual(withoutTime(again), withoutTime(exported));
 

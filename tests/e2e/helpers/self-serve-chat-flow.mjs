@@ -19,11 +19,19 @@ async function assertInitialChatPreferences(manageUrls) {
       assert.equal(response?.status(), 200, `${channel} management opens without an operator session`);
       assert.ok(await page.getByText(`Channel: ${channel}`, { exact: true }).isVisible());
       const preferences = page.getByRole('group', { name: 'Updates to receive' });
-      for (const [name, checked] of [['Incidents', true], ['Maintenance', true], ['Component status changes', false]]) {
+      for (const [name, eventKind, checked] of [
+        ['Incidents', 'incidents', true],
+        ['Maintenance', 'maintenance', true],
+        ['Component status changes', 'components', false],
+      ]) {
         const checkbox = preferences.getByRole('checkbox', { name, exact: true });
         assert.ok(await checkbox.isVisible(), `${channel} offers ${name}`);
+        assert.ok(await checkbox.isEnabled(), `${channel} allows changing ${name}`);
+        assert.equal(await checkbox.getAttribute('value'), eventKind, `${channel} event kind for ${name}`);
         assert.equal(await checkbox.isChecked(), checked, `${channel} initial selection for ${name}`);
       }
+      const selectedKinds = await preferences.evaluate(fieldset => new FormData(fieldset.form).getAll('eventKind'));
+      assert.deepEqual(selectedKinds.sort(), ['incidents', 'maintenance'], `${channel} form submits the initial event selection`);
       await page.close();
     }
   } finally {
