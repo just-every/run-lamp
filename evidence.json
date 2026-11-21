@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "00d748d41411e2c257b6d47efbfaa33138ac4814",
+      "bytes": 9031,
+      "path": "REPORT.md",
+      "sha256": "9deb8b4e4b7820f7a9be764b8aeea065ff7aa61d63a05d7463276d8cd6b1a72a"
+    },
+    {
+      "blob": "9a2df4f865ba12e35f2ba6303c0d3adabbecfdc1",
+      "bytes": 3560,
+      "path": "checks-receipt.json",
+      "sha256": "80ae5b5f6498c58d64899faa74537779558dfda319202e6bc0a13f7a9a013996"
+    },
+    {
+      "blob": "7e28e4cda244606571fe2287cd3ed9bea39fffab",
+      "bytes": 1011,
+      "path": "preview-receipt.json",
+      "sha256": "be2db959f5ae9b514c44eb8854f2ce84d56b2cf0010bc0567a07bef0a52549c0"
+    },
+    {
+      "blob": "1eea3b356d0f65fb35f368f9bc763cdb1612bdcb",
+      "bytes": 196365,
+      "path": "scheduled-email-1440.png",
+      "sha256": "3935d0ccba7b2e919d0c1f245546f63e6141659504af0c9504ded0c42cbe258d"
+    },
+    {
+      "blob": "1ff15a5b00abdc0ce9d53df66ce61854ce8e2d45",
+      "bytes": 154509,
+      "path": "scheduled-email-390.png",
+      "sha256": "cf1e9ae29cc209854a0e00a6367c06169c826dc4e62bc2bc0df80002b5c4fa3c"
+    },
+    {
+      "blob": "a329d517773751cba00fc9e9bc606597ad8a8ebd",
+      "bytes": 159439,
+      "path": "scheduled-page-1440.png",
+      "sha256": "fff5fb2c133bb6cd88a1c8c405ddd6715dc984d0615fe58939eb4a350c4a6efb"
+    },
+    {
+      "blob": "06774b2bce371496c5c75f1ad89cdf373d012ccd",
+      "bytes": 124773,
+      "path": "scheduled-page-390.png",
+      "sha256": "b704e02f6ed38ae9214ea0579c95f208753d56a0a55dee9637609c1b7e5e08e9"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f200",
+  "product_head": "262f3fed8f3c40024fb7582b2e91565245ff94c2",
+  "ref": "refs/heads/evidence/sd-lamp-c-f200",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f200"
+}

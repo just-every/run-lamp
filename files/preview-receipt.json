@@ -1,0 +1,30 @@
+{
+  "widths": [
+    1440,
+    390
+  ],
+  "assertionsWidth": 1440,
+  "pageWindow": {
+    "wording": "Feb 11, 04:00 AM – 05:00 AM Brisbane time",
+    "instants": [
+      "2031-02-10T18:00:00.000Z",
+      "2031-02-10T19:00:00.000Z"
+    ]
+  },
+  "wording": [
+    [
+      "Who is affected",
+      "Account owners who use billing and invoices"
+    ],
+    [
+      "Customer impact",
+      "Invoices and payment settings will be read-only during the upgrade."
+    ]
+  ],
+  "emailSubject": "Synthetic Lamp follow-ups: Scheduled: Billing system upgrade",
+  "emailWording": "Billing system upgrade\n\nStatus: Scheduled\n\nNotice: Scheduled\n\nStart: Feb 11, 2031, 04:00 UTC+10:00\n\nEnd: Feb 11, 2031, 05:00 UTC+10:00\n\nWho is affected: Account owners who use billing and invoices\n\nCustomer impact: Invoices and payment settings will be read-only during the upgrade.",
+  "publicPermalinkMatched": true,
+  "capturedEmailMatched": true,
+  "previewEffectsUnchanged": true,
+  "generation": "01R41GGVG01674SNF411EVQE10"
+}

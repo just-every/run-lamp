@@ -1,0 +1,92 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f200",
+  "head": "262f3fed8f3c40024fb7582b2e91565245ff94c2",
+  "main_base": "9d35f872ac5d654f1cfcd1cc41698e7363254b0c",
+  "browser": "Chromium",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "tests": [
+    {
+      "command": "node --test --test-reporter=tap --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+      "passed": [
+        "MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard",
+        "SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications",
+        "TEAM-002 — Local operator invitations stay pending without email or a share action"
+      ],
+      "exit": 0
+    },
+    {
+      "command": "node --test --test-reporter=tap --test-concurrency=1 --test-name-pattern='Maintenance cancellation|Maintenance reminders respect' tests/e2e/publishing-contract.test.mjs",
+      "passed": [
+        "Maintenance reminders respect the lead time and skip recent announcements",
+        "Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers"
+      ],
+      "exit": 0
+    }
+  ],
+  "check_exit_codes": {
+    "npx -y @runeditrun/rer build": 0,
+    "pnpm typecheck": 0,
+    "pnpm exec rer check --profile first-party": 0,
+    "node src/base/contract-docs.mjs write": 0,
+    "node src/base/contract-docs.mjs check": 0,
+    "node scripts/edition-authoring/cli.mjs lock": 0,
+    "node scripts/edition-authoring/cli.mjs check": 0,
+    "git diff --check origin/main...HEAD": 0
+  },
+  "verify": {
+    "id": 44936512278,
+    "event": "push",
+    "head": "262f3fed8f3c40024fb7582b2e91565245ff94c2",
+    "url": "https://github.com/just-every/run-lamp/actions/runs/44936512278",
+    "first_attempt": {
+      "conclusion": "failure",
+      "failed_job": {
+        "name": "shards (runtime)",
+        "id": 136944509009,
+        "step": "Verify this product shard"
+      },
+      "aggregate_job": {
+        "name": "verify",
+        "id": 136948053555,
+        "conclusion": "failure"
+      },
+      "composer_job": {
+        "name": "shards (composer)",
+        "id": 136944509039,
+        "conclusion": "success"
+      },
+      "failure": "MiniflareCoreError [ERR_ADDRESS_IN_USE]: Address already in use (127.0.0.1:41465).",
+      "case": "NOTIFY-006 — repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private",
+      "log_command": "gh run view 44936512278 --repo just-every/run-lamp --job 136944509009 --log-failed"
+    },
+    "failed_job_rerun_requested": true,
+    "local_focused_comparison": {
+      "pinned_node": "22.20.0",
+      "runner": "this cloud VM",
+      "candidate_exit": 0,
+      "base_exit": 0,
+      "base_head": "9d35f872ac5d654f1cfcd1cc41698e7363254b0c"
+    },
+    "final": {
+      "conclusion": "success",
+      "head_sha": "262f3fed8f3c40024fb7582b2e91565245ff94c2",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44936512278",
+      "run_attempt": 2,
+      "status": "completed"
+    }
+  },
+  "terminal_remote_refs": {
+    "refs/heads/cloud/sd-lamp-c-f200": "262f3fed8f3c40024fb7582b2e91565245ff94c2",
+    "refs/heads/main": "a72f4668621d5d8a43c3e312bb1d24f4b9067831"
+  },
+  "publication_scan": {
+    "status": "pending guarded lander",
+    "head": "262f3fed8f3c40024fb7582b2e91565245ff94c2"
+  },
+  "run_site": {
+    "status": "pending guarded landing",
+    "run_id": null
+  }
+}
