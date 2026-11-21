@@ -1,0 +1,110 @@
+{
+  "base_head": "885d3d981556cdc99fa3656225fbd89d714e2058",
+  "branch": "cloud/sd-lamp-route-fulfill-1",
+  "chromium": "154.0.8037.57",
+  "exact_head_checks": {
+    "candidate_history": {
+      "commits": 1,
+      "identity": "fleet",
+      "merge_commits": 0,
+      "trailers": 0
+    },
+    "channels_and_update_reminders": {
+      "cancelled": 0,
+      "fail": 0,
+      "pass": 2,
+      "skipped": 0,
+      "tests": 2,
+      "todo": 0
+    },
+    "contract_docs": "passed",
+    "delivery_and_statuspage_import": {
+      "cancelled": 0,
+      "fail": 0,
+      "pass": 3,
+      "skipped": 0,
+      "tests": 3,
+      "todo": 0
+    },
+    "git_diff_check": "passed",
+    "production_build": "passed",
+    "publishing_browser": {
+      "retry": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 1,
+        "skipped": 0,
+        "tests": 1,
+        "todo": 0
+      },
+      "timed_out_first_attempt": 1
+    },
+    "rer_mail": {
+      "passed_first_attempt": 4,
+      "retry": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 1,
+        "skipped": 0,
+        "tests": 1,
+        "todo": 0
+      },
+      "timed_out_first_attempt": 1
+    },
+    "source_lock": "passed",
+    "typecheck": "passed"
+  },
+  "focused_browser_probe": "A real duplicate Chromium route completion was ignored by the guard. Original unrelated errors were rethrown.",
+  "initial_base_checks": {
+    "channels": {
+      "cancelled": 0,
+      "fail": 0,
+      "pass": 8,
+      "skipped": 0,
+      "tests": 8,
+      "todo": 0
+    },
+    "delivery_import_reminders": {
+      "cancelled": 0,
+      "fail": 0,
+      "pass": 16,
+      "skipped": 0,
+      "tests": 16,
+      "todo": 0
+    },
+    "mail": {
+      "cancelled": 0,
+      "fail": 0,
+      "pass": 5,
+      "skipped": 0,
+      "tests": 5,
+      "todo": 0
+    },
+    "publishing_browser": {
+      "cancelled": 0,
+      "fail": 1,
+      "pass": 8,
+      "skipped": 0,
+      "tests": 9,
+      "todo": 0
+    },
+    "theme_failure": "Chromium 154.0.8037.57 counted favicon.svg as a fifth resource on both candidate and main.",
+    "theme_on_unmodified_main": {
+      "cancelled": 0,
+      "fail": 1,
+      "pass": 0,
+      "skipped": 0,
+      "tests": 1,
+      "todo": 0
+    }
+  },
+  "node": "22.20.0",
+  "product_head": "7fc7fecdc331a1078f7480999ade305561259ab7",
+  "product_push": {
+    "advertised_utc": "2026-11-21T16:57:20Z",
+    "attempt": 1,
+    "result": "success"
+  },
+  "recorded_utc": "2026-11-21T16:56:33Z",
+  "repository": "just-every/run-lamp"
+}

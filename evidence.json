@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "95c06ead6256757947eedaab513b25efe5b3a6c2",
+      "bytes": 276,
+      "path": "CI-RECEIPT.json",
+      "sha256": "3bab0396c7e82b83db2d4ad60a68c78fa8bd9a5797157734f3d69f09ee506402"
+    },
+    {
+      "blob": "c3145419c253de2fec5ae7871d6f6a10367bad3a",
+      "bytes": 2498,
+      "path": "LOCAL-RECEIPT.json",
+      "sha256": "2125ad9dc56736bf3b649083756a00a593846ecc1d9670a7b1ed54ca2074db23"
+    },
+    {
+      "blob": "10ad17e0947244d0f7eb9b5bcf90a7aa2dba108e",
+      "bytes": 3615,
+      "path": "REPORT.md",
+      "sha256": "85c4648b9e2ee1d0f3afdcc94ec7cea2314c414a6060b71711cc901c439f623c"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-route-fulfill-1",
+  "product_head": "7fc7fecdc331a1078f7480999ade305561259ab7",
+  "ref": "refs/heads/evidence/sd-lamp-route-fulfill-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-route-fulfill-1"
+}
