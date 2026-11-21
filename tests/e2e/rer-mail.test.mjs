@@ -149,8 +149,9 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal((await call('/api/app/page-settings', { ...settingsInput, emailBranding: branding }, 'PUT')).status, 200);
       const incidentResponse = await call('/api/app/incidents', { title: 'Payment delays', components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
       assert.equal(incidentResponse.status, 201); const incident = (await incidentResponse.json()).incident;
+      const nextUpdateAt = new Date(Date.now() + 3600000).toISOString();
       const publish = async impact => {
-        const saved = await call(`/api/app/incidents/${incident.id}/draft`, { lifecycle: 'Monitoring', affectedAudience: 'Payment customers', customerImpact: impact, whatStillWorks: 'Balances remain readable.', details: 'Operators are restoring capacity.', nextUpdateAt: new Date(Date.now() + 3600000).toISOString() }, 'PUT');
+        const saved = await call(`/api/app/incidents/${incident.id}/draft`, { lifecycle: 'Monitoring', affectedAudience: 'Payment customers', customerImpact: impact, whatStillWorks: 'Balances remain readable.', details: 'Operators are restoring capacity.', nextUpdateAt }, 'PUT');
         assert.equal(saved.status, 200, await saved.clone().text());
         const response = await call(`/api/app/incidents/${incident.id}/publish`, { channels: ['email'] });
         assert.equal(response.status, 200, await response.clone().text());
@@ -164,7 +165,8 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal(queued.outcome, 'queued'); assert.equal(queued.providerAcceptedAt, null);
       const firstAttempt = sentTo(reader).at(-1).body;
       const settings = (await (await call('/api/app/page-settings')).json()).settings;
-      const edited = await call('/api/app/page-settings', { ...Object.fromEntries(['pageName','tagline','accentColor','timezone','hostname','footerCreditEnabled','mailFromAddress'].map(key => [key, settings[key]])), emailBranding: { subjectPrefix: '[Changed after submission]', footer: 'Changed after submission' } }, 'PUT');
+      const savedFooter = 'Contact the payment recovery desk for case Orchid.';
+      const edited = await call('/api/app/page-settings', { ...editableSettings(settings), emailBranding: { subjectPrefix: '[Changed after submission]', header: 'Operations will continue monitoring payments.', footer: savedFooter } }, 'PUT');
       assert.equal(edited.status, 200, await edited.clone().text());
       responseStatus = 202;
       const beforeEarlyReplay = submissions.length;
@@ -207,11 +209,85 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.equal((await deliveries()).find(row => row.id === queued.id).outcome, 'delivered');
       }
       const prior = sentTo(reader).at(-1);
-      await publish('Payment processing has improved.'); await tick();
-      const threaded = wire(sentTo(reader).at(-1).body);
+      const populatedImpact = 'Payment processing has improved.';
+      const populatedUpdate = await publish(populatedImpact); await tick();
+      const populatedBody = sentTo(reader).at(-1).body;
+      const threaded = wire(populatedBody);
       const firstMessageId = provider === 'rer' ? `<${prior.id}@relay.example.test>` : notification.headers['Message-ID'];
       assert.equal(provider === 'rer' ? threaded.inReplyTo : threaded.headers['In-Reply-To'], firstMessageId);
       assert.equal(provider === 'rer' ? threaded.references : threaded.headers.References, firstMessageId);
+
+      const populatedSettings = (await (await call('/api/app/page-settings')).json()).settings;
+      assert.equal(populatedSettings.emailBranding.footer, savedFooter);
+      assert.ok(threaded.text.includes(savedFooter) && threaded.html.includes(savedFooter));
+      const clearedBranding = { ...populatedSettings.emailBranding, footer: '' };
+      const cleared = await call('/api/app/page-settings', { ...editableSettings(populatedSettings), emailBranding: clearedBranding }, 'PUT');
+      assert.equal(cleared.status, 200, await cleared.clone().text());
+      const readback = await call('/api/app/page-settings');
+      assert.equal(readback.status, 200);
+      assert.deepEqual((await readback.json()).settings.emailBranding, clearedBranding);
+
+      const beforeClearDelivery = submissions.length;
+      const clearedImpact = 'Payment processing has stabilized.';
+      const clearedUpdate = await publish(clearedImpact);
+      assert.notEqual(clearedUpdate.id, populatedUpdate.id);
+      await tick();
+      const deliveryReadback = await call(`/api/app/deliveries?incidentUpdateId=${clearedUpdate.id}`);
+      assert.equal(deliveryReadback.status, 200);
+      const { deliveries: clearedDeliveries } = await deliveryReadback.json();
+      assert.equal(clearedDeliveries.length, 1);
+      const [clearedDelivery] = clearedDeliveries;
+      assert.equal(clearedDelivery.incidentUpdateId, clearedUpdate.id);
+      assert.equal(clearedDelivery.subscriberId, pendingReader.id);
+      assert.equal(clearedDelivery.destination, reader);
+      assert.equal(clearedDelivery.subscriberState, 'active');
+      assert.ok(clearedDelivery.providerAcceptedAt);
+      const captured = submissions.slice(beforeClearDelivery);
+      assert.equal(captured.length, 1, 'only the confirmed reader gets the fresh update');
+      const clearedBody = captured[0].body;
+      const clearedMail = wire(clearedBody);
+      const host = new URL(pageOrigin).host;
+      const messageId = `<lamp-notification-${clearedDelivery.id}@${host}>`;
+      if (provider === 'rer') {
+        assert.equal(clearedMail.to, reader);
+        assert.equal(clearedMail.messageKey, `lamp:${createHash('sha256').update(messageId).digest('hex')}`);
+      } else {
+        assert.deepEqual(provider === 'sendgrid' ? clearedBody.personalizations[0].to.map(person => person.email) : clearedMail.to, [reader]);
+        assert.equal(clearedMail.headers['Message-ID'], messageId);
+        assert.deepEqual(clearedBody.from, populatedBody.from);
+        assert.deepEqual(clearedBody.reply_to, populatedBody.reply_to);
+        assert.equal(clearedMail.headers['Auto-Submitted'], 'auto-generated');
+      }
+      assert.equal(clearedMail.subject, threaded.subject);
+      assert.ok(clearedMail.text.includes(clearedImpact) && clearedMail.html.includes(clearedImpact));
+      assert.ok(!clearedMail.text.includes(savedFooter) && !clearedMail.html.includes(savedFooter));
+      assert.equal(clearedMail.text, threaded.text.replace(`\n\n${savedFooter}`, '').replace(populatedImpact, clearedImpact));
+      assert.equal(clearedMail.html, threaded.html.replace(`<p>${savedFooter}</p>`, '').replace(populatedImpact, clearedImpact));
+
+      const manageUrl = notification.text.match(/^Manage this subscription: (\S+)$/m)?.[1];
+      const unsubscribeUrl = notification.text.match(/^Unsubscribe: (\S+)$/m)?.[1];
+      assert.match(manageUrl, /^https:\/\/status\.example\.test\/manage\/[^/?#]+$/);
+      assert.match(unsubscribeUrl, /^https:\/\/status\.example\.test\/unsubscribe\/[^/?#]+$/);
+      assert.equal((await raw(manageUrl)).status, 200);
+      for (const mail of [threaded, clearedMail]) {
+        assert.ok(mail.text.endsWith(`\n\nManage this subscription: ${manageUrl}\nUnsubscribe: ${unsubscribeUrl}\nReturn to status: ${pageOrigin}/`));
+        assert.ok(mail.html.includes(`<a href="${pageOrigin}/">${populatedSettings.pageName}</a>`));
+        assert.ok(mail.html.includes(`<a href="${manageUrl}">Manage subscription</a>`));
+        assert.ok(mail.html.includes(`<a href="${unsubscribeUrl}">Unsubscribe</a>`));
+        if (provider === 'rer') {
+          assert.equal(mail.listUnsubscribe, `<mailto:${settings.mailFromAddress}>, <${unsubscribeUrl}>`);
+          assert.equal(mail.listUnsubscribePost, true);
+          assert.equal(mail.listId, `<${host}>`);
+          assert.equal(mail.listArchive, `<${pageOrigin}/history>`);
+          assert.equal(mail.listHelp, `<${manageUrl}>`);
+        } else {
+          assert.equal(mail.headers['List-Unsubscribe'], `<mailto:${settings.mailFromAddress}?subject=unsubscribe>, <${unsubscribeUrl}>`);
+          assert.equal(mail.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
+          assert.equal(mail.headers['List-Id'], `<${host}>`);
+          assert.equal(mail.headers['List-Archive'], `${pageOrigin}/history`);
+          assert.equal(mail.headers['List-Help'], manageUrl);
+        }
+      }
       const maintenanceResponse = await call('/api/app/maintenance', { title: 'Payment service upgrade', affectedAudience: 'Payment customers', customerImpact: 'Authorizations may pause.', startsAt: new Date(Date.now() + 7200000).toISOString(), endsAt: new Date(Date.now() + 10800000).toISOString(), componentIds: [component.id], autoStart: false, autoComplete: false });
       assert.equal(maintenanceResponse.status, 201, await maintenanceResponse.clone().text());
       const maintenance = (await maintenanceResponse.json()).maintenance;
