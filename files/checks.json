@@ -1,0 +1,129 @@
+{
+  "base": {
+    "head": "fb2f45426797a803d88515ed69adfbe7ce738930",
+    "run_site": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44923068680
+    },
+    "verify": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44923068607
+    }
+  },
+  "branch": "cloud/sd-lamp-c-f198",
+  "candidate_main_equal": false,
+  "candidate_run_site": null,
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "f38216d232a54300bdb67de2c01201d02ae6538d",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44924312336",
+    "id": 44924312336,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "changed_assertion_registrations": 0,
+  "changed_migrations": 0,
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "claim": "partial",
+  "head": "f38216d232a54300bdb67de2c01201d02ae6538d",
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "proved_points": [
+    1
+  ],
+  "publication_scan": {
+    "commit": "f38216d232a54300bdb67de2c01201d02ae6538d",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null
+  },
+  "recorded_status": "missing",
+  "remote_main": "885d3d981556cdc99fa3656225fbd89d714e2058",
+  "status_table_counts": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123,
+    "total": 245
+  },
+  "tag": "sd-lamp-c-f198",
+  "tests": {
+    "inventory": {
+      "assertion_scripts": 10,
+      "registrations": 117
+    },
+    "mutation": {
+      "change": "Omit the mapped automation sidecar",
+      "exit": 1,
+      "expected": [
+        false,
+        true
+      ],
+      "observed": [
+        true,
+        true
+      ],
+      "temporary_worktree": true,
+      "test_line": 671
+    },
+    "point": {
+      "cancelled": 0,
+      "command": "node --test --test-concurrency=1 --test-name-pattern=MAINT-015 tests/e2e/statuspage-import.test.mjs",
+      "duration_ms": 6589,
+      "exit": 0,
+      "fail": 0,
+      "pass": 1,
+      "skipped": 0,
+      "tests": 1
+    },
+    "touched": {
+      "cancelled": 0,
+      "command": "node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs",
+      "duration_ms": 181370,
+      "exit": 0,
+      "fail": 0,
+      "pass": 3,
+      "skipped": 0,
+      "tests": 3
+    }
+  }
+}
