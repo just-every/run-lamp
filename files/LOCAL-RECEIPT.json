@@ -1,0 +1,101 @@
+{
+  "productHead": "23e980f419288637f75e5809345bc53c9c994029",
+  "parent": "bafb632174ace2da2191b88bb186d0364e1415c7",
+  "tree": "b4e542f743f92e2bb85e947b697e02322ccebbe4",
+  "publishedRefsAtObservation": {
+    "refs/heads/cloud/sd-lamp-c-f180": "23e980f419288637f75e5809345bc53c9c994029",
+    "refs/heads/main": "bafb632174ace2da2191b88bb186d0364e1415c7"
+  },
+  "candidateFiles": [
+    "sources.lock.json",
+    "tests/e2e/helpers/sms-delivery-receipts-flow.mjs"
+  ],
+  "testBinding": "The runtime suite used the staged journey bytes before commit. The candidate matched them byte for byte after the no-op rebase.",
+  "runner": {
+    "node": "v24.19.0",
+    "repositoryNodePin": "22.20.0",
+    "pnpm": "10.12.4",
+    "browserExecutable": "/usr/bin/chromium"
+  },
+  "checks": [
+    {
+      "command": "pnpm test:delivery",
+      "exit": 0,
+      "output": [
+        "✔ SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 — Subscriber consent, selected publication, channel delivery, export and erasure (321730.050378ms)",
+        "✔ NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 — Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts (49228.936365ms)",
+        "✔ Scoped incident subscriptions — native and Statuspage API consent, private reads and revoked writes (77461.945606ms)",
+        "✔ NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes (185876.123016ms)",
+        "✔ Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications (28866.517416ms)",
+        "✔ SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search (7691.484059ms)",
+        "✔ SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary (18810.667835ms)",
+        "✔ NOTIFY-003 — Durable exponential retry eligibility, exhaustion and replay silence (15387.698828ms)",
+        "ℹ tests 8",
+        "ℹ suites 0",
+        "ℹ pass 8",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0",
+        "ℹ todo 0",
+        "ℹ duration_ms 707233.249688"
+      ]
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": "Wrote 0 contract documents."
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": "Contract prose: 0 errors, 0 warnings. Contract documents are current."
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "output": {
+        "ok": true,
+        "manifest": "51998d443156db109f672a88207bfe0d668cb3fa79853caaa473d205df03ffbf",
+        "test": "90e2a6f2a5b8bc4c2472b0b589064fbf4f3eb0fb14d6eb1d4e6d439e6ea4cda1"
+      }
+    },
+    {
+      "command": "node --check tests/e2e/helpers/sms-delivery-receipts-flow.mjs",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "testInventory": {
+    "registeredCases": 116,
+    "assertionScripts": 10,
+    "registrationsAdded": 0
+  },
+  "additionalPinnedNodeChecks": {
+    "node": "v22.20.0",
+    "head": "23e980f419288637f75e5809345bc53c9c994029",
+    "typecheckExit": 0,
+    "firstPartyCheckExit": 0,
+    "standaloneHelper": {
+      "entry": "smsSubscriberFlow",
+      "attemptWithCloudEnvironment": "Stopped after stalled fixture startup.",
+      "attemptWithoutProxyVariables": "Fixture startup exceeded 180 seconds. The bounded command was terminated.",
+      "cloudRunnerExit": 247,
+      "acceptedRuntimeEvidence": "The registered delivery test command passed on Node 24.19.0. No test result is claimed from the standalone Node 22 helper attempts."
+    }
+  }
+}
