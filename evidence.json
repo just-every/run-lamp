@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "blob": "474e0bb9b9b40ea6796bc8f9f5491af1131b3560",
+      "bytes": 5821,
+      "path": "RECEIPT.json",
+      "sha256": "1324baee8a903bd5dd75b5a55dff480502f869bcdb413bfbcdef0d959b719d9d"
+    },
+    {
+      "blob": "2cb3808c35ac76bd0636b0945ba073564d5d88bd",
+      "bytes": 5524,
+      "path": "REPORT.md",
+      "sha256": "097840547509f29338ea2940832c4250e722b00846852f54f9a4443922cae304"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-rer-pin-126-1",
+  "product_head": "d442dbb58d146eee3589c8880463d94d12b11981",
+  "ref": "refs/heads/evidence/sd-lamp-rer-pin-126-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-rer-pin-126-1"
+}

@@ -1,0 +1,241 @@
+{
+  "base": {
+    "after": [
+      "3637852064bf6ddadd15418518964d99d615cc46"
+    ],
+    "before": [
+      "965e8d4e105f6f4d281dacb3c099f6a958a886e7"
+    ],
+    "records_after": 258,
+    "records_before": 258,
+    "unrecorded_matches_present_before_adoption": [
+      "importers.json",
+      "migrations/core/0076_dependency_keys_sealed.sql"
+    ]
+  },
+  "base_product_head": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+  "branch": "cloud/sd-lamp-rer-pin-126-1",
+  "build": {
+    "commit": null,
+    "runAttempt": 0,
+    "runId": null,
+    "shard": "build",
+    "steps": [
+      {
+        "durationMs": 1015,
+        "exitCode": 0,
+        "script": "check:contract-docs"
+      },
+      {
+        "durationMs": 718,
+        "exitCode": 0,
+        "script": "source:copies"
+      },
+      {
+        "durationMs": 1484,
+        "exitCode": 0,
+        "script": "source:check"
+      },
+      {
+        "durationMs": 23981,
+        "exitCode": 0,
+        "script": "typecheck"
+      },
+      {
+        "durationMs": 11782,
+        "exitCode": 0,
+        "script": "check:syntax"
+      },
+      {
+        "durationMs": 1265,
+        "exitCode": 0,
+        "script": "validate:release"
+      },
+      {
+        "durationMs": 433,
+        "exitCode": 0,
+        "script": "verify:visual:source"
+      },
+      {
+        "durationMs": 9590,
+        "exitCode": 0,
+        "script": "build:app"
+      },
+      {
+        "durationMs": 7157,
+        "exitCode": 0,
+        "script": "build:site"
+      }
+    ],
+    "success": true
+  },
+  "candidate_count": 1,
+  "checked_utc": "2026-11-21T00:31:49Z",
+  "contract_counts_before_and_after": [
+    "| Core | 65 | 124 | 51 | 240 |",
+    "| Agent surface | 0 | 0 | 5 | 5 |",
+    "| Later | 0 | 0 | 0 | 0 |",
+    "| Full target | 65 | 124 | 56 | 245 |"
+  ],
+  "files": [
+    "base-copies.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json"
+  ],
+  "github_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-rer-pin-126-1",
+    "head_sha": "d442dbb58d146eee3589c8880463d94d12b11981",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44842658234",
+    "id": 44842658234,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "head": "d442dbb58d146eee3589c8880463d94d12b11981",
+  "merge_count": 0,
+  "ownership": {
+    "first_shard": {
+      "commit": null,
+      "runAttempt": 0,
+      "runId": null,
+      "shard": "ownership",
+      "steps": [
+        {
+          "durationMs": 408200,
+          "exitCode": 1,
+          "script": "test:ownership"
+        },
+        {
+          "durationMs": 34208,
+          "exitCode": 0,
+          "script": "test:owner-claim"
+        },
+        {
+          "durationMs": 333852,
+          "exitCode": 0,
+          "script": "test:owner-backup"
+        }
+      ],
+      "success": false
+    },
+    "first_shard_counts": [
+      "Verifying ownership: test:ownership",
+      "# tests 24",
+      "# pass 23",
+      "# fail 1",
+      "# cancelled 0",
+      "# skipped 0",
+      "Verifying ownership: test:owner-claim",
+      "# tests 4",
+      "# pass 4",
+      "# fail 0",
+      "# cancelled 0",
+      "# skipped 0",
+      "Verifying ownership: test:owner-backup",
+      "# tests 1",
+      "# pass 1",
+      "# fail 0",
+      "# cancelled 0",
+      "# skipped 0"
+    ],
+    "owner_entry_retry_counts": [
+      "# tests 2",
+      "# pass 2",
+      "# fail 0",
+      "# cancelled 0",
+      "# skipped 0"
+    ],
+    "owner_entry_retry_exit": 0
+  },
+  "portability": {
+    "counts": [
+      "Verifying portability: test:portability",
+      "# tests 3",
+      "# pass 3",
+      "# fail 0",
+      "# cancelled 0",
+      "# skipped 0"
+    ],
+    "shard": {
+      "commit": null,
+      "runAttempt": 0,
+      "runId": null,
+      "shard": "portability",
+      "steps": [
+        {
+          "durationMs": 409209,
+          "exitCode": 0,
+          "script": "test:portability"
+        }
+      ],
+      "success": true
+    }
+  },
+  "readme_restore_preview": [
+    "npx -y @runeditrun/rer setup --owner-email <owner> --non-interactive exit=0",
+    "rer dev --foreground --non-interactive --port 34335",
+    "RER_READY http://127.0.0.1:34335",
+    "GET /health 200",
+    "RER_OPEN owner entry succeeded; GET /api/app/session 200",
+    "rer export --output <archive> exit=0",
+    "rer import --input <archive> --yes in empty checkout exit=0",
+    "npx -y @runeditrun/rer setup --owner-email <original owner> --non-interactive after restore exit=0",
+    "rer preview --foreground --non-interactive --port 36591",
+    "RER_READY http://127.0.0.1:36591",
+    "GET /health 200",
+    "RER_OPEN owner entry succeeded; GET /api/app/session 200"
+  ],
+  "repository": "just-every/run-lamp",
+  "rer_verify": {
+    "exit": 0,
+    "results": [
+      "Verifying runtime: test:runtime",
+      "# tests 2",
+      "# pass 2",
+      "# fail 0",
+      "# cancelled 0",
+      "# skipped 0",
+      "Verifying runtime: test:publishing",
+      "# tests 17",
+      "# pass 17",
+      "# fail 0",
+      "# cancelled 0",
+      "# skipped 0",
+      "verify: complete (exit 0)"
+    ],
+    "runtime_shard": {
+      "commit": null,
+      "runAttempt": 0,
+      "runId": null,
+      "shard": "runtime",
+      "steps": [
+        {
+          "durationMs": 174937,
+          "exitCode": 0,
+          "script": "test:runtime"
+        },
+        {
+          "durationMs": 552221,
+          "exitCode": 0,
+          "script": "test:publishing"
+        }
+      ],
+      "success": true
+    }
+  },
+  "structural_and_lock_checks": [
+    "rer_check exit=0",
+    "contract_views_write exit=0",
+    "contract_views_check exit=0",
+    "source_lock_write exit=0",
+    "source_lock_check exit=0"
+  ],
+  "toolchain": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer_after": "0.2.126",
+    "rer_before": "0.2.125"
+  }
+}
