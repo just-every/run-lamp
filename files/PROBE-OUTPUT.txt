@@ -1,0 +1,17 @@
+Candidate 68d0a2f086c58c21ca8aae71615cc4461c73c94e
+Node 22.20.0 and pnpm 10.12.4
+# PROBE AUD-001 1: native Status Pages Settings -> stable Public, Staff and Acme paths, branding and component selection
+# PROBE AUD-001 3: one native incident publish selecting Public and Staff -> same update in both snapshots and one public subscriber delivery
+# PROBE AUD-001 2: one native maintenance create selecting Public and Staff -> the same window and notice in both published APIs and permalinks
+# PROBE AUD-001 4: Staff-only native publication -> public artifacts and notification work exclude it; anonymous and revoked sessions do not reach object storage
+# AUD-001 populated upgrade and native export and import preserve settings, page membership and all three feed identities without reviving source sessions
+# tests 12
+# pass 12
+# fail 0
+# PROBE AUD-001 5: unauthenticated public Worker reads with D1 unavailable -> previous populated public generation and no Staff publication
+# tests 10
+# pass 10
+# fail 0
+# tests 1
+# pass 1
+# fail 0

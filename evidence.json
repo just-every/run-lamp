@@ -1,0 +1,112 @@
+{
+  "files": [
+    {
+      "blob": "35549388b395fb25220ce2693341587dfccb34da",
+      "bytes": 3271,
+      "path": "BROWSER-RECEIPT.md",
+      "sha256": "2de2134ed1c8e55556c38d2dd5de9e75c0774ee24b4a36c351415ee8be792067"
+    },
+    {
+      "blob": "2d03ddaaba25de05bc272628d6ba433f369ee1e0",
+      "bytes": 3666,
+      "path": "CI-RECEIPT.md",
+      "sha256": "4d0840db92120d5558daa87bafd0dd261e495d231c61e2712b69f7414e809bea"
+    },
+    {
+      "blob": "726bcab5d099a9a9042b2a2228bc938acfc6f2d5",
+      "bytes": 3034,
+      "path": "LOCAL-RECEIPT.md",
+      "sha256": "12271db8b822c2af57e8d75dfc7f6a2651480903cd6e55e0ead3edcea75b78ca"
+    },
+    {
+      "blob": "1babdacf0c7509b72155eae4d3d598576b111460",
+      "bytes": 1033,
+      "path": "PROBE-OUTPUT.txt",
+      "sha256": "23ff5940358e2a1302e1c3366e1209d1bd11d717af71058142a824aabc919405"
+    },
+    {
+      "blob": "6b429fea045d0c693ba6ce9b5de694cc982d6a2e",
+      "bytes": 8704,
+      "path": "REPORT.md",
+      "sha256": "80687b74c475c600a82c8b6fcc464153d68453600167f73af9a317f6c5cc3f84"
+    },
+    {
+      "blob": "f705b9002a96eb3899668324599c27f99f464d67",
+      "bytes": 128073,
+      "path": "browser/1440-audience-incident-composer.png",
+      "sha256": "ef8c4171026f4faa42563a436d5784facd9ee578ba5d2b0d88e5f44962791a65"
+    },
+    {
+      "blob": "775ac205df413d20b3e55aabc4e1fb7e1d3f8cff",
+      "bytes": 128871,
+      "path": "browser/1440-audience-maintenance-scheduler.png",
+      "sha256": "bb051f4841e1d229432e766f6479d66d65f0b1678a905abfe385dbba57b67192"
+    },
+    {
+      "blob": "0bed1ff98fa4f0e08975bd57fe04ac15d190195a",
+      "bytes": 179976,
+      "path": "browser/1440-audience-page-reader.png",
+      "sha256": "3582bce5631aaf041223201a3c369d31b76f3bb1777393de6b4ce5fa27b4e147"
+    },
+    {
+      "blob": "a7e4bd51707d83e95bb9b71a845af6d6ba5232ec",
+      "bytes": 288248,
+      "path": "browser/1440-audience-page-settings.png",
+      "sha256": "6de910fb1f227b3be9a9c0f1b664e9b16fbf9c54c0f0f89cc51712b772175d22"
+    },
+    {
+      "blob": "a86c9f3bbe474189a5c78bcf611c7024b762f0d8",
+      "bytes": 305945,
+      "path": "browser/1440-audience-public-reader.png",
+      "sha256": "2464e2908293966259fbfb75e581299fa0424d47d7d1634c9f44e90931844376"
+    },
+    {
+      "blob": "aa6c8252b7feace85b6494d185b3299cc7bc3b89",
+      "bytes": 303334,
+      "path": "browser/1440-audience-staff-reader.png",
+      "sha256": "f22234ba299fb085e4418f6f03a58d05e6ad49cacf8bc55415187a374798420c"
+    },
+    {
+      "blob": "992bfc56c7ebf2df5f4a1a0a11d136b121115168",
+      "bytes": 103943,
+      "path": "browser/390-audience-incident-composer.png",
+      "sha256": "8873fb4bf109553d9ed7d54d2d7142b5941804aeba9b16058a502a7c606a88db"
+    },
+    {
+      "blob": "93e4408e68795fa768cdd714bef2232fc1f2d0cf",
+      "bytes": 98129,
+      "path": "browser/390-audience-maintenance-scheduler.png",
+      "sha256": "d66d1af41e919df1fe3b89584423513ebdccc5c3ba8dac2a32bf9617b104c068"
+    },
+    {
+      "blob": "efd86edf4478c3a48183120fbba564db738bdbf3",
+      "bytes": 93692,
+      "path": "browser/390-audience-page-reader.png",
+      "sha256": "2458fc9f1cb87187e217e2bca7346d9113df3ae45d060534a46d9f9bdfbd8621"
+    },
+    {
+      "blob": "5bf942d69d939e541a2d54f55380ae60d2e41868",
+      "bytes": 224422,
+      "path": "browser/390-audience-page-settings.png",
+      "sha256": "0d89730bad8fc1377f3fc440182a579b0cabf32237597c30b6bd2639ad29dd1e"
+    },
+    {
+      "blob": "506f8b418231f9443c3c3199d6bce9258861be86",
+      "bytes": 181255,
+      "path": "browser/390-audience-public-reader.png",
+      "sha256": "1779af215e878bdf7a48e43d3193aaed7e2022256ac807ba4cec33667b4de77e"
+    },
+    {
+      "blob": "7f29963326cf40d490a0b1df38f33fe6bb7d9a49",
+      "bytes": 178386,
+      "path": "browser/390-audience-staff-reader.png",
+      "sha256": "a21abfafb59677785bfbec122ed9349463a2291c0e539d2c0cabe89912761aae"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f188",
+  "product_head": "68d0a2f086c58c21ca8aae71615cc4461c73c94e",
+  "ref": "refs/heads/evidence/sd-lamp-c-f188",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f188"
+}

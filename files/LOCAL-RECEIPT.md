@@ -1,0 +1,24 @@
+# Lamp local verification receipt
+
+- Candidate: 68d0a2f086c58c21ca8aae71615cc4461c73c94e
+- Branch: cloud/sd-lamp-c-f188
+- Integrated main: 9ea011e0fe99033bc4e3d09fd6b6f96252c55324
+- Toolchain: Node 22.20.0, pnpm 10.12.4 and headless system Chromium.
+- Setup and pinned production build exited 0.
+- Typecheck and syntax checks exited 0. Syntax parsed 500 of 500 modules.
+- Release validation exited 0 at 1.11.26. Both archived 1.11.25 files matched their tag bytes.
+- Base copy integrity and exact-candidate source-lock freshness exited 0.
+- Contract generator write and check exited 0 with generated views in place. First-party check exited 0. Both generated views were restored from main. The exact checked-in view check reproduced only the expected stale ACCEPTANCE.md result.
+- The seed migration-ledger journey passed. The populated AUD-001 journey applied the additive core migration, reconciled each prior field, checked foreign keys, and performed actual native export and import.
+- The focused publishing run passed 5 tests with no failures. It includes the selected publication journey, reviewed native publication, maintenance and imported undo, scheduled-publication regression, and linked operators in Slack and Teams. It started before the final amend, which changed only the source-lock file.
+- The public D1-outage proof passed. Seven anonymous reads returned retained bytes with zero D1 calls and no Staff content.
+- The Settings page-data journey passed 1 test with no failures. It preserved prior-file compatibility and subscriber consent, and exercised per-page settings, assignments, logo bytes and restore refusal.
+- The exact-candidate 1440 native browser test passed with 12 captures at 1440 and 390. See BROWSER-RECEIPT.md.
+- The inventory contains 118 cases and 10 assertion scripts. The candidate added two cases and extended existing journeys.
+- The final candidate includes the release metadata required by the migration validator, with the prior tag preserved. No tag was created.
+- Both candidate commit messages and identities were inspected across all ancestry outside the tracked main. The committed Status section and both generated view files match main.
+- Base Verify runs 44899481148 and 44897965626 completed successfully. Base Run site 44899481252 completed successfully on the integrated main.
+- The complete public and retained suites passed 10 tests with no failures. They exercised public layout, identity, legacy records, browser behavior, bindings, time zones, cache invalidation and recovery.
+- The intermediate save captured a temporary browser probe in the visual edit map. The final candidate restores main's exact bytes for that map. The candidate browser proof restored its own fixture after running.
+- The final production build completed on the exact candidate. The touched test diff retains existing assertions.
+- The complete exact-candidate publishing suite passed 12 tests with no failures. This repeated the selected-page and populated native archive run on the final commit.
