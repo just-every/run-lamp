@@ -5,7 +5,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
-import { notificationActivity, assertNoNewNotifications, assertNoNewNotificationWork, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
+import { notificationActivity, assertNoNewNotifications, assertNoNewNotificationWork, moveInDoor, importedRecordInventory, notificationInventory, undoNotificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
@@ -305,7 +305,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       const published = await api(`/api/app/incidents/${edited.id}/publish`, { channels: [] }, { 'If-Match': `${draft.body.draft.id}:${edited.updates.length}` });
       assert.equal(published.status, 200, JSON.stringify(published.body));
       const invitationDeadline = await importInvitationFlow({ runtime, api, source, result, priorIds, control: invitationControl });
-      const beforeUndo = await notificationInventory(runtime);
+      const beforeUndo = await undoNotificationInventory(runtime);
       const undone = await moveIn.undo(result.door); assert.equal(undone.status, 200, JSON.stringify(undone.body));
       assert.equal(undone.body.job.state, 'undone');
       await assertNoNewNotificationWork(runtime, beforeUndo, `${source} conditional undo`);
