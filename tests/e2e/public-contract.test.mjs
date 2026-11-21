@@ -95,6 +95,64 @@ function hasClass(node, name) {
   return node.attrs?.some(attr => attr.name === 'class' && attr.value.split(' ').includes(name));
 }
 
+async function assertPublicBranding(j, { state, pageName, logoBytes, previousVersion }) {
+  const version = await eventually(async () => {
+    const response = await j.publicResponse('/api/public/status');
+    if (!response.ok || response.headers.get('x-lamp-snapshot-state') === 'stale') {
+      await response.text();
+      return;
+    }
+    const { overall } = await response.json();
+    if (overall === state) return response.headers.get('x-lamp-snapshot-version');
+  }, current => Boolean(current && current !== previousVersion), `a current ${state} snapshot is published`);
+
+  const attribute = (node, name) => node?.attrs?.find(attr => attr.name === name)?.value;
+  const readArtifact = async (url, type) => {
+    assert.equal(url.origin, j.publicOrigin, `${url.pathname} is first-party`);
+    const response = await j.publicResponse(url);
+    assert.equal(response.status, 200, url.pathname);
+    assert.match(response.headers.get('content-type') ?? '', type, url.pathname);
+    assert.notEqual(response.headers.get('x-lamp-snapshot-state'), 'stale', url.pathname);
+    assert.equal(response.headers.get('x-lamp-snapshot-version'), version, url.pathname);
+    return response.text();
+  };
+
+  const html = await readArtifact(new URL(j.publicOrigin), /^text\/html\b/);
+  const elements = descendants(parse(html));
+  const label = elements.find(node => attribute(node, 'id') === 'overall-status');
+  assert.ok(label, 'the public page shows its overall state');
+  const labelText = nodeText(label).trim();
+  assert.equal(labelText, expectedComponentLabels[state]);
+  const expectedTitle = `${pageName}: ${labelText}`;
+  const head = elements.find(node => node.tagName === 'head');
+  const metadata = property => attribute(head.childNodes.find(node => node.tagName === 'meta' && attribute(node, 'property') === property), 'content');
+  assert.equal(metadata('og:title'), expectedTitle);
+  const icon = head.childNodes.find(node => node.tagName === 'link' && attribute(node, 'rel') === 'icon');
+  const faviconUrl = new URL(attribute(icon, 'href'), j.publicOrigin);
+  const socialUrl = new URL(metadata('og:image'));
+
+  const readArtwork = async url => {
+    const svg = parseFragment(await readArtifact(url, /^image\/svg\+xml\b/)).childNodes.find(node => node.tagName === 'svg');
+    assert.ok(svg, `${url.pathname} serves SVG artwork`);
+    const image = svg.childNodes.find(node => node.tagName === 'image');
+    const embedded = attribute(image, 'href')?.match(/^data:image\/png;base64,([A-Za-z0-9+/]+={0,2})$/);
+    assert.ok(embedded, `${url.pathname} embeds a PNG`);
+    assert.deepEqual(Buffer.from(embedded[1], 'base64'), logoBytes, `${url.pathname} embeds the original uploaded logo`);
+    return svg.childNodes;
+  };
+  const favicon = await readArtwork(faviconUrl);
+  const stateMark = attribute(favicon.find(node => node.tagName === 'circle'), 'fill');
+  const stylesheet = await j.publicText('/assets/status-page.css');
+  const stateColor = state === 'Operational' ? '--ok' : '--down';
+  const publicColor = stylesheet.match(new RegExp(`${stateColor}:\\s*(#[a-fA-F0-9]+)`))?.[1];
+  assert.ok(publicColor, `the public stylesheet exposes the ${state} color`);
+  assert.equal(stateMark, publicColor, `the favicon mark matches the public ${state} color`);
+
+  const social = await readArtwork(socialUrl);
+  assert.deepEqual(social.filter(node => node.tagName === 'text').map(nodeText), [expectedTitle], 'the served Open Graph image visibly states the public overall status');
+  return { version, stateMark, labelText, faviconPath: faviconUrl.pathname, socialPath: socialUrl.pathname };
+}
+
 function rssItems(xml) {
   return [...xml.matchAll(/<item\b[^>]*>([\s\S]*?)<\/item>/g)].map(([, item]) => ({
     guid: item.match(/<guid\b[^>]*>([^<]+)<\/guid>/)?.[1],
@@ -562,8 +620,9 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
   let browser;
   try {
     const settings = (await j.json('/api/app/page-settings')).settings;
+    const pageName = 'Customer service status';
     await j.json('/api/app/page-settings', 'PUT', {
-      mailFromAddress: settings.mailFromAddress, pageName: 'Customer service status', tagline: 'Current service facts', accentColor: '#16794C',
+      mailFromAddress: settings.mailFromAddress, pageName, tagline: 'Current service facts', accentColor: '#16794C',
       timezone: 'America/Los_Angeles', hostname: 'localhost', footerCreditEnabled: false,
       widgetAllowedOrigins: [j.publicOrigin],
     });
@@ -620,7 +679,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const review = await j.json('/api/app/components/bulk/preview', 'POST', { catalogue, revision: beforeCatalogue.revision });
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: review.catalogue, revision: review.revision, reviewToken: review.reviewToken });
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: review.catalogue, revision: review.revision, reviewToken: review.reviewToken }, 409);
-    let html = await j.visible('/', 'Customer service status');
+    let html = await j.visible('/', pageName);
     assert.ok(html.indexOf(firstGroup.name) < html.indexOf(secondGroup.name));
     assert.ok(!html.includes(other.name), 'a healthy conditional component stays out of the public catalogue');
     assert.ok(html.includes(main.note));
@@ -698,7 +757,13 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const originalLogo = await j.publicResponse('/assets/logo');
     assert.equal(originalLogo.status, 200);
     assert.deepEqual(Buffer.from(await originalLogo.arrayBuffer()), png);
-    for (const path of ['/assets/favicon.svg', '/assets/og.svg']) { const response = await j.publicResponse(path); assert.equal(response.status, 200); assert.ok((await response.text()).includes('data:image/png')); }
+    const workingBrand = await assertPublicBranding(j, { state: 'Operational', pageName, logoBytes: png });
+    const brandingClaimPath = `/api/app/components/${main.id}/standing-claim`;
+    await j.json(brandingClaimPath, 'PUT', { state: 'Major outage' });
+    const outageBrand = await assertPublicBranding(j, { state: 'Major outage', pageName, logoBytes: png, previousVersion: workingBrand.version });
+    assert.notEqual(outageBrand.stateMark, workingBrand.stateMark, 'the standing claim changes the favicon mark while retaining the logo');
+    await j.json(brandingClaimPath, 'PUT', { state: null });
+    console.info(`PROBE PAGE-012 4: logo upload and native standing claim -> ${workingBrand.labelText} to ${outageBrand.labelText}; ${outageBrand.faviconPath} retained the upload bytes and changed mark; the same-origin ${outageBrand.socialPath} text and Open Graph title matched each public label`);
     const iconPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNQ7poIAAISAT/YErM2AAAAAElFTkSuQmCC', 'base64');
     const icon = new FormData(); icon.set('file', new Blob([iconPng], { type: 'image/png' }), 'icon.png');
     const iconMultipart = new Request(j.appOrigin + '/api/app/page-settings/theme-assets/icon', { method: 'POST', body: icon });
