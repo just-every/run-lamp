@@ -5968,7 +5968,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/maintenance-calendar.ts": {
-      "sha256": "ebdedb68df88c108a813a8bbbfaad8ccdec5dd89d0e9ebb7d33397af5b5c837f",
+      "sha256": "7768275615f4d75cee6eec40405c4c3d421b05ddff1a07cafc9ef34270ed8bfc",
       "executable": false
     },
     "src/core/features/public-snapshot/native-api.ts": {
@@ -6000,7 +6000,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "42df0fcb5c83c8a24efb3268914a024f288035a8f1f5fe7cd418a6dc758ed2ea",
+      "sha256": "1c6393129a93c712ac5f296486461948ccb17a02f1c02c04570efe92364fa6df",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -8507,6 +8507,10 @@
       "sha256": "a170892a4a14479a2da0a6f3592184d7bbf6541f09694b6a8e5b92af86ab5340",
       "executable": false
     },
+    "tests/e2e/helpers/retained-snapshot-runtime.mjs": {
+      "sha256": "36f16ea7652c790701acd744457c86980eedf35ea53bda14411c7493f4592bdc",
+      "executable": false
+    },
     "tests/e2e/helpers/scheduled-update-flow.mjs": {
       "sha256": "98c800b22b40b34893585eef24419977030b6d58494a41c18b5f140ef53b9e33",
       "executable": false
@@ -8768,7 +8772,7 @@
       "executable": false
     },
     "tests/e2e/public-contract.test.mjs": {
-      "sha256": "2c34b70ebae759f9cadd6e3036fed179cf7948ff84756fbed1d82c245c13f206",
+      "sha256": "f82061ff67669bc0f32e2f94191e4a8cc4f72274a0818d53d80d78c2a1291095",
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
@@ -8776,7 +8780,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "a09f5a829d06a57cafe9f9762e997081ba2cfc9ceb44459a9e31feb1f0c34888",
+      "sha256": "f7904f3df6bed7b0bf07e39c070a3867d329ae0936c5472e3221750d764b7e8e",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
@@ -8816,7 +8820,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "b18896b84b248568f5e40bc29ae8280e88485cae721814eecf308dba8d986e12",
+      "sha256": "20bbbaaa2587dde61533f6c8099222c1f4f9e38543af79fc030de396b0a32442",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
@@ -8844,7 +8848,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "b81320207aa0b7f57fa5888cf736a967398c39dee099c26176c5ec9bb2270a55",
+      "sha256": "19eb9a35a60c278922b775bd12a12ef8702ea1de8183c25063a2367ca505b1cb",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
