@@ -25,6 +25,35 @@ export async function reservePort({ host = "127.0.0.1", label = "Worker" } = {})
   });
 }
 
+/** Start Miniflare on a reserved port, retrying only listener collisions. */
+export async function startMiniflare({ create, label, firstPort }) {
+  const tried = new Set();
+  let port = firstPort;
+
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    while (port === undefined || tried.has(port)) {
+      port = await reservePort({ label });
+    }
+    tried.add(port);
+    let runtime;
+    try {
+      runtime = create(port);
+      await runtime.ready;
+      return runtime;
+    } catch (error) {
+      try {
+        await runtime?.dispose();
+      } catch (disposeError) {
+        // Miniflare can rethrow its startup error after disposing.
+        if (disposeError !== error) throw disposeError;
+      }
+      const collision = error?.code === "EADDRINUSE" || error?.code === "ERR_ADDRESS_IN_USE"
+        || /\b(?:EADDRINUSE|address already in use)\b/i.test(error?.message ?? String(error));
+      if (!collision || attempt === 3) throw error;
+    }
+  }
+}
+
 /**
  * Wait for one locally spawned Worker without allowing a half-open HTTP probe
  * to exceed the fixture's wall-clock startup budget. Custom host-routing probes

@@ -12,7 +12,7 @@ import { chromium } from 'playwright';
 import { unstable_splitSqlQuery } from 'wrangler';
 import { produceArtifact } from '../scripts/build-delivery-artifact.mjs';
 import { setupPageSettingsStatement } from '../scripts/ops-config.mjs';
-import { reservePort } from './e2e/worker-startup.mjs';
+import { startMiniflare } from './e2e/worker-startup.mjs';
 import { secret } from './auth-adoption/runtime.mjs';
 
 const require = createRequire(import.meta.url);
@@ -31,19 +31,18 @@ async function installedVersionPublicDoorProof() {
     const artifact = JSON.parse(await readFile(artifactPath, 'utf8'));
     const payloads = new Map(await Promise.all([...artifact.modules, ...artifact.assets].map(async item =>
       [item.payload, await readFile(resolve(dirname(artifactPath), item.payload))])));
-    const port = await reservePort();
-    const origin = `http://127.0.0.1:${port}`;
+    let origin;
     // Only the managed identity is supplied. Legacy health inputs remain absent.
     const managedIdentity = { releaseDigest: 'synthetic-lamp-release-1', versionId: 'synthetic-lamp-version-1' };
     const bindings = { ...artifact.deploymentSpec.publicVariables, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'status.lamp.test',
-      AUTH_ORIGIN: origin, AUTH_LOCAL: 'true', SESSION_SECRET: secret, SETUP_OPERATOR_EMAIL: 'owner@example.test',
+      AUTH_LOCAL: 'true', SESSION_SECRET: secret, SETUP_OPERATOR_EMAIL: 'owner@example.test',
       SETUP_TOKEN: 'synthetic-lamp-bootstrap-1-'.repeat(3), MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_PROVIDER: '',
       SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscription-1-'.repeat(3), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-webhook-1-'.repeat(3),
       RER_RELEASE_DIGEST: managedIdentity.releaseDigest, RER_VERSION_METADATA: { id: managedIdentity.versionId } };
     const modules = artifact.modules.map(module => ({ type: module.type === 'esm' ? 'ESModule' : module.type === 'compiled-wasm' ? 'CompiledWasm' : 'Text',
       path: module.name, contents: module.type === 'compiled-wasm' ? payloads.get(module.payload) : payloads.get(module.payload).toString() }));
     modules.sort((a, b) => a.path === artifact.mainModule ? -1 : b.path === artifact.mainModule ? 1 : 0);
-    runtime = new Miniflare(convertV4MiniflareOptions({ name: 'lamp-version', port, modules, bindings,
+    const options = { name: 'lamp-version', modules,
       compatibilityDate: artifact.deploymentSpec.compatibilityDate, compatibilityFlags: artifact.deploymentSpec.compatibilityFlags,
       d1Databases: { DB: 'lamp-version-db' }, r2Buckets: { SNAPSHOTS: 'lamp-version-snapshots' },
       durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, queueProducers: { JOBS: 'lamp-version-jobs' },
@@ -53,8 +52,14 @@ async function installedVersionPublicDoorProof() {
         return asset ? new Response(payloads.get(asset.payload), { headers: { 'Content-Type': asset.contentType } }) : new Response(null, { status: 404 });
       } },
       outboundService: () => { throw new Error('The version journey must make no external requests.'); },
-    }));
-    await runtime.ready;
+    };
+    runtime = await startMiniflare({
+      label: 'health version Worker',
+      create(port) {
+        origin = `http://127.0.0.1:${port}`;
+        return new Miniflare(convertV4MiniflareOptions({ ...options, port, bindings: { ...bindings, AUTH_ORIGIN: origin } }));
+      },
+    });
     const db = await runtime.getD1Database('DB');
     for (const migration of artifact.deploymentSpec.migrations) await db.batch(unstable_splitSqlQuery(migration.sql).map(sql => db.prepare(sql)));
     await db.prepare(setupPageSettingsStatement({ pageName: 'Synthetic Lamp status', pageTagline: 'Version proof', pageTimezone: 'UTC',
