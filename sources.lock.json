@@ -8792,7 +8792,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "d5ae33742cef4bca1ca4856707532e3fe440974761d256789da0fc624755e2d6",
+      "sha256": "7cbb3da203f44a8139db73418d3130579b4f8a9f5605f23f61b55e241c6e9439",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {
