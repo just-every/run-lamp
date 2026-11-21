@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "blob": "f4eb4ab64e9cc311d3e49862f595a969a3971afb",
+      "bytes": 7608,
+      "path": "REPORT.md",
+      "sha256": "7fb0d1634548742b0466ed7233e07420b84c56bb392300cde5a6aeef822a5908"
+    },
+    {
+      "blob": "dfcb13693ca4a690267a2376e5a217a2ad5f2cd6",
+      "bytes": 3070,
+      "path": "RUN-RECEIPT.md",
+      "sha256": "ab900895e94973e603b6eb3308c09129e9b0cf608ab832b6fb70b432cedf2d7d"
+    },
+    {
+      "blob": "64785712b924ebc572443fce23ab8367f8d9a438",
+      "bytes": 3465,
+      "path": "browser-captures.json",
+      "sha256": "7984831674c979447c818d41b6748476efd3609f73479be532c79777c749a4f2"
+    },
+    {
+      "blob": "6538db7d771d28b353e62f92b36b5fb972c58d24",
+      "bytes": 90724,
+      "path": "screens/after-calm-1440.png",
+      "sha256": "a2de50c659ea1ff136c643b913c3db2079ae6f7eaf3ade3bfce8f6af583a7628"
+    },
+    {
+      "blob": "93c4f9c3074f8b7973f1b2b8892eae479f4830ff",
+      "bytes": 63046,
+      "path": "screens/after-calm-390.png",
+      "sha256": "bcda8657997358202c2fd0af34244c67cfd60f3f777967ccd77ac5548e5cf3ea"
+    },
+    {
+      "blob": "c7d037946ba496fec73a6e01f40ce6855e970136",
+      "bytes": 277586,
+      "path": "screens/after-default-1440.png",
+      "sha256": "1a2704fb4d90e83cff097abca0789246937f262410aa552541c2ca1b6a6accf9"
+    },
+    {
+      "blob": "916f2604f49317bcda043feb1d16840dd4364e68",
+      "bytes": 155638,
+      "path": "screens/after-default-390.png",
+      "sha256": "2301346003144586fbbc8798c9052a402f7bc27cefd08b0c84b3807b88574f82"
+    },
+    {
+      "blob": "30007f5567002eede3a4f6dceb0559ae6f1038c9",
+      "bytes": 157100,
+      "path": "screens/after-regions-1440.png",
+      "sha256": "3140d4131619c330938741aa434d74af934b38b00460567f76b69b3d6749253a"
+    },
+    {
+      "blob": "9343476ce45f6f3f6eed86e96563f0e4bb647d06",
+      "bytes": 105849,
+      "path": "screens/after-regions-390.png",
+      "sha256": "8b1c63828d7a58d5973038b6fa924bfc4b2087b356d4dc2ecb3e90a87581e366"
+    },
+    {
+      "blob": "cdd9734df3007343a9b817636386d70d20512a8f",
+      "bytes": 131337,
+      "path": "screens/after-uptime-1440.png",
+      "sha256": "30a575b9fd2655d1d51f7d1747784618cb8deb8c394b5b2ceddb18d2c8b66cb6"
+    },
+    {
+      "blob": "5d632eb752a6618a060296cfb7cf65d62c4146c4",
+      "bytes": 114332,
+      "path": "screens/after-uptime-390.png",
+      "sha256": "f02b7cd7f777993b953f4b7ed6e506788f778bb011bfc8024e4f50cae35a83f7"
+    },
+    {
+      "blob": "b6c6fb985136665ac5a5eaee8e28bfa536e0af38",
+      "bytes": 90790,
+      "path": "screens/before-calm-1440.png",
+      "sha256": "8bb5f9afc2cfbdf772f82c12177160cc9b12aa996b0fddbd31f737b070da33a1"
+    },
+    {
+      "blob": "4c24afb1cbfff42861984f6ef3cc18a291cb579f",
+      "bytes": 63025,
+      "path": "screens/before-calm-390.png",
+      "sha256": "9fd03bc0168d21cd08e088b3363e1ad1afe026efcb90253a6a953e40d7fbe733"
+    },
+    {
+      "blob": "338ea84b20942c58c9192e7a15363a2762c8e106",
+      "bytes": 277370,
+      "path": "screens/before-default-1440.png",
+      "sha256": "c6f31d6345ce36bd0d77d848890707e8398c8a523ec749bd5d27ab2d216cfeb2"
+    },
+    {
+      "blob": "834df19a7e54e907c3c2ddd077a18e9aab61fb9e",
+      "bytes": 155629,
+      "path": "screens/before-default-390.png",
+      "sha256": "0ff435c4e96880e337eaf8bf583845e63be0229d551a8680c81f7d6d2e7fb871"
+    },
+    {
+      "blob": "84915c0c87e9e647ddf78bad4ca600dcddada566",
+      "bytes": 157127,
+      "path": "screens/before-regions-1440.png",
+      "sha256": "ec3bfbbdb8bd12c9ae75b3148a997e77d16341b41f32666b3ab0d9591468de31"
+    },
+    {
+      "blob": "7b680ae61eceac6d8b2926858fab1d66cab5fddb",
+      "bytes": 105787,
+      "path": "screens/before-regions-390.png",
+      "sha256": "37578c756493509f8189734030fd6416a1dd7bf7c0431b315face42cdb57bd78"
+    },
+    {
+      "blob": "63d4c938d18561066ea6a55a44181151e191d46b",
+      "bytes": 131351,
+      "path": "screens/before-uptime-1440.png",
+      "sha256": "f256d4e3a0fd3f2653d88f5e3fc32f096ebaac4a91db48fdea160398c72c6127"
+    },
+    {
+      "blob": "57d712c1837b55b0bccad8b2bef4417df67688a1",
+      "bytes": 114317,
+      "path": "screens/before-uptime-390.png",
+      "sha256": "c4933fd31b743c63d4cf17228eab02bf6232c0dd50cf2601430b1e96406c12a6"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f197",
+  "product_head": "fbc51b72cf291392da9de7b261783f154f258489",
+  "ref": "refs/heads/evidence/sd-lamp-c-f197",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f197"
+}

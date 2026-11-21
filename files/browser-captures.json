@@ -1,0 +1,118 @@
+{
+  "head": "fbc51b72cf291392da9de7b261783f154f258489",
+  "body": "Public root, with group disclosures opened",
+  "captures": [
+    {
+      "file": "screens/after-calm-1440.png",
+      "width": 1440,
+      "height": 1157,
+      "bytes": 90724,
+      "sha256": "a2de50c659ea1ff136c643b913c3db2079ae6f7eaf3ade3bfce8f6af583a7628"
+    },
+    {
+      "file": "screens/after-calm-390.png",
+      "width": 390,
+      "height": 1183,
+      "bytes": 63046,
+      "sha256": "bcda8657997358202c2fd0af34244c67cfd60f3f777967ccd77ac5548e5cf3ea"
+    },
+    {
+      "file": "screens/after-default-1440.png",
+      "width": 1440,
+      "height": 1908,
+      "bytes": 277586,
+      "sha256": "1a2704fb4d90e83cff097abca0789246937f262410aa552541c2ca1b6a6accf9"
+    },
+    {
+      "file": "screens/after-default-390.png",
+      "width": 390,
+      "height": 1954,
+      "bytes": 155638,
+      "sha256": "2301346003144586fbbc8798c9052a402f7bc27cefd08b0c84b3807b88574f82"
+    },
+    {
+      "file": "screens/after-regions-1440.png",
+      "width": 1440,
+      "height": 1330,
+      "bytes": 157100,
+      "sha256": "3140d4131619c330938741aa434d74af934b38b00460567f76b69b3d6749253a"
+    },
+    {
+      "file": "screens/after-regions-390.png",
+      "width": 390,
+      "height": 1384,
+      "bytes": 105849,
+      "sha256": "8b1c63828d7a58d5973038b6fa924bfc4b2087b356d4dc2ecb3e90a87581e366"
+    },
+    {
+      "file": "screens/after-uptime-1440.png",
+      "width": 1440,
+      "height": 1460,
+      "bytes": 131337,
+      "sha256": "30a575b9fd2655d1d51f7d1747784618cb8deb8c394b5b2ceddb18d2c8b66cb6"
+    },
+    {
+      "file": "screens/after-uptime-390.png",
+      "width": 390,
+      "height": 2135,
+      "bytes": 114332,
+      "sha256": "f02b7cd7f777993b953f4b7ed6e506788f778bb011bfc8024e4f50cae35a83f7"
+    },
+    {
+      "file": "screens/before-calm-1440.png",
+      "width": 1440,
+      "height": 1157,
+      "bytes": 90790,
+      "sha256": "8bb5f9afc2cfbdf772f82c12177160cc9b12aa996b0fddbd31f737b070da33a1"
+    },
+    {
+      "file": "screens/before-calm-390.png",
+      "width": 390,
+      "height": 1183,
+      "bytes": 63025,
+      "sha256": "9fd03bc0168d21cd08e088b3363e1ad1afe026efcb90253a6a953e40d7fbe733"
+    },
+    {
+      "file": "screens/before-default-1440.png",
+      "width": 1440,
+      "height": 1908,
+      "bytes": 277370,
+      "sha256": "c6f31d6345ce36bd0d77d848890707e8398c8a523ec749bd5d27ab2d216cfeb2"
+    },
+    {
+      "file": "screens/before-default-390.png",
+      "width": 390,
+      "height": 1954,
+      "bytes": 155629,
+      "sha256": "0ff435c4e96880e337eaf8bf583845e63be0229d551a8680c81f7d6d2e7fb871"
+    },
+    {
+      "file": "screens/before-regions-1440.png",
+      "width": 1440,
+      "height": 1330,
+      "bytes": 157127,
+      "sha256": "ec3bfbbdb8bd12c9ae75b3148a997e77d16341b41f32666b3ab0d9591468de31"
+    },
+    {
+      "file": "screens/before-regions-390.png",
+      "width": 390,
+      "height": 1384,
+      "bytes": 105787,
+      "sha256": "37578c756493509f8189734030fd6416a1dd7bf7c0431b315face42cdb57bd78"
+    },
+    {
+      "file": "screens/before-uptime-1440.png",
+      "width": 1440,
+      "height": 1460,
+      "bytes": 131351,
+      "sha256": "f256d4e3a0fd3f2653d88f5e3fc32f096ebaac4a91db48fdea160398c72c6127"
+    },
+    {
+      "file": "screens/before-uptime-390.png",
+      "width": 390,
+      "height": 2135,
+      "bytes": 114317,
+      "sha256": "c4933fd31b743c63d4cf17228eab02bf6232c0dd50cf2601430b1e96406c12a6"
+    }
+  ]
+}
