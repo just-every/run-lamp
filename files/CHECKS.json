@@ -1,0 +1,235 @@
+{
+  "base": "f275c4e4c7024d97bd1e26117905ade863ce5f2a",
+  "base_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f275c4e4c7024d97bd1e26117905ade863ce5f2a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44936655191",
+      "id": 44936655191,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f275c4e4c7024d97bd1e26117905ade863ce5f2a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44936655200",
+      "id": 44936655200,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "f275c4e4c7024d97bd1e26117905ade863ce5f2a",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44935101830",
+      "id": 44935101830,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-lamp-c-f201",
+  "branch_verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "17a8630d863575486a33c2f0334c75ed98efec86",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44938104883",
+    "id": 44938104883,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "candidate_run_site": "main-only, pending guarded landing",
+  "checks": [
+    {
+      "basis": "committed repair",
+      "command": "LAMP_VERIFY_SHARD=build pnpm run verify:app and production Worker tar",
+      "exit": 0
+    },
+    {
+      "command": "pnpm run validate:release",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "basis": "published product commit before the release-only repair",
+      "command": "node --test --test-name-pattern 'native identity setup|mail-off rer signin follows native deployment' tests/auth-adoption/dependencies.test.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "proof": [
+        "tests/auth-adoption/dependencies.test.mjs lines 169\u2013253",
+        "tests/auth-adoption/dependencies.test.mjs line 349"
+      ],
+      "tested_head": "3f9d35d1af0d1f89a3281ebc0ee2d5f2def9c72e"
+    },
+    {
+      "basis": "local implementation before final Settings copy and archive formatting",
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/dependencies.test.mjs tests/auth-adoption/sign-in-providers.test.mjs tests/auth-adoption/setup-migrations.test.mjs tests/auth-adoption/upgrade.test.mjs",
+      "exit": 0,
+      "ledger_inventory_sha256": "5b86f2652cc96ea12f2c2429e0f0ef10a30dcfd6b38a820f25dd15c83e376e36",
+      "observed_d1_migrations": 84,
+      "passed": 12
+    },
+    {
+      "assertion_width": 1440,
+      "basis": "candidate source and browser test bytes. Subsequent base drift only touched the lock and the unrelated publishing contract test.",
+      "browser": "/usr/bin/chromium",
+      "command": "node --test tests/e2e/auth-adoption-journey.test.mjs",
+      "exit": 0,
+      "inspected_widths": [
+        1440,
+        390
+      ],
+      "passed": 2,
+      "proof": [
+        "tests/e2e/auth-adoption-journey.test.mjs line 92",
+        "tests/e2e/helpers/required-sign-in-flow.mjs lines 18\u2013101"
+      ]
+    },
+    {
+      "basis": "local implementation, archive formatting was subsequently refactored without changing its transformation",
+      "command": "node --test --test-concurrency=1 tests/auth-adoption/portability.test.mjs tests/e2e/prior-backup.test.mjs",
+      "exit": 0,
+      "passed": 2
+    },
+    {
+      "basis": "published product commit before the release-only repair",
+      "command": "node --test tests/auth-adoption/portability.test.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "passed": 1,
+      "proof": [
+        "tests/auth-adoption/portability.test.mjs lines 80\u2013106",
+        "tests/auth-adoption/portability.test.mjs line 180"
+      ],
+      "tested_head": "3f9d35d1af0d1f89a3281ebc0ee2d5f2def9c72e"
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generated_documents_changed": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "basis": "committed candidate",
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "git diff origin/main...HEAD --exit-code -- CONTRACT.md ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "assertion_width": 1440,
+      "basis": "committed repair",
+      "browser": "/usr/bin/chromium",
+      "command": "node --test tests/e2e/auth-adoption-journey.test.mjs",
+      "exit": 0,
+      "node": "22.20.0",
+      "passed": 2
+    }
+  ],
+  "clause": {
+    "fixture_points_proven": [
+      1
+    ],
+    "id": "TEAM-006",
+    "status_after": "partial",
+    "status_before": "partial"
+  },
+  "counts_after": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123
+  },
+  "counts_before": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123
+  },
+  "head": "17a8630d863575486a33c2f0334c75ed98efec86",
+  "main_equals_candidate": false,
+  "observed_remote_main": "a72f4668621d5d8a43c3e312bb1d24f4b9067831",
+  "product_commit_identity_check": "all candidate author and committer identities allowed",
+  "product_commit_trailers": 0,
+  "publication_scan": {
+    "commit": "17a8630d863575486a33c2f0334c75ed98efec86",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "deferred to guarded lander"
+  },
+  "recorded_at": "2026-11-21T19:10:23.704987+00:00",
+  "remote_branch_head": "17a8630d863575486a33c2f0334c75ed98efec86",
+  "repository": "just-every/run-lamp",
+  "screens": [
+    {
+      "file": "required-sign-in-settings-1440.png",
+      "height": 1000,
+      "reviewed": true,
+      "sha256": "8fb4f51d311fe39f0e12c50b1695aa3be0be84405f2842ea1e35c93e7cb84345",
+      "width": 1440
+    },
+    {
+      "file": "required-sign-in-settings-390.png",
+      "height": 1108,
+      "reviewed": true,
+      "sha256": "7770f51aef7cf49813e7e762c3e52dfa1336b5762cebbf187768708d5b9625d8",
+      "width": 390
+    },
+    {
+      "file": "required-sign-in-notice-1440.png",
+      "height": 1000,
+      "reviewed": true,
+      "sha256": "52d58960bcccdd9c1702d597aaef2b42b79cb45937e6896ac72c5a013d838403",
+      "width": 1440
+    },
+    {
+      "file": "required-sign-in-notice-390.png",
+      "height": 844,
+      "reviewed": true,
+      "sha256": "82f6f160a0b07c7077bcaa7618986039f994519c078294bcc136f06b468e805d",
+      "width": 390
+    }
+  ],
+  "tag": "sd-lamp-c-f201",
+  "test_inventory": {
+    "assertion_scripts": 10,
+    "registered_cases": 119
+  },
+  "verify_reproduced": {
+    "command": "pnpm run verify:app followed by tar -czf \"$RUNNER_TEMP/lamp-built-worker.tar.gz\" dist .wrangler/deploy/config.json",
+    "environment": {
+      "CI": "true",
+      "LAMP_VERIFY_SHARD": "build",
+      "node": "22.20.0"
+    },
+    "exit": 1,
+    "failure": "RELEASE.json migrations must exactly match newly introduced migrations/core in apply order.",
+    "head": "3f9d35d1af0d1f89a3281ebc0ee2d5f2def9c72e",
+    "job": "build",
+    "job_id": 136946565123,
+    "repair": "Added the required sign-in migration to the release inventory and reran the same build shard.",
+    "run": 44937269514,
+    "test": "validate:release"
+  }
+}
