@@ -24,6 +24,112 @@ function sourceHistory(source, files) {
   }));
 }
 
+function enrichStatuspageCapture(files) {
+  const components = parsed(files, 'components.json');
+  const [selected] = components;
+  selected.only_show_if_degraded = true;
+  components.push({
+    id: 'synthetic-lamp-history-control', name: 'Unaffected history control', position: 3,
+    page_id: selected.page_id, created_at: '2026-01-04T12:34:56.789Z', status: 'operational',
+  });
+  files.find(file => file.name === 'components.json').text = JSON.stringify(components);
+
+  const incidents = parsed(files, 'incidents.json');
+  const [incident] = incidents;
+  const [opened, resolved] = incident.incident_updates;
+  // The published instants precede the source write times, even at resolution.
+  opened.display_at = '2026-01-11T08:54:03.201Z';
+  resolved.display_at = '2026-01-11T10:27:19.405Z';
+  incident.resolved_at = resolved.display_at;
+  resolved.affected_components[0].old_status = 'degraded_performance';
+  incident.incident_updates = [
+    opened,
+    {
+      id: 'synthetic-lamp-history-monitoring', incident_id: incident.id, status: 'monitoring',
+      body: 'API recovery is under observation as errors subside.',
+      created_at: '2026-01-11T10:06:43.000Z', display_at: '2026-01-11T10:02:41.302Z',
+      affected_components: [{ code: selected.id, name: selected.name, old_status: 'partial_outage', new_status: 'degraded_performance' }],
+    },
+    resolved,
+  ];
+  files.find(file => file.name === 'incidents.json').text = JSON.stringify(incidents);
+}
+
+async function reconcileComponentHistory(api, component, expected) {
+  const rows = [], cursors = new Set();
+  const limit = 2;
+  let cursor = null;
+  do {
+    const query = new URLSearchParams({ limit });
+    if (cursor !== null) query.set('cursor', cursor);
+    const page = await api(`/api/app/components/${component.id}/history?${query}`);
+    assert.equal(page.status, 200, JSON.stringify(page.body));
+    assert.equal(page.body.historyPage.limit, limit);
+    assert.equal(page.body.history.length, Math.min(limit, expected.length - rows.length), 'the history page contains its expected rows');
+    rows.push(...page.body.history);
+    cursor = page.body.historyPage.nextCursor;
+    if (cursor !== null) {
+      assert.ok(rows.length < expected.length && !cursors.has(cursor), 'the history cursor advances towards the final expected row');
+      cursors.add(cursor);
+    }
+  } while (cursor !== null);
+  assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'each transition has one native history identity');
+  assert.deepEqual(rows.map(({ previousState, newState, changedAt, causeType, causeId }) => ({
+    previousState, newState, changedAt, causeType, causeId,
+  })), expected, `${component.name}: complete newest-first native history`);
+}
+
+async function assertStatuspageComponentHistory(api, files, components, incidents) {
+  const sourceComponents = parsed(files, 'components.json');
+  const sourceIncident = parsed(files, 'incidents.json').find(row => row.id === 'i0000000001');
+  assert.ok(sourceIncident, 'the selected source incident is in the reviewed capture');
+  const updates = sourceIncident.incident_updates;
+  const affectedCodes = updates.flatMap(update => update.affected_components.map(row => row.code));
+  const selected = sourceComponents.find(row => row.id === affectedCodes[0]);
+  const control = sourceComponents.find(row => row.id === 'synthetic-lamp-history-control');
+  assert.ok(selected && control && selected.id !== control.id);
+  assert.deepEqual(affectedCodes, [selected.id, selected.id, selected.id], 'only the selected source component changes through resolution');
+  assert.ok(updates.every(update => update.incident_id === sourceIncident.id
+    && Date.parse(update.display_at) < Date.parse(update.created_at)), 'the reviewed publication instants are distinct from source write times');
+  assert.equal(new Set(updates.map(update => Date.parse(update.display_at))).size, updates.length);
+  assert.ok(parsed(files, 'incidents.json').every(row => row.incident_updates.every(update =>
+    !(update.affected_components ?? []).some(affected => affected.code === control.id))), 'the control is unaffected across the saved capture');
+
+  const match = (rows, field, sourceName) => {
+    const matches = rows.filter(row => row[field] === sourceName);
+    assert.equal(matches.length, 1, `${sourceName}: exactly one matching native record`);
+    assert.ok(matches[0].id, `${sourceName}: the native record has an identity`);
+    return matches[0];
+  };
+  const nativeSelected = match(components, 'name', selected.name);
+  const nativeControl = match(components, 'name', control.name);
+  const incident = match(incidents, 'title', sourceIncident.name);
+  assert.notEqual(nativeSelected.id, nativeControl.id);
+  assert.equal(incident.lifecycle, 'Resolved');
+  assert.deepEqual(incident.components.map(row => row.componentId), [nativeSelected.id]);
+  assert.deepEqual(incident.updates.toSorted((a, b) => a.publishedAt.localeCompare(b.publishedAt))
+    .map(({ customerImpact, publishedAt, lifecycle, isRetroactive }) => ({ customerImpact, publishedAt, lifecycle, isRetroactive })),
+  updates.map((update, index) => ({
+    customerImpact: update.body, publishedAt: update.display_at,
+    lifecycle: ['Investigating', 'Monitoring', 'Resolved'][index], isRetroactive: true,
+  })), 'the independently matched incident retains each original message and publication instant');
+
+  const standing = source => ({
+    previousState: 'Operational', newState: 'Operational', changedAt: source.created_at,
+    causeType: 'standing-claim', causeId: null,
+  });
+  const transition = (update, previousState, newState) => ({
+    previousState, newState, changedAt: update.display_at, causeType: 'incident', causeId: incident.id,
+  });
+  await reconcileComponentHistory(api, nativeSelected, [
+    transition(updates[2], 'Degraded performance', 'Operational'),
+    transition(updates[1], 'Partially unavailable', 'Degraded performance'),
+    transition(updates[0], 'Operational', 'Partially unavailable'),
+    standing(selected),
+  ]);
+  await reconcileComponentHistory(api, nativeControl, [standing(control)]);
+}
+
 test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes', { timeout: 600_000 }, async t => {
   await subscriberMoveInCapacityFlow(t);
   const sourceFiles = fixtures('statuspage'), apiKey = 'synthetic-owner-import-key';
@@ -114,12 +220,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       // publication work before measuring this independent silent import.
       await runtime.tick(Date.now());
       const files = invitationFiles(source, fixtures(source)), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
-      if (source === 'statuspage') {
-        const componentFile = files.find(file => file.name === 'components.json');
-        const components = JSON.parse(componentFile.text);
-        components[0].only_show_if_degraded = true;
-        componentFile.text = JSON.stringify(components);
-      }
+      if (source === 'statuspage') enrichStatuspageCapture(files);
       const before = await counts(), quiet = await notificationActivity(runtime);
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
       assert.deepEqual(await counts(), before, `${source} review writes nothing`);
@@ -132,9 +233,14 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       for (const [kind, plural] of [['component', 'components'], ['group', 'groups'], ['incident', 'incidents'], ['maintenance', 'maintenance'], ['subscriber', 'subscribers']]) {
         assert.equal(after[plural] - before[plural], result.report.counts[kind].imported + result.report.counts[kind].changed, `${source} applies its complete reviewed ${kind} inventory`);
       }
+      const incidents = await incidentSnapshot(api);
       if (source === 'statuspage') {
         const sourceComponents = parsed(files, 'components.json');
-        const imported = (await api('/api/app/components')).body.components;
+        const componentList = await api('/api/app/components');
+        assert.equal(componentList.status, 200, JSON.stringify(componentList.body));
+        const imported = componentList.body.components;
+        await assertStatuspageComponentHistory(api, files, imported, incidents);
+        t.diagnostic('PROBE MOVE-002 1: reviewed Statuspage capture and native component history at two entries per page -> exact incident transitions at original publication instants, and only the creation baseline for the unaffected control');
         const conditional = imported.find(row => row.name === sourceComponents[0].name);
         const visible = imported.find(row => row.name === sourceComponents[1].name);
         assert.ok(conditional && visible, 'both reviewed source components are independently readable after import');
@@ -192,7 +298,6 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         t.diagnostic('PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted');
         t.diagnostic('PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable');
       }
-      const incidents = await incidentSnapshot(api);
       for (const row of sourceHistory(source, files)) {
         const incident = incidents.find(candidate => candidate.title === row.title); assert.ok(incident, row.title);
         assert.deepEqual(incident.updates.map(update => Date.parse(update.publishedAt)).sort(), row.times.map(Date.parse).sort());

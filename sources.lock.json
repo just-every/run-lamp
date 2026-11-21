@@ -8840,7 +8840,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "4e6b8dbe22ae0722d4f72d2ef9b6e756d933b8721b602fca9348fcfb007fc99f",
+      "sha256": "b81320207aa0b7f57fa5888cf736a967398c39dee099c26176c5ec9bb2270a55",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
