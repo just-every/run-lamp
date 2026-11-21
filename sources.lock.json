@@ -8507,6 +8507,10 @@
       "sha256": "a170892a4a14479a2da0a6f3592184d7bbf6541f09694b6a8e5b92af86ab5340",
       "executable": false
     },
+    "tests/e2e/helpers/retained-snapshot-runtime.mjs": {
+      "sha256": "36f16ea7652c790701acd744457c86980eedf35ea53bda14411c7493f4592bdc",
+      "executable": false
+    },
     "tests/e2e/helpers/scheduled-update-flow.mjs": {
       "sha256": "98c800b22b40b34893585eef24419977030b6d58494a41c18b5f140ef53b9e33",
       "executable": false
@@ -8816,7 +8820,7 @@
       "executable": false
     },
     "tests/e2e/snapshot-retained.test.mjs": {
-      "sha256": "b18896b84b248568f5e40bc29ae8280e88485cae721814eecf308dba8d986e12",
+      "sha256": "20bbbaaa2587dde61533f6c8099222c1f4f9e38543af79fc030de396b0a32442",
       "executable": false
     },
     "tests/e2e/snapshot-retained.worker.ts": {
@@ -8844,7 +8848,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "b81320207aa0b7f57fa5888cf736a967398c39dee099c26176c5ec9bb2270a55",
+      "sha256": "653a7e60e676e9b5ef7c7ece96f10884763e6ff00e48b2dce0af6b271b1e9b9f",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
