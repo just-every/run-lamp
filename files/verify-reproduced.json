@@ -1,0 +1,8 @@
+{
+  "head": "17a8630d863575486a33c2f0334c75ed98efec86",
+  "job": "shards (ownership)",
+  "command": "pnpm run verify:app 2>&1 | tee \"$RUNNER_TEMP/lamp-verification/shard.log\"",
+  "test": "SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, invitations and deliberate sign-out",
+  "exit": 1,
+  "failure": "page.waitForURL: Timeout 30000ms exceeded. Browser navigated to chrome-error://chromewebdata/."
+}

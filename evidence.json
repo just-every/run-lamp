@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "blob": "ad5066ae60131d61e7c2c7190494a7362d667074",
+      "bytes": 8575,
+      "path": "REPORT.md",
+      "sha256": "5fade59f470be1eef55e27102bfad1066f14b745418b1b92dc481c42edb34562"
+    },
+    {
+      "blob": "b17ae7798b89c2e27c8736de9077d3bae5338804",
+      "bytes": 4300,
+      "path": "checks.json",
+      "sha256": "b7cf6a9773c37a3cedf8d3e89b7e24cee2e6f66ee9e8c84dbeedefeab6f84122"
+    },
+    {
+      "blob": "9793ae2097fa86d6cba4ee7e87d83db26622bc4a",
+      "bytes": 45689,
+      "path": "required-sign-in-notice-1440.png",
+      "sha256": "52d58960bcccdd9c1702d597aaef2b42b79cb45937e6896ac72c5a013d838403"
+    },
+    {
+      "blob": "c295f94eb74b1892c98b12a7ef3961e742c1212f",
+      "bytes": 37923,
+      "path": "required-sign-in-notice-390.png",
+      "sha256": "82f6f160a0b07c7077bcaa7618986039f994519c078294bcc136f06b468e805d"
+    },
+    {
+      "blob": "d3b7384c5dd822d95137a8d6c98f0cc9e9331c06",
+      "bytes": 109058,
+      "path": "required-sign-in-settings-1440.png",
+      "sha256": "8fb4f51d311fe39f0e12c50b1695aa3be0be84405f2842ea1e35c93e7cb84345"
+    },
+    {
+      "blob": "24b4c3f0719ce296d4c0df3583e15edb4697dc36",
+      "bytes": 68490,
+      "path": "required-sign-in-settings-390.png",
+      "sha256": "7770f51aef7cf49813e7e762c3e52dfa1336b5762cebbf187768708d5b9625d8"
+    },
+    {
+      "blob": "0b32c02f73f915c303e4f95931c543ad13d7377b",
+      "bytes": 425,
+      "path": "verify-reproduced.json",
+      "sha256": "3b46eb6aae3acb4232022b02f5729b39527633ad0d90578556906c7ba555c715"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f201-pc1",
+  "product_head": "4524788cf708042f3e51e9612d36f246843602aa",
+  "ref": "refs/heads/evidence/sd-lamp-c-f201-pc1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f201-pc1"
+}

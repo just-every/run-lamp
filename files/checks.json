@@ -1,0 +1,163 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f201-pc1",
+  "head": "4524788cf708042f3e51e9612d36f246843602aa",
+  "saved_head": "17a8630d863575486a33c2f0334c75ed98efec86",
+  "main_at_product_push": "15da5a7ddfc8aaec69e7239e497cde2d35840f69",
+  "main_equal_at_push": false,
+  "product_push": {
+    "result": "success",
+    "remote_ref": "refs/heads/cloud/sd-lamp-c-f201-pc1"
+  },
+  "previous_verify": {
+    "id": 44938104883,
+    "attempt": 1,
+    "ownership_job": 136949469879,
+    "aggregate_job": 136953277102,
+    "result": "failure",
+    "local_reproduction": "verify-reproduced.json"
+  },
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "4524788cf708042f3e51e9612d36f246843602aa",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44944512643",
+    "id": 44944512643,
+    "name": "Verify",
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "local_checks": {
+    "build": {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "first_party": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "contract_views": {
+      "command": "node src/base/contract-docs.mjs write and check",
+      "exit": 0,
+      "restored_from_main": [
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ]
+    },
+    "migration_inventory": {
+      "command": "node scripts/validate-release.mjs",
+      "exit": 0
+    },
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock and check",
+      "exit": 0
+    },
+    "plan": {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "registered_cases": 119,
+      "assertion_scripts": 10
+    },
+    "test": {
+      "command": "node --test --test-concurrency=1 tests/e2e/auth-adoption-journey.test.mjs tests/auth-adoption/dependencies.test.mjs tests/auth-adoption/portability.test.mjs",
+      "exit": 0,
+      "passed": 7,
+      "failed": 0
+    },
+    "verify_chromium_flow": {
+      "test": "operatorManagementFlow",
+      "browser_major": 153,
+      "exit": 0
+    },
+    "commit_audit": {
+      "status": "pass",
+      "candidate_commits_inspected": 3
+    },
+    "diff_hygiene": {
+      "status": "pass",
+      "new_email_shaped_strings": 0
+    }
+  },
+  "screens": [
+    {
+      "path": "required-sign-in-settings-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "8fb4f51d311fe39f0e12c50b1695aa3be0be84405f2842ea1e35c93e7cb84345"
+    },
+    {
+      "path": "required-sign-in-settings-390.png",
+      "width": 390,
+      "height": 1108,
+      "sha256": "7770f51aef7cf49813e7e762c3e52dfa1336b5762cebbf187768708d5b9625d8"
+    },
+    {
+      "path": "required-sign-in-notice-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "sha256": "52d58960bcccdd9c1702d597aaef2b42b79cb45937e6896ac72c5a013d838403"
+    },
+    {
+      "path": "required-sign-in-notice-390.png",
+      "width": 390,
+      "height": 844,
+      "sha256": "82f6f160a0b07c7077bcaa7618986039f994519c078294bcc136f06b468e805d"
+    }
+  ],
+  "screen_inspection": [
+    {
+      "screen": "required-sign-in-settings-1440",
+      "viewportWidth": 1440,
+      "fitsWidth": true,
+      "minVisibleTextPx": 14,
+      "iconOnlyControls": 0
+    },
+    {
+      "screen": "required-sign-in-notice-1440",
+      "viewportWidth": 1440,
+      "fitsWidth": true,
+      "minVisibleTextPx": 16,
+      "iconOnlyControls": 0
+    },
+    {
+      "screen": "required-sign-in-settings-390",
+      "viewportWidth": 390,
+      "fitsWidth": true,
+      "minVisibleTextPx": 14,
+      "iconOnlyControls": 0
+    },
+    {
+      "screen": "required-sign-in-notice-390",
+      "viewportWidth": 390,
+      "fitsWidth": true,
+      "minVisibleTextPx": 16,
+      "iconOnlyControls": 0
+    }
+  ],
+  "publication_scan": {
+    "status": "pending_guarded_lander",
+    "commit": "4524788cf708042f3e51e9612d36f246843602aa",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "run_site": {
+    "status": "pending_guarded_landing"
+  },
+  "status_counts": {
+    "before": {
+      "done": 66,
+      "partial": 123,
+      "missing": 56
+    },
+    "after": {
+      "done": 66,
+      "partial": 123,
+      "missing": 56
+    }
+  }
+}
