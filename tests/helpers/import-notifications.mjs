@@ -37,7 +37,7 @@ export function importedRecordInventory(runtime) {
   return tableInventory(runtime, [
     'component_groups', 'components', 'component_standing_claims', 'component_claim_events', 'component_state_history',
     'incidents', 'incident_components', 'incident_updates', 'incident_drafts', 'incident_attachments', 'incident_reports',
-    'maintenance', 'maintenance_components', 'maintenance_notices', 'import_maintenance_updates',
+    'maintenance', 'maintenance_automation', 'maintenance_components', 'maintenance_notices', 'import_maintenance_updates',
     'subscribers', 'subscriber_components', 'incident_subscriptions', 'incident_templates', 'incident_template_components',
     'statuspage_import_targets', 'statuspage_import_template_targets', 'statuspage_import_update_template_targets', 'reference_allocations', 'reference_counters',
   ]);

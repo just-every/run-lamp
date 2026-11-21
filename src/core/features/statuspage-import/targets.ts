@@ -1,7 +1,7 @@
 import type { D1Database, D1Sql, D1TargetAdapter, D1UndoDependency, D1UndoEffect, TargetRow } from "../../../../modules/import-kit/src/d1/index.ts";
 import { insertJsonRows } from "../../../../modules/import-kit/src/d1/sets.ts";
 import { entityTables, type EntityKind, type NativeValue, type Row } from "./rows";
-import { allMarkers, markerTable, markerWhere, sealedDefaults, tablesOf } from "./native-tables";
+import { allMarkers, fixedNativeColumns, markerTable, markerWhere, optionalNativeTables, sealedDefaults, tablesOf } from "./native-tables";
 import { createUlid, nowIso } from "../../shared/ids";
 import { matchesAll } from "./target-digest";
 
@@ -16,7 +16,7 @@ function conjunction(parts: readonly string[]): string {
 
 /** Exactly these rows, and no others, under the entity's owning column. */
 function exactRows(table: string, column: string, id: string, rows: Row[]): D1Sql {
-  const columns = [...new Set(rows.flatMap((row) => Object.keys(row)))];
+  const columns = fixedNativeColumns[table] ?? [...new Set(rows.flatMap((row) => Object.keys(row)))];
   if (columns.some((key) => !/^\w+$/u.test(key))) throw new Error("Invalid native column.");
   return {
     sql: `(SELECT count(*) FROM ${table} WHERE ${column}=?)=? AND NOT EXISTS(SELECT 1 FROM json_each(?) wanted WHERE NOT EXISTS(SELECT 1 FROM ${table} actual WHERE ${conjunction(columns.map((key) => {
@@ -43,8 +43,7 @@ function settle(tables: NativeValue["tables"], table: string, rows: Row[]) {
   // Defaults added after old import journals were sealed do not constitute
   // an owner edit. Non-default values remain visible to custody and undo.
   for (const [column, value] of Object.entries(sealedDefaults[table] ?? {})) for (const row of rows) if (row[column] === value) delete row[column];
-  // Legacy journals have no history key: empty additions must not change their revision value.
-  if (!["import_maintenance_updates", "component_standing_claims", "incident_reports", "incident_subscriptions"].includes(table) || rows.length) tables[table] = rows;
+  if (!optionalNativeTables.has(table) || rows.length) tables[table] = rows;
 }
 
 /** Imported targets (every one, or those wanted) with their owned tables, in

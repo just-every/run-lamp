@@ -1,6 +1,6 @@
 import type { D1Sql, TargetRow } from "../../../../modules/import-kit/src/d1/index.ts";
 import type { NativeValue, Row } from "./rows";
-import { allMarkers, markerTable, markerWhere, nativeKinds, sealedDefaults, tablesOf } from "./native-tables";
+import { allMarkers, fixedNativeColumns, markerTable, markerWhere, nativeKinds, sealedDefaults, tablesOf } from "./native-tables";
 
 /** A full-set fence for every imported native target whose size does not grow
  * with the rows it covers. Each marker (kind, id, revision) and each row an
@@ -40,7 +40,8 @@ const encodeSql = (x: string) => `CASE typeof(${x}) WHEN 'null' THEN 'n' WHEN 't
 const literal = (value: Row[string]) => value === null ? "NULL" : typeof value === "number" ? String(value) : `'${value.replaceAll("'", "''")}'`;
 
 function columnsOf(table: string, rows: readonly Row[]) {
-  return [...new Set([...rows.flatMap((row) => Object.keys(row)), ...Object.keys(sealedDefaults[table] ?? {})])].map(name).sort();
+  const columns = fixedNativeColumns[table] ?? rows.flatMap((row) => Object.keys(row));
+  return [...new Set([...columns, ...Object.keys(sealedDefaults[table] ?? {})])].map(name).sort();
 }
 function renderRow(table: string, columns: string[], row: Row) {
   const defaults = sealedDefaults[table] ?? {};

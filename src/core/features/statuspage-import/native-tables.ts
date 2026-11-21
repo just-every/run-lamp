@@ -9,8 +9,20 @@ export const tablesOf = (kind: string): Record<string, string> => {
   if (kind === "source") return sourceTables;
   const tables = entityTables[kind as keyof typeof entityTables];
   if (!tables) throw new Error("Unsupported import native kind.");
-  return kind === "component" ? { ...tables, component_standing_claims: "component_id" } : kind === "maintenance" ? { ...tables, import_maintenance_updates: "maintenance_id" } : tables;
+  if (kind === "component") return { ...tables, component_standing_claims: "component_id" };
+  if (kind === "maintenance") return { ...tables, import_maintenance_updates: "maintenance_id", maintenance_automation: "maintenance_id" };
+  return tables;
 };
+// A missing child keeps the value hash of a journal that did not seal it.
+export const optionalNativeTables = new Set([
+  "import_maintenance_updates", "maintenance_automation", "component_standing_claims", "incident_reports", "incident_subscriptions",
+]);
+
+// Keep both automation fields in every fence, even for a sidecar-free journal.
+export const fixedNativeColumns: Record<string, string[] | undefined> = {
+  maintenance_automation: ["maintenance_id", "auto_start", "auto_complete"],
+};
+
 export const nativeKinds = [...Object.keys(entityTables), "source"];
 /** Kinds newer than the shared marker table's kind check keep their own. */
 const ownMarkers: Record<string, string> = { template: "statuspage_import_template_targets", "update-template": "statuspage_import_update_template_targets", source: "statuspage_import_source_targets" };

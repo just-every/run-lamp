@@ -6476,7 +6476,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/native-tables.ts": {
-      "sha256": "020b4678c9f9ee124d69739bcc5f2f06bf0c497e1c4404203213eb79d8386af0",
+      "sha256": "5a0ddec2e97e6749c2af26a5f0ebbdcead6607e0a9ef2164c79bb8b52939ac42",
       "executable": false
     },
     "src/core/features/statuspage-import/operating-notes.ts": {
@@ -6536,7 +6536,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/rows.ts": {
-      "sha256": "ef6ef5ddbc97713c59f783ade247a6f76905b02ff923796917be08b471b39156",
+      "sha256": "26b0364a5ad2c07c79f5aaf0d2fc5cf0178340587bba44b07b266019f4da7a5e",
       "executable": false
     },
     "src/core/features/statuspage-import/service.ts": {
@@ -6584,15 +6584,15 @@
       "executable": false
     },
     "src/core/features/statuspage-import/source.ts": {
-      "sha256": "aea0b820037376a0b2c8d672ffd4ee3bb0b6fab2b03dd4f7ba7e7f4fde13a83f",
+      "sha256": "484a0be52fc4551c31563bc003a2c81ee8f6c496e5691c058374e168456cc2c5",
       "executable": false
     },
     "src/core/features/statuspage-import/target-digest.ts": {
-      "sha256": "7ed3b649d18ac1e9ac0feaa2d9b4b0650fb0e4efa97b537ed4105a9b01402fc8",
+      "sha256": "2ce06e5100a8b142239633e2e1dfb2499b7537b464efeeaf03eeac17317c3e58",
       "executable": false
     },
     "src/core/features/statuspage-import/targets.ts": {
-      "sha256": "1214c4543d3383ee357b77963affe639dfd3586ddb163808f3a70dc67e16b599",
+      "sha256": "0c5bb3851de08a3fc8e7eff39058913a1321fce6c14bfd4178f298402758e615",
       "executable": false
     },
     "src/core/features/statuspage-import/templates.ts": {
@@ -8900,7 +8900,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "19eb9a35a60c278922b775bd12a12ef8702ea1de8183c25063a2367ca505b1cb",
+      "sha256": "2b0dc94b1740d4c15725b5a61ed89d435a06b66d2eebbcd5daa1abc2453be465",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
@@ -10160,7 +10160,7 @@
       "executable": false
     },
     "tests/helpers/import-notifications.mjs": {
-      "sha256": "17bf88773b0eb464b225a874e5e742496200d90cc9b57aebc30339c8fe342eb8",
+      "sha256": "31327a72fb24aa8147b37493185f73f56af36fb9790b2a313d18a7b7a1e81af4",
       "executable": false
     },
     "tests/helpers/incident-snapshot.mjs": {
