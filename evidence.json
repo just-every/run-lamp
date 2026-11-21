@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "972f6301626c7668d3635cbb97af031d97614298",
+      "bytes": 7908,
+      "path": "REPORT.md",
+      "sha256": "312b4eb8f5acaacd4101ae3b6bd96352b1506a866d8ce8092d75f7aeec041a63"
+    },
+    {
+      "blob": "9f436eb0b6729a3031374103c53f2a65bb023a5f",
+      "bytes": 1439,
+      "path": "onboarding-receipt.txt",
+      "sha256": "8b230ce55d5e1b52274e3a5be937f98ebfca3bc11f0d604320340264c95fdea8"
+    },
+    {
+      "blob": "b947d18edda58fc185663b14a0519711aaf1b01a",
+      "bytes": 316495,
+      "path": "setup-browser-zone-1440.png",
+      "sha256": "fc24b614a2de7013b8c26d9b4ae0796fc983cdcb0dc73678d610c40be4ae5919"
+    },
+    {
+      "blob": "13f02d26f185ae8507c1fc4f82e13a8577359e20",
+      "bytes": 193407,
+      "path": "setup-browser-zone-390.png",
+      "sha256": "b4306e95157c3a7661b8422cb2a92079117cecdd0d2e031fe91fab5c332243b5"
+    },
+    {
+      "blob": "d8cc91006e0ebbaab73dada59b016eb10187709d",
+      "bytes": 528,
+      "path": "verify-receipt.json",
+      "sha256": "4b95816fe7a78467ae360e29cc2720ae5b965d756bfce8c93fa3f4e97bfb43d6"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f168",
+  "product_head": "f7dceaf2bd9334d57a47ce9d1b2db5cb9f87adc2",
+  "ref": "refs/heads/evidence/sd-lamp-c-f168",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f168"
+}

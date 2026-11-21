@@ -1,0 +1,19 @@
+{
+  "discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "f7dceaf2bd9334d57a47ce9d1b2db5cb9f87adc2",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44863236776",
+      "id": 44863236776,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "final": {
+    "conclusion": "success",
+    "head_sha": "f7dceaf2bd9334d57a47ce9d1b2db5cb9f87adc2",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44863236776",
+    "status": "completed"
+  }
+}

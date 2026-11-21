@@ -1,0 +1,35 @@
+Product SHA: f7dceaf2bd9334d57a47ce9d1b2db5cb9f87adc2
+Node: v22.20.0
+pnpm: 10.12.4
+Browser: Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)
+Command: cloud_run perl -e 'alarm 1200; exec @ARGV' -- node --test --test-concurrency=1 tests/e2e/website-onboarding.test.mjs
+Exit: 0
+TAP version 13
+# Subtest: SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+ok 1 - SETUP-002 — a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see
+  ---
+  duration_ms: 154894.863496
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 155482.807185
+
+Committed tree checks
+pnpm typecheck, exit 0
+pnpm exec rer check --profile first-party, exit 0
+node src/base/contract-docs.mjs check, exit 0, no errors or warnings
+node scripts/edition-authoring/cli.mjs check, exit 0
+
+Screenshot SHA-256 values
+fc24b614a2de7013b8c26d9b4ae0796fc983cdcb0dc73678d610c40be4ae5919  setup-browser-zone-1440.png
+b4306e95157c3a7661b8422cb2a92079117cecdd0d2e031fe91fab5c332243b5  setup-browser-zone-390.png
+
+Candidate test SHA-256
+848a1780d2dc74632281a56da8bcbe1c30cce057ea7e2b98f966a1af1c3955e6  -
