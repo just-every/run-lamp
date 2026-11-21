@@ -1,0 +1,89 @@
+{
+  "product_head": "edb0ecec0e247e03c1c1d48ef4734c24c44c269f",
+  "base": "2939f22d0549be77fcc94315b2747667f8796e66",
+  "branch": "cloud/sd-lamp-c-f166",
+  "pushed": true,
+  "checked_with_node": "22.20.0",
+  "journey": {
+    "command": "node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs",
+    "chromium": "/usr/bin/chromium",
+    "exit": 0,
+    "duration_ms": 174190.348533,
+    "counts": {
+      "tests": 3,
+      "pass": 3,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "probe": "PROBE MOVE-002 1: reviewed Statuspage capture and native component history at two entries per page -> exact incident transitions at original publication instants, and only the creation baseline for the unaffected control"
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "output": [
+        "Wrote 0 contract documents."
+      ]
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "output": [
+        "Contract prose: 0 errors, 0 warnings.",
+        "Contract documents are current."
+      ]
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify:plan",
+      "exit": 0,
+      "output": "Verification plan: 9 test shards and one shared build, 36 routine test files, 116 registered cases (including release qualification) + 10 assertion scripts = 126 checks."
+    }
+  ],
+  "main_base_ci": {
+    "head": "2939f22d0549be77fcc94315b2747667f8796e66",
+    "verify": {
+      "event": "push",
+      "id": 44861397097,
+      "conclusion": "success"
+    },
+    "run_site": {
+      "event": "push",
+      "id": 44861397172,
+      "conclusion": "success"
+    }
+  },
+  "main_equality": false,
+  "publication_scan": {
+    "head": "edb0ecec0e247e03c1c1d48ef4734c24c44c269f",
+    "observed_in_cloud": false,
+    "owner": "guarded lander"
+  },
+  "migration_ledger": "out of scope because no migration changed",
+  "candidate_verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "edb0ecec0e247e03c1c1d48ef4734c24c44c269f",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44863297740",
+    "id": 44863297740,
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "candidate_run_site": "awaits guarded landing"
+}
