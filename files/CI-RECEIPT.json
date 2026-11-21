@@ -1,0 +1,63 @@
+{
+  "base_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44872765882",
+      "id": 44872765882,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44872765905",
+      "id": 44872765905,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "cloud/sd-lamp-c-f170-rebase-2d49c9f3a8eb566e43b36126dbb844b6d9591b26",
+      "head_sha": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44871228814",
+      "id": 44871228814,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "exact_run": {
+    "conclusion": null,
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f173",
+    "head_sha": "1baeb5fae8ebb027dea2f083e2b112bec1f82937",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44874210760",
+    "id": 44874210760,
+    "name": "Verify",
+    "status": "in_progress"
+  },
+  "first_poll": {
+    "conclusion": null,
+    "head_sha": "1baeb5fae8ebb027dea2f083e2b112bec1f82937",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44874210760",
+    "status": "in_progress"
+  },
+  "latest_poll": {
+    "conclusion": null,
+    "head_sha": "1baeb5fae8ebb027dea2f083e2b112bec1f82937",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44874210760",
+    "status": "in_progress"
+  },
+  "observed": "2026-11-21T06:20:12.418712+00:00",
+  "observed_product_refs": {
+    "refs/heads/cloud/sd-lamp-c-f173": "1baeb5fae8ebb027dea2f083e2b112bec1f82937",
+    "refs/heads/main": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26"
+  },
+  "product_branch": "cloud/sd-lamp-c-f173",
+  "product_sha": "1baeb5fae8ebb027dea2f083e2b112bec1f82937"
+}
