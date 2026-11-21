@@ -1,4 +1,4 @@
-function widgetRuntime(initial, allowedOrigins, defaultVariant, stateLabels) {
+function widgetRuntime(initial, allowedOrigins, defaultVariant, stateLabels, protectedPrefix = "") {
   const script = document.currentScript;
   if (!script || !allowedOrigins.includes(window.location.origin)) return;
   const variant = ["banner", "floating", "dot"].includes(script.dataset.variant ?? "")
@@ -58,14 +58,14 @@ function widgetRuntime(initial, allowedOrigins, defaultVariant, stateLabels) {
   };
   draw(initial);
   script.parentNode?.insertBefore(root, script.nextSibling);
-  const statusUrl = new URL("/api/public/status", script.src);
+  const statusUrl = new URL(protectedPrefix + "/api/public/status", script.src);
   let pending = false;
   const timer = window.setInterval(async () => {
     if (!root.isConnected) { window.clearInterval(timer); return; }
     if (pending) return;
     pending = true;
     try {
-      const response = await fetch(statusUrl, { credentials: "omit", cache: "no-store", referrerPolicy: "no-referrer" });
+      const response = await fetch(statusUrl, { credentials: protectedPrefix ? "same-origin" : "omit", cache: "no-store", referrerPolicy: "no-referrer" });
       if (!response.ok) return;
       const data = await response.json();
       if (data.version !== 1 || typeof data.overall !== "string") return;

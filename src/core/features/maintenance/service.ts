@@ -6,13 +6,13 @@ import type { ComponentsService } from "../components";
 import { defaultMaintenanceRemindersPolicy, type MaintenanceRemindersPolicy } from "./policies";
 import type { MaintenanceNotice, MaintenanceRepository, StoredMaintenance, StoredMaintenanceComponent } from "./repository";
 
-export type MaintenanceView = StoredMaintenance & MaintenanceAutomation & { components: StoredMaintenanceComponent[]; notices: MaintenanceNotice[]; importedUpdates: Awaited<ReturnType<MaintenanceRepository["listImportedUpdates"]>>; overrunning: boolean };
+export type MaintenanceView = StoredMaintenance & MaintenanceAutomation & { pagePaths: string[]; components: StoredMaintenanceComponent[]; notices: MaintenanceNotice[]; importedUpdates: Awaited<ReturnType<MaintenanceRepository["listImportedUpdates"]>>; overrunning: boolean };
 
 export interface MaintenanceNotificationStatements {
   forMaintenanceNotice(input: { eventId: string; maintenanceId: string; componentIds: string[]; kind: MaintenanceNotice["kind"]; queuedAt: string; recipientScope: "eligible" | "previous"; previousEventIds: string[]; social?: boolean }): Promise<D1PreparedStatement[]>;
 }
 
-export interface MaintenanceInput extends Partial<MaintenanceAutomation> { social?:boolean; affectedAudience: string; customerImpact: string; title: string; startsAt: string; endsAt: string; componentIds: string[]; }
+export interface MaintenanceInput extends Partial<MaintenanceAutomation> { social?:boolean; affectedAudience: string; customerImpact: string; title: string; startsAt: string; endsAt: string; componentIds: string[]; pagePaths?: string[]; }
 
 export interface MaintenanceOverrunAlertEvent {
   maintenanceId: string;
@@ -58,6 +58,10 @@ function groupByMaintenance<T extends { maintenanceId: string }>(records: T[]): 
   return groups;
 }
 
+function maintenancePagePaths(publicHidden: boolean, additionalPaths: string[]) {
+  return publicHidden ? additionalPaths : ["public", ...additionalPaths];
+}
+
 export function createMaintenanceService(
   repository: MaintenanceRepository,
   componentsService: ComponentsService,
@@ -69,14 +73,15 @@ export function createMaintenanceService(
   onStartDue?: (event: { maintenanceId: string; startsAt: string }) => Promise<void>,
 ): MaintenanceService {
   const view = async (record: StoredMaintenance): Promise<MaintenanceView> => {
-    const [components, notices, importedUpdates, automation] = await Promise.all([
-      repository.listComponents(record.id), repository.listNotices(record.id), repository.listImportedUpdates(record.id), repository.automation.get(record.id),
+    const [components, notices, importedUpdates, automation, additionalPaths] = await Promise.all([
+      repository.listComponents(record.id), repository.listNotices(record.id), repository.listImportedUpdates(record.id), repository.automation.get(record.id), repository.listPagePaths(record.id),
     ]);
-    return { ...record, ...automation, components, notices, importedUpdates, overrunning: record.state === "In progress" && new Date(record.endsAt).getTime() + 15 * 60 * 1000 <= Date.now() };
+    return { ...record, ...automation, pagePaths: maintenancePagePaths(record.publicHidden, additionalPaths), components, notices, importedUpdates, overrunning: record.state === "In progress" && new Date(record.endsAt).getTime() + 15 * 60 * 1000 <= Date.now() };
   };
   const prepareNotice = async (record: StoredMaintenance, components: StoredMaintenanceComponent[], kind: MaintenanceNotice["kind"], operatorId: string | null, recipientScope: "eligible" | "previous", social=false, explanation?: string) => {
     if (!notificationStatements) throw new Error("Maintenance notification transaction wiring is required.");
     const timestamp = nowIso(); const notice: MaintenanceNotice = { id: createUlid(), maintenanceId: record.id, kind, body: [renderMaintenanceWording(record), explanation].filter(Boolean).join("\n\n"), publishedAt: timestamp, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
+    if (record.publicHidden) return { notice, statements: [] };
     const previousEventIds = recipientScope === "previous" ? (await repository.listNotices(record.id)).map((prior) => prior.id) : [];
     const statements = await notificationStatements.forMaintenanceNotice({ eventId: notice.id, maintenanceId: record.id, componentIds: components.flatMap((component) => component.componentId ? [component.componentId] : []), kind, queuedAt: timestamp, recipientScope, previousEventIds, social });
     return { notice, statements };
@@ -84,6 +89,10 @@ export function createMaintenanceService(
   const notify = async (record: StoredMaintenance, components: StoredMaintenanceComponent[], kind: MaintenanceNotice["kind"], operatorId: string | null, recipientScope: "eligible" | "previous") => {
     const { notice, statements } = await prepareNotice(record, components, kind, operatorId, recipientScope);
     return repository.writeNotice(notice, statements);
+  };
+  const recomputePublicClaims = async (record: StoredMaintenance, components: StoredMaintenanceComponent[], operatorId: string | null, at: string) => {
+    if (record.publicHidden) return;
+    await Promise.all(components.flatMap(component => component.componentId ? [componentsService.recomputePublicState(component.componentId, { type: "maintenance", id: record.id, operatorId }, at)] : []));
   };
   return {
     getAutomationDefault: () => repository.automation.getDefault(),
@@ -93,9 +102,11 @@ export function createMaintenanceService(
       const components = groupByMaintenance(details.components);
       const notices = groupByMaintenance(details.notices);
       const importedUpdates = groupByMaintenance(details.importedUpdates);
+      const pages = groupByMaintenance(details.pages);
       const result = records.map((record): MaintenanceView => ({
         ...record,
         ...(automation.get(record.id) ?? defaultMaintenanceAutomation),
+        pagePaths: maintenancePagePaths(record.publicHidden, pages.get(record.id)?.map(page => page.path) ?? []),
         components: components.get(record.id) ?? [],
         notices: notices.get(record.id) ?? [],
         importedUpdates: (importedUpdates.get(record.id) ?? []).map(({ maintenanceId, ...update }) => update),
@@ -110,17 +121,20 @@ export function createMaintenanceService(
       const wording = maintenanceWording(input);
       if (!input.componentIds.length) throw new Error("Attach at least one component to maintenance.");
       if (!notificationStatements) throw new Error("Maintenance notification transaction wiring is required.");
+      const pagePaths = input.pagePaths ?? ["public"];
+      await repository.validatePagePaths(pagePaths);
+      const publicHidden = !pagePaths.includes("public");
       const components = await Promise.all(input.componentIds.map((id) => componentsService.get(id)));
       if (components.some((component) => !component)) throw new Error("One or more attached components no longer exist.");
       const timestamp = nowIso(); const maintenanceId = createUlid();
       const reference = await repository.allocateMaintenanceReference();
-      const record: StoredMaintenance = { id: maintenanceId, reference, title: input.title.trim(), ...wording, state: "Scheduled", startsAt: input.startsAt, endsAt: input.endsAt, completedAt: null, createdByOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
+      const record: StoredMaintenance = { id: maintenanceId, reference, title: input.title.trim(), ...wording, state: "Scheduled", startsAt: input.startsAt, endsAt: input.endsAt, completedAt: null, createdByOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp, publicHidden };
       const attached = components.map((component) => ({ id: createUlid(), maintenanceId, componentId: component!.id, componentName: component!.name, state: "Under maintenance" as const, createdAt: timestamp, updatedAt: timestamp }));
       const notice: MaintenanceNotice = { id: createUlid(), maintenanceId, kind: "scheduled", body: renderMaintenanceWording(record), publishedAt: timestamp, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
-      const statements = await notificationStatements.forMaintenanceNotice({ eventId: notice.id, maintenanceId, componentIds: attached.flatMap((component) => component.componentId ? [component.componentId] : []), kind: notice.kind, queuedAt: timestamp, recipientScope: "eligible", previousEventIds: [], social: input.social });
+      const statements = publicHidden ? [] : await notificationStatements.forMaintenanceNotice({ eventId: notice.id, maintenanceId, componentIds: attached.flatMap(component => component.componentId ? [component.componentId] : []), kind: notice.kind, queuedAt: timestamp, recipientScope: "eligible", previousEventIds: [], social: input.social });
       const defaults = await repository.automation.getDefault();
-      await repository.create(record, attached, notice, statements, { autoStart: input.autoStart ?? defaults.autoStart, autoComplete: input.autoComplete ?? defaults.autoComplete });
-      await events?.maintenanceScheduled({ maintenanceId, reference: record.reference, state: "Scheduled", occurredAt: timestamp });
+      await repository.create(record, attached, notice, statements, { autoStart: input.autoStart ?? defaults.autoStart, autoComplete: input.autoComplete ?? defaults.autoComplete }, pagePaths);
+      if (!record.publicHidden) await events?.maintenanceScheduled({ maintenanceId, reference: record.reference, state: "Scheduled", occurredAt: timestamp });
       return view(record);
     },
     async reschedule(maintenanceId, input, operatorId) {
@@ -151,8 +165,8 @@ export function createMaintenanceService(
       const changed = { ...record, state: "In progress" as const, updatedAt: timestamp };
       const { notice, statements } = await prepareNotice(changed, components, "started", operatorId, "eligible");
       if (!(await repository.transitionWithNotice(maintenanceId,"Scheduled","In progress",null,timestamp,notice,statements,{startsAt:record.startsAt,endsAt:record.endsAt,autoStart:false}))) throw new Error("The maintenance changed before it could be started.");
-      await Promise.all(components.flatMap(component => component.componentId ? [componentsService.recomputePublicState(component.componentId,{type:"maintenance",id:maintenanceId,operatorId},timestamp)] : []));
-      await events?.maintenanceStarted({ maintenanceId, reference: record.reference, state: "In progress", occurredAt: timestamp });
+      await recomputePublicClaims(record, components, operatorId, timestamp);
+      if (!record.publicHidden) await events?.maintenanceStarted({ maintenanceId, reference: record.reference, state: "In progress", occurredAt: timestamp });
       await onPublicDataChanged();
       return view((await repository.find(maintenanceId))!);
     },
@@ -181,7 +195,7 @@ export function createMaintenanceService(
       const changed = { ...record, state: "Completed" as const, completedAt: timestamp, updatedAt: timestamp };
       const { notice, statements } = await prepareNotice(changed, components, "completed", operatorId, "eligible");
       if (!(await repository.transitionWithNotice(maintenanceId, "In progress", "Completed", timestamp, timestamp, notice, statements))) throw new Error("Only in-progress maintenance can be completed.");
-      await events?.maintenanceCompleted({ maintenanceId, reference: record.reference, state: "Completed", occurredAt: timestamp });
+      if (!record.publicHidden) await events?.maintenanceCompleted({ maintenanceId, reference: record.reference, state: "Completed", occurredAt: timestamp });
       return view((await repository.find(maintenanceId))!);
     },
     async finishCompletion(maintenanceId, operatorId) {
@@ -189,7 +203,7 @@ export function createMaintenanceService(
       if (!record || record.state !== "Completed") return;
       const components = await repository.listComponents(maintenanceId);
       const changedAt = record.completedAt ?? record.updatedAt;
-      await Promise.all(components.flatMap((component) => component.componentId ? [componentsService.recomputePublicState(component.componentId, { type: "maintenance", id: maintenanceId, operatorId }, changedAt)] : []));
+      await recomputePublicClaims(record, components, operatorId, changedAt);
       await onPublicDataChanged();
     },
     async runDue(now = nowIso()) {
@@ -209,8 +223,8 @@ export function createMaintenanceService(
           const changed = { ...record, state: "In progress" as const, updatedAt: now };
           const { notice, statements } = await prepareNotice(changed, components, "started", null, "eligible");
           if (await repository.transitionWithNotice(record.id, "Scheduled", "In progress", null, now, notice, statements, { startsAt: record.startsAt, endsAt: record.endsAt, autoStart: true })) {
-            await Promise.all(components.flatMap((component) => component.componentId ? [componentsService.recomputePublicState(component.componentId, { type: "maintenance", id: record.id, operatorId: null }, now)] : []));
-            await events?.maintenanceStarted({ maintenanceId: record.id, reference: record.reference, state: "In progress", occurredAt: now });
+            await recomputePublicClaims(record, components, null, now);
+            if (!record.publicHidden) await events?.maintenanceStarted({ maintenanceId: record.id, reference: record.reference, state: "In progress", occurredAt: now });
             started.push(record.id);
           }
         }
@@ -218,8 +232,8 @@ export function createMaintenanceService(
           const changed = { ...record, state: "Completed" as const, completedAt: now, updatedAt: now };
           const { notice, statements } = await prepareNotice(changed, components, "completed", null, "eligible");
           if (await repository.transitionWithNotice(record.id, "In progress", "Completed", now, now, notice, statements, { startsAt: record.startsAt, endsAt: record.endsAt, autoComplete: true })) {
-            await Promise.all(components.flatMap((component) => component.componentId ? [componentsService.recomputePublicState(component.componentId, { type: "maintenance", id: record.id, operatorId: null }, now)] : []));
-            await events?.maintenanceCompleted({ maintenanceId: record.id, reference: record.reference, state: "Completed", occurredAt: now });
+            await recomputePublicClaims(record, components, null, now);
+            if (!record.publicHidden) await events?.maintenanceCompleted({ maintenanceId: record.id, reference: record.reference, state: "Completed", occurredAt: now });
             completed.push(record.id);
           }
         }

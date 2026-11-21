@@ -16,9 +16,9 @@ export const componentChoiceReason = (name: string) => `Choose what customers sh
 
 const slug = (state: string) => state.toLowerCase().replaceAll(" ", "-");
 
-function usePublicComponents() {
+function useIncidentComponents(includeInternal = false) {
   const { data, error } = useAppData<ComponentsResponse>("/api/app/components");
-  return { components: data?.components.filter(component => !component.internal) ?? null, error };
+  return { components: data?.components.filter(component => includeInternal || !component.internal) ?? null, error };
 }
 
 /** One chip per affected component: its name and the state it claims, chosen in place. When this update
@@ -33,7 +33,7 @@ function ComponentChip({ name, state, now, disabled, onState, onRemove }: { name
       {state === null ? <option value="" disabled>Choose a state</option> : null}
       {state === "Under maintenance" ? <option value={state} disabled>{componentStateLabel(state)}</option> : null}
       {INCIDENT_CLAIM_STATES.map(value => <option key={value} value={value}>{disabled && value === "Operational" ? "Effect ends" : componentStateLabel(value)}</option>)}</select>
-    {onRemove ? <button type="button" className="chip-remove" aria-label={`Remove ${name}`} title="Remove affected component" onClick={onRemove}>×</button> : null}
+    {onRemove ? <button type="button" className="chip-remove has-option-tooltip" aria-label={`Remove ${name}`} onClick={onRemove}>×<span className="option-tooltip" aria-hidden="true">Remove component</span></button> : null}
   </span>;
 }
 
@@ -43,10 +43,10 @@ function AddComponent({ options, onAdd }: { options: Array<{ id: string; name: s
 }
 
 /** The new incident's components (INCIDENT-002: at least one). Each attachment needs an explicit state. */
-export function NewIncidentComponents({ claims, onChange }: { claims: NewClaim[]; onChange: (claims: NewClaim[]) => void }) {
-  const { components, error } = usePublicComponents();
+export function NewIncidentComponents({ claims, onChange, includeInternal }: { claims: NewClaim[]; onChange: (claims: NewClaim[]) => void; includeInternal: boolean }) {
+  const { components, error } = useIncidentComponents(includeInternal);
   if (error) return <FormError>{error}</FormError>;
-  if (components && !components.length) return <p className="component-chips-empty">Add a public component first. <Link className="quiet-link" to="/app/components">Components</Link></p>;
+  if (components && !components.length) return <p className="component-chips-empty">{includeInternal ? "Add a component first." : "Add a public component first."} <Link className="quiet-link" to="/app/components">Components</Link></p>;
   const name = (id: string) => components?.find(component => component.id === id)?.name ?? "Component";
   return <div className="component-chips">
     {claims.map(claim => <ComponentChip key={claim.componentId} name={name(claim.componentId)} state={claim.state} onState={(state) => onChange(claims.map(item => item.componentId === claim.componentId ? { ...item, state } : item))} onRemove={() => onChange(claims.filter(item => item.componentId !== claim.componentId))} />)}
@@ -67,8 +67,8 @@ function draftRows(incident: IncidentView, draft: IncidentDraftInput, components
 }
 
 /** An open incident's components with this update: changes stay private until publication; Operational releases one. */
-export function DraftComponentChips({ incident, draft, pending, onPendingChange, onChange }: { incident: IncidentView; draft: IncidentDraftInput; pending: PendingComponent[]; onPendingChange: (pending: PendingComponent[]) => void; onChange: (changes: NonNullable<IncidentDraftInput["componentChanges"]>) => void }) {
-  const { components, error } = usePublicComponents();
+export function DraftComponentChips({ incident, draft, pending, onPendingChange, onChange, includeInternal }: { incident: IncidentView; draft: IncidentDraftInput; includeInternal: boolean; pending: PendingComponent[]; onPendingChange: (pending: PendingComponent[]) => void; onChange: (changes: NonNullable<IncidentDraftInput["componentChanges"]>) => void }) {
+  const { components, error } = useIncidentComponents(includeInternal);
   const choices = draft.componentChanges ?? [];
   const resolved = draft.lifecycle === "Resolved";
   const rows = draftRows(incident, draft, components);
@@ -108,7 +108,7 @@ export function ComponentRelationships({ rows, onChange }: { rows: Array<{ compo
 
 /** The relationship rows for an open incident's draft; a change stages that component with its claimed state. */
 export function useDraftRelationships(incident: IncidentView | null, draft: IncidentDraftInput, onChange: (changes: NonNullable<IncidentDraftInput["componentChanges"]>) => void) {
-  const { components } = usePublicComponents();
+  const { components } = useIncidentComponents(true);
   const choices = draft.componentChanges ?? [];
   const rows = incident ? draftRows(incident, draft, components).map(row => ({ ...row, relationship: choices.find(choice => choice.componentId === row.componentId)?.relationship ?? row.relationship })) : [];
   const change = (componentId: string, relationship: Relationship) => {

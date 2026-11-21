@@ -1,3 +1,4 @@
+import { registerStatusPageSettingsRoutes } from "../features/page-settings/status-page.routes";
 import { registerDependencyRoutes } from "../features/dependencies/routes";
 import { registerAlertRuleRoutes } from "../features/intake/rule-routes";
 import { registerPrelaunchGate, registerPrelaunchRoutes } from "../features/prelaunch";
@@ -132,6 +133,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerPrelaunchRoutes(app,snapshotBlobs,bindings.DB,()=>services.publicSnapshots.rebuild(true));
   registerSmsRoutes(app,services.sms,()=>services.subscribers.getPageName(),bindings.TWILIO_AUTH_TOKEN,publicWriteLimiter);
   registerTeamsSubscriptionRoutes(app, services.teamsSubscriptions, services.subscribers, publicWriteLimiter, linkPagesPrelaunch);
+  registerStatusPageSettingsRoutes(app, services.pageSettings, services.statusPages, path => services.scopedSnapshots.forPage(path).rebuild(true));
   registerPageSettingsRoutes(app, services.pageSettings, (key) => services.publicSnapshots.readArtifact(key));
   registerWebsiteRoutes(app, services.website);
   registerPageExportRoutes(app, services.pageExport);

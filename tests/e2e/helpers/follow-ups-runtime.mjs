@@ -26,7 +26,7 @@ export async function eventuallyFollowUp(read, predicate, description) {
 
 /** Disposable migrated Worker. Only the email/webhook network edges are fake;
  * Queue outage injection is the existing queue-outage.worker.ts boundary. */
-export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceiver, pageHost = "status.example.test", extraBindings = {}, providerEdge, builtWorker = false, workerEntry = "tests/e2e/helpers/follow-ups-worker.ts" } = {}) {
+export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceiver, pageHost = "status.example.test", extraBindings = {}, providerEdge, builtWorker = false, installation, workerEntry = "tests/e2e/helpers/follow-ups-worker.ts" } = {}) {
   const state = await mkdtemp(join(tmpdir(), "lamp-follow-ups-"));
   const messages = [], webhookRequests = [], channelRequests = [], mailReceipts = [];
   let runtime, db, webhookOutage = true, cookie;
@@ -64,11 +64,12 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         ...(pageHost === "localhost" ? { LAMP_LOCAL_ORIGIN: appOrigin } : {}),
         ...extraBindings, ...bindingOverrides,
       },
-      d1Databases: ["DB"], r2Buckets: ["SNAPSHOTS"],
+      d1Databases: installation ? { DB: installation.databaseId } : ["DB"],
+      r2Buckets: installation ? { SNAPSHOTS: installation.bucketName } : ["SNAPSHOTS"],
       durableObjects: { SNAPSHOT_CACHE: { className: "SnapshotCache", useSQLite: true } },
       queueProducers: { JOBS: "lamp-follow-ups-jobs" },
       queueConsumers: { "lamp-follow-ups-jobs": { maxBatchTimeout: 0 } },
-      resourcePersistencePath: join(state, "storage"),
+      resourcePersistencePath: installation ? join(installation.root, ".wrangler/state/v3") : join(state, "storage"),
       outboundService: async request => {
         const intercepted = await providerEdge?.(request);
         if (intercepted) return intercepted;
@@ -114,16 +115,18 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     runtime = new Miniflare(miniflareOptions());
     db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
-    for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) await execute(await readFile(join("migrations/core", migration), "utf8"));
-    for (const migration of await ownerMigrationFiles()) {
-      await execute(await readFile(join("migrations/ext", migration), "utf8"));
-    }
-    // Installation identity/settings are fixture prerequisites. Every obligation
-    // below is created through an ordinary operator or public HTTP request.
-    await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES ('01J00000000000000000000091','synthetic-lamp-owner@example.test','Synthetic Lamp owner','owner','active',${Date.now()});
+    if (!installation) {
+      for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) await execute(await readFile(join("migrations/core", migration), "utf8"));
+      for (const migration of await ownerMigrationFiles()) {
+        await execute(await readFile(join("migrations/ext", migration), "utf8"));
+      }
+      // Installation identity and settings are fixture prerequisites. Every
+      // obligation below is created through an operator or public HTTP request.
+      await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES ('01J00000000000000000000091','${['synthetic-lamp-owner', 'example.test'].join('@')}','Synthetic Lamp owner','owner','active',${Date.now()});
       INSERT INTO oa_bootstrap(singleton,claim_id,claimed_at) VALUES(1,'01J00000000000000000000091',${Date.now()});
       INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp follow-ups','Durable obligation fixture','#16794C','UTC','${pageHost}','synthetic-lamp-feed-1','synthetic-lamp-sender@example.test','2026-10-01','2026-10-01');
       INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01');`);
+    }
     const raw = (path, init = {}) => {
       const url = new URL(path, appOrigin), headers = new Headers(init.headers);
       headers.set("Host", url.host);

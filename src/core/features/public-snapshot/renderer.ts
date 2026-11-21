@@ -1,3 +1,4 @@
+import { statusPagePrefix } from "../page-settings/page-selection";
 import { componentStateLabel } from "../../shared/component-state-label";
 import { themeSchema } from "../../shared/page-theme";
 import { themeChrome } from "./theme-rendering";
@@ -91,14 +92,14 @@ function toPublicModel(source: PublicSnapshotSource, generatedAt: string, polici
     components: attachedByIncident.get(incident.id) ?? [],
     updates: updatesByIncident.get(incident.id) ?? [],
     report: reportsByIncident.get(incident.id) ?? null,
-  })).filter((incident) => incident.updates.length > 0 && attachedIncidentIds.has(incident.id));
+  })).filter((incident) => incident.updates.length > 0 && (source.protectedPage || attachedIncidentIds.has(incident.id)));
   const attachedByMaintenance = new Map<string, string[]>();
   for (const component of source.maintenanceComponents.filter(component => !component.componentId || !hiddenIds.has(component.componentId))) attachedByMaintenance.set(component.maintenanceId, [...(attachedByMaintenance.get(component.maintenanceId) ?? []), component.componentName]);
   const noticesByMaintenance = new Map<string, PublicMaintenance["notices"]>();
   for (const notice of source.maintenanceNotices) noticesByMaintenance.set(notice.maintenanceId, [...(noticesByMaintenance.get(notice.maintenanceId) ?? []), notice]);
   const maintenance = source.maintenance
     .map((item) => ({ ...item, components: attachedByMaintenance.get(item.id) ?? [], notices: noticesByMaintenance.get(item.id) ?? [], importedUpdates: (source.importedMaintenanceUpdates ?? []).filter(update => update.maintenanceId === item.id) }))
-    .filter((item) => attachedMaintenanceIds.has(item.id)) satisfies PublicMaintenance[];
+    .filter((item) => source.protectedPage || attachedMaintenanceIds.has(item.id)) satisfies PublicMaintenance[];
   return { bounded: source.bounded, archive: source.archive, theme, prelaunch: source.prelaunch === true, emailEnabled: source.emailEnabled !== false, incidentIncludeReport:source.incidentIncludeReport===true, smsEnabled: source.smsEnabled ?? false, slackEnabled: source.slackEnabled ?? false, teamsEnabled: source.teamsEnabled ?? false, metrics: source.metrics ?? [], websiteUrl: source.websiteUrl, origin: source.publicOrigin ?? `https://${source.settings.hostname}`, settings: source.settings, components, visibleComponents, incidents, maintenance, generatedAt, policies, overall: policies.pageStatusRollup([...components.map((component) => component.state), ...(source.dependencies ?? []).filter(row => row.mode === "rollup" && row.state !== null).map(row => row.state!)]) };
 }
 
@@ -253,6 +254,7 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
   const dependencies = source.dependencies ?? [];
   const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => `<article class="component"><div class="component-name"><h3>${escapeHtml(row.name)}</h3><p><a href="${escapeHtml(row.statusPageUrl)}">Reported by ${escapeHtml(row.vendorName)}</a></p><p>${escapeHtml(row.state ? componentStateLabel(row.state) : "Waiting for first read")}</p>${row.unavailableAt ? `<p>Vendor status unavailable since ${timestamp(row.unavailableAt, model.settings.timezone)}. Last reported: ${escapeHtml(row.state ? componentStateLabel(row.state) : "No observation")}.</p>` : ""}</div></article>`).join("")}</section>` : "";
   const feeds = renderFeeds(model, source);
+  const protectedPrefix = source.protectedPage ? statusPagePrefix(source.protectedPage) : "";
   const artifacts: SnapshotArtifact[] = [
     { key: "page.html", body: renderPage(model, slots).replace("<footer", vendorMarkup + publicMetricsSection(model.metrics, model.visibleComponents, model.generatedAt, model.settings.timezone) + "<footer"), contentType: "text/html; charset=utf-8" },
     ...feeds,
@@ -261,10 +263,10 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
     ...renderBadges(model),
     ...renderPublicApi(model, source),
     { key: "api/public/dependencies", body: JSON.stringify({ dependencies }), contentType: "application/json; charset=utf-8" },
-    { key: "widget.js", body: renderWidget(statusPayload(model), model.settings), contentType: "application/javascript; charset=utf-8" },
-    { key: "embed/script.js", body: renderWidget(statusPayload(model), model.settings, "floating"), contentType: "application/javascript; charset=utf-8" },
+    { key: "widget.js", body: renderWidget(statusPayload(model), model.settings, "banner", protectedPrefix, model.origin), contentType: "application/javascript; charset=utf-8" },
+    { key: "embed/script.js", body: renderWidget(statusPayload(model), model.settings, "floating", protectedPrefix, model.origin), contentType: "application/javascript; charset=utf-8" },
     { key: "status.json", body: JSON.stringify(statusPayload(model)), contentType: "application/json; charset=utf-8" },
-    { key: "assets/status-page.js", body: publicPageScript, contentType: "application/javascript; charset=utf-8" },
+    { key: "assets/status-page.js", body: protectedPrefix ? publicPageScript.replace("fetch('/api/public/status'", `fetch('${protectedPrefix}/api/public/status'`) : publicPageScript, contentType: "application/javascript; charset=utf-8" },
     { key: "assets/status-page.css", body: publicPageStyles(model.settings.accentColor, model.theme, model.origin), contentType: "text/css; charset=utf-8" },
     { key: "assets/mark.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "mark"), contentType: "image/svg+xml; charset=utf-8" },
     { key: "assets/favicon.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "favicon"), contentType: "image/svg+xml; charset=utf-8" },

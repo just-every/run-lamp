@@ -13,6 +13,7 @@ import { assertUpdateLinkSurfaces } from './helpers/update-link-surfaces.mjs';
 import { openStatusJourney, eventually, wording, visibleText } from './helpers/status-journey.mjs';
 import { assertEmptyCalendar, validateMaintenanceCalendar } from './helpers/calendar-assertions.mjs';
 import { assertHistoryRecord } from './helpers/history-assertions.mjs';
+import { audiencePagesFlow } from './helpers/audience-pages-flow.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
 import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
 import { recordClosedOutage, rootFigures } from './helpers/uptime-correction-journey.mjs';
@@ -1196,6 +1197,8 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     }
   } finally { await j.close(); }
 });
+
+test('AUD-001 — native publication is visible only on selected status pages and silent for public subscribers when private', { timeout: 300_000 }, audiencePagesFlow);
 
 test('UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence', scheduledUpdateFlow);
 test('INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams', chatDeskNativeFlow);

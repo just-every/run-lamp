@@ -1,5 +1,6 @@
-import { loadArchiveSource, publicIncident, publicMaintenance } from "./archive.repository";
+import { loadArchiveSource, publicIncident, publicMaintenance, scopedRecord } from "./archive.repository";
 import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
+import type { createStatusPageRepository } from "../page-settings/status-page.repository";
 import { createUlid } from "../../shared/ids";
 import { createDependencyRepository } from "../dependencies/repository";
 import { createIncidentFollowSettingsRepository } from "../subscribers/incident-follow-settings.repository";
@@ -44,6 +45,7 @@ export interface SnapshotRepository {
 }
 
 export interface PublicSnapshotSource {
+  protectedPage?: string;
   archive?: import("./archive").ArchivePage;
   bounded?: boolean;
   dependencies?: Awaited<ReturnType<ReturnType<typeof createDependencyRepository>["publicRows"]>>;
@@ -92,13 +94,36 @@ export interface PublicSnapshotSource {
   maintenanceNotices: Array<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>;
 }
 
-export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false, chat: { slack: boolean; teams: boolean } = { slack: false, teams: false }, emailEnabled = true): SnapshotRepository {
+export function createSnapshotRepository(binding: D1Database, publicOrigin?: string, smsEnabled = false, chat: { slack: boolean; teams: boolean } = { slack: false, teams: false }, emailEnabled = true, scope?: { path: string; pages: ReturnType<typeof createStatusPageRepository> }): SnapshotRepository {
   const database = createDatabase(binding);
+  const path = scope?.path ?? "public";
+  // The global revision watches shared component and record source mutations.
+  // This page keeps its own completion and manual rebuild requests.
+  const globalRevision = scope ? " + (SELECT requested_revision FROM public_snapshot_work WHERE id = 'default')" : "";
+  const workTable = scope ? "status_page_snapshot_work" : "public_snapshot_work";
+  const workId = scope ? path : "default";
+  async function ensureWork() {
+    if (!scope) return;
+    const now = new Date().toISOString();
+    await binding.prepare("INSERT OR IGNORE INTO status_page_snapshot_work (id, created_at, updated_at) VALUES (?,?,?)").bind(workId, now, now).run();
+  }
 
   return {
     async load() {
       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
       if (!settings) return null;
+      const protectedPage = scope ? await scope.pages.get(path) : null;
+      if (scope && !protectedPage) return null;
+      if (protectedPage) {
+        const { pageName, tagline, timezone, accentColor, feedId, createdAt, updatedAt } = protectedPage;
+        Object.assign(settings, {
+          id: path, pageName, tagline, timezone, accentColor, feedId, createdAt, updatedAt, template: "default",
+          hostname: publicOrigin ? new URL(publicOrigin).hostname : settings.hostname,
+          theme: "{}", themeAssets: "{}", logoKey: null, logoContentType: null,
+          mailFromAddress: "", emailBranding: "{}", aiToneInstructions: "", wordingBlockedTerms: "[]",
+          widgetAllowedOrigins: "[]",
+        });
+      }
       // Settings restored or inserted after the feed-identity migration can
       // still have its placeholder default. Persist one identity before rendering;
       // competing builders must use the same winner, including on retries.
@@ -113,10 +138,15 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       // Older records use indexed, bounded archive pages; no records are removed.
       // Apply the archive's public membership before the limit: private rows
       // cannot consume a slot and suppress the Older history continuation.
-      const recentIncidentQuery = `SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved'
-        UNION SELECT id FROM (SELECT i.id FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle = 'Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident} ORDER BY i.resolved_at DESC, i.id DESC LIMIT 50)`;
-      const recentMaintenanceQuery = `SELECT id FROM maintenance WHERE state NOT IN ('Completed','Cancelled')
-        UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
+      const incidentVisibility = scope ? scopedRecord("incident", path) : publicIncident;
+      const maintenanceVisibility = scope ? scopedRecord("maintenance", path) : publicMaintenance;
+      const activeIncidentQuery = `SELECT i.id FROM incidents i WHERE i.deleted_at IS NULL AND i.lifecycle <> 'Resolved' AND ${scope ? incidentVisibility : "i.public_hidden=0"}`;
+      const activeMaintenanceQuery = `SELECT m.id FROM maintenance m WHERE m.state NOT IN ('Completed','Cancelled') AND ${scope ? maintenanceVisibility : "m.public_hidden=0"}`;
+      const recentIncidentQuery = `${activeIncidentQuery}
+        UNION SELECT id FROM (SELECT i.id FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle = 'Resolved' AND i.resolved_at IS NOT NULL AND ${incidentVisibility} ORDER BY i.resolved_at DESC, i.id DESC LIMIT 50)`;
+      const recentMaintenanceQuery = `${activeMaintenanceQuery}
+        UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${maintenanceVisibility} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
+      const selected = sql`(SELECT value FROM json_each(${JSON.stringify(protectedPage?.componentIds ?? [])}))`;
       const recentIncidents = sql.raw(`(${recentIncidentQuery})`);
       const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
       const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
@@ -141,7 +171,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           })
           .from(components)
           .leftJoin(componentGroups, eq(components.groupId, componentGroups.id))
-          .where(eq(components.internal, false))
+          .where(scope ? inArray(components.id, selected) : eq(components.internal, false))
           .orderBy(asc(componentGroups.displayOrder), asc(components.displayOrder))
           .all(),
         database.select({ componentId: componentStandingClaims.componentId, state: componentStandingClaims.state }).from(componentStandingClaims).all(),
@@ -149,13 +179,13 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .select({ componentId: incidentComponents.componentId, state: incidentComponents.state })
           .from(incidentComponents)
           .innerJoin(incidents, eq(incidentComponents.incidentId, incidents.id))
-          .where(and(inArray(incidentComponents.incidentId, sql`(SELECT id FROM incidents WHERE deleted_at IS NULL AND lifecycle <> 'Resolved')`), sql`incident_components.published_at IS NOT NULL`))
+          .where(and(inArray(incidentComponents.incidentId, sql.raw(`(${activeIncidentQuery})`)), sql`incident_components.published_at IS NOT NULL`))
           .all(),
         database
           .select({ componentId: maintenanceComponents.componentId, state: maintenanceComponents.state })
           .from(maintenanceComponents)
           .innerJoin(maintenance, eq(maintenanceComponents.maintenanceId, maintenance.id))
-          .where(eq(maintenance.state, "In progress"))
+          .where(and(eq(maintenance.state, "In progress"), inArray(maintenance.id, sql.raw(`(${activeMaintenanceQuery})`))))
           .all(),
         // Correction audit rows are not observations; computeUptime reads the
         // independently stored correction intervals instead.
@@ -168,7 +198,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .select(getTableColumns(incidentComponents))
           .from(incidentComponents)
           .leftJoin(components, eq(incidentComponents.componentId, components.id))
-          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
+          .where(and(inArray(incidentComponents.incidentId, recentIncidents), sql`incident_components.published_at IS NOT NULL`, scope ? inArray(incidentComponents.componentId, selected) : or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal = 0`), eq(components.internal, false))))
           .all(),
         database.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, recentIncidents)).orderBy(desc(incidentUpdates.publishedAt)).all(),
         database.select().from(maintenance).where(inArray(maintenance.id, recentMaintenance)).orderBy(asc(maintenance.startsAt)).all(),
@@ -176,14 +206,14 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .select(getTableColumns(maintenanceComponents))
           .from(maintenanceComponents)
           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
-          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
+          .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), scope ? inArray(maintenanceComponents.componentId, selected) : or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
           .all(),
         binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (${recentIncidentQuery}) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
-        readImportedPublicRecords(binding),
-        readImportedNamespaces(binding),
+        scope ? [] : readImportedPublicRecords(binding),
+        scope ? [] : readImportedNamespaces(binding),
         binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates: string}>().then(result => result.results),
-        loadPublicApiIds(binding),
+        scope ? {} : loadPublicApiIds(binding),
         database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
       ]);
 
@@ -191,6 +221,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       const vendorIds = new Set((await createDependencyRepository(binding).list()).map(row => row.componentId));
       return {
         bounded: true,
+        protectedPage: scope?.path,
         websiteUrl: website?.url ?? null,
         emailEnabled,
         smsEnabled,
@@ -201,8 +232,8 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         publicApiIds, incidentImpacts: Object.fromEntries(incidentImpactRows.filter(row => row.impact !== null).map(row => [row.id, row.impact!])),
         importedPublicRecords, importedNamespaces,
         settings,
-        dependencies: await createDependencyRepository(binding).publicRows(),
-        components: componentRows.filter(component => !vendorIds.has(component.id)),
+        dependencies: scope ? [] : await createDependencyRepository(binding).publicRows(),
+        components: scope ? componentRows : componentRows.filter(component => !vendorIds.has(component.id)),
         claims: [...standingClaims, ...incidentClaims, ...maintenanceClaims]
           .filter((claim): claim is { componentId: string; state: typeof componentStandingClaims.$inferSelect.state } => claim.componentId !== null),
         history,
@@ -213,18 +244,18 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         maintenance: maintenanceRows,
         maintenanceComponents: attachedMaintenanceComponents,
         reports,
-        maintenanceNotices, importedMaintenanceUpdates, metrics: await createMetricsRepository(binding).publicSeries(),
+        maintenanceNotices, importedMaintenanceUpdates, metrics: scope ? [] : await createMetricsRepository(binding).publicSeries(),
       };
     },
     loadArchive: (context, key, generatedAt) => loadArchiveSource(binding, context, key, generatedAt),
     async startBuild(input) {
-      await database.insert(snapshotBuilds).values(input);
+      await database.insert(snapshotBuilds).values({ ...input, pagePath: path });
     },
     async finishBuild(input) {
       await database.update(snapshotBuilds).set(input).where(eq(snapshotBuilds.id, input.id));
     },
     async latestBuild() {
-      return (await database.select().from(snapshotBuilds).orderBy(desc(snapshotBuilds.startedAt)).limit(1).get()) ?? null;
+      return (await database.select().from(snapshotBuilds).where(eq(snapshotBuilds.pagePath, path)).orderBy(desc(snapshotBuilds.startedAt)).limit(1).get()) ?? null;
     },
     async reserveGeneration(now, atLeast) {
       const result = await binding.prepare(`UPDATE snapshot_build_control SET next_generation = MAX(next_generation, ?) + 1, updated_at = ? WHERE id = 'default' RETURNING next_generation AS generation`).bind(atLeast, now).first<{ generation: number }>();
@@ -232,28 +263,30 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       return result.generation;
     },
     async requestWork(now) {
-      const result = await binding.prepare(`UPDATE public_snapshot_work SET requested_revision = requested_revision + 1, updated_at = ? WHERE id = 'default' RETURNING requested_revision AS requestedRevision`).bind(now).first<{ requestedRevision: number }>();
+      await ensureWork();
+      const result = await binding.prepare(`UPDATE ${workTable} SET requested_revision = requested_revision + 1, updated_at = ? WHERE id = ? RETURNING requested_revision${globalRevision} AS requestedRevision`).bind(now, workId).first<{ requestedRevision: number }>();
       if (!result || !Number.isInteger(result.requestedRevision)) throw new Error("Public snapshot work control is unavailable.");
       return result.requestedRevision;
     },
     async currentWork() {
-      const work = await binding.prepare(`SELECT requested_revision AS requestedRevision, completed_revision AS completedRevision FROM public_snapshot_work WHERE id = 'default'`).first<{ requestedRevision: number; completedRevision: number }>();
+      await ensureWork();
+      const work = await binding.prepare(`SELECT requested_revision${globalRevision} AS requestedRevision, completed_revision AS completedRevision FROM ${workTable} WHERE id = ?`).bind(workId).first<{ requestedRevision: number; completedRevision: number }>();
       if (!work || !Number.isInteger(work.requestedRevision) || !Number.isInteger(work.completedRevision)) throw new Error("Public snapshot work control is unavailable.");
       return work;
     },
     async completeWork(revision, now) {
-      await binding.prepare(`UPDATE public_snapshot_work SET completed_revision = CASE WHEN completed_revision < ? THEN ? ELSE completed_revision END, updated_at = ? WHERE id = 'default'`).bind(revision, revision, now).run();
+      await binding.prepare(`UPDATE ${workTable} SET completed_revision = CASE WHEN completed_revision < ? THEN ? ELSE completed_revision END, updated_at = ? WHERE id = ?`).bind(revision, revision, now, workId).run();
     },
     async markInterruptedBuilds(now, staleBefore) {
-      await binding.prepare(`UPDATE snapshot_builds SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE status = 'building' AND started_at <= ?`).bind(now, now, staleBefore).run();
+      await binding.prepare(`UPDATE snapshot_builds SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE page_path = ? AND status = 'building' AND started_at <= ?`).bind(now, now, path, staleBefore).run();
     },
     async claimPendingWork(input) {
-      const result = await binding.prepare(`UPDATE public_snapshot_work SET retry_lease_id = ?, retry_lease_until = ?, updated_at = ? WHERE id = 'default' AND requested_revision > completed_revision AND (retry_lease_until IS NULL OR retry_lease_until <= ?) AND NOT EXISTS (SELECT 1 FROM snapshot_builds WHERE status = 'building' AND started_at > ?)`)
-        .bind(input.leaseId, input.leaseUntil, input.now, input.now, input.staleBefore).run();
+      const result = await binding.prepare(`UPDATE ${workTable} SET retry_lease_id = ?, retry_lease_until = ?, updated_at = ? WHERE id = ? AND requested_revision${globalRevision} > completed_revision AND (retry_lease_until IS NULL OR retry_lease_until <= ?) AND NOT EXISTS (SELECT 1 FROM snapshot_builds WHERE page_path = ? AND status = 'building' AND started_at > ?)`)
+        .bind(input.leaseId, input.leaseUntil, input.now, workId, input.now, path, input.staleBefore).run();
       return result.meta.changes === 1;
     },
     async releaseWorkLease(leaseId, now) {
-      await binding.prepare(`UPDATE public_snapshot_work SET retry_lease_id = NULL, retry_lease_until = NULL, updated_at = ? WHERE id = 'default' AND retry_lease_id = ?`).bind(now, leaseId).run();
+      await binding.prepare(`UPDATE ${workTable} SET retry_lease_id = NULL, retry_lease_until = NULL, updated_at = ? WHERE id = ? AND retry_lease_id = ?`).bind(now, workId, leaseId).run();
     },
   };
 }

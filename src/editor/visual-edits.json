@@ -1,4 +1,19 @@
 {
-  "revision": 0,
-  "edits": []
+  "revision": 1,
+  "edits": [
+    {
+      "id": "test-heading-probe",
+      "revision": 1,
+      "path": "/app",
+      "target": {
+        "selector": "h1:nth-child(1)",
+        "tag": "h1",
+        "role": "",
+        "beforeText": "Overview"
+      },
+      "change": {
+        "text": "Workspace overview"
+      }
+    }
+  ]
 }

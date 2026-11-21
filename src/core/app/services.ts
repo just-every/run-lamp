@@ -1,3 +1,5 @@
+import { createStatusPageRepository } from "../features/page-settings/status-page.repository";
+import { createScopedSnapshots } from "../features/public-snapshot/scoped-service";
 import { createRuleGuardRepository } from "../features/intake/rule-guard.repository";
 import { createDependenciesService } from "../features/dependencies/service";
 import { createRuleWorkRepository } from "../features/intake/rule-work.repository";
@@ -70,10 +72,23 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
       : null,
   };
   const snapshotOrigin = bindings.LAMP_LOCAL_ORIGIN ? publicPageOrigin(bindings.LAMP_LOCAL_ORIGIN, bindings.LAMP_PAGE_HOST) : undefined;
-  const publicSnapshots = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, twilioConfigured({accountSid:bindings.TWILIO_ACCOUNT_SID,authToken:bindings.TWILIO_AUTH_TOKEN,fromNumber:bindings.TWILIO_FROM_NUMBER,messagingService:bindings.TWILIO_MESSAGING_SERVICE}) && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET) && bindings.EFFECTS_PAUSED !== "1" && !outboundUnavailable(bindings,"SMS messages"), {
+  const primarySnapshot = createPublicSnapshotService(createSnapshotRepository(bindings.DB, snapshotOrigin, twilioConfigured({accountSid:bindings.TWILIO_ACCOUNT_SID,authToken:bindings.TWILIO_AUTH_TOKEN,fromNumber:bindings.TWILIO_FROM_NUMBER,messagingService:bindings.TWILIO_MESSAGING_SERVICE}) && Boolean(bindings.SUBSCRIBER_TOKEN_SECRET) && bindings.EFFECTS_PAUSED !== "1" && !outboundUnavailable(bindings,"SMS messages"), {
     slack: Boolean(bindings.SLACK_CLIENT_ID && bindings.SLACK_CLIENT_SECRET && bindings.SLACK_SIGNING_SECRET && bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Slack subscriptions"),
     teams: Boolean(bindings.WEBHOOK_SIGNING_SECRET && bindings.SUBSCRIBER_TOKEN_SECRET) && !outboundUnavailable(bindings, "Teams subscriptions"),
   }, bindings.MAIL_PROVIDER !== "none"), blobs, extensions.publicSnapshotPolicies, extensions.publicSnapshotEvents, extensions.slots, createRetainedSnapshotCache(bindings), runningReleaseIdentity(bindings));
+  const statusPages = createStatusPageRepository(bindings.DB);
+  const scopedSnapshots = createScopedSnapshots(bindings, blobs, statusPages, extensions.publicSnapshotPolicies);
+  const publicSnapshots = {
+    ...primarySnapshot,
+    async rebuild(force?: boolean) {
+      await primarySnapshot.rebuild(force);
+      await scopedSnapshots.forEach(snapshot => snapshot.rebuild());
+    },
+    async retryPendingBuild() {
+      const primaryChanged = await primarySnapshot.retryPendingBuild();
+      return await scopedSnapshots.forEach(snapshot => snapshot.retryPendingBuild()) || primaryChanged;
+    },
+  };
   const metrics = createMetricsService(bindings.DB, async()=>{await publicSnapshots.retryPendingBuild();}, { webhookSecret: bindings.WEBHOOK_SIGNING_SECRET, effectsPaused: bindings.EFFECTS_PAUSED === "1" });
   const incidentImpact = createIncidentImpactService(createIncidentImpactRepository(bindings.DB), publicSnapshots.rebuild);
   const pageSettings = createPageSettingsService(createPageSettingsRepository(bindings.DB), publicSnapshots.rebuild, blobs, bindings.MAIL_FROM_ADDRESS, bindings.MAIL_PROVIDER !== "rer");
@@ -295,7 +310,8 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
   });
 
   const chatDesk = createChatDeskService(bindings, incidents, components, async () => { const settings = await pageSettings.get(); if (!settings) throw new Error("Page settings are not configured."); return { blockedTerms: settings.wordingBlockedTerms, friendlyLength: settings.wordingFriendlyLength }; });
-  return { mailConfiguration, dependencies, alertRules, social, trafficStorage, trafficAlerts, sms, metrics, teamsSubscriptions, chatDesk, auth, signInAuth, signIn, operators, availabilityReports, communicationPerformance, incidentImpact, pageSettings, pageExport, components, componentCatalogue, incidents, maintenance, subscribers, deliveries, reports, intake, briefs, ai, overview, website, updateReminders, publicSnapshots, statuspageImport, channels };
+  return {
+    statusPages, scopedSnapshots, mailConfiguration, dependencies, alertRules, social, trafficStorage, trafficAlerts, sms, metrics, teamsSubscriptions, chatDesk, auth, signInAuth, signIn, operators, availabilityReports, communicationPerformance, incidentImpact, pageSettings, pageExport, components, componentCatalogue, incidents, maintenance, subscribers, deliveries, reports, intake, briefs, ai, overview, website, updateReminders, publicSnapshots, statuspageImport, channels };
 }
 
 export type AppServices = ReturnType<typeof createAppServices>;
