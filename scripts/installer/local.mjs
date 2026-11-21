@@ -34,7 +34,7 @@ const listen=context=>String(context.runtimePort??(new URL(context.origin).port|
 // notification links know the page origin.
 const vite=async context=>{
  await localHosts(context);
- return ['node',['scripts/dev.mjs','--port',listen(context)],{env:environment(context)}];
+ return ['node',['scripts/dev.mjs','--port',listen(context)],{env:environment(context),timeoutMs:900_000}];
 };
 const preview=async context=>{
  await localHosts(context);

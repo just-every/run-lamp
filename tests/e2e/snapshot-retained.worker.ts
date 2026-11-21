@@ -20,6 +20,14 @@ export default {
     if (url.pathname === "/test/blob-reads") return Response.json({
       getText: Object.fromEntries(blobReads.getText), getBytes: Object.fromEntries(blobReads.getBytes),
     });
+    if (url.pathname === "/test/snapshot-cache") {
+      const fallback = await caches.open("lamp-public-snapshot-fallback");
+      const cachedPaths = [];
+      for (const path of url.searchParams.getAll("path")) {
+        if (await fallback.match(new Request(new URL(path, url.origin)))) cachedPaths.push(path);
+      }
+      return Response.json({ replicaGeneration: await cache.generation(), cachedPaths });
+    }
     if (url.pathname === "/test/rebuild") return Response.json(await exerciseRebuild(env, await request.json()));
     if (url.pathname === "/test/retain") {
       try { await cache.write(await request.text()); return new Response(null, { status: 204 }); }

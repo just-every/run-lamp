@@ -13,11 +13,22 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
   let receiverStatus = 204;
   const smsMessages = [];
   const fixture = await openSubscriberManagementFixture({
-    workerEntry: 'tests/e2e/helpers/status-journey.worker.ts',
+    workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts',
     webhookReceiver: () => new Response(null, { status: receiverStatus }),
     extraBindings: smsBindings, providerEdge: smsProviderEdge(smsMessages),
   });
-  const { api, post, raw } = fixture;
+  const { api, post, raw, db } = fixture;
+  let clock;
+  const now = () => clock ?? Date.now();
+  const advanceToNextRetry = async updateId => {
+    const job = await db.prepare("SELECT available_at FROM notification_outbox WHERE kind = 'delivery-dispatch' AND aggregate_id = ? AND completed_at IS NULL")
+      .bind(updateId).first();
+    const deadline = Date.parse(job?.available_at);
+    assert.ok(deadline > now(), 'the next Queue retry has a future persisted deadline');
+    const response = await raw('/test/clock', { method: 'PUT', body: JSON.stringify({ now: deadline }) });
+    assert.equal(response.status, 204);
+    clock = deadline;
+  };
   const pause = async paused => assert.equal((await raw('/test/effects', {
     method: 'PUT', body: JSON.stringify({ paused }),
   })).status, 204);
@@ -42,12 +53,12 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     const draft = await api(`/api/app/incidents/${id}/draft`, {
       method: 'PUT', body: JSON.stringify({ lifecycle: 'Identified', affectedAudience: 'Synthetic Lamp readers',
         customerImpact: `Requests are delayed: ${label}.`, whatStillWorks: 'The dashboard is available.',
-        details, nextUpdateAt: new Date(Date.now() + 3_600_000).toISOString() }),
+        details, nextUpdateAt: new Date(now() + 3_600_000).toISOString() }),
     });
     assert.equal(draft.status, 200, draft.text);
-    const start = Date.now();
+    const start = now();
     const published = await post(`/api/app/incidents/${id}/publish`, { channels });
-    const end = Date.now();
+    const end = now();
     assert.equal(published.status, 200, published.text);
     publicationWindows.set(published.body.update.id, [start, end]);
     return published.body.update;
@@ -57,7 +68,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     await pause(false);
     try {
       return await (await fixture.runtime.getWorker()).queue('lamp-follow-ups-jobs', [{
-        id: `synthetic-lamp-failure-dispatch-${++dispatchNumber}`, timestamp: new Date(), attempts: dispatchNumber,
+        id: `synthetic-lamp-failure-dispatch-${++dispatchNumber}`, timestamp: new Date(now()), attempts: dispatchNumber,
         body: { type: 'delivery-dispatch', eventId: update.id },
       }]);
     } finally { await pause(true); }
@@ -65,7 +76,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
   const scheduled = async () => {
     await pause(false);
     try {
-      const result = await (await fixture.runtime.getWorker()).scheduled({ scheduledTime: Date.now(), cron: '* * * * *' });
+      const result = await (await fixture.runtime.getWorker()).scheduled({ scheduledTime: now(), cron: '* * * * *' });
       assert.equal(result.outcome, 'ok', 'the actual scheduled entry point drains due work');
     } finally { await pause(true); }
   };
@@ -99,19 +110,22 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     assert.equal(confirmed.status, 200, await confirmed.text());
     return { id: added.body.subscriber.id, destination, channel: 'sms' };
   };
+  const signReceipt = (id, body) => {
+    const timestamp = String(Math.floor(now() / 1000));
+    const signature = createHmac('sha256', Buffer.from('synthetic-lamp-subscriber-receipts'))
+      .update(`${id}.${timestamp}.${body}`).digest('base64url');
+    return { method: 'POST', body, headers: { 'Content-Type': 'application/json',
+      'svix-id': id, 'svix-timestamp': timestamp, 'svix-signature': `v1,${signature}` } };
+  };
   let receiptNumber = 0;
   const receipt = (delivery, type, bounceType) => {
     const accepted = fixture.mailReceipts.find(row => row.idempotencyKey === `notification/${delivery.id}`);
     assert.ok(accepted, 'the receipt identifies the actual accepted notification');
     const id = `synthetic-lamp-failure-receipt-${++receiptNumber}`;
-    const timestamp = String(Math.floor(Date.now() / 1000));
     const body = JSON.stringify({ type: `email.${type}`, data: {
       email_id: accepted.id, ...(bounceType ? { bounce: { type: bounceType } } : {}),
     } });
-    const signature = createHmac('sha256', Buffer.from('synthetic-lamp-subscriber-receipts'))
-      .update(`${id}.${timestamp}.${body}`).digest('base64url');
-    return { method: 'POST', body, headers: { 'Content-Type': 'application/json',
-      'svix-id': id, 'svix-timestamp': timestamp, 'svix-signature': `v1,${signature}` } };
+    return signReceipt(id, body);
   };
   const sendReceipt = async request => {
     const response = await raw(`${pageOrigin}/api/intake/mail-events`, request);
@@ -129,7 +143,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
   const checkFact = (row, updateId, target, outcome, outcomeBetween) =>
     assertDeliveryFact(row, expectFact(updateId, target, outcome, outcomeBetween));
   const readFact = async (delivery, target, outcome, start) => {
-    const end = Date.now();
+    const end = now();
     const rows = await deliveries({ id: delivery.incidentUpdateId });
     const row = rows.find(row => row.id === delivery.id);
     checkFact(row, delivery.incidentUpdateId, target, outcome, [start, end]);
@@ -151,7 +165,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     const row = await subscriber(target.id);
     assert.equal(row.state, 'deactivated');
     assert.equal(row.deactivationReason, reason);
-    assert.ok(Date.parse(row.deactivatedAt) >= earliest && Date.parse(row.deactivatedAt) <= Date.now(), 'the operator sees the actual bounded deactivation instant');
+    assert.ok(Date.parse(row.deactivatedAt) >= earliest && Date.parse(row.deactivatedAt) <= now(), 'the operator sees the actual bounded deactivation instant');
     return row;
   };
   const noFutureMail = async (component, target, label) => {
@@ -182,7 +196,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     await pause(true);
 
     const control = await publish(webhookComponent, 'healthy webhook control', ['webhook', 'sms']);
-    const dispatchedAt = Date.now();
+    const dispatchedAt = now();
     assert.equal((await dispatch(control)).outcome, 'ok');
     await scheduled();
     const controls = await eventuallySubscriber(() => deliveries(control),
@@ -191,12 +205,12 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     assert.equal(controls.length, 2);
     const delivered = controls.find(row => row.channel === 'webhook');
     assert.equal(delivered.outcome, 'delivered', 'the confirmed endpoint accepts a real publication');
-    checkFact(delivered, control.id, webhook, 'delivered', [dispatchedAt, Date.now()]);
+    checkFact(delivered, control.id, webhook, 'delivered', [dispatchedAt, now()]);
     checkFact(controls.find(row => row.channel === 'sms'), control.id, sms, 'queued');
     assert.ok(smsMessages.some(message => message.To === sms.destination && message.Body.includes('Requests are delayed: healthy webhook control.')));
 
     const hardDelivery = await acceptedMail(hardComponent, 'hard bounce notification', hard);
-    const hardAt = Date.now();
+    const hardAt = now();
     await sendReceipt(receipt(hardDelivery, 'bounced', 'Permanent'));
     await assertDeliveryFilter(fixture, await readFact(hardDelivery, hard, 'bounced', hardAt));
     await deactivated(hard, 'hard bounce', hardAt);
@@ -225,18 +239,18 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     assert.deepEqual(await subscriber(complaint.id), beforeInvalid);
     const afterInvalid = (await deliveries({ id: complaintDelivery.incidentUpdateId })).find(row => row.id === complaintDelivery.id);
     assert.deepEqual(afterInvalid, complaintDelivery, 'an unauthenticated complaint cannot change the delivery log');
-    const complaintAt = Date.now();
+    const complaintAt = now();
     await sendReceipt(signedComplaint);
     const complained = await readFact(complaintDelivery, complaint, 'complained', complaintAt);
     await assertDeliveryFilter(fixture, complained);
     const stoppedComplaint = await deactivated(complaint, 'spam complaint', complaintAt);
     const complaintMailCount = fixture.messagesFor(complaint.address).length;
-    const suppressionAt = Date.now();
+    const suppressionAt = now();
     assert.equal((await dispatch(queuedComplaint)).outcome, 'ok');
     const suppressedComplaint = (await deliveries(queuedComplaint)).find(row => row.id === committedComplaint.id);
     assert.equal(suppressedComplaint.outcome, 'suppressed');
     assert.ok(suppressedComplaint.outcomeAt);
-    checkFact(suppressedComplaint, queuedComplaint.id, complaint, 'suppressed', [suppressionAt, Date.now()]);
+    checkFact(suppressedComplaint, queuedComplaint.id, complaint, 'suppressed', [suppressionAt, now()]);
     assert.equal(suppressedComplaint.queuedAt, committedComplaint.queuedAt);
     await assertDeliveryFilter(fixture, suppressedComplaint);
     const healthyBefore = fixture.messagesFor(healthy.address).length;
@@ -256,7 +270,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     let softBacklog;
     for (let index = 0; index < 10; index++) {
       const delivery = await acceptedMail(softComponent, `soft bounce sequence ${index}`, soft);
-      const softAt = Date.now();
+      const softAt = now();
       if (index === 9) {
         softBacklog = await publish(softComponent, 'newer queued soft bounce control', ['email']);
         assert.equal((await deliveries(softBacklog))[0].outcome, 'queued');
@@ -280,22 +294,23 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
       assert.equal(delivery.outcome, 'queued');
       backlog.push({ update, delivery });
     }
-    const webhookAt = Date.now();
+    const webhookAt = now();
     for (let index = 0; index < failedUpdates.length; index++) {
       const update = failedUpdates[index];
       const [committed] = await deliveries(update);
       assert.equal(committed.outcome, 'queued');
       checkFact(committed, update.id, webhook, 'queued');
-      const failedAt = Date.now();
+      const failedAt = now();
       for (let attempt = 0; (await deliveries(update))[0].outcome === 'queued'; attempt++) {
         assert.ok(attempt < 10, 'native Queue retries terminate this failed notification');
+        if (attempt > 0) await advanceToNextRetry(update.id);
         await dispatch(update);
       }
       const [failed] = await deliveries(update);
       assert.equal(failed.id, committed.id);
       assert.equal(failed.outcome, 'failed');
       assert.ok(failed.outcomeAt);
-      checkFact(failed, update.id, webhook, 'failed', [failedAt, Date.now()]);
+      checkFact(failed, update.id, webhook, 'failed', [failedAt, now()]);
       assert.equal(failed.queuedAt, committed.queuedAt);
       if (index === 0) await assertDeliveryFilter(fixture, failed);
       assert.ok(fixture.webhookRequests.some(record => record.headers['webhook-id'] === failed.id), 'each terminal outcome came from actual receiver requests');
@@ -312,9 +327,9 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
       assert.ok(!fixture.webhookRequests.some(record => record.headers['webhook-id'] === delivery.id));
     }
     const requestsAtDeactivation = fixture.webhookRequests.length;
-    const scheduledAt = Date.now();
+    const scheduledAt = now();
     await scheduled();
-    const scheduledBetween = [scheduledAt, Date.now()];
+    const scheduledBetween = [scheduledAt, now()];
     checkFact((await deliveries(softBacklog))[0], softBacklog.id, soft, 'suppressed', scheduledBetween);
     for (const { update, delivery } of backlog) {
       const [suppressed] = await deliveries(update);
@@ -344,7 +359,7 @@ export async function subscriberFailuresFlow(t, reconcileLog) {
     await reconcileLog(t, fixture, [...expected.values()], bulk.id);
 
     assert.equal((await api('/api/app/subscribers/' + complaint.id, { method: 'DELETE' })).status, 204);
-    await sendReceipt(signedComplaint);
+    await sendReceipt(signReceipt(signedComplaint.headers['svix-id'], signedComplaint.body));
     assert.equal((await raw(complaintManagementLink)).status, 404, 'replay cannot restore a revoked subscription link');
     const erasedLog = await api('/api/app/deliveries?incidentUpdateId=' + complaintDelivery.incidentUpdateId);
     assert.equal(erasedLog.status, 200);

@@ -4,6 +4,7 @@ import { openSubscriberManagementFixture, eventuallySubscriber } from './subscri
 import { smsBindings } from './sms-subscriber-flow.mjs';
 import { recordedSlackExchange } from '../slack-subscriptions-helper.mjs';
 import { subscriberTeamsUrl } from '../teams-subscriptions-helper.mjs';
+import { actorAudits, admitAttributionOperator, assertActorAudit } from './operator-attribution.mjs';
 
 const SUBSCRIBE_ROUTES = ['/subscribe', '/subscribe/incident', '/subscribe/teams', '/subscribe/sms', '/subscribe/slack'];
 
@@ -44,10 +45,23 @@ export async function prelaunchFlow() {
       assert.equal(response.status, 200, path);
       return { text: await response.text(), headers: response.headers };
     };
-    const setPrelaunch = async enabled => {
-      const response = await fixture.api('/api/app/prelaunch', { method: 'PATCH', body: JSON.stringify({ enabled }) });
+    const prelaunchPath = '/api/app/prelaunch';
+    const auditSubject = ['settings', 'prelaunch', 'prelaunch-settings-updated'];
+    const changeAudits = () => actorAudits(fixture, ...auditSubject);
+    const patchPrelaunch = enabled => fixture.api(prelaunchPath, { method: 'PATCH', body: JSON.stringify({ enabled }) });
+    const assertPrelaunch = async enabled => {
+      const response = await fixture.api(prelaunchPath);
       assert.equal(response.status, 200, response.text);
       assert.deepEqual(response.body, { enabled });
+    };
+    const setPrelaunch = async (enabled, actor) => {
+      const before = await changeAudits();
+      const response = await patchPrelaunch(enabled);
+      assert.equal(response.status, 200, response.text);
+      assert.deepEqual(response.body, { enabled });
+      await assertPrelaunch(enabled);
+      const audit = await assertActorAudit(fixture, ...auditSubject, actor, before);
+      assert.deepEqual(JSON.parse(audit.payload_json), { enabled });
     };
     const offersSubscription = html => /action="\/subscribe|href="\/#subscribe"|id="subscribe"/.test(html);
 
@@ -96,8 +110,44 @@ export async function prelaunchFlow() {
 
     outbound.length = 0; // the open phase sent real messages through the captured edges
 
+    // Both active management roles can change the setting and leave an attributed audit.
+    const { creator: owner, actor: admin, email: adminEmail } = await admitAttributionOperator(fixture, 'prelaunch-admin');
+    assert.equal(owner.role, 'owner');
+    assert.equal(admin.role, 'admin');
+    const adminCookie = fixture.cookie;
+    await fixture.signIn();
+    const communicatorEmail = ['synthetic-lamp-prelaunch-communicator', 'example.test'].join('@');
+    const invite = await fixture.post('/api/app/operators/invite', {
+      email: communicatorEmail, displayName: 'Synthetic Lamp prelaunch communicator', role: 'communicator',
+    });
+    assert.equal(invite.status, 202, invite.text);
+
+    const assertRefused = async (enabled, status, message) => {
+      const before = await changeAudits();
+      const response = await patchPrelaunch(enabled);
+      assert.equal(response.status, status, message);
+      await fixture.signIn();
+      await assertPrelaunch(!enabled);
+      assert.deepEqual(await changeAudits(), before, message);
+    };
+
+    await fixture.signIn(communicatorEmail);
+    assert.equal((await fixture.api('/api/app/session')).body.operator.role, 'communicator');
+    await assertRefused(true, 403, 'an active Communicator cannot enable pre-launch');
+    await setPrelaunch(true, owner);
+    await fixture.signIn(communicatorEmail);
+    await assertRefused(false, 403, 'an active Communicator cannot clear pre-launch');
+    await fixture.signIn(adminEmail);
+    await setPrelaunch(false, admin);
+    await setPrelaunch(true, admin);
+    await fixture.signIn();
+    const revoke = await fixture.post(`/api/app/operators/${admin.id}/revoke-access`);
+    assert.equal(revoke.status, 204, revoke.text);
+    await fixture.signIn(adminEmail);
+    assert.equal(fixture.cookie, adminCookie, 'the request reuses the previously authorized Admin session');
+    await assertRefused(false, 401, 'the revoked Admin session cannot clear pre-launch');
+
     // Set: no forms, five refusals before any write or send, noindex everywhere.
-    await setPrelaunch(true);
     for (const path of ['/', '/history', incidentPath]) assert.ok(!offersSubscription((await publicHtml(path)).text), `${path} offers no subscription`);
     assert.ok(!(await publicHtml('/')).text.includes('/subscribe'), 'no subscribe address is left on the page');
     for (const path of ['/', '/history', incidentPath, '/feed.atom', '/feed.rss', '/api/public/status', '/widget.js', '/no-such-page']) {
@@ -169,13 +219,15 @@ export async function prelaunchFlow() {
     }
 
     // Cleared: subscription and indexing return at once.
-    await setPrelaunch(false);
+    await setPrelaunch(false, owner);
     const restored = await publicHtml('/');
     assert.ok(offersSubscription(restored.text));
     assert.equal(restored.headers.get('x-robots-tag'), null);
     assert.ok(mastheadSubscribe(await (await send(`/confirm-subscription/${unissued}`)).text()), 'link pages carry the masthead Subscribe link again');
     assert.equal((await send('/robots.txt')).status, 404);
     assert.equal((await form('/subscribe', { email: 'synthetic-lamp-later@example.test' })).status, 202, 'a stranger can subscribe once the page has launched');
+    await fixture.signIn(adminEmail);
+    await assertRefused(true, 401, 'the revoked Admin session cannot enable pre-launch');
   } finally {
     await browser?.close();
     await fixture.close();
