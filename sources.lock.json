@@ -8092,7 +8092,7 @@
       "executable": false
     },
     "tests/dev-ingress/runtime.mjs": {
-      "sha256": "5c334399de14ccea48be9bebb6b0201f6db5c515f725668d26d46879ed7c4744",
+      "sha256": "24a00a8eefddb01ae99dbf98915d4533e9c54b79b5d52bf66913fa16cdb366ea",
       "executable": false
     },
     "tests/dev-ingress/shutdown.mjs": {
@@ -8756,7 +8756,7 @@
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
-      "sha256": "a564b2fc234c2d877fccc006024693ff23794042bdda80cc4c528aedeff42537",
+      "sha256": "52f76500766c90e3ec06353241855bbc5f93934d45a3ad002b1c29faa479622a",
       "executable": false
     },
     "tests/e2e/owned-process-group.mjs": {
@@ -8776,7 +8776,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "b3cc4c6367c426f39a64043b7c5b5cf91c63182e9ae3a16c96e7ad3dfbfea0d6",
+      "sha256": "4ffbd6eb31241215ba8b9b54de4a0f3a86b323b5a91992c9319b1278ab700753",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -8860,7 +8860,7 @@
       "executable": false
     },
     "tests/e2e/unsaved-work-browser.test.mjs": {
-      "sha256": "04a2ba8998f1cae65897e00a8eeb157fcf6edf04de30e24ddb693250508836c2",
+      "sha256": "7cce3a90ceea444ad02fe7483618644bed381c88a3a0d686084e519efe458cb8",
       "executable": false
     },
     "tests/e2e/update-reminders.test.mjs": {
@@ -8872,7 +8872,7 @@
       "executable": false
     },
     "tests/e2e/worker-startup.mjs": {
-      "sha256": "5c326700e8a7e681b5774fab4fc3f39845b26a5dc45799de75eae6766afa0e41",
+      "sha256": "2a10c2c14472472a858ba40caca4204415093256473c2ba29989f463597deb75",
       "executable": false
     },
     "tests/fixtures/archive/listed-c5dab715.rer": {
