@@ -4,6 +4,110 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { setTimeout as pause } from "node:timers/promises";
 import { chromium, expect } from "@playwright/test";
 
+const paletteLabels = { background: "Background", surface: "Surface", text: "Text", link: "Links", operational: "Working", degraded: "Slow", partial: "Partly down", major: "Down", maintenance: "Maintenance" };
+const paletteField = (page, key) => page.getByRole("textbox", { name: paletteLabels[key] + " hex colour", exact: true });
+
+async function fillPalette(page, palette) {
+  for (const [key, colour] of Object.entries(palette)) await paletteField(page, key).fill(colour);
+}
+
+function rgbFromHex(hex) {
+  return "rgb(" + hex.slice(1).match(/../g).map(channel => Number.parseInt(channel, 16)).join(", ") + ")";
+}
+
+function relativeLuminance(colour) {
+  const rgb = /^rgb\((\d+), (\d+), (\d+)\)$/.exec(colour);
+  assert.ok(rgb, "expected an opaque computed sRGB colour: " + colour);
+  const [red, green, blue] = rgb.slice(1).map(channel => {
+    const srgb = Number(channel) / 255;
+    return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrast(text, background) {
+  const [dark, light] = [relativeLuminance(text), relativeLuminance(background)].sort((a, b) => a - b);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+export async function statusCardContrastBrowserFlow({ appUrl, pageUrl, browser, browserContext, currentSettings, palette, diagnostic }) {
+  const directory = "./test-results/theme-004";
+  const viewports = [{ width: 1440, height: 1000 }, { width: 390, height: 844 }];
+  await mkdir(directory, { recursive: true });
+  const settings = await browserContext.newPage();
+  const colours = settings.getByText("Colours", { exact: true });
+  const settingsPath = new URL("/api/app/page-settings", appUrl).href;
+
+  // Use a fresh signed-out context for each readback so the retained page and stylesheet are fetched again.
+  const readCard = async (viewport, capture = false) => {
+    const context = await browser.newContext({ viewport });
+    try {
+      const page = await context.newPage();
+      assert.equal((await page.goto(pageUrl)).status(), 200);
+      const card = page.locator(".status-banner.operational #status-live");
+      const update = card.locator(".status-live-update");
+      await expect(update).toBeVisible();
+      await expect(update).toHaveText(/\S/);
+      const text = await update.evaluate(element => getComputedStyle(element).color);
+      const surface = await card.evaluate(element => getComputedStyle(element).backgroundColor);
+      const background = await page.locator("body").evaluate(element => getComputedStyle(element).backgroundColor);
+      if (capture) await page.screenshot({ path: directory + "/public-" + viewport.width + ".png" });
+      return { text, surface, background };
+    } finally { await context.close(); }
+  };
+
+  try {
+    await settings.goto(appUrl + "/app/settings#look");
+    await operatorHydrated(settings);
+    await colours.click();
+    await settings.getByLabel("Use a custom colour palette").check();
+    await fillPalette(settings, palette);
+    await expect(settings.getByRole("status").filter({ hasText: /^Saved · live$/ })).toBeVisible({ timeout: 60_000 });
+    const saved = await currentSettings();
+    assert.deepEqual(saved.theme.palette, palette);
+
+    const served = [];
+    const rejectedText = "#a2a2a2";
+    for (const viewport of viewports) {
+      await settings.setViewportSize(viewport);
+      await paletteField(settings, "text").scrollIntoViewIfNeeded();
+      await settings.screenshot({ path: directory + "/settings-" + viewport.width + ".png" });
+      const actual = await readCard(viewport, true);
+      assert.deepEqual(actual, { text: rgbFromHex(palette.text), surface: rgbFromHex(palette.surface), background: rgbFromHex(palette.background) });
+      const acceptedRatio = contrast(actual.text, actual.surface);
+      const pageRatio = contrast(rgbFromHex(rejectedText), actual.background);
+      const cardRatio = contrast(rgbFromHex(rejectedText), actual.surface);
+      assert.ok(acceptedRatio >= 4.5, "saved update text must meet AA against its actual card");
+      assert.ok(pageRatio >= 4.5 && cardRatio < 4.5, "the proposed text only fails against the card");
+      served.push(actual);
+      diagnostic("THEME-004 at " + viewport.width + " px: computed " + JSON.stringify(actual) +
+        "; saved text on card " + acceptedRatio.toFixed(4) + ":1; proposed text on page " + pageRatio.toFixed(4) +
+        ":1 and on card " + cardRatio.toFixed(4) + ":1");
+    }
+
+    await settings.setViewportSize(viewports[0]);
+    const refusal = settings.waitForResponse(response => {
+      const request = response.request();
+      return response.url() === settingsPath && request.method() === "PUT" && request.postDataJSON().theme?.palette?.text === rejectedText;
+    }, { timeout: 60_000 });
+    await paletteField(settings, "text").fill(rejectedText);
+    const response = await refusal;
+    assert.deepEqual(response.request().postDataJSON().theme.palette, { ...palette, text: rejectedText });
+    assert.equal(response.status(), 400);
+    await expect(settings.getByRole("alert").filter({ hasText: "Palette text against surface contrast" })).toBeVisible();
+    await expect(paletteField(settings, "text")).toHaveValue(rejectedText);
+    const retained = await currentSettings();
+    assert.deepEqual(retained.theme, saved.theme);
+    assert.equal(retained.template, saved.template);
+    await settings.reload();
+    await operatorHydrated(settings);
+    await colours.click();
+    for (const [key, colour] of Object.entries(palette)) await expect(paletteField(settings, key)).toHaveValue(colour);
+    for (const [index, viewport] of viewports.entries()) assert.deepEqual(await readCard(viewport), served[index]);
+    diagnostic("THEME-004: native Settings refused the edit with HTTP 400; all nine colours survived reload and signed-out computed colours stayed the same at both widths");
+  } finally { await settings.close(); }
+}
+
 export async function themeBrowserFlow({ appUrl, pageUrl, sessionId, cookieName, theme, image, font, currentSettings, snapshot }) {
   const browser = await chromium.launch({ headless: true, args: ["--use-mock-keychain", "--password-store=basic"] });
   const directory = "test-results/theme-001";
@@ -38,8 +142,7 @@ export async function themeBrowserFlow({ appUrl, pageUrl, sessionId, cookieName,
     const open = async title => { const detail = page.locator("details").filter({ has: page.locator(":scope > summary", { hasText: title }) }).first(); if (!await detail.getAttribute("open")) await detail.locator(":scope > summary").click(); };
     await open("Colours");
     await page.getByLabel("Use a custom colour palette").check();
-    const labels = { background: "Background", surface: "Surface", text: "Text", link: "Links", operational: "Working", degraded: "Slow", partial: "Partly down", major: "Down", maintenance: "Maintenance" };
-    for (const [key, label] of Object.entries(labels)) await page.getByRole("textbox", { name: `${label} hex colour`, exact: true }).fill(theme.palette[key]);
+    await fillPalette(page, theme.palette);
     await saved();
     const textColour = page.getByRole("textbox", { name: "Text hex colour", exact: true });
     await textColour.fill(theme.palette.background);

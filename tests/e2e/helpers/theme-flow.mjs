@@ -2,7 +2,31 @@ import { themeHeaderImage, themeSettings } from "./theme-fixture.mjs";
 import { themeTemplateFlow } from "./theme-template-flow.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { themeBrowserFlow } from "./theme-browser-flow.mjs";
+import { statusCardContrastBrowserFlow, themeBrowserFlow } from "./theme-browser-flow.mjs";
+
+export async function statusCardContrastFlow({ api, appUrl, pageUrl, browser, browserContext, diagnostic }) {
+  const settingsPath = "/api/app/page-settings";
+  const currentSettings = async () => (await api(settingsPath)).settings;
+  const original = await currentSettings();
+  assert.equal(original.template, "default", "the fixture starts on the default public layout");
+  const palette = {
+    background: "#111111", surface: "#3a3a3a", text: "#a3a3a3", link: "#c4dcff",
+    operational: "#9ee0b0", degraded: "#ffdb87", partial: "#ffc8a2", major: "#ffb7b7", maintenance: "#ccd0ff",
+  };
+  const { component } = await api("/api/app/components", "POST", {
+    name: "Synthetic Lamp contrast service", description: "", note: "", groupId: null, internal: false, displayOrder: 0,
+  });
+  try {
+    await statusCardContrastBrowserFlow({ appUrl, pageUrl, browser, browserContext, currentSettings, palette, diagnostic });
+  } finally {
+    const { pageName, tagline, accentColor, timezone, hostname, footerCreditEnabled, theme, aiToneInstructions } = original;
+    try {
+      await api(settingsPath, "PUT", { pageName, tagline, accentColor, timezone, hostname, footerCreditEnabled, theme, aiToneInstructions });
+    } finally {
+      await api(`/api/app/components/${component.id}`, "DELETE");
+    }
+  }
+}
 
 export async function themeFlow({ appFetch, fetch, appUrl, pageUrl, currentSettings, updateSettings, sessionId, cookieName, diagnostic }) {
   const original = await currentSettings();

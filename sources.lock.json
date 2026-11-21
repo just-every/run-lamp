@@ -8660,7 +8660,7 @@
       "executable": false
     },
     "tests/e2e/helpers/theme-browser-flow.mjs": {
-      "sha256": "8f0ee95fccfb1de94ba9784a5878fb5798fa36005f610d92d8cb53f645ad38f1",
+      "sha256": "5323f29c99e5355f20b87502c1cd35ffed9c99dab70d363479418818b4c0ccc0",
       "executable": false
     },
     "tests/e2e/helpers/theme-fixture.mjs": {
@@ -8668,7 +8668,7 @@
       "executable": false
     },
     "tests/e2e/helpers/theme-flow.mjs": {
-      "sha256": "99a58122bc5423d9e9cf52e70559989764f9dd3ab1ca3432e0e3ca14134a7250",
+      "sha256": "5dc37b039662b0a23e5a0c47ffbdd1647bb616180e104449efd2d1785a621e0e",
       "executable": false
     },
     "tests/e2e/helpers/theme-owner-journey.mjs": {
@@ -8776,7 +8776,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "b3cc4c6367c426f39a64043b7c5b5cf91c63182e9ae3a16c96e7ad3dfbfea0d6",
+      "sha256": "db40c5d320dd0ac948e2112d4f54fefabb0db65f24ce3a58f06c0896f11f9ebc",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
