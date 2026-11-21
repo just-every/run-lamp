@@ -7,7 +7,7 @@ import { unstable_getMiniflareWorkerOptions } from 'wrangler';
 import { expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { migrate } from '../../reference-storage/runtime.mjs';
-import { reservePort } from '../worker-startup.mjs';
+import { startMiniflare } from '../worker-startup.mjs';
 import { invitationRolesFlow } from './invitation-roles-flow.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 
@@ -19,8 +19,6 @@ const address = name => `${name}${String.fromCharCode(64)}example.test`;
 // Run the built app, including Start documents and browser assets. Only the
 // outbound mail provider is replaced; confirmation and authority stay native.
 export async function managementInstallation(diagnostic = () => {}) {
-  const port = await reservePort({ label: 'operator management Worker' });
-  const origin = `http://127.0.0.1:${port}`;
   const state = await mkdtemp(join(tmpdir(), 'lamp-operator-management-'));
   const options = unstable_getMiniflareWorkerOptions(resolve('dist/server/wrangler.json'));
   const { modulesRules, ...workerOptions } = options.workerOptions;
@@ -38,24 +36,30 @@ export async function managementInstallation(diagnostic = () => {}) {
   const modules = await moduleFiles(dirname(options.main));
   modules.sort((a, b) => a.path === options.main ? -1 : b.path === options.main ? 1 : a.path.localeCompare(b.path));
   const messages = [], owner = address('synthetic-lamp-1');
-  let runtime;
+  let runtime, origin;
   const close = async () => { try { await runtime?.dispose(); } finally { await rm(state, { recursive: true, force: true }); } };
   try {
     diagnostic('Starting the built operator management Worker');
-    runtime = new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: state, workers: [{
-      ...workerOptions, modules, modulesRoot: dirname(options.main),
-      bindings: { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: origin,
-        AUTH_ORIGIN: origin, AUTH_LOCAL: 'true', SETUP_OPERATOR_EMAIL: owner,
-        SESSION_SECRET: 'synthetic-lamp-session-1'.repeat(4), SETUP_TOKEN: 'synthetic-lamp-setup-1'.repeat(4),
-        SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-1'.repeat(4), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-webhook-1'.repeat(4),
-        MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: address('synthetic-lamp-2'), MAIL_PROVIDER_API_KEY: 'synthetic-lamp-mail-1' },
-      outboundService: async request => {
-        const url = new URL(request.url);
-        assert.equal(url.origin + url.pathname, 'https://api.resend.com/emails', 'only the synthetic mail edge is called');
-        messages.push(await request.json());
-        return Response.json({ id: `synthetic-lamp-mail-${messages.length}` });
+    runtime = await startMiniflare({
+      label: 'operator management Worker',
+      create(port) {
+        origin = `http://127.0.0.1:${port}`;
+        return new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: state, workers: [{
+          ...workerOptions, modules, modulesRoot: dirname(options.main),
+          bindings: { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: origin,
+            AUTH_ORIGIN: origin, AUTH_LOCAL: 'true', SETUP_OPERATOR_EMAIL: owner,
+            SESSION_SECRET: 'synthetic-lamp-session-1'.repeat(4), SETUP_TOKEN: 'synthetic-lamp-setup-1'.repeat(4),
+            SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-1'.repeat(4), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-webhook-1'.repeat(4),
+            MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: address('synthetic-lamp-2'), MAIL_PROVIDER_API_KEY: 'synthetic-lamp-mail-1' },
+          outboundService: async request => {
+            const url = new URL(request.url);
+            assert.equal(url.origin + url.pathname, 'https://api.resend.com/emails', 'only the synthetic mail edge is called');
+            messages.push(await request.json());
+            return Response.json({ id: `synthetic-lamp-mail-${messages.length}` });
+          },
+        }, ...options.externalWorkers] }));
       },
-    }, ...options.externalWorkers] }));
+    });
     const db = await runtime.getD1Database('DB');
     diagnostic('Migrating the operator management installation');
     await migrate(db);

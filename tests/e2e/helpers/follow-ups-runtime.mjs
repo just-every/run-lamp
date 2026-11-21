@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { unstable_splitSqlQuery } from "wrangler";
 import { ownerMigrationFiles } from "../../../scripts/owner-migrations.mjs";
 import { withDraftVersion } from "../draft-version-helper.mjs";
-import { reservePort } from "../worker-startup.mjs";
+import { startMiniflare } from "../worker-startup.mjs";
 
 const require = createRequire(import.meta.url);
 const wranglerRequire = createRequire(require.resolve("wrangler"));
@@ -45,9 +45,7 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         builder.onLoad({ filter: /.*/, namespace: "inline" }, async args => ({ contents: `export default ${JSON.stringify("data:application/octet-stream;base64," + (await readFile(args.path)).toString("base64"))}`, loader: "js" }));
       } }],
     });
-    // Allocate for this open after bundling, never across fixture lifetimes.
-    const appPort = await reservePort({ label: "follow-ups Worker" });
-    const appOrigin = `http://127.0.0.1:${appPort}`;
+    let appPort, appOrigin;
     const miniflareOptions = (bindingOverrides = {}) => {
       const native = {
       name: "lamp-follow-ups-test", modules: true, ...(built ? { script: built.outputFiles[0].text } : {}),
@@ -112,7 +110,16 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
         { ...worker, ...bindings, bindings: { ...worker.bindings, ...bindings.bindings } }, ...externalWorkers,
       ] });
     };
-    runtime = new Miniflare(miniflareOptions());
+    const startRuntime = (bindingOverrides, firstPort) => startMiniflare({
+      label: "follow-ups Worker",
+      firstPort,
+      create(port) {
+        appPort = port;
+        appOrigin = `http://127.0.0.1:${port}`;
+        return new Miniflare(miniflareOptions(bindingOverrides));
+      },
+    });
+    runtime = await startRuntime();
     db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
     if (!installation) {
@@ -170,13 +177,13 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
       /** A new Worker over the same storage; `bindings` replace the ones it started with, as a deploy does. */
       async restart({ bindings = {} } = {}) {
         await runtime.dispose();
-        runtime = new Miniflare(miniflareOptions(bindings));
+        runtime = undefined;
+        runtime = await startRuntime(bindings, appPort);
         db = await runtime.getD1Database("DB");
-        await runtime.ready;
       },
-      execute, get cookie() { return cookie; }, appOrigin, publicOrigin: pageHost === "localhost" ? `http://localhost:${appPort}` : `https://${pageHost}`, api, post, request, raw, messages, mailReceipts, webhookRequests, channelRequests, signIn,
+      execute, get cookie() { return cookie; }, get appOrigin() { return appOrigin; }, get publicOrigin() { return pageHost === "localhost" ? `http://localhost:${appPort}` : `https://${pageHost}`; }, api, post, request, raw, messages, mailReceipts, webhookRequests, channelRequests, signIn,
       recoverWebhook() { webhookOutage = false; },
-      async close() { try { await runtime.dispose(); } finally { await rm(state, { recursive: true, force: true }); } },
+      async close() { try { await runtime?.dispose(); } finally { await rm(state, { recursive: true, force: true }); } },
     };
   } catch (cause) {
     try { await runtime?.dispose(); } finally { await rm(state, { recursive: true, force: true }); }

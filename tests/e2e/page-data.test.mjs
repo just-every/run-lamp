@@ -13,7 +13,7 @@ const require = createRequire(import.meta.url), workerRequire = createRequire(re
 const { Miniflare, convertV4MiniflareOptions } = workerRequire("miniflare");
 
 import { legacyApiFixtureSql } from "./fixtures/legacy-api-fixture.mjs";
-import { reservePort } from "./worker-startup.mjs";
+import { startMiniflare } from "./worker-startup.mjs";
 import { fixtureFetch as fetch } from "../public-snapshots/fixture-fetch.mjs";
 
 const staffLogo = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLttAAAAABJRU5ErkJggg==", "base64");
@@ -38,8 +38,6 @@ INSERT INTO reference_counters (namespace,last_number) VALUES ('INC',4821) ON CO
 const signingSecret = { SUBSCRIBER_TOKEN_SECRET: "test-only-page-data-subscriber-secret-cccccccccccc" };
 
 async function startPage(seedSql, vars = signingSecret) {
-  const port = await reservePort({ label: "page data Worker" });
-  const app = `http://127.0.0.1:${port}`, page = `http://localhost:${port}`;
   const state = await mkdtemp(join(tmpdir(), "lamp-page-data-"));
   const options = unstable_getMiniflareWorkerOptions(resolve("dist/server/wrangler.json"));
   const { modulesRules, ...workerOptions } = options.workerOptions;
@@ -55,22 +53,29 @@ async function startPage(seedSql, vars = signingSecret) {
   const modules = await moduleFiles(dirname(options.main));
   modules.sort((a, b) => a.path === options.main ? -1 : b.path === options.main ? 1 : a.path.localeCompare(b.path));
   const messages = [];
-  let runtime;
+  let runtime, app, page;
   const stop = async () => { await runtime?.dispose(); await rm(state, { recursive: true, force: true }); };
   try {
-    runtime = new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: state, workers: [{
-      ...workerOptions, modules, modulesRoot: dirname(options.main),
-      bindings: { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: app,
-        AUTH_ORIGIN: app, AUTH_LOCAL: 'true', SESSION_SECRET: secret, SETUP_OPERATOR_EMAIL: 'operator@example.test',
-        MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_PROVIDER_API_KEY: 'synthetic-page-data-mail-key', ...vars },
-      // Production mail adapter and HTTP envelope; only its provider edge is synthetic.
-      outboundService: async request => {
-        const url = new URL(request.url);
-        assert.equal(url.origin + url.pathname, 'https://api.resend.com/emails', 'confirmation mail uses the configured provider');
-        messages.push(await request.json());
-        return Response.json({ id: `synthetic-page-data-receipt-${messages.length}` });
+    runtime = await startMiniflare({
+      label: "page data Worker",
+      create(port) {
+        app = `http://127.0.0.1:${port}`;
+        page = `http://localhost:${port}`;
+        return new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: state, workers: [{
+          ...workerOptions, modules, modulesRoot: dirname(options.main),
+          bindings: { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: app,
+            AUTH_ORIGIN: app, AUTH_LOCAL: 'true', SESSION_SECRET: secret, SETUP_OPERATOR_EMAIL: 'operator@example.test',
+            MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_PROVIDER_API_KEY: 'synthetic-page-data-mail-key', ...vars },
+          // Production mail adapter and HTTP envelope; only its provider edge is synthetic.
+          outboundService: async request => {
+            const url = new URL(request.url);
+            assert.equal(url.origin + url.pathname, 'https://api.resend.com/emails', 'confirmation mail uses the configured provider');
+            messages.push(await request.json());
+            return Response.json({ id: `synthetic-page-data-receipt-${messages.length}` });
+          },
+        }, ...options.externalWorkers] }));
       },
-    }, ...options.externalWorkers] }));
+    });
     const { DB: db } = await runtime.getBindings();
     await migrate(db);
     if (seedSql) await executeSql(db, seedSql);
