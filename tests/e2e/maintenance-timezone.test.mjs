@@ -14,6 +14,7 @@ import { reservePort, startViteWorker } from "./worker-startup.mjs";
 import { sessionCookieName } from "../helpers/session-cookie.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { newIncidentForm } from "./helpers/incident-composer.mjs";
+import { expect } from "@playwright/test";
 
 let worker, browser, context, page, statePath, cachePath, origin, sessionId;
 const subscriberTokenSecret = "synthetic-lamp-020-subscriber-token-secret";
@@ -98,10 +99,37 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     assert.equal(await scheduleWindow.isEnabled(), false);
     await create.getByLabel("Starts", { exact: true }).fill("2027-07-15T09:00");
     assert.equal(await scheduleWindow.isEnabled(), true);
+    await create.getByRole("button", { name: "Preview notice", exact: true }).click();
+    const preview = create.getByRole("complementary", { name: "Scheduled notice preview" });
+    await preview.getByRole("heading", { name: "Configured-zone window", exact: true }).waitFor();
+    const previewWindow = preview.locator(".maintenance-window");
+    assert.equal((await previewWindow.innerText()).replace(/\s+/g, " "), "Jul 15, 09:00 AM – 10:00 AM Brisbane time");
+    const times = target => target.locator("time").evaluateAll(nodes => nodes.map(node => node.dateTime));
+    assert.deepEqual(await times(previewWindow), ["2027-07-14T23:00:00.000Z", "2027-07-15T00:00:00.000Z"]);
+    await preview.getByRole("button", { name: "Email", exact: true }).click();
+    const emailNotice = preview.frameLocator('iframe[title="Notification email message"]').locator("main > div");
+    await emailNotice.waitFor();
+    assert.match(await emailNotice.textContent(), /Start: Jul 15, 2027, 09:00 UTC\+10:00\n\nEnd: Jul 15, 2027, 10:00 UTC\+10:00/);
+    const revisedImpact = "Reports may load slowly while the index is rebuilt.";
+    await create.getByLabel("Customer impact", { exact: true }).fill(revisedImpact);
+    await emailNotice.filter({ hasText: revisedImpact }).waitFor();
+    assert.ok((await emailNotice.textContent()).endsWith(`Customer impact: ${revisedImpact}`));
+    assert.deepEqual((await api("/api/app/maintenance")).maintenance, [], "previewing and editing do not create a window");
     const created = page.waitForResponse(response => response.url().endsWith("/api/app/maintenance") && response.request().method() === "POST");
     await create.getByRole("button", { name: "Schedule window", exact: true }).click();
     const window = (await (await created).json()).maintenance;
     assert.equal(window.startsAt, "2027-07-14T23:00:00.000Z"); assert.equal(window.endsAt, "2027-07-15T00:00:00.000Z");
+    const permalink = await context.newPage();
+    try {
+      const publicUrl = `${pageOrigin(new URL(origin).port)}/maintenance/${window.reference}`;
+      await expect.poll(async () => (await permalink.goto(publicUrl)).status()).toBe(200);
+      const publicWindow = permalink.locator("article.maintenance .maintenance-window");
+      await publicWindow.waitFor();
+      assert.equal((await publicWindow.innerText()).replace(/\s+/g, " "), "Jul 15, 09:00 AM – 10:00 AM Brisbane time");
+      assert.deepEqual(await times(publicWindow), [window.startsAt, window.endsAt]);
+      const publicNotice = permalink.locator(".maintenance-notice").filter({ has: permalink.locator(".update-head strong", { hasText: /^scheduled$/ }) });
+      assert.deepEqual(await publicNotice.locator("dd").allTextContents(), ["Customers using the configured-zone service.", revisedImpact]);
+    } finally { await permalink.close(); }
     await page.goto(`${origin}/app`); await operatorHydrated(page);
     const scheduled = page.locator('article').filter({ has: page.getByRole('heading', { name: 'Scheduled', exact: true }) });
     await scheduled.getByText(window.title, { exact: true }).waitFor();

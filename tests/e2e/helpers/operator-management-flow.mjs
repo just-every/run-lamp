@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { unstable_getMiniflareWorkerOptions } from 'wrangler';
@@ -17,9 +18,10 @@ const require = createRequire(import.meta.url);
 const workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
 const address = name => `${name}${String.fromCharCode(64)}example.test`;
+const invitedEmail = address('synthetic-lamp-3');
 
-// Run the built app, including Start documents and browser assets. Only the
-// outbound mail provider is replaced; confirmation and authority stay native.
+// Run the built app, including Start documents and browser assets, against
+// fixture authorization and mail providers.
 export async function managementInstallation(diagnostic = () => {}) {
   const port = await reservePort({ label: 'operator management Worker' });
   const origin = `http://127.0.0.1:${port}`;
@@ -40,14 +42,45 @@ export async function managementInstallation(diagnostic = () => {}) {
   const modules = await moduleFiles(dirname(options.main));
   modules.sort((a, b) => a.path === options.main ? -1 : b.path === options.main ? 1 : a.path.localeCompare(b.path));
   const messages = [], owner = address('synthetic-lamp-1');
-  const issuer = 'https://identity.example.test';
-  const idp = await provider({ issuer, alg: 'ES256', clientId: 'synthetic-lamp-oidc',
-    method: 'private_key_jwt', redirectUri: origin + '/auth/oidc/company/callback',
-    rerInterfaces: ['oidc-provider@1.0.0'] });
-  idp.options.clientKey = idp.key.public;
-  let runtime;
-  const close = async () => { try { await runtime?.dispose(); } finally { await rm(state, { recursive: true, force: true }); } };
+  const redirectUri = origin + '/auth/oidc/company/callback';
+  let runtime, idp, issuer;
+  // Chromium follows the app's form redirect over real HTTP. The provider
+  // still uses the shared fixture for validating the request and issuing a code.
+  const authorization = createServer(async (request, response) => {
+    const url = new URL(request.url, issuer);
+    if (request.method !== 'GET' || url.pathname !== '/authorize') {
+      response.writeHead(404).end();
+      return;
+    }
+    try {
+      const grant = await idp.authorize(url.href, {
+        email: invitedEmail,
+        sub: 'synthetic-lamp-operator',
+        email_verified_at: Math.floor(Date.now() / 1000),
+      });
+      const callback = new URL(redirectUri);
+      callback.search = new URLSearchParams(grant);
+      response.writeHead(303, { Location: callback.href }).end();
+    } catch {
+      response.writeHead(400).end('Fixture refused authorization');
+    }
+  });
+  const close = async () => {
+    try { await runtime?.dispose(); }
+    finally {
+      await new Promise(resolve => authorization.close(resolve));
+      await rm(state, { recursive: true, force: true });
+    }
+  };
   try {
+    await new Promise((resolve, reject) => {
+      authorization.once('error', reject);
+      authorization.listen(0, '127.0.0.1', resolve);
+    });
+    issuer = 'http://localhost:' + authorization.address().port;
+    idp = await provider({ issuer, alg: 'ES256', clientId: 'synthetic-lamp-oidc',
+      method: 'private_key_jwt', redirectUri, rerInterfaces: ['oidc-provider@1.0.0'] });
+    idp.options.clientKey = idp.key.public;
     diagnostic('Starting the built operator management Worker');
     runtime = new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: state, workers: [{
       ...workerOptions, modules, modulesRoot: dirname(options.main),
@@ -80,7 +113,7 @@ export async function managementInstallation(diagnostic = () => {}) {
     await db.prepare("INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp','Team journey','#16794C','UTC','localhost','synthetic-lamp-feed-1',?,'2026-10-01','2026-10-01')").bind(address('synthetic-lamp-2')).run();
     await db.prepare("INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01')").run();
     assert.equal((await post('/auth/magic-link', { email: owner })).status, 202);
-    return { origin, owner, db, messages, idp, close };
+    return { origin, owner, db, messages, close };
   } catch (error) { await close(); throw error; }
 }
 
@@ -113,7 +146,7 @@ export async function operatorManagementFlow({ browser, capture, proof, diagnost
     await operatorHydrated(page);
     const panel = page.getByRole('region', { name: 'Operators', exact: true });
     await expect(panel.getByLabel('Invitation role', { exact: true })).toHaveValue('communicator');
-    const email = address('synthetic-lamp-3'), displayName = 'Synthetic Lamp invited operator';
+    const email = invitedEmail, displayName = 'Synthetic Lamp invited operator';
     await panel.getByLabel('Email', { exact: true }).fill(email);
     await panel.getByLabel('Name', { exact: true }).fill(displayName);
     const invitationResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/operators/invite' && response.request().method() === 'POST');
@@ -155,7 +188,7 @@ export async function operatorManagementFlow({ browser, capture, proof, diagnost
     const savedIncident = (await (await invitedPage.request.get(origin + `/api/app/incidents/${incident.id}`)).json()).incident;
     const publication = await invitedPage.request.post(origin + `/api/app/incidents/${incident.id}/publish`, { headers: { Origin: origin, 'If-Match': `${savedIncident.draft?.id ?? "-"}:${savedIncident.updates.length}` }, data: { channels: [] } });
     assert.equal(publication.status(), 200, 'the default invitation permits posting updates');
-    await requiredSignInFlow({ browser, page, origin, idp: fixture.idp, email, operatorId: pending.id, messages, proof });
+    await requiredSignInFlow({ browser, page, origin, email, operatorId: pending.id, messages, proof });
     await page.goto(origin + '/app/settings#operators');
     await operatorHydrated(page);
 

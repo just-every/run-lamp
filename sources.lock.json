@@ -4496,7 +4496,7 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "68d9ef8818ecd86f9bee762ebabd73c749073e726f406839f8b2a39fc26b482f",
+      "sha256": "29aaab26afa3dcdde2a2520c857d55a70f63056c1605a024767667c1d6b75a04",
       "executable": false
     },
     "src/core/app/types.ts": {
@@ -4932,7 +4932,7 @@
       "executable": false
     },
     "src/core/features/deliveries/service.ts": {
-      "sha256": "d9817c77fd79c25676fe9a2cd2f3527961b1ce6c7a85c9b4cae7eb33378dd582",
+      "sha256": "044cbfeda588e9976f54353af8c559a0fe25d264b8453f4548155e1fa8cee289",
       "executable": false
     },
     "src/core/features/deliveries/ses-events.ts": {
@@ -5152,7 +5152,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/incident-preview.tsx": {
-      "sha256": "209e115a6b4559803efc9d9f6df56ae895ec960f0fe3da0ebcb2a9a12cd2415a",
+      "sha256": "11d29ffb739e30a68e281f2a34d2b7668c61ff4485832fc706246ec58a49eac7",
       "executable": false
     },
     "src/core/features/incidents/ui/incident-record.tsx": {
@@ -5428,11 +5428,11 @@
       "executable": false
     },
     "src/core/features/maintenance/routes.ts": {
-      "sha256": "7839bf3f5e255bbe133a3cc4a545271a5b5a517b130c3a770be232695aadbe01",
+      "sha256": "a51aa42d88d6bf59eda8b1b8c6906f1c3572db94a1f1034bd0f4b8f775e5202c",
       "executable": false
     },
     "src/core/features/maintenance/service.ts": {
-      "sha256": "d6525c384940214ca91e423da23606c1d61e4da070492bedaf604b89078390ab",
+      "sha256": "ca517c4f9d0f1da909dbbd5fad8a3b7dd505270ab576aac465096e904ed6176e",
       "executable": false
     },
     "src/core/features/maintenance/ui/automation-default-card.tsx": {
@@ -5448,7 +5448,11 @@
       "executable": false
     },
     "src/core/features/maintenance/ui/maintenance-page.tsx": {
-      "sha256": "d17278a04187611eddfae79183c331541b69121223bdc865644a971c2cf15abc",
+      "sha256": "ff108153a9c0a1d5bd6616fbb3c3a14013faff60cdd42a6de6a8a72dffbb3e8c",
+      "executable": false
+    },
+    "src/core/features/maintenance/ui/scheduled-notice-preview.tsx": {
+      "sha256": "c9bfd9f72050f209ca7b34f513e739729b830915b7be96d3b4c214a619d4bc3b",
       "executable": false
     },
     "src/core/features/maintenance/ui/window-time.ts": {
@@ -5548,7 +5552,7 @@
       "executable": false
     },
     "src/core/features/operators/permissions.ts": {
-      "sha256": "5f3cfd9a6ab2515b21e3098c8382b63752144ddaa1f4e0687aab6b0251c99c95",
+      "sha256": "66dc1c54474e43966b2112358a6e6d8a5a29ea8a1d58f3122154d0f93a78d1fe",
       "executable": false
     },
     "src/core/features/operators/repository.ts": {
@@ -5972,7 +5976,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/format.ts": {
-      "sha256": "6671df7b1eae3fa26495bef1b28a45148a57afec3339ef55043111d6fe2c3ce6",
+      "sha256": "d2fdf601bdfacfa1607fc354fd7db028df80d81c493a4557a3d808b4a166b8d2",
       "executable": false
     },
     "src/core/features/public-snapshot/generation-cache.ts": {
@@ -7220,7 +7224,7 @@
       "executable": false
     },
     "src/core/shared/maintenance-notice.ts": {
-      "sha256": "3f76a502d7f5e8a5508f70a81ada37b2447354651c621c7c98e8ed26b79fe4ff",
+      "sha256": "4378c6dbce175b1963bcafc6a3fc4e46103c9b4d4cca25e0ad15100892690645",
       "executable": false
     },
     "src/core/shared/page-theme.ts": {
@@ -7260,7 +7264,7 @@
       "executable": false
     },
     "src/core/shared/update-renderer.ts": {
-      "sha256": "6cfee85bfe85de1b2c6caa77125ea2321dec9cb20214a81db8e040534c69a15d",
+      "sha256": "02f858db0ea4043c8e298a344ca9d11da754c713478b251ed21ffd2e5a0e10bd",
       "executable": false
     },
     "src/core/shared/widget-appearance.ts": {
@@ -8212,7 +8216,7 @@
       "executable": false
     },
     "tests/e2e/helpers/audience-pages-flow.mjs": {
-      "sha256": "8d7ec0881b13f3a43a6851f5276e28f549d0bb701f9d46f5f9570097c014efc3",
+      "sha256": "2f5901874b2d21b3c4caa9a04775a90ece5762b8063d062f40a2d027271bcf63",
       "executable": false
     },
     "tests/e2e/helpers/audit-labels-flow.mjs": {
@@ -8448,7 +8452,7 @@
       "executable": false
     },
     "tests/e2e/helpers/maintenance-notices-flow.mjs": {
-      "sha256": "15b409f8932868d5091bd39b9e5e6b1765150d75933f972fd6a96fc6a0bfc963",
+      "sha256": "6d23ac8f2b8207bbecc1759d8bf863d657fc3daea6d6d1078f5842d88fdc81ab",
       "executable": false
     },
     "tests/e2e/helpers/metric-setup-journey.mjs": {
@@ -8496,7 +8500,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operator-management-flow.mjs": {
-      "sha256": "0170d12a06912a9e7965843e344b0c6aa5f352b2bac389303463ee260cf27c81",
+      "sha256": "709040bdc838e65aec171ab8d55bca51da7952977532a5e1b88d1956e046e099",
       "executable": false
     },
     "tests/e2e/helpers/operator-role-actors.mjs": {
@@ -8572,7 +8576,7 @@
       "executable": false
     },
     "tests/e2e/helpers/required-sign-in-flow.mjs": {
-      "sha256": "c693cbeb961592e965018d755bc3bc3aca62880bf2188817cfd57e19a25404de",
+      "sha256": "cd4e34c4dacd4c48f4a81ad30dde23cf38d0680a8f1c143a05ea3ed81f2bf42f",
       "executable": false
     },
     "tests/e2e/helpers/retained-snapshot-runtime.mjs": {
@@ -8584,7 +8588,7 @@
       "executable": false
     },
     "tests/e2e/helpers/self-serve-chat-flow.mjs": {
-      "sha256": "2427bba37e431072b760569322bfe5183c177aefc6e2fe639a013fb04e11cc8e",
+      "sha256": "b2bcadf92b368d2645cde20ea0514a60da6e2ee8417314954649426c8f3324a7",
       "executable": false
     },
     "tests/e2e/helpers/setup-page-branding.mjs": {
@@ -8644,7 +8648,7 @@
       "executable": false
     },
     "tests/e2e/helpers/status-journey.mjs": {
-      "sha256": "d299dc3024673a6cf55f5995b6ecc299116e55f8c6409a59b2b5eb8ed38beb35",
+      "sha256": "7c2210c8154e641b85b68cd5fe6d49de2841bea5b9bd5c65028867c137542d71",
       "executable": false
     },
     "tests/e2e/helpers/status-journey.worker.ts": {
@@ -8824,7 +8828,7 @@
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
-      "sha256": "565ba840b98906d483f7eca16f77084c3b9d1ba2a8e693b1db066467e969e119",
+      "sha256": "f473ce345820ee6851b012ce0d258d4b5c5c9b4f0ca0f1c0c0842a06c29b167a",
       "executable": false
     },
     "tests/e2e/owned-process-group.mjs": {

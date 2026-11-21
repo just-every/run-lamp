@@ -3,7 +3,7 @@ import { expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { operatorHydrated } from './operator-hydrated.mjs';
 
-export async function requiredSignInFlow({ browser, page, origin, idp, email, operatorId, messages, proof }) {
+export async function requiredSignInFlow({ browser, page, origin, email, operatorId, messages, proof }) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const guest = await context.newPage();
   const signIn = origin + '/signin';
@@ -33,14 +33,6 @@ export async function requiredSignInFlow({ browser, page, origin, idp, email, op
   }
 
   try {
-    await context.route(url => url.origin === idp.issuer && url.pathname === '/authorize', async route => {
-      const grant = await idp.authorize(route.request().url(), {
-        email, sub: 'synthetic-lamp-operator', email_verified_at: Math.floor(Date.now() / 1000),
-      });
-      const callback = new URL(idp.options.redirectUri);
-      callback.search = new URLSearchParams(grant);
-      await route.fulfill({ status: 303, headers: { location: callback.href } });
-    });
     await page.goto(settings);
     await operatorHydrated(page);
     assert.equal((await (await pageRead()).json()).requiredProvider, null);
