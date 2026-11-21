@@ -8516,7 +8516,7 @@
       "executable": false
     },
     "tests/e2e/helpers/self-serve-chat-flow.mjs": {
-      "sha256": "2672a34832178ed85bae9c1093f6e8fd514801328212411456206975f95311d5",
+      "sha256": "2427bba37e431072b760569322bfe5183c177aefc6e2fe639a013fb04e11cc8e",
       "executable": false
     },
     "tests/e2e/helpers/setup-page-branding.mjs": {
