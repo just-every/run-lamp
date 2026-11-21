@@ -4,7 +4,7 @@ import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, join, dirname } from 'node:path';
 import { readBuiltWorkerArtifact } from '../../scripts/build-output.mjs';
-import { reservePort } from '../e2e/worker-startup.mjs';
+import { startMiniflare } from '../e2e/worker-startup.mjs';
 import { randomBytes } from 'node:crypto';
 import { unstable_splitSqlQuery } from 'wrangler';
 import { authFixture, secret as sessionSecret } from '../auth-adoption/runtime.mjs';
@@ -33,9 +33,7 @@ export async function runtime(t, keys, { configured = true, browser = false, req
   const directory = await mkdtemp(join(tmpdir(), 'lamp-chat-'));
   const signingSecret = randomBytes(32).toString('hex'), appId = `synthetic-lamp-${randomBytes(8).toString('hex')}`;
   const production = browser ? await browserWorker() : null;
-  const port = browser ? await reservePort({ label: 'chat links production Worker' }) : 0;
-  const runtimeOrigin = browser ? `http://127.0.0.1:${port}` : origin;
-  const runtimePage = browser ? `http://localhost:${port}` : page;
+  let runtimeOrigin = origin, runtimePage = page;
   const built = production ? null : await build({ entryPoints: ['tests/fixtures/chat-desk/worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false,
     external: ['cloudflare:workers', 'node:*'], define: { 'import.meta.env.DEV': 'false' },
     plugins: [{ name: 'assets', setup(builder) {
@@ -46,8 +44,7 @@ export async function runtime(t, keys, { configured = true, browser = false, req
   const requests = [], replies = [];
   const workerOptions = { ...(production?.workerOptions ?? { name: 'lamp-chat-proof', modules: true, script: built.outputFiles[0].text }),
     compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'],
-    bindings: { ...production?.workerOptions.bindings, LAMP_APP_HOST: new URL(runtimeOrigin).hostname, LAMP_PAGE_HOST: new URL(runtimePage).hostname, AUTH_ORIGIN: runtimeOrigin,
-      ...(browser ? { AUTH_LOCAL: 'true', LAMP_LOCAL_ORIGIN: runtimeOrigin } : {}),
+    bindings: { ...production?.workerOptions.bindings,
       SESSION_SECRET: sessionSecret, SETUP_OPERATOR_EMAIL: 'operator@example.test', MAIL_FROM_ADDRESS: 'lamp@example.test',
       SUBSCRIBER_TOKEN_SECRET: randomBytes(32).toString('hex'), WEBHOOK_SIGNING_SECRET: randomBytes(32).toString('hex'),
       LAMP_TEST_REQUIRE_REVIEW: String(requireReview),
@@ -62,11 +59,22 @@ export async function runtime(t, keys, { configured = true, browser = false, req
       throw new Error(`Unexpected outbound request to ${new URL(request.url).origin}`);
     },
   };
-  const worker = new Miniflare(convertV4MiniflareOptions({ host: '127.0.0.1', port, inspectorPort: 0,
-    resourcePersistencePath: join(directory, 'state'), workers: [workerOptions, ...(production?.externalWorkers ?? [])] }));
-  const close = async () => { await worker.dispose(); await rm(directory, { recursive: true, force: true }); };
+  let worker;
+  const create = port => {
+    if (browser) {
+      runtimeOrigin = `http://127.0.0.1:${port}`;
+      runtimePage = `http://localhost:${port}`;
+    }
+    const bindings = { ...workerOptions.bindings, LAMP_APP_HOST: new URL(runtimeOrigin).hostname,
+      LAMP_PAGE_HOST: new URL(runtimePage).hostname, AUTH_ORIGIN: runtimeOrigin,
+      ...(browser ? { AUTH_LOCAL: 'true', LAMP_LOCAL_ORIGIN: runtimeOrigin } : {}) };
+    return new Miniflare(convertV4MiniflareOptions({ host: '127.0.0.1', port, inspectorPort: 0,
+      resourcePersistencePath: join(directory, 'state'), workers: [{ ...workerOptions, bindings }, ...(production?.externalWorkers ?? [])] }));
+  };
+  const close = async () => { await worker?.dispose(); await rm(directory, { recursive: true, force: true }); };
   try {
-    await worker.ready;
+    worker = browser ? await startMiniflare({ create, label: 'chat links production Worker' }) : create(0);
+    if (!browser) await worker.ready;
     const db = await worker.getD1Database('DB');
     const names = (await readdir('migrations/core')).filter(name => name.endsWith('.sql')).sort();
     const apply = async name => db.batch(unstable_splitSqlQuery(await readFile(join('migrations/core', name), 'utf8')).map(sql => db.prepare(sql)));

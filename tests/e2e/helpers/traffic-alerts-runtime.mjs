@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import { readdir } from 'node:fs/promises';
 import { dirname, resolve, join } from 'node:path';
 import { readBuiltWorkerArtifact } from '../../../scripts/build-output.mjs';
-import { reservePort } from '../worker-startup.mjs';
+import { startMiniflare } from '../worker-startup.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
 import { migrate, executeSql } from '../../reference-storage/runtime.mjs';
 
@@ -15,8 +15,7 @@ const { unstable_getMiniflareWorkerOptions } = require('wrangler');
  * response and the fixture clock are controlled; no business service is fake. */
 export async function openTrafficAlertsRuntime({ database = true, diagnostic = () => {} } = {}) {
   await readBuiltWorkerArtifact();
-  const port = await reservePort({ label: 'traffic alerts production Worker' });
-  const origin = `http://127.0.0.1:${port}`, publicOrigin = `http://localhost:${port}`;
+  let origin, publicOrigin;
   const options = unstable_getMiniflareWorkerOptions(resolve('dist/server/wrangler.json'));
   const { modulesRules, ...workerOptions } = options.workerOptions;
   assert.deepEqual(modulesRules.map(rule => rule.type), ['ESModule', 'Text', 'Data', 'CompiledWasm']);
@@ -55,7 +54,7 @@ export async function openTrafficAlertsRuntime({ database = true, diagnostic = (
   ` });
   const messages = [];
   let runtime, cookie;
-  const bindings = { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: origin, AUTH_ORIGIN: origin, AUTH_LOCAL: 'true',
+  const bindings = { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', AUTH_LOCAL: 'true',
     SETUP_OPERATOR_EMAIL: 'synthetic-lamp-owner@example.test', SESSION_SECRET: 'synthetic-lamp-traffic-session-1'.repeat(3), SETUP_TOKEN: 'synthetic-lamp-traffic-setup-1'.repeat(3),
     SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-traffic-subscriber-1'.repeat(3), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-traffic-webhook-1'.repeat(3),
     MAIL_FROM_ADDRESS: 'lamp@example.test', MAIL_PROVIDER: 'resend', MAIL_PROVIDER_API_KEY: 'synthetic-lamp-traffic-resend-1' };
@@ -73,8 +72,16 @@ export async function openTrafficAlertsRuntime({ database = true, diagnostic = (
     const configured = { ...workerOptions, modules, modulesRoot: dirname(options.main), bindings, outboundService };
     if (!database) delete configured.d1Databases;
     diagnostic('HIST-006 starting built Worker');
-    runtime = new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, workers: [configured, ...options.externalWorkers] }));
-    runtime.ready.then(() => diagnostic('HIST-006 built Worker ready'), error => diagnostic('HIST-006 Worker start failed: ' + error.message));
+    runtime = await startMiniflare({
+      label: 'traffic alerts production Worker',
+      create(port) {
+        origin = `http://127.0.0.1:${port}`;
+        publicOrigin = `http://localhost:${port}`;
+        const localBindings = { ...bindings, LAMP_LOCAL_ORIGIN: origin, AUTH_ORIGIN: origin };
+        return new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, workers: [{ ...configured, bindings: localBindings }, ...options.externalWorkers] }));
+      },
+    });
+    diagnostic('HIST-006 built Worker ready');
     const env = await runtime.getBindings();
     diagnostic('HIST-006 real Worker bindings ready');
     if (database) {

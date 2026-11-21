@@ -13,7 +13,7 @@ import { chromium } from 'playwright';
 import AxeBuilder from '@axe-core/playwright';
 import { expect } from '@playwright/test';
 import { readBuiltWorkerArtifact } from '../../../scripts/build-output.mjs';
-import { reservePort } from '../worker-startup.mjs';
+import { startMiniflare } from '../worker-startup.mjs';
 import { withDraftVersion } from '../draft-version-helper.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { providerSettingsGuideFlow } from './provider-settings-guide-flow.mjs';
@@ -27,7 +27,7 @@ const {unstable_getMiniflareWorkerOptions}=require('wrangler');
  * external network edge. Sign-in, preferences, publish and log reads are real. */
 export async function mailSettingsBrowserFlow(t){
   await readBuiltWorkerArtifact();
-  const port=await reservePort({label:'mail settings browser'}),origin=`http://127.0.0.1:${port}`,pageOrigin=`http://localhost:${port}`;
+  let origin, pageOrigin;
   const options=unstable_getMiniflareWorkerOptions(resolve('dist/server/wrangler.json'));
   const {modulesRules,...workerOptions}=options.workerOptions;
   async function moduleFiles(directory){
@@ -43,7 +43,7 @@ export async function mailSettingsBrowserFlow(t){
   modules.sort((a,b)=>a.path===options.main?-1:b.path===options.main?1:a.path.localeCompare(b.path));
   const messages=[];
   let runtime,browser;
-  const bindings={...options.workerOptions.bindings,...smsBindings,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'localhost',LAMP_LOCAL_ORIGIN:origin,AUTH_ORIGIN:origin,AUTH_LOCAL:'true',
+  const bindings={...options.workerOptions.bindings,...smsBindings,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'localhost',AUTH_LOCAL:'true',
     SETUP_OPERATOR_EMAIL:'synthetic-lamp-owner@example.test',SESSION_SECRET:'synthetic-lamp-ui-session-1'.repeat(3),SETUP_TOKEN:'synthetic-lamp-ui-setup-1'.repeat(3),
     RESEND_WEBHOOK_SECRET:`whsec_${incidentBrowserReceiptKey.toString('base64url')}`,SUBSCRIBER_TOKEN_SECRET:'synthetic-lamp-ui-subscriber-1'.repeat(3),WEBHOOK_SIGNING_SECRET:'synthetic-lamp-ui-webhook-1'.repeat(3),
     MAIL_FROM_ADDRESS:'lamp@example.test',MAIL_PROVIDER:'resend',MAIL_PROVIDER_API_KEY:'synthetic-lamp-ui-resend-1',MAIL_SECONDARY_PROVIDER:'mailgun',MAIL_SECONDARY_API_KEY:'synthetic-lamp-ui-mailgun-1'};
@@ -57,7 +57,15 @@ export async function mailSettingsBrowserFlow(t){
     throw new Error(`Unexpected mail UI provider edge: ${url.origin}${url.pathname}`);
   };
   try{
-    runtime=new Miniflare(convertV4MiniflareOptions({port,inspectorPort:0,workers:[{...workerOptions,modules,modulesRoot:dirname(options.main),bindings,outboundService},...options.externalWorkers]}));
+    runtime = await startMiniflare({
+      label: 'mail settings browser',
+      create(port) {
+        origin = `http://127.0.0.1:${port}`;
+        pageOrigin = `http://localhost:${port}`;
+        const localBindings = { ...bindings, LAMP_LOCAL_ORIGIN: origin, AUTH_ORIGIN: origin };
+        return new Miniflare(convertV4MiniflareOptions({port,inspectorPort:0,workers:[{...workerOptions,modules,modulesRoot:dirname(options.main),bindings:localBindings,outboundService},...options.externalWorkers]}));
+      },
+    });
     const env=await runtime.getBindings();
     await migrate(env.DB);
     await executeSql(env.DB,`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000091','synthetic-lamp-owner@example.test','Synthetic Lamp owner','owner','active',${Date.now()});

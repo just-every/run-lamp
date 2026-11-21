@@ -14,8 +14,8 @@ export function renderNotificationUpdate(input: IncidentUpdateRenderInput & { in
 
 /** Freeze each native maintenance notice's wording at publication. Legacy and
  * imported title-only windows have no wording; their content is unchanged. */
-export function renderMaintenanceWording(input: { reference: string; title: string; affectedAudience: string | null; customerImpact: string | null }): string {
-  const heading = `${input.reference}: ${input.title}`;
+export function renderMaintenanceWording(input: { reference?: string; title: string; affectedAudience: string | null; customerImpact: string | null }): string {
+  const heading = input.reference ? `${input.reference}: ${input.title}` : input.title;
   if (input.affectedAudience === null && input.customerImpact === null) return heading;
   if (input.affectedAudience === null || input.customerImpact === null) throw new Error("Maintenance wording must contain both statements.");
   return [heading, ...renderImpactWording({ affectedAudience: input.affectedAudience, customerImpact: input.customerImpact }).map(field => `${field.label}: ${field.value}`)].join("\n\n");

@@ -4492,7 +4492,7 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "68d9ef8818ecd86f9bee762ebabd73c749073e726f406839f8b2a39fc26b482f",
+      "sha256": "29aaab26afa3dcdde2a2520c857d55a70f63056c1605a024767667c1d6b75a04",
       "executable": false
     },
     "src/core/app/types.ts": {
@@ -4928,7 +4928,7 @@
       "executable": false
     },
     "src/core/features/deliveries/service.ts": {
-      "sha256": "d9817c77fd79c25676fe9a2cd2f3527961b1ce6c7a85c9b4cae7eb33378dd582",
+      "sha256": "044cbfeda588e9976f54353af8c559a0fe25d264b8453f4548155e1fa8cee289",
       "executable": false
     },
     "src/core/features/deliveries/ses-events.ts": {
@@ -5148,7 +5148,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/incident-preview.tsx": {
-      "sha256": "209e115a6b4559803efc9d9f6df56ae895ec960f0fe3da0ebcb2a9a12cd2415a",
+      "sha256": "11d29ffb739e30a68e281f2a34d2b7668c61ff4485832fc706246ec58a49eac7",
       "executable": false
     },
     "src/core/features/incidents/ui/incident-record.tsx": {
@@ -5424,11 +5424,11 @@
       "executable": false
     },
     "src/core/features/maintenance/routes.ts": {
-      "sha256": "7839bf3f5e255bbe133a3cc4a545271a5b5a517b130c3a770be232695aadbe01",
+      "sha256": "a51aa42d88d6bf59eda8b1b8c6906f1c3572db94a1f1034bd0f4b8f775e5202c",
       "executable": false
     },
     "src/core/features/maintenance/service.ts": {
-      "sha256": "d6525c384940214ca91e423da23606c1d61e4da070492bedaf604b89078390ab",
+      "sha256": "ca517c4f9d0f1da909dbbd5fad8a3b7dd505270ab576aac465096e904ed6176e",
       "executable": false
     },
     "src/core/features/maintenance/ui/automation-default-card.tsx": {
@@ -5444,7 +5444,11 @@
       "executable": false
     },
     "src/core/features/maintenance/ui/maintenance-page.tsx": {
-      "sha256": "d17278a04187611eddfae79183c331541b69121223bdc865644a971c2cf15abc",
+      "sha256": "ff108153a9c0a1d5bd6616fbb3c3a14013faff60cdd42a6de6a8a72dffbb3e8c",
+      "executable": false
+    },
+    "src/core/features/maintenance/ui/scheduled-notice-preview.tsx": {
+      "sha256": "c9bfd9f72050f209ca7b34f513e739729b830915b7be96d3b4c214a619d4bc3b",
       "executable": false
     },
     "src/core/features/maintenance/ui/window-time.ts": {
@@ -5544,7 +5548,7 @@
       "executable": false
     },
     "src/core/features/operators/permissions.ts": {
-      "sha256": "5f3cfd9a6ab2515b21e3098c8382b63752144ddaa1f4e0687aab6b0251c99c95",
+      "sha256": "66dc1c54474e43966b2112358a6e6d8a5a29ea8a1d58f3122154d0f93a78d1fe",
       "executable": false
     },
     "src/core/features/operators/repository.ts": {
@@ -5968,7 +5972,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/format.ts": {
-      "sha256": "6671df7b1eae3fa26495bef1b28a45148a57afec3339ef55043111d6fe2c3ce6",
+      "sha256": "d2fdf601bdfacfa1607fc354fd7db028df80d81c493a4557a3d808b4a166b8d2",
       "executable": false
     },
     "src/core/features/public-snapshot/generation-cache.ts": {
@@ -7212,7 +7216,7 @@
       "executable": false
     },
     "src/core/shared/maintenance-notice.ts": {
-      "sha256": "3f76a502d7f5e8a5508f70a81ada37b2447354651c621c7c98e8ed26b79fe4ff",
+      "sha256": "4378c6dbce175b1963bcafc6a3fc4e46103c9b4d4cca25e0ad15100892690645",
       "executable": false
     },
     "src/core/shared/page-theme.ts": {
@@ -7252,7 +7256,7 @@
       "executable": false
     },
     "src/core/shared/update-renderer.ts": {
-      "sha256": "6cfee85bfe85de1b2c6caa77125ea2321dec9cb20214a81db8e040534c69a15d",
+      "sha256": "02f858db0ea4043c8e298a344ca9d11da754c713478b251ed21ffd2e5a0e10bd",
       "executable": false
     },
     "src/core/shared/widget-appearance.ts": {
@@ -8104,7 +8108,7 @@
       "executable": false
     },
     "tests/chat-desk/runtime.mjs": {
-      "sha256": "f8025a517125e5d8461efa2655fd2f074eed0c8fdef2491deb86e9515a90c8b2",
+      "sha256": "1ff651916b04df49a6801ae0c14fa4dda11240056909cfbf1226b113924c7b2e",
       "executable": false
     },
     "tests/chat-desk/settings-browser-flow.mjs": {
@@ -8204,7 +8208,7 @@
       "executable": false
     },
     "tests/e2e/helpers/audience-pages-flow.mjs": {
-      "sha256": "8d7ec0881b13f3a43a6851f5276e28f549d0bb701f9d46f5f9570097c014efc3",
+      "sha256": "2f5901874b2d21b3c4caa9a04775a90ece5762b8063d062f40a2d027271bcf63",
       "executable": false
     },
     "tests/e2e/helpers/audit-labels-flow.mjs": {
@@ -8263,6 +8267,10 @@
       "sha256": "d79dff3def9bb8b0b0ae11c9585df9f60d6b934f75014edce2148ea118ec587d",
       "executable": false
     },
+    "tests/e2e/helpers/complete-route.mjs": {
+      "sha256": "22b33c239c0dcc22bb574479875177d10a0445cc95e7aab9d80028382d7313ca",
+      "executable": false
+    },
     "tests/e2e/helpers/component-notification-flow.mjs": {
       "sha256": "f85d9d6b71d88807d2382ce7b3701db0ee4d98a9b6a2e4863751e8da15a81d3f",
       "executable": false
@@ -8308,7 +8316,7 @@
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-runtime.mjs": {
-      "sha256": "a2a8c533af53f6e87861ec2e1fb899d2203794e2d350d6faab786d4b223ea989",
+      "sha256": "7ae55dc17e450079a6d82b5eccb796a992cdc3d132b90c2ee88b4d1385fc4998",
       "executable": false
     },
     "tests/e2e/helpers/follow-ups-worker.ts": {
@@ -8424,7 +8432,7 @@
       "executable": false
     },
     "tests/e2e/helpers/mail-settings-browser-flow.mjs": {
-      "sha256": "aabf4c16940aff15e017a22ce7a9e18892bf97db266877409a748404f0377026",
+      "sha256": "e510bbe1a695df38d2d441878350f53b7982dab5fe49e41cfaa3ed5cce919228",
       "executable": false
     },
     "tests/e2e/helpers/maintenance-browser-flow.mjs": {
@@ -8436,7 +8444,7 @@
       "executable": false
     },
     "tests/e2e/helpers/maintenance-notices-flow.mjs": {
-      "sha256": "15b409f8932868d5091bd39b9e5e6b1765150d75933f972fd6a96fc6a0bfc963",
+      "sha256": "6d23ac8f2b8207bbecc1759d8bf863d657fc3daea6d6d1078f5842d88fdc81ab",
       "executable": false
     },
     "tests/e2e/helpers/metric-setup-journey.mjs": {
@@ -8464,7 +8472,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operations-credentials-browser-flow.mjs": {
-      "sha256": "1fd73f3c1cbded231c8c3d8d24d138f1431fc8591be19e3310cdf71eced1d187",
+      "sha256": "069ae6380d88bd99bfc5d8243bbef8f8c01ba3bdeff0d11da3f3c1027a18ba1f",
       "executable": false
     },
     "tests/e2e/helpers/operator-attribution.mjs": {
@@ -8484,7 +8492,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operator-management-flow.mjs": {
-      "sha256": "b22b11dd438ca8f1ec1a42ea1339fab89b2bd3fcab7109456eb9b0b020b6de76",
+      "sha256": "9c875d8c6764b16470131cf96b38b01eee71bc82a26b1293e1bd00e1919630e6",
       "executable": false
     },
     "tests/e2e/helpers/operator-role-actors.mjs": {
@@ -8504,7 +8512,7 @@
       "executable": false
     },
     "tests/e2e/helpers/per-update-channels-flow.mjs": {
-      "sha256": "83771cfdb70e7834d7d599ecd222ce5be8ca34263b67c9e8a104fe8603056e9c",
+      "sha256": "f63eeaaef4480c3278c92a7b70c8510eb32a773fb4c3d02ef03af905b0be4440",
       "executable": false
     },
     "tests/e2e/helpers/phone-desk-flow.mjs": {
@@ -8568,7 +8576,7 @@
       "executable": false
     },
     "tests/e2e/helpers/self-serve-chat-flow.mjs": {
-      "sha256": "2427bba37e431072b760569322bfe5183c177aefc6e2fe639a013fb04e11cc8e",
+      "sha256": "b2bcadf92b368d2645cde20ea0514a60da6e2ee8417314954649426c8f3324a7",
       "executable": false
     },
     "tests/e2e/helpers/setup-page-branding.mjs": {
@@ -8628,7 +8636,7 @@
       "executable": false
     },
     "tests/e2e/helpers/status-journey.mjs": {
-      "sha256": "d299dc3024673a6cf55f5995b6ecc299116e55f8c6409a59b2b5eb8ed38beb35",
+      "sha256": "7c2210c8154e641b85b68cd5fe6d49de2841bea5b9bd5c65028867c137542d71",
       "executable": false
     },
     "tests/e2e/helpers/status-journey.worker.ts": {
@@ -8652,7 +8660,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-channels-flow.mjs": {
-      "sha256": "129c06520ff3a5b3167f9fe45b108353867a6e3b942fe4b7e7b3abd635d947a8",
+      "sha256": "a0f16f5901af65d786281319a8a4bc29005be37eecc8acd7d4fcfacee1077174",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-components-flow.mjs": {
@@ -8676,7 +8684,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-intake-browser-flow.mjs": {
-      "sha256": "f78d4a43aa9784e0c0676edd003298ceb4eb12e83accc5825f54b85e3ee2fc0a",
+      "sha256": "f9b2f5ec8e6cb40484bbf43eaae61177650402db108df21d1ae15fbf797e465b",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-limits-flow.mjs": {
@@ -8692,7 +8700,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-preferences-flow.mjs": {
-      "sha256": "9730ada27c9ca159a6cdca1cd3bb5528a574440f9ce2036cf9217e94c8409480",
+      "sha256": "40ee09905910dbe8a101a582444a50a0dd9a7a6531a5ee53b8382804f107d36f",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-public-consent-flow.mjs": {
@@ -8732,11 +8740,11 @@
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-flow.mjs": {
-      "sha256": "2858f070391b6f849e2a4bd6e81c610a29fbfa75cdb85f787d9e2affacb77450",
+      "sha256": "8b1c8fdc5ff3afaf6f4036e6a2da9a3363f61a642bf28f59ca0bd1de8718914f",
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-runtime.mjs": {
-      "sha256": "5bb2bd7409371dbc383800032c0699367def3ceed0b47e2b05dac282e0d8b091",
+      "sha256": "49b044ede3725b8518ab09c43914b27329a2a0ba424b62dc8a2d6c2dde8bec78",
       "executable": false
     },
     "tests/e2e/helpers/traffic-resolution-flow.mjs": {
@@ -8804,11 +8812,11 @@
       "executable": false
     },
     "tests/e2e/independent-release.test.mjs": {
-      "sha256": "120615a9858c03091c57f0df30b313362428f031f677d24bfb1d7dcf6c219eba",
+      "sha256": "b83a6c42b56b299bb20935bcae0968f5b0ef085222880daf1ad0af4e17d97326",
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
-      "sha256": "565ba840b98906d483f7eca16f77084c3b9d1ba2a8e693b1db066467e969e119",
+      "sha256": "f473ce345820ee6851b012ce0d258d4b5c5c9b4f0ca0f1c0c0842a06c29b167a",
       "executable": false
     },
     "tests/e2e/owned-process-group.mjs": {
@@ -8816,7 +8824,7 @@
       "executable": false
     },
     "tests/e2e/page-data.test.mjs": {
-      "sha256": "ef4848e52a62e943c3b198dc149b6e97046ececf260c91b517de05ccabcbb176",
+      "sha256": "bd498fe504108d3b0853ec75fd7e82c7aee0b6bfae925db8c41313915c63c0ef",
       "executable": false
     },
     "tests/e2e/prior-backup.test.mjs": {
@@ -8828,11 +8836,11 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "9bb85e903a8138454ff81244f777356a321d26dbdf955e7fab024884cb46564e",
+      "sha256": "e6c1127368b10380b9de3e4fa7e701d22ba7a677bac9c11bc2f898603a9f3699",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "32e62dba23f5a59b0af3640ce37eef86eddca136967cd59ed7f7aa151c2798d6",
+      "sha256": "1918fdfd88a04363b07faffdbf041feb2b2deeec4082191f338de50674f94581",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
@@ -8848,7 +8856,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "3fb4c9fab08512778b398a8dbbba37d9a7034a769e3dbc2f27950acc7fd29a6e",
+      "sha256": "f5e82f6f43500235ee513e99b2632cda25a061dd203e243ee611508c9563c811",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {
@@ -8900,7 +8908,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "2b0dc94b1740d4c15725b5a61ed89d435a06b66d2eebbcd5daa1abc2453be465",
+      "sha256": "7e9480b763732a774b31fb13cc90d1c418c8ee0be86a1443ef1ed3372cf8393c",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
@@ -8924,7 +8932,7 @@
       "executable": false
     },
     "tests/e2e/worker-startup.mjs": {
-      "sha256": "2a10c2c14472472a858ba40caca4204415093256473c2ba29989f463597deb75",
+      "sha256": "3670306702e5801a0566e113cac8271807ed511a87694d1afcdec6400ddd3c34",
       "executable": false
     },
     "tests/fixtures/archive/listed-c5dab715.rer": {
@@ -10128,7 +10136,7 @@
       "executable": false
     },
     "tests/health-version.mjs": {
-      "sha256": "e7c18ab0c6733a1fc7f3dd97380379d525447b5cc6aef9c55189ead2b5a68825",
+      "sha256": "22dc642a0eec41eadd08b885398f02ef6dcb90b9671ef576b36c09111227b581",
       "executable": false
     },
     "tests/helpers/applied-styles.mjs": {

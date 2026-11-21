@@ -201,17 +201,52 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     }
 
     await review(incident.id);
-    const reviewedMonitoring = await j.read(incident.id);
+    // The native incident read previews the saved draft without resubmitting its choices.
+    const { incident: reviewedMonitoring, preview: monitoringPreview } = await j.json(endpoint);
     assert.equal(reviewedMonitoring.draft.lifecycle, 'Monitoring');
     assert.ok(reviewedMonitoring.draft.reviewedAt);
     assert.equal(reviewedMonitoring.lifecycle, 'Identified');
     assert.deepEqual(reviewedMonitoring.updates, identified.updates);
     assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+    for (const item of [component, hidden]) {
+      assert.equal(reviewedMonitoring.draft.componentChanges.find(change => change.componentId === item.id)?.state, 'Degraded performance');
+    }
+    const { affectedAudience, customerImpact, whatStillWorks, details, nextUpdateAt } = monitoringDraftInput;
+    const componentLine = `${component.name}: Down → Slow`;
+    const monitoringFields = [
+      ['Who is affected', affectedAudience], ['Customer impact', customerImpact],
+      ['What still works', whatStillWorks], ['Next update by', brisbaneTime(nextUpdateAt)],
+      ['Additional details', details],
+    ];
+    const monitoringDisplayFields = monitoringFields.map(([label, value]) =>
+      [label, label === 'Next update by' ? brisbaneTime(nextUpdateAt, 'Brisbane time') : value]);
+    assert.equal(monitoringPreview.public.heading, incident.reference + ': ' + incident.title);
+    assert.equal(monitoringPreview.public.lifecycle, 'Monitoring');
+    assert.deepEqual(monitoringPreview.public.fields, [
+      ...monitoringDisplayFields.map(([label, value]) => label === 'Next update by'
+        ? { label, value, instant: nextUpdateAt }
+        : { label, value }),
+      { label: 'Component state', value: componentLine },
+    ]);
+    assert.ok(!JSON.stringify(monitoringPreview.public).includes(hidden.name));
+
     const consumedDraftId = reviewedMonitoring.draft.id;
     const priorUpdateCount = reviewedMonitoring.updates.length;
-    const monitoring = (await j.publish(incident.id)).update;
+    const mailBeforeMonitoring = j.messages.length;
+    const monitoring = (await j.publish(incident.id, { channels: ['email'] })).update;
     assert.equal(monitoring.id, consumedDraftId);
     assert.equal(monitoring.lifecycle, 'Monitoring');
+    assert.deepEqual(
+      [monitoring.affectedAudience, monitoring.customerImpact, monitoring.whatStillWorks, monitoring.details, monitoring.nextUpdateAt],
+      [affectedAudience, customerImpact, whatStillWorks, details, nextUpdateAt],
+      'the committed wording and commitment match the submitted draft',
+    );
+    assert.deepEqual(monitoring.componentChanges.filter(change => !change.internal), [{
+      componentId: component.id, name: component.name, previousState: 'Major outage', newState: 'Degraded performance', internal: false,
+    }]);
+    assert.ok(monitoring.componentChanges.some(change => change.componentId === hidden.id
+      && change.internal && change.previousState === 'Major outage' && change.newState === 'Degraded performance'),
+      'the internal transition is in the committed update');
     const publishedMonitoring = await j.read(incident.id);
     assert.equal(publishedMonitoring.lifecycle, 'Monitoring');
     assert.equal(publishedMonitoring.draft, null);
@@ -221,6 +256,34 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(monitoringUpdates.length, identifiedUpdates.length + 1);
     assert.deepEqual(monitoringUpdates.filter(row => row.id !== monitoring.id), identifiedUpdates);
     assert.equal(monitoringUpdates.find(row => row.id === monitoring.id).lifecycle, 'Monitoring');
+
+    await j.tick(Date.now());
+    const monitoringReach = await eventually(() => j.json(`${endpoint}/reach?updateId=${monitoring.id}`),
+      body => body.updates[0].channels.some(row => row.channel === 'email' && row.providerAccepted === 1),
+      'the committed Monitoring update reaches the confirmed reader');
+    assert.equal(monitoringReach.updates[0].channels.find(row => row.channel === 'email').committed, 1);
+    const monitoringMessages = j.messages.slice(mailBeforeMonitoring).filter(mail => mail.to.includes(subscriber));
+    assert.equal(monitoringMessages.length, 1);
+    const [monitoringMail] = monitoringMessages;
+    assert.equal(monitoringMail.subject, monitoringPreview.email.subject);
+    assert.equal(monitoringMail.text.split('\n\nManage this subscription:')[0], monitoringPreview.email.plainText);
+
+    for (const [surface, body, fields] of [
+      ['email preview text', monitoringPreview.email.plainText, monitoringFields],
+      ['received email text', monitoringMail.text, monitoringFields],
+      ['email preview HTML', monitoringPreview.email.html, monitoringDisplayFields],
+      ['received email HTML', monitoringMail.html, monitoringFields],
+    ]) {
+      assert.ok(!body.includes(hidden.name), `${surface}: the internal component is absent`);
+      const text = surface.endsWith('HTML')
+        ? nodeText(descendants(parse(body)).find(node => node.tagName === 'div'))
+        : body;
+      assertPublicationText(text, incident, monitoring, fields, surface);
+      assert.deepEqual(text.split('\n\n').filter(paragraph => paragraph.startsWith('Component state:')),
+        [`Component state: ${componentLine}`], surface);
+      assert.ok(!text.includes(hidden.name), `${surface}: the internal component is absent from readable content`);
+    }
+    t.diagnostic('PROBE UPDATE-015 1: review saved public and internal changes and publish to email -> preview, committed update and captured email agree on the submitted wording and public step-down, with the internal component excluded from customer content');
 
     await owner();
     const staleSave = await j.api(`${endpoint}/draft`, {

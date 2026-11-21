@@ -1,6 +1,7 @@
 import {secret as sessionSecret} from '../auth-adoption/runtime.mjs';
 import {setupPageSettingsStatement} from '../../scripts/ops-config.mjs';
 import test from 'node:test';
+import { startMiniflare } from './worker-startup.mjs';
 import {openStatusJourney} from './helpers/status-journey.mjs';
 import {unstable_splitSqlQuery} from 'wrangler';
 import assert from 'node:assert/strict';
@@ -43,15 +44,26 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const raw=new Map(await Promise.all([...artifact.modules,...artifact.assets].map(async item=>[item.payload,await readFile(resolve(dirname(artifactPath),item.payload))])));
   const mail=[];
   const secret='test-bootstrap-secret-'.repeat(3);
-  const bindings={...artifact.deploymentSpec.publicVariables,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'status.lamp.test',SETUP_TOKEN:secret,SESSION_SECRET:sessionSecret,SETUP_OPERATOR_EMAIL:'owner@example.test',AUTH_ORIGIN:'http://127.0.0.1:12402',AUTH_LOCAL:'true',MAIL_PROVIDER:'resend',MAIL_FROM_ADDRESS:'status@example.test',MAIL_PROVIDER_API_KEY:'test-only-provider',SUBSCRIBER_TOKEN_SECRET:'test-subscriber-secret-'.repeat(3),WEBHOOK_SIGNING_SECRET:'test-webhook-secret-'.repeat(3),RER_INSTALLATION_ID:'independent-local'};
+  const bindings={...artifact.deploymentSpec.publicVariables,LAMP_APP_HOST:'127.0.0.1',LAMP_PAGE_HOST:'status.lamp.test',SETUP_TOKEN:secret,SESSION_SECRET:sessionSecret,SETUP_OPERATOR_EMAIL:'owner@example.test',AUTH_LOCAL:'true',MAIL_PROVIDER:'resend',MAIL_FROM_ADDRESS:'status@example.test',MAIL_PROVIDER_API_KEY:'test-only-provider',SUBSCRIBER_TOKEN_SECRET:'test-subscriber-secret-'.repeat(3),WEBHOOK_SIGNING_SECRET:'test-webhook-secret-'.repeat(3),RER_INSTALLATION_ID:'independent-local'};
   const modules=artifact.modules.map(module=>({type:module.type==='esm'?'ESModule':module.type==='compiled-wasm'?'CompiledWasm':'Text',path:module.name,contents:module.type==='compiled-wasm'?raw.get(module.payload):raw.get(module.payload).toString()}));
   modules.sort((a,b)=>a.path===artifact.mainModule?-1:b.path===artifact.mainModule?1:0);
-  const runtimeOptions={port:12402,name:'lamp-independent',modules,compatibilityDate:artifact.deploymentSpec.compatibilityDate,compatibilityFlags:artifact.deploymentSpec.compatibilityFlags,bindings,d1Databases:{DB:'lamp-independent-db'},r2Buckets:{SNAPSHOTS:'lamp-independent-snapshots'},durableObjects:{SNAPSHOT_CACHE:{className:'SnapshotCache',useSQLite:true}},queueProducers:{JOBS:'lamp-independent-jobs'},resourcePersistencePath:join(temporary,'state'),serviceBindings:{ASSETS:async request=>{const asset=artifact.assets.find(asset=>asset.path===new URL(request.url).pathname);return asset?new Response(raw.get(asset.payload),{headers:{'Content-Type':asset.contentType}}):new Response(null,{status:404});}},outboundService:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com','unexpected external request');mail.push(await request.json());return Response.json({id:'test-only-mail-'+mail.length});}};
-  const options=convertV4MiniflareOptions(runtimeOptions);
-  runtime=new Miniflare(options);
+  const runtimeOptions={name:'lamp-independent',modules,compatibilityDate:artifact.deploymentSpec.compatibilityDate,compatibilityFlags:artifact.deploymentSpec.compatibilityFlags,d1Databases:{DB:'lamp-independent-db'},r2Buckets:{SNAPSHOTS:'lamp-independent-snapshots'},durableObjects:{SNAPSHOT_CACHE:{className:'SnapshotCache',useSQLite:true}},queueProducers:{JOBS:'lamp-independent-jobs'},resourcePersistencePath:join(temporary,'state'),serviceBindings:{ASSETS:async request=>{const asset=artifact.assets.find(asset=>asset.path===new URL(request.url).pathname);return asset?new Response(raw.get(asset.payload),{headers:{'Content-Type':asset.contentType}}):new Response(null,{status:404});}},outboundService:async request=>{assert.equal(new URL(request.url).hostname,'api.resend.com','unexpected external request');mail.push(await request.json());return Response.json({id:'test-only-mail-'+mail.length});}};
+  let origin, appPort;
+  const startRuntime = (overrides, firstPort) => startMiniflare({
+    label: 'independent release Worker',
+    firstPort,
+    create(port) {
+      appPort = port;
+      origin = `http://127.0.0.1:${port}`;
+      return new Miniflare(convertV4MiniflareOptions({
+        ...runtimeOptions, port, bindings: { ...bindings, ...overrides, AUTH_ORIGIN: origin },
+      }));
+    },
+  });
+  runtime = await startRuntime();
   const db=await runtime.getD1Database('DB');
   for(const migration of artifact.deploymentSpec.migrations)await db.batch(unstable_splitSqlQuery(migration.sql).map(sql=>db.prepare(sql)));
-  const request=(path,init={})=>fetch('http://127.0.0.1:12402'+path,{redirect:'manual',...init,headers:{Origin:'http://127.0.0.1:12402',...init.headers}});
+  const request=(path,init={})=>fetch(origin+path,{redirect:'manual',...init,headers:{Origin:origin,...init.headers}});
   const publicRequest=(path,init={})=>runtime.dispatchFetch('https://status.lamp.test'+path,init);
   assert.equal((await request('/health')).status,200);
   assert.equal((await request('/setup/status')).status,409);
@@ -98,8 +110,9 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
   const component=await request('/api/app/components',{method:'POST',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify({name:'Owner API',description:'Persistent independent component',groupId:null,internal:false,displayOrder:0,note:''})});
   assert.equal(component.status,201,await component.text());
   assert.match(await (await publicRequest('/')).text(),/Owner API/);
-  await runtime.dispose();runtime=undefined;
-  runtime=new Miniflare(options);await runtime.ready;
+  await runtime.dispose();
+  runtime = undefined;
+  runtime = await startRuntime({}, appPort);
   assert.equal((await request('/auth/bootstrap',setup)).status,409,'restart must never reopen bootstrap');
   assert.equal((await request('/api/app/session',{headers:{Cookie:cookie}})).status,200,'real persisted session survives restart');
   assert.match(await (await publicRequest('/')).text(),/Owner API/);
@@ -108,9 +121,10 @@ test('ACCESS-001 SETUP-002 — a packaged installation refuses missing deploy au
 
   await runtime.dispose();runtime=undefined;
   const previewSecret='synthetic-preview-authority', releaseDigest='synthetic-release-identity';
-  runtime=new Miniflare(convertV4MiniflareOptions({...runtimeOptions,bindings:{...bindings,RER_PREVIEW_TOKEN:previewSecret,RER_RELEASE_DIGEST:releaseDigest,RER_VERSION_METADATA:{id:'synthetic-build'}}}));
-  await runtime.ready;
-  const preview=(path,headers={})=>runtime.dispatchFetch('http://127.0.0.1:12402'+path,{headers,redirect:'manual'});
+  runtime = await startRuntime({
+    RER_PREVIEW_TOKEN: previewSecret, RER_RELEASE_DIGEST: releaseDigest, RER_VERSION_METADATA: { id: 'synthetic-build' },
+  }, appPort);
+  const preview=(path,headers={})=>runtime.dispatchFetch(origin+path,{headers,redirect:'manual'});
   assert.equal((await preview('/signin')).status,401,'an uninvited preview visitor cannot reach application or assets');
   const assetPath=artifact.assets.find(asset=>asset.path.endsWith('.js')).path;
   assert.equal((await preview(assetPath)).status,401);

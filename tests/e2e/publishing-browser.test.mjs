@@ -1,4 +1,5 @@
 import { audiencePagesBrowserFlow } from "./helpers/audience-pages-browser.mjs";
+import { completeRoute } from "./helpers/complete-route.mjs";
 import { incidentCorrectionsFlow } from "./helpers/incident-corrections-flow.mjs";
 import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
 import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
@@ -539,7 +540,7 @@ async function assertAutosaveDuringRefresh({ page, api, openIncident, assertPriv
     refreshEntered();
     await released;
     timings.refreshDelivered = Date.now();
-    await route.fulfill({ response });
+    await completeRoute(() => route.fulfill({ response }));
   });
   try {
     await composer.row("Notes");
@@ -629,7 +630,7 @@ async function assertQueuedAutosaveDeadline({ page, api, openIncident, assertPri
     timings.earlierPersisted = Date.now();
     enteredFirst();
     await release;
-    await route.fulfill({ response });
+    await completeRoute(() => route.fulfill({ response }));
   });
   try {
     await observeAutosaveAcknowledgement(endpoint, "queuedAutosaveProbe");

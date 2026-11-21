@@ -7,7 +7,7 @@ import { chromium } from 'playwright';
 import { expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { readBuiltWorkerArtifact } from '../../../scripts/build-output.mjs';
-import { reservePort } from '../worker-startup.mjs';
+import { startMiniflare } from '../worker-startup.mjs';
 import { migrate, executeSql } from '../../reference-storage/runtime.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 import { subscriberCsv, subscriberCsvRows, eventuallySubscriber } from './subscriber-management-fixture.mjs';
@@ -21,8 +21,7 @@ const address = name => [name, 'example.test'].join('@');
  * and receiver transports are synthetic; no browser request is fulfilled by a fake. */
 export async function subscriberIntakeBrowserFlow(t) {
   await readBuiltWorkerArtifact();
-  const port = await reservePort({ label: 'subscriber intake browser' });
-  const origin = `http://127.0.0.1:${port}`, publicOrigin = `http://localhost:${port}`;
+  let origin, publicOrigin;
   const options = unstable_getMiniflareWorkerOptions(resolve('dist/server/wrangler.json'));
   const { modulesRules, ...workerOptions } = options.workerOptions;
   async function moduleFiles(directory) {
@@ -38,7 +37,7 @@ export async function subscriberIntakeBrowserFlow(t) {
   modules.sort((a, b) => a.path === options.main ? -1 : b.path === options.main ? 1 : a.path.localeCompare(b.path));
   const messages = [];
   let runtime, browser, page;
-  const bindings = { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: origin, AUTH_ORIGIN: origin, AUTH_LOCAL: 'true',
+  const bindings = { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', AUTH_LOCAL: 'true',
     SETUP_OPERATOR_EMAIL: address('synthetic-lamp-owner'), SESSION_SECRET: 'synthetic-lamp-intake-session-1'.repeat(3), SETUP_TOKEN: 'synthetic-lamp-intake-setup-1'.repeat(3),
     SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-intake-subscriber-1'.repeat(3), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-intake-webhook-1'.repeat(3),
     MAIL_FROM_ADDRESS: address('synthetic-lamp-sender'), MAIL_PROVIDER: 'resend', MAIL_PROVIDER_API_KEY: 'synthetic-lamp-intake-mail-1' };
@@ -51,7 +50,15 @@ export async function subscriberIntakeBrowserFlow(t) {
     throw new Error(`Unexpected subscriber intake network edge: ${url.origin}${url.pathname}`);
   };
   try {
-    runtime = new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, workers: [{ ...workerOptions, modules, modulesRoot: dirname(options.main), bindings, outboundService }, ...options.externalWorkers] }));
+    runtime = await startMiniflare({
+      label: 'subscriber intake browser',
+      create(port) {
+        origin = `http://127.0.0.1:${port}`;
+        publicOrigin = `http://localhost:${port}`;
+        const localBindings = { ...bindings, LAMP_LOCAL_ORIGIN: origin, AUTH_ORIGIN: origin };
+        return new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, workers: [{ ...workerOptions, modules, modulesRoot: dirname(options.main), bindings: localBindings, outboundService }, ...options.externalWorkers] }));
+      },
+    });
     const env = await runtime.getBindings();
     await migrate(env.DB);
     await executeSql(env.DB, `INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES('01J00000000000000000000091','${address('synthetic-lamp-owner')}','Synthetic Lamp owner','owner','active',${Date.now()});
