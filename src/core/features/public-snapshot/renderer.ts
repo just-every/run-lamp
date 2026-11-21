@@ -251,7 +251,13 @@ function renderHistory(model: ReturnType<typeof toPublicModel>, slots: LampServe
 export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null; iconDataUrl?: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}): RenderedSnapshot {
   const model = toPublicModel(source, generatedAt, policies);
   const dependencies = source.dependencies ?? [];
-  const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => `<article class="component"><div class="component-name"><h3>${escapeHtml(row.name)}</h3><p><a href="${escapeHtml(row.statusPageUrl)}">Reported by ${escapeHtml(row.vendorName)}</a></p><p>${escapeHtml(row.state ? componentStateLabel(row.state) : "Waiting for first read")}</p>${row.unavailableAt ? `<p>Vendor status unavailable since ${timestamp(row.unavailableAt, model.settings.timezone)}. Last reported: ${escapeHtml(row.state ? componentStateLabel(row.state) : "No observation")}.</p>` : ""}</div></article>`).join("")}</section>` : "";
+  const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => {
+    const state = row.state && componentStateLabel(row.state);
+    const status = row.unavailableAt
+      ? `Vendor status unavailable since ${timestamp(row.unavailableAt, model.settings.timezone)}.${state ? ` Last reported: ${escapeHtml(state)}.` : ""}`
+      : escapeHtml(state ?? "Waiting for first read");
+    return `<article class="component"><div class="component-name"><h3>${escapeHtml(row.name)}</h3><p><a href="${escapeHtml(row.statusPageUrl)}">Reported by ${escapeHtml(row.vendorName)}</a></p><p>${status}</p></div></article>`;
+  }).join("")}</section>` : "";
   const feeds = renderFeeds(model, source);
   const artifacts: SnapshotArtifact[] = [
     { key: "page.html", body: renderPage(model, slots).replace("<footer", vendorMarkup + publicMetricsSection(model.metrics, model.visibleComponents, model.generatedAt, model.settings.timezone) + "<footer"), contentType: "text/html; charset=utf-8" },

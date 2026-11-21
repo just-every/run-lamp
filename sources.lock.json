@@ -620,7 +620,7 @@
       "executable": false
     },
     "docs/contract/public-details.md": {
-      "sha256": "4a11e76b442e5ad2e586332e8731550d709d02280ee222011de4b58762fef0a5",
+      "sha256": "1199ff5c4ecf0383ae2fe502dcca4c19ae4274194be176b56a4b7cb668196302",
       "executable": false
     },
     "docs/contract/publishing-details.md": {
@@ -4956,7 +4956,7 @@
       "executable": false
     },
     "src/core/features/dependencies/repository.ts": {
-      "sha256": "165213f5abff45292ffeab78eac1c95a649776d160c9a6492b746678e09cf436",
+      "sha256": "9baabbe38481b3be0798d0a5a4d6163344f44ad67481ddf42194c99167585b8f",
       "executable": false
     },
     "src/core/features/dependencies/routes.ts": {
@@ -6000,7 +6000,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "42df0fcb5c83c8a24efb3268914a024f288035a8f1f5fe7cd418a6dc758ed2ea",
+      "sha256": "c7297e6fe24a44de52615863de54518356ea44b74aeed382ee9100b57bf945ad",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -8716,7 +8716,7 @@
       "executable": false
     },
     "tests/e2e/helpers/vendor-dependencies-flow.mjs": {
-      "sha256": "33674e161e1d4d4e20caee0c9049a6f6e2a5ab3b06f019fc654037ea7ae8199c",
+      "sha256": "f5e287f565fa7bacbd4bc56e2dbd2315192f8675790094e167aabf8d5ed50bb4",
       "executable": false
     },
     "tests/e2e/helpers/webhook-at-most-once-flow.mjs": {

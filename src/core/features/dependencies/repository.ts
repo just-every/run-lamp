@@ -64,7 +64,13 @@ export function createDependencyRepository(db: D1Database) {
       ]);
     },
     async publicRows() {
-      return (await db.prepare(`SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,v.status_page_url AS statusPageUrl,v.mode,v.state,v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt FROM vendor_dependencies v JOIN components c ON c.id=v.component_id WHERE c.internal=0 ORDER BY v.created_at,v.id`).all<Pick<Dependency,"componentId"|"name"|"vendorName"|"statusPageUrl"|"mode"|"state"|"unavailableAt"|"lastReadAt">>()).results;
+      const { results } = await db.prepare(`SELECT v.component_id AS componentId,v.name,v.vendor_name AS vendorName,
+        v.status_page_url AS statusPageUrl,v.mode,
+        CASE WHEN v.unavailable_at IS NOT NULL AND v.state='Operational' THEN NULL ELSE v.state END AS state,
+        v.unavailable_at AS unavailableAt,v.last_read_at AS lastReadAt
+        FROM vendor_dependencies v JOIN components c ON c.id=v.component_id
+        WHERE c.internal=0 ORDER BY v.created_at,v.id`).all<Pick<Dependency,"componentId"|"name"|"vendorName"|"statusPageUrl"|"mode"|"state"|"unavailableAt"|"lastReadAt">>();
+      return results;
     },
   };
 }

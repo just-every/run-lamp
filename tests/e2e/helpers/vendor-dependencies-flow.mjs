@@ -3,6 +3,7 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { chromium } from 'playwright';
 import { openStatusJourney, eventually } from './status-journey.mjs';
 import { moveInDoor } from '../../helpers/import-notifications.mjs';
+import { expectedComponentLabels } from '../../helpers/public-meaning.mjs';
 
 /** The scheduled Worker and ordinary HTTP doors own every status change.
  * Only public vendor responses and public DNS answers are recorded fixtures. */
@@ -39,22 +40,32 @@ export async function vendorDependenciesFlow() {
     }
     const cloudflare=followed.find(row=>row.catalogId==='cloudflare'),aws=followed.find(row=>row.catalogId==='aws');
     const same=(await j.json('/api/app/dependencies','POST',{catalogId:'cloudflare',name:'synthetic-lamp-selected',options:{componentId:'synthetic-lamp-1'}},201)).dependency;
+    const customUrl = 'https://status.synthetic-lamp.test/api/v2/summary.json';
+    const customSource = { ...sources.get(cloudflare.sourceUrl) };
+    sources.set(customUrl, customSource);
+    const custom = (await j.json('/api/app/dependencies', 'POST', {
+      name: 'synthetic-lamp Edge API', sourceUrl: customUrl, format: 'statuspage',
+      options: { componentId: 'synthetic-lamp-1' },
+    }, 201)).dependency;
+    const customReport = async () => (await publicRows()).find(row => row.componentId === custom.componentId);
     await tick();
-    assert.equal(calls.length,21,'one GET per declared public source path');
+    assert.deepEqual(calls.map(row => row.url).sort(), [...sources.keys()].sort(), 'one GET per declared public source path');
     assert.ok(calls.every(row=>row.method==='GET' && !('authorization' in row.headers) && !('cookie' in row.headers)));
     assert.ok((await list()).every(row=>row.state==='Operational' && row.failures===0));
+    assert.equal((await customReport()).state, 'Operational');
     const before=calls.length;await j.tick(now+119_999);assert.equal(calls.length,before,'an early scheduled read performs no vendor request');
     const upstream=sources.get(cloudflare.sourceUrl),awsSource=sources.get(aws.sourceUrl);
     upstream.body=upstream.fixture.cases.find(row=>row.sourceState==='major_outage').body;
+    customSource.body = upstream.body;
     awsSource.body=awsSource.fixture.cases.find(row=>row.sourceState==='major_outage').body;
     const outageAt=await tick();
-    for(const row of [cloudflare,aws,same]) {
+    for(const row of [cloudflare,aws,same,custom]) {
       const current=(await list()).find(value=>value.id===row.id);assert.equal(current.state,'Major outage');
       const history=(await j.json(`/api/app/components/${row.componentId}/history`)).history;
       assert.ok(history.some(item=>item.sourceName===row.vendorName && item.sourceUrl===row.statusPageUrl && item.newState==='Major outage' && Date.parse(item.changedAt)===outageAt),'changed fixture is source-attributed within the next two-minute trigger');
     }
     const customerReports=await publicRows();
-    for(const row of [cloudflare,aws,same])assert.equal(customerReports.find(value=>value.componentId===row.componentId).state,'Major outage','changed vendor state reaches the public source read in the same trigger');
+    for(const row of [cloudflare,aws,same,custom])assert.equal(customerReports.find(value=>value.componentId===row.componentId).state,'Major outage','changed vendor state reaches the public source read in the same trigger');
     const status=async()=>(await (await j.publicResponse('/api/public/status')).json());
     assert.equal((await status()).overall,'Operational');
     assert.equal((await j.json("/api/app/components")).components.find(row=>row.id===buyer.id).publicState,'Operational');
@@ -79,26 +90,56 @@ export async function vendorDependenciesFlow() {
     assert.ok(!(await j.publicText('/')).includes('synthetic-lamp-provider-impact'));
     await j.save(incident.id,{lifecycle:'Identified',affectedAudience:'synthetic-lamp-customers',customerImpact:'synthetic-lamp-provider-impact',whatStillWorks:'synthetic-lamp-alternative',details:'synthetic-lamp-review-first'});await j.publish(incident.id);
     assert.equal((await j.json('/api/app/components')).components.find(row=>row.id===buyer.id).publicState,'Major outage');
-    upstream.body=upstream.fixture.cases.find(row=>row.expected==='Operational').body;await tick();
+    upstream.body=upstream.fixture.cases.find(row=>row.expected==='Operational').body;
+    customSource.body = upstream.body;
+    await tick();
     const recovered=await j.read(incident.id);assert.equal(recovered.lifecycle,'Identified');assert.equal(recovered.updates.length,1);
     assert.equal((await j.json('/api/app/components')).components.find(row=>row.id===buyer.id).publicState,'Major outage','vendor recovery preserves the buyer incident claim');
     const brief=(await j.json(`/api/app/incidents/${incident.id}/brief`)).brief;
     assert.ok(brief.whatWeKnow.alerts.some(row=>row.source==='Cloudflare' && row.state==='recovered' && row.payload.sourceUrl===cloudflare.statusPageUrl));
-    awsSource.status=503;await tick();await tick();const failedAt=await tick();
+    awsSource.status=503;
+    customSource.status = 503;
+    await tick();await tick();
+    assert.equal((await customReport()).unavailableAt, null, 'two failed reads leave the previous result visible');
+    const failedAt=await tick();
     const failed=(await list()).find(row=>row.id===aws.id);
     assert.equal(failed.failures,3);assert.equal(failed.state,'Major outage');assert.equal(Date.parse(failed.unavailableAt),failedAt);
     const unavailablePage=await j.visible('/','Vendor status unavailable since');
     assert.ok(unavailablePage.includes(`datetime="${failed.unavailableAt}"`),'the public unavailable notice names the first unavailable instant');
+    const customUnavailable = await customReport();
+    assert.equal(Date.parse(customUnavailable.unavailableAt), failedAt);
+    assert.equal(customUnavailable.state, null, 'an unavailable Statuspage source cannot report stale Operational');
+    assert.equal((await list()).find(row => row.id === custom.id).state, 'Operational', 'the last real observation stays on the operator record');
     if(process.env.LAMP_DEP_SCREENSHOTS) {
       await mkdir(process.env.LAMP_DEP_SCREENSHOTS,{recursive:true});
-      browser=await chromium.launch({headless:true,executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
-      const page=await browser.newPage({viewport:{width:1440,height:1000}});await page.goto(j.publicOrigin);
-      for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await page.screenshot({path:`${process.env.LAMP_DEP_SCREENSHOTS}/public-vendors-${width}.png`,fullPage:true});}
+      browser = await chromium.launch({
+        headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH,
+        args: ['--use-mock-keychain', '--password-store=basic'],
+      });
+      const page = await browser.newPage();
+      await page.goto(j.publicOrigin);
+      const article = name => page.getByRole('article').filter({ has: page.getByRole('heading', { name, exact: true }) });
+      const vendor = article(custom.name);
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 844 });
+        const time = vendor.locator('time');
+        assert.ok(await time.isVisible());
+        assert.equal(await time.getAttribute('datetime'), customUnavailable.unavailableAt);
+        assert.ok(!(await vendor.innerText()).includes(expectedComponentLabels.Operational));
+        assert.ok((await article(aws.name).innerText()).includes(expectedComponentLabels['Major outage']));
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        await vendor.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: `${process.env.LAMP_DEP_SCREENSHOTS}/public-vendors-${width}.png` });
+      }
     }
     assert.equal((await publicRows()).find(row=>row.componentId===aws.componentId).state,'Major outage');
     const firstUnavailable=failed.unavailableAt;await tick();assert.equal((await list()).find(row=>row.id===aws.id).unavailableAt,firstUnavailable);
+    assert.equal((await customReport()).unavailableAt, customUnavailable.unavailableAt);
+    customSource.status = 200;
     awsSource.status=200;awsSource.body=awsSource.fixture.cases.find(row=>row.expected==='Operational').body;await tick();
     assert.equal((await list()).find(row=>row.id===aws.id).unavailableAt,null);
+    assert.equal((await customReport()).unavailableAt, null);
+    assert.equal((await customReport()).state, 'Operational');
     for(const [index,[format,body,options]] of [
       ['rss','<rss><channel><item><guid>synthetic-lamp-1</guid><title>[SERVICE DISRUPTION] synthetic-lamp-1</title></item></channel></rss>',{}],
       ['atom','<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>synthetic-lamp-1</id><title>[SERVICE DISRUPTION] synthetic-lamp-1</title></entry></feed>',{}],
