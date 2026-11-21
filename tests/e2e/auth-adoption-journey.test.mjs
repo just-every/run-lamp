@@ -1,7 +1,7 @@
 import { workingCheckout } from '../helpers/native-transfer.mjs';
 import assert from 'node:assert/strict';
 import {spawn,spawnSync} from 'node:child_process';
-import {mkdtemp,rm,writeFile,readFile,mkdir} from 'node:fs/promises';
+import {access,mkdtemp,rm,writeFile,readFile,mkdir} from 'node:fs/promises';
 import {hostname,tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {test} from 'node:test';
@@ -65,6 +65,29 @@ async function setupAndProbe(root,env,port,origin){
   assert.equal(await ended,0,'rer setup succeeds');assert.equal(probed,true,'setup runtime was probed while listening');
  }finally{if(process.exitCode===null){process.kill('SIGTERM');await ended;}}
 }
+
+test('remote terminal sign-in refuses a missing environment secret before invoking Wrangler', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'lamp-remote-signin-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await writeFile(join(root, '.dev.vars'), 'SESSION_SECRET=synthetic-lamp-149\n', { mode: 0o600 });
+
+  // The only pnpm on the child's PATH records attempts without contacting D1.
+  const invocation = join(root, 'wrangler-invoked');
+  await writeFile(join(root, 'pnpm'), '#!/bin/sh\nprintf called > wrangler-invoked\nexit 1\n', { mode: 0o700 });
+
+  const origin = 'https://operator.example.test';
+  const result = spawnSync(process.execPath, [
+    resolve('scripts/signin-link.mjs'), '--remote', '--email', owner, '--origin', origin,
+  ], { cwd: root, env: { PATH: root }, encoding: 'utf8', timeout: 15_000 });
+
+  assert.ifError(result.error);
+  assert.equal(result.signal, null);
+  assert.ok(result.status > 0, 'remote issuance exits nonzero');
+  assert.ok(/\bSESSION_SECRET\b/.test(result.stderr), 'the refusal names the missing variable');
+  assert.ok(result.stdout === '', 'remote issuance prints no link on stdout');
+  assert.ok(!/https?:\/\//i.test(result.stderr), 'the diagnostic contains no link');
+  await assert.rejects(access(invocation), { code: 'ENOENT' }, 'Wrangler never runs');
+});
 
 test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out',{timeout:1200000},async t=>{
  t.diagnostic('Execution host: '+hostname());
@@ -141,11 +164,13 @@ test('SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations
       await pending.getByText(address,{exact:true}).waitFor({state:'visible'});
      }
      await accessible(page);
-     await context.grantPermissions(['clipboard-read','clipboard-write'],{origin});
      const row=pending.locator('.operator-row').filter({hasText:colleagueEmail});
-     await row.getByRole('button',{name:'Copy link',exact:true}).click();
-     invitationLink=await page.evaluate(()=>navigator.clipboard.readText());
-     assert.equal(new URL(invitationLink).origin,origin);
+     const openLocally=row.getByRole('link',{name:'Open as Invited operator in this browser',exact:true});
+     await openLocally.waitFor({state:'visible'});
+     const href=await openLocally.getAttribute('href');
+     assert.ok(href);
+     invitationLink=new URL(href,origin).href;
+     assert.equal(new URL(invitationLink).origin,origin,'the local invitation stays on the same installation');
      const cancelledRow=pending.locator('.operator-row').filter({hasText:cancelledEmail});
      page.once('dialog',dialog=>dialog.accept());
      await cancelledRow.getByRole('button',{name:'Erase personal data',exact:true}).click();

@@ -1,13 +1,15 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import { useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
 
-import { COMPONENT_STATES, type ComponentState } from "../../../shared/domain";
+import type { ComponentState } from "../../../shared/domain";
+import { ComponentStateSelect } from "../../../app/client/ui/component-state-select";
 import type { ComponentHistoryView, ComponentView } from "../service";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { Icon } from "../../../app/client/ui/icon";
 import { FormError, LoadingState, useOperatorTime } from "../../../app/client/ui/states";
-import { fromPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
+import { TimezoneHint, fromPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
 import { AvailabilityReport } from "../../availability-reports/ui/availability-report";
 
 /** History: state changes and corrections, this component's availability report and a closed correction form. A saved
@@ -21,7 +23,7 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
   if (historyCursors.length) query.set("cursor", historyCursors.at(-1)!);
   if (correctionCursors.length) query.set("correctionsCursor", correctionCursors.at(-1)!);
   const { data, error, loading, refresh } = useAppData<ComponentHistoryView>(`/api/app/components/${component.id}/history${query.size ? `?${query}` : ""}`);
-  const [state, setState] = useState<ComponentState>("Operational");
+  const [state, setState] = useState<ComponentState | "">("");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [reason, setReason] = useState("");
@@ -31,10 +33,12 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
   const saveButton = useRef<HTMLButtonElement>(null);
 
   async function correct(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setSaving(true); setSaved(false); setMutationError(null);
+    event.preventDefault();
+    if (!state) return;
+    setSaving(true); setSaved(false); setMutationError(null);
     try {
       await appApi(`/api/app/components/${component.id}/history-corrections`, { method: "POST", body: JSON.stringify({ state, startsAt: fromPageDateTime(startsAt, timezone), endsAt: fromPageDateTime(endsAt, timezone), reason }) });
-      setState("Operational"); setStartsAt(""); setEndsAt(""); setReason(""); setSaved(true);
+      setState(""); setStartsAt(""); setEndsAt(""); setReason(""); setSaved(true);
       setHistoryCursors([]); setCorrectionCursors([]); refresh(); onSaved();
     } catch (cause) {
       setMutationError(cause instanceof Error ? cause.message : "The correction could not be saved.");
@@ -48,13 +52,13 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
   return <div className="component-history-part">
     {error ? <FormError>{error}</FormError> : null}
     {loading && !data ? <LoadingState /> : data ? <>
-      <section className="component-history" aria-label="Component state history" tabIndex={0}>{data.history.length ? data.history.map((entry) => <article key={entry.id}><strong>{entry.previousState} → {entry.newState}</strong><small>{entry.causeType === "standing-claim" ? "Operator status" : entry.causeType.replaceAll("-", " ")} · {formatOperatorTime(entry.changedAt)}</small></article>) : <p>No status changes yet.</p>}</section>
+      <section className="component-history" aria-label="Component state history" tabIndex={0}>{data.history.length ? data.history.map((entry) => <article key={entry.id}><strong>{componentStateLabel(entry.previousState)} → {componentStateLabel(entry.newState)}</strong><small>{entry.causeType === "standing-claim" ? "Operator status" : entry.causeType.replaceAll("-", " ")} · {formatOperatorTime(entry.changedAt)}</small></article>) : <p>No status changes yet.</p>}</section>
       <div className="drawer-actions" aria-label="History pages">
         <p>{data.history.length} changes on this page · Newest first</p>
         {historyCursors.length > 0 && <Button variant="secondary" disabled={loading} onClick={() => setHistoryCursors(current => current.slice(0, -1))}>Newer changes</Button>}
         {data.historyPage.nextCursor && <Button variant="secondary" disabled={loading} onClick={() => setHistoryCursors(current => [...current, data.historyPage.nextCursor!])}>Older changes</Button>}
       </div>
-      {data.corrections.length ? <section className="component-corrections" aria-label="Corrections"><h3>Corrections</h3>{data.corrections.map((correction) => <article key={correction.id}><strong>{correction.state}</strong><small>{formatOperatorTime(correction.startsAt)} to {formatOperatorTime(correction.endsAt)}</small><p>{correction.reason}</p></article>)}</section> : null}
+      {data.corrections.length ? <section className="component-corrections" aria-label="Corrections"><h3>Corrections</h3>{data.corrections.map((correction) => <article key={correction.id}><strong>{componentStateLabel(correction.state)}</strong><small>{formatOperatorTime(correction.startsAt)} to {formatOperatorTime(correction.endsAt)}</small><p>{correction.reason}</p></article>)}</section> : null}
       {(correctionCursors.length > 0 || data.correctionsPage.nextCursor) && <div className="drawer-actions" aria-label="Correction pages">
         <p>{data.corrections.length} corrections on this page · Newest first</p>
         {correctionCursors.length > 0 && <Button variant="secondary" disabled={loading} onClick={() => setCorrectionCursors(current => current.slice(0, -1))}>Newer corrections</Button>}
@@ -63,8 +67,8 @@ export function ComponentHistory({ component, onSaved }: { component: ComponentV
     </> : null}
     <AvailabilityReport component={component} />
     <details className="component-correction"><summary>Correct a past period</summary><form className="component-correction-form" onSubmit={correct} onChange={() => setSaved(false)}>
-      <p>Earlier entries stay. Times in {timezone}.</p>
-      <label className="form-label">Correct state<select value={state} onChange={(event) => setState(event.target.value as ComponentState)}>{COMPONENT_STATES.map((option) => <option key={option} value={option}>{option}</option>)}</select></label>
+      <p>Earlier entries stay. <TimezoneHint timezone={timezone} />.</p>
+      <ComponentStateSelect label="Correct state" state={state} disabled={saving} onChange={setState} />
       <div className="component-editor-grid"><label className="form-label">Starts at<input required type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} /></label><label className="form-label">Ends at<input required type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} /></label></div>
       <label className="form-label">Reason<textarea required maxLength={500} value={reason} onChange={(event) => setReason(event.target.value)} /></label>
       {mutationError && <FormError>{mutationError}</FormError>}

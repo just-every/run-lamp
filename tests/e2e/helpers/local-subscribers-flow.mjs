@@ -48,6 +48,9 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     const emailStatus = page.getByRole('region', { name: 'Email delivery', exact: true }).getByRole('status');
     await expect(emailStatus).toHaveAttribute('data-mail-mode', 'local');
     assert.equal(await emailStatus.getAttribute('data-provider'), null);
+    assert.equal(await page.getByRole('textbox', { name: 'From email', exact: true }).count(), 0, 'a suppressed sender offers no active From field');
+    const details = page.locator('details').filter({ has: page.locator('summary').getByText('Details', { exact: true }) });
+    assert.equal(await details.getAttribute('open'), null, 'deployment details start collapsed');
     const smsSettings = await api('/api/app/sms/settings');
     await expect(page.getByRole('region', { name: 'SMS delivery', exact: true }).getByRole('status'))
       .toHaveAttribute('data-sms-configured', String(smsSettings.configured));
@@ -107,19 +110,29 @@ export async function localSubscribersFlow({ browser, context, origin }) {
     await screens('local-incident-follower');
     const { update } = await publish(incident, 'Payment processing is recovering.', ['email']);
     await expect.poll(async () => (await api(`/api/app/deliveries?incidentUpdateId=${update.id}`)).deliveries.filter(row => [pageEmail, incidentEmail].includes(row.destination) && row.outcome === 'suppressed').length, { timeout: 30000 }).toBe(2);
-    const logged = (await api(`/api/app/deliveries?incidentUpdateId=${update.id}`)).deliveries;
+    const { deliveries: logged, hasMore } = await api(`/api/app/deliveries?incidentUpdateId=${update.id}`);
+    assert.equal(hasMore, false, 'the update has no further delivery rows');
+    assert.deepEqual(logged.map(row => row.subscriberId).sort(), subscribers.map(row => row.id).sort(),
+      'the committed update has exactly one delivery per confirmed subscriber');
     for (const subscriber of subscribers) {
       const row = logged.find(row => row.subscriberId === subscriber.id);
       assert.ok(row, 'the notification identifies its subscriber');
+      assert.equal(row.destination, subscriber.destination);
+      assert.equal(row.subscriberState, 'active');
       assert.equal(row.channel, 'email');
       assert.equal(row.incidentUpdateId, update.id);
       assert.equal(row.outcome, 'suppressed');
+      assert.equal(row.providerAcceptedAt, null, 'a suppressed delivery has no provider acceptance time');
+      assert.equal(row.acceptingProvider, null, 'a suppressed delivery has no accepting provider');
+      assert.equal(row.providerOutcome ?? null, null, 'a suppressed delivery has no provider outcome');
       assert.ok(Number.isFinite(Date.parse(row.queuedAt)) && Number.isFinite(Date.parse(row.outcomeAt)), 'queue and outcome times are recorded');
     }
     await page.goto(origin + '/app/subscribers?view=log'); await operatorHydrated(page);
     const records = page.getByRole('region', { name: 'Delivery records', exact: true });
-    for (const email of [pageEmail, incidentEmail]) {
-      const row = records.getByRole('row').filter({ hasText: email });
+    for (const subscriber of subscribers) {
+      const row = records.getByRole('row').filter({ hasText: subscriber.destination });
+      await expect(row).toContainText('active subscriber');
+      await expect(row).toContainText(incident.reference);
       await expect(row).toContainText('Not sent locally');
       await expect(row).not.toContainText(/Accepted by|SendGrid/);
     }

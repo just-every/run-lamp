@@ -63,7 +63,9 @@ a { color: inherit; text-underline-offset: 3px; text-decoration-thickness: 1px; 
 .masthead { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px 32px; padding: 36px 0 32px; }
 .masthead-brand { min-width: 0; }
 .brand { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; color: var(--ink); font-size: 21px; font-weight: 600; line-height: 1.25; letter-spacing: -.015em; text-decoration: none; overflow-wrap: anywhere; }
-.brand-logo { width: 36px; height: 36px; flex: none; border-radius: 10px; background: var(--card); box-shadow: 0 0 0 1px var(--line); object-fit: cover; }
+.brand-mark { width: 36px; height: 36px; flex: none; border-radius: 10px; background: var(--card); box-shadow: 0 0 0 1px var(--line); object-fit: contain; }
+.brand-logo { display: block; width: auto; height: 36px; max-width: min(180px, 45vw); flex: 0 1 auto; min-width: 0; object-fit: contain; }
+.brand span { min-width: 0; }
 .tagline { margin: 6px 0 0 48px; color: var(--ink-2); font-size: 14px; overflow-wrap: anywhere; }
 .tagline:empty { display: none; }
 .status-utilities { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: -2px; }
@@ -104,3 +106,6 @@ footer:empty { display: none; }
 
 /* A retained snapshot served while the current state cannot be verified. */
 .snapshot-stale { margin: 0; background: var(--amber-wash); box-shadow: inset 0 -1px 0 rgb(138 90 6 / .18); padding: 12px 24px; color: var(--amber-ink); font-size: 14px; font-weight: 500; line-height: 1.45; text-align: center; overflow-wrap: anywhere; }
+
+.time-details { color: var(--ink-3); font-size: 13px; overflow-wrap: anywhere; }
+.time-details summary { display: list-item; width: fit-content; min-height: 24px; line-height: 24px; cursor: pointer; }

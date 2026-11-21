@@ -1,4 +1,5 @@
 import { maintenanceNoticeDetails } from "../../shared/maintenance-notice";
+import { maintenanceTimeRange } from "./format";
 import { importedMaintenanceUpdateLabel } from "../../shared/imported-maintenance-update";
 import type { PublishedIncidentComponentChange } from "../../shared/incident-component-changes";
 import type { IncidentLifecycle } from "../../shared/domain";
@@ -6,7 +7,7 @@ import { type IncidentImpact } from "../../shared/incident-impact";
 import { renderUpdateHtml } from "../../shared/update-links";
 
 import { renderedUpdate } from "./feed-widget";
-import { MINUTE, durationText, escapeHtml, stateClass, timestamp } from "./format";
+import { MINUTE, durationText, escapeHtml, stateClass, timestamp, timestampDetails } from "./format";
 
 /** The public record's shared pieces: state chips, incident and maintenance entries and their updates, used by the
  *  current page, history and each incident's permanent page alike. */
@@ -41,8 +42,8 @@ export interface PublicMaintenance {
 export type TitleHeading = "h1" | "h3" | "h4";
 
 /** A quiet pill with a coloured dot, as the operator app draws states. */
-export function statePill(state: string, className = "") {
-  return `<span class="${className ? `${className} ` : ""}state-pill state-${stateClass(state)}"><strong>${escapeHtml(state)}</strong></span>`;
+export function statePill(state: string, className = "", label = state) {
+  return `<span class="${className ? `${className} ` : ""}state-pill state-${stateClass(state)}"><strong>${escapeHtml(label)}</strong></span>`;
 }
 
 export function recordHead(kicker: string, title: string, heading: TitleHeading, state: string | null) {
@@ -64,7 +65,9 @@ export function updateMarkup(incident: PublicIncident, update: PublicIncident["u
   const fields = rendered.public.fields.map((field) => `<div><dt>${escapeHtml(field.label)}</dt><dd>${field.instant ? timestamp(field.instant, timezone) : renderUpdateHtml(field.value)}</dd></div>`).join("");
   const isResolutionTime = incident.lifecycle === "Resolved" && update.lifecycle === "Resolved" && update.publishedAt === incident.resolvedAt;
   const published = isResolutionTime ? `Resolved at ${timestamp(update.publishedAt, timezone)}` : timestamp(update.publishedAt, timezone);
-  return `<article class="update" id="update-${escapeHtml(update.id)}" data-update-id="${escapeHtml(update.id)}"><div class="update-head"><strong>${escapeHtml(rendered.public.lifecycle)}</strong><span>${published}</span></div>${correctionMarkup(incident, update, timezone)}<dl>${fields}</dl></article>`;
+  const times: Array<[string, string]> = [[isResolutionTime ? "Resolved" : "Published", update.publishedAt]];
+  if (update.nextUpdateAt && update.lifecycle !== "Resolved") times.push(["Next update by", update.nextUpdateAt]);
+  return `<article class="update" id="update-${escapeHtml(update.id)}" data-update-id="${escapeHtml(update.id)}"><div class="update-head"><strong>${escapeHtml(rendered.public.lifecycle)}</strong><span>${published}</span></div>${correctionMarkup(incident, update, timezone)}<dl>${fields}</dl>${timestampDetails(timezone, ...times)}</article>`;
 }
 
 export function incidentMarkup(incident: PublicIncident, timezone: string, maximumUpdates?: number, label = "Incident", heading: TitleHeading = "h3") {
@@ -88,11 +91,11 @@ export function maintenanceNoticeBody(notice: PublicMaintenance["notices"][numbe
 }
 
 export function noticeMarkup(notice: PublicMaintenance["notices"][number], timezone: string, item: Pick<PublicMaintenance, "reference" | "title">) {
-  return `<article class="update maintenance-notice"><div class="update-head"><strong>${escapeHtml(notice.kind)}</strong><span>${timestamp(notice.publishedAt, timezone)}</span></div>${maintenanceNoticeBody(notice, item)}</article>`;
+  return `<article class="update maintenance-notice"><div class="update-head"><strong>${escapeHtml(notice.kind)}</strong><span>${timestamp(notice.publishedAt, timezone)}</span></div>${maintenanceNoticeBody(notice, item)}${timestampDetails(timezone, ["Published", notice.publishedAt])}</article>`;
 }
 
 export function maintenanceMarkup(item: PublicMaintenance, timezone: string, generatedAt: string, permalink = false) {
   const overrun = item.state === "In progress" && new Date(item.endsAt).getTime() + 15 * MINUTE <= new Date(generatedAt).getTime();
   const notices = [...item.notices, ...(item.importedUpdates ?? []).map(update => ({ ...update, kind: importedMaintenanceUpdateLabel(update) }))].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map((notice) => noticeMarkup(notice, timezone, item)).join("");
-  return `<article class="maintenance">${recordHead(item.state === "Scheduled" ? "Planned maintenance" : "Maintenance", permalink ? escapeHtml(item.title) : `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, permalink ? "h1" : "h4", item.state)}<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${timestamp(item.startsAt, timezone)} – ${timestamp(item.endsAt, timezone)}${overrun ? ` <span class="overrun">Running longer than planned</span>` : ""}</p>${item.components.length ? `<p class="incident-meta">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${notices ? `<div class="updates">${notices}</div>` : ""}</article>`;
+  return `<article class="maintenance">${recordHead(item.state === "Scheduled" ? "Planned maintenance" : "Maintenance", permalink ? escapeHtml(item.title) : `<a href="/maintenance/${encodeURIComponent(item.reference)}">${escapeHtml(item.title)}</a>`, permalink ? "h1" : "h4", item.state)}<p class="maintenance-window" data-maintenance-state="${escapeHtml(item.state)}" data-maintenance-ends-at="${escapeHtml(item.endsAt)}">${maintenanceTimeRange(item.startsAt, item.endsAt, timezone)}${overrun ? ` <span class="overrun">Running longer than planned</span>` : ""}</p>${timestampDetails(timezone, ["Starts", item.startsAt], ["Ends", item.endsAt])}${item.components.length ? `<p class="incident-meta">Affects ${escapeHtml(item.components.join(", "))}</p>` : ""}${notices ? `<div class="updates">${notices}</div>` : ""}</article>`;
 }

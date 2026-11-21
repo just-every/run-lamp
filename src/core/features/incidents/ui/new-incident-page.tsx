@@ -4,8 +4,8 @@ import { useId, useState } from "react";
 import { INCIDENT_LIFECYCLES, type IncidentLifecycle } from "../../../shared/domain";
 import { Button } from "../../../app/client/ui/button";
 import { FormError } from "../../../app/client/ui/states";
-import { fromPageDateTime, toPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
-import { ComponentRelationships, NewIncidentComponents, relationshipSummary } from "./affected-components";
+import { TimezoneHint, fromPageDateTime, toPageDateTime, usePageTimezone } from "../../../app/client/ui/timezone";
+import { ComponentRelationships, NewIncidentComponents, componentChoiceReason, relationshipSummary } from "./affected-components";
 import { IncidentPreview } from "./incident-preview";
 import { NextUpdateField } from "./next-update-field";
 import { OptionalText } from "./optional-text";
@@ -21,13 +21,15 @@ import type { ComponentsService } from "../../components";
  * With `onClose`, it stands in for an empty incident list (an empty list opens the create form). */
 export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
   const timezone = usePageTimezone();
-  const { form, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate } = useNewIncident();
+  const { form, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate } = useNewIncident();
   const { data: componentData } = useAppData<{ components: Awaited<ReturnType<ComponentsService["list"]>> }>("/api/app/components");
   const [openedAtError, setOpenedAtError] = useState<string | null>(null);
   const [shownFields, setShownFields] = useState({ whatStillWorks: false, details: false, openedAt: false });
   const stillWorksId = useId(), detailsId = useId(), openedAtId = useId();
   const { update } = form;
+  const publishReasonId = useId();
   const name = (componentId: string) => componentData?.components.find(component => component.id === componentId)?.name ?? "Component";
+  const pending = form.claims.find(claim => !claim.state);
   const relationshipRows = form.claims.map(claim => ({ componentId: claim.componentId, name: name(claim.componentId), relationship: claim.relationship }));
   const chooseTiming = (mode: PublishTiming["mode"]) => { if (form.timing.mode !== mode) { setForm(current => ({ ...current, timing: { mode, at: null } })); setTimeErrors(current => ({ ...current, timing: null })); } };
   const groups: OptionGroup[] = [
@@ -48,7 +50,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
       { key: "save-template", label: "Save as a template", glyph: "template", panel: "template-save" },
     ] },
     { caption: "Draft", entries: [
-      { key: "private-draft", label: "Save as private draft", glyph: "lock", disabled: !savable || Boolean(openedAtError), value: savable ? undefined : "Title and component first", onSelect: () => void saveDraft() },
+      { key: "private-draft", label: "Save as private draft", glyph: "lock", disabled: !savable || Boolean(openedAtError), value: savable ? undefined : pending ? "Choose a component state" : "Title and component first", onSelect: () => void saveDraft() },
     ] },
   ];
   return <div className="incident-page new-incident">
@@ -62,7 +64,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
           <fieldset className="impact-field">
             <legend>What’s happening?</legend>
             <input aria-label="Incident title" required maxLength={250} placeholder="Title customers will see" value={form.title} onChange={(event) => setForm(current => ({ ...current, title: event.target.value }))} />
-            <textarea aria-label="Customer impact" required rows={2} maxLength={250} placeholder="What customers see" value={update.customerImpact} onChange={(event) => setUpdate("customerImpact", event.target.value)} />
+            <textarea aria-label="Customer impact" required rows={2} maxLength={250} placeholder="What customers will see next" value={update.customerImpact} onChange={(event) => setUpdate("customerImpact", event.target.value)} />
           </fieldset>
           <fieldset className="impact-field">
             <legend>Who’s affected?</legend>
@@ -71,18 +73,18 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
           </fieldset>
           <OptionalText id={stillWorksId} label="What still works" value={update.whatStillWorks} max={250} shown={shownFields.whatStillWorks} onChange={(value) => setUpdate("whatStillWorks", value)} />
           <OptionalText id={detailsId} label="Details" value={update.details} max={500} shown={shownFields.details} onChange={(value) => setUpdate("details", value)} />
-          <div className="form-label option-text" hidden={!shownFields.openedAt && !form.openedAt && !openedAtError}><label htmlFor={openedAtId}>Opened at</label><input id={openedAtId} type="datetime-local" value={toPageDateTime(form.openedAt, timezone)} onChange={(event) => { try { setForm(current => ({ ...current, openedAt: fromPageDateTime(event.target.value, timezone) })); setOpenedAtError(null); } catch (cause) { setOpenedAtError((cause as Error).message); } }} /><small>When it started, if earlier. Times in {timezone}.</small>{openedAtError ? <FormError>{openedAtError}</FormError> : null}</div>
+          <div className="form-label option-text" hidden={!shownFields.openedAt && !form.openedAt && !openedAtError}><label htmlFor={openedAtId}>Opened at</label><input id={openedAtId} type="datetime-local" value={toPageDateTime(form.openedAt, timezone)} onChange={(event) => { try { setForm(current => ({ ...current, openedAt: fromPageDateTime(event.target.value, timezone) })); setOpenedAtError(null); } catch (cause) { setOpenedAtError((cause as Error).message); } }} /><small>When it started, if earlier. <TimezoneHint timezone={timezone} />.</small>{openedAtError ? <FormError>{openedAtError}</FormError> : null}</div>
           {update.lifecycle === "Resolved" ? <p className="resolution-note" role="status">Resolved: no next update.</p> : <NextUpdateField value={update.nextUpdateAt} timezone={timezone} onChange={(value) => setUpdate("nextUpdateAt", value)} onError={(message) => setTimeErrors(current => ({ ...current, nextUpdate: message }))} />}
           {error ? <FormError>{error}</FormError> : null}
         </form>
       </section>
       <div className="incident-side"><IncidentPreview preview={preview} error={previewError} /></div>
       <div className="composer-publish" inert={publishing}>
-        <UpdateOptions groups={groups} footer={<><span className="publish-hint">{publishHint(form.channels, form.timing, timezone)}</span><Button type="button" disabled={!publishable || publishing || Boolean(openedAtError)} onClick={() => void publish()}>{publishing ? "Publishing…" : form.timing.mode === "schedule" ? "Schedule" : form.timing.mode === "backdate" ? "Publish historical update" : "Publish"}</Button></>}>
+        <UpdateOptions groups={groups} footer={<><span className="publish-hint">{publishHint(form.channels, form.timing, timezone)}</span><Button type="button" disabled={!publishable || publishing || Boolean(openedAtError)} aria-describedby={pending ? publishReasonId : undefined} onClick={() => void publish()}>{publishing ? "Publishing…" : form.timing.mode === "schedule" ? "Schedule" : form.timing.mode === "backdate" ? "Publish historical update" : "Publish"}</Button>{pending ? <p id={publishReasonId} className="publish-reason" role="status">{componentChoiceReason(name(pending.componentId))}</p> : null}</>}>
           <OptionPanel name="notify" title="Notify"><NotifyChannels channels={form.channels} onChange={setChannels} /></OptionPanel>
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={form.timing} timezone={timezone} error={timeErrors.timing} onChange={(timing) => setForm(current => ({ ...current, timing }))} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>
           <OptionPanel name="relationship" title="Relationship"><ComponentRelationships rows={relationshipRows} onChange={(componentId, relationship) => setForm(current => ({ ...current, claims: current.claims.map(claim => claim.componentId === componentId ? { ...claim, relationship } : claim) }))} /></OptionPanel>
-          <TemplateControls draft={update} components={form.claims} onApply={async (template) => applyTemplate(template)} captureUpdate={() => () => true} />
+          <TemplateControls draft={update} components={selectedClaims} onApply={async (template) => applyTemplate(template)} captureUpdate={() => () => true} />
         </UpdateOptions>
       </div>
     </div>

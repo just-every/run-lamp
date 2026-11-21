@@ -1,16 +1,16 @@
-/** A mark (SVG or raster, as a data: or blob: URL) drawn into a square PNG in the browser, so Lamp stores
+/** A mark (SVG or raster, as a data: or blob: URL) drawn into a PNG in the browser, so Lamp stores
  * only raster logos. SVG drawn through an image runs no scripts. Vectors render at 512px; rasters keep
  * their own size (64-512px) rather than being blown up. */
-export async function markToPng(source: string, vector: boolean): Promise<Blob> {
+export async function markToPng(source: string, vector: boolean, square = false): Promise<Blob> {
   const image = new Image();
   image.src = source;
   await image.decode();
   const width = image.naturalWidth || 512, height = image.naturalHeight || 512;
   const size = vector ? 512 : Math.min(512, Math.max(64, width, height));
   const canvas = document.createElement("canvas");
-  canvas.width = size; canvas.height = size;
-  const scale = Math.min(size / width, size / height);
-  canvas.getContext("2d")!.drawImage(image, (size - width * scale) / 2, (size - height * scale) / 2, width * scale, height * scale);
+  const scale = size / Math.max(width, height);
+  canvas.width = square ? size : Math.max(1, Math.round(width * scale)); canvas.height = square ? size : Math.max(1, Math.round(height * scale));
+  canvas.getContext("2d")!.drawImage(image, (canvas.width - width * scale) / 2, (canvas.height - height * scale) / 2, width * scale, height * scale);
   return new Promise((resolve, reject) => canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error("The mark could not be drawn.")), "image/png"));
 }
 
@@ -32,5 +32,14 @@ export async function uploadMark(png: Blob) {
   const response = await fetch("/api/app/page-settings/logo", { method: "POST", body: form, headers: { Accept: "application/json" } });
   const body = await response.json().catch(() => null) as { settings?: unknown; error?: string } | null;
   if (!response.ok || !body?.settings) throw new Error(body?.error ?? "The logo could not be saved.");
+  return body.settings;
+}
+
+export async function uploadIcon(png: Blob) {
+  const form = new FormData();
+  form.set("file", new File([png], "icon.png", { type: "image/png" }));
+  const response = await fetch("/api/app/page-settings/theme-assets/icon", { method: "POST", body: form, headers: { Accept: "application/json" } });
+  const body = await response.json() as { settings?: unknown; error?: string };
+  if (!response.ok || !body.settings) throw new Error(body.error ?? "The square icon could not be saved.");
   return body.settings;
 }

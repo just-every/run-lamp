@@ -100,6 +100,7 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
     await publicCorrection(resolvedCorrectionIncident, resolvedCorrection, resolution);
     await capture(publicPage, 'resolved-correction-public');
 
+    await composer.openDraft();
     await composer.setStatus('Investigating');
     await composer.impact.fill('Harbour Cart checkout is failing again; investigation has reopened.');
     await page.getByLabel(`${component.name} state with this update`, { exact: true }).selectOption('Partially unavailable');
@@ -108,7 +109,7 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
     assert.equal((await read()).draft.correctsUpdateId, null, 'the next saved draft is ordinary');
     assert.equal((await api('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Operational', 'readers see recovery before reopening');
     const preview = (await api(path)).preview;
-    assert.ok(JSON.stringify(preview).includes(`${component.name}: Operational → Partially unavailable`), 'the reopen preview uses the same recovered baseline');
+    assert.ok(JSON.stringify(preview).includes(`${component.name}: Working → Partly down`), 'the reopen preview uses the same recovered baseline');
     const priorUpdates = (await read()).updates;
     const reopened = await publish();
     const reopening = reopened.updates[0];
@@ -121,7 +122,7 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
     await publicPage.goto(`${pageUrl}/incidents/${incident.reference}`);
     for (const [surface, selector] of [[page, `.timeline [data-update-id="${reopening.id}"]`], [publicPage, `article.update[data-update-id="${reopening.id}"]`]]) {
       const text = await surface.locator(selector).innerText();
-      assert.ok(text.includes(`${component.name}: Operational → Partially unavailable`), 'operator and public reopening timelines use the recovered baseline');
+      assert.ok(text.includes(`${component.name}: Working → Partly down`), 'operator and public reopening timelines use the recovered baseline');
     }
     await capture(page, 'reopened-operator');
     await capture(publicPage, 'reopened-public');
@@ -134,6 +135,7 @@ export async function incidentCorrectionsFlow({ page, browserContext, appUrl, pa
     }
 
     // Active incidents use exactly the same correction controls.
+    await composer.openDraft();
     await composer.setStatus('Identified');
     await composer.impact.fill('Harbour Cart retries sometimes succeed while checkout capacity recovers.');
     await composer.nextUpdate.fill('2027-09-08T16:00');

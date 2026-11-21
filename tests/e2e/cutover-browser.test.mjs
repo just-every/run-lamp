@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { mkdir, readdir, readFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
@@ -9,6 +10,126 @@ import { devKey } from '../helpers/dev-key.mjs';
 import { signInAs } from '@runeditrun/rer/internal/modules/operator-auth/dev/sign-in-as.mjs';
 import { notificationActivity, assertNoNewNotifications, moveInDoor } from '../helpers/import-notifications.mjs';
 import { reservePort } from './worker-startup.mjs';
+
+async function selectPublicAddress(page, address) {
+  await page.getByLabel('Public address', { exact: true }).fill(address);
+  await page.getByRole('button', { name: 'Use this address for checks' }).click();
+}
+
+async function checkImportedBookmark(page, bookmark, evidence) {
+  const row = page.getByRole('row').filter({
+    has: page.getByRole('rowheader', { name: bookmark.path, exact: true }),
+  });
+  const check = row.getByRole('button', { name: 'Check opens', exact: true });
+  const status = row.getByRole('status');
+  const opens = status.filter({ hasText: /^Opens$/ });
+  const failed = status.filter({ hasText: /^Could not verify:/ });
+
+  // A second port on the app host is cross-origin but same-site. Chromium
+  // would otherwise be free to block the test cookie as a third-party cookie.
+  const cookieName = 'synthetic-lamp-cutover';
+  const visits = [];
+  let outcome = 'opens';
+  const wrongTarget = '/unexpected-bookmark';
+  const publicEdge = createServer((request, response) => {
+    const path = request.url;
+    const cookie = request.headers.cookie;
+    visits.push({ path, hasCookie: cookie !== undefined, hasProbeCookie: cookie?.split('; ').includes(cookieName + '=present') ?? false });
+    response.setHeader('Access-Control-Allow-Origin', origin);
+    response.setHeader('Access-Control-Allow-Credentials', 'true');
+    response.setHeader('Cache-Control', 'no-store');
+    if (path === bookmark.path) {
+      response.writeHead(302, { Location: outcome === 'wrong-address' ? wrongTarget : bookmark.target }).end();
+    } else if (path === bookmark.target || path === wrongTarget) {
+      const nonHtml = outcome === 'non-html';
+      response.writeHead(outcome === 'http-error' ? 404 : 200, {
+        'Content-Type': `text/${nonHtml ? 'plain' : 'html'}; charset=utf-8`,
+      }).end(nonHtml ? 'Plain text' : '<!doctype html><title>Bookmark response</title>');
+    } else {
+      response.writeHead(404).end();
+    }
+  });
+  await new Promise((ready, reject) => {
+    publicEdge.once('error', reject);
+    publicEdge.listen(0, '127.0.0.1', ready);
+  });
+
+  const context = page.context();
+  const selected = new URL(origin);
+  selected.port = String(publicEdge.address().port);
+  try {
+    await context.addCookies([{ name: cookieName, value: 'present', url: selected.origin, sameSite: 'Lax' }]);
+    const control = await page.evaluate(async url => {
+      const response = await fetch(url, { credentials: 'include', cache: 'no-store' });
+      return { ok: response.ok, url: response.url };
+    }, selected.origin + bookmark.path);
+    assert.deepEqual(control, { ok: true, url: selected.origin + bookmark.target });
+    assert.deepEqual(visits.splice(0), [bookmark.path, bookmark.target].map(path => ({
+      path, hasCookie: true, hasProbeCookie: true,
+    })), 'the selected origin receives the cookie on both hops when the browser includes credentials');
+
+    for (const width of evidence ? [1440, 390] : [1440]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await selectPublicAddress(page, publicOrigin);
+      const [native] = await Promise.all([
+        page.waitForResponse(publicOrigin + bookmark.target),
+        check.click(),
+      ]);
+      assert.equal(native.request().redirectedFrom()?.url(), publicOrigin + bookmark.path);
+      assert.equal(native.ok(), true);
+      assert.match(native.headers()['content-type'], /^text\/html\b/);
+      assert.match(await native.text(), /Elevated API errors/);
+      await opens.waitFor({ state: 'visible' });
+
+      await selectPublicAddress(page, selected.origin);
+      for (const [result, target, httpStatus] of [
+        ['opens', bookmark.target, 200],
+        ['wrong-address', wrongTarget, 200],
+        ['non-html', bookmark.target, 200],
+        ['http-error', bookmark.target, 404],
+      ]) {
+        outcome = result;
+        const [response] = await Promise.all([
+          page.waitForResponse(selected.origin + target),
+          check.click(),
+        ]);
+        assert.equal(response.status(), httpStatus);
+        assert.equal(response.request().redirectedFrom()?.url(), selected.origin + bookmark.path);
+        assert.match(response.headers()['content-type'], result === 'non-html' ? /^text\/plain\b/ : /^text\/html\b/);
+        await (result === 'opens' ? opens : failed).waitFor({ state: 'visible' });
+        assert.deepEqual(visits.splice(0), [bookmark.path, target].map(path => ({
+          path, hasCookie: false, hasProbeCookie: false,
+        })), `${result}: both browser requests must omit cookies`);
+        if (result === 'http-error') {
+          assert.match(await status.innerText(), /HTTP 404/);
+        } else if (result !== 'opens') {
+          const message = await status.innerText();
+          assert.ok(message.includes(selected.origin + target), message);
+          assert.ok(message.includes(`expected a redirect to ${selected.origin + bookmark.target}`), message);
+        }
+      }
+
+      const unreachable = `http://127.0.0.1:${await reservePort()}`;
+      await selectPublicAddress(page, unreachable);
+      const [request] = await Promise.all([
+        page.waitForEvent('requestfailed', { predicate: request => request.url() === unreachable + bookmark.path }),
+        check.click(),
+      ]);
+      assert.match(request.failure().errorText, /ERR_CONNECTION_REFUSED/);
+      await failed.waitFor({ state: 'visible' });
+      if (evidence) {
+        await failed.scrollIntoViewIfNeeded();
+        await page.screenshot({ path: join(evidence, `bookmark-failed-${width}.png`) });
+      }
+      console.log(`PROBE MOVE-006 3 (${width}px): native bookmark opened its imported incident; both hops omitted cookies; wrong address, plain text, HTTP 404 and unreachable origin left its row visibly failed`);
+    }
+  } finally {
+    publicEdge.closeAllConnections();
+    await new Promise((resolveClose, reject) => publicEdge.close(error => error ? reject(error) : resolveClose()));
+    await context.clearCookies({ name: cookieName });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+}
 
 // One owner migration through the actual wizard and Cutover documents. The source
 // table changes the saved export, not the behavior or the viewport under test.
@@ -205,7 +326,7 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
           await notice.waitFor({ state: 'visible' });
           assert.equal(await notice.count(), 1, 'the old tag creates one visible notice');
           assert.deepEqual(await notice.evaluate(element => ({ position: getComputedStyle(element).position, bottom: getComputedStyle(element).bottom, right: getComputedStyle(element).right })), { position: 'fixed', bottom: '16px', right: '16px' }, 'the compatibility tag selects the floating notice by default');
-          assert.equal(await notice.locator('strong').innerText(), 'Partially unavailable', 'the notice reflects the imported partial-outage claim');
+          assert.equal(await notice.locator('strong').innerText(), 'Partly down', 'the notice reflects the imported partial-outage claim');
           const content = await notice.innerText();
           for (const value of [imported.reference, 'Elevated API errors', 'Status: Investigating', 'We are investigating elevated error rates on the API.']) assert.ok(content.includes(value), `the old tag renders the imported incident content: ${value}`);
           if (evidence) for (const width of [1440, 390]) {
@@ -215,6 +336,8 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         } finally { await noticePage.close(); }
         console.log('PROBE MOVE-009 1: old embed tag after import and owner origin opt-in -> one visible fixed floating notice with imported reference, title, lifecycle and customer wording');
         console.log('PROBE MOVE-009 3: dry-run and completed Cutover documents -> full correction, no-channel, atomic publication-state and degraded-only guidance visible');
+        const bookmark = { path: '/incidents/i0000000001', target: `/incidents/${imported.reference}` };
+        await checkImportedBookmark(page, bookmark, evidence);
       }
       await page.getByLabel('Public address', { exact: true }).fill(publicOrigin);
       await page.getByRole('button', { name: 'Use this address for checks' }).click();

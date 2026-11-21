@@ -50,7 +50,7 @@ export function lobbyHtml(identity: EditionIdentity, state: SetupState, loginHin
   const claimed = state === 'claimed', product = escape(identity.product)
   const line = claimed ? signedIn ? 'You’re signed in. Continue to your workspace.' : 'The owner is set up. Sign in to continue.' : `This ${product} is waiting for its owner.`
   const action = claimed ? signedIn ? `<a class="btn" href="/app">Open app${ARROW}</a>` : `<a class="btn" href="${escape(identity.signInPath)}${loginHint ? `?login_hint=${encodeURIComponent(loginHint)}` : ''}">Sign in${ARROW}</a>` : `<a class="btn" href="/setup">Finish setup${ARROW}</a>`
-  const ownerHelp = claimed && local && !signedIn ? '<p class="credit">This app runs on your own computer. Open it from the terminal where <code>rer dev</code> is running, or run <code>rer dev --as owner</code> from the project folder.</p>' : ''
+  const ownerHelp = claimed && local && !signedIn ? '<p class="credit">This app runs on your own computer. Open it from the terminal where <code>~/.local/bin/rer dev</code> is running, or run <code>~/.local/bin/rer dev --as owner</code> from the project folder.</p><p class="credit">If you see &quot;command not found&quot;, run <code>~/.local/bin/rer cli path</code> and paste the line it prints.</p>' : ''
   const credit = claimed
     ? `<p class="credit">Powered by <a href="${escape(identity.runSite)}">${product}</a>, free and open source</p>`
     : identity.manualSetupTokenClaim ? '<p class="credit">You’ll need the setup token from your install.</p>' : ''
@@ -58,7 +58,7 @@ export function lobbyHtml(identity: EditionIdentity, state: SetupState, loginHin
   const art = identity.band ? `<div class="door-art" aria-hidden="true"><img src="${escape(identity.band)}" alt=""></div>` : ''
   return `<!doctype html><html lang="en" data-state="${state}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title>`
     + `${iconHead}${identity.fonts ? `<link rel="stylesheet" href="${escape(identity.fonts)}">` : ''}<link rel="stylesheet" href="${escape(identity.theme)}"><style>${accentStyle(identity)}${STYLE}</style></head>`
-    + `<body><main class="door">${art}<section class="door-card"><h1><a class="lockup" href="/"><img class="mark" src="${escape(identity.mark)}" alt=""><span class="word" data-rer-name>${product}</span></a></h1>`
+    + `<body><main class="door">${art}<section class="door-card"><h1><a class="lockup" href="/"><img class="mark" src="${escape(identity.mark)}" alt=""><span class="word" data-rer-name>${escape(identity.deployment.trim() || identity.product)}</span></a></h1>`
     + `<p class="line">${line}</p>${action}${ownerHelp}${credit}</section></main></body></html>`
 }
 

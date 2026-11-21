@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { FormError } from "../../../app/client/ui/states";
-import { fromPageDateTime, toPageDateTime } from "../../../app/client/ui/timezone";
+import { TimezoneHint, fromPageDateTime, toPageDateTime } from "../../../app/client/ui/timezone";
 
 const QUICK = [{ label: "15 min", minutes: 15 }, { label: "30 min", minutes: 30 }, { label: "1 hour", minutes: 60 }, { label: "2 hours", minutes: 120 }];
 
@@ -10,9 +10,6 @@ const QUICK = [{ label: "15 min", minutes: 15 }, { label: "30 min", minutes: 30 
 export function NextUpdateField({ value, timezone, onChange, onError }: { value: string | null; timezone: string; onChange: (iso: string | null) => void; onError: (message: string | null) => void }) {
   const [error, setError] = useState<string | null>(null);
   const [chosen, setChosen] = useState<number | null>(null);
-  // The page zone is named only when it differs from the browser's, after hydration.
-  const [otherZone, setOtherZone] = useState(false);
-  useEffect(() => setOtherZone(Intl.DateTimeFormat().resolvedOptions().timeZone !== timezone), [timezone]);
   const report = (message: string | null) => { setError(message); onError(message); };
   const choose = (minutes: number) => {
     setChosen(minutes); report(null);
@@ -24,7 +21,7 @@ export function NextUpdateField({ value, timezone, onChange, onError }: { value:
       {QUICK.map(choice => <button key={choice.minutes} type="button" className="choice-pill" aria-pressed={chosen === choice.minutes && Boolean(value)} onClick={() => choose(choice.minutes)}>{choice.label}</button>)}
       <input aria-label="Next update date and time" type="datetime-local" value={toPageDateTime(value, timezone)} onChange={(event) => { setChosen(null); try { onChange(fromPageDateTime(event.target.value, timezone)); report(null); } catch (cause) { onChange(null); report((cause as Error).message); } }} />
     </div>
-    {otherZone ? <small>Times in {timezone}.</small> : null}
+    <small><TimezoneHint timezone={timezone} />.</small>
     {value && Date.parse(value) > Date.now() + 86_400_000 ? <p role="status" className="time-warning">More than 24 hours away.</p> : null}
     {error ? <FormError>{error}</FormError> : null}
   </fieldset>;

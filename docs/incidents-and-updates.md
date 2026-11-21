@@ -51,7 +51,11 @@ too; leave the status **Resolved** to keep the incident closed. The public page,
 incident permalink and operator timeline mark the new publication as a correction
 and link to the earlier update by status and publication time. The earlier
 wording stays unchanged, and both remain in publication order, newest first.
-After publication, the next draft starts as an ordinary update.
+After you publish, use **View public page** to open the incident customers see.
+**What customers see now** shows the latest published update once the public
+page reflects it. Open **Next update (draft)** to write the next update.
+When you add an affected component, choose **Working**, **Slow or partly down**
+or **Down** before you publish.
 
 ## Change affected components
 

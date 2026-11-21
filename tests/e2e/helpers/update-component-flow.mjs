@@ -86,7 +86,7 @@ export async function updateComponentFlow({ appFetch, channels = [] }) {
     const preview = await request(`/api/app/incidents/${incident.id}/draft/preview`, { method: "POST", body: {
       ...UPDATE_LINK_FIELDS, lifecycle: "Monitoring", nextUpdateAt: firstSave.draft.nextUpdateAt, componentChanges: choice(component, "Degraded performance"),
     } });
-    assert.ok(preview.preview.public.fields.some(field => field.value === `${component.name}: Major outage → Degraded performance`));
+    assert.ok(preview.preview.public.fields.some(field => field.value === `${component.name}: Down → Slow`));
     const saved = await save(incident.id, "Monitoring", choice(component, "Degraded performance"));
     const staleVersion = await appFetch(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": firstSave.version }, body: JSON.stringify({ channels: [] }) });
     assert.equal(staleVersion.status, 409, "a replaced draft cannot authorize publication");

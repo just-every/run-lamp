@@ -1,3 +1,4 @@
+import type { ThemeAssets } from "../page-settings/theme-assets";
 import { themeAssetArtifacts } from "./theme-rendering";
 import type { RetainedSnapshotCache } from "../../platform/blobs/retained";
 import { encodeRetainedBundle, readRetainedArtifact } from "../../platform/blobs/retained-bundle";
@@ -22,7 +23,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
 // The minute scheduler periodically rereads source data even without a mutation.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v23";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v24";
 
 interface SnapshotPointer {
   version: string;
@@ -191,13 +192,23 @@ export function createPublicSnapshotService(
       async function prepare() {
         const source = await repository.load();
         if (!source) throw new Error("Cannot build a public snapshot before page settings exist.");
-        const logo = source.settings.logoKey ? await blobs.getBytes(source.settings.logoKey) : null;
+        const iconAsset = (JSON.parse(source.settings.themeAssets ?? "{}") as ThemeAssets).icon;
+        const [logo, icon] = await Promise.all([
+          source.settings.logoKey ? blobs.getBytes(source.settings.logoKey) : null,
+          iconAsset ? blobs.getBytes(iconAsset.key) : null,
+        ]);
+        if (iconAsset && !icon) throw new Error("Configured icon object is missing from object storage.");
+        if (iconAsset && iconAsset.contentType !== "image/png") throw new Error("Configured icon content type is invalid.");
         if (source.settings.logoKey && !logo) throw new Error("Configured logo object is missing from object storage.");
         const logoContentType = logo?.contentType ?? source.settings.logoContentType;
         if (logo && !logoContentType) throw new Error("Configured logo content type is missing.");
         const version = createUlid();
         source.prelaunch = await readPrelaunch(blobs);
-        const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null }, slots);
+        const logoUrl = logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null;
+        const iconUrl = icon && iconAsset ? logoDataUrl({ ...icon, contentType: iconAsset.contentType }) : null;
+        const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logoUrl, iconDataUrl: iconUrl }, slots);
+        // The masthead reads the original logo, including from a retained snapshot.
+        if (logoUrl && logoContentType) rendered.artifacts.push({ key: "assets/logo", body: logoUrl.slice(logoUrl.indexOf(",") + 1), contentType: logoContentType, encoding: "base64" });
         // Feed event order is independent of incident resolution order. Read
         // its first bounded page directly so later updates to older incidents
         // cannot disappear behind the recent incident window.
@@ -221,7 +232,7 @@ export function createPublicSnapshotService(
           artifact.body = artifact.body.replaceAll('url("/assets/theme-font")', `url("data:font/woff2;base64,${uploadedFont.body}")`);
         }
         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
-        return { version, rendered, bundle, logo, logoContentType, source };
+        return { version, rendered, bundle, source };
       }
       // Source/renderer failures need a later revision or repair. Retrying
       // them immediately reloads the same history three times. Only delivery
@@ -231,7 +242,7 @@ export function createPublicSnapshotService(
         attempts += 1;
         try {
         // Retry storage/replica/pointer delivery with identical generation bytes.
-        const { version, rendered, bundle, logo, logoContentType, source } = prepared;
+        const { version, rendered, bundle, source } = prepared;
         // Keep a small sequence fence even if delivery stops partway through.
         await blobs.putText(`snapshots/${version}/generation.json`, JSON.stringify({ version, generation }), "application/json");
         // Cold historical pages use this generation's public presentation data.
@@ -240,9 +251,6 @@ export function createPublicSnapshotService(
         await Promise.all(rendered.artifacts.map(artifact => artifact.encoding === "base64"
           ? blobs.putBytes(`snapshots/${version}/${artifact.key}`, Uint8Array.from(atob(artifact.body), character => character.charCodeAt(0)).buffer, artifact.contentType)
           : blobs.putText(`snapshots/${version}/${artifact.key}`, artifact.body, artifact.contentType)));
-        if (logo) {
-          await blobs.putBytes(`snapshots/${version}/assets/logo`, logo.bytes, logoContentType ?? "application/octet-stream");
-        }
         // Artifacts are complete before the conditional pointer change. A
         // superseded build deliberately leaves its revision pending: a later
         // cron pass rereads D1 rather than assuming the winner saw this write.

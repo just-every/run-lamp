@@ -1,5 +1,6 @@
 import { subscriberPublicConsentFlow } from './helpers/subscriber-public-consent-flow.mjs';
 import { perUpdateChannelsFlow } from './helpers/per-update-channels-flow.mjs';
+import { deliveryRetryFlow } from './helpers/delivery-retry-flow.mjs';
 import { incidentSubscriptionApiFlow } from './helpers/incident-subscription-api-flow.mjs';
 import { incidentFollowFlow } from './helpers/incident-follow-flow.mjs';
 import { test } from 'node:test';
@@ -19,7 +20,9 @@ import { mailFailoverFlow } from './helpers/mail-failover-flow.mjs';
 import { mailSettingsBrowserFlow } from './helpers/mail-settings-browser-flow.mjs';
 import { emailCapacityFlow } from './helpers/email-capacity-flow.mjs';
 import { webhookAtMostOnceFlow } from './helpers/webhook-at-most-once-flow.mjs';
+import { webhookReceiverDeadlineFlow } from './helpers/webhook-receiver-deadline-flow.mjs';
 import { subscriberFailuresFlow } from './helpers/subscriber-failures-flow.mjs';
+import { assertDeliveryInventory } from './helpers/delivery-log-flow.mjs';
 import { prelaunchFlow } from './helpers/prelaunch-flow.mjs';
 
 // Consent, publication, delivery and erasure are exercised through the ordinary
@@ -38,6 +41,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await subscriberCsvFlow();
   await subscriberIntakeBrowserFlow(t);
   await statuspageWebhookFlow();
+  await webhookReceiverDeadlineFlow(t);
   await smsSubscriberFlow();
   await webhookAtMostOnceFlow();
 });
@@ -57,8 +61,10 @@ test('Scoped incident subscriptions — native and Statuspage API consent, priva
 });
 
 test('NOTIFY-002 — Every eligible capacity recipient reaches provider acceptance within five minutes', { timeout: 360_000 }, emailCapacityFlow);
-test('Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications', { timeout: 300_000 }, subscriberFailuresFlow);
+test('Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications', { timeout: 300_000 }, t => subscriberFailuresFlow(t, assertDeliveryInventory));
 
 test('SUB-024 — A page that has not launched offers no subscription, sends nothing to strangers and stays out of search', { timeout: 300_000 }, prelaunchFlow);
 
 test('SUB-001 — Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary', { timeout: 120_000 }, subscriberPublicConsentFlow);
+
+test('NOTIFY-003 — Durable exponential retry eligibility, exhaustion and replay silence', { timeout: 120_000 }, deliveryRetryFlow);

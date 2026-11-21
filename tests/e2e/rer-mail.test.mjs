@@ -34,8 +34,8 @@ function nativeDeploymentEnvironment(provider = 'none') {
 
 const editableSettings = settings => Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'footerCreditEnabled', 'mailFromAddress'].map(key => [key, settings[key]]));
 
-async function buildMailWorker(entry = 'tests/e2e/rer-mail.worker.ts') {
-  return build({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'browser', write: false,
+async function buildMailWorker(input = { entryPoints: ['tests/e2e/rer-mail.worker.ts'] }) {
+  return build({ ...input, bundle: true, format: 'esm', platform: 'browser', write: false,
     external: ['cloudflare:workers', 'node:*'], define: { 'import.meta.env.DEV': 'false' },
     plugins: [{ name: 'renderer-assets', setup(builder) {
       builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: 'asset' }));
@@ -47,7 +47,24 @@ async function buildMailWorker(entry = 'tests/e2e/rer-mail.worker.ts') {
 // Each row is the same business journey through a supported transport. Only
 // provider responses are synthetic; app routes, migrations and Cron are real.
 test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SUB-008 NOTIFY-001 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-006 NOTIFY-007 NOTIFY-008 NOTIFY-009 NOTIFY-010 NOTIFY-019 MAINT-005 MAINT-009 UPDATE-008 — Sign in, confirm a reader, publish, recover frozen mail, inspect receipts, notify maintenance and opt out', { timeout: 300_000 }, async () => {
-  const built = await buildMailWorker();
+  // The isolated Worker gets a test-only clock: Date keeps flowing but can be advanced
+  // through /test/clock; every product route, Cron entry, D1 query and retry rule is real.
+  const clockedWorker = `import worker from './tests/e2e/rer-mail.worker.ts';
+    export { SnapshotCache } from './tests/e2e/rer-mail.worker.ts';
+    const RealDate = Date; let offset = 0;
+    globalThis.Date = new Proxy(RealDate, {
+      construct(target, args) { return Reflect.construct(target, args.length ? args : [RealDate.now() + offset]); },
+      get(target, key) { return key === 'now' ? () => RealDate.now() + offset : Reflect.get(target, key); },
+    });
+    export default { ...worker, async fetch(request, env, context) {
+      if (new URL(request.url).pathname === '/test/clock' && request.method === 'PUT') {
+        const { now } = await request.json(); const shifted = now - RealDate.now();
+        if (!Number.isFinite(now) || shifted < offset) return new Response('Clock must advance', { status: 400 });
+        offset = shifted; return new Response(null, { status: 204 });
+      }
+      return worker.fetch(request, env, context);
+    } };`;
+  const built = await buildMailWorker({ stdin: { contents: clockedWorker, resolveDir: process.cwd(), sourcefile: 'rer-mail-clocked-worker.ts', loader: 'ts' } });
   for (const provider of ['rer', 'resend', 'sendgrid']) {
     const state = await mkdtemp(join(tmpdir(), `lamp-mail-${provider}-`));
     const submissions = [];
@@ -150,8 +167,12 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       const edited = await call('/api/app/page-settings', { ...Object.fromEntries(['pageName','tagline','accentColor','timezone','hostname','footerCreditEnabled','mailFromAddress'].map(key => [key, settings[key]])), emailBranding: { subjectPrefix: '[Changed after submission]', footer: 'Changed after submission' } }, 'PUT');
       assert.equal(edited.status, 200, await edited.clone().text());
       responseStatus = 202;
-      // Advance the fixture's queued clock; the ordinary Cron entry performs the retry.
-      await db.prepare("UPDATE notification_outbox SET available_at='2000-01-01T00:00:00Z' WHERE completed_at IS NULL").run();
+      const beforeEarlyReplay = submissions.length;
+      await tick();
+      assert.equal(submissions.length, beforeEarlyReplay, `${provider}: early Cron replay must send nothing`);
+      // Advance the Worker's clock past the subscriber's first durable retry interval (about two
+      // minutes); the ordinary Cron entry then performs the retry.
+      assert.equal((await call('/test/clock', { now: Date.now() + 180_000 }, 'PUT')).status, 204);
       await tick();
       const accepted = (await deliveries()).find(row => row.id === queued.id);
       assert.ok(accepted.providerAcceptedAt); assert.equal(accepted.outcome, 'queued', 'provider acceptance does not claim inbox delivery');
@@ -387,7 +408,7 @@ test('A deliberate mail-off deployment passes native configuration and Base pref
 });
 
 test('Mail-off keeps email unavailable, operator alerts pending and status work usable without exposing hosted sign-in shortcuts', { timeout: 120_000 }, async () => {
-  const built = await buildMailWorker('tests/e2e/rer-mail-off.worker.ts');
+  const built = await buildMailWorker({ entryPoints: ['tests/e2e/rer-mail-off.worker.ts'] });
   const state = await mkdtemp(join(tmpdir(), 'synthetic-lamp-off-'));
   const secret = 'synthetic-lamp-session-secret-aaaaaaaaaaaa', session = randomBytes(32).toString('base64url');
   const sessionHash = await hashToken(secret, 'session', session);

@@ -4,7 +4,7 @@ import { sanitizeThemeHtml } from "./theme-html";
 import { themeSchema } from "../../shared/page-theme";
 import type { PageSettingsRepository } from "./repository";
 
-export type ThemeAssetKind = "font" | "header";
+export type ThemeAssetKind = "font" | "header" | "icon";
 export type ThemeAssets = Partial<Record<ThemeAssetKind, { key: string; contentType: string }>>;
 
 function validatedType(kind: ThemeAssetKind, bytes: ArrayBuffer, contentType: string) {
@@ -14,6 +14,13 @@ function validatedType(kind: ThemeAssetKind, bytes: ArrayBuffer, contentType: st
   if (kind === "font") {
     if (data.length < 48 || !signature(0, "wOF2") || new DataView(bytes).getUint32(8) !== data.length) throw new Error("Font must be a valid WOFF2 file.");
     return "font/woff2";
+  }
+  if (kind === "icon") {
+    if (contentType !== "image/png" || data.length < 33 || !signature(0, "\x89PNG\r\n\x1a\n") || !signature(12, "IHDR")) throw new Error("Icon must be a square PNG image.");
+    const header = new DataView(bytes);
+    const width = header.getUint32(16), height = header.getUint32(20);
+    if (header.getUint32(8) !== 13 || !width || width !== height) throw new Error("Icon must be a square PNG image.");
+    return "image/png";
   }
   const valid = contentType === "image/png" ? signature(0, "\x89PNG\r\n\x1a\n") : contentType === "image/jpeg" ? data[0] === 255 && data[1] === 216 && data[2] === 255 : contentType === "image/webp" && signature(0, "RIFF") && signature(8, "WEBP");
   if (!valid) throw new Error("Header must be a PNG, JPEG or WebP image.");
@@ -33,7 +40,7 @@ export function createThemeAssetsService<T>(repository: PageSettingsRepository, 
       await blobs.putBytes(key, input.bytes, contentType);
       assets[kind] = { key, contentType };
       if (kind === "font") theme.font = "uploaded";
-      else theme.headerImage = true;
+      else if (kind === "header") theme.headerImage = true;
       await repository.updateThemeAssets({ theme: JSON.stringify(theme), themeAssets: JSON.stringify(assets), updatedAt: nowIso() });
       return rebuild();
     },
@@ -44,7 +51,7 @@ export function createThemeAssetsService<T>(repository: PageSettingsRepository, 
       const assets = JSON.parse(existing.themeAssets) as ThemeAssets;
       delete assets[kind];
       if (kind === "font") theme.font = "default";
-      else {
+      else if (kind === "header") {
         theme.headerImage = false;
         const options = { origin: `https://${existing.hostname}`, imagePaths: existing.logoKey ? ["/assets/logo"] : [] };
         theme.headerHtml = sanitizeThemeHtml(theme.headerHtml, "headerHtml", options).html;

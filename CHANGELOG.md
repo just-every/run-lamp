@@ -1,5 +1,58 @@
 # Changelog
 
+## 1.11.25
+
+- **See which ungrouped components move in a Sorry dry run.** Lamp names each ungrouped component that moves below the groups, marks it as changed and explains that Lamp lists groups first.
+- **Lamp uses rer 0.2.126.** The pinned tool supports the local startup, owner entry and archive restore steps in RUN-LOCALLY.md. Local port inspection now stops at its deadline if the inspection process hangs.
+
+### Upgrading from 1.11.24
+
+Back up data and your source changes first. Update the checkout to `v1.11.25`, run `pnpm install --frozen-lockfile` and run `rer deploy` with the same environment and input file. This version adds no migrations. Keep the backup and exercise a restored copy. Check sign-in, first-run setup, Settings, incident publication, maintenance notices and your intended mail configuration. Review imported Sorry templates before using them. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+
+### Known limits
+
+Use the source revision that created a technical archive for the initial restore, then update the restored copy normally. Restore into an empty destination. The existing accessibility evaluation covers selected journeys and leaves some WCAG 2.2 AA criteria unevaluated.
+
+<!-- Run Edit Run fleet, 2026-11-21: Lamp 1.11.25 release metadata. -->
+
+## 1.11.24
+
+- **Maintenance notices follow the transition.** Starting a window sends its start notice and completing it sends its completion notice. The public status page lists upcoming maintenance through the fourteen-day boundary.
+- **Component states and times are easier to read.** Lamp uses Working, Slow, Partly down, Down and Maintenance for component states. Times show a familiar zone name, such as New York time. Open Time details on the public page for exact UTC offsets. Settings → Page gives Time zone details a full-size control.
+- **The public status page starts with the first published snapshot.** The page, Atom feed and widget report that status is unavailable until Lamp has published its first snapshot. After an operator publishes a new update, a request carrying the previous snapshot’s cache validator gets the current content.
+- **Technical archives restore into an empty local installation.** Lamp skips rer’s internal bookkeeping tables when exporting and restoring, so those tables no longer prevent a local restore.
+- **Verify old bookmarks during Cutover.** Lamp checks that each legacy bookmark redirects to the expected Lamp page and reports an unexpected destination, an unavailable page or an unreachable address.
+- **Reconcile notifications in the Delivery log.** The CSV covers the full set of deliveries matching the active filters. If a subscriber delivery fails and can be retried, Lamp schedules up to five retries over one hour.
+- **Local invitation guidance explains where links work.** An operator can open a pending invitation in the same browser. To send a teammate an invitation they can open elsewhere, invite them from the online copy with email enabled.
+- **The checkout uses rer 0.2.125.**
+
+### Upgrading from 1.11.23
+
+Back up data and your source changes first. Update the checkout to `v1.11.24`, run `pnpm install --frozen-lockfile` and run `rer deploy` with the same environment and input file. This version adds no migrations. Keep the backup and exercise a restored copy. Check sign-in, first-run setup, Settings, incident publication, maintenance notices and your intended mail configuration. Review imported Sorry templates before using them. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets.
+
+### Known limits
+
+Use the source revision that created a technical archive for the initial restore, then update the restored copy normally. Restore into an empty destination. The existing accessibility evaluation covers selected journeys and leaves some WCAG 2.2 AA criteria unevaluated.
+
+<!-- Run Edit Run fleet, 2026-11-19: Lamp 1.11.24 release metadata. -->
+
+## 1.11.23
+
+**The install description's declared hash matched an older file: approving Lamp on the platform said it could not be installed yet; fixed.**
+
+- **Get your team into Lamp.** Settings → Operators explains what each role can do before you send the invitation. Communicator is the default so a teammate can publish updates without managing settings or other operators. Pending invitations show the selected role. On a local copy, open the pending link in the same browser to try the role, or put Lamp online with email enabled to invite someone on another computer.
+- **Set up your page and see its identity in Lamp.** Choose an accent colour during local installation and search by city for a time zone during first-run setup. Setup keeps a valid saved zone and suggests the browser zone if the saved one is invalid. The saved page name appears in the workspace, browser tab and sign-in card. Add a wide logo and an optional separate square icon during setup or in Settings → Page. Settings → Look explains invalid colour values and keeps the last saved colour until the new value is valid. Maintenance forms show the chosen time zone.
+- **See what customers can see after publishing.** The incident record links to the public page and shows the latest customer-facing update once it is public. The next draft has its own editor. Use the Page and Email previews to check the customer's update. The email preview explains how Lamp chose the incident impact and says when local email is off. Set each affected component's impact before publishing. A correction starts from the original wording and links both public updates. Resolving an incident warns when a manual component status will remain in effect and offers a way back to Automatic.
+- **Know what this copy can send.** Notification settings show the actual email and text configuration, explain when a local page cannot be opened by customers, and link to setup instructions. The inactive sender field is hidden and technical deployment inputs are under Details.
+- **Change maintenance plans without losing the record.** Cancel with an optional customer reason, reinstate the same window, or cancel it again. Previous subscribers receive the applicable cancellation or change notice. An announcement or change in the last 24 hours replaces the reminder. Public and email notices separate impact from affected services. The public page shows the time range in the page’s time zone. The Delivery log names the maintenance window and notice type. Overview shows when overdue work was due and where to start, complete or cancel it.
+- **Review what will move from Sorry.** Dry runs and saved jobs list each supplied field, its outcome and the next action in a searchable, downloadable field ledger. Unsupported resources and shortened values are called out. Notice and update templates retain their original wording and source scope privately. Applying a template leaves the draft's status, audience and affected services for review before publication. Move in sends no notifications and preserves edited templates on undo.
+- **Manage installation and connections more clearly.** Hosted setup records the exact migration files D1 confirmed, including after a partial apply, so health reports the observed schema separately from uptime. Native removal checks that both workers.dev Workers and their proven resources are gone and can resume if a provider leaves resources behind. The install guide and local sign-in page explain how to make the CLI available in a new terminal. Jira Service Management and Opsgenie settings keep matcher edits separate from saving a replacement key.
+- **Keep the public page readable during a storage interruption.** When Lamp serves the last known status, the page and feeds label when it was generated. A retained page also keeps its uploaded logo.
+
+Upgrading from 1.11.22: back up data and your source changes first, update the checkout to `v1.11.23`, run `pnpm install --frozen-lockfile` and `rer deploy` with the same environment and input file. The deploy applies `0082_repeated_maintenance_cancellation.sql` and then `0083_sorry_template_metadata.sql` before starting the updated Worker. Keep the backup and exercise a restored copy. Check sign-in, first-run setup, Settings, incident publication, maintenance cancellation and reinstatement, and your intended mail configuration. Review imported Sorry templates before using them. Preserve the original deployment checkout, ownership records and account credentials for `rer signin`. Earlier installations also follow the retained upgrade notes below, including the migration introduced in 1.11.17, the mail-off instructions in 1.11.19 and keeping `INSTALLATION_KEY` with their private secrets. The checkout keeps rer 0.2.121.
+
+<!-- Run Edit Run fleet, 2026-11-18: Lamp 1.11.23 release metadata. -->
+
 ## 1.11.22
 
 **Published status-page snapshots no longer accumulate without limit in R2.** After a successful publication and pointer readback, Lamp keeps the current and previous snapshot generations and prunes older versions in bounded batches. An existing pile drains over successive successful publishes. A failed publication deletes nothing; deferred cleanup resumes on a later publish. Deployment removal clears snapshot objects with the rest of the files bucket.

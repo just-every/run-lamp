@@ -28,7 +28,7 @@ export function parseSorryJson(text: string): Json {
     }
     const start = index;
     while (index < text.length && !/[\s,\]}]/u.test(text[index])) index++;
-    if (/^(?:id|parent_id|page_id|component_ids)$/u.test(key) && /^-?\d+(?:[.eE][+\-\d]*)?$/u.test(text.slice(start, index))) {
+    if (/^(?:id|parent_id|page_id|component_id|component_ids)$/u.test(key) && /^-?\d+(?:[.eE][+\-\d]*)?$/u.test(text.slice(start, index))) {
       if (!/^(?:0|[1-9][0-9]*)$/u.test(text.slice(start, index))) throw new Error("Sorry numeric identities must be nonnegative decimal integers.");
       replacements.push({ start, end: index });
     }
@@ -85,7 +85,7 @@ export function sorryFieldInventory(
   const pointer = (value: string) => value.replaceAll("~", "~0").replaceAll("/", "~1");
   for (const { name: file, value: envelope } of files) {
     const isPublic = !Object.hasOwn(envelope, "response");
-    const resource = /^sorry-(components|notices|subscribers)(?:-\d+)?\.json$/u.exec(file)?.[1];
+    const resource = /^sorry-(components|notices|subscribers|notice-templates|update-templates)(?:-\d+)?\.json$/u.exec(file)?.[1];
     const noticeId = /^sorry-notice-(\d+)(?:-updates(?:-\d+)?)?\.json$/u.exec(file)?.[1];
     const separateUpdates = /-updates(?:-\d+)?\.json$/u.test(file);
     const root = isPublic ? resource ?? (file === "sorry-status.json" ? "page" : "notice") : "response";
@@ -115,6 +115,13 @@ export function sorryFieldInventory(
         if (key === "position") mapped(kind === "group" ? "component_groups.display_order" : "components.display_order", true, "Source relative order is appended after existing Lamp records.");
         if (key === "state" && kind === "component") mapped("component_standing_claims.state", true, "Source state is translated to a Lamp standing claim; Operational needs no extra claim.");
         if (key === "created_at" && kind === "component") mapped("components.created_at", true, "Native history starts at the earliest source creation or derived claim instant.");
+      } else if (["template", "update-template"].includes(kind) && relative.length === 1) {
+        if (key === "id") mapped("provenance.sourceId", true, "Source identity derives a stable Lamp template identity.");
+        if (key === "name") mapped("incident_templates.name");
+        if (key === "subject") mapped("incident_templates.source_metadata_json", false, "Exact subject retained, including an update template subject; oversized titles require shortening.");
+        if (["initial_comment", "content"].includes(key)) mapped("incident_templates wording", true, "Complete wording fills impact and details by paragraph; oversized fields stay complete until the owner shortens them.");
+        if (key === "component_id") mapped("incident_templates.source_metadata_json", false, "Collection-page scope retained; this is not an affected-service choice or state.");
+        if (["created_at", "updated_at"].includes(key)) mapped("incident_templates.source_metadata_json", false, "Source timestamp retained unchanged, separately from native import/edit times.");
       } else if (kind === "subscriber") {
         if (relative.length === 1 && key === "id") mapped("provenance.sourceId", true, "Source identity derives a stable Lamp identity.");
         if (relative.length === 1 && key === "email") mapped("subscribers.destination", true, "Email is trimmed and lowercased; the candidate is held inactive for explicit invitation and confirmation.");
@@ -170,6 +177,7 @@ export function sorryFieldInventory(
           const owner = detail ? (detail.response ?? detail.notice) as Record<string, unknown> : undefined;
           const kind = resource === "components" ? groupIds.has(String(row.id)) ? "group" : "component"
             : resource === "subscribers" ? "subscriber"
+            : resource === "notice-templates" ? "template" : resource === "update-templates" ? "update-template"
             : (separateUpdates ? owner?.type : row.type) === "planned" ? "maintenance" : "incident";
           walk(row, [key, String(index)], kind, noticeId ?? String(row.id), separateUpdates ? ["updates", String(index)] : []);
         });

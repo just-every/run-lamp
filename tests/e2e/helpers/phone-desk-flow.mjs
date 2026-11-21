@@ -45,7 +45,7 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.locator(`a[href="/app/incidents/${incidentId}"]`).click();
     await page.getByRole('heading', { name: 'First update' }).waitFor();
     await operatorHydrated(page);
-    // Choosing a component from "+ Add component" stages it with this update.
+    // The new attachment needs an explicit choice before it joins the saved update.
     await page.getByLabel('Add component', { exact: true }).selectOption(component.id);
     const composer = incidentComposer(page);
     const audience = composer.audience;
@@ -53,6 +53,10 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await audience.fill('Customers making card payments in the US.');
     await impact.fill('Some checkouts fail during authorization. Retrying may succeed.');
     await page.getByLabel('Next update date and time').fill('2027-09-08T14:00');
+    const state = page.getByLabel(`${component.name} state with this update`, { exact: true });
+    assert.equal(await state.inputValue(), '');
+    assert.equal(await composer.publish.isDisabled(), true);
+    await state.selectOption('Major outage');
     await page.getByText('Draft saved', { exact: true }).waitFor();
     await page.reload();
     await operatorHydrated(page);
@@ -63,10 +67,11 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.getByText('Notification email', { exact: true }).waitFor();
     await inspect('preview');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
-    await page.getByText('Update published.').waitFor();
+    await page.locator('.publication-confirmation').waitFor();
     const published = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(published.updates.length, 1);
     assert.equal(published.components[0].componentId, component.id);
+    await composer.openDraft();
     await composer.setStatus('Resolved');
     await audience.fill('Customers making card payments in the US.');
     await impact.fill('Card authorization is restored. Checkouts are completing normally.');
@@ -75,22 +80,49 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     await page.getByLabel('Recovery override reason', { exact: true }).fill(recoveryReason);
     await inspect('resolve');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
-    await page.getByText('Update published.').waitFor();
+    await page.locator('.next-draft-toggle[aria-expanded="false"]').waitFor();
+    await page.locator('.live-preview').getByText('Card authorization is restored. Checkouts are completing normally.', { exact: true }).waitFor();
     const resolved = (await (await appFetch(`/api/app/incidents/${incidentId}`)).json()).incident;
     assert.equal(resolved.lifecycle, 'Resolved');
     assert.ok(resolved.internalNotes.some(note => note.body.includes(recoveryReason)), 'the phone operator records the required private override');
     await inspect('resolved');
     await page.goto(`${appUrl}/app/components`);
     await operatorHydrated(page);
-    const row = page.locator('.component-row').filter({ hasText: component.name });
-    await row.getByRole('button', { name: component.name }).click();
+    const row = page.locator('.component-row').filter({ has: page.getByText(component.name, { exact: true }) });
+    const openComponent = row.getByRole('button', { name: component.name });
+    await openComponent.click();
     const drawer = page.getByRole('dialog', { name: component.name, exact: true });
-    await drawer.getByRole('button', { name: 'Status', exact: true }).click();
+    const statusTab = drawer.getByRole('button', { name: 'Status', exact: true });
+    const serviceStatus = drawer.getByLabel('Service status');
+    await statusTab.click();
     await inspect('claim');
-    await drawer.getByLabel('Service status').selectOption('Degraded performance');
+    const selectedClaim = 'Degraded performance';
+    await serviceStatus.selectOption(selectedClaim);
     await drawer.getByRole('button', { name: 'Save status', exact: true }).click();
-    await row.getByText('Degraded performance', { exact: true }).waitFor();
+    const visibleStatus = row.getByText('Slow', { exact: true });
+    await visibleStatus.waitFor();
+
+    const componentsResponse = await page.request.get(`${appUrl}/api/app/components`);
+    assert.equal(componentsResponse.status(), 200);
+    const { components } = await componentsResponse.json();
+    const savedComponent = components.find(({ id }) => id === component.id);
+    assert.ok(savedComponent, 'the component edited on the phone is in the authenticated catalogue');
+    assert.equal(savedComponent.name, component.name);
+    assert.equal(savedComponent.standingClaimState, selectedClaim);
+
+    await page.reload();
+    await operatorHydrated(page);
+    await visibleStatus.waitFor();
     await inspect('components');
+    if (proof) {
+      const phoneViewport = page.viewportSize();
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.screenshot({ path: `${proof}/1440-components.png`, fullPage: true });
+      await page.setViewportSize(phoneViewport);
+    }
+    await openComponent.click();
+    await statusTab.click();
+    assert.equal(await serviceStatus.inputValue(), savedComponent.standingClaimState);
     await page.goto(`${appUrl}/app/maintenance`);
     await operatorHydrated(page);
     await page.getByLabel('Title', { exact: true }).fill(`Payments database index rollout ${width}`);

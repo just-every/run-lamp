@@ -21,7 +21,7 @@ const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 export type PageSettingsView = Omit<StoredPageSettings, "theme" | "widgetAllowedOrigins" | "widgetAppearance" | "wordingBlockedTerms" | "emailBranding"> & {
   theme: PageTheme;
   themeRemovals?: string[];
-  themeAssetAvailability: { font: boolean; header: boolean };
+  themeAssetAvailability: { font: boolean; header: boolean; icon: boolean };
   emailBranding: EmailBranding;
   mailIdentityEditable: boolean;
   widgetAllowedOrigins: string[];
@@ -43,7 +43,7 @@ export interface PageSettingsService {
 function toView(settings: StoredPageSettings, mailIdentityEditable: boolean, regionsAvailable: boolean): PageSettingsView {
   const wordingBlockedTerms: unknown = JSON.parse(settings.wordingBlockedTerms);
   if (!Array.isArray(wordingBlockedTerms) || wordingBlockedTerms.some(term => typeof term !== "string")) throw new Error("Wording check terms are invalid.");
-  return { ...settings, themeAssetAvailability: { font: Boolean(JSON.parse(settings.themeAssets).font), header: Boolean(JSON.parse(settings.themeAssets).header) }, theme: themeSchema.parse(JSON.parse(settings.theme)), emailBranding: emailBrandingSchema.parse(JSON.parse(settings.emailBranding)), widgetAppearance: widgetAppearanceSchema.parse(JSON.parse(settings.widgetAppearance)), mailIdentityEditable, regionsAvailable, wordingBlockedTerms, widgetAllowedOrigins: parseWidgetAllowedOrigins(settings.widgetAllowedOrigins) };
+  return { ...settings, themeAssetAvailability: { font: Boolean(JSON.parse(settings.themeAssets).font), header: Boolean(JSON.parse(settings.themeAssets).header), icon: Boolean(JSON.parse(settings.themeAssets).icon) }, theme: themeSchema.parse(JSON.parse(settings.theme)), emailBranding: emailBrandingSchema.parse(JSON.parse(settings.emailBranding)), widgetAppearance: widgetAppearanceSchema.parse(JSON.parse(settings.widgetAppearance)), mailIdentityEditable, regionsAvailable, wordingBlockedTerms, widgetAllowedOrigins: parseWidgetAllowedOrigins(settings.widgetAllowedOrigins) };
 }
 
 export function createPageSettingsService(

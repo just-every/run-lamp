@@ -16,8 +16,8 @@ declare module "@tanstack/react-router" {
 /** What the incident page opens with after the new-incident screen, on that visit only. `publication` carries the operator's
  * notification and timing choices when the update stayed private (saved as a draft, or refused), so a retry offers what they
  * chose. A scheduled update needs none: the server holds its time and channels, and the incident page starts from them. */
-export type IncidentNotice = { text: string; error: boolean; publication?: { channels: Channel[]; timing: PublishTiming } };
-export type NewClaim = { componentId: string; state: IncidentClaimState; relationship: "Primary" | "Dependent" };
+export type IncidentNotice = { text?: string; error: boolean; publishedUpdateId?: string; publication?: { channels: Channel[]; timing: PublishTiming } };
+export type NewClaim = { componentId: string; state: IncidentClaimState | null; relationship: "Primary" | "Dependent" };
 export interface NewIncident { title: string; claims: NewClaim[]; update: IncidentFirstUpdateInput; openedAt: string | null; channels: Channel[]; timing: PublishTiming }
 type Created = Awaited<ReturnType<IncidentsService["create"]>>;
 
@@ -59,7 +59,9 @@ export function useNewIncident() {
 
   useEffect(() => { if (restored && socialData?.postByDefault && !touchedChannels.current) setForm(current => current.channels.includes("social") ? current : { ...current, channels: [...current.channels, "social"] }); }, [restored, socialData?.postByDefault]);
 
-  const previewBody = JSON.stringify({ title: form.title.trim(), components: form.claims.map(({ componentId, state }) => ({ componentId, state })), update: form.update });
+  const selectedClaims = form.claims.flatMap(claim => claim.state ? [{ ...claim, state: claim.state }] : []);
+  const claimsReady = selectedClaims.length > 0 && selectedClaims.length === form.claims.length;
+  const previewBody = JSON.stringify({ title: form.title.trim(), components: selectedClaims.map(({ componentId, state }) => ({ componentId, state })), update: form.update });
   useEffect(() => {
     const controller = new AbortController();
     const timeout = window.setTimeout(() => {
@@ -78,21 +80,24 @@ export function useNewIncident() {
   const setChannels = (channels: Channel[]) => { touchedChannels.current = true; setForm(current => ({ ...current, channels })); };
   const { update } = form;
   const resolved = update.lifecycle === "Resolved";
-  const publishable = Boolean(form.title.trim() && form.claims.length && update.affectedAudience.trim() && update.customerImpact.trim() && (resolved || update.nextUpdateAt) && (form.timing.mode === "now" || form.timing.at)) && !timeErrors.nextUpdate && !timeErrors.timing;
+  const publishable = Boolean(form.title.trim() && claimsReady && update.affectedAudience.trim() && update.customerImpact.trim() && (resolved || update.nextUpdateAt) && (form.timing.mode === "now" || form.timing.at)) && !timeErrors.nextUpdate && !timeErrors.timing;
 
   // UPDATE-009: a template fills the form and attaches its components with their states; nothing publishes.
   const applyTemplate = (template: IncidentTemplate) => {
+    if (template.title.length > 250 || template.fieldsToShorten.length) return "Shorten this template in Settings before applying.";
+    const wordingOnly = template.kind === "notice" || template.kind === "update";
     const claims = template.components.flatMap(component => component.componentId && (INCIDENT_CLAIM_STATES as readonly string[]).includes(component.state) ? [{ componentId: component.componentId, state: component.state as IncidentClaimState, relationship: component.relationship }] : []);
-    if (template.lifecycle === "Resolved") setTimeErrors(current => ({ ...current, nextUpdate: null }));
+    if (!wordingOnly && template.lifecycle === "Resolved") setTimeErrors(current => ({ ...current, nextUpdate: null }));
     if (template.shouldSendNotifications !== null) touchedChannels.current = true;
     setForm(current => ({
       ...current,
       title: current.title.trim() || template.title,
       claims: [...current.claims.filter(claim => !claims.some(next => next.componentId === claim.componentId)), ...claims],
-      update: { lifecycle: template.lifecycle, affectedAudience: template.affectedAudience, customerImpact: template.customerImpact, whatStillWorks: template.whatStillWorks, details: template.details, nextUpdateAt: template.lifecycle === "Resolved" || template.nextUpdateOffsetMinutes === null ? null : new Date(Date.now() + template.nextUpdateOffsetMinutes * 60_000).toISOString() },
+      update: { lifecycle: wordingOnly ? current.update.lifecycle : template.lifecycle, affectedAudience: wordingOnly && !template.affectedAudience ? current.update.affectedAudience : template.affectedAudience, customerImpact: template.customerImpact, whatStillWorks: template.whatStillWorks, details: template.details, nextUpdateAt: wordingOnly ? current.update.nextUpdateAt : template.lifecycle === "Resolved" || template.nextUpdateOffsetMinutes === null ? null : new Date(Date.now() + template.nextUpdateOffsetMinutes * 60_000).toISOString() },
       channels: template.shouldSendNotifications === null ? current.channels : template.shouldSendNotifications ? ["email", "webhook", ...(hasChat ? ["chat" as const] : []), ...(current.channels.includes("social") ? ["social" as const] : [])] : [],
     }));
     const skipped = template.components.filter(component => !claims.some(claim => claim.componentId === component.componentId)).map(component => component.componentName);
+    if (wordingOnly) return "Template filled the private draft. Choose status and affected services before publishing.";
     return skipped.length ? `Template applied. Not attached: ${skipped.join(", ")}.` : template.nextUpdateOffsetMinutes === null && template.lifecycle !== "Resolved" ? "Template applied. Choose the next update time." : "Template applied.";
   };
 
@@ -100,12 +105,12 @@ export function useNewIncident() {
   const create = async () => {
     setPublishing(true); setError(null);
     try {
-      const { incident } = await appApi<{ incident: Created }>("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: form.title.trim(), ...(form.openedAt ? { openedAt: form.openedAt } : {}), components: form.claims, update }) });
+      const { incident } = await appApi<{ incident: Created }>("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: form.title.trim(), ...(form.openedAt ? { openedAt: form.openedAt } : {}), components: selectedClaims, update }) });
       remember(null);
       return incident;
     } catch (cause) { setPublishing(false); setError(cause instanceof Error ? cause.message : "The incident could not be created."); return null; }
   };
-  const savable = Boolean(form.title.trim() && form.claims.length) && !publishing;
+  const savable = Boolean(form.title.trim() && claimsReady) && !publishing;
   // Keeps the private-draft path: the incident exists, unpublished, for review or for later.
   const saveDraft = async () => {
     if (!savable) return;
@@ -127,12 +132,12 @@ export function useNewIncident() {
         await appApi(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ publishAt: timing.at, channels: form.channels }) });
         notice = { text: "Update scheduled. It stays private until then.", error: false };
       } else {
-        await appApi(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ channels: form.channels, ...(timing.mode === "backdate" ? { publishedAt: timing.at } : {}) }) });
-        notice = { text: timing.mode === "backdate" ? "Historical update published. It did not notify subscribers." : "Update published.", error: false };
+        const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ channels: form.channels, ...(timing.mode === "backdate" ? { publishedAt: timing.at } : {}) }) });
+        notice = { publishedUpdateId: update.id, error: false };
       }
     } catch (cause) { notice = { text: `Not published: ${cause instanceof Error ? cause.message : "the update could not be published."}`, error: true, publication: { channels: form.channels, timing } }; }
     await navigate({ to: "/app/incidents/$incidentId", params: { incidentId: incident.id }, state: (current) => ({ ...current, incidentNotice: notice }) });
   };
 
-  return { form, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate };
+  return { form, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate };
 }

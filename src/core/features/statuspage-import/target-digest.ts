@@ -107,8 +107,10 @@ export function matchesAll(rows: TargetRow[]): D1Sql[] {
   const markers = rows.map((row) => {
     counts[row.targetKind] = (counts[row.targetKind] ?? 0) + 1;
     for (const table of Object.keys(tablesOf(row.targetKind))) {
-      const entries = owned.get(table) ?? [];
-      owned.set(table, entries);
+      // Different marker kinds can own rows in the same native table.
+      const prefix = rowPrefix(row.targetKind, table);
+      const entries = owned.get(prefix) ?? [];
+      owned.set(prefix, entries);
       for (const record of (row.value as unknown as NativeValue).tables[table] ?? []) entries.push({ id: row.targetId, record });
     }
     return `m${encode(row.targetKind)}${encode(row.targetId)}${encode(row.revision ?? null)}`;
@@ -119,9 +121,10 @@ export function matchesAll(rows: TargetRow[]): D1Sql[] {
     { sql: `${digestSql(`SELECT 'm'||${encodeSql("kind")}||${encodeSql("id")}||${encodeSql("revision")} AS t FROM (${allMarkers})`)}=?`, params: [setDigest(markers)] },
   ];
   for (const kind of nativeKinds) for (const [table, column] of Object.entries(tablesOf(kind))) {
-    const entries = owned.get(table) ?? [], columns = columnsOf(table, entries.map((entry) => entry.record));
-    const select = `SELECT '${rowPrefix(kind, table)}'||${encodeSql("m.id")}||${renderRowSql(table, columns)} AS t FROM ${markerTable(kind)} m JOIN ${table} x ON x.${name(column)}=m.id${markerWhere(kind).params.length ? ` WHERE m.kind='${kind}'` : ""}`;
-    guards.push({ sql: `${digestSql(select)}=?`, params: [setDigest(entries.map((entry) => `${rowPrefix(kind, table)}${encode(entry.id)}${renderRow(table, columns, entry.record)}`))] });
+    const prefix = rowPrefix(kind, table);
+    const entries = owned.get(prefix) ?? [], columns = columnsOf(table, entries.map((entry) => entry.record));
+    const select = `SELECT '${prefix}'||${encodeSql("m.id")}||${renderRowSql(table, columns)} AS t FROM ${markerTable(kind)} m JOIN ${table} x ON x.${name(column)}=m.id${markerWhere(kind).params.length ? ` WHERE m.kind='${kind}'` : ""}`;
+    guards.push({ sql: `${digestSql(select)}=?`, params: [setDigest(entries.map((entry) => `${prefix}${encode(entry.id)}${renderRow(table, columns, entry.record)}`))] });
   }
   return guards;
 }

@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
 import type { ComponentsService } from "../service";
 import { ClientExtensionSlot } from "../../../app/client/extensions";
 import { publicStateSource } from "./public-state-source";
@@ -30,7 +31,7 @@ function ComponentRow({ component, open, onOpen }: { component: Component; open:
   return <li className={open ? "component-row is-open" : "component-row"}>
     <button type="button" className="component-row-button" aria-haspopup="dialog" onClick={onOpen}>
       <span className="component-row-summary"><strong>{component.name}</strong>{facts.length > 0 && <small>{facts.join(" · ")}</small>}</span>
-      <span className={`state-pill state-${component.publicState.toLowerCase().replaceAll(" ", "-")}`}>{component.publicState}</span>
+      <span className={`state-pill state-${component.publicState.toLowerCase().replaceAll(" ", "-")}`}>{componentStateLabel(component.publicState)}</span>
       <svg className="row-chevron" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
     </button>
     <ClientExtensionSlot id="component.row.actions.v1" context={{ component: { id: component.id, name: component.name, publicState: component.publicState, groupName: component.groupName } }} />

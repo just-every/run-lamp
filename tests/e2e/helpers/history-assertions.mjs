@@ -10,7 +10,7 @@ const descendants = node => (node.childNodes ?? []).flatMap(child => [child, ...
 export function historyTime(instant) {
   const local = new Date(Date.parse(instant) + 10 * 3600_000);
   const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][local.getUTCMonth()];
-  return `${month} ${local.getUTCDate()}, ${local.getUTCFullYear()}, ${local.toISOString().slice(11, 16)} UTC+10:00`;
+  return `${month} ${local.getUTCDate()}, ${local.getUTCFullYear()}, ${local.toISOString().slice(11, 16)} Brisbane time`;
 }
 
 export function historyGroups(html) {

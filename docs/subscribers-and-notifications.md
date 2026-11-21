@@ -7,6 +7,13 @@ their emailed link.
 
 ## Connect email delivery
 
+Notifications keeps your inactive From field hidden and the technical setup names in
+**Details**. Your local email stays off; the text status reflects whether SMS is
+configured. Put Lamp online and connect your chosen services before relying on
+subscriber delivery; the steps below cover email and texts.
+
+Run Edit Run fleet, 17 November 2026.
+
 **Settings → Notifications → Email delivery** reports the sender this installation
 actually uses. On a local `rer dev` installation, email is off even when a provider
 name is present: sign-in uses the one-click owner entry, subscriber pages say no

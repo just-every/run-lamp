@@ -1,7 +1,9 @@
+import { componentStateLabel } from "../../../shared/component-state-label";
+import type { ComponentState } from "../../../shared/domain";
 import { useAppData } from "../../../app/client/ui/api";
 
 type PublicStatus = {
-  overall: string;
+  overall: ComponentState;
   incident: { lifecycle: string; message: string } | null;
   maintenance: { reference: string; title: string; state: string } | null;
 };
@@ -21,7 +23,7 @@ export function EmbedPreview({ variant, background, color, hideOperational }: {
       : hidden ? <p>This embed is hidden with your page’s current status.</p>
       : <div className={`embed-preview-status embed-preview-${variant}`} style={{ background, color }}>
         <span className={`page-preview-dot state-${data.overall.toLowerCase().replaceAll(" ", "-")}`} aria-hidden="true" />
-        <strong>{data.overall}</strong>
+        <strong>{componentStateLabel(data.overall)}</strong>
         {variant !== "dot" && (incident || maintenance) ? <p>{incident ? incident.message : `${maintenance!.reference}: ${maintenance!.title}\n${maintenance!.state}`}</p> : null}
       </div>}
   </section>;

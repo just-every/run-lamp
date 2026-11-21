@@ -1,3 +1,4 @@
+import { componentStateLabel } from "../../shared/component-state-label";
 import { themeSchema } from "../../shared/page-theme";
 import { themeChrome } from "./theme-rendering";
 import { publicMetricsSection } from "../metrics/public-chart";
@@ -29,7 +30,7 @@ import { renderBadges } from "./badges";
 import { renderPublicApi } from "./public-api";
 import { publicComponentResources } from "./component-address";
 import { incidentMarkup, maintenanceMarkup, resolvedMarkup, statePill, type PublicIncident, type PublicMaintenance } from "./record-markup";
-import { DAY, REPORTING_DAYS, durationText, escapeHtml, stateClass, timestamp, timezoneLabel } from "./format";
+import { DAY, REPORTING_DAYS, durationText, escapeHtml, stateClass, timestamp, timestampDetails, timezoneLabel } from "./format";
 import { computeUptime, type Uptime, uptimeMarkup } from "./uptime";
 import { uptimeMethod } from "./uptime-method";
 
@@ -132,15 +133,15 @@ function footerResources(model: PublicSnapshotModel) {
 function pageShell(title: string, body: string, model: ReturnType<typeof toPublicModel>, slots: LampServerSlots, current: "root" | "history" | "other") {
   const { settings, overall } = model;
   const publicOrigin = model.origin;
-  const masthead = publicMasthead(settings.pageName, current === "root" ? "status" : current === "history" ? "history" : undefined, settings.tagline, !model.prelaunch);
+  const masthead = publicMasthead(settings.pageName, current === "root" ? "status" : current === "history" ? "history" : undefined, settings.tagline, !model.prelaunch, Boolean(settings.logoKey));
   const website = model.websiteUrl ? new URL(model.websiteUrl) : null;
   const websiteLink = website ? `<a href="${escapeHtml(website.href)}">← ${escapeHtml(website.hostname)}</a>` : "";
-  const meta = `<p class="page-meta">${websiteLink}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span></p>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${overall}`)}"><meta property="og:image" content="${escapeHtml(`${publicOrigin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${overall}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body class="lamp-public"><main class="page${current === "root" ? " root-page" : ""}">${themeChrome(model.theme, "header")}${masthead}${slotMarkup(slots, "status-page.header.after.v1", model)}${body}${meta}<footer>${themeChrome(model.theme, "footer")}${slotMarkup(slots, "status-page.footer.before.v1", model)}${footerResources(model)}<a data-lamp-signin href="/signin">Sign in</a>${settings.footerCreditEnabled ? " · Powered by Lamp" : ""}</footer></main><script src="/assets/status-page.js" defer></script></body></html>`;
+  const meta = `<p class="page-meta">${websiteLink}<span class="host" data-timezone-label data-timezone="${escapeHtml(settings.timezone)}" data-zone-name="${escapeHtml(timezoneLabel(settings.timezone))}">Times shown in ${escapeHtml(timezoneLabel(settings.timezone))}</span></p>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta name="description" content="${escapeHtml(settings.tagline)}"><meta property="og:title" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><meta property="og:image" content="${escapeHtml(`${publicOrigin}/assets/og.svg`)}"><meta property="og:image:alt" content="${escapeHtml(`${settings.pageName}: ${componentStateLabel(overall)}`)}"><title>${escapeHtml(title)}</title><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/status-page.css"></head><body class="lamp-public"><main class="page${current === "root" ? " root-page" : ""}">${themeChrome(model.theme, "header")}${masthead}${slotMarkup(slots, "status-page.header.after.v1", model)}${body}${meta}<footer>${themeChrome(model.theme, "footer")}${slotMarkup(slots, "status-page.footer.before.v1", model)}${footerResources(model)}<a data-lamp-signin href="/signin">Sign in</a>${settings.footerCreditEnabled ? " · Powered by Lamp" : ""}</footer></main><script src="/assets/status-page.js" defer></script></body></html>`;
 }
 
 function componentMarkup(component: PublicComponent & { hideUptime?: boolean }, timezone: string, generatedAt: string) {
-  return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state")}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}</div><div class="component-status">${uptimeMarkup(component, timezone, generatedAt)}</div></article>`;
+  return `<article class="component"><div class="component-name"><h4>${escapeHtml(component.name)}</h4>${statePill(component.state, "component-state", componentStateLabel(component.state))}${component.description ? `<details class="component-description"><summary>About ${escapeHtml(component.name)}</summary><p>${escapeHtml(component.description)}</p></details>` : ""}${component.note ? `<p class="component-note">${escapeHtml(component.note)}</p>` : ""}</div><div class="component-status">${uptimeMarkup(component, timezone, generatedAt)}</div></article>`;
 }
 
 function componentHealthMarkup(model: ReturnType<typeof toPublicModel>) {
@@ -221,7 +222,7 @@ function renderPage(model: ReturnType<typeof toPublicModel>, slots: LampServerSl
   const { settings, incidents, overall, generatedAt } = model;
   const newest = incidents.filter((incident) => incident.lifecycle !== "Resolved").flatMap((incident) => incident.updates.map((update) => ({ incident, update }))).sort((left, right) => right.update.publishedAt.localeCompare(left.update.publishedAt))[0];
   const statusIcon = overall === "Operational" ? "check" : overall === "Under maintenance" ? "maintenance" : "alert";
-  const status = `<section class="status-banner ${stateClass(overall)}" aria-labelledby="overall-status"><div id="status-live" role="status" aria-live="polite" aria-atomic="true"><div class="status-summary">${publicIcon(statusIcon, "overall-status-icon")}<div><p class="eyebrow">Current status</p><h1 id="overall-status" data-overall>${escapeHtml(overall)}</h1></div></div><p class="status-live-update" data-newest-update>${escapeHtml(newest ? updateSummary(newest.incident, newest.update) : "There are no open incidents.")}</p></div><p class="status-generated" data-generated-at>Updated ${timestamp(generatedAt, settings.timezone)}.</p></section>`;
+  const status = `<section class="status-banner ${stateClass(overall)}" aria-labelledby="overall-status"><div id="status-live" role="status" aria-live="polite" aria-atomic="true"><div class="status-summary">${publicIcon(statusIcon, "overall-status-icon")}<div><p class="eyebrow">Current status</p><h1 id="overall-status" data-overall>${escapeHtml(componentStateLabel(overall))}</h1></div></div><p class="status-live-update" data-newest-update>${escapeHtml(newest ? updateSummary(newest.incident, newest.update) : "There are no open incidents.")}</p></div><p class="status-generated" data-generated-at>Updated ${timestamp(generatedAt, settings.timezone)}.</p><div data-generation-details>${timestampDetails(settings.timezone, ["Updated", generatedAt])}</div></section>`;
   const pageTitle = /\bstatus\s*$/i.test(settings.pageName.trim()) ? settings.pageName : `${settings.pageName} status`;
   const timeline = timelineMarkup(model, slots);
   return pageShell(pageTitle, `${status}${timeline.active}${componentHealthMarkup(model)}<div class="component-extension">${slotMarkup(slots, "status-page.components.after.v1", model)}</div>${timeline.rest}${model.prelaunch ? "" : subscriptionMarkup(model)}`, model, slots, "root");
@@ -234,7 +235,7 @@ function renderIncidentPage(incident: PublicIncident, model: ReturnType<typeof t
   const resolved = incident.lifecycle === "Resolved" && incident.resolvedAt
     ? `<p class="incident-resolution">${resolutionUpdateCarriesTime ? "" : `Resolved at ${timestamp(incident.resolvedAt, timezone)}. `}Duration: ${escapeHtml(durationText(incident.openedAt, incident.resolvedAt))}</p>`
     : "";
-  const content = `<div class="incident-document"><div class="incident-document-main">${incidentMarkup(incident, timezone, undefined, "Incident", "h1")}${resolved ? `<section class="about"><h2>About this incident</h2>${resolved}</section>` : ""}${report}${model.prelaunch ? "" : incidentFollowMarkup(incident, model.smsEnabled,model.incidentIncludeReport)}</div><aside class="incident-summary" aria-label="Incident status"><p class="eyebrow">Incident status</p><h2 class="summary-state">${statePill(incident.lifecycle)}</h2><dl><div><dt>Opened</dt><dd>${timestamp(incident.openedAt, timezone)}</dd></div><div><dt>Updates</dt><dd>${incident.updates.length}</dd></div></dl><a class="text-link" href="/">Current status</a></aside></div>`;
+  const content = `<div class="incident-document"><div class="incident-document-main">${incidentMarkup(incident, timezone, undefined, "Incident", "h1")}${resolved ? `<section class="about"><h2>About this incident</h2>${resolved}</section>` : ""}${report}${model.prelaunch ? "" : incidentFollowMarkup(incident, model.smsEnabled,model.incidentIncludeReport)}</div><aside class="incident-summary" aria-label="Incident status"><p class="eyebrow">Incident status</p><h2 class="summary-state">${statePill(incident.lifecycle)}</h2><dl><div><dt>Opened</dt><dd>${timestamp(incident.openedAt, timezone)}</dd></div><div><dt>Updates</dt><dd>${incident.updates.length}</dd></div></dl>${timestampDetails(timezone, ["Opened", incident.openedAt], ...(incident.resolvedAt ? [["Resolved", incident.resolvedAt] as [string, string]] : []))}<a class="text-link" href="/">Current status</a></aside></div>`;
   return pageShell(`${incident.title} · ${model.settings.pageName}`, content, model, slots, "other");
 }
 
@@ -247,10 +248,10 @@ function renderHistory(model: ReturnType<typeof toPublicModel>, slots: LampServe
   return pageShell(`${month ?? "History"} · ${model.settings.pageName}`, `${renderHistoryContent(model, month)}`, model, slots, "history");
 }
 
-export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}): RenderedSnapshot {
+export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt = new Date().toISOString(), policies: PublicSnapshotPolicies = defaultPublicSnapshotPolicies, branding: { logoDataUrl: string | null; iconDataUrl?: string | null } = { logoDataUrl: null }, slots: LampServerSlots = {}): RenderedSnapshot {
   const model = toPublicModel(source, generatedAt, policies);
   const dependencies = source.dependencies ?? [];
-  const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => `<article class="component"><div class="component-name"><h3>${escapeHtml(row.name)}</h3><p><a href="${escapeHtml(row.statusPageUrl)}">Reported by ${escapeHtml(row.vendorName)}</a></p><p>${escapeHtml(row.state ?? "Waiting for first read")}</p>${row.unavailableAt ? `<p>Vendor status unavailable since ${timestamp(row.unavailableAt, model.settings.timezone)}. Last reported: ${escapeHtml(row.state ?? "No observation")}.</p>` : ""}</div></article>`).join("")}</section>` : "";
+  const vendorMarkup = dependencies.length ? `<section class="history" aria-label="Upstream providers"><h2>Upstream providers</h2><p>Vendor reports are separate from buyer incidents.</p>${dependencies.map(row => `<article class="component"><div class="component-name"><h3>${escapeHtml(row.name)}</h3><p><a href="${escapeHtml(row.statusPageUrl)}">Reported by ${escapeHtml(row.vendorName)}</a></p><p>${escapeHtml(row.state ? componentStateLabel(row.state) : "Waiting for first read")}</p>${row.unavailableAt ? `<p>Vendor status unavailable since ${timestamp(row.unavailableAt, model.settings.timezone)}. Last reported: ${escapeHtml(row.state ? componentStateLabel(row.state) : "No observation")}.</p>` : ""}</div></article>`).join("")}</section>` : "";
   const feeds = renderFeeds(model, source);
   const artifacts: SnapshotArtifact[] = [
     { key: "page.html", body: renderPage(model, slots).replace("<footer", vendorMarkup + publicMetricsSection(model.metrics, model.visibleComponents, model.generatedAt, model.settings.timezone) + "<footer"), contentType: "text/html; charset=utf-8" },
@@ -265,9 +266,9 @@ export function renderPublicSnapshot(source: PublicSnapshotSource, generatedAt =
     { key: "status.json", body: JSON.stringify(statusPayload(model)), contentType: "application/json; charset=utf-8" },
     { key: "assets/status-page.js", body: publicPageScript, contentType: "application/javascript; charset=utf-8" },
     { key: "assets/status-page.css", body: publicPageStyles(model.settings.accentColor, model.theme, model.origin), contentType: "text/css; charset=utf-8" },
-    { key: "assets/mark.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl }, "mark"), contentType: "image/svg+xml; charset=utf-8" },
-    { key: "assets/favicon.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl }, "favicon"), contentType: "image/svg+xml; charset=utf-8" },
-    { key: "assets/og.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl }, "og"), contentType: "image/svg+xml; charset=utf-8" },
+    { key: "assets/mark.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "mark"), contentType: "image/svg+xml; charset=utf-8" },
+    { key: "assets/favicon.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "favicon"), contentType: "image/svg+xml; charset=utf-8" },
+    { key: "assets/og.svg", body: renderBrandSvg({ settings: model.settings, overall: model.overall, logoDataUrl: branding.logoDataUrl, iconDataUrl: branding.iconDataUrl }, "og"), contentType: "image/svg+xml; charset=utf-8" },
     { key: "not-found.html", body: renderNotFoundPage(model, slots), contentType: "text/html; charset=utf-8" },
     ...model.incidents.map((incident) => ({ key: `incidents/${encodeURIComponent(incident.reference)}.html`, body: renderIncidentPage(incident, model, slots), contentType: "text/html; charset=utf-8" })),
   ];

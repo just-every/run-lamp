@@ -19,7 +19,11 @@ export function literalLinkFields(fields) {
 function assertLiteralLinks(html, surface) {
   assert.ok(html.includes(MARKDOWN_LITERAL), `${surface}: Markdown delimiters and wording stay literal`);
   assert.ok(html.includes(LABELLED_LITERAL.replaceAll('<', '&lt;').replaceAll('>', '&gt;')), `${surface}: both labelled-link forms stay wholly literal`);
-  assert.doesNotMatch(html, /<(?:strong|em|code)\b|href="https:\/\/guide\.example\.test\//, `${surface}: no Markdown or labelled destination is interpreted`);
+  assert.doesNotMatch(html, /<(?:strong|em|code)\b/, `${surface}: no Markdown is interpreted`);
+  for (const link of descendants(parse(html)).filter(node => node.tagName === 'a')) {
+    const url = new URL(link.attrs.find(attr => attr.name === 'href')?.value ?? '');
+    assert.notEqual(url.hostname, 'guide.example.test', `${surface}: no labelled destination is interpreted`);
+  }
   assert.ok(html.includes(anchor('https://help.example.com/audience')), `${surface}: the audience field also links a bare HTTPS URL`);
   assert.ok(html.includes(anchor('https://help.example.com/recovery')), `${surface}: the details field also links a bare HTTPS URL`);
 }
@@ -48,7 +52,9 @@ export function assertLinkedUpdateHtml(html, surface) {
   assert.ok(nodeText(parse(html)).includes('<a href="https://x.test">x</a>'), `${surface}: markup is escaped literal text`);
   for (const literal of LITERALS) assert.ok(html.includes(literal), `${surface}: ${literal} stays literal`);
   for (const link of descendants(parse(html)).filter(node => node.tagName === 'a')) {
-    assert.doesNotMatch(link.attrs.find(attr => attr.name === 'href')?.value ?? '', /^(?:https:\/\/x\.test|javascript:|http:\/\/example\.com|data:)/, `${surface}: no other scheme or markup becomes a link`);
+    const url = new URL(link.attrs.find(attr => attr.name === 'href')?.value ?? '');
+    assert.equal(url.protocol, 'https:', `${surface}: only HTTPS becomes a link`);
+    assert.notEqual(url.hostname, 'x.test', `${surface}: escaped markup never becomes a link`);
   }
   for (const [, href, text] of html.matchAll(/<a href="([^"]*)" rel="nofollow noopener ugc">([^<]*)<\/a>/g)) assert.equal(text, href, `${surface}: every update link shows its own URL`);
 }

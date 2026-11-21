@@ -67,6 +67,7 @@ export async function socialBrowserFlow({ origin, devLink, diagnostic = () => {}
     await social.uncheck();
     await newForm.title.fill('Synthetic Lamp social browser publication');
     await newForm.addComponent(component.name);
+    await newForm.componentState(component.name, 'Major outage');
     await newForm.impact.fill('Customers see a synthetic browser test interruption.');
     await newForm.audience.fill('Synthetic test customers.');
     await page.getByRole('button', { name: '30 min', exact: true }).click();
@@ -77,9 +78,10 @@ export async function socialBrowserFlow({ origin, devLink, diagnostic = () => {}
     assert.equal((await publish).status(), 200);
     await page.waitForURL(url => /^\/app\/incidents\/[A-Z0-9]{26}$/.test(url.pathname));
     await operatorHydrated(page);
-    await page.getByRole('button', { name: 'Publish update', exact: true }).waitFor();
     const incidentUrl = page.url();
     const composer = incidentComposer(page);
+    await composer.openDraft();
+    await composer.publish.waitFor();
     await composer.option('Notify…');
     await expect(page.getByRole('checkbox', { name: 'Social accounts', exact: true })).toBeChecked();
     const incidentId = new URL(incidentUrl).pathname.split('/').at(-1);
@@ -101,7 +103,9 @@ export async function socialBrowserFlow({ origin, devLink, diagnostic = () => {}
     await page.getByText('Draft saved', { exact: true }).waitFor();
     const nextPublish = page.waitForResponse(response => response.url().includes('/publish') && response.request().method() === 'POST');
     await composer.publish.click(); assert.equal((await nextPublish).status(), 200);
-    await expect(page.getByText('Update published.', { exact: true })).toBeVisible();
+    await expect(page.locator('.publication-confirmation')).toBeVisible();
+    await composer.openDraft();
+    await composer.option('Notify…');
     await expect(nextSocial).not.toBeChecked();
     assert.equal((await api('/api/app/social')).body.posts.length, 0, 'repeated deselection queues no post');
     diagnostic('INTEG-002 browser 1440px: Settings connected an account, concealed the saved credential, saved post-by-default on/off; composer respected deselection and reset each new update to the owner default.');

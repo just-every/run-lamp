@@ -1,7 +1,7 @@
 import { ResolutionStatuses } from "./resolution-statuses";
 import { RecoveryCheckPanel } from "./recovery-check";
 import { TemplateControls } from "./template-controls";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { getRouteApi, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { createUlid } from "../../../shared/ids";
@@ -28,10 +28,10 @@ import { IncidentHeader } from "./incident-header";
 import { PreparedDraft } from "./prepared-draft";
 import { IncidentTimeline } from "./incident-record";
 import { IncidentPanel } from "./incident-panel";
-import { IncidentPreview } from "./incident-preview";
+import { IncidentPreview, PublishedIncidentPreview } from "./incident-preview";
 import { StatusChoice } from "./status-choice";
 import { NextUpdateField } from "./next-update-field";
-import { ComponentRelationships, DraftComponentChips, relationshipSummary, useDraftRelationships } from "./affected-components";
+import { ComponentRelationships, DraftComponentChips, componentChoiceReason, relationshipSummary, useDraftRelationships, type PendingComponent } from "./affected-components";
 import { OptionalText } from "./optional-text";
 import { OptionPanel, UpdateOptions, type OptionGroup } from "./update-options";
 import { NotifyChannels, PublishTimingField, channelSummary, publishHint, publishTime, type Channel, type PublishTiming } from "./publish-options";
@@ -40,6 +40,7 @@ import { publishBlockReason } from "./publish-readiness";
 type IncidentResponse = { wordingChecks?: { blockedTerms: string[]; friendlyLength: number }; incident: Awaited<ReturnType<IncidentsService["get"]>>; hasChatChannels: boolean; previewError?: string | null; preview?: RenderedIncidentUpdate | null };
 type PreviewResponse = { preview: RenderedIncidentUpdate };
 // A draft write clears the stored schedule on the server, so the page stops saying the update is scheduled.
+const operatorRoute = getRouteApi("/app");
 const SCHEDULE_CLEARED = "Your edit cancelled the schedule.";
 
 export function IncidentDetailPage({ incidentId }: { incidentId: string }) {
@@ -57,8 +58,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     return () => isVisitCurrent() && updateGeneration.current === generation;
   }, [captureVisit]);
   const timezone = usePageTimezone();
+  const { publicPageOrigin } = operatorRoute.useLoaderData();
   const impactId = useId();
   const publishReasonId = useId();
+  const draftActionsId = useId();
   const initialPreviewTimezone = useRef(timezone);
   const { data, error, loading, refresh } = useAppData<IncidentResponse>(`/api/app/incidents/${incidentId}`);
   const { data: socialData } = useAppData<{ postByDefault: boolean }>("/api/app/social");
@@ -67,6 +70,9 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   // this visit: read once here, then dropped from the history entry, so a reload or a return never replays it.
   const notice = useRouterState({ select: state => state.location.state.incidentNotice });
   const arrival = useRef(notice).current;
+  const [publishedUpdateId, setPublishedUpdateId] = useState(arrival?.publishedUpdateId);
+  const [draftOpen, setDraftOpen] = useState(!arrival?.publishedUpdateId);
+  const [pendingComponents, setPendingComponents] = useState<PendingComponent[]>([]);
   useEffect(() => {
     const { incidentNotice, ...entry } = window.history.state ?? {};
     // The native replace: the router's patched one counts as a navigation and reloads the page's data.
@@ -89,7 +95,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const socialDefaultApplied = useRef(false);
   const [channels, setChannels] = useState<Channel[]>(arrival?.publication?.channels ?? ["email"]);
   const [timing, setTiming] = useState<PublishTiming>(arrival?.publication?.timing ?? { mode: "now", at: null });
-  const [publishState, setPublishState] = useState<"idle" | "publishing" | "scheduled" | "published" | "error">(arrival ? (arrival.error ? "error" : "published") : "idle");
+  const [publishState, setPublishState] = useState<"idle" | "publishing" | "scheduled" | "published" | "error">(arrival?.error ? "error" : arrival?.publishedUpdateId ? "published" : "idle");
   const [publishMessage, setPublishMessage] = useState<string | null>(arrival?.text ?? null);
   const [overrideReason, setOverrideReason] = useState("");
   const [correcting, setCorrecting] = useState<string | null>(null);
@@ -113,7 +119,8 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   // Eligibility follows the displayed bytes, including before effects run.
   const draftSaved = savedKey.current === draftKey && !activeSave.current && saveState !== "error";
   const draftEmpty = untouchedDraft.current && pristineKey.current === draftKey;
-  const blockReason = publishBlockReason({ draft, hasComponents: Boolean(incident?.components.some(component => component.componentId) || draft.componentChanges?.length), timing, timeError: timeErrors.nextUpdate ?? timeErrors.timing, saved: draftSaved, saveFailed: saveState === "error", publishing: publishState === "publishing" });
+  const pendingComponent = pendingComponents[0];
+  const blockReason = draft.lifecycle !== "Resolved" && pendingComponent ? componentChoiceReason(pendingComponent.name) : publishBlockReason({ draft, hasComponents: Boolean(incident?.components.some(component => component.componentId) || draft.componentChanges?.length), timing, timeError: timeErrors.nextUpdate ?? timeErrors.timing, saved: draftSaved, saveFailed: saveState === "error", publishing: publishState === "publishing" });
   const visibleSaveState = draftEmpty ? "empty" : draftSaved ? "saved" : saveState === "error" && failedKey.current === draftKey ? "error" : "saving";
   const updateField = <K extends keyof IncidentDraftInput>(field: K, value: IncidentDraftInput[K]) => {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -274,6 +281,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     if (!isCurrent()) return null;
     const { lifecycle, affectedAudience, customerImpact, whatStillWorks, details, nextUpdateAt } = response.draft;
     const componentChanges = response.draft.componentChanges.map(({ componentId, state, relationship }) => ({ componentId, state, relationship }));
+    setPendingComponents([]);
     applyDraft({ lifecycle, affectedAudience, customerImpact, whatStillWorks, details, nextUpdateAt, componentChanges }, response.draft.id);
     if (response.channels !== undefined) {
       // Notification templates choose subscriber channels. An existing social
@@ -285,7 +293,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     return nextUpdateAt === null && lifecycle !== "Resolved" ? "Template filled the private draft. Choose the next update time before publishing." : "Template filled the private draft.";
   };
   const changeLifecycle = (lifecycle: IncidentDraftInput["lifecycle"]) => {
-    if (lifecycle === "Resolved") setTimeErrors(current => ({ ...current, nextUpdate: null }));
+    if (lifecycle === "Resolved") {
+      setTimeErrors(current => ({ ...current, nextUpdate: null }));
+      setPendingComponents([]);
+    }
     setDraft((current) => normalizeResolvedDraft({ ...current, lifecycle }));
     setPublishState("idle");
     setPublishMessage(null);
@@ -301,7 +312,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     try {
       if (correcting) await appApi(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
       if (!isCurrent()) return;
-      await appApi(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels, ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
+      const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels, ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
       if (!isCurrent()) return;
       // Publication consumes one update's authority, even without navigation.
       // Suggestions, templates, previews or saves started for that update must
@@ -328,7 +339,12 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       touchedSocialSelection.current = false;
       setChannels(current => [...current.filter(channel => channel !== "social"), ...(socialData?.postByDefault ? ["social" as const] : [])]);
       setTiming({ mode: "now", at: null });
-      setPublishState("published"); setPublishMessage(historicalPublishedAt ? "Historical update published. It did not notify subscribers." : "Update published."); refresh(); }
+      setPendingComponents([]);
+      setPublishedUpdateId(update.id);
+      setDraftOpen(false);
+      setPublishState("published");
+      refresh();
+    }
     catch (cause) { if (!isCurrent()) return; setPublishState("error"); setRecoveryRevision(current => current + 1); setPublishMessage(cause instanceof Error ? cause.message : "The update could not be published."); }
   };
   const schedule = async () => {
@@ -343,6 +359,8 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   };
   const correctUpdate = (update: NonNullable<typeof incident>["updates"][number]) => {
     if (draft.customerImpact.trim() && !window.confirm("Replace your current draft with this published update?")) return;
+    setDraftOpen(true);
+    setPendingComponents([]);
     setCorrecting(update.id);
     setDraft(normalizeResolvedDraft({ ...draft, lifecycle: incident.lifecycle, affectedAudience: update.affectedAudience, customerImpact: update.customerImpact, whatStillWorks: update.whatStillWorks, details: update.details, nextUpdateAt: incident.updates[0]?.nextUpdateAt ?? null, componentChanges: [] }));
     setPublishMessage(null);
@@ -376,8 +394,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
 
   return <div className="incident-page">
     <IncidentHeader incident={incident} />
-    <div className="incident-compose">
-      <section className="composer-panel" aria-labelledby="composer-title" inert={publishState === "publishing"}>
+    {publishedUpdateId && incident.updates.length ? <PublishedIncidentPreview key={publishedUpdateId} incident={incident} publishedUpdateId={publishedUpdateId} publicOrigin={publicPageOrigin} /> : null}
+    {incident.updates.length ? <button type="button" className="next-draft-toggle" aria-expanded={draftOpen} aria-controls={`draft-editor ${draftActionsId} draft-preview`} onClick={() => setDraftOpen(open => !open)}>Next update (draft)</button> : null}
+    <div className={`incident-compose${draftOpen ? "" : " is-draft-collapsed"}`}>
+      <section id="draft-editor" hidden={!draftOpen} className="composer-panel" aria-labelledby="composer-title" inert={publishState === "publishing"}>
         <div className="composer-heading"><h2 id="composer-title" className="eyebrow">{incident.updates.length ? "Update draft" : "First update"}</h2><p role="status" aria-live="polite" className={`autosave-status is-${visibleSaveState}`}>{saveLabel}</p></div>
         {correcting ? <p role="status" className="correction-note">Correcting a published update. Edit the wording, then publish. Customers will see a correction linked to the original.</p> : null}
         <PreparedDraft preparation={incident.draft?.agentPreparation ?? null} />
@@ -388,11 +408,11 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
         <form inert={publishState === "publishing"} className="impact-form" onSubmit={(event) => event.preventDefault()}>
           <StatusChoice value={draft.lifecycle} onChange={changeLifecycle} />
           {/* A separate label keeps the field's name to its question; a wrapping label would also read the text. */}
-          <div className="impact-field"><label className="field-label" htmlFor={impactId}>What’s happening?</label><textarea id={impactId} required aria-invalid={!draft.customerImpact.trim() || undefined} rows={2} placeholder="What customers see now" value={draft.customerImpact} maxLength={250} onChange={(event) => updateField("customerImpact", event.target.value)} /></div>
+          <div className="impact-field"><label className="field-label" htmlFor={impactId}>What’s happening?</label><textarea id={impactId} required aria-invalid={!draft.customerImpact.trim() || undefined} rows={2} placeholder="What customers will see next" value={draft.customerImpact} maxLength={250} onChange={(event) => updateField("customerImpact", event.target.value)} /></div>
           {findings("customerImpact")}
           <fieldset className="impact-field">
             <legend>Who’s affected?</legend>
-            <DraftComponentChips incident={incident} draft={draft} onChange={changes => updateField("componentChanges", changes)} />
+            <DraftComponentChips incident={incident} draft={draft} pending={pendingComponents} onPendingChange={setPendingComponents} onChange={changes => updateField("componentChanges", changes)} />
             <input aria-label="Who is affected" required aria-invalid={!draft.affectedAudience.trim() || undefined} placeholder="Which customers" value={draft.affectedAudience} maxLength={250} onChange={(event) => updateField("affectedAudience", event.target.value)} />
           </fieldset>
           {findings("affectedAudience")}
@@ -405,10 +425,10 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
         {draft.lifecycle === "Resolved" && <RecoveryCheckPanel key={`recovery-${recoveryRevision}`} incidentId={incident.id} overrideReason={overrideReason} onOverrideReason={setOverrideReason} />}
       </section>
       <div className="incident-side">
-        <IncidentPreview preview={preview} error={previewError} />
+        <IncidentPreview preview={preview} error={previewError} hidden={!draftOpen} />
         <IncidentTimeline incident={incident} onCorrect={correctUpdate} disabled={publishState === "publishing" || Boolean(activeSave.current)} />
       </div>
-      <div className="composer-publish" inert={publishState === "publishing"}>
+      <div className="composer-publish" id={draftActionsId} hidden={!draftOpen} inert={publishState === "publishing"}>
         <UpdateOptions publicationKey={updateGeneration.current} groups={groups}
           footer={<><span className="publish-hint">{publishHint(channels, timing, timezone)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
           message={<>{draftActions.message ? <p role="status" className="option-message">{draftActions.message}</p> : null}{draftActions.error ? <FormError>{draftActions.error}</FormError> : null}</>}>

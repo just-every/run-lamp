@@ -5,7 +5,7 @@ import { useLeaveGuard } from "../../../app/client/ui/leave-guard";
 import { FormError } from "../../../app/client/ui/states";
 
 type SmsPreferences = { countries: string[]; supportContact: string };
-type SmsSettingsResponse = { settings: SmsPreferences; configured: boolean };
+export type SmsSettingsResponse = { settings: SmsPreferences; configured: boolean };
 const countries = [
   ["US", "United States"], ["CA", "Canada"], ["GB", "United Kingdom"],
   ["AU", "Australia"], ["DE", "Germany"], ["FR", "France"], ["IN", "India"],
@@ -13,8 +13,7 @@ const countries = [
   ["ES", "Spain"], ["IT", "Italy"], ["BR", "Brazil"], ["MX", "Mexico"],
 ] as const;
 
-export function SmsSettings() {
-  const resource = useAppData<SmsSettingsResponse>("/api/app/sms/settings");
+export function SmsSettings({ resource }: { resource: ReturnType<typeof useAppData<SmsSettingsResponse>> }) {
   const [draft, setDraft] = useState<SmsPreferences | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +38,6 @@ export function SmsSettings() {
     {settings ? <>
       <p role="status" data-sms-configured={resource.data?.configured}>{resource.data?.configured ? "SMS sending is configured with Twilio." : "SMS sending is off."}</p>
       <div className="setup-guide">
-        <p>Set <code>TWILIO_ACCOUNT_SID</code> and <code>TWILIO_AUTH_TOKEN</code>, plus <code>TWILIO_FROM_NUMBER</code> or <code>TWILIO_MESSAGING_SERVICE</code>, in your deploy’s private input file or environment, then redeploy.</p>
         <p><a href="/docs/subscribers-and-notifications#connect-sms-delivery">Twilio SMS setup</a></p>
       </div>
       <form className="incident-note-form" onSubmit={submit}>

@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { unstable_splitSqlQuery } from "wrangler";
+import { ownerMigrationFiles } from "../../../scripts/owner-migrations.mjs";
 import { withDraftVersion } from "../draft-version-helper.mjs";
 import { reservePort } from "../worker-startup.mjs";
 
@@ -88,8 +89,9 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
           return Response.json({ messageId: `<synthetic-lamp-relay-${messages.length}@relay.example.test>` }, { status: 202 });
         }
         if (url.origin === "https://receiver.example.test" && ["/synthetic-lamp-1", "/synthetic-lamp-components"].includes(url.pathname)) {
-          const rawBody = await request.text();
-          const captured = { rawBody, body: JSON.parse(rawBody), headers: Object.fromEntries(request.headers) };
+          const wireBytes = Buffer.from(await request.arrayBuffer());
+          const rawBody = wireBytes.toString("utf8");
+          const captured = { wireBytes, rawBody, body: JSON.parse(rawBody), headers: Object.fromEntries(request.headers) };
           webhookRequests.push(captured);
           if (webhookOutage) return new Response(null, { status: 500 });
           return webhookReceiver ? await webhookReceiver(captured) : new Response(null, { status: 204 });
@@ -113,6 +115,9 @@ export async function openFollowUpsRuntime({ resendWebhookSecret, webhookReceive
     db = await runtime.getD1Database("DB");
     const execute = sql => db.batch(unstable_splitSqlQuery(sql).map(statement => db.prepare(statement)));
     for (const migration of (await readdir("migrations/core")).filter(name => name.endsWith(".sql")).sort()) await execute(await readFile(join("migrations/core", migration), "utf8"));
+    for (const migration of await ownerMigrationFiles()) {
+      await execute(await readFile(join("migrations/ext", migration), "utf8"));
+    }
     // Installation identity/settings are fixture prerequisites. Every obligation
     // below is created through an ordinary operator or public HTTP request.
     await execute(`INSERT INTO oa_operators(id,email,display_name,role,status,created_at) VALUES ('01J00000000000000000000091','synthetic-lamp-owner@example.test','Synthetic Lamp owner','owner','active',${Date.now()});

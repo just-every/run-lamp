@@ -3,6 +3,8 @@ import worker from './server';
 import { withDevIdentity } from '@runeditrun/rer/modules/operator-auth/dev';
 import { authConfig } from './core/platform/auth/config';
 import { createLampAuth } from './core/platform/auth';
+import { installationSignIn } from "./core/platform/auth/installation-presentation";
+import { createPageSettingsRepository } from "./core/features/page-settings/repository";
 import { signedInOwnerRedirect } from './core/platform/auth/http';
 import type { AppBindings } from './core/app/types';
 export { SnapshotCache } from './server';
@@ -17,10 +19,19 @@ export default {
   async fetch(request: Request, bindings: AppBindings, execution: ExecutionContext) {
     // Base admits the local dev credential before Lamp checks its native owner
     // session. Its one-click chooser never reaches the production sign-in route.
-    const response = await development.fetch(request, bindings, execution);
+    let response = await development.fetch(request, bindings, execution);
     if (response.status === 200 && new URL(request.url).pathname === '/signin') {
       const signedIn = await signedInOwnerRedirect(request, createLampAuth(devBindings(bindings)));
       if (signedIn) return signedIn;
+    }
+    if (response.headers.get('content-type')?.includes('text/html')) {
+      const html = await response.text();
+      const headers = new Headers(response.headers); headers.delete('content-length');
+      response = new Response(html.replace(/(<title[^>]*>)([\s\S]*?) Dev(<\/title>)/i, '$1$2$3').replace(/<style data-rer-label="Dev"[^>]*>[\s\S]*?<\/style><script>[\s\S]*?<\/script>/g, ''), { status: response.status, headers });
+      if (['/signin', '/__dev/key'].includes(new URL(request.url).pathname)) {
+        const page = await createPageSettingsRepository(bindings.DB).get();
+        response = await installationSignIn(response, page?.pageName ?? 'Lamp', true, new URL(request.url).pathname === '/__dev/key');
+      }
     }
     return response;
   },

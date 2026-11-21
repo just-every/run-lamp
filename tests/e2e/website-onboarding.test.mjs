@@ -1,8 +1,10 @@
+import { chooseSetupBranding, checkPublishedBranding, renamePage, scheduleLocalMaintenance, captureSetupScreen } from './helpers/setup-page-branding.mjs';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { chromium } from 'playwright';
+import { createRedaction } from '@runeditrun/rer/redaction';
 import { contract } from '../contract.mjs';
 import { nativeRequest, openNativeRuntime, origin, publicOrigin } from '../dev-ingress/runtime.mjs';
 import { devKey, devKeyHeaders } from '../helpers/dev-key.mjs';
@@ -28,7 +30,83 @@ const feeds = Object.fromEntries(readdirSync('tests/fixtures/status-feeds/status
 }
 const noComponents = JSON.stringify({ page: { id: 'acmetracking01' }, status: { indicator: 'none' }, components: [], incidents: [], scheduled_maintenances: [] });
 
-contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see', async () => {
+function setupFixtureSql(runtime, sql) {
+  execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--persist-to', runtime.state, '--config', 'wrangler.jsonc', '--command', sql], { env: runtime.env, stdio: 'pipe' });
+}
+
+const resetFirstRun = "DELETE FROM setup_readiness WHERE step='first-run'";
+
+async function withOnboardingRuntime(site, journey) {
+  const runtime = await openNativeRuntime();
+  let browser;
+  try {
+    runtime.env.LAMP_DEV_SITE_ORIGIN = `http://127.0.0.1:${site.address().port}`;
+    await runtime.start();
+    await runtime.seedOperator();
+    browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    await journey(runtime, browser);
+  } catch (error) {
+    const redaction = createRedaction();
+    redaction.addSecrets(Object.values(runtime.env).filter(value => typeof value === 'string' && value.length > 5));
+    const output = redaction.redact(runtime.output).replace(/https?:\/\/[^\s<>]+/g, value => value.split('?')[0]);
+    console.error('Setup runtime diagnostics:', output);
+    console.error('Setup transport cause:', error?.cause?.code ?? error?.cause?.message ?? 'none');
+    throw error;
+  } finally {
+    try { await browser?.close(); } finally { await runtime.close(); }
+  }
+}
+
+async function confirmWebsiteWithBrowserZone(runtime, browser) {
+  const invalidZone = 'Etc/Unknown';
+  const browserZone = 'America/New_York';
+  const summaryPath = '/api/public/v1/summary.json';
+  // Model a saved bad zone after the installation has already published a usable page.
+  const baseline = await nativeRequest(summaryPath, { host: publicOrigin, headers: { Connection: 'close' } });
+  assert.equal(baseline.status, 200);
+  assert.equal((await baseline.json()).page.timezone, 'UTC');
+  setupFixtureSql(runtime, `${resetFirstRun}; UPDATE page_settings SET timezone='${invalidZone}' WHERE id='default'`);
+
+  const context = await browser.newContext({ timezoneId: browserZone, viewport: { width: 1440, height: 1000 } });
+  await context.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
+  const entered = await signInAs({ origin, key: devKey });
+  await context.addCookies(entered.cookies.map(cookie => ({ ...cookie, url: origin })));
+  const cookie = entered.cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
+  const readSettings = async () => {
+    const response = await nativeRequest('/api/app/page-settings', { cookie });
+    assert.equal(response.status, 200);
+    return (await response.json()).settings;
+  };
+  assert.equal((await readSettings()).timezone, invalidZone, 'the installation starts with an invalid saved zone');
+
+  const page = await context.newPage();
+  await page.goto(`${origin}/app`);
+  await page.waitForURL('**/setup');
+  assert.equal(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), browserZone);
+  await page.getByLabel('Website', { exact: true }).fill('acme-tracking.com');
+  await page.getByRole('button', { name: 'Read website', exact: true }).click();
+  await page.getByRole('status').filter({ hasText: 'We read acme-tracking.com' }).waitFor();
+  const website = await nativeRequest('/api/app/website', { cookie });
+  assert.equal(website.status, 200);
+  assert.equal((await website.json()).website.url, 'https://www.acme-tracking.com/');
+  const zone = page.getByRole('combobox', { name: 'Which time zone are you in?' });
+  assert.match(await zone.inputValue(), /^New York\b/, 'website review suggests the valid browser zone');
+  assert.equal((await readSettings()).timezone, invalidZone, 'the suggestion waits for owner confirmation');
+  await captureSetupScreen(page, 'setup-browser-zone');
+
+  await page.getByRole('button', { name: 'Looks right, open Lamp', exact: true }).click();
+  await page.waitForURL('**/app', { timeout: 120_000 });
+  await page.getByRole('region', { name: 'Your public page' }).waitFor();
+  const settings = await readSettings();
+  assert.equal(settings.timezone, browserZone, 'confirmation saves the unedited suggestion');
+  const summary = await nativeRequest(summaryPath, { host: publicOrigin });
+  assert.equal(summary.status, 200);
+  const { page: published } = await summary.json();
+  assert.equal(published.name, 'Acme Tracking Status');
+  assert.equal(published.timezone, browserZone, 'the public page uses the confirmed browser zone');
+}
+
+contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see', async t => {
   const requests = [];
   let statusPageListsComponents = false;
   const site = createServer((request, response) => {
@@ -46,14 +124,13 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     response.writeHead(404).end();
   });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
-  const runtime = await openNativeRuntime(); let browser;
-  try {
-    runtime.env.LAMP_DEV_SITE_ORIGIN = `http://127.0.0.1:${site.address().port}`;
-    await runtime.start(); await runtime.seedOperator();
+  t.after(() => new Promise(resolve => site.close(resolve)));
+  await withOnboardingRuntime(site, confirmWebsiteWithBrowserZone);
+
+  await withOnboardingRuntime(site, async (runtime, browser) => {
     // A fresh owner: claimed, but first run not yet confirmed.
-    const freshOwner = () => execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--persist-to', runtime.state, '--config', 'wrangler.jsonc', '--command', "DELETE FROM setup_readiness WHERE step='first-run'"], { env: runtime.env, stdio: 'pipe' });
+    const freshOwner = () => setupFixtureSql(runtime, resetFirstRun);
     freshOwner();
-    browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
     const context = await browser.newContext({ timezoneId: 'America/New_York', viewport: { width: 1440, height: 1000 } });
     await context.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
     const entered = await signInAs({ origin, key: devKey });
@@ -75,7 +152,9 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
       await lost.getByRole('button', { name: "Skip, I'll fill it in", exact: true }).click();
       await lost.getByRole('button', { name: 'Open Lamp', exact: true }).click();
       await lost.waitForURL('**/app', { timeout: 120_000 });
-      assert.equal((await (await nativeRequest('/api/app/page-settings', { cookie })).json()).settings.timezone, 'UTC', 'an unresolvable zone opens Lamp on UTC');
+      // The synchronous Wrangler reset below blocks Node from processing idle-socket closure.
+      // Close this fixture connection before the reset; each following request still runs once.
+      assert.equal((await (await nativeRequest('/api/app/page-settings', { cookie, headers: { Connection: 'close' } })).json()).settings.timezone, 'UTC', 'an unresolvable zone opens Lamp on UTC');
       await unknown.close();
       freshOwner();
     }
@@ -124,7 +203,10 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     assert.equal(await row('page name').innerText(), 'Acme Tracking Status');
     assert.equal(await row('tagline').innerText(), "Acme Tracking keeps your team's hours in one place.");
     assert.equal(await row('accent colour').innerText(), '#0F7B6C');
-    assert.equal(await page.locator('[data-found="time zone"]').count(), 0, 'setup does not ask for the time zone: the page takes the browser\'s');
+    const timezone = page.getByRole('combobox', { name: 'Which time zone are you in?' });
+    assert.equal(await timezone.inputValue(), 'Universal time', 'setup keeps valid saved UTC even when the browser is in New York');
+    await timezone.fill('Toronto');
+    await page.getByRole('option', { name: /^Toronto / }).click();
     // Its real components replace the navigation's guesses, labelled with where they came from, in its own groups.
     assert.equal(await label('components').textContent(), 'Components (8 from status.acme-tracking.com)');
     const groups = async () => page.locator('[data-found="components"] .found-groups > div').evaluateAll(blocks => blocks.map(block => [block.querySelector('.found-group').textContent, [...block.querySelectorAll('li')].map(item => item.textContent)]));
@@ -149,6 +231,8 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     assert.deepEqual(await groups(), edited);
     assert.equal(await label('components').textContent(), 'Components (8 from status.acme-tracking.com)');
     await history.check();
+    await chooseSetupBranding(page);
+    await captureSetupScreen(page, 'setup-details');
     // Reloading restores both the read and the owner's edits and choice without another network read.
     const readsBeforeReload = requests.length;
     await page.reload();
@@ -164,10 +248,12 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
       throw cause;
     });
     await page.getByRole('region', { name: 'Your public page' }).waitFor();
+    assert.equal(await page.locator('.app-brand span').innerText(), (await (await nativeRequest('/api/app/page-settings', { cookie })).json()).settings.pageName);
+    assert.equal(await page.title(), `${await page.locator('.app-brand span').innerText()} · Lamp`);
 
     const api = async path => (await nativeRequest(path, { cookie })).json();
     const { settings } = await api('/api/app/page-settings');
-    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'UTC']);
+    assert.deepEqual([settings.pageName, settings.tagline, settings.accentColor, settings.timezone], ['Acme Tracking Status', "Acme Tracking keeps your team's hours in one place.", '#0F7B6C', 'America/Toronto']);
     assert.ok(settings.logoKey, 'the mark became the page logo');
     const { components } = await api('/api/app/components');
     const byGroup = edited.map(([group, names]) => [group === 'Other services' ? null : group, names]);
@@ -200,12 +286,20 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     const logo = await fetch(`${publicOrigin}/assets/logo`, { headers: devKeyHeaders });
     assert.equal(logo.headers.get('content-type'), 'image/png');
     assert.ok((await logo.arrayBuffer()).byteLength, 'the stored logo remains readable');
+    assert.equal(settings.themeAssetAvailability.icon, true);
+    await checkPublishedBranding(context, publicOrigin);
     assert.equal(requests.some(path => path.includes('ran-a-script')), false, 'nothing on the site ran');
     assert.ok(requests.every(path => /^(redirect\.example\.com|blocked\.example\.com|acme-tracking\.com|www\.acme-tracking\.com|status\.acme-tracking\.com)\//.test(path)), 'every read went to the named site or its linked status page');
 
+    await renamePage(page, origin);
+    await scheduleLocalMaintenance(page, origin, context, publicOrigin);
     // The saved first-run choice belongs to this installation, not its old
     // browser session. A new local owner entry opens the workspace directly.
     assert.equal((await nativeRequest('/api/app/session/signout', { cookie, method: 'POST', json: {} })).status, 204);
+    await page.goto(origin + '/signin');
+    await page.getByRole('heading', { name: 'Sign in to Brightwell Support', exact: true }).waitFor();
+    assert.equal(await page.title(), 'Brightwell Support · Lamp');
+    await captureSetupScreen(page, 'sign-in-name');
     const returning = await signInAs({ origin, key: devKey });
     await context.addCookies(returning.cookies.map(value => ({ ...value, url: origin })));
     await page.goto(origin + returning.location);
@@ -223,8 +317,5 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     await page.waitForURL(url => url.pathname === '/app');
     await page.locator('.operator-shell[data-hydrated]').waitFor();
     assert.equal(await page.getByText('Welcome', { exact: true }).count(), 0, 'client navigation cannot reopen completed first-run setup');
-  } finally {
-    await browser?.close(); await runtime.close();
-    await new Promise(resolve => site.close(resolve));
-  }
+  });
 });

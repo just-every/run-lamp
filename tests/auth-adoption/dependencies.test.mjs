@@ -95,7 +95,11 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     const signIn = await call('/signin?returnTo=%2Fapp%2Fsettings');
     assert.equal(signIn.status, 200);
     assert.equal(signIn.headers.get('referrer-policy'), 'strict-origin');
-    assert.ok(signIn.headers.get('content-security-policy').includes(issuer));
+    const formSources = signIn.headers.get('content-security-policy').split(';')
+      .map(directive => directive.trim().split(/\s+/))
+      .find(([name]) => name === 'form-action').slice(1);
+    assert.ok(formSources.some(source => source !== "'self'" && new URL(source).origin === new URL(issuer).origin),
+      'the sign-in form permits the exact provider origin');
     const html = await signIn.text();
     const providerForm = /<form method="post" action="([^"]*\/auth\/oidc\/auth\/start)">([\s\S]*?)<\/form>/.exec(html);
     assert.ok(providerForm, 'hosted sign-in exposes the enabled provider start form');

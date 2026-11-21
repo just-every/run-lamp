@@ -25,6 +25,7 @@ import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { incidentComposer, newIncidentForm } from "./helpers/incident-composer.mjs";
 import { suggestedUpdateFlow } from "./helpers/suggested-update-flow.mjs";
+import { wordingFindingsFlow } from "./helpers/wording-findings-flow.mjs";
 import { emptyAudienceReason, publishedIncidentState } from "./helpers/published-incident-state.mjs";
 
 let appUrl = "";
@@ -43,8 +44,9 @@ let browser;
 let browserContext;
 let page;
 let serverOutput = "";
-let failingAiServer;
+let aiServer;
 let aiAnswer = null;
+let unansweredAiRequests;
 const aiRequests = [];
 let originalVisualSource;
 
@@ -56,30 +58,38 @@ function configWithLocalMail(config) {
 
 function configWithAiProvider(config) {
   config = configWithLocalMail(config);
-  return { ...config, vars: { ...config.vars, AI_PROVIDER_URL: `http://127.0.0.1:${aiPort}/v1`, AI_PROVIDER_API_KEY: "browser-test-key", AI_PROVIDER_MODEL: "browser-test-model" } };
+  return { ...config, vars: { ...config.vars, AI_PROVIDER_URL: `http://127.0.0.1:${aiPort}/v1`, AI_PROVIDER_API_KEY: "synthetic-lamp-1", AI_PROVIDER_MODEL: "browser-test-model" } };
 }
 
-async function startFailingAiProvider() {
+async function startAiProvider() {
   const provider = createHttpServer(async (request, response) => {
     let body = '';
     for await (const chunk of request) body += chunk;
-    aiRequests.push(JSON.parse(body));
+    const payload = JSON.parse(body);
+    aiRequests.push(payload);
+    if (unansweredAiRequests) {
+      unansweredAiRequests.push({ method: request.method, path: request.url, payload, response });
+      return;
+    }
     response.writeHead(aiAnswer ? 200 : 503, { "Content-Type": "application/json" });
     response.end(JSON.stringify(aiAnswer
       ? { choices: [{ message: { content: JSON.stringify(aiAnswer) } }] }
       : { error: "Browser AI provider intentionally unavailable" }));
   });
-  failingAiServer = provider;
+  aiServer = provider;
   await new Promise((resolve, reject) => {
     provider.once("error", reject);
     provider.listen(aiPort, "127.0.0.1", resolve);
   });
 }
 
-async function stopFailingAiProvider() {
-  if (!failingAiServer) return;
-  await new Promise((resolve) => failingAiServer.close(resolve));
-  failingAiServer = undefined;
+async function stopAiProvider() {
+  if (!aiServer) return;
+  await new Promise((resolve) => {
+    aiServer.close(resolve);
+    aiServer.closeAllConnections();
+  });
+  aiServer = undefined;
 }
 
 async function assertPortAvailable(port) {
@@ -152,7 +162,7 @@ before(async () => {
   // The fixture config lives in its own directory so a checkout's `.dev.vars` (for example its AI provider) cannot override it.
   // The add-subscriber door prepares a confirmation. Use the shipped silent
   // local transport, while the real operator session remains the authority.
-  await startFailingAiProvider();
+  await startAiProvider();
   fixtureConfig = isolatedWranglerConfig(configWithAiProvider);
   configPath = fixtureConfig.path;
   execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", defaultConfigPath, "--persist-to", statePath], { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024, stdio: "pipe" });
@@ -183,7 +193,7 @@ after(async () => {
       assert.deepEqual(readFileSync(source),originalVisualSource,'the probe must restore the exact owner snapshot bytes');
     }
   }
-  await stopFailingAiProvider();
+  await stopAiProvider();
   await Promise.all([rm(statePath, { recursive: true, force: true }), rm(viteCachePath, { recursive: true, force: true }), rm(terminalDirectory, { recursive: true, force: true }), fixtureConfig?.cleanup()]);
 });
 
@@ -304,6 +314,125 @@ async function assertAssistantDisclosure(id, t) {
     }
     t.diagnostic('PROBE DRAFT-004 acceptance 6: expand native Assistant input then request successful synthetic suggestion -> parsed disclosure equals captured provider user message; expansion alone makes no model request');
   } finally { aiAnswer = null; }
+}
+
+async function assertPublicationAfterAiTimeout(width, t) {
+  const viewport = page.viewportSize();
+  assert.equal(viewport.width, width);
+  const surface = width === 390 ? 'mobile' : 'desktop';
+  const component = (await api('/api/app/components', 'POST', {
+    name: `Dispatch API on ${surface}`, description: '', groupId: null, internal: false, displayOrder: 0, note: '',
+  })).component;
+  const title = `Dispatch confirmations are delayed on ${surface}`;
+  const { incident } = await api('/api/app/incidents', 'POST', {
+    title, components: [{ componentId: component.id, state: 'Degraded performance', relationship: 'Primary' }],
+  });
+  const { id, reference } = incident;
+  t.after(async () => {
+    await api(`/api/app/incidents/${id}`, 'DELETE', { reason: 'Remove the browser proof fixture.' });
+    await api(`/api/app/components/${component.id}`, 'DELETE');
+  });
+  const wording = {
+    lifecycle: 'Identified',
+    affectedAudience: `Customers checking dispatch on ${surface}.`,
+    customerImpact: `Dispatch confirmations on ${surface} may take a few extra minutes.`,
+    whatStillWorks: 'Order history remains available.',
+    details: 'Accepted orders keep their place in the dispatch queue.',
+    nextUpdateAt: new Date(Math.floor(Date.now() / 60_000) * 60_000 + 3_600_000).toISOString(),
+  };
+  await api(`/api/app/incidents/${id}/draft`, 'PUT', wording);
+  await page.goto(`${appUrl}/app/incidents/${id}`);
+  await operatorHydrated(page);
+  await saved();
+  const composer = incidentComposer(page);
+  assert.equal(await composer.impact.inputValue(), wording.customerImpact);
+  const before = await readIncident(id);
+  assert.deepEqual(before.updates, []);
+  const suggestion = page.getByRole('button', { name: 'Suggest update', exact: true });
+  const deadlineError = page.locator('.ai-suggestion [role=status]').filter({ hasText: 'did not answer before the request deadline' });
+  await suggestion.scrollIntoViewIfNeeded();
+
+  const requestCount = aiRequests.length;
+  const held = [];
+  unansweredAiRequests = held;
+  try {
+    const limit = 20_000;
+    const started = performance.now();
+    const [, elapsed] = await Promise.all([
+      suggestion.click({ timeout: limit }),
+      deadlineError.waitFor({ state: 'visible', timeout: limit }).then(() => performance.now() - started),
+    ]);
+    assert.ok(elapsed <= limit, `the ${width}-wide composer reported the missed deadline after ${Math.round(elapsed)} ms`);
+    assert.equal(aiRequests.length, requestCount + 1);
+    assert.equal(held.length, 1, 'the real suggestion reached the unanswered provider');
+    const [{ method, path, payload, response }] = held;
+    assert.equal(method, 'POST');
+    assert.equal(path, '/v1');
+    const brief = JSON.parse(payload.messages.find(message => message.role === 'user').content);
+    assert.equal(brief.incident.reference, reference);
+    assert.equal(brief.incident.title, title);
+    assert.equal(response.headersSent, false, 'the provider sent no response headers');
+    assert.equal(response.writableEnded, false, 'the provider did not end the response');
+    t.diagnostic(`PROBE DRAFT-003 2: ${width}-wide Suggest update reached the unanswered provider and showed the composer deadline error in ${Math.round(elapsed)} ms`);
+    if (process.env.LAMP_DRAFT_DEADLINE_PROOF) {
+      await deadlineError.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: join(process.env.LAMP_DRAFT_DEADLINE_PROOF, `${width}-draft-deadline.png`) });
+    }
+  } finally {
+    unansweredAiRequests = undefined;
+    for (const { response } of held) response.destroy();
+  }
+
+  const afterTimeout = await readIncident(id);
+  assert.deepEqual(afterTimeout.draft, before.draft, 'the timeout preserves the saved draft');
+  assert.deepEqual(afterTimeout.updates, before.updates, 'the timeout leaves publication to the operator');
+  assert.equal(await composer.impact.inputValue(), wording.customerImpact);
+  assert.equal(await composer.publish.isEnabled(), true);
+  await composer.publish.click();
+  await page.locator('.publication-confirmation').getByText('Published.', { exact: true }).waitFor();
+  const { updates } = await readIncident(id);
+  assert.equal(updates.length, 1, 'the operator committed one immediate update');
+  const [update] = updates;
+  for (const [key, value] of Object.entries(wording)) assert.equal(update[key], value, `published ${key}`);
+
+  const { settings } = await api('/api/app/page-settings');
+  const timeZone = 'America/Los_Angeles';
+  assert.equal(settings.timezone, timeZone);
+  assert.equal(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), 'Australia/Brisbane');
+  const publicationInstant = new Date(update.publishedAt);
+  const date = new Intl.DateTimeFormat('en-US', { timeZone, month: 'short', day: 'numeric', year: 'numeric' }).format(publicationInstant);
+  const time = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(publicationInstant);
+  const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
+  const timestamp = timeline.locator(`li[data-update-id="${update.id}"] > span`);
+  await timestamp.waitFor({ state: 'visible' });
+  const displayed = await timestamp.innerText();
+  assert.equal(displayed, `${date}, ${time} Los Angeles time`, 'the committed update shows its publication time in the page zone');
+  t.diagnostic(`PROBE PAGE-002 3: ${width}-wide Brisbane browser Timeline update ${update.id} at ${update.publishedAt} displays ${displayed}`);
+  if (process.env.LAMP_SCREENSHOTS) {
+    await mkdir(process.env.LAMP_SCREENSHOTS, { recursive: true });
+    await timeline.screenshot({ path: join(process.env.LAMP_SCREENSHOTS, `${width}-operator-publication-time.png`) });
+  }
+
+  await waitForPublicIncident(reference, wording.customerImpact);
+  const publicPage = await browser.newPage({ viewport });
+  try {
+    const response = await publicPage.goto(`${pageUrl}/incidents/${reference}`);
+    assert.equal(response.status(), 200);
+    assert.equal(await publicPage.locator('article.incident h1').textContent(), title);
+    const article = publicPage.locator(`article.update[data-update-id="${update.id}"]`);
+    assert.equal(await article.locator('.update-head > strong').textContent(), wording.lifecycle);
+    assert.equal(await article.locator('.update-head time').getAttribute('datetime'), update.publishedAt);
+    const fields = Object.fromEntries((await wordingFields(article)).map(({ label, value }) => [label, value]));
+    assert.equal(fields['Who is affected'], wording.affectedAudience);
+    assert.equal(fields['Customer impact'], wording.customerImpact);
+    assert.equal(fields['What still works'], wording.whatStillWorks);
+    assert.equal(fields['Additional details'], wording.details);
+    assert.equal(await article.locator('dl time').getAttribute('datetime'), wording.nextUpdateAt);
+    if (process.env.LAMP_DRAFT_DEADLINE_PROOF) {
+      await publicPage.screenshot({ path: join(process.env.LAMP_DRAFT_DEADLINE_PROOF, `${width}-draft-published.png`) });
+    }
+  } finally { await publicPage.close(); }
+  t.diagnostic(`PROBE DRAFT-003 3: ${width}-wide Publish update committed the unchanged draft and its update ID, wording and times matched the unauthenticated incident permalink`);
 }
 
 test('TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys', { timeout: 180_000 }, async () => {
@@ -626,7 +755,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await form.title.fill('Checkout requests are delayed');
   await form.impact.fill('Card authorizations are timing out.');
   await form.addComponent(component.name);
-  await form.componentState(component.name, 'Degraded performance');
+  const componentState = page.getByLabel(`${component.name} state with this update`, { exact: true });
+  assert.equal(await componentState.inputValue(), '', 'adding a component does not choose a state');
+  await componentState.selectOption({ label: 'Partly down' });
   await form.audience.fill('Customers checking out in the US.');
   await form.nextUpdate.fill('2027-09-08T14:00');
   await form.option('Details');
@@ -637,6 +768,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await saved();
   let incident = await readIncident(id);
   assert.equal(incident.updates.length, 0, 'saving does not publish');
+  assert.equal(incident.components.find(row => row.componentId === component.id)?.state, 'Partially unavailable');
   const composer = incidentComposer(page);
   await page.reload(); await operatorHydrated(page); await saved();
   assert.equal(await composer.impact.inputValue(), incident.draft.customerImpact);
@@ -720,9 +852,9 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
     { label: 'Who is affected', value: submitted.affectedAudience },
     { label: 'Customer impact', value: submitted.customerImpact },
     { label: 'What still works', value: submitted.whatStillWorks },
-    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 UTC-07:00' },
+    { label: 'Next update by', value: 'Sep 8, 2027, 14:00 Los Angeles time' },
     { label: 'Additional details', value: submitted.details },
-    { label: 'Component state', value: 'Journey checkout API: Operational → Major outage' },
+    { label: 'Component state', value: 'Journey checkout API: Working → Down' },
   ];
   const panel = page.locator('.preview-panel');
   await page.getByRole('button', { name: 'Page', exact: true }).click();
@@ -752,7 +884,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await page.locator('.ai-suggestion [role=status]').filter({ hasText: /503|intentionally unavailable/i }).waitFor();
   assert.equal(await composer.publish.isEnabled(), true, 'a failed suggestion leaves ordinary publication usable');
   await composer.publish.click();
-  await page.getByText('Update published.', { exact: true }).waitFor();
+  await page.locator('.publication-confirmation').waitFor();
   incident = await readIncident(id);
   const first = incident.updates[0];
   await publishedIncidentState({ page, composer, component, update: first, screens: previewScreens });
@@ -787,6 +919,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await composer.publish.click();
   await page.waitForFunction(() => document.querySelector('.composer-panel textarea')?.value === '');
 
+  await composer.openDraft();
   await composer.setStatus('Resolved');
   await composer.audience.fill('US customers paying by card.');
   await composer.impact.fill('Checkout authorizations are working normally.');
@@ -794,10 +927,12 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await composer.details.fill('Follow https://support.example.test/checkout for any remaining questions.');
   await saved();
   assert.equal(await composer.nextUpdate.count(), 0, 'resolution needs no further update promise');
-  await composer.publish.click(); await page.getByText('Update published.', { exact: true }).waitFor();
+  await composer.publish.click();
+  await page.locator('.next-draft-toggle[aria-expanded="false"]').waitFor();
+  await page.locator('.live-preview').getByText('Checkout authorizations are working normally.', { exact: true }).waitFor();
   incident = await readIncident(id);
   assert.equal(incident.lifecycle, 'Resolved');
-  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimState: 'Degraded performance', screens: previewScreens });
+  await publishedIncidentState({ page, composer, component, update: incident.updates.find(update => update.lifecycle === 'Resolved'), resolved: true, claimLabel: 'Slow', screens: previewScreens });
   assert.deepEqual(incident.updates.find(row => row.id === first.id), first, 'later publications preserve the original update');
   await waitForPublicIncident(incident.reference, 'Checkout authorizations are working normally.');
   await page.goto(`${pageUrl}/incidents/${incident.reference}`);
@@ -926,11 +1061,18 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await activeSection.locator('a.incident-list-row').first().click();
   await page.waitForURL(`${appUrl}/app/incidents/${firstListPage.incidents[0].id}`);
   await operatorHydrated(page);
-
+  const suggestionRequests = aiRequests.length;
+  await wordingFindingsFlow({
+    page, browser, appUrl, pageUrl, api, component, nextUpdate: await localInput(60 * 60 * 1000),
+    screens: previewScreens, waitForPublicIncident,
+  });
+  assert.equal(aiRequests.length, suggestionRequests, 'wording checks do not request a model');
+  await assertPublicationAfterAiTimeout(1440, t);
 });
 
-test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async () => {
+test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke', { timeout: 600_000 }, async t => {
   await phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLink: async () => execFileSync(process.execPath, [resolve('scripts/signin-link.mjs'), '--email', 'operator@example.test', '--origin', appUrl, '--config', configPath, '--persist-to', statePath], { cwd: terminalDirectory, env: process.env, encoding: 'utf8' }).trim() });
+  await assertPublicationAfterAiTimeout(390, t);
 });
 
 
@@ -983,4 +1125,8 @@ test('DEP-001 DEP-002 — owner configures upstream reports under Settings', { t
 
 test('Owner incident communication — manual resolution, customer email and timeline correction', { timeout: 240_000 }, async () => {
   await (await import('./helpers/incident-owner-journey.mjs')).incidentOwnerJourney({ page, browserContext, appUrl, pageUrl, api });
+});
+
+test('Sorry templates — both collections stay complete in Settings and private composers', { timeout: 600_000 }, async () => {
+  await (await import('./helpers/sorry-template-browser-flow.mjs')).sorryTemplateBrowserFlow({ page, appUrl, appFetch, api, screens: previewScreens });
 });
