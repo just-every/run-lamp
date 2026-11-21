@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { emailBrandingSchema } from "../../shared/email-branding";
+import { statusPagePathSchema } from "../page-settings/page-selection";
 import { widgetAppearanceSchema } from "../../shared/widget-appearance";
 
 /**
@@ -35,6 +36,9 @@ export const PAGE_DATA_TABLES = [
   { table: "maintenance_components", order: ["id"] },
   { table: "maintenance_notices", order: ["id"] },
   { table: "import_maintenance_updates", order: ["id"] },
+  { table: "status_pages", order: ["path"] },
+  { table: "incident_status_pages", order: ["incident_id", "page_path"] },
+  { table: "maintenance_status_pages", order: ["maintenance_id", "page_path"] },
   { table: "subscribers", order: ["id"] },
   { table: "subscriber_components", order: ["id"] },
   { table: "incident_subscriptions", order: ["subscriber_id"] },
@@ -46,7 +50,7 @@ export const PAGE_DATA_TABLES = [
 export type PageDataTable = typeof PAGE_DATA_TABLES[number]["table"];
 
 /** A restore needs a page with none of these yet. */
-export const OWNER_RECORD_TABLES: PageDataTable[] = ["component_groups", "components", "incidents", "maintenance", "subscribers", "incident_templates"];
+export const OWNER_RECORD_TABLES: PageDataTable[] = ["component_groups", "components", "incidents", "maintenance", "subscribers", "incident_templates", "status_pages"];
 
 /** Operator ID columns and the email column that replaces each in the file. */
 export const AUTHOR_COLUMNS: Record<string, string> = {
@@ -70,6 +74,11 @@ export const HELD_RESTORE_DAYS = 30;
 const cell = z.union([z.string().refine((value) => !value.includes("\u0000"), "Text cannot contain a NUL character."), z.number(), z.null()]);
 const row = z.record(z.string().regex(/^[a-z][a-z0-9_]*$/), cell);
 
+export const pageDataLogoSchema = z.object({
+  contentType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+  base64: z.string().max(3_000_000),
+});
+
 export const pageDataFileSchema = z.object({
   format: z.literal(PAGE_DATA_FORMAT),
   version: z.literal(PAGE_DATA_VERSION),
@@ -89,10 +98,11 @@ export const pageDataFileSchema = z.object({
     aiToneInstructions: z.string(),
     emailBranding: emailBrandingSchema.optional(),
     feedId: z.string(),
-    logo: z.object({ contentType: z.enum(["image/png", "image/jpeg", "image/webp"]), base64: z.string().max(3_000_000) }).nullable(),
+    logo: pageDataLogoSchema.nullable(),
   }).strict(),
+  statusPageLogos: z.array(pageDataLogoSchema.extend({ path: statusPagePathSchema }).strict()).max(12).optional(),
   people: z.array(z.object({ email: z.string().min(3).max(320), displayName: z.string().min(1).max(120) }).strict()),
-  records: z.object(Object.fromEntries(PAGE_DATA_TABLES.map(({ table }) => [table, z.array(row)])) as Record<PageDataTable, z.ZodArray<typeof row>>).partial({ incident_impact_changes: true, incident_templates: true, incident_template_components: true, incident_subscriptions: true, incident_follow_settings: true, vendor_dependencies: true, vendor_source_reads: true, vendor_evidence: true }).strict(),
+  records: z.object(Object.fromEntries(PAGE_DATA_TABLES.map(({ table }) => [table, z.array(row)])) as Record<PageDataTable, z.ZodArray<typeof row>>).partial({ incident_impact_changes: true, incident_templates: true, incident_template_components: true, incident_subscriptions: true, incident_follow_settings: true, status_pages: true, incident_status_pages: true, maintenance_status_pages: true, vendor_dependencies: true, vendor_source_reads: true, vendor_evidence: true }).strict(),
   // Files from earlier Lamp releases have none; see integrity.ts.
   integrity: z.object({ algorithm: z.literal("HMAC-SHA256"), value: z.string().regex(/^[A-Za-z0-9_-]{43}$/) }).strict().optional(),
 }).strict();
@@ -100,4 +110,4 @@ export const pageDataFileSchema = z.object({
 export type PageDataFile = z.infer<typeof pageDataFileSchema>;
 export type PageDataRow = Record<string, string | number | null>;
 
-export const PAGE_DATA_CONTENTS = "Page settings and logo; component groups and components with their status history; incidents with every update, draft, internal note, impact choice and post-incident report; reusable incident templates; maintenance with its notices; subscribers with their channel, chosen components, incident scope, report choice and consent state; incident and maintenance reference numbers. Authors are named by email.";
+export const PAGE_DATA_CONTENTS = "Page settings and logos; status pages and their publication selections; component groups and components with their status history; incidents with every update, draft, internal note, impact choice and post-incident report; reusable incident templates; maintenance with its notices; subscribers with their channel, chosen components, incident scope, report choice and consent state; incident and maintenance reference numbers. Authors are named by email.";

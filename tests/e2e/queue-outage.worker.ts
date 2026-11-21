@@ -1,5 +1,6 @@
 import { createApp } from "../../src/core/app/server";
-import { createHostDispatch } from "../../src/core/app/host-dispatch";
+import { createHostDispatch, protectedPageAddress } from "../../src/core/app/host-dispatch";
+import { protectedStatusPage } from "../../src/core/features/public-snapshot/protected-routes";
 import type { AppBindings } from "../../src/core/app/types";
 export { SnapshotCache } from "../../src/core/platform/blobs/snapshot-cache";
 
@@ -51,7 +52,9 @@ export default {
       await runtime.services.publicSnapshots.rebuild();
       return new Response(null, { status: 204 });
     }
-    if (!createHostDispatch(env).surfaceFor(request)) return new Response("Not found", { status: 404 });
+    const surface = createHostDispatch(env).surfaceFor(request);
+    if (!surface) return new Response("Not found", { status: 404 });
+    if (surface === "protected-page") return protectedStatusPage(request, bindings, context, runtime, protectedPageAddress(url.pathname)!);
     return runtime.app.fetch(request, bindings, context);
   },
 };

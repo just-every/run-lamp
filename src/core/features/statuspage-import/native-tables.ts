@@ -34,8 +34,8 @@ export const sealedDefaults: Record<string, Row> = {
   incident_updates: { component_changes_json: "[]", component_snapshot_json: "[]", automation_attribution: null, automation_receipt_id: null },
   // Unapproved automation defaults do not turn imported templates into edits.
   incident_templates: { channels_json: "[]", resolved_update_json: null, kind: "incident", source_metadata_json: null },
-  incidents: { impact_override: null },
+  incidents: { impact_override: null, public_hidden: 0 },
   incident_components: { detached_internal: 0 },
-  maintenance: { affected_audience: null, customer_impact: null },
+  maintenance: { affected_audience: null, customer_impact: null, public_hidden: 0 },
   maintenance_components: { detached_internal: 0 },
 };

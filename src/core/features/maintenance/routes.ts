@@ -1,11 +1,12 @@
 import type { Hono } from "hono";
 import { z } from "zod";
+import { pagePathsSchema, UnknownStatusPageError } from "../page-settings/page-selection";
 
 import type { AppEnv } from "../../app/types";
 import type { MaintenanceService } from "./service";
 
 const wordingField = z.string().trim().min(1).max(250);
-const maintenanceSchema = z.object({ affectedAudience: wordingField, customerImpact: wordingField, title: z.string().trim().min(1).max(250), startsAt: z.iso.datetime(), endsAt: z.iso.datetime(), componentIds: z.array(z.string().min(1)).min(1).max(100), autoStart: z.boolean().optional(), autoComplete: z.boolean().optional(), social: z.boolean().optional() }).strict();
+const maintenanceSchema = z.object({ pagePaths: pagePathsSchema.optional(), affectedAudience: wordingField, customerImpact: wordingField, title: z.string().trim().min(1).max(250), startsAt: z.iso.datetime(), endsAt: z.iso.datetime(), componentIds: z.array(z.string().min(1)).min(1).max(100), autoStart: z.boolean().optional(), autoComplete: z.boolean().optional(), social: z.boolean().optional() }).strict();
 const automationSchema = z.object({ autoStart: z.boolean(), autoComplete: z.boolean() }).strict();
 const windowSchema = maintenanceSchema.pick({ startsAt: true, endsAt: true, autoStart: true, autoComplete: true, social: true }).extend({ affectedAudience: wordingField.optional(), customerImpact: wordingField.optional() }).superRefine((input, context) => {
   if ((input.affectedAudience === undefined) !== (input.customerImpact === undefined)) context.addIssue({ code: "custom", message: "Provide both maintenance wording statements together." });
@@ -27,7 +28,7 @@ export function registerMaintenanceRoutes(app: Hono<AppEnv>, service: Maintenanc
       context.executionCtx.waitUntil(service.refreshPublic());
       return context.json({ maintenance }, 201);
     }
-    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Maintenance could not be scheduled." }, 409); }
+    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Maintenance could not be scheduled." }, cause instanceof UnknownStatusPageError ? 400 : 409); }
   });
   app.put("/api/app/maintenance/:maintenanceId/window", async (context) => {
     const input = windowSchema.safeParse(await context.req.json().catch(() => null));

@@ -15,8 +15,8 @@ import { emailBrandingSchema, type EmailBranding } from "../../shared/email-bran
 export class UnsupportedMailIdentityError extends Error {}
 export class UnavailablePageTemplateError extends Error {}
 
-const MAX_LOGO_BYTES = 2 * 1024 * 1024;
-const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+export const MAX_LOGO_BYTES = 2 * 1024 * 1024;
+export const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 export type PageSettingsView = Omit<StoredPageSettings, "theme" | "widgetAllowedOrigins" | "widgetAppearance" | "wordingBlockedTerms" | "emailBranding"> & {
   theme: PageTheme;

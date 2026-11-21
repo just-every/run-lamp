@@ -1,3 +1,4 @@
+import { audiencePagesBrowserFlow } from "./helpers/audience-pages-browser.mjs";
 import { incidentCorrectionsFlow } from "./helpers/incident-corrections-flow.mjs";
 import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
 import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
@@ -1070,6 +1071,11 @@ test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review
   await assertPublicationAfterAiTimeout(390, t);
 });
 
+
+test('AUD-001 — an operator configures status pages and publishes to the selected pages', { timeout: 300_000 }, async t => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl, api, localInput, screenshots: previewScreens, diagnostic: message => t.diagnostic(message) });
+});
 
 test('THEME-001 — owner publishes branded themes and layouts within the page budget', { timeout: 600_000 }, async t => {
   await themeOwnerJourney({ appFetch, appUrl, pageUrl, sessionId, cookieName: sessionCookieName(appUrl), diagnostic: message => t.diagnostic(message) });

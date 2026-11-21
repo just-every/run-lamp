@@ -78,8 +78,9 @@ export function createReportsService(repository: ReportRepository, onPublicDataC
       assertReport(report, true);
       if (!notificationStatements) throw new Error("Post-incident report publication requires notification transaction wiring.");
       const timestamp = nowIso();
-      const componentIds = await repository.listComponentIds(incidentId);
-      const notifications = await notificationStatements.forIncidentReport({ eventId: report.id, incidentId, componentIds, channels, queuedAt: timestamp });
+      const notifications = await repository.isPublicIncident(incidentId)
+        ? await notificationStatements.forIncidentReport({ eventId: report.id, incidentId, componentIds: await repository.listComponentIds(incidentId), channels, queuedAt: timestamp })
+        : [];
       if (!(await repository.publish(incidentId, report, timestamp, operatorId, notifications))) return null;
       await onPublicDataChanged();
       return repository.find(incidentId);

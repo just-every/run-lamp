@@ -1,4 +1,5 @@
 /// <reference path="../scripts/dev-ingress/virtual.d.ts" />
+import { protectedStatusPage } from "./core/features/public-snapshot/protected-routes";
 import { withDemo } from '@runeditrun/rer/modules/demo';
 import { seedDemo } from './demo';
 export { SnapshotCache } from "./core/platform/blobs/snapshot-cache";
@@ -8,7 +9,7 @@ import { authResponse } from "./core/platform/auth/http";
 import start from "@tanstack/react-start/server-entry";
 
 import { installedHomeResponse } from "./installed-home";
-import { createHostDispatch, isDevelopmentAppPath, type LampSurface } from "./core/app/host-dispatch";
+import { createHostDispatch, isDevelopmentAppPath, protectedPageAddress, type LampSurface } from "./core/app/host-dispatch";
 import { createApp } from "./core/app/server";
 import { prepareAppMailBindings } from "./core/app/mail";
 import { withOperatorRequest } from "./core/platform/operator-request.server";
@@ -55,7 +56,7 @@ function isOperatorDocument(request: Request, pathname: string) {
 // visit to the same host is sent there rather than failing Base's origin check.
 function secureOperatorRedirect(request: Request, bindings: AppBindings, url: URL) {
   if (url.protocol !== "http:" || (request.method !== "GET" && request.method !== "HEAD")) return null;
-  if (url.pathname !== "/" && url.pathname !== "/signin" && !url.pathname.startsWith("/auth/") && !isOperatorDocument(request, url.pathname)) return null;
+  if (!protectedPageAddress(url.pathname) && url.pathname !== "/" && url.pathname !== "/signin" && !url.pathname.startsWith("/auth/") && !isOperatorDocument(request, url.pathname)) return null;
   const origin = authOrigin(bindings);
   return origin === `https://${url.host}` ? Response.redirect(new URL(`${url.pathname}${url.search}`, origin), 301) : null;
 }
@@ -108,6 +109,12 @@ export default withDemo({
       const home = await installedHomeResponse(request, bindings);
       if (home) return noindexAppDocument(request, bindings, home);
       if (url.pathname === "/robots.txt") return appHostRobots(request, bindings);
+    }
+
+    if (surface === "protected-page") {
+      const secure = secureOperatorRedirect(request, bindings, url);
+      if (secure) return secure;
+      return protectedStatusPage(request, bindings, executionContext, createApp(bindings, request), protectedPageAddress(url.pathname)!);
     }
 
     const runtime = createApp(await prepareAppMailBindings(bindings, request), request);

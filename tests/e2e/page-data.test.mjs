@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -15,6 +16,7 @@ import { legacyApiFixtureSql } from "./fixtures/legacy-api-fixture.mjs";
 import { reservePort } from "./worker-startup.mjs";
 import { fixtureFetch as fetch } from "../public-snapshots/fixture-fetch.mjs";
 
+const staffLogo = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLttAAAAABJRU5ErkJggg==", "base64");
 const logo = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Jm4kAAAAASUVORK5CYII=", "base64");
 
 // A former teammate authored one update; subscribers hold every consent state.
@@ -99,6 +101,7 @@ const withoutTime = ({ exportedAt: _time, integrity: _integrity, ...file }) => f
 test("Page data restores verified consent and holds unverified addresses until confirmation", async () => {
   const source = await startPage(`${legacyApiFixtureSql()}\n${ownerHistorySql}`);
   let exported;
+  let staffIncident, staffMaintenance;
   try {
     const form = new FormData();
     form.set("logo", new Blob([logo], { type: "image/png" }), "logo.png");
@@ -117,6 +120,33 @@ test("Page data restores verified consent and holds unverified addresses until c
     assert.equal((await source.request("/api/app/page-settings", { ...json({ ...input, emailBranding, widgetAppearance }), method: "PUT" })).status, 200);
     // Older callers omit tag choices; their next settings write must retain them.
     assert.equal((await source.request("/api/app/page-settings", { ...json(input), method: "PUT" })).status, 200);
+    const componentId = "01J00000000000000000000011";
+    const staffSettings = { path: "staff", kind: "staff", pageName: "Synthetic Lamp staff operations", tagline: "Maintenance desk", accentColor: "#428260", timezone: "UTC", componentIds: [componentId], footerCreditEnabled: false };
+    const staff = await source.request("/api/app/status-pages", json(staffSettings));
+    assert.equal(staff.status, 201, await staff.clone().text());
+    const staffBrand = new FormData();
+    staffBrand.set("logo", new Blob([staffLogo], { type: "image/png" }), "staff.png");
+    assert.equal((await source.request("/api/app/status-pages/staff/logo", { method: "POST", body: staffBrand })).status, 200);
+    const incident = await source.request("/api/app/incidents", json({
+      title: "Synthetic Lamp private scope incident",
+      pagePaths: ["staff"],
+      components: [{ componentId, state: "Major outage", relationship: "Primary" }],
+      update: { lifecycle: "Identified", affectedAudience: "Operators", customerImpact: "Staff are reviewing the failover.", whatStillWorks: "", details: "", nextUpdateAt: new Date(Date.now() + 3600_000).toISOString() },
+    }));
+    assert.equal(incident.status, 201, await incident.clone().text());
+    staffIncident = (await incident.json()).incident;
+    const publish = json({ channels: [] });
+    const published = await source.request(`/api/app/incidents/${staffIncident.id}/publish`, { ...publish, headers: { ...publish.headers, "If-Match": `${staffIncident.draft.id}:0` } });
+    assert.equal(published.status, 200, await published.clone().text());
+    const maintenance = await source.request("/api/app/maintenance", json({
+      title: "Synthetic Lamp private scope maintenance",
+      affectedAudience: "Operators", customerImpact: "Staff are updating the fallback queue.",
+      componentIds: [componentId], pagePaths: ["staff"], autoStart: false,
+      startsAt: new Date(Date.now() + 3600_000).toISOString(), endsAt: new Date(Date.now() + 7200_000).toISOString(),
+    }));
+    assert.equal(maintenance.status, 201, await maintenance.clone().text());
+    staffMaintenance = (await maintenance.json()).maintenance;
+
     const download = await source.request("/api/app/page-data");
     assert.equal(download.status, 200);
     assert.match(download.headers.get("content-disposition") ?? "", /attachment; filename=lamp-page-data-\d{4}-\d{2}-\d{2}\.json/);
@@ -125,6 +155,10 @@ test("Page data restores verified consent and holds unverified addresses until c
     assert.deepEqual(exported.page.emailBranding, emailBranding);
     assert.deepEqual(exported.page.widgetAppearance, widgetAppearance);
     assert.equal(exported.page.logo.base64, logo.toString("base64"));
+    assert.deepEqual(exported.statusPageLogos, [{ path: "staff", contentType: "image/png", base64: staffLogo.toString("base64") }]);
+    assert.deepEqual(exported.records.incident_status_pages, [{ incident_id: staffIncident.id, page_path: "staff" }]);
+    assert.deepEqual(exported.records.maintenance_status_pages, [{ maintenance_id: staffMaintenance.id, page_path: "staff" }]);
+    assert.ok(exported.records.status_pages.every(row => !("logo_key" in row)));
     assert.deepEqual(exported.people.map((person) => person.email), ["former@example.test", "operator@example.test"]);
     const subscribers = Object.fromEntries(exported.records.subscribers.map((row) => [row.destination, row]));
     assert.equal(subscribers["ops-team@atlascloud.example"].confirmed_at, "2026-09-08T00:05:00.000Z");
@@ -156,6 +190,13 @@ test("Page data restores verified consent and holds unverified addresses until c
     assert.equal(checked.check.counts.subscribers, 4);
     assert.deepEqual(checked.check.consent, { kept: true, provenance: "verified", emailSubscribers: 2 });
 
+    const unsafe = structuredClone(exported);
+    unsafe.records.status_pages[0].logo_key = "snapshots/current.json";
+    assert.equal((await destination.request("/api/app/page-data/restore", json(unsafe))).status, 409, "restored logos cannot name storage keys");
+    const missingScope = structuredClone(exported);
+    delete missingScope.records.incidents.find(row => row.id === staffIncident.id).public_hidden;
+    assert.equal((await destination.request("/api/app/page-data/restore", json(missingScope))).status, 409, "a missing flag cannot make a private record public");
+
     const restored = await destination.request("/api/app/page-data/restore", json(exported));
     assert.equal(restored.status, 200, JSON.stringify(await restored.clone().json()));
     const again = await (await destination.request("/api/app/page-data")).json();
@@ -163,6 +204,16 @@ test("Page data restores verified consent and holds unverified addresses until c
 
     const publicPage = await (await fetch(`${destination.page}/`)).text();
     assert.match(publicPage, /Elevated API error rates/);
+    assert.ok(!publicPage.includes(staffIncident.title));
+    assert.ok(!publicPage.includes(staffMaintenance.title));
+    for (const [kind, record] of [["incidents", staffIncident], ["maintenance", staffMaintenance]]) {
+      const protectedRecord = await destination.request(`/status-pages/staff/${kind}/${record.reference}`);
+      assert.equal(protectedRecord.status, 200, await protectedRecord.clone().text());
+      assert.ok((await protectedRecord.text()).includes(record.title));
+    }
+    const protectedLogo = await destination.request("/status-pages/staff/assets/logo");
+    assert.equal(protectedLogo.status, 200);
+    assert.deepEqual(Buffer.from(await protectedLogo.arrayBuffer()), staffLogo);
     const repeat = await destination.request("/api/app/page-data/restore", json(exported));
     assert.equal(repeat.status, 409, "a second restore must not duplicate the page");
   } finally {
@@ -179,11 +230,25 @@ async function verifyUntrustedPageDataRestore() {
   } finally {
     await source.stop();
   }
+  // Version 1 files made before audience pages lack their tables and fields.
+  const legacy = structuredClone(edited);
+  delete legacy.integrity;
+  for (const table of ["status_pages", "incident_status_pages", "maintenance_status_pages"]) delete legacy.records[table];
+  for (const table of ["incidents", "maintenance"]) for (const row of legacy.records[table]) delete row.public_hidden;
+  for (const row of legacy.records.incident_drafts) delete row.page_paths;
+  const sortKeys = value => Array.isArray(value) ? value.map(sortKeys)
+    : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, sortKeys(value[key])])) : value;
+  const key = createHmac("sha256", signingSecret.SUBSCRIBER_TOKEN_SECRET).update("lamp-page-data-integrity.v1").digest("base64url");
+  legacy.integrity = { algorithm: "HMAC-SHA256", value: createHmac("sha256", key).update(JSON.stringify(sortKeys(legacy))).digest("base64url") };
+
   edited.records.subscribers.push({ ...edited.records.subscribers.find((row) => row.destination === "ops-team@atlascloud.example"), id: "01J00000000000000000000098", destination: "bought-list@example.test", confirmed_at: "2026-09-08T00:05:00.000Z" });
 
   // The restored page sends real production mail through a synthetic provider edge.
   const destination = await startPage();
   try {
+    const checkedLegacy = await (await destination.request("/api/app/page-data/check", json(legacy))).json();
+    assert.equal(checkedLegacy.check.ok, true, checkedLegacy.check.problems.join(" "));
+    assert.equal(checkedLegacy.check.consent.provenance, "verified", "older signed files verify with the original bytes");
     const { integrity: _integrity, ...unsigned } = edited;
     assert.equal((await (await destination.request("/api/app/page-data/check", json(unsigned))).json()).check.consent.provenance, "unsigned");
     const checked = await (await destination.request("/api/app/page-data/check", json(edited))).json();
