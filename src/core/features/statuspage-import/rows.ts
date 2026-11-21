@@ -1,3 +1,4 @@
+import { defaultMaintenanceAutomation } from "../maintenance/automation.repository";
 import { planSubscriberCapacity, type SubscriberCounts } from "../subscribers/limits";
 import { attachPostmortem } from "./postmortems";
 import { mapTemplates } from "./templates";
@@ -231,8 +232,17 @@ function mapMaintenance(window: SourceIncident, components: Map<string, { id: st
     if (completedAt) claims.push({ componentId: components.get(code)!.id, causeType: "maintenance", causeId: id, state: null, changedAt: completedAt });
   }
   const sourceState = ({ scheduled: "Scheduled", in_progress: "In progress", verifying: "In progress", completed: "Completed", cancelled: "Cancelled" } as Record<string, string>)[window.status];
+  const { scheduled_auto_in_progress: autoStart, scheduled_auto_completed: autoComplete } = window;
+  // A missing pair keeps the legacy no-sidecar value. When one switch is
+  // provided, the other keeps the behavior it would have without a sidecar.
+  const automation = autoStart != null || autoComplete != null ? [{
+    maintenance_id: id,
+    auto_start: Number(autoStart ?? defaultMaintenanceAutomation.autoStart),
+    auto_complete: Number(autoComplete ?? defaultMaintenanceAutomation.autoComplete),
+  }] : undefined;
   return { kind: "maintenance", sourceId: window.id, value: { tables: {
     maintenance: [{ id, reference: reference(id), title: clip(name, 250), state, starts_at: startsAt, ends_at: endsAt, completed_at: completedAt, created_by_operator_id: operatorId, created_at: asOf, updated_at: asOf }],
+    ...(automation ? { maintenance_automation: automation } : {}),
     ...(window.incident_updates.length ? { import_maintenance_updates: window.incident_updates.map((update) => ({ id: identify(`maintenance-update:${update.id}`, at(update)), maintenance_id: id, body: update.body ?? "", published_at: at(update), source_states: JSON.stringify({ status: update.authored_status === null ? null : update.status, components: update.affected_components ?? [] }) })).sort((a, b) => a.published_at.localeCompare(b.published_at) || a.id.localeCompare(b.id)) } : {}),
     maintenance_components: attached.map((code) => ({ id: identify(`maintenance-component:${window.id}:${code}`, startsAt), maintenance_id: id, component_id: components.get(code)!.id, component_name: components.get(code)!.name, state: "Under maintenance", created_at: asOf, updated_at: asOf })),
   } }, accounting: [{ kind: "maintenance", sourceId: window.id, name, outcome: sourceState === state ? "imported" : "changed", reason: sourceState === state ? `${state} window carried over; no notice is sent for it.` : `Imported as ${state} because its window is ${state === "Completed" ? "over" : "under way"}; no notice is sent for it.` }] };

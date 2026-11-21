@@ -620,15 +620,62 @@ test('MAINT-015 — imported maintenance messages retain their own source lifecy
         affected_components: [{ code: 'c0000000001', new_status: index === 2 ? 'operational' : 'under_maintenance' }],
       })),
     };
-    files.find(file => file.name === 'incidents.json').text = JSON.stringify([window]);
+    const now = Date.now();
+    const daysFromNow = days => new Date(now + days * 86_400_000).toISOString();
+    const future = {
+      id: 'synthetic-lamp-future', name: 'Future switch choices', status: 'scheduled', impact: 'maintenance',
+      created_at: daysFromNow(-2), scheduled_for: daysFromNow(2), scheduled_until: daysFromNow(3),
+      components: window.components, incident_updates: [],
+      scheduled_auto_in_progress: false, scheduled_auto_completed: true,
+    };
+    const running = {
+      ...future, id: 'synthetic-lamp-running', name: 'Running switch choices', status: 'in_progress',
+      scheduled_for: daysFromNow(-1), scheduled_until: daysFromNow(1),
+      scheduled_auto_in_progress: true, scheduled_auto_completed: false,
+    };
+    const capture = (scheduled, underway, history = window) => ({
+      source: 'statuspage', pageId: 'synthpage01', publicAccessAcknowledged: true,
+      files: [
+        ...files.map(file => file.name === 'incidents.json' ? { ...file, text: JSON.stringify([history, scheduled, underway]) } : file),
+        { name: 'incidents-scheduled.json', text: JSON.stringify([scheduled]) },
+      ],
+    });
+    const input = capture(future, running);
+    const readWindows = async () => {
+      const response = await api('/api/app/maintenance');
+      assert.equal(response.status, 200);
+      return response.body.maintenance;
+    };
+    const findWindow = (windows, title) => {
+      const found = windows.filter(row => row.title === title);
+      assert.equal(found.length, 1, title + ' has one native record');
+      return found[0];
+    };
+    const switches = row => [row.autoStart, row.autoComplete];
+    const identities = windows => windows.map(({ id, reference }) => [id, reference]).sort();
     const quiet = await notificationActivity(runtime);
-    const review = await moveIn.preview({ source: 'statuspage', files, pageId: 'synthpage01', publicAccessAcknowledged: true });
+    const outbound = await undoNotificationInventory(runtime);
+    const review = await moveIn.preview(input);
     assert.equal(review.status, 200, JSON.stringify(review.body));
+    assert.deepEqual(await readWindows(), [], 'review writes no maintenance');
+    await assertNoNewNotificationWork(runtime, outbound, 'maintenance review');
     const applied = await moveIn.apply(review.body);
     assert.equal(applied.status, 200, JSON.stringify(applied.body));
-    const windows = (await api('/api/app/maintenance')).body.maintenance;
-    const imported = windows.find(row => row.title === window.name);
-    assert.ok(imported);
+    assert.equal(applied.body.job.state, 'completed');
+    const windows = await readWindows();
+    assert.equal(windows.length, 3);
+    const imported = findWindow(windows, window.name);
+    const futureWindow = findWindow(windows, future.name);
+    const runningWindow = findWindow(windows, running.name);
+    assert.equal(futureWindow.state, 'Scheduled');
+    assert.deepEqual(switches(futureWindow), [false, true]);
+    assert.equal(runningWindow.state, 'In progress');
+    assert.deepEqual(switches(runningWindow), [true, false]);
+    assert.deepEqual(switches(imported), [true, true], 'omitted fields keep the original automation defaults');
+    const records = await importedRecordInventory(runtime);
+    assert.equal(records.maintenance_automation.length, 2, 'only windows with explicit switches have a sidecar');
+    assert.ok(!records.maintenance_automation.some(row => row.maintenance_id === imported.id));
+    await assertNoNewNotificationWork(runtime, outbound, 'reviewed maintenance apply');
     assert.equal(imported.notices.length, 0, 'historical messages never become native notification notices');
     assert.equal(imported.importedUpdates.length, messages.length, 'every source maintenance message survives the public import door');
     assert.deepEqual(imported.importedUpdates.map(row => row.publishedAt).sort(), times);
@@ -640,6 +687,45 @@ test('MAINT-015 — imported maintenance messages retain their own source lifecy
       }
     }
     await assertNoNewNotifications(runtime, quiet);
+    const replay = await moveIn.preview(input);
+    assert.equal(replay.status, 200, JSON.stringify(replay.body));
+    assert.equal(replay.body.report.state, 'already imported');
+    const replayed = await moveIn.apply(replay.body);
+    assert.equal(replayed.status, 200, JSON.stringify(replayed.body));
+    assert.equal(replayed.body.job.id, applied.body.job.id);
+    assert.equal(replayed.body.job.state, 'completed');
+    assert.deepEqual(identities(await readWindows()), identities(windows), 'replay keeps one native identity for each source');
+    assert.deepEqual(await importedRecordInventory(runtime), records, 'replay preserves the complete native records');
+    await assertNoNewNotificationWork(runtime, outbound, 'maintenance replay');
+
+    const saved = await api('/api/app/maintenance/' + runningWindow.id + '/window', {
+      startsAt: runningWindow.startsAt, endsAt: runningWindow.endsAt, autoComplete: true,
+    }, undefined, 'PUT');
+    assert.equal(saved.status, 200, JSON.stringify(saved.body));
+    assert.deepEqual(switches(findWindow(await readWindows(), running.name)), [true, true]);
+    const afterNativeEdit = await undoNotificationInventory(runtime);
+    const corrected = { ...window, name: window.name + ' corrected at source' };
+    const updatedFuture = { ...future, scheduled_auto_in_progress: true };
+    delete updatedFuture.scheduled_auto_completed;
+    const updated = await moveIn.preview(capture(updatedFuture, { ...running, scheduled_auto_in_progress: false }, corrected));
+    assert.equal(updated.status, 200, JSON.stringify(updated.body));
+    const key = source => JSON.stringify(['maintenance', source.id]);
+    assert.deepEqual(updated.body.differences.conflicts, [key(running)], 'a changed source cannot take ownership back from a native edit');
+    const replacements = updated.body.differences.replacements.filter(item => JSON.parse(item)[0] === 'maintenance');
+    assert.deepEqual(replacements.toSorted(), [key(future), key(window)].toSorted(), 'the unedited sidecar and sidecar-free journal are both eligible for replacement');
+    const caughtUp = await moveIn.apply(updated.body);
+    assert.equal(caughtUp.status, 200, JSON.stringify(caughtUp.body));
+    assert.equal(caughtUp.body.job.state, 'completed');
+    const afterCatchup = await readWindows();
+    assert.deepEqual(identities(afterCatchup), identities(windows));
+    assert.deepEqual(switches(findWindow(afterCatchup, future.name)), [true, true], 'the remaining explicit switch is stored and the omitted one keeps its default');
+    assert.deepEqual(switches(findWindow(afterCatchup, running.name)), [true, true], 'the native edit survives a conflicting source change');
+    assert.deepEqual(switches(findWindow(afterCatchup, corrected.name)), [true, true]);
+    const caughtUpRecords = await importedRecordInventory(runtime);
+    assert.deepEqual(caughtUpRecords.maintenance_automation.map(row => [row.maintenance_id, row.auto_start, row.auto_complete]).sort(),
+      [[futureWindow.id, 1, 1], [runningWindow.id, 1, 1]].sort(), 'the explicit true and native edit are stored while the absent pair stays sidecar-free');
+    await assertNoNewNotificationWork(runtime, afterNativeEdit, 'maintenance catch-up');
+    t.diagnostic('PROBE MAINT-015 1: saved Statuspage review, apply and replay -> Scheduled false and true, In progress true and false, absent pair stays default, one record per source and no new notification work');
     t.diagnostic('PROBE MAINT-015: scheduled, in_progress and completed source messages survive review/apply, native read, public permalink and monthly history at original times without notifications');
   } finally { await runtime.close(); }
 });
