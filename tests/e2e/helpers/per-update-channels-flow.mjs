@@ -1,3 +1,4 @@
+import { completeRoute } from './complete-route.mjs';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -69,7 +70,8 @@ export async function perUpdateChannelsFlow() {
       if (url.origin === widgetOrigin) return route.fulfill({ contentType: 'text/html', body: `<!doctype html><html lang="en"><title>Synthetic Lamp customer</title><body><script src="${pageOrigin}/widget.js"></script></body></html>` });
       assert.equal(url.origin, pageOrigin, 'public proof contacts only the retained public host');
       const response = await fixture.raw(url.href);
-      await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+      const body = Buffer.from(await response.arrayBuffer());
+      await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
     });
     const page = await context.newPage(), widget = await context.newPage();
     const expectedSelections = [], expectedDeliveries = [], expectedMailIds = [], expectedWebhookIds = [], expectedUpdates = [];

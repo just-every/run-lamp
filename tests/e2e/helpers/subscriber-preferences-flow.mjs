@@ -1,3 +1,4 @@
+import { completeRoute } from "./complete-route.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
@@ -60,7 +61,8 @@ export async function subscriberPreferencesFlow() {
     await context.route(`${pageOrigin}/**`, async route => {
       const request = route.request();
       const response = await raw(request.url(), { method: request.method(), headers: request.headers(), body: request.postDataBuffer() ?? undefined });
-      await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+      const body = Buffer.from(await response.arrayBuffer());
+      await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
     });
     const page = await context.newPage();
     assert.equal((await page.goto(manageUrl)).status(), 200);

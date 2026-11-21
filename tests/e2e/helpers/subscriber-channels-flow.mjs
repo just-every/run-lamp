@@ -1,3 +1,4 @@
+import { completeRoute } from './complete-route.mjs';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
@@ -20,7 +21,8 @@ export async function subscriberChannelsFlow() {
   const routePublic = () => context.route(`${publicOrigin}/**`, async route => {
     const request = route.request();
     const response = await fixture.raw(request.url(), { method: request.method(), headers: { ...request.headers(), 'CF-Connecting-IP': '192.0.2.66' }, body: request.postDataBuffer() ?? undefined });
-    await route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
+    const body = Buffer.from(await response.arrayBuffer());
+    await completeRoute(() => route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body }));
   });
   await routePublic();
   const page = await context.newPage();

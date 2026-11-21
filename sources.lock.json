@@ -8263,6 +8263,10 @@
       "sha256": "d79dff3def9bb8b0b0ae11c9585df9f60d6b934f75014edce2148ea118ec587d",
       "executable": false
     },
+    "tests/e2e/helpers/complete-route.mjs": {
+      "sha256": "22b33c239c0dcc22bb574479875177d10a0445cc95e7aab9d80028382d7313ca",
+      "executable": false
+    },
     "tests/e2e/helpers/component-notification-flow.mjs": {
       "sha256": "f85d9d6b71d88807d2382ce7b3701db0ee4d98a9b6a2e4863751e8da15a81d3f",
       "executable": false
@@ -8464,7 +8468,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operations-credentials-browser-flow.mjs": {
-      "sha256": "1fd73f3c1cbded231c8c3d8d24d138f1431fc8591be19e3310cdf71eced1d187",
+      "sha256": "069ae6380d88bd99bfc5d8243bbef8f8c01ba3bdeff0d11da3f3c1027a18ba1f",
       "executable": false
     },
     "tests/e2e/helpers/operator-attribution.mjs": {
@@ -8504,7 +8508,7 @@
       "executable": false
     },
     "tests/e2e/helpers/per-update-channels-flow.mjs": {
-      "sha256": "83771cfdb70e7834d7d599ecd222ce5be8ca34263b67c9e8a104fe8603056e9c",
+      "sha256": "f63eeaaef4480c3278c92a7b70c8510eb32a773fb4c3d02ef03af905b0be4440",
       "executable": false
     },
     "tests/e2e/helpers/phone-desk-flow.mjs": {
@@ -8652,7 +8656,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-channels-flow.mjs": {
-      "sha256": "129c06520ff3a5b3167f9fe45b108353867a6e3b942fe4b7e7b3abd635d947a8",
+      "sha256": "a0f16f5901af65d786281319a8a4bc29005be37eecc8acd7d4fcfacee1077174",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-components-flow.mjs": {
@@ -8692,7 +8696,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-preferences-flow.mjs": {
-      "sha256": "9730ada27c9ca159a6cdca1cd3bb5528a574440f9ce2036cf9217e94c8409480",
+      "sha256": "40ee09905910dbe8a101a582444a50a0dd9a7a6531a5ee53b8382804f107d36f",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-public-consent-flow.mjs": {
@@ -8732,7 +8736,7 @@
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-flow.mjs": {
-      "sha256": "2858f070391b6f849e2a4bd6e81c610a29fbfa75cdb85f787d9e2affacb77450",
+      "sha256": "8b1c8fdc5ff3afaf6f4036e6a2da9a3363f61a642bf28f59ca0bd1de8718914f",
       "executable": false
     },
     "tests/e2e/helpers/traffic-alerts-runtime.mjs": {
@@ -8828,7 +8832,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "9bb85e903a8138454ff81244f777356a321d26dbdf955e7fab024884cb46564e",
+      "sha256": "e6c1127368b10380b9de3e4fa7e701d22ba7a677bac9c11bc2f898603a9f3699",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -8848,7 +8852,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "3fb4c9fab08512778b398a8dbbba37d9a7034a769e3dbc2f27950acc7fd29a6e",
+      "sha256": "f5e82f6f43500235ee513e99b2632cda25a061dd203e243ee611508c9563c811",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {
@@ -8900,7 +8904,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "2b0dc94b1740d4c15725b5a61ed89d435a06b66d2eebbcd5daa1abc2453be465",
+      "sha256": "7e9480b763732a774b31fb13cc90d1c418c8ee0be86a1443ef1ed3372cf8393c",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {

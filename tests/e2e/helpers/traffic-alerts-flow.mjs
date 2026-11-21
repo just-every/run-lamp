@@ -1,3 +1,4 @@
+import { completeRoute } from './complete-route.mjs';
 import assert from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -249,7 +250,7 @@ export async function trafficAlertsFlow(t) {
         if (route.request().method() !== 'PUT') return route.continue();
         writes.push(route.request().postDataJSON().multiple);
         if (writes.length === 1) await held;
-        await route.continue();
+        await completeRoute(() => route.continue());
       };
       const recordAcknowledgement = response => {
         if (response.url() === settingsUrl && response.request().method() === 'PUT') {
