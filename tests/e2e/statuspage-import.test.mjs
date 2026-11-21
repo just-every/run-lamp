@@ -309,6 +309,21 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     assert.equal((await moveIn.apply(fetched.body)).status, 409, 'a page edited after review requires a fresh import review');
     assert.deepEqual(await counts(), { ...beforeSignout, components: beforeSignout.components + 1 });
 
+    const nativeComponent = native.body.component;
+    const nativeIncident = await runtime.incident('Owner investigation kept in draft', [nativeComponent]);
+    const { draft: nativeDraft } = await runtime.save(nativeIncident.id, { customerImpact: 'Owner wording kept private.' });
+    const nativeAddress = ['synthetic-lamp-preview', 'example.test'].join('@');
+    const subscription = await fetch(publicOrigin + '/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: publicOrigin, Accept: 'text/html' },
+      body: new URLSearchParams({ email: nativeAddress, componentId: nativeComponent.id }).toString(),
+    });
+    assert.equal(subscription.status, 202, await subscription.text());
+    const nativeConfirmation = await eventually(
+      () => runtime.messages.find(message => message.to.includes(nativeAddress) && message.text.includes('/confirm-subscription/')),
+      Boolean, 'the native subscription sends a confirmation before the review',
+    );
+
     // Each row is the same owner migration, using one saved export per provider.
     // Assertions compare source records with native documents, rather than pinning fixture sizes.
     for (const source of ['statuspage', 'betterstack', 'instatus']) {
@@ -319,12 +334,40 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       const files = invitationFiles(source, fixtures(source)), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
       const continuityIncident = source === 'statuspage' ? enrichStatuspageCapture(files) : null;
       const before = await counts(), quiet = await notificationActivity(runtime);
+      const firstStatuspageReview = source === 'statuspage';
+      const recordsBeforeReview = firstStatuspageReview ? await importedRecordInventory(runtime) : null;
+      const outboundBeforeReview = firstStatuspageReview ? await undoNotificationInventory(runtime) : null;
+      if (firstStatuspageReview) {
+        assert.ok(recordsBeforeReview.components.some(row => row.id === nativeComponent.id));
+        assert.ok(recordsBeforeReview.incidents.some(row => row.id === nativeIncident.id));
+        assert.ok(recordsBeforeReview.incident_drafts.some(row => row.id === nativeDraft.id));
+        const nativeSubscriber = recordsBeforeReview.subscribers.find(row => row.destination === nativeAddress);
+        assert.ok(nativeSubscriber, 'the pending native subscriber is present in the record baseline');
+        assert.ok(outboundBeforeReview.tables.subscriber_tokens.some(row => row.subscriber_id === nativeSubscriber.id));
+        assert.ok(outboundBeforeReview.transports.messages.some(message => message.text === nativeConfirmation.text));
+      }
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
       assert.deepEqual(await counts(), before, `${source} review writes nothing`);
+      if (firstStatuspageReview) {
+        const { planId, fingerprint, report } = reviewed.body;
+        assert.ok(planId && fingerprint, 'the saved responses produce a review the owner can apply');
+        assert.equal(report.state, 'dry run', 'the saved responses have never been applied');
+        assert.ok(report.counts.component.imported > 0, 'the review includes actual importable components');
+        const savedPlan = await runtime.db.prepare('SELECT complete, fingerprint, job_id FROM ik_door_plans WHERE id=?').bind(planId).first();
+        assert.deepEqual(savedPlan, { complete: 1, fingerprint, job_id: null }, 'review retains a complete plan without creating an apply job');
+        assert.deepEqual(await importedRecordInventory(runtime), recordsBeforeReview, 'the first saved Statuspage review preserves every complete native record');
+        assert.deepEqual(await undoNotificationInventory(runtime), outboundBeforeReview, 'the first saved Statuspage review preserves all outbound rows and captured transports');
+        t.diagnostic('PROBE MOVE-001 2: first saved Statuspage review on a populated native install -> importable plan retained without an apply job; complete native rows and outbound work unchanged');
+      }
       const changed = reviewed.body.fingerprint[0] === '0' ? '1' : '0';
       assert.equal((await moveIn.apply(reviewed.body, changed + reviewed.body.fingerprint.slice(1))).status, 409);
       assert.deepEqual(await counts(), before, 'unreviewed source bytes cannot apply');
       const { review, result } = await apply(input);
+      if (firstStatuspageReview) {
+        assert.equal(review.planId, reviewed.body.planId, 'explicit apply uses the same saved Statuspage plan');
+        assert.equal(review.fingerprint, reviewed.body.fingerprint, 'explicit apply uses the reviewed fingerprint');
+        assert.equal(result.door.planId, reviewed.body.planId, 'the completed job belongs to the reviewed plan');
+      }
       assert.deepEqual(result.report.counts, review.report.counts);
       const after = await counts();
       for (const [kind, plural] of [['component', 'components'], ['group', 'groups'], ['incident', 'incidents'], ['maintenance', 'maintenance'], ['subscriber', 'subscribers']]) {
