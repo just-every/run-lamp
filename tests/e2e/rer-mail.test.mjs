@@ -194,7 +194,7 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal(queued.outcome, 'queued'); assert.equal(queued.providerAcceptedAt, null);
       const { body: firstAttempt, idempotencyKey: firstKey } = sentTo(reader).at(-1);
       const settings = (await (await call('/api/app/page-settings')).json()).settings;
-      const savedFooter = 'Contact the payment recovery desk for case Orchid.';
+      const savedFooter = '482 Synthetic Lantern Way, Suite 19, Example City, ZZ 00000';
       const editedIdentity = provider === 'rer' ? {} : { displayName: 'Payments recovery desk', replyTo: ['recovery-desk', 'example.test'].join('@') };
       const edited = await call('/api/app/page-settings', { ...editableSettings(settings), emailBranding: {
         ...settings.emailBranding, ...editedIdentity, subjectPrefix: '[Changed after submission]',
@@ -246,15 +246,33 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.equal((await receiptCall(body)).status, 200);
         assert.equal((await deliveries()).find(row => row.id === queued.id).outcome, 'delivered');
       }
+      const populatedSettings = (await (await call('/api/app/page-settings')).json()).settings;
+      assert.equal(populatedSettings.emailBranding.footer, savedFooter);
       const prior = sentTo(reader).at(-1);
       const populatedImpact = 'Payment processing has improved.';
       const beforePopulatedDelivery = submissions.length;
-      const populatedUpdate = await publish(populatedImpact); await tick();
+      const populatedUpdate = await publish(populatedImpact);
+      assert.notEqual(populatedUpdate.id, update.id);
+      await tick();
+      const populatedLog = await call('/api/app/deliveries?incidentUpdateId=' + populatedUpdate.id);
+      assert.equal(populatedLog.status, 200);
+      const { deliveries: populatedDeliveries } = await populatedLog.json();
+      assert.equal(populatedDeliveries.length, 1);
+      const [populatedDelivery] = populatedDeliveries;
+      assert.equal(populatedDelivery.incidentUpdateId, populatedUpdate.id);
+      assert.equal(populatedDelivery.subscriberId, pendingReader.id);
+      assert.equal(populatedDelivery.destination, reader);
+      assert.equal(populatedDelivery.subscriberState, 'active');
+      assert.ok(populatedDelivery.providerAcceptedAt);
       const populatedCaptures = submissions.slice(beforePopulatedDelivery);
       assert.equal(populatedCaptures.length, 1);
       assert.equal(populatedCaptures[0], sentTo(reader).at(-1), 'the branded baseline reached the confirmed reader');
       const populatedBody = populatedCaptures[0].body;
       const threaded = wire(populatedBody);
+      const recipients = provider === 'sendgrid'
+        ? populatedBody.personalizations.flatMap(personalization => personalization.to.map(recipient => recipient.email))
+        : [threaded.to].flat();
+      assert.deepEqual(recipients, [reader], 'the fresh envelope names only the confirmed reader');
       const firstMessageId = provider === 'rer' ? `<${prior.id}@relay.example.test>` : notification.headers['Message-ID'];
       if (provider === 'sendgrid') {
         assert.equal(populatedBody.from.name, editedIdentity.displayName);
@@ -264,9 +282,9 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.equal(populatedBody.reply_to, editedIdentity.replyTo);
       }
 
-      const populatedSettings = (await (await call('/api/app/page-settings')).json()).settings;
-      assert.equal(populatedSettings.emailBranding.footer, savedFooter);
-      assert.ok(threaded.text.includes(savedFooter) && threaded.html.includes(savedFooter));
+      assert.ok(threaded.text.includes(populatedImpact) && threaded.html.includes(populatedImpact), 'both parts match the newly committed update');
+      assert.ok(threaded.text.split('\n').includes(savedFooter), 'the postal address is a complete text line');
+      assert.ok(threaded.html.includes(`<p>${savedFooter}</p>`), 'the postal address is a complete HTML paragraph');
       const clearedBranding = { ...populatedSettings.emailBranding, footer: '' };
       const proofDirectory = provider === 'rer' ? process.env.LAMP_FOOTER_PROOF_DIR : undefined;
       await clearSavedFooter(browser, raw, cookie, savedFooter, proofDirectory);
