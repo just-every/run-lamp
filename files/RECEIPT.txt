@@ -1,0 +1,63 @@
+Candidate 8e677b278745824c3b80a639b2798926765cdb68
+Product ref refs/heads/cloud/sd-lamp-c-f199
+Candidate parent 9d35f872ac5d654f1cfcd1cc41698e7363254b0c
+Observed main ref 9d35f872ac5d654f1cfcd1cc41698e7363254b0c
+PUSH_OK branch=cloud/sd-lamp-c-f199
+Candidate identity and messages checked for every outgoing commit. Trailers absent.
+
+Local runtime pinned to Node 22.20.0 and pnpm 10.12.4.
+
+Exact candidate focused runtime command
+node --test --test-concurrency=1 --test-name-pattern=AUD-001 tests/e2e/publishing-contract.test.mjs
+exit=0
+ok 1 - AUD-001 — native publication is visible only on selected status pages and silent for public subscribers when private
+tests 1
+pass 1
+fail 0
+duration_ms 146039.194745
+PROBE AUD-005 2: populated Staff and Acme artifacts on the operator host -> public GET and HEAD return 404 without artifact bytes, snapshot metadata or object reads with the validator, the operator cookie, or both
+
+Full publishing-file command
+node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs
+exit=1
+ok 1 - INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion
+ok 2 - INCIDENT-013 — every explicit impact choice overrides higher and lower derived impact and clearing restores components
+ok 3 - INCIDENT-013 — each set and clear appends the exact acting operator and before and after values to private history
+ok 4 - INCIDENT-013 — every impact set and clear preserves complete component states, overall status, populated uptime days and current uptime
+ok 5 - MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history
+ok 6 - AUD-001 — native publication is visible only on selected status pages and silent for public subscribers when private
+ok 7 - UPDATE-006 — reviewed scheduled publication meets its deadline after complete public and subscriber silence
+ok 8 - INCIDENT-012 — linked operators run a whole private incident draft, preview and explicit publication through signed Slack and Teams
+ok 9 - AGENT-005 HIST-002 — cited report reconciles the retained record, requires human explanations and publishes immutable text
+ok 10 - NOTIFY-015 — update outcomes and incident reach reconcile retained recipients and deliveries across publication, suppression and failure
+ok 11 - Maintenance reminders respect the lead time and skip recent announcements
+not ok 12 - Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers
+tests 12
+pass 11
+fail 1
+duration_ms 307056.465962
+The maintenance cancellation browser could not launch without an explicit Chromium executable in this VM.
+
+Exact candidate focused maintenance cancellation rerun with system Chromium and no sandbox
+node --test --test-concurrency=1 --test-name-pattern='Maintenance cancellation is reviewed' tests/e2e/publishing-contract.test.mjs
+exit=0
+ok 1 - Maintenance cancellation is reviewed and the same window can be reinstated for its subscribers
+tests 1
+pass 1
+fail 0
+duration_ms 30569.156024
+
+npx -y @runeditrun/rer build exit=0
+pnpm run typecheck exit=0
+node scripts/verification/check-plan.mjs exit=0
+pnpm exec rer check --profile first-party exit=0
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check exit=0; views=node src/base/contract-docs.mjs write and check exit=0; ledger=none exit=0
+git diff --check exit=0
+Verification inventory 119 registered cases and 10 assertion scripts before and after.
+Contract inventory 66 DONE, 123 PARTIAL, 56 MISSING, total 245, before and after.
+Contract and generated-view diff empty.
+
+Verify 44936069690 event=push status=in_progress conclusion=None head=8e677b278745824c3b80a639b2798926765cdb68
+Verify observation 2026-11-21T18:37:38Z
+https://github.com/just-every/run-lamp/actions/runs/44936069690
+Candidate publication scan and main Run site pending guarded landing.
