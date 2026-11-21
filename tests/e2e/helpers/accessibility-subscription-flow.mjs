@@ -20,6 +20,7 @@ async function assertVisibleFocus(target, label) {
     return { active: document.activeElement === node, visible: node.matches(":focus-visible"), outline: style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0 && !["transparent", "rgba(0, 0, 0, 0)"].includes(style.outlineColor), shadow: style.boxShadow !== "none" };
   });
   assert.ok(focus.active && focus.visible && (focus.outline || focus.shadow), `${label}: keyboard focus is visible: ${JSON.stringify(focus)}`);
+  await expect(target).toBeInViewport();
 }
 
 async function tabTo(page, target, label) {
@@ -54,87 +55,124 @@ export async function footerAccessibilityResourcesFlow({ page, appUrl, pageUrl, 
   await page.goto(`${pageUrl}/`);
 }
 
-/** Real public HTML forms, driven only with Tab, text keys, Space and Enter.
- * The fixture reconstructs ONLY its own signed tokens at the mail/token edge,
- * from the same known synthetic key used by the isolated local Worker. */
-export async function accessibilitySubscriptionFlow({ page, appUrl, pageUrl, incident, maintenance, tokenSecret, tokenRows, diagnostic = () => {} }) {
-  const originalViewport = page.viewportSize();
-  const hydrationErrors = [];
-  const observeConsole = message => { if (/hydration|did not match|server rendered/i.test(message.text())) hydrationErrors.push(message.text()); };
-  const observePageError = error => { if (/hydration|did not match|server rendered/i.test(error.message)) hydrationErrors.push(error.message); };
-  const token = row => `v1.${row.scope}.${row.id}.${createHmac("sha256", tokenSecret).update(`lamp-subscriber-token.v1.${row.scope}.${row.id}`).digest("base64url")}`;
-  page.on("console", observeConsole); page.on("pageerror", observePageError);
-  try {
-    for (const width of [1440]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-      for (const [host, path, label, selector] of [
-        [pageUrl, "/", "public status page", "main.root-page"],
-        [pageUrl, "/history", "public history", "main.page"],
-        [pageUrl, `/incidents/${incident.reference}`, "public incident permalink", "main.page"],
-        [appUrl, "/docs/accessibility/vpat", "VPAT document", "main"],
-      ]) {
-        const response = await page.goto(`${host}${path}`);
-        assert.equal(response.status(), 200, `${width}px ${label} is served`);
-        await page.locator(selector).first().waitFor();
-        await page.getByRole("heading", { level: 1 }).first().waitFor();
-        await audit(page, `${width}px ${label}`);
-        diagnostic(`PAGE-020 ${width}px ${label}: full-page axe and no horizontal overflow passed`);
-      }
-      const permanent = await page.goto(`${pageUrl}/maintenance/${maintenance.reference}`);
-      assert.equal(permanent.status(), 200);
-      await page.getByRole("heading", { name: maintenance.title, exact: true }).waitFor();
-      await audit(page, `${width}px public maintenance permalink`);
+async function auditDesktopSurfaces({ page, appUrl, pageUrl, incident, maintenance, diagnostic }) {
+  for (const [host, path, label, selector] of [
+    [pageUrl, "/", "public status page", "main.root-page"],
+    [pageUrl, "/history", "public history", "main.page"],
+    [pageUrl, `/incidents/${incident.reference}`, "public incident permalink", "main.page"],
+    [appUrl, "/docs/accessibility/vpat", "VPAT document", "main"],
+  ]) {
+    const response = await page.goto(`${host}${path}`);
+    assert.equal(response.status(), 200, `1440px ${label} is served`);
+    await page.locator(selector).first().waitFor();
+    await page.getByRole("heading", { level: 1 }).first().waitFor();
+    await audit(page, `1440px ${label}`);
+    diagnostic(`PAGE-020 1440px ${label}: full-page axe and no horizontal overflow passed`);
+  }
+  const permanent = await page.goto(`${pageUrl}/maintenance/${maintenance.reference}`);
+  assert.equal(permanent.status(), 200);
+  await page.getByRole("heading", { name: maintenance.title, exact: true }).waitFor();
+  await audit(page, "1440px public maintenance permalink");
 
-      await page.goto(`${pageUrl}/`);
-      await footerAccessibilityResourcesFlow({ page, appUrl, pageUrl, width });
+  await page.goto(`${pageUrl}/`);
+  await footerAccessibilityResourcesFlow({ page, appUrl, pageUrl, width: 1440 });
+}
+
+async function captureKeyboardFocus(page, width, screen) {
+  const directory = process.env.LAMP_SCREENSHOTS;
+  if (!directory) return;
+  await mkdir(directory, { recursive: true });
+  await page.screenshot({ path: `${directory}/${width}-keyboard-${screen}.png` });
+}
+
+/** Real public HTML forms, driven only with Tab, text keys, Space and Enter.
+ * The fixture reconstructs only its own issued links using the isolated Worker's synthetic key. */
+export async function accessibilitySubscriptionFlow({
+  browser, appUrl, pageUrl, incident, maintenance, components, tokenSecret, tokenRows, diagnostic = () => {},
+}) {
+  const [excluded, selected] = components;
+  const token = row => `v1.${row.scope}.${row.id}.${createHmac("sha256", tokenSecret).update(`lamp-subscriber-token.v1.${row.scope}.${row.id}`).digest("base64url")}`;
+  for (const width of [1440, 390]) {
+    const context = await browser.newContext({ timezoneId: "America/Los_Angeles", viewport: { width, height: width === 390 ? 844 : 1000 } });
+    try {
+      const page = await context.newPage();
+      const hydrationErrors = [];
+      const observeHydration = message => {
+        if (/hydration|did not match|server rendered/i.test(message)) hydrationErrors.push(message);
+      };
+      page.on("console", message => observeHydration(message.text()));
+      page.on("pageerror", error => observeHydration(error.message));
+      if (width === 1440) {
+        await auditDesktopSurfaces({ page, appUrl, pageUrl, incident, maintenance, diagnostic });
+      } else {
+        const publicPage = await page.goto(`${pageUrl}/`);
+        assert.equal(publicPage.status(), 200);
+      }
+
       const form = page.locator('form[action="/subscribe"]').first();
       const email = form.getByRole("textbox", { name: "Email address", exact: true });
       await email.waitFor();
       await tabTo(page, email, `${width}px subscription email`);
+      await captureKeyboardFocus(page, width, "subscribe");
       const address = `synthetic-lamp-020-${width}@example.test`;
       await page.keyboard.type(address);
       await page.keyboard.press("Tab");
       const subscribe = form.getByRole("button", { name: "Subscribe", exact: true });
       await assertVisibleFocus(subscribe, `${width}px email → subscribe focus order`);
-      const submitted = page.waitForResponse(response => new URL(response.url()).pathname === "/subscribe" && response.request().method() === "POST");
+      const submitted = page.waitForResponse(response => response.url() === `${pageUrl}/subscribe` && response.request().method() === "POST");
       await page.keyboard.press("Enter");
       assert.equal((await submitted).status(), 202);
       await page.getByRole("heading", { name: "Local subscription", exact: true }).waitFor();
       await expect(page.locator("main")).toContainText("No email was sent on this computer");
       await audit(page, `${width}px subscription result`);
+
       const issued = await tokenRows(address);
       const confirm = issued.find(row => row.scope === "confirm"), manage = issued.find(row => row.scope === "manage");
       assert.ok(confirm && manage, "the real subscription issued confirmation and management links");
+      const manageUrl = `${pageUrl}/manage/${token(manage)}`;
+      const pending = await context.request.get(manageUrl);
+      assert.equal(pending.status(), 404, "management is unavailable before the subscriber consents");
       const confirmed = await page.goto(`${pageUrl}/confirm-subscription/${token(confirm)}`);
       assert.equal(confirmed.status(), 200);
       await page.getByRole("heading", { name: "Subscription confirmed", exact: true }).waitFor();
       await audit(page, `${width}px subscription confirmation`);
-      await page.goto(`${pageUrl}/manage/${token(manage)}`);
+
+      const management = await page.goto(manageUrl);
+      assert.equal(management.status(), 200, "consent activates signed-out subscription management");
       await page.getByRole("heading", { name: "Manage subscription", exact: true }).waitFor();
-      const choices = page.getByRole("checkbox");
+      const choices = page.getByRole("group", { name: "Components", exact: true }).getByRole("checkbox");
       assert.ok(await choices.count() >= 2, "the real management form offers at least two component choices");
       const first = choices.first();
+      const second = choices.nth(1);
+      await expect(first).toHaveAccessibleName(excluded.name);
+      await expect(second).toHaveAccessibleName(selected.name);
       await tabTo(page, first, `${width}px management component`);
       assert.equal(await first.isChecked(), true);
       await page.keyboard.press("Space");
       assert.equal(await first.isChecked(), false);
       await page.keyboard.press("Tab");
-      await assertVisibleFocus(choices.nth(1), `${width}px component → component focus order`);
+      await assertVisibleFocus(second, `${width}px component → component focus order`);
+      await captureKeyboardFocus(page, width, "manage");
       const save = page.getByRole("button", { name: "Save selection", exact: true });
       await tabTo(page, save, `${width}px save selection`);
       await audit(page, `${width}px subscription management`);
-      const saved = page.waitForResponse(response => new URL(response.url()).pathname.startsWith("/manage/") && response.request().method() === "POST");
+      const saved = page.waitForResponse(response => response.url() === manageUrl && response.request().method() === "POST");
       await page.keyboard.press("Enter");
       assert.equal((await saved).status(), 200);
       await page.getByRole("heading", { name: "Subscription updated", exact: true }).waitFor();
       await audit(page, `${width}px saved subscription`);
-      await page.goto(`${pageUrl}/manage/${token(manage)}`);
-      await expect(page.getByRole("checkbox").first()).not.toBeChecked();
-      diagnostic(`PAGE-020 ${width}px: full-page status, history, incident, maintenance, VPAT, subscribe result, confirmation, management and saved selection axe passed; keyboard-only subscribe/manage with visible focus and ordered controls passed`);
+
+      const readback = await page.goto(manageUrl);
+      assert.equal(readback.status(), 200);
+      await page.getByRole("heading", { name: "Manage subscription", exact: true }).waitFor();
+      await expect(first).not.toBeChecked();
+      await expect(second).toBeChecked();
+      assert.deepEqual(await choices.evaluateAll(inputs => inputs.filter(input => input.checked).map(input => input.value)), [selected.id],
+        "the signed-out management document reads back exactly the selected component");
+      assert.deepEqual(hydrationErrors, []);
+      diagnostic(`PAGE-020 ${width}px signed-out keyboard probe passed: visible focus, native subscribe 202, consent activated management, native save 200 and exact selected component on fresh GET; subscription pages passed axe and overflow checks`);
+    } finally {
+      await context.close();
     }
-    assert.deepEqual(hydrationErrors, []);
-  } finally {
-    page.off("console", observeConsole); page.off("pageerror", observePageError);
-    if (originalViewport) await page.setViewportSize(originalViewport);
   }
 }

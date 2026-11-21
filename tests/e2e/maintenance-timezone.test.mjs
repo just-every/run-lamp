@@ -194,8 +194,9 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     await page.locator('.page-stack > [role="alert"]:has(+ .maintenance-workspace)').waitFor();
     assert.equal(await create.getByRole("alert").isVisible(), true);
     assert.equal((await api("/api/app/maintenance")).maintenance.find(item => item.id === window.id).startsAt, window.startsAt);
-    await api("/api/app/components", "POST", { groupId: null, name: "synthetic-lamp-020-other", description: "Second keyboard selection choice.", internal: false, displayOrder: 201, note: "" });
-    await accessibilitySubscriptionFlow({ page, appUrl: origin, pageUrl: pageOrigin(new URL(origin).port), incident: historicalIncident, maintenance: window, tokenSecret: subscriberTokenSecret,
+    const { component: otherComponent } = await api("/api/app/components", "POST", { groupId: null, name: "synthetic-lamp-020-other", description: "Second keyboard selection choice.", internal: false, displayOrder: 201, note: "" });
+    await accessibilitySubscriptionFlow({ browser, appUrl: origin, pageUrl: pageOrigin(new URL(origin).port), incident: historicalIncident, maintenance: window,
+      components: [component, otherComponent], tokenSecret: subscriberTokenSecret,
       tokenRows: async address => {
         const sql = `SELECT t.id,t.scope FROM subscriber_tokens t JOIN subscribers s ON s.id=t.subscriber_id WHERE s.destination='${address.replaceAll("'", "''")}' AND t.revoked_at IS NULL`;
         const result = execFileSync("pnpm", ["exec", "wrangler", "d1", "execute", "DB", "--local", "--config", process.env.LAMP_WRANGLER_CONFIG, "--persist-to", statePath, "--json", "--command", sql], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
