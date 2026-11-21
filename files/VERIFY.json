@@ -1,0 +1,52 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f189-c1",
+  "run_id": 44906309475,
+  "discovery": {
+    "utc": "2026-11-21T12:56:15Z",
+    "runs": [
+      {
+        "conclusion": null,
+        "head_sha": "429823ba1e3094719a8646182465f060bafb8c40",
+        "html_url": "https://github.com/just-every/run-lamp/actions/runs/44906309475",
+        "id": 44906309475,
+        "name": "Verify",
+        "run_attempt": 1,
+        "status": "in_progress"
+      }
+    ]
+  },
+  "observations": [
+    {
+      "utc": "2026-11-21T13:01:16Z",
+      "conclusion": null,
+      "head_sha": "429823ba1e3094719a8646182465f060bafb8c40",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44906309475",
+      "run_attempt": 1,
+      "status": "in_progress"
+    },
+    {
+      "utc": "2026-11-21T13:06:17Z",
+      "conclusion": null,
+      "head_sha": "429823ba1e3094719a8646182465f060bafb8c40",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44906309475",
+      "run_attempt": 1,
+      "status": "in_progress"
+    },
+    {
+      "utc": "2026-11-21T13:11:18Z",
+      "conclusion": "success",
+      "head_sha": "429823ba1e3094719a8646182465f060bafb8c40",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44906309475",
+      "run_attempt": 1,
+      "status": "completed"
+    }
+  ],
+  "final": {
+    "conclusion": "success",
+    "head_sha": "429823ba1e3094719a8646182465f060bafb8c40",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44906309475",
+    "run_attempt": 1,
+    "status": "completed"
+  }
+}
