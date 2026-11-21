@@ -53,10 +53,13 @@ export async function trafficAlertsFlow(t) {
       const result = await api('/api/app/traffic-alerts', { method: 'PUT', body: JSON.stringify({ multiple }) });
       assert.equal(result.status, 200, result.text); assert.deepEqual(result.body, { settings: { multiple } });
     };
+    const target = Math.floor(Date.now() / HOUR) * HOUR + 30 * MINUTE;
+    // Build the initial public snapshot on the fixture clock so the burst
+    // checks finish before Cron's periodic snapshot refresh is due.
+    await fixture.clock(target);
     const componentResult = await post('/api/app/components', { groupId: null, name: 'Synthetic Lamp traffic API', description: '', internal: false, displayOrder: 0, note: '' });
     assert.equal(componentResult.status, 201, componentResult.text);
     const component = componentResult.body.component;
-    const target = Math.floor(Date.now() / HOUR) * HOUR + 30 * MINUTE;
     const readAt = async (at, count, path = '/', surface = 'page') => {
       await fixture.clock(at);
       const before = await minuteCount(surface, at);
