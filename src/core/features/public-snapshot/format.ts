@@ -103,7 +103,7 @@ export function localMidnight(day: string, timezone: string) {
   return approximate + (approximate - Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute")));
 }
 
-export function maintenanceTimeRange(startsAt: string, endsAt: string, timezone: string) {
+export function formatMaintenanceWindow(startsAt: string, endsAt: string, timezone: string) {
   const start = validDate(startsAt), end = validDate(endsAt);
   const universal = ["UTC", "Etc/UTC", "Etc/GMT"].includes(timezone);
   const date = (at: Date) => new Intl.DateTimeFormat("en-US", { timeZone: timezone, month: "short", day: "numeric" }).format(at);
@@ -111,5 +111,10 @@ export function maintenanceTimeRange(startsAt: string, endsAt: string, timezone:
   const sameDay = dayKey(start.getTime(), timezone) === dayKey(end.getTime(), timezone);
   const startText = `${date(start)}, ${clock(start)}`;
   const endText = `${sameDay ? "" : `${date(end)}, `}${clock(end)} ${zoneLabel(timezone)}`;
+  return { startText, endText };
+}
+
+export function maintenanceTimeRange(startsAt: string, endsAt: string, timezone: string) {
+  const { startText, endText } = formatMaintenanceWindow(startsAt, endsAt, timezone);
   return `<time datetime="${escapeHtml(startsAt)}">${escapeHtml(startText)}</time> – <time datetime="${escapeHtml(endsAt)}">${escapeHtml(endText)}</time>`;
 }

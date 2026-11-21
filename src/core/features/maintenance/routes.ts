@@ -20,6 +20,13 @@ export function registerMaintenanceRoutes(app: Hono<AppEnv>, service: Maintenanc
     return context.json({ automation: await service.saveAutomationDefault(input.data) });
   });
   app.get("/api/app/maintenance", async (context) => context.json({ maintenance: await service.list(), automation: await service.getAutomationDefault() }));
+  app.post("/api/app/maintenance/preview", async context => {
+    context.header("Cache-Control", "no-store");
+    const input = maintenanceSchema.safeParse(await context.req.json().catch(() => null));
+    if (!input.success) return context.json({ error: "A title, valid window, and one or more components are required." }, 400);
+    try { return context.json({ preview: await service.previewScheduled(input.data) }); }
+    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Maintenance notice could not be previewed." }, cause instanceof UnknownStatusPageError ? 400 : 409); }
+  });
   app.post("/api/app/maintenance", async (context) => {
     const input = maintenanceSchema.safeParse(await context.req.json().catch(() => null));
     if (!input.success) return context.json({ error: "A title, valid window, and one or more components are required." }, 400);

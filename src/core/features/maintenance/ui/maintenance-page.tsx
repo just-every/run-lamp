@@ -13,6 +13,7 @@ import { EmptyState, ErrorState } from "../../../app/client/ui/lit-states";
 import { TimezoneHint, usePageTimezone, toPageDateTime, fromPageDateTime } from "../../../app/client/ui/timezone";
 import { windowInstant } from "./window-time";
 import { MaintenanceAutomationSwitches } from "./automation-switches";
+import { ScheduledNoticePreviewPanel } from "./scheduled-notice-preview";
 
 type MaintenanceResponse = { automation: { autoStart: boolean; autoComplete: boolean }; maintenance: Awaited<ReturnType<MaintenanceService["list"]>> };
 type ComponentsResponse = { components: Awaited<ReturnType<ComponentsService["list"]>> };
@@ -33,6 +34,7 @@ export function MaintenancePage() {
   const autoStart = startChoice ?? maintenance.data?.automation.autoStart ?? true;
   const autoComplete = completeChoice ?? maintenance.data?.automation.autoComplete ?? true;
   const [error, setError] = useState<string | null>(null); const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const visible = useMemo(() => components.data?.components.filter(component => includeInternal || !component.internal || componentIds.includes(component.id)) ?? [], [componentIds, components.data, includeInternal]);
   if (maintenance.loading || components.loading) return <LoadingState />;
   if (maintenance.error || components.error) return <ErrorState onRetry={() => window.location.reload()}>{maintenance.error ?? components.error}</ErrorState>;
@@ -41,6 +43,8 @@ export function MaintenancePage() {
   try { startInstant = fromPageDateTime(startsAt, timezone); endInstant = fromPageDateTime(endsAt, timezone); } catch (cause) { timeError = (cause as Error).message; }
   const validWindow = Boolean(startInstant && endInstant && endInstant > startInstant);
   const comparableWindow = Boolean(startInstant && endInstant);
+  const scheduleBody = JSON.stringify({ title, affectedAudience, customerImpact, startsAt: startInstant, endsAt: endInstant, componentIds, pagePaths, autoStart, autoComplete, social: publicSelected && social });
+  const canPreview = validWindow && componentIds.length > 0 && Boolean(title.trim() && affectedAudience.trim() && customerImpact.trim());
   const schedule = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validWindow || !pagePaths.length || saving) return;
@@ -49,10 +53,11 @@ export function MaintenancePage() {
     try {
       await appApi("/api/app/maintenance", {
         method: "POST",
-        body: JSON.stringify({ title, affectedAudience, customerImpact, startsAt: startInstant, endsAt: endInstant, componentIds, pagePaths, autoStart, autoComplete, social: publicSelected && social }),
+        body: scheduleBody,
       });
       setTitle(""); setAffectedAudience(""); setCustomerImpact(""); setStartsAt(""); setEndsAt(""); setComponentIds([]);
       setPagePaths([PUBLIC_PAGE_PATH]); setAutoStart(null); setAutoComplete(null); setSocial(false);
+      setPreviewOpen(false);
       maintenance.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Maintenance could not be scheduled.");
@@ -75,7 +80,7 @@ export function MaintenancePage() {
         <p className="schedule-copy">{publicSelected ? "Components show Maintenance when work begins. Subscribers receive a reminder 24 hours before the start, unless this notice is already within that time." : "Selected pages show this window. Public subscribers do not receive a reminder."}</p>
         <label className="form-label">Title<input required maxLength={250} value={title} onChange={event => setTitle(event.target.value)} placeholder="Database maintenance" /></label>
         <MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required />
-        {(pages.data?.pages.length ?? 0) > 1 || pages.error ? <StatusPageSelection pages={pages} value={pagePaths} onChange={setPagePaths} disabled={saving} /> : null}
+        {(pages.data?.pages.length ?? 0) > 1 || pages.error ? <StatusPageSelection pages={pages} value={pagePaths} onChange={paths => { setPagePaths(paths); if (!paths.includes(PUBLIC_PAGE_PATH)) setPreviewOpen(false); }} disabled={saving} /> : null}
         <fieldset className="maintenance-components">
           <legend>Components</legend>
           {visible.map(component => <label className="checkbox-label" key={component.id}>
@@ -91,7 +96,11 @@ export function MaintenancePage() {
         <MaintenanceAutomationSwitches autoStart={autoStart} autoComplete={autoComplete} onAutoStart={setAutoStart} onAutoComplete={setAutoComplete} disabled={saving} />
         {publicSelected ? <label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label> : null}
         {comparableWindow ? <p className={`window-validation ${validWindow ? "is-valid" : ""}`}>{validWindow ? `${autoStart ? "Starts automatically." : "An operator starts this window."} ${autoComplete ? "Completes automatically." : "An operator completes this window."}` : "Choose an end time after the start time."}</p> : null}
-        <div className="form-actions"><Button type="submit" disabled={saving || !validWindow || componentIds.length === 0 || pagePaths.length === 0}>{saving ? "Scheduling…" : "Schedule window"}</Button></div>
+        <div className="form-actions">
+          {publicSelected ? <Button type="button" variant="secondary" aria-expanded={previewOpen} aria-controls={previewOpen ? "maintenance-notice-preview" : undefined} disabled={saving || (!previewOpen && !canPreview)} onClick={() => setPreviewOpen(open => !open)}>{previewOpen ? "Hide preview" : "Preview notice"}</Button> : null}
+          <Button type="submit" disabled={saving || !validWindow || componentIds.length === 0 || pagePaths.length === 0}>{saving ? "Scheduling…" : "Schedule window"}</Button>
+        </div>
+        {previewOpen && publicSelected ? <ScheduledNoticePreviewPanel requestBody={canPreview ? scheduleBody : null} /> : null}
       </form>
     </div>
   </div>;

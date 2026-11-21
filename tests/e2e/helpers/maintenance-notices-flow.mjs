@@ -144,15 +144,19 @@ export async function maintenanceCancellationFlow() {
   const j = await openStatusJourney({ pageHost: 'localhost', builtWorker: true });
   let browser;
   try {
-    const now = Date.now();
+    const now = Date.parse('2031-02-10T12:00:00.000Z');
     await j.json('/test/clock', 'PUT', { now }, 204);
+    await j.signIn(undefined, { fresh: true });
+    const { settings } = await j.json('/api/app/page-settings');
+    const { pageName, tagline, accentColor, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress } = settings;
+    await j.json('/api/app/page-settings', 'PUT', { pageName, tagline, accentColor, hostname, footerCreditEnabled, widgetAllowedOrigins, mailFromAddress, timezone: 'Australia/Brisbane' });
     const component = await j.component('Billing');
     const reader = 'synthetic-maintenance-reader@example.test';
     assert.equal((await j.raw(j.publicOrigin + '/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ email: reader, componentId: component.id }) })).status, 202);
     const confirmation = await eventually(() => j.messages.find(mail => mail.to.includes(reader)), Boolean, 'subscriber confirmation');
     assert.equal((await j.raw(confirmation.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0])).status, 200);
     browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
-    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const context = await browser.newContext({ timezoneId: 'America/Los_Angeles', viewport: { width: 1440, height: 1000 } });
     const [name, ...value] = j.cookie.split('=');
     await context.addCookies([{ name, value: value.join('='), url: j.appOrigin }]);
     const page = await context.newPage(), publicPage = await context.newPage();
@@ -165,8 +169,73 @@ export async function maintenanceCancellationFlow() {
     await form.getByLabel('Affected audience', { exact: true }).fill(audience);
     await form.getByLabel('Customer impact', { exact: true }).fill(impact);
     await form.getByLabel(component.name, { exact: true }).check();
-    await form.getByLabel('Starts', { exact: true }).fill(iso(now + 6 * hour).slice(0, 16));
-    await form.getByLabel('Ends', { exact: true }).fill(iso(now + 7 * hour).slice(0, 16));
+    await form.getByLabel('Starts', { exact: true }).fill('2031-02-11T04:00');
+    await form.getByLabel('Ends', { exact: true }).fill('2031-02-11T05:00');
+    const readPreviewEffects = async () => {
+      const published = await j.publicResponse('/api/public/status');
+      assert.equal(published.status, 200);
+      const generation = published.headers.get('x-lamp-snapshot-version');
+      await published.text();
+      assert.ok(generation, 'the public page already serves a retained generation');
+      const tables = ['maintenance_notices', 'notification_delivery_records', 'notification_outbox'];
+      const stored = await j.db.batch(tables.map(table => j.db.prepare(`SELECT id FROM ${table} ORDER BY id`)));
+      return {
+        windows: (await j.json('/api/app/maintenance')).maintenance,
+        generation, build: await j.db.prepare('SELECT next_generation FROM snapshot_build_control').first(),
+        rows: stored.map(result => result.results),
+        sent: j.messages.length, accepted: j.mailReceipts.length,
+      };
+    };
+    await j.visible('/', component.name);
+    const beforePreview = await readPreviewEffects();
+    const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/maintenance/preview');
+    await form.getByRole('button', { name: 'Preview notice', exact: true }).click();
+    const previewResponse = await responsePromise;
+    assert.equal(previewResponse.status(), 200);
+    assert.equal(previewResponse.headers()['cache-control'], 'no-store');
+    const anonymousPreview = await j.raw(j.appOrigin + '/api/app/maintenance/preview', {
+      method: 'POST', headers: { Origin: j.appOrigin, 'Content-Type': 'application/json' }, body: previewResponse.request().postData(),
+    });
+    assert.equal(anonymousPreview.status, 401);
+    await anonymousPreview.text();
+    const preview = form.getByRole('complementary', { name: 'Scheduled notice preview' });
+    await preview.getByRole('heading', { name: title, exact: true }).waitFor();
+    const readWindow = async target => ({
+      wording: (await target.innerText()).replace(/\s+/g, ' '),
+      instants: await target.locator('time').evaluateAll(times => times.map(time => time.dateTime)),
+    });
+    const readWording = target => target.locator('dl > div').evaluateAll(fields => fields.map(field => [field.querySelector('dt').textContent, field.querySelector('dd').textContent]));
+    const pageCard = preview.locator('.preview-card');
+    assert.equal(await pageCard.locator('.state-pill').textContent(), 'Scheduled');
+    const previewWindow = await readWindow(pageCard.locator('.maintenance-window'));
+    assert.deepEqual(previewWindow, { wording: 'Feb 11, 04:00 AM – 05:00 AM Brisbane time', instants: ['2031-02-10T18:00:00.000Z', '2031-02-10T19:00:00.000Z'] });
+    const previewWording = await readWording(pageCard);
+    assert.deepEqual(previewWording, [['Who is affected', audience], ['Customer impact', impact]]);
+    const previewProof = process.env.LAMP_MAINTENANCE_PREVIEW_EVIDENCE;
+    const capturePreview = async name => {
+      if (!previewProof) return;
+      await mkdir(previewProof, { recursive: true });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+        await page.screenshot({ path: `${previewProof}/scheduled-${name}-${width}.png`, fullPage: true });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    };
+    await capturePreview('page');
+    await preview.getByRole('button', { name: 'Email', exact: true }).click();
+    const emailCard = preview.locator('.email-preview');
+    const emailContent = emailCard.frameLocator('iframe[title="Notification email message"]').locator('main > div');
+    await emailContent.waitFor();
+    const emailSubject = await emailCard.getByRole('heading').textContent();
+    const emailWording = await emailContent.textContent();
+    assert.equal(emailSubject, `${pageName}: Scheduled: ${title}`);
+    assert.equal(emailWording, [title, 'Status: Scheduled', 'Notice: Scheduled',
+      'Start: Feb 11, 2031, 04:00 UTC+10:00', 'End: Feb 11, 2031, 05:00 UTC+10:00',
+      `Who is affected: ${audience}`, `Customer impact: ${impact}`].join('\n\n'));
+    await capturePreview('email');
+    assert.deepEqual(await readPreviewEffects(), beforePreview, 'preview creates no window, notice, generation, delivery or send');
+    assert.ok(!(await j.publicText('/')).includes(title), 'the draft wording is absent from the public page');
+
     const scheduled = page.waitForResponse(response => response.url().endsWith('/api/app/maintenance') && response.request().method() === 'POST');
     await form.getByRole('button', { name: 'Schedule window', exact: true }).click();
     const item = (await (await scheduled).json()).maintenance;
@@ -175,7 +244,23 @@ export async function maintenanceCancellationFlow() {
     const customerMail = () => j.messages.filter(mail => mail.to.includes(reader) && !mail.text.includes('/confirm-subscription/'));
     await j.tick(now + 120_000);
     assert.equal((await read()).notices.filter(notice => notice.kind === 'reminder').length, 0);
-    await eventually(customerMail, messages => messages.length === 1, 'one scheduling email');
+    const [scheduledEmail] = await eventually(customerMail, messages => messages.length === 1, 'one scheduling email');
+    assert.equal(scheduledEmail.subject, emailSubject);
+    assert.equal(scheduledEmail.text.split('\n\n').slice(1, -1).join('\n\n'), emailWording);
+    const publicPath = '/maintenance/' + item.reference;
+    await j.visible(publicPath, impact);
+    await publicPage.goto(j.publicOrigin + publicPath);
+    const publicRecord = publicPage.locator('article.maintenance');
+    assert.equal(await publicRecord.getByRole('heading', { level: 1 }).textContent(), title);
+    assert.equal(await publicRecord.locator('.state-pill').textContent(), 'Scheduled');
+    assert.deepEqual(await readWindow(publicRecord.locator('.maintenance-window')), previewWindow);
+    const publicScheduled = publicRecord.locator('.maintenance-notice').filter({ has: publicPage.locator('.update-head strong', { hasText: /^scheduled$/ }) });
+    assert.deepEqual(await readWording(publicScheduled), previewWording);
+    if (previewProof) await writeFile(`${previewProof}/preview-receipt.json`, JSON.stringify({
+      widths: [1440, 390], assertionsWidth: 1440, pageWindow: previewWindow, wording: previewWording,
+      emailSubject, emailWording, publicPermalinkMatched: true, capturedEmailMatched: true,
+      previewEffectsUnchanged: true, generation: beforePreview.generation,
+    }, null, 2) + '\n');
     await row.getByRole('button', { name: 'Cancel maintenance', exact: true }).click();
     const cancelForm = row.getByRole('form', { name: 'Cancel maintenance', exact: true });
     await cancelForm.waitFor();

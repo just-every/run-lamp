@@ -93,7 +93,7 @@ export function PublishedIncidentPreview({ incident, publishedUpdateId, publicOr
 }
 
 /** Keep the customer's document readable when the preview changes width. */
-function EmailMessage({ html }: { html: string }) {
+export function EmailMessage({ html }: { html: string }) {
   const observer = useRef<ResizeObserver | null>(null);
   useEffect(() => () => observer.current?.disconnect(), []);
   return <iframe title="Notification email message" sandbox="allow-same-origin" srcDoc={html} onLoad={event => {
