@@ -1,0 +1,39 @@
+Product HEAD: c1f2554f9842351987eb2d7e608d89cbc526566b
+Tested incremental source diff SHA-256: 07a7700cbb863c5675d1a0d893c0bad82810df209e81a8065d28b1c2a8effd3b
+Node: v22.20.0
+Chromium: /usr/bin/chromium
+Command: node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs
+Exit: 0
+
+ok 1 - SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+# PROBE MOVE-004 3 statuspage: native conditional undo and scheduled drain -> no new notification work or attempt identities, captured transports unchanged
+# PROBE MOVE-004 3 betterstack: native conditional undo and scheduled drain -> no new notification work or attempt identities, captured transports unchanged
+# PROBE MOVE-004 3 instatus: native conditional undo and scheduled drain -> no new notification work or attempt identities, captured transports unchanged
+ok 2 - MAINT-015 — imported maintenance messages retain their own source lifecycle labels
+ok 3 - Imported incident wording stays whole beyond native field limits
+# tests 3
+# pass 3
+# fail 0
+# skipped 0
+# duration_ms 193241.975718
+
+Comparator sensitivity probe (exit 0):
+Removed existing work and attempts: allowed.
+Replaced one outbox identity with another at equal count: rejected.
+Added an attempt identity on an existing delivery with no new outbox work: rejected.
+Added a captured mail request with no new database work: rejected.
+
+Typecheck: pnpm run typecheck, exit 0.
+First-party check: pnpm exec rer check --profile first-party, exit 0.
+Product build: npx -y @runeditrun/rer build, exit 0.
+Contract documents: generator write and check, exit 0.
+Source lock: regenerated, check exit 0.
+
+Supplementary shared-helper regression check on the initial push b24d3b0e082c16991c3e9cce4a63870a3f5e22a5:
+Command: node --test --test-concurrency=1 tests/e2e/sorry-import.test.mjs tests/e2e/sorry-documented-export.test.mjs
+Exit: 0
+# tests 8
+# pass 8
+# fail 0
+# skipped 0
+# duration_ms 112536.017384

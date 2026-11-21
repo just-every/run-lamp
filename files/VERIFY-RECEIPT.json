@@ -1,0 +1,44 @@
+{
+  "baseline_main": {
+    "head": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+    "run_site": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44839596465
+    },
+    "verify": {
+      "conclusion": "success",
+      "event": "push",
+      "id": 44839596494
+    }
+  },
+  "branch": "refs/heads/cloud/sd-lamp-c-f161",
+  "candidate_scan": {
+    "commit": "c1f2554f9842351987eb2d7e608d89cbc526566b",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null
+  },
+  "initial_push_verify": {
+    "checked_at": "2026-11-21T00:13:55+00:00",
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "b24d3b0e082c16991c3e9cce4a63870a3f5e22a5",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44841804383",
+    "id": 44841804383,
+    "status": "in_progress"
+  },
+  "product_head": "c1f2554f9842351987eb2d7e608d89cbc526566b",
+  "recorded_at": "2026-11-21T00:35:34+00:00",
+  "remote_main": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+  "repository": "just-every/run-lamp",
+  "verify": {
+    "checked_at": "2026-11-21T00:35:25+00:00",
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "c1f2554f9842351987eb2d7e608d89cbc526566b",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44842545166",
+    "id": 44842545166,
+    "status": "completed"
+  }
+}
