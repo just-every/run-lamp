@@ -217,7 +217,7 @@ test('ACCESS-002 an installation linked before sealing keeps its provider key, s
       db.prepare("INSERT INTO rer_dependency_installation(singleton,sector_id) VALUES(1,'synthetic-legacy-sector')"),
       db.prepare("INSERT INTO rer_dependency_keys(interface,private_key) VALUES('oidc-provider@1',?)").bind(legacy),
     ]);
-    await migrate(db, name => name.startsWith('0076_'));
+    await migrate(db, name => name >= '0076');
     const installation = () => db.prepare('SELECT sector_id,keys_sealed,key_ids FROM rer_dependency_installation').first();
     const stored = async () => (await db.prepare("SELECT private_key FROM rer_dependency_keys WHERE interface='oidc-provider@1'").first()).private_key;
     assert.deepEqual(await installation(), { sector_id: 'synthetic-legacy-sector', keys_sealed: 0, key_ids: '[]' });

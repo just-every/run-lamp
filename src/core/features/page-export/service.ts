@@ -1,10 +1,15 @@
+import { z } from "zod";
+import { pagePathsSchema, statusPagePathSchema, statusPageStoragePrefix } from "../page-settings/page-selection";
+import { MAX_LOGO_BYTES } from "../page-settings/service";
+import { pageSettingsSchema } from "../../shared/schemas";
+import { ulidSchema } from "../../shared/ids";
 import { emailBrandingSchema } from "../../shared/email-branding";
 import { createUlid, nowIso } from "../../shared/ids";
 import { parseWidgetAllowedOrigins } from "../../shared/widget-origins";
 import { defaultWidgetAppearance, widgetAppearanceSchema } from "../../shared/widget-appearance";
 import type { BlobStore } from "../../platform/blobs/store";
 import { isMailPreparationError } from "../../platform/mail/sender";
-import { AUTHOR_COLUMNS, HELD_RESTORE_DAYS, HELD_RESTORE_REASON, OWNER_RECORD_TABLES, PAGE_DATA_CONTENTS, PAGE_DATA_FORMAT, PAGE_DATA_TABLES, PAGE_DATA_VERSION, SUBSCRIBER_CONSENT_COLUMN, pageDataFileSchema, type PageDataFile, type PageDataRow, type PageDataTable } from "./format";
+import { AUTHOR_COLUMNS, HELD_RESTORE_DAYS, HELD_RESTORE_REASON, OWNER_RECORD_TABLES, PAGE_DATA_CONTENTS, PAGE_DATA_FORMAT, PAGE_DATA_TABLES, PAGE_DATA_VERSION, SUBSCRIBER_CONSENT_COLUMN, pageDataFileSchema, pageDataLogoSchema, type PageDataFile, type PageDataRow, type PageDataTable } from "./format";
 import { pageDataProvenance, signPageData, type PageDataProvenance } from "./integrity";
 import { PageNotEmptyError, type PageExportRepository } from "./repository";
 
@@ -57,6 +62,79 @@ function fromBase64(text: string) {
   return bytes.buffer;
 }
 
+const scopedLogoKey = /^branding\/logos\/[0-9A-HJKMNP-TV-Z]{26}$/;
+const statusPageComponents = z.array(ulidSchema).max(100);
+const presentation = pageSettingsSchema.shape;
+const storedStatusPage = z.object({
+  path: statusPagePathSchema.refine(path => path !== "public"),
+  kind: z.enum(["staff", "audience"]),
+  page_name: presentation.pageName,
+  tagline: presentation.tagline,
+  accent_color: presentation.accentColor,
+  timezone: presentation.timezone,
+  footer_credit_enabled: z.union([z.literal(0), z.literal(1)]),
+  component_ids_json: z.string(),
+  feed_id: ulidSchema,
+  created_at: z.iso.datetime(),
+  updated_at: z.iso.datetime(),
+}).strict();
+
+function parseJson(text: string) {
+  try { return JSON.parse(text) as unknown; }
+  catch { return undefined; }
+}
+
+function statusPageProblems(file: PageDataFile): string[] {
+  const pages = file.records.status_pages ?? [];
+  const paths = new Set(pages.map(row => row.path));
+  const feedIds = new Set(pages.map(row => row.feed_id));
+  if (pages.length > 12 || paths.size !== pages.length || feedIds.size !== pages.length || feedIds.has(file.page.feedId) || pages.some(row => {
+    const page = storedStatusPage.safeParse(row);
+    if (!page.success) return true;
+    try { new Intl.DateTimeFormat("en", { timeZone: page.data.timezone }); }
+    catch { return true; }
+    return !statusPageComponents.safeParse(parseJson(page.data.component_ids_json)).success;
+  })) return ["The file contains invalid status pages."];
+
+  const logoPaths = new Set<string>();
+  for (const logo of file.statusPageLogos ?? []) {
+    if (!paths.has(logo.path) || logoPaths.has(logo.path)) return ["The file contains invalid status page logos."];
+    logoPaths.add(logo.path);
+    try {
+      const bytes = fromBase64(logo.base64).byteLength;
+      if (bytes === 0 || bytes > MAX_LOGO_BYTES) return ["The file contains invalid status page logos."];
+    } catch { return ["The file contains invalid status page logos."]; }
+  }
+
+  for (const kind of ["incident", "maintenance"] as const) {
+    const source = kind === "incident" ? file.records.incidents : file.records.maintenance;
+    const byId = new Map(source.map(row => [row.id, row]));
+    const linked = new Set<PageDataRow["id"]>();
+    const selected = new Set<string>();
+    for (const row of file.records[`${kind}_status_pages`] ?? []) {
+      const record = byId.get(row[`${kind}_id`]);
+      const pair = JSON.stringify([row[`${kind}_id`], row.page_path]);
+      if (!record || !paths.has(row.page_path) || ![0, 1].includes(Number(record.public_hidden)) || typeof record.public_hidden !== "number" || selected.has(pair)) {
+        return ["The file contains invalid status page publication selections."];
+      }
+      linked.add(record.id);
+      selected.add(pair);
+    }
+    if (source.some(row => row.public_hidden === 1 && !linked.has(row.id) || row.public_hidden !== undefined && row.public_hidden !== 0 && row.public_hidden !== 1)) {
+      return ["The file contains private records without a valid status page selection."];
+    }
+  }
+
+  for (const draft of file.records.incident_drafts) {
+    if (draft.page_paths == null) continue;
+    const selection = typeof draft.page_paths === "string" ? pagePathsSchema.safeParse(parseJson(draft.page_paths)) : null;
+    if (!selection?.success || selection.data.some(path => path !== "public" && !paths.has(path))) {
+      return ["The file contains a draft with an invalid status page selection."];
+    }
+  }
+  return [];
+}
+
 const awaitingConsent = (row: PageDataRow) => row.channel === "email" && (row.state === "active" || row.state === "pending");
 
 const ownerRecordsProblem = (tables: PageDataTable[]) => `This page already holds ${tables.map((table) => table.replaceAll("_", " ")).join(", ")}. Restore into a new Lamp installation, before you add anything to it.`;
@@ -86,7 +164,7 @@ export function createPageExportService(repository: PageExportRepository, blobs:
       if (typeof row[column] === "string") operatorIds.add(row[column] as string);
     }
     const people = await repository.operatorsById([...operatorIds]);
-    const records = Object.fromEntries(Object.entries(tables).map(([table, rows]) => [table, rows.map((row) => Object.fromEntries(Object.entries(row).map(([column, value]) => {
+    const records = Object.fromEntries(Object.entries(tables).map(([table, rows]) => [table, rows.map((row) => Object.fromEntries(Object.entries(row).filter(([column]) => table !== "status_pages" || (column !== "logo_key" && column !== "logo_content_type")).map(([column, value]) => {
       const emailColumn = AUTHOR_COLUMNS[column];
       if (!emailColumn) return [column, value];
       if (value === null) return [emailColumn, null];
@@ -95,6 +173,15 @@ export function createPageExportService(repository: PageExportRepository, blobs:
       return [emailColumn, person.email];
     })))])) as PageDataFile["records"];
     const logo = settings.logo_key ? await blobs.getBytes(settings.logo_key) : null;
+    const statusPageLogos = [];
+    for (const page of tables.status_pages) {
+      if (!page.logo_key && !page.logo_content_type) continue;
+      const path = storedStatusPage.shape.path.parse(page.path);
+      if (typeof page.logo_key !== "string" || !scopedLogoKey.test(page.logo_key)) throw new Error("A status page logo key is invalid.");
+      const logo = await blobs.getBytes(statusPageStoragePrefix(path) + page.logo_key);
+      if (!logo || logo.contentType !== page.logo_content_type) throw new Error("A status page logo is unavailable.");
+      statusPageLogos.push({ path, ...pageDataLogoSchema.parse({ contentType: logo.contentType, base64: base64(logo.bytes) }) });
+    }
     return signPageData(secret, {
       format: PAGE_DATA_FORMAT,
       version: PAGE_DATA_VERSION,
@@ -114,6 +201,7 @@ export function createPageExportService(repository: PageExportRepository, blobs:
         feedId: settings.feed_id,
         logo: logo && settings.logo_content_type ? { contentType: settings.logo_content_type as "image/png" | "image/jpeg" | "image/webp", base64: base64(logo.bytes) } : null,
       },
+      ...(statusPageLogos.length ? { statusPageLogos } : {}),
       people: [...new Map([...people.values()].map((person) => [person.email, person])).values()].sort((left, right) => left.email.localeCompare(right.email)),
       records,
     });
@@ -126,7 +214,7 @@ export function createPageExportService(repository: PageExportRepository, blobs:
       return { ok: false, problems: [format === PAGE_DATA_FORMAT ? `This page data file does not match version ${PAGE_DATA_VERSION}: ${parsed.error.issues.slice(0, 3).map((issue) => `${issue.path.join(".") || "file"}: ${issue.message}`).join("; ")}.` : "This is not a Lamp page data file. Download one from Settings → Export page data on the Lamp page you are leaving."], counts: {}, exportedAt: null, pageName: null };
     }
     const file = parsed.data;
-    const problems: string[] = [];
+    const problems = statusPageProblems(file);
     if (options.mailIdentityEditable === false && (file.page.emailBranding?.displayName || file.page.emailBranding?.replyTo)) problems.push("Managed mail controls From and Reply-To. Clear those branding fields in the source before restoring.");
     const existing = await repository.ownerRecordCounts();
     const held = OWNER_RECORD_TABLES.filter((table) => existing[table] > 0);
@@ -211,12 +299,23 @@ export function createPageExportService(repository: PageExportRepository, blobs:
           return restored;
         }),
       }));
-      let logoKey: string | null = null;
-      if (file.page.logo) {
-        logoKey = `branding/logos/${createUlid()}`;
-        await blobs.putBytes(logoKey, fromBase64(file.page.logo.base64), file.page.logo.contentType);
-      }
+      const uploadedKeys: string[] = [];
+      const uploadLogo = async (logo: z.infer<typeof pageDataLogoSchema>, prefix = "") => {
+        const key = `branding/logos/${createUlid()}`;
+        uploadedKeys.push(prefix + key);
+        await blobs.putBytes(prefix + key, fromBase64(logo.base64), logo.contentType);
+        return key;
+      };
       try {
+        const logoKey = file.page.logo ? await uploadLogo(file.page.logo) : null;
+        const statusPages = tables.find(entry => entry.table === "status_pages")!.rows;
+        const statusPageLogos = new Map(file.statusPageLogos?.map(logo => [logo.path, logo]));
+        for (const page of statusPages) {
+          const logo = statusPageLogos.get(String(page.path));
+          if (!logo) continue;
+          page.logo_key = await uploadLogo(logo, statusPageStoragePrefix(logo.path));
+          page.logo_content_type = logo.contentType;
+        }
         await repository.restore({
           existingPeople,
           newPeople,
@@ -240,8 +339,8 @@ export function createPageExportService(repository: PageExportRepository, blobs:
           },
         });
       } catch (cause) {
-        // The logo is stored before the transaction; a refused restore removes it.
-        if (logoKey) await blobs.delete(logoKey);
+        // Logos are stored before the transaction; remove them if the restore fails.
+        if (uploadedKeys.length) await blobs.delete(uploadedKeys);
         if (cause instanceof PageNotEmptyError) return { ...result, ok: false, problems: [ownerRecordsProblem(cause.tables)] };
         return { ...result, ok: false, problems: [`Nothing was restored: the page refused a record (${cause instanceof Error ? cause.message : String(cause)}).`] };
       }

@@ -23,7 +23,7 @@ const RETRY_LEASE_MS = 2 * 60_000;
 // The minute scheduler periodically rereads source data even without a mutation.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
-export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v24";
+export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v25";
 
 interface SnapshotPointer {
   version: string;
@@ -99,6 +99,7 @@ export function createPublicSnapshotService(
   slots: LampServerSlots = {},
   retained?: RetainedSnapshotCache,
   releaseIdentity: string | null = null,
+  protectedSnapshot = false,
 ): PublicSnapshotService {
   let rebuildTail: Promise<void> = Promise.resolve();
 
@@ -203,7 +204,7 @@ export function createPublicSnapshotService(
         const logoContentType = logo?.contentType ?? source.settings.logoContentType;
         if (logo && !logoContentType) throw new Error("Configured logo content type is missing.");
         const version = createUlid();
-        source.prelaunch = await readPrelaunch(blobs);
+        source.prelaunch = protectedSnapshot || await readPrelaunch(blobs);
         const logoUrl = logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null;
         const iconUrl = icon && iconAsset ? logoDataUrl({ ...icon, contentType: iconAsset.contentType }) : null;
         const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logoUrl, iconDataUrl: iconUrl }, slots);
@@ -338,7 +339,7 @@ export function createPublicSnapshotService(
           const bundle = await retained?.read();
           return bundle ? retainedArtifact(bundle, key) : null;
         }
-        let object = await readGenerationArtifact(blobs, pointer.version, key);
+        let object = protectedSnapshot ? await blobs.getBytes(`snapshots/${pointer.version}/${key}`) : await readGenerationArtifact(blobs, pointer.version, key);
         if (!object && repository.loadArchive) {
           const context = await blobs.getText(`snapshots/${pointer.version}/archive-context.json`);
           const source = context ? await repository.loadArchive(JSON.parse(context.text), key, pointer.generatedAt) : null;

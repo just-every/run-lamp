@@ -1,6 +1,7 @@
 import { templateSchema, templateUpdateSchema } from "./template-schema";
 import type { Context, Hono } from "hono";
 import { z } from "zod";
+import { pagePathsSchema, UnknownStatusPageError } from "../page-settings/page-selection";
 
 import type { AppEnv } from "../../app/types";
 import { INCIDENT_CLAIM_STATES } from "../../shared/incident-component-changes";
@@ -21,15 +22,15 @@ const incidentQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
   cursor: incidentCursorSchema.optional(),
 }).strict().refine(query => !query.group || !query.lifecycle, "Choose a lifecycle or a group.");
-const publishSchema = z.object({ channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]), publishedAt: z.iso.datetime().optional(), componentStates: z.record(ulidSchema, z.enum(INCIDENT_CLAIM_STATES)).optional(), overrideReason: z.string().trim().max(1_000).optional() }).strict();
-const scheduleSchema = z.object({ publishAt: z.iso.datetime(), channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]) }).strict();
+const publishSchema = z.object({ pagePaths: pagePathsSchema.optional(), channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]), publishedAt: z.iso.datetime().optional(), componentStates: z.record(ulidSchema, z.enum(INCIDENT_CLAIM_STATES)).optional(), overrideReason: z.string().trim().max(1_000).optional() }).strict();
+const scheduleSchema = z.object({ pagePaths: pagePathsSchema.optional(), publishAt: z.iso.datetime(), channels: z.array(z.enum(["email", "webhook", "chat", "sms", "social"])).max(5).transform((channels) => [...new Set(channels)]) }).strict();
 const deleteSchema = z.object({ reason: z.string().trim().min(1).max(1_000) }).strict();
 const attachedComponentSchema = z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict();
 const componentChangeSchema = z.discriminatedUnion("action", [
   attachedComponentSchema.extend({ action: z.literal("attach") }).strict(),
   z.object({ action: z.literal("detach"), componentId: ulidSchema }).strict(),
 ]);
-const createIncidentSchema = z.object({ title: z.string().trim().min(1).max(250), openedAt: z.iso.datetime().optional(), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict()).min(1).max(100), update: incidentFirstUpdateSchema.optional() }).strict();
+const createIncidentSchema = z.object({ pagePaths: pagePathsSchema.optional(), title: z.string().trim().min(1).max(250), openedAt: z.iso.datetime().optional(), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(COMPONENT_STATES), relationship: z.enum(["Primary", "Dependent"]).default("Primary") }).strict()).min(1).max(100), update: incidentFirstUpdateSchema.optional() }).strict();
 const newIncidentPreviewSchema = z.object({ title: z.string().trim().max(250), components: z.array(z.object({ componentId: ulidSchema, state: z.enum(INCIDENT_CLAIM_STATES) }).strict()).max(100), update: incidentFirstUpdateSchema }).strict();
 const correctionSchema = z.object({ updateId: ulidSchema }).strict();
 const internalNoteSchema = z.object({ body: z.string().trim().min(1).max(5_000) }).strict();
@@ -65,7 +66,7 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
     const input = createIncidentSchema.safeParse(await context.req.json().catch(() => null));
     if (!input.success) return context.json({ error: "An incident title and one or more affected components are required." }, 400);
     try { return context.json({ incident: await service.create(input.data, context.get("operator").id) }, 201); }
-    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Incident could not be created." }, 409); }
+    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Incident could not be created." }, cause instanceof UnknownStatusPageError ? 400 : 409); }
   });
   app.post("/api/app/incidents/preview", async (context) => {
     const input = newIncidentPreviewSchema.safeParse(await context.req.json().catch(() => null));
@@ -179,15 +180,15 @@ export function registerIncidentRoutes(app: Hono<AppEnv>, service: IncidentsServ
       return update ? context.json({ update }) : context.json({ error: "A saved draft is required." }, 409);
     } catch (cause) {
       if (cause instanceof RecoveryCheckError) return context.json({ error: cause.message, recovery: cause.recovery }, 409);
-      return context.json({ error: cause instanceof Error ? cause.message : "The update could not be published." }, cause instanceof InvalidIncidentUpdateError ? 400 : 409);
+      return context.json({ error: cause instanceof Error ? cause.message : "The update could not be published." }, cause instanceof InvalidIncidentUpdateError || cause instanceof UnknownStatusPageError ? 400 : 409);
     }
   });
 
   app.post("/api/app/incidents/:incidentId/draft/schedule", async (context) => {
     const incidentId = incidentIdFrom(context); const parsed = scheduleSchema.safeParse(await context.req.json().catch(() => null));
     if (!incidentId.success || !parsed.success) return context.json({ error: "Invalid scheduled publish request." }, 400);
-    try { const draft = await service.schedule(incidentId.data, context.get("operator").id, parsed.data.publishAt, parsed.data.channels, context.req.header("If-Match")!); return draft ? context.json({ draft }, 202) : context.json({ error: "A saved draft is required." }, 409); }
-    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "The update could not be scheduled." }, 409); }
+    try { const draft = await service.schedule(incidentId.data, context.get("operator").id, parsed.data.publishAt, parsed.data.channels, context.req.header("If-Match")!, parsed.data.pagePaths); return draft ? context.json({ draft }, 202) : context.json({ error: "A saved draft is required." }, 409); }
+    catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "The update could not be scheduled." }, cause instanceof UnknownStatusPageError ? 400 : 409); }
   });
 
   app.post("/api/app/incidents/:incidentId/draft/review", async (context) => {

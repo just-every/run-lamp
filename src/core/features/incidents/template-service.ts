@@ -80,7 +80,7 @@ export function createIncidentTemplateService(repository: IncidentRepository, co
       const lifecycle = template.requiresReview ? currentDraft?.lifecycle ?? incident.lifecycle : template.lifecycle;
       const nextUpdateAt = template.requiresReview ? currentDraft?.nextUpdateAt ?? null
         : template.lifecycle === "Resolved" || template.nextUpdateOffsetMinutes === null ? null : new Date(Date.now() + template.nextUpdateOffsetMinutes * 60_000).toISOString();
-      const draft: StoredIncidentDraft = { id: createUlid(), incidentId, lifecycle, affectedAudience: template.requiresReview && !template.affectedAudience ? currentDraft?.affectedAudience ?? "" : template.affectedAudience, customerImpact: template.customerImpact, whatStillWorks: template.whatStillWorks, details: template.details, nextUpdateAt, componentChanges, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
+      const draft: StoredIncidentDraft = { id: createUlid(), incidentId, lifecycle, pagePaths: currentDraft?.pagePaths ?? null, affectedAudience: template.requiresReview && !template.affectedAudience ? currentDraft?.affectedAudience ?? "" : template.affectedAudience, customerImpact: template.customerImpact, whatStillWorks: template.whatStillWorks, details: template.details, nextUpdateAt, componentChanges, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
       await repository.applyTemplate(incidentId, draft, expectedVersion);
       const { id, name, title, folder, shouldSendNotifications } = template;
       return { draft, template: { id, name, title, folder, shouldSendNotifications } };

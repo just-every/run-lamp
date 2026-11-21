@@ -2517,7 +2517,7 @@ The primary journey: An operator sets up the page and components, accepts eviden
 
 *Tier:* Core · *Cites:* BASE-ROLE-001
 
-**Requirement.** One deployment provides public, private and named-audience pages over shared components, with each page retaining its own presentation and publication surfaces.
+**Requirement.** One deployment provides public, private and named-audience pages over shared components, with each page retaining its own presentation and publication surfaces. The public page keeps its existing address and feed identity. Staff and named-audience pages use stable paths on the operator host and admit active operators through the existing session. The first publication fixes a record’s page selection for later updates. AUD-002 governs visitor access, AUD-003 governs audience membership, and AUD-004 governs subscriptions to protected pages.
 
 **Acceptance.**
 1. Each page has its own hostname or path, branding, languages and component selection; THEME-001, THEME-002, THEME-003 and I18N-001 supply those capabilities.

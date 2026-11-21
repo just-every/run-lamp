@@ -7,6 +7,11 @@ import { publicationComponentsGuard } from "./component-claims";
 import { recoverySnapshotGuard } from "./recovery-repository";
 import type { IncidentPublishRecord } from "./repository";
 
+export function assignIncidentPages(binding: D1Database, incidentId: string, pagePaths: string[]) {
+  return pagePaths.filter(path => path !== "public").map(path =>
+    binding.prepare("INSERT INTO incident_status_pages (incident_id, page_path) VALUES (?, ?)").bind(incidentId, path));
+}
+
 /** Update, claims, aggregate history and recipient selection share one D1 commit. */
 export async function publishIncidentDraft(binding: D1Database, input: IncidentPublishRecord, recipients: D1PreparedStatement[]) {
   const statements = [publicationComponentsGuard(binding, input.incidentId, input.baselineComponents)];
@@ -19,6 +24,16 @@ export async function publishIncidentDraft(binding: D1Database, input: IncidentP
       WHERE o.id=? AND o.status='active' AND (o.role IN ('owner','admin') OR (o.role='member' AND r.role='communicator')))
       THEN 1 ELSE json('Publication authority changed') END`).bind(input.authorOperatorId),
   );
+  // A competing first publication must not replace a newly committed scope.
+  if (input.firstPublication) statements.push(
+    binding.prepare(`SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM incident_updates WHERE incident_id = ?)
+      THEN 1 ELSE json('Publication scope changed') END`).bind(input.incidentId),
+    binding.prepare("UPDATE incidents SET public_hidden = ? WHERE id = ?").bind(Number(input.publicHidden), input.incidentId),
+    binding.prepare("DELETE FROM incident_status_pages WHERE incident_id = ?").bind(input.incidentId),
+    ...assignIncidentPages(binding, input.incidentId, input.pagePaths),
+  );
+  statements.push(binding.prepare(`SELECT CASE WHEN EXISTS (SELECT 1 FROM incidents WHERE id = ? AND public_hidden = ?)
+    THEN 1 ELSE json('Publication scope changed') END`).bind(input.incidentId, Number(input.publicHidden)));
   const notificationHistoryIds: string[] = [];
   if (input.recovery) statements.push(recoverySnapshotGuard(binding, input.incidentId, input.recovery.snapshot));
   for (const change of input.stagedChanges) {
@@ -42,9 +57,16 @@ export async function publishIncidentDraft(binding: D1Database, input: IncidentP
       .bind(event.id,event.componentId,event.causeType,event.causeId,event.state,event.changedAt,event.createdAt,event.updatedAt),
   );
   // A backdated publication cannot replace a newer claim in the live attachment.
+  // A private incident's claim lives in its own update history and never enters
+  // the deployment's public component ledger.
+  const currentClaim = input.publicHidden
+    ? `(SELECT json_extract(claim.value, '$.newState') FROM incident_updates u, json_each(u.component_snapshot_json) claim
+      WHERE u.incident_id = incident_components.incident_id AND json_extract(claim.value, '$.componentId') = incident_components.component_id
+      ORDER BY u.published_at DESC, u.created_at DESC, u.id DESC LIMIT 1)`
+    : `(SELECT state FROM component_claim_events WHERE component_id = incident_components.component_id AND cause_type = 'incident' AND cause_id = incident_components.incident_id ORDER BY changed_at DESC,created_at DESC,id DESC LIMIT 1)`;
   for (const component of input.components) statements.push(
     binding.prepare(`UPDATE incident_components SET
-      state = CASE WHEN (SELECT lifecycle FROM incident_updates WHERE incident_id = incident_components.incident_id ORDER BY published_at DESC,created_at DESC,id DESC LIMIT 1) = 'Resolved' THEN state ELSE COALESCE((SELECT state FROM component_claim_events WHERE component_id = incident_components.component_id AND cause_type = 'incident' AND cause_id = incident_components.incident_id ORDER BY changed_at DESC,created_at DESC,id DESC LIMIT 1), 'Operational') END,
+      state = CASE WHEN (SELECT lifecycle FROM incident_updates WHERE incident_id = incident_components.incident_id ORDER BY published_at DESC,created_at DESC,id DESC LIMIT 1) = 'Resolved' THEN state ELSE COALESCE(${currentClaim}, 'Operational') END,
       relationship = ?, published_at = CASE WHEN published_at IS NULL OR published_at > ? THEN ? ELSE published_at END, updated_at = ? WHERE id = ?`)
       .bind(component.relationship,input.publishedAt,input.publishedAt,input.updatedAt,component.id),
   );
@@ -56,7 +78,7 @@ export async function publishIncidentDraft(binding: D1Database, input: IncidentP
   if (input.isRetroactive) {
     for (const entry of input.historyEntries) statements.push(binding.prepare(`INSERT INTO component_state_history (id,component_id,previous_state,new_state,cause_type,cause_id,operator_id,changed_at,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)`)
       .bind(entry.id,entry.componentId,entry.previousState,entry.newState,entry.cause.type,entry.cause.id,entry.cause.operatorId,entry.changedAt,entry.createdAt,entry.updatedAt));
-  } else {
+  } else if (!input.publicHidden) {
     for (const component of input.components) if (component.componentId) {
       const historyId = createUlid();
       notificationHistoryIds.push(historyId);

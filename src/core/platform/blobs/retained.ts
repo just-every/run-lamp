@@ -6,9 +6,9 @@ export interface RetainedSnapshotCache {
   generation(): Promise<number | null>;
   write(bundle: string): Promise<void>;
 }
-export function createRetainedSnapshotCache(bindings: { SNAPSHOT_CACHE: DurableObjectNamespace }): RetainedSnapshotCache {
+export function createRetainedSnapshotCache(bindings: { SNAPSHOT_CACHE: DurableObjectNamespace }, identity = "public-snapshot"): RetainedSnapshotCache {
   if (!bindings.SNAPSHOT_CACHE) throw new Error("SNAPSHOT_CACHE binding is required.");
-  const stub = () => bindings.SNAPSHOT_CACHE.get(bindings.SNAPSHOT_CACHE.idFromName("public-snapshot"));
+  const stub = () => bindings.SNAPSHOT_CACHE.get(bindings.SNAPSHOT_CACHE.idFromName(identity));
   return {
     async generation() {
       const response = await stub().fetch("https://snapshot.internal/", { method: "HEAD" });

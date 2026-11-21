@@ -13,6 +13,7 @@ import type { AppliedIncidentTemplate } from "../template-service";
 import { ClientExtensionSlot } from "../../../app/client/extensions";
 import { ApiError, appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
+import { PUBLIC_PAGE_PATH, StatusPageSelection, statusPageNames, useStatusPages } from "../../page-settings/ui/status-page-selection";
 import { LoadingState, FormError } from "../../../app/client/ui/states";
 import { EmptyState, ErrorState } from "../../../app/client/ui/lit-states";
 import { usePageTimezone } from "../../../app/client/ui/timezone";
@@ -58,6 +59,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     return () => isVisitCurrent() && updateGeneration.current === generation;
   }, [captureVisit]);
   const timezone = usePageTimezone();
+  const pages = useStatusPages();
   const { publicPageOrigin } = operatorRoute.useLoaderData();
   const impactId = useId();
   const publishReasonId = useId();
@@ -94,6 +96,12 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const touchedSocialSelection = useRef(Boolean(arrival?.publication));
   const socialDefaultApplied = useRef(false);
   const [channels, setChannels] = useState<Channel[]>(arrival?.publication?.channels ?? ["email"]);
+  const [chosenPages, setChosenPages] = useState<string[] | undefined>(arrival?.publication?.pagePaths);
+  const firstPublication = !incident?.updates.length;
+  const pagePaths = firstPublication ? chosenPages ?? incident?.draft?.scheduledPagePaths ?? incident?.pagePaths ?? [PUBLIC_PAGE_PATH] : incident?.pagePaths ?? [PUBLIC_PAGE_PATH];
+  const publicSelected = pagePaths.includes(PUBLIC_PAGE_PATH);
+  const selectedPages = statusPageNames(pages.data?.pages ?? [], pagePaths);
+  const publishChannels = publicSelected ? channels : [];
   const [timing, setTiming] = useState<PublishTiming>(arrival?.publication?.timing ?? { mode: "now", at: null });
   const [publishState, setPublishState] = useState<"idle" | "publishing" | "scheduled" | "published" | "error">(arrival?.error ? "error" : arrival?.publishedUpdateId ? "published" : "idle");
   const [publishMessage, setPublishMessage] = useState<string | null>(arrival?.text ?? null);
@@ -120,7 +128,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
   const draftSaved = savedKey.current === draftKey && !activeSave.current && saveState !== "error";
   const draftEmpty = untouchedDraft.current && pristineKey.current === draftKey;
   const pendingComponent = pendingComponents[0];
-  const blockReason = draft.lifecycle !== "Resolved" && pendingComponent ? componentChoiceReason(pendingComponent.name) : publishBlockReason({ draft, hasComponents: Boolean(incident?.components.some(component => component.componentId) || draft.componentChanges?.length), timing, timeError: timeErrors.nextUpdate ?? timeErrors.timing, saved: draftSaved, saveFailed: saveState === "error", publishing: publishState === "publishing" });
+  const blockReason = pagePaths.length === 0 ? "Choose at least one status page." : draft.lifecycle !== "Resolved" && pendingComponent ? componentChoiceReason(pendingComponent.name) : publishBlockReason({ draft, hasComponents: Boolean(incident?.components.some(component => component.componentId) || draft.componentChanges?.length), timing, timeError: timeErrors.nextUpdate ?? timeErrors.timing, saved: draftSaved, saveFailed: saveState === "error", publishing: publishState === "publishing" });
   const visibleSaveState = draftEmpty ? "empty" : draftSaved ? "saved" : saveState === "error" && failedKey.current === draftKey ? "error" : "saving";
   const updateField = <K extends keyof IncidentDraftInput>(field: K, value: IncidentDraftInput[K]) => {
     setDraft((current) => ({ ...current, [field]: value }));
@@ -312,7 +320,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     try {
       if (correcting) await appApi(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
       if (!isCurrent()) return;
-      const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels, ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
+      const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ channels: publishChannels, ...(firstPublication ? { pagePaths } : {}), ...(draft.lifecycle === "Resolved" && overrideReason.trim() ? { overrideReason: overrideReason.trim() } : {}), ...(historicalPublishedAt ? { publishedAt: historicalPublishedAt } : {}) }) });
       if (!isCurrent()) return;
       // Publication consumes one update's authority, even without navigation.
       // Suggestions, templates, previews or saves started for that update must
@@ -354,7 +362,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
     try {
       if (correcting) await appApi(`/api/app/incidents/${incident.id}/draft/correction`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ updateId: correcting }) });
       if (!isCurrent()) return;
-      const response = await appApi<{ draft: { id: string } }>(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ publishAt: timing.at, channels }) }); if (!isCurrent()) return; version.current = `${response.draft.id}:${incident.updates.length}`; heldSchedule.current = true; setPublishState("scheduled"); setPublishMessage("Update scheduled. It stays private until then."); }
+      const response = await appApi<{ draft: { id: string } }>(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version.current }, body: JSON.stringify({ publishAt: timing.at, channels: publishChannels, ...(firstPublication ? { pagePaths } : {}) }) }); if (!isCurrent()) return; version.current = `${response.draft.id}:${incident.updates.length}`; heldSchedule.current = true; setPublishState("scheduled"); setPublishMessage("Update scheduled. It stays private until then."); }
     catch (cause) { if (!isCurrent()) return; setPublishState("error"); setPublishMessage(cause instanceof Error ? cause.message : "The update could not be scheduled."); }
   };
   const correctUpdate = (update: NonNullable<typeof incident>["updates"][number]) => {
@@ -378,7 +386,8 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
       ...(relationships.rows.length ? [{ key: "relationship", label: "Relationship…", glyph: "link" as const, value: relationshipSummary(relationships.rows), panel: "relationship" }] : []),
     ] },
     { caption: "Send", entries: [
-      { key: "notify", label: "Notify…", glyph: "send", value: channelSummary(channels), panel: "notify" },
+      ...(firstPublication ? [{ key: "publication-pages", label: "Status pages…", glyph: "page" as const, panel: "publication-pages" }] : []),
+      ...(publicSelected ? [{ key: "notify", label: "Notify…", glyph: "send" as const, value: channelSummary(channels), panel: "notify" }] : []),
       { key: "schedule", label: "Schedule…", glyph: "calendar", value: timing.mode === "schedule" && timing.at ? publishTime(timing.at, timezone) : undefined, panel: "timing", onSelect: () => chooseTiming("schedule") },
       { key: "backdate", label: "Backdate…", glyph: "clock", value: timing.mode === "backdate" && timing.at ? publishTime(timing.at, timezone) : undefined, panel: "timing", onSelect: () => chooseTiming("backdate") },
     ] },
@@ -394,7 +403,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
 
   return <div className="incident-page">
     <IncidentHeader incident={incident} />
-    {publishedUpdateId && incident.updates.length ? <PublishedIncidentPreview key={publishedUpdateId} incident={incident} publishedUpdateId={publishedUpdateId} publicOrigin={publicPageOrigin} /> : null}
+    {publishedUpdateId && incident.updates.length ? <PublishedIncidentPreview key={publishedUpdateId} incident={incident} publishedUpdateId={publishedUpdateId} publicOrigin={publicPageOrigin} pages={pages.data?.pages} /> : null}
     {incident.updates.length ? <button type="button" className="next-draft-toggle" aria-expanded={draftOpen} aria-controls={`draft-editor ${draftActionsId} draft-preview`} onClick={() => setDraftOpen(open => !open)}>Next update (draft)</button> : null}
     <div className={`incident-compose${draftOpen ? "" : " is-draft-collapsed"}`}>
       <section id="draft-editor" hidden={!draftOpen} className="composer-panel" aria-labelledby="composer-title" inert={publishState === "publishing"}>
@@ -412,7 +421,7 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
           {findings("customerImpact")}
           <fieldset className="impact-field">
             <legend>Who’s affected?</legend>
-            <DraftComponentChips incident={incident} draft={draft} pending={pendingComponents} onPendingChange={setPendingComponents} onChange={changes => updateField("componentChanges", changes)} />
+            <DraftComponentChips incident={incident} draft={draft} includeInternal={pagePaths.some(path => path !== PUBLIC_PAGE_PATH)} pending={pendingComponents} onPendingChange={setPendingComponents} onChange={changes => updateField("componentChanges", changes)} />
             <input aria-label="Who is affected" required aria-invalid={!draft.affectedAudience.trim() || undefined} placeholder="Which customers" value={draft.affectedAudience} maxLength={250} onChange={(event) => updateField("affectedAudience", event.target.value)} />
           </fieldset>
           {findings("affectedAudience")}
@@ -425,14 +434,15 @@ function IncidentVisit({ incidentId }: { incidentId: string }) {
         {draft.lifecycle === "Resolved" && <RecoveryCheckPanel key={`recovery-${recoveryRevision}`} incidentId={incident.id} overrideReason={overrideReason} onOverrideReason={setOverrideReason} />}
       </section>
       <div className="incident-side">
-        <IncidentPreview preview={preview} error={previewError} hidden={!draftOpen} />
+        <IncidentPreview preview={preview} error={previewError} hidden={!draftOpen} publicPage={publicSelected} />
         <IncidentTimeline incident={incident} onCorrect={correctUpdate} disabled={publishState === "publishing" || Boolean(activeSave.current)} />
       </div>
       <div className="composer-publish" id={draftActionsId} hidden={!draftOpen} inert={publishState === "publishing"}>
         <UpdateOptions publicationKey={updateGeneration.current} groups={groups}
-          footer={<><span className="publish-hint">{publishHint(channels, timing, timezone)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
+          footer={<><span className="publish-hint">{publishHint(publishChannels, timing, timezone)}</span><Button type="button" disabled={Boolean(blockReason)} aria-describedby={blockReason ? publishReasonId : undefined} onClick={timing.mode === "schedule" ? schedule : publish}>{publishState === "publishing" ? "Publishing…" : timing.mode === "schedule" ? "Schedule update" : timing.mode === "backdate" ? "Publish historical update" : "Publish update"}</Button>{(pages.data?.pages.length ?? 0) > 1 || !publicSelected ? <p className="publish-reason">Pages: {selectedPages || "choose a status page"}</p> : null}{blockReason ? <p id={publishReasonId} className="publish-reason" role="status">{blockReason}</p> : null}</>}
           message={<>{draftActions.message ? <p role="status" className="option-message">{draftActions.message}</p> : null}{draftActions.error ? <FormError>{draftActions.error}</FormError> : null}</>}>
-          <OptionPanel name="notify" title="Notify"><NotifyChannels channels={channels} onChange={next => { touchedSocialSelection.current = true; setChannels(next); }} /></OptionPanel>
+          {firstPublication ? <OptionPanel name="publication-pages" title="Status pages"><StatusPageSelection pages={pages} value={pagePaths} onChange={setChosenPages} /></OptionPanel> : null}
+          {publicSelected ? <OptionPanel name="notify" title="Notify"><NotifyChannels channels={channels} onChange={next => { touchedSocialSelection.current = true; setChannels(next); }} /></OptionPanel> : null}
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={timing} timezone={timezone} error={timeErrors.timing} onChange={setTiming} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>
           <OptionPanel name="relationship" title="Relationship"><ComponentRelationships rows={relationships.rows} onChange={relationships.change} /></OptionPanel>
           <TemplateControls key={updateGeneration.current} draft={draft} components={[...incident.components.flatMap(component => component.componentId ? [{ componentId: component.componentId, state: draft.componentChanges?.find(change => change.componentId === component.componentId)?.state ?? component.state, relationship: component.relationship }] : []), ...(draft.componentChanges ?? []).filter(change => !incident.components.some(component => component.componentId === change.componentId)).map(change => ({ ...change, relationship: change.relationship ?? "Primary" as const }))]} onApply={applyTemplate} captureUpdate={captureUpdate} />
