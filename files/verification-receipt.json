@@ -1,0 +1,92 @@
+{
+  "base": "a72f4668621d5d8a43c3e312bb1d24f4b9067831",
+  "branch": "cloud/sd-lamp-miniflare-retry-1",
+  "checks": {
+    "changed_assertion_text_comparison": "matched",
+    "changed_file_syntax": "passed",
+    "chat_links_selected_registration": [
+      "ok 1 - TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 \u2014 operator roles, permissions, audit and Settings chat identities",
+      "# tests 1",
+      "# pass 1",
+      "# fail 0"
+    ],
+    "delivery_combined_run": [
+      "\u2714 SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SUB-009 SUB-010 SUB-011 SUB-012 SUB-013 SUB-016 SUB-017 SUB-018 SUB-020 PAGE-013 HIST-007 TEAM-003 TEAM-004 UPDATE-008 NOTIFY-007 \u2014 Subscriber consent, selected publication, channel delivery, export and erasure (328923.108613ms)",
+      "\u2714 NOTIFY-013 NOTIFY-002 NOTIFY-003 NOTIFY-004 NOTIFY-005 NOTIFY-007 NOTIFY-008 NOTIFY-010 \u2014 Owner-selected provider fallback preserves frozen notifications and reconciles delivery receipts (51808.149744ms)",
+      "\u2714 Scoped incident subscriptions \u2014 native and Statuspage API consent, private reads and revoked writes (84955.919407ms)",
+      "\u2714 NOTIFY-002 \u2014 Every eligible capacity recipient reaches provider acceptance within five minutes (195737.836489ms)",
+      "\u2714 Failing subscriber destinations deactivate with reasons, alert the webhook contact and suppress queued and future notifications (30649.383142ms)",
+      "\u2714 SUB-024 \u2014 A page that has not launched offers no subscription, sends nothing to strangers and stays out of search (10007.258167ms)",
+      "\u2714 SUB-001 \u2014 Generic public email consent preserves the daily allowance, pending silence and anonymous submission boundary (20523.232264ms)",
+      "\u2714 NOTIFY-003 \u2014 Durable exponential retry eligibility, exhaustion and replay silence (16338.507431ms)",
+      "\u2714 ACCESS-001 SETUP-002 \u2014 a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview (10854.823203ms)",
+      "\u2714 Page data restores verified consent and holds unverified addresses until confirmation (14825.074404ms)",
+      "\u2714 INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 \u2014 a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident (8363.04839ms)",
+      "\u2714 AUTO-003 NOTIFY-006 \u2014 operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery (9158.838556ms)",
+      "\u2714 NOTIFY-006 \u2014 repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private (4838.813522ms)",
+      "\u2714 HIST-006 \u2014 independent public readership produces private traffic alerts and recoverable owner actions (42756.541833ms)",
+      "\u2714 AUTO-004 HIST-003 \u2014 both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders (16417.984854ms)",
+      "\u2139 tests 15",
+      "\u2139 pass 15",
+      "\u2139 fail 0"
+    ],
+    "generated_contract_documents": "passed",
+    "git_diff_check": "passed",
+    "health_version": "passed",
+    "listener_collision_probe": [
+      "PASS: real occupied listener retries on a fresh port, unrelated errors fail immediately, repeated collisions stop after three attempts with disposal"
+    ],
+    "operator_management_selected_registration": [
+      "ok 1 - SETUP-002 ACCESS-001 TEAM-002 native rer setup, owner sign-in, invitations and deliberate sign-out",
+      "# tests 1",
+      "# pass 1",
+      "# fail 0"
+    ],
+    "source_lock": "passed",
+    "typecheck_node_22_20_0": "passed",
+    "update_reminders_page_data_independent_release": [
+      "\u2714 ACCESS-001 SETUP-002 \u2014 a packaged installation refuses missing deploy authority, claims its owner, publishes, survives restart and protects a preview (10084.646361ms)",
+      "\u2714 Page data restores verified consent and holds unverified addresses until confirmation (15529.364611ms)",
+      "\u2714 INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 \u2014 a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident (9022.255141ms)",
+      "\u2714 AUTO-003 NOTIFY-006 \u2014 operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery (9135.682511ms)",
+      "\u2714 NOTIFY-006 \u2014 repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private (4918.432429ms)",
+      "\u2714 HIST-006 \u2014 independent public readership produces private traffic alerts and recoverable owner actions (49997.530799ms)",
+      "\u2714 AUTO-004 HIST-003 \u2014 both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders (15776.709195ms)",
+      "\u2139 tests 7",
+      "\u2139 pass 7",
+      "\u2139 fail 0"
+    ],
+    "update_reminders_pinned_node": [
+      "ok 1 - INCIDENT-010 INCIDENT-011 NOTIFY-006 NOTIFY-016 AGENT-002 \u2014 a communication owner keeps a promise, hands it over, receives one private escalation and resolves the customer incident",
+      "ok 2 - AUTO-003 NOTIFY-006 \u2014 operator follows real scheduled, delivery and import obligations through failures, reasoned dismissal and recovery",
+      "ok 3 - NOTIFY-006 \u2014 repeated scheduled review holds and alert intake email each operator once per obligation while drafts stay private",
+      "ok 4 - HIST-006 \u2014 independent public readership produces private traffic alerts and recoverable owner actions",
+      "ok 5 - AUTO-004 HIST-003 \u2014 both severe incidents become report-due at seven days and reviewed publication or reasoned waiver stops weekly reminders",
+      "# tests 5",
+      "# pass 5",
+      "# fail 0"
+    ]
+  },
+  "clause_status_changes": [],
+  "counts": {
+    "after": 129,
+    "before": 129
+  },
+  "head": "e183bbf828c30ca5d278d80476bda97209808192",
+  "push": {
+    "attempt": 1,
+    "candidate_commits": 1,
+    "result": "published"
+  },
+  "repository": "just-every/run-lamp",
+  "timestamp_utc": "2026-11-21T19:37:17Z",
+  "tree": "366b1b45e2cb75e7648da26602e65be34d9a8313",
+  "verification_plan": "Verification plan: 9 test shards and one shared build, 36 routine test files, 119 registered cases (including release qualification) + 10 assertion scripts = 129 checks.",
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "e183bbf828c30ca5d278d80476bda97209808192",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44940519201",
+    "id": 44940519201,
+    "status": "completed"
+  }
+}

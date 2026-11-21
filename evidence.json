@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "025cd33d8f89fccd72201ec6903a21f4bdb80c75",
+      "bytes": 3859,
+      "path": "REPORT.md",
+      "sha256": "b334c822260b25d2e1c03a557ce780bda12117d97d0a790b3175c526b30f3a7e"
+    },
+    {
+      "blob": "9f7776ca49af07373f7fc674b5ebe9cd38c37a64",
+      "bytes": 967,
+      "path": "health-version.json",
+      "sha256": "94cdff83a6b7c651cdd735d2a8c833a8ce3fae51fd9cb717347dd837c3375682"
+    },
+    {
+      "blob": "6dccafe587778759e8f9f025f7ca865544a3bf4c",
+      "bytes": 6758,
+      "path": "verification-receipt.json",
+      "sha256": "21c6d776c41b92146fe0413c4d0b56b6a920ffba7317fc149dd8902bd77c9139"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-miniflare-retry-1",
+  "product_head": "e183bbf828c30ca5d278d80476bda97209808192",
+  "ref": "refs/heads/evidence/sd-lamp-miniflare-retry-1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-miniflare-retry-1"
+}
