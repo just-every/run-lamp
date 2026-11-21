@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "e35512c35541e5f839ed156f885314fc1464153b",
+      "bytes": 2817,
+      "path": "LOCAL-CHECKS.md",
+      "sha256": "d296854c6013ec9645afb20af6286196de034877025103ebcf9c2d25d51bdddd"
+    },
+    {
+      "blob": "a4a25a0404a55cfb91196ddb09b38e49c7d6853b",
+      "bytes": 2795,
+      "path": "REPORT.md",
+      "sha256": "1b516f8037a51ce101c11d6d07cfdccea1bdb9d3792a9f422aecfa144eefd0b6"
+    },
+    {
+      "blob": "ef712210e69e6b95e903a2b244186fc5f0499a60",
+      "bytes": 300,
+      "path": "VERIFY.json",
+      "sha256": "a6c4cb59b371dee6381b6bbdaf1813dc49847c3172e5fdb0ffd7a3c5c14cd2d5"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-port-race-1-c2",
+  "product_head": "553d1cdf26c3f491e23334727c250717881b9f56",
+  "ref": "refs/heads/evidence/sd-lamp-port-race-1-c2",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-port-race-1-c2"
+}
