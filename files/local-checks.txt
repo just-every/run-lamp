@@ -1,0 +1,54 @@
+2026-11-21T02:20:03Z
+Candidate e9af527b7301c73aabdd47e3367f6a1d2378d3a5
+Base ed7eff2049b04804047a8c26b9aadcb09ba22922
+Linear single-commit diff and unchanged contract source and views verified.
+
+> lamp@1.11.25 validate:release /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c2/run-lamp
+> node scripts/validate-release.mjs
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.25.
+
+> lamp@1.11.25 typecheck /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c2/run-lamp
+> tsc --noEmit
+
+Typecheck passed.
+
+> lamp@1.11.25 source:check /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c2/run-lamp
+> node scripts/edition-authoring/cli.mjs check
+
+Source lock check reported ok: true.
+
+
+> lamp@1.11.25 check:contract-docs /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c2/run-lamp
+> node src/base/contract-docs.mjs check
+
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+CHANGELOG.md and publicReleaseNotes match for 1.11.25.
+release-history/1.11.24.json matches v1.11.24:RELEASE.json byte-for-byte.
+release-history/1.11.24.CONTRACT.md matches v1.11.24:CONTRACT.md byte-for-byte.
+setup.sha256 matches rer-setup.json: d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab
+Before and after contract progress (Done, Partial, Missing, Total):
+origin/main | Core | 65 | 124 | 51 | 240 |
+origin/main | Agent surface | 0 | 0 | 5 | 5 |
+origin/main | Later | 0 | 0 | 0 | 0 |
+origin/main | Full target | 65 | 124 | 56 | 245 |
+HEAD | Core | 65 | 124 | 51 | 240 |
+HEAD | Agent surface | 0 | 0 | 5 | 5 |
+HEAD | Later | 0 | 0 | 0 | 0 |
+HEAD | Full target | 65 | 124 | 56 | 245 |
+Changed files:
+M	CHANGELOG.md
+M	RELEASE.json
+M	docs/accessibility/vpat.md
+M	package.json
+A	release-history/1.11.24.CONTRACT.md
+A	release-history/1.11.24.json
+M	seed.json
+M	sources.lock.json
+
+Contract write: 0 documents written. Contract prose: 0 errors, 0 warnings.
+The fresh-main rebase left the locally checked product SHA unchanged.
+All candidate author and committer identities verified. No commit trailers or co-author lines.
+The guarded push succeeded on attempt 1. The product ref advertised the checked SHA.

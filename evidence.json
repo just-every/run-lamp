@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "blob": "1dfd867c6fb81587817b90100d5171ad674a3b11",
+      "bytes": 3421,
+      "path": "REPORT.md",
+      "sha256": "52700d42778de8c72aac523e9c3efe7c8c0e509a06a088ecb4db7d10cde125a7"
+    },
+    {
+      "blob": "a9f66c3be3f5c80f0da7ee38c2f240b9befc5e2f",
+      "bytes": 818,
+      "path": "ci-receipt.txt",
+      "sha256": "31aa9b3b480312bc130f8837422d7349317b2f74e90cc83b7ffcf9bf6c2be616"
+    },
+    {
+      "blob": "b8845961c2e44fd1f39f9b07676ccd10b5aca2b8",
+      "bytes": 2222,
+      "path": "local-checks.txt",
+      "sha256": "e30646683ac19c38e4a646e735f7db3304ef0cae3747ed5e70065d86c7b64d11"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-release-1-11-25-c2",
+  "product_head": "e9af527b7301c73aabdd47e3367f6a1d2378d3a5",
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-25-c2",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-25-c2"
+}
