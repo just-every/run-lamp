@@ -30,7 +30,93 @@ const feeds = Object.fromEntries(readdirSync('tests/fixtures/status-feeds/status
 }
 const noComponents = JSON.stringify({ page: { id: 'acmetracking01' }, status: { indicator: 'none' }, components: [], incidents: [], scheduled_maintenances: [] });
 
-contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see', async () => {
+function setupFixtureSql(runtime, sql) {
+  execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--persist-to', runtime.state, '--config', 'wrangler.jsonc', '--command', sql], { env: runtime.env, stdio: 'pipe' });
+}
+
+const resetFirstRun = "DELETE FROM setup_readiness WHERE step='first-run'";
+
+async function withOnboardingRuntime(site, journey) {
+  const runtime = await openNativeRuntime();
+  let browser;
+  try {
+    runtime.env.LAMP_DEV_SITE_ORIGIN = `http://127.0.0.1:${site.address().port}`;
+    await runtime.start();
+    await runtime.seedOperator();
+    browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    await journey(runtime, browser);
+  } catch (error) {
+    const redaction = createRedaction();
+    redaction.addSecrets(Object.values(runtime.env).filter(value => typeof value === 'string' && value.length > 5));
+    const output = redaction.redact(runtime.output).replace(/https?:\/\/[^\s<>]+/g, value => value.split('?')[0]);
+    console.error('Setup runtime diagnostics:', output);
+    console.error('Setup transport cause:', error?.cause?.code ?? error?.cause?.message ?? 'none');
+    throw error;
+  } finally {
+    try { await browser?.close(); } finally { await runtime.close(); }
+  }
+}
+
+async function confirmWebsiteWithBrowserZone(runtime, browser) {
+  const invalidZone = 'Etc/Unknown';
+  const browserZone = 'America/New_York';
+  const readPublicPage = async () => {
+    const response = await nativeRequest('/api/public/v1/summary.json', { host: publicOrigin, headers: { Connection: 'close' } });
+    assert.equal(response.status, 200);
+    return (await response.json()).page;
+  };
+  // Model a saved bad zone after the installation has already published a usable page.
+  assert.equal((await readPublicPage()).timezone, 'UTC');
+  setupFixtureSql(runtime, `${resetFirstRun}; UPDATE page_settings SET timezone='${invalidZone}' WHERE id='default'`);
+
+  // Verify runs this journey at desktop width. The browser proof also runs the same flow on a phone.
+  const viewport = process.env.LAMP_SETUP_VIEWPORT_WIDTH === '390'
+    ? { width: 390, height: 844 }
+    : { width: 1440, height: 1000 };
+  const context = await browser.newContext({ timezoneId: browserZone, viewport });
+  await context.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
+  const entered = await signInAs({ origin, key: devKey });
+  await context.addCookies(entered.cookies.map(cookie => ({ ...cookie, url: origin })));
+  const cookie = entered.cookies.map(({ name, value }) => `${name}=${value}`).join('; ');
+  const readSettings = async () => {
+    const response = await nativeRequest('/api/app/page-settings', { cookie });
+    assert.equal(response.status, 200);
+    return (await response.json()).settings;
+  };
+  assert.equal((await readSettings()).timezone, invalidZone, 'the installation starts with an invalid saved zone');
+
+  const page = await context.newPage();
+  await page.goto(`${origin}/app`);
+  await page.waitForURL('**/setup');
+  assert.equal(await page.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone), browserZone);
+  await page.getByLabel('Website', { exact: true }).fill('acme-tracking.com');
+  await page.getByRole('button', { name: 'Read website', exact: true }).click();
+  await page.getByRole('status').filter({ hasText: 'We read acme-tracking.com' }).waitFor();
+  const website = await nativeRequest('/api/app/website', { cookie });
+  assert.equal(website.status, 200);
+  assert.equal((await website.json()).website.url, 'https://www.acme-tracking.com/');
+  const zone = page.getByRole('combobox', { name: 'Which time zone are you in?' });
+  const suggestedLabel = await zone.inputValue();
+  assert.match(suggestedLabel, /^New York\b/, 'website review suggests the valid browser zone');
+  assert.equal((await readSettings()).timezone, invalidZone, 'the suggestion waits for owner confirmation');
+  assert.equal((await readPublicPage()).timezone, 'UTC', 'website review leaves the published zone alone');
+  await captureSetupScreen(page, 'setup-browser-zone');
+
+  await page.getByRole('button', { name: 'Looks right, open Lamp', exact: true }).click();
+  await page.waitForURL('**/app', { timeout: 120_000 });
+  await page.getByRole('region', { name: 'Your public page' }).waitFor();
+  const settings = await readSettings();
+  assert.equal(settings.timezone, browserZone, 'confirmation saves the unedited suggestion');
+  const published = await readPublicPage();
+  assert.equal(published.name, 'Acme Tracking Status');
+  assert.equal(published.timezone, settings.timezone, 'the public page uses the saved zone');
+
+  await page.goto(origin + '/app/settings#page');
+  const savedZone = page.getByRole('combobox', { name: 'Time zone', exact: true });
+  assert.equal(await savedZone.inputValue(), suggestedLabel, 'Settings shows the confirmed suggestion on a new load');
+}
+
+contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in the page from it, or from the status page it already runs, a site it cannot read leaves calm defaults, and the edited result is what customers see', async t => {
   const requests = [];
   let statusPageListsComponents = false;
   const site = createServer((request, response) => {
@@ -48,14 +134,13 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     response.writeHead(404).end();
   });
   await new Promise(resolve => site.listen(0, '127.0.0.1', resolve));
-  const runtime = await openNativeRuntime(); let browser;
-  try {
-    runtime.env.LAMP_DEV_SITE_ORIGIN = `http://127.0.0.1:${site.address().port}`;
-    await runtime.start(); await runtime.seedOperator();
+  t.after(() => new Promise(resolve => site.close(resolve)));
+  await withOnboardingRuntime(site, confirmWebsiteWithBrowserZone);
+
+  await withOnboardingRuntime(site, async (runtime, browser) => {
     // A fresh owner: claimed, but first run not yet confirmed.
-    const freshOwner = () => execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'execute', 'DB', '--local', '--persist-to', runtime.state, '--config', 'wrangler.jsonc', '--command', "DELETE FROM setup_readiness WHERE step='first-run'"], { env: runtime.env, stdio: 'pipe' });
+    const freshOwner = () => setupFixtureSql(runtime, resetFirstRun);
     freshOwner();
-    browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
     const context = await browser.newContext({ timezoneId: 'America/New_York', viewport: { width: 1440, height: 1000 } });
     await context.route(url => url.pathname.startsWith('/@fs/'), route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': devKey } }));
     const entered = await signInAs({ origin, key: devKey });
@@ -242,15 +327,5 @@ contract('SETUP-002', 'a fresh owner gives their website first; Lamp fills in th
     await page.waitForURL(url => url.pathname === '/app');
     await page.locator('.operator-shell[data-hydrated]').waitFor();
     assert.equal(await page.getByText('Welcome', { exact: true }).count(), 0, 'client navigation cannot reopen completed first-run setup');
-  } catch (error) {
-    const redaction = createRedaction();
-    redaction.addSecrets(Object.values(runtime.env).filter(value => typeof value === 'string' && value.length > 5));
-    const output = redaction.redact(runtime.output).replace(/https?:\/\/[^\s<>]+/g, value => value.split('?')[0]);
-    console.error('Setup runtime diagnostics:', output);
-    console.error('Setup transport cause:', error?.cause?.code ?? error?.cause?.message ?? 'none');
-    throw error;
-  } finally {
-    await browser?.close(); await runtime.close();
-    await new Promise(resolve => site.close(resolve));
-  }
+  });
 });
