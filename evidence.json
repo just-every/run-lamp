@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "3881b4c885ee0f2281ce756fd4cf7d2761d94090",
+      "bytes": 1727,
+      "path": "CHECKS.md",
+      "sha256": "fad551da914bda166a96bbb214700597f22431346a43b5e3cdf680f91ad79fbf"
+    },
+    {
+      "blob": "436c5c719105cd876811571aea39ab78d58ff909",
+      "bytes": 8317,
+      "path": "REPORT.md",
+      "sha256": "a07eaef8f65f376c8bc9b317bf894f5da10847706f0e840c6d9849e2b6454a0d"
+    },
+    {
+      "blob": "9876c26135adcfe5d7ec704d45ee1173eec59a30",
+      "bytes": 627,
+      "path": "browser-1440.tap",
+      "sha256": "590a8c8e0b110f55511a43fd8105f8b105392062fbda9f824b6722dfcaef9c37"
+    },
+    {
+      "blob": "1fbd677f63c91fb9bdf2aaf8b034352b16e1b594",
+      "bytes": 627,
+      "path": "browser-390.tap",
+      "sha256": "3c97f9157c3c2c7b582414e32c742d0ef548b45d12a68e192c2b71e6a02a4d9a"
+    },
+    {
+      "blob": "eaa12e4bf7123a4e343f0a5c66c278ceb67660d2",
+      "bytes": 316602,
+      "path": "setup-browser-zone-1440.png",
+      "sha256": "1b955928b04c1f09bcb6628e06b6f4c2926417f09cb70722c8ee4508053c42ed"
+    },
+    {
+      "blob": "e77833baafe6bef68ab3abd4f00eb3bb7abeed10",
+      "bytes": 193550,
+      "path": "setup-browser-zone-390.png",
+      "sha256": "900ef1bf29f1035f7a307d36846337ee97f4ab21a7463ed0319b2669625a647a"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f172",
+  "product_head": "d59fcf780c2764aad927417b9dfa2d11af9582b0",
+  "ref": "refs/heads/evidence/sd-lamp-c-f172",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f172"
+}
