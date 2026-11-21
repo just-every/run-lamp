@@ -1,0 +1,124 @@
+{
+  "tag": "sd-lamp-c-f163",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f163",
+  "head": "e48ebca220a72ed26f6551f1b041f1c0f1dcccc9",
+  "base": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+  "remote_refs": {
+    "refs/heads/cloud/sd-lamp-c-f163": "e48ebca220a72ed26f6551f1b041f1c0f1dcccc9",
+    "refs/heads/main": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb"
+  },
+  "product_push": {
+    "result": "advertised",
+    "force": false
+  },
+  "commit_audit": {
+    "candidate_count": 1,
+    "allowed_author_and_committer": true,
+    "trailers": 0,
+    "includes_side_parents": true
+  },
+  "local_checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-name-pattern='COMP-009 \u2014 reviewed CSV' tests/e2e/public-contract.test.mjs",
+      "node": "22.20.0",
+      "exit": 0,
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "output": [
+        "ok 1 - COMP-009 \u2014 reviewed CSV edits, reorders and deletes existing components",
+        "# tests 1",
+        "# pass 1",
+        "# fail 0",
+        "# duration_ms 8215.441013"
+      ]
+    },
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "node": "24.19.0",
+      "chromium": "/usr/bin/chromium",
+      "exit": 0,
+      "checkout_note": "The full-file run started before the final focused run and before removal of the case-insensitive flag in the review error assertion.",
+      "summary": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": "pnpm run typecheck",
+      "node": "22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "documents_written": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "prose_errors": 0,
+      "prose_warnings": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "git diff origin/main...HEAD --check",
+      "exit": 0
+    }
+  ],
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "e48ebca220a72ed26f6551f1b041f1c0f1dcccc9",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44841998504",
+    "id": 44841998504,
+    "name": "Verify",
+    "status": "completed",
+    "observed_at": "2026-11-21T00:26:16+00:00"
+  },
+  "base_ci": {
+    "head": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+    "verify": {
+      "id": 44839596494,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "run_site": {
+      "id": 44839596465,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  },
+  "candidate_run_site": "pending landing",
+  "publication_scan": {
+    "commit": "e48ebca220a72ed26f6551f1b041f1c0f1dcccc9",
+    "status": "not run in cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "contract_counts": {
+    "done": 65,
+    "partial": 124,
+    "missing": 56,
+    "total": 245
+  },
+  "pull_request": null
+}
