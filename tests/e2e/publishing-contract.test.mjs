@@ -177,10 +177,14 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
 
     await owner();
     const originalRecovery = { lifecycle: 'Monitoring', customerImpact: 'Payments are recovering.', details: 'The original recovery estimate is based on the first restored payment queue.' };
-    await j.save(incident.id, { ...originalRecovery, componentChanges: [
-      { componentId: component.id, state: 'Degraded performance' },
-      { componentId: hidden.id, state: 'Degraded performance' },
-    ] });
+    const monitoringDraftInput = {
+      ...wording, ...originalRecovery, nextUpdateAt: new Date(Date.now() + 3600_000).toISOString(),
+      componentChanges: [
+        { componentId: component.id, state: 'Degraded performance' },
+        { componentId: hidden.id, state: 'Degraded performance' },
+      ],
+    };
+    await j.json(`${endpoint}/draft`, 'PUT', monitoringDraftInput);
     const savedMonitoring = await j.read(incident.id);
     assert.equal(savedMonitoring.draft.lifecycle, 'Monitoring');
     assert.equal(savedMonitoring.lifecycle, 'Identified');
@@ -215,6 +219,22 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(monitoringUpdates.length, identifiedUpdates.length + 1);
     assert.deepEqual(monitoringUpdates.filter(row => row.id !== monitoring.id), identifiedUpdates);
     assert.equal(monitoringUpdates.find(row => row.id === monitoring.id).lifecycle, 'Monitoring');
+
+    await owner();
+    const staleSave = await j.api(`${endpoint}/draft`, {
+      method: 'PUT',
+      headers: { 'If-Match': `${consumedDraftId}:${priorUpdateCount}` },
+      body: JSON.stringify(monitoringDraftInput),
+    });
+    assert.equal(staleSave.status, 409, staleSave.text);
+    const afterStaleSave = await j.read(incident.id);
+    assert.equal(afterStaleSave.draft, null, 'a consumed draft cannot be revived by a stale save');
+    assert.equal(await j.db.prepare('SELECT id FROM incident_drafts WHERE incident_id = ?').bind(incident.id).first(), null,
+      'the stale save stores no draft row');
+    assert.deepEqual(afterStaleSave.updates, publishedMonitoring.updates, 'the native read returns the same committed updates');
+    assert.deepEqual(await publishedUpdates(), monitoringUpdates, 'the stale save changes no persisted publication fields');
+    t.diagnostic('PROBE UPDATE-005 4: save the prior Monitoring wording with the consumed draft version -> HTTP 409, no draft and identical committed updates');
+    await j.signIn(reviewer);
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Degraded performance');
     assert.equal((await j.read(incident.id)).impact, 'Major outage');
     const impact = (await j.json(`${endpoint}/impact`, 'PUT', { impactOverride: 'minor' })).impact;
@@ -228,18 +248,6 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(stale.status, 409);
 
     await owner();
-    const staleSave = await j.api(`${endpoint}/draft`, {
-      method: 'PUT',
-      headers: { 'If-Match': `${consumedDraftId}:${priorUpdateCount}` },
-      body: JSON.stringify({ ...wording, ...originalRecovery, nextUpdateAt: reviewedMonitoring.draft.nextUpdateAt }),
-    });
-    assert.equal(staleSave.status, 409, staleSave.text);
-    const afterStaleSave = await j.read(incident.id);
-    assert.equal(afterStaleSave.draft, null, 'a consumed draft cannot be revived by a stale save');
-    assert.deepEqual(afterStaleSave.updates, publishedMonitoring.updates, 'the native read returns the same committed updates');
-    assert.deepEqual(await publishedUpdates(), monitoringUpdates, 'the stale save changes no persisted publication fields');
-    t.diagnostic('PROBE UPDATE-005 4: save the prior Monitoring wording with the consumed draft version -> HTTP 409, no draft and identical committed updates');
-
     const originalUpdates = (await j.read(incident.id)).updates;
     const storedUpdates = async () => (await j.db.prepare('SELECT * FROM incident_updates WHERE incident_id = ? ORDER BY id').bind(incident.id).all()).results;
     const originalRows = await storedUpdates();
