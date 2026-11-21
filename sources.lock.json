@@ -1112,7 +1112,7 @@
       "executable": false
     },
     "migrations/core/0086_required_sign_in.sql": {
-      "sha256": "95d920a844288ee8770e028973da0230bdd406a308c1b6701d2b229a2fbc9fbf",
+      "sha256": "8d20e40d59bcd1ff7325b16021e4167a0e55efd2b2b912fe3e2221fefa7e41a9",
       "executable": false
     },
     "migrations/README.md": {
@@ -4092,11 +4092,11 @@
       "executable": false
     },
     "scripts/signin-link/database.mjs": {
-      "sha256": "0ca4e7ab4d7b676a36910a5cc5199719a7d464a6d6c00f4c91cb2a02d28f07b0",
+      "sha256": "544bfb9883985c79c9ed20f4dc42c957a78aebb9f86e166edb4d4036a3f07385",
       "executable": false
     },
     "scripts/signin-link/issue.mjs": {
-      "sha256": "01753bb08a9fa9e18c7bcac4c7424e52ac0b6fe75210d0cef5fea845c66ab8ff",
+      "sha256": "36c79fe7d02f467d19d9a729d710bcf0e392c9fd7bd7206ce81030c38419e46f",
       "executable": false
     },
     "scripts/sorry-capture.mjs": {
@@ -6271,12 +6271,16 @@
       "sha256": "2dc1584eb8ecf7d041ffdf34e08645997d2f74bba25e618cc960b7fbf72cd2af",
       "executable": false
     },
+    "src/core/features/sign-in-providers/base-auth-crypto.d.ts": {
+      "sha256": "5f9bdb34fd64e40d60a5c4c924aab58e357096b2ba57136349274693348d86e6",
+      "executable": false
+    },
     "src/core/features/sign-in-providers/compose.ts": {
       "sha256": "a3e17c96115d24a1fa6665b35dcfd99dcddd305cbd1fb6891e06b1a4f11710d7",
       "executable": false
     },
     "src/core/features/sign-in-providers/repository.ts": {
-      "sha256": "274349a075826fdab5e720bdccb027f41eee2fc413ddb0a1dd859528c59e3ced",
+      "sha256": "caf149144ba34c6b0940e2c94e2210868c218b6b8102a54ab8cc93ab44d496f4",
       "executable": false
     },
     "src/core/features/sign-in-providers/routes.ts": {
@@ -6288,7 +6292,7 @@
       "executable": false
     },
     "src/core/features/sign-in-providers/service.ts": {
-      "sha256": "1201526cd2a9271e2c69b4d9298053d312baabdd6a829b072e6bfba11b818f2f",
+      "sha256": "8d58cc16d6ea913b778fc8aa1d7b89ba86a31465cd9d4fad924bc4ce1001b051",
       "executable": false
     },
     "src/core/features/sign-in-providers/types.ts": {
@@ -6936,7 +6940,7 @@
       "executable": false
     },
     "src/core/platform/auth/http.ts": {
-      "sha256": "1557ae8c300a6541f6568cdb5f53ec3621d85debb932384302e3113e267066a1",
+      "sha256": "64c96c3825e1263fd82410dcc0dcdadb8681d40f619235dcaaa6f25d95691378",
       "executable": false
     },
     "src/core/platform/auth/identity-provider-guides.ts": {
@@ -8504,7 +8508,7 @@
       "executable": false
     },
     "tests/e2e/helpers/operator-management-flow.mjs": {
-      "sha256": "1fdb0bd1a9ca1342503ebb11ed2c3d97168d6074cdfb4c3683406e600fb9e5a3",
+      "sha256": "8f197e53a80acecfe8d4fa485a8a3ccccb7d361957931971a5fedd30cb522bfd",
       "executable": false
     },
     "tests/e2e/helpers/operator-role-actors.mjs": {
@@ -8580,7 +8584,7 @@
       "executable": false
     },
     "tests/e2e/helpers/required-sign-in-flow.mjs": {
-      "sha256": "cd4e34c4dacd4c48f4a81ad30dde23cf38d0680a8f1c143a05ea3ed81f2bf42f",
+      "sha256": "b49e99ab5502a4e6e9a2c92136a0a36bb208f972d89455fe98b5f328978e907f",
       "executable": false
     },
     "tests/e2e/helpers/retained-snapshot-runtime.mjs": {

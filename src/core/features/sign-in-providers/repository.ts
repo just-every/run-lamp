@@ -19,6 +19,10 @@ export function createSignInRepository(db: D1Database) {
       const row = await db.prepare("SELECT required_provider AS id FROM oa_auth_settings WHERE singleton=1").first<{ id: string | null }>();
       return row?.id ?? null;
     },
+    async hasTerminalOwnerLink(hash: string) {
+      return Boolean(await db.prepare("SELECT id FROM lamp_terminal_owner_links WHERE token_hash=? AND expires_at>?")
+        .bind(hash, Date.now()).first());
+    },
     async setRequiredProvider(actor: Session, previous: string | null, provider: ProviderLink | null) {
       const now = Date.now();
       const id = provider?.id ?? null;
@@ -33,10 +37,8 @@ export function createSignInRepository(db: D1Database) {
           WHERE a.singleton=1 AND a.required_provider IS ? AND EXISTS (
             SELECT 1 FROM oa_sessions s JOIN oa_operators o ON o.id=s.operator_id
             WHERE s.id=? AND o.id=? AND o.version=? AND s.operator_version=o.version
-            AND s.revoked_at IS NULL AND s.expires_at>? AND o.id=(
-              SELECT q.id FROM oa_operators q LEFT JOIN oa_bootstrap b ON b.claim_id=q.id
-              WHERE q.role='owner' AND q.status='active' ORDER BY b.claim_id IS NULL,q.created_at,q.id LIMIT 1
-            ) AND (s.kind!='oidc' OR EXISTS (
+            AND s.revoked_at IS NULL AND s.expires_at>? AND o.id=(SELECT id FROM lamp_sign_in_owner)
+            AND (s.kind!='oidc' OR EXISTS (
               SELECT 1 FROM oa_provider_sessions p WHERE p.session_id=s.id
               AND a.idp_sign_in=1 AND p.generation=a.generation
             ))
@@ -46,6 +48,7 @@ export function createSignInRepository(db: D1Database) {
           SELECT ?,'sign-in','policy',?,?,?,?,? WHERE changes()=1`).bind(auditId,
             id ? "require-provider" : "allow-email", actor.operator.id, JSON.stringify({ providerId: id }), timestamp, timestamp),
         db.prepare(`UPDATE oa_tokens SET revoked_at=? WHERE kind='magic' AND consumed_at IS NULL AND revoked_at IS NULL
+          AND id NOT IN (SELECT id FROM lamp_terminal_owner_links)
           AND EXISTS (SELECT 1 FROM audit_entries WHERE id=? AND action='require-provider')`).bind(now, auditId),
       ]);
       return saved.results.length === 1;

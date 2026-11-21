@@ -187,6 +187,6 @@ export function createSignInService(db: D1Database, options: SignInOptions) {
     return { canEdit, confirmed, signInEnabled, requiredProvider, qualifiedProviders: qualifiedProviders.map(({ id, label }) => ({ id, label })), unavailable: options.unavailable, providers, operators: candidates.map(({ id, displayName, email }) => ({ id, displayName, email })) };
   }
 
-  return { composed, status, save, savePeople, disconnect, requiredProvider: repository.requiredProvider, setRequiredProvider };
+  return { composed, status, save, savePeople, disconnect, requiredProvider: repository.requiredProvider, setRequiredProvider, hasTerminalOwnerLink: repository.hasTerminalOwnerLink };
 }
 export type SignInService = ReturnType<typeof createSignInService>;

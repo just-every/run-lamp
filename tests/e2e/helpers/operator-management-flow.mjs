@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { promisify } from 'node:util';
 import { unstable_getMiniflareWorkerOptions } from 'wrangler';
 import { expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -17,6 +19,7 @@ import { operatorHydrated } from './operator-hydrated.mjs';
 const require = createRequire(import.meta.url);
 const workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
+const run = promisify(execFile);
 const address = name => `${name}${String.fromCharCode(64)}example.test`;
 const invitedEmail = address('synthetic-lamp-3');
 
@@ -40,6 +43,19 @@ export async function managementInstallation(diagnostic = () => {}) {
   const modules = await moduleFiles(dirname(options.main));
   modules.sort((a, b) => a.path === options.main ? -1 : b.path === options.main ? 1 : a.path.localeCompare(b.path));
   const messages = [], owner = address('synthetic-lamp-1');
+  const sessionSecret = 'synthetic-lamp-session-1'.repeat(4);
+  async function terminalLink(email) {
+    try {
+      const { stdout } = await run('pnpm', ['--silent', 'signin-link', '--email', email,
+        '--origin', origin, '--persist-to', state], {
+        env: { ...process.env, SESSION_SECRET: sessionSecret }, encoding: 'utf8', timeout: 30_000,
+      });
+      return { status: 0, stdout: stdout.trim() };
+    } catch (error) {
+      if (typeof error.code !== 'number') throw new Error('The terminal sign-in command could not run.');
+      return { status: error.code, stdout: error.stdout.trim() };
+    }
+  }
   let runtime, origin, issuer, idp;
   // Chromium follows the app's form redirect over real HTTP. The provider
   // still uses the shared fixture for validating the request and issuing a code.
@@ -84,11 +100,12 @@ export async function managementInstallation(diagnostic = () => {}) {
       create(port) {
         origin = `http://127.0.0.1:${port}`;
         idp.options.redirectUri = origin + '/auth/oidc/company/callback';
-        return new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: state, workers: [{
+        // Wrangler's local D1 command opens the database under this same v3 directory.
+        return new Miniflare(convertV4MiniflareOptions({ port, inspectorPort: 0, resourcePersistencePath: join(state, 'v3'), workers: [{
           ...workerOptions, modules, modulesRoot: dirname(options.main),
           bindings: { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: origin,
             AUTH_ORIGIN: origin, AUTH_LOCAL: 'true', SETUP_OPERATOR_EMAIL: owner,
-            SESSION_SECRET: 'synthetic-lamp-session-1'.repeat(4), SETUP_TOKEN: 'synthetic-lamp-setup-1'.repeat(4),
+            SESSION_SECRET: sessionSecret, SETUP_TOKEN: 'synthetic-lamp-setup-1'.repeat(4),
             AUTH_PROVIDERS: JSON.stringify([{ id: 'company', label: 'Company SSO', preset: 'auth', issuer,
               clientId: 'synthetic-lamp-oidc', privateKey: idp.key.private }]),
             SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-1'.repeat(4), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-webhook-1'.repeat(4),
@@ -117,14 +134,14 @@ export async function managementInstallation(diagnostic = () => {}) {
     await db.prepare("INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp','Team journey','#16794C','UTC','localhost','synthetic-lamp-feed-1',?,'2026-10-01','2026-10-01')").bind(address('synthetic-lamp-2')).run();
     await db.prepare("INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01')").run();
     assert.equal((await post('/auth/magic-link', { email: owner })).status, 202);
-    return { origin, owner, db, messages, close };
+    return { origin, owner, db, messages, terminalLink, close };
   } catch (error) { await close(); throw error; }
 }
 
 /** TEAM-002's Settings invitation and erasure are one complete team journey. */
 export async function operatorManagementFlow({ browser, capture, proof, diagnostic = () => {} }) {
   const fixture = await managementInstallation(diagnostic);
-  const { origin, owner, db, messages } = fixture;
+  const { origin, owner, db, messages, terminalLink } = fixture;
   const ownerContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const invitedContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const errors = [];
@@ -192,7 +209,7 @@ export async function operatorManagementFlow({ browser, capture, proof, diagnost
     const savedIncident = (await (await invitedPage.request.get(origin + `/api/app/incidents/${incident.id}`)).json()).incident;
     const publication = await invitedPage.request.post(origin + `/api/app/incidents/${incident.id}/publish`, { headers: { Origin: origin, 'If-Match': `${savedIncident.draft?.id ?? "-"}:${savedIncident.updates.length}` }, data: { channels: [] } });
     assert.equal(publication.status(), 200, 'the default invitation permits posting updates');
-    await requiredSignInFlow({ browser, page, origin, email, operatorId: pending.id, messages, proof });
+    await requiredSignInFlow({ browser, page, origin, owner, email, operatorId: pending.id, messages, terminalLink, proof });
     await page.goto(origin + '/app/settings#operators');
     await operatorHydrated(page);
 
