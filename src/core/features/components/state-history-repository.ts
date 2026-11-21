@@ -7,9 +7,9 @@ export function currentStateHistoryStatement(binding: D1Database, input: Omit<Co
     SELECT state FROM vendor_dependencies WHERE component_id = ? AND state IS NOT NULL
     UNION ALL SELECT state FROM component_standing_claims WHERE component_id = ?
     UNION ALL SELECT attached.state FROM incident_components attached JOIN incidents incident ON incident.id = attached.incident_id
-      WHERE attached.component_id = ? AND attached.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved'
+      WHERE attached.component_id = ? AND attached.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.public_hidden = 0 AND incident.lifecycle <> 'Resolved'
     UNION ALL SELECT attached.state FROM maintenance_components attached JOIN maintenance window ON window.id = attached.maintenance_id
-      WHERE attached.component_id = ? AND window.state = 'In progress'
+      WHERE attached.component_id = ? AND window.public_hidden = 0 AND window.state = 'In progress'
   ), current AS (
     SELECT value AS state FROM json_each(?) WHERE value = 'Operational' OR value IN (SELECT state FROM claims) ORDER BY key LIMIT 1
   ), previous AS (

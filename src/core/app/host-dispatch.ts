@@ -1,5 +1,10 @@
 import { isImportAliasPath } from "../features/statuspage-import/public-addresses";
-export type LampSurface = "page" | "app";
+export type LampSurface = "page" | "app" | "protected-page";
+
+export function protectedPageAddress(pathname: string) {
+  const match = /^\/status-pages\/([a-z0-9]+(?:-[a-z0-9]+)*)(\/.*)?$/.exec(pathname);
+  return match && match[1].length <= 48 && match[1] !== "public" ? { page: match[1], resource: match[2] ?? "/" } : null;
+}
 
 export interface HostDispatchBindings {
   LAMP_PAGE_HOST: string;
@@ -69,6 +74,7 @@ export function createHostDispatch(bindings: HostDispatchBindings) {
       const requestHost = new URL(request.url).hostname.toLowerCase();
       const pathname = new URL(request.url).pathname;
 
+      if (protectedPageAddress(pathname)) return requestHost === appHost ? "protected-page" : null;
       if (pathname === "/") {
         if (requestHost === pageHost) return "page";
         if (requestHost === appHost) return "app";

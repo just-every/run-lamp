@@ -32,10 +32,10 @@ export function createPageSettingsRepository(binding: D1Database): PageSettingsR
             OR EXISTS (SELECT 1 FROM incident_components AS claim
               JOIN incidents AS incident ON incident.id = claim.incident_id
               WHERE claim.component_id = component.id AND claim.state <> 'Operational'
-                AND claim.published_at IS NOT NULL AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')
+                AND claim.published_at IS NOT NULL AND incident.public_hidden = 0 AND incident.deleted_at IS NULL AND incident.lifecycle <> 'Resolved')
             OR EXISTS (SELECT 1 FROM maintenance_components AS claim
               JOIN maintenance AS window ON window.id = claim.maintenance_id
-              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.state = 'In progress'))
+              WHERE claim.component_id = component.id AND claim.state <> 'Operational' AND window.public_hidden = 0 AND window.state = 'In progress'))
       `).all<{ region: string }>();
       return results.map((row) => row.region);
     },

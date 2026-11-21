@@ -29,6 +29,7 @@ export default {
   // A RER Managed page initializer's page_settings row (a random feed id) is a
   // bootstrap row the restore replaces.
   replaceableTables: ['public_snapshot_work', 'snapshot_build_control', 'reference_counters', 'page_settings', 'sms_settings', 'incident_follow_settings'],
+  derivedTables: ['status_page_snapshot_work'],
   includeTables: operatorContinuity,
   excludeTables: ['subscriber_oauth_states', 'chat_link_codes', 'chat_previews', 'chat_requests', 'oa_sessions', 'oa_tokens', 'oa_step_up_challenges', 'oa_credentials', 'oa_dev_credentials', ...importCustody],
   requiredConfiguration: ['SETUP_TOKEN', 'SESSION_SECRET', 'SUBSCRIBER_TOKEN_SECRET', 'WEBHOOK_SIGNING_SECRET'],

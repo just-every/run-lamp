@@ -96,6 +96,11 @@ select.add-component { width: auto; min-height: 38px; border-style: dashed; bord
 .update-options-toggle { display: inline-grid; width: 40px; height: 40px; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; background: var(--card); color: var(--ink); padding: 0; cursor: pointer; }
 .update-options-toggle:hover { border-color: var(--ink-3); }
 .update-options-toggle[aria-expanded="true"] { border-color: var(--pill); background: var(--pill); color: var(--on-ink); }
+.has-option-tooltip { position: relative; }
+.option-tooltip { position: absolute; z-index: 29; top: calc(100% + 6px); left: 0; visibility: hidden; padding: 5px 8px; border-radius: 6px; background: var(--ink); color: var(--on-ink); font-size: 13px; font-weight: 500; line-height: 1.4; white-space: nowrap; pointer-events: none; transition: visibility 0s; }
+.chip-remove .option-tooltip, .sheet-close .option-tooltip { right: 0; left: auto; }
+.has-option-tooltip:not([aria-expanded="true"]):hover .option-tooltip { visibility: visible; transition-delay: 300ms; }
+.has-option-tooltip:not([aria-expanded="true"]):focus-visible .option-tooltip { visibility: visible; transition-delay: 0s; }
 .publish-hint { color: var(--ink-3); font-size: 13px; }
 .publish-reason { flex-basis: 100%; margin: 0; color: var(--ink-2); font-size: 14px; text-align: right; }
 .option-message { margin: 12px 0 0; color: var(--ink-2); font-size: 14px; font-weight: 500; }

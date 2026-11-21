@@ -12,7 +12,7 @@ export function attachClaimStatements(binding: D1Database, claim: AttachedIncide
       FROM incidents i JOIN components c ON c.id = ? WHERE i.id = ? AND i.deleted_at IS NULL AND i.lifecycle <> 'Resolved'`)
       .bind(claim.id,claim.state,claim.relationship,claim.createdAt,claim.createdAt,claim.updatedAt,claim.componentId,claim.incidentId),
     binding.prepare(`INSERT INTO component_claim_events (id,component_id,cause_type,cause_id,state,changed_at,created_at,updated_at)
-      SELECT ?,component_id,'incident',incident_id,state,?,?,? FROM incident_components WHERE id = ? AND published_at IS NOT NULL`)
+      SELECT ?,component_id,'incident',incident_id,state,?,?,? FROM incident_components WHERE id = ? AND published_at IS NOT NULL AND EXISTS (SELECT 1 FROM incidents WHERE id = incident_components.incident_id AND public_hidden = 0)`)
       .bind(claim.id,claim.createdAt,claim.createdAt,claim.updatedAt,claim.id),
     binding.prepare(`UPDATE incidents SET peak_impact = (
       SELECT value FROM json_each(?) WHERE value = incidents.peak_impact OR value = ? ORDER BY key LIMIT 1

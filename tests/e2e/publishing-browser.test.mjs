@@ -1,9 +1,9 @@
+import { audiencePagesBrowserFlow } from "./helpers/audience-pages-browser.mjs";
 import { incidentCorrectionsFlow } from "./helpers/incident-corrections-flow.mjs";
 import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
 import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
 import { themeOwnerJourney } from "./helpers/theme-owner-journey.mjs";
 import { statusCardContrastFlow } from "./helpers/theme-flow.mjs";
-import { stripVTControlCharacters } from "node:util";
 import { requestHeaders } from "../helpers/request-headers.mjs";
 import { withDraftVersion } from "./draft-version-helper.mjs";
 import assert from "node:assert/strict";
@@ -11,7 +11,6 @@ import { execFileSync, spawn } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { mkdir, mkdtemp, rm, symlink } from "node:fs/promises";
 import { createServer as createHttpServer } from "node:http";
-import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, before, test } from "node:test";
@@ -19,7 +18,7 @@ import { chromium } from "playwright";
 
 import { insertRealOperatorSession } from "./real-session-helper.mjs";
 import { appOrigin, pageOrigin } from "./helpers/hosts.mjs";
-import { reservePort, waitForWorker } from "./worker-startup.mjs";
+import { reservePort, startViteWorker } from "./worker-startup.mjs";
 import { isolatedWranglerConfig } from "../helpers/wrangler-config.mjs";
 import { sessionCookieName } from "../helpers/session-cookie.mjs";
 import { phoneDeskFlow } from "./helpers/phone-desk-flow.mjs";
@@ -31,7 +30,6 @@ import { emptyAudienceReason, publishedIncidentState } from "./helpers/published
 
 let appUrl = "";
 let pageUrl = "";
-let testPort;
 let aiPort;
 let statePath;
 let viteCachePath;
@@ -44,7 +42,6 @@ let sessionId;
 let browser;
 let browserContext;
 let page;
-let serverOutput = "";
 let aiServer;
 let aiAnswer = null;
 let unansweredAiRequests;
@@ -93,28 +90,6 @@ async function stopAiProvider() {
   aiServer = undefined;
 }
 
-async function assertPortAvailable(port) {
-  await new Promise((resolve, reject) => {
-    const probe = createServer();
-    probe.once("error", () => reject(new Error(`Publishing browser test port ${port} is already in use.`)));
-    probe.listen(port, "127.0.0.1", () => probe.close((error) => error ? reject(error) : resolve()));
-  });
-}
-
-async function startWorker(config = defaultConfigPath) {
-  await assertPortAvailable(testPort);
-  serverOutput = "";
-  server = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(testPort), "--strictPort"], {
-    cwd: process.cwd(),
-    detached: true,
-    stdio: "pipe",
-    env: { ...process.env, LAMP_WORKERS_STATE_PATH: statePath, LAMP_VITE_CACHE_DIR: viteCachePath, LAMP_WRANGLER_CONFIG: config, LAMP_DISABLE_INSPECTOR: "true" },
-  });
-  server.stdout.on("data", (chunk) => { serverOutput += chunk; });
-  server.stderr.on("data", (chunk) => { serverOutput += chunk; });
-  await waitForWorker({ origin: appUrl, timeoutMs: 180_000, isListening: () => stripVTControlCharacters(serverOutput).includes(`${appUrl}/`), child: server, output: () => `${serverOutput}\nState: ${statePath}`, label: "Publishing browser Worker" });
-}
-
 async function stopWorker() {
   if (!server || server.killed || server.exitCode !== null) return;
   // The pnpm wrapper can exit while Vite still owns the listening socket.
@@ -149,10 +124,10 @@ async function appFetch(path, init = {}) {
 
 
 before(async () => {
-  testPort = await reservePort({ label: "Publishing browser Worker" });
+  const firstPort = await reservePort({ label: "Publishing browser Worker" });
   aiPort = await reservePort({ label: "Publishing browser AI provider" });
-  appUrl = appOrigin(testPort);
-  pageUrl = pageOrigin(testPort);
+  appUrl = appOrigin(firstPort);
+  pageUrl = pageOrigin(firstPort);
   statePath = await mkdtemp(join(tmpdir(), "lamp-publishing-browser-d1-"));
   // The public terminal command reads settings from its working directory.
   // Keep the fixture independent of the installed owner settings in this checkout.
@@ -176,7 +151,22 @@ before(async () => {
     writeFileSync(visualSource, JSON.stringify(snapshot, null, 2) + '\n');
   }
 
-  await startWorker(configPath);
+  ({ child: server } = await startViteWorker({
+    label: "Publishing browser Worker",
+    firstPort,
+    describeOutput: (output) => `${output}\nState: ${statePath}`,
+    start(port) {
+      if (appUrl !== `http://127.0.0.1:${port}`) {
+        appUrl = appOrigin(port);
+        pageUrl = pageOrigin(port);
+        fixtureConfig.write();
+      }
+      return spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+        cwd: process.cwd(), detached: true, stdio: "pipe",
+        env: { ...process.env, LAMP_WORKERS_STATE_PATH: statePath, LAMP_VITE_CACHE_DIR: viteCachePath, LAMP_WRANGLER_CONFIG: configPath, LAMP_DISABLE_INSPECTOR: "true" },
+      });
+    },
+  }));
   sessionId = await insertRealOperatorSession({ persistTo: statePath });
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"] });
   await openAuthenticatedPage({ width: 1440, height: 1000 });
@@ -1081,6 +1071,11 @@ test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review
   await assertPublicationAfterAiTimeout(390, t);
 });
 
+
+test('AUD-001 — an operator configures status pages and publishes to the selected pages', { timeout: 300_000 }, async t => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl, api, localInput, screenshots: previewScreens, diagnostic: message => t.diagnostic(message) });
+});
 
 test('THEME-001 — owner publishes branded themes and layouts within the page budget', { timeout: 600_000 }, async t => {
   await themeOwnerJourney({ appFetch, appUrl, pageUrl, sessionId, cookieName: sessionCookieName(appUrl), diagnostic: message => t.diagnostic(message) });

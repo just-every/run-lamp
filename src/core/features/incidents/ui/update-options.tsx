@@ -105,7 +105,7 @@ export function UpdateOptions({ groups, footer, message, children, publicationKe
   return <>
     <div className="composer-footer">
       <div className="update-options">
-        <button ref={toggle} type="button" className="update-options-toggle" aria-label="Update options" aria-haspopup="menu" aria-expanded={popup !== null} aria-controls={popup ? menuId : undefined} onClick={() => popup ? dismiss(true) : show("first")} onKeyDown={onToggleKey}><Icon name="plus" width={20} height={20} /></button>
+        <button ref={toggle} type="button" className="update-options-toggle has-option-tooltip" aria-label="Update options" aria-haspopup="menu" aria-expanded={popup !== null} aria-controls={popup ? menuId : undefined} onClick={() => popup ? dismiss(true) : show("first")} onKeyDown={onToggleKey}><Icon name="plus" width={20} height={20} /><span className="option-tooltip" aria-hidden="true">Update options</span></button>
         {popup === "menu" ? <div className="update-options-menu">{list}</div> : null}
       </div>
       {footer}
@@ -115,7 +115,7 @@ export function UpdateOptions({ groups, footer, message, children, publicationKe
       if (event.target === event.currentTarget && (event.clientY < bounds.top || event.clientX < bounds.left || event.clientX > bounds.right)) dismiss(true);
     }}>
       <div className="sheet-grabber" aria-hidden="true" />
-      <div className="sheet-heading"><h2 id={titleId}>Update options</h2><button type="button" className="sheet-close" aria-label="Close options" onClick={() => dismiss(true)}><Icon name="close" width={20} height={20} /></button></div>
+      <div className="sheet-heading"><h2 id={titleId}>Update options</h2><button type="button" className="sheet-close has-option-tooltip" aria-label="Close options" onClick={() => dismiss(true)}><Icon name="close" width={20} height={20} /><span className="option-tooltip" aria-hidden="true">Close options</span></button></div>
       {list}
     </dialog> : null}
     {message}

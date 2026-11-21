@@ -696,7 +696,101 @@ async function assertCompetingClaimStepDown(j, publisherEmail, publisherId) {
   }
 }
 
+async function catalogueOrderJourney() {
+  const j = await openStatusJourney({ pageHost: 'localhost' });
+  let browser;
+  try {
+    const { settings } = await j.json('/api/app/page-settings');
+    const settingsInput = Object.fromEntries(['pageName', 'tagline', 'accentColor', 'timezone', 'hostname', 'mailFromAddress', 'footerCreditEnabled', 'widgetAllowedOrigins'].map(key => [key, settings[key]]));
+    const createGroup = async (name, displayOrder) => (await j.json('/api/app/component-groups', 'POST', { name, displayOrder }, 201)).group;
+    const delivery = await createGroup('Delivery services', 0);
+    const accounts = await createGroup('Account services', 1);
+    const webhooks = await j.component('Webhooks', { groupId: delivery.id, displayOrder: 0, region: 'North America' });
+    const dispatch = await j.component('Dispatch', { groupId: delivery.id, displayOrder: 1, region: 'North America' });
+    const sessions = await j.component('Sessions', { groupId: accounts.id, displayOrder: 0, region: 'Europe' });
+    const directory = await j.component('Directory', { groupId: accounts.id, displayOrder: 1, region: 'Europe' });
+    const control = await j.component('Global routing', { displayOrder: 0 });
+
+    browser = await chromium.launch({ headless: true, executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] });
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const layouts = [
+      ['default', '.component-health', '.component-name h4'],
+      ['calm', '.calm-components', '.calm-name h4'],
+      ['uptime', '.up-heatmap, .up-components', '.hm-name, .up-name'],
+      ['regions', '.rg-components', '.rg-name-text'],
+    ];
+    const readVersion = async () => {
+      const response = await j.publicResponse('/');
+      assert.equal(response.status, 200);
+      await response.arrayBuffer();
+      return response.headers.get('x-lamp-snapshot-version');
+    };
+    const assertOrder = async (phase, namedGroups) => {
+      const saved = await j.json('/api/app/components');
+      assert.deepEqual(saved.groups.map(({ id, name, displayOrder }) => [id, name, displayOrder]),
+        namedGroups.map(([group], position) => [group.id, group.name, position]), `${phase}: saved groups`);
+      const sections = [...namedGroups, [{ id: null, name: 'Other services' }, [control]]];
+      const expectedMembers = sections.flatMap(([group, members]) => members.map(({ id, name }, position) => [id, name, group.id, position]));
+      const byId = (a, b) => a[0].localeCompare(b[0]);
+      assert.deepEqual(saved.components.map(({ id, name, groupId, displayOrder }) => [id, name, groupId, displayOrder]).sort(byId),
+        expectedMembers.sort(byId), `${phase}: exact saved membership and positions`);
+
+      const expectedNames = sections.flatMap(([, members]) => members.map(member => member.name));
+      for (const [template, container, label] of layouts) {
+        // Uptime and Regions also have a flat presentation. Use their group
+        // disclosure setting to check actual membership as well as flat order.
+        for (const groupsCollapsed of [false, true]) {
+          const previous = await readVersion();
+          await j.json('/api/app/page-settings', 'PUT', { ...settingsInput, template, theme: { ...settings.theme, groupsCollapsed } });
+          const version = await eventually(readVersion, value => value && value !== previous, `${phase}: ${template} publishes a new snapshot`);
+          const proofDir = process.env.LAMP_COMP011_SCREENSHOTS;
+          for (const width of proofDir ? [1440, 390] : [1440]) {
+            const context = `${phase}, ${template}, collapsed=${groupsCollapsed}, ${width}px`;
+            await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+            const response = await page.goto(j.publicOrigin);
+            assert.equal(response.status(), 200, context);
+            assert.equal(response.headers()['x-lamp-snapshot-version'], version, context);
+            assert.equal(await page.locator('body').getAttribute('data-template'), template === 'default' ? null : template, context);
+            const componentAreas = await page.locator(container).filter({ visible: true }).all();
+            // Uptime shows a second component list below its heatmap on phones.
+            assert.equal(componentAreas.length, template === 'uptime' && width === 390 ? 2 : 1, context);
+            for (const componentArea of componentAreas) {
+              if (groupsCollapsed) {
+                const disclosures = componentArea.locator('details.component-group:visible, details.theme-component-group:visible');
+                assert.deepEqual(await disclosures.locator(':scope > summary').allTextContents(),
+                  sections.map(([group]) => group.name), `${context}: group order`);
+                for (const [position, [group, members]] of sections.entries()) {
+                  const disclosure = disclosures.nth(position);
+                  await disclosure.locator(':scope > summary').click();
+                  assert.deepEqual(await disclosure.locator(label).filter({ visible: true }).allTextContents(),
+                    members.map(member => member.name), `${context}: ${group.name} membership and order`);
+                }
+              }
+              const names = componentArea.locator(label).filter({ visible: true });
+              assert.deepEqual(await names.allTextContents(), expectedNames, `${context}: visible component order`);
+              const rowTops = await names.evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().top));
+              assert.ok(rowTops.every((top, index) => index === 0 || top > rowTops[index - 1]), `${context}: components are displayed in that order`);
+            }
+            if (proofDir && groupsCollapsed) {
+              await mkdir(proofDir, { recursive: true });
+              await page.screenshot({ path: `${proofDir}/${phase}-${template}-${width}.png`, fullPage: true });
+            }
+          }
+        }
+      }
+    };
+
+    await assertOrder('before', [[delivery, [webhooks, dispatch]], [accounts, [sessions, directory]]]);
+    await j.json(`/api/app/component-groups/${delivery.id}/move`, 'POST', { direction: 'down', expectedIds: [delivery.id, accounts.id] });
+    await j.json(`/api/app/components/${dispatch.id}/move`, 'POST', { direction: 'up', expectedIds: [webhooks.id, dispatch.id], groupId: delivery.id });
+    await j.json(`/api/app/components/${sessions.id}/move`, 'POST', { direction: 'down', expectedIds: [sessions.id, directory.id], groupId: accounts.id });
+    await assertOrder('after', [[accounts, [directory, sessions]], [delivery, [dispatch, webhooks]]]);
+    console.info('PROBE COMP-011 4: native group and member moves -> saved positions and public order reverse; Global routing stays under Other services');
+  } finally { await browser?.close(); await j.close(); }
+}
+
 test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
+  await catalogueOrderJourney();
   await componentReadFlow();
   await widgetVariantsJourney();
   await statedUptimeMethodJourney();

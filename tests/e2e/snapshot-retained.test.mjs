@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { createServer } from 'node:http';
 import { test } from 'node:test';
 import { parse } from 'parse5';
+import { addStatusPage, privateStatusUrl } from './helpers/audience-pages-flow.mjs';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { Miniflare, retainedSnapshotOptions } from './helpers/retained-snapshot-runtime.mjs';
 
@@ -92,7 +93,7 @@ async function assertNativeGenerationRevalidation(j, component, incident, initia
   console.info('PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304');
 }
 
-test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm', async () => {
+test('AUD-001 THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-resilience-'));
   let runtime, j, monitor, alarmTimer;
   let receipt = null, alarm = false, pings = 0;
@@ -112,7 +113,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     };
     j = await openStatusJourney({ providerEdge: edge }); await j.tick(Date.now());
     assert.equal(pings, 0, 'an unconfigured installation sends no heartbeat');
-    await j.close(); j = await openStatusJourney({ providerEdge: edge, extraBindings: { LAMP_HEARTBEAT_URL: 'https://heartbeat.example.test/ping', LAMP_HEARTBEAT_INTERVAL_MINUTES: '1' } });
+    await j.close(); j = await openStatusJourney({ providerEdge: edge, extraBindings: { LAMP_TEST_AUDIENCE_READS: 'true', LAMP_HEARTBEAT_URL: 'https://heartbeat.example.test/ping', LAMP_HEARTBEAT_INTERVAL_MINUTES: '1' } });
     await healthSchemaProof(j);
     const component = await j.component('Customer API during dependency outage');
     const incident = await j.incident('Known API degradation', [component]);
@@ -120,6 +121,34 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
     await j.save(incident.id, { customerImpact: initialImpact });
     await j.publish(incident.id); await j.visible('/', incident.title);
     await assertNativeGenerationRevalidation(j, component, incident, initialImpact);
+    const staff = await addStatusPage(j, {
+      path: 'operator-status', kind: 'staff', pageName: 'Operator status',
+      tagline: 'Retained-public isolation control', accentColor: '#6b4a9f',
+      timezone: 'UTC', componentIds: [component.id],
+    });
+    const protectedIncident = await j.incident('Private operational assessment', [component]);
+    const protectedImpact = 'Only operators need the resilience assessment wording.';
+    await j.save(protectedIncident.id, { customerImpact: protectedImpact });
+    const { update: protectedUpdate } = await j.publish(protectedIncident.id, { pagePaths: [staff.path] });
+    await eventually(async () => {
+      const response = await j.request(privateStatusUrl(staff, '/feed.atom'));
+      return await response.text();
+    }, body => body.includes(protectedUpdate.id), 'present Staff publication in its own retained generation');
+
+    for (const path of ['/', '/feed.atom', '/feed.rss', '/widget.js', '/badge.svg', '/badge.json', '/api/public/status']) {
+      const healthy = await j.publicResponse(path);
+      const healthyBody = await healthy.text();
+      const retained = await j.raw(new URL(path, j.publicOrigin).href, { headers: { 'X-Test-D1-Unavailable': '1' } });
+      assert.equal(retained.status, 200, path);
+      assert.equal(retained.headers.get('x-test-d1-reads'), '0', path);
+      assert.equal(retained.headers.get('x-lamp-snapshot-version'), healthy.headers.get('x-lamp-snapshot-version'), path);
+      const retainedBody = await retained.text();
+      assert.equal(retainedBody, healthyBody, path);
+      for (const marker of [protectedIncident.title, protectedImpact, protectedUpdate.id]) assert.ok(!retainedBody.includes(marker), path);
+      if (['/', '/feed.atom', '/feed.rss', '/widget.js', '/api/public/status'].includes(path)) assert.ok(retainedBody.includes(incident.title), path);
+      else assert.ok(retainedBody.includes('Down'), path);
+    }
+    console.info('PROBE AUD-001 5: unauthenticated public Worker reads with D1 unavailable -> previous populated public generation and no Staff publication');
     await j.tick(Date.now()); assert.ok(pings > 0 && receipt);
     await j.raw('/test/effects', { method: 'PUT', body: JSON.stringify({ paused: true }) });
     const beforePause = pings; await j.tick(Date.now()); assert.equal(pings, beforePause, 'a transferring host stops external effects');

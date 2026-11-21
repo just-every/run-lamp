@@ -10,7 +10,8 @@ type WidgetVariant = "banner" | "floating" | "dot";
 
 /** Self-contained browser program: only public snapshot data crosses this boundary. */
 
-export function renderWidget(payload: WidgetPayload, settings: { widgetAllowedOrigins: string }, defaultVariant: WidgetVariant = "banner"): string {
+export function renderWidget(payload: WidgetPayload, settings: { widgetAllowedOrigins: string }, defaultVariant: WidgetVariant = "banner", protectedPrefix = "", pageUrl?: string): string {
   const encode = (value: unknown) => JSON.stringify(value).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
-  return `(${runtime})(${encode(payload)},${encode(parseWidgetAllowedOrigins(settings.widgetAllowedOrigins))},${encode(defaultVariant)},${encode(componentStateLabels)});`;
+  const allowedOrigins = protectedPrefix && pageUrl ? [new URL(pageUrl).origin] : parseWidgetAllowedOrigins(settings.widgetAllowedOrigins);
+  return `(${runtime})(${encode(payload)},${encode(allowedOrigins)},${encode(defaultVariant)},${encode(componentStateLabels)},${encode(protectedPrefix)});`;
 }
