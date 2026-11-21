@@ -488,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "b9812b78d7cbcad80f611510857749f9f47c93ff3d1e45ef4ca765db0e506c19",
+      "sha256": "eced024259f5524c8605785304f9523cdd25f38a9b679d502151c2dd57baf3c4",
       "executable": false
     },
     "BASELINE.md": {
@@ -2640,7 +2640,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "d3d41871b4f4c662f307aeb10035f29ca6d95af72775f9f5a6953ba14d0cfbe8",
+      "sha256": "d457d8ae34548c4ebb4ab96ec9aa367e2019dfd85a8f78ee61a1f0cfe8a41643",
       "executable": false
     },
     "patches/picomatch@4.0.7.patch": {
@@ -2648,7 +2648,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "20d729591fd73f23cce409004ac3e36c662a9ef6b97f67e9f6c9aacd78642fcc",
+      "sha256": "09c88dd0811374f6943b7943c467cbcccbfe672aef44891c1ffc35722a6774e5",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
