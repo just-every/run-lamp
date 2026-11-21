@@ -4,7 +4,8 @@ import { randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
-import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
+import { openStatusJourney, eventually, visibleText } from './helpers/status-journey.mjs';
+import { Miniflare, retainedSnapshotOptions } from './helpers/retained-snapshot-runtime.mjs';
 import { notificationActivity, assertNoNewNotifications, assertNoNewNotificationWork, moveInDoor, importedRecordInventory, notificationInventory, undoNotificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
@@ -35,7 +36,7 @@ function enrichStatuspageCapture(files) {
   files.find(file => file.name === 'components.json').text = JSON.stringify(components);
 
   const incidents = parsed(files, 'incidents.json');
-  const [incident] = incidents;
+  const [incident, continuityIncident] = incidents;
   const [opened, resolved] = incident.incident_updates;
   // The published instants precede the source write times, even at resolution.
   opened.display_at = '2026-01-11T08:54:03.201Z';
@@ -52,7 +53,103 @@ function enrichStatuspageCapture(files) {
     },
     resolved,
   ];
+  // Keep the continuity incident well inside the rolling Atom window while
+  // preserving the source's intervals and the first incident's exact dates.
+  const offset = Date.now() - 30 * 86_400_000 - Date.parse(continuityIncident.created_at);
+  const shift = instant => new Date(Date.parse(instant) + offset).toISOString();
+  for (const key of ['created_at', 'updated_at', 'resolved_at']) {
+    continuityIncident[key] = shift(continuityIncident[key]);
+  }
+  for (const update of continuityIncident.incident_updates) {
+    for (const key of ['created_at', 'display_at', 'updated_at']) update[key] = shift(update[key]);
+  }
   files.find(file => file.name === 'incidents.json').text = JSON.stringify(incidents);
+  return continuityIncident;
+}
+
+async function assertRetainedStatuspageIncident(journey, source, incidents, t) {
+  const incident = incidents.find(row => row.title === source.name);
+  assert.ok(incident, 'the imported incident has a native identity');
+  const oldPath = `/incidents/${source.id}`;
+  const nativePath = `/incidents/${incident.reference}`;
+  const importedWording = source.incident_updates.at(-1).body;
+  const sourceBucket = await journey.runtime.getR2Bucket('SNAPSHOTS');
+  const { pointer, pointerBytes } = await eventually(async () => {
+    const work = await journey.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first();
+    const building = await journey.db.prepare("SELECT id FROM snapshot_builds WHERE status = 'building'").first();
+    if (building || work.requested_revision !== work.completed_revision) return null;
+    const current = await sourceBucket.get('snapshots/current.json');
+    if (!current) return null;
+    const pointerBytes = await current.arrayBuffer();
+    const pointer = JSON.parse(Buffer.from(pointerBytes).toString());
+    return pointer.sourceRevision === work.completed_revision ? { pointer, pointerBytes } : null;
+  }, Boolean, 'the reviewed import has a settled public generation');
+
+  const paths = new Map([
+    [oldPath, `aliases/${encodeURIComponent(oldPath)}.json`],
+    [nativePath, `incidents/${incident.reference}.html`],
+    ['/history.atom', 'history.atom'],
+    ['/feed.atom', 'feed.atom'],
+  ]);
+  const runtime = new Miniflare(await retainedSnapshotOptions({ name: 'lamp-retained-import' }));
+  try {
+    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
+    const generationRoot = `snapshots/${pointer.version}/`;
+    const stored = new Map();
+    for (const artifact of [...paths.values(), 'retained.json']) {
+      const key = generationRoot + artifact;
+      const object = await sourceBucket.get(key);
+      assert.ok(object, `import generation contains ${artifact}`);
+      const bytes = await object.arrayBuffer();
+      await bucket.put(key, bytes, { httpMetadata: object.httpMetadata });
+      stored.set(artifact, Buffer.from(bytes));
+    }
+    await bucket.put('snapshots/current.json', pointerBytes, { httpMetadata: { contentType: 'application/json' } });
+
+    const read = (path) => runtime.dispatchFetch(`https://page.example${path}`, { redirect: 'manual' });
+    const evidence = async (path) => {
+      const response = await read(path);
+      assert.equal(response.status, 200, path);
+      return response.json();
+    };
+    const cacheQuery = new URLSearchParams([...paths.keys()].map(path => ['path', path]));
+    assert.deepEqual(await evidence(`/test/snapshot-cache?${cacheQuery}`), { replicaGeneration: null, cachedPaths: [] });
+    assert.deepEqual((await evidence('/test/blob-reads')).getBytes, {}, 'no public artifact has been loaded');
+
+    const readGeneration = async (path, status) => {
+      const response = await read(path);
+      assert.equal(response.status, status, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), pointer.version, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), pointer.generatedAt, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-state'), null, path);
+      return response;
+    };
+    const redirect = await readGeneration(oldPath, 301);
+    assert.equal(redirect.headers.get('location'), nativePath);
+    const destination = await readGeneration(redirect.headers.get('location'), 200);
+    const wording = visibleText(await destination.text());
+    assert.ok(wording.includes(source.name) && wording.includes(importedWording), 'the redirect reaches the imported title and update');
+
+    const feeds = new Map();
+    for (const path of ['/history.atom', '/feed.atom']) {
+      const response = await readGeneration(path, 200);
+      assert.match(response.headers.get('content-type'), /^application\/atom\+xml\b/);
+      const bytes = Buffer.from(await response.arrayBuffer());
+      assert.deepEqual(bytes, stored.get(paths.get(path)), `${path} serves the exact published Atom bytes`);
+      feeds.set(path, bytes);
+    }
+    assert.deepEqual(feeds.get('/history.atom'), feeds.get('/feed.atom'), 'old and native Atom addresses are byte-identical');
+    const entries = feeds.get('/feed.atom').toString().match(/<entry>[\s\S]*?<\/entry>/g) ?? [];
+    assert.ok(entries.some(entry => entry.includes(`<title>${incident.reference}: ${source.name}</title>`)
+      && entry.includes(`href="${journey.publicOrigin}${nativePath}"`)
+      && entry.includes(importedWording)), 'an Atom entry identifies this incident, links to its permalink and carries the imported update');
+
+    const { getBytes } = await evidence('/test/blob-reads');
+    for (const key of paths.values()) assert.equal(getBytes[generationRoot + key], 1, key);
+    const { accesses } = await evidence('/test/database-touches');
+    assert.equal(accesses, 0, 'cold import continuity does not ask the repository');
+    t.diagnostic(`PROBE MOVE-005 4: GET ${oldPath} -> 301 ${nativePath}; GET ${nativePath} -> 200 with "${source.name}" and "${importedWording}"; both Atom routes -> 200 with ${feeds.get('/feed.atom').length} identical published bytes and the incident entry; snapshot ${pointer.version}, generated ${pointer.generatedAt}, cold cache, ${accesses} database touches`);
+  } finally { await runtime.dispose(); }
 }
 
 async function reconcileComponentHistory(api, component, expected) {
@@ -220,7 +317,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       // publication work before measuring this independent silent import.
       await runtime.tick(Date.now());
       const files = invitationFiles(source, fixtures(source)), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
-      if (source === 'statuspage') enrichStatuspageCapture(files);
+      const continuityIncident = source === 'statuspage' ? enrichStatuspageCapture(files) : null;
       const before = await counts(), quiet = await notificationActivity(runtime);
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
       assert.deepEqual(await counts(), before, `${source} review writes nothing`);
@@ -240,6 +337,7 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         assert.equal(componentList.status, 200, JSON.stringify(componentList.body));
         const imported = componentList.body.components;
         await assertStatuspageComponentHistory(api, files, imported, incidents);
+        await assertRetainedStatuspageIncident(runtime, continuityIncident, incidents, t);
         t.diagnostic('PROBE MOVE-002 1: reviewed Statuspage capture and native component history at two entries per page -> exact incident transitions at original publication instants, and only the creation baseline for the unaffected control');
         const conditional = imported.find(row => row.name === sourceComponents[0].name);
         const visible = imported.find(row => row.name === sourceComponents[1].name);
