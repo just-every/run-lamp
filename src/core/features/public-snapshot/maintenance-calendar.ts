@@ -1,3 +1,4 @@
+import { renderImpactWording } from "../incidents/renderer";
 import type { PublicSnapshotModel } from "./renderer";
 
 // RFC 5545 TEXT escaping and UTF-8 octet folding. Continuations include their
@@ -31,7 +32,12 @@ export function renderMaintenanceCalendar(model: PublicSnapshotModel) {
   if (!maintenance.length) lines.push("BEGIN:VTIMEZONE", "TZID:Etc/UTC", "BEGIN:STANDARD", "DTSTART:19700101T000000", "TZOFFSETFROM:+0000", "TZOFFSETTO:+0000", "TZNAME:UTC", "END:STANDARD", "END:VTIMEZONE");
   for (const item of maintenance) {
     const revisions = item.notices.filter(notice => ["rescheduled", "cancelled"].includes(notice.kind)).length;
-    lines.push("BEGIN:VEVENT", `UID:lamp-maintenance-${item.id}@lamp`, `DTSTAMP:${instant(model.generatedAt)}`, `DTSTART:${instant(item.startsAt)}`, `DTEND:${instant(item.endsAt)}`, `SEQUENCE:${revisions}`, `STATUS:${item.state === "Cancelled" ? "CANCELLED" : "CONFIRMED"}`, `SUMMARY:${text(item.title)}`, `DESCRIPTION:${text([item.title, ...item.components].join("\n"))}`, `URL:${model.origin}/maintenance/${encodeURIComponent(item.reference)}`, "END:VEVENT");
+    const wording = renderImpactWording({
+      affectedAudience: item.affectedAudience ?? "",
+      customerImpact: item.customerImpact ?? "",
+    }).filter(({ value }) => value !== "").map(({ label, value }) => `${label}: ${value}`);
+    const description = [item.title, ...item.components, ...wording].join("\n");
+    lines.push("BEGIN:VEVENT", `UID:lamp-maintenance-${item.id}@lamp`, `DTSTAMP:${instant(model.generatedAt)}`, `DTSTART:${instant(item.startsAt)}`, `DTEND:${instant(item.endsAt)}`, `SEQUENCE:${revisions}`, `STATUS:${item.state === "Cancelled" ? "CANCELLED" : "CONFIRMED"}`, `SUMMARY:${text(item.title)}`, `DESCRIPTION:${text(description)}`, `URL:${model.origin}/maintenance/${encodeURIComponent(item.reference)}`, "END:VEVENT");
   }
   lines.push("END:VCALENDAR");
   return lines.map(fold).join("\r\n") + "\r\n";

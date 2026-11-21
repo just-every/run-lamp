@@ -5968,7 +5968,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/maintenance-calendar.ts": {
-      "sha256": "ebdedb68df88c108a813a8bbbfaad8ccdec5dd89d0e9ebb7d33397af5b5c837f",
+      "sha256": "7768275615f4d75cee6eec40405c4c3d421b05ddff1a07cafc9ef34270ed8bfc",
       "executable": false
     },
     "src/core/features/public-snapshot/native-api.ts": {
@@ -6000,7 +6000,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/renderer.ts": {
-      "sha256": "42df0fcb5c83c8a24efb3268914a024f288035a8f1f5fe7cd418a6dc758ed2ea",
+      "sha256": "1c6393129a93c712ac5f296486461948ccb17a02f1c02c04570efe92364fa6df",
       "executable": false
     },
     "src/core/features/public-snapshot/report-markup.ts": {
@@ -8780,7 +8780,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "a09f5a829d06a57cafe9f9762e997081ba2cfc9ceb44459a9e31feb1f0c34888",
+      "sha256": "f7904f3df6bed7b0bf07e39c070a3867d329ae0936c5472e3221750d764b7e8e",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {

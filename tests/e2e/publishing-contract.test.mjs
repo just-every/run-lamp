@@ -972,14 +972,22 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal(calendar.event.getFirstPropertyValue('status'), 'CONFIRMED');
     assert.equal(calendar.event.getFirstPropertyValue('sequence'), 0);
     assert.equal(calendar.event.getFirstPropertyValue('dtstart').toJSDate().getTime(), Math.floor(Date.parse(startsAt) / 1000) * 1000);
+    assert.equal(calendar.event.getFirstPropertyValue('dtend').toJSDate().getTime(), Math.floor(Date.parse(endsAt) / 1000) * 1000);
+    const descriptionPrefix = [input.title, component.name, operatorComponent.name, incidentComponent.name].join('\n');
+    assert.equal(calendar.event.getFirstPropertyValue('description'),
+      descriptionPrefix + '\nWho is affected: Customers using the database\nCustomer impact: Writes may pause during the upgrade.');
     assert.ok(!(await j.json('/api/app/incidents')).incidents.some(row => row.id === maintenance.id));
     await j.visible(`/maintenance/${maintenance.reference}`, input.customerImpact);
     await j.tick(now + 1000); await j.tick(now + 1000);
     assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 0, 'the recent scheduling notice replaces the reminder');
     const actualStart = new Date(now - 7200000).toISOString();
     const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
+    const revisedWording = {
+      affectedAudience: 'Customers restoring backups, including Montréal accounts',
+      customerImpact: 'Restores will pause; keep the archive at backups\\today.\n' + 'Réessayez après la maintenance. '.repeat(3).trimEnd(),
+    };
     let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
-    await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd });
+    await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd, ...revisedWording });
     await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
     await j.tick(Date.now());
     assert.equal((await list()).state, 'In progress');
@@ -992,6 +1000,11 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
     assert.equal(calendar.event.getFirstPropertyValue('dtstart').toJSDate().getTime(), Math.floor(Date.parse(actualStart) / 1000) * 1000);
     assert.equal(calendar.event.getFirstPropertyValue('dtend').toJSDate().getTime(), Math.floor(Date.parse(elapsedEnd) / 1000) * 1000);
+    const revisedDescription = calendar.event.getFirstPropertyValue('description');
+    assert.equal(revisedDescription, descriptionPrefix + '\nWho is affected: ' + revisedWording.affectedAudience
+      + '\nCustomer impact: ' + revisedWording.customerImpact);
+    assert.ok(!revisedDescription.includes(input.affectedAudience));
+    assert.ok(!revisedDescription.includes(input.customerImpact));
     // Public HTML localizes the human date; its semantic time attributes
     // carry the exact owner-selected window for browsers and calendar readers.
     const publicWindow = ends => eventually(() => j.publicText(`/maintenance/${maintenance.reference}`), html => html.includes(`data-maintenance-ends-at="${ends}"`) && html.includes(`<time datetime="${actualStart}"`), 'public maintenance window');
@@ -1027,6 +1040,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.ok(!extendedPage.includes('Running longer than planned'));
     calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 2, 'extended calendar event');
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
+    assert.equal(calendar.event.getFirstPropertyValue('description'), revisedDescription);
     priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/complete`, 'POST', {});
     await assertMaintenanceActor(j, maintenance.id, 'completed', maintainer, priorNotices);
@@ -1061,9 +1075,23 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await eventually(readCalendar, value => value.events.some(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${cancelled.id}@lamp` && event.getFirstPropertyValue('status') === 'CANCELLED'), 'cancelled calendar event');
     const internal = await j.component('Internal database topology', { internal: true });
     const hidden = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Internal-only upgrade', componentIds: [internal.id] }, 201)).maintenance;
+    // An installed legacy record predates the native door's required wording.
+    const legacyId = '01J00000000000000000000083';
+    await j.db.batch([
+      j.db.prepare(`INSERT INTO maintenance(id,reference,title,state,starts_at,ends_at,created_by_operator_id,created_at,updated_at)
+        VALUES(?,?,?,'Scheduled',?,?,?,?,?)`).bind(legacyId, 'SCH-202610010103', 'Legacy database upgrade',
+        new Date(now + 7 * 86400000).toISOString(), new Date(now + 7 * 86400000 + 3600000).toISOString(),
+        scheduler.id, new Date(now).toISOString(), new Date(now).toISOString()),
+      j.db.prepare(`INSERT INTO maintenance_components(id,maintenance_id,component_id,component_name,state,created_at,updated_at)
+        SELECT ?,?,component_id,component_name,state,created_at,updated_at FROM maintenance_components
+        WHERE maintenance_id=? AND component_id=?`).bind('01J00000000000000000000084', legacyId, maintenance.id, component.id),
+    ]);
     const barrier = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Public calendar generation barrier', componentIds: [component.id, internal.id] }, 201)).maintenance;
     calendar = await eventually(readCalendar, value => value.body.includes(barrier.id), 'later public calendar generation');
     for (const privateValue of [hidden.id, hidden.title, internal.id, internal.name]) assert.ok(!calendar.body.includes(privateValue), 'a later calendar generation excludes internal-only windows and component details');
+    const legacyEvent = calendar.events.find(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${legacyId}@lamp`);
+    assert.ok(legacyEvent, 'legacy maintenance still has a calendar event');
+    assert.equal(legacyEvent.getFirstPropertyValue('description'), 'Legacy database upgrade\nScheduled database service');
     // A second window keeps automatic completion on and proves both scheduled
     // transitions, rather than treating manual completion as a Cron result.
     const automatic = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Automatic maintenance', startsAt: new Date(now - 7200000).toISOString(), endsAt: new Date(now - 3600000).toISOString(), autoComplete: true }, 201)).maintenance;
