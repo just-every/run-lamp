@@ -1,0 +1,93 @@
+{
+  "base": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+  "baseRunSiteRunId": 44888108898,
+  "baseVerifyRunIds": [
+    44888108728,
+    44886865207
+  ],
+  "branch": "cloud/sd-lamp-c-f185",
+  "candidateRunSite": null,
+  "checks": {
+    "addedTextHygiene": {
+      "exit": 0
+    },
+    "firstParty": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "ledger": {
+      "applicable": false
+    },
+    "nativeJourney": {
+      "cases": [
+        "PROBE UPDATE-014 4: second claimant holds Partially unavailable; published Major outage to Degraded performance -> Partially unavailable, 1 new history rows",
+        "PROBE UPDATE-014 4: second claimant holds Major outage; published Major outage to Degraded performance -> Major outage, 0 new history rows"
+      ],
+      "command": "node --test --test-concurrency=1 tests/e2e/public-contract.test.mjs",
+      "durationMs": 432002.796892,
+      "exit": 0,
+      "failed": 0,
+      "passed": 8,
+      "skipped": 0
+    },
+    "sourceLock": {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "writeCommand": "node scripts/edition-authoring/cli.mjs lock"
+    },
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "views": {
+      "command": "node src/base/contract-docs.mjs write && node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "generatedDocumentsChanged": 0
+    }
+  },
+  "countsAfter": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123,
+    "total": 245
+  },
+  "countsBefore": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123,
+    "total": 245
+  },
+  "mainEqualsCandidate": false,
+  "productHead": "7992a90f44de34f4915165a9f5bc9183e9b39131",
+  "productPushVerified": true,
+  "productTree": "0015b1e025108ec489eacf9ffdadff9159a84314",
+  "publicationScan": {
+    "commit": "7992a90f44de34f4915165a9f5bc9183e9b39131",
+    "complete": null,
+    "findings": null,
+    "historyScanned": null,
+    "status": "Awaiting guarded lander"
+  },
+  "recordedAt": "2026-11-21T09:48:27+00:00",
+  "remoteMain": "f95b99b87f0ab98c8ad15c8e842a77baf30c95b1",
+  "repository": "just-every/run-lamp",
+  "scope": {
+    "clause": "UPDATE-014",
+    "points": [
+      4
+    ],
+    "statusAfter": "partial",
+    "statusBefore": "partial"
+  },
+  "tag": "sd-lamp-c-f185",
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-lamp-c-f185",
+    "head_sha": "7992a90f44de34f4915165a9f5bc9183e9b39131",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44890095478",
+    "id": 44890095478,
+    "name": "Verify",
+    "status": "completed"
+  }
+}
