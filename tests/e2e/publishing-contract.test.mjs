@@ -16,6 +16,7 @@ import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
 import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
 import { recordClosedOutage, rootFigures } from './helpers/uptime-correction-journey.mjs';
+import { subscriberCsvRows } from './helpers/subscriber-management-fixture.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -779,6 +780,94 @@ test('INCIDENT-013 — every impact set and clear preserves complete component s
   } finally { await j.close(); }
 });
 
+async function assertMaintenanceAvailabilityDownloads(j, otherComponent) {
+  const advanceClock = instant => j.json('/test/clock', 'PUT', { now: Date.parse(instant) }, 204);
+  const trackingSince = '2040-03-15T00:00:00.000Z';
+  await advanceClock(trackingSince);
+  await j.signIn(undefined, { fresh: true });
+  const component = await j.component('Maintenance report service');
+  const download = async (format, contentType) => {
+    const response = await j.request('/api/app/availability-report?' + new URLSearchParams({
+      component: component.id, month: '2040-03', format,
+    }));
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type'), contentType);
+    assert.match(response.headers.get('content-disposition'), new RegExp('^attachment;.*\\.' + format + '"$'));
+    return response.text();
+  };
+  const readCsv = async () => {
+    const rows = subscriberCsvRows(await download('csv', /^text\/csv\b/));
+    const summaries = rows.filter(row => row.record_type === 'summary');
+    assert.equal(summaries.length, 1);
+    const summary = summaries[0];
+    assert.equal(summary.component_id, component.id);
+    assert.equal(summary.period, '2040-03');
+    assert.equal(summary.tracking_since, trackingSince);
+    assert.equal(summary.uptime, '100.00%');
+    assert.equal(summary.weighted_downtime_minutes, '0.00');
+    return { rows, summary };
+  };
+
+  await advanceClock('2040-03-16T00:00:00.000Z');
+  const baseline = await readCsv();
+  assert.equal(baseline.summary.coverage_whole_days, '1');
+  assert.equal(baseline.rows.length, 1, 'the tracked component has no earlier maintenance rows');
+
+  const schedule = async (title, startsAt, endsAt, target = component) => (await j.json('/api/app/maintenance', 'POST', {
+    title, startsAt, endsAt, componentIds: [target.id], autoStart: false, autoComplete: false,
+    affectedAudience: 'Customers using the maintenance report service',
+    customerImpact: 'Routine service work.',
+  }, 201)).maintenance;
+  const startedAt = '2040-03-16T23:00:00.000Z';
+  const completedAt = '2040-03-17T00:00:00.000Z';
+  const completed = await schedule('Database indexing', startedAt, '2040-03-17T02:00:00.000Z');
+  const cancelled = await schedule('Cache replacement', '2040-03-16T23:10:00.000Z', '2040-03-17T03:00:00.000Z');
+  const scheduled = await schedule('Network expansion', '2040-03-16T23:20:00.000Z', '2040-03-17T04:00:00.000Z');
+  await schedule('Different component upgrade', '2040-03-16T23:20:00.000Z', '2040-03-17T04:00:00.000Z', otherComponent);
+  await j.json('/api/app/maintenance/' + cancelled.id + '/cancel', 'POST', {});
+  await advanceClock(startedAt);
+  await j.json('/api/app/maintenance/' + completed.id + '/start', 'POST', {});
+  const readComponent = async () => (await j.json('/api/app/components')).components.find(row => row.id === component.id);
+  assert.equal((await readComponent()).publicState, 'Under maintenance', 'the tracked component spends time in the maintenance state');
+  await advanceClock(completedAt);
+  await j.json('/api/app/maintenance/' + completed.id + '/complete', 'POST', {});
+  await eventually(readComponent, row => row.publicState === 'Operational', 'the component returns to Operational');
+  const { history } = await j.json('/api/app/components/' + component.id + '/history');
+  assert.deepEqual(history.filter(row => row.causeId === completed.id).map(row => [row.newState, row.changedAt]).sort(),
+    [['Operational', completedAt], ['Under maintenance', startedAt]], 'the report has an hour of recorded maintenance to weigh');
+
+  const expected = [
+    [completed.reference, 'Database indexing', 'Completed'],
+    [cancelled.reference, 'Cache replacement', 'Cancelled'],
+    [scheduled.reference, 'Network expansion', 'Scheduled'],
+  ];
+  assert.equal(new Set(expected.map(([reference]) => reference)).size, 3);
+  const { rows, summary } = await readCsv();
+  assert.equal(summary.coverage_whole_days, '2');
+  assert.deepEqual(rows.filter(row => row.record_type === 'maintenance').map(row => [row.reference, row.title, row.state]).sort(),
+    [...expected].sort(), 'CSV contains exactly the three overlapping windows with their states');
+
+  const pdf = await download('pdf', /^application\/pdf\b/);
+  assert.ok(pdf.startsWith('%PDF-') && pdf.trimEnd().endsWith('%%EOF'));
+  // Read the visible text operands in page order. These short fixture titles
+  // fit on one line, so each reference and its state must appear together.
+  const lines = [...pdf.matchAll(/\(((?:\\.|[^\\()])*)\) Tj EMC T\*$/gm)].map(([, line]) => line.replace(/\\([\\()])/g, '$1'));
+  assert.ok(lines.includes(component.name + ' (' + component.id + ')'));
+  assert.ok(lines.includes('2040-03 - UTC'));
+  assert.ok(lines.includes('Tracking since: ' + trackingSince + '; 2 whole days covered'));
+  assert.ok(lines.includes('Uptime: 100.00%'));
+  assert.ok(lines.includes('Downtime minutes: 0.00'));
+  const section = lines.findIndex(line => /^Maintenance \(\d+\)$/.test(line));
+  assert.ok(section >= 0, 'PDF contains the maintenance section');
+  const end = lines.indexOf('', section + 1);
+  assert.ok(end > section, 'PDF maintenance section terminates');
+  assert.equal(lines[section], 'Maintenance (3)');
+  const maintenanceLines = lines.slice(section + 1, end);
+  assert.equal(maintenanceLines.length, 2 * expected.length);
+  assert.deepEqual(maintenanceLines.filter((_, index) => index % 2 === 0).sort(),
+    expected.map(record => record.join(' | ')).sort(), 'PDF contains exactly the three overlapping windows with their states');
+}
+
 test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history', async () => {
   const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
@@ -1012,6 +1101,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await j.tick(completionDeadline);
     await advanceAndTick(completionDeadline + 60000);
     assert.deepEqual(await readBounded(), finished, 'repeated completion ticks retain exactly one notice for each transition');
+    await assertMaintenanceAvailabilityDownloads(j, operatorComponent);
   } finally { await j.close(); }
 });
 
