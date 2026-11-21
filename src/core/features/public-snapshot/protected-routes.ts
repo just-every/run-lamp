@@ -60,9 +60,10 @@ export async function protectedStatusPage(
     const page = await runtime.services.statusPages.get(address.page);
     if (!page && operator) return new Response("Status page not found.", { status: 404, headers });
     if (!operator) {
+      if (page?.kind !== "staff") return signInRequired(request, headers, address.page);
       const ip = trustedConnectionAddress(request, bindings);
-      if (page?.kind !== "staff" || !ip || !staffCidrAllows(ip, page.allowedCidrs)) {
-        return signInRequired(request, headers, address.page, page?.pageName);
+      if (!ip || !staffCidrAllows(ip, page.allowedCidrs)) {
+        return signInRequired(request, headers, address.page, page.pageName);
       }
     }
   } catch {

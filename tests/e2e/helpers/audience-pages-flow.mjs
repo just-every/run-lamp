@@ -367,7 +367,8 @@ export async function audiencePagesFlow() {
         assert.equal(response.headers.get('x-lamp-snapshot-version'), expected.version);
         assert.equal(await response.text(), expected.body, 'an admitted visitor gets the same healthy Staff snapshot as an operator');
       }
-      await deniedWithoutLookup(j, privateStatusUrl(audience, '/'), acmeImpact, undefined, headers);
+      const otherPage = await deniedWithoutLookup(j, privateStatusUrl(audience, '/'), acmeImpact, undefined, headers);
+      requireBody(otherPage, ['Sign in to Lamp'], [audience.pageName, audienceSettings.tagline], 'named audience keeps its generic refusal');
     }
 
     const deniedHeaders = [

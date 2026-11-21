@@ -6024,7 +6024,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/protected-routes.ts": {
-      "sha256": "69a41c6f62e94fff31f91f3a98899c75869131b67b26eb26dbefd3a543dc572c",
+      "sha256": "073e3de001421ad4871e4f56d74cf70d7ce9656dfbeb9646025c17690017a4d3",
       "executable": false
     },
     "src/core/features/public-snapshot/public-api.ts": {
@@ -8212,7 +8212,7 @@
       "executable": false
     },
     "tests/e2e/helpers/audience-pages-flow.mjs": {
-      "sha256": "0af74de4c91d0f6bc74c2085754240ac86004bc1c48a0faf550bfc803cc31fb1",
+      "sha256": "5b3108973d6104eb58dd20ea9e0807f6d312bc0822836c6d66a0c1bae4fcffa3",
       "executable": false
     },
     "tests/e2e/helpers/audit-labels-flow.mjs": {
@@ -8844,7 +8844,7 @@
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
-      "sha256": "32e62dba23f5a59b0af3640ce37eef86eddca136967cd59ed7f7aa151c2798d6",
+      "sha256": "1918fdfd88a04363b07faffdbf041feb2b2deeec4082191f338de50674f94581",
       "executable": false
     },
     "tests/e2e/queue-outage.worker.ts": {
