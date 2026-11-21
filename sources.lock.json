@@ -8484,7 +8484,7 @@
       "executable": false
     },
     "tests/e2e/helpers/public-history-selection-flow.mjs": {
-      "sha256": "ef38a10379465779461c45173cd7c8a7011ea227bb34dea98d417ef37cb61a93",
+      "sha256": "bf591de49e01b709cbc4f17062546a4c88d54dda335d66f1f84677a9bdc3d501",
       "executable": false
     },
     "tests/e2e/helpers/public-isolation-flow.mjs": {
