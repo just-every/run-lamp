@@ -1,5 +1,4 @@
 import { localSubscribersFlow } from "./helpers/local-subscribers-flow.mjs";
-import { stripVTControlCharacters } from "node:util";
 import {appHost, appOrigin, pageOrigin} from './helpers/hosts.mjs';
 import { devKey } from '../helpers/dev-key.mjs';
 import { accessibilitySubscriptionFlow } from './helpers/accessibility-subscription-flow.mjs';
@@ -11,31 +10,37 @@ import { join, resolve } from "node:path";
 import { after, before, test } from "node:test";
 import { chromium } from "playwright";
 import { insertRealOperatorSession } from "./real-session-helper.mjs";
-import { reservePort, waitForWorker } from "./worker-startup.mjs";
+import { reservePort, startViteWorker } from "./worker-startup.mjs";
 import { sessionCookieName } from "../helpers/session-cookie.mjs";
 import { operatorHydrated } from "./helpers/operator-hydrated.mjs";
 import { newIncidentForm } from "./helpers/incident-composer.mjs";
 
 let worker, browser, context, page, statePath, cachePath, origin, sessionId;
-let output = "";
 const subscriberTokenSecret = "synthetic-lamp-020-subscriber-token-secret";
 before(async () => {
-  const port = await reservePort({ label: "Maintenance timezone Worker" });
-  // Exercise the shipped silent development-mail transport. Its local key
-  // stays in this isolated Worker fixture; the real operator session remains
-  // the authority because development identity is disabled.
-  origin = appOrigin(port, { SUBSCRIBER_TOKEN_SECRET: subscriberTokenSecret,
-    RER_DEV_KEY: devKey, RER_DEV_ORIGIN: `http://${appHost}:${port}`, RER_DEV_IDENTITY: "off" });
+  const firstPort = await reservePort({ label: "Maintenance timezone Worker" });
+  const configureOrigin = (port) => {
+    // Exercise the shipped silent development-mail transport. Its local key
+    // stays in this isolated Worker fixture; the real operator session remains
+    // the authority because development identity is disabled.
+    return appOrigin(port, { SUBSCRIBER_TOKEN_SECRET: subscriberTokenSecret,
+      RER_DEV_KEY: devKey, RER_DEV_ORIGIN: `http://${appHost}:${port}`, RER_DEV_IDENTITY: "off" });
+  };
+  origin = configureOrigin(firstPort);
   statePath = await mkdtemp(join(tmpdir(), "lamp-maintenance-timezone-d1-"));
   cachePath = await mkdtemp(resolve("node_modules/.lamp-maintenance-timezone-vite-"));
   execFileSync("pnpm", ["exec", "wrangler", "d1", "migrations", "apply", "DB", "--local", "--config", "wrangler.jsonc", "--persist-to", statePath], { maxBuffer: 8 * 1024 * 1024, stdio: "pipe" });
   sessionId = await insertRealOperatorSession({ persistTo: statePath });
-  worker = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
-    detached: true, stdio: "pipe", env: { ...process.env, LAMP_WORKERS_STATE_PATH: statePath, LAMP_VITE_CACHE_DIR: cachePath, LAMP_DISABLE_INSPECTOR: "true" },
-  });
-  worker.stdout.on("data", chunk => { output += chunk; });
-  worker.stderr.on("data", chunk => { output += chunk; });
-  await waitForWorker({ origin, timeoutMs: 180_000, isListening: () => stripVTControlCharacters(output).includes(`${origin}/`), child: worker, output: () => output, label: "Maintenance timezone Worker" });
+  ({ child: worker } = await startViteWorker({
+    label: "Maintenance timezone Worker",
+    firstPort,
+    start(port) {
+      if (port !== firstPort) origin = configureOrigin(port);
+      return spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+        detached: true, stdio: "pipe", env: { ...process.env, LAMP_WORKERS_STATE_PATH: statePath, LAMP_VITE_CACHE_DIR: cachePath, LAMP_DISABLE_INSPECTOR: "true" },
+      });
+    },
+  }));
   browser = await chromium.launch({ headless: true, ...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH } : {}), args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"] });
 
 });
