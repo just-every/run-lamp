@@ -1,0 +1,13 @@
+Candidate: 093f6bef6fee83f52b213f3d5eb6f86c0c11466f
+Node: v22.20.0
+Wrote 0 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Source lock regeneration and freshness check passed.
+Candidate tree clean after regeneration. No migrations changed.
+
+> lamp@1.11.25 typecheck /workspace/run-lamp-sd-lamp-c-f178
+> tsc --noEmit
+
+Typecheck and first-party check exit 0.
+Verification plan: 9 test shards and one shared build, 36 routine test files, 116 registered cases (including release qualification) + 10 assertion scripts = 126 checks.

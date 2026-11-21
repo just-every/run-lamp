@@ -1,0 +1,10 @@
+{
+  "branch": "cloud/sd-lamp-c-f178",
+  "conclusion": null,
+  "event": "push",
+  "head_sha": "093f6bef6fee83f52b213f3d5eb6f86c0c11466f",
+  "html_url": "https://github.com/just-every/run-lamp/actions/runs/44880140659",
+  "repository": "just-every/run-lamp",
+  "status": "in_progress",
+  "verify_run_id": 44880140659
+}
