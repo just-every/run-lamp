@@ -626,6 +626,76 @@ async function widgetVariantsJourney() {
 }
 
 // One catalogue-to-customer journey: no renderer or uptime helper is imported.
+async function assertCompetingClaimStepDown(j, publisherEmail, publisherId) {
+  for (const { secondState, expectedAggregate, expectedRows } of [
+    { secondState: 'Partially unavailable', expectedAggregate: 'Partially unavailable', expectedRows: 1 },
+    { secondState: 'Major outage', expectedAggregate: 'Major outage', expectedRows: 0 },
+  ]) {
+    const scenario = `second claimant holds ${secondState}`;
+    await j.signIn();
+    const component = await j.component(`Synthetic overlap service with ${secondState}`);
+    const primary = await j.incident(`Primary incident on ${component.name}`, [component]);
+    const secondary = await j.incident(`Second incident on ${component.name}`, [component]);
+    const publishState = async (incidentId, state, fields = {}) => {
+      await j.save(incidentId, { componentChanges: [{ componentId: component.id, state }], ...fields });
+      return (await j.publish(incidentId)).update;
+    };
+    const readHistory = async () => {
+      const { history, historyPage } = await j.json(`/api/app/components/${component.id}/history`);
+      assert.equal(historyPage.nextCursor, null, `${scenario}: the read includes every history row`);
+      return history;
+    };
+    const aggregate = async () => (await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState;
+    const attachment = incident => incident.components.map(({ componentId, state, publishedAt }) => ({ componentId, state, publishedAt }));
+
+    const initialUpdate = await publishState(primary.id, 'Major outage');
+    const secondUpdate = await publishState(secondary.id, secondState);
+    await j.signIn(publisherEmail);
+    const beforePrimary = await j.read(primary.id);
+    const beforeSecondary = await j.read(secondary.id);
+    assert.equal(beforePrimary.lifecycle, 'Identified', scenario);
+    assert.equal(beforeSecondary.lifecycle, 'Identified', scenario);
+    assert.deepEqual(attachment(beforePrimary), [{ componentId: component.id, state: 'Major outage', publishedAt: initialUpdate.publishedAt }], scenario);
+    assert.deepEqual(attachment(beforeSecondary), [{ componentId: component.id, state: secondState, publishedAt: secondUpdate.publishedAt }], scenario);
+    assert.equal(await aggregate(), 'Major outage', scenario);
+    const beforeHistory = await readHistory();
+    assert.equal(beforeHistory[0]?.newState, 'Major outage', scenario);
+
+    const customerImpact = `Primary recovery reached degraded operation with ${secondState} still claimed.`;
+    const stepDown = await publishState(primary.id, 'Degraded performance', { customerImpact });
+    const afterPrimary = await j.read(primary.id);
+    const afterSecondary = await j.read(secondary.id);
+    const committed = afterPrimary.updates.find(update => update.id === stepDown.id);
+    assert.deepEqual(committed, stepDown, scenario);
+    assert.equal(committed.authorOperatorId, publisherId, scenario);
+    assert.equal(afterPrimary.lifecycle, 'Identified', scenario);
+    assert.deepEqual(attachment(afterPrimary), [{ componentId: component.id, state: 'Degraded performance', publishedAt: initialUpdate.publishedAt }], scenario);
+    assert.equal(afterSecondary.lifecycle, beforeSecondary.lifecycle, scenario);
+    assert.deepEqual(afterSecondary.components, beforeSecondary.components, scenario);
+    assert.deepEqual(afterSecondary.updates, beforeSecondary.updates, scenario);
+    assert.equal(await aggregate(), expectedAggregate, scenario);
+
+    const afterHistory = await readHistory();
+    const priorIds = new Set(beforeHistory.map(row => row.id));
+    const added = afterHistory.filter(row => !priorIds.has(row.id));
+    assert.deepEqual(afterHistory.filter(row => priorIds.has(row.id)), beforeHistory, `${scenario}: earlier rows retain their full values`);
+    assert.equal(added.length, expectedRows, scenario);
+    if (expectedRows === 1) {
+      const { previousState, newState, changedAt, causeType, causeId, operatorId } = added[0];
+      assert.deepEqual({ previousState, newState, changedAt, causeType, causeId, operatorId }, {
+        previousState: 'Major outage', newState: 'Partially unavailable', changedAt: committed.publishedAt,
+        causeType: 'incident', causeId: primary.id, operatorId: publisherId,
+      }, scenario);
+    }
+
+    await j.visible(`/incidents/${primary.reference}`, customerImpact);
+    const response = await j.publicResponse('/api/public/v1/components');
+    assert.equal(response.status, 200, scenario);
+    assert.equal((await response.json()).data.find(row => row.id === component.id)?.state, expectedAggregate, scenario);
+    console.info(`PROBE UPDATE-014 4: ${scenario}; published Major outage to Degraded performance -> ${expectedAggregate}, ${added.length} new history rows`);
+  }
+}
+
 test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAGE-010 PAGE-011 PAGE-012 PAGE-013 PAGE-014 PAGE-016 PAGE-017 PAGE-018 PAGE-019 PAGE-020 COMP-001 COMP-002 COMP-003 COMP-004 COMP-005 COMP-007 COMP-009 COMP-010 UPTIME-001 UPTIME-002 UPTIME-003 UPTIME-004 UPTIME-005 UPTIME-006 MOVE-009 — owner maintains a complete catalogue and customers read, refresh, embed and retain its public story', async () => {
   await componentReadFlow();
   await widgetVariantsJourney();
@@ -1372,6 +1442,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     assert.deepEqual((await j.json('/api/app/maintenance')).maintenance.find(row => row.id === maintenance.id).notices, savedMaintenance.notices, 'deletion preserves every published maintenance update');
     const remaining = (await (await j.publicResponse('/api/public/v1/components')).json()).data;
     assert.ok(!remaining.some(row => row.id === main.id));
+    await assertCompetingClaimStepDown(j, stateActorEmail, stateActor.id);
   } finally { await browser?.close(); await j.close(); }
 });
 
