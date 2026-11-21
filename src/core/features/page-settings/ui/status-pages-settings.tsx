@@ -3,10 +3,12 @@ import { useState, type FormEvent } from "react";
 import { appApi } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
 import { FormError, LoadingState } from "../../../app/client/ui/states";
+import { markToPng, readFileAsDataUrl, uploadMark } from "../../../app/client/ui/mark-image";
 import { TimezoneField } from "../../../app/client/ui/timezone-field";
+import { PageLogoField } from "./logo-card";
 import { type StatusPage, useStatusPages } from "./status-page-selection";
 
-type PageDraft = Pick<StatusPage, "path" | "pageName" | "tagline" | "accentColor" | "timezone" | "componentIds"> & { kind: "staff" | "audience" };
+type PageDraft = Pick<StatusPage, "path" | "pageName" | "tagline" | "accentColor" | "timezone" | "componentIds" | "footerCreditEnabled"> & { kind: "staff" | "audience" };
 type ComponentChoice = { id: string; name: string };
 
 export function StatusPagesSettings({ canManage, components, componentsReady, defaults }: {
@@ -20,6 +22,8 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const activePage = editor?.existing ? pages.data?.pages.find(page => page.path === editor.page.path) : undefined;
+  const logoUrl = activePage?.logoUrl ? `${activePage.logoUrl}?v=${encodeURIComponent(activePage.updatedAt ?? "")}` : null;
 
   function open(page?: StatusPage) {
     if (page?.kind === "public") return;
@@ -29,8 +33,8 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
       existing: Boolean(page),
       page: page ? {
         path: page.path, kind: page.kind, pageName: page.pageName, tagline: page.tagline,
-        accentColor: page.accentColor, timezone: page.timezone, componentIds: page.componentIds,
-      } : { path: "", kind: "staff", pageName: "", tagline: "", ...defaults, componentIds: [] },
+        accentColor: page.accentColor, timezone: page.timezone, componentIds: page.componentIds, footerCreditEnabled: page.footerCreditEnabled,
+      } : { path: "", kind: "staff", pageName: "", tagline: "", ...defaults, footerCreditEnabled: true, componentIds: [] },
     });
   }
 
@@ -59,6 +63,28 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
     }
   }
 
+  async function changeLogo(file?: File) {
+    if (!activePage || saving) return;
+    setSaving(true);
+    setError(null);
+    setSaved(null);
+    const endpoint = `/api/app/status-pages/${activePage.path}/logo`;
+    try {
+      if (file) {
+        const png = await markToPng(await readFileAsDataUrl(file), file.type === "image/svg+xml");
+        await uploadMark(png, endpoint, "page");
+      } else {
+        await appApi(endpoint, { method: "DELETE" });
+      }
+      pages.refresh();
+      setSaved(file ? "Logo saved." : "Logo removed.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "The logo could not be changed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return <section className="data-card page-card" aria-labelledby="status-pages-title">
     <div className="card-heading">
       <h2 id="status-pages-title">Status pages</h2>
@@ -71,7 +97,7 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
         <strong>{page.kind === "public" ? "Public" : page.pageName}</strong>
         <div><a className="text-link" href={page.url} target="_blank" rel="noopener">Open {page.kind === "public" ? "public page" : page.pageName}</a></div>
       </div>
-      {page.kind !== "public" && canManage ? <Button type="button" variant="secondary" disabled={saving} onClick={() => open(page)}>Edit {page.pageName}</Button> : null}
+      {page.kind !== "public" && canManage ? <Button type="button" variant="secondary" aria-label={`Edit ${page.pageName}`} disabled={saving} onClick={() => open(page)}>Edit</Button> : null}
     </div>)}
     {editor ? <form className="settings-form" aria-label={editor.existing ? "Edit status page" : "New status page"} onSubmit={save} inert={saving}>
       <label className="form-label">Access
@@ -87,6 +113,8 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
       <label className="form-label">Page name<input required maxLength={120} value={editor.page.pageName} onChange={event => update("pageName", event.target.value)} /></label>
       <label className="form-label">Tagline<textarea required maxLength={280} value={editor.page.tagline} onChange={event => update("tagline", event.target.value)} /></label>
       <label className="form-label">Accent colour<input required pattern="#[0-9A-Fa-f]{6}" value={editor.page.accentColor} onChange={event => update("accentColor", event.target.value)} /></label>
+      {editor.existing ? <div className="settings-form"><PageLogoField src={logoUrl} busy={saving} upload={file => void changeLogo(file)} remove={() => void changeLogo()} /></div> : null}
+      <label className="checkbox-label"><input type="checkbox" checked={editor.page.footerCreditEnabled} onChange={event => update("footerCreditEnabled", event.target.checked)} />Show the Powered by Lamp footer credit</label>
       <TimezoneField value={editor.page.timezone} onChange={zone => update("timezone", zone)} />
       <fieldset className="maintenance-components">
         <legend>Components shown</legend>

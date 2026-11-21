@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { legacyPublication, openAudienceInstallations } from './audience-archive-fixture.mjs';
 import { eventually, openStatusJourney } from './status-journey.mjs';
+import { themeHeaderImage } from './theme-fixture.mjs';
 
 const configuration = '/api/app/status-pages';
 const staffPath = 'staff';
@@ -42,8 +43,8 @@ export function privateStatusUrl(page, path = '/') {
   return new URL(base.pathname.replace(/\/$/, '') + path, base.origin).href;
 }
 
-export async function addStatusPage(j, {path, kind, pageName, tagline, accentColor, timezone, componentIds}) {
-  const input = {path, kind, pageName, tagline, accentColor, timezone, componentIds};
+export async function addStatusPage(j, {path, kind, pageName, tagline, accentColor, timezone, componentIds, footerCreditEnabled = true}) {
+  const input = {path, kind, pageName, tagline, accentColor, timezone, componentIds, footerCreditEnabled};
   const { page } = await j.json(configuration, 'POST', input, 201);
   assert.equal(new URL(page.url).origin, j.appOrigin);
   assert.equal(new URL(page.url).pathname.replace(/\/$/, ''), `/status-pages/${path}`);
@@ -122,14 +123,34 @@ export async function audiencePagesFlow() {
     assert.deepEqual([...beforePublicPage.componentIds].sort(), [legacyPublication.componentId, a.id, b.id].sort());
     assert.equal(beforePublicPage.pageName, publicBrand.pageName);
 
-    const staffSettings = { path: staffPath, kind: 'staff', pageName: 'Internal operations', tagline: 'Signals for our operators', accentColor: '#75499b', timezone: 'UTC', componentIds: [a.id, b.id] };
+    const staffSettings = { path: staffPath, kind: 'staff', pageName: 'Internal operations', tagline: 'Signals for our operators', accentColor: '#75499b', timezone: ['Europe', 'Stockholm'].join('/'), componentIds: [a.id, b.id], footerCreditEnabled: false };
     const staff = await addStatusPage(j, staffSettings);
     const audienceSettings = { path: audiencePath, kind: 'audience', pageName: 'Acme service status', tagline: 'Signals for Acme', accentColor: '#394785', timezone: 'UTC', componentIds: [b.id] };
     const audience = await addStatusPage(j, audienceSettings);
-    const renamed = { pageName: staffSettings.pageName, tagline: 'Operations team service health', accentColor: '#914486', timezone: 'UTC', componentIds: staffSettings.componentIds };
+    const renamed = { pageName: staffSettings.pageName, tagline: 'Operations team service health', accentColor: '#914486', timezone: staffSettings.timezone, componentIds: staffSettings.componentIds, footerCreditEnabled: false };
     const { page: savedStaff } = await j.json(`${configuration}/${staff.path}`, 'PUT', renamed);
     assert.equal(savedStaff.url, staff.url, 'editing branding leaves the page address stable');
     assert.deepEqual(Object.fromEntries(Object.keys(renamed).map(key => [key, savedStaff[key]])), renamed);
+    const logo = themeHeaderImage();
+    const form = new FormData();
+    form.append('logo', new Blob([logo], { type: 'image/png' }), 'synthetic-lamp.png');
+    const logoEndpoint = `${configuration}/${staff.path}/logo`;
+    const multipart = new Request(j.appOrigin + logoEndpoint, { method: 'POST', body: form });
+    const upload = await j.request(logoEndpoint, {
+      method: 'POST', headers: { 'Content-Type': multipart.headers.get('Content-Type') }, body: await multipart.arrayBuffer(),
+    });
+    assert.equal(upload.status, 200, await upload.clone().text());
+    assert.equal((await upload.json()).page.logoUrl, privateStatusUrl(staff, '/assets/logo'));
+    const verifyLogo = async page => {
+      const logoResponse = await j.request(privateStatusUrl(page, '/assets/logo'));
+      assert.equal(logoResponse.status, 200);
+      assert.equal(logoResponse.headers.get('content-type'), 'image/png');
+      assert.match(logoResponse.headers.get('cache-control'), /private, no-store/);
+      assert.deepEqual(Buffer.from(await logoResponse.arrayBuffer()), logo, 'the selected page serves its uploaded image bytes');
+    };
+    await verifyLogo(staff);
+    assert.equal((await j.publicResponse('/assets/logo')).status, 404);
+    assert.equal((await j.request(privateStatusUrl(audience, '/assets/logo'))).status, 404);
     const listed = (await j.json(configuration)).pages;
     assert.deepEqual(listed.map(page => page.path).sort(), [audiencePath, staffPath, 'public'].sort());
     assert.equal(listed.find(page => page.path === staffPath).url, staff.url);
@@ -140,8 +161,9 @@ export async function audiencePagesFlow() {
     await waitFor(j, audience, '/', audienceSettings.tagline);
     const staffRoot = await representation(j, staff, '/');
     const audienceRoot = await representation(j, audience, '/');
-    requireBody(staffRoot.body, [renamed.pageName, renamed.tagline, a.name, b.name], [internal.name, legacyPublication.component, audienceSettings.pageName], 'Staff snapshot branding and selection');
-    requireBody(audienceRoot.body, [audienceSettings.pageName, audienceSettings.tagline, b.name], [a.name, internal.name, legacyPublication.component, renamed.pageName], 'Acme snapshot branding and selection');
+    requireBody(staffRoot.body, [renamed.pageName, renamed.tagline, a.name, b.name], [internal.name, legacyPublication.component, audienceSettings.pageName, 'Powered by Lamp'], 'Staff snapshot branding and selection');
+    requireBody(audienceRoot.body, [audienceSettings.pageName, audienceSettings.tagline, b.name, 'Powered by Lamp'], [a.name, internal.name, legacyPublication.component, renamed.pageName], 'Acme snapshot branding and selection');
+    assert.equal(JSON.parse((await representation(j, staff, '/api/public/v1')).body).page.timezone, renamed.timezone);
     for (const [page, accent] of [[staff, renamed.accentColor], [audience, audienceSettings.accentColor]]) {
       const { body: css } = await representation(j, page, '/assets/status-page.css');
       assert.ok(css.includes(accent), page.path + ' supplies its configured brand color');
@@ -177,6 +199,9 @@ export async function audiencePagesFlow() {
         const specificIdentity = ['/feed.atom', '/feed.rss', '/api/public/v1/incidents'].includes(path) ? [sharedUpdate.id] : [];
         requireBody(await read(path), [shared.title, sharedImpact, ...specificIdentity], [], `${page?.path ?? "Public"} ${path}`);
       }
+      const permalink = page ? new URL(privateStatusUrl(page, sharedPermalink)).pathname : sharedPermalink;
+      assert.ok((await read('/')).includes(`href="${permalink}"`), 'the page links to its own copy of the incident');
+      assert.ok((await read('/feed.atom')).includes(page ? privateStatusUrl(page, sharedPermalink) : new URL(sharedPermalink, j.publicOrigin).href), 'the feed links to its own copy of the incident');
       assert.equal(JSON.parse(await read('/badge.json')).message, 'Slow');
       assert.match(await read('/badge.svg'), />Slow<\/text>/);
     }
@@ -283,7 +308,7 @@ export async function audiencePagesFlow() {
     });
     assert.equal(otherValidator.status, 200, 'the protected generation cannot validate a public feed');
     requireBody(await otherValidator.text(), [sharedUpdate.id], staffOnly, 'public response to a protected validator');
-    for (const path of [...responses.keys(), confidentialPermalink, privateWorkLink]) {
+    for (const path of [...responses.keys(), '/assets/logo', confidentialPermalink, privateWorkLink]) {
       await deniedWithoutLookup(j, privateStatusUrl(staff, path), confidentialImpact, protectedRead.etag);
     }
     await deniedWithoutLookup(j, privateStatusUrl(audience, '/feed.atom'), acmeImpact);
@@ -297,18 +322,22 @@ export async function audiencePagesFlow() {
     await j.signIn(undefined, { fresh: true });
     assert.equal((await j.request(privateStatusUrl(staff, confidentialPermalink))).status, 200);
     const sourceSession = j.cookie;
-    const savedPages = listed.map(({ url, ...page }) => ({ ...page, pathName: new URL(url).pathname }));
+    const settingsAtStablePaths = pages => pages.map(({ url, logoUrl, ...page }) => ({
+      ...page, pathName: new URL(url).pathname, logoPath: logoUrl ? new URL(logoUrl).pathname : null,
+    }));
+    const savedPages = settingsAtStablePaths(listed);
     await j.close();
     j = null;
 
     j = await openStatusJourney({ ...options, installation: await installations.restore() });
     const restoredPages = (await j.json(configuration)).pages;
-    assert.deepEqual(restoredPages.map(({ url, ...page }) => ({ ...page, pathName: new URL(url).pathname })), savedPages);
+    assert.deepEqual(settingsAtStablePaths(restoredPages), savedPages);
     const restoredStaff = restoredPages.find(page => page.path === staffPath);
     const restoredAudience = restoredPages.find(page => page.path === audiencePath);
     const oldSession = await j.raw(privateStatusUrl(restoredStaff, confidentialPermalink), { headers: { Cookie: sourceSession } });
     assert.equal(oldSession.status, 401, 'the native restore does not revive source session authority');
     assert.equal((await j.raw('/test/rebuild', { method: 'POST' })).status, 204);
+    await verifyLogo(restoredStaff);
     assert.equal(snapshotIdentity(await j.publicText('/feed.atom')), legacyPublication.feedIdentity);
     assert.equal(snapshotIdentity((await representation(j, restoredStaff, '/feed.atom')).body), staffFeed);
     assert.equal(snapshotIdentity((await representation(j, restoredAudience, '/feed.atom')).body), audienceFeed);

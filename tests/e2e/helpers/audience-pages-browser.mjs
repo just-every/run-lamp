@@ -55,6 +55,13 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
   assert.equal(await editor.getByRole('textbox', { name: /^Page path/ }).inputValue(), audience.path);
   assert.equal(await editor.getByRole('checkbox', { name: partnerQueue.name }).isChecked(), true);
   await editor.getByRole('textbox', { name: 'Tagline', exact: true }).fill('Pickup and dispatch updates for partners');
+  await editor.getByRole('checkbox', { name: 'Show the Powered by Lamp footer credit' }).uncheck();
+  await editor.getByLabel('Logo', { exact: true }).setInputFiles({
+    name: 'synthetic-lamp-mark.svg', mimeType: 'image/svg+xml',
+    buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="128"><rect width="512" height="128" fill="#70502E"/></svg>'),
+  });
+  await statusPages.getByRole('status').filter({ hasText: 'Logo saved.' }).waitFor();
+  await editor.getByRole('img', { name: 'Your logo' }).waitFor();
   await screenshots(page, 'audience-page-settings');
   await editor.getByRole('button', { name: 'Save status page' }).click();
   await statusPages.getByRole('status').filter({ hasText: `${audience.pageName} saved.` }).waitFor();
@@ -73,6 +80,8 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
   try {
     await openPublishedPage(assignedPage, audienceUrl, 'Pickup and dispatch updates for partners');
     await assignedPage.getByText(partnerQueue.name, { exact: true }).first().waitFor();
+    assert.equal(await assignedPage.locator('img.brand-logo').evaluate(async logo => { await logo.decode(); return logo.naturalWidth > 0; }), true);
+    assert.ok(!(await assignedPage.locator('footer').innerText()).includes('Powered by Lamp'));
     assert.equal(await assignedPage.getByText(staffConsole.name, { exact: true }).count(), 0);
     await screenshots(assignedPage, 'audience-page-reader');
     const denied = await customerPage.goto(audienceUrl);
@@ -154,6 +163,13 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
     await openPublishedPage(assignedPage, staffUrl, staffTitle);
     await screenshots(assignedPage, 'audience-staff-reader');
     await screenshots(customerPage, 'audience-public-reader');
+    await page.goto(`${appUrl}/app/settings#page`);
+    await operatorHydrated(page);
+    await statusPages.getByRole('button', { name: `Edit ${audience.pageName}` }).click();
+    await editor.getByRole('button', { name: 'Remove logo' }).click();
+    await statusPages.getByRole('status').filter({ hasText: 'Logo removed.' }).waitFor();
+    await openPublishedPage(assignedPage, audienceUrl, maintenanceTitle);
+    assert.equal(await assignedPage.locator('img.brand-logo').count(), 0);
     diagnostic('The 1440-wide owner journey configured Staff and named audience branding and components, then used native incident and maintenance editors to publish to the selected pages. Public and signed-in browsers reconciled the resulting pages.');
   } finally {
     await assignedPage.close();

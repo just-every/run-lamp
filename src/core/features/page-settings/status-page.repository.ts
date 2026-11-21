@@ -1,3 +1,4 @@
+import { UnknownStatusPageError } from "./page-selection";
 import { createUlid, nowIso } from "../../shared/ids";
 
 export interface StatusPagePresentation {
@@ -6,22 +7,26 @@ export interface StatusPagePresentation {
   accentColor: string;
   timezone: string;
   componentIds: string[];
+  footerCreditEnabled?: boolean;
 }
 
 export interface ProtectedStatusPage extends StatusPagePresentation {
   path: string;
   kind: "staff" | "audience";
   feedId: string;
+  footerCreditEnabled: boolean;
+  logoKey: string | null;
+  logoContentType: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-type StoredStatusPage = Omit<ProtectedStatusPage, "componentIds"> & { componentIdsJson: string };
+type StoredStatusPage = Omit<ProtectedStatusPage, "componentIds" | "footerCreditEnabled"> & { componentIdsJson: string; footerCreditEnabled: number };
 
-const fields = "path, kind, page_name AS pageName, tagline, accent_color AS accentColor, timezone, component_ids_json AS componentIdsJson, feed_id AS feedId, created_at AS createdAt, updated_at AS updatedAt";
+const fields = "path, kind, page_name AS pageName, tagline, accent_color AS accentColor, timezone, footer_credit_enabled AS footerCreditEnabled, logo_key AS logoKey, logo_content_type AS logoContentType, component_ids_json AS componentIdsJson, feed_id AS feedId, created_at AS createdAt, updated_at AS updatedAt";
 
 function decode({ componentIdsJson, ...row }: StoredStatusPage): ProtectedStatusPage {
-  return { ...row, componentIds: JSON.parse(componentIdsJson) };
+  return { ...row, footerCreditEnabled: row.footerCreditEnabled === 1, componentIds: JSON.parse(componentIdsJson) };
 }
 
 export class StatusPageConflictError extends Error {}
@@ -57,16 +62,29 @@ export function createStatusPageRepository(binding: D1Database) {
       await validateComponents(input);
       const now = nowIso();
       // The bounded catalogue also caps per-mutation rendering work.
-      const result = await binding.prepare("INSERT INTO status_pages (path, kind, page_name, tagline, accent_color, timezone, component_ids_json, feed_id, created_at, updated_at) SELECT ?,?,?,?,?,?,?,?,?,? WHERE (SELECT count(*) FROM status_pages) < 12 ON CONFLICT DO NOTHING")
-        .bind(path, kind, ...presentationValues(input), createUlid(), now, now).run();
+      const result = await binding.prepare("INSERT INTO status_pages (path, kind, page_name, tagline, accent_color, timezone, component_ids_json, footer_credit_enabled, feed_id, created_at, updated_at) SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE (SELECT count(*) FROM status_pages) < 12 ON CONFLICT DO NOTHING")
+        .bind(path, kind, ...presentationValues(input), input.footerCreditEnabled === false ? 0 : 1, createUlid(), now, now).run();
       if (!result.meta.changes) throw new StatusPageConflictError("This path is already assigned or this installation has reached its status page limit.");
       return (await get(path))!;
     },
+    async setLogo(path: string, logoKey: string | null, logoContentType: string | null) {
+      const result = await binding.prepare("UPDATE status_pages SET logo_key=?,logo_content_type=?,updated_at=? WHERE path=?")
+        .bind(logoKey, logoContentType, nowIso(), path).run();
+      return result.meta.changes ? get(path) : null;
+    },
     async update(path: string, input: StatusPagePresentation) {
       await validateComponents(input);
-      const result = await binding.prepare("UPDATE status_pages SET page_name=?,tagline=?,accent_color=?,timezone=?,component_ids_json=?,updated_at=? WHERE path=?")
-        .bind(...presentationValues(input), nowIso(), path).run();
+      const result = await binding.prepare("UPDATE status_pages SET page_name=?,tagline=?,accent_color=?,timezone=?,component_ids_json=?,footer_credit_enabled=COALESCE(?,footer_credit_enabled),updated_at=? WHERE path=?")
+        .bind(...presentationValues(input), input.footerCreditEnabled === undefined ? null : Number(input.footerCreditEnabled), nowIso(), path).run();
       return result.meta.changes ? get(path) : null;
     },
   };
+}
+
+export async function resolvePageSelection(binding: D1Database, pagePaths: string[]): Promise<void> {
+  const selected = pagePaths.filter(path => path !== "public");
+  if (!selected.length) return;
+  const { results } = await binding.prepare("SELECT path FROM status_pages").all<{ path: string }>();
+  const known = new Set(results.map(row => row.path));
+  if (selected.some(path => !known.has(path))) throw new UnknownStatusPageError("One or more selected status pages do not exist.");
 }

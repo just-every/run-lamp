@@ -1,4 +1,4 @@
-import { resolvePageSelection } from "../page-settings/page-selection";
+import { resolvePageSelection } from "../page-settings/status-page.repository";
 import { createOperatorRolesRepository } from '../operators/roles.repository';
 import { projectImportedIncidentUpdates } from "../statuspage-import/imported-update.repository";
 import { publishes } from '../operators/permissions';

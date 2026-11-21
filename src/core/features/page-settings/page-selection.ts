@@ -6,12 +6,8 @@ export const pagePathsSchema = z.array(statusPagePathSchema).min(1).max(13)
 
 export class UnknownStatusPageError extends Error {}
 
-export async function resolvePageSelection(binding: D1Database, pagePaths: string[]): Promise<void> {
-  const selected = pagePaths.filter(path => path !== "public");
-  if (!selected.length) return;
-  const { results } = await binding.prepare("SELECT path FROM status_pages").all<{ path: string }>();
-  const known = new Set(results.map(row => row.path));
-  if (selected.some(path => !known.has(path))) throw new UnknownStatusPageError("One or more selected status pages do not exist.");
+export function statusPageStoragePrefix(path: string) {
+  return "status-pages/" + path + "/";
 }
 
 export function statusPagePrefix(path: string) {

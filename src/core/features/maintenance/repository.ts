@@ -1,5 +1,5 @@
 import { automationStatement, createMaintenanceAutomationRepository, type MaintenanceAutomation } from "./automation.repository";
-import { resolvePageSelection } from "../page-settings/page-selection";
+import { resolvePageSelection } from "../page-settings/status-page.repository";
 import { asc, eq } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";

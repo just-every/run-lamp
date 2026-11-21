@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, rename, rm } from 'node:fs/promises';
+import { mkdtemp, readdir, rename, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -29,8 +29,6 @@ async function populatePriorSchema(db) {
     db.prepare("INSERT INTO oa_operators (id,email,display_name,role,status,created_at) VALUES (?,?,'Synthetic Lamp owner','owner','active',?)")
       .bind(ownerId, ownerEmail, Date.parse(at)),
     db.prepare("INSERT INTO oa_bootstrap (singleton,claim_id,claimed_at) VALUES (1,?,?)").bind(ownerId, Date.parse(at)),
-    db.prepare("INSERT INTO operators (id,email,display_name,is_setup_operator,created_at,updated_at) VALUES (?,?,'Synthetic Lamp owner',1,?,?)")
-      .bind(ownerId, ownerEmail, at, at),
     db.prepare("INSERT INTO page_settings (id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES ('default','Legacy customer status','Previously published status','#16794c','UTC','localhost',?,?,?,?)")
       .bind(legacyPublication.feedIdentity.slice('urn:lamp:'.length), ownerEmail, at, at),
     db.prepare("INSERT INTO setup_readiness (step,evidence_key,checked_at) VALUES ('first-run','complete',?)").bind(at),
@@ -82,9 +80,10 @@ export async function openAudienceInstallations() {
   try {
     await checkout(root, source);
     await checkout(root, target);
-    const pending = join(source, 'migrations/core', migration);
-    const staged = join(directory, migration);
-    await rename(pending, staged);
+    const core = join(source, 'migrations/core');
+    const pending = (await readdir(core)).filter(name => name.endsWith('.sql') && name >= migration);
+    if (!pending.includes(migration)) throw new Error('The audience migration is unavailable for the upgrade fixture.');
+    for (const name of pending) await rename(join(core, name), join(directory, name));
     let before;
     try {
       await runMigration(source);
@@ -96,7 +95,7 @@ export async function openAudienceInstallations() {
         await prior.dispose();
       }
     } finally {
-      await rename(staged, pending);
+      for (const name of pending) await rename(join(directory, name), join(core, name));
     }
     await runMigration(source);
     const upgraded = await proxy(source);

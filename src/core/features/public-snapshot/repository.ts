@@ -115,11 +115,11 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       const protectedPage = scope ? await scope.pages.get(path) : null;
       if (scope && !protectedPage) return null;
       if (protectedPage) {
-        const { pageName, tagline, timezone, accentColor, feedId, createdAt, updatedAt } = protectedPage;
+        const { pageName, tagline, timezone, accentColor, feedId, createdAt, updatedAt, footerCreditEnabled, logoKey, logoContentType } = protectedPage;
         Object.assign(settings, {
           id: path, pageName, tagline, timezone, accentColor, feedId, createdAt, updatedAt, template: "default",
           hostname: publicOrigin ? new URL(publicOrigin).hostname : settings.hostname,
-          theme: "{}", themeAssets: "{}", logoKey: null, logoContentType: null,
+          theme: "{}", themeAssets: "{}", footerCreditEnabled, logoKey, logoContentType,
           mailFromAddress: "", emailBranding: "{}", aiToneInstructions: "", wordingBlockedTerms: "[]",
           widgetAllowedOrigins: "[]",
         });

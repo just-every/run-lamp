@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.11.26
+
+- **Publish to selected status pages.** In Settings, configure Staff and named audience pages with their own paths, branding and components. An operator can send one incident publication or maintenance notice to the selected pages. Protected pages require an active Lamp operator session.
+- **Keep the public page in place.** Existing addresses and feed identity carry forward. Staff-only records stay out of public pages, feeds, widgets, badges, API responses and notifications.
+
+### Upgrading from 1.11.25
+
+Back up owner source and data and exercise a restored copy before adopting. The standard deploy applies the additive status-page migration before the updated Worker starts. Keep the existing public host and configuration. Check the public feed identity, sign-in, page settings, and Public and Staff publication on the restored copy.
+
+### Known limits
+
+Named audience pages currently use operator authority. Audience membership and subscriptions, full per-page themes and languages, and protected reads during database outages await their corresponding contract work.
+
+<!-- Run Edit Run fleet, 2026-11-21. -->
+
 ## 1.11.25
 
 - **See which ungrouped components move in a Sorry dry run.** Lamp names each ungrouped component that moves below the groups, marks it as changed and explains that Lamp lists groups first.

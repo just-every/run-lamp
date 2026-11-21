@@ -314,6 +314,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
 }
 
 export function protectedSnapshotHeaders(headers = new Headers()) {
+  headers.delete("Access-Control-Allow-Origin");
   headers.set("Cache-Control", "private, no-store");
   headers.set("Cross-Origin-Resource-Policy", "same-origin");
   headers.set("Referrer-Policy", "no-referrer");

@@ -10,6 +10,9 @@ export type StatusPage = {
   timezone: string;
   componentIds: string[];
   url: string;
+  footerCreditEnabled: boolean;
+  logoUrl: string | null;
+  updatedAt: string;
 };
 
 export const PUBLIC_PAGE_PATH = "public";
@@ -34,7 +37,7 @@ export function StatusPageSelection({ pages, value, onChange, disabled }: {
     <legend>Publish on</legend>
     {pages.data.pages.map(page => <label key={page.path} className="checkbox-label">
       <input type="checkbox" checked={value.includes(page.path)} onChange={event => onChange(event.target.checked ? [...value, page.path] : value.filter(path => path !== page.path))} />
-      {page.kind === "public" ? "Public" : page.pageName}
+      {page.kind === "public" ? "Public" : `${page.pageName} (${page.path})`}
     </label>)}
     {value.length === 0 ? <p role="status">Choose at least one status page.</p> : null}
   </fieldset>;

@@ -26,13 +26,13 @@ export function readFileAsDataUrl(file: File) {
 }
 
 /** Store a mark as the page logo; the public page, favicon and social image are rebuilt from it. */
-export async function uploadMark(png: Blob) {
+export async function uploadMark(png: Blob, endpoint = "/api/app/page-settings/logo", responseKey: "settings" | "page" = "settings") {
   const form = new FormData();
   form.set("logo", new File([png], "mark.png", { type: "image/png" }));
-  const response = await fetch("/api/app/page-settings/logo", { method: "POST", body: form, headers: { Accept: "application/json" } });
-  const body = await response.json().catch(() => null) as { settings?: unknown; error?: string } | null;
-  if (!response.ok || !body?.settings) throw new Error(body?.error ?? "The logo could not be saved.");
-  return body.settings;
+  const response = await fetch(endpoint, { method: "POST", body: form, headers: { Accept: "application/json" } });
+  const body = await response.json().catch(() => null) as { settings?: unknown; page?: unknown; error?: string } | null;
+  if (!response.ok || !body?.[responseKey]) throw new Error(body?.error ?? "The logo could not be saved.");
+  return body[responseKey];
 }
 
 export async function uploadIcon(png: Blob) {

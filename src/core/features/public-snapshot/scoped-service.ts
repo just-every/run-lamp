@@ -2,14 +2,14 @@ import type { AppBindings } from "../../app/types";
 import { authOrigin } from "../../platform/auth/config";
 import { createRetainedSnapshotCache } from "../../platform/blobs/retained";
 import type { BlobStore } from "../../platform/blobs/store";
-import { statusPagePrefix } from "../page-settings/page-selection";
+import { statusPagePrefix, statusPageStoragePrefix } from "../page-settings/page-selection";
 import type { createStatusPageRepository } from "../page-settings/status-page.repository";
 import type { PublicSnapshotPolicies } from "./policies";
 import { createSnapshotRepository } from "./repository";
 import { createPublicSnapshotService, runningReleaseIdentity } from "./service";
 
 function withinPage(blobs: BlobStore, path: string): BlobStore {
-  const prefix = "status-pages/" + path + "/";
+  const prefix = statusPageStoragePrefix(path);
   return {
     getText: key => blobs.getText(prefix + key),
     putText: (key, text, contentType) => blobs.putText(prefix + key, text, contentType),

@@ -133,7 +133,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerPrelaunchRoutes(app,snapshotBlobs,bindings.DB,()=>services.publicSnapshots.rebuild(true));
   registerSmsRoutes(app,services.sms,()=>services.subscribers.getPageName(),bindings.TWILIO_AUTH_TOKEN,publicWriteLimiter);
   registerTeamsSubscriptionRoutes(app, services.teamsSubscriptions, services.subscribers, publicWriteLimiter, linkPagesPrelaunch);
-  registerStatusPageSettingsRoutes(app, services.pageSettings, services.statusPages, path => services.scopedSnapshots.forPage(path).rebuild(true));
+  registerStatusPageSettingsRoutes(app, services.pageSettings, services.statusPages, snapshotBlobs, path => services.scopedSnapshots.forPage(path).rebuild());
   registerPageSettingsRoutes(app, services.pageSettings, (key) => services.publicSnapshots.readArtifact(key));
   registerWebsiteRoutes(app, services.website);
   registerPageExportRoutes(app, services.pageExport);

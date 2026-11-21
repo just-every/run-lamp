@@ -5,6 +5,9 @@ CREATE TABLE status_pages (
   tagline TEXT NOT NULL,
   accent_color TEXT NOT NULL,
   timezone TEXT NOT NULL,
+  footer_credit_enabled INTEGER NOT NULL DEFAULT 1 CHECK (footer_credit_enabled IN (0, 1)),
+  logo_key TEXT,
+  logo_content_type TEXT,
   component_ids_json TEXT NOT NULL,
   feed_id TEXT NOT NULL UNIQUE,
   created_at TEXT NOT NULL,
@@ -39,3 +42,12 @@ CREATE TABLE status_page_snapshot_work (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+-- Record presentation changes in the same transaction as the new settings.
+CREATE TRIGGER status_pages_snapshot_insert AFTER INSERT ON status_pages BEGIN
+  INSERT OR IGNORE INTO status_page_snapshot_work (id, requested_revision, created_at, updated_at)
+    VALUES (NEW.path, 1, NEW.created_at, NEW.updated_at);
+END;
+CREATE TRIGGER status_pages_snapshot_update AFTER UPDATE ON status_pages BEGIN
+  UPDATE status_page_snapshot_work SET requested_revision = requested_revision + 1, updated_at = NEW.updated_at WHERE id = NEW.path;
+END;
