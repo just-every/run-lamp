@@ -1,0 +1,54 @@
+{
+  "base_runs": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44839596494",
+      "id": 44839596494,
+      "name": "Verify",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44839596465",
+      "id": 44839596465,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44837432042",
+      "id": 44837432042,
+      "name": "Verify",
+      "status": "completed"
+    }
+  ],
+  "branch": "cloud/sd-lamp-c-f160",
+  "candidate_head": "268e93422a0ff044c720273e05da0eb74090a108",
+  "discovery": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "268e93422a0ff044c720273e05da0eb74090a108",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44842161187",
+      "id": 44842161187,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "discovery_time_utc": "2026-11-21T00:12:45Z",
+  "observation_time_utc": "2026-11-21T00:17:45Z",
+  "verify_run": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "268e93422a0ff044c720273e05da0eb74090a108",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44842161187",
+    "id": 44842161187,
+    "status": "in_progress"
+  }
+}
