@@ -3048,7 +3048,7 @@
       "executable": true
     },
     "scripts/archive-runtime.mjs": {
-      "sha256": "62ba34361dac98a0c616eaf6241e4f10514d21065bb910991862792987541b89",
+      "sha256": "7e4763d33619325226e8832c71052de70737853474df2fbdeceb166fee4f4d47",
       "executable": false
     },
     "scripts/archive-validation.mjs": {
