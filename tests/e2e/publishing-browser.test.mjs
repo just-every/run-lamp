@@ -1076,6 +1076,47 @@ test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review
 test('AUD-001 — an operator configures status pages and publishes to the selected pages', { timeout: 300_000 }, async t => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl, api, localInput, screenshots: previewScreens, diagnostic: message => t.diagnostic(message) });
+  await page.goto(`${appUrl}/app/settings#notifications`);
+  await operatorHydrated(page);
+  const email = page.getByRole('region', { name: 'Notification email', exact: true });
+  const pageSetting = email.getByRole('combobox', { name: 'Status page', exact: true });
+  await pageSetting.selectOption('staff-browser');
+  const inherit = email.getByRole('checkbox', { name: 'Use deployment branding' });
+  assert.equal(await inherit.isChecked(), true);
+  await inherit.uncheck();
+  await email.getByLabel('Subject prefix', { exact: true }).fill('[Dispatch staff]');
+  await email.getByRole('textbox', { name: /^Email header/ }).fill('Internal dispatch desk');
+  await email.getByRole('button', { name: 'Save email branding' }).click();
+  await email.getByText('Email branding saved.', { exact: true }).waitFor();
+  await pageSetting.selectOption('partners-browser');
+  assert.equal(await inherit.isChecked(), true);
+  await email.getByRole('button', { name: 'Preview saved branding' }).click();
+  const sample = email.getByRole('region', { name: 'Sample email' });
+  await sample.getByRole('heading', { name: /Partner operations:/ }).waitFor();
+  assert.ok(!(await sample.innerText()).includes('[Dispatch staff]'));
+
+  await page.reload();
+  await operatorHydrated(page);
+  await pageSetting.selectOption('staff-browser');
+  assert.equal(await email.getByLabel('Subject prefix', { exact: true }).inputValue(), '[Dispatch staff]');
+  await email.getByRole('button', { name: 'Preview saved branding' }).click();
+  await sample.getByRole('heading', { name: /^\[Dispatch staff\] Staff operations:/ }).waitFor();
+  await sample.frameLocator('iframe').getByText('Internal dispatch desk', { exact: true }).waitFor();
+  if (process.env.LAMP_AUDIENCE_EMAIL_PROOF) {
+    await mkdir(process.env.LAMP_AUDIENCE_EMAIL_PROOF, { recursive: true });
+    await email.getByRole('button', { name: 'Hide sample email' }).click();
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await email.screenshot({ path: join(process.env.LAMP_AUDIENCE_EMAIL_PROOF, `notification-email-${width}.png`) });
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  await inherit.check();
+  await email.getByRole('button', { name: 'Save email branding' }).click();
+  await email.getByText('Email branding saved.', { exact: true }).waitFor();
+  const restored = await api('/api/app/status-pages/staff-browser/email-branding');
+  assert.equal(restored.branding, null);
+  assert.ok(!restored.preview.subject.startsWith('[Dispatch staff]'));
 });
 
 test('THEME-001 — owner publishes branded themes and layouts within the page budget', { timeout: 600_000 }, async t => {

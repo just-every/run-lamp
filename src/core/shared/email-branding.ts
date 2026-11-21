@@ -9,9 +9,12 @@ export const emailBrandingSchema = z.object({
   header: z.string().trim().max(500).regex(/^[^\x00-\x08\x0b-\x1f\x7f]*$/).default(""),
   footer: z.string().trim().max(1000).regex(/^[^\x00-\x08\x0b-\x1f\x7f]*$/).default(""),
   usePageLogo: z.boolean().default(false),
+  postalLine: header(250).optional(),
 }).strict();
 export type EmailBranding = z.infer<typeof emailBrandingSchema>;
 export const defaultEmailBranding = emailBrandingSchema.parse({});
+
+export const managedMailIdentityReason = "Managed mail controls From and Reply-To.";
 
 const escape = (value: string) => value.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -24,14 +27,15 @@ export function renderEmailDocument(title: string, content: string) {
  * Personal management/unsubscribe links are appended by delivery, outside all
  * editable wording. No setting is interpreted as HTML or as a destination URL. */
 export function brandEmail(email: { subject: string; plainText: string }, input: {
-  branding: EmailBranding; pageName: string; fromAddress: string; origin: string; hasLogo: boolean; subscriptionLinks?: { manageUrl: string; unsubscribeUrl: string }; displayBody?: string;
+  branding: EmailBranding; pageName: string; fromAddress: string; origin: string; hasLogo: boolean; pageUrl?: string; logoUrl?: string; subscriptionLinks?: { manageUrl: string; unsubscribeUrl: string }; displayBody?: string;
 }) {
   const { branding, pageName, fromAddress, origin, hasLogo } = input;
   const subject = [branding.subjectPrefix, `${pageName}: ${email.subject}`].filter(Boolean).join(" ");
   const from = branding.displayName ? `"${branding.displayName}" <${fromAddress}>` : fromAddress;
-  const logoUrl = branding.usePageLogo && hasLogo ? new URL("/assets/logo", origin).href : undefined;
-  const plainText = [pageName, branding.header, email.plainText, branding.footer].filter(Boolean).join("\n\n");
-  const displayText = input.displayBody === undefined ? undefined : [pageName, branding.header, input.displayBody, branding.footer].filter(Boolean).join("\n\n");
-  const html = renderEmailDocument(subject, `<p><a href="${escape(new URL("/", origin).href)}">${escape(pageName)}</a></p>${logoUrl ? `<img src="${escape(logoUrl)}" alt="${escape(pageName)}" width="160" style="max-width:100%;height:auto">` : ""}${branding.header ? `<p>${renderUpdateHtml(branding.header)}</p>` : ""}<h1>${escape(email.subject)}</h1><div style="white-space:pre-wrap;overflow-wrap:anywhere">${renderUpdateHtml(input.displayBody ?? email.plainText)}</div>${branding.footer ? `<p>${renderUpdateHtml(branding.footer)}</p>` : ""}${input.subscriptionLinks ? `<p><a href="${escape(input.subscriptionLinks.manageUrl)}">Manage subscription</a> · <a href="${escape(input.subscriptionLinks.unsubscribeUrl)}">Unsubscribe</a></p>` : ""}`);
+  const statusUrl = input.pageUrl ?? new URL("/", origin).href;
+  const logoUrl = branding.usePageLogo && hasLogo ? input.logoUrl ?? new URL("/assets/logo", origin).href : undefined;
+  const plainText = [pageName, branding.header, email.plainText, branding.footer, branding.postalLine].filter(Boolean).join("\n\n");
+  const displayText = input.displayBody === undefined ? undefined : [pageName, branding.header, input.displayBody, branding.footer, branding.postalLine].filter(Boolean).join("\n\n");
+  const html = renderEmailDocument(subject, `<p><a href="${escape(statusUrl)}">${escape(pageName)}</a></p>${logoUrl ? `<img src="${escape(logoUrl)}" alt="${escape(pageName)}" width="160" style="max-width:100%;height:auto">` : ""}${branding.header ? `<p>${renderUpdateHtml(branding.header)}</p>` : ""}<h1>${escape(email.subject)}</h1><div style="white-space:pre-wrap;overflow-wrap:anywhere">${renderUpdateHtml(input.displayBody ?? email.plainText)}</div>${branding.footer ? `<p>${renderUpdateHtml(branding.footer)}</p>` : ""}${branding.postalLine ? `<p>${escape(branding.postalLine)}</p>` : ""}${input.subscriptionLinks ? `<p><a href="${escape(input.subscriptionLinks.manageUrl)}">Manage subscription</a> · <a href="${escape(input.subscriptionLinks.unsubscribeUrl)}">Unsubscribe</a></p>` : ""}`);
   return { subject, plainText, html, from, ...(displayText === undefined ? {} : { displayText }), ...(branding.replyTo ? { replyTo: branding.replyTo } : {}), ...(logoUrl ? { logoUrl, logoAlt: pageName } : {}) };
 }

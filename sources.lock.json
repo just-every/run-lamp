@@ -524,7 +524,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e2532a9b4e61d18528469af8a7a3d3c2fc56f7d0ad2ca4a33b3b9d21a7f73aa4",
+      "sha256": "d1afd79bd65d4a7b185a2ea5a670050de0c1699390db165cc62c0fecb4b31ed3",
       "executable": false
     },
     "DEMO.md": {
@@ -5724,11 +5724,11 @@
       "executable": false
     },
     "src/core/features/page-settings/status-page.repository.ts": {
-      "sha256": "546df0a2f467c4fa334bcb737431dee58b7dfedf48112a74f4479825b3988232",
+      "sha256": "3167d4298297e3222ae0742b819604bd31588fd4b1e398a0982b1d88b5ef5666",
       "executable": false
     },
     "src/core/features/page-settings/status-page.routes.ts": {
-      "sha256": "7bd390831c48cb0ce18572330e1a6512ee29f1cea94fc9278e2db75629d3485c",
+      "sha256": "0c31f0fbef8e5f4b46ec6da8ba59a69acbe4c6cb9d4ae3f63bb21cce69bc8816",
       "executable": false
     },
     "src/core/features/page-settings/theme-assets.ts": {
@@ -5760,7 +5760,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/email-branding-settings.tsx": {
-      "sha256": "7e97e5538d85834ead281ada12109336c6dea5ab41ee3ac775f333dbed74b50a",
+      "sha256": "3a95f290c2933735d83e9efe6a4add729fa0fe287f2483878ac232fc6d49c2a9",
       "executable": false
     },
     "src/core/features/page-settings/ui/embed-preview.tsx": {
@@ -7196,7 +7196,7 @@
       "executable": false
     },
     "src/core/shared/email-branding.ts": {
-      "sha256": "b96aa1fd27543dab7a0e4ff947d7d4bcd1c27232de73b41ac5250bb0475ab9a9",
+      "sha256": "6d133ffe327199665cfced85de390db91e07a9a17357a3c2ab78c8c7214a6d31",
       "executable": false
     },
     "src/core/shared/ids.ts": {
@@ -8836,7 +8836,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "e6c1127368b10380b9de3e4fa7e701d22ba7a677bac9c11bc2f898603a9f3699",
+      "sha256": "10e450c887d687b8daee1ffb580b0765aaba353e078e638657bdad36540e110f",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -8856,7 +8856,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "f5e82f6f43500235ee513e99b2632cda25a061dd203e243ee611508c9563c811",
+      "sha256": "375158253eb00fd8fc0d3300d2235f55505f8fbf0f6e49c098278733e71342a4",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

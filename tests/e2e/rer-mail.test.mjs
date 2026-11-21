@@ -178,6 +178,43 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
         assert.equal((await call('/api/app/page-settings', { ...settingsInput, emailBranding: { replyTo: 'support@example.test' } }, 'PUT')).status, 400);
       }
       assert.equal((await call('/api/app/page-settings', { ...settingsInput, emailBranding: branding }, 'PUT')).status, 200);
+      const isolatedBranding = { displayName: 'Partner dispatch', subjectPrefix: '[Partner dispatch]',
+        header: 'For pickup partners only', footer: 'Use the partner support desk',
+        postalLine: '12 Dispatch Avenue', usePageLogo: true };
+      const { timezone, accentColor } = initialSettings;
+      const scope = 'pickup-partners';
+      const page = await call('/api/app/status-pages', { path: scope, kind: 'audience', pageName: 'Pickup partners',
+        tagline: 'Pickup service updates', timezone, accentColor, componentIds: [component.id] });
+      assert.equal(page.status, 201);
+      const logo = new FormData();
+      logo.set('logo', new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jR30AAAAASUVORK5CYII=', 'base64')], { type: 'image/png' }), 'synthetic-lamp-logo.png');
+      const logoPath = `/api/app/status-pages/${scope}/logo`;
+      const upload = new Request(appOrigin + logoPath, { method: 'POST', body: logo, headers: { Origin: appOrigin, Cookie: cookie } });
+      const uploadedLogo = await raw(logoPath, { method: 'POST', body: Buffer.from(await upload.arrayBuffer()), headers: Object.fromEntries(upload.headers) });
+      assert.equal(uploadedLogo.status, 200, await uploadedLogo.clone().text());
+      const brandingPath = `/api/app/status-pages/${scope}/email-branding`;
+      const putScopedBrand = async body => call(brandingPath, body, 'PUT');
+      if (provider === 'rer') {
+        for (const identity of [{ branding: { ...isolatedBranding, replyTo: 'support@example.test' } }, { branding: isolatedBranding, fromAddress: 'custom@example.test' }]) {
+          const refused = await putScopedBrand(identity);
+          assert.equal(refused.status, 400);
+          assert.match((await refused.json()).error, /Managed mail controls From and Reply-To/);
+        }
+        assert.equal((await (await call(brandingPath)).json()).branding, null);
+      }
+      const isolated = await putScopedBrand({ branding: { ...isolatedBranding, ...(provider === 'rer' ? {} : { replyTo: branding.replyTo }) } });
+      assert.equal(isolated.status, 200);
+      const sample = (await isolated.json()).preview;
+      assert.ok(sample.subject.startsWith(isolatedBranding.subjectPrefix));
+      assert.equal(sample.logoUrl, `${appOrigin}/status-pages/${scope}/assets/logo`);
+      assert.equal(sample.logoAlt, 'Pickup partners');
+      assert.ok(!sample.plainText.includes(sample.logoUrl));
+      for (const wording of [isolatedBranding.header, isolatedBranding.footer, isolatedBranding.postalLine]) {
+        assert.ok(sample.plainText.includes(wording));
+        assert.ok(sample.html.includes(wording));
+      }
+      assert.equal(sample.replyTo, branding.replyTo);
+      if (provider !== 'rer') assert.ok(sample.from.includes(isolatedBranding.displayName));
       const incidentResponse = await call('/api/app/incidents', { title: 'Payment delays', components: [{ componentId: component.id, state: 'Partially unavailable', relationship: 'Primary' }] });
       assert.equal(incidentResponse.status, 201); const incident = (await incidentResponse.json()).incident;
       const nextUpdateAt = new Date(Date.now() + 3600000).toISOString();
@@ -197,10 +234,11 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       const { body: firstAttempt, idempotencyKey: firstKey } = sentTo(reader).at(-1);
       const settings = (await (await call('/api/app/page-settings')).json()).settings;
       const savedFooter = 'Contact the payment recovery desk for case Orchid.';
+      const postalLine = '34 Public Service Avenue';
       const editedIdentity = provider === 'rer' ? {} : { displayName: 'Payments recovery desk', replyTo: ['recovery-desk', 'example.test'].join('@') };
       const edited = await call('/api/app/page-settings', { ...editableSettings(settings), emailBranding: {
         ...settings.emailBranding, ...editedIdentity, subjectPrefix: '[Changed after submission]',
-        header: 'Operations will continue monitoring payments.', footer: savedFooter,
+        header: 'Operations will continue monitoring payments.', footer: savedFooter, postalLine,
       } }, 'PUT');
       assert.equal(edited.status, 200, await edited.clone().text());
       responseStatus = 202;
@@ -313,6 +351,11 @@ test('BASE-ACCESS-001 BASE-ACCESS-002 SUB-001 SUB-002 SUB-003 SUB-005 SUB-006 SU
       assert.equal(clearedMail.subject, threaded.subject);
       assert.ok(clearedMail.text.includes(clearedImpact) && clearedMail.html.includes(clearedImpact));
       assert.ok(!clearedMail.text.includes(savedFooter) && !clearedMail.html.includes(savedFooter));
+      assert.ok(clearedMail.text.includes(postalLine) && clearedMail.html.includes(postalLine));
+      const publicMessage = [clearedMail.subject, clearedMail.text, clearedMail.html].join(' ');
+      for (const wording of [isolatedBranding.displayName, isolatedBranding.subjectPrefix, isolatedBranding.header, isolatedBranding.footer, isolatedBranding.postalLine, sample.logoUrl]) {
+        assert.ok(!publicMessage.includes(wording));
+      }
       assert.equal(clearedMail.text, threaded.text.replace(`\n\n${savedFooter}`, '').replace(populatedImpact, clearedImpact));
       assert.equal(clearedMail.html, threaded.html.replace(`<p>${savedFooter}</p>`, '').replace(populatedImpact, clearedImpact));
 

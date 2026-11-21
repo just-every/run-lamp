@@ -4,11 +4,17 @@ import { z } from "zod";
 import { authOrigin } from "../../platform/auth/config";
 import { publicPageOrigin } from "../../app/public-origin";
 import type { AppEnv } from "../../app/types";
+import { brandEmail, emailBrandingSchema, managedMailIdentityReason } from "../../shared/email-branding";
 import { pageSettingsSchema } from "../../shared/schemas";
 import { createUlid, ulidSchema } from "../../shared/ids";
 import { statusPagePathSchema, statusPagePrefix, statusPageStoragePrefix } from "./page-selection";
 import { StatusPageComponentsError, StatusPageConflictError, type ProtectedStatusPage, type createStatusPageRepository } from "./status-page.repository";
 import { LOGO_CONTENT_TYPES, MAX_LOGO_BYTES, type PageSettingsService } from "./service";
+
+const emailBrandingInput = z.object({
+  branding: emailBrandingSchema.nullable(),
+  fromAddress: z.email().optional(),
+}).strict();
 
 const presentation = pageSettingsSchema.pick({ pageName: true, tagline: true, accentColor: true, timezone: true, footerCreditEnabled: true }).extend({
   footerCreditEnabled: z.boolean().optional(),
@@ -82,6 +88,46 @@ export function registerStatusPageSettingsRoutes(
       throw cause;
     }
   });
+
+  const emailBranding = (write: boolean) => async (context: Context<AppEnv>) => {
+    if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) {
+      return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
+    }
+    const path = statusPagePathSchema.safeParse(context.req.param("path"));
+    const page = path.success ? await repository.get(path.data) : null;
+    if (!page) return context.json({ error: "Status page not found." }, 404);
+    const deployment = await settings.get();
+    if (!deployment) return context.json({ error: "Page settings are not configured." }, 404);
+
+    const identityEditable = deployment.mailIdentityEditable;
+    let branding;
+    if (write) {
+      const parsed = emailBrandingInput.safeParse(await context.req.json().catch(() => null));
+      if (!parsed.success) return context.json({ error: "Invalid email branding settings.", issues: parsed.error.issues }, 400);
+      if (!identityEditable && (parsed.data.branding?.replyTo || parsed.data.fromAddress)) {
+        return context.json({ error: managedMailIdentityReason }, 400);
+      }
+      if (parsed.data.fromAddress) return context.json({ error: "Set the authenticated From address in the Sender settings." }, 400);
+      branding = parsed.data.branding;
+      await repository.setEmailBranding(page.path, branding);
+    } else {
+      branding = await repository.getEmailBranding(page.path);
+    }
+
+    const origin = authOrigin(context.env);
+    const pageUrl = new URL(statusPagePrefix(page.path) + "/", origin).href;
+    const logoUrl = branding
+      ? (page.logoKey ? new URL("assets/logo", pageUrl).href : undefined)
+      : (deployment.logoKey ? new URL("/assets/logo", publicPageOrigin(origin, context.env.LAMP_PAGE_HOST)).href : undefined);
+    const effective = branding ?? deployment.emailBranding;
+    const preview = brandEmail({ subject: "Service update", plainText: "Our team is investigating a service disruption." }, {
+      branding: identityEditable ? effective : { ...effective, displayName: "", replyTo: "" },
+      pageName: page.pageName, fromAddress: deployment.mailFromAddress, origin, pageUrl, logoUrl, hasLogo: Boolean(logoUrl),
+    });
+    return context.json({ branding, preview });
+  };
+  app.get("/api/app/status-pages/:path/email-branding", emailBranding(false));
+  app.put("/api/app/status-pages/:path/email-branding", emailBranding(true));
 
   const changeLogo = (upload: boolean) => async (context: Context<AppEnv>) => {
     if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);

@@ -1,3 +1,4 @@
+import { emailBrandingSchema, type EmailBranding } from "../../shared/email-branding";
 import { UnknownStatusPageError } from "./page-selection";
 import { createUlid, nowIso } from "../../shared/ids";
 
@@ -50,6 +51,20 @@ export function createStatusPageRepository(binding: D1Database) {
 
   return {
     get,
+    async getEmailBranding(path: string) {
+      const row = await binding.prepare("SELECT branding_json FROM status_page_email_branding WHERE page_path=?")
+        .bind(path).first<{ branding_json: string }>();
+      return row ? emailBrandingSchema.parse(JSON.parse(row.branding_json)) : null;
+    },
+    async setEmailBranding(path: string, branding: EmailBranding | null) {
+      if (branding === null) {
+        await binding.prepare("DELETE FROM status_page_email_branding WHERE page_path=?").bind(path).run();
+        return;
+      }
+      await binding.prepare(`INSERT INTO status_page_email_branding (page_path, branding_json) VALUES (?,?)
+        ON CONFLICT(page_path) DO UPDATE SET branding_json=excluded.branding_json`)
+        .bind(path, JSON.stringify(branding)).run();
+    },
     async list() {
       const { results } = await binding.prepare("SELECT " + fields + " FROM status_pages ORDER BY kind DESC, path").all<StoredStatusPage>();
       return results.map(decode);
