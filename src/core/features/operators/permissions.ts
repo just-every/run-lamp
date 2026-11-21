@@ -11,7 +11,7 @@ export function allowsOperatorRequest(role: OperatorRole, method: string, pathna
   if (path === '/session/signout' && method === 'POST') return true;
   if (['GET', 'HEAD', 'OPTIONS'].includes(method)) {
     if (/^\/(?:operators|audit-log|management-tokens|mail-settings|sms-settings|social|channels|website|statuspage-import|import-door|page-export)(?:\/|$)/.test(path)) return false;
-    return /^\/(?:session|page-settings|overview|components|component-groups|incidents|incident-templates|maintenance|reports|ai|subscribers|subscriber-reporting|communication-performance|availability-report|deliveries|intake|metrics|chat-links|embed)(?:\/|$)/.test(path);
+    return /^\/(?:session|page-settings|status-pages|overview|components|component-groups|incidents|incident-templates|maintenance|reports|ai|subscribers|subscriber-reporting|communication-performance|availability-report|deliveries|intake|metrics|chat-links|embed)(?:\/|$)/.test(path);
   }
   if (/^\/chat-links(?:\/[^/]+)?$/.test(path)) return method === 'DELETE' || drafts(role);
   if (!drafts(role)) return false;

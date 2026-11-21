@@ -7,6 +7,7 @@ import type { RenderedIncidentUpdate } from "../renderer";
 import type { IncidentsService } from "../service";
 import type { IncidentTemplate } from "../template-repository";
 import { appApi, useAppData } from "../../../app/client/ui/api";
+import { PUBLIC_PAGE_PATH } from "../../page-settings/ui/status-page-selection";
 import type { Channel, PublishTiming } from "./publish-options";
 
 declare module "@tanstack/react-router" {
@@ -16,13 +17,13 @@ declare module "@tanstack/react-router" {
 /** What the incident page opens with after the new-incident screen, on that visit only. `publication` carries the operator's
  * notification and timing choices when the update stayed private (saved as a draft, or refused), so a retry offers what they
  * chose. A scheduled update needs none: the server holds its time and channels, and the incident page starts from them. */
-export type IncidentNotice = { text?: string; error: boolean; publishedUpdateId?: string; publication?: { channels: Channel[]; timing: PublishTiming } };
+export type IncidentNotice = { text?: string; error: boolean; publishedUpdateId?: string; publication?: { channels: Channel[]; timing: PublishTiming; pagePaths: string[] } };
 export type NewClaim = { componentId: string; state: IncidentClaimState | null; relationship: "Primary" | "Dependent" };
-export interface NewIncident { title: string; claims: NewClaim[]; update: IncidentFirstUpdateInput; openedAt: string | null; channels: Channel[]; timing: PublishTiming }
+export interface NewIncident { title: string; claims: NewClaim[]; update: IncidentFirstUpdateInput; openedAt: string | null; channels: Channel[]; timing: PublishTiming; pagePaths: string[] }
 type Created = Awaited<ReturnType<IncidentsService["create"]>>;
 
 const STORAGE_KEY = "lamp.new-incident";
-const blank: NewIncident = { title: "", claims: [], update: { lifecycle: "Investigating", affectedAudience: "", customerImpact: "", whatStillWorks: "", details: "", nextUpdateAt: null }, openedAt: null, channels: ["email"], timing: { mode: "now", at: null } };
+const blank: NewIncident = { title: "", claims: [], update: { lifecycle: "Investigating", affectedAudience: "", customerImpact: "", whatStillWorks: "", details: "", nextUpdateAt: null }, openedAt: null, channels: ["email"], pagePaths: [PUBLIC_PAGE_PATH], timing: { mode: "now", at: null } };
 
 // Nothing exists on the server until Publish, so the tab keeps what was typed across a reload;
 // leaving the screen in the app discards it, so the next new incident starts empty.
@@ -80,7 +81,7 @@ export function useNewIncident() {
   const setChannels = (channels: Channel[]) => { touchedChannels.current = true; setForm(current => ({ ...current, channels })); };
   const { update } = form;
   const resolved = update.lifecycle === "Resolved";
-  const publishable = Boolean(form.title.trim() && claimsReady && update.affectedAudience.trim() && update.customerImpact.trim() && (resolved || update.nextUpdateAt) && (form.timing.mode === "now" || form.timing.at)) && !timeErrors.nextUpdate && !timeErrors.timing;
+  const publishable = Boolean(form.pagePaths.length && form.title.trim() && claimsReady && update.affectedAudience.trim() && update.customerImpact.trim() && (resolved || update.nextUpdateAt) && (form.timing.mode === "now" || form.timing.at)) && !timeErrors.nextUpdate && !timeErrors.timing;
 
   // UPDATE-009: a template fills the form and attaches its components with their states; nothing publishes.
   const applyTemplate = (template: IncidentTemplate) => {
@@ -102,20 +103,21 @@ export function useNewIncident() {
   };
 
   // Creates the incident with this update as its saved draft (UPDATE-005), or reports why not.
+  const channels = form.pagePaths.includes(PUBLIC_PAGE_PATH) ? form.channels : [];
   const create = async () => {
     setPublishing(true); setError(null);
     try {
-      const { incident } = await appApi<{ incident: Created }>("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: form.title.trim(), ...(form.openedAt ? { openedAt: form.openedAt } : {}), components: selectedClaims, update }) });
+      const { incident } = await appApi<{ incident: Created }>("/api/app/incidents", { method: "POST", body: JSON.stringify({ title: form.title.trim(), ...(form.openedAt ? { openedAt: form.openedAt } : {}), components: selectedClaims, update, pagePaths: form.pagePaths }) });
       remember(null);
       return incident;
     } catch (cause) { setPublishing(false); setError(cause instanceof Error ? cause.message : "The incident could not be created."); return null; }
   };
-  const savable = Boolean(form.title.trim() && claimsReady) && !publishing;
+  const savable = Boolean(form.pagePaths.length && form.title.trim() && claimsReady) && !publishing;
   // Keeps the private-draft path: the incident exists, unpublished, for review or for later.
   const saveDraft = async () => {
     if (!savable) return;
     const incident = await create();
-    if (incident) await navigate({ to: "/app/incidents/$incidentId", params: { incidentId: incident.id }, state: (current) => ({ ...current, incidentNotice: { text: "Saved as a private draft.", error: false, publication: { channels: form.channels, timing: form.timing } } }) });
+    if (incident) await navigate({ to: "/app/incidents/$incidentId", params: { incidentId: incident.id }, state: (current) => ({ ...current, incidentNotice: { text: "Saved as a private draft.", error: false, publication: { channels: form.channels, timing: form.timing, pagePaths: form.pagePaths } } }) });
   };
 
   const publish = async () => {
@@ -129,13 +131,13 @@ export function useNewIncident() {
     let notice: IncidentNotice;
     try {
       if (timing.mode === "schedule") {
-        await appApi(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ publishAt: timing.at, channels: form.channels }) });
+        await appApi(`/api/app/incidents/${incident.id}/draft/schedule`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ publishAt: timing.at, channels, pagePaths: form.pagePaths }) });
         notice = { text: "Update scheduled. It stays private until then.", error: false };
       } else {
-        const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ channels: form.channels, ...(timing.mode === "backdate" ? { publishedAt: timing.at } : {}) }) });
+        const { update } = await appApi<{ update: { id: string } }>(`/api/app/incidents/${incident.id}/publish`, { method: "POST", headers: { "If-Match": version }, body: JSON.stringify({ channels, pagePaths: form.pagePaths, ...(timing.mode === "backdate" ? { publishedAt: timing.at } : {}) }) });
         notice = { publishedUpdateId: update.id, error: false };
       }
-    } catch (cause) { notice = { text: `Not published: ${cause instanceof Error ? cause.message : "the update could not be published."}`, error: true, publication: { channels: form.channels, timing } }; }
+    } catch (cause) { notice = { text: `Not published: ${cause instanceof Error ? cause.message : "the update could not be published."}`, error: true, publication: { channels: form.channels, timing, pagePaths: form.pagePaths } }; }
     await navigate({ to: "/app/incidents/$incidentId", params: { incidentId: incident.id }, state: (current) => ({ ...current, incidentNotice: notice }) });
   };
 

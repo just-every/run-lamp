@@ -4,7 +4,7 @@ import type { PublicIncident } from "./record-markup";
 /** Project the immutable update into public fields before any surface renders it. */
 export function publicUpdate(source: PublicSnapshotSource, update: PublicSnapshotSource["updates"][number]): PublicIncident["updates"][number] {
   const attachments = source.incidentComponents.filter(row => row.incidentId === update.incidentId);
-  const componentChanges = (update.componentChanges ?? []).filter(change => !change.internal && attachments.some(row =>
+  const componentChanges = (update.componentChanges ?? []).filter(change => (source.protectedPage || !change.internal) && attachments.some(row =>
     row.componentId === change.componentId || (row.componentId === null && row.componentName === change.name)));
   return {
     id: update.id, correctsUpdateId: update.correctsUpdateId, lifecycle: update.lifecycle, affectedAudience: update.affectedAudience,

@@ -116,6 +116,7 @@ export const componentStateCorrections = sqliteTable("component_state_correction
 }, (table) => [index("component_state_corrections_component_interval_idx").on(table.componentId, table.startsAt, table.endsAt)]);
 
 export const snapshotBuilds = sqliteTable("snapshot_builds", {
+  pagePath: text("page_path").notNull().default("public"),
   id: text().primaryKey(),
   status: text({ enum: ["building", "published", "failed"] }).notNull(),
   version: text(),
@@ -127,6 +128,7 @@ export const snapshotBuilds = sqliteTable("snapshot_builds", {
 }, (table) => [index("snapshot_builds_status_started_idx").on(table.status, table.startedAt)]);
 
 export const incidents = sqliteTable("incidents", {
+  publicHidden: integer("public_hidden", { mode: "boolean" }).notNull().default(false),
   id: text().primaryKey(),
   reference: text().notNull().unique(),
   title: text().notNull(),
@@ -172,6 +174,7 @@ export const incidentUpdates = sqliteTable("incident_updates", {
 }, (table) => [index("incident_updates_incident_published_idx").on(table.incidentId, table.publishedAt)]);
 
 export const incidentDrafts = sqliteTable("incident_drafts", {
+  pagePaths: text("page_paths"),
   id: text().primaryKey(),
   incidentId: text("incident_id").notNull().references(() => incidents.id),
   lifecycle: text({ enum: ["Investigating", "Identified", "Monitoring", "Resolved"] }).$type<IncidentLifecycle>().notNull(),
@@ -205,6 +208,7 @@ export const incidentAttachments = sqliteTable("incident_attachments", {
 }, (table) => [index("incident_attachments_incident_id_idx").on(table.incidentId)]);
 
 export const maintenance = sqliteTable("maintenance", {
+  publicHidden: integer("public_hidden", { mode: "boolean" }).notNull().default(false),
   id: text().primaryKey(),
   reference: text().notNull().unique(),
   title: text().notNull(),

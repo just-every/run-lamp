@@ -21,6 +21,7 @@ export interface ReportRepository {
   createDraft(input: IncidentReportRow): Promise<boolean>;
   upsert(input: IncidentReportRow): Promise<void>;
   publish(incidentId: string, report: IncidentReportRow, publishedAt: string, operatorId: string, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
+  isPublicIncident(incidentId: string): Promise<boolean>;
   listComponentIds(incidentId: string): Promise<string[]>;
   listResolvedWithoutPublishedReport(reminders?: { now: string; defaultPolicy: boolean }): Promise<Array<{ id: string; reference: string; title: string; lifecycle: string; resolvedAt: string | null; impact: string | null; reminderEligible: number }>>;
   waiver(incidentId: string): Promise<{ reason: string; operatorId: string; createdAt: string } | null>;
@@ -96,6 +97,9 @@ export function createReportRepository(binding: D1Database): ReportRepository {
     },
     async reminderSent(incidentId, week) { return Boolean(await binding.prepare("SELECT 1 FROM report_reminders WHERE incident_id=? AND week=?").bind(incidentId,week).first()); },
     async recordReminder(incidentId, week, at) { await binding.prepare("INSERT OR IGNORE INTO report_reminders(incident_id,week,recorded_at) VALUES(?,?,?)").bind(incidentId,week,at).run(); },
+    async isPublicIncident(incidentId) {
+      return Boolean(await binding.prepare("SELECT 1 FROM incidents WHERE id = ? AND deleted_at IS NULL AND public_hidden = 0").bind(incidentId).first());
+    },
     async listComponentIds(incidentId) { return (await binding.prepare(`SELECT component_id AS componentId FROM incident_components WHERE incident_id = ? AND component_id IS NOT NULL`).bind(incidentId).all<{ componentId: string }>()).results.map((row) => row.componentId); },
     async listResolvedWithoutPublishedReport(reminders) {
       if (reminders?.defaultPolicy) {

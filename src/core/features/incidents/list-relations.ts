@@ -4,8 +4,9 @@ import { createDatabase } from "../../platform/db/client";
 import { incidents, incidentComponents, incidentUpdates, incidentInternalNotes } from "../../shared/schema";
 import type { ComponentState } from "../../shared/domain";
 import type { PublishingDraft } from "./repository";
+import { pagePathsSchema } from "../page-settings/page-selection";
 
-export type DraftRow = Omit<PublishingDraft, "scheduledChannels" | "componentChanges"> & { scheduledChannelsJson: string | null; componentChangesJson: string; agentPreparationJson?: string | null };
+export type DraftRow = Omit<PublishingDraft, "scheduledChannels" | "scheduledPagePaths" | "componentChanges"> & { scheduledChannelsJson: string | null; componentChangesJson: string; agentPreparationJson?: string | null };
 
 export function publishingDraft(row: DraftRow | null): PublishingDraft | null {
   if (!row) return null;
@@ -13,9 +14,10 @@ export function publishingDraft(row: DraftRow | null): PublishingDraft | null {
   try { candidate = JSON.parse(row.scheduledChannelsJson ?? "[]"); }
   catch { throw new Error("Scheduled delivery channel configuration is malformed."); }
   if (!Array.isArray(candidate) || candidate.some(item => item !== "email" && item !== "webhook" && item !== "chat" && item !== "sms")) throw new Error("Scheduled delivery channel configuration is invalid.");
+  const scheduledPagePaths = row.pagePaths == null ? null : pagePathsSchema.parse(JSON.parse(row.pagePaths));
   const componentChanges = JSON.parse(row.componentChangesJson);
   if (!Array.isArray(componentChanges)) throw new Error("Draft component changes are malformed.");
-  return { ...row, agentPreparation: row.agentPreparationJson ? JSON.parse(row.agentPreparationJson) : null, componentChanges, scheduledChannels: [...new Set(candidate)] };
+  return { ...row, agentPreparation: row.agentPreparationJson ? JSON.parse(row.agentPreparationJson) : null, componentChanges, scheduledChannels: [...new Set(candidate)], scheduledPagePaths };
 }
 
 function byIncident<T extends { incidentId: string }>(rows: T[]): Map<string, T[]> {
@@ -35,14 +37,16 @@ export async function listIncidentRelations(binding: D1Database, incidentIds?: s
   const visible = incidentIds ?? db.select({ id: incidents.id }).from(incidents).where(isNull(incidents.deletedAt));
   const placeholders = incidentIds?.map(() => "?").join(",") || "NULL";
   const scope = incidentIds ? `i.id IN (${placeholders})` : "i.deleted_at IS NULL";
-  const [components, updates, notes, drafts, impacts] = await Promise.all([
+  const [components, updates, notes, drafts, impacts, pages] = await Promise.all([
     db.select().from(incidentComponents).where(inArray(incidentComponents.incidentId, visible)).all(),
     db.select().from(incidentUpdates).where(inArray(incidentUpdates.incidentId, visible)).orderBy(desc(incidentUpdates.publishedAt)).all(),
     db.select().from(incidentInternalNotes).where(inArray(incidentInternalNotes.incidentId, visible)).orderBy(desc(incidentInternalNotes.createdAt)).all(),
-    binding.prepare(`SELECT d.id, d.incident_id AS incidentId, d.lifecycle, d.affected_audience AS affectedAudience, d.customer_impact AS customerImpact, d.what_still_works AS whatStillWorks, d.details, d.next_update_at AS nextUpdateAt, d.author_operator_id AS authorOperatorId, d.created_at AS createdAt, d.updated_at AS updatedAt, d.scheduled_publish_at AS scheduledPublishAt, d.scheduled_channels_json AS scheduledChannelsJson, d.reviewed_by_operator_id AS reviewedByOperatorId, d.reviewed_at AS reviewedAt, d.corrects_update_id AS correctsUpdateId, d.component_changes_json AS componentChangesJson,(SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=d.id AND active=1) AS agentPreparationJson FROM incident_drafts d JOIN incidents i ON i.id=d.incident_id WHERE ${scope}`).bind(...(incidentIds ?? [])).all<DraftRow>(),
+    binding.prepare(`SELECT d.id, d.incident_id AS incidentId, d.lifecycle, d.affected_audience AS affectedAudience, d.customer_impact AS customerImpact, d.what_still_works AS whatStillWorks, d.details, d.next_update_at AS nextUpdateAt, d.author_operator_id AS authorOperatorId, d.created_at AS createdAt, d.updated_at AS updatedAt, d.scheduled_publish_at AS scheduledPublishAt, d.scheduled_channels_json AS scheduledChannelsJson, d.page_paths AS pagePaths, d.reviewed_by_operator_id AS reviewedByOperatorId, d.reviewed_at AS reviewedAt, d.corrects_update_id AS correctsUpdateId, d.component_changes_json AS componentChangesJson,(SELECT preparation_json FROM incident_agent_draft_preparations WHERE draft_id=d.id AND active=1) AS agentPreparationJson FROM incident_drafts d JOIN incidents i ON i.id=d.incident_id WHERE ${scope}`).bind(...(incidentIds ?? [])).all<DraftRow>(),
     binding.prepare(`SELECT i.id, i.peak_impact AS peakImpact FROM incidents i WHERE ${scope}`).bind(...(incidentIds ?? [])).all<{ id: string; peakImpact: ComponentState | null }>(),
+    binding.prepare(`SELECT i.id AS incidentId,p.page_path AS path FROM incident_status_pages p JOIN incidents i ON i.id=p.incident_id WHERE ${scope} ORDER BY p.page_path`).bind(...(incidentIds ?? [])).all<{ incidentId: string; path: string }>(),
   ]);
   return {
+    pages: byIncident(pages.results),
     components: byIncident(components), updates: byIncident(await projectImportedIncidentUpdates(binding, updates)), notes: byIncident(notes),
     drafts: new Map(drafts.results.map(row => [row.incidentId, publishingDraft(row)])),
     impacts: new Map(impacts.results.map(row => [row.id, row.peakImpact])),

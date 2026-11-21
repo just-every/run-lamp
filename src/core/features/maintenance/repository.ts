@@ -1,4 +1,5 @@
 import { automationStatement, createMaintenanceAutomationRepository, type MaintenanceAutomation } from "./automation.repository";
+import { resolvePageSelection } from "../page-settings/status-page.repository";
 import { asc, eq } from "drizzle-orm";
 
 import { createDatabase } from "../../platform/db/client";
@@ -16,6 +17,7 @@ export interface ImportedMaintenanceUpdate { id: string; body: string; published
 export interface MaintenanceCollectionDetails {
   components: StoredMaintenanceComponent[];
   notices: MaintenanceNotice[];
+  pages: Array<{ maintenanceId: string; path: string }>;
   importedUpdates: Array<ImportedMaintenanceUpdate & { maintenanceId: string }>;
 }
 
@@ -26,8 +28,10 @@ export interface MaintenanceRepository {
   allocateMaintenanceReference(): Promise<AllocatedReference>;
   listMaintenance(): Promise<StoredMaintenance[]>;
   listComponents(maintenanceId: string): Promise<StoredMaintenanceComponent[]>;
+  listPagePaths(maintenanceId: string): Promise<string[]>;
+  validatePagePaths(pagePaths: string[]): Promise<void>;
   find(maintenanceId: string): Promise<StoredMaintenance | null>;
-  create(input: typeof maintenance.$inferInsert & MaintenanceWording, components: Array<typeof maintenanceComponents.$inferInsert>, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], automation?: Partial<MaintenanceAutomation>): Promise<void>;
+  create(input: typeof maintenance.$inferInsert & MaintenanceWording, components: Array<typeof maintenanceComponents.$inferInsert>, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], automation: Partial<MaintenanceAutomation>, pagePaths: string[]): Promise<void>;
   updateWindowWithNotice(maintenanceId: string, startsAt: string, endsAt: string, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], automation?: Partial<MaintenanceAutomation>, wording?: MaintenanceWording): Promise<boolean>;
   extendInProgressWithNotice(maintenanceId: string, startsAt: string, previousEndsAt: string, endsAt: string, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], automation?: Partial<MaintenanceAutomation>, wording?: MaintenanceWording): Promise<boolean>;
   transitionWithNotice(maintenanceId: string, from: "Scheduled" | "In progress", to: "In progress" | "Completed", completedAt: string | null, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[], expectedWindow?: Pick<StoredMaintenance, "startsAt" | "endsAt"> & Partial<MaintenanceAutomation>): Promise<boolean>;
@@ -65,28 +69,35 @@ export function createMaintenanceRepository(binding: D1Database): MaintenanceRep
 
   return {
     automation: createMaintenanceAutomationRepository(binding),
+    validatePagePaths: pagePaths => resolvePageSelection(binding, pagePaths),
     async allocateMaintenanceReference() { return allocateReference(binding, "SCH"); },
     async listMaintenance() {
       return database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all();
     },
     async listCollectionDetails() {
-      const [components, notices, importedUpdates] = await Promise.all([
+      const [components, notices, importedUpdates, pages] = await Promise.all([
         database.select().from(maintenanceComponents).orderBy(maintenanceComponents.maintenanceId).all(),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt, author_operator_id AS authorOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance_notices ORDER BY maintenance_id, published_at DESC`).all<MaintenanceNotice>(),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, body, published_at AS publishedAt, source_states AS sourceStates FROM import_maintenance_updates ORDER BY maintenance_id, published_at DESC, id`).all<ImportedMaintenanceUpdate & { maintenanceId: string }>(),
+        binding.prepare("SELECT maintenance_id AS maintenanceId, page_path AS path FROM maintenance_status_pages ORDER BY page_path").all<{ maintenanceId: string; path: string }>(),
       ]);
-      return { components, notices: notices.results, importedUpdates: importedUpdates.results };
+      return { components, notices: notices.results, importedUpdates: importedUpdates.results, pages: pages.results };
     },
     async listComponents(maintenanceId) {
       return database.select().from(maintenanceComponents).where(eq(maintenanceComponents.maintenanceId, maintenanceId)).all();
+    },
+    async listPagePaths(maintenanceId) {
+      const { results } = await binding.prepare("SELECT page_path AS path FROM maintenance_status_pages WHERE maintenance_id = ? ORDER BY page_path").bind(maintenanceId).all<{ path: string }>();
+      return results.map(row => row.path);
     },
     async find(maintenanceId) {
       const item = await database.select().from(maintenance).where(eq(maintenance.id, maintenanceId)).get();
       return item ?? null;
     },
-    async create(input, attached, notice, notificationStatements, automation = {}) {
+    async create(input, attached, notice, notificationStatements, automation, pagePaths) {
       await binding.batch([
-        binding.prepare(`INSERT INTO maintenance (id,reference,title,state,starts_at,ends_at,completed_at,created_by_operator_id,created_at,updated_at,affected_audience,customer_impact) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).bind(input.id, input.reference, input.title, input.state, input.startsAt, input.endsAt, input.completedAt, input.createdByOperatorId, input.createdAt, input.updatedAt, input.affectedAudience, input.customerImpact),
+        binding.prepare(`INSERT INTO maintenance (id,reference,title,state,starts_at,ends_at,completed_at,created_by_operator_id,created_at,updated_at,affected_audience,customer_impact,public_hidden) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`).bind(input.id, input.reference, input.title, input.state, input.startsAt, input.endsAt, input.completedAt, input.createdByOperatorId, input.createdAt, input.updatedAt, input.affectedAudience, input.customerImpact, Number(input.publicHidden ?? false)),
+        ...pagePaths.filter(path => path !== "public").map(path => binding.prepare("INSERT INTO maintenance_status_pages (maintenance_id, page_path) VALUES (?, ?)").bind(input.id, path)),
         ...attached.map((component) => binding.prepare(`INSERT INTO maintenance_components (id,maintenance_id,component_id,component_name,state,created_at,updated_at) VALUES (?,?,?,?,?,?,?)`).bind(component.id, component.maintenanceId, component.componentId, component.componentName, component.state, component.createdAt, component.updatedAt)),
         binding.prepare(`INSERT INTO maintenance_notices (id,maintenance_id,kind,body,published_at,author_operator_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)`).bind(notice.id, notice.maintenanceId, notice.kind, notice.body, notice.publishedAt, notice.authorOperatorId, notice.createdAt, notice.updatedAt),
         binding.prepare("INSERT INTO audit_entries (id, entity_type, entity_id, action, operator_id, payload_json, created_at, updated_at) VALUES (?, 'maintenance', ?, 'notice-published', ?, ?, ?, ?)").bind(`${notice.id}-audit`, input.id, notice.authorOperatorId, JSON.stringify({ kind: notice.kind }), notice.createdAt, notice.updatedAt),
@@ -135,11 +146,11 @@ export function createMaintenanceRepository(binding: D1Database): MaintenanceRep
       );
     },
     async listDue(now) {
-      const result = await binding.prepare(`SELECT id, reference, title, affected_audience AS affectedAudience, customer_impact AS customerImpact, state, starts_at AS startsAt, ends_at AS endsAt, completed_at AS completedAt, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt FROM maintenance WHERE (state = 'Scheduled' AND starts_at <= ?) OR (state = 'In progress' AND ends_at <= ?)`).bind(now, now).all<StoredMaintenance>();
+      const result = await binding.prepare(`SELECT id, reference, title, affected_audience AS affectedAudience, customer_impact AS customerImpact, state, starts_at AS startsAt, ends_at AS endsAt, completed_at AS completedAt, created_by_operator_id AS createdByOperatorId, created_at AS createdAt, updated_at AS updatedAt, public_hidden AS publicHidden FROM maintenance WHERE (state = 'Scheduled' AND starts_at <= ?) OR (state = 'In progress' AND ends_at <= ?)`).bind(now, now).all<StoredMaintenance>();
       return result.results;
     },
     async listReminderDue(now) {
-      const result = await binding.prepare(`SELECT maintenance.id, maintenance.reference, maintenance.title, maintenance.affected_audience AS affectedAudience, maintenance.customer_impact AS customerImpact, maintenance.state, maintenance.starts_at AS startsAt, maintenance.ends_at AS endsAt, maintenance.completed_at AS completedAt, maintenance.created_by_operator_id AS createdByOperatorId, maintenance.created_at AS createdAt, maintenance.updated_at AS updatedAt FROM maintenance LEFT JOIN maintenance_notices ON maintenance_notices.maintenance_id = maintenance.id AND maintenance_notices.kind = 'reminder' WHERE maintenance.state = 'Scheduled' AND maintenance.starts_at <= ? AND maintenance.starts_at > ? AND maintenance_notices.id IS NULL AND EXISTS (SELECT 1 FROM maintenance_notices announcement WHERE announcement.maintenance_id = maintenance.id AND announcement.kind IN ('scheduled','rescheduled')) AND NOT EXISTS (SELECT 1 FROM maintenance_notices announcement WHERE announcement.maintenance_id = maintenance.id AND announcement.kind IN ('scheduled','rescheduled') AND julianday(announcement.published_at) >= julianday(maintenance.starts_at,'-24 hours'))`).bind(new Date(new Date(now).getTime() + 24 * 60 * 60 * 1000).toISOString(), now).all<StoredMaintenance>();
+      const result = await binding.prepare(`SELECT maintenance.id, maintenance.reference, maintenance.title, maintenance.affected_audience AS affectedAudience, maintenance.customer_impact AS customerImpact, maintenance.state, maintenance.starts_at AS startsAt, maintenance.ends_at AS endsAt, maintenance.completed_at AS completedAt, maintenance.created_by_operator_id AS createdByOperatorId, maintenance.created_at AS createdAt, maintenance.updated_at AS updatedAt, maintenance.public_hidden AS publicHidden FROM maintenance LEFT JOIN maintenance_notices ON maintenance_notices.maintenance_id = maintenance.id AND maintenance_notices.kind = 'reminder' WHERE maintenance.state = 'Scheduled' AND maintenance.starts_at <= ? AND maintenance.starts_at > ? AND maintenance_notices.id IS NULL AND EXISTS (SELECT 1 FROM maintenance_notices announcement WHERE announcement.maintenance_id = maintenance.id AND announcement.kind IN ('scheduled','rescheduled')) AND NOT EXISTS (SELECT 1 FROM maintenance_notices announcement WHERE announcement.maintenance_id = maintenance.id AND announcement.kind IN ('scheduled','rescheduled') AND julianday(announcement.published_at) >= julianday(maintenance.starts_at,'-24 hours'))`).bind(new Date(new Date(now).getTime() + 24 * 60 * 60 * 1000).toISOString(), now).all<StoredMaintenance>();
       return result.results;
     },
     async writeNotice(input, notificationStatements) {

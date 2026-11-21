@@ -1,7 +1,7 @@
 /** Match public-snapshot's incident projection: at least one publication and a
  * published attachment that is public now, including retained detached names. */
 export function publicIncidentSubscriptionSql(incident = "i") {
-  return `${incident}.deleted_at IS NULL
+  return `${incident}.deleted_at IS NULL AND ${incident}.public_hidden = 0
     AND EXISTS(SELECT 1 FROM incident_updates public_update WHERE public_update.incident_id=${incident}.id)
     AND EXISTS(SELECT 1 FROM incident_components public_attachment
       LEFT JOIN components public_component ON public_component.id=public_attachment.component_id

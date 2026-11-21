@@ -4,6 +4,7 @@ import { DependencySettings } from "../../dependencies/ui/dependency-settings";
 import { getRouteApi } from "@tanstack/react-router";
 
 import type { PageSettingsService } from "../service";
+import type { ComponentsService } from "../../components";
 import type { OverviewService } from "../../overview/service";
 import { AuditLog } from "../../audit-log/ui/audit-log";
 import { YourPageFacts } from "../../overview/ui/your-page";
@@ -26,6 +27,8 @@ import { ConnectedToolsTab } from "./connected-tools-tab";
 import { ReportsSettingsTab } from "./reports-settings-tab";
 import { ExportSettingsTab } from "./export-settings-tab";
 import { SettingsSaveState } from "./settings-save-state";
+import { StatusPagesSettings } from "./status-pages-settings";
+import { managesTeam } from "../../operators/permissions";
 import { useSettingsAutosave } from "./use-settings-autosave";
 
 const operatorRoute = getRouteApi("/app");
@@ -46,8 +49,9 @@ const LINES: Partial<Record<SettingsTab, string>> = {
 
 export function SettingsPage() {
   const { data, error, loading } = useAppData<SettingsResponse>("/api/app/page-settings");
+  const catalogue = useAppData<{ components: Awaited<ReturnType<ComponentsService["list"]>> }>("/api/app/components");
   const overview = useAppData<OverviewResponse>("/api/app/overview");
-  const publicOrigin = operatorRoute.useLoaderData().publicPageOrigin;
+  const { publicPageOrigin: publicOrigin, operator } = operatorRoute.useLoaderData();
   const aiStatus = useAppData<AiStatus>("/api/app/ai/status");
   const tab = useSettingsTab();
   const autosave = useSettingsAutosave(data?.settings ?? undefined, () => {
@@ -82,6 +86,7 @@ export function SettingsPage() {
         {live ? <YourPageFacts live={live} pageName={saved.pageName} accentColor={saved.accentColor} components={components} /> : overview.error ? <FormError>{overview.error}</FormError> : null}
         <PageSettingsTab settings={settings} live={live} markSrc={markSrc} update={update} />
         <LogoCard settings={saved} onSettings={autosave.adoptSaved} />
+        <StatusPagesSettings canManage={managesTeam(operator.role)} components={catalogue.data?.components ?? []} componentsReady={Boolean(catalogue.data)} defaults={{ accentColor: saved.accentColor, timezone: saved.timezone }} />
       </>}
       {tab === "look" && <LookSettingsTab settings={settings} saved={saved} components={components} update={update} adoptSaved={autosave.adoptSaved} busy={brandBusy} setBusy={setBrandBusy} status={brandStatus} setStatus={setBrandStatus} />}
       {tab === "notifications" && <NotificationSettingsTab settings={settings} live={live} identityEditable={saved.mailIdentityEditable} update={update} needsConfirm={autosave.pending("mailFromAddress")} confirm={() => autosave.confirm("mailFromAddress")} onTrafficPhase={setTrafficPhase} />}

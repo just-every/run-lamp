@@ -7,7 +7,7 @@ import { assertPlatformLedger, platformLedger } from "./platform-ledger.mjs";
 export function isRerBookkeepingTable(name) {
   const normalized = name.toLowerCase();
   // Older portability schemas also have bookkeeping without the leading underscore.
-  return normalized.startsWith("_rer_") || normalized.startsWith("rer_portability_");
+  return normalized === "status_page_snapshot_work" || normalized.startsWith("_rer_") || normalized.startsWith("rer_portability_");
 }
 
 export function digest(bytes) {

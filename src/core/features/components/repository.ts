@@ -104,13 +104,13 @@ export function createComponentRepository(binding: D1Database): ComponentReposit
         SELECT attached.component_id AS componentId, attached.state, 'incident' AS causeType
         FROM incidents AS incident CROSS JOIN incident_components AS attached
         ON attached.incident_id = incident.id
-        WHERE incident.lifecycle IN ('Investigating', 'Identified', 'Monitoring') AND incident.deleted_at IS NULL
+        WHERE incident.lifecycle IN ('Investigating', 'Identified', 'Monitoring') AND incident.deleted_at IS NULL AND incident.public_hidden = 0
           AND attached.published_at IS NOT NULL AND attached.component_id IN (SELECT value FROM json_each(?))
         UNION ALL
         SELECT attached.component_id AS componentId, attached.state, 'maintenance' AS causeType
         FROM maintenance AS window CROSS JOIN maintenance_components AS attached
         ON attached.maintenance_id = window.id
-        WHERE window.state = 'In progress' AND attached.component_id IN (SELECT value FROM json_each(?))
+        WHERE window.state = 'In progress' AND window.public_hidden = 0 AND attached.component_id IN (SELECT value FROM json_each(?))
       `).bind(ids, ids, ids, ids).all<CurrentComponentClaim>();
       return result.results;
     },

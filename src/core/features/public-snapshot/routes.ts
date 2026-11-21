@@ -175,10 +175,11 @@ function currentMaintenanceOverruns(response: Response, now: number) {
     }).transform(response);
 }
 
-export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService) {
+export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPrefix?: string) {
   // While the page is pre-launch every answer from the page host asks search engines to stay away.
   const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
     return async (context: Context<AppEnv>) => {
+      if (protectedPrefix) return answerProtectedArtifact(service, artifact(context), context.req.url, protectedPrefix, missingArtifact);
       // The artifact read already carries the generation's pre-launch flag, so a served page reads the pointer once;
       // only an answer that never reached a stored artifact asks the service again.
       const seen: { prelaunch?: boolean } = {};
@@ -270,6 +271,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   });
   app.get("*", async (context, next) => {
     const path = new URL(context.req.url).pathname;
+    if (protectedPrefix) return next();
     if (["/history.atom", "/history.rss"].includes(path)) return next();
     if (!isImportAliasPath(path)) return next();
     // Every valid Sorry month shares the retained collection redirect. Its
@@ -309,4 +311,49 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   app.get("/assets/og.svg", serve(() => "assets/og.svg"));
   app.get("/api/public/dependencies", serve(() => "api/public/dependencies"));
   app.get("/api/public/status", serve(() => "status.json"));
+}
+
+export function protectedSnapshotHeaders(headers = new Headers()) {
+  headers.delete("Access-Control-Allow-Origin");
+  headers.set("Cache-Control", "private, no-store");
+  headers.set("Cross-Origin-Resource-Policy", "same-origin");
+  headers.set("Referrer-Policy", "no-referrer");
+  headers.set("X-Robots-Tag", PRELAUNCH_ROBOTS_TAG);
+  return headers;
+}
+
+async function answerProtectedArtifact(service: PublicSnapshotService, key: string, requestUrl: string, prefix: string, missing?: string) {
+  const headers = protectedSnapshotHeaders();
+  applyPublicIsolationHeaders(headers, new URL(requestUrl).origin);
+  try {
+    let object = await service.readArtifact(key);
+    const status = object ? 200 : 404;
+    if (!object && missing) object = await service.readArtifact(missing);
+    if (!object) return new Response("Status resource not found.", { status, headers });
+    headers.set("Content-Type", object.contentType);
+    headers.set("X-Lamp-Snapshot-Version", object.version);
+    headers.set("X-Lamp-Snapshot-Generated-At", object.generatedAt);
+    if (object.retainedReady) headers.set("X-Lamp-Snapshot-Retained", "true");
+    let response = new Response(object.bytes, { status, headers });
+    if (object.contentType.includes("text/html")) {
+      const scopeLink = (attribute: "href" | "src") => ({
+        element(element: Element) {
+          const value = element.getAttribute(attribute);
+          if (value?.startsWith("/") && !value.startsWith("//")
+            && !["/signin", "/docs/accessibility/vpat"].includes(value)) element.setAttribute(attribute, prefix + value);
+        },
+      });
+      response = new HTMLRewriter().on("a[href], link[href]", scopeLink("href"))
+        .on("img[src], script[src]", scopeLink("src"))
+        .on("a[data-lamp-signin]", { element(element) { element.remove(); } }).transform(response);
+      response = currentMaintenanceOverruns(response, Date.now());
+    }
+    if (object.stale) {
+      response = await labelledStaleResponse(response, key);
+      protectedSnapshotHeaders(response.headers);
+    }
+    return response;
+  } catch {
+    return new Response("The last known status snapshot is unavailable.", { status: 503, headers });
+  }
 }

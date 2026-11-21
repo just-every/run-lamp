@@ -12,8 +12,8 @@ type RecordKey = { id: string; at: string; kind: "incident" | "maintenance" };
 type EventKey = { id: string; at: string; recordId: string; kind: "incident-update" | "maintenance-notice" };
 // Only records with a published public attachment can enter the archive. Keep
 // detached public names while excluding deleted, private and draft-only rows.
-export const publicIncident = `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
-export const publicMaintenance = `EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
+export const publicIncident = `i.public_hidden=0 AND i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id) AND EXISTS(SELECT 1 FROM incident_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.incident_id=i.id AND a.published_at IS NOT NULL AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
+export const publicMaintenance = `m.public_hidden=0 AND EXISTS(SELECT 1 FROM maintenance_components a LEFT JOIN components c ON c.id=a.component_id WHERE a.maintenance_id=m.id AND ((a.component_id IS NULL AND a.detached_internal=0) OR c.internal=0))`;
 const compare = (a: { at: string; id: string; kind: string }, b: { at: string; id: string; kind: string }) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id) || b.kind.localeCompare(a.kind);
 function seek(column: string, id: string, kind: string, cursor: ArchiveCursor | null, values: unknown[]) {
   if (!cursor) return "";
@@ -32,6 +32,10 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
   const request = parseArchiveKey(key);
   if (!request) return null;
   const database = createDatabase(binding);
+  const scope = context.protectedPage;
+  const incidentVisibility = scope ? scopedRecord("incident", scope) : publicIncident;
+  const maintenanceVisibility = scope ? scopedRecord("maintenance", scope) : publicMaintenance;
+  const selected = sql`(SELECT value FROM json_each(${JSON.stringify(context.components.map(component => component.id))}))`;
   let incidentIds: string[] = [], maintenanceIds: string[] = [];
   let updateIds: string[] | undefined, noticeIds: string[] | undefined;
   let nextCursor: string | null = null;
@@ -39,18 +43,18 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
   const cursor = request.cursor && !request.kind.startsWith("api-") ? decodeArchiveCursor(request.cursor) : null;
   if (request.cursor && !request.kind.startsWith("api-") && !cursor) return null;
   if (request.kind === "incident") {
-    const row = await binding.prepare(`SELECT i.id FROM incidents i WHERE i.reference=? AND ${publicIncident} LIMIT 1`).bind(request.reference).first<{ id: string }>();
+    const row = await binding.prepare(`SELECT i.id FROM incidents i WHERE i.reference=? AND ${incidentVisibility} LIMIT 1`).bind(request.reference).first<{ id: string }>();
     if (!row) return null;
     incidentIds = [row.id];
   } else if (request.kind === "maintenance") {
-    const row = await binding.prepare(`SELECT m.id FROM maintenance m WHERE m.reference=? AND ${publicMaintenance} LIMIT 1`).bind(request.reference).first<{ id: string }>();
+    const row = await binding.prepare(`SELECT m.id FROM maintenance m WHERE m.reference=? AND ${maintenanceVisibility} LIMIT 1`).bind(request.reference).first<{ id: string }>();
     if (!row) return null;
     maintenanceIds = [row.id];
   } else if (request.kind === "api-incidents" || request.kind === "api-maintenance") {
     const incident = request.kind === "api-incidents";
-    const anchor = request.cursor ? await binding.prepare(incident ? `SELECT i.id,i.opened_at AS at FROM incidents i WHERE i.id=? AND ${publicIncident}` : `SELECT m.id,m.starts_at AS at FROM maintenance m WHERE m.id=? AND ${publicMaintenance}`).bind(request.cursor).first<{ id: string; at: string }>() : null;
+    const anchor = request.cursor ? await binding.prepare(incident ? `SELECT i.id,i.opened_at AS at FROM incidents i WHERE i.id=? AND ${incidentVisibility}` : `SELECT m.id,m.starts_at AS at FROM maintenance m WHERE m.id=? AND ${maintenanceVisibility}`).bind(request.cursor).first<{ id: string; at: string }>() : null;
     if (request.cursor && !anchor) return null;
-    const query = incident ? `SELECT i.id FROM incidents i INDEXED BY incidents_public_archive_seek WHERE ${publicIncident}${anchor ? " AND (i.opened_at,i.id)<(?,?)" : ""} ORDER BY i.opened_at DESC,i.id DESC LIMIT ?` : `SELECT m.id FROM maintenance m INDEXED BY maintenance_public_archive_seek WHERE ${publicMaintenance}${anchor ? " AND (m.starts_at,m.id)>(?,?)" : ""} ORDER BY m.starts_at,m.id LIMIT ?`;
+    const query = incident ? `SELECT i.id FROM incidents i INDEXED BY incidents_public_archive_seek WHERE ${incidentVisibility}${anchor ? " AND (i.opened_at,i.id)<(?,?)" : ""} ORDER BY i.opened_at DESC,i.id DESC LIMIT ?` : `SELECT m.id FROM maintenance m INDEXED BY maintenance_public_archive_seek WHERE ${maintenanceVisibility}${anchor ? " AND (m.starts_at,m.id)>(?,?)" : ""} ORDER BY m.starts_at,m.id LIMIT ?`;
     const values = anchor ? [anchor.at, anchor.id, ARCHIVE_PAGE_SIZE + 1] : [ARCHIVE_PAGE_SIZE + 1];
     const rows = (await binding.prepare(query).bind(...values).all<{ id: string }>()).results;
     const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
@@ -70,8 +74,8 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     const maintenanceSeek = seek("n.published_at", "n.id", "maintenance-notice", cursor, right);
     left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
     const [updates, notices] = await Promise.all([
-      binding.prepare(`SELECT u.id,u.published_at AS at,u.incident_id AS recordId,'incident-update' AS kind FROM incident_updates u INDEXED BY incident_updates_public_feed_seek JOIN incidents i ON i.id=u.incident_id WHERE u.published_at>=? AND ${publicIncident}${componentIncident}${incidentSeek} ORDER BY u.published_at DESC,u.id DESC LIMIT ?`).bind(...left).all<EventKey>(),
-      binding.prepare(`SELECT n.id,n.published_at AS at,n.maintenance_id AS recordId,'maintenance-notice' AS kind FROM maintenance_notices n INDEXED BY maintenance_notices_public_feed_seek JOIN maintenance m ON m.id=n.maintenance_id WHERE n.published_at>=? AND ${publicMaintenance}${componentMaintenance}${maintenanceSeek} ORDER BY n.published_at DESC,n.id DESC LIMIT ?`).bind(...right).all<EventKey>(),
+      binding.prepare(`SELECT u.id,u.published_at AS at,u.incident_id AS recordId,'incident-update' AS kind FROM incident_updates u INDEXED BY incident_updates_public_feed_seek JOIN incidents i ON i.id=u.incident_id WHERE u.published_at>=? AND ${incidentVisibility}${componentIncident}${incidentSeek} ORDER BY u.published_at DESC,u.id DESC LIMIT ?`).bind(...left).all<EventKey>(),
+      binding.prepare(`SELECT n.id,n.published_at AS at,n.maintenance_id AS recordId,'maintenance-notice' AS kind FROM maintenance_notices n INDEXED BY maintenance_notices_public_feed_seek JOIN maintenance m ON m.id=n.maintenance_id WHERE n.published_at>=? AND ${maintenanceVisibility}${componentMaintenance}${maintenanceSeek} ORDER BY n.published_at DESC,n.id DESC LIMIT ?`).bind(...right).all<EventKey>(),
     ]);
     const rows = [...updates.results, ...notices.results].sort(compare);
     const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
@@ -94,10 +98,10 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
       // Adjacent populated months are separate indexed seeks. A page holding
       // only one month's records must still navigate through the full archive.
       const [incidentBefore, incidentAfter, maintenanceBefore, maintenanceAfter] = await Promise.all([
-        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at<? AND ${publicIncident} ORDER BY i.resolved_at DESC,i.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
-        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at>=? AND ${publicIncident} ORDER BY i.resolved_at,i.id LIMIT 1`).bind(until).first<{at: string}>(),
-        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)<? AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
-        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)>=? AND ${publicMaintenance} ORDER BY COALESCE(m.completed_at,m.ends_at),m.id LIMIT 1`).bind(until).first<{at: string}>(),
+        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at<? AND ${incidentVisibility} ORDER BY i.resolved_at DESC,i.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
+        binding.prepare(`SELECT i.resolved_at AS at FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at>=? AND ${incidentVisibility} ORDER BY i.resolved_at,i.id LIMIT 1`).bind(until).first<{at: string}>(),
+        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)<? AND ${maintenanceVisibility} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 1`).bind(from).first<{at: string}>(),
+        binding.prepare(`SELECT COALESCE(m.completed_at,m.ends_at) AS at FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND COALESCE(m.completed_at,m.ends_at)>=? AND ${maintenanceVisibility} ORDER BY COALESCE(m.completed_at,m.ends_at),m.id LIMIT 1`).bind(until).first<{at: string}>(),
       ]);
       const monthOf = (at: string | undefined) => {
         if (!at) return undefined;
@@ -109,8 +113,8 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     }
     left.push(ARCHIVE_PAGE_SIZE + 1); right.push(ARCHIVE_PAGE_SIZE + 1);
     const [resolved, completed] = await Promise.all([
-      binding.prepare(`SELECT i.id,i.resolved_at AS at,'incident' AS kind FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at IS NOT NULL AND ${publicIncident}${incidentSeek}${incidentMonth} ORDER BY i.resolved_at DESC,i.id DESC LIMIT ?`).bind(...left).all<RecordKey>(),
-      binding.prepare(`SELECT m.id,COALESCE(m.completed_at,m.ends_at) AS at,'maintenance' AS kind FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${publicMaintenance}${maintenanceSeek}${maintenanceMonth} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT ?`).bind(...right).all<RecordKey>(),
+      binding.prepare(`SELECT i.id,i.resolved_at AS at,'incident' AS kind FROM incidents i INDEXED BY incidents_resolved_public_window WHERE i.lifecycle='Resolved' AND i.resolved_at IS NOT NULL AND ${incidentVisibility}${incidentSeek}${incidentMonth} ORDER BY i.resolved_at DESC,i.id DESC LIMIT ?`).bind(...left).all<RecordKey>(),
+      binding.prepare(`SELECT m.id,COALESCE(m.completed_at,m.ends_at) AS at,'maintenance' AS kind FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${maintenanceVisibility}${maintenanceSeek}${maintenanceMonth} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT ?`).bind(...right).all<RecordKey>(),
     ]);
     const rows = [...resolved.results, ...completed.results].sort(compare);
     const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
@@ -121,8 +125,8 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
   const [incidentRows, maintenanceRows, attachments, maintenanceAttachments, updates, notices, reports, importedUpdates, impacts] = await Promise.all([
     incidentIds.length ? database.select().from(incidents).where(and(inArray(incidents.id, incidentIds), isNull(incidents.deletedAt))).orderBy(desc(incidents.openedAt), desc(incidents.id)).all() : [],
     maintenanceIds.length ? database.select().from(maintenance).where(inArray(maintenance.id, maintenanceIds)).orderBy(asc(maintenance.startsAt), asc(maintenance.id)).all() : [],
-    incidentIds.length ? database.select(getTableColumns(incidentComponents)).from(incidentComponents).leftJoin(components, eq(incidentComponents.componentId, components.id)).where(and(inArray(incidentComponents.incidentId, incidentIds), sql`incident_components.published_at IS NOT NULL`, or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
-    maintenanceIds.length ? database.select(getTableColumns(maintenanceComponents)).from(maintenanceComponents).leftJoin(components, eq(maintenanceComponents.componentId, components.id)).where(and(inArray(maintenanceComponents.maintenanceId, maintenanceIds), or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
+    incidentIds.length ? database.select(getTableColumns(incidentComponents)).from(incidentComponents).leftJoin(components, eq(incidentComponents.componentId, components.id)).where(and(inArray(incidentComponents.incidentId, incidentIds), sql`incident_components.published_at IS NOT NULL`, scope ? inArray(incidentComponents.componentId, selected) : or(and(isNull(incidentComponents.componentId), sql`incident_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
+    maintenanceIds.length ? database.select(getTableColumns(maintenanceComponents)).from(maintenanceComponents).leftJoin(components, eq(maintenanceComponents.componentId, components.id)).where(and(inArray(maintenanceComponents.maintenanceId, maintenanceIds), scope ? inArray(maintenanceComponents.componentId, selected) : or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal=0`), eq(components.internal, false)))).all() : [],
     incidentIds.length && (!updateIds || updateIds.length) ? database.select().from(incidentUpdates).where(and(inArray(incidentUpdates.incidentId, incidentIds), updateIds ? inArray(incidentUpdates.id, updateIds) : undefined)).orderBy(desc(incidentUpdates.publishedAt), desc(incidentUpdates.id)).all() : [],
     maintenanceIds.length && (!noticeIds || noticeIds.length) ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,kind,body,published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")})${noticeIds ? ` AND id IN (${noticeIds.map(() => "?").join(",")})` : ""} ORDER BY published_at DESC,id DESC`).bind(...maintenanceIds, ...(noticeIds ?? [])).all<PublicSnapshotSource["maintenanceNotices"][number]>().then(rows => rows.results) : [],
     incidentIds.length ? binding.prepare(`SELECT incident_id AS incidentId,summary,timeline,cause,remediation,published_at AS publishedAt FROM incident_reports WHERE published_at IS NOT NULL AND incident_id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<PublicSnapshotSource["reports"][number]>().then(rows => rows.results) : [],
@@ -131,4 +135,11 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
   ]);
   const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
   return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates: await projectImportedIncidentUpdates(binding, updates), maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
+}
+
+export function scopedRecord(kind: "incident" | "maintenance", path: string) {
+  // Only validated ASCII slugs may become part of these query predicates.
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path)) throw new Error("Invalid status page path.");
+  if (kind === "incident") return `i.deleted_at IS NULL AND EXISTS(SELECT 1 FROM incident_status_pages pa WHERE pa.incident_id=i.id AND pa.page_path='${path}') AND EXISTS(SELECT 1 FROM incident_updates u WHERE u.incident_id=i.id)`;
+  return `EXISTS(SELECT 1 FROM maintenance_status_pages pa WHERE pa.maintenance_id=m.id AND pa.page_path='${path}')`;
 }
