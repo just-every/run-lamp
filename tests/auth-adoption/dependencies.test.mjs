@@ -9,6 +9,7 @@ import { parseEnv } from 'node:util';
 import { database, load } from '../operator-readiness/runtime.mjs';
 import { migrate, openRuntime } from '../reference-storage/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
+import { ownerSigninDigest, OWNER_SIGNIN_SECONDS } from '@runeditrun/rer/internal/modules/operator-auth/owner-signin-grant.mjs';
 import { authFixture, installationKey, otherInstallationKey, secret, setupToken } from './runtime.mjs';
 import { provider } from '../fixtures/base/oidc-idp.mjs';
 import { linkEdge } from '../fixtures/base/provider-edge.mjs';
@@ -19,7 +20,7 @@ import { withDeploymentSecrets } from '../../scripts/deployment-secrets.mjs';
 
 // Real Lamp Hono routes and D1 transactions; only the external provider's network
 // is substituted. The copied Base edge validates signed client assertions.
-test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable', async () => {
+test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-006 TEAM-007 native identity setup, provider approval, invitations and erasure keep access recoverable', async () => {
   const dir = await mkdtemp(join(process.cwd(), '.lamp-dependency-'));
   const storage = await database(dir);
   const cache = await openSnapshotCacheRuntime(dir);
@@ -146,8 +147,8 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
 
     // The same owner manages actual invitations and native sessions. Cancellation
     // invalidates the delivered link; erasure revokes access and retains an audit.
-    const invite = async email => {
-      const result = await post('/api/app/operators/invite', { email, displayName: 'Recovery owner', role: 'owner' }, proof);
+    const invite = async (email, role = "owner") => {
+      const result = await post('/api/app/operators/invite', { email, displayName: 'Invited teammate', role }, proof);
       assert.equal(result.status, 202, await result.clone().text());
       const token = new URL(messages.at(-1).text.match(/https?:\/\/[^\s]+/)[0]).searchParams.get('token');
       const invited = (await (await call('/api/app/operators/invited', { cookie: proof })).json()).operators.find(row => row.email === email);
@@ -165,6 +166,92 @@ test('ACCESS-001 ACCESS-002 TEAM-001 TEAM-002 TEAM-003 TEAM-007 native identity 
     const teammateSession = await call('/api/app/session', { cookie: teammateCookie });
     assert.equal(teammateSession.status, 200);
     assert.equal((await teammateSession.json()).operator.email, 'teammate@example.test');
+    // TEAM-006: an actual non-owner email login works until the Owner requires
+    // the already tested Auth registration. The old unused proof is refused too.
+    const responderEmail = ['responder', 'example.com'].join('@');
+    const responder = await invite(responderEmail, 'responder');
+    const responderCookie = (await post('/auth/confirm', { token: responder.token })).headers.get('set-cookie').split(';')[0];
+    assert.equal((await call('/api/app/session', { cookie: responderCookie })).status, 200);
+    assert.equal((await post('/auth/magic-link', { email: responderEmail })).status, 202);
+    const oldLink = new URL(messages.at(-1).text.match(/https?:\/\/[^\s]+/)[0]);
+    assert.equal((await call(oldLink.pathname + oldLink.search)).status, 200, 'the pending email link was usable before enforcement');
+    const policy = (cookie, providerId) => call('/api/app/sign-in/policy', { method: 'PUT', body: { providerId }, cookie });
+    const readPolicy = async () => (await (await call('/api/app/sign-in', { cookie: proof })).json()).requiredProvider;
+    assert.deepEqual((await (await call('/api/app/sign-in', { cookie: proof })).json()).qualifiedProviders.map(entry => entry.id), ['auth']);
+    assert.equal((await policy(teammateCookie, 'auth')).status, 403, 'another Owner cannot set the installation policy');
+    assert.equal((await policy(responderCookie, 'auth')).status, 403, 'a non-owner cannot enforce sign-in');
+    assert.equal((await policy(bootstrapCookie, 'auth')).status, 403, 'the setup session needs fresh proof');
+    assert.equal((await policy(proof, 'google')).status, 409, 'unqualified providers cannot be required');
+    assert.equal(await readPolicy(), null);
+    const saved = await policy(proof, 'auth');
+    assert.equal(saved.status, 200, await saved.clone().text());
+    assert.equal((await saved.json()).requiredProvider, 'auth');
+    assert.equal(await readPolicy(), 'auth', 'an independent read acknowledges the saved requirement');
+    assert.equal((await post('/auth/settings/identity', { idpSignIn: false }, proof)).status, 409, 'the switch cannot disable the required provider');
+
+    const sessionIds = async () => (await storage.db.prepare('SELECT id FROM oa_sessions ORDER BY id').all()).results.map(row => row.id);
+    const beforeSessions = await sessionIds(), beforeMail = messages.length;
+    const denied = await app.fetch(new Request(origin + '/auth/magic-link', {
+      method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ email: responderEmail }),
+    }), env);
+    assert.equal(denied.status, 303);
+    const requiredPage = await (await call(denied.headers.get('location'))).text();
+    assert.match(requiredPage, /requires single sign-on/);
+    assert.match(requiredPage, /action="[^"]*auth\/oidc\/auth\/start"/);
+    assert.doesNotMatch(requiredPage, /action="[^"]*auth\/magic-link"/);
+    assert.equal((await post('/auth/magic-link', { email: env.SETUP_OPERATOR_EMAIL })).status, 403, 'the Owner has no ordinary email bypass');
+    assert.equal((await call(oldLink.pathname + oldLink.search)).status, 400);
+    const oldConfirmation = await post('/auth/confirm', { token: oldLink.searchParams.get('token') });
+    assert.equal(oldConfirmation.status, 403);
+    assert.equal(oldConfirmation.headers.has('set-cookie'), false);
+    assert.equal(messages.length, beforeMail, 'no refused request or confirmation sends mail');
+    assert.deepEqual(await sessionIds(), beforeSessions, 'no refused request or confirmation creates a session');
+    assert.equal((await call('/api/app/session')).status, 401);
+
+    const enforcedStart = await post('/auth/oidc/auth/start');
+    assert.equal(enforcedStart.status, 303);
+    const enforcedGrant = await idp.authorize(enforcedStart.headers.get('location'), {
+      sub: 'synthetic-lamp-responder', email: responderEmail, email_verified_at: Math.floor(Date.now() / 1000),
+    });
+    const enforcedLogin = await call('/auth/oidc/auth/callback?' + new URLSearchParams(enforcedGrant), {
+      cookie: enforcedStart.headers.get('set-cookie').split(';')[0],
+    });
+    assert.equal(enforcedLogin.status, 303, await enforcedLogin.clone().text());
+    const enforcedCookie = enforcedLogin.headers.getSetCookie().map(value => value.split(';')[0])
+      .find(value => !value.includes('oa_oidc') && value.split('=')[1]);
+    const enforcedSession = await call('/api/app/session', { cookie: enforcedCookie });
+    assert.equal(enforcedSession.status, 200);
+    assert.equal((await enforcedSession.json()).operator.id, responder.id);
+
+    idp.options.transport = uri => uri === issuer + '/token' ? Response.json({}, { status: 503 }) : null;
+    const outageStart = await post('/auth/oidc/auth/start');
+    assert.equal(outageStart.status, 303);
+    const outageGrant = await idp.authorize(outageStart.headers.get('location'));
+    const unavailable = await call('/auth/oidc/auth/callback?' + new URLSearchParams(outageGrant), {
+      cookie: outageStart.headers.get('set-cookie').split(';')[0],
+    });
+    assert.equal((await unavailable.json()).error, 'oidc_provider_unavailable');
+
+    // Seed exactly the digest and recorded owner that the existing terminal
+    // issuer writes. The deployment-custody test below runs the actual CLI.
+    const recoveryToken = randomBytes(32).toString('base64url'), now = Date.now();
+    await storage.db.prepare(`INSERT INTO oa_owner_signins(id,token_hash,operator_id,operator_version,created_at,expires_at)
+      SELECT ?,?,id,version,?,? FROM oa_operators WHERE id=?`).bind('synthetic-lamp-recovery', await ownerSigninDigest(recoveryToken),
+        now, now + OWNER_SIGNIN_SECONDS * 1000, bootstrapSession.operator.id).run();
+    const recovery = await post('/auth/owner-signin', { token: recoveryToken });
+    assert.equal(recovery.status, 303);
+    const recoveryCookie = recovery.headers.get('set-cookie').split(';')[0];
+    assert.equal((await (await call('/api/app/session', { cookie: recoveryCookie })).json()).operator.id, bootstrapSession.operator.id);
+    const replayRecovery = await post('/auth/owner-signin', { token: recoveryToken });
+    assert.equal(replayRecovery.headers.get('location'), '/signin?notice=invalid_or_expired');
+    assert.equal(replayRecovery.headers.has('set-cookie'), false);
+    assert.equal((await storage.db.prepare("SELECT COUNT(*) n FROM oa_auth_audit WHERE action='owner:signin-link'").first()).n, 1);
+    assert.equal((await policy(recoveryCookie, null)).status, 200, 'the terminal Owner can restore email sign-in');
+    assert.equal(await readPolicy(), null);
+    assert.equal((await post('/auth/confirm', { token: oldLink.searchParams.get('token') })).status, 400,
+      'clearing the policy does not revive an ordinary link issued before enforcement');
+
     const ownerSession = await (await call('/api/app/session', { cookie: proof })).json();
     assert.equal((await call(`/api/app/operators/${ownerSession.operator.id}`, { method: 'DELETE', cookie: teammateCookie })).status, 403, 'another operator cannot erase the setup owner');
     // Keep saved rule provenance with the publication while erasing its

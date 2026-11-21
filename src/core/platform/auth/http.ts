@@ -26,6 +26,8 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
     // A host-configured key set selects native signed claims. Claims never choose their own authority.
     // The signed claim exists only on its own route, and only while the platform still holds SETUP_TOKEN. The trust stays bound after the
     // claim (the import door reads it), but the platform then retires the token: every other route must not build the handler.
+    const required = url.pathname === '/auth/owner-signin' ? null : await services.signIn.requiredProvider();
+    const publicAuth = required ? requireProvider(auth, required) : auth;
     const trust = url.pathname === '/auth/owner-claim' ? ownerClaimConfig(env) : null;
     let response = !trust ? null : !env.SETUP_TOKEN ? Response.json({ error: 'claim_unavailable' }, { status: 409, headers: securityHeaders() })
       : await createOwnerClaimHandler({ db: env.DB, authConfig: config,
@@ -36,9 +38,9 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
       const claim=createIdpOwnerClaimHandler({db:env.DB,authConfig:config,clientIp:()=>config.local?'loopback':request.headers.get('CF-Connecting-IP')??''});
       const dependency=await createDependencies({db:env.DB,INSTALLATION_KEY:config.INSTALLATION_KEY,INSTALLATION_KEY_PREVIOUS:config.INSTALLATION_KEY_PREVIOUS,origin:config.origin,name:'Lamp',provider:env.IDENTITY_PROVIDER,local:config.local,auth,
         claimOwner:token=>claim(new Request(config.origin+'/auth/owner-claim',{method:'POST',headers:{Host:new URL(config.origin).host,Origin:config.origin,'Content-Type':'application/json'},body:JSON.stringify({token})}))}).handle(request);
-      response = dependency ?? await claim(request) ?? await createSignInHandler(auth,{
+      response = dependency ?? await claim(request) ?? await createSignInHandler(publicAuth,{
         setup:async()=> env.SETUP_TOKEN&&!await services.operators.initialized()?{instructions:'Use the setup token from your installation to claim the first owner.'}:null,
-      })(request) ?? await createAuthHandler(auth)(request) ?? new Response('Not found',{status:404});
+      })(request) ?? await createAuthHandler(publicAuth)(request) ?? new Response('Not found',{status:404});
     }
     // A claim's answer (the first claim, or already claimed) and every sign-in
     // that starts a session open a Business-provisioned install's door when no
@@ -54,7 +56,7 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
       headers.set('Location', '/auth/settings/identity?saved=1');
       return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
     }
-    if (env.MAIL_PROVIDER === 'none' && url.pathname === '/signin' && request.method === 'GET'
+    if (!required && env.MAIL_PROVIDER === 'none' && url.pathname === '/signin' && request.method === 'GET'
       && response.status === 200 && response.headers.get('content-type')?.includes('text/html')) {
       // Keep Base's provider buttons, notice, setup guard and security headers.
       // This is guidance only: no grant is minted or exposed by the hosted page.
@@ -64,7 +66,7 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
         element.append('<section aria-labelledby="mail-off-signin"><h2 id="mail-off-signin">Email is turned off</h2><p>Email links and invitations are unavailable. The deployment owner can run <code>rer signin</code> from the checkout that deployed this environment, with the same Cloudflare account credentials and deployment record.</p><p>Other operators need a configured sign-in provider or an administrator to enable mail.</p></section>', { html: true });
       } }).transform(response);
     }
-    if (url.pathname === '/signin') response = await installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp');
+    if (url.pathname === '/signin') response = await installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp', false, false, Boolean(required));
     if (url.pathname === '/auth/owner-signin' && response.status >= 400) return ownerSignInRefused(response);
     const test = await testFailureOnPane(request, response, auth, config.origin);
     if (test) return test;
@@ -75,6 +77,48 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
     const response=Response.json({error:error instanceof AuthError?error.code:'auth_unavailable'},{status:error instanceof AuthError?error.status:503,headers:securityHeaders()});
     return new URL(request.url).pathname === '/auth/owner-signin' ? ownerSignInRefused(response) : response;
   }
+}
+
+type LampAuth = Awaited<ReturnType<AppServices['signInAuth']>>;
+
+function requireProvider(auth: LampAuth, required: string): LampAuth {
+  const providers = auth.providers;
+  const refuse = () => new Response(null, {
+    status: 303, headers: { ...securityHeaders(), Location: '/signin?notice=provider_required' },
+  });
+  return {
+    ...auth,
+    emailSignInAvailable: false,
+    oneClick: undefined,
+    providers: providers && {
+      ...providers,
+      async list() { return (await providers.list()).filter(provider => provider.id === required); },
+      begin: (request, provider, input) => provider === required ? providers.begin(request, provider, input) : Promise.resolve(refuse()),
+      callback: (request, provider) => provider === required ? providers.callback(request, provider) : Promise.resolve(refuse()),
+    },
+    async requestMagicLink() { throw new AuthError('provider_required', 403); },
+    async previewLink(request, token) {
+      const preview = await auth.previewLink(request, token);
+      return preview?.kind === 'step_up' ? preview : null;
+    },
+    async confirmLink(request, input) {
+      // Email step-up belongs to an existing session and never starts one.
+      const preview = await auth.previewLink(new Request(request.url, { headers: request.headers }), input.token);
+      if (preview?.kind !== 'step_up') throw new AuthError('provider_required', 403);
+      return auth.confirmLink(request, input);
+    },
+    async issueReviewSession() { throw new AuthError('provider_required', 403); },
+    async setIdentitySettings(request, input) {
+      if (input.idpSignIn !== false) return auth.setIdentitySettings(request, input);
+      await auth.identitySettings(request);
+      throw new AuthError('provider_in_use', 409);
+    },
+    async unlinkProvider(request, input) {
+      if (input.provider !== required) return auth.unlinkProvider(request, input);
+      await auth.identitySettings(request);
+      throw new AuthError('provider_in_use', 409);
+    },
+  };
 }
 
 // The owner's Test sign-in on Settings › Sign-in: a refusal Base sends to /signin?notice=… (which a signed-in person

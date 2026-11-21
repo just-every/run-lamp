@@ -10,6 +10,7 @@ const clientSecret = z.string("client_secret_required").max(4096, "client_secret
 const googleInput = z.object({ clientId, clientSecret }).strict();
 const oktaInput = z.object({ domain: z.string("domain_required").max(512, "domain_invalid"), clientId, clientSecret, people: z.array(person).max(200, "person_invalid") }).strict();
 const peopleInput = z.object({ people: z.array(person).max(200, "person_invalid") }).strict();
+const policyInput = z.object({ providerId: z.string().regex(/^[a-z][a-z0-9-]{0,31}$/).nullable() }).strict();
 const providerSchema = z.enum(SIGN_IN_PROVIDERS);
 
 /** Every refusal is `{error: code}`. A Base refusal (`owner_required`, `step_up_required`) keeps its own code and
@@ -36,6 +37,11 @@ export function registerSignInRoutes(app: Hono<AppEnv>, service: SignInService) 
   };
 
   app.get("/api/app/sign-in", c => guarded(c, async () => {}));
+  app.put("/api/app/sign-in/policy", async c => {
+    const input = await body(c, policyInput);
+    if ("error" in input) return c.json({ error: input.error }, 400);
+    return guarded(c, () => service.setRequiredProvider(c.req.raw, input.value.providerId));
+  });
   app.put("/api/app/sign-in/google", async c => {
     const input = await body(c, googleInput);
     if ("error" in input) return c.json({ error: input.error }, 400);

@@ -8,6 +8,8 @@ import { expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { migrate } from '../../reference-storage/runtime.mjs';
 import { reservePort } from '../worker-startup.mjs';
+import { provider } from '../../fixtures/base/oidc-idp.mjs';
+import { requiredSignInFlow } from './required-sign-in-flow.mjs';
 import { invitationRolesFlow } from './invitation-roles-flow.mjs';
 import { operatorHydrated } from './operator-hydrated.mjs';
 
@@ -38,6 +40,11 @@ export async function managementInstallation(diagnostic = () => {}) {
   const modules = await moduleFiles(dirname(options.main));
   modules.sort((a, b) => a.path === options.main ? -1 : b.path === options.main ? 1 : a.path.localeCompare(b.path));
   const messages = [], owner = address('synthetic-lamp-1');
+  const issuer = 'https://identity.example.test';
+  const idp = await provider({ issuer, alg: 'ES256', clientId: 'synthetic-lamp-oidc',
+    method: 'private_key_jwt', redirectUri: origin + '/auth/oidc/company/callback',
+    rerInterfaces: ['oidc-provider@1.0.0'] });
+  idp.options.clientKey = idp.key.public;
   let runtime;
   const close = async () => { try { await runtime?.dispose(); } finally { await rm(state, { recursive: true, force: true }); } };
   try {
@@ -47,10 +54,16 @@ export async function managementInstallation(diagnostic = () => {}) {
       bindings: { ...workerOptions.bindings, LAMP_APP_HOST: '127.0.0.1', LAMP_PAGE_HOST: 'localhost', LAMP_LOCAL_ORIGIN: origin,
         AUTH_ORIGIN: origin, AUTH_LOCAL: 'true', SETUP_OPERATOR_EMAIL: owner,
         SESSION_SECRET: 'synthetic-lamp-session-1'.repeat(4), SETUP_TOKEN: 'synthetic-lamp-setup-1'.repeat(4),
+        AUTH_PROVIDERS: JSON.stringify([{ id: 'company', label: 'Company SSO', preset: 'auth', issuer,
+          clientId: 'synthetic-lamp-oidc', privateKey: idp.key.private }]),
         SUBSCRIBER_TOKEN_SECRET: 'synthetic-lamp-subscriber-1'.repeat(4), WEBHOOK_SIGNING_SECRET: 'synthetic-lamp-webhook-1'.repeat(4),
         MAIL_PROVIDER: 'resend', MAIL_FROM_ADDRESS: address('synthetic-lamp-2'), MAIL_PROVIDER_API_KEY: 'synthetic-lamp-mail-1' },
       outboundService: async request => {
         const url = new URL(request.url);
+        if (url.origin === issuer) {
+          return idp.fetch(request.url, { method: request.method, redirect: 'manual',
+            body: request.method === 'POST' ? await request.text() : undefined });
+        }
         assert.equal(url.origin + url.pathname, 'https://api.resend.com/emails', 'only the synthetic mail edge is called');
         messages.push(await request.json());
         return Response.json({ id: `synthetic-lamp-mail-${messages.length}` });
@@ -67,12 +80,12 @@ export async function managementInstallation(diagnostic = () => {}) {
     await db.prepare("INSERT INTO page_settings(id,page_name,tagline,accent_color,timezone,hostname,feed_id,mail_from_address,created_at,updated_at) VALUES('default','Synthetic Lamp','Team journey','#16794C','UTC','localhost','synthetic-lamp-feed-1',?,'2026-10-01','2026-10-01')").bind(address('synthetic-lamp-2')).run();
     await db.prepare("INSERT INTO setup_readiness(step,evidence_key,checked_at) VALUES('first-run','complete','2026-10-01')").run();
     assert.equal((await post('/auth/magic-link', { email: owner })).status, 202);
-    return { origin, owner, db, messages, close };
+    return { origin, owner, db, messages, idp, close };
   } catch (error) { await close(); throw error; }
 }
 
 /** TEAM-002's Settings invitation and erasure are one complete team journey. */
-export async function operatorManagementFlow({ browser, capture, diagnostic = () => {} }) {
+export async function operatorManagementFlow({ browser, capture, proof, diagnostic = () => {} }) {
   const fixture = await managementInstallation(diagnostic);
   const { origin, owner, db, messages } = fixture;
   const ownerContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -142,6 +155,10 @@ export async function operatorManagementFlow({ browser, capture, diagnostic = ()
     const savedIncident = (await (await invitedPage.request.get(origin + `/api/app/incidents/${incident.id}`)).json()).incident;
     const publication = await invitedPage.request.post(origin + `/api/app/incidents/${incident.id}/publish`, { headers: { Origin: origin, 'If-Match': `${savedIncident.draft?.id ?? "-"}:${savedIncident.updates.length}` }, data: { channels: [] } });
     assert.equal(publication.status(), 200, 'the default invitation permits posting updates');
+    await requiredSignInFlow({ browser, page, origin, idp: fixture.idp, email, operatorId: pending.id, messages, proof });
+    await page.goto(origin + '/app/settings#operators');
+    await operatorHydrated(page);
+
     const active = await db.prepare('SELECT * FROM oa_operators WHERE id=?').bind(pending.id).first();
     assert.equal(active.status, 'active', 'confirmation durably activates the invited identity');
     const cookies = await invitedContext.cookies(origin);

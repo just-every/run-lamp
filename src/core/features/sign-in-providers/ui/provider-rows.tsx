@@ -15,14 +15,14 @@ function meta(provider: SignInProviderView) {
 }
 
 /** Google and Okta as compact rows: name, one quiet line, state, then Set up or Edit and Disconnect. */
-export function ProviderRows({ providers, canEdit, unavailable, editing, onEdit, onChanged, onStale }: { providers: SignInProviderView[]; canEdit: boolean; unavailable: string | null; editing: SignInProviderId | null; onEdit: (id: SignInProviderId) => void; onChanged: (disconnected: SignInProviderId) => void; onStale: () => void }) {
+export function ProviderRows({ providers, requiredProvider, canEdit, unavailable, editing, onEdit, onChanged, onStale }: { providers: SignInProviderView[]; requiredProvider: string | null; canEdit: boolean; unavailable: string | null; editing: SignInProviderId | null; onEdit: (id: SignInProviderId) => void; onChanged: (disconnected: SignInProviderId) => void; onStale: () => void }) {
   return <section className="data-card connected-tools" aria-labelledby="sign-in-providers-title">
     <h2 id="sign-in-providers-title">Providers</h2>
-    <ul className="tool-list">{providers.map(provider => <ProviderRow key={provider.id} provider={provider} canEdit={canEdit} unavailable={unavailable} editing={editing === provider.id} onEdit={() => onEdit(provider.id)} onDisconnected={() => onChanged(provider.id)} onStale={onStale} />)}</ul>
+    <ul className="tool-list">{providers.map(provider => <ProviderRow key={provider.id} provider={provider} required={provider.id === requiredProvider} canEdit={canEdit} unavailable={unavailable} editing={editing === provider.id} onEdit={() => onEdit(provider.id)} onDisconnected={() => onChanged(provider.id)} onStale={onStale} />)}</ul>
   </section>;
 }
 
-function ProviderRow({ provider, canEdit, unavailable, editing, onEdit, onDisconnected, onStale }: { provider: SignInProviderView; canEdit: boolean; unavailable: string | null; editing: boolean; onEdit: () => void; onDisconnected: () => void; onStale: () => void }) {
+function ProviderRow({ provider, required, canEdit, unavailable, editing, onEdit, onDisconnected, onStale }: { provider: SignInProviderView; required: boolean; canEdit: boolean; unavailable: string | null; editing: boolean; onEdit: () => void; onDisconnected: () => void; onStale: () => void }) {
   const { name } = PROVIDER_COPY[provider.id];
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -45,10 +45,10 @@ function ProviderRow({ provider, canEdit, unavailable, editing, onEdit, onDiscon
     <span className={`state-pill ${pill.tone}`}>{pill.label}</span>
     {canEdit && <span className="tool-row-actions">
       <Button type="button" variant="secondary" className="table-action" aria-label={`${verb} ${name}`} aria-expanded={editing} disabled={provider.source === "none" && Boolean(unavailable)} onClick={onEdit}>{verb}</Button>
-      {provider.source === "app" && <Button type="button" variant="secondary" className="table-action" aria-label={`Disconnect ${name}`} disabled={busy} onClick={() => setConfirming(true)}>Disconnect</Button>}
+      {provider.source === "app" && <Button type="button" variant="secondary" className="table-action" aria-label={`Disconnect ${name}`} disabled={busy || required} onClick={() => setConfirming(true)}>Disconnect</Button>}
     </span>}
     {confirming && <div className="tool-confirm" role="group" aria-label={`Disconnect ${name}?`}>
-      <p>Disconnect {name}? People signed in with {name} are signed out. Email sign-in links keep working.</p>
+      <p>Disconnect {name}? People signed in with {name} are signed out.</p>
       <div className="form-actions"><Button type="button" variant="secondary" disabled={busy} onClick={() => setConfirming(false)}>Keep</Button><Button type="button" variant="secondary" className="danger-button" disabled={busy} onClick={() => void disconnect()}>{busy ? "Disconnecting…" : `Disconnect ${name}`}</Button></div>
       {error && <FormError>{error}</FormError>}
     </div>}

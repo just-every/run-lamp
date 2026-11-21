@@ -24,6 +24,8 @@ export interface SignInStatusView {
   canEdit: boolean;
   confirmed: boolean;
   signInEnabled: boolean;
+  requiredProvider: string | null;
+  qualifiedProviders: Array<{ id: string; label: string }>;
   unavailable: string | null;
   providers: SignInProviderView[];
   /** The people an Okta user ID can be paired with: active and invited operators. Owners only. */
