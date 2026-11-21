@@ -8144,7 +8144,7 @@
       "executable": false
     },
     "tests/e2e/helpers/accessibility-subscription-flow.mjs": {
-      "sha256": "a592977d2e77cfca1478ef5739910b6a70d4fe91854dbea7dbe4f56c2d451d5e",
+      "sha256": "971a672ba6b00b4f80c1b142cf7486e2ddefd2914559dc83e2c3e0b38271f78a",
       "executable": false
     },
     "tests/e2e/helpers/another-tool-setup-journey.mjs": {
@@ -8756,7 +8756,7 @@
       "executable": false
     },
     "tests/e2e/maintenance-timezone.test.mjs": {
-      "sha256": "a564b2fc234c2d877fccc006024693ff23794042bdda80cc4c528aedeff42537",
+      "sha256": "bcdb5f5508113d761ed773ded4fdd09d3487a0342ecdeecc9c14dcc34613caca",
       "executable": false
     },
     "tests/e2e/owned-process-group.mjs": {
