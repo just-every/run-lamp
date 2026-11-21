@@ -8016,7 +8016,7 @@
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {
-      "sha256": "91e607858b740567ec5313e291196c850e93cccb352af9fc43ac97f54e29493b",
+      "sha256": "32595d077e3a5c41511f2a677a507580c330b3190dcc8e8211d5250f71f57b1c",
       "executable": false
     },
     "tests/auth-adoption/role-portability.mjs": {
@@ -10076,7 +10076,7 @@
       "executable": false
     },
     "tests/helpers/archive-history.mjs": {
-      "sha256": "b4052ac8f7e74b6dbbbc830d92b0f9f5d3be92ee765db7d23c43a301d70904d3",
+      "sha256": "1cbc4cca8fa631cc1220ce2783da85ec2507c0fcba3509489cf55c43b5ef53dc",
       "executable": false
     },
     "tests/helpers/cloudflare-edge-preload.mjs": {
