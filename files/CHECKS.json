@@ -1,0 +1,89 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "8afab1e051703df9842745b725acef9a0b10575b",
+  "observedProductRefs": {
+    "refs/heads/cloud/sd-lamp-c-f174": "8afab1e051703df9842745b725acef9a0b10575b",
+    "refs/heads/main": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26"
+  },
+  "node": "22.20.0",
+  "pnpm": "10.12.4",
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 --test-reporter=tap tests/e2e/incident-brief.test.mjs",
+      "exit": 0,
+      "results": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "documentsWritten": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0,
+      "note": "Passed again on the clean candidate"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "output": "Verification plan: 9 test shards and one shared build, 36 routine test files, 116 registered cases (including release qualification) + 10 assertion scripts = 126 checks."
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    }
+  ],
+  "candidatePublicationChecks": {
+    "allCandidateCommitsAudited": 1,
+    "trailers": 0,
+    "newEmailShapedStrings": 0
+  },
+  "baseWorkflows": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44872765882",
+      "id": 44872765882,
+      "name": "Verify",
+      "run_attempt": 1,
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "2d49c9f3a8eb566e43b36126dbb844b6d9591b26",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44872765905",
+      "id": 44872765905,
+      "name": "Run site",
+      "run_attempt": 1,
+      "status": "completed"
+    }
+  ]
+}

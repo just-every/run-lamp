@@ -1,0 +1,375 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f174",
+  "head": "8afab1e051703df9842745b725acef9a0b10575b",
+  "test": "INTAKE-001 INTAKE-002 INTAKE-003 INTAKE-004 INTAKE-005 DRAFT-001 DRAFT-002 DRAFT-003 DRAFT-004 AGENT-002 AGENT-004 \u2014 authenticated alert to private evidence, cited suggestion and operator-approved recovery even when AI fails",
+  "command": "node --test --test-concurrency=1 --test-reporter=tap tests/e2e/incident-brief.test.mjs",
+  "exit": 0,
+  "runner": "local cloud Worker with controlled Date",
+  "elapsedSinceRecoveryMs": {
+    "beforeBoundary": 299999,
+    "atBoundary": 300000
+  },
+  "results": {
+    "tests": 1,
+    "pass": 1,
+    "fail": 0,
+    "skipped": 0
+  },
+  "observations": {
+    "firing": {
+      "status": 202,
+      "receiptId": "020GQ5MRG0090H6DJFPBGYM0AV",
+      "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+      "replayed": false
+    },
+    "firingReceipt": {
+      "id": "020GQ5MRG0090H6DJFPBGYM0AV",
+      "sourceId": "020GQ5MRG019FEX0CG0AC55SJG",
+      "deduplicationKey": "checkout-recovery-hold",
+      "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+      "state": "firing",
+      "receivedAt": "2040-04-02T12:00:00.000Z",
+      "recoveredAt": null,
+      "error": null,
+      "createdAt": "2040-04-02T12:00:00.000Z",
+      "updatedAt": "2040-04-02T12:00:00.000Z",
+      "sourceName": "Checkout recovery hold monitor"
+    },
+    "recovered": {
+      "status": 202,
+      "receiptId": "020GQ5PK30MT9SJ1DH2JNMKZ0S",
+      "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+      "replayed": false
+    },
+    "recoveredReceipt": {
+      "id": "020GQ5PK30MT9SJ1DH2JNMKZ0S",
+      "sourceId": "020GQ5MRG019FEX0CG0AC55SJG",
+      "deduplicationKey": "checkout-recovery-hold",
+      "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+      "state": "recovered",
+      "receivedAt": "2040-04-02T12:01:00.000Z",
+      "recoveredAt": "2040-04-02T12:01:00.000Z",
+      "error": null,
+      "createdAt": "2040-04-02T12:01:00.000Z",
+      "updatedAt": "2040-04-02T12:01:00.000Z",
+      "sourceName": "Checkout recovery hold monitor"
+    },
+    "linkedFiringReceipt": {
+      "id": "020GQ5MRG0090H6DJFPBGYM0AV",
+      "sourceId": "020GQ5MRG019FEX0CG0AC55SJG",
+      "deduplicationKey": "checkout-recovery-hold",
+      "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+      "state": "firing",
+      "receivedAt": "2040-04-02T12:00:00.000Z",
+      "recoveredAt": "2040-04-02T12:01:00.000Z",
+      "error": null,
+      "createdAt": "2040-04-02T12:00:00.000Z",
+      "updatedAt": "2040-04-02T12:01:00.000Z",
+      "sourceName": "Checkout recovery hold monitor"
+    },
+    "draft": {
+      "id": "020GQ5MRG0GV9SGD42AX3J24XV",
+      "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+      "lifecycle": "Resolved",
+      "affectedAudience": "Customers checking out",
+      "customerImpact": "Checkout requests are succeeding again.",
+      "whatStillWorks": "Browsing remains available throughout recovery.",
+      "details": "The checkout incident has ended.",
+      "nextUpdateAt": null,
+      "authorOperatorId": "01J00000000000000000000091",
+      "createdAt": "2040-04-02T12:00:00.000Z",
+      "updatedAt": "2040-04-02T12:00:00.000Z",
+      "scheduledPublishAt": null,
+      "scheduledChannelsJson": null,
+      "reviewedByOperatorId": null,
+      "reviewedAt": null,
+      "correctsUpdateId": null,
+      "componentChangesJson": "[]",
+      "agentPreparationJson": null,
+      "agentPreparation": null,
+      "componentChanges": [],
+      "scheduledChannels": []
+    },
+    "beforeBoundary": {
+      "check": {
+        "passed": false,
+        "checkedAt": "2040-04-02T12:05:59.999Z",
+        "holdMinutes": 5,
+        "items": [
+          {
+            "source": "Checkout recovery hold monitor",
+            "key": "checkout-recovery-hold",
+            "evidenceAt": "2040-04-02T12:01:00.000Z",
+            "recoveredAt": "2040-04-02T12:01:00.000Z",
+            "state": "holding"
+          }
+        ],
+        "notTracked": [
+          "Vendor dependencies",
+          "Public-page traffic baseline",
+          "Linked support tickets",
+          "Continuous monitor passing samples"
+        ],
+        "trafficLearning": [
+          "page",
+          "history",
+          "incident",
+          "maintenance",
+          "feed",
+          "widget",
+          "status",
+          "asset",
+          "badge",
+          "component",
+          "public-api"
+        ]
+      },
+      "status": 409,
+      "response": {
+        "error": "A recovery check still reports a problem or a monitor recovered less than five minutes ago. Give a reason to publish Resolved now.",
+        "recovery": {
+          "passed": false,
+          "checkedAt": "2040-04-02T12:05:59.999Z",
+          "holdMinutes": 5,
+          "items": [
+            {
+              "source": "Checkout recovery hold monitor",
+              "key": "checkout-recovery-hold",
+              "evidenceAt": "2040-04-02T12:01:00.000Z",
+              "recoveredAt": "2040-04-02T12:01:00.000Z",
+              "state": "holding"
+            }
+          ],
+          "notTracked": [
+            "Vendor dependencies",
+            "Public-page traffic baseline",
+            "Linked support tickets",
+            "Continuous monitor passing samples"
+          ],
+          "trafficLearning": [
+            "page",
+            "history",
+            "incident",
+            "maintenance",
+            "feed",
+            "widget",
+            "status",
+            "asset",
+            "badge",
+            "component",
+            "public-api"
+          ]
+        }
+      },
+      "draft": {
+        "id": "020GQ5MRG0GV9SGD42AX3J24XV",
+        "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+        "lifecycle": "Resolved",
+        "affectedAudience": "Customers checking out",
+        "customerImpact": "Checkout requests are succeeding again.",
+        "whatStillWorks": "Browsing remains available throughout recovery.",
+        "details": "The checkout incident has ended.",
+        "nextUpdateAt": null,
+        "authorOperatorId": "01J00000000000000000000091",
+        "createdAt": "2040-04-02T12:00:00.000Z",
+        "updatedAt": "2040-04-02T12:00:00.000Z",
+        "scheduledPublishAt": null,
+        "scheduledChannelsJson": null,
+        "reviewedByOperatorId": null,
+        "reviewedAt": null,
+        "correctsUpdateId": null,
+        "componentChangesJson": "[]",
+        "agentPreparationJson": null,
+        "agentPreparation": null,
+        "componentChanges": [],
+        "scheduledChannels": []
+      },
+      "updates": [
+        {
+          "automationAttribution": null,
+          "automationReceiptId": null,
+          "id": "020GQ5MRG0CXAS6BV5QPZRB56Y",
+          "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+          "lifecycle": "Identified",
+          "affectedAudience": "Checkout customers",
+          "customerImpact": "Checkout requests are failing.",
+          "whatStillWorks": "Browsing remains available.",
+          "details": "",
+          "nextUpdateAt": "2040-04-02T13:00:00.000Z",
+          "publishedAt": "2040-04-02T12:00:00.000Z",
+          "isRetroactive": false,
+          "authorOperatorId": "01J00000000000000000000091",
+          "correctsUpdateId": null,
+          "componentChanges": [
+            {
+              "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+              "name": "Checkout recovery hold API",
+              "previousState": "Operational",
+              "newState": "Major outage",
+              "internal": false
+            }
+          ],
+          "componentSnapshot": [
+            {
+              "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+              "name": "Checkout recovery hold API",
+              "previousState": "Operational",
+              "newState": "Major outage",
+              "internal": false
+            }
+          ],
+          "createdAt": "2040-04-02T12:00:00.000Z",
+          "updatedAt": "2040-04-02T12:00:00.000Z"
+        }
+      ]
+    },
+    "atBoundary": {
+      "check": {
+        "passed": true,
+        "checkedAt": "2040-04-02T12:06:00.000Z",
+        "holdMinutes": 5,
+        "items": [
+          {
+            "source": "Checkout recovery hold monitor",
+            "key": "checkout-recovery-hold",
+            "evidenceAt": "2040-04-02T12:01:00.000Z",
+            "recoveredAt": "2040-04-02T12:01:00.000Z",
+            "state": "recovered"
+          }
+        ],
+        "notTracked": [
+          "Vendor dependencies",
+          "Public-page traffic baseline",
+          "Linked support tickets",
+          "Continuous monitor passing samples"
+        ],
+        "trafficLearning": [
+          "page",
+          "history",
+          "incident",
+          "maintenance",
+          "feed",
+          "widget",
+          "status",
+          "asset",
+          "badge",
+          "component",
+          "public-api"
+        ]
+      },
+      "status": 200,
+      "update": {
+        "automationAttribution": null,
+        "automationReceiptId": null,
+        "id": "020GQ5MRG0GV9SGD42AX3J24XV",
+        "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+        "lifecycle": "Resolved",
+        "affectedAudience": "Customers checking out",
+        "customerImpact": "Checkout requests are succeeding again.",
+        "whatStillWorks": "Browsing remains available throughout recovery.",
+        "details": "The checkout incident has ended.",
+        "nextUpdateAt": null,
+        "publishedAt": "2040-04-02T12:06:00.000Z",
+        "isRetroactive": false,
+        "authorOperatorId": "01J00000000000000000000091",
+        "correctsUpdateId": null,
+        "componentChanges": [
+          {
+            "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+            "name": "Checkout recovery hold API",
+            "previousState": "Major outage",
+            "newState": "Operational",
+            "internal": false
+          }
+        ],
+        "componentSnapshot": [
+          {
+            "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+            "name": "Checkout recovery hold API",
+            "previousState": "Major outage",
+            "newState": "Operational",
+            "internal": false
+          }
+        ],
+        "createdAt": "2040-04-02T12:06:00.000Z",
+        "updatedAt": "2040-04-02T12:06:00.000Z"
+      },
+      "draft": null,
+      "updates": [
+        {
+          "automationAttribution": null,
+          "automationReceiptId": null,
+          "id": "020GQ5MRG0GV9SGD42AX3J24XV",
+          "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+          "lifecycle": "Resolved",
+          "affectedAudience": "Customers checking out",
+          "customerImpact": "Checkout requests are succeeding again.",
+          "whatStillWorks": "Browsing remains available throughout recovery.",
+          "details": "The checkout incident has ended.",
+          "nextUpdateAt": null,
+          "publishedAt": "2040-04-02T12:06:00.000Z",
+          "isRetroactive": false,
+          "authorOperatorId": "01J00000000000000000000091",
+          "correctsUpdateId": null,
+          "componentChanges": [
+            {
+              "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+              "name": "Checkout recovery hold API",
+              "previousState": "Major outage",
+              "newState": "Operational",
+              "internal": false
+            }
+          ],
+          "componentSnapshot": [
+            {
+              "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+              "name": "Checkout recovery hold API",
+              "previousState": "Major outage",
+              "newState": "Operational",
+              "internal": false
+            }
+          ],
+          "createdAt": "2040-04-02T12:06:00.000Z",
+          "updatedAt": "2040-04-02T12:06:00.000Z"
+        },
+        {
+          "automationAttribution": null,
+          "automationReceiptId": null,
+          "id": "020GQ5MRG0CXAS6BV5QPZRB56Y",
+          "incidentId": "020GQ5MRG0ZZJXZ7SZXND2C7JN",
+          "lifecycle": "Identified",
+          "affectedAudience": "Checkout customers",
+          "customerImpact": "Checkout requests are failing.",
+          "whatStillWorks": "Browsing remains available.",
+          "details": "",
+          "nextUpdateAt": "2040-04-02T13:00:00.000Z",
+          "publishedAt": "2040-04-02T12:00:00.000Z",
+          "isRetroactive": false,
+          "authorOperatorId": "01J00000000000000000000091",
+          "correctsUpdateId": null,
+          "componentChanges": [
+            {
+              "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+              "name": "Checkout recovery hold API",
+              "previousState": "Operational",
+              "newState": "Major outage",
+              "internal": false
+            }
+          ],
+          "componentSnapshot": [
+            {
+              "componentId": "020GQ5MRG02FQGRAP9DF57Y035",
+              "name": "Checkout recovery hold API",
+              "previousState": "Operational",
+              "newState": "Major outage",
+              "internal": false
+            }
+          ],
+          "createdAt": "2040-04-02T12:00:00.000Z",
+          "updatedAt": "2040-04-02T12:00:00.000Z"
+        }
+      ]
+    }
+  }
+}

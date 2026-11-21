@@ -1,0 +1,27 @@
+{
+  "head": "8afab1e051703df9842745b725acef9a0b10575b",
+  "workflow": "Verify",
+  "event": "push",
+  "runId": 44874143345,
+  "runAttempt": 1,
+  "url": "https://github.com/just-every/run-lamp/actions/runs/44874143345",
+  "observations": [
+    {
+      "at": "2026-11-21T06:09:10+00:00",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "at": "2026-11-21T06:14:11+00:00",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "at": "2026-11-21T06:19:12+00:00",
+      "status": "in_progress",
+      "conclusion": null
+    }
+  ],
+  "status": "in_progress",
+  "conclusion": null
+}
