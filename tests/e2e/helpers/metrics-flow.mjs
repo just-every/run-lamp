@@ -7,7 +7,12 @@ import { mkdir } from "node:fs/promises";
 import { openFollowUpsRuntime,eventuallyFollowUp } from "./follow-ups-runtime.mjs";
 import { metricsProviderEdge } from "./metrics-provider-edge.mjs";
 export async function metricsFlow({t}) {
-  const calls=[],fixture=await openFollowUpsRuntime({pageHost:"localhost",providerEdge:metricsProviderEdge(calls)});
+  const calls = [];
+  const fixture = await openFollowUpsRuntime({
+    pageHost: "localhost",
+    providerEdge: metricsProviderEdge(calls),
+    workerEntry: "tests/e2e/helpers/automation-clock-worker.ts",
+  });
   const {api,post,raw,publicOrigin}=fixture;
   const minute=Math.floor(Date.now()/60_000)*60_000;
   const made=await post("/api/app/components",{name:"synthetic-lamp-23",groupId:null,description:"API response times",internal:false,displayOrder:0,note:""});assert.equal(made.status,201,made.text);
@@ -151,9 +156,73 @@ export async function metricsFlow({t}) {
     assert.deepEqual(at(86400,dayCutoff+day),{resolution:86400,bucket:dayCutoff+day,value_sum:77,samples:7},"a day just inside ninety days remains daily");
     assert.equal(at(86400,dayCutoff-day),undefined,"a day just outside ninety days expires");
     assert.equal(retained.length,5,"only the expected retained and rolled aggregates remain");
+    const { admitted, retryAfter } = await assertReadTokenRateLimit({ api, mint, readComponents, readMetrics });
+    t.diagnostic(`API-001: ${admitted} component reads admitted before quota exhaustion. Metric reads returned 429 with Retry-After ${retryAfter}, left usage unchanged, admitted the second token and restored the first at the next minute.`);
     t.diagnostic("UPTIME-008/INTAKE-011: next-snapshot pushes, four real provider adapters at fake edges, twenty-minute disconnected gap, verified Uptime timings and aggregate retention passed.");
   } finally {await fixture.close();}
 }
+async function assertReadTokenRateLimit({ api, mint, readComponents, readMetrics }) {
+  const nextMinute = (Math.floor(Date.now() / 60_000) + 2) * 60_000;
+  const admittedAt = nextMinute - 47_750;
+  const refusedAt = nextMinute - 22_500;
+  const setClock = async now => {
+    const result = await api("/test/clock", { method: "PUT", body: JSON.stringify({ now }) });
+    assert.equal(result.status, 204, result.text);
+  };
+  const metadata = async credential => {
+    const result = await api("/api/app/management-tokens");
+    assert.equal(result.status, 200);
+    const token = result.body.tokens.find(row => row.id === credential.id);
+    assert.ok(token, "the issued token is in the operator inventory");
+    return token;
+  };
+
+  await setClock(admittedAt);
+  const first = await mint(["read"]);
+  const second = await mint(["read"]);
+  assert.notEqual(first.credential.id, second.credential.id);
+  assert.equal(first.credential.issuerId, second.credential.issuerId);
+
+  // Bound the probe if enforcement breaks without pinning the quota's value.
+  let admitted = 0;
+  for (; admitted < 120; admitted++) {
+    const response = await readComponents(first.token);
+    await response.arrayBuffer();
+    if (response.status === 429) break;
+    assert.equal(response.status, 200, "versioned component reads consume the token's quota");
+  }
+  assert.ok(admitted > 0 && admitted < 120, "the first token serves reads and then exhausts its quota");
+  const beforeRefusal = await metadata(first.credential);
+  assert.equal(beforeRefusal.lastUsedAt, admittedAt);
+
+  // A later instant in the same window exposes a spurious last-used update.
+  await setClock(refusedAt);
+  const refused = await readMetrics(first.token);
+  assert.equal(refused.status, 429, "the same exhausted token cannot read another resource");
+  const retryAfter = refused.headers.get("Retry-After");
+  assert.equal(retryAfter, String(Math.ceil((nextMinute - refusedAt) / 1000)));
+  assert.deepEqual(await metadata(first.credential), beforeRefusal, "rate-limited reads leave token usage unchanged");
+
+  const expectedMetrics = (await api("/api/app/metrics")).body;
+  const independent = await readMetrics(second.token);
+  assert.equal(independent.status, 200, "another read token from the same operator still has its own quota");
+  assert.deepEqual(await independent.json(), expectedMetrics);
+  assert.equal((await metadata(second.credential)).lastUsedAt, refusedAt);
+
+  await setClock(nextMinute - 1);
+  const stillRefused = await readMetrics(first.token);
+  assert.equal(stillRefused.status, 429, "the quota remains exhausted through the end of the minute");
+  assert.equal(stillRefused.headers.get("Retry-After"), "1");
+  assert.deepEqual(await metadata(first.credential), beforeRefusal);
+
+  await setClock(nextMinute);
+  const restored = await readMetrics(first.token);
+  assert.equal(restored.status, 200, "the exhausted token can read again at the next minute boundary");
+  assert.deepEqual(await restored.json(), expectedMetrics);
+  assert.equal((await metadata(first.credential)).lastUsedAt, nextMinute);
+  return { admitted, retryAfter };
+}
+
 async function auditPublicCharts(origin) {
   const browser=await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined),headless:true,args:["--no-sandbox","--use-mock-keychain","--password-store=basic"]});
   try {
