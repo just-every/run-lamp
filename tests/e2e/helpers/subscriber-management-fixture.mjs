@@ -66,6 +66,14 @@ export async function openSubscriberManagementFixture({ webhookReceiver, pageHos
     const link = message.text.match(/https?:\/\/\S+\/confirm-subscription\/\S+/)[0];
     assert.equal((await fixture.raw(link)).status, 200, "the public confirmation door activates the subscriber");
   };
+  const sendDeliveryReceipt = async ({ id: providerMessageId, idempotencyKey }, now = Date.now()) => {
+    const id = 'synthetic-lamp-receipt-' + idempotencyKey.split('/').at(-1);
+    const timestamp = String(Math.floor(now / 1000));
+    const body = JSON.stringify({ type: "email.delivered", data: { email_id: providerMessageId } });
+    const signature = createHmac("sha256", receiptKey).update(id + "." + timestamp + "." + body).digest("base64url");
+    const event = await fixture.raw(pageOrigin + "/api/intake/mail-events", { method: "POST", headers: { "Content-Type": "application/json", "svix-id": id, "svix-timestamp": timestamp, "svix-signature": "v1," + signature }, body });
+    assert.equal(event.status, 200, "the real adapter accepts the provider's signed delivery receipt");
+  };
   const publish = async (component, title) => {
     const created = await fixture.post("/api/app/incidents", { title, components: [{ componentId: component.id, state: "Partially unavailable", relationship: "Primary" }] });
     assert.equal(created.status, 201, created.text);
@@ -85,12 +93,7 @@ export async function openSubscriberManagementFixture({ webhookReceiver, pageHos
     for (const delivery of accepted.filter(row => row.channel === "email")) {
       const receipt = fixture.mailReceipts.find(row => row.idempotencyKey === `notification/${delivery.id}`);
       assert.ok(receipt, "the provider edge recorded the exact delivery's acceptance ID");
-      const id = `synthetic-lamp-receipt-${delivery.id}`;
-      const timestamp = String(Math.floor(Date.now() / 1000));
-      const body = JSON.stringify({ type: "email.delivered", data: { email_id: receipt.id } });
-      const signature = createHmac("sha256", receiptKey).update(`${id}.${timestamp}.${body}`).digest("base64url");
-      const event = await fixture.raw(`${pageOrigin}/api/intake/mail-events`, { method: "POST", headers: { "Content-Type": "application/json", "svix-id": id, "svix-timestamp": timestamp, "svix-signature": `v1,${signature}` }, body });
-      assert.equal(event.status, 200, "the real adapter accepts the provider's signed delivery receipt");
+      await sendDeliveryReceipt(receipt);
     }
     // Await actual publication dispatch through its public delivery record,
     // including the empty recipient set in the out-of-scope case.
@@ -118,5 +121,5 @@ export async function openSubscriberManagementFixture({ webhookReceiver, pageHos
     assert.deepEqual([...after.keys()], [...before.keys()], "dry run creates no database table");
     for (const [name, value] of before) assert.ok(after.get(name) === value, `dry run changed ${name}`);
   };
-  return { ...fixture, createComponent, list, messagesFor, confirm, publish, databaseState, assertUnchanged };
+  return { ...fixture, createComponent, list, messagesFor, confirm, publish, sendDeliveryReceipt, databaseState, assertUnchanged };
 }

@@ -476,7 +476,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a2f71f5336a8e90ae37e8a7bc4fcdee82a71588198c896b9b6bc8bc607516225",
+      "sha256": "2893418d24e094a7bc7ef588f02ede96febd4098257518ff7f5416661063b20e",
       "executable": false
     },
     "AGENTS.md": {
@@ -524,7 +524,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5143f61d67908656da12a6ac79943486325f7c937624f6dc18ff6f104f7d20b9",
+      "sha256": "004b161eb20049b9a470097d1d535c82eeaf3d5b55c966288b5a7622df9d0bc0",
       "executable": false
     },
     "DEMO.md": {
@@ -580,7 +580,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "72c8cbf51e05fb1658c339ba06e37341a706977258dc4c6a53ac25c4c7c48af0",
+      "sha256": "bc4be77aedcc944e95328f223b865f921a36d9493151de3c4c972c61002c3c93",
       "executable": false
     },
     "docs/components-and-groups.md": {
@@ -8016,7 +8016,7 @@
       "executable": false
     },
     "tests/auth-adoption/portability.test.mjs": {
-      "sha256": "91e607858b740567ec5313e291196c850e93cccb352af9fc43ac97f54e29493b",
+      "sha256": "32595d077e3a5c41511f2a677a507580c330b3190dcc8e8211d5250f71f57b1c",
       "executable": false
     },
     "tests/auth-adoption/role-portability.mjs": {
@@ -8116,7 +8116,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "c797f341a4a65833a262e32d14105259af4df53d1d1da653be03bbf38967a48c",
+      "sha256": "e238b5889b85b910323858f9e8b67b2f10050174dc8afe7bf4fc5f644bb6c7b2",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -8361,6 +8361,10 @@
     },
     "tests/e2e/helpers/mail-failover-flow.mjs": {
       "sha256": "4d96b9ce2fe368545e441bad93147b11a1d4902005958dde9e1e65323c4b5fec",
+      "executable": false
+    },
+    "tests/e2e/helpers/mail-outage-recovery-flow.mjs": {
+      "sha256": "37334530f3ca1351a5ea39b853eeb60028efc9d6ecbe18c6e2df347084d6b3b6",
       "executable": false
     },
     "tests/e2e/helpers/mail-provider-fixtures.mjs": {
@@ -8624,7 +8628,7 @@
       "executable": false
     },
     "tests/e2e/helpers/subscriber-management-fixture.mjs": {
-      "sha256": "7e34efd791e96e5b3de57c3ce59628f732fc45c4906a655dcc0044981668c1da",
+      "sha256": "58b2b83393260bf0af3f55336b4932829b98f4f4eee451aa751d87e347a5fb3a",
       "executable": false
     },
     "tests/e2e/helpers/subscriber-one-click-flow.mjs": {
@@ -10076,7 +10080,7 @@
       "executable": false
     },
     "tests/helpers/archive-history.mjs": {
-      "sha256": "b4052ac8f7e74b6dbbbc830d92b0f9f5d3be92ee765db7d23c43a301d70904d3",
+      "sha256": "1cbc4cca8fa631cc1220ce2783da85ec2507c0fcba3509489cf55c43b5ef53dc",
       "executable": false
     },
     "tests/helpers/cloudflare-edge-preload.mjs": {
