@@ -2,6 +2,7 @@ import { incidentCorrectionsFlow } from "./helpers/incident-corrections-flow.mjs
 import { updateReachBrowserFlow } from "./helpers/update-reach-browser-flow.mjs";
 import { maintenanceBrowserFlow } from "./helpers/maintenance-browser-flow.mjs";
 import { themeOwnerJourney } from "./helpers/theme-owner-journey.mjs";
+import { statusCardContrastFlow } from "./helpers/theme-flow.mjs";
 import { stripVTControlCharacters } from "node:util";
 import { requestHeaders } from "../helpers/request-headers.mjs";
 import { withDraftVersion } from "./draft-version-helper.mjs";
@@ -434,6 +435,11 @@ async function assertPublicationAfterAiTimeout(width, t) {
   } finally { await publicPage.close(); }
   t.diagnostic(`PROBE DRAFT-003 3: ${width}-wide Publish update committed the unchanged draft and its update ID, wording and times matched the unauthenticated incident permalink`);
 }
+
+// Start with a healthy public page before the incident journeys publish outages.
+test('owner saves readable dark status card colours and a rejected edit stays private', { timeout: 180_000 }, async t => {
+  await statusCardContrastFlow({ api, appUrl, pageUrl, browser, browserContext, diagnostic: message => t.diagnostic(message) });
+});
 
 test('TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys', { timeout: 180_000 }, async () => {
   await (await import('./helpers/audit-labels-flow.mjs')).auditLabelsFlow({ page, appUrl, pageUrl, appFetch, screens: previewScreens });
