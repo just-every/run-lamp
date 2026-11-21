@@ -129,6 +129,7 @@ export function createSignInService(db: D1Database, options: SignInOptions) {
     const auth = await options.auth(request);
     await owner(request, auth);
     if (deployed(id)) throw new SignInError("deploy_configured", 409);
+    if (await repository.requiredProvider() === id) throw new SignInError("provider_in_use", 409);
     const [rows, people] = await Promise.all([repository.registrations(), repository.people()]);
     const row = rows.find(candidate => candidate.id === id);
     if (!row) throw new SignInError("not_set_up", 404);
@@ -140,12 +141,32 @@ export function createSignInService(db: D1Database, options: SignInOptions) {
     await repository.remove(id, actor);
   }
 
+  async function qualified(auth: LampAuth) {
+    return (await auth.providers?.list() ?? []).filter(provider => provider.visible && provider.linked && !provider.pendingRelink);
+  }
+
+  async function setRequiredProvider(request: Request, id: string | null) {
+    const auth = await options.auth(request);
+    await owner(request, auth);
+    const actor = await auth.requireStepUp(request, "providers:relink");
+    const previous = await repository.requiredProvider();
+    if (previous === id) return;
+    const provider = id === null ? null : (await auth.providers?.links())?.find(link => link.id === id);
+    if (id !== null && (!provider || !(await qualified(auth)).some(entry => entry.id === id))) {
+      throw new SignInError("provider_not_qualified", 409);
+    }
+    if (!await repository.setRequiredProvider(actor, previous, provider ?? null)) {
+      throw new SignInError("authority_changed", 409);
+    }
+  }
+
   async function status(request: Request): Promise<SignInStatusView> {
     const auth = await options.auth(request);
     const canEdit = await auth.identitySettings(request).then(() => true, () => false);
-    const [rows, people, links, usable, candidates, signInEnabled] = await Promise.all([
+    const [rows, people, links, usable, candidates, signInEnabled, requiredProvider, qualifiedProviders] = await Promise.all([
       repository.registrations(), repository.people(), auth.listProviders(request), composed(),
       canEdit ? repository.candidates() : Promise.resolve([]), Promise.resolve(auth.accounts.identityEnabled?.()).then(Boolean),
+      repository.requiredProvider(), canEdit ? qualified(auth) : Promise.resolve([]),
     ]);
     const confirmed = canEdit && !options.unavailable && await auth.requireStepUp(request, "providers:relink").then(() => true, () => false);
     const providers = IDS.map<SignInProviderView>(id => {
@@ -163,9 +184,9 @@ export function createSignInService(db: D1Database, options: SignInOptions) {
       const paired = id === "okta" ? people.filter(person => person.providerId === id).map(person => ({ operatorId: person.operatorId, subject: person.subject, displayName: person.displayName, email: person.email })) : undefined;
       return { id, source: "app", status: state, clientId: row.clientId, domain: domainOf(row.issuer), secretSaved: Boolean(entry), redirectUri: redirectUri(id), ...(paired ? { people: paired } : {}) };
     });
-    return { canEdit, confirmed, signInEnabled, unavailable: options.unavailable, providers, operators: candidates.map(({ id, displayName, email }) => ({ id, displayName, email })) };
+    return { canEdit, confirmed, signInEnabled, requiredProvider, qualifiedProviders: qualifiedProviders.map(({ id, label }) => ({ id, label })), unavailable: options.unavailable, providers, operators: candidates.map(({ id, displayName, email }) => ({ id, displayName, email })) };
   }
 
-  return { composed, status, save, savePeople, disconnect };
+  return { composed, status, save, savePeople, disconnect, requiredProvider: repository.requiredProvider, setRequiredProvider };
 }
 export type SignInService = ReturnType<typeof createSignInService>;

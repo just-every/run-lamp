@@ -44,7 +44,7 @@ const SAVES = new Set<SettingsTab>([...FORMS, "operators"]);
 // A pane's title says what it is; a line under it only where it adds something.
 const LINES: Partial<Record<SettingsTab, string>> = {
   tools: "Alerts from your tools open private drafts. Nothing is public until you publish, or a rule you saved does.",
-  "sign-in": "Invited people can sign in with Google or Okta. Email sign-in links keep working.",
+  "sign-in": "Choose how invited people sign in.",
 };
 
 export function SettingsPage() {

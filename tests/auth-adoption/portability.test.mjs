@@ -78,6 +78,7 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     const portableMetrics=await preparePortableMetrics({env:current.env,native,cookie:oldCookie});
     const portableRules = await preparePortableAlertRules({ env: current.env, native, cookie: oldCookie });
     const sourceHistory = await captureArchiveHistory(current.env);
+    await db.prepare("UPDATE oa_auth_settings SET idp_sign_in=1,required_provider='google' WHERE singleton=1").run();
     await current.dispose(); current = null;
     const archivePath = join(directory, 'installation.rer');
     await command(source, 'export', '--output', archivePath);
@@ -94,12 +95,14 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     const nativeArchive = await readFile(join(directory, 'installation.rer'));
     for (const [kind, privateValue] of Object.entries({ key: pagerDutyApiKey, author: pagerDutyFromEmail, ciphertext: pagerDutySealed })) assert.ok(!nativeArchive.includes(privateValue), `native archives exclude the PagerDuty ${kind}`);
     for (const [kind, privateValue] of Object.entries({ secret: signInSecret, ciphertext: signInSealed, 'Okta ciphertext': 'v1.synthetic-lamp-okta-ciphertext' })) assert.ok(!nativeArchive.includes(privateValue), `native archives exclude the sign-in ${kind}`);
-    let archivedSignIn;
+    let archivedSignIn, archivedPolicy;
     for await (const record of fileRecords(join(directory, 'installation.rer'))) {
       if (record.kind !== 'part') continue;
       archivedSignIn ??= record.items.find(item => item.kind === 'row' && item.table === 'sign_in_providers' && item.row.provider_id === 'google');
+      archivedPolicy ??= record.items.find(item => item.kind === 'row' && item.table === 'oa_auth_settings');
     }
     assert.ok(archivedSignIn, 'the registration travels'); assert.equal(archivedSignIn.row.sealed_secret, null, 'its secret does not');
+    assert.equal(archivedPolicy?.row.required_provider, null, 'the destination must qualify its provider before enforcing it');
     let archivedPagerDuty;
     for await (const record of fileRecords(join(directory, 'installation.rer'))) {
       if (record.kind !== 'part') continue;
@@ -174,6 +177,7 @@ test('SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE
     assert.deepEqual({ ...await restored.prepare("SELECT client_id,sealed_secret FROM sign_in_providers WHERE provider_id='google'").first() }, { client_id: 'synthetic-lamp-150019', sealed_secret: null }, 'the restored registration asks for its secret again');
     assert.equal((await restored.prepare('SELECT COUNT(*) n FROM sign_in_people').first()).n, 1, 'the Okta pairing travels');
     const signIn = await (await transferredApp.app.fetch(new Request(fresh.origin + '/api/app/sign-in', { headers: { Cookie: cookie } }), transferredBindings)).json();
+    assert.equal(signIn.requiredProvider, null, 'the restored installation permits native email recovery');
     assert.deepEqual(signIn.providers.map(row => [row.id, row.status]), [['google', 'needs-secret'], ['okta', 'needs-secret']], 'a restored registration is never offered until its secret is pasted again');
     await assertPortableMetrics({expected:portableMetrics,app:transferredApp.app,bindings:transferredBindings,origin:fresh.origin,cookie,db:restored});
     await assertPortableAlertRules({ expected: portableRules, app: transferredApp.app, bindings: transferredBindings, origin: fresh.origin, cookie, oldCookie, db: restored });
