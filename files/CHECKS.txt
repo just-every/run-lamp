@@ -1,0 +1,37 @@
+Task: sd-lamp-port-race-1
+Repository: just-every/run-lamp
+Branch: cloud/sd-lamp-port-race-1
+Product head: e40ea4589b9c7c6a89f5a413094b149180c4149a
+Rebased main: bae6596ccf21e8c6a905b0e708c9a76c4f85c4db
+Branch publication: verified by git ls-remote
+Local toolchain: Node 24.19.0, pnpm 10.12.4, system Chromium 154.0.8037.57
+
+Deterministic occupied-port checks (throwaway local checks)
+Vite occupied-port proof startup retried: first port 44673, ready on port 43975
+PASS: real Vite recovered on attempt 2, the first port stayed occupied, and the original child stopped.
+dev ingress startup retried: first port 44593, ready on port 44393
+PASS: ingress exported both working origins, updated auth environment, and reused the successful port on restart.
+PASS: three early exits tried three distinct ports and then surfaced the startup error.
+
+Local touched browser checks
+Command: node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs tests/e2e/publishing-browser.test.mjs tests/e2e/unsaved-work-browser.test.mjs tests/e2e/cutover-browser.test.mjs
+Result: 13 passed, 1 failed, 14 total.
+THEME-001 picked Playwright's missing bundled browser. This reproduced with the original fixture from main. Two targeted checks routed the Playwright default executable to the VM's system Chromium without changing repository files.
+Candidate and main then reached the same assertion: observed five requests (including /assets/favicon.svg), budget four.
+All exercised fixture and test inputs are byte-identical across the rebase. The incoming main commit changed a different test and the source lock.
+Typecheck (pnpm typecheck) passed before and after the rebase.
+Changed fixture syntax, source-lock check, verification plan, registration comparison, scoped diff hygiene and git diff --check passed.
+Full publication scan runs on the landing machine.
+
+Exact-SHA GitHub Verify
+Run: 44892622721
+URL: https://github.com/just-every/run-lamp/actions/runs/44892622721
+Product head: e40ea4589b9c7c6a89f5a413094b149180c4149a
+Conclusion: completed / failure
+Imports: success (job 136811869352).
+Composer: success (job 136811869372).
+Public: failure (job 136811869393). The Subscriber consent journey in tests/e2e/delivery-contract.test.mjs reported MiniflareCoreError ERR_ADDRESS_IN_USE at 127.0.0.1:37699 while openFollowUpsRuntime in tests/e2e/helpers/follow-ups-runtime.mjs requested its proxy client. The fixture starts workerd via Miniflare.
+Aggregate Verify: failure (job 136814558928). Nine of ten shard completions succeeded. The public job accounted for the aggregate failure.
+Both failed-job archives were read successfully. Product branch is published. Landing remains blocked on successful exact-SHA Verify.
+
+Receipt recorded 2026-11-21T10:21:49Z.
