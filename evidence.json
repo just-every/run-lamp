@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "c04b3ce3b5561562b76955585bf5dd2a355906d3",
+      "bytes": 3307,
+      "path": "CI-RECEIPT.txt",
+      "sha256": "166f9aa66b195bf2cf7343d00d17c239eb979368f6828e6773db14547d78f09b"
+    },
+    {
+      "blob": "e0c176465923a8f9e837e6112d2e47461b2adb06",
+      "bytes": 4646,
+      "path": "FAILED-JOBS.txt",
+      "sha256": "78832f355555785c32e657e097c05b2606f1f56ac45f5d4b570ce6d894873d9e"
+    },
+    {
+      "blob": "6872ed6bb69a253e8a8114fbafc861e880e28a0d",
+      "bytes": 3776,
+      "path": "LOCAL-CHECKS.txt",
+      "sha256": "e03f47ec180b7d685c27ce06b5de9de8ec67292b09202ca4d32cce00074c6fa8"
+    },
+    {
+      "blob": "dfeb2f49b1355737bfaa2a58698dfd11278e69aa",
+      "bytes": 1401,
+      "path": "PRODUCT-RECEIPT.txt",
+      "sha256": "11c562fa5c2ea51ea3bfc7baa074f33eb190465f4e40355a585398303c62fc77"
+    },
+    {
+      "blob": "95153a34bd625f058ad5a791a48eb1fa71ee0cba",
+      "bytes": 4380,
+      "path": "REPORT.md",
+      "sha256": "a115b61895dc1c2d03e963b6956e8ebb47473aa5cd46daf999c2c540bfc8b7eb"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-release-1-11-25-c1",
+  "product_head": "19261bd230d989d6e890c47910fd40c45e5b4ce3",
+  "ref": "refs/heads/evidence/sd-lamp-release-1-11-25-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-release-1-11-25-c1"
+}

@@ -1,0 +1,122 @@
+rer toolchain: node v22.20.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)
+2026-11-21T01:45:15Z
+
+[Frozen dependencies]
+Lockfile is up to date, resolution step is skipped
+Already up to date
+
+Done in 5s using pnpm v10.12.4
+Frozen dependencies exit=0
+
+[Release validator]
+
+> lamp@1.11.25 validate:release /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c1/run-lamp
+> node scripts/validate-release.mjs
+
+Vendor catalog: 20 sources and 162 native state cases validated.
+RELEASE.json validates against the standalone schema for 1.11.25.
+Release validator exit=0
+
+[Typecheck]
+
+> lamp@1.11.25 typecheck /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c1/run-lamp
+> tsc --noEmit
+
+Typecheck exit=0
+
+[Contract generator]
+Wrote 0 contract documents.
+Contract generator exit=0
+
+[Generated contract check]
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+Generated contract check exit=0
+
+[Changelog parity]
+CHANGELOG.md 1.11.25 section equals RELEASE.json publicReleaseNotes byte for byte after trimming section boundaries.
+Changelog parity exit=0
+
+[Migration inventory]
+Tag and candidate migration tree: aaf4efd6c27950bfa38ceb895f5bd532ab688580
+Existing SQL migration blobs: 82
+Migration inventory exit=0
+
+[Tagged snapshots]
+v1.11.24:RELEASE.json -> release-history/1.11.24.json sha256=10a6e8637cd75ea29dc22c0b1ddacb81659f2f64fdf899645449d7d41e69ef41
+v1.11.24:CONTRACT.md -> release-history/1.11.24.CONTRACT.md sha256=d87c0980ff9dc859074461da7a99628712882edf7e13290f625752ad5543da68
+Tagged snapshots exit=0
+
+[Offline Base copy check]
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f"
+    },
+    {
+      "path": "src/base/lobby.ts",
+      "revision": "f2737d02a5f77be042cfdfd237a7dce4689cbe2f"
+    },
+    {
+      "path": "src/base/run-site.ts",
+      "revision": "73923a8d0a5e5a2cd7f0cb204ec97b227d73b4bf"
+    }
+  ],
+  "meaning": "Undeclared copies claim Base byte equality. Declared adaptations must match their acknowledged local bytes and mode; their recorded Base bytes and revision remain comparison baselines."
+}
+
+Offline Base copy check exit=0
+
+[Source lock regeneration]
+      "sha256": "0016f9da9b2d68b89595db66c64d024c4f4b28e11e56fc3a02589531f37c58f6",
+      "executable": false
+    },
+    "vite.site.config.ts": {
+      "sha256": "2fb29edf75b7974ff85de81a9ec738ddd104f69901e5f4d0236533368c1ed698",
+      "executable": false
+    },
+    "wrangler.jsonc": {
+      "sha256": "49814cd393f1340c4b78dfa1e40ed9413f0b264c4b243b20d20a5037357af45b",
+      "executable": false
+    }
+  }
+}
+
+Source lock regeneration exit=0
+
+[Source lock check]
+      "sha256": "0016f9da9b2d68b89595db66c64d024c4f4b28e11e56fc3a02589531f37c58f6",
+      "executable": false
+    },
+    "vite.site.config.ts": {
+      "sha256": "2fb29edf75b7974ff85de81a9ec738ddd104f69901e5f4d0236533368c1ed698",
+      "executable": false
+    },
+    "wrangler.jsonc": {
+      "sha256": "49814cd393f1340c4b78dfa1e40ed9413f0b264c4b243b20d20a5037357af45b",
+      "executable": false
+    }
+  }
+}
+
+Source lock check exit=0
+
+[Diff whitespace check]
+Diff whitespace check exit=0
+M	CHANGELOG.md
+M	RELEASE.json
+M	docs/accessibility/vpat.md
+M	package.json
+A	release-history/1.11.24.CONTRACT.md
+A	release-history/1.11.24.json
+M	seed.json
+M	sources.lock.json
+
+[Verification plan]
+
+> lamp@1.11.25 verify:plan /home/agent/rer-consolidation/work/sd-lamp-release-1-11-25-c1/run-lamp
+> node scripts/verification/check-plan.mjs
+
+Verification plan: 9 test shards and one shared build, 36 routine test files, 115 registered cases (including release qualification) + 10 assertion scripts = 125 checks.
+Verification plan exit=0
+
+[Historical VPAT test path]
+Could not find 'tests/release-history.test.mjs'
+Standalone test file unavailable in the current checkout. The current validate:release command passed.

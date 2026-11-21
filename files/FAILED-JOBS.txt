@@ -1,0 +1,31 @@
+gh run view 44852065021 --repo just-every/run-lamp --job 136685822345 --log-failed (exit 0)
+shards (composer)	Verify this product shard	2026-11-21T01:48:22.8167844Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+shards (composer)	Verify this product shard	2026-11-21T01:51:00.1979395Z # Subtest: MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maintenance in its configured zone, then a customer subscribes by keyboard
+shards (composer)	Verify this product shard	2026-11-21T01:51:44.9365902Z # Subtest: SETUP-001 SUB-002 NOTIFY-001 NOTIFY-004 — Local owner confirms public subscribers and inspects unsent incident notifications
+shards (composer)	Verify this product shard	2026-11-21T01:51:50.0547503Z # Subtest: TEAM-002 — Local operator invitations stay pending without email or a share action
+shards (composer)	Verify this product shard	2026-11-21T01:52:45.4356061Z # Subtest: TEAM-007 — audit labels identify people and subjects while filters and CSV retain machine keys
+shards (composer)	Verify this product shard	2026-11-21T01:53:10.5712186Z # Subtest: TEAM-001 TEAM-004 TEAM-007 INCIDENT-014 — operator roles, permissions, audit and Settings chat identities
+shards (composer)	Verify this product shard	2026-11-21T01:55:55.4875192Z # Subtest: INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-011 UPDATE-013 DRAFT-002 DRAFT-003 DRAFT-004 HIST-002 AGENT-005 SETUP-001 NOTIFY-019 — compiled visual edits and the operator publication journey
+shards (composer)	Verify this product shard	2026-11-21T01:56:56.9402352Z # Subtest: INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review, publication, resolution and maintenance smoke
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3565820Z # Subtest: THEME-001 — owner publishes branded themes and layouts within the page budget
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3567306Z not ok 8 - THEME-001 — owner publishes branded themes and layouts within the page budget
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3578107Z   failureType: 'testCodeFailure'
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3578626Z   error: |-
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3580303Z     Expected: visible
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3580672Z     Timeout: 5000ms
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3581062Z     Error: element(s) not found
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3582315Z       - Expect "toBeVisible" getByRole('heading', { name: 'Theme', exact: true }) with timeout 5000ms
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3585738Z   code: 'ERR_TEST_FAILURE'
+shards (composer)	Verify this product shard	2026-11-21T01:57:09.3590775Z     async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+shards (composer)	Verify this product shard	2026-11-21T01:57:20.3065055Z # Subtest: DEP-001 DEP-002 — owner configures upstream reports under Settings
+shards (composer)	Verify this product shard	2026-11-21T01:57:35.1678011Z # Subtest: Owner incident communication — manual resolution, customer email and timeline correction
+shards (composer)	Verify this product shard	2026-11-21T01:58:03.5381696Z # Subtest: Sorry templates — both collections stay complete in Settings and private composers
+shards (composer)	Verify this product shard	2026-11-21T01:59:18.4633713Z # Subtest: A refused Impact save keeps the chosen value for Retry, and an unsaved SMS delivery draft asks before a pane switch drops it
+shards (composer)	Verify this product shard	2026-11-21T01:59:33.1944417Z # Subtest: An invalid accent colour preserves the saved colour and recovers through typing or the picker
+shards (composer)	Verify this product shard	2026-11-21T01:59:33.3776005Z # fail 1
+shards (composer)	Verify this product shard	2026-11-21T01:59:33.3966012Z  ELIFECYCLE  Command failed with exit code 1.
+shards (composer)	Verify this product shard	2026-11-21T01:59:33.4636300Z  ELIFECYCLE  Command failed with exit code 1.
+shards (composer)	Verify this product shard	2026-11-21T01:59:33.4794486Z ##[error]Process completed with exit code 1.
+gh run view 44852065021 --repo just-every/run-lamp --job 136689641017 --log-failed (exit 0)
+verify	Require every planned command to succeed on this commit	2026-11-21T01:59:44.3273547Z   SHARDS_RESULT: failure
+verify	Require every planned command to succeed on this commit	2026-11-21T01:59:44.5016792Z ##[error]Process completed with exit code 1.

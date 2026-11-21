@@ -1,0 +1,27 @@
+2026-11-21T01:46:09Z
+Repository: just-every/run-lamp
+Product ref: refs/heads/cloud/sd-lamp-release-1-11-25-c1
+Advertised SHA: 19261bd230d989d6e890c47910fd40c45e5b4ce3
+Parent SHA: d442dbb58d146eee3589c8880463d94d12b11981
+Candidate commits: 1
+Candidate merges: 0
+Commit metadata: candidate author and committer checked, no co-author trailers.
+M	CHANGELOG.md
+M	RELEASE.json
+M	docs/accessibility/vpat.md
+M	package.json
+A	release-history/1.11.24.CONTRACT.md
+A	release-history/1.11.24.json
+M	seed.json
+M	sources.lock.json
+v1.11.24 | Full target | 65 | 124 | 55 | 244 |
+origin/main | Full target | 65 | 124 | 56 | 245 |
+19261bd230d989d6e890c47910fd40c45e5b4ce3 | Full target | 65 | 124 | 56 | 245 |
+v1.11.24 migration tree aaf4efd6c27950bfa38ceb895f5bd532ab688580
+origin/main migration tree aaf4efd6c27950bfa38ceb895f5bd532ab688580
+19261bd230d989d6e890c47910fd40c45e5b4ce3 migration tree aaf4efd6c27950bfa38ceb895f5bd532ab688580
+rer-project.json setup.sha256 = d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab
+d2c56bbcab4b784cf9012fb7e25f0732ef0f32ee6e9c404c28505b81a9fbbbab  rer-setup.json (committed bytes)
+v1.11.24:RELEASE.json = release-history/1.11.24.json SHA-256 10a6e8637cd75ea29dc22c0b1ddacb81659f2f64fdf899645449d7d41e69ef41
+v1.11.24:CONTRACT.md = release-history/1.11.24.CONTRACT.md SHA-256 d87c0980ff9dc859074461da7a99628712882edf7e13290f625752ad5543da68
+Product version: 1.11.25
