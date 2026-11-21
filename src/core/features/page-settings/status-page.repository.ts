@@ -8,11 +8,13 @@ export interface StatusPagePresentation {
   timezone: string;
   componentIds: string[];
   footerCreditEnabled?: boolean;
+  allowedCidrs?: string[];
 }
 
 export interface ProtectedStatusPage extends StatusPagePresentation {
   path: string;
   kind: "staff" | "audience";
+  allowedCidrs: string[];
   feedId: string;
   footerCreditEnabled: boolean;
   logoKey: string | null;
@@ -21,12 +23,21 @@ export interface ProtectedStatusPage extends StatusPagePresentation {
   updatedAt: string;
 }
 
-type StoredStatusPage = Omit<ProtectedStatusPage, "componentIds" | "footerCreditEnabled"> & { componentIdsJson: string; footerCreditEnabled: number };
+type StoredStatusPage = Omit<ProtectedStatusPage, "componentIds" | "footerCreditEnabled" | "allowedCidrs"> & {
+  componentIdsJson: string;
+  allowedCidrsJson: string;
+  footerCreditEnabled: number;
+};
 
-const fields = "path, kind, page_name AS pageName, tagline, accent_color AS accentColor, timezone, footer_credit_enabled AS footerCreditEnabled, logo_key AS logoKey, logo_content_type AS logoContentType, component_ids_json AS componentIdsJson, feed_id AS feedId, created_at AS createdAt, updated_at AS updatedAt";
+const fields = "path, kind, page_name AS pageName, tagline, accent_color AS accentColor, timezone, footer_credit_enabled AS footerCreditEnabled, logo_key AS logoKey, logo_content_type AS logoContentType, component_ids_json AS componentIdsJson, allowed_cidrs_json AS allowedCidrsJson, feed_id AS feedId, created_at AS createdAt, updated_at AS updatedAt";
 
-function decode({ componentIdsJson, ...row }: StoredStatusPage): ProtectedStatusPage {
-  return { ...row, footerCreditEnabled: row.footerCreditEnabled === 1, componentIds: JSON.parse(componentIdsJson) };
+function decode({ componentIdsJson, allowedCidrsJson, ...row }: StoredStatusPage): ProtectedStatusPage {
+  return {
+    ...row,
+    footerCreditEnabled: row.footerCreditEnabled === 1,
+    componentIds: JSON.parse(componentIdsJson),
+    allowedCidrs: JSON.parse(allowedCidrsJson),
+  };
 }
 
 export class StatusPageConflictError extends Error {}
@@ -62,8 +73,8 @@ export function createStatusPageRepository(binding: D1Database) {
       await validateComponents(input);
       const now = nowIso();
       // The bounded catalogue also caps per-mutation rendering work.
-      const result = await binding.prepare("INSERT INTO status_pages (path, kind, page_name, tagline, accent_color, timezone, component_ids_json, footer_credit_enabled, feed_id, created_at, updated_at) SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE (SELECT count(*) FROM status_pages) < 12 ON CONFLICT DO NOTHING")
-        .bind(path, kind, ...presentationValues(input), input.footerCreditEnabled === false ? 0 : 1, createUlid(), now, now).run();
+      const result = await binding.prepare("INSERT INTO status_pages (path, kind, page_name, tagline, accent_color, timezone, component_ids_json, footer_credit_enabled, allowed_cidrs_json, feed_id, created_at, updated_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,? WHERE (SELECT count(*) FROM status_pages) < 12 ON CONFLICT DO NOTHING")
+        .bind(path, kind, ...presentationValues(input), input.footerCreditEnabled === false ? 0 : 1, JSON.stringify(input.allowedCidrs ?? []), createUlid(), now, now).run();
       if (!result.meta.changes) throw new StatusPageConflictError("This path is already assigned or this installation has reached its status page limit.");
       return (await get(path))!;
     },
@@ -74,8 +85,8 @@ export function createStatusPageRepository(binding: D1Database) {
     },
     async update(path: string, input: StatusPagePresentation) {
       await validateComponents(input);
-      const result = await binding.prepare("UPDATE status_pages SET page_name=?,tagline=?,accent_color=?,timezone=?,component_ids_json=?,footer_credit_enabled=COALESCE(?,footer_credit_enabled),updated_at=? WHERE path=?")
-        .bind(...presentationValues(input), input.footerCreditEnabled === undefined ? null : Number(input.footerCreditEnabled), nowIso(), path).run();
+      const result = await binding.prepare("UPDATE status_pages SET page_name=?,tagline=?,accent_color=?,timezone=?,component_ids_json=?,footer_credit_enabled=COALESCE(?,footer_credit_enabled),allowed_cidrs_json=COALESCE(?,allowed_cidrs_json),updated_at=? WHERE path=?")
+        .bind(...presentationValues(input), input.footerCreditEnabled === undefined ? null : Number(input.footerCreditEnabled), input.allowedCidrs === undefined ? null : JSON.stringify(input.allowedCidrs), nowIso(), path).run();
       return result.meta.changes ? get(path) : null;
     },
   };

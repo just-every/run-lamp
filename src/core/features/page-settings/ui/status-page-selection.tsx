@@ -9,6 +9,7 @@ export type StatusPage = {
   accentColor: string;
   timezone: string;
   componentIds: string[];
+  allowedCidrs?: string[];
   url: string;
   footerCreditEnabled: boolean;
   logoUrl: string | null;

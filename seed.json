@@ -231,7 +231,7 @@
     "Uptime monitoring, probing, or synthetic checks: Lamp reports state that operators or accepted alerts produce, and running probes would make it a monitoring product with a second, contradictory source of truth behind the public page. For observability, see [Porthole](https://github.com/just-every/run-porthole).",
     "On-call scheduling, paging, and escalation: the buyer's existing alerting tool already does this, and it is the system that feeds INTAKE-001.",
     "More than one anonymous public status page per deployment. The existing public page keeps its address. Staff and named audience pages use fixed paths on the operator host.",
-    "Audience visitor sign-in, membership, subscriber settings and protected reads during database outages remain outside this release. Protected status pages require an active Lamp operator session.",
+    "Audience visitor sign-in, membership, subscriber settings and protected reads during database outages remain outside this release. Protected status pages default to active Lamp operator sessions. Owners can allow IPv4 and IPv6 ranges on Staff pages.",
     "Roles and permissions: these are one business's equal operators, and UPDATE-007 covers the one gate buyers actually ask for.",
     "SMS and voice notifications: per-message cost, carrier registration, and per-country consent rules that a self-hosted deployment cannot satisfy generically.",
     "Multi-language status pages: every incident update would need a translation before publish, which is the opposite of publishing in two minutes.",

@@ -86,7 +86,7 @@ export function SettingsPage() {
         {live ? <YourPageFacts live={live} pageName={saved.pageName} accentColor={saved.accentColor} components={components} /> : overview.error ? <FormError>{overview.error}</FormError> : null}
         <PageSettingsTab settings={settings} live={live} markSrc={markSrc} update={update} />
         <LogoCard settings={saved} onSettings={autosave.adoptSaved} />
-        <StatusPagesSettings canManage={managesTeam(operator.role)} components={catalogue.data?.components ?? []} componentsReady={Boolean(catalogue.data)} defaults={{ accentColor: saved.accentColor, timezone: saved.timezone }} />
+        <StatusPagesSettings canManage={managesTeam(operator.role)} canManageAccess={operator.role === "owner"} components={catalogue.data?.components ?? []} componentsReady={Boolean(catalogue.data)} defaults={{ accentColor: saved.accentColor, timezone: saved.timezone }} />
       </>}
       {tab === "look" && <LookSettingsTab settings={settings} saved={saved} components={components} update={update} adoptSaved={autosave.adoptSaved} busy={brandBusy} setBusy={setBrandBusy} status={brandStatus} setStatus={setBrandStatus} />}
       {tab === "notifications" && <NotificationSettingsTab settings={settings} live={live} identityEditable={saved.mailIdentityEditable} update={update} needsConfirm={autosave.pending("mailFromAddress")} confirm={() => autosave.confirm("mailFromAddress")} onTrafficPhase={setTrafficPhase} />}

@@ -23,6 +23,7 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
     path: 'staff-browser', kind: 'staff', pageName: 'Staff operations', tagline: 'Dispatch and internal tools',
     accentColor: '#315887', componentIds: [shared.id, staffConsole.id], components: [shared.name, staffConsole.name],
   };
+  const staffCidrs = ['198.51.100.0/24', '2001:db8:5::/48'];
   const audience = {
     path: 'partners-browser', kind: 'audience', pageName: 'Partner operations', tagline: 'Pickup updates for partners',
     accentColor: '#70502E', componentIds: [partnerQueue.id], components: [partnerQueue.name],
@@ -48,8 +49,28 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
     await editor.getByRole('button', { name: 'Save status page' }).click();
     await statusPages.getByRole('status').filter({ hasText: `${entry.pageName} saved.` }).waitFor();
   }
-  await statusPages.getByRole('button', { name: `Edit ${audience.pageName}` }).click();
   const editor = statusPages.getByRole('form', { name: 'Edit status page' });
+  const editStaff = statusPages.getByRole('button', { name: `Edit ${staff.pageName}` });
+  await editStaff.click();
+  const allowedRanges = editor.getByRole('textbox', { name: /^Allowed IP ranges\b/ });
+  await allowedRanges.fill('198.51.100.0/33');
+  await editor.getByRole('button', { name: 'Save status page' }).click();
+  await editor.getByRole('alert').waitFor();
+  let readStaff = (await api('/api/app/status-pages')).pages.find(entry => entry.path === staff.path);
+  assert.deepEqual(readStaff.allowedCidrs, [], 'an invalid setting leaves Staff restricted to operator sign-in');
+
+  await allowedRanges.fill(staffCidrs.join('\n'));
+  await editor.getByRole('button', { name: 'Save status page' }).click();
+  await statusPages.getByRole('status').filter({ hasText: `${staff.pageName} saved.` }).waitFor();
+  await page.reload();
+  await operatorHydrated(page);
+  await editStaff.click();
+  assert.equal(await allowedRanges.inputValue(), staffCidrs.join('\n'), 'the saved ranges are visible after a fresh load');
+  await screenshots(page, 'staff-cidr-settings');
+  await editor.getByRole('button', { name: 'Cancel', exact: true }).click();
+
+  await statusPages.getByRole('button', { name: `Edit ${audience.pageName}` }).click();
+  assert.equal(await allowedRanges.count(), 0, 'named audience settings have no Staff network control');
   const audienceUrl = new URL(`/status-pages/${audience.path}/`, appUrl).href;
   assert.equal(await editor.getByRole('textbox', { name: /^Page path/ }).isDisabled(), true);
   assert.equal(await editor.getByRole('textbox', { name: /^Page path/ }).inputValue(), audience.path);
@@ -66,6 +87,8 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
   await editor.getByRole('button', { name: 'Save status page' }).click();
   await statusPages.getByRole('status').filter({ hasText: `${audience.pageName} saved.` }).waitFor();
   const pages = (await api('/api/app/status-pages')).pages;
+  readStaff = pages.find(entry => entry.path === staff.path);
+  assert.deepEqual(readStaff.allowedCidrs, staffCidrs);
   for (const entry of [staff, audience]) {
     const stored = pages.find(candidate => candidate.path === entry.path);
     assert.deepEqual(new Set(stored.componentIds), new Set(entry.componentIds));
@@ -135,6 +158,17 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
     const staffUrl = new URL(`/status-pages/${staff.path}/`, appUrl).href;
     await openPublishedPage(assignedPage, staffUrl, staffTitle);
     await assignedPage.getByText(sharedTitle, { exact: true }).first().waitFor();
+    const staffSignIn = await customerPage.goto(staffUrl);
+    assert.equal(staffSignIn.status(), 401);
+    await customerPage.getByRole('heading', { name: staff.pageName, exact: true }).waitFor();
+    const signIn = customerPage.getByRole('link', { name: 'Sign in', exact: true });
+    await signIn.waitFor();
+    assert.equal(new URL(await signIn.getAttribute('href'), appUrl).pathname, '/signin');
+    const signInText = await customerPage.locator('body').innerText();
+    for (const privateText of [staff.tagline, staffConsole.name, staffTitle, sharedTitle, ...staffCidrs]) {
+      assert.ok(!signInText.includes(privateText), 'the denied Staff screen never renders snapshot data or its access policy');
+    }
+    await screenshots(customerPage, 'staff-cidr-signin');
     await openPublishedPage(customerPage, pageUrl, sharedTitle);
     assert.ok(!(await customerPage.locator('body').innerText()).includes(staffTitle));
 
@@ -170,7 +204,7 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
     await statusPages.getByRole('status').filter({ hasText: 'Logo removed.' }).waitFor();
     await openPublishedPage(assignedPage, audienceUrl, maintenanceTitle);
     assert.equal(await assignedPage.locator('img.brand-logo').count(), 0);
-    diagnostic('The 1440-wide owner journey configured Staff and named audience branding and components, then used native incident and maintenance editors to publish to the selected pages. Public and signed-in browsers reconciled the resulting pages.');
+    diagnostic('The 1440-wide owner journey saved and independently reopened Staff network ranges after refusing an invalid entry. An anonymous visitor saw the Staff page name and sign-in. The journey also configured both protected pages and reconciled their incident and maintenance publications with the public page.');
   } finally {
     await assignedPage.close();
     await anonymous.close();

@@ -1107,6 +1107,10 @@
       "sha256": "26ba97e05c0730f0f58842c813322ac4694d841a17bbf3f680f03c6df0722137",
       "executable": false
     },
+    "migrations/core/0085_staff_page_cidrs.sql": {
+      "sha256": "85cc9326c122cf18814207a5671b22874b5ef4043bef04d05506ee88e8216e71",
+      "executable": false
+    },
     "migrations/README.md": {
       "sha256": "8aa6d22bcfab1ec1d279f128961286b0654cbc3f7c327da1aeb535793dd874e9",
       "executable": false
@@ -3000,7 +3004,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "ba02de9e56b0709fd987b2623de0296817b680a83f91f02864b365e429b556b2",
+      "sha256": "b33fb3c0d4e82700888b86dc49c3cb881d989a9ce04bccb9781340fa091729a3",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4144,7 +4148,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "9d07dbf0bcf53de3e36185e5d6cc36ea558f8da0bfaa4427cf98a264dc42e9f6",
+      "sha256": "91514525028a81a242d30dd716576191ce53a3dbcdbd72c7926fac540a599375",
       "executable": false
     },
     "src/base/actor.ts": {
@@ -5719,12 +5723,16 @@
       "sha256": "c9b3b0ce589a787b9fa216641fbcc0d9a9deedf105f829f2242a9da7447d7832",
       "executable": false
     },
+    "src/core/features/page-settings/staff-cidrs.ts": {
+      "sha256": "031f57a74b54edb35650947fec8bf8ceb8becad4b5f8b31c0afe5eb691cbdefc",
+      "executable": false
+    },
     "src/core/features/page-settings/status-page.repository.ts": {
-      "sha256": "546df0a2f467c4fa334bcb737431dee58b7dfedf48112a74f4479825b3988232",
+      "sha256": "df2d34afeb668f77ad6aae6186dcebcbde576601a6ff7621d94792957d872371",
       "executable": false
     },
     "src/core/features/page-settings/status-page.routes.ts": {
-      "sha256": "7bd390831c48cb0ce18572330e1a6512ee29f1cea94fc9278e2db75629d3485c",
+      "sha256": "ee50b3258d77092b16351741413f25f0e8b4fda0a39ac52c52b3924fb4ede898",
       "executable": false
     },
     "src/core/features/page-settings/theme-assets.ts": {
@@ -5824,7 +5832,7 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-page.tsx": {
-      "sha256": "7b130f3b92d94cd0dbbcecf8e9b45b4600aad37d630eb5bff30bf6b919c278ab",
+      "sha256": "115572697a8ab9ab0f41b14d6fca884efffb5dbeaf20a758f083dd132de91e05",
       "executable": false
     },
     "src/core/features/page-settings/ui/settings-save-state.tsx": {
@@ -5840,11 +5848,11 @@
       "executable": false
     },
     "src/core/features/page-settings/ui/status-page-selection.tsx": {
-      "sha256": "88f70dc0edbe31ee8bce34b590b55473b5e4aa3f8e660d789607163ce2cc0929",
+      "sha256": "5ffad0240f17a721a67624e4c9d2d48ef563b454671d29338a89094c8bf5e4a8",
       "executable": false
     },
     "src/core/features/page-settings/ui/status-pages-settings.tsx": {
-      "sha256": "7e8f6917f4759dfc025f866524864e699ab9848a8557d0bdf239c54f86787e9c",
+      "sha256": "62baa2cabcada4e6302a6769e73a38781d11493e079b68cb62f1b6267641d4c5",
       "executable": false
     },
     "src/core/features/page-settings/ui/template-choice.tsx": {
@@ -6016,7 +6024,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/protected-routes.ts": {
-      "sha256": "96f9f1efe6f12524b06bec7b7d9795ccdb786b4c8af3c45fa57bcbd06900a07c",
+      "sha256": "69a41c6f62e94fff31f91f3a98899c75869131b67b26eb26dbefd3a543dc572c",
       "executable": false
     },
     "src/core/features/public-snapshot/public-api.ts": {
@@ -8200,11 +8208,11 @@
       "executable": false
     },
     "tests/e2e/helpers/audience-pages-browser.mjs": {
-      "sha256": "f323f46800cddeb54b33a4e552fbdd576fe557bd08d866ac4d746fc7b95f3c26",
+      "sha256": "7a41cb05d8662b55408eee0123342a6719a3e75804572b5cb6ea84db40963cc0",
       "executable": false
     },
     "tests/e2e/helpers/audience-pages-flow.mjs": {
-      "sha256": "8d7ec0881b13f3a43a6851f5276e28f549d0bb701f9d46f5f9570097c014efc3",
+      "sha256": "0af74de4c91d0f6bc74c2085754240ac86004bc1c48a0faf550bfc803cc31fb1",
       "executable": false
     },
     "tests/e2e/helpers/audit-labels-flow.mjs": {
@@ -8636,7 +8644,7 @@
       "executable": false
     },
     "tests/e2e/helpers/status-journey.worker.ts": {
-      "sha256": "9665abf31d93ba02edcc05ba37f41b6a837ed97c4d1a187659f2cdbf3d777df0",
+      "sha256": "a51ea47c85037f6a6fdc0e4a2b674726006de87ca4ecf656670940758256143a",
       "executable": false
     },
     "tests/e2e/helpers/statuspage-webhook-flow.mjs": {

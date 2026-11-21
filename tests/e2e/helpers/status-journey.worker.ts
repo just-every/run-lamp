@@ -48,7 +48,22 @@ async function observeAudienceReads(request: Request, env: AppBindings, context:
       return Reflect.apply(value, target, args);
     };
   } });
-  const response = await worker.fetch(request, { ...env, DB, SNAPSHOTS }, context);
+  let bindings = { ...env, DB, SNAPSHOTS };
+  const edge = request.headers.get('X-Test-Cloudflare-Edge');
+  if (edge) {
+    // Supply hosting metadata at the simulated Cloudflare ingress only.
+    const url = new URL(request.url);
+    url.protocol = 'https:';
+    const headers = new Headers(request.headers);
+    const address = headers.get('X-Test-Cloudflare-Address');
+    headers.delete('X-Test-Cloudflare-Edge');
+    headers.delete('X-Test-Cloudflare-Address');
+    headers.delete('CF-Connecting-IP');
+    if (address) headers.set('CF-Connecting-IP', address);
+    request = new Request(url, { method: request.method, headers, cf: edge === '1' ? { colo: 'DFW' } : {} });
+    bindings = { ...bindings, AUTH_LOCAL: undefined, LAMP_LOCAL_ORIGIN: undefined, AUTH_ORIGIN: url.origin };
+  }
+  const response = await worker.fetch(request, bindings, context);
   const observed = new Response(response.body, response);
   observed.headers.set('X-Test-D1-Reads', String(databaseReads));
   observed.headers.set('X-Test-R2-Reads', String(objectReads));

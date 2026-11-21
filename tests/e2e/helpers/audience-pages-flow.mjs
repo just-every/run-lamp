@@ -6,6 +6,7 @@ import { themeHeaderImage } from './theme-fixture.mjs';
 const configuration = '/api/app/status-pages';
 const staffPath = 'staff';
 const audiencePath = 'acme';
+const staffCidrs = ['192.0.2.64/26', '2001:db8:4:180::/57'];
 const responses = new Map([
   ['/', 'text/html'],
   ['/history', 'text/html'],
@@ -90,15 +91,28 @@ async function publicationInventory(j, table, column, id) {
   return (await j.db.prepare(`SELECT id FROM ${table} WHERE ${column} = ? ORDER BY id`).bind(id).all()).results;
 }
 
-async function deniedWithoutLookup(j, url, marker, validator, revokedCookie) {
-  const headers = new Headers({ 'If-None-Match': validator ?? '*' });
-  if (revokedCookie) headers.set('Cookie', revokedCookie);
+function hostedRequestHeaders(connectionIp, headers = {}) {
+  return {
+    'X-Test-Cloudflare-Edge': '1',
+    ...(connectionIp ? { 'X-Test-Cloudflare-Address': connectionIp } : {}),
+    ...headers,
+  };
+}
+
+async function deniedWithoutLookup(j, url, marker, validator, requestHeaders = {}) {
+  const headers = new Headers(requestHeaders);
+  headers.set('If-None-Match', validator ?? '*');
   const response = await j.raw(url, { headers });
   assert.equal(response.status, 401, url);
-  assert.equal(response.headers.get('x-test-r2-reads'), '0', 'the operator authorization boundary is before stored artifact lookup');
+  assert.equal(response.headers.get('x-test-r2-reads'), '0', 'authorization is required before stored artifact lookup');
   assert.equal(response.headers.get('x-lamp-snapshot-version'), null);
   assert.equal(response.headers.get('etag'), null);
-  assert.doesNotMatch(await response.text(), new RegExp(marker));
+  assert.match(response.headers.get('cache-control') ?? '', /\bprivate\b/);
+  assert.match(response.headers.get('cache-control') ?? '', /\bno-store\b/);
+  assert.equal(response.headers.get('access-control-allow-origin'), null);
+  const body = await response.text();
+  assert.doesNotMatch(body, new RegExp(marker));
+  return body;
 }
 
 export async function audiencePagesFlow() {
@@ -127,10 +141,33 @@ export async function audiencePagesFlow() {
     const staff = await addStatusPage(j, staffSettings);
     const audienceSettings = { path: audiencePath, kind: 'audience', pageName: 'Acme service status', tagline: 'Signals for Acme', accentColor: '#394785', timezone: 'UTC', componentIds: [b.id] };
     const audience = await addStatusPage(j, audienceSettings);
-    const renamed = { pageName: staffSettings.pageName, tagline: 'Operations team service health', accentColor: '#914486', timezone: staffSettings.timezone, componentIds: staffSettings.componentIds, footerCreditEnabled: false };
+    const renamed = { pageName: staffSettings.pageName, tagline: 'Operations team service health', accentColor: '#914486', timezone: staffSettings.timezone, componentIds: staffSettings.componentIds, footerCreditEnabled: false, allowedCidrs: staffCidrs };
     const { page: savedStaff } = await j.json(`${configuration}/${staff.path}`, 'PUT', renamed);
     assert.equal(savedStaff.url, staff.url, 'editing branding leaves the page address stable');
     assert.deepEqual(Object.fromEntries(Object.keys(renamed).map(key => [key, savedStaff[key]])), renamed);
+    for (const invalid of ['192.0.2.64/33', '2001:db8:4:180::/129', '192.0.2.64', '2001::db8::/64']) {
+      await j.json(`${configuration}/${staff.path}`, 'PUT', {
+        ...renamed, tagline: 'Rejected CIDR changes must leave this tagline unsaved', allowedCidrs: [staffCidrs[0], invalid],
+      }, 400);
+    }
+    const { path: _path, kind: _kind, ...audiencePresentation } = audienceSettings;
+    await j.json(`${configuration}/${audience.path}`, 'PUT', { ...audiencePresentation, allowedCidrs: staffCidrs }, 400);
+
+    const adminAddress = ['synthetic-lamp-cidr-admin', 'example.test'].join('@');
+    await j.json('/api/app/operators/invite', 'POST', { email: adminAddress, displayName: 'Synthetic Lamp admin', role: 'admin' }, 202);
+    await j.signIn(adminAddress);
+    assert.equal((await j.json('/api/app/session')).operator.role, 'admin');
+    await j.json(`${configuration}/${staff.path}`, 'PUT', { ...renamed, allowedCidrs: [] }, 403);
+    assert.equal((await j.json(configuration)).pages.find(page => page.path === staffPath).allowedCidrs, undefined);
+    const { allowedCidrs: _ownerOnly, ...staffPresentation } = renamed;
+    const adminTagline = 'Operations service health maintained by the admin';
+    const { page: adminEdit } = await j.json(`${configuration}/${staff.path}`, 'PUT', { ...staffPresentation, tagline: adminTagline });
+    assert.equal(adminEdit.tagline, adminTagline);
+    assert.equal(adminEdit.allowedCidrs, undefined);
+    await j.signIn();
+    const { page: restoredBranding } = await j.json(`${configuration}/${staff.path}`, 'PUT', staffPresentation);
+    assert.deepEqual(restoredBranding.allowedCidrs, staffCidrs, 'presentation edits leave the owner’s access policy in place');
+
     const logo = themeHeaderImage();
     const form = new FormData();
     form.append('logo', new Blob([logo], { type: 'image/png' }), 'synthetic-lamp.png');
@@ -153,9 +190,13 @@ export async function audiencePagesFlow() {
     assert.equal((await j.request(privateStatusUrl(audience, '/assets/logo'))).status, 404);
     const listed = (await j.json(configuration)).pages;
     assert.deepEqual(listed.map(page => page.path).sort(), [audiencePath, staffPath, 'public'].sort());
-    assert.equal(listed.find(page => page.path === staffPath).url, staff.url);
+    const listedStaff = listed.find(page => page.path === staffPath);
+    assert.equal(listedStaff.url, staff.url);
+    assert.deepEqual(listedStaff.allowedCidrs, staffCidrs, 'both approved ranges survive independent readback and refused saves');
+    assert.equal(listedStaff.tagline, renamed.tagline);
     assert.equal(listed.find(page => page.path === audiencePath).url, audience.url);
     assert.equal(listed.find(page => page.path === 'public').url, beforePublicPage.url);
+    console.info('PROBE AUD-002 2: owner saves Staff IPv4 and IPv6 CIDRs, rereads both and cannot save malformed ranges or attach them to another page');
 
     await waitFor(j, staff, '/', renamed.tagline);
     await waitFor(j, audience, '/', audienceSettings.tagline);
@@ -312,12 +353,67 @@ export async function audiencePagesFlow() {
       await deniedWithoutLookup(j, privateStatusUrl(staff, path), confidentialImpact, protectedRead.etag);
     }
     await deniedWithoutLookup(j, privateStatusUrl(audience, '/feed.atom'), acmeImpact);
+
+    const staffPage = await representation(j, staff, '/');
+    const allowedAddresses = ['192.0.2.127', '2001:0db8:0004:01ff:0000:0000:0000:0010'];
+    for (const connectionIp of allowedAddresses) {
+      const headers = hostedRequestHeaders(connectionIp);
+      for (const [path, expected] of [['/', staffPage], [confidentialPermalink, protectedRead]]) {
+        const response = await j.raw(privateStatusUrl(staff, path), { headers });
+        assert.equal(response.status, 200, `Staff access from ${connectionIp} to ${path}`);
+        assert.match(response.headers.get('cache-control') ?? '', /\bprivate\b/);
+        assert.match(response.headers.get('cache-control') ?? '', /\bno-store\b/);
+        assert.equal(response.headers.get('access-control-allow-origin'), null);
+        assert.equal(response.headers.get('x-lamp-snapshot-version'), expected.version);
+        assert.equal(await response.text(), expected.body, 'an admitted visitor gets the same healthy Staff snapshot as an operator');
+      }
+      await deniedWithoutLookup(j, privateStatusUrl(audience, '/'), acmeImpact, undefined, headers);
+    }
+
+    const deniedHeaders = [
+      hostedRequestHeaders('192.0.2.128'),
+      hostedRequestHeaders('2001:db8:4:200::10'),
+      hostedRequestHeaders(),
+      hostedRequestHeaders(undefined, { 'X-Forwarded-For': allowedAddresses[0] }),
+      hostedRequestHeaders(allowedAddresses[0], { 'CF-Worker': 'another-worker.example.test' }),
+      hostedRequestHeaders(allowedAddresses[0], { 'X-Test-Cloudflare-Edge': 'no-metadata' }),
+      { 'CF-Connecting-IP': allowedAddresses[0] },
+    ];
+    for (const headers of deniedHeaders) {
+      for (const path of ['/', confidentialPermalink, '/feed.atom', '/assets/logo']) {
+        const body = await deniedWithoutLookup(j, privateStatusUrl(staff, path), confidentialImpact, protectedRead.etag, headers);
+        requireBody(body, [savedStaff.pageName], [
+          savedStaff.tagline, a.name, b.name, ...staffOnly, ...staffCidrs,
+        ], 'denied Staff response');
+        assert.match(body, /sign in/i);
+      }
+    }
+    const operatorWithUnmatchedAddress = await j.request(privateStatusUrl(staff, confidentialPermalink), {
+      headers: { 'CF-Connecting-IP': '192.0.2.128' },
+    });
+    assert.equal(operatorWithUnmatchedAddress.status, 200, 'the ordinary active operator session still admits a reader outside configured ranges');
+    assert.equal(await operatorWithUnmatchedAddress.text(), protectedRead.body);
+    const publicWithMatchingAddress = await j.raw(new URL('/', j.publicOrigin).href, { headers: hostedRequestHeaders(allowedAddresses[0]) });
+    assert.equal(publicWithMatchingAddress.status, 200);
+    requireBody(await publicWithMatchingAddress.text(), [publicBrand.pageName, shared.title], staffOnly, 'public page with an allowed Staff connection address');
+
+    await j.json(`${configuration}/${staff.path}`, 'PUT', { ...staffPresentation, allowedCidrs: [...staffCidrs, '240.0.2.0/24'] });
+    await deniedWithoutLookup(j, privateStatusUrl(staff, confidentialPermalink), confidentialImpact, protectedRead.etag, hostedRequestHeaders('240.0.2.8'));
+    const { page: clearedStaff } = await j.json(`${configuration}/${staff.path}`, 'PUT', { ...staffPresentation, allowedCidrs: [] });
+    assert.deepEqual(clearedStaff.allowedCidrs, []);
+    for (const address of allowedAddresses) {
+      await deniedWithoutLookup(j, privateStatusUrl(staff, confidentialPermalink), confidentialImpact, protectedRead.etag, hostedRequestHeaders(address));
+    }
+    requireBody((await representation(j, staff, confidentialPermalink)).body, [confidentialImpact], [], 'operator session after the network grant is cleared');
+    await j.json(`${configuration}/${staff.path}`, 'PUT', renamed);
+    console.info('PROBE AUD-002 3: in-range IPv4 and IPv6 receive the populated Staff snapshot; denied and cleared addresses see sign-in without private bytes or object reads');
+
     const wrongHost = await j.raw(new URL(new URL(staff.url).pathname, j.publicOrigin).href, { headers: { Cookie: j.cookie } });
     assert.equal(wrongHost.status, 404);
     assert.equal(wrongHost.headers.get('x-test-r2-reads'), '0');
     const revoked = j.cookie;
     assert.equal((await j.request('/api/app/session/signout', { method: 'POST' })).status, 204);
-    await deniedWithoutLookup(j, privateStatusUrl(staff, confidentialPermalink), confidentialImpact, protectedRead.etag, revoked);
+    await deniedWithoutLookup(j, privateStatusUrl(staff, confidentialPermalink), confidentialImpact, protectedRead.etag, { Cookie: revoked });
     console.info('PROBE AUD-001 4: Staff-only native publication -> public artifacts and notification work exclude it; anonymous and revoked sessions do not reach object storage');
     await j.signIn(undefined, { fresh: true });
     assert.equal((await j.request(privateStatusUrl(staff, confidentialPermalink))).status, 200);
@@ -325,7 +421,7 @@ export async function audiencePagesFlow() {
     const settingsAtStablePaths = pages => pages.map(({ url, logoUrl, ...page }) => ({
       ...page, pathName: new URL(url).pathname, logoPath: logoUrl ? new URL(logoUrl).pathname : null,
     }));
-    const savedPages = settingsAtStablePaths(listed);
+    const savedPages = settingsAtStablePaths((await j.json(configuration)).pages);
     await j.close();
     j = null;
 

@@ -8,17 +8,18 @@ import { TimezoneField } from "../../../app/client/ui/timezone-field";
 import { PageLogoField } from "./logo-card";
 import { type StatusPage, useStatusPages } from "./status-page-selection";
 
-type PageDraft = Pick<StatusPage, "path" | "pageName" | "tagline" | "accentColor" | "timezone" | "componentIds" | "footerCreditEnabled"> & { kind: "staff" | "audience" };
+type PageDraft = Pick<StatusPage, "path" | "pageName" | "tagline" | "accentColor" | "timezone" | "componentIds" | "footerCreditEnabled"> & { kind: "staff" | "audience"; cidrText: string };
 type ComponentChoice = { id: string; name: string };
 
-export function StatusPagesSettings({ canManage, components, componentsReady, defaults }: {
+export function StatusPagesSettings({ canManage, canManageAccess, components, componentsReady, defaults }: {
   canManage: boolean;
+  canManageAccess: boolean;
   components: ComponentChoice[];
   componentsReady: boolean;
   defaults: Pick<StatusPage, "accentColor" | "timezone">;
 }) {
   const pages = useStatusPages();
-  const [editor, setEditor] = useState<{ existing: boolean; page: PageDraft } | null>(null);
+  const [editor, setEditor] = useState<{ existing: boolean; originalCidrText: string; page: PageDraft } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
@@ -29,12 +30,15 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
     if (page?.kind === "public") return;
     setError(null);
     setSaved(null);
+    const originalCidrText = page?.allowedCidrs?.join("\n") ?? "";
     setEditor({
       existing: Boolean(page),
+      originalCidrText,
       page: page ? {
         path: page.path, kind: page.kind, pageName: page.pageName, tagline: page.tagline,
         accentColor: page.accentColor, timezone: page.timezone, componentIds: page.componentIds, footerCreditEnabled: page.footerCreditEnabled,
-      } : { path: "", kind: "staff", pageName: "", tagline: "", ...defaults, footerCreditEnabled: true, componentIds: [] },
+        cidrText: originalCidrText,
+      } : { path: "", kind: "staff", pageName: "", tagline: "", ...defaults, footerCreditEnabled: true, componentIds: [], cidrText: "" },
     });
   }
 
@@ -45,13 +49,16 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!editor || saving) return;
-    const { path, kind, ...fields } = editor.page;
+    const { path, kind, cidrText, ...fields } = editor.page;
+    const values = canManageAccess && kind === "staff" && cidrText !== editor.originalCidrText
+      ? { ...fields, allowedCidrs: cidrText.split("\n").map(line => line.trim()).filter(Boolean) }
+      : fields;
     setSaving(true);
     setError(null);
     try {
       const { page } = await appApi<{ page: StatusPage }>(editor.existing ? `/api/app/status-pages/${path}` : "/api/app/status-pages", {
         method: editor.existing ? "PUT" : "POST",
-        body: JSON.stringify(editor.existing ? fields : { path, kind, ...fields }),
+        body: JSON.stringify(editor.existing ? values : { path, kind, ...values }),
       });
       setEditor(null);
       setSaved(`${page.pageName} saved.`);
@@ -104,8 +111,13 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
         <select value={editor.page.kind} disabled={editor.existing} onChange={event => update("kind", event.target.value === "audience" ? "audience" : "staff")}>
           <option value="staff">Staff</option><option value="audience">Named audience</option>
         </select>
-        <span>Access requires operator sign-in.</span>
+        <span>{editor.page.kind === "staff" ? "Active Lamp operators can always sign in." : "Access requires operator sign-in."}</span>
       </label>
+      {canManageAccess && editor.page.kind === "staff" ? <div className="form-label">
+        <label htmlFor="staff-cidr-ranges">Allowed IP ranges</label>
+        <textarea id="staff-cidr-ranges" rows={3} spellCheck={false} autoCapitalize="none" value={editor.page.cidrText} aria-describedby="staff-cidr-help" onChange={event => update("cidrText", event.target.value)} />
+        <span className="field-hint" id="staff-cidr-help">Enter one IPv4 or IPv6 CIDR range per line to allow those visitors to read without signing in. Leave blank to require sign-in.</span>
+      </div> : null}
       <label className="form-label">Page path
         <input value={editor.page.path} required disabled={editor.existing} maxLength={48} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" onChange={event => update("path", event.target.value)} />
         <span>Use lowercase letters, numbers and hyphens. This path stays fixed.</span>

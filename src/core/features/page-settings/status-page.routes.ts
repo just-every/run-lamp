@@ -6,12 +6,14 @@ import { publicPageOrigin } from "../../app/public-origin";
 import type { AppEnv } from "../../app/types";
 import { pageSettingsSchema } from "../../shared/schemas";
 import { createUlid, ulidSchema } from "../../shared/ids";
+import { validStaffCidr } from "./staff-cidrs";
 import { statusPagePathSchema, statusPagePrefix, statusPageStoragePrefix } from "./page-selection";
 import { StatusPageComponentsError, StatusPageConflictError, type ProtectedStatusPage, type createStatusPageRepository } from "./status-page.repository";
 import { LOGO_CONTENT_TYPES, MAX_LOGO_BYTES, type PageSettingsService } from "./service";
 
 const presentation = pageSettingsSchema.pick({ pageName: true, tagline: true, accentColor: true, timezone: true, footerCreditEnabled: true }).extend({
   footerCreditEnabled: z.boolean().optional(),
+  allowedCidrs: z.array(z.string().trim().max(49).refine(validStaffCidr)).max(64).optional(),
   componentIds: z.array(ulidSchema).max(100).refine(ids => new Set(ids).size === ids.length, "Choose each component once."),
 }).strict();
 
@@ -28,10 +30,21 @@ const createInput = z.object({
   kind: z.enum(["staff", "audience"]),
 }).strict().refine(validTimezone, timezoneIssue);
 
-function pageView(page: ProtectedStatusPage, origin: string) {
+function invalidSettings(context: Context<AppEnv>, error: z.ZodError | undefined) {
+  const invalidCidrs = error?.issues.some(issue => issue.path[0] === "allowedCidrs");
+  return context.json({ error: invalidCidrs
+    ? "Enter up to 64 IPv4 or IPv6 CIDR ranges, each with a prefix length."
+    : "Invalid status page settings." }, 400);
+}
+
+function pageView(page: ProtectedStatusPage, origin: string, owner: boolean) {
   const { path, kind, pageName, tagline, accentColor, timezone, componentIds, footerCreditEnabled, updatedAt } = page;
   const url = new URL(statusPagePrefix(path) + "/", origin).href;
-  return { path, kind, pageName, tagline, accentColor, timezone, componentIds, footerCreditEnabled, updatedAt, url, logoUrl: page.logoKey ? new URL("assets/logo", url).href : null };
+  return {
+    path, kind, pageName, tagline, accentColor, timezone, componentIds, footerCreditEnabled, updatedAt, url,
+    ...(owner && kind === "staff" ? { allowedCidrs: page.allowedCidrs } : {}),
+    logoUrl: page.logoKey ? new URL("assets/logo", url).href : null,
+  };
 }
 
 export function registerStatusPageSettingsRoutes(
@@ -44,7 +57,8 @@ export function registerStatusPageSettingsRoutes(
   app.get("/api/app/status-pages", async context => {
     const [primary, componentIds, protectedPages] = await Promise.all([settings.get(), repository.publicComponentIds(), repository.list()]);
     const origin = authOrigin(context.env);
-    const pages = protectedPages.map(page => pageView(page, origin));
+    const owner = context.get("operatorSession").operator.role === "owner";
+    const pages = protectedPages.map(page => pageView(page, origin, owner));
     if (!primary) return context.json({ pages });
     const { pageName, tagline, accentColor, timezone, footerCreditEnabled, updatedAt } = primary;
     const url = publicPageOrigin(origin, context.env.LAMP_PAGE_HOST) + "/";
@@ -52,14 +66,21 @@ export function registerStatusPageSettingsRoutes(
   });
 
   app.post("/api/app/status-pages", async context => {
-    if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
+    const { role } = context.get("operatorSession").operator;
+    if (!["owner", "admin"].includes(role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
     const parsed = createInput.safeParse(await context.req.json().catch(() => null));
-    if (!parsed.success) return context.json({ error: "Invalid status page settings." }, 400);
+    if (!parsed.success) return invalidSettings(context, parsed.error);
+    if (parsed.data.allowedCidrs !== undefined && role !== "owner") {
+      return context.json({ error: "Only the installation owner can configure allowed IP ranges." }, 403);
+    }
+    if (parsed.data.allowedCidrs?.length && parsed.data.kind !== "staff") {
+      return context.json({ error: "Allowed IP ranges are available for Staff pages." }, 400);
+    }
     try {
       const { path, kind, ...input } = parsed.data;
       const page = await repository.create(path, kind, input);
       await publish(page.path);
-      return context.json({ page: pageView(page, authOrigin(context.env)) }, 201);
+      return context.json({ page: pageView(page, authOrigin(context.env), role === "owner") }, 201);
     } catch (cause) {
       if (cause instanceof StatusPageComponentsError) return context.json({ error: cause.message }, 400);
       if (cause instanceof StatusPageConflictError) return context.json({ error: cause.message }, 409);
@@ -68,15 +89,24 @@ export function registerStatusPageSettingsRoutes(
   });
 
   app.put("/api/app/status-pages/:path", async context => {
-    if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
+    const { role } = context.get("operatorSession").operator;
+    if (!["owner", "admin"].includes(role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
     const path = statusPagePathSchema.safeParse(context.req.param("path"));
     const input = presentation.refine(validTimezone, timezoneIssue).safeParse(await context.req.json().catch(() => null));
-    if (!path.success || !input.success) return context.json({ error: "Invalid status page settings." }, 400);
+    if (!path.success || !input.success) return invalidSettings(context, input.error);
+    if (input.data.allowedCidrs !== undefined && role !== "owner") {
+      return context.json({ error: "Only the installation owner can configure allowed IP ranges." }, 403);
+    }
+    if (input.data.allowedCidrs?.length) {
+      const existing = await repository.get(path.data);
+      if (!existing) return context.json({ error: "Status page not found." }, 404);
+      if (existing.kind !== "staff") return context.json({ error: "Allowed IP ranges are available for Staff pages." }, 400);
+    }
     try {
       const page = await repository.update(path.data, input.data);
       if (!page) return context.json({ error: "Status page not found." }, 404);
       await publish(page.path);
-      return context.json({ page: pageView(page, authOrigin(context.env)) });
+      return context.json({ page: pageView(page, authOrigin(context.env), role === "owner") });
     } catch (cause) {
       if (cause instanceof StatusPageComponentsError) return context.json({ error: cause.message }, 400);
       throw cause;
@@ -84,7 +114,8 @@ export function registerStatusPageSettingsRoutes(
   });
 
   const changeLogo = (upload: boolean) => async (context: Context<AppEnv>) => {
-    if (!["owner", "admin"].includes(context.get("operatorSession").operator.role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
+    const { role } = context.get("operatorSession").operator;
+    if (!["owner", "admin"].includes(role)) return context.json({ error: "Only a page owner or admin can configure status pages." }, 403);
     const path = statusPagePathSchema.safeParse(context.req.param("path"));
     if (!path.success || !(await repository.get(path.data))) return context.json({ error: "Status page not found." }, 404);
     let key: string | null = null;
@@ -101,7 +132,7 @@ export function registerStatusPageSettingsRoutes(
     const page = await repository.setLogo(path.data, key, contentType);
     if (!page) return context.json({ error: "Status page not found." }, 404);
     await publish(page.path);
-    return context.json({ page: pageView(page, authOrigin(context.env)) });
+    return context.json({ page: pageView(page, authOrigin(context.env), role === "owner") });
   };
   app.post("/api/app/status-pages/:path/logo", changeLogo(true));
   app.delete("/api/app/status-pages/:path/logo", changeLogo(false));
