@@ -1,0 +1,102 @@
+{
+  "checks": {
+    "browser_e2e": {
+      "command": "node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs tests/e2e/publishing-browser.test.mjs tests/e2e/unsaved-work-browser.test.mjs",
+      "exact_candidate_chromium": "Playwright Chrome Headless Shell 153.0.8010.12 (build 1243)",
+      "exact_candidate_combined_exit": 0,
+      "exact_candidate_combined_run": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 14,
+        "skipped": 0,
+        "tests": 14,
+        "todo": 0
+      },
+      "initial_chromium": "/usr/bin/chromium",
+      "initial_combined_run": {
+        "cancelled": 0,
+        "fail": 3,
+        "pass": 11,
+        "skipped": 0,
+        "tests": 14,
+        "todo": 0
+      },
+      "node": "22.20.0",
+      "passed": true,
+      "pnpm": "10.12.4",
+      "publishing_after_worker_build": {
+        "cancelled": 0,
+        "fail": 1,
+        "pass": 8,
+        "skipped": 0,
+        "tests": 9,
+        "todo": 0
+      },
+      "registrations_after": 14,
+      "registrations_before": 14,
+      "theme_with_pinned_headless_shell": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 1,
+        "skipped": 0,
+        "tests": 1,
+        "todo": 0
+      },
+      "totals": {
+        "cancelled": 0,
+        "fail": 0,
+        "pass": 14,
+        "skipped": 0,
+        "tests": 14,
+        "todo": 0
+      }
+    },
+    "candidate author, committer and trailers": "passed",
+    "credential-shaped values in added lines": "none found",
+    "full publication scan": "fleet lander",
+    "git diff --check": "passed",
+    "node --check tests/e2e/worker-startup.mjs": "passed",
+    "node scripts/edition-authoring/cli.mjs check": "passed",
+    "node src/base/contract-docs.mjs check": "passed",
+    "npx -y @runeditrun/rer build": "passed",
+    "occupied loopback retry probe": "passed",
+    "pnpm typecheck": "passed"
+  },
+  "clause_status_changes": [],
+  "clause_totals_after": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123,
+    "total": 245
+  },
+  "clause_totals_before": {
+    "done": 66,
+    "missing": 56,
+    "partial": 123,
+    "total": 245
+  },
+  "notes": "",
+  "product": {
+    "branch": "cloud/sd-lamp-port-race-1-c4",
+    "head": "b80dd78009e96f645bb652df64ae6b2f3e735d25",
+    "parent": "54d9b79e55885ac2522412ea4cc089e975b2577f",
+    "push": "pushed",
+    "tree": "be737910d8fce4c7e6939844dd7fb55a6d3f0cb2"
+  },
+  "recorded_at_utc": "2026-11-21T15:19:01Z",
+  "reference_verify": {
+    "attempt": 2,
+    "conclusion": "success",
+    "head_sha": "3ff1d402e05d64271a976199de1d4a1c82563961",
+    "id": 44907516461
+  },
+  "repository": "just-every/run-lamp",
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "b80dd78009e96f645bb652df64ae6b2f3e735d25",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44917070974",
+    "id": 44917070974,
+    "run_attempt": 1,
+    "status": "completed"
+  }
+}

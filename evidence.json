@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "blob": "26ce8e8889e3e7f08f75356650cdb34994653858",
+      "bytes": 2895,
+      "path": "CHECKS.json",
+      "sha256": "d33cc70c56d6a82e5929eed317b1d40b8875282641b65e5995273de73146edc5"
+    },
+    {
+      "blob": "8d5f0c2147b0d03ed5cb88875a92a34e5606731c",
+      "bytes": 2671,
+      "path": "REPORT.md",
+      "sha256": "ca2031b1cfd7c9ee785b9bc0c56084ffe95c6f768719b1882ba6152c5da75129"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-port-race-1-c4",
+  "product_head": "b80dd78009e96f645bb652df64ae6b2f3e735d25",
+  "ref": "refs/heads/evidence/sd-lamp-port-race-1-c4",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-port-race-1-c4"
+}

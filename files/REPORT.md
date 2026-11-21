@@ -1,0 +1,13 @@
+# Lamp port-race replay
+
+Recorded by Codex on 2026-11-21T15:19:01Z.
+
+The plan was to fetch fresh Lamp main and the c3 source branch, replay the fixture change as one commit, preserve main's newer publishing-browser journey, regenerate the affected source-lock hashes, run the touched suites and typecheck, then push c4 and read its exact-SHA Verify.
+
+The replay used source commit `3ff1d402e05d64271a976199de1d4a1c82563961`. Its reference Verify 44907516461 was green on attempt 2. During local testing main advanced with a change to the public-history suite and its lock entry. The unpublished replay was rebased and its source lock regenerated. The tested fixture and build inputs matched across the rebase. The c4 base was `54d9b79e55885ac2522412ea4cc089e975b2577f`. The candidate is `b80dd78009e96f645bb652df64ae6b2f3e735d25` on `cloud/sd-lamp-port-race-1-c4`, with one parent and one commit over that base. In the publishing-browser conflict, main's dark status-card contrast test and its import were retained. The other three leased files match the c3 versions. The generated source lock changes four fixture hashes. The dev-ingress fixture is outside the e2e lease and was excluded from the replay.
+
+The browser fixtures allow up to three startup attempts, with a fresh loopback port for each retry. A local socket probe held the first port open, observed one retry, and got a healthy response on the replacement port. The three touched browser suites registered 14 tests before and after and ran with Node 22.20.0, pnpm 10.12.4 and system Chromium. Local e2e result was 14/14 passed. The initial publishing run lacked the required built Worker artifact, so the Worker was built with `npx -y @runeditrun/rer build` before rerunning the publishing suite. System Chromium added a favicon request in the theme asset-budget test. That case was rerun with the pinned Playwright headless shell used by Verify. A combined run on the published SHA then passed with the pinned shell. TypeScript, helper syntax, source lock, contract-doc generation check, commit identity and trailer inspection, and Git whitespace checks passed. The commit delta was checked for credential-shaped additions. The fleet lander owns the full publication scan.
+
+No contract clause claimed; this is test-infrastructure maintenance. Full target counts before and after were 66 done, 123 partial, 56 missing, and 245 total. Core was 66 done, 123 partial, and 51 missing. Agent surface had 5 missing. Later had 0 clauses.
+
+Product push status was pushed. Verify 44917070974, attempt 1 reported completed/success on the candidate SHA. https://github.com/just-every/run-lamp/actions/runs/44917070974
