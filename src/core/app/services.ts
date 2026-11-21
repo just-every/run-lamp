@@ -203,7 +203,14 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
       : kind === "escalation" ? { eventId: `incident-escalation/${updateId}`, title: `Lamp communication escalation: ${reference}`, text: `${reference} ${title} is at least ${extensions.incidentEscalationPolicy.overdueMinutes()} minutes past its next-update commitment of ${committed}. Every active operator can publish until TEAM-004 roles ship. Write the update here: ${link}` }
       : { eventId: `incident-overdue/${updateId}`, recipients, title: `Lamp incident is overdue for an update: ${reference}`, text: `${reference} ${title} passed its next-update commitment of ${committed} with no newer update. The public page still shows that time. Write the update here: ${link}` });
   }, extensions.incidentEscalationPolicy, createPromiseDraftPreparer(createPromiseDraftRepository(bindings.DB), briefs));
-  const maintenance = createMaintenanceService(createMaintenanceRepository(bindings.DB), components, publicSnapshots.rebuild, {
+  const maintenance = createMaintenanceService(createMaintenanceRepository(bindings.DB), components, publicSnapshots.rebuild, async () => {
+    const settings = await pageSettings.get();
+    if (!settings) throw new Error("Page settings are not configured.");
+    return {
+      timezone: settings.timezone, branding: settings.emailBranding, pageName: settings.pageName,
+      fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey),
+    };
+  }, {
     forMaintenanceNotice: async (input) => [
       ...notificationPublicationStatements(bindings.DB, { eventId: input.eventId, eventType: "maintenance-notice", maintenanceId: input.maintenanceId, componentIds: input.componentIds, channels: ["email", "webhook"], queuedAt: input.queuedAt, recipientScope: input.recipientScope, previousEventIds: input.previousEventIds }),
       ...channels.maintenanceStatements(input),

@@ -21,7 +21,7 @@ export function allowsOperatorRequest(role: OperatorRole, method: string, pathna
   return (method === 'POST' && /^\/incidents\/[^/]+\/(?:publish|draft\/(?:schedule|review)|components|owner\/take-over|report\/(?:publish|waive))$/.test(path))
     || (method === 'DELETE' && /^\/incidents\/[^/]+(?:\/components\/[^/]+)?$/.test(path))
     || (method === 'PUT' && /^\/incidents\/[^/]+\/(?:owner|impact)$/.test(path))
-    || (method === 'POST' && (path === '/maintenance' || /^\/maintenance\/[^/]+\/(?:start|complete|cancel)$/.test(path)))
+    || (method === 'POST' && (['/maintenance', '/maintenance/preview'].includes(path) || /^\/maintenance\/[^/]+\/(?:start|complete|cancel)$/.test(path)))
     || (method === 'PUT' && /^\/maintenance\/[^/]+\/window$/.test(path))
     || /^\/subscribers(?:\/|$)/.test(path)
     || (method === 'PUT' && /^\/components\/[^/]+\/(?:standing-claim|history\/[^/]+\/correction)$/.test(path))

@@ -1,4 +1,8 @@
 import { renderMaintenanceWording } from "../../shared/update-renderer";
+import { maintenanceNoticeDetails } from "../../shared/maintenance-notice";
+import { brandEmail } from "../../shared/email-branding";
+import { renderMaintenanceNoticeEmail } from "../deliveries/service";
+import { formatMaintenanceWindow } from "../public-snapshot/format";
 import { defaultMaintenanceAutomation, type MaintenanceAutomation } from "./automation.repository";
 import { createUlid, nowIso } from "../../shared/ids";
 import type { LampEventDispatcher } from "../../api/extensions";
@@ -14,6 +18,14 @@ export interface MaintenanceNotificationStatements {
 
 export interface MaintenanceInput extends Partial<MaintenanceAutomation> { social?:boolean; affectedAudience: string; customerImpact: string; title: string; startsAt: string; endsAt: string; componentIds: string[]; pagePaths?: string[]; }
 
+type MaintenancePreviewPresentation = Parameters<typeof brandEmail>[1] & { timezone: string };
+export interface ScheduledNoticePreview {
+  title: string;
+  window: ReturnType<typeof formatMaintenanceWindow> & Pick<MaintenanceInput, "startsAt" | "endsAt">;
+  fields: ReturnType<typeof maintenanceNoticeDetails>;
+  email: { subject: string; html: string };
+}
+
 export interface MaintenanceOverrunAlertEvent {
   maintenanceId: string;
   endsAt: string;
@@ -23,6 +35,7 @@ export type MaintenanceRuntimeEvents = Pick<LampEventDispatcher, "maintenanceSch
 
 export interface MaintenanceService {
   list(): Promise<MaintenanceView[]>;
+  previewScheduled(input: MaintenanceInput): Promise<ScheduledNoticePreview>;
   getAutomationDefault(): Promise<MaintenanceAutomation>;
   saveAutomationDefault(value: MaintenanceAutomation): Promise<MaintenanceAutomation>;
   create(input: MaintenanceInput, operatorId: string): Promise<MaintenanceView>;
@@ -66,12 +79,25 @@ export function createMaintenanceService(
   repository: MaintenanceRepository,
   componentsService: ComponentsService,
   onPublicDataChanged: () => Promise<void>,
+  loadPreviewPresentation: () => Promise<MaintenancePreviewPresentation>,
   notificationStatements: MaintenanceNotificationStatements | null = null,
   reminderPolicy: MaintenanceRemindersPolicy = defaultMaintenanceRemindersPolicy,
   onOverrun: (event: MaintenanceOverrunAlertEvent) => Promise<void>,
   events?: MaintenanceRuntimeEvents,
   onStartDue?: (event: { maintenanceId: string; startsAt: string }) => Promise<void>,
 ): MaintenanceService {
+  const validateSchedule = async (input: MaintenanceInput) => {
+    const title = input.title.trim();
+    if (!title || input.title.length > 250) throw new Error("Maintenance title is required and must be at most 250 characters.");
+    assertWindow(input.startsAt, input.endsAt);
+    const wording = maintenanceWording(input);
+    if (!input.componentIds.length) throw new Error("Attach at least one component to maintenance.");
+    const pagePaths = input.pagePaths ?? ["public"];
+    await repository.validatePagePaths(pagePaths);
+    const components = await Promise.all(input.componentIds.map((id) => componentsService.get(id)));
+    if (components.some((component) => !component)) throw new Error("One or more attached components no longer exist.");
+    return { title, wording, pagePaths, components };
+  };
   const view = async (record: StoredMaintenance): Promise<MaintenanceView> => {
     const [components, notices, importedUpdates, automation, additionalPaths] = await Promise.all([
       repository.listComponents(record.id), repository.listNotices(record.id), repository.listImportedUpdates(record.id), repository.automation.get(record.id), repository.listPagePaths(record.id),
@@ -97,6 +123,16 @@ export function createMaintenanceService(
   return {
     getAutomationDefault: () => repository.automation.getDefault(),
     saveAutomationDefault: value => repository.automation.saveDefault(value),
+    async previewScheduled(input) {
+      const { title, wording, pagePaths } = await validateSchedule(input);
+      if (!pagePaths.includes("public")) throw new Error("Select the public page to preview its scheduled notice.");
+      const presentation = await loadPreviewPresentation();
+      const { startsAt, endsAt } = input;
+      const fields = maintenanceNoticeDetails(renderMaintenanceWording({ title, ...wording }), null, title);
+      const content = renderMaintenanceNoticeEmail({ title, kind: "scheduled", startsAt, endsAt, timezone: presentation.timezone, fields });
+      const { subject, html } = brandEmail(content, presentation);
+      return { title, window: { startsAt, endsAt, ...formatMaintenanceWindow(startsAt, endsAt, presentation.timezone) }, fields, email: { subject, html } };
+    },
     async list() {
       const [records, details, automation] = await Promise.all([repository.listMaintenance(), repository.listCollectionDetails(), repository.automation.list()]);
       const components = groupByMaintenance(details.components);
@@ -116,19 +152,12 @@ export function createMaintenanceService(
       return result;
     },
     async create(input, operatorId) {
-      if (!input.title.trim() || input.title.length > 250) throw new Error("Maintenance title is required and must be at most 250 characters.");
-      assertWindow(input.startsAt, input.endsAt);
-      const wording = maintenanceWording(input);
-      if (!input.componentIds.length) throw new Error("Attach at least one component to maintenance.");
+      const { title, wording, pagePaths, components } = await validateSchedule(input);
       if (!notificationStatements) throw new Error("Maintenance notification transaction wiring is required.");
-      const pagePaths = input.pagePaths ?? ["public"];
-      await repository.validatePagePaths(pagePaths);
       const publicHidden = !pagePaths.includes("public");
-      const components = await Promise.all(input.componentIds.map((id) => componentsService.get(id)));
-      if (components.some((component) => !component)) throw new Error("One or more attached components no longer exist.");
       const timestamp = nowIso(); const maintenanceId = createUlid();
       const reference = await repository.allocateMaintenanceReference();
-      const record: StoredMaintenance = { id: maintenanceId, reference, title: input.title.trim(), ...wording, state: "Scheduled", startsAt: input.startsAt, endsAt: input.endsAt, completedAt: null, createdByOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp, publicHidden };
+      const record: StoredMaintenance = { id: maintenanceId, reference, title, ...wording, state: "Scheduled", startsAt: input.startsAt, endsAt: input.endsAt, completedAt: null, createdByOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp, publicHidden };
       const attached = components.map((component) => ({ id: createUlid(), maintenanceId, componentId: component!.id, componentName: component!.name, state: "Under maintenance" as const, createdAt: timestamp, updatedAt: timestamp }));
       const notice: MaintenanceNotice = { id: createUlid(), maintenanceId, kind: "scheduled", body: renderMaintenanceWording(record), publishedAt: timestamp, authorOperatorId: operatorId, createdAt: timestamp, updatedAt: timestamp };
       const statements = publicHidden ? [] : await notificationStatements.forMaintenanceNotice({ eventId: notice.id, maintenanceId, componentIds: attached.flatMap(component => component.componentId ? [component.componentId] : []), kind: notice.kind, queuedAt: timestamp, recipientScope: "eligible", previousEventIds: [], social: input.social });

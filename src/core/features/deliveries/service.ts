@@ -64,20 +64,38 @@ function displayNotificationTime(value: string, timezone: string | null) {
   return formatTime(value, timezone ?? "UTC");
 }
 
-function renderMaintenanceNotice(delivery: DispatchableDelivery) {
-  if (!delivery.maintenanceReference || !delivery.maintenanceTitle || !delivery.maintenanceState || !delivery.maintenanceNoticeKind) return null;
-  const starts = delivery.maintenanceStartsAt ? displayNotificationTime(delivery.maintenanceStartsAt, delivery.timezone) : "Not recorded";
-  const ends = delivery.maintenanceEndsAt ? displayNotificationTime(delivery.maintenanceEndsAt, delivery.timezone) : "Not recorded";
-  const kind = delivery.maintenanceNoticeKind[0]!.toUpperCase() + delivery.maintenanceNoticeKind.slice(1);
+export function renderMaintenanceNoticeEmail(input: {
+  title: string;
+  kind: NonNullable<DispatchableDelivery["maintenanceNoticeKind"]>;
+  startsAt: string | null;
+  endsAt: string | null;
+  timezone: string | null;
+  fields: ReturnType<typeof maintenanceNoticeDetails>;
+}) {
+  const starts = input.startsAt ? displayNotificationTime(input.startsAt, input.timezone) : "Not recorded";
+  const ends = input.endsAt ? displayNotificationTime(input.endsAt, input.timezone) : "Not recorded";
+  const kind = input.kind[0]!.toUpperCase() + input.kind.slice(1);
   const plainText = [
-    delivery.maintenanceTitle,
-    `Status: ${{ scheduled: "Scheduled", rescheduled: "Scheduled", reminder: "Scheduled", started: "In progress", completed: "Completed", cancelled: "Cancelled" }[delivery.maintenanceNoticeKind]}`,
+    input.title,
+    `Status: ${{ scheduled: "Scheduled", rescheduled: "Scheduled", reminder: "Scheduled", started: "In progress", completed: "Completed", cancelled: "Cancelled" }[input.kind]}`,
     `Notice: ${kind}`,
     `Start: ${starts}`,
     `End: ${ends}`,
-    ...maintenanceNoticeDetails(delivery.maintenanceNoticeBody ?? "", delivery.maintenanceReference, delivery.maintenanceTitle).map(field => field.label ? `${field.label}: ${field.value}` : field.value),
+    ...input.fields.map(field => field.label ? `${field.label}: ${field.value}` : field.value),
   ].filter(Boolean).join("\n\n");
-  return { email: { subject: `${kind}: ${delivery.maintenanceTitle}`, plainText } };
+  return { subject: `${kind}: ${input.title}`, plainText };
+}
+
+function renderMaintenanceNotice(delivery: DispatchableDelivery) {
+  if (!delivery.maintenanceReference || !delivery.maintenanceTitle || !delivery.maintenanceState || !delivery.maintenanceNoticeKind) return null;
+  return { email: renderMaintenanceNoticeEmail({
+    title: delivery.maintenanceTitle,
+    kind: delivery.maintenanceNoticeKind,
+    startsAt: delivery.maintenanceStartsAt,
+    endsAt: delivery.maintenanceEndsAt,
+    timezone: delivery.timezone,
+    fields: maintenanceNoticeDetails(delivery.maintenanceNoticeBody ?? "", delivery.maintenanceReference, delivery.maintenanceTitle),
+  }) };
 }
 
 export function createDeliveriesService(
