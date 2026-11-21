@@ -1,0 +1,58 @@
+{
+  "files": [
+    {
+      "blob": "d212c3cc5ee999c6d3bec294ff0f54aa8221cf16",
+      "bytes": 197788,
+      "path": "1440-keyboard-manage.png",
+      "sha256": "cad2702aa02afc100760f8a20d82ba33ed9080591408a4656092935e206e1985"
+    },
+    {
+      "blob": "ed83b8d84bf69b9d7f9cd16e66e6681a408c803a",
+      "bytes": 158092,
+      "path": "1440-keyboard-subscribe.png",
+      "sha256": "323179d8d670e5cd762fc7e8c3e222ccf558b37358d3d29c0a9e8ee53dcacc74"
+    },
+    {
+      "blob": "1acd3c2ca09131d1fb21947b284959f2231282ea",
+      "bytes": 21188,
+      "path": "1440-public-footer.png",
+      "sha256": "d08e2e0ea4ffbcf2574ddb74b3853389b1c1b997b25b80b0c56ab04ad5ca99b8"
+    },
+    {
+      "blob": "1ed1b08974a5d2353bcd5f25af41b8153f042879",
+      "bytes": 76526,
+      "path": "390-keyboard-manage.png",
+      "sha256": "f1a135e22ebb9603c9b98c04a87e5d09ec666a610fd622a461dd92e7d92023b6"
+    },
+    {
+      "blob": "1f5db700f3f384fe37c0557f7aed5c8a9a8832de",
+      "bytes": 70042,
+      "path": "390-keyboard-subscribe.png",
+      "sha256": "7ff349442acdb9e74d9b750d3627953909b78704a0077eb38f4dd678c7072939"
+    },
+    {
+      "blob": "fe0ced86450c60ab1a00fe9cd46932818daaea08",
+      "bytes": 3080,
+      "path": "RECEIPT.json",
+      "sha256": "c0252668cf4e18025d04760e8ae246e18ee93709e4942dce328bebdf19928e84"
+    },
+    {
+      "blob": "3c676189c4e2891fc2293c4176891a369e5385c8",
+      "bytes": 8165,
+      "path": "REPORT.md",
+      "sha256": "fb4f3bef0fcec2e56b8e450a504120d9bc4be5905ad77c9507d6f9d8b9edcb40"
+    },
+    {
+      "blob": "2a45dc2f7d4ce9dd1bda12a1944320babc6ffade",
+      "bytes": 1849,
+      "path": "keyboard-journey.tap",
+      "sha256": "513d7185b5c6f1459a17af966efc13b6b3572d1ca064b86b6606b90ddf2efb67"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f195",
+  "product_head": "83820924a89a6333a62141586eb264f47bf3e33a",
+  "ref": "refs/heads/evidence/sd-lamp-c-f195",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f195"
+}

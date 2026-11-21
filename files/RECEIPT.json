@@ -1,0 +1,104 @@
+{
+  "tag": "sd-lamp-c-f195",
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f195",
+  "head": "83820924a89a6333a62141586eb264f47bf3e33a",
+  "main_observed_at_push": "00eaed1983515aa829036376d7fabeea8337f13b",
+  "status_counts_before": {
+    "done": 66,
+    "partial": 123,
+    "missing": 56,
+    "total": 245
+  },
+  "status_counts_after": {
+    "done": 66,
+    "partial": 123,
+    "missing": 56,
+    "total": 245
+  },
+  "clause": {
+    "id": "PAGE-020",
+    "status": "PARTIAL",
+    "proven_slice": "Acceptance 3, subscriber keyboard controls and native consent and persistence"
+  },
+  "tools": {
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "rer": "0.2.126",
+    "chromium": "154.0.8037.57"
+  },
+  "local_checks": [
+    {
+      "command": "node --test --test-concurrency=1 tests/e2e/maintenance-timezone.test.mjs",
+      "exit": 0,
+      "pass": 3,
+      "fail": 0,
+      "widths": [
+        1440,
+        390
+      ]
+    },
+    {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generated_files_changed": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "exit": 0
+    }
+  ],
+  "files": {
+    "keyboard-journey.tap": "513d7185b5c6f1459a17af966efc13b6b3572d1ca064b86b6606b90ddf2efb67",
+    "1440-keyboard-subscribe.png": "323179d8d670e5cd762fc7e8c3e222ccf558b37358d3d29c0a9e8ee53dcacc74",
+    "1440-keyboard-manage.png": "cad2702aa02afc100760f8a20d82ba33ed9080591408a4656092935e206e1985",
+    "390-keyboard-subscribe.png": "7ff349442acdb9e74d9b750d3627953909b78704a0077eb38f4dd678c7072939",
+    "390-keyboard-manage.png": "f1a135e22ebb9603c9b98c04a87e5d09ec666a610fd622a461dd92e7d92023b6",
+    "1440-public-footer.png": "d08e2e0ea4ffbcf2574ddb74b3853389b1c1b997b25b80b0c56ab04ad5ca99b8"
+  },
+  "publication_scan": {
+    "commit": "83820924a89a6333a62141586eb264f47bf3e33a",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "guarded lander pending"
+  },
+  "main_workflows": {
+    "verify": 44912276262,
+    "run_site": 44912276281,
+    "conclusion": "success"
+  },
+  "candidate_run_site": "guarded landing pending",
+  "candidate_verify": {
+    "conclusion": "success",
+    "head_sha": "83820924a89a6333a62141586eb264f47bf3e33a",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44912812883",
+    "status": "completed",
+    "observed_utc": "2026-11-21T14:34:01+00:00",
+    "id": 44912812883,
+    "event": "push",
+    "created_at": "2026-11-21T14:13:27Z"
+  },
+  "main_observed_at_handoff": "00eaed1983515aa829036376d7fabeea8337f13b",
+  "product_ref_advertised": "83820924a89a6333a62141586eb264f47bf3e33a"
+}
