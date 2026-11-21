@@ -1,0 +1,75 @@
+Product candidate 081613316b0dbacd5bc25264430ae8a8e73687aa
+Product base 2d49c9f3a8eb566e43b36126dbb844b6d9591b26
+
+Local commands at the candidate source tree:
+  node --test --test-concurrency=1 tests/e2e/statuspage-import.test.mjs tests/e2e/snapshot-retained.test.mjs
+  Exit 0, 5 tests passed, 0 failed.
+  pnpm typecheck
+  Exit 0.
+  pnpm exec rer check --profile first-party
+  Exit 0.
+  node src/base/contract-docs.mjs write
+  Exit 0, generated document changes 0, prose errors 0, prose warnings 0.
+  node src/base/contract-docs.mjs check
+  Exit 0, contract documents are current.
+  node scripts/edition-authoring/cli.mjs lock
+  Exit 0.
+  node scripts/edition-authoring/cli.mjs check
+  Exit 0.
+  git diff --cached --check
+  Exit 0.
+
+Product push guard reported PUSH_OK on the first attempt. All candidate author and committer fields used the fleet identity. Candidate commit messages contained no trailers.
+
+Observed test output
+✔ THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm (16479.904033ms)
+✔ Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications (15075.197833ms)
+✔ SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes (215797.846388ms)
+ℹ PROBE MOVE-005 4: GET /incidents/i0000000002 -> 301 /incidents/INC-2; GET /incidents/INC-2 -> 200 with "Slow dashboard loads" and "Dashboard load times are normal."; both Atom routes -> 200 with 5272 identical published bytes and the incident entry; snapshot 01M7YBH318R5TVHCSEZSCP9KP1, generated 2026-11-21T06:08:35.369Z, cold cache, 0 database touches
+✔ MAINT-015 — imported maintenance messages retain their own source lifecycle labels (4169.565785ms)
+✔ Imported incident wording stays whole beyond native field limits (8285.726907ms)
+ℹ tests 5
+ℹ pass 5
+ℹ fail 0
+ℹ duration_ms 263221.023185
+
+Advertised Git refs
+081613316b0dbacd5bc25264430ae8a8e73687aa	refs/heads/cloud/sd-lamp-c-f175
+2d49c9f3a8eb566e43b36126dbb844b6d9591b26	refs/heads/main
+
+Main baseline CI observed before the product push
+[{"conclusion":"success","event":"push","head_sha":"2d49c9f3a8eb566e43b36126dbb844b6d9591b26","html_url":"https://github.com/just-every/run-lamp/actions/runs/44872765882","id":44872765882,"name":"Verify","status":"completed"},{"conclusion":"success","event":"push","head_sha":"2d49c9f3a8eb566e43b36126dbb844b6d9591b26","html_url":"https://github.com/just-every/run-lamp/actions/runs/44872765905","id":44872765905,"name":"Run site","status":"completed"}]
+
+Candidate file hashes
+653a7e60e676e9b5ef7c7ece96f10884763e6ff00e48b2dce0af6b271b1e9b9f  tests/e2e/statuspage-import.test.mjs
+20bbbaaa2587dde61533f6c8099222c1f4f9e38543af79fc030de396b0a32442  tests/e2e/snapshot-retained.test.mjs
+36f16ea7652c790701acd744457c86980eedf35ea53bda14411c7493f4592bdc  tests/e2e/helpers/retained-snapshot-runtime.mjs
+633690b0b9091747574b1a0d5be5c762dbbdb1748a1aaa78a3a09daf28e5fdfa  tests/e2e/snapshot-retained.worker.ts
+a5396d69a2957ef5c620d7e9f03a905767d8810694a21b4558e030903ffd0669  sources.lock.json
+
+Exact committed candidate replay with Node 22.20.0 and pnpm 10.12.4
+Typecheck exit 0. First-party profile exit 0. Touched journey command exit 0.
+ok 1 - THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm
+ok 2 - Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications
+ok 3 - SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes
+# PROBE MOVE-005 4: GET /incidents/i0000000002 -> 301 /incidents/INC-2; GET /incidents/INC-2 -> 200 with "Slow dashboard loads" and "Dashboard load times are normal."; both Atom routes -> 200 with 5272 identical published bytes and the incident entry; snapshot 01M7YBX4E131W3PDHWCWR4H0DN, generated 2026-11-21T06:15:10.018Z, cold cache, 0 database touches
+ok 4 - MAINT-015 — imported maintenance messages retain their own source lifecycle labels
+ok 5 - Imported incident wording stays whole beyond native field limits
+# tests 5
+# pass 5
+# fail 0
+# duration_ms 254598.18949
+
+Initial exact-SHA Verify discovery
+[{"conclusion":null,"event":"push","head_sha":"081613316b0dbacd5bc25264430ae8a8e73687aa","html_url":"https://github.com/just-every/run-lamp/actions/runs/44874414150","id":44874414150,"name":"Verify","status":"in_progress"}]
+2026-11-21T06:17:39Z
+{"conclusion":null,"head_sha":"081613316b0dbacd5bc25264430ae8a8e73687aa","html_url":"https://github.com/just-every/run-lamp/actions/runs/44874414150","status":"in_progress"}
+
+Advertised refs after main advanced during candidate Verify
+081613316b0dbacd5bc25264430ae8a8e73687aa	refs/heads/cloud/sd-lamp-c-f175
+22888471699c91014a61db3499e59968c8bb8392	refs/heads/main
+
+Terminal exact-SHA Verify poll for the push event, run 44874414150
+2026-11-21T06:27:39Z
+{"conclusion":"success","head_sha":"081613316b0dbacd5bc25264430ae8a8e73687aa","html_url":"https://github.com/just-every/run-lamp/actions/runs/44874414150","status":"completed"}
+Guarded full-history scan: not run in cloud. Main equality: false at last observation. Exact-candidate Run site: pending landing.
