@@ -8524,7 +8524,7 @@
       "executable": false
     },
     "tests/e2e/helpers/sms-delivery-receipts-flow.mjs": {
-      "sha256": "2b81e25d9e688a30430d314d3394f074a5861bd442c38008760eccfaafd8d020",
+      "sha256": "90e2a6f2a5b8bc4c2472b0b589064fbf4f3eb0fb14d6eb1d4e6d439e6ea4cda1",
       "executable": false
     },
     "tests/e2e/helpers/sms-subscriber-flow.mjs": {
