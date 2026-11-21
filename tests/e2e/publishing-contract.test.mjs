@@ -1125,6 +1125,47 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await advanceAndTick(completionDeadline + 60000);
     assert.deepEqual(await readBounded(), finished, 'repeated completion ticks retain exactly one notice for each transition');
     await assertMaintenanceAvailabilityDownloads(j, operatorComponent);
+
+    const automationPath = '/api/app/maintenance/automation';
+    const readDefaults = async () => (await j.json(automationPath)).automation;
+    const switches = ({ autoStart, autoComplete }) => ({ autoStart, autoComplete });
+    assert.deepEqual(await readDefaults(), { autoStart: true, autoComplete: true });
+
+    const futureStart = new Date(boundedEnd + 24 * 3600000).toISOString();
+    const futureEnd = new Date(boundedEnd + 25 * 3600000).toISOString();
+    const retainedWindows = [{ id: maintenance.id, title: maintenance.title, expected: { autoStart: true, autoComplete: false } }];
+    for (const defaults of [
+      { autoStart: false, autoComplete: true },
+      { autoStart: true, autoComplete: false },
+    ]) {
+      await j.json(automationPath, 'PUT', defaults);
+      assert.deepEqual(await readDefaults(), defaults, 'saved defaults are returned by a separate read');
+
+      const overrideStart = { autoStart: !defaults.autoStart };
+      const overrideComplete = { autoComplete: !defaults.autoComplete };
+      for (const [title, overrides] of [
+        ['Inherit both switches', {}],
+        ['Override start and inherit completion', overrideStart],
+        ['Inherit start and override completion', overrideComplete],
+      ]) {
+        const expected = { ...defaults, ...overrides };
+        const window = (await j.json('/api/app/maintenance', 'POST', {
+          title, affectedAudience: input.affectedAudience, customerImpact: input.customerImpact,
+          startsAt: futureStart, endsAt: futureEnd,
+          componentIds: [internal.id], ...overrides,
+        }, 201)).maintenance;
+        assert.deepEqual(switches(window), expected, title);
+        retainedWindows.push({ id: window.id, title, expected });
+      }
+
+      const collection = await j.json('/api/app/maintenance');
+      assert.deepEqual(collection.automation, defaults);
+      for (const { id, title, expected } of retainedWindows) {
+        const saved = collection.maintenance.find(window => window.id === id);
+        assert.ok(saved, `${title}: the created window is listed`);
+        assert.deepEqual(switches(saved), expected, `${title}: saved choices survive changes to defaults`);
+      }
+    }
   } finally { await j.close(); }
 });
 
