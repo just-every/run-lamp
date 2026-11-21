@@ -8832,7 +8832,7 @@
       "executable": false
     },
     "tests/e2e/statuspage-import.test.mjs": {
-      "sha256": "757336d596a174fe56124cc220fcf0c8468c64126e7c20d2991e2331fc059bb5",
+      "sha256": "4e6b8dbe22ae0722d4f72d2ef9b6e756d933b8721b602fca9348fcfb007fc99f",
       "executable": false
     },
     "tests/e2e/subscriber-audit-helper.mjs": {
@@ -10092,7 +10092,7 @@
       "executable": false
     },
     "tests/helpers/import-notifications.mjs": {
-      "sha256": "2232bb6ac5634a3cfee795768267164bdfcaf91d475c1b3d229640b9d0444e7a",
+      "sha256": "17bf88773b0eb464b225a874e5e742496200d90cc9b57aebc30339c8fe342eb8",
       "executable": false
     },
     "tests/helpers/incident-snapshot.mjs": {
