@@ -8116,7 +8116,7 @@
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
-      "sha256": "e238b5889b85b910323858f9e8b67b2f10050174dc8afe7bf4fc5f644bb6c7b2",
+      "sha256": "2c693b93f4aca2728292475e5adeb0e19bed759bd409bd9d31645c3b8a3a7a5a",
       "executable": false
     },
     "tests/e2e/draft-version-helper.mjs": {
@@ -8212,7 +8212,7 @@
       "executable": false
     },
     "tests/e2e/helpers/component-notification-flow.mjs": {
-      "sha256": "7b73553b4f9106ad16ba968c9735485f5a1f4586fc7435c7dbbbd35223295ec3",
+      "sha256": "f85d9d6b71d88807d2382ce7b3701db0ee4d98a9b6a2e4863751e8da15a81d3f",
       "executable": false
     },
     "tests/e2e/helpers/component-read-flow.mjs": {
@@ -8484,7 +8484,7 @@
       "executable": false
     },
     "tests/e2e/helpers/public-history-selection-flow.mjs": {
-      "sha256": "ef38a10379465779461c45173cd7c8a7011ea227bb34dea98d417ef37cb61a93",
+      "sha256": "bf591de49e01b709cbc4f17062546a4c88d54dda335d66f1f84677a9bdc3d501",
       "executable": false
     },
     "tests/e2e/helpers/public-isolation-flow.mjs": {

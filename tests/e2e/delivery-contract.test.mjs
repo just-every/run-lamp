@@ -1,3 +1,4 @@
+import { internalStandingClaimSilenceFlow } from './helpers/component-notification-flow.mjs';
 import { subscriberPublicConsentFlow } from './helpers/subscriber-public-consent-flow.mjs';
 import { perUpdateChannelsFlow } from './helpers/per-update-channels-flow.mjs';
 import { mailOutageRecoveryFlow } from './helpers/mail-outage-recovery-flow.mjs';
@@ -42,6 +43,7 @@ test('SUB-019 SUB-001 SUB-002 SUB-003 SUB-004 SUB-005 SUB-006 SUB-007 SUB-008 SU
   await subscriberCsvFlow();
   await subscriberIntakeBrowserFlow(t);
   await statuspageWebhookFlow();
+  await internalStandingClaimSilenceFlow();
   await webhookReceiverDeadlineFlow(t);
   await smsSubscriberFlow();
   await webhookAtMostOnceFlow();
