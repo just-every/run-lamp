@@ -29,6 +29,62 @@ test('PAGE-005 — a new release rebuilds the stored public page once, retries p
 test('UPTIME-003 — newly observed services report only their recorded coverage', shortHistoryFlow);
 test('HIST-001 — completed native records retain their month, window, components and complete publication inventory', publicHistoryFlow);
 
+test('COMP-009 — reviewed CSV edits, reorders and deletes existing components', async () => {
+  const j = await openStatusJourney();
+  try {
+    const { group } = await j.json('/api/app/component-groups', 'POST', { name: 'CSV review services', displayOrder: 0 }, 201);
+    const monitoring = await j.component('Monitoring', { groupId: group.id, displayOrder: 0, description: 'Original checks' });
+    const routing = await j.component('Routing', { groupId: group.id, displayOrder: 1, description: 'Original routing' });
+    const retired = await j.component('Retired relay', { groupId: group.id, displayOrder: 2 });
+    const control = await j.component('Unlisted control', {
+      groupId: group.id, displayOrder: 3, description: 'Keep this description', note: 'Keep this note', internal: true,
+    });
+    const readComponents = () => j.json('/api/app/components');
+    const bulkPath = '/api/app/components/bulk';
+    const before = await readComponents();
+    const beforeReview = await j.json(bulkPath);
+    const groupComponents = rows => rows.filter(row => row.groupId === group.id);
+    const reviewFields = rows => rows.map(({ id, name, description, displayOrder }) => ({ id, name, description, displayOrder }));
+    assert.deepEqual(groupComponents(before.components).map(row => row.id), [monitoring.id, routing.id, retired.id, control.id]);
+
+    const csv = [
+      'id,name,description,display_order,action',
+      `${monitoring.id},Edge monitoring,"Checks ""north"", south\nand west",1,upsert`,
+      `${routing.id},Routing,Original routing,0,upsert`,
+      `${retired.id},,,,delete`,
+    ].join('\n');
+    const expected = [
+      { id: routing.id, name: 'Routing', description: 'Original routing', displayOrder: 0 },
+      { id: monitoring.id, name: 'Edge monitoring', description: 'Checks "north", south\nand west', displayOrder: 1 },
+      { id: control.id, name: 'Unlisted control', description: 'Keep this description', displayOrder: 3 },
+    ];
+    const preview = await j.json(`${bulkPath}/preview`, 'POST', { csv });
+    assert.equal(preview.revision, beforeReview.revision);
+    assert.deepEqual(preview.counts, {
+      components: { created: 0, changed: 2, deleted: 1 },
+      groups: { created: 0, changed: 0, deleted: 0 },
+    });
+    assert.deepEqual(preview.removed, { components: ['Retired relay'], groups: [] });
+    assert.deepEqual(preview.catalogue.groups, beforeReview.catalogue.groups);
+    assert.deepEqual(reviewFields(groupComponents(preview.catalogue.components).sort((a, b) => a.displayOrder - b.displayOrder)), expected);
+    assert.deepEqual(await j.json(bulkPath), beforeReview, 'preview leaves the stored catalogue and revision unchanged');
+    assert.deepEqual(await readComponents(), before, 'the original records and order remain until apply');
+
+    const { catalogue, revision, reviewToken } = preview;
+    const unreviewedDeletion = { ...catalogue, components: catalogue.components.filter(row => row.id !== control.id) };
+    const refused = await j.json(`${bulkPath}/apply`, 'POST', { catalogue: unreviewedDeletion, revision, reviewToken }, 400);
+    assert.match(refused.error, /changed after review/);
+    assert.deepEqual(await readComponents(), before, 'refusing the unreviewed deletion changes nothing');
+
+    await j.json(`${bulkPath}/apply`, 'POST', { catalogue, revision, reviewToken });
+    const saved = await readComponents();
+    assert.deepEqual(reviewFields(groupComponents(saved.components)), expected, 'the native list returns the exact survivors in their new order');
+    assert.ok(!saved.components.some(row => row.id === retired.id), 'the named component is deleted from the catalogue');
+    assert.deepEqual(saved.components.find(row => row.id === control.id), before.components.find(row => row.id === control.id));
+    assert.deepEqual(saved.groups, before.groups);
+  } finally { await j.close(); }
+});
+
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
 }
