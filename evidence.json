@@ -1,0 +1,40 @@
+{
+  "files": [
+    {
+      "blob": "8bff7b4677a6995ed927affe8d34c221863148f1",
+      "bytes": 8285,
+      "path": "REPORT.md",
+      "sha256": "c8e97c86c904e947ece1793232a158c7f5936f3b327c902e89bd15b62afb51dd"
+    },
+    {
+      "blob": "8e6111c7c2b841130485e09d0d2a1b68d0db2876",
+      "bytes": 2012,
+      "path": "availability-march-2040.csv",
+      "sha256": "c01627e98ef2d01117bdef4f54c8e12b97f20cd7993cee159b65d24a0ecdb5e3"
+    },
+    {
+      "blob": "aefd282c3d2c2fdb5d5310945612d63dc091116d",
+      "bytes": 8805,
+      "path": "availability-march-2040.pdf",
+      "sha256": "6d697452933673b64ebc18b932b22cbfcffb9c3131ee96f9f45db70d269852a3"
+    },
+    {
+      "blob": "04be278921fe82be62b8e43009f89660d02b6db7",
+      "bytes": 2233,
+      "path": "maintenance-download-receipt.json",
+      "sha256": "04f0119b8a0b7c76d46c250b0b53315e192eb1ed3799c3a9ad87829bc4ffbab8"
+    },
+    {
+      "blob": "de9ae72e0f3addb57a99450830a9ace2ab9ecd4b",
+      "bytes": 2381,
+      "path": "validation-receipt.json",
+      "sha256": "d52f5e3e508eb9727a805b3cea318f487a310810bef78954ff4fecf1cc4974f9"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-c-f164",
+  "product_head": "1391f636036e163105fd3781e3c2ae29b6eddbf8",
+  "ref": "refs/heads/evidence/sd-lamp-c-f164",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-c-f164"
+}

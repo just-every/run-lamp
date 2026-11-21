@@ -1,0 +1,83 @@
+{
+  "repository": "just-every/run-lamp",
+  "head": "1391f636036e163105fd3781e3c2ae29b6eddbf8",
+  "branch": "cloud/sd-lamp-c-f164",
+  "observedAt": "2026-11-21T00:29:11Z",
+  "base": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb",
+  "advertisedRefs": {
+    "refs/heads/cloud/sd-lamp-c-f164": "1391f636036e163105fd3781e3c2ae29b6eddbf8",
+    "refs/heads/main": "3c814ba060047b1f2f0908c42dfcbe0f4f9a8adb"
+  },
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "1391f636036e163105fd3781e3c2ae29b6eddbf8",
+    "html_url": "https://github.com/just-every/run-lamp/actions/runs/44842383923",
+    "id": 44842383923,
+    "name": "Verify",
+    "status": "completed"
+  },
+  "startingMainRuns": {
+    "verify": 44839596494,
+    "runSite": 44839596465
+  },
+  "candidateRunSite": {
+    "status": "main_push_only",
+    "id": null
+  },
+  "publicationScan": {
+    "commit": "1391f636036e163105fd3781e3c2ae29b6eddbf8",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "pending_lander"
+  },
+  "exactHeadPublishingTest": {
+    "command": "node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+    "exit": 0,
+    "maintenanceTest": "MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 \u2014 owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history",
+    "testBlobSha256": "fd244ae6d9a11e6c5f14373ab095233b3c3b02a823bdf3b8d6dda935346111d5",
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "skipped": 0
+  },
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs write",
+      "exit": 0,
+      "generatedDocumentChanges": 0
+    },
+    {
+      "command": "node src/base/contract-docs.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "migrationLedger": "inapplicable",
+  "candidateCommitCount": 1,
+  "newCommitTrailers": 0
+}

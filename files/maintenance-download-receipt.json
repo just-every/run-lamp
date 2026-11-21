@@ -1,0 +1,83 @@
+{
+  "head": "1391f636036e163105fd3781e3c2ae29b6eddbf8",
+  "period": "2040-03",
+  "timezone": "UTC",
+  "component": {
+    "id": "020F7H9F00772YW0Z0RRSPFZGS",
+    "name": "Maintenance report service"
+  },
+  "baseline": {
+    "coverageWholeDays": 1,
+    "trackingSince": "2040-03-15T00:00:00.000Z"
+  },
+  "after": {
+    "coverageWholeDays": 2,
+    "trackingSince": "2040-03-15T00:00:00.000Z",
+    "uptime": "100.00%",
+    "weightedDowntimeMinutes": "0.00"
+  },
+  "excludedMaintenance": {
+    "reference": "SCH-4",
+    "component": "Independent service"
+  },
+  "observedMaintenanceTransitions": [
+    {
+      "state": "Operational",
+      "at": "2040-03-17T00:00:00.000Z"
+    },
+    {
+      "state": "Under maintenance",
+      "at": "2040-03-16T23:00:00.000Z"
+    }
+  ],
+  "downloads": {
+    "csv": {
+      "path": "availability-march-2040.csv",
+      "mediaType": "text/csv; charset=utf-8",
+      "contentDisposition": "attachment; filename=\"availability-maintenance-report-service-2040-03.csv\"",
+      "sha256": "c01627e98ef2d01117bdef4f54c8e12b97f20cd7993cee159b65d24a0ecdb5e3",
+      "bytes": 2012,
+      "maintenance": [
+        {
+          "reference": "SCH-1",
+          "title": "Database indexing",
+          "state": "Completed"
+        },
+        {
+          "reference": "SCH-2",
+          "title": "Cache replacement",
+          "state": "Cancelled"
+        },
+        {
+          "reference": "SCH-3",
+          "title": "Network expansion",
+          "state": "Scheduled"
+        }
+      ]
+    },
+    "pdf": {
+      "path": "availability-march-2040.pdf",
+      "mediaType": "application/pdf",
+      "contentDisposition": "attachment; filename=\"availability-maintenance-report-service-2040-03.pdf\"",
+      "sha256": "6d697452933673b64ebc18b932b22cbfcffb9c3131ee96f9f45db70d269852a3",
+      "bytes": 8805,
+      "maintenance": [
+        {
+          "reference": "SCH-1",
+          "title": "Database indexing",
+          "state": "Completed"
+        },
+        {
+          "reference": "SCH-2",
+          "title": "Cache replacement",
+          "state": "Cancelled"
+        },
+        {
+          "reference": "SCH-3",
+          "title": "Network expansion",
+          "state": "Scheduled"
+        }
+      ]
+    }
+  }
+}
