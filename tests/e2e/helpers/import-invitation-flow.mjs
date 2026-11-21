@@ -211,6 +211,7 @@ export async function importInvitationFlow({ runtime, api, source, result, prior
   assert.deepEqual(await stored(), [active]);
   assert.equal(runtime.messages.length, transportAtDeadline);
   console.log(`PROBE MOVE-013 ${source}: owner-only confirmation envelopes, exact recipients, concurrent claims, original deadline, expired refusals, native erasure and safe retry controls passed`);
+  return deadline;
 }
 
 /** A separately reviewed import is never invited before its deadline. This
