@@ -1,0 +1,98 @@
+{
+  "repository": "just-every/run-lamp",
+  "branch": "cloud/sd-lamp-c-f177",
+  "commit": "aac02ad17dcbf10ea11675276995eb806849483b",
+  "base": "bafb632174ace2da2191b88bb186d0364e1415c7",
+  "main_workflows_at_base": [
+    {
+      "name": "Verify",
+      "id": 44876986189,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Run site",
+      "id": 44876986360,
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "candidate_workflows": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "aac02ad17dcbf10ea11675276995eb806849483b",
+      "html_url": "https://github.com/just-every/run-lamp/actions/runs/44880054287",
+      "id": 44880054287,
+      "name": "Verify",
+      "status": "in_progress"
+    }
+  ],
+  "tests": {
+    "command": "node --test --test-concurrency=1 tests/e2e/publishing-contract.test.mjs",
+    "chromium": "/usr/bin/chromium",
+    "node": "24.19.0",
+    "pnpm": "10.12.4",
+    "exit": 0,
+    "counts": {
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "target": "✔ MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history (50283.748662ms)",
+    "committed_head_rerun": {
+      "filter": "MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013",
+      "exit": 0,
+      "target": "✔ MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history (52615.677182ms)"
+    },
+    "test_blob_sha256": "939f765321ae6c0f66c35aca9b7f30041aec1e48f01bdc09f4a5a3a593f1e67a"
+  },
+  "mechanical": {
+    "typecheck": {
+      "command": "pnpm run typecheck",
+      "exit": 0
+    },
+    "first_party_check": {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    "verification_plan": {
+      "command": "node scripts/verification/check-plan.mjs",
+      "exit": 0,
+      "checks": 126
+    },
+    "views": {
+      "commands": [
+        "node src/base/contract-docs.mjs write",
+        "node src/base/contract-docs.mjs check"
+      ],
+      "exit": 0
+    },
+    "lock": {
+      "commands": [
+        "node scripts/edition-authoring/cli.mjs lock",
+        "node scripts/edition-authoring/cli.mjs check"
+      ],
+      "exit": 0
+    },
+    "migration_ledger": {
+      "status": "not_applicable"
+    },
+    "author_committer_and_trailers_checked": true
+  },
+  "clause_counts_before_and_after": {
+    "done": 66,
+    "partial": 123,
+    "missing": 56,
+    "total": 245
+  },
+  "publication_scan": {
+    "commit": "aac02ad17dcbf10ea11675276995eb806849483b",
+    "status": "awaiting Mac lander"
+  }
+}
