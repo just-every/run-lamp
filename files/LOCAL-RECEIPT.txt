@@ -1,0 +1,74 @@
+Lamp HIST-004 local test and mechanical receipt
+Run Edit Run fleet, 2026-11-21
+Repository: just-every/run-lamp
+Candidate: 2bc6d2739a202864471aefa2493cb822e5cebaa4
+Branch: cloud/sd-lamp-c-f169
+Base: 2939f22d0549be77fcc94315b2747667f8796e66
+Node: v22.20.0
+pnpm: 10.12.4
+
+Native export and restore command
+node --test --test-concurrency=1 tests/auth-adoption/portability.test.mjs
+exit=0
+TAP version 13
+ok 1 - SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 158208.410836
+
+One-off comparator probe outcomes
+PASS rejects missing subscriber
+PASS rejects duplicate subscriber
+PASS rejects wrong subscriber state
+PASS rejects wrong subscriber channel
+PASS rejects changed audit payload
+PASS rejects missing object
+PASS rejects changed decoded bytes
+
+Typecheck
+pnpm run typecheck
+exit=0
+
+First-party validation
+rer check --profile first-party
+exit=0
+
+App build
+npx -y @runeditrun/rer build
+exit=0
+
+Contract generation and source lock
+node src/base/contract-docs.mjs write
+node src/base/contract-docs.mjs check
+exit=0
+Wrote 0 contract documents.
+Contract prose: 0 errors, 0 warnings.
+Contract documents are current.
+node scripts/edition-authoring/cli.mjs lock
+node scripts/edition-authoring/cli.mjs check
+exit=0
+
+Product push
+PUSH_OK branch=cloud/sd-lamp-c-f169
+2bc6d2739a202864471aefa2493cb822e5cebaa4	refs/heads/cloud/sd-lamp-c-f169
+2939f22d0549be77fcc94315b2747667f8796e66	refs/heads/main
+
+Scope checks
+Candidate history: 1 commit, allowed fleet author and committer, zero trailers.
+Added source: zero email-shaped strings. No bare owner and repository tokens in the added prose.
+Contract and both generated views match base. Clean worktree. Full-history clone.
+
+Exact candidate rerun from clean committed checkout
+HEAD: 2bc6d2739a202864471aefa2493cb822e5cebaa4
+node --test --test-concurrency=1 tests/auth-adoption/portability.test.mjs
+exit=0
+ok 1 - SUB-019 AUTO-001 HIST-004 PORT-001 ACCESS-001 ACCESS-002 INTAKE-009 INTAKE-014 native rer backup restores the whole product without reviving temporary authority
+# pass 1
+# fail 0
+# duration_ms 152599.594839
