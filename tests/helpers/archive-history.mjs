@@ -1,5 +1,70 @@
+import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+
 const logo = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Jm4kAAAAASUVORK5CYII=", "base64");
+const icon = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGPgbloLAAHWATsKuk4/AAAAAElFTkSuQmCC", "base64");
+const iconKey = 'branding/theme/export-icon.png';
+
+const historyTables = [
+  'incidents', 'incident_updates', 'incident_components', 'incident_attachments',
+  'components', 'component_groups', 'component_state_history', 'component_standing_claims',
+  'component_state_corrections', 'component_claim_events',
+  'maintenance', 'maintenance_components', 'maintenance_notices', 'import_maintenance_updates',
+  'subscribers', 'subscriber_components', 'incident_subscriptions', 'sms_subscriptions', 'sms_consents',
+  'notification_deliveries', 'notification_delivery_attempts', 'mail_provider_routes',
+  'mail_provider_webhook_events', 'component_notification_events', 'component_notification_deliveries',
+  'component_delivery_attempts', 'report_notification_deliveries', 'report_delivery_attempts',
+  'subscriber_channel_posts', 'channel_posts', 'channel_subscriber_events', 'sms_deliveries',
+  'incident_reports',
+  'page_settings', 'maintenance_automation_defaults', 'maintenance_automation', 'mail_provider_settings',
+  'incident_follow_settings', 'sms_settings', 'social_settings',
+  'audit_entries', 'oa_auth_audit',
+];
+
+export async function captureArchiveHistory({ DB, SNAPSHOTS }) {
+  const results = await DB.batch(historyTables.map(table => DB.prepare(`SELECT * FROM ${table}`)));
+  const rows = new Map(historyTables.map((table, index) => [table, results[index].results]));
+  const objects = new Map();
+  let cursor;
+  do {
+    const page = await SNAPSHOTS.list({ cursor });
+    for (const { key } of page.objects) {
+      const object = await SNAPSHOTS.get(key);
+      assert.ok(object, `source object ${key} is readable`);
+      objects.set(key, Buffer.from(await object.arrayBuffer()));
+    }
+    cursor = page.truncated ? page.cursor : undefined;
+  } while (cursor);
+  assert.deepEqual(objects.get('branding/original.png'), logo);
+  assert.deepEqual(objects.get(iconKey), icon);
+  return { rows, objects };
+}
+
+function sortedRows(rows) {
+  return rows.map(row => Object.fromEntries(Object.keys(row).sort().map(column => [column, row[column]])))
+    .sort((left, right) => {
+      const a = JSON.stringify(left), b = JSON.stringify(right);
+      return a < b ? -1 : a > b ? 1 : 0;
+    });
+}
+
+export function assertArchiveHistory({ rows, objects: sourceObjects }, { items, objects }) {
+  for (const [table, expected] of rows) {
+    const actual = items.filter(item => item.kind === 'row' && item.table === table).map(item => item.row);
+    assert.deepEqual(sortedRows(actual), sortedRows(expected), `first export preserves all ${table} rows and values`);
+  }
+
+  const archivedObjects = objects.filter(object => object.bucket === 'SNAPSHOTS');
+  assert.deepEqual(archivedObjects.map(object => object.key).sort(), [...sourceObjects.keys()].sort(),
+    'first export preserves the complete source object inventory');
+  for (const [key, expected] of sourceObjects) {
+    const chunks = items.filter(item => item.kind === 'object' && item.bucket === 'SNAPSHOTS' && item.key === key)
+      .sort((left, right) => left.offset - right.offset);
+    const bytes = Buffer.concat(chunks.map(chunk => Buffer.from(chunk.data, 'base64')));
+    assert.deepEqual(bytes, expected, `first export preserves the original bytes for ${key}`);
+  }
+}
+
 export async function populateArchiveHistory(env) {
   await env.DB.batch([
     env.DB.prepare("INSERT INTO operators (id, email, display_name, is_setup_operator, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)").bind("operator-export", "archive-author@example.test", "Owner", 1, "2026-09-08T00:00:00.000Z", "2026-09-08T00:00:00.000Z"),
@@ -33,6 +98,17 @@ export async function populateArchiveHistory(env) {
   // the same technical archive. These chat recipients have already opted out;
   // current active-channel behavior is exercised by the subscription journey.
   const stamp="2026-09-08T00:00:00.000Z",confirmed="2026-09-08T00:01:00.000Z",deactivated="2026-09-08T00:16:00.000Z";
+  await env.DB.batch([
+    env.DB.prepare("INSERT INTO incident_updates(id,incident_id,lifecycle,affected_audience,customer_impact,what_still_works,details,published_at,author_operator_id,created_at,updated_at) VALUES('update-export-first','incident-export','Investigating','API customers','Some requests are failing','Dashboard remains available','Checking increased errors.',?,'operator-export',?,?)").bind(confirmed, stamp, confirmed),
+    env.DB.prepare("INSERT INTO maintenance_notices(id,maintenance_id,kind,body,published_at,author_operator_id,created_at,updated_at) VALUES('notice-export-started','maintenance-export','started','Database maintenance is underway.','2026-09-09T00:00:00.000Z','operator-export',?,?)").bind(stamp, stamp),
+    env.DB.prepare("INSERT INTO subscribers(id,channel,destination,state,token_hash,created_at,updated_at) VALUES('subscriber-export-pending','webhook','https://pending.example.test/updates','pending','synthetic-lamp-1714',?,?)").bind(stamp, stamp),
+    env.DB.prepare("INSERT INTO maintenance_automation_defaults(singleton,auto_start,auto_complete) VALUES(1,0,1)"),
+    env.DB.prepare("INSERT INTO maintenance_automation(maintenance_id,auto_start,auto_complete) VALUES('maintenance-export',1,0)"),
+    env.DB.prepare("INSERT INTO social_settings(id,post_by_default) VALUES('default',1)"),
+    env.DB.prepare("UPDATE page_settings SET theme_assets=? WHERE id='default'").bind(JSON.stringify({
+      icon: { key: iconKey, contentType: 'image/png' },
+    })),
+  ]);
   for (const [number,kind] of [[1701,"slack"],[1702,"teams"]]) {
     const id=`synthetic-lamp-${number}`;
     await env.DB.batch([
@@ -71,4 +147,6 @@ export async function populateArchiveHistory(env) {
     env.DB.prepare("UPDATE sms_settings SET countries_json='[\"US\",\"CA\",\"GB\"]',support_contact='support@example.test' WHERE id=1"),
   ]);
   await env.SNAPSHOTS.put("branding/original.png", logo, { httpMetadata: { contentType: "image/png", contentDisposition: "attachment; filename=brand.png", cacheControl: "public, max-age=60" }, customMetadata: { owner: "portable-brand" } });
+  await env.SNAPSHOTS.put(iconKey, icon, { httpMetadata: { contentType: 'image/png' } });
+  await env.SNAPSHOTS.put('traffic/settings.json', JSON.stringify({ multiple: 7 }));
 }

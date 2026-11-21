@@ -29,6 +29,62 @@ test('PAGE-005 — a new release rebuilds the stored public page once, retries p
 test('UPTIME-003 — newly observed services report only their recorded coverage', shortHistoryFlow);
 test('HIST-001 — completed native records retain their month, window, components and complete publication inventory', publicHistoryFlow);
 
+test('COMP-009 — reviewed CSV edits, reorders and deletes existing components', async () => {
+  const j = await openStatusJourney();
+  try {
+    const { group } = await j.json('/api/app/component-groups', 'POST', { name: 'CSV review services', displayOrder: 0 }, 201);
+    const monitoring = await j.component('Monitoring', { groupId: group.id, displayOrder: 0, description: 'Original checks' });
+    const routing = await j.component('Routing', { groupId: group.id, displayOrder: 1, description: 'Original routing' });
+    const retired = await j.component('Retired relay', { groupId: group.id, displayOrder: 2 });
+    const control = await j.component('Unlisted control', {
+      groupId: group.id, displayOrder: 3, description: 'Keep this description', note: 'Keep this note', internal: true,
+    });
+    const readComponents = () => j.json('/api/app/components');
+    const bulkPath = '/api/app/components/bulk';
+    const before = await readComponents();
+    const beforeReview = await j.json(bulkPath);
+    const groupComponents = rows => rows.filter(row => row.groupId === group.id);
+    const reviewFields = rows => rows.map(({ id, name, description, displayOrder }) => ({ id, name, description, displayOrder }));
+    assert.deepEqual(groupComponents(before.components).map(row => row.id), [monitoring.id, routing.id, retired.id, control.id]);
+
+    const csv = [
+      'id,name,description,display_order,action',
+      `${monitoring.id},Edge monitoring,"Checks ""north"", south\nand west",1,upsert`,
+      `${routing.id},Routing,Original routing,0,upsert`,
+      `${retired.id},,,,delete`,
+    ].join('\n');
+    const expected = [
+      { id: routing.id, name: 'Routing', description: 'Original routing', displayOrder: 0 },
+      { id: monitoring.id, name: 'Edge monitoring', description: 'Checks "north", south\nand west', displayOrder: 1 },
+      { id: control.id, name: 'Unlisted control', description: 'Keep this description', displayOrder: 3 },
+    ];
+    const preview = await j.json(`${bulkPath}/preview`, 'POST', { csv });
+    assert.equal(preview.revision, beforeReview.revision);
+    assert.deepEqual(preview.counts, {
+      components: { created: 0, changed: 2, deleted: 1 },
+      groups: { created: 0, changed: 0, deleted: 0 },
+    });
+    assert.deepEqual(preview.removed, { components: ['Retired relay'], groups: [] });
+    assert.deepEqual(preview.catalogue.groups, beforeReview.catalogue.groups);
+    assert.deepEqual(reviewFields(groupComponents(preview.catalogue.components).sort((a, b) => a.displayOrder - b.displayOrder)), expected);
+    assert.deepEqual(await j.json(bulkPath), beforeReview, 'preview leaves the stored catalogue and revision unchanged');
+    assert.deepEqual(await readComponents(), before, 'the original records and order remain until apply');
+
+    const { catalogue, revision, reviewToken } = preview;
+    const unreviewedDeletion = { ...catalogue, components: catalogue.components.filter(row => row.id !== control.id) };
+    const refused = await j.json(`${bulkPath}/apply`, 'POST', { catalogue: unreviewedDeletion, revision, reviewToken }, 400);
+    assert.match(refused.error, /changed after review/);
+    assert.deepEqual(await readComponents(), before, 'refusing the unreviewed deletion changes nothing');
+
+    await j.json(`${bulkPath}/apply`, 'POST', { catalogue, revision, reviewToken });
+    const saved = await readComponents();
+    assert.deepEqual(reviewFields(groupComponents(saved.components)), expected, 'the native list returns the exact survivors in their new order');
+    assert.ok(!saved.components.some(row => row.id === retired.id), 'the named component is deleted from the catalogue');
+    assert.deepEqual(saved.components.find(row => row.id === control.id), before.components.find(row => row.id === control.id));
+    assert.deepEqual(saved.groups, before.groups);
+  } finally { await j.close(); }
+});
+
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
 }
@@ -37,6 +93,80 @@ function nodeText(node) {
 }
 function hasClass(node, name) {
   return node.attrs?.some(attr => attr.name === 'class' && attr.value.split(' ').includes(name));
+}
+
+async function assertPublicBranding(j, { state, pageName, logoBytes, previousVersion }) {
+  const attribute = (node, name) => node?.attrs?.find(attr => attr.name === name)?.value;
+  const isCurrent = response => response.ok && response.headers.get('x-lamp-snapshot-state') !== 'stale';
+  const { version, html } = await eventually(async () => {
+    const response = await j.publicResponse('/api/public/status');
+    if (!isCurrent(response)) {
+      await response.text();
+      return;
+    }
+    const { overall } = await response.json();
+    const version = response.headers.get('x-lamp-snapshot-version');
+    if (overall !== state || !version || version === previousVersion) return;
+
+    const document = await j.publicResponse('/');
+    const html = await document.text();
+    if (!isCurrent(document) || document.headers.get('x-lamp-snapshot-version') !== version) return;
+    assert.match(document.headers.get('content-type') ?? '', /^text\/html\b/);
+    return { version, html };
+  }, Boolean, `a current ${state} snapshot is published`);
+
+  const readArtifact = async (url, type) => {
+    assert.equal(url.origin, j.publicOrigin, `${url.pathname} is first-party`);
+    const response = await j.publicResponse(url);
+    assert.equal(response.status, 200, url.pathname);
+    assert.match(response.headers.get('content-type') ?? '', type, url.pathname);
+    assert.notEqual(response.headers.get('x-lamp-snapshot-state'), 'stale', url.pathname);
+    assert.equal(response.headers.get('x-lamp-snapshot-version'), version, url.pathname);
+    return response.text();
+  };
+
+  const elements = descendants(parse(html));
+  const label = elements.find(node => attribute(node, 'id') === 'overall-status');
+  assert.ok(label, 'the public page shows its overall state');
+  const labelText = nodeText(label).trim();
+  assert.equal(labelText, expectedComponentLabels[state]);
+  const expectedTitle = `${pageName}: ${labelText}`;
+  const head = elements.find(node => node.tagName === 'head');
+  const metadata = property => attribute(head.childNodes.find(node => node.tagName === 'meta' && attribute(node, 'property') === property), 'content');
+  assert.equal(metadata('og:title'), expectedTitle);
+  const icon = head.childNodes.find(node => node.tagName === 'link' && attribute(node, 'rel') === 'icon');
+  const faviconHref = attribute(icon, 'href');
+  const socialHref = metadata('og:image');
+  const stylesheet = head.childNodes.find(node => node.tagName === 'link' && attribute(node, 'rel') === 'stylesheet');
+  const stylesheetHref = attribute(stylesheet, 'href');
+  assert.ok(faviconHref, 'the public document advertises a favicon');
+  assert.ok(socialHref, 'the public document advertises an Open Graph image');
+  assert.ok(stylesheetHref, 'the public document advertises its stylesheet');
+  const faviconUrl = new URL(faviconHref, j.publicOrigin);
+  const socialUrl = new URL(socialHref);
+
+  const readArtwork = async url => {
+    const svg = parseFragment(await readArtifact(url, /^image\/svg\+xml\b/)).childNodes.find(node => node.tagName === 'svg');
+    assert.ok(svg, `${url.pathname} serves SVG artwork`);
+    const image = svg.childNodes.find(node => node.tagName === 'image');
+    const embedded = attribute(image, 'href')?.match(/^data:image\/png;base64,([A-Za-z0-9+/]+={0,2})$/);
+    assert.ok(embedded, `${url.pathname} embeds a PNG`);
+    assert.deepEqual(Buffer.from(embedded[1], 'base64'), logoBytes, `${url.pathname} embeds the original uploaded logo`);
+    return svg.childNodes;
+  };
+  const favicon = await readArtwork(faviconUrl);
+  const mark = favicon.find(node => node.tagName === 'circle');
+  assert.ok(Number(attribute(mark, 'r')) > 0, 'the favicon draws a state mark over the logo');
+  const stateMark = attribute(mark, 'fill');
+  const css = await readArtifact(new URL(stylesheetHref, j.publicOrigin), /^text\/css\b/);
+  const stateColor = state === 'Operational' ? '--ok' : '--down';
+  const publicColor = css.match(new RegExp(`${stateColor}:\\s*(#[a-fA-F0-9]+)`))?.[1];
+  assert.ok(publicColor, `the public stylesheet exposes the ${state} color`);
+  assert.equal(stateMark, publicColor, `the favicon mark matches the public ${state} color`);
+
+  const social = await readArtwork(socialUrl);
+  assert.deepEqual(social.filter(node => node.tagName === 'text').map(nodeText), [expectedTitle], 'the served Open Graph image visibly states the public overall status');
+  return { version, stateMark, labelText, faviconPath: faviconUrl.pathname, socialPath: socialUrl.pathname };
 }
 
 function rssItems(xml) {
@@ -506,8 +636,9 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
   let browser;
   try {
     const settings = (await j.json('/api/app/page-settings')).settings;
+    const pageName = 'Customer service status';
     await j.json('/api/app/page-settings', 'PUT', {
-      mailFromAddress: settings.mailFromAddress, pageName: 'Customer service status', tagline: 'Current service facts', accentColor: '#16794C',
+      mailFromAddress: settings.mailFromAddress, pageName, tagline: 'Current service facts', accentColor: '#16794C',
       timezone: 'America/Los_Angeles', hostname: 'localhost', footerCreditEnabled: false,
       widgetAllowedOrigins: [j.publicOrigin],
     });
@@ -564,7 +695,7 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const review = await j.json('/api/app/components/bulk/preview', 'POST', { catalogue, revision: beforeCatalogue.revision });
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: review.catalogue, revision: review.revision, reviewToken: review.reviewToken });
     await j.json('/api/app/components/bulk/apply', 'POST', { catalogue: review.catalogue, revision: review.revision, reviewToken: review.reviewToken }, 409);
-    let html = await j.visible('/', 'Customer service status');
+    let html = await j.visible('/', pageName);
     assert.ok(html.indexOf(firstGroup.name) < html.indexOf(secondGroup.name));
     assert.ok(!html.includes(other.name), 'a healthy conditional component stays out of the public catalogue');
     assert.ok(html.includes(main.note));
@@ -642,7 +773,18 @@ test('SUB-019 PAGE-001 PAGE-002 PAGE-003 PAGE-004 PAGE-007 PAGE-008 PAGE-009 PAG
     const originalLogo = await j.publicResponse('/assets/logo');
     assert.equal(originalLogo.status, 200);
     assert.deepEqual(Buffer.from(await originalLogo.arrayBuffer()), png);
-    for (const path of ['/assets/favicon.svg', '/assets/og.svg']) { const response = await j.publicResponse(path); assert.equal(response.status, 200); assert.ok((await response.text()).includes('data:image/png')); }
+    const branding = { pageName, logoBytes: png };
+    const workingBrand = await assertPublicBranding(j, {
+      ...branding, state: 'Operational', previousVersion: initial.headers.get('x-lamp-snapshot-version'),
+    });
+    const brandingClaimPath = `/api/app/components/${main.id}/standing-claim`;
+    await j.json(brandingClaimPath, 'PUT', { state: 'Major outage' });
+    const outageBrand = await assertPublicBranding(j, {
+      ...branding, state: 'Major outage', previousVersion: workingBrand.version,
+    });
+    assert.notEqual(outageBrand.stateMark, workingBrand.stateMark, 'the standing claim changes the favicon mark while retaining the logo');
+    await j.json(brandingClaimPath, 'PUT', { state: null });
+    console.info(`PROBE PAGE-012 4: logo upload and native standing claim -> ${workingBrand.labelText} to ${outageBrand.labelText}; ${outageBrand.faviconPath} retained the upload bytes and changed mark; the same-origin ${outageBrand.socialPath} text and Open Graph title matched each public label`);
     const iconPng = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNQ7poIAAISAT/YErM2AAAAAElFTkSuQmCC', 'base64');
     const icon = new FormData(); icon.set('file', new Blob([iconPng], { type: 'image/png' }), 'icon.png');
     const iconMultipart = new Request(j.appOrigin + '/api/app/page-settings/theme-assets/icon', { method: 'POST', body: icon });

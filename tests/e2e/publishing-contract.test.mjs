@@ -16,6 +16,7 @@ import { assertHistoryRecord } from './helpers/history-assertions.mjs';
 import { scheduledUpdateFlow } from './helpers/scheduled-update-flow.mjs';
 import { reportPublicationFlow } from './helpers/report-publication-flow.mjs';
 import { recordClosedOutage, rootFigures } from './helpers/uptime-correction-journey.mjs';
+import { subscriberCsvRows } from './helpers/subscriber-management-fixture.mjs';
 
 function descendants(node) {
   return (node.childNodes ?? []).flatMap(child => [child, ...descendants(child)]);
@@ -75,7 +76,7 @@ function assertPublicationText(text, incident, publication, expectedFields, surf
     expectedFields.map(([label, value]) => `${label}: ${value}`), `${surface}: exact populated fields and no absent fields`);
 }
 
-test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async () => {
+test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-006 INCIDENT-007 INCIDENT-008 INCIDENT-009 INCIDENT-013 HIST-005 HIST-008 NOTIFY-015 UPDATE-001 UPDATE-002 UPDATE-003 UPDATE-004 UPDATE-005 UPDATE-006 UPDATE-007 UPDATE-008 UPDATE-009 UPDATE-011 UPDATE-012 UPDATE-013 COMP-006 HIST-001 HIST-002 HIST-003 AGENT-005 AUTO-004 UPTIME-009 — reviewed incident from private template to immutable updates, recovery, report and audited deletion', async t => {
   const j = await openStatusJourney({ extraBindings: { LAMP_TEST_REQUIRE_REVIEW: 'true' } });
   const linkedWording = literalLinkFields(wording);
   const reviewer = ['synthetic-lamp-reviewer', 'example.test'].join('@');
@@ -177,10 +178,14 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
 
     await owner();
     const originalRecovery = { lifecycle: 'Monitoring', customerImpact: 'Payments are recovering.', details: 'The original recovery estimate is based on the first restored payment queue.' };
-    await j.save(incident.id, { ...originalRecovery, componentChanges: [
-      { componentId: component.id, state: 'Degraded performance' },
-      { componentId: hidden.id, state: 'Degraded performance' },
-    ] });
+    const monitoringDraftInput = {
+      ...wording, ...originalRecovery, nextUpdateAt: new Date(Date.now() + 3600_000).toISOString(),
+      componentChanges: [
+        { componentId: component.id, state: 'Degraded performance' },
+        { componentId: hidden.id, state: 'Degraded performance' },
+      ],
+    };
+    await j.json(`${endpoint}/draft`, 'PUT', monitoringDraftInput);
     const savedMonitoring = await j.read(incident.id);
     assert.equal(savedMonitoring.draft.lifecycle, 'Monitoring');
     assert.equal(savedMonitoring.lifecycle, 'Identified');
@@ -201,7 +206,10 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(reviewedMonitoring.lifecycle, 'Identified');
     assert.deepEqual(reviewedMonitoring.updates, identified.updates);
     assert.deepEqual(await publishedUpdates(), identifiedUpdates);
+    const consumedDraftId = reviewedMonitoring.draft.id;
+    const priorUpdateCount = reviewedMonitoring.updates.length;
     const monitoring = (await j.publish(incident.id)).update;
+    assert.equal(monitoring.id, consumedDraftId);
     assert.equal(monitoring.lifecycle, 'Monitoring');
     const publishedMonitoring = await j.read(incident.id);
     assert.equal(publishedMonitoring.lifecycle, 'Monitoring');
@@ -212,6 +220,22 @@ test('INCIDENT-001 INCIDENT-002 INCIDENT-003 INCIDENT-004 INCIDENT-005 INCIDENT-
     assert.equal(monitoringUpdates.length, identifiedUpdates.length + 1);
     assert.deepEqual(monitoringUpdates.filter(row => row.id !== monitoring.id), identifiedUpdates);
     assert.equal(monitoringUpdates.find(row => row.id === monitoring.id).lifecycle, 'Monitoring');
+
+    await owner();
+    const staleSave = await j.api(`${endpoint}/draft`, {
+      method: 'PUT',
+      headers: { 'If-Match': `${consumedDraftId}:${priorUpdateCount}` },
+      body: JSON.stringify(monitoringDraftInput),
+    });
+    assert.equal(staleSave.status, 409, staleSave.text);
+    const afterStaleSave = await j.read(incident.id);
+    assert.equal(afterStaleSave.draft, null, 'a consumed draft cannot be revived by a stale save');
+    assert.equal(await j.db.prepare('SELECT id FROM incident_drafts WHERE incident_id = ?').bind(incident.id).first(), null,
+      'the stale save stores no draft row');
+    assert.deepEqual(afterStaleSave.updates, publishedMonitoring.updates, 'the native read returns the same committed updates');
+    assert.deepEqual(await publishedUpdates(), monitoringUpdates, 'the stale save changes no persisted publication fields');
+    t.diagnostic('PROBE UPDATE-005 4: save the prior Monitoring wording with the consumed draft version -> HTTP 409, no draft and identical committed updates');
+    await j.signIn(reviewer);
     assert.equal((await j.json('/api/app/components')).components.find(row => row.id === component.id).publicState, 'Degraded performance');
     assert.equal((await j.read(incident.id)).impact, 'Major outage');
     const impact = (await j.json(`${endpoint}/impact`, 'PUT', { impactOverride: 'minor' })).impact;
@@ -779,6 +803,94 @@ test('INCIDENT-013 — every impact set and clear preserves complete component s
   } finally { await j.close(); }
 });
 
+async function assertMaintenanceAvailabilityDownloads(j, otherComponent) {
+  const advanceClock = instant => j.json('/test/clock', 'PUT', { now: Date.parse(instant) }, 204);
+  const trackingSince = '2040-03-15T00:00:00.000Z';
+  await advanceClock(trackingSince);
+  await j.signIn(undefined, { fresh: true });
+  const component = await j.component('Maintenance report service');
+  const download = async (format, contentType) => {
+    const response = await j.request('/api/app/availability-report?' + new URLSearchParams({
+      component: component.id, month: '2040-03', format,
+    }));
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type'), contentType);
+    assert.match(response.headers.get('content-disposition'), new RegExp('^attachment;.*\\.' + format + '"$'));
+    return response.text();
+  };
+  const readCsv = async () => {
+    const rows = subscriberCsvRows(await download('csv', /^text\/csv\b/));
+    const summaries = rows.filter(row => row.record_type === 'summary');
+    assert.equal(summaries.length, 1);
+    const summary = summaries[0];
+    assert.equal(summary.component_id, component.id);
+    assert.equal(summary.period, '2040-03');
+    assert.equal(summary.tracking_since, trackingSince);
+    assert.equal(summary.uptime, '100.00%');
+    assert.equal(summary.weighted_downtime_minutes, '0.00');
+    return { rows, summary };
+  };
+
+  await advanceClock('2040-03-16T00:00:00.000Z');
+  const baseline = await readCsv();
+  assert.equal(baseline.summary.coverage_whole_days, '1');
+  assert.equal(baseline.rows.length, 1, 'the tracked component has no earlier maintenance rows');
+
+  const schedule = async (title, startsAt, endsAt, target = component) => (await j.json('/api/app/maintenance', 'POST', {
+    title, startsAt, endsAt, componentIds: [target.id], autoStart: false, autoComplete: false,
+    affectedAudience: 'Customers using the maintenance report service',
+    customerImpact: 'Routine service work.',
+  }, 201)).maintenance;
+  const startedAt = '2040-03-16T23:00:00.000Z';
+  const completedAt = '2040-03-17T00:00:00.000Z';
+  const completed = await schedule('Database indexing', startedAt, '2040-03-17T02:00:00.000Z');
+  const cancelled = await schedule('Cache replacement', '2040-03-16T23:10:00.000Z', '2040-03-17T03:00:00.000Z');
+  const scheduled = await schedule('Network expansion', '2040-03-16T23:20:00.000Z', '2040-03-17T04:00:00.000Z');
+  await schedule('Different component upgrade', '2040-03-16T23:20:00.000Z', '2040-03-17T04:00:00.000Z', otherComponent);
+  await j.json('/api/app/maintenance/' + cancelled.id + '/cancel', 'POST', {});
+  await advanceClock(startedAt);
+  await j.json('/api/app/maintenance/' + completed.id + '/start', 'POST', {});
+  const readComponent = async () => (await j.json('/api/app/components')).components.find(row => row.id === component.id);
+  assert.equal((await readComponent()).publicState, 'Under maintenance', 'the tracked component spends time in the maintenance state');
+  await advanceClock(completedAt);
+  await j.json('/api/app/maintenance/' + completed.id + '/complete', 'POST', {});
+  await eventually(readComponent, row => row.publicState === 'Operational', 'the component returns to Operational');
+  const { history } = await j.json('/api/app/components/' + component.id + '/history');
+  assert.deepEqual(history.filter(row => row.causeId === completed.id).map(row => [row.newState, row.changedAt]).sort(),
+    [['Operational', completedAt], ['Under maintenance', startedAt]], 'the report has an hour of recorded maintenance to weigh');
+
+  const expected = [
+    [completed.reference, 'Database indexing', 'Completed'],
+    [cancelled.reference, 'Cache replacement', 'Cancelled'],
+    [scheduled.reference, 'Network expansion', 'Scheduled'],
+  ];
+  assert.equal(new Set(expected.map(([reference]) => reference)).size, 3);
+  const { rows, summary } = await readCsv();
+  assert.equal(summary.coverage_whole_days, '2');
+  assert.deepEqual(rows.filter(row => row.record_type === 'maintenance').map(row => [row.reference, row.title, row.state]).sort(),
+    [...expected].sort(), 'CSV contains exactly the three overlapping windows with their states');
+
+  const pdf = await download('pdf', /^application\/pdf\b/);
+  assert.ok(pdf.startsWith('%PDF-') && pdf.trimEnd().endsWith('%%EOF'));
+  // Read the visible text operands in page order. These short fixture titles
+  // fit on one line, so each reference and its state must appear together.
+  const lines = [...pdf.matchAll(/\(((?:\\.|[^\\()])*)\) Tj EMC T\*$/gm)].map(([, line]) => line.replace(/\\([\\()])/g, '$1'));
+  assert.ok(lines.includes(component.name + ' (' + component.id + ')'));
+  assert.ok(lines.includes('2040-03 - UTC'));
+  assert.ok(lines.includes('Tracking since: ' + trackingSince + '; 2 whole days covered'));
+  assert.ok(lines.includes('Uptime: 100.00%'));
+  assert.ok(lines.includes('Downtime minutes: 0.00'));
+  const section = lines.findIndex(line => /^Maintenance \(\d+\)$/.test(line));
+  assert.ok(section >= 0, 'PDF contains the maintenance section');
+  const end = lines.indexOf('', section + 1);
+  assert.ok(end > section, 'PDF maintenance section terminates');
+  assert.equal(lines[section], 'Maintenance (3)');
+  const maintenanceLines = lines.slice(section + 1, end);
+  assert.equal(maintenanceLines.length, 2 * expected.length);
+  assert.deepEqual(maintenanceLines.filter((_, index) => index % 2 === 0).sort(),
+    expected.map(record => record.join(' | ')).sort(), 'PDF contains exactly the three overlapping windows with their states');
+}
+
 test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAINT-009 MAINT-013 — owner schedules, announces, starts, extends and completes maintenance without losing window or calendar history', async () => {
   const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/automation-clock-worker.ts' });
   try {
@@ -860,14 +972,22 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal(calendar.event.getFirstPropertyValue('status'), 'CONFIRMED');
     assert.equal(calendar.event.getFirstPropertyValue('sequence'), 0);
     assert.equal(calendar.event.getFirstPropertyValue('dtstart').toJSDate().getTime(), Math.floor(Date.parse(startsAt) / 1000) * 1000);
+    assert.equal(calendar.event.getFirstPropertyValue('dtend').toJSDate().getTime(), Math.floor(Date.parse(endsAt) / 1000) * 1000);
+    const descriptionPrefix = [input.title, component.name, operatorComponent.name, incidentComponent.name].join('\n');
+    assert.equal(calendar.event.getFirstPropertyValue('description'),
+      descriptionPrefix + '\nWho is affected: Customers using the database\nCustomer impact: Writes may pause during the upgrade.');
     assert.ok(!(await j.json('/api/app/incidents')).incidents.some(row => row.id === maintenance.id));
     await j.visible(`/maintenance/${maintenance.reference}`, input.customerImpact);
     await j.tick(now + 1000); await j.tick(now + 1000);
     assert.equal((await list()).notices.filter(row => row.kind === 'reminder').length, 0, 'the recent scheduling notice replaces the reminder');
     const actualStart = new Date(now - 7200000).toISOString();
     const elapsedEnd = new Date(Date.now() - 15 * 60000 + 30000).toISOString();
+    const revisedWording = {
+      affectedAudience: 'Customers restoring backups, including Montréal accounts',
+      customerImpact: 'Restores will pause; keep the archive at backups\\today.\n' + 'Réessayez après la maintenance. '.repeat(3).trimEnd(),
+    };
     let priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
-    await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd });
+    await j.json(`${endpoint}/window`, 'PUT', { startsAt: actualStart, endsAt: elapsedEnd, ...revisedWording });
     await assertMaintenanceActor(j, maintenance.id, 'rescheduled', maintainer, priorNotices);
     await j.tick(Date.now());
     assert.equal((await list()).state, 'In progress');
@@ -880,6 +1000,11 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
     assert.equal(calendar.event.getFirstPropertyValue('dtstart').toJSDate().getTime(), Math.floor(Date.parse(actualStart) / 1000) * 1000);
     assert.equal(calendar.event.getFirstPropertyValue('dtend').toJSDate().getTime(), Math.floor(Date.parse(elapsedEnd) / 1000) * 1000);
+    const revisedDescription = calendar.event.getFirstPropertyValue('description');
+    assert.equal(revisedDescription, descriptionPrefix + '\nWho is affected: ' + revisedWording.affectedAudience
+      + '\nCustomer impact: ' + revisedWording.customerImpact);
+    assert.ok(!revisedDescription.includes(input.affectedAudience));
+    assert.ok(!revisedDescription.includes(input.customerImpact));
     // Public HTML localizes the human date; its semantic time attributes
     // carry the exact owner-selected window for browsers and calendar readers.
     const publicWindow = ends => eventually(() => j.publicText(`/maintenance/${maintenance.reference}`), html => html.includes(`data-maintenance-ends-at="${ends}"`) && html.includes(`<time datetime="${actualStart}"`), 'public maintenance window');
@@ -915,6 +1040,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     assert.ok(!extendedPage.includes('Running longer than planned'));
     calendar = await eventually(readCalendar, value => value.event?.getFirstPropertyValue('sequence') === 2, 'extended calendar event');
     assert.equal(calendar.event.getFirstPropertyValue('uid'), uid);
+    assert.equal(calendar.event.getFirstPropertyValue('description'), revisedDescription);
     priorNotices = await actorAudits(j, 'maintenance', maintenance.id, 'notice-published');
     await j.json(`${endpoint}/complete`, 'POST', {});
     await assertMaintenanceActor(j, maintenance.id, 'completed', maintainer, priorNotices);
@@ -949,9 +1075,23 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await eventually(readCalendar, value => value.events.some(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${cancelled.id}@lamp` && event.getFirstPropertyValue('status') === 'CANCELLED'), 'cancelled calendar event');
     const internal = await j.component('Internal database topology', { internal: true });
     const hidden = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Internal-only upgrade', componentIds: [internal.id] }, 201)).maintenance;
+    // An installed legacy record predates the native door's required wording.
+    const legacyId = '01J00000000000000000000083';
+    await j.db.batch([
+      j.db.prepare(`INSERT INTO maintenance(id,reference,title,state,starts_at,ends_at,created_by_operator_id,created_at,updated_at)
+        VALUES(?,?,?,'Scheduled',?,?,?,?,?)`).bind(legacyId, 'SCH-202610010103', 'Legacy database upgrade',
+        new Date(now + 7 * 86400000).toISOString(), new Date(now + 7 * 86400000 + 3600000).toISOString(),
+        scheduler.id, new Date(now).toISOString(), new Date(now).toISOString()),
+      j.db.prepare(`INSERT INTO maintenance_components(id,maintenance_id,component_id,component_name,state,created_at,updated_at)
+        SELECT ?,?,component_id,component_name,state,created_at,updated_at FROM maintenance_components
+        WHERE maintenance_id=? AND component_id=?`).bind('01J00000000000000000000084', legacyId, maintenance.id, component.id),
+    ]);
     const barrier = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Public calendar generation barrier', componentIds: [component.id, internal.id] }, 201)).maintenance;
     calendar = await eventually(readCalendar, value => value.body.includes(barrier.id), 'later public calendar generation');
     for (const privateValue of [hidden.id, hidden.title, internal.id, internal.name]) assert.ok(!calendar.body.includes(privateValue), 'a later calendar generation excludes internal-only windows and component details');
+    const legacyEvent = calendar.events.find(event => event.getFirstPropertyValue('uid') === `lamp-maintenance-${legacyId}@lamp`);
+    assert.ok(legacyEvent, 'legacy maintenance still has a calendar event');
+    assert.equal(legacyEvent.getFirstPropertyValue('description'), 'Legacy database upgrade\nScheduled database service');
     // A second window keeps automatic completion on and proves both scheduled
     // transitions, rather than treating manual completion as a Cron result.
     const automatic = (await j.json('/api/app/maintenance', 'POST', { ...input, title: 'Automatic maintenance', startsAt: new Date(now - 7200000).toISOString(), endsAt: new Date(now - 3600000).toISOString(), autoComplete: true }, 201)).maintenance;
@@ -1012,6 +1152,7 @@ test('MAINT-001 MAINT-002 MAINT-003 MAINT-004 MAINT-005 MAINT-006 MAINT-007 MAIN
     await j.tick(completionDeadline);
     await advanceAndTick(completionDeadline + 60000);
     assert.deepEqual(await readBounded(), finished, 'repeated completion ticks retain exactly one notice for each transition');
+    await assertMaintenanceAvailabilityDownloads(j, operatorComponent);
   } finally { await j.close(); }
 });
 

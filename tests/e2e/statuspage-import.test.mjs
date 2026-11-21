@@ -4,8 +4,9 @@ import { randomBytes } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { chromium } from 'playwright';
-import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
-import { notificationActivity, assertNoNewNotifications, moveInDoor, importedRecordInventory, notificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
+import { openStatusJourney, eventually, visibleText } from './helpers/status-journey.mjs';
+import { Miniflare, retainedSnapshotOptions } from './helpers/retained-snapshot-runtime.mjs';
+import { notificationActivity, assertNoNewNotifications, assertNoNewNotificationWork, moveInDoor, importedRecordInventory, notificationInventory, undoNotificationInventory, publicAliasInventory } from '../helpers/import-notifications.mjs';
 import { importedIncidentLiveFlow } from './helpers/imported-incident-live-flow.mjs';
 import { incidentSubscriberFiles, incidentSubscriberImportFlow } from './helpers/incident-subscriber-import-flow.mjs';
 import { postmortemTemplateImportFlow } from './helpers/postmortem-template-import-flow.mjs';
@@ -22,6 +23,208 @@ function sourceHistory(source, files) {
     title: row.attributes.title,
     times: files.filter(file => file.name.startsWith(`status-updates-${row.id}`)).flatMap(file => JSON.parse(file.text).data.map(update => update.attributes.published_at)),
   }));
+}
+
+function enrichStatuspageCapture(files) {
+  const components = parsed(files, 'components.json');
+  const [selected] = components;
+  selected.only_show_if_degraded = true;
+  components.push({
+    id: 'synthetic-lamp-history-control', name: 'Unaffected history control', position: 3,
+    page_id: selected.page_id, created_at: '2026-01-04T12:34:56.789Z', status: 'operational',
+  });
+  files.find(file => file.name === 'components.json').text = JSON.stringify(components);
+
+  const incidents = parsed(files, 'incidents.json');
+  const [incident, continuityIncident] = incidents;
+  const [opened, resolved] = incident.incident_updates;
+  // The published instants precede the source write times, even at resolution.
+  opened.display_at = '2026-01-11T08:54:03.201Z';
+  resolved.display_at = '2026-01-11T10:27:19.405Z';
+  incident.resolved_at = resolved.display_at;
+  resolved.affected_components[0].old_status = 'degraded_performance';
+  incident.incident_updates = [
+    opened,
+    {
+      id: 'synthetic-lamp-history-monitoring', incident_id: incident.id, status: 'monitoring',
+      body: 'API recovery is under observation as errors subside.',
+      created_at: '2026-01-11T10:06:43.000Z', display_at: '2026-01-11T10:02:41.302Z',
+      affected_components: [{ code: selected.id, name: selected.name, old_status: 'partial_outage', new_status: 'degraded_performance' }],
+    },
+    resolved,
+  ];
+  // Keep the continuity incident well inside the rolling Atom window while
+  // preserving the source's intervals and the first incident's exact dates.
+  const offset = Date.now() - 30 * 86_400_000 - Date.parse(continuityIncident.created_at);
+  const shift = instant => new Date(Date.parse(instant) + offset).toISOString();
+  for (const key of ['created_at', 'updated_at', 'resolved_at']) {
+    continuityIncident[key] = shift(continuityIncident[key]);
+  }
+  for (const update of continuityIncident.incident_updates) {
+    for (const key of ['created_at', 'display_at', 'updated_at']) update[key] = shift(update[key]);
+  }
+  files.find(file => file.name === 'incidents.json').text = JSON.stringify(incidents);
+  return continuityIncident;
+}
+
+async function assertRetainedStatuspageIncident(journey, source, incidents, t) {
+  const incident = incidents.find(row => row.title === source.name);
+  assert.ok(incident, 'the imported incident has a native identity');
+  const oldPath = `/incidents/${source.id}`;
+  const nativePath = `/incidents/${incident.reference}`;
+  const importedWording = source.incident_updates.at(-1).body;
+  const sourceBucket = await journey.runtime.getR2Bucket('SNAPSHOTS');
+  const { pointer, pointerBytes } = await eventually(async () => {
+    const work = await journey.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first();
+    const building = await journey.db.prepare("SELECT id FROM snapshot_builds WHERE status = 'building'").first();
+    if (building || work.requested_revision !== work.completed_revision) return null;
+    const current = await sourceBucket.get('snapshots/current.json');
+    if (!current) return null;
+    const pointerBytes = await current.arrayBuffer();
+    const pointer = JSON.parse(Buffer.from(pointerBytes).toString());
+    return pointer.sourceRevision === work.completed_revision ? { pointer, pointerBytes } : null;
+  }, Boolean, 'the reviewed import has a settled public generation');
+
+  const paths = new Map([
+    [oldPath, `aliases/${encodeURIComponent(oldPath)}.json`],
+    [nativePath, `incidents/${incident.reference}.html`],
+    ['/history.atom', 'history.atom'],
+    ['/feed.atom', 'feed.atom'],
+  ]);
+  const runtime = new Miniflare(await retainedSnapshotOptions({ name: 'lamp-retained-import' }));
+  try {
+    const bucket = await runtime.getR2Bucket('SNAPSHOTS');
+    const generationRoot = `snapshots/${pointer.version}/`;
+    const stored = new Map();
+    for (const artifact of [...paths.values(), 'retained.json']) {
+      const key = generationRoot + artifact;
+      const object = await sourceBucket.get(key);
+      assert.ok(object, `import generation contains ${artifact}`);
+      const bytes = await object.arrayBuffer();
+      await bucket.put(key, bytes, { httpMetadata: object.httpMetadata });
+      stored.set(artifact, Buffer.from(bytes));
+    }
+    await bucket.put('snapshots/current.json', pointerBytes, { httpMetadata: { contentType: 'application/json' } });
+
+    const read = (path) => runtime.dispatchFetch(`https://page.example${path}`, { redirect: 'manual' });
+    const evidence = async (path) => {
+      const response = await read(path);
+      assert.equal(response.status, 200, path);
+      return response.json();
+    };
+    const cacheQuery = new URLSearchParams([...paths.keys()].map(path => ['path', path]));
+    assert.deepEqual(await evidence(`/test/snapshot-cache?${cacheQuery}`), { replicaGeneration: null, cachedPaths: [] });
+    assert.deepEqual((await evidence('/test/blob-reads')).getBytes, {}, 'no public artifact has been loaded');
+
+    const readGeneration = async (path, status) => {
+      const response = await read(path);
+      assert.equal(response.status, status, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-version'), pointer.version, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), pointer.generatedAt, path);
+      assert.equal(response.headers.get('x-lamp-snapshot-state'), null, path);
+      return response;
+    };
+    const redirect = await readGeneration(oldPath, 301);
+    assert.equal(redirect.headers.get('location'), nativePath);
+    const destination = await readGeneration(redirect.headers.get('location'), 200);
+    const wording = visibleText(await destination.text());
+    assert.ok(wording.includes(source.name) && wording.includes(importedWording), 'the redirect reaches the imported title and update');
+
+    const feeds = new Map();
+    for (const path of ['/history.atom', '/feed.atom']) {
+      const response = await readGeneration(path, 200);
+      assert.match(response.headers.get('content-type'), /^application\/atom\+xml\b/);
+      const bytes = Buffer.from(await response.arrayBuffer());
+      assert.deepEqual(bytes, stored.get(paths.get(path)), `${path} serves the exact published Atom bytes`);
+      feeds.set(path, bytes);
+    }
+    assert.deepEqual(feeds.get('/history.atom'), feeds.get('/feed.atom'), 'old and native Atom addresses are byte-identical');
+    const entries = feeds.get('/feed.atom').toString().match(/<entry>[\s\S]*?<\/entry>/g) ?? [];
+    assert.ok(entries.some(entry => entry.includes(`<title>${incident.reference}: ${source.name}</title>`)
+      && entry.includes(`href="${journey.publicOrigin}${nativePath}"`)
+      && entry.includes(importedWording)), 'an Atom entry identifies this incident, links to its permalink and carries the imported update');
+
+    const { getBytes } = await evidence('/test/blob-reads');
+    for (const key of paths.values()) assert.equal(getBytes[generationRoot + key], 1, key);
+    const { accesses } = await evidence('/test/database-touches');
+    assert.equal(accesses, 0, 'cold import continuity does not ask the repository');
+    t.diagnostic(`PROBE MOVE-005 4: GET ${oldPath} -> 301 ${nativePath}; GET ${nativePath} -> 200 with "${source.name}" and "${importedWording}"; both Atom routes -> 200 with ${feeds.get('/feed.atom').length} identical published bytes and the incident entry; snapshot ${pointer.version}, generated ${pointer.generatedAt}, cold cache, ${accesses} database touches`);
+  } finally { await runtime.dispose(); }
+}
+
+async function reconcileComponentHistory(api, component, expected) {
+  const rows = [], cursors = new Set();
+  const limit = 2;
+  let cursor = null;
+  do {
+    const query = new URLSearchParams({ limit });
+    if (cursor !== null) query.set('cursor', cursor);
+    const page = await api(`/api/app/components/${component.id}/history?${query}`);
+    assert.equal(page.status, 200, JSON.stringify(page.body));
+    assert.equal(page.body.historyPage.limit, limit);
+    assert.equal(page.body.history.length, Math.min(limit, expected.length - rows.length), 'the history page contains its expected rows');
+    rows.push(...page.body.history);
+    cursor = page.body.historyPage.nextCursor;
+    if (cursor !== null) {
+      assert.ok(rows.length < expected.length && !cursors.has(cursor), 'the history cursor advances towards the final expected row');
+      cursors.add(cursor);
+    }
+  } while (cursor !== null);
+  assert.equal(new Set(rows.map(row => row.id)).size, rows.length, 'each transition has one native history identity');
+  assert.deepEqual(rows.map(({ previousState, newState, changedAt, causeType, causeId }) => ({
+    previousState, newState, changedAt, causeType, causeId,
+  })), expected, `${component.name}: complete newest-first native history`);
+}
+
+async function assertStatuspageComponentHistory(api, files, components, incidents) {
+  const sourceComponents = parsed(files, 'components.json');
+  const sourceIncident = parsed(files, 'incidents.json').find(row => row.id === 'i0000000001');
+  assert.ok(sourceIncident, 'the selected source incident is in the reviewed capture');
+  const updates = sourceIncident.incident_updates;
+  const affectedCodes = updates.flatMap(update => update.affected_components.map(row => row.code));
+  const selected = sourceComponents.find(row => row.id === affectedCodes[0]);
+  const control = sourceComponents.find(row => row.id === 'synthetic-lamp-history-control');
+  assert.ok(selected && control && selected.id !== control.id);
+  assert.deepEqual(affectedCodes, [selected.id, selected.id, selected.id], 'only the selected source component changes through resolution');
+  assert.ok(updates.every(update => update.incident_id === sourceIncident.id
+    && Date.parse(update.display_at) < Date.parse(update.created_at)), 'the reviewed publication instants are distinct from source write times');
+  assert.equal(new Set(updates.map(update => Date.parse(update.display_at))).size, updates.length);
+  assert.ok(parsed(files, 'incidents.json').every(row => row.incident_updates.every(update =>
+    !(update.affected_components ?? []).some(affected => affected.code === control.id))), 'the control is unaffected across the saved capture');
+
+  const match = (rows, field, sourceName) => {
+    const matches = rows.filter(row => row[field] === sourceName);
+    assert.equal(matches.length, 1, `${sourceName}: exactly one matching native record`);
+    assert.ok(matches[0].id, `${sourceName}: the native record has an identity`);
+    return matches[0];
+  };
+  const nativeSelected = match(components, 'name', selected.name);
+  const nativeControl = match(components, 'name', control.name);
+  const incident = match(incidents, 'title', sourceIncident.name);
+  assert.notEqual(nativeSelected.id, nativeControl.id);
+  assert.equal(incident.lifecycle, 'Resolved');
+  assert.deepEqual(incident.components.map(row => row.componentId), [nativeSelected.id]);
+  assert.deepEqual(incident.updates.toSorted((a, b) => a.publishedAt.localeCompare(b.publishedAt))
+    .map(({ customerImpact, publishedAt, lifecycle, isRetroactive }) => ({ customerImpact, publishedAt, lifecycle, isRetroactive })),
+  updates.map((update, index) => ({
+    customerImpact: update.body, publishedAt: update.display_at,
+    lifecycle: ['Investigating', 'Monitoring', 'Resolved'][index], isRetroactive: true,
+  })), 'the independently matched incident retains each original message and publication instant');
+
+  const standing = source => ({
+    previousState: 'Operational', newState: 'Operational', changedAt: source.created_at,
+    causeType: 'standing-claim', causeId: null,
+  });
+  const transition = (update, previousState, newState) => ({
+    previousState, newState, changedAt: update.display_at, causeType: 'incident', causeId: incident.id,
+  });
+  await reconcileComponentHistory(api, nativeSelected, [
+    transition(updates[2], 'Degraded performance', 'Operational'),
+    transition(updates[1], 'Partially unavailable', 'Degraded performance'),
+    transition(updates[0], 'Operational', 'Partially unavailable'),
+    standing(selected),
+  ]);
+  await reconcileComponentHistory(api, nativeControl, [standing(control)]);
 }
 
 test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOVE-012 MOVE-013 MOVE-014 SUB-023 ACCESS-001 — owner reviews provider history, imports silently, keeps public readers, invites deliberately and conditionally undoes', { timeout: 600_000 }, async t => {
@@ -106,6 +309,21 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
     assert.equal((await moveIn.apply(fetched.body)).status, 409, 'a page edited after review requires a fresh import review');
     assert.deepEqual(await counts(), { ...beforeSignout, components: beforeSignout.components + 1 });
 
+    const nativeComponent = native.body.component;
+    const nativeIncident = await runtime.incident('Owner investigation kept in draft', [nativeComponent]);
+    const { draft: nativeDraft } = await runtime.save(nativeIncident.id, { customerImpact: 'Owner wording kept private.' });
+    const nativeAddress = ['synthetic-lamp-preview', 'example.test'].join('@');
+    const subscription = await fetch(publicOrigin + '/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Origin: publicOrigin, Accept: 'text/html' },
+      body: new URLSearchParams({ email: nativeAddress, componentId: nativeComponent.id }).toString(),
+    });
+    assert.equal(subscription.status, 202, await subscription.text());
+    const nativeConfirmation = await eventually(
+      () => runtime.messages.find(message => message.to.includes(nativeAddress) && message.text.includes('/confirm-subscription/')),
+      Boolean, 'the native subscription sends a confirmation before the review',
+    );
+
     // Each row is the same owner migration, using one saved export per provider.
     // Assertions compare source records with native documents, rather than pinning fixture sizes.
     for (const source of ['statuspage', 'betterstack', 'instatus']) {
@@ -114,27 +332,56 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       // publication work before measuring this independent silent import.
       await runtime.tick(Date.now());
       const files = invitationFiles(source, fixtures(source)), input = { source, files, pageId: 'synthpage01', publicAccessAcknowledged: true };
-      if (source === 'statuspage') {
-        const componentFile = files.find(file => file.name === 'components.json');
-        const components = JSON.parse(componentFile.text);
-        components[0].only_show_if_degraded = true;
-        componentFile.text = JSON.stringify(components);
-      }
+      const continuityIncident = source === 'statuspage' ? enrichStatuspageCapture(files) : null;
       const before = await counts(), quiet = await notificationActivity(runtime);
+      const firstStatuspageReview = source === 'statuspage';
+      const recordsBeforeReview = firstStatuspageReview ? await importedRecordInventory(runtime) : null;
+      const outboundBeforeReview = firstStatuspageReview ? await undoNotificationInventory(runtime) : null;
+      if (firstStatuspageReview) {
+        assert.ok(recordsBeforeReview.components.some(row => row.id === nativeComponent.id));
+        assert.ok(recordsBeforeReview.incidents.some(row => row.id === nativeIncident.id));
+        assert.ok(recordsBeforeReview.incident_drafts.some(row => row.id === nativeDraft.id));
+        const nativeSubscriber = recordsBeforeReview.subscribers.find(row => row.destination === nativeAddress);
+        assert.ok(nativeSubscriber, 'the pending native subscriber is present in the record baseline');
+        assert.ok(outboundBeforeReview.tables.subscriber_tokens.some(row => row.subscriber_id === nativeSubscriber.id));
+        assert.ok(outboundBeforeReview.transports.messages.some(message => message.text === nativeConfirmation.text));
+      }
       const reviewed = await moveIn.preview(input); assert.equal(reviewed.status, 200, JSON.stringify(reviewed.body));
       assert.deepEqual(await counts(), before, `${source} review writes nothing`);
+      if (firstStatuspageReview) {
+        const { planId, fingerprint, report } = reviewed.body;
+        assert.ok(planId && fingerprint, 'the saved responses produce a review the owner can apply');
+        assert.equal(report.state, 'dry run', 'the saved responses have never been applied');
+        assert.ok(report.counts.component.imported > 0, 'the review includes actual importable components');
+        const savedPlan = await runtime.db.prepare('SELECT complete, fingerprint, job_id FROM ik_door_plans WHERE id=?').bind(planId).first();
+        assert.deepEqual(savedPlan, { complete: 1, fingerprint, job_id: null }, 'review retains a complete plan without creating an apply job');
+        assert.deepEqual(await importedRecordInventory(runtime), recordsBeforeReview, 'the first saved Statuspage review preserves every complete native record');
+        assert.deepEqual(await undoNotificationInventory(runtime), outboundBeforeReview, 'the first saved Statuspage review preserves all outbound rows and captured transports');
+        t.diagnostic('PROBE MOVE-001 2: first saved Statuspage review on a populated native install -> importable plan retained without an apply job; complete native rows and outbound work unchanged');
+      }
       const changed = reviewed.body.fingerprint[0] === '0' ? '1' : '0';
       assert.equal((await moveIn.apply(reviewed.body, changed + reviewed.body.fingerprint.slice(1))).status, 409);
       assert.deepEqual(await counts(), before, 'unreviewed source bytes cannot apply');
       const { review, result } = await apply(input);
+      if (firstStatuspageReview) {
+        assert.equal(review.planId, reviewed.body.planId, 'explicit apply uses the same saved Statuspage plan');
+        assert.equal(review.fingerprint, reviewed.body.fingerprint, 'explicit apply uses the reviewed fingerprint');
+        assert.equal(result.door.planId, reviewed.body.planId, 'the completed job belongs to the reviewed plan');
+      }
       assert.deepEqual(result.report.counts, review.report.counts);
       const after = await counts();
       for (const [kind, plural] of [['component', 'components'], ['group', 'groups'], ['incident', 'incidents'], ['maintenance', 'maintenance'], ['subscriber', 'subscribers']]) {
         assert.equal(after[plural] - before[plural], result.report.counts[kind].imported + result.report.counts[kind].changed, `${source} applies its complete reviewed ${kind} inventory`);
       }
+      const incidents = await incidentSnapshot(api);
       if (source === 'statuspage') {
         const sourceComponents = parsed(files, 'components.json');
-        const imported = (await api('/api/app/components')).body.components;
+        const componentList = await api('/api/app/components');
+        assert.equal(componentList.status, 200, JSON.stringify(componentList.body));
+        const imported = componentList.body.components;
+        await assertStatuspageComponentHistory(api, files, imported, incidents);
+        await assertRetainedStatuspageIncident(runtime, continuityIncident, incidents, t);
+        t.diagnostic('PROBE MOVE-002 1: reviewed Statuspage capture and native component history at two entries per page -> exact incident transitions at original publication instants, and only the creation baseline for the unaffected control');
         const conditional = imported.find(row => row.name === sourceComponents[0].name);
         const visible = imported.find(row => row.name === sourceComponents[1].name);
         assert.ok(conditional && visible, 'both reviewed source components are independently readable after import');
@@ -192,7 +439,6 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
         t.diagnostic('PROBE MOVE-009 1: retained Statuspage client after native import -> moved summary parsed with Dashboard Operational and the conditional Operational component omitted; Atom continuity and RSS remain asserted');
         t.diagnostic('PROBE MOVE-009 2: dry run, apply and saved Cutover -> API, RSS, Atom and embed served; maintenance switches, Verifying, webhook bodies and automation addresses explicitly unavailable');
       }
-      const incidents = await incidentSnapshot(api);
       for (const row of sourceHistory(source, files)) {
         const incident = incidents.find(candidate => candidate.title === row.title); assert.ok(incident, row.title);
         assert.deepEqual(incident.updates.map(update => Date.parse(update.publishedAt)).sort(), row.times.map(Date.parse).sort());
@@ -304,9 +550,14 @@ test('SUB-019 MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-009 MOVE-011 MOV
       assert.equal(draft.status, 200, JSON.stringify(draft.body));
       const published = await api(`/api/app/incidents/${edited.id}/publish`, { channels: [] }, { 'If-Match': `${draft.body.draft.id}:${edited.updates.length}` });
       assert.equal(published.status, 200, JSON.stringify(published.body));
-      await importInvitationFlow({ runtime, api, source, result, priorIds, control: invitationControl });
+      const invitationDeadline = await importInvitationFlow({ runtime, api, source, result, priorIds, control: invitationControl });
+      const beforeUndo = await undoNotificationInventory(runtime);
       const undone = await moveIn.undo(result.door); assert.equal(undone.status, 200, JSON.stringify(undone.body));
       assert.equal(undone.body.job.state, 'undone');
+      await assertNoNewNotificationWork(runtime, beforeUndo, `${source} conditional undo`);
+      await runtime.tick(invitationDeadline);
+      await assertNoNewNotificationWork(runtime, beforeUndo, `${source} scheduled drain after conditional undo`);
+      t.diagnostic(`PROBE MOVE-004 3 ${source}: native conditional undo and scheduled drain -> no new notification work or attempt identities, captured transports unchanged`);
       assert.ok(undone.body.undo.dispositions.some(row => row.targetKind === 'incident' && row.disposition === 'retained' && row.reason));
       const retained = await incidentSnapshot(api);
       assert.ok(retained.some(row => row.id === edited.id && row.updates.some(update => update.customerImpact === 'Owner correction after import')));

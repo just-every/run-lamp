@@ -2,28 +2,15 @@ import { healthSchemaProof } from "./helpers/health-schema-proof.mjs";
 import { themeHeaderImage } from "./helpers/theme-fixture.mjs";
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { test } from 'node:test';
 import { parse } from 'parse5';
 import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
-const require = createRequire(import.meta.url);
-const wranglerRequire = createRequire(require.resolve('wrangler'));
-const { Miniflare, convertV4MiniflareOptions } = wranglerRequire('miniflare');
-const { build } = wranglerRequire('esbuild');
+import { Miniflare, retainedSnapshotOptions } from './helpers/retained-snapshot-runtime.mjs';
 
 const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
-
-async function snapshotWorkerScript() {
-  const built = await build({ entryPoints: ['tests/e2e/snapshot-retained.worker.ts'], bundle: true, format: 'esm', platform: 'browser', write: false, external: ['cloudflare:workers'], plugins: [{ name: 'vite-assets', setup(builder) {
-    builder.onResolve({ filter: /\?(inline|raw)$/ }, args => ({ path: resolve(args.resolveDir, args.path.split('?')[0]), namespace: args.path.endsWith('?raw') ? 'raw' : 'inline' }));
-    builder.onLoad({ filter: /.*/, namespace: 'raw' }, async args => ({ contents: `export default ${JSON.stringify(await readFile(args.path, 'utf8'))}`, loader: 'js' }));
-    builder.onLoad({ filter: /.*/, namespace: 'inline' }, async args => ({ contents: `export default ${JSON.stringify('data:application/octet-stream;base64,' + (await readFile(args.path)).toString('base64'))}`, loader: 'js' }));
-  } }] });
-  return built.outputFiles[0].text;
-}
 
 async function assertNativeGenerationRevalidation(j, component, incident, initialImpact) {
   const maintenanceTitle = 'Synthetic Lamp cache maintenance';
@@ -152,8 +139,11 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
 
     // Real public routes, R2 and durable replica. Its repository throws on every
     // read; only the provider edges are replaced to inject failure.
-    const options = { bindings: { LAMP_APP_HOST: 'app.example' }, name: 'lamp-retained-journey', resourcePersistencePath: join(directory, 'storage'), modules: true, script: await snapshotWorkerScript(), compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'], durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'] };
-    runtime = new Miniflare(convertV4MiniflareOptions(options));
+    const options = await retainedSnapshotOptions({
+      name: 'lamp-retained-journey',
+      resourcePersistencePath: join(directory, 'storage'),
+    });
+    runtime = new Miniflare(options);
     const read = (path, init) => runtime.dispatchFetch(`https://page.example${path}`, init);
     const bucket = await runtime.getR2Bucket('SNAPSHOTS');
     const firstPublicationPaths = new Map([
@@ -350,7 +340,7 @@ test('THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survi
       if (!path.startsWith('/badge.')) assert.ok(text.includes('Last known state') || text.includes('"snapshotState":"stale"'), path);
     }
     for (const path of monthPaths) await checkMonth(path, '?storage=down');
-    await runtime.dispose(); runtime = new Miniflare(convertV4MiniflareOptions(options));
+    await runtime.dispose(); runtime = new Miniflare(options);
     for (const path of paths) assert.equal((await read(path + '?storage=down&cold=1')).status, 200, `cold retained read ${path}`);
     for (const path of monthPaths) await checkMonth(path, '?storage=down&cold=1');
     for (const row of archived.filter(row => row.kind === 'incident')) {
@@ -448,12 +438,7 @@ test('Published snapshot retention keeps two versions, drains old piles and prot
     assert.equal(counts.at(-1), 2, 'real publish requests drain the legacy pile');
     console.info(`RETENTION operator publish route: ten old versions drained; versionCounts=${counts.join(',')}`);
   } finally { await j.close(); }
-  const runtime = new Miniflare(convertV4MiniflareOptions({
-    bindings: { LAMP_APP_HOST: 'app.example' },
-    name: 'lamp-retention', modules: true, script: await snapshotWorkerScript(),
-    compatibilityDate: '2026-09-08', compatibilityFlags: ['nodejs_compat'],
-    durableObjects: { SNAPSHOT_CACHE: { className: 'SnapshotCache', useSQLite: true } }, r2Buckets: ['SNAPSHOTS'],
-  }));
+  const runtime = new Miniflare(await retainedSnapshotOptions({ name: 'lamp-retention' }));
   try {
     const bucket = await runtime.getR2Bucket('SNAPSHOTS');
     const publish = async input => {

@@ -121,9 +121,32 @@ export async function postmortemTemplateImportFlow({ api, request, importAll, mo
   const published = incidents.find(row => `/incidents/${row.reference}` === permalink);
   const draftIncident = incidents.find(row => `/incidents/${row.reference}` === draftRedirect.headers.get("Location"));
   const readReport = async id => (await api(`/api/app/incidents/${id}/report`)).body.report;
-  const report = await readReport(published.id);
+  const firstRead = await api(`/api/app/incidents/${published.id}/report`);
+  assert.equal(firstRead.status, 200, JSON.stringify(firstRead.body));
+  const { report } = firstRead.body;
   assert.equal(report.publishedAt, publication);
-  for (const word of [publishedText, "every word", "é entity", "First list item", "Second list item", "Review recovery", "https://example.com/recovery", "Recovery chart", "https://images.example.com/never-fetch.png", "HTML paragraph", "HTML link wording", "https://example.com/html", "Final heading", "Final list wording", reportTail]) assert.ok(report.summary.includes(word), word);
+
+  const expectedSummary = `CONTINUITY-PUBLISHED-REPORT
+
+First paragraph with every word & an é entity.
+
+First list item
+
+Second list item
+
+Review recovery (https://example.com/recovery)
+
+[Image: Recovery chart (https://images.example.com/never-fetch.png)]
+
+HTML paragraph HTML link wording (https://example.com/html).
+
+Final heading
+
+Final list wording
+
+${"Detailed recovery evidence. ".repeat(800)}END-OF-FULL-REPORT`;
+  assert.equal(report.summary, expectedSummary, "first native report read preserves the complete plain-text summary");
+  t.diagnostic("PROBE MOVE-011 2: first native report read matches the complete expected plain text, including all boundaries, decoded entities, link URLs, image label and URL, and the full tail");
   assert.deepEqual([report.timeline, report.cause, report.remediation], ["", "", ""]);
   assert.equal((await readReport(draftIncident.id)).publishedAt, null);
   assert.ok((await readReport(draftIncident.id)).summary.includes(privateText));

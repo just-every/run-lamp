@@ -43,17 +43,52 @@ export function importedRecordInventory(runtime) {
   ]);
 }
 
-export async function notificationInventory(runtime) {
+const notificationTables = [
+  'notification_outbox', 'notification_channel_selections', 'notification_deliveries', 'notification_delivery_attempts',
+  'component_notification_events', 'component_notification_deliveries', 'component_delivery_attempts',
+  'report_notification_deliveries', 'report_delivery_attempts', 'sms_deliveries',
+  'channel_posts', 'subscriber_channel_posts', 'integration_deliveries', 'integration_attempts',
+  'statuspage_import_invites', 'subscriber_confirmation_attempts', 'subscriber_tokens', 'mail_send_ledger',
+];
+
+async function readNotificationInventory(runtime, tables) {
   return {
-    tables: await tableInventory(runtime, [
-      'notification_outbox', 'notification_channel_selections', 'notification_deliveries', 'notification_delivery_attempts',
-      'component_notification_events', 'component_notification_deliveries', 'component_delivery_attempts',
-      'report_notification_deliveries', 'report_delivery_attempts', 'sms_deliveries',
-      'channel_posts', 'subscriber_channel_posts', 'integration_deliveries', 'integration_attempts',
-      'statuspage_import_invites', 'subscriber_confirmation_attempts', 'subscriber_tokens', 'mail_send_ledger',
-    ]),
+    tables: await tableInventory(runtime, tables),
     transports: structuredClone({ messages: runtime.messages, receipts: runtime.mailReceipts, webhooks: runtime.webhookRequests, channels: runtime.channelRequests }),
   };
+}
+
+export function notificationInventory(runtime) {
+  return readNotificationInventory(runtime, notificationTables);
+}
+
+export function undoNotificationInventory(runtime) {
+  return readNotificationInventory(runtime, [
+    ...notificationTables, 'notification_attempt_records', 'maintenance_notices', 'social_posts',
+  ]);
+}
+
+const notificationIdentityColumns = {
+  notification_channel_selections: ['incident_update_id', 'channel'],
+  notification_attempt_records: ['delivery_id', 'id'],
+  integration_deliveries: ['namespace', 'id'],
+  integration_attempts: ['namespace', 'id'],
+  statuspage_import_invites: ['subscriber_id', 'sent_at'],
+  subscriber_confirmation_attempts: ['email_hash'],
+};
+
+export async function assertNoNewNotificationWork(runtime, before, phase) {
+  const after = await undoNotificationInventory(runtime);
+  for (const [table, rows] of Object.entries(after.tables)) {
+    const columns = notificationIdentityColumns[table] ?? ['id'];
+    const identity = row => JSON.stringify(columns.map(column => {
+      assert.ok(Object.hasOwn(row, column), `${table} has identity column ${column}`);
+      return row[column];
+    }));
+    const prior = new Set(before.tables[table].map(identity));
+    assert.deepEqual(rows.map(identity).filter(id => !prior.has(id)), [], `${phase}: no new ${table} identities`);
+  }
+  assert.deepEqual(after.transports, before.transports, `${phase}: captured transport requests stay unchanged`);
 }
 
 /** Read the retained alias inventory, then exercise each address on the public
