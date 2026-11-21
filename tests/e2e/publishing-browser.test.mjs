@@ -1076,7 +1076,7 @@ test('INCIDENT-001 AGENT-004 MOBILE-001 — 390-wide owner sign-in, alert review
 });
 
 
-test('THEME-001 — owner publishes branded themes and layouts within the page budget', { timeout: 600_000 }, async t => {
+test('THEME-001 and THEME-005 — owner publishes branded themes within budget and restores default colours', { timeout: 600_000 }, async t => {
   await themeOwnerJourney({ appFetch, appUrl, pageUrl, sessionId, cookieName: sessionCookieName(appUrl), diagnostic: message => t.diagnostic(message) });
 });
 

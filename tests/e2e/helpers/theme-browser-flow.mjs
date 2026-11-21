@@ -4,8 +4,56 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { setTimeout as pause } from "node:timers/promises";
 import { chromium, expect } from "@playwright/test";
 
+const viewport = width => ({ width, height: 1000 });
+
+async function readPaletteSnapshot(page, pageUrl, previousVersion) {
+  const stylesheetUrl = `${pageUrl}/assets/status-page.css`;
+  let stylesheet;
+  const recordStylesheet = response => {
+    if (response.url() === stylesheetUrl) stylesheet = response;
+  };
+  page.on("response", recordStylesheet);
+  let version;
+  try {
+    await expect.poll(async () => {
+      stylesheet = undefined;
+      const document = await page.goto(`${pageUrl}/`, { waitUntil: "load", timeout: 15_000 });
+      const headers = document.headers();
+      version = headers["x-lamp-snapshot-version"];
+      const stylesheetHeaders = stylesheet?.headers();
+      return document.ok() && stylesheet?.ok() && Boolean(version) && version !== previousVersion
+        && version === stylesheetHeaders["x-lamp-snapshot-version"]
+        && !headers["x-lamp-snapshot-state"] && !stylesheetHeaders["x-lamp-snapshot-state"];
+    }, { timeout: 15_000, message: "The page and stylesheet serve the same new healthy snapshot" }).toBe(true);
+  } finally {
+    page.off("response", recordStylesheet);
+  }
+
+  const heading = page.getByRole("heading", { name: "Web application", exact: true });
+  await expect(heading).toBeVisible();
+  const card = page.locator(".component-group").filter({ has: heading });
+  const marker = card.locator(".component").filter({ has: heading }).locator(".state-operational");
+  await expect(marker).toBeVisible();
+  const colors = {
+    background: await page.locator("body").evaluate(element => getComputedStyle(element).backgroundColor),
+    surface: await card.evaluate(element => getComputedStyle(element).backgroundColor),
+    text: await heading.evaluate(element => getComputedStyle(element).color),
+    operational: await marker.evaluate(element => getComputedStyle(element, "::before").backgroundColor),
+  };
+  return { version, colors };
+}
+
+async function paletteScreens(page, directory, name) {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize(viewport(width));
+    await page.screenshot({ path: `${directory}/palette-${name}-${width}.png`, fullPage: true });
+  }
+  await page.setViewportSize(viewport(1440));
+}
+
 export async function themeBrowserFlow({ appUrl, pageUrl, sessionId, cookieName, theme, image, font, currentSettings, snapshot }) {
-  const browser = await chromium.launch({ headless: true, args: ["--use-mock-keychain", "--password-store=basic"] });
+  const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+  const browser = await chromium.launch({ headless: true, ...(executablePath ? { executablePath } : {}), args: ["--no-sandbox", "--use-mock-keychain", "--password-store=basic"] });
   const directory = "test-results/theme-001";
   await mkdir(directory, { recursive: true });
   let activePage;
@@ -37,10 +85,52 @@ export async function themeBrowserFlow({ appUrl, pageUrl, sessionId, cookieName,
     const saved = () => expect(page.getByRole("status").filter({ hasText: /^Saved · live$/ })).toBeVisible({ timeout: 60_000 });
     const open = async title => { const detail = page.locator("details").filter({ has: page.locator(":scope > summary", { hasText: title }) }).first(); if (!await detail.getAttribute("open")) await detail.locator(":scope > summary").click(); };
     await open("Colours");
-    await page.getByLabel("Use a custom colour palette").check();
+    const paletteToggle = page.getByLabel("Use a custom colour palette");
     const labels = { background: "Background", surface: "Surface", text: "Text", link: "Links", operational: "Working", degraded: "Slow", partial: "Partly down", major: "Down", maintenance: "Maintenance" };
-    for (const [key, label] of Object.entries(labels)) await page.getByRole("textbox", { name: `${label} hex colour`, exact: true }).fill(theme.palette[key]);
+    const applyPalette = async () => {
+      await paletteToggle.check();
+      for (const [key, label] of Object.entries(labels)) {
+        await page.getByRole("textbox", { name: `${label} hex colour`, exact: true }).fill(theme.palette[key]);
+      }
+      await saved();
+    };
+
+    // Keep the template and populated component card fixed throughout the colour comparison.
+    await expect(paletteToggle).not.toBeChecked();
+    const paletteView = await browser.newContext({ javaScriptEnabled: false, viewport: viewport(1440) });
+    const palettePage = await paletteView.newPage();
+    const defaults = await readPaletteSnapshot(palettePage, pageUrl);
+
+    await applyPalette();
+    await expect.poll(async () => (await currentSettings()).theme.palette).toEqual(theme.palette);
+    const custom = await readPaletteSnapshot(palettePage, pageUrl, defaults.version);
+    for (const [key, color] of Object.entries(custom.colors)) {
+      const channels = Buffer.from(theme.palette[key].slice(1), "hex");
+      assert.equal(color, `rgb(${[...channels].join(", ")})`, `The saved palette changes ${key} on the public page`);
+      assert.notEqual(color, defaults.colors[key], `The custom ${key} differs from the default`);
+    }
+    await paletteScreens(palettePage, directory, "custom");
+
+    const disableWrite = page.waitForResponse(response =>
+      response.url() === `${appUrl}/api/app/page-settings`
+      && response.request().method() === "PUT"
+      && response.request().postDataJSON()?.theme?.palette === null,
+    { timeout: 60_000 });
+    await paletteToggle.uncheck();
+    const acknowledgement = await disableWrite;
+    assert.equal(acknowledgement.status(), 200);
+    assert.equal((await acknowledgement.json()).settings.theme.palette, null);
     await saved();
+
+    const restored = await readPaletteSnapshot(palettePage, pageUrl, custom.version);
+    assert.deepEqual(restored.colors, defaults.colors, "The public page returns to the default colours after disabling the palette");
+    await paletteScreens(page, directory, "settings-off");
+    await paletteScreens(palettePage, directory, "restored");
+    await writeFile(`${directory}/palette-toggle.json`, JSON.stringify({ defaults, custom, restored }, null, 2) + "\n");
+    await paletteView.close();
+
+    // Restore the fixture for the contrast, asset and layout checks below.
+    await applyPalette();
     const textColour = page.getByRole("textbox", { name: "Text hex colour", exact: true });
     await textColour.fill(theme.palette.background);
     await expect(page.getByRole("alert").filter({ hasText: /text against background contrast/ })).toBeVisible();
