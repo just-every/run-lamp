@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "64f95f88970df38762904ed62c6c79eed3885430d1e6eea4bab81c14c2c004cc",
+      "sha256": "49a95ec510bb47f090712c8ff9d921514c8cecd4f93262dfd265791a0c4d76e9",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "40698792008e0c3f1adc6b264d6f1ae1fa2f483b868ace749b70d359eb2ae263",
+      "sha256": "b136e5805ce8bc68b37a5756fa608d84e1d0c04d132ded75ee4a905790353766",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2652,7 +2652,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "35996619cfa6fcfb3107aa55d27c04780bbf5c74da1462043eb10dfac7d28618",
+      "sha256": "d6eb8b2f1ec31d711486ae722b64cd5e6bf977495c3a74b5fff1ea8c528101b5",
       "executable": false
     },
     "patches/picomatch@4.0.7.patch": {
@@ -2660,7 +2660,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "09c88dd0811374f6943b7943c467cbcccbfe672aef44891c1ffc35722a6774e5",
+      "sha256": "6a0e99b5169502a37d2f2d56d33c0e69f04f9978b482451c737b87f86114498a",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -3016,7 +3016,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "716ef5d47acc3ee5238711f3bb3c1a6aa7447c4c8c0ff36a843a43cc801a289e",
+      "sha256": "d4ee5fad96c282e50c99cefc7ec16fd908fc92948e329c7e747bb11ce09e7212",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4160,7 +4160,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "df261094318934333171ca931c4ecee90cf5a201b4db81b392a681500b99b3a8",
+      "sha256": "db0ac72db96304894fef10cff903f2ddcc97edfeeb350ab15cc65ebf63de07df",
       "executable": false
     },
     "src/base/actor.ts": {
