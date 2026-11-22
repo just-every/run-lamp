@@ -1,8 +1,8 @@
 {
-  "version": "1.11.28",
-  "previousVersion": "1.11.26",
+  "version": "1.11.29",
+  "previousVersion": "1.11.28",
   "date": "2026-11-22",
-  "publicReleaseNotes": "- **Local startup makes time for Chromium.** Lamp gives Chromium up to five minutes to download on a fresh checkout before starting the app. The checkout pins rer 0.2.129, which gives browser preparation its own budget before the private owner-entry check.\n- **Long deployment removals report progress and can resume.** Lamp reports each resource and progress during an R2 purge. Each invocation allows up to 60 seconds per resource readback and 10 minutes per R2 bucket purge. If it reports `remove-incomplete`, rerun the same command and wait for `read back: none remains`.\n- **Staff and named audience pages show their saved accent colours.** The accent appears in the masthead, including on retained pages. Signed-out visitors opening a protected page in a browser get a sign-in link that returns them to that page.\n- **The README and Run page show a tagged local install.** The homepage links to the deployment dry-run guide. The deployment instructions show the first-owner name flag and explain how to run with email disabled.\n- **Setup guides explain first-owner sign-in for Run Edit Run Business.** The setup agent uses the one-time HTTPS link from `rer signin` and passes it only in `session.report` as `tools[i].sign_in`.\n- **Release verification follows the documented local launch.** The journey uses the public rer installer and the tagged clone steps from the guide, checks the Run page command, and exercises owner entry and status publication.\n\n### Upgrading from 1.11.26\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.28`, run `pnpm install --frozen-lockfile` and run `rer deploy` with the same environment and input file. Check local owner entry, deployed owner sign-in, and the saved accents and access controls on Staff and named audience pages. This release adds no migrations.\n\n<!-- Run Edit Run fleet, 2026-11-22. -->",
+  "publicReleaseNotes": "- **Local sign-in returns you to the protected page you opened.** Terminal owner entry and localhost passkey sign-in preserve the requested path and query string. Local owners can enrol a passkey for later sign-ins.\n- **The embeddable banner works in local development.** The generated banner tag can load Lamp's widget script from the local status-page host.\n- **Publishing explains when email is off.** Incident publishing suppresses the email option when email is disabled. Maintenance explains that reminders can still use other configured channels.\n- **Local install and update instructions follow the latest published release.** The Run page shows the published tag, and the Run page, Getting started and README resolve the release at launch. The README and local update guide move an existing tagged checkout to the latest published release.\n\n### Upgrading from 1.11.28\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.29`, run `pnpm install --frozen-lockfile`, and use the same environment and input file for an existing deployment. Apply migration `0087_local_passkeys.sql` through the standard migration path. Local passkey credentials stay outside portable archives. Check local owner entry, the local banner and publishing with email disabled.",
   "contractChanges": {},
   "proseChanges": [
     {
@@ -10,18 +10,18 @@
       "section": "Run it locally",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "The documented local one-liner starts from a published release tag.",
-      "was": "The one-liner used rer to clone and start the default development branch.",
-      "now": "The one-liner installs rer, clones a published Lamp tag and allows up to five minutes for the first owner-entry check."
+      "summary": "Local install and update commands resolve the latest published Lamp release.",
+      "was": "The tagged README cloned a fixed older tag.",
+      "now": "The README selects the latest published release when installing or updating."
     },
     {
-      "document": "README.md",
-      "section": "Deploy and verify",
+      "document": "docs/getting-started.md",
+      "section": "Getting started",
       "change": "changed",
       "date": "2026-11-22",
-      "summary": "The deployment instructions document deliberate mail-off hosting and the first-owner name flag.",
-      "was": "The README said every hosted installation needed working mail and showed deploy commands without an owner name.",
-      "now": "The README documents terminal owner entry with MAIL_PROVIDER=none and shows --owner-name in the dry-run and deploy commands."
+      "summary": "The local launch command follows the latest published Lamp release.",
+      "was": "The guide named a fixed older tag.",
+      "now": "The guide resolves the latest published release at launch and links to the local update steps."
     }
   ],
   "extensionPointChanges": [],
@@ -32,5 +32,5 @@
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Update with frozen dependencies and deploy with the same environment and input file. Preserve the original deployment checkout and account credentials for rer signin, the existing mail configuration, and public addresses and feed identity. Check local owner entry, deployed owner sign-in, and Staff and named audience pages with saved accents, both with and without an operator session. For a Business installation, report the first-owner link only through session.report with the same HTTPS host and port as the tool address. This release adds no migrations. Retain the pre-upgrade backup and earlier release and migration records."
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Apply 0087_local_passkeys.sql through standard migrations. Local passkey credentials stay outside portable archives. Check that local owner entry returns to the requested protected page, that the local banner loads, and that incident and maintenance publishing reflect the email configuration. Preserve the deployed mail settings, public addresses and feed identity."
 }

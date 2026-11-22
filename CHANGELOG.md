@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.29
+
+- **Local sign-in returns you to the protected page you opened.** Terminal owner entry and localhost passkey sign-in preserve the requested path and query string. Local owners can enrol a passkey for later sign-ins.
+- **The embeddable banner works in local development.** The generated banner tag can load Lamp's widget script from the local status-page host.
+- **Publishing explains when email is off.** Incident publishing suppresses the email option when email is disabled. Maintenance explains that reminders can still use other configured channels.
+- **Local install and update instructions follow the latest published release.** The Run page shows the published tag, and the Run page, Getting started and README resolve the release at launch. The README and local update guide move an existing tagged checkout to the latest published release.
+
+### Upgrading from 1.11.28
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.29`, run `pnpm install --frozen-lockfile`, and use the same environment and input file for an existing deployment. Apply migration `0087_local_passkeys.sql` through the standard migration path. Local passkey credentials stay outside portable archives. Check local owner entry, the local banner and publishing with email disabled.
+
 ## 1.11.28
 
 - **Local startup makes time for Chromium.** Lamp gives Chromium up to five minutes to download on a fresh checkout before starting the app. The checkout pins rer 0.2.129, which gives browser preparation its own budget before the private owner-entry check.
