@@ -1,0 +1,36 @@
+{
+  "version": "1.11.29",
+  "previousVersion": "1.11.28",
+  "date": "2026-11-22",
+  "publicReleaseNotes": "- **Local sign-in returns you to the protected page you opened.** Terminal owner entry and localhost passkey sign-in preserve the requested path and query string. Local owners can enrol a passkey for later sign-ins.\n- **The embeddable banner works in local development.** The generated banner tag can load Lamp's widget script from the local status-page host.\n- **Publishing explains when email is off.** Incident publishing suppresses the email option when email is disabled. Maintenance explains that reminders can still use other configured channels.\n- **Local install and update instructions follow the latest published release.** The Run page shows the published tag, and the Run page, Getting started and README resolve the release at launch. The README and local update guide move an existing tagged checkout to the latest published release.\n\n### Upgrading from 1.11.28\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.29`, run `pnpm install --frozen-lockfile`, and use the same environment and input file for an existing deployment. Apply migration `0087_local_passkeys.sql` through the standard migration path. Local passkey credentials stay outside portable archives. Check local owner entry, the local banner and publishing with email disabled.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "README.md",
+      "section": "Run it locally",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "Local install and update commands resolve the latest published Lamp release.",
+      "was": "The tagged README cloned a fixed older tag.",
+      "now": "The README selects the latest published release when installing or updating."
+    },
+    {
+      "document": "docs/getting-started.md",
+      "section": "Getting started",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "The local launch command follows the latest published Lamp release.",
+      "was": "The guide named a fixed older tag.",
+      "now": "The guide resolves the latest published release at launch and links to the local update steps."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [
+    {
+      "id": "0087_local_passkeys.sql",
+      "buyerSteps": "Apply with the standard migrations. Passkey credentials are used only by localhost development and stay outside portable archives."
+    }
+  ],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Apply 0087_local_passkeys.sql through standard migrations. Local passkey credentials stay outside portable archives. Check that local owner entry returns to the requested protected page, that the local banner loads, and that incident and maintenance publishing reflect the email configuration. Preserve the deployed mail settings, public addresses and feed identity."
+}

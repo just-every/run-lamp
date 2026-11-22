@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.11.30
+
+- **Hosted backups handle files that disappear during export.** Lamp checks R2 again when an object vanishes during the copy and lists any skipped objects in the console and backup manifest. An interrupted export leaves an `.incomplete` marker. Retry in a new empty folder.
+- **Email controls follow the mail setting locally and on hosted installations.** When email is off, incident publishing hides the Email option and maintenance hides the email preview.
+- **Maintenance shows which reminder channels are active.** When email is off, the public schedule names the active Webhook, SMS, Slack or Teams channels, or says when no active subscriptions can receive the reminder. Staff-only notices still have a page preview.
+- **Publish a completed incident report in one click.** Publish report saves any unsaved changes and publishes the completed report.
+- **Local passkey challenges are tracked per attempt.** Starting another sign-in or enrolment in the same browser no longer replaces a pending challenge.
+
+### Upgrading from 1.11.29
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.30`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check hosted backup completion, publishing with email off, the Staff-only maintenance preview and local passkey sign-in.
+
 ## 1.11.29
 
 - **Local sign-in returns you to the protected page you opened.** Terminal owner entry and localhost passkey sign-in preserve the requested path and query string. Local owners can enrol a passkey for later sign-ins.
