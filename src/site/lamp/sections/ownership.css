@@ -11,6 +11,7 @@
   width: 26px; height: 26px; box-sizing: border-box; border: 1px solid var(--lamp-line-strong); border-radius: 50%;
   color: var(--lamp-ink); font-size: 13px; font-weight: 600; line-height: 1; }
 .lamp-home .lamp-ownership__steps strong { color: var(--lamp-ink); font-weight: 600; }
+.lamp-home .lamp-ownership__steps a { text-decoration: underline; text-underline-offset: .15em; }
 @container lamp-page (min-width: 1024px) {
   .lamp-home .lamp-ownership__panel { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; padding: 0; }
   .lamp-home .lamp-ownership__text { grid-column: 2 / 6; grid-row: 1; padding-block: calc(96 * var(--u)); }
@@ -32,6 +33,4 @@
   .lamp-home .lamp-ownership[data-reveal="play"] .lamp-export__step:nth-child(2) .lamp-export__output { animation-delay: .98s; }
   .lamp-home .lamp-ownership[data-reveal="play"] .lamp-export__step:nth-child(3) .lamp-export__command { animation-duration: .3s; animation-timing-function: steps(36, end); animation-delay: 1.1s; }
   .lamp-home .lamp-ownership[data-reveal="play"] .lamp-export__step:nth-child(3) .lamp-export__output { animation-delay: 1.4s; }
-  .lamp-home .lamp-ownership[data-reveal="play"] .lamp-export__step:nth-child(4) .lamp-export__command { animation-duration: .12s; animation-timing-function: steps(8, end); animation-delay: 1.52s; }
-  .lamp-home .lamp-ownership[data-reveal="play"] .lamp-export__step:nth-child(4) .lamp-export__output { animation-delay: 1.64s; }
 }

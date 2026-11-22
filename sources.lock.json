@@ -7964,11 +7964,11 @@
       "executable": false
     },
     "src/site/lamp/sections/ownership.css": {
-      "sha256": "505705e5eb2012e138a5ea13e9c1c2d087aaf79df40be1c3474f428a3b415ed8",
+      "sha256": "56a74aa3bdc5adf1cafd3fda59cf57db446a7f30cbfcf12ae7e3730d5d4ffe72",
       "executable": false
     },
     "src/site/lamp/sections/OwnershipSection.tsx": {
-      "sha256": "d60dc997abb7e706c11de1832fc30ff828dbd91ad6cd9de5aa2dcd6ca4eba22b",
+      "sha256": "30614ffb798c2ca4db9db484d3a23d5d4ca72d6cce5b3b34d71d043c43b595de",
       "executable": false
     },
     "src/site/lamp/sections/pool.css": {
