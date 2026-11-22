@@ -1,0 +1,13 @@
+diff --git a/cli/deploy-inputs.mjs b/cli/deploy-inputs.mjs
+index 6baac1fe76f9a3810d9ece5cc3988cc287acc94e..5ebded9582f63623c421d71b03c687985d98221f 100644
+--- a/cli/deploy-inputs.mjs
++++ b/cli/deploy-inputs.mjs
+@@ -20,7 +20,7 @@ export async function deployEnvironment({ root, options, declaration, setupManif
+   try { values = await readDeployEnvFile(root, options.envFile, localOnlyKeys); }
+   catch (error) { throw invalid(`The --env-file ${options.envFile} could not be used: ${error.code === 'ENOENT' ? 'no such file' : error.message}.`); }
+   const providerKey = refuseProviderKeys && Object.keys(values).find(key => /^(CLOUDFLARE_|CF_)/.test(key));
+-  if (providerKey) throw refuse(`The --env-file ${options.envFile} contains ${providerKey}, which is refused while CLOUDFLARE_API_TOKEN is set in the environment. Remove all CLOUDFLARE_* and CF_* keys from the file and run the same command again.`);
++  if (providerKey) throw refuse(`The --env-file ${options.envFile} contains ${providerKey}, which is refused while CLOUDFLARE_API_TOKEN is set in the environment. Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN together in the environment (with no CLOUDFLARE_* or CF_* keys in the file), or put both in the private --env-file and unset the environment token.`);
+   Object.assign(env, values);
+  }
+  await applyPublicAssignments(env, options, declaration, setupManifest);

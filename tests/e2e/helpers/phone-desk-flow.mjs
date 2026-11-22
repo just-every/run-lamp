@@ -63,8 +63,10 @@ export async function phoneDeskFlow({ page, appUrl, pageUrl, appFetch, signInLin
     assert.equal(await impact.inputValue(), 'Some checkouts fail during authorization. Retrying may succeed.');
     await page.getByLabel(`${component.name} state with this update`).waitFor();
     await inspect('composer');
-    await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
-    await page.getByText('Notification email', { exact: true }).waitFor();
+    const preview = page.locator('#draft-preview');
+    await preview.getByText('Some checkouts fail during authorization. Retrying may succeed.', { exact: true }).waitFor();
+    assert.equal(await preview.getByRole('button', { name: /^Email/ }).count(), 0);
+    assert.equal(await preview.locator('iframe').count(), 0);
     await inspect('preview');
     await page.getByRole('button', { name: 'Publish update', exact: true }).click();
     await page.locator('.publication-confirmation').waitFor();

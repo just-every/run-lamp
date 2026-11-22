@@ -17,6 +17,8 @@ import { chromium } from 'playwright';
 import { reachBuiltWorkerOptions } from './helpers/reach-built-worker.mjs';
 import { operatorHydrated } from './helpers/operator-hydrated.mjs';
 import { newIncidentForm } from './helpers/incident-composer.mjs';
+import { hostedOwnerReturn } from './helpers/hosted-owner-return.mjs';
+import { inspectEmailPreviewAccessibility } from './helpers/email-preview-accessibility.mjs';
 
 const require = createRequire(import.meta.url), workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
@@ -760,6 +762,7 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           await page.getByRole('heading', { level: 1 }).waitFor();
         }
         if (provider === 'none' && choice === 'skip') {
+          await hostedOwnerReturn({ raw, db, origin: appOrigin, sessionCookie: '__Host-operator_session=' + session });
           await page.goto(appOrigin + '/app');
           await page.getByText('Email is off for this installation', { exact: true }).waitFor();
           assert.equal(await page.locator('.live-strip.is-failing').count(), 0, 'deliberate mail-off does not mark the installation as broken');
@@ -769,9 +772,24 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           const emailChannel = page.getByRole('checkbox', { name: /^Email/ });
           assert.equal(await emailChannel.isDisabled(), true);
           assert.equal(await emailChannel.isChecked(), false);
+          const preview = page.locator('#draft-preview');
+          await preview.locator('.preview-card').waitFor();
+          assert.equal(await preview.getByRole('button', { name: /^Email/ }).count(), 0);
+          assert.equal(await preview.locator('iframe').count(), 0);
           await page.goto(pageOrigin + '/');
           assert.equal(await page.locator('form[action="/subscribe"]').count(), 0, 'the hosted public page does not offer unusable email signup');
           await page.getByText('Email subscriptions are unavailable for this installation.', { exact: true }).first().waitFor();
+        }
+        if (provider === 'resend' && choice === 'skip') {
+          await page.goto(appOrigin + '/app/incidents/new');
+          await operatorHydrated(page);
+          const form = newIncidentForm(page);
+          await form.impact.fill('Some payments are delayed.');
+          const preview = page.locator('#draft-preview');
+          await preview.getByRole('button', { name: 'Email', exact: true }).click();
+          await preview.frameLocator('iframe').getByText('Some payments are delayed.', { exact: false }).waitFor();
+          const axe = await inspectEmailPreviewAccessibility(page);
+          assert.deepEqual(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact)).map(v => v.id), []);
         }
         await page.goto(appOrigin + '/app/settings');
         await operatorHydrated(page);

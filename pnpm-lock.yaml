@@ -10,6 +10,9 @@ overrides:
   source-map-js@<1.2.2: 1.2.2
 
 patchedDependencies:
+  '@runeditrun/rer@0.2.129':
+    hash: 8351feb8bb264837718567cb8b142910a15f1315b897a8899ee66aeff6e0784c
+    path: patches/@runeditrun__rer@0.2.129.patch
   picomatch@4.0.7:
     hash: 35fffafb79237d89b70c8e8cff0df4f4b156c76868f839e89accecdecc4da33b
     path: patches/picomatch@4.0.7.patch
@@ -72,7 +75,7 @@ importers:
         version: 1.63.0
       '@runeditrun/rer':
         specifier: 0.2.129
-        version: 0.2.129
+        version: 0.2.129(patch_hash=8351feb8bb264837718567cb8b142910a15f1315b897a8899ee66aeff6e0784c)
       '@simplewebauthn/server':
         specifier: 14.0.3
         version: 14.0.3
@@ -2361,7 +2364,7 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@runeditrun/rer@0.2.129': {}
+  '@runeditrun/rer@0.2.129(patch_hash=8351feb8bb264837718567cb8b142910a15f1315b897a8899ee66aeff6e0784c)': {}
 
   '@simplewebauthn/server@14.0.3':
     dependencies:

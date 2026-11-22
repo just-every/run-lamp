@@ -46,10 +46,11 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   const emailChannel = page.getByRole('checkbox', { name: /Email.*off/i });
   assert.equal(await emailChannel.isDisabled(), true);
   assert.equal(await emailChannel.isChecked(), false);
-  await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
   const preview = page.locator('.preview-panel');
-  await page.frameLocator('iframe[title="Notification email message"]').getByText('Some mobile requests take longer to finish.', { exact: false }).waitFor();
-  observations.newEmail = await preview.innerText();
+  await preview.getByText('Some mobile requests take longer to finish.', { exact: true }).waitFor();
+  assert.equal(await preview.getByRole('button', { name: /^Email/ }).count(), 0);
+  assert.equal(await preview.locator('iframe').count(), 0);
+  observations.newPreview = await preview.innerText();
   const rendered = (await api('/api/app/incidents/preview', 'POST', {
     title: 'Mobile requests are slow', components: [{ componentId: component.id, state: 'Degraded performance' }],
     update: { lifecycle: 'Investigating', affectedAudience: 'Customers using mobile apps.', customerImpact: 'Some mobile requests take longer to finish.', whatStillWorks: '', details: '', nextUpdateAt: '2027-09-08T21:00:00.000Z' },
@@ -57,7 +58,7 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   assert.ok(rendered.email.html, 'the preview exposes the same branded document sent to customers');
   assert.equal(rendered.email.deliverySuppressed, true, 'the preview reports local email suppression');
   assert.equal(await preview.locator('dt').filter({ hasText: /^Message$/ }).count(), 0);
-  await capture(page, 'new-email');
+  await capture(page, 'new-preview');
   await form.publish.click();
   await page.waitForURL(url => /^\/app\/incidents\/[0-9A-Z]{26}$/.test(url.pathname));
   const id = new URL(page.url()).pathname.split('/').at(-1);
@@ -85,9 +86,10 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   await page.getByRole('region', { name: 'Component statuses after resolution' }).waitFor();
   observations.resolve = await page.locator('.composer-panel').innerText();
   await capture(page, 'resolve-manual');
-  await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
-  await page.frameLocator('iframe[title="Notification email message"]').getByText(/Update: Fixed/).waitFor();
-  await capture(page, 'resolved-email');
+  await preview.getByText('Fixed. Mobile requests finish normally again.', { exact: true }).waitFor();
+  assert.equal(await preview.getByRole('button', { name: /^Email/ }).count(), 0);
+  assert.equal(await preview.locator('iframe').count(), 0);
+  await capture(page, 'resolved-preview');
   await composer.publish.click();
   await page.waitForFunction(() => document.querySelector('.composer-panel textarea')?.value === '');
   let incident = (await api(path)).incident;

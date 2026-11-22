@@ -3,7 +3,7 @@ import { escapeHtml } from "@runeditrun/rer/internal/modules/operator-auth/http.
 import { pageResponse } from "@runeditrun/rer/internal/modules/operator-auth/page.mjs";
 import type { AppBindings } from "../../../app/types";
 import { createLampAuth } from "..";
-import { localReturnPath } from "../local-return";
+import { signInReturnPath } from "../return-path";
 import script from "./client.js?raw";
 import { PasskeyStore } from "./repository";
 
@@ -77,6 +77,6 @@ export async function addPasskeySignIn(request: Request, response: Response, env
   const owner = await store.owner();
   if (!owner || !await store.credential(owner.id)) return response;
   const url = new URL(request.url);
-  const target = localReturnPath(url.searchParams.get("returnTo"), url.origin);
+  const target = signInReturnPath(url.searchParams.get("returnTo"), url.origin);
   return scripted(response, control("signin", target ?? "/app"));
 }

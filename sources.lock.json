@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "d7412b8b4d3b5e15681997c86fd6443d0d669fdbd0dc70b93d33122f20e54293",
+      "sha256": "8c5818b0ea88df04a496e570997dcd65e2aebb3a80746dbe98eda7dbbc395816",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -2656,7 +2656,11 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "a67ca8b7725d65469a3aad169f082627965924917ef07d6d9a167a1ac7fcd63f",
+      "sha256": "8bf0182528b96135d32a72369d822c8044854f392faa5d3b60f3822faf324c57",
+      "executable": false
+    },
+    "patches/@runeditrun__rer@0.2.129.patch": {
+      "sha256": "8351feb8bb264837718567cb8b142910a15f1315b897a8899ee66aeff6e0784c",
       "executable": false
     },
     "patches/picomatch@4.0.7.patch": {
@@ -2664,7 +2668,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "f51f8f6b0cf753ea74b6780456c56abc1968aa2aec7d4507ff37526b4929c169",
+      "sha256": "161b92bfeb35b69c384e02eae3836d6e1eea36024325b82ab093ef43e8ef8d15",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -5184,7 +5188,7 @@
       "executable": false
     },
     "src/core/features/incidents/ui/incident-preview.tsx": {
-      "sha256": "14a62dce15470b8826de6c9c7283f85f574f16f1c33b3348e1ac20b8c0bd227e",
+      "sha256": "f4c32c42c067c637c14aff656be713c737b0ed0d62415bdd9474d78c1698edc6",
       "executable": false
     },
     "src/core/features/incidents/ui/incident-record.tsx": {
@@ -6968,7 +6972,7 @@
       "executable": false
     },
     "src/core/platform/auth/http.ts": {
-      "sha256": "64c96c3825e1263fd82410dcc0dcdadb8681d40f619235dcaaa6f25d95691378",
+      "sha256": "8c731dbbef67878463f2336f9d90952b2ee6148ad2d1b6ff7201e89a25205b7f",
       "executable": false
     },
     "src/core/platform/auth/identity-provider-guides.ts": {
@@ -7000,7 +7004,7 @@
       "executable": false
     },
     "src/core/platform/auth/local-passkey/pages.ts": {
-      "sha256": "61ab5bd4c4f9409dcc0e8bdac73754053693460a2750295b9b162c709398f67b",
+      "sha256": "1142b7a28f3198e4e0eec7e78441ae15b7557b39ee8989ae861fe8d3741df5b4",
       "executable": false
     },
     "src/core/platform/auth/local-passkey/repository.ts": {
@@ -7008,7 +7012,15 @@
       "executable": false
     },
     "src/core/platform/auth/local-return.ts": {
-      "sha256": "a3a8904483298b5d51a0066b254c9bc943872d03947ef51db61fdf8c03a7c71e",
+      "sha256": "3918413ffac83bc2d63258a0e848c5f3fe85b833b6bf48cbfea848b95a60c0b3",
+      "executable": false
+    },
+    "src/core/platform/auth/owner-signin-return.ts": {
+      "sha256": "105d126774f5c036b66f5e0e2a6341b4a5085ada2601a0fb1a831cf0d8cc6888",
+      "executable": false
+    },
+    "src/core/platform/auth/return-path.ts": {
+      "sha256": "f2c647c5ceb2c7186b1b7070693914a45f2a8194e714adaae4300e6aa0fbe6ac",
       "executable": false
     },
     "src/core/platform/bindings.server.ts": {
@@ -8407,6 +8419,10 @@
       "sha256": "e909365d786ace6bd3f9bf5ee6c3a5b9d2b9741cea8efbd21c44c544157727bd",
       "executable": false
     },
+    "tests/e2e/helpers/hosted-owner-return.mjs": {
+      "sha256": "4497afb03592b7c5b07dffe2b0d4042184c91f37fc440d7ede3294e12a4638b6",
+      "executable": false
+    },
     "tests/e2e/helpers/hosts.mjs": {
       "sha256": "9bcbb29574f710fa3c9d7529853fbcb843e241ba1b1ce767ed33c216e9677f0a",
       "executable": false
@@ -8460,7 +8476,7 @@
       "executable": false
     },
     "tests/e2e/helpers/incident-owner-journey.mjs": {
-      "sha256": "b61bc48bc957d0ee8625940d11b12f38b35664f4f161bd1a737702d2186a8661",
+      "sha256": "b1f98a072bb4506c1193a92d97cc09b6a9897cfca10eef48c6cb0a62c642eb7b",
       "executable": false
     },
     "tests/e2e/helpers/incident-subscriber-import-flow.mjs": {
@@ -8588,7 +8604,7 @@
       "executable": false
     },
     "tests/e2e/helpers/phone-desk-flow.mjs": {
-      "sha256": "5b3aa203a1a93bae3172552bb6f4d4a7586d8a8125bd41a89b9bed408389e28b",
+      "sha256": "cf86abe3b4873970e9ef704226e60ff063d5c83e5cce4ef5c6dc79fccc059484",
       "executable": false
     },
     "tests/e2e/helpers/postmortem-template-import-flow.mjs": {
@@ -8912,7 +8928,7 @@
       "executable": false
     },
     "tests/e2e/publishing-browser.test.mjs": {
-      "sha256": "10a85525ff6545910dd0f54f33e90476771e50f91ae9ce2f4e0c15d0616c57d6",
+      "sha256": "694b72f36ebe4d5b1be89a247c3af6357aefebec14fa2ed117e1fb02e8a445c6",
       "executable": false
     },
     "tests/e2e/publishing-contract.test.mjs": {
@@ -8932,7 +8948,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "07de57399349eb5322355561b4995c2f7144506003696adbf6f88bd9ae9635df",
+      "sha256": "7585081dbc4d7b35fdd41322d243da0443f8c67e69379ea3ac0bb33d8037ba72",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

@@ -67,6 +67,11 @@ permission **Workers Routes**: **Edit** for that domain's zone. Choose
 **Continue to summary**, then **Create Token**, and copy the token: Cloudflare
 shows it only once.
 
+Put both values in your private deployment file, or export both in the shell
+where you run `rer deploy`. If a credential helper injects the token, export
+the account ID alongside it and remove any `CLOUDFLARE_*` and `CF_*` entries
+from the private file.
+
 ```text
 CLOUDFLARE_ACCOUNT_ID=your-account-id
 CLOUDFLARE_API_TOKEN=synthetic-your-cloudflare-api-token

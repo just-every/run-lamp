@@ -7,6 +7,7 @@ import { createIdpOwnerClaimHandler, createOwnerClaimHandler } from '@runeditrun
 import { authConfig } from './config';
 import { identitySettingsPage } from './identity-settings-page';
 import { ownerClaimConfig } from './claim';
+import { hostedOwnerSignInReturn } from './owner-signin-return';
 import { openDoorAtFirstClaim } from '../../features/statuspage-import/door-claim';
 import type { AppBindings } from '../../app/types';
 import type { AppServices } from '../../app/services';
@@ -70,6 +71,7 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
     }
     if (url.pathname === '/signin') response = await installationSignIn(response, (await services.pageSettings.get())?.pageName ?? 'Lamp', false, false, Boolean(required));
     if (url.pathname === '/auth/owner-signin' && response.status >= 400) return ownerSignInRefused(response);
+    if (!config.local) response = hostedOwnerSignInReturn(request, response, config.origin);
     const test = await testFailureOnPane(request, response, auth, config.origin);
     if (test) return test;
     return request.method === 'GET' && url.pathname === '/auth/settings/identity'

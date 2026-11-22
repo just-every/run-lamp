@@ -1,12 +1,7 @@
-import { safeReturnTo } from "@runeditrun/rer/modules/operator-auth";
 import { localCookieName, sessionCookie } from "@runeditrun/rer/internal/modules/operator-auth/http.mjs";
+import { signInReturnPath } from "./return-path";
 
 const terminalPath = "/__dev/key";
-
-export function localReturnPath(value: string | null, origin: string) {
-  const path = safeReturnTo(value, "/");
-  return path === value && new URL(path, origin).origin === origin ? path : null;
-}
 
 export function localReturnCookie(origin: string, value: string, age: number) {
   return sessionCookie(value, { cookieName: localCookieName("lamp_dev_return", origin), secure: new URL(origin).protocol === "https:" }, age);
@@ -20,7 +15,7 @@ export async function localSignInReturn(request: Request, response: Response, or
   const name = localCookieName("lamp_dev_return", origin);
   const headers = new Headers(response.headers);
   if (url.pathname === "/signin" && response.status === 303 && headers.get("location") === terminalPath) {
-    const target = localReturnPath(url.searchParams.get("returnTo"), origin);
+    const target = signInReturnPath(url.searchParams.get("returnTo"), origin);
     if (target) {
       headers.set("Location", `${terminalPath}?${new URLSearchParams({ returnTo: target })}`);
       if (request.method === "GET") headers.append("Set-Cookie", localReturnCookie(origin, encodeURIComponent(target), 600));
@@ -38,7 +33,7 @@ export async function localSignInReturn(request: Request, response: Response, or
     .filter(value => value.startsWith(`${name}=`));
   if (values.length !== 1) return response;
   let target;
-  try { target = localReturnPath(decodeURIComponent(values[0].slice(name.length + 1)), origin); } catch { return response; }
+  try { target = signInReturnPath(decodeURIComponent(values[0].slice(name.length + 1)), origin); } catch { return response; }
   if (!target) return response;
 
   headers.append("Set-Cookie", localReturnCookie(origin, "", 0));

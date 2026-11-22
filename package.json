@@ -111,7 +111,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "picomatch@4.0.7": "patches/picomatch@4.0.7.patch"
+      "picomatch@4.0.7": "patches/picomatch@4.0.7.patch",
+      "@runeditrun/rer@0.2.129": "patches/@runeditrun__rer@0.2.129.patch"
     },
     "onlyBuiltDependencies": [
       "esbuild",

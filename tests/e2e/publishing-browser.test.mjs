@@ -854,7 +854,6 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
     { label: 'Component state', value: 'Journey checkout API: Working → Down' },
   ];
   const panel = page.locator('.preview-panel');
-  await page.getByRole('button', { name: 'Page', exact: true }).click();
   await panel.getByText(submitted.whatStillWorks, { exact: true }).waitFor();
   assert.equal(await panel.locator('.preview-type').textContent(), 'Public page');
   assert.equal(await panel.locator('h3').textContent(), heading);
@@ -864,19 +863,20 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   assert.equal((await readIncident(id)).updates.length, 0, 'preview leaves the draft private');
   assert.equal((await (await fetch(`${pageUrl}/`)).text()).includes(submitted.customerImpact), false);
   await previewScreens(page, 'page-preview');
-  await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
-  await panel.frameLocator('iframe[title="Notification email message"]').getByText(submitted.customerImpact, { exact: false }).waitFor();
-  await panel.getByText(settings.emailBranding.replyTo, { exact: true }).waitFor();
-  assert.ok((await page.locator('.preview-panel h3').textContent()).startsWith('[Journey status]'));
-  assert.equal(await panel.locator('.preview-type').textContent(), 'Notification email');
-  assert.equal(await panel.locator('h3').textContent(), `[Journey status] Atlas Cloud Status: [${incident.reference}] Checkout requests are delayed`);
+  assert.equal(await panel.getByRole('button', { name: /^Email/ }).count(), 0);
+  assert.equal(await panel.locator('iframe').count(), 0);
+  const { preview: { email } } = await api(`/api/app/incidents/${id}`);
+  assert.equal(email.replyTo, settings.emailBranding.replyTo);
+  assert.equal(email.subject, `[Journey status] Atlas Cloud Status: [${incident.reference}] Checkout requests are delayed`);
   const emailBody = ['Atlas Cloud Status', emailHeader, heading, 'Status: Identified',
     ...expectedFields.map(field => `${field.label}: ${field.value}`), 'Incident impact: Critical', emailFooter];
-  const emailDocument = panel.frameLocator('iframe[title="Notification email message"]');
-  const customerText = (await emailDocument.locator('body').innerText()).replace(/\s+/g, ' ');
-  for (const paragraph of emailBody) assert.ok(customerText.includes(paragraph), 'the actual branded email retains every populated field');
-  assert.deepEqual(await wordingFields(panel), [{ label: 'Reply-To', value: settings.emailBranding.replyTo }]);
-  await previewScreens(page, 'email-preview');
+  const emailDocument = await browserContext.newPage();
+  try {
+    await emailDocument.route('**/*', route => route.abort());
+    await emailDocument.setContent(email.html);
+    const customerText = (await emailDocument.locator('body').innerText()).replace(/\s+/g, ' ');
+    for (const paragraph of emailBody) assert.ok(customerText.includes(paragraph), 'the actual branded email retains every populated field');
+  } finally { await emailDocument.close(); }
   await page.getByRole('button', { name: 'Suggest update', exact: true }).click();
   await page.locator('.ai-suggestion [role=status]').filter({ hasText: /503|intentionally unavailable/i }).waitFor();
   assert.equal(await composer.publish.isEnabled(), true, 'a failed suggestion leaves ordinary publication usable');
