@@ -1,0 +1,24 @@
+{
+  "version": "1.11.26",
+  "previousVersion": "1.11.25",
+  "date": "2026-11-21",
+  "publicReleaseNotes": "- **Publish to selected status pages.** In Settings, configure Staff and named audience pages with their own paths, branding and components. An operator can send one incident publication or maintenance notice to the selected pages. Protected pages require an active Lamp operator session.\n- **Keep the public page in place.** Existing addresses and feed identity carry forward. Staff-only records stay out of public pages, feeds, widgets, badges, API responses and notifications.\n\n### Upgrading from 1.11.25\n\nBack up owner source and data and exercise a restored copy before adopting. The standard deploy applies the additive status-page migration before the updated Worker starts. Keep the existing public host and configuration. Check the public feed identity, sign-in, page settings, and Public and Staff publication on the restored copy.\n\n### Known limits\n\nNamed audience pages currently use operator authority. Audience membership and subscriptions, full per-page themes and languages, and protected reads during database outages await their corresponding contract work.\n\n<!-- Run Edit Run fleet, 2026-11-21. -->",
+  "contractChanges": {},
+  "extensionPointChanges": [],
+  "migrations": [
+    {
+      "id": "0084_status_pages.sql",
+      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration keeps existing incident and maintenance records on the public page and adds private page settings and publication assignments."
+    },
+    {
+      "id": "0085_status_page_email_branding.sql",
+      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration adds storage for email branding overrides on individual status pages."
+    },
+    {
+      "id": "0086_required_sign_in.sql",
+      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. Required sign-in starts off on existing installations."
+    }
+  ],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up owner source and data, then restore and exercise a copy before adopting. Update with frozen dependencies and deploy with the same environment, account, configured hostnames and input file. The standard deploy applies the additive migration before the updated Worker starts. Preserve owner authority, subscriber consent, public addresses and feed identity, and existing sources and resources. On a populated restored copy, check that an existing public incident and maintenance window remain visible and that selected Public and Staff publications reach the intended pages. Test a Staff-only publication with an authorized session and an anonymous reader, then reconcile public notification work. Retain the pre-upgrade backup and preserve earlier release and migration records."
+}

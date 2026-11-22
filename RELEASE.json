@@ -1,24 +1,31 @@
 {
-  "version": "1.11.26",
-  "previousVersion": "1.11.25",
-  "date": "2026-11-21",
-  "publicReleaseNotes": "- **Publish to selected status pages.** In Settings, configure Staff and named audience pages with their own paths, branding and components. An operator can send one incident publication or maintenance notice to the selected pages. Protected pages require an active Lamp operator session.\n- **Keep the public page in place.** Existing addresses and feed identity carry forward. Staff-only records stay out of public pages, feeds, widgets, badges, API responses and notifications.\n\n### Upgrading from 1.11.25\n\nBack up owner source and data and exercise a restored copy before adopting. The standard deploy applies the additive status-page migration before the updated Worker starts. Keep the existing public host and configuration. Check the public feed identity, sign-in, page settings, and Public and Staff publication on the restored copy.\n\n### Known limits\n\nNamed audience pages currently use operator authority. Audience membership and subscriptions, full per-page themes and languages, and protected reads during database outages await their corresponding contract work.\n\n<!-- Run Edit Run fleet, 2026-11-21. -->",
+  "version": "1.11.27",
+  "previousVersion": "1.11.26",
+  "date": "2026-11-22",
+  "publicReleaseNotes": "- **Local startup makes time for Chromium.** On a fresh checkout, `rer dev` gives Chromium up to five minutes to download before starting Lamp and checking the private owner-entry link.\n- **Long deployment removals show progress and can resume.** The command reports each resource and progress during an R2 purge. It allows up to 60 seconds per readback and 10 minutes per R2 bucket per invocation. If it reports `remove-incomplete`, rerun the same command and wait for `read back: none remains`.\n- **Staff and named audience pages show their saved accent colours.** The accent appears in the masthead, including on retained pages. Signed-out visitors opening a protected page in a browser get a sign-in link that returns them to that page.\n- **The README and Run page point local users to a published checkout.** The homepage links to the deployment dry-run guide, and the deployment instructions show the first-owner name flag and explain how to run with email disabled.\n- **Setup guides explain first-owner sign-in for Run Edit Run Business.** The setup agent uses the one-time HTTPS link from `rer signin` and passes it only in `session.report` as `tools[i].sign_in`.\n\n### Upgrading from 1.11.26\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.27`, install frozen dependencies and run `rer deploy` with the same environment and input file. Check local owner entry, deployed owner sign-in, and the saved accents and access controls on Staff and named audience pages. This release adds no migrations.\n\n<!-- Run Edit Run fleet, 2026-11-22. -->",
   "contractChanges": {},
-  "extensionPointChanges": [],
-  "migrations": [
+  "proseChanges": [
     {
-      "id": "0084_status_pages.sql",
-      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration keeps existing incident and maintenance records on the public page and adds private page settings and publication assignments."
+      "document": "README.md",
+      "section": "Run it locally",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "The documented local one-liner starts from a published release tag.",
+      "was": "The one-liner used rer to clone and start the default development branch.",
+      "now": "The one-liner installs rer, clones a published Lamp tag and allows up to five minutes for the first owner-entry check."
     },
     {
-      "id": "0085_status_page_email_branding.sql",
-      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration adds storage for email branding overrides on individual status pages."
-    },
-    {
-      "id": "0086_required_sign_in.sql",
-      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. Required sign-in starts off on existing installations."
+      "document": "README.md",
+      "section": "Deploy and verify",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "The deployment instructions document deliberate mail-off hosting and the first-owner name flag.",
+      "was": "The README said every hosted installation needed working mail and showed deploy commands without an owner name.",
+      "now": "The README documents terminal owner entry with MAIL_PROVIDER=none and shows --owner-name in the dry-run and deploy commands."
     }
   ],
+  "extensionPointChanges": [],
+  "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up owner source and data, then restore and exercise a copy before adopting. Update with frozen dependencies and deploy with the same environment, account, configured hostnames and input file. The standard deploy applies the additive migration before the updated Worker starts. Preserve owner authority, subscriber consent, public addresses and feed identity, and existing sources and resources. On a populated restored copy, check that an existing public incident and maintenance window remain visible and that selected Public and Staff publications reach the intended pages. Test a Staff-only publication with an authorized session and an anonymous reader, then reconcile public notification work. Retain the pre-upgrade backup and preserve earlier release and migration records."
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Update with frozen dependencies and deploy with the same environment and input file. Preserve the original deployment checkout and account credentials for rer signin, the existing mail configuration, and public addresses and feed identity. Check local owner entry, deployed owner sign-in, and Staff and named audience pages with saved accents, both with and without an operator session. For a Business installation, report the first-owner link only through session.report with the same HTTPS host and port as the tool address. This release adds no migrations. Retain the pre-upgrade backup and earlier release and migration records."
 }

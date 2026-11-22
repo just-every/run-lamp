@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.11.27
+
+- **Local startup makes time for Chromium.** On a fresh checkout, `rer dev` gives Chromium up to five minutes to download before starting Lamp and checking the private owner-entry link.
+- **Long deployment removals show progress and can resume.** The command reports each resource and progress during an R2 purge. It allows up to 60 seconds per readback and 10 minutes per R2 bucket per invocation. If it reports `remove-incomplete`, rerun the same command and wait for `read back: none remains`.
+- **Staff and named audience pages show their saved accent colours.** The accent appears in the masthead, including on retained pages. Signed-out visitors opening a protected page in a browser get a sign-in link that returns them to that page.
+- **The README and Run page point local users to a published checkout.** The homepage links to the deployment dry-run guide, and the deployment instructions show the first-owner name flag and explain how to run with email disabled.
+- **Setup guides explain first-owner sign-in for Run Edit Run Business.** The setup agent uses the one-time HTTPS link from `rer signin` and passes it only in `session.report` as `tools[i].sign_in`.
+
+### Upgrading from 1.11.26
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.27`, install frozen dependencies and run `rer deploy` with the same environment and input file. Check local owner entry, deployed owner sign-in, and the saved accents and access controls on Staff and named audience pages. This release adds no migrations.
+
+<!-- Run Edit Run fleet, 2026-11-22. -->
+
 ## 1.11.26
 
 - **Publish to selected status pages.** In Settings, configure Staff and named audience pages with their own paths, branding and components. An operator can send one incident publication or maintenance notice to the selected pages. Protected pages require an active Lamp operator session.
