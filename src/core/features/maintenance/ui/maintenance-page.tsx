@@ -1,6 +1,7 @@
 import { MaintenanceCancellation } from "./cancellation-controls";
 import { importedMaintenanceUpdateLabel } from "../../../shared/imported-maintenance-update";
 import { useMemo, useRef, useState } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 
 import { PUBLIC_PAGE_PATH, StatusPageSelection, statusPageNames, useStatusPages, type StatusPage } from "../../page-settings/ui/status-page-selection";
 import type { ComponentsService } from "../../components";
@@ -21,6 +22,7 @@ type ComponentsResponse = { components: Awaited<ReturnType<ComponentsService["li
 
 export function MaintenancePage() {
   const timezone = usePageTimezone();
+  const { emailOff } = getRouteApi("/app").useLoaderData();
   const maintenance = useAppData<MaintenanceResponse>("/api/app/maintenance");
   const components = useAppData<ComponentsResponse>("/api/app/components");
   const pages = useStatusPages();
@@ -77,7 +79,9 @@ export function MaintenancePage() {
       </section>
       <form id="schedule-maintenance" className="data-card maintenance-schedule-card" onSubmit={schedule}>
         <div className="card-heading"><div><h2>Schedule maintenance</h2></div></div>
-        <p className="schedule-copy">{publicSelected ? "Components show Maintenance when work begins. Subscribers receive a reminder 24 hours before the start, unless this notice is already within that time." : "Selected pages show this window. Public subscribers do not receive a reminder."}</p>
+        <p className="schedule-copy">{!publicSelected ? "Selected pages show this window. Public subscribers do not receive a reminder."
+          : emailOff ? "Components show Maintenance when work begins. Email is turned off. Reminders can still use other configured channels."
+          : "Components show Maintenance when work begins. Subscribers receive a reminder 24 hours before the start, unless this notice is already within that time."}</p>
         <label className="form-label">Title<input required maxLength={250} value={title} onChange={event => setTitle(event.target.value)} placeholder="Database maintenance" /></label>
         <MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required />
         {(pages.data?.pages.length ?? 0) > 1 || pages.error ? <StatusPageSelection pages={pages} value={pagePaths} onChange={paths => { setPagePaths(paths); if (!paths.includes(PUBLIC_PAGE_PATH)) setPreviewOpen(false); }} disabled={saving} /> : null}

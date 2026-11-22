@@ -11,6 +11,8 @@ export type OperatorSessionView = {
   publicPageOrigin: string;
   timezone: string;
   pageName: string;
+  emailOff: boolean;
+  localPasskeys: "localhost" | "127.0.0.1" | null;
   /** The /app path whose reads `data` holds. */
   path: string;
   data: AppDataSnapshot;
@@ -28,7 +30,7 @@ function redirectToSignIn(requestUrl: URL): never {
 export const loadOperatorSession = createServerFn({ method: "GET" })
 .inputValidator(z.object({ path: z.string().regex(/^\/app(?:\/[^?#]*)?$/), view: z.string().max(40).optional() }))
 .handler(async ({ data: input }): Promise<OperatorSessionView> => {
-  const [{ getRequest, getRequestUrl, setResponseHeader }, { requestBindings }, { createApp }, { prepareAppMailBindings }, { operatorRequest }] = await Promise.all([
+  const [{ getRequest, getRequestUrl, setResponseHeader }, { requestBindings }, { createApp }, { prepareAppMailBindings, isLocalMailExecution }, { operatorRequest }] = await Promise.all([
     import("@tanstack/react-start/server"),
     import("../platform/bindings.server"),
     import("./server"),
@@ -67,5 +69,11 @@ export const loadOperatorSession = createServerFn({ method: "GET" })
   const data = Object.fromEntries(entries) as AppDataSnapshot;
   data["/api/app/session"] = { data: { operator: { ...operator }, publicPageHost: bindings.LAMP_PAGE_HOST }, error: null };
   data["/api/app/page-settings"] = { data: { settings }, error: null };
-  return { operator, pageName: settings.pageName, publicPageOrigin: publicPageOrigin(requestUrl, bindings.LAMP_PAGE_HOST), timezone: settings.timezone, path: input.path, data };
+  const host = requestUrl.hostname;
+  const localPasskeys = import.meta.env.DEV && session.kind === "dev" && bindings.RER_DEV_ORIGIN === requestUrl.origin
+    && bindings.RER_DEMO !== "1" && !bindings.RER_INSTALLATION_ID && requestUrl.protocol === "http:"
+    && (host === "localhost" || host === "127.0.0.1") ? host : null;
+  return { operator, pageName: settings.pageName, publicPageOrigin: publicPageOrigin(requestUrl, bindings.LAMP_PAGE_HOST),
+    timezone: settings.timezone, emailOff: bindings.MAIL_PROVIDER === "none" && !isLocalMailExecution(bindings),
+    localPasskeys, path: input.path, data };
 });

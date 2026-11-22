@@ -12,6 +12,7 @@ import {operatorHydrated} from './helpers/operator-hydrated.mjs';
 import {readDevKey,signInAs} from '@runeditrun/rer/internal/modules/operator-auth/dev/sign-in-as.mjs';
 import {createRedaction} from '@runeditrun/rer/redaction';
 import {operatorManagementFlow} from './helpers/operator-management-flow.mjs';
+import {localPasskeyFlow} from './helpers/local-passkey-flow.mjs';
 
 const owner='owner@example.test';
 const setupAccent='#486b51';
@@ -52,7 +53,7 @@ async function denied(origin,archive){for(const path of ['/cdn-cgi/local/explore
 
 async function setupAndProbe(root,env,port,origin){
  await writeFile(join(root,'setup-answers.json'),JSON.stringify({LAMP_ACCENT_COLOR:setupAccent}),{mode:0o600});
- const process=spawn(globalThis.process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','setup','--answers','setup-answers.json','--owner-email',owner,'--non-interactive','--port',String(port)],{cwd:root,env,stdio:['ignore','pipe','pipe']});
+ const process=spawn(globalThis.process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','setup','--answers','setup-answers.json','--owner-email',owner,'--non-interactive','--host','localhost','--port',String(port)],{cwd:root,env,stdio:['ignore','pipe','pipe']});
  // Capture credential-bearing output without forwarding it to the test reporter.
  process.stdout.resume();process.stderr.resume();let probed=false;
  const ended=new Promise(resolve=>process.once('exit',code=>resolve(code)));
@@ -101,7 +102,7 @@ test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, in
  const stop=async()=>{if(child&&child.exitCode===null){const stopped=new Promise(done=>child.once('close',done));child.kill('SIGTERM');await stopped;}child=undefined;};
  try{
     await workingCheckout(process.cwd(), root);
-  const port=await reservePort(),origin=`http://127.0.0.1:${port}`;
+  const port=await reservePort(),origin=`http://localhost:${port}`;
   await setupAndProbe(root,env,port,origin);
   const terminal=spawnSync(process.execPath,['scripts/signin-link.mjs','--email',owner,'--origin',origin],{cwd:root,env,encoding:'utf8'});
   assert.equal(terminal.status,0,'owner terminal issues a private sign-in link');
@@ -109,7 +110,7 @@ test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, in
   assert.ok(terminalToken);
   browser=await chromium.launch({headless:true,executablePath:process.env.LAMP_CHROMIUM_PATH,args:['--no-sandbox','--use-mock-keychain','--password-store=basic']});
    await mkdir(join(root,'exports'),{recursive:true});await writeFile(join(root,'exports/probe.rer'),'auth-journey-private-sentinel');await writeFile(join(root,'probe.rer'),'auth-journey-private-sentinel');
-   output='';child=spawn(process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','dev'],{cwd:root,env,stdio:['ignore','pipe','pipe']});child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>output+=b);
+   output='';child=spawn(process.execPath,['node_modules/@runeditrun/rer/bin/rer.mjs','dev','--host','localhost','--port',String(port)],{cwd:root,env,stdio:['ignore','pipe','pipe']});child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>output+=b);
    const deadline=Date.now()+180000;while(!output.includes('RER_READY ')&&child.exitCode===null&&Date.now()<deadline)await new Promise(done=>setTimeout(done,250));
    if(!output.includes('RER_READY ')){
     const redaction=createRedaction();redaction.addSecrets([await readDevKey(root),...(await readFile(join(root,'.dev.vars'),'utf8')).split('\n').map(line=>line.slice(line.indexOf('=')+1)).filter(Boolean)]);
@@ -129,6 +130,9 @@ test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, in
    {await devPage.getByRole('button',{name:"Skip, I'll fill it in"}).click();await devPage.getByRole('button',{name:'Edit page name'}).click();await devPage.getByLabel('Page name',{exact:true}).fill('Auth Journey');await devPage.getByRole('button',{name:'Open Lamp',exact:true}).click();await devPage.waitForURL('**/app');}
    await devPage.goto(origin+'/app/settings#look');await operatorHydrated(devPage);
    assert.equal((await devPage.getByLabel('Accent colour',{exact:true}).inputValue()).toLowerCase(),setupAccent);
+   const terminalLink=/^RER_OPEN (\S+)/m.exec(output)?.[1];
+   assert.ok(terminalLink,'rer provided the private terminal link');
+   await localPasskeyFlow({browser,ownerPage:devPage,origin,terminalLink});
    await devContext.close();
    const width=1440;
    {

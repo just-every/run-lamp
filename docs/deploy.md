@@ -16,11 +16,11 @@ your mail provider, or you can deliberately turn email off in step 6. On the
 Free path, enabled mail uses your own provider and an authenticated sender
 domain. Managed hosting can supply mail without your own provider account.
 
-You need the published Lamp checkout from [Run Lamp locally](../RUN-LOCALLY.md)
-and a Cloudflare account. Run each command from that checkout. The Run page
-starts `v1.11.26`. For another tag, use the guide in that tag's checkout.
-For enabled email, you also
-need a mail provider and an authenticated sender domain. Custom-domain hosting
+You need a Cloudflare account and the Lamp checkout selected by the
+[Run page](https://run-lamp.com/run), which points to the latest published
+release. Run each command from that checkout. If you choose another release,
+use the deploy guide inside its checkout.
+For enabled email, you also need a mail provider and an authenticated sender domain. Custom-domain hosting
 needs domains whose DNS records you can change; workers.dev hosting does not.
 
 After the curl install, if `~/.local/bin` is missing from your PATH, run the

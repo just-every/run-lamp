@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 
 import { useAppData } from "../../../app/client/ui/api";
 import { FormError, LoadingState } from "../../../app/client/ui/states";
@@ -15,6 +16,7 @@ export function SignInPane() {
   const { data, error, loading, refresh } = useAppData<SignInStatusView>("/api/app/sign-in");
   const [open, setOpen] = useState<SignInProviderId | null>(null);
   const [outcome, setOutcome] = useState<TestOutcome | null>(null);
+  const { localPasskeys } = getRouteApi("/app").useLoaderData();
   // The outcome of a Test sign-in rides in the address; read it once the page is live.
   useEffect(() => setOutcome(testOutcome(window.location.search)), []);
   // Confirming by email happens in another tab; coming back refreshes what the pane knows.
@@ -32,6 +34,8 @@ export function SignInPane() {
     {!data.canEdit && <p className="tool-note" role="status">Only the owner can change sign-in.</p>}
     {data.canEdit && data.unavailable && <p className="tool-note" role="status">{data.unavailable}</p>}
     {data.canEdit && !data.confirmed && !data.unavailable && <ConfirmIdentity />}
+    {data.canEdit && localPasskeys === "localhost" && <p className="tool-note"><a className="text-link" href="/auth/local/passkey">Set up a local passkey</a></p>}
+    {data.canEdit && localPasskeys === "127.0.0.1" && <p className="tool-note">To use a passkey, restart this checkout with <code>~/.local/bin/rer dev --host localhost</code> and open its private <code>RER_OPEN</code> link.</p>}
     <SwitchRow enabled={data.signInEnabled} canEdit={data.canEdit} required={data.requiredProvider !== null} onSaved={changed} />
     <RequiredSignIn key={data.requiredProvider ?? ""} view={data} onSaved={changed} />
     <ProviderRows providers={data.providers} requiredProvider={data.requiredProvider} canEdit={data.canEdit} unavailable={data.unavailable} editing={open}

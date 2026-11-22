@@ -37,10 +37,13 @@ export function channelSummary(channels: Channel[]) {
 }
 
 /** NOTIFY-007: subscriber channels per update; the page, feed and widget always update. */
-export function NotifyChannels({ channels, onChange }: { channels: Channel[]; onChange: (channels: Channel[]) => void }) {
+export function NotifyChannels({ channels, onChange, emailOff }: { channels: Channel[]; onChange: (channels: Channel[]) => void; emailOff: boolean }) {
   return <fieldset className="option-group">
     <legend className="sr-only">Notify</legend>
-    <div className="channel-checks">{CHANNELS.map(channel => <label key={channel.value} className="checkbox-label"><input type="checkbox" checked={channels.includes(channel.value)} onChange={() => onChange(channels.includes(channel.value) ? channels.filter(item => item !== channel.value) : [...channels, channel.value])} />{channel.label}</label>)}</div>
+    <div className="channel-checks">{CHANNELS.map(channel => {
+      const disabled = emailOff && channel.value === "email";
+      return <label key={channel.value} className="checkbox-label"><input type="checkbox" disabled={disabled} checked={channels.includes(channel.value)} onChange={() => onChange(channels.includes(channel.value) ? channels.filter(item => item !== channel.value) : [...channels, channel.value])} />{disabled ? "Email (turned off)" : channel.label}</label>;
+    })}</div>
   </fieldset>;
 }
 

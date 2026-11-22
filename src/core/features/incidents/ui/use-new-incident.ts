@@ -38,7 +38,7 @@ function remember(form: NewIncident | null) {
 }
 
 /** The new-incident screen: one form that creates the incident with its first update and publishes it in one action. */
-export function useNewIncident() {
+export function useNewIncident(emailOff: boolean) {
   const navigate = useNavigate();
   const { data: channelData } = useAppData<{ channels: unknown[] }>("/api/app/channels");
   const { data: socialData } = useAppData<{ postByDefault: boolean }>("/api/app/social");
@@ -103,7 +103,8 @@ export function useNewIncident() {
   };
 
   // Creates the incident with this update as its saved draft (UPDATE-005), or reports why not.
-  const channels = form.pagePaths.includes(PUBLIC_PAGE_PATH) ? form.channels : [];
+  const availableChannels = emailOff ? form.channels.filter(channel => channel !== "email") : form.channels;
+  const channels = form.pagePaths.includes(PUBLIC_PAGE_PATH) ? availableChannels : [];
   const create = async () => {
     setPublishing(true); setError(null);
     try {
@@ -141,5 +142,5 @@ export function useNewIncident() {
     await navigate({ to: "/app/incidents/$incidentId", params: { incidentId: incident.id }, state: (current) => ({ ...current, incidentNotice: notice }) });
   };
 
-  return { form, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate };
+  return { form, availableChannels, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate };
 }

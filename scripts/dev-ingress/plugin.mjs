@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
 import { isForwardingHeader, proofHeader, proofPayload } from './protocol.mjs';
 import { isSameOriginSubscriberPost } from '../../src/core/platform/development/subscriber-origin.mjs';
-import { isLocalPublicRead } from '../../src/core/platform/development/public-read.mjs';
+import { isLocalPublicRead, isLocalWidgetRead } from '../../src/core/platform/development/public-read.mjs';
 
 const virtualId = 'virtual:lamp-dev-ingress';
 const resolvedId = `\0${virtualId}`;
@@ -73,7 +73,9 @@ export function inspectIngress(request) {
   const port = Number(url.port || (protocol === 'https:' ? 443 : 80));
   const scheduledTrigger = scheduledPaths.includes(pathname) && port === request.socket.localPort && ['GET', 'HEAD'].includes(request.method);
   if (port !== publicPort(request.socket.localPort) && !scheduledTrigger) return null;
-  const publicRead = isLocalPublicRead(request.method, target, headers, url);
+  const publicRead = isLocalPublicRead(request.method, target, headers, url)
+    || (url.hostname !== new URL(process.env.RER_DEV_ORIGIN || `${protocol}//127.0.0.1`).hostname
+      && isLocalWidgetRead(request.method, target, headers, url));
   if (headers.has('origin') && headers.get('origin') !== url.origin && !publicRead
     && !isSameOriginSubscriberPost(request.method, target, headers.get('origin'), headers.get('sec-fetch-site'))) return null;
   const fetchSite = headers.get('sec-fetch-site');

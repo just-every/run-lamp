@@ -25,7 +25,12 @@
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [],
+  "migrations": [
+    {
+      "id": "0087_local_passkeys.sql",
+      "buyerSteps": "Apply with the standard migrations. Passkey credentials are used only by localhost development and stay outside portable archives."
+    }
+  ],
   "breaking": false,
   "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Update with frozen dependencies and deploy with the same environment and input file. Preserve the original deployment checkout and account credentials for rer signin, the existing mail configuration, and public addresses and feed identity. Check local owner entry, deployed owner sign-in, and Staff and named audience pages with saved accents, both with and without an operator session. For a Business installation, report the first-owner link only through session.report with the same HTTPS host and port as the tool address. This release adds no migrations. Retain the pre-upgrade backup and earlier release and migration records."
 }

@@ -23,7 +23,7 @@ export async function installation(mode, guide) {
   const env = {
     ...Object.fromEntries([
       "HTTP_PROXY", "HTTPS_PROXY", "NO_PROXY", "NODE_EXTRA_CA_CERTS",
-      "SSL_CERT_FILE", "PLAYWRIGHT_BROWSERS_PATH",
+      "SSL_CERT_FILE", "PLAYWRIGHT_BROWSERS_PATH", "RER_OWNER_BROWSER_HOME",
     ].filter(key => process.env[key]).map(key => [key, process.env[key]])),
     HOME: home,
     PATH: [join(home, ".local/bin"), join(home, ".local/node/bin"), process.env.PATH].join(delimiter),
@@ -91,7 +91,7 @@ export async function installation(mode, guide) {
     }
   }
   try {
-    // README supplies the public installer and exact clone command. The
+    // README links to the Run page for the public installer and exact clone command. The
     // standalone installer journey discovers its public entry from the Run page.
     const start = guide ?? await publicLaunch(source);
     const installerPath = join(directory, "install-rer.sh");

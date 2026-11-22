@@ -11,32 +11,25 @@ function parseStartLine(line, message) {
   return { installer, tag, repository, folder, timeout };
 }
 
-export async function readmeGuide(root) {
+export async function readmeGuide(root, browser) {
   const readme = await readFile(join(root, "README.md"), "utf8");
   assert.match(readme, /\]\(RUN-LOCALLY\.md\)/, "README links to the canonical local guide");
   const guide = await readFile(join(root, "RUN-LOCALLY.md"), "utf8");
+  const runPage = /\[Run page\]\((https:\/\/[^)]+)\)/.exec(readme)?.[1];
+  assert.ok(runPage && guide.includes(`[Run page](${runPage})`), "README and the local guide lead to the same Run page");
   const blocks = [...guide.matchAll(/```sh\s*\n([^`]+)```/g)].map(match => match[1].trim());
-  const start = parseStartLine(blocks[0], "the guide's first command installs rer, clones a release tag and starts Lamp");
-  const restart = blocks.slice(1).find(block => block === "rer dev");
+  const start = await readRunPage(browser, runPage);
+  const restart = blocks.find(block => block === "rer dev");
   assert.equal(restart, "rer dev", "the guide documents one dev command to restart Lamp");
   return { ...start, restartArgs: restart.split(" ").slice(1) };
 }
 
-export async function checkRunPage(browser, site, guide) {
+export async function readRunPage(browser, url) {
   const page = await browser.newPage();
   try {
-    const response = await page.goto(new URL("/run", site).href);
-    assert.ok(response?.ok(), "the local Run page renders successfully");
+    const response = await page.goto(url);
+    assert.ok(response?.ok(), "the Run page renders successfully");
     const snippet = await page.locator("section.self pre code").first().textContent();
-    const command = parseStartLine(snippet.trim(), "the Run page shows a tagged one-line launch");
-    // The guide can point to the last published release while the candidate's
-    // Run page already carries the next version. The launch steps must agree.
-    assert.deepEqual({ ...command, repository: command.repository.replace(/\.git$/, "") }, {
-      installer: guide.installer,
-      tag: command.tag,
-      repository: guide.repository.replace(/\.git$/, ""),
-      folder: guide.folder,
-      timeout: guide.timeout,
-    }, "the guide and the Run page use the same tagged launch steps");
+    return parseStartLine(snippet.trim(), "the Run page shows a tagged one-line launch");
   } finally { await page.close(); }
 }

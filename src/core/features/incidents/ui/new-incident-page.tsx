@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { useId, useState } from "react";
 
 import { INCIDENT_LIFECYCLES, type IncidentLifecycle } from "../../../shared/domain";
@@ -23,7 +23,8 @@ import type { ComponentsService } from "../../components";
 export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
   const timezone = usePageTimezone();
   const pages = useStatusPages();
-  const { form, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate } = useNewIncident();
+  const { emailOff } = getRouteApi("/app").useLoaderData();
+  const { form, availableChannels, selectedClaims, setForm, setUpdate, setChannels, preview, previewError, timeErrors, setTimeErrors, publishable, publishing, error, publish, savable, saveDraft, applyTemplate } = useNewIncident(emailOff);
   const { data: componentData } = useAppData<{ components: Awaited<ReturnType<ComponentsService["list"]>> }>("/api/app/components");
   const [openedAtError, setOpenedAtError] = useState<string | null>(null);
   const [shownFields, setShownFields] = useState({ whatStillWorks: false, details: false, openedAt: false });
@@ -46,7 +47,7 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
     ] },
     { caption: "Send", entries: [
       { key: "publication-pages", label: "Status pages…", glyph: "page", panel: "publication-pages" },
-      ...(publicSelected ? [{ key: "notify", label: "Notify…", glyph: "send" as const, value: channelSummary(form.channels), panel: "notify" }] : []),
+      ...(publicSelected ? [{ key: "notify", label: "Notify…", glyph: "send" as const, value: channelSummary(availableChannels), panel: "notify" }] : []),
       { key: "schedule", label: "Schedule…", glyph: "calendar", value: form.timing.mode === "schedule" && form.timing.at ? publishTime(form.timing.at, timezone) : undefined, panel: "timing", onSelect: () => chooseTiming("schedule") },
       { key: "backdate", label: "Backdate…", glyph: "clock", value: form.timing.mode === "backdate" && form.timing.at ? publishTime(form.timing.at, timezone) : undefined, panel: "timing", onSelect: () => chooseTiming("backdate") },
     ] },
@@ -83,11 +84,11 @@ export function NewIncidentPage({ onClose }: { onClose?: () => void }) {
           {error ? <FormError>{error}</FormError> : null}
         </form>
       </section>
-      <div className="incident-side"><IncidentPreview preview={preview} error={previewError} publicPage={publicSelected} /></div>
+      <div className="incident-side"><IncidentPreview preview={preview} error={previewError} publicPage={publicSelected} emailOff={emailOff} /></div>
       <div className="composer-publish" inert={publishing}>
-        <UpdateOptions groups={groups} footer={<><span className="publish-hint">{publishHint(publicSelected ? form.channels : [], form.timing, timezone)}</span><Button type="button" disabled={!publishable || publishing || Boolean(openedAtError)} aria-describedby={pending ? publishReasonId : undefined} onClick={() => void publish()}>{publishing ? "Publishing…" : form.timing.mode === "schedule" ? "Schedule" : form.timing.mode === "backdate" ? "Publish historical update" : "Publish"}</Button>{(pages.data?.pages.length ?? 0) > 1 || !publicSelected ? <p className="publish-reason">Pages: {selectedPages || "choose a status page"}</p> : null}{pending ? <p id={publishReasonId} className="publish-reason" role="status">{componentChoiceReason(name(pending.componentId))}</p> : null}</>}>
+        <UpdateOptions groups={groups} footer={<><span className="publish-hint">{publishHint(publicSelected ? availableChannels : [], form.timing, timezone)}</span><Button type="button" disabled={!publishable || publishing || Boolean(openedAtError)} aria-describedby={pending ? publishReasonId : undefined} onClick={() => void publish()}>{publishing ? "Publishing…" : form.timing.mode === "schedule" ? "Schedule" : form.timing.mode === "backdate" ? "Publish historical update" : "Publish"}</Button>{(pages.data?.pages.length ?? 0) > 1 || !publicSelected ? <p className="publish-reason">Pages: {selectedPages || "choose a status page"}</p> : null}{pending ? <p id={publishReasonId} className="publish-reason" role="status">{componentChoiceReason(name(pending.componentId))}</p> : null}</>}>
           <OptionPanel name="publication-pages" title="Status pages"><StatusPageSelection pages={pages} value={form.pagePaths} onChange={pagePaths => setForm(current => ({ ...current, pagePaths }))} /></OptionPanel>
-          {publicSelected ? <OptionPanel name="notify" title="Notify"><NotifyChannels channels={form.channels} onChange={setChannels} /></OptionPanel> : null}
+          {publicSelected ? <OptionPanel name="notify" title="Notify"><NotifyChannels channels={availableChannels} onChange={setChannels} emailOff={emailOff} /></OptionPanel> : null}
           <OptionPanel name="timing" title="When it publishes"><PublishTimingField timing={form.timing} timezone={timezone} error={timeErrors.timing} onChange={(timing) => setForm(current => ({ ...current, timing }))} onError={(message) => setTimeErrors(current => ({ ...current, timing: message }))} /></OptionPanel>
           <OptionPanel name="relationship" title="Relationship"><ComponentRelationships rows={relationshipRows} onChange={(componentId, relationship) => setForm(current => ({ ...current, claims: current.claims.map(claim => claim.componentId === componentId ? { ...claim, relationship } : claim) }))} /></OptionPanel>
           <TemplateControls draft={update} components={selectedClaims} onApply={async (template) => applyTemplate(template)} captureUpdate={() => () => true} />

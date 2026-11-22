@@ -9,7 +9,7 @@ import { PUBLIC_PAGE_PATH, type StatusPage } from "../../page-settings/ui/status
 import { PreviewCard } from "./incident-composer-tools";
 
 /** UPDATE-004: the draft as the public page and as the notification email render it, one view at a time. */
-export function IncidentPreview({ preview, error, headingRef, hidden, publicPage = true }: { hidden?: boolean; publicPage?: boolean; preview: RenderedIncidentUpdate | null; error: string | null; headingRef?: Ref<HTMLHeadingElement> }) {
+export function IncidentPreview({ preview, error, headingRef, hidden, publicPage = true, emailOff }: { hidden?: boolean; publicPage?: boolean; emailOff: boolean; preview: RenderedIncidentUpdate | null; error: string | null; headingRef?: Ref<HTMLHeadingElement> }) {
   const timezone = usePageTimezone();
   const nextUpdate = preview?.public.fields.find(field => field.instant)?.instant;
   const [view, setView] = useState<"page" | "email">("page");
@@ -18,14 +18,15 @@ export function IncidentPreview({ preview, error, headingRef, hidden, publicPage
       <h2 id="preview-title" className="eyebrow" ref={headingRef}>Preview</h2>
       {publicPage ? <div className="preview-switch" role="group" aria-label="Preview as">
         <button type="button" aria-pressed={view === "page"} onClick={() => setView("page")}>Page</button>
-        <button type="button" aria-pressed={view === "email"} onClick={() => setView("email")}>Email</button>
+        <button type="button" aria-pressed={view === "email"} onClick={() => setView("email")}>{emailOff ? "Email (off)" : "Email"}</button>
       </div> : null}
     </div>
     {error ? <FormError>{error}</FormError> : !preview ? <LoadingState>Rendering this draft…</LoadingState> : !publicPage || view === "page"
       ? <PreviewCard title={publicPage ? "Public page" : "Selected pages"} heading={preview.public.heading} lifecycle={preview.public.lifecycle} fields={preview.public.fields} />
       : <section className="preview-card email-preview">
         <p className="preview-type">Notification email</p>
-        {preview.email.deliverySuppressed ? <p role="status">{preview.email.deliveryNotice}</p> : null}
+        {emailOff ? <p role="status">Email is turned off for this installation.</p>
+          : preview.email.deliverySuppressed ? <p role="status">{preview.email.deliveryNotice}</p> : null}
         <dl>{preview.email.from && !preview.email.deliverySuppressed ? <div><dt>From</dt><dd>{preview.email.from}</dd></div> : null}{preview.email.replyTo ? <div><dt>Reply-To</dt><dd>{preview.email.replyTo}</dd></div> : null}</dl>
         <h3>{preview.email.subject}</h3>
         {preview.email.html ? <EmailMessage key={preview.email.html} html={preview.email.html} /> : <div className="email-preview-text">{preview.email.plainText}</div>}

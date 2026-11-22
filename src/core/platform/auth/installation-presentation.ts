@@ -2,8 +2,7 @@ import { parse, parseFragment, serialize, type DefaultTreeAdapterMap } from "par
 
 const ssoNotice = `<p class="notice" role="status">Your organization requires single sign-on (SSO). Use your sign-in provider.</p>
 <p>For emergency access, the deployment owner can run <code>rer signin</code> from the checkout that deployed this environment.</p>`;
-const terminalRecovery = `<p>If you see 'command not found', run <code>~/.local/bin/rer cli path</code> and paste the line it prints.</p>`;
-export const terminalHelp = `<p>From your project folder, run <code>~/.local/bin/rer dev --as owner</code>.</p>${terminalRecovery}`;
+const terminalHelp = `<p>On this computer, paste the private <code>RER_OPEN</code> link from your terminal into this tab. For a fresh link, run <code>~/.local/bin/rer dev --as owner</code> from your Lamp folder.</p>`;
 
 type Element = DefaultTreeAdapterMap["element"];
 type Parent = DefaultTreeAdapterMap["document"] | DefaultTreeAdapterMap["documentFragment"] | Element;
@@ -11,7 +10,7 @@ const hasClass = (element: Element, name: string) => element.attrs.some(attribut
 const setText = (element: Element, value: string) => { element.childNodes = [{ nodeName: "#text", value, parentNode: element }]; };
 
 /** Preserve the native sign-in controls and headers in both Worker and Node handlers. */
-export async function installationSignIn(response: Response, name: string, local = false, hasTerminalHelp = false, required = false): Promise<Response> {
+export async function installationSignIn(response: Response, name: string, local = false, terminalEntry = false, required = false): Promise<Response> {
   if (!response.headers.get("content-type")?.includes("text/html")) return response;
   const label = name.trim() || "Lamp";
   const document = parse(await response.text());
@@ -37,8 +36,18 @@ export async function installationSignIn(response: Response, name: string, local
       }
       rewrite(element);
       if (element.tagName === "main" && local) {
-        const help = parseFragment(hasTerminalHelp ? terminalRecovery : terminalHelp);
-        for (const child of help.childNodes) { child.parentNode = element; element.childNodes.push(child); }
+        const help = parseFragment(terminalHelp).childNodes;
+        for (const child of help) child.parentNode = element;
+        if (terminalEntry) {
+          element.childNodes = element.childNodes.flatMap(child => {
+            if (!("tagName" in child) || child.tagName !== "p") return [child];
+            const text = child.childNodes.find(node => "value" in node)?.value ?? "";
+            if (text.startsWith("It opens only from that computer.")) return help;
+            return text.includes("command not found") ? [] : [child];
+          });
+        } else {
+          element.childNodes.push(...help);
+        }
       }
     }
   }

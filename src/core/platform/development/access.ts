@@ -1,5 +1,5 @@
 import { isSameOriginSubscriberPost } from './subscriber-origin.mjs';
-import { isLocalPublicRead } from './public-read.mjs';
+import { isLocalPublicRead, isLocalWidgetRead } from './public-read.mjs';
 
 /** The compiler removes development access from the emitted production Worker.
  * A runtime binding, request header or localhost URL cannot turn it back on. */
@@ -47,9 +47,10 @@ function localDevelopmentRequest(bindings: DevelopmentBindings, request: Request
   const host = request.headers.get('host');
   if (host !== null && (!localAuthority(host) || new URL(`${url.protocol}//${host}`).host !== url.host)) return false;
   const publicRead = admitPublicReads
-    && isLocalPublicRead(request.method, `${url.pathname}${url.search}`, request.headers, url)
     && url.hostname === bindings.LAMP_PAGE_HOST.toLowerCase()
-    && new URL(request.headers.get('origin')!).hostname === bindings.LAMP_APP_HOST.toLowerCase();
+    && (isLocalWidgetRead(request.method, `${url.pathname}${url.search}`, request.headers, url)
+      || (isLocalPublicRead(request.method, `${url.pathname}${url.search}`, request.headers, url)
+        && new URL(request.headers.get('origin')!).hostname === bindings.LAMP_APP_HOST.toLowerCase()));
   if (request.headers.get('sec-fetch-site') === 'cross-site' && !publicRead && !(admitCrossSurfaceNavigation && crossSurfaceNavigation(bindings, request, url))) return false;
   const origin = request.headers.get('origin');
   if (origin !== null && origin !== url.origin && !publicRead

@@ -1,15 +1,11 @@
 # Run it locally
 
 Lamp runs on your computer without a Cloudflare account or mail credentials;
-development mail is silently suppressed. Start it with the same line as the
-[Run page](https://run-lamp.com/run):
-
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh && git clone --branch v1.11.26 https://github.com/just-every/run-lamp.git && (cd run-lamp && RER_OWNER_READY_TIMEOUT_MS=300000 "$HOME/.local/bin/rer" dev)
-```
+development mail is silently suppressed. Copy the Linux, macOS or WSL2
+launch command from the [Run page](https://run-lamp.com/run).
 
 Git is required; the installer brings Node when needed and rer brings pnpm.
-This clones the published `v1.11.26` release into `run-lamp` and starts it.
+The command clones the latest published release into `run-lamp` and starts it.
 The release's first owner-entry check can include a Chromium download. The
 one-liner allows up to five minutes for that check. Start from the same
 checkout next time with `rer dev`.

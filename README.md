@@ -38,13 +38,10 @@ information.
 
 ## Run it locally
 
-```sh
-curl -fsSL https://runeditrun.com/install.sh | sh && git clone --branch v1.11.26 https://github.com/just-every/run-lamp.git && (cd run-lamp && RER_OWNER_READY_TIMEOUT_MS=300000 "$HOME/.local/bin/rer" dev)
-```
-
-That one line gets Lamp, brings Node and pnpm, installs everything, makes you the
-owner and prints a link that opens Lamp signed in. Git is required. See the
-[Run page](https://run-lamp.com/run) for the same launch and hosting options.
+Copy the Linux, macOS or WSL2 launch command from the
+[Run page](https://run-lamp.com/run). It selects the latest Lamp release,
+installs its dependencies, makes you the owner and prints the private
+`RER_OPEN` link that opens Lamp signed in. Git is required.
 
 After the curl install, to make `rer` available by name in new terminals, run:
 
@@ -53,7 +50,6 @@ After the curl install, to make `rer` available by name in new terminals, run:
 ```
 
 Paste the line it prints for your shell, then open a new Terminal window.
-If you see 'command not found', run `~/.local/bin/rer cli path` and paste the line it prints.
 To start Lamp again later:
 
 ```sh
@@ -77,9 +73,9 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 
 ## Source and tooling versions
 
-The [Run page's](https://run-lamp.com/run) command above clones the published
-`v1.11.26` release into `run-lamp`. The first launch allows up to five minutes
-for the owner-entry check, including the Chromium download on that release.
+The [Run page](https://run-lamp.com/run) launch command clones the latest
+published release into `run-lamp`. The first launch allows up to five minutes
+for the owner-entry check, which can include a Chromium download.
 After that, run `~/.local/bin/rer dev` from the same folder. The exact
 `@runeditrun/rer` pin is in `package.json` under `devDependencies`, locked in
 `pnpm-lock.yaml`. `package.json` and `RELEASE.json` name this checkout's Lamp
