@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "blob": "939bca110de684d4ae4b19d2b7fe30a716a9b137",
+      "bytes": 3790,
+      "path": "REPORT.md",
+      "sha256": "6ed14b90d9dbba691f34603dcd3cb7cc99a59b1ad8dcc6b2577eea64c6a2fe68"
+    },
+    {
+      "blob": "9f72ae31152fcdd4aad55b6b99b0bc98f7b53b79",
+      "bytes": 227,
+      "path": "ci-discovery.json",
+      "sha256": "2ad95f942e055c4b5375cac3aaca34b5675d0072942329dcb83708ed636455df"
+    },
+    {
+      "blob": "347a034664fbe51ebc1d4ed7d9976eb8c11806c3",
+      "bytes": 493,
+      "path": "ci-jobs.json",
+      "sha256": "38f3d1dffd67e5eaa5341fed98bdba52f1b2047c158856a990fb49a0116a40c8"
+    },
+    {
+      "blob": "1fcadea3cb6556bff041bada99ae235cca6c7997",
+      "bytes": 98,
+      "path": "contract-generation.txt",
+      "sha256": "c13b82a5e8c5eb726365d51a834d1ede37697c26e0828a2aa5d52274278a4f7a"
+    },
+    {
+      "blob": "181d1890d728ba777a4c5d6df9bbc16b99e21137",
+      "bytes": 112,
+      "path": "contract-restored-check.txt",
+      "sha256": "0f6df8eed24b7dd6877233908251804714df0236f320e01f00478c5cdf0d2786"
+    },
+    {
+      "blob": "e2ce6d0d52c4330dd4dbf03973658a6fb8e35258",
+      "bytes": 519,
+      "path": "counts.txt",
+      "sha256": "371fbf6ea02d4b610f8fb3b08009221ed179fd9c8f3dd0fb02df51f287b923a9"
+    },
+    {
+      "blob": "7fa2a72b9f82757a16d553cd26662d780b8056b4",
+      "bytes": 869,
+      "path": "local-checks.txt",
+      "sha256": "7e74a61d6c70b2247384e74cab62d6bde1f0ab2784581ac2f517cc5973b98d48"
+    },
+    {
+      "blob": "843d4ec31017bb26861cf0260a4e515248213b0c",
+      "bytes": 2711,
+      "path": "receipt.txt",
+      "sha256": "80f5301bffaf88fa6c39002c7e34d6f46c5ef9d0c6dbfd177b4c688edaa81abc"
+    },
+    {
+      "blob": "7596905d39a37185377a2a28be87344c22ed91a4",
+      "bytes": 131,
+      "path": "release-after.txt",
+      "sha256": "8ecac68fc570e81a9c9d074cc4e12efb8118f3a527ea05791d5eeffbf31a6512"
+    },
+    {
+      "blob": "85ff6eeac32bc0847468bd8bd8fa7ce0c942d384",
+      "bytes": 258,
+      "path": "release-before.txt",
+      "sha256": "b39a2a21837939d531a179f033879f813c18379adb8ef91b2447f8ac69c82091"
+    },
+    {
+      "blob": "e3aff4a33f91c05608423a3befec6b438c9e7451",
+      "bytes": 105,
+      "path": "source-lock.txt",
+      "sha256": "6dadfbc30dc0df19214ebaf571ac8b8dc4aea6e1cdbd6cf30eb5ad3c230a701e"
+    }
+  ],
+  "product_branch": "cloud/sd-lamp-notify-aud-1-c1",
+  "product_head": "3d7619d005a5a0a5f9e4574d0c9325436fa0999c",
+  "ref": "refs/heads/evidence/sd-lamp-notify-aud-1-c1",
+  "repository": "just-every/run-lamp",
+  "schema": 1,
+  "tag": "sd-lamp-notify-aud-1-c1"
+}

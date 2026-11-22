@@ -1,0 +1,24 @@
+Recorded at 2026-11-22T00:48:20Z
+Head 3d7619d005a5a0a5f9e4574d0c9325436fa0999c
+
+Build
+Your application is built
+build: complete (exit 0)
+
+Migration ledger
+✔ Setup resumes migration apply, backfills the installed-health ledger and stops safely on interruption or without progress (80278.706809ms)
+ℹ PROBE: fresh apply, re-deploy, missing/empty/subset backfill -> /health available, 84, 7acb47345e8d46efbd70ce9bd7a7ed8b852522f955c8fc0f295a6327af7f1979
+ℹ PROBE: clean early return after 59 -> same setup command finishes 84 migrations
+ℹ PROBE: made no progress -> stops with 0/84, no page settings
+ℹ PROBE: five-pass migration budget -> stops with 70/84, no page settings
+ℹ PROBE: Synthetic interruption -> stops with 59/84, no page settings
+ℹ tests 1
+ℹ pass 1
+ℹ fail 0
+
+Typecheck
+pnpm run typecheck: exit 0
+
+Migrations in carrier before and after
+84
+84

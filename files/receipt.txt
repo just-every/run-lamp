@@ -1,0 +1,29 @@
+Recorded at 2026-11-22T00:50:01Z
+Product branch cloud/sd-lamp-notify-aud-1-c1
+Product head 3d7619d005a5a0a5f9e4574d0c9325436fa0999c
+Product push verified by remote branch advertisement.
+Identity inspected across all three candidate commits, including their trailers. All three carry the fleet author and committer names and addresses and have no trailers.
+Full publication scan is deferred to the Mac lander per the cloud instructions.
+
+Exact-SHA Verify run 44968385566 completed with failure.
+Build job 137042520966 stopped at the generated ACCEPTANCE.md comparison. The build artifact was never produced.
+Verification aggregator job 137042598076 reported missing build and shard artifacts. The shards were skipped.
+The generated-view exception applies to this candidate. CI did not reach validate:release, which passed locally on this exact head.
+
+Build extraction
+build	Build the production Worker once	2026-11-22T00:48:36.7946205Z Contract prose: 0 errors, 0 warnings.
+build	Build the production Worker once	2026-11-22T00:48:36.8822082Z ACCEPTANCE.md: generated content differs; run contract-docs write.
+build	Retain commit-bound build completion	2026-11-22T00:48:37.1349808Z ##[error]No files were found with the provided path: /home/runner/work/_temp/lamp-verification/ci-shards/build.json. No artifacts will be uploaded.
+
+Verify extraction
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:45.0669772Z   SHARDS_RESULT: skipped
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5064665Z build: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5065360Z ownership: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5065887Z portability: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5066393Z imports: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5066864Z composer: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5067355Z public-pages: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5070699Z delivery: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5071088Z public: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5071352Z runtime: missing shard artifact
+verify	Require every planned command to succeed on this commit	2026-11-22T00:48:47.5071609Z demo: missing shard artifact

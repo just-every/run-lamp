@@ -1,0 +1,7 @@
+main 245 { partial: 123, done: 66, missing: 56 }
+[ [ 'NOTIFY-019', 'partial' ], [ 'NOTIFY-022', 'partial' ] ]
+carrier before 245 { partial: 123, done: 66, missing: 56 }
+[ [ 'NOTIFY-019', 'partial' ], [ 'NOTIFY-022', 'partial' ] ]
+carrier after 245 { partial: 123, done: 66, missing: 56 }
+[ [ 'NOTIFY-019', 'partial' ], [ 'NOTIFY-022', 'partial' ] ]
+Verification plan: 9 test shards and one shared build, 36 routine test files, 119 registered cases (including release qualification) + 10 assertion scripts = 129 checks.
