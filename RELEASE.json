@@ -9,6 +9,10 @@
     {
       "id": "0084_status_pages.sql",
       "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration keeps existing incident and maintenance records on the public page and adds private page settings and publication assignments."
+    },
+    {
+      "id": "0085_status_page_email_branding.sql",
+      "buyerSteps": "Apply through the standard deploy before starting the updated Worker. The migration adds storage for email branding overrides on individual status pages."
     }
   ],
   "breaking": false,
