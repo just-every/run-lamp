@@ -1,6 +1,6 @@
 {
   "name": "lamp",
-  "version": "1.11.30",
+  "version": "1.11.31",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.12.4",
@@ -86,7 +86,7 @@
     "@cloudflare/vite-plugin": "1.54.5",
     "@cloudflare/workers-types": "5.20260908.1",
     "@playwright/test": "1.63.0",
-    "@runeditrun/rer": "0.2.129",
+    "@runeditrun/rer": "0.2.131",
     "@simplewebauthn/server": "14.0.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/css-tree": "^3.2.0",
@@ -112,7 +112,7 @@
   "pnpm": {
     "patchedDependencies": {
       "picomatch@4.0.7": "patches/picomatch@4.0.7.patch",
-      "@runeditrun/rer@0.2.129": "patches/@runeditrun__rer@0.2.129.patch"
+      "@runeditrun/rer@0.2.131": "patches/@runeditrun__rer@0.2.131.patch"
     },
     "onlyBuiltDependencies": [
       "esbuild",

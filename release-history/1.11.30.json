@@ -1,0 +1,31 @@
+{
+  "version": "1.11.30",
+  "previousVersion": "1.11.29",
+  "date": "2026-11-22",
+  "publicReleaseNotes": "- **Hosted backups handle files that disappear during export.** Lamp checks R2 again when an object vanishes during the copy and lists any skipped objects in the console and backup manifest. An interrupted export leaves an `.incomplete` marker. Retry in a new empty folder.\n- **Email controls follow the mail setting locally and on hosted installations.** When email is off, incident publishing hides the Email option and maintenance hides the email preview.\n- **Maintenance shows which reminder channels are active.** When email is off, the public schedule names the active Webhook, SMS, Slack or Teams channels, or says when no active subscriptions can receive the reminder. Staff-only notices still have a page preview.\n- **Publish a completed incident report in one click.** Publish report saves any unsaved changes and publishes the completed report.\n- **Local passkey challenges are tracked per attempt.** Starting another sign-in or enrolment in the same browser no longer replaces a pending challenge.\n\n### Upgrading from 1.11.29\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.30`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check hosted backup completion, publishing with email off, the Staff-only maintenance preview and local passkey sign-in.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "OPERATIONS.md",
+      "section": "Portable backups and restore",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "The hosted backup instructions explain skipped storage objects and interrupted exports.",
+      "was": "An object that disappeared during the copy stopped the export, leaving the folder without a completed manifest.",
+      "now": "The export re-lists storage once and records skipped objects. Interrupted exports leave an .incomplete marker and must be retried in a new empty folder."
+    },
+    {
+      "document": "docs/backups-and-recovery.md",
+      "section": "Back up a hosted installation",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "The hosted backup instructions explain skipped storage objects and interrupted exports.",
+      "was": "An object that disappeared during the copy stopped the export, leaving the folder without a completed manifest.",
+      "now": "The export re-lists storage once and records skipped objects. Interrupted exports leave an .incomplete marker and must be retried in a new empty folder."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve deployed mail settings, public addresses and feed identity. Review any skipped objects in the hosted backup manifest and retry an interrupted export in a new empty folder. Verify incident publishing and maintenance with email off, preview a Staff-only notice, publish a completed report and check local passkey sign-in."
+}

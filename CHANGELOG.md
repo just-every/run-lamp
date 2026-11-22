@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.31
+
+- **Incident previews follow the mail setting.** With email off, the incident composer offers only the page preview. The Email tab is hidden when drafting or editing an incident update.
+- **Hosted terminal sign-in returns to the Staff page you opened.** Open the one-time owner link in the same browser that opened the protected page to return to its original address, including its query string.
+- **Cloudflare dry-run errors explain where to put credentials.** Set the account ID and API token together in the shell environment or together in the private deployment file. The deployment guide also explains what to do when a credential helper injects the token.
+- **Local first start uses rer 0.2.131.** Lamp can check the owner sign-in page on macOS with an isolated home directory. While Lamp starts, the proxy returns a retryable 503 and the launcher reports progress.
+
+### Upgrading from 1.11.30
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.31`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check incident previews with email off, hosted terminal sign-in from a protected Staff URL and a local first start.
+
 ## 1.11.30
 
 - **Hosted backups handle files that disappear during export.** Lamp checks R2 again when an object vanishes during the copy and lists any skipped objects in the console and backup manifest. An interrupted export leaves an `.incomplete` marker. Retry in a new empty folder.

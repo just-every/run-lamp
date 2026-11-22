@@ -496,7 +496,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "d501970cda41f6c3785b5e26145d18ee4967f8b63ef3e89c2c171254dc891ee1",
+      "sha256": "3d9bd48da24d8ace52c01ea5cfc5a4b02048d9bb5163c48179f0aeed99b53bba",
       "executable": false
     },
     "CLAUDE.md": {
@@ -548,7 +548,7 @@
       "executable": false
     },
     "docs/accessibility/vpat.md": {
-      "sha256": "9b9faa046d21137e512b54071f2e1edba5850c7eb822c529f461534c4a018f82",
+      "sha256": "1b13dd044ce47a59785df6ab2be32ce3a89ed6319f65772d2e956d1c539fed91",
       "executable": false
     },
     "docs/ai-assistance.md": {
@@ -2656,10 +2656,10 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "8bf0182528b96135d32a72369d822c8044854f392faa5d3b60f3822faf324c57",
+      "sha256": "608dcc375064dc7df71eed0f5c11e0635d20926e4b9653bf3ea07bafb2332bed",
       "executable": false
     },
-    "patches/@runeditrun__rer@0.2.129.patch": {
+    "patches/@runeditrun__rer@0.2.131.patch": {
       "sha256": "8351feb8bb264837718567cb8b142910a15f1315b897a8899ee66aeff6e0784c",
       "executable": false
     },
@@ -2668,7 +2668,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "161b92bfeb35b69c384e02eae3836d6e1eea36024325b82ab093ef43e8ef8d15",
+      "sha256": "a07e6c06b5cdc8986973646fa723aa10f40328f091d6b3cd0771a0f5f5d33b55",
       "executable": false
     },
     "public/app-assets/brand/lamp-mark.svg": {
@@ -2895,6 +2895,14 @@
       "sha256": "7a9e440bbbc09f29e05fde02249aba032de1d113ec1b0bf216894a9b6066520d",
       "executable": false
     },
+    "release-history/1.11.30.CONTRACT.md": {
+      "sha256": "d1afd79bd65d4a7b185a2ea5a670050de0c1699390db165cc62c0fecb4b31ed3",
+      "executable": false
+    },
+    "release-history/1.11.30.json": {
+      "sha256": "5905619aa799ca77dd78de493b29a935e0e1af2047e4f5fea61d7f6420cf1ff7",
+      "executable": false
+    },
     "release-history/1.11.4.CONTRACT.md": {
       "sha256": "2a72e905c96ba05640e2b01ac04d573651f0cfe4f597d42e4895ef32de961a35",
       "executable": false
@@ -3040,7 +3048,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "5905619aa799ca77dd78de493b29a935e0e1af2047e4f5fea61d7f6420cf1ff7",
+      "sha256": "eb77205f1c326e4f3e9a401d5cc252625d79f8ba7db7499ef506564105ad022c",
       "executable": false
     },
     "rer-packaging.json": {
@@ -4184,7 +4192,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "2ba64f225f758816d19f9fe8bb7b31418f430c6373ca640f4506b0c4fa137966",
+      "sha256": "a22db12008b0dac8549988636e4f136ba24564e6e7064410bc4e12e8bc60b7f4",
       "executable": false
     },
     "src/base/actor.ts": {
