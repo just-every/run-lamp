@@ -61,10 +61,10 @@ The exact candidate commit is fetched from the calling checkout after the public
 clone, so unpublished commits work too. Tracked working changes are copied into
 that candidate. They install real
 frozen dependencies without sharing node_modules or copying private state.
-The README journey follows README → RUN-LOCALLY, runs the guide's installer
-and tagged clone steps, and runs its bare `rer dev` command from the candidate
-with an isolated free port. It checks that the candidate's rendered Run page
-uses the same launch steps as the guide. The installer journey launches
+The README journey runs the README's installer and published-release checkout,
+then starts the candidate with the local guide's bare `rer dev` command on an
+isolated free port. It checks that the candidate's Run page shows the release
+reported by GitHub and offers the same launch command as the README. The installer journey launches
 `node scripts/install.mjs --no-open --no-prefill` and approves local installation
 in Chromium, opens its exact private entry in a separate app tab, and submits
 the native sign-in confirmation. Both consume their private owner entry in memory, create a component,

@@ -488,7 +488,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "2cc31cf709e7b67c80d285b4d80396e67c89cbd7b8d4da6d5033b95f5b047eb6",
+      "sha256": "454abff2653e544937c90f96335237eef36df4870d4f872aafbe9096bb318d7b",
       "executable": false
     },
     "BASELINE.md": {
@@ -644,7 +644,7 @@
       "executable": false
     },
     "docs/getting-started.md": {
-      "sha256": "85972cec47dc014807e323e344c739c9e4ef8978f1e678ab31d37e64175fc904",
+      "sha256": "4ca63a4264f46196dbfb13730455fac9f7e77dd627bc24b89c7fe3f7ab8b4ab1",
       "executable": false
     },
     "docs/incidents-and-updates.md": {
@@ -700,7 +700,7 @@
       "executable": false
     },
     "docs/updating.md": {
-      "sha256": "f52b6ec20ea47e5431f03944ed4a17bb812fc413644d258325a0387d3a612133",
+      "sha256": "46ea3ce203dcac176d90976d309428affa19544537c6bd03878d5721359f62ad",
       "executable": false
     },
     "docs/verify.md": {
@@ -2688,7 +2688,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "24f90b19e94d41f587488e234938cf4dfd4807609c79ed9ae993a40bd575cfbc",
+      "sha256": "045c54c642b9b485f7411ebd4ffa7a107668715b4ad25761eb93893a0e9fee39",
       "executable": false
     },
     "release-history/1.0.0.CONTRACT.md": {
@@ -3016,7 +3016,7 @@
       "executable": false
     },
     "RELEASE-INDEPENDENT.md": {
-      "sha256": "da7365c507d67fc24cb3d9622434f13ddd869dc84b7e535ae79785a97cdf1b8e",
+      "sha256": "fc1a88c864fb76e532990588a99f6103091cdb6696c617598d9a7fdb69fa3659",
       "executable": false
     },
     "RELEASE.json": {
@@ -4280,7 +4280,7 @@
       "executable": false
     },
     "src/base/run-site.ts": {
-      "sha256": "ca9dd23fef9ed5f52cbd71499a9264c788a3a5b0be36ddf8e42efe7661bc81b8",
+      "sha256": "0050c0781ab9594e15ff3170722133548fed5daaf30f7eb71a835eeaf2df7521",
       "executable": false
     },
     "src/base/seed-contract.d.mts": {
@@ -8084,11 +8084,11 @@
       "executable": false
     },
     "src/site/pages.tsx": {
-      "sha256": "53f70f6f081e84d56e62f2339f24ed3e588722f85454c11c50e74367d043ccba",
+      "sha256": "84674bb8dff1a4646425abd4733076ce0315639f033d0bcdd056fe5bf97921e4",
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "5679e5d904ae9e0edd112661db46dedcae77337ce54f16bb001fd18590e5483d",
+      "sha256": "0d9371aa76d4a744ec8ea4aa324330ecd3faca16ca111b3f81525821c456bac4",
       "executable": false
     },
     "TESTING.md": {
@@ -10300,11 +10300,11 @@
       "executable": false
     },
     "tests/release/installation-journey.mjs": {
-      "sha256": "e5b0e4d6755d44a84a8495d7788fc52ac4e0b9367d64304e7819250adf202b69",
+      "sha256": "5ffceb802464c84765f47274b22f6c4e0b351e2aaeb0abee3a60d211528740f6",
       "executable": false
     },
     "tests/release/installation-runtime.mjs": {
-      "sha256": "9038a737bb00e33c6eeea4d034181f98b8ad68fd3a9a7b310662aefc180d2b67",
+      "sha256": "d12fb392288af5c41edfa2afe4b9c2c17487ceb2c2ea5d61c4123a83ea19e974",
       "executable": false
     },
     "tests/release/journeys.mjs": {
@@ -10316,11 +10316,11 @@
       "executable": false
     },
     "tests/release/readme-guide.mjs": {
-      "sha256": "3ccf96578116c565ea5dfe6df89ff40e3359a5e06d15253c860e656530bbe06e",
+      "sha256": "6e135ef4d9b827909e175a4056f3a3a20aa9e0ef11570b6562a63325f38286ee",
       "executable": false
     },
     "tests/release/README.md": {
-      "sha256": "247d051c58cd43006b9fe184ee0b8b3cc945670ba6709e1f75c7fbbe5f24fcef",
+      "sha256": "5df922df7598bf25e07b4466bc99b37a69eea3449003852a464e1404ba9781eb",
       "executable": false
     },
     "tests/release/runtime.mjs": {

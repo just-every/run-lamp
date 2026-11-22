@@ -32,7 +32,7 @@ are refused. Existing migration files and identities are preserved.
 
 ## Publication and remote acceptance
 
-Before tagging, update the version in `RELEASE.json` so the Run page selects the new release.
+The Run page and local install commands follow the latest published GitHub Release.
 
 Commit the candidate; record `git rev-parse HEAD` and `git rev-parse HEAD^{tree}`,
 SHA-256 of `rer-project.json` and the emitted artifact. Supply that source commit

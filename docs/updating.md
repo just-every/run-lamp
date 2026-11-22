@@ -7,11 +7,18 @@ later migrations in order.
 
 ## Update a local installation
 
-Update the checkout to the source revision you plan to adopt. Keep its existing
-local data in place; run the canonical backup and restore sequence if moving it
-to another checkout. Before install, build or verification, stop the active
+Keep the existing local data in place. Follow the backup and restore sequence
+if moving to another checkout. Stop the active
 development server with `rer dev --stop` or the production preview with
-`rer preview --stop`. Then run `rer install`, `rer setup` and `rer verify` from
+`rer preview --stop`. For a checkout cloned from Lamp's Run page or README,
+run this from the `run-lamp` folder to switch to the latest published release.
+
+```sh
+LAMP_TAG=$(curl -fsSI -o /dev/null -w '%{redirect_url}' https://github.com/just-every/run-lamp/releases/latest | sed -nE 's|.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$LAMP_TAG" && git fetch origin "refs/tags/$LAMP_TAG:refs/tags/$LAMP_TAG" && git switch --detach "refs/tags/$LAMP_TAG"
+```
+
+For a customised checkout, integrate the release into your branch before
+adopting it. Then run `rer install`, `rer setup` and `rer verify` from
 the updated source, check the owner workflows affected by the update, and
 resume local work with `rer dev`. The [local guide](../RUN-LOCALLY.md) has the
 exact recovery commands.

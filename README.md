@@ -38,10 +38,14 @@ information.
 
 ## Run it locally
 
-Copy the Linux, macOS or WSL2 launch command from the
-[Run page](https://run-lamp.com/run). It selects the latest Lamp release,
-installs its dependencies, makes you the owner and prints the private
-`RER_OPEN` link that opens Lamp signed in. Git is required.
+On Linux, macOS or WSL2, paste this command into your terminal. It clones
+the latest published Lamp release, installs its dependencies, makes you the
+owner and prints the private `RER_OPEN` link that opens Lamp signed in. Git is
+required. You can also copy the command from the [Run page](https://run-lamp.com/run).
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh && LAMP_TAG=$(curl -fsSI -o /dev/null -w '%{redirect_url}' https://github.com/just-every/run-lamp/releases/latest | sed -nE 's|.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$LAMP_TAG" && git clone --branch "$LAMP_TAG" --single-branch https://github.com/just-every/run-lamp.git run-lamp && (cd run-lamp && RER_OWNER_READY_TIMEOUT_MS=300000 "$HOME/.local/bin/rer" dev)
+```
 
 After the curl install, to make `rer` available by name in new terminals, run:
 
@@ -56,6 +60,18 @@ To start Lamp again later:
 cd run-lamp
 ~/.local/bin/rer dev
 ```
+
+## Update a local release checkout
+
+Follow the [local update guide](docs/updating.md#update-a-local-installation)
+to back up your data and stop Lamp. Then run this from your `run-lamp` folder
+to fetch and switch to the latest published tag.
+
+```sh
+LAMP_TAG=$(curl -fsSI -o /dev/null -w '%{redirect_url}' https://github.com/just-every/run-lamp/releases/latest | sed -nE 's|.*/releases/tag/(v[0-9]+\.[0-9]+\.[0-9]+)$|\1|p') && test -n "$LAMP_TAG" && git fetch origin "refs/tags/$LAMP_TAG:refs/tags/$LAMP_TAG" && git switch --detach "refs/tags/$LAMP_TAG"
+```
+
+The local update guide covers setup, verification and restart after switching.
 
 ## Owner guides
 

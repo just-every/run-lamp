@@ -26,8 +26,10 @@ export interface RunData {
    * the same `dev just-every/cradle` handed to the installer (startLine).
    */
   clone: string
-  /** Published tag to check out before running the seed, when declared. */
-  releaseTag?: string
+  /** Shell command that clones the latest published release and starts it. */
+  releaseCheckout?: string
+  /** A published tag resolved when rendering the site. */
+  publishedReleaseTag?: string
   /** "MIT". */
   licence: string
   /** Whether the run site carries /docs. */
@@ -58,15 +60,10 @@ const shellArgument = (value: string) => /[^A-Za-z0-9_./-]/.test(value) ? `'${va
  */
 export const startLine = (run: RunData) => {
   checkRunData(run)
-  if (run.releaseTag) return `curl -fsSL https://runeditrun.com/install.sh | sh && ${releaseCheckout(run)}`
+  if (run.releaseCheckout) return `curl -fsSL https://runeditrun.com/install.sh | sh && ${run.releaseCheckout}`
   return PATHS.self.command(run.clone.slice(repoStart.length))
 }
 
-function releaseCheckout(run: RunData) {
-  const repo = run.clone.slice(repoStart.length), folder = repo.split('/').at(-1)!
-  // Older released rer pins also need time for a cold browser download.
-  return `git clone --branch ${run.releaseTag} https://github.com/${repo}.git && (cd ${folder} && RER_OWNER_READY_TIMEOUT_MS=300000 "$HOME/.local/bin/rer" dev)`
-}
 /** The one requirements sentence: rer clones with git; the installer brings Node and rer the pinned pnpm. */
 export const runRequirements = 'git is required; rer brings Node and pnpm.'
 
@@ -111,7 +108,7 @@ export function checkRunData(run: RunData): RunData {
   if (run.leadLine !== undefined && typeof run.leadLine !== 'string') throw new Error('Run data leadLine is a plain string when present.')
   const repo = run.clone.slice(repoStart.length)
   if (!run.clone.startsWith(repoStart) || repositoryId.exec(repo)?.[0] !== repo) throw new Error(`Run data clone must be ${repoStart}<owner>/<repo> with a valid repository id.`)
-  if (run.releaseTag !== undefined && !/^v\d+\.\d+\.\d+$/.test(run.releaseTag)) throw new Error('Run data releaseTag must be vMAJOR.MINOR.PATCH.')
+  if (run.publishedReleaseTag !== undefined && !/^v\d+\.\d+\.\d+$/.test(run.publishedReleaseTag)) throw new Error('Run data publishedReleaseTag must be vMAJOR.MINOR.PATCH.')
   if (!/^https:\/\/[^\s"<>]+$/.test(run.repository)) throw new Error('Run data repository is an https URL.')
   if (typeof run.docs !== 'boolean') throw new Error('Run data declares docs.')
   for (const key of ['assisted', 'managed', 'note'] as const) {
@@ -200,9 +197,12 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
   checkIdentity(identity); checkRunData(run)
   const repo = run.clone.slice(repoStart.length), slug = repo.split('/').at(-1)!.replace(/^run-/, '')
   const product = run.paths.product ?? `run-${slug}`, self = PATHS.self, steps = self.steps(run.name)
-  const otherWays = run.releaseTag
-    ? `<div class="alt"><span>After <code>rer</code> is installed:</span><pre><code>${pipelines(releaseCheckout(run))}</code></pre></div>`
+  const otherWays = run.releaseCheckout
+    ? `<div class="alt"><span>After <code>rer</code> is installed:</span><pre><code>${pipelines(run.releaseCheckout)}</code></pre></div>`
     : `<p class="alt"><span>${escape(self.alt)}</span>${inlineStart(run)}</p><div class="alt"><span>To install rer separately:</span><pre><code>curl -fsSL https://runeditrun.com/install.sh | sh</code></pre><span>Then run:</span><pre><code>$HOME/.local/bin/rer dev ${escape(repo)}</code></pre></div>`
+  const publishedRelease = run.publishedReleaseTag
+    ? `<p class="self-body">Published at site build <a class="published-release" href="https://github.com/${repo}/releases/tag/${run.publishedReleaseTag}">${run.publishedReleaseTag}</a>. The command installs the latest release.</p>`
+    : ''
   const stops = (labels: string[], numbered = false) => `<ol class="${numbered ? 'paste-stops' : 'timeline-stops'}">${labels.map((label, i) => `<li><span class="stop" aria-hidden="true">${numbered ? i + 1 : i === labels.length - 1 ? TICK : ''}</span><span class="stop-label">${escape(label)}</span></li>`).join('')}</ol>`
   const doors = (['assisted', 'managed'] as const).map(id => {
     const path = PATHS[id], closed = PATHS.signups === 'request' || run.paths.product === null || run.paths[id]?.open === false
@@ -211,6 +211,7 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
   }).join('')
   const body = `${homepage?.html ?? header(identity, run, contract)}<main><div class="intro"><h1>${escape(PATHS.heading(run.name))}</h1>${run.leadLine !== undefined ? `<p class="sub">${escape(run.leadLine)}</p>` : ''}</div><div class="chooser">`
     + `<section class="self" aria-labelledby="self"><div class="self-heading"><span class="badge">${escape(self.badge)}</span><h2 id="self">${escape(self.title)}</h2><p class="self-body">${escape(self.body(run.name))}</p></div>`
+    + publishedRelease
     + codeBlock(startLine(run), self.title)
     + `<section class="paste-panel" aria-labelledby="paste-title"><h3 id="paste-title">${escape(self.pasteTitle)}</h3><div class="paste-track">${stops(steps, true)}<p class="track-note">${escape(self.note)}</p></div></section>`
     + `<details class="other-ways"><summary>Other ways to run locally</summary>${otherWays}<div class="alt"><span>The one-line launch above already finds rer for this run. If <code>~/.local/bin</code> is missing from your PATH, run the installer’s Bash line once before using bare <code>rer</code> commands in this terminal or future ones:</span><pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc &amp;&amp; export PATH="$HOME/.local/bin:$PATH"</code></pre><span>For another shell, <code>"$HOME/.local/bin/rer" cli path</code> prints its line. See <a href="/docs/run-locally">Run Lamp locally</a> for restart and backup steps.</span></div></details><p class="requirements">${escape(self.requirements)}${run.paths.requirementsExtra ? ' ' + escape(run.paths.requirementsExtra) : ''}</p><p class="email-note">${escape(self.email)}</p>`
@@ -218,7 +219,8 @@ export function runPageHtml(identity: EditionIdentity, run: RunData, contract?: 
     + (run.docs ? `<p class="guide">${action(self.guide.href, self.guide.label)}</p>` : '')
     + `</section><div class="doors">${doors}</div><div class="quiet"><p>${escape(PATHS.business.lead)} ${action(PATHS.business.href, PATHS.business.action)}</p></div>`
     + `<footer class="facts"><p>${escape(PATHS.facts.source)} <a href="${escape(run.repository)}">${escape(run.repository.replace(/^https:\/\//, ''))}</a> · ${escape(run.licence)} ${escape(PATHS.facts.licence)}</p></footer></div></main>`
-  return document(identity, PATHS.title(run.name), PATHS.meta(run.name), RUN_CHOOSER, body, COPY_SCRIPT, homepage?.styles)
+  const releaseStyle = run.publishedReleaseTag ? '.published-release{text-decoration:underline;text-underline-offset:3px}' : ''
+  return document(identity, PATHS.title(run.name), PATHS.meta(run.name), RUN_CHOOSER + releaseStyle, body, COPY_SCRIPT, homepage?.styles)
 }
 
 /** Base's composed homepage for a seed without an approved one: its primary action is Run <Seed>. */

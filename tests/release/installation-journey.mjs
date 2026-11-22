@@ -5,7 +5,7 @@ import { chromium } from "playwright";
 import { reservePort } from "../e2e/worker-startup.mjs";
 import { installation, until } from "./installation-runtime.mjs";
 import { exerciseOwner, installerEntry } from "./installation-browser.mjs";
-import { readRunPage, readmeGuide } from "./readme-guide.mjs";
+import { checkRunPage, readmeGuide } from "./readme-guide.mjs";
 
 const mode = process.env.LAMP_RELEASE_JOURNEY;
 assert.ok(["installer", "readme"].includes(mode), "set LAMP_RELEASE_JOURNEY to installer or readme");
@@ -14,7 +14,7 @@ await mkdir(evidence, { recursive: true });
 let fixture, browser, entry;
 try {
   browser = await chromium.launch({ headless: true });
-  const guide = mode === "readme" ? await readmeGuide(process.cwd(), browser) : undefined;
+  const guide = mode === "readme" ? await readmeGuide(process.cwd()) : undefined;
   fixture = await installation(mode, guide);
   if (mode === "installer") entry = await installerEntry(fixture, browser, evidence);
   else {
@@ -34,7 +34,7 @@ try {
       site = /^RER_SITE (\S+)/m.exec(output)?.[1];
       return /^RER_READY /m.test(output) && open && site;
     }, "README rer dev installs, prepares and starts Lamp", 15 * 60000);
-    await readRunPage(browser, new URL("/run", site).href);
+    await checkRunPage(browser, new URL("/run", site).href, guide.command);
     const context = await browser.newContext();
     const page = await context.newPage();
     await page.goto(open);

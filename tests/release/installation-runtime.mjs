@@ -91,16 +91,16 @@ export async function installation(mode, guide) {
     }
   }
   try {
-    // README links to the Run page for the public installer and exact clone command. The
-    // standalone installer journey discovers its public entry from the Run page.
+    // Exercise the README's actual release lookup and clone before importing the candidate.
     const start = guide ?? await publicLaunch(source);
     const installerPath = join(directory, "install-rer.sh");
     await run("curl", ["-fsSL", start.installer, "-o", installerPath]);
     await run("sh", [installerPath]);
     const sha = (await run("git", ["rev-parse", "HEAD"], source)).trim();
-    const ref = start.tag ? ["--branch", start.tag] : [];
-    await run("git", ["clone", ...ref, start.repository]);
+    if (guide) await run("sh", ["-ec", guide.checkout]);
+    else await run("git", ["clone", start.repository]);
     root = join(directory, start.folder);
+    if (guide) await run("git", ["describe", "--tags", "--exact-match"]);
     // A pre-push candidate need not exist on the public remote yet. Import
     // exactly its commit object after the real public clone succeeds.
     await run("git", ["fetch", "--no-tags", source, sha]);
@@ -124,7 +124,7 @@ export async function installation(mode, guide) {
 async function publicLaunch(source) {
   const runPage = await readFile(join(source, "src/site/run.ts"), "utf8");
   const line = /clone:\s*'npx -y @runeditrun\/rer dev (just-every\/([\w.-]+))'/.exec(runPage);
-  const repository = /repository:\s*'(https:\/\/github\.com\/just-every\/[\w.-]+?)(?:\.git)?'/.exec(runPage)?.[1];
+  const repository = /const repository = '(https:\/\/github\.com\/just-every\/[\w.-]+)'/.exec(runPage)?.[1];
   const folder = repository?.split("/").at(-1);
   assert.ok(line && folder === line[2], "Run page provides the one-line install and its repo-name folder");
   const site = await readFile(join(source, "src/base/run-site.ts"), "utf8");
