@@ -211,6 +211,11 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
       fromAddress: settings.mailFromAddress, origin: publicPageOrigin(authOrigin(bindings), bindings.LAMP_PAGE_HOST), hasLogo: Boolean(settings.logoKey),
     };
   }, {
+    reminderChannelConfigured: (channel) => {
+      if (channel === "sms") return sms.configured();
+      const signingConfigured = Boolean(bindings.WEBHOOK_SIGNING_SECRET?.split(",").some(secret => secret.trim()));
+      return signingConfigured && bindings.EFFECTS_PAUSED !== "1" && (channel === "webhook" || !channels.unavailable);
+    },
     forMaintenanceNotice: async (input) => [
       ...notificationPublicationStatements(bindings.DB, { eventId: input.eventId, eventType: "maintenance-notice", maintenanceId: input.maintenanceId, componentIds: input.componentIds, channels: ["email", "webhook"], queuedAt: input.queuedAt, recipientScope: input.recipientScope, previousEventIds: input.previousEventIds }),
       ...channels.maintenanceStatements(input),

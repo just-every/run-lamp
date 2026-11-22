@@ -16,6 +16,7 @@ import { commandAdapter } from '../../scripts/installer/local.mjs';
 import { chromium } from 'playwright';
 import { reachBuiltWorkerOptions } from './helpers/reach-built-worker.mjs';
 import { operatorHydrated } from './helpers/operator-hydrated.mjs';
+import { newIncidentForm } from './helpers/incident-composer.mjs';
 
 const require = createRequire(import.meta.url), workerRequire = createRequire(require.resolve('wrangler'));
 const { Miniflare, convertV4MiniflareOptions } = workerRequire('miniflare');
@@ -762,6 +763,12 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           await page.goto(appOrigin + '/app');
           await page.getByText('Email is off for this installation', { exact: true }).waitFor();
           assert.equal(await page.locator('.live-strip.is-failing').count(), 0, 'deliberate mail-off does not mark the installation as broken');
+          await page.goto(appOrigin + '/app/incidents/new');
+          await operatorHydrated(page);
+          await newIncidentForm(page).option('Notify');
+          const emailChannel = page.getByRole('checkbox', { name: /^Email/ });
+          assert.equal(await emailChannel.isDisabled(), true);
+          assert.equal(await emailChannel.isChecked(), false);
           await page.goto(pageOrigin + '/');
           assert.equal(await page.locator('form[action="/subscribe"]').count(), 0, 'the hosted public page does not offer unusable email signup');
           await page.getByText('Email subscriptions are unavailable for this installation.', { exact: true }).first().waitFor();

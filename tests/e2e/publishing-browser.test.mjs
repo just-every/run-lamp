@@ -864,7 +864,7 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   assert.equal((await readIncident(id)).updates.length, 0, 'preview leaves the draft private');
   assert.equal((await (await fetch(`${pageUrl}/`)).text()).includes(submitted.customerImpact), false);
   await previewScreens(page, 'page-preview');
-  await page.getByRole('button', { name: 'Email', exact: true }).click();
+  await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
   await panel.frameLocator('iframe[title="Notification email message"]').getByText(submitted.customerImpact, { exact: false }).waitFor();
   await panel.getByText(settings.emailBranding.replyTo, { exact: true }).waitFor();
   assert.ok((await page.locator('.preview-panel h3').textContent()).startsWith('[Journey status]'));
@@ -953,6 +953,16 @@ test('INCIDENT-001 INCIDENT-004 INCIDENT-005 UPDATE-002 UPDATE-004 UPDATE-005 UP
   await report.getByRole('button', { name: 'Draft report', exact: true }).waitFor();
   assert.equal(await report.getByRole('button', { name: 'Draft report', exact: true }).isEnabled(), true, 'an optional report can still be drafted');
   assert.equal(await report.getByRole('button', { name: 'Waive report reminder', exact: true }).count(), 0, 'a minor incident offers no owed-report reminder action');
+  const firstReport = {
+    Summary: 'Checkout latency returned to normal.',
+    Timeline: 'Requests slowed before traffic was shifted to the standby.',
+    Cause: 'The primary database exhausted its connection pool.',
+    Remediation: 'We shifted traffic and added a pool saturation alert.',
+  };
+  for (const [field, value] of Object.entries(firstReport)) await report.getByRole('textbox', { name: field, exact: true }).fill(value);
+  await report.getByRole('button', { name: 'Publish report', exact: true }).click();
+  await report.locator('.report-editor > p').filter({ hasText: /^Published / }).waitFor();
+  await waitForPublicIncident(minor.reference, firstReport.Summary);
   await page.goto(`${appUrl}/app/incidents/${id}#post-incident-report`); await operatorHydrated(page);
   const drafting = page.waitForResponse(response => response.url().endsWith(`${reportPath}/draft`) && response.request().method() === 'POST');
   await page.getByRole('button', { name: 'Draft report', exact: true }).click();

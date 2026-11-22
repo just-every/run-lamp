@@ -28,10 +28,10 @@ export class PasskeyStore {
   return id
  }
 
- async consume(id: string, operation: Operation, owner: Owner, sessionId: string | null) {
+ async consume(id: string, challenge: string, operation: Operation, owner: Owner, sessionId: string | null) {
   return this.db.prepare(`DELETE FROM oa_local_passkey_challenges
-   WHERE id=? AND operation=? AND operator_id=? AND session_id IS ? AND expires_at>?
-   RETURNING id,challenge`).bind(id, operation, owner.id, sessionId, Date.now()).first<Challenge>()
+   WHERE id=? AND challenge=? AND operation=? AND operator_id=? AND session_id IS ? AND expires_at>?
+   RETURNING id,challenge`).bind(id, challenge, operation, owner.id, sessionId, Date.now()).first<Challenge>()
  }
 
  async enroll(owner: Owner, sessionId: string, credential: WebAuthnCredential) {

@@ -7,7 +7,10 @@ import { reportReview, ReportInputError, ReportDraftError } from "./draft";
 import type { ReportsService } from "./service";
 
 const reportSchema = z.object({ summary: z.string().trim().max(10_000), timeline: z.string().trim().max(10_000), cause: z.string().trim().max(10_000), remediation: z.string().trim().max(10_000) }).strict();
-const channelsSchema = z.object({ channels: z.array(z.enum(["email", "webhook", "sms"])).max(3).transform((channels) => [...new Set(channels)]) }).strict();
+const publishSchema = z.object({
+  channels: z.array(z.enum(["email", "webhook", "sms"])).max(3).transform((channels) => [...new Set(channels)]),
+  expectedReport: reportSchema.optional(),
+}).strict();
 
 export function registerReportRoutes(app: Hono<AppEnv>, service: ReportsService) {
   app.get("/api/app/incidents/:incidentId/report", async (context) => {
@@ -38,9 +41,9 @@ export function registerReportRoutes(app: Hono<AppEnv>, service: ReportsService)
   });
   app.post("/api/app/incidents/:incidentId/report/publish", async (context) => {
     const incidentId = ulidSchema.safeParse(context.req.param("incidentId"));
-    const channels = channelsSchema.safeParse(await context.req.json().catch(() => null));
-    if (!incidentId.success || !channels.success) return context.json({ error: "A valid channel selection is required." }, 400);
-    try { const report = await service.publish(incidentId.data, context.get("operator").id, channels.data.channels); return report ? context.json({ report }) : context.json({ error: "A mutable report for a resolved incident is required before publication." }, 409); }
+    const input = publishSchema.safeParse(await context.req.json().catch(() => null));
+    if (!incidentId.success || !input.success) return context.json({ error: "A valid channel selection is required." }, 400);
+    try { const report = await service.publish(incidentId.data, context.get("operator").id, input.data.channels, input.data.expectedReport); return report ? context.json({ report }) : context.json({ error: "A mutable report for a resolved incident is required before publication." }, 409); }
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "The report could not be published." }, cause instanceof ReportInputError ? 400 : 409); }
   });
   app.get("/api/app/reports/owing", async (context) => context.json({ incidentIds: await service.owing() }));

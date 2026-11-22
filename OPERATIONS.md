@@ -324,8 +324,10 @@ Export includes every application and owner sidecar table, original R2 bytes,
 HTTP metadata and custom metadata. The database reads run in one D1 transaction.
 Pause operator writes and scheduled work for a coordinated backup: D1 and R2 do
 not share a transaction, so the archive must not be treated as a cross-service
-point-in-time backup while data is changing. A failed export leaves no completed
-manifest; use a new empty output directory for the next attempt. Archive files
+point-in-time backup while data is changing. If an R2 object disappears during
+export, Lamp re-lists the bucket once. It reports any skipped keys on the console
+and in the manifest's `skippedObjects` list. An interrupted export contains an
+`.incomplete` marker. Use a new empty directory for the next attempt. Archive files
 are private because they include subscriber data, sessions and frozen mail.
 
 A database Run Edit Run Managed installed carries Platform's own migration

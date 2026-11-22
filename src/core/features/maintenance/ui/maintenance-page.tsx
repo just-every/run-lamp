@@ -5,6 +5,7 @@ import { getRouteApi } from "@tanstack/react-router";
 
 import { PUBLIC_PAGE_PATH, StatusPageSelection, statusPageNames, useStatusPages, type StatusPage } from "../../page-settings/ui/status-page-selection";
 import type { ComponentsService } from "../../components";
+import type { MaintenanceReminderChannel } from "../repository";
 import type { MaintenanceService } from "../service";
 import { appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -16,9 +17,11 @@ import { windowInstant } from "./window-time";
 import { MaintenanceAutomationSwitches } from "./automation-switches";
 import { ScheduledNoticePreviewPanel } from "./scheduled-notice-preview";
 
-type MaintenanceResponse = { automation: { autoStart: boolean; autoComplete: boolean }; maintenance: Awaited<ReturnType<MaintenanceService["list"]>> };
+type MaintenanceResponse = { automation: { autoStart: boolean; autoComplete: boolean }; maintenance: Awaited<ReturnType<MaintenanceService["list"]>>; reminderChannels: MaintenanceReminderChannel[] };
 type ComponentsResponse = { components: Awaited<ReturnType<ComponentsService["list"]>> };
 
+const reminderChannelLabels: Record<MaintenanceReminderChannel, string> = { webhook: "Webhooks", sms: "SMS", slack: "Slack", teams: "Teams" };
+const reminderChannelList = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
 
 export function MaintenancePage() {
   const timezone = usePageTimezone();
@@ -46,7 +49,8 @@ export function MaintenancePage() {
   const validWindow = Boolean(startInstant && endInstant && endInstant > startInstant);
   const comparableWindow = Boolean(startInstant && endInstant);
   const scheduleBody = JSON.stringify({ title, affectedAudience, customerImpact, startsAt: startInstant, endsAt: endInstant, componentIds, pagePaths, autoStart, autoComplete, social: publicSelected && social });
-  const canPreview = validWindow && componentIds.length > 0 && Boolean(title.trim() && affectedAudience.trim() && customerImpact.trim());
+  const canPreview = validWindow && pagePaths.length > 0 && componentIds.length > 0 && Boolean(title.trim() && affectedAudience.trim() && customerImpact.trim());
+  const reminderChannels = reminderChannelList.format(maintenance.data.reminderChannels.map(channel => reminderChannelLabels[channel]));
   const schedule = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validWindow || !pagePaths.length || saving) return;
@@ -80,11 +84,14 @@ export function MaintenancePage() {
       <form id="schedule-maintenance" className="data-card maintenance-schedule-card" onSubmit={schedule}>
         <div className="card-heading"><div><h2>Schedule maintenance</h2></div></div>
         <p className="schedule-copy">{!publicSelected ? "Selected pages show this window. Public subscribers do not receive a reminder."
-          : emailOff ? "Components show Maintenance when work begins. Email is turned off. Reminders can still use other configured channels."
-          : "Components show Maintenance when work begins. Subscribers receive a reminder 24 hours before the start, unless this notice is already within that time."}</p>
+          : "Components show Maintenance when work begins."}
+          {publicSelected && (!emailOff || reminderChannels) ? " Eligible subscribers receive a reminder 24 hours before the start if you schedule more than 24 hours ahead." : null}
+          {publicSelected && emailOff ? ` Email is off. ${reminderChannels
+            ? `${reminderChannels} can deliver the reminder.`
+            : "No active non-email subscriptions are set up to receive the 24-hour reminder."}` : null}</p>
         <label className="form-label">Title<input required maxLength={250} value={title} onChange={event => setTitle(event.target.value)} placeholder="Database maintenance" /></label>
         <MaintenanceWordingFields affectedAudience={affectedAudience} customerImpact={customerImpact} onAudience={setAffectedAudience} onImpact={setCustomerImpact} disabled={saving} required />
-        {(pages.data?.pages.length ?? 0) > 1 || pages.error ? <StatusPageSelection pages={pages} value={pagePaths} onChange={paths => { setPagePaths(paths); if (!paths.includes(PUBLIC_PAGE_PATH)) setPreviewOpen(false); }} disabled={saving} /> : null}
+        {(pages.data?.pages.length ?? 0) > 1 || pages.error ? <StatusPageSelection pages={pages} value={pagePaths} onChange={setPagePaths} disabled={saving} /> : null}
         <fieldset className="maintenance-components">
           <legend>Components</legend>
           {visible.map(component => <label className="checkbox-label" key={component.id}>
@@ -101,10 +108,12 @@ export function MaintenancePage() {
         {publicSelected ? <label className="checkbox-label"><input type="checkbox" checked={social} disabled={saving} onChange={event => setSocial(event.target.checked)} />Post this notice to social accounts</label> : null}
         {comparableWindow ? <p className={`window-validation ${validWindow ? "is-valid" : ""}`}>{validWindow ? `${autoStart ? "Starts automatically." : "An operator starts this window."} ${autoComplete ? "Completes automatically." : "An operator completes this window."}` : "Choose an end time after the start time."}</p> : null}
         <div className="form-actions">
-          {publicSelected ? <Button type="button" variant="secondary" aria-expanded={previewOpen} aria-controls={previewOpen ? "maintenance-notice-preview" : undefined} disabled={saving || (!previewOpen && !canPreview)} onClick={() => setPreviewOpen(open => !open)}>{previewOpen ? "Hide preview" : "Preview notice"}</Button> : null}
+          <Button type="button" variant="secondary" aria-expanded={previewOpen} aria-controls={previewOpen ? "maintenance-notice-preview" : undefined} disabled={saving || (!previewOpen && !canPreview)} onClick={() => setPreviewOpen(open => !open)}>{previewOpen ? "Hide preview" : "Preview notice"}</Button>
           <Button type="submit" disabled={saving || !validWindow || componentIds.length === 0 || pagePaths.length === 0}>{saving ? "Scheduling…" : "Schedule window"}</Button>
         </div>
-        {previewOpen && publicSelected ? <ScheduledNoticePreviewPanel requestBody={canPreview ? scheduleBody : null} /> : null}
+        {previewOpen ? <ScheduledNoticePreviewPanel requestBody={canPreview ? scheduleBody : null}
+          pageLabel={publicSelected ? "Public page" : statusPageNames(pages.data?.pages ?? [], pagePaths)}
+          emailAvailable={publicSelected && !emailOff} /> : null}
       </form>
     </div>
   </div>;

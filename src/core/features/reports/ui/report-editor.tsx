@@ -35,6 +35,9 @@ export function ReportEditor({ incidentId, resource }: { incidentId: string; res
   if (report.publishedAt) return <div className="report-editor"><p>Published {formatOperatorTime(report.publishedAt)}.</p></div>;
   const review = reportReview(report);
   const busy = pending || loading || !data;
+  const { summary, timeline, cause, remediation } = report;
+  const fields = { summary, timeline, cause, remediation };
+  const canPublish = Boolean(summary.trim() && timeline.trim()) && !review.cause.required && !review.remediation.required;
   const update = (field: keyof Omit<Report, "publishedAt">, value: string) => { setDirty(true); setReport((current) => ({ ...current, [field]: value })); };
   const draft = async () => {
     setPending(true);
@@ -45,18 +48,27 @@ export function ReportEditor({ incidentId, resource }: { incidentId: string; res
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Report could not be drafted."); }
     finally { setPending(false); }
   };
+  const saveDraft = async () => {
+    await appApi(endpoint, { method: "PUT", body: JSON.stringify(fields) });
+    setDirty(false);
+  };
   const save = async () => {
-    const { summary, timeline, cause, remediation } = report;
     setPending(true);
-    try { await appApi(endpoint, { method: "PUT", body: JSON.stringify({ summary, timeline, cause, remediation }) }); setDirty(false); setMessage("Report saved."); refresh(); }
+    try { await saveDraft(); setMessage("Report saved."); refresh(); }
     catch (cause) { setMessage(cause instanceof Error ? cause.message : "Report could not be saved."); }
     finally { setPending(false); }
   };
   const publish = async () => {
     setPending(true);
-    try { await appApi(`${endpoint}/publish`, { method: "POST", body: JSON.stringify({ channels: ["email"] }) }); setMessage("Report published."); refresh(); }
+    try {
+      if (dirty || !data?.report) await saveDraft();
+      const response = await appApi<{ report: Report }>(`${endpoint}/publish`, {
+        method: "POST", body: JSON.stringify({ channels: ["email"], expectedReport: fields }),
+      });
+      setReport(response.report);
+    }
     catch (cause) { setMessage(cause instanceof Error ? cause.message : "Report could not be published."); }
-    finally { setPending(false); }
+    finally { refresh(); setPending(false); }
   };
   return <div className="report-editor">
     <p className="report-prompt">{data?.owed ? "A report is owed. Publish it or waive the reminder." : "You can publish an optional report for this incident."}</p>
@@ -73,7 +85,7 @@ export function ReportEditor({ incidentId, resource }: { incidentId: string; res
       </label>{flagged ? <p id={hintId}><strong>Human input required.</strong> {prompt} Check the timeline sources.</p> : null}</div>;
     })}
     {message || error ? <p role="status">{message ?? error}</p> : null}
-    <div className="form-actions"><Button type="button" variant="secondary" disabled={busy} onClick={save}>Save report</Button><Button type="button" disabled={busy || dirty || !data?.report} onClick={publish}>Publish report</Button></div>
+    <div className="form-actions"><Button type="button" variant="secondary" disabled={busy} onClick={save}>Save report</Button><Button type="button" disabled={busy || !canPublish} onClick={publish}>Publish report</Button></div>
     {data?.owed || data?.waiver ? <ReportWaiver incidentId={incidentId} waiver={data.waiver} onChanged={refresh} /> : null}
   </div>;
 }

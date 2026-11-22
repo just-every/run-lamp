@@ -42,7 +42,11 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   const reason = await form.publish.getAttribute('aria-describedby');
   assert.ok((await page.locator(`[id="${reason}"]`).innerText()).includes(component.name));
   await form.componentState(component.name, 'Degraded performance');
-  await page.getByRole('button', { name: 'Email', exact: true }).click();
+  await form.option('Notify');
+  const emailChannel = page.getByRole('checkbox', { name: /Email.*off/i });
+  assert.equal(await emailChannel.isDisabled(), true);
+  assert.equal(await emailChannel.isChecked(), false);
+  await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
   const preview = page.locator('.preview-panel');
   await page.frameLocator('iframe[title="Notification email message"]').getByText('Some mobile requests take longer to finish.', { exact: false }).waitFor();
   observations.newEmail = await preview.innerText();
@@ -81,7 +85,7 @@ export async function incidentOwnerJourney({ page, browserContext, appUrl, pageU
   await page.getByRole('region', { name: 'Component statuses after resolution' }).waitFor();
   observations.resolve = await page.locator('.composer-panel').innerText();
   await capture(page, 'resolve-manual');
-  await page.getByRole('button', { name: 'Email', exact: true }).click();
+  await page.getByRole('button', { name: 'Email (off)', exact: true }).click();
   await page.frameLocator('iframe[title="Notification email message"]').getByText(/Update: Fixed/).waitFor();
   await capture(page, 'resolved-email');
   await composer.publish.click();

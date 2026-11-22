@@ -1,6 +1,7 @@
 import {
  generateAuthenticationOptions, generateRegistrationOptions, verifyAuthenticationResponse, verifyRegistrationResponse,
 } from '@simplewebauthn/server'
+import { decodeClientDataJSON } from '@simplewebauthn/server/helpers'
 import { z } from 'zod'
 import { AuthError, securityHeaders } from '@runeditrun/rer/modules/operator-auth'
 import { managedInstallation } from '@runeditrun/rer/modules/operator-auth/dev'
@@ -39,9 +40,9 @@ export function admitsPasskeys(request: Request, env: AppBindings) {
 export async function passkeyResponse(request: Request, env: AppBindings): Promise<Response> {
  const headers = new Headers(securityHeaders())
  const config = configure(authConfig(env)), store = new PasskeyStore(env.DB)
- const cookieName = localCookieName('lamp_passkey_challenge', config.origin)
- const cookieConfig = { cookieName, secure: config.secure }
- const reject = (status: number) => Response.json({ error: 'passkey_refused' }, { status, headers })
+ const cookiePrefix = localCookieName('lamp_passkey_challenge', config.origin)
+ const attemptCookie = (challenge: string) => ({ cookieName: `${cookiePrefix}_${challenge}`, secure: config.secure })
+ const reject = (status: number, error = 'passkey_refused') => Response.json({ error }, { status, headers })
  try {
   requirePost(request, config)
   const parsed = passkeyInput.safeParse(await readInput(request))
@@ -52,30 +53,40 @@ export async function passkeyResponse(request: Request, env: AppBindings): Promi
   const session = operation === 'enroll' ? await createLampAuth(env).getSession(request) : null
   if (operation === 'enroll' && (session?.operator.id !== owner.id || session.kind !== 'dev')) return reject(403)
   const credential = await store.credential(owner.id)
-  if (operation === 'enroll' ? credential : !credential) return reject(409)
+  if (operation === 'signin' && !credential) return reject(409)
 
   const rpID = 'localhost', verification = { expectedOrigin: config.origin, expectedRPID: rpID, requireUserVerification: true }
   if (answer === undefined) {
+   if (operation === 'enroll' && credential) return reject(409, 'passkey_already_enrolled')
    const options = operation === 'enroll'
     ? await generateRegistrationOptions({ rpID, rpName: 'Lamp', userID: new TextEncoder().encode(owner.id),
       userName: owner.email, attestationType: 'none', authenticatorSelection: { residentKey: 'preferred', userVerification: 'required' },
       supportedAlgorithmIDs: [-7, -257] })
     : await generateAuthenticationOptions({ rpID, userVerification: 'required', allowCredentials: [{ id: credential!.id }] })
    const id = await store.begin(operation, owner, session?.id ?? null, options.challenge, Date.now() + lifetimeSeconds * 1000)
-   headers.append('Set-Cookie', sessionCookie(id, cookieConfig, lifetimeSeconds))
+   headers.append('Set-Cookie', sessionCookie(id, attemptCookie(options.challenge), lifetimeSeconds))
    return Response.json(options, { headers })
   }
 
+  let challenge: string
+  try { challenge = decodeClientDataJSON(answer.response.clientDataJSON).challenge }
+  catch { return reject(400) }
+  if (typeof challenge !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/.test(challenge)) return reject(400)
+  const cookieConfig = attemptCookie(challenge)
+  const { cookieName } = cookieConfig
   const challengeCookie = request.headers.get('cookie')?.split(';').map(cookie => cookie.trim()).filter(cookie => cookie.startsWith(cookieName + '='))
   if (challengeCookie?.length !== 1) return reject(400)
-  const pending = await store.consume(challengeCookie[0].slice(cookieName.length + 1), operation, owner, session?.id ?? null)
+  const pending = await store.consume(challengeCookie[0].slice(cookieName.length + 1), challenge, operation, owner, session?.id ?? null)
   headers.append('Set-Cookie', sessionCookie('', cookieConfig, 0))
   if (!pending) return reject(400)
   const expectedChallenge = pending.challenge
   if (operation === 'enroll') {
+   if (credential) return reject(409, 'passkey_already_enrolled')
    const proof = await verifyRegistrationResponse({ ...verification, expectedChallenge, response: answer }).catch(() => null)
    if (!proof?.verified || !proof.registrationInfo) return reject(400)
-   if (!await store.enroll(owner, session!.id, proof.registrationInfo.credential)) return reject(409)
+   if (!await store.enroll(owner, session!.id, proof.registrationInfo.credential)) {
+    return reject(409, await store.credential(owner.id) ? 'passkey_already_enrolled' : 'passkey_refused')
+   }
    return Response.json({ enrolled: true }, { headers })
   }
 

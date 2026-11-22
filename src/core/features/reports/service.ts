@@ -13,7 +13,7 @@ export interface ReportsService {
   draft(incidentId: string, operatorId: string): Promise<{ report: IncidentReportRow; review: ReportReview }>;
   get(incidentId: string): Promise<IncidentReportRow | null>;
   save(incidentId: string, input: ReportInput, operatorId: string): Promise<IncidentReportRow>;
-  publish(incidentId: string, operatorId: string, channels: Array<"email" | "webhook" | "sms">): Promise<IncidentReportRow | null>;
+  publish(incidentId: string, operatorId: string, channels: Array<"email" | "webhook" | "sms">, expectedReport?: ReportInput): Promise<IncidentReportRow | null>;
   owing(now?: string): Promise<string[]>;
   waiver(incidentId: string): ReturnType<ReportRepository["waiver"]>;
   waive(incidentId: string, reason: string, operatorId: string): Promise<boolean>;
@@ -72,9 +72,12 @@ export function createReportsService(repository: ReportRepository, onPublicDataC
       await repository.upsert(report);
       return (await repository.find(incidentId))!;
     },
-    async publish(incidentId, operatorId, channels) {
+    async publish(incidentId, operatorId, channels, expectedReport) {
       const report = await repository.find(incidentId);
       if (!report || report.publishedAt) return null;
+      if (expectedReport && (["summary", "timeline", "cause", "remediation"] as const).some(field => report[field] !== expectedReport[field])) {
+        throw new ReportDraftError("The saved report changed. Reload and review it before publishing.", 409);
+      }
       assertReport(report, true);
       if (!notificationStatements) throw new Error("Post-incident report publication requires notification transaction wiring.");
       const timestamp = nowIso();

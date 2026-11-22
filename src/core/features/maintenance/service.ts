@@ -8,12 +8,13 @@ import { createUlid, nowIso } from "../../shared/ids";
 import type { LampEventDispatcher } from "../../api/extensions";
 import type { ComponentsService } from "../components";
 import { defaultMaintenanceRemindersPolicy, type MaintenanceRemindersPolicy } from "./policies";
-import type { MaintenanceNotice, MaintenanceRepository, StoredMaintenance, StoredMaintenanceComponent } from "./repository";
+import type { MaintenanceNotice, MaintenanceReminderChannel, MaintenanceRepository, StoredMaintenance, StoredMaintenanceComponent } from "./repository";
 
 export type MaintenanceView = StoredMaintenance & MaintenanceAutomation & { pagePaths: string[]; components: StoredMaintenanceComponent[]; notices: MaintenanceNotice[]; importedUpdates: Awaited<ReturnType<MaintenanceRepository["listImportedUpdates"]>>; overrunning: boolean };
 
 export interface MaintenanceNotificationStatements {
   forMaintenanceNotice(input: { eventId: string; maintenanceId: string; componentIds: string[]; kind: MaintenanceNotice["kind"]; queuedAt: string; recipientScope: "eligible" | "previous"; previousEventIds: string[]; social?: boolean }): Promise<D1PreparedStatement[]>;
+  reminderChannelConfigured(channel: MaintenanceReminderChannel): boolean;
 }
 
 export interface MaintenanceInput extends Partial<MaintenanceAutomation> { social?:boolean; affectedAudience: string; customerImpact: string; title: string; startsAt: string; endsAt: string; componentIds: string[]; pagePaths?: string[]; }
@@ -23,7 +24,7 @@ export interface ScheduledNoticePreview {
   title: string;
   window: ReturnType<typeof formatMaintenanceWindow> & Pick<MaintenanceInput, "startsAt" | "endsAt">;
   fields: ReturnType<typeof maintenanceNoticeDetails>;
-  email: { subject: string; html: string };
+  email: { subject: string; html: string } | null;
 }
 
 export interface MaintenanceOverrunAlertEvent {
@@ -35,6 +36,7 @@ export type MaintenanceRuntimeEvents = Pick<LampEventDispatcher, "maintenanceSch
 
 export interface MaintenanceService {
   list(): Promise<MaintenanceView[]>;
+  listReminderChannels(): Promise<MaintenanceReminderChannel[]>;
   previewScheduled(input: MaintenanceInput): Promise<ScheduledNoticePreview>;
   getAutomationDefault(): Promise<MaintenanceAutomation>;
   saveAutomationDefault(value: MaintenanceAutomation): Promise<MaintenanceAutomation>;
@@ -123,15 +125,18 @@ export function createMaintenanceService(
   return {
     getAutomationDefault: () => repository.automation.getDefault(),
     saveAutomationDefault: value => repository.automation.saveDefault(value),
+    async listReminderChannels() {
+      return (await repository.listReminderSubscriberChannels()).filter(channel => notificationStatements?.reminderChannelConfigured(channel));
+    },
     async previewScheduled(input) {
       const { title, wording, pagePaths } = await validateSchedule(input);
-      if (!pagePaths.includes("public")) throw new Error("Select the public page to preview its scheduled notice.");
       const presentation = await loadPreviewPresentation();
       const { startsAt, endsAt } = input;
       const fields = maintenanceNoticeDetails(renderMaintenanceWording({ title, ...wording }), null, title);
-      const content = renderMaintenanceNoticeEmail({ title, kind: "scheduled", startsAt, endsAt, timezone: presentation.timezone, fields });
-      const { subject, html } = brandEmail(content, presentation);
-      return { title, window: { startsAt, endsAt, ...formatMaintenanceWindow(startsAt, endsAt, presentation.timezone) }, fields, email: { subject, html } };
+      const email = pagePaths.includes("public")
+        ? brandEmail(renderMaintenanceNoticeEmail({ title, kind: "scheduled", startsAt, endsAt, timezone: presentation.timezone, fields }), presentation)
+        : null;
+      return { title, window: { startsAt, endsAt, ...formatMaintenanceWindow(startsAt, endsAt, presentation.timezone) }, fields, email: email && { subject: email.subject, html: email.html } };
     },
     async list() {
       const [records, details, automation] = await Promise.all([repository.listMaintenance(), repository.listCollectionDetails(), repository.automation.list()]);

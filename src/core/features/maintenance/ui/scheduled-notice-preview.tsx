@@ -5,7 +5,7 @@ import { tokenizeUpdateLinks } from "../../../shared/update-links";
 import { EmailMessage } from "../../incidents/ui/incident-preview";
 import type { ScheduledNoticePreview } from "../service";
 
-export function ScheduledNoticePreviewPanel({ requestBody }: { requestBody: string | null }) {
+export function ScheduledNoticePreviewPanel({ requestBody, pageLabel, emailAvailable }: { requestBody: string | null; pageLabel: string; emailAvailable: boolean }) {
   const [view, setView] = useState<"page" | "email">("page");
   const [result, setResult] = useState<{ body: string; preview?: ScheduledNoticePreview; error?: string } | null>(null);
   useEffect(() => {
@@ -26,24 +26,25 @@ export function ScheduledNoticePreviewPanel({ requestBody }: { requestBody: stri
 
   const current = result?.body === requestBody ? result : null;
   const preview = current?.preview;
+  const email = emailAvailable && view === "email" ? preview?.email : null;
   return <aside id="maintenance-notice-preview" aria-labelledby="maintenance-notice-preview-title">
     <div className="preview-heading">
       <h2 id="maintenance-notice-preview-title" className="eyebrow">Scheduled notice preview</h2>
-      <div className="preview-switch" role="group" aria-label="Preview as">
+      {emailAvailable ? <div className="preview-switch" role="group" aria-label="Preview as">
         <button type="button" aria-pressed={view === "page"} onClick={() => setView("page")}>Page</button>
         <button type="button" aria-pressed={view === "email"} onClick={() => setView("email")}>Email</button>
-      </div>
+      </div> : null}
     </div>
-    {!requestBody ? <p>Enter the notice wording, choose components and set the window to see the preview.</p>
+    {!requestBody ? <p>Enter the notice wording, select pages and components, and set the window to see the preview.</p>
       : current?.error ? <FormError>{current.error}</FormError>
       : !preview ? <LoadingState>Rendering this notice…</LoadingState>
-      : view === "email" ? <section className="preview-card email-preview">
+      : email ? <section className="preview-card email-preview">
         <p className="preview-type">Notification email</p>
-        <h3>{preview.email.subject}</h3>
-        <EmailMessage key={preview.email.html} html={preview.email.html} />
+        <h3>{email.subject}</h3>
+        <EmailMessage key={email.html} html={email.html} />
       </section>
       : <section className="preview-card">
-        <p className="preview-type">Public page</p>
+        <p className="preview-type">{pageLabel}</p>
         <span className="state-pill state-scheduled">Scheduled</span>
         <h3>{preview.title}</h3>
         <p className="maintenance-window"><time dateTime={preview.window.startsAt}>{preview.window.startText}</time>{" – "}<time dateTime={preview.window.endsAt}>{preview.window.endText}</time></p>

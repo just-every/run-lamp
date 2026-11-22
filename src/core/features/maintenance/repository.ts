@@ -6,10 +6,13 @@ import { createDatabase } from "../../platform/db/client";
 import { allocateReference, type AllocatedReference } from "../../shared/references/repository";
 import { createUlid } from "../../shared/ids";
 import { maintenance, maintenanceComponents } from "../../shared/schema";
+import { eventPreferenceSql, ordinarySubscriptionSql } from "../deliveries/subscriber-eligibility";
+import type { SubscriberChannel } from "../subscribers/limits";
 
 export type StoredMaintenance = typeof maintenance.$inferSelect;
 export type MaintenanceWording = Pick<StoredMaintenance, "affectedAudience" | "customerImpact">;
 export type StoredMaintenanceComponent = typeof maintenanceComponents.$inferSelect;
+export type MaintenanceReminderChannel = Exclude<SubscriberChannel, "email">;
 export interface MaintenanceNotice { id: string; maintenanceId: string; kind: "scheduled" | "rescheduled" | "reminder" | "started" | "completed" | "cancelled"; body: string; publishedAt: string; authorOperatorId: string | null; createdAt: string; updatedAt: string; }
 
 export interface ImportedMaintenanceUpdate { id: string; body: string; publishedAt: string; sourceStates: string }
@@ -39,6 +42,7 @@ export interface MaintenanceRepository {
   reinstateWithNotice(maintenanceId: string, startsAt: string, endsAt: string, updatedAt: string, notice: MaintenanceNotice, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
   listDue(now: string): Promise<StoredMaintenance[]>;
   listReminderDue(now: string): Promise<StoredMaintenance[]>;
+  listReminderSubscriberChannels(): Promise<MaintenanceReminderChannel[]>;
   writeNotice(input: MaintenanceNotice, notificationStatements: D1PreparedStatement[]): Promise<boolean>;
   listNotices(maintenanceId: string): Promise<MaintenanceNotice[]>;
 }
@@ -70,6 +74,14 @@ export function createMaintenanceRepository(binding: D1Database): MaintenanceRep
   return {
     automation: createMaintenanceAutomationRepository(binding),
     validatePagePaths: pagePaths => resolvePageSelection(binding, pagePaths),
+    async listReminderSubscriberChannels() {
+      const { results } = await binding.prepare(`SELECT DISTINCT s.channel FROM subscriber_directory s
+        WHERE s.state = 'active' AND ${eventPreferenceSql("maintenance")} AND ${ordinarySubscriptionSql()}
+          AND (s.channel IN ('webhook', 'sms') OR (s.channel IN ('slack', 'teams') AND EXISTS (
+            SELECT 1 FROM delivery_channel_destinations d WHERE d.id = s.id AND d.removed_at IS NULL
+          ))) ORDER BY s.channel`).all<{ channel: MaintenanceReminderChannel }>();
+      return results.map(({ channel }) => channel);
+    },
     async allocateMaintenanceReference() { return allocateReference(binding, "SCH"); },
     async listMaintenance() {
       return database.select().from(maintenance).orderBy(asc(maintenance.startsAt)).all();

@@ -30,7 +30,7 @@ function redirectToSignIn(requestUrl: URL): never {
 export const loadOperatorSession = createServerFn({ method: "GET" })
 .inputValidator(z.object({ path: z.string().regex(/^\/app(?:\/[^?#]*)?$/), view: z.string().max(40).optional() }))
 .handler(async ({ data: input }): Promise<OperatorSessionView> => {
-  const [{ getRequest, getRequestUrl, setResponseHeader }, { requestBindings }, { createApp }, { prepareAppMailBindings, isLocalMailExecution }, { operatorRequest }] = await Promise.all([
+  const [{ getRequest, getRequestUrl, setResponseHeader }, { requestBindings }, { createApp }, { prepareAppMailBindings }, { operatorRequest }] = await Promise.all([
     import("@tanstack/react-start/server"),
     import("../platform/bindings.server"),
     import("./server"),
@@ -74,6 +74,6 @@ export const loadOperatorSession = createServerFn({ method: "GET" })
     && bindings.RER_DEMO !== "1" && !bindings.RER_INSTALLATION_ID && requestUrl.protocol === "http:"
     && (host === "localhost" || host === "127.0.0.1") ? host : null;
   return { operator, pageName: settings.pageName, publicPageOrigin: publicPageOrigin(requestUrl, bindings.LAMP_PAGE_HOST),
-    timezone: settings.timezone, emailOff: bindings.MAIL_PROVIDER === "none" && !isLocalMailExecution(bindings),
+    timezone: settings.timezone, emailOff: runtime.services.mailConfiguration.primaryProvider === null,
     localPasskeys, path: input.path, data };
 });

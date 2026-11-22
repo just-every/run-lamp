@@ -106,14 +106,10 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     assert.equal((await previewWindow.innerText()).replace(/\s+/g, " "), "Jul 15, 09:00 AM – 10:00 AM Brisbane time");
     const times = target => target.locator("time").evaluateAll(nodes => nodes.map(node => node.dateTime));
     assert.deepEqual(await times(previewWindow), ["2027-07-14T23:00:00.000Z", "2027-07-15T00:00:00.000Z"]);
-    await preview.getByRole("button", { name: "Email", exact: true }).click();
-    const emailNotice = preview.frameLocator('iframe[title="Notification email message"]').locator("main > div");
-    await emailNotice.waitFor();
-    assert.match(await emailNotice.textContent(), /Start: Jul 15, 2027, 09:00 UTC\+10:00\n\nEnd: Jul 15, 2027, 10:00 UTC\+10:00/);
+    assert.equal(await preview.getByRole("button", { name: "Email", exact: true }).count(), 0, "email-off local maintenance has only a page preview");
     const revisedImpact = "Reports may load slowly while the index is rebuilt.";
     await create.getByLabel("Customer impact", { exact: true }).fill(revisedImpact);
-    await emailNotice.filter({ hasText: revisedImpact }).waitFor();
-    assert.ok((await emailNotice.textContent()).endsWith(`Customer impact: ${revisedImpact}`));
+    await preview.getByText(revisedImpact, { exact: true }).waitFor();
     assert.deepEqual((await api("/api/app/maintenance")).maintenance, [], "previewing and editing do not create a window");
     const created = page.waitForResponse(response => response.url().endsWith("/api/app/maintenance") && response.request().method() === "POST");
     await create.getByRole("button", { name: "Schedule window", exact: true }).click();

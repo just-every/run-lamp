@@ -19,7 +19,12 @@ export function registerMaintenanceRoutes(app: Hono<AppEnv>, service: Maintenanc
     if (!input.success) return context.json({ error: "Both maintenance automation choices must be true or false." },400);
     return context.json({ automation: await service.saveAutomationDefault(input.data) });
   });
-  app.get("/api/app/maintenance", async (context) => context.json({ maintenance: await service.list(), automation: await service.getAutomationDefault() }));
+  app.get("/api/app/maintenance", async (context) => {
+    const [maintenance, automation, reminderChannels] = await Promise.all([
+      service.list(), service.getAutomationDefault(), service.listReminderChannels(),
+    ]);
+    return context.json({ maintenance, automation, reminderChannels });
+  });
   app.post("/api/app/maintenance/preview", async context => {
     context.header("Cache-Control", "no-store");
     const input = maintenanceSchema.safeParse(await context.req.json().catch(() => null));

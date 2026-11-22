@@ -110,11 +110,13 @@ With `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` exported in the shell,
 runs the same command for the `production` installation and names the folder
 and exit status when it finishes.
 
-It writes a new folder holding every database table, every stored file with its
-metadata, and a `manifest.json` with checksums and the migrations the data needs.
-The folder must not exist yet or be empty. Keep it private: it holds subscriber
-addresses, sessions and sent mail. Pause operator work while it runs; the
-database is read in one transaction, but files are copied after it. Keep your
+It writes a folder holding database tables, stored files with their metadata,
+and a `manifest.json` with checksums and the migrations the data needs. Start
+with an empty or nonexistent folder and keep it private. Pause operator work
+while the command runs. The database is read in one transaction, and files are
+copied afterward. If a file disappears, Lamp re-lists the bucket once and
+reports any skipped files on the console and in the manifest. An `.incomplete`
+marker means the command did not finish. Retry in a new empty folder. Keep your
 input file and [its signing secrets](deploy.md#after-the-first-deploy)
 with the archive.
 

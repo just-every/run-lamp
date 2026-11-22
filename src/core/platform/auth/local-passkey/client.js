@@ -8,7 +8,12 @@ async function exchange(credential) {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({operation, credential}),
   });
-  if (!response.ok) throw new Error('Passkey request failed');
+  if (!response.ok) {
+    if (operation === 'enroll' && response.status === 409 && (await response.json()).error === 'passkey_already_enrolled') {
+      throw new Error('already-enrolled');
+    }
+    throw new Error('Passkey request failed');
+  }
   return response.json();
 }
 
@@ -27,7 +32,11 @@ if (!globalThis.PublicKeyCredential?.parseCreationOptionsFromJSON || !PublicKeyC
       await exchange(credential.toJSON());
       if (operation === 'signin') location.assign(button.dataset.returnTo);
       else location.reload();
-    } catch {
+    } catch (error) {
+      if (error.message === 'already-enrolled') {
+        message.textContent = 'A passkey is already enrolled. Reload to see your sign-in options.';
+        return;
+      }
       message.textContent = 'The passkey could not be used. Try again, or open the private link from rer dev.';
       button.disabled = false;
     }
