@@ -39,18 +39,12 @@ information.
 ## Run it locally
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
+curl -fsSL https://runeditrun.com/install.sh | sh && git clone --branch v1.11.26 https://github.com/just-every/run-lamp.git && (cd run-lamp && RER_OWNER_READY_TIMEOUT_MS=300000 "$HOME/.local/bin/rer" dev)
 ```
 
 That one line gets Lamp, brings Node and pnpm, installs everything, makes you the
 owner and prints a link that opens Lamp signed in. Git is required. See the
 [Run page](https://run-lamp.com/run) for the same launch and hosting options.
-
-Already have Node 22 or later? Use this alternative:
-
-```sh
-npx -y @runeditrun/rer dev just-every/run-lamp
-```
 
 After the curl install, to make `rer` available by name in new terminals, run:
 
@@ -83,9 +77,10 @@ The app host serves Lamp's public documentation at `/docs`. Start with the
 
 ## Source and tooling versions
 
-The [Run page's](https://run-lamp.com/run) combined curl line above clones the
-default branch, `main`, not a release tag, into a `run-lamp` folder and starts it; after that, run `~/.local/bin/rer dev` from that folder. `main` is Lamp's
-development source and may hold changes not yet in a release. The exact
+The [Run page's](https://run-lamp.com/run) command above clones the published
+`v1.11.26` release into `run-lamp`. The first launch allows up to five minutes
+for the owner-entry check, including the Chromium download on that release.
+After that, run `~/.local/bin/rer dev` from the same folder. The exact
 `@runeditrun/rer` pin is in `package.json` under `devDependencies`, locked in
 `pnpm-lock.yaml`. `package.json` and `RELEASE.json` name this checkout's Lamp
 version. To use a published release, choose a tag from the
@@ -125,7 +120,9 @@ Managed hosting includes mail: you need no provider account or mail key. RER
 fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and the private
 `MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
 authenticated sender and API key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR`
-and `MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail.
+and `MAIL_PROVIDER_API_KEY` when email is enabled. You can set `MAIL_PROVIDER=none`
+and use `rer signin` for terminal owner entry. Email sign-in, invitations and
+subscriber email need an enabled mail provider.
 [Deploy to Cloudflare](docs/deploy.md) is one guided page: it explains each input
 in the order the dry run asks for it, including how to authenticate a sending
 domain at SendGrid or Resend, and keeps them in a private
@@ -141,11 +138,11 @@ stop a running development server with `~/.local/bin/rer dev --stop` or a produc
 with `~/.local/bin/rer preview --stop`.
 
 ```sh
-~/.local/bin/rer deploy --dry-run --environment production --env-file "$HOME/.config/lamp/production.env"
-~/.local/bin/rer deploy --environment production --env-file "$HOME/.config/lamp/production.env"
+~/.local/bin/rer deploy --dry-run --environment production --env-file "$HOME/.config/lamp/production.env" --owner-name "Alex Morgan"
+~/.local/bin/rer deploy --environment production --env-file "$HOME/.config/lamp/production.env" --owner-name "Alex Morgan"
 ```
 
-The dry run validates and compiles locally without contacting Cloudflare. A
+Replace `Alex Morgan` with your name. The dry run validates and compiles locally without contacting Cloudflare. A
 deployment validates owner inputs, provisions or reuses resources, applies
 migrations, builds and uploads the Worker with secrets, and checks application health.
 Run `~/.local/bin/rer verify` separately for the full source and browser checks; deployment does

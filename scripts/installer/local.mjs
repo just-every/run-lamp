@@ -6,6 +6,7 @@ import {parseEnv} from 'node:util';
 import {localInstaller} from '@runeditrun/rer/local-installer';
 import {readSettings} from '@runeditrun/rer/adapter-settings';
 import {writePrivateFile} from '@runeditrun/rer/internal/onboarding/private-files.mjs';
+import {ensureChromium} from '@runeditrun/rer/internal/cli/browser-runtime.mjs';
 import {commandAdapter as createCommandAdapter} from '@runeditrun/rer/adapter';
 import {localPortability} from '@runeditrun/rer/portability';
 import {coreMigrationPrefix,pageInitializer} from '../platform-ledger.mjs';
@@ -78,7 +79,14 @@ const transfer={hostedExport:['node','scripts/export.mjs'],...localPortability({
 const docs=JSON.parse(await readFile(new URL('../../docs/site.json',import.meta.url),'utf8'));
 
 export const commandAdapter=createCommandAdapter(adapter,{
- product:model.product.name,dev:vite,preview,mailOffSignIn:"rer signin",
+ product:model.product.name,
+ async dev(context) {
+  // A cold download has its own budget before rer checks the owner link in Chromium.
+  const signal = AbortSignal.any([context.signal, AbortSignal.timeout(5 * 60 * 1000)]);
+  await ensureChromium(context.root, context.store, signal);
+  return vite(context);
+ },
+ preview,mailOffSignIn:"rer signin",
  publicPages:['/','/docs',...docs.sections.flatMap(section=>section.pages.map(page=>`/docs/${page.slug}`))],
  devIdentity:{entry:'src/server.dev.ts',output:['dist'],emailLinkTest:'tests/e2e/auth-adoption-journey.test.mjs'},verify:['pnpm',['run','verify:app']],deploy:lampDeploy(adapter),
  portability:transfer,generatedOutputs:['src/routeTree.gen.ts'],

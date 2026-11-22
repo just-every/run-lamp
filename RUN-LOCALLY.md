@@ -5,16 +5,14 @@ development mail is silently suppressed. Start it with the same line as the
 [Run page](https://run-lamp.com/run):
 
 ```sh
-curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp
+curl -fsSL https://runeditrun.com/install.sh | sh && git clone --branch v1.11.26 https://github.com/just-every/run-lamp.git && (cd run-lamp && RER_OWNER_READY_TIMEOUT_MS=300000 "$HOME/.local/bin/rer" dev)
 ```
 
 Git is required; the installer brings Node when needed and rer brings pnpm.
-This clones `main` (development source, not a release tag) into `run-lamp` and
-starts it. Already have Node 22 or later? Use this alternative:
-
-```sh
-npx -y @runeditrun/rer dev just-every/run-lamp
-```
+This clones the published `v1.11.26` release into `run-lamp` and starts it.
+The release's first owner-entry check can include a Chromium download. The
+one-liner allows up to five minutes for that check. Start from the same
+checkout next time with `rer dev`.
 
 After the curl install, if `~/.local/bin` is missing from your PATH, run the
 installer's Bash line once to make the command available now and in future
@@ -48,7 +46,8 @@ On first launch, `rer dev` installs locked dependencies and prepares a local
 owner automatically. When ready, it prints `RER_READY` with the app address and
 `RER_OPEN` with your private one-click owner entry link. Open the `RER_OPEN`
 link to work as the owner; no email is needed. Keep that link private.
-The development server has up to 15 minutes to become ready before rer reports a startup timeout.
+On current source, the first start gives Chromium up to five minutes to
+download before starting the app and checking the owner link.
 
 Local mail is not sent or retained, and there is no local inbox. Test emailed sign-in and subscriber delivery on a hosted installation
 with its real mail provider and mailbox.

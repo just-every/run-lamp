@@ -11,6 +11,17 @@ async function openPublishedPage(screen, url, content) {
   assert.fail(`The selected status page did not show ${content}.`);
 }
 
+async function readAccent(screen, entry, screenshots, diagnostic) {
+  await screen.locator('.masthead-brand').waitFor();
+  const rendered = await screen.evaluate(() => ({
+    inline: Array.from(document.querySelectorAll('head style')).map(style => style.textContent).join('\n'),
+    color: getComputedStyle(document.querySelector('.masthead-brand')).borderInlineStartColor,
+  }));
+  diagnostic(`${entry.pageName}: inline accent=${rendered.inline.includes(entry.accentColor)}, masthead border=${rendered.color}`);
+  await screenshots(screen, `${entry.kind}-accent-reader`);
+  return rendered;
+}
+
 export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl, api, localInput, screenshots, diagnostic }) {
   assert.equal(page.viewportSize().width, 1440);
   async function component(name, internal = false) {
@@ -21,11 +32,11 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
   const partnerQueue = await component('Partner pickup queue');
   const staff = {
     path: 'staff-browser', kind: 'staff', pageName: 'Staff operations', tagline: 'Dispatch and internal tools',
-    accentColor: '#315887', componentIds: [shared.id, staffConsole.id], components: [shared.name, staffConsole.name],
+    accentColor: '#8C3A14', renderedAccent: 'rgb(140, 58, 20)', componentIds: [shared.id, staffConsole.id], components: [shared.name, staffConsole.name],
   };
   const audience = {
     path: 'partners-browser', kind: 'audience', pageName: 'Partner operations', tagline: 'Pickup updates for partners',
-    accentColor: '#70502E', componentIds: [partnerQueue.id], components: [partnerQueue.name],
+    accentColor: '#4357A8', renderedAccent: 'rgb(67, 87, 168)', componentIds: [partnerQueue.id], components: [partnerQueue.name],
   };
   await page.goto(`${appUrl}/app/settings#page`);
   await operatorHydrated(page);
@@ -78,7 +89,15 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
   const assignedPage = await page.context().newPage();
   const customerPage = await anonymous.newPage();
   try {
+    const staffUrl = new URL(`/status-pages/${staff.path}/`, appUrl).href;
+    await openPublishedPage(assignedPage, staffUrl, staff.tagline);
+    const staffAccent = await readAccent(assignedPage, staff, screenshots, diagnostic);
     await openPublishedPage(assignedPage, audienceUrl, 'Pickup and dispatch updates for partners');
+    const audienceAccent = await readAccent(assignedPage, audience, screenshots, diagnostic);
+    for (const [entry, rendered] of [[staff, staffAccent], [audience, audienceAccent]]) {
+      assert.ok(rendered.inline.includes(entry.accentColor), `${entry.pageName} includes its accent in inline CSS`);
+      assert.equal(rendered.color, entry.renderedAccent, `${entry.pageName} masthead displays its saved accent`);
+    }
     await assignedPage.getByText(partnerQueue.name, { exact: true }).first().waitFor();
     assert.equal(await assignedPage.locator('img.brand-logo').evaluate(async logo => { await logo.decode(); return logo.naturalWidth > 0; }), true);
     assert.ok(!(await assignedPage.locator('footer').innerText()).includes('Powered by Lamp'));
@@ -132,7 +151,6 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
       assert.equal(await confirmation.getByRole('link', { name: 'View public page' }).count(), staffOnly ? 0 : 1);
     }
 
-    const staffUrl = new URL(`/status-pages/${staff.path}/`, appUrl).href;
     await openPublishedPage(assignedPage, staffUrl, staffTitle);
     await assignedPage.getByText(sharedTitle, { exact: true }).first().waitFor();
     await openPublishedPage(customerPage, pageUrl, sharedTitle);

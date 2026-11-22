@@ -40,7 +40,7 @@ async function confirmEmpty(api, worker, kind, name, id) {
  * everything before the first delete; a replaced or uncertain resource refuses it all,
  * except an uncertain one confirmed empty (see confirmEmpty). R2 object purges
  * additionally require the saved creation timestamp and recheck it before each delete. */
-export async function ownerRemove({api: provider, target, statePath, expectedResources = {}, clock = () => performance.now(), sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), readbackMs = 60000, purgeMs = 600000}) {
+export async function ownerRemove({api: provider, target, statePath, expectedResources = {}, report = () => {}, clock = () => performance.now(), sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), readbackMs = 60000, purgeMs = 600000}) {
   const api = withSettledLists(withScopeHints(provider), {clock, sleep, windowMs: readbackMs});
   const waitGone = async (read, resource) => {
     const start = clock();
@@ -114,26 +114,30 @@ export async function ownerRemove({api: provider, target, statePath, expectedRes
         }
       }
       if (worker) {
+        report(`Removing Worker ${worker}…`);
         try { await deleteWorker({api, worker, clock, sleep, maxWaitMs: readbackMs}); }
         catch (error) { if (error.status !== 404) throw Object.assign(new Error('remove-incomplete'), {resource: `worker:${worker}`, cause:error}); }
         await waitGone(async bounded => await workerSettings(bounded, worker) === null, `worker:${worker}`);
         remaining.delete(`worker:${worker}`);
         removed.push(`worker:${worker}`);
+        report(`Verified Worker ${worker} is gone.`);
       }
       await waitGone(async bounded => !(await bounded.list('/workers/durable_objects/namespaces')).some(row => row.script === target.worker), `durable-object:${target.worker}`);
       for (const item of doomed) {
+        const resource = `${item.kind}:${item.name}`;
         try {
-          if (item.kind === 'r2') await removeBucket(api, item, {clock, sleep, purgeMs});
+          report(item.kind === 'r2' ? `Purging stored objects from ${resource}…` : `Removing ${resource}…`);
+          if (item.kind === 'r2') await removeBucket(api, item, {clock, sleep, purgeMs, report});
           else {
             try { await remove[item.kind](api, item.id, item.name); }
             catch (error) { if (error.status !== 404) throw error; }
           }
-          await waitGone(async bounded => !findResource(await resourceKinds[item.kind].list(bounded), item.kind, item.name), `${item.kind}:${item.name}`);
-          remaining.delete(`${item.kind}:${item.name}`);
-          removed.push(`${item.kind}:${item.name}`);
+          await waitGone(async bounded => !findResource(await resourceKinds[item.kind].list(bounded), item.kind, item.name), resource);
+          remaining.delete(resource);
+          removed.push(resource);
+          report(`Verified ${resource} is gone.`);
         }
         catch (error) {
-          const resource = `${item.kind}:${item.name}`;
           failed.push({resource, code:error.message, error});
           // This step exhausted its budget or was refused. Keep all records;
           // don't spend a second readback budget before reporting the survivor.
@@ -196,9 +200,11 @@ function requireBucketIdentity(name, entry) {
 // Re-list the first bounded page after each batch: deleting while advancing a
 // cursor can skip objects. The saved creation identity is checked before every
 // destructive call, including every retry of the bucket delete.
-async function removeBucket(api, {name, entry}, {clock, sleep, purgeMs}) {
+async function removeBucket(api, {name, entry}, {clock, sleep, purgeMs, report}) {
   requireBucketIdentity(name, entry);
   const start = clock();
+  let lastReport = start;
+  let processed = 0;
   const resource = `r2:${name}`;
   const left = () => purgeMs - (clock() - start);
   const budget = () => {
@@ -221,6 +227,11 @@ async function removeBucket(api, {name, entry}, {clock, sleep, purgeMs}) {
       if (!await present()) return;
       try { await bounded.request(r2ObjectPath(name, key), {method: 'DELETE'}); }
       catch (error) { if (error.status !== 404) throw error; }
+      processed++;
+      if (clock() - lastReport >= 15_000) {
+        report(`R2 ${name}: processed ${processed} object deletions so far.`);
+        lastReport = clock();
+      }
     }
     if (!rows.length) {
       if (!await present()) return;

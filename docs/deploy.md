@@ -16,8 +16,10 @@ your mail provider, or you can deliberately turn email off in step 6. On the
 Free path, enabled mail uses your own provider and an authenticated sender
 domain. Managed hosting can supply mail without your own provider account.
 
-You need the Lamp folder from [Run Lamp locally](../RUN-LOCALLY.md) (run every
-command below from it) and a Cloudflare account. For enabled email, you also
+You need the published Lamp checkout from [Run Lamp locally](../RUN-LOCALLY.md)
+and a Cloudflare account. Run each command from that checkout. The Run page
+starts `v1.11.26`. For another tag, use the guide in that tag's checkout.
+For enabled email, you also
 need a mail provider and an authenticated sender domain. Custom-domain hosting
 needs domains whose DNS records you can change; workers.dev hosting does not.
 
@@ -123,12 +125,11 @@ six hex digits. You can change all four later in **Settings**.
 
 ```text
 SETUP_OPERATOR_EMAIL=owner@example.com
-OWNER_DISPLAY_NAME=Alex Morgan
 ```
 
-`SETUP_OPERATOR_EMAIL` is your own address: you become the page's owner and sign
-in with it. `OWNER_DISPLAY_NAME` is optional (the name shown for you; `Owner`
-when left out).
+`SETUP_OPERATOR_EMAIL` is the address you sign in with as the page's owner.
+Give your display name with `--owner-name` for the first deploy and its dry run,
+as shown in step 7. The checkout can reuse a name saved by `rer setup`.
 
 ## Step 6: Mail
 
@@ -228,19 +229,21 @@ If you are running a production preview instead, stop it with `rer preview --sto
 Then check your inputs:
 
 ```sh
-rer deploy --dry-run --environment production --env-file "$LAMP_DEPLOY_ENV"
+rer deploy --dry-run --environment production --env-file "$LAMP_DEPLOY_ENV" --owner-name "Alex Morgan"
 ```
 
-The dry run checks the file and builds Lamp on your computer without contacting
+Replace `Alex Morgan` with your own name in both commands. The dry run checks
+the file and builds Lamp on your computer without contacting
 Cloudflare. If an input is missing it lists each one by name with the step that
 explains it; add them and run it again. When it passes, deploy:
 
 ```sh
-rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV"
+rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV" --owner-name "Alex Morgan"
 ```
 
-The deploy checks your mail DNS, creates Lamp's database, file storage and queue
-in your Cloudflare account, uploads Lamp and checks it is healthy. It ends by
+The deploy creates Lamp's database, file storage and queue in your Cloudflare
+account, uploads Lamp and checks it is healthy. With email enabled, it checks
+your mail DNS. It ends by
 naming the address to sign in at (your `LAMP_APP_HOST`). It generates the four
 signing secrets `SETUP_TOKEN`, `SESSION_SECRET`, `SUBSCRIBER_TOKEN_SECRET` and
 `WEBHOOK_SIGNING_SECRET` and keeps them in `.rer/deploy/production.secrets.env`
@@ -273,6 +276,11 @@ the link it prints within 15 minutes; it works once:
 ```sh
 rer signin --environment production --env-file "$LAMP_DEPLOY_ENV"
 ```
+
+For an agent setting up Lamp through Run Edit Run Business, the first-owner
+sign-in link is the URL printed after `One-time sign-in link for the owner`
+by this command. Pass it only in `session.report` as `tools[i].sign_in`, with
+the same HTTPS host and port as that tool's address. Keep it out of chat and files.
 
 First-run setup then walks you through your components. Your public page is at
 `https://<LAMP_PAGE_HOST>`. See [terminal entry](operators-and-sign-in.md#terminal-entry-for-the-hosted-owner)
@@ -345,12 +353,15 @@ deployed it, with the same environment and input file:
 node scripts/remove-deployment.mjs --environment production --env-file "$LAMP_DEPLOY_ENV" --yes
 ```
 
-One invocation removes the public page Worker, then the app Worker with its
-database, files and queue, and reads back that none remains, including its
-Durable Object namespace. It allows up to 60 seconds per readback for Cloudflare
-to stop reporting a deleted resource and up to 10 minutes per R2 bucket to purge
-bounded object batches and retry a not-empty bucket delete. Large buckets can
-take about five minutes per GB-scale bucket. In custom-domain mode there is one Worker. `rer deploy --remove
+The command removes the public page Worker, then the app Worker with its
+database, files and queue. It verifies their removal, including the Durable
+Object namespace. It allows up to 60 seconds per readback and up to 10 minutes
+per R2 bucket. A large bucket can take more than one invocation. If you see
+`remove-incomplete`, run the same command again to resume from the retained
+records. Wait for `read back: none remains` before treating the removal as complete.
+The command prints the Worker removal phases. Current source also reports each
+resource and progress during a long R2 purge. In custom-domain mode there is one
+Worker. `rer deploy --remove
 --yes` alone does not remove the separate public page Worker of a `workers.dev`
 installation, so use this command.
 
@@ -362,10 +373,6 @@ publishes (up to four pages of 256 objects, with a one-second scheduling budget)
 A failed publication deletes nothing; a failed cleanup resumes on a later publish.
 Deployment removal purges all snapshot versions with the rest of that bucket.
 <!-- Run Edit Run fleet, 2026-11-17: bounded snapshot retention. -->
-
-If a provider refusal or exhausted budget leaves a resource unverified, the
-command stops with `remove-incomplete`, names the remaining resource and keeps
-its creation records; running the same command again resumes safely.
 
 Removal only touches what its creation records prove this environment created;
 it never matches by name. If an older installation has no creation records, the

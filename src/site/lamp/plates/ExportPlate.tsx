@@ -3,7 +3,7 @@ import { Plate } from './Plate';
 import { TERMINAL } from './sample';
 import './export-plate.css';
 
-const LABEL = 'Drawing of a terminal: pnpm run setup provisions Lamp, pnpm run deploy passes its smoke check, and pnpm run export writes every database record and stored file to a backup folder holding entities.json, manifest.json and objects.';
+const LABEL = 'Terminal example showing the rer deploy dry run, the hosted deployment, and the remote backup folder with entities.json, manifest.json and objects.';
 
 // Each word of a terminal line is kept whole, so a narrow terminal wraps between words, never inside `--environment`.
 function Words({ line }: { line: string }) {

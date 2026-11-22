@@ -2,7 +2,21 @@ import { Hono } from "hono";
 import { statusPagePrefix } from "../page-settings/page-selection";
 import type { createApp } from "../../app/server";
 import type { AppBindings, AppEnv } from "../../app/types";
+import { escapeHtml } from "./format";
+import { applyPublicIsolationHeaders } from "./headers";
 import { protectedSnapshotHeaders, registerPublicSnapshotRoutes } from "./routes";
+
+function signInRequired(request: Request, headers: Headers) {
+  if (!request.headers.get("Accept")?.includes("text/html")) {
+    return new Response(request.method === "HEAD" ? null : "Sign in to Lamp to read this status page.", { status: 401, headers });
+  }
+  const url = new URL(request.url);
+  const signIn = `/signin?${new URLSearchParams({ returnTo: url.pathname + url.search })}`;
+  applyPublicIsolationHeaders(headers, url.origin);
+  headers.set("Content-Type", "text/html; charset=utf-8");
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in to Lamp</title></head><body><main><h1>Sign in to Lamp</h1><p>A Lamp account is required to read this status page.</p><a href="${escapeHtml(signIn)}">Sign in</a></main></body></html>`;
+  return new Response(request.method === "HEAD" ? null : body, { status: 401, headers });
+}
 
 export async function protectedStatusPage(
   request: Request,
@@ -16,13 +30,15 @@ export async function protectedStatusPage(
     headers.set("Allow", "GET, HEAD");
     return new Response("Method not allowed.", { status: 405, headers });
   }
+  let page;
   try {
     // Resolve the ordinary, revocable Lamp session before opening any page
     // directory, pointer, retained object, or artifact (including misses).
     if (!await runtime.services.auth().getSession(request)) {
-      return new Response("Sign in to Lamp to read this status page.", { status: 401, headers });
+      return signInRequired(request, headers);
     }
-    if (!await runtime.services.statusPages.get(address.page)) {
+    page = await runtime.services.statusPages.get(address.page);
+    if (!page) {
       return new Response("Status page not found.", { status: 404, headers });
     }
   } catch {
@@ -32,7 +48,9 @@ export async function protectedStatusPage(
   const url = new URL(request.url);
   url.pathname = address.resource;
   const app = new Hono<AppEnv>();
-  registerPublicSnapshotRoutes(app, runtime.services.scopedSnapshots.forPage(address.page), statusPagePrefix(address.page));
+  registerPublicSnapshotRoutes(app, runtime.services.scopedSnapshots.forPage(address.page), {
+    prefix: statusPagePrefix(address.page), accentColor: page.accentColor,
+  });
   const response = await app.fetch(new Request(url, { method: request.method }), bindings, execution);
   return new Response(response.body, { status: response.status, headers: protectedSnapshotHeaders(new Headers(response.headers)) });
 }

@@ -175,11 +175,11 @@ function currentMaintenanceOverruns(response: Response, now: number) {
     }).transform(response);
 }
 
-export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPrefix?: string) {
+export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicSnapshotService, protectedPage?: { prefix: string; accentColor: string }) {
   // While the page is pre-launch every answer from the page host asks search engines to stay away.
   const serve = (artifact: (context: Context<AppEnv>) => string, download = false, missingArtifact?: string) => {
     return async (context: Context<AppEnv>) => {
-      if (protectedPrefix) return answerProtectedArtifact(service, artifact(context), context.req.url, protectedPrefix, missingArtifact);
+      if (protectedPage) return answerProtectedArtifact(service, artifact(context), context.req.url, protectedPage, missingArtifact);
       // The artifact read already carries the generation's pre-launch flag, so a served page reads the pointer once;
       // only an answer that never reached a stored artifact asks the service again.
       const seen: { prelaunch?: boolean } = {};
@@ -271,7 +271,7 @@ export function registerPublicSnapshotRoutes(app: Hono<AppEnv>, service: PublicS
   });
   app.get("*", async (context, next) => {
     const path = new URL(context.req.url).pathname;
-    if (protectedPrefix) return next();
+    if (protectedPage) return next();
     if (["/history.atom", "/history.rss"].includes(path)) return next();
     if (!isImportAliasPath(path)) return next();
     // Every valid Sorry month shares the retained collection redirect. Its
@@ -322,7 +322,7 @@ export function protectedSnapshotHeaders(headers = new Headers()) {
   return headers;
 }
 
-async function answerProtectedArtifact(service: PublicSnapshotService, key: string, requestUrl: string, prefix: string, missing?: string) {
+async function answerProtectedArtifact(service: PublicSnapshotService, key: string, requestUrl: string, { prefix, accentColor }: { prefix: string; accentColor: string }, missing?: string) {
   const headers = protectedSnapshotHeaders();
   applyPublicIsolationHeaders(headers, new URL(requestUrl).origin);
   try {
@@ -334,8 +334,19 @@ async function answerProtectedArtifact(service: PublicSnapshotService, key: stri
     headers.set("X-Lamp-Snapshot-Version", object.version);
     headers.set("X-Lamp-Snapshot-Generated-At", object.generatedAt);
     if (object.retainedReady) headers.set("X-Lamp-Snapshot-Retained", "true");
-    let response = new Response(object.bytes, { status, headers });
+    let rewriter: HTMLRewriter | undefined;
     if (object.contentType.includes("text/html")) {
+      rewriter = new HTMLRewriter();
+      // Protected pages have no Subscribe action, so use their saved accent in
+      // the masthead. Decorate on read so retained snapshots pick it up too.
+      if (/^#[0-9a-f]{6}$/i.test(accentColor)) {
+        const styles = `.masthead-brand{border-inline-start:4px solid ${accentColor.toUpperCase()};padding-inline-start:12px}`;
+        const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(styles));
+        const hash = btoa(String.fromCharCode(...new Uint8Array(digest)));
+        const policy = headers.get("Content-Security-Policy")!;
+        headers.set("Content-Security-Policy", policy.replace("style-src ", `style-src 'sha256-${hash}' `));
+        rewriter.on("head", { element(element) { element.append(`<style>${styles}</style>`, { html: true }); } });
+      }
       const scopeLink = (attribute: "href" | "src") => ({
         element(element: Element) {
           const value = element.getAttribute(attribute);
@@ -343,9 +354,13 @@ async function answerProtectedArtifact(service: PublicSnapshotService, key: stri
             && !["/signin", "/docs/accessibility/vpat"].includes(value)) element.setAttribute(attribute, prefix + value);
         },
       });
-      response = new HTMLRewriter().on("a[href], link[href]", scopeLink("href"))
+      rewriter.on("a[href], link[href]", scopeLink("href"))
         .on("img[src], script[src]", scopeLink("src"))
-        .on("a[data-lamp-signin]", { element(element) { element.remove(); } }).transform(response);
+        .on("a[data-lamp-signin]", { element(element) { element.remove(); } });
+    }
+    let response = new Response(object.bytes, { status, headers });
+    if (rewriter) {
+      response = rewriter.transform(response);
       response = currentMaintenanceOverruns(response, Date.now());
     }
     if (object.stale) {

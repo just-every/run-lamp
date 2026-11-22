@@ -16,7 +16,7 @@ try {
   if (record.accountId !== env.CLOUDFLARE_ACCOUNT_ID) throw new Error('Use the Cloudflare account that deployed this environment.');
   const ownership = deploymentOwnership({ environment: values.environment, resourcePrefix: record.resources.worker, pageWorker: record.resources.publicWorker, appHost: record.appHost, pageHost: record.pageHost }, env);
   const removed = [];
-  console.log('Removal budgets: up to 60 seconds per resource readback; up to 10 minutes per R2 bucket purge and delete.');
+  console.log('Removal allows up to 60 seconds per resource readback and 10 minutes per R2 bucket purge. If a long removal stops, run this same command again to resume.');
   // The public Worker refers to the app Worker's Durable Object. Release it
   // first, then clear schedules, consumers, stored objects and data.
   for (const page of [true, false]) {
@@ -26,7 +26,7 @@ try {
     }
     // Each pass can take a few minutes while Cloudflare confirms the data is gone.
     console.log(page ? 'Removing the public page Worker…' : 'Removing the app Worker, its database, files and queue…');
-    const result = await ownerRemove({ api: ownership.api, target: ownership.target(page), statePath: ownership.path(page),
+    const result = await ownerRemove({ api: ownership.api, target: ownership.target(page), statePath: ownership.path(page), report: console.log,
       expectedResources: page ? {} : {d1: [record.resources.database], r2: [record.resources.bucket], queues: [record.resources.queue]} });
     removed.push(...result.removed);
   }
@@ -37,7 +37,7 @@ try {
   if (error.message === 'remove-incomplete') {
     const remaining = [...new Set([...(error.remaining ?? []), ...(error.resource ? [error.resource] : [])])];
     console.error(`Removal stopped: remove-incomplete. ${remaining.join(', ') || 'An unverified resource'} remains or could not be verified absent; running the same command again resumes with the retained records.`);
-      process.exitCode = 1;
+    process.exitCode = 1;
   } else {
     console.error(`Removal stopped: ${error.code === 'ENOENT' ? 'no deployment record for this environment' : error.message}. Keep the records and correct the cause before running the same command again.`);
     process.exitCode = 1;

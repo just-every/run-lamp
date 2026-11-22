@@ -33,13 +33,17 @@ silently suppressed.
 
 ## Sign in
 
-Operators use email sign-in links. Locally, the development server opens a
-private one-click owner entry address. For a deployed installation, request a link from the sign-in page and
-open it from the same host.
+Operators use email sign-in links when email is enabled. For a deployed
+installation, request a link from the sign-in page and open it from the same
+host. Locally, `rer dev` prints a private one-click owner entry address on the
+`RER_OPEN` line of its terminal output.
 
 The hosted owner can also use `rer signin` from the deploying checkout with the
 original Cloudflare credentials and environment. It prints a single-use link
 without sending email; follow [terminal entry](operators-and-sign-in.md#terminal-entry-for-the-hosted-owner).
+When an agent sets up a hosted Lamp through Run Edit Run Business, it takes the
+first-owner HTTPS link from the `rer signin` terminal output and passes it only
+as `tools[i].sign_in` in `session.report`. Keep the link out of chat and files.
 Optional OpenID Connect
 through Auth, Google, Microsoft or Okta can be linked and enabled by an owner;
 email links remain available. SCIM and role synchronization are not supported.

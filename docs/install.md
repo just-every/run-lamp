@@ -2,14 +2,12 @@
 
 Lamp uses the exact `@runeditrun/rer` pin in `package.json` under
 `devDependencies`, locked in `pnpm-lock.yaml`, and can run locally or in your
-Cloudflare account. For the local path, run `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-lamp`, which installs rer, clones Lamp into `run-lamp`, installs dependencies, sets up the first owner and starts it. Git is required; rer brings Node and pnpm. Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-lamp` does the same. To start it again later, run the same line from the same folder, or `cd run-lamp && rer dev` (after the `curl` installer, a terminal without `~/.local/bin` on PATH needs `export PATH="$HOME/.local/bin:$PATH"` first or it says `rer: command not found`; `"$HOME/.local/bin/rer" cli path` shows the line for your shell).
-The [local guide](../RUN-LOCALLY.md) has the details. Local mail is silently
+Cloudflare account. The [local guide](../RUN-LOCALLY.md) gives the one-line
+install for the published release and shows how to restart it. Local mail is silently
 suppressed and not retained; use a hosted installation to exercise real email delivery.
 
-That start line clones `main`, Lamp's development source, not a release tag. Choose a
-published tag from the [releases page](https://github.com/just-every/run-lamp/releases);
-see [source and tooling versions](../README.md#source-and-tooling-versions) to use
-that release instead. `rer --version` names the `rer` you installed first and the
+To use another published tag, see [source and tooling versions](../README.md#source-and-tooling-versions).
+`rer --version` names the `rer` you installed first and the
 version the checkout pins second. After dependencies are installed, commands
 inside the checkout run that pin; the installed CLI starts it.
 
@@ -28,8 +26,9 @@ Managed hosting includes mail without a provider account or mail key from you.
 RER fills and hides `MAIL_PROVIDER=rer`, `MAIL_FROM`, `MAIL_RELAY_URL` and private
 `MAIL_API_KEY`. Free and Assisted hosting keep your own Resend or SendGrid account,
 authenticated sender and key, using `MAIL_FROM_ADDRESS`, `MAIL_DKIM_SELECTOR` and
-`MAIL_PROVIDER_API_KEY`. Every hosted installation needs working mail for operator
-sign-in and subscriber messages; terminal recovery links do not replace it.
+`MAIL_PROVIDER_API_KEY` when email is enabled. With `MAIL_PROVIDER=none`, the
+owner can use `rer signin` and Lamp keeps publishing status updates. See
+[the mail-off settings](deploy.md#or-deliberately-turn-email-off).
 
 Choose two distinct hostnames for the public status page and operator app. Use
 custom domains in your Cloudflare account, or use that account's existing
@@ -44,7 +43,7 @@ you supply from generated secrets and shows how to find the `workers.dev` hosts.
 For Free, Assisted and native deployment, prepare your own sender as follows.
 Managed hosting supplies the sender and relay credential automatically.
 
-`MAIL_PROVIDER` selects `resend` (the native command's default) or `sendgrid`.
+To send email, set `MAIL_PROVIDER` to `resend` or `sendgrid`.
 Set it explicitly to match your key. Authenticate the domain of
 `MAIL_FROM_ADDRESS` in that provider and copy its DNS records to your DNS host:
 [step 6 of Deploy to Cloudflare](deploy.md#step-6-mail) walks through it at

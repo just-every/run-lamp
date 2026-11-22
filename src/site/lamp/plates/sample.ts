@@ -158,12 +158,9 @@ export const DELIVERIES = [
 /** The operator Settings screen's first two public page fields, in the product's order. */
 export const SETTINGS = [['Host name', HOST], ['Accent colour', '#18221b']];
 
-/** In, live and out, in the owner's own terminal: setup (scripts/setup.mjs; the worker's name from resourceNames in
- * scripts/ops-config.mjs), deploy (scripts/deploy.mjs, on an RFC 2606 app host) and the export (OPERATIONS.md), with the
- * entity count a real local export printed (41 tables). */
+/** The hosted dry run, deployment and backup in the Cloudflare guide. */
 export const TERMINAL = [
-  { command: 'pnpm run setup', output: ['Provisioned lamp-production; migrations, setup operator, and initial page settings are initialized.'] },
-  { command: 'pnpm run deploy', output: ['Deployment smoke check passed for lamp.example.com.'] },
-  { command: 'pnpm run export -- --remote --environment production --out ./lamp-backup', output: ['Exported 41 database entities and 186 stored files to ./lamp-backup.'] },
-  { command: 'ls ./lamp-backup', output: ['entities.json  manifest.json  objects'] },
+  { command: 'rer deploy --dry-run --environment production --env-file "$LAMP_DEPLOY_ENV" --owner-name "Alex Morgan"', output: ['Local dry run complete.'] },
+  { command: 'rer deploy --environment production --env-file "$LAMP_DEPLOY_ENV" --owner-name "Alex Morgan"', output: ['Deployment smoke check passed for lamp.example.com.'] },
+  { command: 'rer export --target remote --output exports/hosted', output: ['entities.json  manifest.json  objects'] },
 ];
