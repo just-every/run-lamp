@@ -460,7 +460,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "bea76389abc32cdb75ab37b34b0a416556af827471dfa80fbb87cf4f92ff80ae",
+      "sha256": "de578d9dbe8025beae5ace27b2b4ae89a114e6bfd40d1d433064e1da8f069eb8",
       "executable": false
     },
     ".gitignore": {
@@ -10264,15 +10264,15 @@
       "executable": false
     },
     "tests/release/installation-browser.mjs": {
-      "sha256": "950476ac2b82c640f1f57f2fb431fcb0c43581bb78bed6ee26eeaddea9eae8c7",
+      "sha256": "73cf4b42a46c2a9714cf60d745678a58b3079b894e6c26f123323f7afc4d6276",
       "executable": false
     },
     "tests/release/installation-journey.mjs": {
-      "sha256": "62630fe9cb7c09f23afa7f4bbc6d933d293b3d2188a611e38de0b38f91a511c3",
+      "sha256": "5cddb4b62ffba9b79c4bc421fb42d300c724b576af6e77580a333dc3dbbdf757",
       "executable": false
     },
     "tests/release/installation-runtime.mjs": {
-      "sha256": "dd94247fb8247f4638528c467c8855feaa7d9cad44c43f7be7b49f855c31352f",
+      "sha256": "c952192e866f374250e794b18e78aefc58650ed18615ba3c7b5f78d9e3cb5af7",
       "executable": false
     },
     "tests/release/journeys.mjs": {
@@ -10283,8 +10283,12 @@
       "sha256": "aad58c13ad4c21e7d9c65f9360fc467ea997aca3a34860bbed49c1871b6a0213",
       "executable": false
     },
+    "tests/release/readme-guide.mjs": {
+      "sha256": "34242d1eb5b3fd320243b047fca209a7c294005a8205e6b50787e7336cd7de00",
+      "executable": false
+    },
     "tests/release/README.md": {
-      "sha256": "ffdb2056601b234900043b9c9f789102d859335d01e6c18d490c99483aae57ee",
+      "sha256": "247d051c58cd43006b9fe184ee0b8b3cc945670ba6709e1f75c7fbbe5f24fcef",
       "executable": false
     },
     "tests/release/runtime.mjs": {

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join } from "node:path";
@@ -14,7 +15,7 @@ export async function until(check, label, timeout = 120000) {
   throw Error(`Timed out: ${label}`);
 }
 
-export async function installation(mode) {
+export async function installation(mode, guide) {
   const source = process.cwd();
   const directory = await mkdtemp(join(tmpdir(), `lamp-release-${mode}-`));
   const home = join(directory, "home");
@@ -36,7 +37,7 @@ export async function installation(mode) {
     X_LOCAL_EXPLORER: "false",
   };
   const processes = new Map();
-  let root, installed = false;
+  let root;
   function launch(command, args, cwd = root ?? directory) {
     const child = spawn("nice", ["-n", "15", command, ...args], {
       cwd, env, detached: true, stdio: ["ignore", "pipe", "pipe"],
@@ -80,24 +81,26 @@ export async function installation(mode) {
     try {
       // Closing the standalone installer also closes the application it owns.
       for (const process of processes.values()) await stop(process);
-      if (installed && root) await run(join(home, ".local/bin/rer"), ["dev", "--stop"]);
+      // Before dependency installation the stop command cannot dispatch to
+      // the checkout's rer, and there is no native server to stop.
+      if (root && existsSync(join(root, "node_modules/@runeditrun/rer/package.json")))
+        await run(join(home, ".local/bin/rer"), ["dev", "--stop"]);
     } finally {
       for (const process of processes.values()) await stop(process);
       await rm(directory, { recursive: true, force: true });
     }
   }
   try {
-    // The Run page's one line clones the public repository into its repo-name folder; do that clone, then select this candidate.
-    const runPage = await readFile(join(source, "src/site/run.ts"), "utf8");
-    const line = /clone:\s*'npx -y @runeditrun\/rer dev (just-every\/([\w.-]+))'/.exec(runPage);
-    const repository = /repository:\s*'(https:\/\/github\.com\/just-every\/[\w.-]+?)(?:\.git)?'/.exec(runPage);
-    // The folder `git clone` creates is the repository's name in the clone URL, minus .git; the one-line install names the same repository.
-    const folder = repository && /\/([^/]+)$/.exec(repository[1]);
-    assert.ok(line && repository && folder && folder[1] === line[2], "Run page provides the one-line install and its repo-name folder");
-    const clone = [null, `${repository[1]}.git`, folder[1]];
+    // README supplies the public installer and exact clone command. The
+    // standalone installer journey discovers its public entry from the Run page.
+    const start = guide ?? await publicLaunch(source);
+    const installerPath = join(directory, "install-rer.sh");
+    await run("curl", ["-fsSL", start.installer, "-o", installerPath]);
+    await run("sh", [installerPath]);
     const sha = (await run("git", ["rev-parse", "HEAD"], source)).trim();
-    await run("git", ["clone", clone[1], clone[2]]);
-    root = join(directory, clone[2]);
+    const ref = start.tag ? ["--branch", start.tag] : [];
+    await run("git", ["clone", ...ref, start.repository]);
+    root = join(directory, start.folder);
     // A pre-push candidate need not exist on the public remote yet. Import
     // exactly its commit object after the real public clone succeeds.
     await run("git", ["fetch", "--no-tags", source, sha]);
@@ -112,15 +115,20 @@ export async function installation(mode) {
         else throw error;
       }
     }
-    const site = await readFile(join(root, "src/base/run-site.ts"), "utf8");
-    const installer = /curl -fsSL (https:\/\/[^\s'`]+) \| sh/.exec(site);
-    assert.ok(installer, "Run page provides its actual public installer");
-    const installerPath = join(directory, "install-rer.sh");
-    await run("curl", ["-fsSL", installer[1], "-o", installerPath]);
-    await run("sh", [installerPath]);
-    installed = true;
     const rer = join(home, ".local/bin/rer");
     // Playwright uses bootstrap's real browser, while child tools use empty HOME.
     return { root, env, rer, run, launch, stop, close };
   } catch (error) { await close(); throw error; }
+}
+
+async function publicLaunch(source) {
+  const runPage = await readFile(join(source, "src/site/run.ts"), "utf8");
+  const line = /clone:\s*'npx -y @runeditrun\/rer dev (just-every\/([\w.-]+))'/.exec(runPage);
+  const repository = /repository:\s*'(https:\/\/github\.com\/just-every\/[\w.-]+?)(?:\.git)?'/.exec(runPage)?.[1];
+  const folder = repository?.split("/").at(-1);
+  assert.ok(line && folder === line[2], "Run page provides the one-line install and its repo-name folder");
+  const site = await readFile(join(source, "src/base/run-site.ts"), "utf8");
+  const installer = /curl -fsSL (https:\/\/[^\s'`]+) \| sh/.exec(site)?.[1];
+  assert.ok(installer, "Run page provides its actual public installer");
+  return { installer, repository: `${repository}.git`, folder };
 }

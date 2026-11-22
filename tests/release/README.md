@@ -41,10 +41,11 @@ runtimes. Provider delivery, deployed infrastructure and browser interaction are
 outside this release upgrade check.
 
 `.github/workflows/release.yml` runs three independent jobs on release tags,
-nightly and manual dispatch. The upgrade job fetches full tag history and runs
+a schedule and manual dispatch. The upgrade job fetches full tag history and runs
 `verify:release` from that default previous tag. The other jobs
 run the actual standalone browser installer and the README's canonical local
-launch journey. They stay outside the ordinary push/PR verification plan.
+launch journey. The existing Verify ownership job also runs the README journey
+on branch pushes and PRs.
 
 To run either installation journey after installing the pinned dependencies and
 Playwright Chromium:
@@ -54,14 +55,16 @@ LAMP_RELEASE_JOURNEY=installer node tests/release/installation-journey.mjs
 LAMP_RELEASE_JOURNEY=readme node tests/release/installation-journey.mjs
 ```
 
-Both fetch the public installer declared by the Run page, install rer into a
-temporary home, clone the public repository and select the candidate revision.
+Both install rer using the public installer in a temporary home, clone the
+public repository and select the candidate revision.
 The exact candidate commit is fetched from the calling checkout after the public
 clone, so unpublished commits work too. Tracked working changes are copied into
 that candidate. They install real
 frozen dependencies without sharing node_modules or copying private state.
-The README journey follows README → RUN-LOCALLY and runs its initial `rer dev`
-command with an isolated free port. The installer journey launches
+The README journey follows README → RUN-LOCALLY, runs the guide's installer
+and tagged clone steps, and runs its bare `rer dev` command from the candidate
+with an isolated free port. It checks that the candidate's rendered Run page
+uses the same launch steps as the guide. The installer journey launches
 `node scripts/install.mjs --no-open --no-prefill` and approves local installation
 in Chromium, opens its exact private entry in a separate app tab, and submits
 the native sign-in confirmation. Both consume their private owner entry in memory, create a component,
