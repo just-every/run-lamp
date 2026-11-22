@@ -2690,12 +2690,14 @@ Core · target · **partial** · Cites BASE-MAIL-001, BASE-OPS-004
 
 Core · target · **partial** · From NOTIFY-019 · Cites BASE-MAIL-001, BASE-PUBLIC-001
 
-**Requirement.** Owners brand notification mail per page and per audience page, while the sender stays authenticated under NOTIFY-008 and NOTIFY-010. NOTIFY-022 preserves required links independently of custom wording.
+**Requirement.** Owners brand notification mail per page and per audience page, while the sender stays authenticated under NOTIFY-008 and NOTIFY-010. NOTIFY-022 preserves required links independently of custom wording. The ct ruling of 21 November 2026 at 10:01 UTC states that on a managed relay the deployment owns From and Reply-To (display name, subject prefix, logo, header, footer and postal line apply; Reply-To or a custom From is refused with its named reason); on an owner-configured provider (SendGrid, Resend) the owner sets Reply-To and the authenticated From.
 
 **Acceptance.**
 1. The owner sets sender display name, reply-to address, subject prefix and plain-text header/footer, previews through UPDATE-004 and may clear the custom footer.
+   Note for settings (ct, 21 November 2026 at 10:01 UTC): on a managed relay the deployment owns From and Reply-To (display name, subject prefix, logo, header, footer and postal line apply; Reply-To or a custom From is refused with its named reason); on an owner-configured provider (SendGrid, Resend) the owner sets Reply-To and the authenticated From.
 2. An uploaded logo is served from the public page's own host, has the page name as alternative text in HTML mail and is absent from plain-text mail; another host's logo URL cannot be saved.
 3. The next message after branding has the configured display name, authenticated From address, reply-to, subject prefix, header, footer and logo.
+   Note for delivery (ct, 21 November 2026 at 10:01 UTC): on a managed relay the deployment owns From and Reply-To (display name, subject prefix, logo, header, footer and postal line apply; Reply-To or a custom From is refused with its named reason); on an owner-configured provider (SendGrid, Resend) the owner sets Reply-To and the authenticated From.
 4. Every AUD-001 audience page can keep its own branding settings.
 5. An owner may add a postal address line, which Lamp suggests where postal identification is required.
 
