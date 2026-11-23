@@ -87,6 +87,10 @@ When `rer setup` asks, use the original owner's email from before the reset.
 After an import, run setup before restarting Lamp so its local private settings
 match that restored owner.
 
+Local passkeys must be enrolled again after restoring an archive. Start Lamp
+with `rer dev --host localhost`, open the private `RER_OPEN` link as the owner,
+and choose **Settings → Sign-in → Set up a local passkey**.
+
 To move the archive to a fresh checkout, stop the source server before exporting.
 Copy the archive into the destination checkout at `exports/lamp.rer` (create the
 folder there if needed). On the destination, keep the local install empty: do

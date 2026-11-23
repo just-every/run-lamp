@@ -19,23 +19,23 @@ const COUNT_LABELS: Record<string, string> = {
 };
 
 const plural = (count: number, one: string, many = `${one}s`) => `${count} ${count === 1 ? one : many}`;
+const confirmationMailOff = "Email is off for this installation. Enable email to send confirmations.";
 
 function Counts({ check }: { check: PageDataCheck }) {
   return <ul className="page-data-counts">{Object.entries(check.counts).map(([key, count]) => <li key={key}><strong>{count}</strong> {COUNT_LABELS[key] ?? key}</li>)}</ul>;
 }
 
-function Consent({ consent }: { consent: SubscriberConsent }) {
+function Consent({ consent, emailOff }: { consent: SubscriberConsent; emailOff: boolean }) {
   if (!consent.emailSubscribers) return null;
   const subscribers = plural(consent.emailSubscribers, "email subscriber");
   if (consent.kept) return <p>{subscribers} keep their state: the file’s subscriber consent was verified.</p>;
   const why = consent.provenance === "unsigned"
     ? "this older file has no verifiable subscriber consent"
     : "subscriber consent could not be verified for this file";
-  return <p className="page-data-held">{subscribers} will be held, and receive nothing, until you send each of them one confirmation email: {why}.</p>;
+  return <p className="page-data-held">{subscribers} will be held because {why}. Held subscribers receive nothing until they confirm by email.{emailOff ? ` ${confirmationMailOff}` : ""}</p>;
 }
 
-function HeldSubscribers({ held, onChange }: { held: HeldConfirmations; onChange: (next: HeldConfirmations) => void }) {
-  const { emailOff } = getRouteApi("/app").useLoaderData();
+function HeldSubscribers({ held, emailOff, onChange }: { held: HeldConfirmations; emailOff: boolean; onChange: (next: HeldConfirmations) => void }) {
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const formatOperatorTime = useOperatorTime();
@@ -61,13 +61,14 @@ function HeldSubscribers({ held, onChange }: { held: HeldConfirmations; onChange
     {held.held > 0 && <p><strong>{plural(held.held, "restored email subscriber")}</strong> {held.held === 1 ? "is" : "are"} held for a confirmation email. Held subscribers receive nothing. Each one you send a confirmation stays subscribed only if they follow its link within 72 hours. Anyone you have not sent one is deleted{held.deleteAfter ? ` from ${formatOperatorTime(held.deleteAfter)}` : ""}.</p>}
     {message && <p className="save-message">{message}</p>}
     {held.held > 0 && <>
-      {emailOff && <p id="restore-confirmations-mail-off">Email is off for this installation. Enable email to send confirmations.</p>}
+      {emailOff && <p id="restore-confirmations-mail-off">{confirmationMailOff}</p>}
       <div className="form-actions"><Button type="button" onClick={send} disabled={emailOff || sending} aria-describedby={emailOff ? "restore-confirmations-mail-off" : undefined}>{sending ? "Sending…" : "Send confirmation emails"}</Button></div>
     </>}
   </div>;
 }
 
 export function PageDataCard() {
+  const { emailOff } = getRouteApi("/app").useLoaderData();
   const [file, setFile] = useState<File | null>(null);
   const [check, setCheck] = useState<PageDataCheck | null>(null);
   const [status, setStatus] = useState<string | null>(null);
@@ -123,7 +124,7 @@ export function PageDataCard() {
     {check && <div className="page-data-check" role="status">
       {check.pageName && <p>{check.pageName}, exported {check.exportedAt?.slice(0, 10)}:</p>}
       <Counts check={check} />
-      {check.consent && <Consent consent={check.consent} />}
+      {check.consent && <Consent consent={check.consent} emailOff={emailOff && check.ok && !status} />}
       {check.problems.map((problem) => <FormError key={problem}>{problem}</FormError>)}
       {check.ok && !status && <>
         <p>This page can take this file. Nothing has been written yet. Restoring sends no emails.</p>
@@ -137,6 +138,6 @@ export function PageDataCard() {
       <Button variant="secondary" type="button" onClick={() => send("check")} disabled={working || !file}>{working ? "Checking…" : "Check file"}</Button>
       <Button type="button" onClick={() => send("restore")} disabled={working || !file || !check?.ok}>Restore page data</Button>
     </div>
-    {held && held.held > 0 && <HeldSubscribers held={held} onChange={setHeld} />}
+    {held && held.held > 0 && <HeldSubscribers held={held} emailOff={emailOff} onChange={setHeld} />}
   </section>;
 }

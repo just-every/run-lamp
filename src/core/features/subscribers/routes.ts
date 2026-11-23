@@ -58,7 +58,7 @@ function parsedComponentIds(value: unknown) {
   });
 }
 
-export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; prelaunch?: () => Promise<boolean>; localMail?: boolean } = {}) {
+export function registerSubscriberRoutes(app: Hono<AppEnv>, service: SubscribersService, options: { rateLimiter?: PublicWriteRateLimiter; prelaunch?: () => Promise<boolean>; localMail?: boolean; smsConfigured?: () => boolean } = {}) {
   registerSubscriberIntakeRoutes(app,service,options);
   // The link pages of existing subscribers keep working before launch, but offer no way back to a form that is not there.
   const subscribeOffered = async () => !(await options.prelaunch?.());
@@ -152,11 +152,17 @@ export function registerSubscriberRoutes(app: Hono<AppEnv>, service: Subscribers
   app.get("/api/app/subscribers", async (context) => {
     const parsed = subscriberQuerySchema.safeParse(context.req.query());
     if (!parsed.success) return context.json({ error: "Invalid subscriber query.", issues: parsed.error.issues }, 400);
-    const page = await service.listPage(parsed.data.limit, parsed.data.offset);
+    const [page, capacity, confirmationEmailAvailable] = await Promise.all([
+      service.listPage(parsed.data.limit, parsed.data.offset),
+      service.getLimits(),
+      service.canSendConfirmationEmail(),
+    ]);
     return context.json({
       subscribers: page.subscribers,
-      capacity: await service.getLimits(),
+      capacity,
       localMail: options.localMail === true,
+      confirmationEmailAvailable,
+      smsAvailable: options.smsConfigured?.() ?? false,
       limit: parsed.data.limit,
       offset: parsed.data.offset,
       hasMore: page.hasMore,

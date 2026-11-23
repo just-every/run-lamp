@@ -776,6 +776,14 @@ test('The built hosted mail-off owner signs in, finishes native first-run after 
           await preview.locator('.preview-card').waitFor();
           assert.equal(await preview.getByRole('button', { name: /^Email/ }).count(), 0);
           assert.equal(await preview.locator('iframe').count(), 0);
+          await page.goto(appOrigin + '/app/subscribers');
+          await operatorHydrated(page);
+          const addSubscriber = page.getByRole('region', { name: 'Add subscriber' });
+          const channel = addSubscriber.getByLabel('Channel');
+          assert.equal(await channel.inputValue(), '', 'unavailable email is never selected by default');
+          assert.equal(await channel.locator('option[value="email"]').isDisabled(), true);
+          assert.equal(await channel.locator('option[value="webhook"]').isDisabled(), true, 'webhook enrollment also requires confirmation email');
+          assert.equal(await addSubscriber.locator('button[type="submit"]').isDisabled(), true);
           await page.goto(pageOrigin + '/');
           assert.equal(await page.locator('form[action="/subscribe"]').count(), 0, 'the hosted public page does not offer unusable email signup');
           await page.getByText('Email subscriptions are unavailable for this installation.', { exact: true }).first().waitFor();

@@ -84,9 +84,14 @@ subscribers will be held, before anything is written. Held subscribers receive
 nothing. Under **Restore page data**, **Send confirmation emails** sends each of
 them one confirmation; whoever follows its link within 72 hours is subscribed
 again, and the rest are deleted as unconfirmed. Held subscribers you never send
-one to are deleted, address and all, 30 days after the restore. Webhook
-subscribers are restored as they were: a webhook endpoint has no confirmation
-step anywhere in Lamp.
+one to are deleted, address and all, 30 days after the restore. To send these
+confirmations, the target installation must have email configured and enabled.
+With email off, the send action is unavailable.
+
+Webhook subscribers keep their saved state when you restore page data. When you
+add a webhook under **Subscribers → Add subscriber**, Lamp requires a contact
+email and sends a confirmation to that address. The webhook starts receiving
+notifications when the contact confirms.
 
 Scheduled updates and maintenance in the file carry on as scheduled. Any that
 fell due between the export and the restore run within a minute of it and notify
@@ -160,6 +165,10 @@ transferring an archive or resetting data. Export before reset, import only into
 an empty destination, then run `rer setup` with the original or restored owner's
 email before restarting Lamp. `rer export` and `rer import` work on the local
 installation only; the commands above cover a hosted one.
+
+Local passkeys must be enrolled again after restoring an archive. Start Lamp
+with `rer dev --host localhost`, open the private `RER_OPEN` link as the owner,
+and choose **Settings → Sign-in → Set up a local passkey**.
 
 The [operations reference](../OPERATIONS.md#portable-backups-and-restore) has
 the technical details of the archive.

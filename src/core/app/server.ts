@@ -128,7 +128,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerBriefRoutes(app, services.briefs);
   registerAiRoutes(app, services.ai);
   registerMaintenanceRoutes(app, services.maintenance);
-  registerSubscriberRoutes(app, services.subscribers, { rateLimiter: publicWriteLimiter, prelaunch: linkPagesPrelaunch, localMail });
+  registerSubscriberRoutes(app, services.subscribers, { rateLimiter: publicWriteLimiter, prelaunch: linkPagesPrelaunch, localMail, smsConfigured: services.sms.configured });
   registerIncidentFollowSettingsRoutes(app,bindings.DB,services.publicSnapshots.rebuild);
   registerPrelaunchRoutes(app,snapshotBlobs,bindings.DB,()=>services.publicSnapshots.rebuild(true));
   registerSmsRoutes(app,services.sms,()=>services.subscribers.getPageName(),bindings.TWILIO_AUTH_TOKEN,publicWriteLimiter);

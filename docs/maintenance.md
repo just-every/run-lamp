@@ -26,6 +26,12 @@ schedule maintenance, 24 hours before it starts, when it starts and when it
 completes. Changes and cancellations notify the subscribers already notified
 about that window. Imported maintenance history does not replay these notices.
 
+With email off, Lamp cannot send email notices or reminders. The maintenance
+form shows whether an active subscriber on an available non-email channel can
+receive the 24-hour reminder. If no such subscriber follows a selected
+component, there is no eligible reminder recipient. A window published only to
+protected pages sends no reminder to public subscribers.
+
 A new Cloudflare deployment can serve requests for many minutes before its
 scheduled trigger starts. Lamp does not wait for it: each operator change sends
 its notice right after it is saved, and while the trigger has not run for three

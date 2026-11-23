@@ -7,20 +7,36 @@ import { SubscriberSelection } from "./subscriber-selection";
 import { WebhookFormatChoice, type WebhookFormat } from "./webhook-format";
 import { defaultPreferences, eventKinds, type SubscriberEventKind } from "../preferences";
 
-export function AddSubscriber({ onChanged, localMail = false }: { onChanged: () => void; localMail?: boolean }) {
-  const [channel, setChannel] = useState<"email" | "webhook" | "sms">("email");
+type AddChannel = "email" | "webhook" | "sms";
+
+export function AddSubscriber({ onChanged, localMail, confirmationEmailAvailable, smsAvailable }: {
+  onChanged: () => void; localMail: boolean; confirmationEmailAvailable: boolean; smsAvailable: boolean;
+}) {
+  const [channel, setChannel] = useState<AddChannel | "">(confirmationEmailAvailable ? "email" : smsAvailable ? "sms" : "");
   const [email, setEmail] = useState("");
   const [destination, setDestination] = useState("");
   const [phone, setPhone] = useState("");
   const [webhookFormat, setWebhookFormat] = useState<WebhookFormat>("lamp");
-  const [selectedEvents, setSelectedEvents] = useState<SubscriberEventKind[]>(defaultPreferences("email").eventKinds);
+  const [selectedEvents, setSelectedEvents] = useState<SubscriberEventKind[]>(() => channel ? defaultPreferences(channel).eventKinds : []);
   const [minimumImpact, setMinimumImpact] = useState<"Partially unavailable" | null>(null);
   const [componentIds, setComponentIds] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const confirmLocally = localMail && channel !== "sms";
+
+  function selectChannel(next: AddChannel) {
+    setChannel(next);
+    setSelectedEvents(defaultPreferences(next).eventKinds);
+    setMinimumImpact(null);
+    setError(null);
+    setResult(null);
+  }
+
   async function submit(event: FormEvent) {
-    event.preventDefault(); setPending(true); setError(null); setResult(null);
+    event.preventDefault();
+    if (pending || !channel) return;
+    setPending(true); setError(null); setResult(null);
     try {
       const preferences = { eventKinds: selectedEvents, minimumImpact };
       const input = channel === "email" ? { channel, email, componentIds, ...preferences } : channel === "sms" ? { channel, phone, componentIds, ...preferences } : { channel, destination, contactEmail: email, componentIds, webhookFormat, ...preferences };
@@ -31,21 +47,31 @@ export function AddSubscriber({ onChanged, localMail = false }: { onChanged: () 
     finally { setPending(false); }
   }
   return <section className="data-card" aria-label="Add subscriber">
-    <h2>Add subscriber</h2><p>{localMail && channel !== "sms" ? "No email is sent on this computer. Add the subscriber, then confirm them in the Delivery log." : "Your add sends one confirmation invitation. The subscription stays pending until the recipient confirms."}</p>
+    <h2>Add subscriber</h2>
+    {!confirmationEmailAvailable && <p id="add-subscriber-email-off">Email confirmation is off. Enable email to add email or webhook subscribers.</p>}
+    {!smsAvailable && !confirmationEmailAvailable && <p>Set up SMS to send opt-in texts.</p>}
+    {channel && <p>{confirmLocally ? "No email is sent on this computer. Add the subscriber, then confirm them in the Delivery log." : "Lamp sends one confirmation invitation. The subscription stays pending until the recipient confirms."}</p>}
     <form className="incident-note-form" onSubmit={submit}>
-      <label className="form-label">Channel<select aria-label="Channel" value={channel} disabled={pending} onChange={event => { const next = event.target.value as "email" | "webhook" | "sms"; setChannel(next); setSelectedEvents(defaultPreferences(next).eventKinds); setMinimumImpact(null); setResult(null); }}><option value="email">Email</option><option value="sms">SMS</option><option value="webhook">Webhook</option></select></label>
-      {channel === "webhook" ? <label className="form-label">Endpoint URL<input type="url" required disabled={pending} value={destination} onChange={event => setDestination(event.target.value)} /></label> : null}
-      {channel === "sms" ? <label className="form-label">Mobile number<input type="tel" autoComplete="tel" placeholder="+12025550100" pattern="[+][1-9][0-9]{7,14}" required disabled={pending} value={phone} onChange={event => setPhone(event.target.value)} /></label> : <label className="form-label">{channel === "email" ? "Email address" : "Contact email"}<input type="email" required disabled={pending} value={email} onChange={event => setEmail(event.target.value)} /></label>}
-      {channel === "webhook" ? <WebhookFormatChoice value={webhookFormat} onChange={setWebhookFormat} disabled={pending} /> : null}
-      <SubscriberSelection selected={componentIds} onChange={setComponentIds} disabled={pending} />
-      <fieldset className="maintenance-components" disabled={pending}>
-        <legend>Updates to receive</legend>
-        {eventKinds.map(kind => <label className="checkbox-label" key={kind}><input type="checkbox" checked={selectedEvents.includes(kind)} onChange={() => setSelectedEvents(selectedEvents.includes(kind) ? selectedEvents.filter(value => value !== kind) : [...selectedEvents, kind])} />{kind === "incidents" ? "Incidents" : kind === "maintenance" ? "Maintenance" : "Component status changes"}</label>)}
-        <label className="checkbox-label"><input type="checkbox" checked={minimumImpact !== null} onChange={event => setMinimumImpact(event.target.checked ? "Partially unavailable" : null)} />Only incidents reaching {componentStateLabel("Partially unavailable")} or worse</label>
-      </fieldset>
+      <label className="form-label">Channel<select aria-label="Channel" value={channel} disabled={pending || !channel} onChange={event => selectChannel(event.target.value as AddChannel)}>
+        {!channel && <option value="">No channels available</option>}
+        <option value="email" disabled={!confirmationEmailAvailable}>{confirmationEmailAvailable ? "Email" : "Email (turned off)"}</option>
+        <option value="sms" disabled={!smsAvailable}>{smsAvailable ? "SMS" : "SMS (turned off)"}</option>
+        <option value="webhook" disabled={!confirmationEmailAvailable}>{confirmationEmailAvailable ? "Webhook" : "Webhook (requires email)"}</option>
+      </select></label>
+      {channel && <>
+        {channel === "webhook" ? <label className="form-label">Endpoint URL<input type="url" required disabled={pending} value={destination} onChange={event => setDestination(event.target.value)} /></label> : null}
+        {channel === "sms" ? <label className="form-label">Mobile number<input type="tel" autoComplete="tel" placeholder="+12025550100" pattern="[+][1-9][0-9]{7,14}" required disabled={pending} value={phone} onChange={event => setPhone(event.target.value)} /></label> : <label className="form-label">{channel === "email" ? "Email address" : "Contact email"}<input type="email" required disabled={pending} value={email} onChange={event => setEmail(event.target.value)} /></label>}
+        {channel === "webhook" ? <WebhookFormatChoice value={webhookFormat} onChange={setWebhookFormat} disabled={pending} /> : null}
+        <SubscriberSelection selected={componentIds} onChange={setComponentIds} disabled={pending} />
+        <fieldset className="maintenance-components" disabled={pending}>
+          <legend>Updates to receive</legend>
+          {eventKinds.map(kind => <label className="checkbox-label" key={kind}><input type="checkbox" checked={selectedEvents.includes(kind)} onChange={() => setSelectedEvents(selectedEvents.includes(kind) ? selectedEvents.filter(value => value !== kind) : [...selectedEvents, kind])} />{kind === "incidents" ? "Incidents" : kind === "maintenance" ? "Maintenance" : "Component status changes"}</label>)}
+          <label className="checkbox-label"><input type="checkbox" checked={minimumImpact !== null} onChange={event => setMinimumImpact(event.target.checked ? "Partially unavailable" : null)} />Only incidents reaching {componentStateLabel("Partially unavailable")} or worse</label>
+        </fieldset>
+      </>}
       {error ? <FormError>{error}</FormError> : null}
       {result ? <p role="status">{result}</p> : null}
-      <Button type="submit" disabled={pending}>{pending ? "Adding subscriber…" : localMail && channel !== "sms" ? "Add subscriber" : "Add subscriber and send confirmation"}</Button>
+      <Button type="submit" disabled={pending || !channel} aria-describedby={!channel ? "add-subscriber-email-off" : undefined}>{pending ? "Adding subscriber…" : channel && confirmLocally ? "Add subscriber" : "Add subscriber and send confirmation"}</Button>
     </form>
   </section>;
 }

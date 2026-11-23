@@ -30,6 +30,7 @@ export type SubscriberView = StoredSubscriber & { incident: IncidentSubscription
 
 export interface SubscribersService {
   intake: ReturnType<typeof createSubscriberIntakeService>;
+  canSendConfirmationEmail(): Promise<boolean>;
   getPageName(): Promise<string>;
   getLimits(): Promise<SubscriberCapacity[]>;
   checkLimits(): Promise<void>;
@@ -104,6 +105,11 @@ export function createSubscribersService(
     return address;
   }
 
+  async function ensureConfirmationMail() {
+    requiredMailAndTokens();
+    await configuredFromAddress();
+  }
+
   async function issuedToken(subscriberId: string, scope: SubscriberTokenScope, expiresAt: string | null) {
     if (!tokens) throw new Error("SUBSCRIBER_TOKEN_SECRET is required for subscriber tokens.");
     const id = createUlid();
@@ -149,7 +155,7 @@ export function createSubscribersService(
   });
   const intake=createSubscriberIntakeService(repository,{sms:options.sms,
     view:async id=>{const row=await repository.findSubscriber(id);if(!row)throw new Error("Subscriber no longer exists.");return view(row);},
-    ensureConfigured:async()=>{requiredMailAndTokens();await configuredFromAddress();},
+    ensureConfigured:ensureConfirmationMail,
     sendConfirmation:sendIntakeConfirmation,
     checkLimits,
   });
@@ -175,6 +181,15 @@ export function createSubscribersService(
       return Promise.all(rows.filter((row):row is StoredSubscriber=>Boolean(row)).map(view));
     },
     intake,
+    async canSendConfirmationEmail() {
+      try {
+        await ensureConfirmationMail();
+        return true;
+      } catch (cause) {
+        if (cause instanceof MailUnavailableError) return false;
+        throw cause;
+      }
+    },
     getLimits:()=>repository.limits.report(),
     checkLimits,
     async getPageName() { return options.pageName ? options.pageName() : lampConfig.pageName; },

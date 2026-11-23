@@ -560,7 +560,7 @@
       "executable": false
     },
     "docs/backups-and-recovery.md": {
-      "sha256": "ace59f413ad8b337597f3b194361b0d521ac42b0858f13b1c8a1232dd9bcbe4f",
+      "sha256": "525a30bd1cb98717f7705e4010a05fd02e1a77d5400d5f611b13f4121eb139d0",
       "executable": false
     },
     "docs/business-self-host.md": {
@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "8c5818b0ea88df04a496e570997dcd65e2aebb3a80746dbe98eda7dbbc395816",
+      "sha256": "af3d1c513df69758161907c810bd9cb72028f41a0a435aaf0c9adcea6281e94e",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -656,7 +656,7 @@
       "executable": false
     },
     "docs/maintenance.md": {
-      "sha256": "d6c3ace40198e806adae7e139961d5b6e68b91fddc0afde29648e72f3ec569ce",
+      "sha256": "acf9b48f7107446e131ec3198c2f4a4094401cfc762edcabe7c29b72724f59ac",
       "executable": false
     },
     "docs/moving-in.md": {
@@ -3096,7 +3096,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "4e2e39dd78cfb204bf9dc7eaf6da78a71ae8f18f11434ca25017f57539474d40",
+      "sha256": "839af56cd225e8b671336eb9d7133e3f48e6481b1b36f7ea92ee0caa4f8df80b",
       "executable": false
     },
     "schema/business-field-inputs.mjs": {
@@ -4564,7 +4564,7 @@
       "executable": false
     },
     "src/core/app/server.ts": {
-      "sha256": "9a99b191497e5c1844a3ba12b5d79cc9b2419776344e7f08edaf460b7b4541d5",
+      "sha256": "7fb5b40a430531e2eecfd78ef7cd540ac9b815eef19844bfa0fd74552b23da7f",
       "executable": false
     },
     "src/core/app/services.ts": {
@@ -5780,7 +5780,7 @@
       "executable": false
     },
     "src/core/features/page-export/ui/page-data-card.tsx": {
-      "sha256": "14d5bfb46f3724a3356431fda1324ab2cce47ec9e33424bf44ea8999ec2c15b5",
+      "sha256": "37d9936e183a52fdbb67da00ee15255bdb1d5daa1c950bd77321f9b6d72465f8",
       "executable": false
     },
     "src/core/features/page-settings/index.ts": {
@@ -6860,11 +6860,11 @@
       "executable": false
     },
     "src/core/features/subscribers/routes.ts": {
-      "sha256": "5836a1ceea88bda35b51659bd0a34a07048cb67212711a153446fb6da8094608",
+      "sha256": "129bdcd6cb913e346789799691e43c88dd00a7b7777c26f195dec909fa4d158e",
       "executable": false
     },
     "src/core/features/subscribers/service.ts": {
-      "sha256": "53d0ca513ebc086c318ca4737084cafd17f1684b05ecc0c7ffa578d00c096502",
+      "sha256": "9581a06f66d62d0fd72febe0e6764c95cf4108f28d83e113011f6a030f00d183",
       "executable": false
     },
     "src/core/features/subscribers/slack-subscriptions.ts": {
@@ -6888,7 +6888,7 @@
       "executable": false
     },
     "src/core/features/subscribers/ui/add-subscriber.tsx": {
-      "sha256": "33aaaa2effb215fd844cc45d93fecae1852a10bc10c94896c0a2682f45772740",
+      "sha256": "e4b8bbc99c0dc0a13ceba7a9a79234b5e3c8a10e17f95bc9a48c1f791ea11128",
       "executable": false
     },
     "src/core/features/subscribers/ui/destination-label.ts": {
@@ -6908,7 +6908,7 @@
       "executable": false
     },
     "src/core/features/subscribers/ui/subscribers-page.tsx": {
-      "sha256": "29ddbca999e4e71a4593da2daed7324225560cc15f07da6b0252f6070b441a72",
+      "sha256": "db036d8387617f64ee115b54908ec67d1c87f98cdf582490cf8746a676d1c277",
       "executable": false
     },
     "src/core/features/subscribers/ui/subscribers-views.tsx": {
@@ -7048,7 +7048,7 @@
       "executable": false
     },
     "src/core/platform/auth/local-passkey/pages.ts": {
-      "sha256": "1142b7a28f3198e4e0eec7e78441ae15b7557b39ee8989ae861fe8d3741df5b4",
+      "sha256": "6360800d17f2778e89052c795e5a07616dfd13cb31b5b0f08a20ac34c07b8883",
       "executable": false
     },
     "src/core/platform/auth/local-passkey/repository.ts": {
@@ -8992,7 +8992,7 @@
       "executable": false
     },
     "tests/e2e/rer-mail.test.mjs": {
-      "sha256": "7585081dbc4d7b35fdd41322d243da0443f8c67e69379ea3ac0bb33d8037ba72",
+      "sha256": "9cb32992cc051cea9f0fe8e25c7eb4b3fe33b530c04248e8edc0f1fd3818012b",
       "executable": false
     },
     "tests/e2e/rer-mail.worker.ts": {

@@ -75,7 +75,14 @@ export async function passkeyEnrollment(request: Request, env: AppBindings) {
 export async function addPasskeySignIn(request: Request, response: Response, env: AppBindings) {
   const store = new PasskeyStore(env.DB);
   const owner = await store.owner();
-  if (!owner || !await store.credential(owner.id)) return response;
+  if (!owner) return response;
+  if (!await store.credential(owner.id)) {
+    return new HTMLRewriter().on("main", {
+      element(main) {
+        main.append("<p>After restoring a backup, local passkeys must be enrolled again. Once signed in as the owner, go to <strong>Settings → Sign-in → Set up a local passkey</strong>.</p>", { html: true });
+      },
+    }).transform(response);
+  }
   const url = new URL(request.url);
   const target = signInReturnPath(url.searchParams.get("returnTo"), url.origin);
   return scripted(response, control("signin", target ?? "/app"));
