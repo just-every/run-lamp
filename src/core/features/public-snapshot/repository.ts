@@ -29,10 +29,13 @@ import {
 } from "../../shared/schema";
 
 export interface SnapshotRepository {
+  /** Non-secret Worker configuration that affects the rendered source. */
+  sourceConfiguration?: string;
   load(): Promise<PublicSnapshotSource | null>;
   loadArchive?(context: PublicSnapshotSource, key: string, generatedAt: string): Promise<PublicSnapshotSource | null>;
   startBuild(input: typeof snapshotBuilds.$inferInsert): Promise<void>;
   finishBuild(input: { id: string; status: "published" | "failed"; version: string | null; error: string | null; attempts: number; finishedAt: string; updatedAt: string }): Promise<void>;
+  hasPublishedBuild?(id: string, version: string): Promise<boolean>;
   latestBuild(): Promise<typeof snapshotBuilds.$inferSelect | null>;
   /** The next generation, strictly above `atLeast` (the generation already published elsewhere). */
   reserveGeneration(now: string, atLeast: number): Promise<number>;
@@ -40,7 +43,7 @@ export interface SnapshotRepository {
   currentWork(): Promise<{ requestedRevision: number; completedRevision: number }>;
   completeWork(revision: number, now: string): Promise<void>;
   markInterruptedBuilds(now: string, staleBefore: string): Promise<void>;
-  claimPendingWork(input: { leaseId: string; now: string; leaseUntil: string; staleBefore: string }): Promise<boolean>;
+  claimPendingWork(input: { leaseId: string; now: string; leaseUntil: string; staleBefore: string; refreshRevision?: number }): Promise<boolean>;
   releaseWorkLease(leaseId: string, now: string): Promise<void>;
 }
 
@@ -109,6 +112,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
   }
 
   return {
+    sourceConfiguration: JSON.stringify([publicOrigin, smsEnabled, chat.slack, chat.teams, emailEnabled]),
     async load() {
       const settings = await database.select().from(pageSettings).where(eq(pageSettings.id, "default")).get();
       if (!settings) return null;
@@ -258,6 +262,9 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
     async finishBuild(input) {
       await database.update(snapshotBuilds).set(input).where(eq(snapshotBuilds.id, input.id));
     },
+    async hasPublishedBuild(id, version) {
+      return Boolean(await binding.prepare("SELECT 1 FROM snapshot_builds WHERE id = ? AND page_path = ? AND status = 'published' AND version = ?").bind(id, path, version).first());
+    },
     async latestBuild() {
       return (await database.select().from(snapshotBuilds).where(eq(snapshotBuilds.pagePath, path)).orderBy(desc(snapshotBuilds.startedAt)).limit(1).get()) ?? null;
     },
@@ -282,11 +289,11 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       await binding.prepare(`UPDATE ${workTable} SET completed_revision = CASE WHEN completed_revision < ? THEN ? ELSE completed_revision END, updated_at = ? WHERE id = ?`).bind(revision, revision, now, workId).run();
     },
     async markInterruptedBuilds(now, staleBefore) {
-      await binding.prepare(`UPDATE snapshot_builds SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE page_path = ? AND status = 'building' AND started_at <= ?`).bind(now, now, path, staleBefore).run();
+      await binding.prepare(`UPDATE snapshot_builds INDEXED BY snapshot_builds_in_flight SET status = 'failed', error = COALESCE(error, 'Snapshot build lease expired before completion.'), finished_at = ?, updated_at = ? WHERE page_path = ? AND status = 'building' AND started_at <= ?`).bind(now, now, path, staleBefore).run();
     },
     async claimPendingWork(input) {
-      const result = await binding.prepare(`UPDATE ${workTable} SET retry_lease_id = ?, retry_lease_until = ?, updated_at = ? WHERE id = ? AND requested_revision${globalRevision} > completed_revision AND (retry_lease_until IS NULL OR retry_lease_until <= ?) AND NOT EXISTS (SELECT 1 FROM snapshot_builds WHERE page_path = ? AND status = 'building' AND started_at > ?)`)
-        .bind(input.leaseId, input.leaseUntil, input.now, workId, input.now, path, input.staleBefore).run();
+      const result = await binding.prepare(`UPDATE ${workTable} SET retry_lease_id = ?, retry_lease_until = ?, updated_at = ? WHERE id = ? AND (requested_revision${globalRevision} > completed_revision OR completed_revision = ?) AND (retry_lease_until IS NULL OR retry_lease_until <= ?) AND NOT EXISTS (SELECT 1 FROM snapshot_builds INDEXED BY snapshot_builds_in_flight WHERE page_path = ? AND status = 'building' AND started_at > ?)`)
+        .bind(input.leaseId, input.leaseUntil, input.now, workId, input.refreshRevision ?? null, input.now, path, input.staleBefore).run();
       return result.meta.changes === 1;
     },
     async releaseWorkLease(leaseId, now) {

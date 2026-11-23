@@ -68,21 +68,25 @@ export function incidentReportEndStatements(db: D1Database, incidentId: string, 
 
 export function createIncidentSubscriptionLifecycleRepository(db: D1Database) {
   return {
-    async expire(now: string) {
-      const cutoff=new Date(Date.parse(now)-30*24*60*60*1000).toISOString();
-      const reportOffCutoff=new Date(Date.parse(now)-24*60*60*1000).toISOString();
+    async expireAndListAddresses(now: string) {
+      const reportCutoff = new Date(Date.parse(now) - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const dayCutoff = new Date(Date.parse(now) - 24 * 60 * 60 * 1000).toISOString();
+      // Existing endings can still need terminal effects or erasure. Check them
+      // alongside both indexed deadlines before opening the write batch.
+      const due = await db.prepare(`SELECT 1 FROM incident_subscriptions WHERE ended_at IS NOT NULL
+        UNION ALL SELECT 1 FROM incident_subscriptions WHERE ended_at IS NULL AND include_report=1 AND resolution_at<=?
+        UNION ALL SELECT 1 FROM incident_subscriptions WHERE ended_at IS NULL AND include_report=0 AND resolution_at<=?
+        LIMIT 1`).bind(reportCutoff, dayCutoff).first();
+      if (!due) return [];
       await db.batch([
         db.prepare(`UPDATE incident_subscriptions SET ended_at=strftime('%Y-%m-%dT%H:%M:%fZ',resolution_at,'+30 days') WHERE ended_at IS NULL AND include_report=1
-          AND resolution_at IS NOT NULL AND resolution_at<=?`).bind(cutoff),
+          AND resolution_at IS NOT NULL AND resolution_at<=?`).bind(reportCutoff),
         db.prepare(`UPDATE incident_subscriptions SET ended_at=strftime('%Y-%m-%dT%H:%M:%fZ',resolution_at,'+24 hours')
-          WHERE ended_at IS NULL AND include_report=0 AND resolution_at IS NOT NULL AND resolution_at<=?`).bind(reportOffCutoff),
-        ...finishIncidentSubscriptionStatements(db,now),
+          WHERE ended_at IS NULL AND include_report=0 AND resolution_at IS NOT NULL AND resolution_at<=?`).bind(dayCutoff),
+        ...finishIncidentSubscriptionStatements(db, now),
       ]);
-    },
-    // Erase on the next sweep once the terminal send is finished. The 24-hour
-    // deadline is an upper bound, including a final report with no receipt.
-    async expiredAddressIds(now: string) {
-      const cutoff=new Date(Date.parse(now)-24*60*60*1000).toISOString();
+      // Erase on the next sweep once the terminal send is finished. The 24-hour
+      // deadline is an upper bound, including a final report with no receipt.
       return (await db.prepare(`SELECT x.subscriber_id AS id FROM incident_subscriptions x JOIN subscribers s ON s.id=x.subscriber_id
         WHERE x.ended_at IS NOT NULL AND s.destination NOT LIKE 'deleted:%' AND (
           x.final_event_id IS NULL OR x.ended_at<=?
@@ -90,7 +94,7 @@ export function createIncidentSubscriptionLifecycleRepository(db: D1Database) {
             AND d.outcome IN ('delivered','failed','suppressed','bounced','complained'))
           OR EXISTS(SELECT 1 FROM sms_deliveries d WHERE d.subscriber_id=x.subscriber_id AND d.event_id=x.final_event_id
             AND d.outcome IN ('delivered','failed','undelivered','suppressed')))
-        ORDER BY x.ended_at,x.subscriber_id LIMIT 1000`).bind(cutoff).all<{id:string}>()).results.map(row=>row.id);
+        ORDER BY x.ended_at,x.subscriber_id LIMIT 1000`).bind(dayCutoff).all<{ id: string }>()).results.map(row => row.id);
     },
   };
 }

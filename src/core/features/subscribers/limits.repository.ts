@@ -2,10 +2,13 @@ import { SubscriberLimitError, subscriberCapacity, subscriberChannelFull, subscr
 
 export function createSubscriberLimitRepository(db:D1Database) {
   async function counts():Promise<SubscriberCounts> {
-    const row=await db.prepare(`SELECT SUM(total) AS total,
-      SUM(CASE WHEN channel='email' THEN total ELSE 0 END) AS email,SUM(CASE WHEN channel='webhook' THEN total ELSE 0 END) AS webhook,
-      SUM(CASE WHEN channel='slack' THEN total ELSE 0 END) AS slack,SUM(CASE WHEN channel='teams' THEN total ELSE 0 END) AS teams,SUM(CASE WHEN channel='sms' THEN total ELSE 0 END) AS sms
-      FROM subscriber_limit_counts`).first<SubscriberCounts>();
+    const row=await db.prepare(`SELECT COALESCE(SUM(total),0) AS total,
+      COALESCE(SUM(total) FILTER (WHERE channel='email'),0) AS email,
+      COALESCE(SUM(total) FILTER (WHERE channel='webhook'),0) AS webhook,
+      COALESCE(SUM(total) FILTER (WHERE channel='slack'),0) AS slack,
+      COALESCE(SUM(total) FILTER (WHERE channel='teams'),0) AS teams,
+      COALESCE(SUM(total) FILTER (WHERE channel='sms'),0) AS sms
+      FROM subscriber_limit_counts WHERE total > 0`).first<SubscriberCounts>();
     if(!row)throw new Error("Subscriber counts could not be read.");
     return row;
   }

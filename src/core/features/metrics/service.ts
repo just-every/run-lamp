@@ -88,6 +88,9 @@ export function createMetricsService(db: D1Database, changed:()=>Promise<void>, 
       if(written)await changed();
     },
     async runDue(now=Date.now()) {
+      // Every point belongs to a metric, so an unused installation has no
+      // rollups, stale metrics, or pulls to process.
+      if (!await repository.hasMetrics()) return;
       await repository.maintain(now);
       if(options.effectsPaused) return;
       // A page has at most ten series; keep provider work serial and bounded.

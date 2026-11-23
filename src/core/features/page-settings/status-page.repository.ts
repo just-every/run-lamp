@@ -69,6 +69,9 @@ export function createStatusPageRepository(binding: D1Database) {
       const { results } = await binding.prepare("SELECT " + fields + " FROM status_pages ORDER BY kind DESC, path").all<StoredStatusPage>();
       return results.map(decode);
     },
+    async paths() {
+      return (await binding.prepare("SELECT path FROM status_pages").all<{ path: string }>()).results;
+    },
     async publicComponentIds() {
       const { results } = await binding.prepare("SELECT id FROM components WHERE internal = 0 ORDER BY display_order, id").all<{ id: string }>();
       return results.map(row => row.id);

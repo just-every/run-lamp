@@ -38,7 +38,7 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
   const selected = sql`(SELECT value FROM json_each(${JSON.stringify(context.components.map(component => component.id))}))`;
   let incidentIds: string[] = [], maintenanceIds: string[] = [];
   let updateIds: string[] | undefined, noticeIds: string[] | undefined;
-  let nextCursor: string | null = null;
+  let nextCursor: string | null = null, nextAt: string | undefined;
   let previousMonth: string | undefined, nextMonth: string | undefined;
   const cursor = request.cursor && !request.kind.startsWith("api-") ? decodeArchiveCursor(request.cursor) : null;
   if (request.cursor && !request.kind.startsWith("api-") && !cursor) return null;
@@ -80,6 +80,7 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     const rows = [...updates.results, ...notices.results].sort(compare);
     const page = rows.slice(0, ARCHIVE_PAGE_SIZE);
     nextCursor = rows.length > ARCHIVE_PAGE_SIZE ? encodeArchiveCursor(page.at(-1)!) : null;
+    nextAt = rows[ARCHIVE_PAGE_SIZE]?.at;
     updateIds = page.filter(row => row.kind === "incident-update").map(row => row.id);
     noticeIds = page.filter(row => row.kind === "maintenance-notice").map(row => row.id);
     incidentIds = [...new Set(page.filter(row => row.kind === "incident-update").map(row => row.recordId))];
@@ -133,7 +134,7 @@ export async function loadArchiveSource(binding: D1Database, context: PublicSnap
     maintenanceIds.length && request.kind !== "feed" ? binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${maintenanceIds.map(() => "?").join(",")}) ORDER BY published_at DESC,id`).bind(...maintenanceIds).all<NonNullable<PublicSnapshotSource["importedMaintenanceUpdates"]>[number]>().then(rows => rows.results) : [],
     incidentIds.length ? binding.prepare(`SELECT id,peak_impact AS impact FROM incidents WHERE id IN (${incidentIds.map(() => "?").join(",")})`).bind(...incidentIds).all<{id: string;impact: PublicSnapshotSource["claims"][number]["state"] | null}>().then(rows => rows.results) : [],
   ]);
-  const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, pageSize: ARCHIVE_PAGE_SIZE };
+  const archive: ArchivePage = { kind: request.kind, cursor: request.cursor, month: request.month, previousMonth, nextMonth, componentSlug: request.componentSlug, nextCursor, nextAt, pageSize: ARCHIVE_PAGE_SIZE };
   return { ...context, archive, incidents: incidentRows, maintenance: maintenanceRows, incidentComponents: attachments, maintenanceComponents: maintenanceAttachments, updates: await projectImportedIncidentUpdates(binding, updates), maintenanceNotices: notices, reports, importedMaintenanceUpdates: importedUpdates, incidentImpacts: Object.fromEntries(impacts.filter(row => row.impact !== null).map(row => [row.id, row.impact!])) };
 }
 
