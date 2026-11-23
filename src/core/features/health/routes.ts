@@ -16,7 +16,8 @@ export function registerHealthRoutes(
       healthService.check((work) => context.executionCtx.waitUntil(work.catch((cause) => console.error("Lamp could not refresh its health check.", cause)))),
       observeSchema(bindings.DB),
     ]);
-    const payload = { ...health, buildVersion, schemaObservation };
+    const ageMs = Math.max(0, Date.now() - Date.parse(schemaObservation.observedAt));
+    const payload = { ...health, buildVersion, schemaObservation: { ...schemaObservation, ageMs } };
     // A healthy answer names the deployment that gave it, so a deploy can
     // confirm the version it just uploaded is the one serving.
     return health.status === "ok"

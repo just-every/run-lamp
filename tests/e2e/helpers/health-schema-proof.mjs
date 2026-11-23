@@ -18,12 +18,23 @@ export function assertMigrationObservation(observation, pairs, partialCount = 0)
   assert.equal(observation.inventorySha256, inventoryDigest(pairs));
 }
 
+export function schemaProbeClock(request) {
+  let now = Date.now();
+  return async (advance = 10 * 60_000) => {
+    now += advance;
+    const response = await request('/test/clock', { method: 'PUT', body: JSON.stringify({ now }) });
+    assert.equal(response.status, 204);
+    return now;
+  };
+}
+
 /** Exercise the emitted door with actual local D1, never an invented inventory. */
 export async function healthSchemaProof(fixture) {
   const { version } = JSON.parse(await readFile('package.json', 'utf8'));
   const execute = sql => fixture.db.prepare(sql).run();
+  const advance = schemaProbeClock(fixture.raw);
   const probe = async () => {
-    const before = Date.now();
+    const now = await advance();
     const response = await fixture.raw('/health');
     assert.equal(response.status, 200, 'schema observation does not change healthy liveness');
     assert.equal(response.headers.get('cache-control'), 'no-store');
@@ -36,7 +47,8 @@ export async function healthSchemaProof(fixture) {
     assert.equal(observation.ledger, 'rer_migrations');
     assert.equal(observation.binding, 'DB');
     assert.equal(new Date(observation.observedAt).toISOString(), observation.observedAt);
-    assert.ok(Date.parse(observation.observedAt) >= before && Date.parse(observation.observedAt) <= Date.now());
+    assert.equal(observation.ageMs, now - Date.parse(observation.observedAt));
+    assert.equal(observation.ageMs, 0, 'an expired observation is refreshed before answering');
     return observation;
   };
   const unavailable = (observation, reason) => {
@@ -45,7 +57,7 @@ export async function healthSchemaProof(fixture) {
     assert.equal(observation.completeCount, null);
     assert.equal(observation.partialCount, null);
     assert.equal(observation.inventorySha256, null);
-    assert.deepEqual(Object.keys(observation).sort(), ['version', 'ledger', 'binding', 'observedAt', 'state', 'completeCount', 'inventorySha256', 'partialCount', 'reason'].sort(), 'only the safe fixed observation fields escape');
+    assert.deepEqual(Object.keys(observation).sort(), ['version', 'ledger', 'binding', 'observedAt', 'ageMs', 'state', 'completeCount', 'inventorySha256', 'partialCount', 'reason'].sort(), 'only the safe fixed observation fields escape');
   };
   const available = assertMigrationObservation;
   assert.equal(await fixture.db.prepare("SELECT 1 FROM sqlite_master WHERE name='rer_migrations'").first(), null);

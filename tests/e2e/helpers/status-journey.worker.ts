@@ -1,4 +1,5 @@
 import worker from './follow-ups-worker';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { lampServerExtensions } from '../../../src/ext/index.server';
 import type { AppBindings } from '../../../src/core/app/types';
 export { SnapshotCache } from '../../../src/core/platform/blobs/snapshot-cache';
@@ -27,19 +28,31 @@ const executionBindings = (env: Parameters<typeof worker.fetch>[1]) => paused ? 
 
 // Request-local provider observations let the retained-read journey prove that
 // public reads ignore an unavailable D1 and anonymous reads never open R2.
-async function observeAudienceReads(request: Request, env: AppBindings, context: ExecutionContext) {
-  let databaseReads = 0;
-  let objectReads = 0;
-  const databaseDown = request.headers.get('X-Test-D1-Unavailable') === '1';
-  const DB = new Proxy(env.DB, { get(target, key) {
+const d1Reads = new AsyncLocalStorage<{ count: number; unavailable: boolean }>();
+const observedDatabases = new WeakMap<D1Database, D1Database>();
+
+function observedDatabase(binding: D1Database) {
+  const existing = observedDatabases.get(binding);
+  if (existing) return existing;
+  const observed = new Proxy(binding, { get(target, key) {
     const value = Reflect.get(target, key);
-    if (typeof value !== 'function') return value;
+    if (typeof value !== 'function' || key === 'constructor') return value;
     return (...args: unknown[]) => {
-      databaseReads++;
-      if (databaseDown) throw new Error('Test-injected D1 unavailable');
+      const reads = d1Reads.getStore();
+      if (reads) {
+        reads.count++;
+        if (reads.unavailable) throw new Error('Test-injected D1 unavailable');
+      }
       return Reflect.apply(value, target, args);
     };
   } });
+  observedDatabases.set(binding, observed);
+  return observed;
+}
+
+async function observeAudienceReads(request: Request, env: AppBindings, context: ExecutionContext) {
+  let objectReads = 0;
+  const reads = { count: 0, unavailable: request.headers.get('X-Test-D1-Unavailable') === '1' };
   const SNAPSHOTS = new Proxy(env.SNAPSHOTS, { get(target, key) {
     const value = Reflect.get(target, key);
     if (typeof value !== 'function') return value;
@@ -48,9 +61,9 @@ async function observeAudienceReads(request: Request, env: AppBindings, context:
       return Reflect.apply(value, target, args);
     };
   } });
-  const response = await worker.fetch(request, { ...env, DB, SNAPSHOTS }, context);
+  const response = await d1Reads.run(reads, () => worker.fetch(request, { ...env, DB: observedDatabase(env.DB), SNAPSHOTS }, context));
   const observed = new Response(response.body, response);
-  observed.headers.set('X-Test-D1-Reads', String(databaseReads));
+  observed.headers.set('X-Test-D1-Reads', String(reads.count));
   observed.headers.set('X-Test-R2-Reads', String(objectReads));
   return observed;
 }

@@ -13,6 +13,7 @@ import { unstable_splitSqlQuery } from 'wrangler';
 import { produceArtifact } from '../scripts/build-delivery-artifact.mjs';
 import { setupPageSettingsStatement } from '../scripts/ops-config.mjs';
 import { startMiniflare } from './e2e/worker-startup.mjs';
+import { workerClockSource } from './e2e/helpers/reach-built-worker.mjs';
 import { secret } from './auth-adoption/runtime.mjs';
 
 const require = createRequire(import.meta.url);
@@ -41,7 +42,17 @@ async function installedVersionPublicDoorProof() {
       RER_RELEASE_DIGEST: managedIdentity.releaseDigest, RER_VERSION_METADATA: { id: managedIdentity.versionId } };
     const modules = artifact.modules.map(module => ({ type: module.type === 'esm' ? 'ESModule' : module.type === 'compiled-wasm' ? 'CompiledWasm' : 'Text',
       path: module.name, contents: module.type === 'compiled-wasm' ? payloads.get(module.payload) : payloads.get(module.payload).toString() }));
-    modules.sort((a, b) => a.path === artifact.mainModule ? -1 : b.path === artifact.mainModule ? 1 : 0);
+    modules.unshift({ type: 'ESModule', path: '__health-version-fixture.mjs', contents: `
+      import worker from ${JSON.stringify(`./${artifact.mainModule}`)};
+      export * from ${JSON.stringify(`./${artifact.mainModule}`)};
+      ${workerClockSource}
+      export default { ...worker,
+        fetch(request, env, ctx) {
+          return new URL(request.url).pathname === '/test/clock' && request.method === 'PUT'
+            ? setClock(request) : worker.fetch(request, env, ctx);
+        },
+      };
+    ` });
     const options = { name: 'lamp-version', modules,
       compatibilityDate: artifact.deploymentSpec.compatibilityDate, compatibilityFlags: artifact.deploymentSpec.compatibilityFlags,
       d1Databases: { DB: 'lamp-version-db' }, r2Buckets: { SNAPSHOTS: 'lamp-version-snapshots' },

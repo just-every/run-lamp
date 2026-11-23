@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { cloudflareEdge } from '../helpers/cloudflare-edge.mjs';
 import { reachBuiltWorkerOptions } from '../e2e/helpers/reach-built-worker.mjs';
-import { assertMigrationObservation } from '../e2e/helpers/health-schema-proof.mjs';
+import { assertMigrationObservation, schemaProbeClock } from '../e2e/helpers/health-schema-proof.mjs';
 import { platformLedgerRows } from '../../scripts/platform-ledger.mjs';
 
 const require = createRequire(import.meta.url);
@@ -58,7 +58,9 @@ test('Setup resumes migration apply, backfills the installed-health ledger and s
   let db = await runtime.getD1Database('DB');
   const expected = await Promise.all(shipped.map(async name => [name, createHash('sha256').update(await readFile(join(root, 'migrations/core', name))).digest('hex')]));
   const rows = async () => (await db.prepare('SELECT name,sha256 FROM rer_migrations ORDER BY name').all()).results;
+  const advance = schemaProbeClock((path, init) => runtime.dispatchFetch('https://app.example.test' + path, init));
   const observe = async () => {
+    await advance();
     const response = await runtime.dispatchFetch('https://app.example.test/health');
     assert.equal(response.status, 200, await response.clone().text());
     assert.equal(response.headers.get('cache-control'), 'no-store');

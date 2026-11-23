@@ -1,4 +1,4 @@
-import { healthSchemaProof } from "./helpers/health-schema-proof.mjs";
+import { healthSchemaProof, schemaProbeClock } from "./helpers/health-schema-proof.mjs";
 import { themeHeaderImage } from "./helpers/theme-fixture.mjs";
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
@@ -12,6 +12,33 @@ import { openStatusJourney, eventually } from './helpers/status-journey.mjs';
 import { Miniflare, retainedSnapshotOptions } from './helpers/retained-snapshot-runtime.mjs';
 
 const descendants = node => [node, ...(node.childNodes ?? []).flatMap(descendants)];
+
+test('Repeated public health probes read zero D1 rows from a warm isolate', async () => {
+  const j = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts', extraBindings: { LAMP_TEST_AUDIENCE_READS: 'true' } });
+  try {
+    await j.db.prepare("CREATE TABLE rer_migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL)").run();
+    await j.db.prepare("INSERT INTO rer_migrations VALUES ('0001_fixture.sql', lower(hex(zeroblob(32))))").run();
+    const advance = schemaProbeClock(j.raw);
+    const read = async (origin, warm = false) => {
+      const response = await j.raw(origin + '/health');
+      assert.equal(response.status, 200, await response.clone().text());
+      if (warm) assert.equal(response.headers.get('x-test-d1-reads'), '0', 'zero D1 calls bounds rows_read at zero');
+      return (await response.json()).schemaObservation;
+    };
+    const first = await read(j.appOrigin);
+    assert.equal(first.state, 'available');
+    for (const origin of [j.appOrigin, j.publicOrigin, j.appOrigin]) {
+      const now = await advance(1000);
+      const latest = await read(origin, true);
+      assert.deepEqual(latest, { ...first, ageMs: now - Date.parse(first.observedAt) });
+      assert.ok(latest.ageMs > 0);
+    }
+    await j.db.prepare('DROP TABLE rer_migrations').run();
+    await healthSchemaProof(j);
+  } finally {
+    await j.close();
+  }
+});
 
 async function assertNativeGenerationRevalidation(j, component, incident, initialImpact) {
   const maintenanceTitle = 'Synthetic Lamp cache maintenance';
@@ -114,7 +141,6 @@ test('AUD-001 THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published stat
     j = await openStatusJourney({ providerEdge: edge }); await j.tick(Date.now());
     assert.equal(pings, 0, 'an unconfigured installation sends no heartbeat');
     await j.close(); j = await openStatusJourney({ providerEdge: edge, extraBindings: { LAMP_TEST_AUDIENCE_READS: 'true', LAMP_HEARTBEAT_URL: 'https://heartbeat.example.test/ping', LAMP_HEARTBEAT_INTERVAL_MINUTES: '1' } });
-    await healthSchemaProof(j);
     const component = await j.component('Customer API during dependency outage');
     const incident = await j.incident('Known API degradation', [component]);
     const initialImpact = 'Customer API requests are failing intermittently.';

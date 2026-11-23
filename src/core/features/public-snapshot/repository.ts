@@ -147,10 +147,16 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
       const recentMaintenanceQuery = `${activeMaintenanceQuery}
         UNION SELECT id FROM (SELECT m.id FROM maintenance m INDEXED BY maintenance_completed_public_window WHERE m.state IN ('Completed','Cancelled') AND ${maintenanceVisibility} ORDER BY COALESCE(m.completed_at,m.ends_at) DESC,m.id DESC LIMIT 50)`;
       const selected = sql`(SELECT value FROM json_each(${JSON.stringify(protectedPage?.componentIds ?? [])}))`;
-      const recentIncidents = sql.raw(`(${recentIncidentQuery})`);
+      // Select the visible incident window once. Links, updates and reports use
+      // the same IDs without repeating the history and visibility seeks.
+      const incidentRowsWithImpact = await database.select({ ...getTableColumns(incidents),
+        peakImpact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`,
+      }).from(incidents).where(inArray(incidents.id, sql.raw(`(${recentIncidentQuery})`))).orderBy(desc(incidents.openedAt)).all();
+      const incidentIds = JSON.stringify(incidentRowsWithImpact.map(row => row.id));
+      const recentIncidents = sql`(SELECT value FROM json_each(${incidentIds}))`;
       const recentMaintenance = sql.raw(`(${recentMaintenanceQuery})`);
       const cutoff = new Date(Date.now() - 90 * 86400000).toISOString();
-      const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, incidentRows, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds, incidentImpactRows] = await Promise.all([
+      const [componentRows, standingClaims, incidentClaims, maintenanceClaims, history, corrections, attachedComponents, updates, maintenanceRows, attachedMaintenanceComponents, reports, maintenanceNotices, importedPublicRecords, importedNamespaces, importedMaintenanceUpdates, publicApiIds] = await Promise.all([
         database
           .select({
             id: components.id,
@@ -193,7 +199,6 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' AND h.changed_at < ${cutoff} ORDER BY h.changed_at DESC,h.created_at DESC,h.id DESC LIMIT 1) FROM components c WHERE c.internal=0)
           OR ${componentStateHistory.id} IN (SELECT (SELECT h.id FROM component_state_history h WHERE h.component_id=c.id AND h.cause_type <> 'correction' ORDER BY h.changed_at,h.created_at,h.id LIMIT 1) FROM components c WHERE c.internal=0))`)).orderBy(asc(componentStateHistory.changedAt), asc(componentStateHistory.createdAt)).all(),
         database.select().from(componentStateCorrections).where(sql`${componentStateCorrections.endsAt} >= ${cutoff}`).orderBy(asc(componentStateCorrections.startsAt), asc(componentStateCorrections.createdAt)).all(),
-        database.select().from(incidents).where(inArray(incidents.id, recentIncidents)).orderBy(desc(incidents.openedAt)).all(),
         database
           .select(getTableColumns(incidentComponents))
           .from(incidentComponents)
@@ -208,13 +213,12 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .leftJoin(components, eq(maintenanceComponents.componentId, components.id))
           .where(and(inArray(maintenanceComponents.maintenanceId, recentMaintenance), scope ? inArray(maintenanceComponents.componentId, selected) : or(and(isNull(maintenanceComponents.componentId), sql`maintenance_components.detached_internal = 0`), eq(components.internal, false))))
           .all(),
-        binding.prepare(`SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (${recentIncidentQuery}) AND published_at IS NOT NULL ORDER BY published_at DESC`).all<{ incidentId: string; summary: string; timeline: string; cause: string; remediation: string; publishedAt: string }>().then((result) => result.results),
+        binding.prepare("SELECT incident_id AS incidentId, summary, timeline, cause, remediation, published_at AS publishedAt FROM incident_reports WHERE incident_id IN (SELECT value FROM json_each(?)) AND published_at IS NOT NULL ORDER BY published_at DESC").bind(incidentIds).all<PublicSnapshotSource["reports"][number]>().then((result) => result.results),
         binding.prepare(`SELECT id, maintenance_id AS maintenanceId, kind, body, published_at AS publishedAt FROM maintenance_notices WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC`).all<{ id: string; maintenanceId: string; kind: string; body: string; publishedAt: string }>().then((result) => result.results),
         scope ? [] : readImportedPublicRecords(binding),
         scope ? [] : readImportedNamespaces(binding),
         binding.prepare(`SELECT id,maintenance_id AS maintenanceId,body,published_at AS publishedAt,source_states AS sourceStates FROM import_maintenance_updates WHERE maintenance_id IN (${recentMaintenanceQuery}) ORDER BY published_at DESC,id`).all<{id: string; maintenanceId: string; body: string; publishedAt: string; sourceStates: string}>().then(result => result.results),
         scope ? {} : loadPublicApiIds(binding),
-        database.select({id: incidents.id, impact: sql<typeof componentStandingClaims.$inferSelect.state | null>`peak_impact`}).from(incidents).where(inArray(incidents.id,recentIncidents)).all(),
       ]);
 
       const website = await createWebsiteRepository(binding).get();
@@ -229,7 +233,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
         teamsEnabled: chat.teams,
         incidentIncludeReport:(await createIncidentFollowSettingsRepository(binding).get()).includeReport,
         publicOrigin,
-        publicApiIds, incidentImpacts: Object.fromEntries(incidentImpactRows.filter(row => row.impact !== null).map(row => [row.id, row.impact!])),
+        publicApiIds, incidentImpacts: Object.fromEntries(incidentRowsWithImpact.flatMap(({ id, peakImpact }) => peakImpact === null ? [] : [[id, peakImpact]])),
         importedPublicRecords, importedNamespaces,
         settings,
         dependencies: scope ? [] : await createDependencyRepository(binding).publicRows(),
@@ -238,7 +242,7 @@ export function createSnapshotRepository(binding: D1Database, publicOrigin?: str
           .filter((claim): claim is { componentId: string; state: typeof componentStandingClaims.$inferSelect.state } => claim.componentId !== null),
         history,
         corrections,
-        incidents: incidentRows,
+        incidents: incidentRowsWithImpact.map(({ peakImpact, ...incident }) => incident),
         incidentComponents: attachedComponents,
         updates: await projectImportedIncidentUpdates(binding, updates),
         maintenance: maintenanceRows,

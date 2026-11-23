@@ -26,8 +26,10 @@ Hosted deploy and `node scripts/setup.mjs` maintain `rer_migrations` in the
 SHA-256 of its exact file bytes. Re-running either command backfills missing
 entries for older installs and preserves recorded entries, including after a
 partial apply. `/health` reports that observed inventory separately from
-liveness, with the complete-file count and deterministic inventory hash; an
-existing empty ledger reports count zero, while a missing ledger is unavailable.
+liveness, with the complete-file count and deterministic inventory hash. A
+Worker isolate reuses the observation for up to five minutes. `observedAt` and
+`ageMs` give the original observation time and its age when returned. An empty
+ledger reports count zero. A missing ledger or a failed read reports unavailable.
 
 <!-- Run Edit Run fleet, 2026-11-17: installed-health ledger follow-up. -->
 

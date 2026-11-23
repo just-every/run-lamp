@@ -6,6 +6,19 @@ import { readBuiltWorkerArtifact } from '../../../scripts/build-output.mjs';
 const require = createRequire(import.meta.url);
 const { unstable_getMiniflareWorkerOptions } = require('wrangler');
 
+export const workerClockSource = `
+  const RealDate = Date;
+  let clock;
+  globalThis.Date = class extends RealDate {
+    constructor(...args) { super(...(args.length ? args : [clock ?? RealDate.now()])); }
+    static now() { return clock ?? RealDate.now(); }
+  };
+  async function setClock(request) {
+    clock = (await request.json()).now;
+    return new Response(null, { status: 204 });
+  }
+`;
+
 // Use the shipped Worker and assets for the existing Reach screen. The wrapper
 // controls only time and the same paused-effects boundary as status journeys.
 export async function reachBuiltWorkerOptions() {
@@ -27,20 +40,13 @@ export async function reachBuiltWorkerOptions() {
   modules.unshift({ type: 'ESModule', path: join(dirname(options.main), '__reach-fixture.mjs'), contents: `
     import worker from './index.js';
     export * from './index.js';
-    const RealDate = Date;
-    let clock, paused = false;
-    globalThis.Date = class extends RealDate {
-      constructor(...args) { super(...(args.length ? args : [clock ?? RealDate.now()])); }
-      static now() { return clock ?? RealDate.now(); }
-    };
+    ${workerClockSource}
+    let paused = false;
     const bindings = env => paused ? { ...env, EFFECTS_PAUSED: '1' } : env;
     export default {
       async fetch(request, env, context) {
         const path = new URL(request.url).pathname;
-        if (path === '/test/clock' && request.method === 'PUT') {
-          clock = (await request.json()).now;
-          return new Response(null, { status: 204 });
-        }
+        if (path === '/test/clock' && request.method === 'PUT') return setClock(request);
         if (path === '/test/effects' && request.method === 'PUT') {
           paused = (await request.json()).paused;
           return new Response(null, { status: 204 });
