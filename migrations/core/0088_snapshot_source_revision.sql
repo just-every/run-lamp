@@ -20,11 +20,6 @@ WHEN OLD.step = 'website' AND EXISTS (SELECT 1 FROM page_settings WHERE id = 'de
   UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
 END;
 
-CREATE TRIGGER incident_follow_snapshot_update AFTER UPDATE OF include_report ON incident_follow_settings
-WHEN NEW.include_report IS NOT OLD.include_report BEGIN
-  UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
-END;
-
 CREATE TRIGGER incident_component_snapshot_insert AFTER INSERT ON incident_components
 WHEN NEW.published_at IS NOT NULL BEGIN
   UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
@@ -73,11 +68,6 @@ WHEN OLD.destination = 'lamp' AND OLD.reversed = 0 AND NEW.reversed <> 0 BEGIN
 END;
 CREATE TRIGGER import_projection_snapshot_provenance_delete AFTER DELETE ON ik_provenance
 WHEN OLD.destination = 'lamp' AND OLD.reversed = 0 BEGIN
-  UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
-END;
-CREATE TRIGGER import_projection_snapshot_door AFTER UPDATE OF job_id, namespace ON ik_door_plans
-WHEN (NEW.job_id IS NOT OLD.job_id OR NEW.namespace IS NOT OLD.namespace)
-  AND (NEW.job_id IS NOT NULL OR OLD.job_id IS NOT NULL) BEGIN
   UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
 END;
 CREATE TRIGGER import_projection_snapshot_target_insert AFTER INSERT ON statuspage_import_targets BEGIN

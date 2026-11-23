@@ -14,6 +14,10 @@ export function createIncidentFollowSettingsRepository(binding: D1Database) {
       try {
         await binding.batch([
           binding.prepare("SELECT CASE WHEN EXISTS (SELECT 1 FROM oa_operators WHERE id=? AND status='active' AND role IN ('owner','admin')) THEN 1 ELSE json('Incident follow settings authority changed.') END").bind(operatorId),
+          // Keep the revision in the same owner write. The migration's seed
+          // insert remains independently replayable during older restores.
+          binding.prepare(`UPDATE public_snapshot_work SET requested_revision=requested_revision+1, updated_at=?
+            WHERE id='default' AND (SELECT include_report FROM incident_follow_settings WHERE id=1)<>?`).bind(now, Number(includeReport)),
           binding.prepare("UPDATE incident_follow_settings SET include_report=? WHERE id=1").bind(Number(includeReport)),
           binding.prepare("INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at) VALUES(?,'settings','incident-follow','incident-follow-settings-updated',?,?,?,?)").bind(createUlid(), operatorId, JSON.stringify({ includeReport }), now, now),
         ]);
