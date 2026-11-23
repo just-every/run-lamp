@@ -102,6 +102,3 @@ WHEN OLD.kind NOT IN ('incident','maintenance') AND EXISTS (
 ) BEGIN
   UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
 END;
-
--- Hydrate retained generations against the new trigger set once on upgrade.
-UPDATE public_snapshot_work SET requested_revision = requested_revision + 1 WHERE id = 'default';
