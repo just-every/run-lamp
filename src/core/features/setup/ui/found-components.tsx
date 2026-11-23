@@ -4,11 +4,16 @@ import type { FoundPage } from "./found-card";
 
 const lines = (value: string) => value.split("\n").map((name) => name.trimStart()).slice(0, 200);
 const kept = (names: string[]) => names.map((name) => name.trim()).filter(Boolean);
+// A trailing newline ends the last entry. Retain gaps between entries so
+// validation can report the line the operator actually sees in the draft.
+const listed = (names: string[]) => names.slice(0, names.findLastIndex((name) => name.trim()) + 1);
 
 /** The page's components as the public page will list them: each group's in its order, then the rest. */
-export function foundLayout(page: FoundPage) {
-  return { components: kept(page.components), groups: page.groups.map((group) => ({ name: group.name, components: kept(group.components) })).filter((group) => group.components.length) };
+export function foundLayout(page: FoundPage, names = kept) {
+  return { components: names(page.components), groups: page.groups.map((group) => ({ name: group.name, components: names(group.components) })).filter((group) => group.components.length) };
 }
+
+export const setupLayout = (page: FoundPage) => foundLayout(page, listed);
 
 function List({ names }: { names: string[] }) {
   return <ul className="found-components">{names.map((name, index) => <li key={index}>{name}</li>)}</ul>;

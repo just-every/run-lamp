@@ -30,6 +30,7 @@ SELECT 'maintenance-reminder:' || m.id,'maintenance-reminder',m.reference || ': 
   '/app/maintenance',json_array(m.id,m.starts_at,julianday(m.starts_at,'-24 hours')<=julianday(c.now))
 FROM maintenance m LEFT JOIN oa_operators o ON o.id=m.created_by_operator_id AND o.status='active'
 CROSS JOIN follow_up_clock c WHERE m.state='Scheduled' AND julianday(m.starts_at)>julianday(c.now)
+  AND m.public_hidden=0 AND c.include_reminders=1
   AND NOT EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind='reminder')
   AND EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind IN ('scheduled','rescheduled'))
   AND NOT EXISTS(SELECT 1 FROM maintenance_notices n WHERE n.maintenance_id=m.id AND n.kind IN ('scheduled','rescheduled') AND julianday(n.published_at)>=julianday(m.starts_at,'-24 hours'))

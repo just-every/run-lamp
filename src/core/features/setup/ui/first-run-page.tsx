@@ -10,7 +10,7 @@ import { LitPage } from "../../../app/client/ui/lit-page";
 import { LoadingState } from "../../../app/client/ui/states";
 import { isVectorMark, markToPng, uploadMark, uploadIcon } from "../../../app/client/ui/mark-image";
 import { FoundCard, type FoundPage } from "./found-card";
-import { foundLayout } from "./found-components";
+import { setupLayout } from "./found-components";
 import { bringHistory } from "./bring-history";
 import { useSetupDraft } from "./setup-draft";
 import { acceptedZone } from "./time-zone";
@@ -88,7 +88,7 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
       }
       // Whatever the history brought already stands; first run adds the rest.
       setProgress("components");
-      const result = await appApi<{ complete: boolean }>("/api/app/overview/first-run", { method: "POST", body: JSON.stringify(foundLayout(found)) });
+      const result = await appApi<{ complete: boolean }>("/api/app/overview/first-run", { method: "POST", body: JSON.stringify(setupLayout(found)) });
       if (!result?.complete) throw new Error("Your public page is still publishing. Try again to finish setup.");
       setProgress("opening");
       clear();

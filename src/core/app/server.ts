@@ -115,7 +115,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerAlertRuleRoutes(app, services.alertRules);
   registerIntakeRoutes(app, services.intake, { publicPageHost: bindings.LAMP_PAGE_HOST, onUptimeTiming: services.metrics.acceptUptime, rateLimiter: publicWriteLimiter });
   registerOperatorRoutes(app, services.auth, bindings.LAMP_PAGE_HOST, { localMail, onErased: services.publicSnapshots.rebuild });
-  registerOverviewRoutes(app, services.overview);
+  registerOverviewRoutes(app, services.overview, services.maintenance, services.mailConfiguration.primaryProvider === null);
   registerAuditLogRoutes(app, createAuditLogRepository(bindings.DB));
   registerSubscriberReportingRoutes(app, createSubscriberReportingService(createSubscriberReportingRepository(bindings.DB)));
   registerCommunicationPerformanceRoutes(app, services.communicationPerformance);

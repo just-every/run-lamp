@@ -102,9 +102,9 @@ export function StatusPagesSettings({ canManage, components, componentsReady, de
     {editor ? <form className="settings-form" aria-label={editor.existing ? "Edit status page" : "New status page"} onSubmit={save} inert={saving}>
       <label className="form-label">Access
         <select value={editor.page.kind} disabled={editor.existing} onChange={event => update("kind", event.target.value === "audience" ? "audience" : "staff")}>
-          <option value="staff">Staff</option><option value="audience">Named audience</option>
+          <option value="staff">Staff</option><option value="audience">Operators only</option>
         </select>
-        <span>Access requires operator sign-in.</span>
+        <span>Every signed-in operator of this Lamp can read this page, including Viewers. Only those operators have access.</span>
       </label>
       <label className="form-label">Page path
         <input value={editor.page.path} required disabled={editor.existing} maxLength={48} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" onChange={event => update("path", event.target.value)} />

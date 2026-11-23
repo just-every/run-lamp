@@ -14,6 +14,18 @@ where you embed the widget. The widget refuses requests from other host origins.
 Add the single script tag for `/widget.js` to your product page. It displays the
 overall status and unresolved incident information from the public snapshot.
 
+## Status pages for operators
+
+In **Settings → Page → Status pages**, add a **Staff** or **Operators only**
+page. Each has its own fixed path on the operator host, branding and
+component selection. Every active operator signed in to this Lamp can read
+both types, including Viewers. Everyone else receives a sign-in screen with
+HTTP 401. Page-specific reader grants are a planned capability.
+
+When publishing an incident or scheduling maintenance, choose the status
+pages that should show it. Records published only to protected pages stay
+off the public page, public feeds, widget and public API.
+
 ## Read history and uptime
 
 History lists resolved incidents and completed maintenance for the previous

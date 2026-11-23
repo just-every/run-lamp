@@ -134,8 +134,11 @@ test("MAINT-009 PAGE-020 — operator schedules, reschedules and publishes maint
     const automationTimes = await scheduled.locator('time').evaluateAll(nodes => nodes.map(node => node.dateTime));
     assert.deepEqual(automationTimes, [window.startsAt, window.endsAt], 'the automatic plan uses the actual saved window');
     const followUps = page.getByRole('region', { name: 'Follow-ups', exact: true });
-    await followUps.locator(`[data-follow-up="maintenance-reminder:${window.id}"]`).waitFor();
-    assert.equal((await api('/api/app/overview/follow-ups')).followUps.filter(item => item.id.endsWith(`:${window.id}`)).length, 1, 'main’s advance-announcement reminder remains alongside the automatic plan');
+    const followUpsLoaded = page.waitForResponse(response => response.url().endsWith("/api/app/overview/follow-ups") && response.ok());
+    await followUps.getByRole("button", { name: "Refresh follow-ups" }).click();
+    const { followUps: rows } = await (await followUpsLoaded).json();
+    assert.ok(!rows.some(item => item.id === `maintenance-reminder:${window.id}`), "mail-off maintenance without an active non-email channel has no subscriber reminder");
+    assert.equal(await followUps.locator(`[data-follow-up="maintenance-reminder:${window.id}"]`).count(), 0);
     assert.equal(await followUps.locator(`[data-follow-up="maintenance-start:${window.id}"], [data-follow-up="maintenance-end:${window.id}"]`).count(), 0, 'future automatic steps need no owner action');
     if (process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE) {
       await mkdir(process.env.LAMP_MAINTENANCE_OVERVIEW_EVIDENCE, { recursive: true });

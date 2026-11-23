@@ -188,7 +188,7 @@ export async function audiencePagesBrowserFlow({ page, browser, appUrl, pageUrl,
     await statusPages.getByRole('status').filter({ hasText: 'Logo removed.' }).waitFor();
     await openPublishedPage(assignedPage, audienceUrl, maintenanceTitle);
     assert.equal(await assignedPage.locator('img.brand-logo').count(), 0);
-    diagnostic('The 1440-wide owner journey configured Staff and named audience branding and components, then used native incident and maintenance editors to publish to the selected pages. Public and signed-in browsers reconciled the resulting pages.');
+    diagnostic('The 1440-wide owner journey configured Staff and Operators only branding and components, then used native incident and maintenance editors to publish to the selected pages. Public and signed-in browsers reconciled the resulting pages.');
   } finally {
     await assignedPage.close();
     await anonymous.close();

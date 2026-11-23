@@ -9,7 +9,7 @@ import { channelFollowUpsSql } from "./channel.repository";
 // D1 bounds compound SELECTs. Each carrier group stays below that bound; list
 // reads all groups in one transactional batch with one shared clock value.
 function query(sql: string) {
-  return `WITH follow_up_clock(now) AS (SELECT ?),
+  return `WITH follow_up_clock(now,include_reminders) AS (VALUES (?,?)),
     follow_up_reports AS (${reportCandidatesSql}), follow_ups AS (${sql})`;
 }
 const incident = query(incidentFollowUpsSql);

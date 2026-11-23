@@ -11,18 +11,19 @@ const dismissal = identity.extend({reason:z.string().trim().min(1).max(1000)}).s
 const query = z.object({}).strict();
 
 /** Mounted beneath the application's existing operator middleware. */
-export function registerFollowUpRoutes(app: Hono<AppEnv>) {
+export function registerFollowUpRoutes(app: Hono<AppEnv>, hasReminderChannel: () => Promise<boolean>) {
   app.get("/api/app/overview/follow-ups",async context=>{
     if (!query.safeParse(context.req.query()).success) return context.json({error:"Invalid follow-up query."},400);
     const service=createFollowUpsService(createFollowUpsRepository(context.env.DB),createFollowUpRetryRepository(context.env.DB));
-    return context.json({followUps:await service.list()},200,{"Cache-Control":"no-store"});
+    return context.json({followUps:await service.list(await hasReminderChannel())},200,{"Cache-Control":"no-store"});
   });
   app.post("/api/app/overview/follow-ups/dismiss",async context=>{
     if (context.req.header("Sec-Fetch-Site")==="cross-site") return context.json({error:"Cross-site follow-up actions are not accepted."},403);
     const parsed=dismissal.safeParse(await context.req.json().catch(()=>null));
     if (!parsed.success) return context.json({error:"A follow-up occurrence and a non-empty reason of at most 1000 characters are required."},400);
     const service=createFollowUpsService(createFollowUpsRepository(context.env.DB),createFollowUpRetryRepository(context.env.DB));
-    return await service.dismiss(parsed.data,context.get("operator").id)
+    const includeReminders = !parsed.data.id.startsWith("maintenance-reminder:") || await hasReminderChannel();
+    return await service.dismiss(parsed.data,context.get("operator").id,includeReminders)
       ? context.json({dismissed:true}) : context.json({error:"This failed follow-up changed or has already been dismissed."},409);
   });
   app.post("/api/app/overview/follow-ups/retry",async context=>{

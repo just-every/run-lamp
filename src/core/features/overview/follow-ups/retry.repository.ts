@@ -23,7 +23,7 @@ export function createFollowUpRetryRepository(db: D1Database) {
                 AND NOT EXISTS(SELECT 1 FROM notification_attempt_records a WHERE a.delivery_id=d.id
                   AND (a.provider_message_id IS NOT NULL OR a.local_capture_id IS NOT NULL)))
           RETURNING id,aggregate_id AS eventId,attempts,locked_at AS lockedAt`)
-          .bind(now,now,now,reclaimBefore,operatorId,id,occurrence,reclaimBefore),
+          .bind(now,0,now,now,reclaimBefore,operatorId,id,occurrence,reclaimBefore),
         db.prepare(`INSERT INTO audit_entries(id,entity_type,entity_id,action,operator_id,payload_json,created_at,updated_at)
           SELECT ?,'follow-up',?,'follow-up.retry-requested',?,json_object('occurrence',?),?,? WHERE changes()=1`)
           .bind(auditId,id,operatorId,occurrence,now,now),

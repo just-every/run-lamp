@@ -7,14 +7,15 @@ import { applyPublicIsolationHeaders } from "./headers";
 import { protectedSnapshotHeaders, registerPublicSnapshotRoutes } from "./routes";
 
 function signInRequired(request: Request, headers: Headers) {
+  const message = "Only signed-in operators of this Lamp can read this status page.";
   if (!request.headers.get("Accept")?.includes("text/html")) {
-    return new Response(request.method === "HEAD" ? null : "Sign in to Lamp to read this status page.", { status: 401, headers });
+    return new Response(request.method === "HEAD" ? null : message, { status: 401, headers });
   }
   const url = new URL(request.url);
   const signIn = `/signin?${new URLSearchParams({ returnTo: url.pathname + url.search })}`;
   applyPublicIsolationHeaders(headers, url.origin);
   headers.set("Content-Type", "text/html; charset=utf-8");
-  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in to Lamp</title></head><body><main><h1>Sign in to Lamp</h1><p>A Lamp account is required to read this status page.</p><a href="${escapeHtml(signIn)}">Sign in</a></main></body></html>`;
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in to Lamp</title></head><body><main><h1>Sign in to Lamp</h1><p>${message}</p><a href="${escapeHtml(signIn)}">Sign in</a></main></body></html>`;
   return new Response(request.method === "HEAD" ? null : body, { status: 401, headers });
 }
 

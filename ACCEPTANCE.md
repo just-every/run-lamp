@@ -3183,7 +3183,7 @@ Core · target · **done** · Cites BASE-PUBLIC-001
 
 Core · target · **missing** · Cites BASE-ROLE-001
 
-**Requirement.** One deployment provides public, private and named-audience pages over shared components, with each page retaining its own presentation and publication surfaces. The public page keeps its existing address and feed identity. Staff and named-audience pages use stable paths on the operator host and admit active operators through the existing session. The first publication fixes a record’s page selection for later updates. AUD-002 governs visitor access, AUD-003 governs audience membership, and AUD-004 governs subscriptions to protected pages.
+**Requirement.** The target is public, private and named-audience pages in one deployment over shared components, with each page retaining its own presentation and publication surfaces. The public page keeps its existing address and feed identity. The shipped Staff and Operators only pages use stable paths on the operator host. Every active operator signed in to this Lamp, including a Viewer, can read either type. Page-specific reader grants are part of the AUD-003 target. The first publication fixes a record’s page selection for later updates. AUD-002 governs visitor access, AUD-003 governs audience membership, and AUD-004 governs subscriptions to protected pages.
 
 **Acceptance.**
 1. Each page has its own hostname or path, branding, languages and component selection; THEME-001, THEME-002, THEME-003 and I18N-001 supply those capabilities.
@@ -3193,7 +3193,7 @@ Core · target · **missing** · Cites BASE-ROLE-001
 5. Each page still serves its own retained snapshot while the database is unavailable.
 
 **Evidence.** None.
-**Gap.** Multiple public, private and audience-scoped pages are not built. This replaces the earlier one-page and public-page-only exclusions when delivered.
+**Gap.** One public page and multiple protected operator pages ship today. Every active operator signed in to this Lamp can read every protected page. The broader target includes private and audience-scoped access.
 
 #### AUD-002 — Private page access
 
@@ -3210,7 +3210,7 @@ Core · target · **missing** · Cites BASE-SIGNIN-001, BASE-ACCESS-002, BASE-AC
 6. The private-page session has HttpOnly, Secure and SameSite=Lax protections, and no private response is stored in a shared cache.
 
 **Evidence.** None.
-**Gap.** Private-page access, its configured access methods and retained reading without the database are not built.
+**Gap.** Protected operator pages use Lamp operator sign-in today. The target includes configurable visitor access and retained reading without the database.
 
 #### AUD-003 — Audiences for named customers
 

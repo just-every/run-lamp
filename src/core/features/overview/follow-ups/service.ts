@@ -25,11 +25,11 @@ function queueError(cause: unknown): string {
 
 export function createFollowUpsService(repository: FollowUpsRepository, retries: FollowUpRetryRepository) {
   return {
-    async list(): Promise<FollowUp[]> { return (await repository.list(new Date().toISOString())).map(project); },
-    async dismiss(input: {id:string;occurrence:string;reason:string}, operatorId: string): Promise<boolean> {
+    async list(includeReminders: boolean): Promise<FollowUp[]> { return (await repository.list(new Date().toISOString(),includeReminders)).map(project); },
+    async dismiss(input: {id:string;occurrence:string;reason:string}, operatorId: string, includeReminders: boolean): Promise<boolean> {
       const reason=input.reason.trim();
       if (!reason || reason.length>1000) return false;
-      return repository.dismiss(input.id,input.occurrence,reason,operatorId,new Date().toISOString());
+      return repository.dismiss(input.id,input.occurrence,reason,operatorId,new Date().toISOString(),includeReminders);
     },
     async retry(input: {id:string;occurrence:string}, operatorId: string, jobs: JobDispatcher): Promise<"stale" | "queued" | "queue-failed"> {
       const claim=await retries.claim(input.id,input.occurrence,operatorId,new Date().toISOString());
