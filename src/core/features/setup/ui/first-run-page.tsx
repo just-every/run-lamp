@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 
 import type { PageSettingsInput } from "../../../shared/schemas";
 import type { PageSettingsService } from "../../page-settings/service";
@@ -16,6 +16,12 @@ import { useSetupDraft } from "./setup-draft";
 import { acceptedZone } from "./time-zone";
 
 type SettingsResponse = { settings: Awaited<ReturnType<PageSettingsService["get"]>> };
+const progressText = {
+  details: "Saving your page details…",
+  history: "Bringing in its incident history…",
+  components: "Publishing your page and components…",
+  opening: "Opening your workspace…",
+};
 
 /** The owner's first run: their website first; Lamp fills in what the site gives, the owner checks it,
  * and opening Lamp stores it all. Nothing here is required beyond confirming. */
@@ -25,7 +31,8 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
   const { website, review } = draft;
   const [reading, setReading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [progress, setProgress] = useState<"publishing" | "history" | "checking" | "opening" | null>(null);
+  const [progress, setProgress] = useState<keyof typeof progressText | null>(null);
+  const finishing = useRef(false);
   const saving = progress !== null;
   if ((loading && !data) || !ready) return <LoadingState />;
   if (error || !data?.settings) return <ErrorState onRetry={() => window.location.reload()}>{error ?? "Your page settings could not be loaded."}</ErrorState>;
@@ -61,8 +68,10 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
   }
 
   async function finish() {
-    if (!found) return;
-    setProgress("publishing"); setMessage(null);
+    if (!found || finishing.current) return;
+    finishing.current = true;
+    setProgress("details");
+    setMessage(null);
     try {
       const { pageName, tagline, accentColor } = found;
       const timezone = found.timezone;
@@ -78,14 +87,15 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
         await bringHistory(found, found.existing);
       }
       // Whatever the history brought already stands; first run adds the rest.
-      await appApi("/api/app/overview/first-run", { method: "POST", body: JSON.stringify(foundLayout(found)) });
-      setProgress("checking");
-      await appApi("/api/app/overview/live");
+      setProgress("components");
+      const result = await appApi<{ complete: boolean }>("/api/app/overview/first-run", { method: "POST", body: JSON.stringify(foundLayout(found)) });
+      if (!result?.complete) throw new Error("Your public page is still publishing. Try again to finish setup.");
       setProgress("opening");
       clear();
       window.location.assign("/app");
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : "Your page could not be saved.");
+      finishing.current = false;
       setProgress(null);
     }
   }
@@ -106,8 +116,8 @@ export function FirstRunPage({ publicPageOrigin, ownerId }: { publicPageOrigin: 
       <fieldset className="first-run-details" aria-label="Your page details" disabled={saving || reading}><FoundCard page={found} address={address} onChange={(next) => setDraft((current) => ({ ...current, found: current.found ? { ...current.found, ...next } : null }))} /></fieldset>
       {message && <p className="save-message" role="alert">{message}</p>}
       <div className="first-run-finish">
-        <Button type="button" onClick={finish} disabled={saving || reading || !found.pageName.trim() || !found.tagline.trim() || !/^#[0-9a-f]{6}$/i.test(found.accentColor)}>{saving ? "Opening Lamp…" : review.kind === "read" ? "Looks right, open Lamp" : "Open Lamp"}</Button>
-        {progress ? <ol className="first-run-progress" role="status" aria-label="Opening your page"><li>{progress === "publishing" ? "Publishing your page…" : "Page published"}</li>{found.existing && found.history ? <li>{progress === "publishing" ? "Then bringing in its incident history" : progress === "history" ? "Bringing in its incident history…" : "Incident history brought in"}</li> : null}<li>{progress === "publishing" || progress === "history" ? "Then checking the subscribe form" : progress === "checking" ? "Checking the subscribe form…" : "Opening your workspace…"}</li></ol> : null}
+        <Button type="button" onClick={finish} disabled={saving || reading || !found.pageName.trim() || !found.tagline.trim() || !/^#[0-9a-f]{6}$/i.test(found.accentColor)}>{progress === "opening" ? "Opening Lamp…" : saving ? "Publishing…" : message ? "Retry publishing" : review.kind === "read" ? "Looks right, open Lamp" : "Open Lamp"}</Button>
+        {progress ? <p className="first-run-progress" role="status">{progressText[progress]}</p> : null}
       </div>
     </> : null}
   </div></LitPage>;

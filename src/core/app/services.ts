@@ -291,7 +291,7 @@ export function createAppServices(bindings: AppBindings, blobs: BlobStore, execu
     publishedAt: () => publicSnapshots.publishedAt(),
     // A demo's mail transport is local, but its sender reads as a configured one's.
     sender: { local: local && bindings.RER_DEMO !== '1', demo: bindings.RER_DEMO === '1', provider: bindings.MAIL_PROVIDER || "resend", apiKey: bindings.MAIL_PROVIDER_API_KEY, mailgunRegion: bindings.MAILGUN_REGION, sesRegion: bindings.SES_REGION, postmarkAccountApiKey: bindings.POSTMARK_ACCOUNT_API_KEY, mail },
-  }));
+  }), primarySnapshot.confirmPublication);
 
   const devSiteOrigin = import.meta.env?.DEV && bindings.LAMP_DEV_SITE_ORIGIN?.startsWith("http://127.0.0.1:") ? bindings.LAMP_DEV_SITE_ORIGIN : undefined;
   const readingUnavailable = outboundUnavailable(bindings, "Reading your website");

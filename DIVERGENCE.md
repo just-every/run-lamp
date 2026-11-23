@@ -1133,7 +1133,8 @@ Lamp runs the Base rer CLI (`scripts/base-cli/`, thin `scripts/rer.mjs`) with th
 - The development ingress accepts the CLI proxy's public port (from `RER_DEV_ORIGIN`) in the Host
   header; the proxy forwards the browser's Host to the internal listener unchanged.
 - First-run setup at `/setup` reads the owner's website and confirms what it found (SETUP-002);
-  Overview shows one live line (SETUP-001).
+  it confirms the published snapshot before opening the workspace so a saved component cannot
+  be mistaken for a published one. Overview shows one live line (SETUP-001).
 
 ## Slack and Teams channels on a Worker — 11 October 2026
 

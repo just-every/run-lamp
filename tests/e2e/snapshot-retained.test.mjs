@@ -417,6 +417,51 @@ test('AUD-001 THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published stat
   }
 });
 
+test('First-run confirmation waits for the three-component public snapshot and retries a refused publication', async () => {
+  const thirdComponentWrite = Promise.withResolvers();
+  const releaseWrite = Promise.withResolvers();
+  let refuseWrite = true;
+  const publicationEdge = 'https://r2.example.test/first-run';
+  const journey = await openStatusJourney({
+    workerEntry: 'tests/e2e/snapshot-retention.worker.ts',
+    extraBindings: { LAMP_TEST_SETUP_PUBLICATION_EDGE: publicationEdge },
+    async providerEdge(request) {
+      if (request.url !== publicationEdge) return;
+      thirdComponentWrite.resolve();
+      await releaseWrite.promise;
+      return new Response(null, { status: refuseWrite ? 503 : 204 });
+    },
+  });
+  let first;
+  try {
+    await journey.execute("DELETE FROM setup_readiness WHERE step='first-run'");
+    const components = ['ChargeDesk website', 'ChargeDesk app', 'Customer support'];
+    const finish = () => journey.post('/api/app/overview/first-run', { components });
+    const setupState = async () => (await (await journey.raw('/setup/state')).json()).state;
+    const publishedComponents = async () => (await (await journey.publicResponse('/api/public/v1/components.json')).json()).data.map(component => component.name);
+    first = finish();
+    await Promise.race([thirdComponentWrite.promise, first.then(() => assert.fail('Setup finished before the third snapshot write'))]);
+    assert.deepEqual(await publishedComponents(), components.slice(0, 2));
+    assert.equal(await setupState(), 'unclaimed');
+    assert.equal((await finish()).status, 409, 'another press during publication does not start another setup');
+    releaseWrite.resolve();
+    const failed = await first;
+    assert.equal(failed.status, 400);
+    assert.match(failed.body.error, /Customer support/);
+    assert.equal(await setupState(), 'unclaimed');
+    refuseWrite = false;
+    const retried = await finish();
+    assert.equal(retried.status, 200);
+    assert.equal(retried.body.complete, true);
+    assert.equal(await setupState(), 'claimed');
+    assert.deepEqual(await publishedComponents(), components);
+  } finally {
+    releaseWrite.resolve();
+    await first?.catch(() => {});
+    await journey.close();
+  }
+});
+
 test('Published snapshot retention keeps two versions, drains old piles and protects failed and overlapping publications', async () => {
   const j = await openStatusJourney({ workerEntry: 'tests/e2e/snapshot-retention.worker.ts' });
   try {

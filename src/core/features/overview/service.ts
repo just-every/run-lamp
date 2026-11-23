@@ -21,6 +21,7 @@ export function createOverviewService(
   incidentsService: IncidentsService,
   maintenanceService: MaintenanceService,
   live: LiveStatusService,
+  confirmPublication: () => Promise<void>,
 ): OverviewService {
   return {
     live,
@@ -43,11 +44,15 @@ export function createOverviewService(
       const key = (groupId: string | null, name: string) => `${groupId ?? ""}\n${name.trim().toLowerCase()}`;
       const taken = new Set(existing.map((component) => key(component.groupId, component.name)));
       let displayOrder = existing.length, groupOrder = Math.max(-1, ...groups.map((group) => group.displayOrder)) + 1;
-      const add = async (names: string[], groupId: string | null) => {
+      const add = async (names: string[], groupId: string | null, groupName?: string) => {
         for (const name of names.map((value) => value.trim()).filter(Boolean)) {
           if (taken.has(key(groupId, name))) continue;
           taken.add(key(groupId, name));
-          await componentsService.create({ groupId, name, description: "", internal: false, displayOrder: displayOrder++, note: "" }, operatorId);
+          try {
+            await componentsService.create({ groupId, name, description: "", internal: false, displayOrder: displayOrder++, note: "" }, operatorId);
+          } catch (cause) {
+            throw new Error(`Could not publish “${name}”${groupName ? ` in “${groupName}”` : ""}.`, { cause });
+          }
         }
       };
       const named = groups.map(({ id, name }) => ({ id, name }));
@@ -59,9 +64,13 @@ export function createOverviewService(
         let target = named.find((candidate) => !claimed.has(candidate.id) && candidate.name.trim().toLowerCase() === group.name.trim().toLowerCase());
         if (!target) { target = await componentsService.createGroup({ name: group.name.trim(), displayOrder: groupOrder++ }); named.push(target); }
         claimed.add(target.id);
-        await add(group.components, target.id);
+        await add(group.components, target.id, target.name);
       }
       await add(layout.components, null);
+      // A failed attempt can leave a component stored while the public
+      // snapshot still shows the preceding revision. Retry that publication
+      // before confirming first run, even if there were no new rows to add.
+      await confirmPublication();
       await live.completeFirstRun();
     },
   };

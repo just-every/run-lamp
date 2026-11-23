@@ -21,6 +21,11 @@ and asks search engines to stay away until you turn it off.
 
 ## Nothing else to set up
 
+**Open Lamp** keeps setup open while Lamp publishes your components. If a
+component fails, Lamp names it and lets you retry from the same draft.
+Setup agents can poll `GET /setup/state` until `state` is `claimed`.
+Lamp records that state after the public snapshot includes the setup changes.
+
 Every change republishes your public page. Lamp checks the page and its
 subscribe form after each publish and every minute, and a hosted sender with
 your mail provider when it changes and daily. Overview shows one line: where the

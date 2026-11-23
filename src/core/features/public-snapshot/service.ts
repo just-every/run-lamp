@@ -54,6 +54,8 @@ function logoDataUrl(logo: { bytes: ArrayBuffer; contentType: string }) {
 
 export interface PublicSnapshotService {
   rebuild(force?: boolean): Promise<void>;
+  /** Publish pending source changes and confirm the public selector covers them. */
+  confirmPublication(): Promise<void>;
   hasCurrentSnapshot(): Promise<boolean>;
   readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean; prelaunch: boolean } | null>;
   /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
@@ -318,6 +320,14 @@ export function createPublicSnapshotService(
 
   return {
     rebuild: enqueueRebuild,
+    async confirmPublication() {
+      const { requestedRevision } = await repository.currentWork();
+      await enqueueRebuild();
+      const pointer = await readPointer();
+      if (!pointer || pointer.sourceRevision < requestedRevision) {
+        throw new Error("Your public page is still publishing. Try again to finish setup.");
+      }
+    },
     async hasCurrentSnapshot() {
       try {
         if (await readPointer()) return true;
