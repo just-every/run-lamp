@@ -338,8 +338,14 @@ export function setupPageSettingsStatement(config, now = new Date().toISOString(
   return `INSERT INTO page_settings (id, page_name, tagline, accent_color, timezone, hostname, feed_id, footer_credit_enabled, widget_allowed_origins, mail_from_address, created_at, updated_at) SELECT 'default', ${sqlLiteral(config.pageName)}, ${sqlLiteral(config.pageTagline)}, ${sqlLiteral(config.pageAccentColor)}, ${sqlLiteral(config.pageTimezone)}, ${sqlLiteral(config.pageHost)}, lower(hex(randomblob(16))), 1, '[]', ${sqlLiteral(config.mailFromAddress)}, ${sqlLiteral(now)}, ${sqlLiteral(now)} WHERE ${condition}${conflict};`;
 }
 
-// The stored page hostname follows LAMP_PAGE_HOST on every deploy. Only the hostname (and, when it changes, the
-// updated_at stamp) is written: a first setup or a new owner already stored it through setupPageSettingsStatement.
-export function pageHostBindingStatement(config, now = new Date().toISOString()) {
-  return `UPDATE page_settings SET hostname = ${sqlLiteral(config.pageHost)}, updated_at = ${sqlLiteral(now)} WHERE id = 'default' AND hostname <> ${sqlLiteral(config.pageHost)};`;
+// The page hostname follows the deployment. A mail-off setup stores an empty
+// sender. When email is enabled, initialize it without replacing a saved From.
+export function pageDeploymentBindingsStatement(config, now = new Date().toISOString()) {
+  const hostname = sqlLiteral(config.pageHost);
+  const sender = sqlLiteral(config.mailFromAddress);
+  return `UPDATE page_settings
+    SET hostname = ${hostname},
+        mail_from_address = CASE WHEN mail_from_address = '' THEN ${sender} ELSE mail_from_address END,
+        updated_at = ${sqlLiteral(now)}
+    WHERE id = 'default' AND (hostname <> ${hostname} OR (mail_from_address = '' AND ${sender} <> ''));`;
 }

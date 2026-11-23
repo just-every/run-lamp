@@ -8,7 +8,7 @@ import { deploymentOwnership } from "./deployment-ownership.mjs";
 
 import { applyOwnerMigrations } from "./owner-migrations.mjs";
 import { assertMigrationsApplied, coreLedgerQuery, ledgerNames, observationLedgerSql, shippedMigrations } from "./setup-migrations.mjs";
-import { deploymentConfig, deploymentRecordPath, parseArgs, resourceNames, pageHostBindingStatement, setupPageSettingsStatement, writeDeploymentRecord, writeGeneratedWrangler } from "./ops-config.mjs";
+import { deploymentConfig, deploymentRecordPath, parseArgs, resourceNames, pageDeploymentBindingsStatement, setupPageSettingsStatement, writeDeploymentRecord, writeGeneratedWrangler } from "./ops-config.mjs";
 
 // The checkout's own Wrangler, run by this Node: a restore needs no global pnpm.
 function wrangler(args, options = {}) {
@@ -102,7 +102,7 @@ async function main() {
     previous = count;
   }
   await applyOwnerMigrations("wrangler.toml", ["--remote"]);
-  wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", `${setupPageSettingsStatement(config)} ${pageHostBindingStatement(config)}`]);
+  wrangler(["d1", "execute", "DB", "--remote", "--config", "wrangler.toml", "--command", `${setupPageSettingsStatement(config)} ${pageDeploymentBindingsStatement(config)}`]);
   if (!existsSync("wrangler.toml")) throw new Error("Setup did not generate wrangler.toml.");
   console.log(`Provisioned ${names.worker}; migrations and page settings are initialized.`);
 }

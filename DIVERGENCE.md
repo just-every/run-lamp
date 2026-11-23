@@ -14,7 +14,9 @@ original checkout with its deploying account credentials and ownership records;
 this adds no hosted development entry or token disclosure.
 
 An absent sender remains empty through first-run and Settings saves; any
-non-empty sender still has to be a valid email address.
+non-empty sender still has to be a valid email address. Redeploying with email
+enabled initializes an empty sender from the deployment's verified sender
+address. A sender already saved in Settings is preserved.
 
 Run Edit Run fleet (Codex), 15 November 2026. Implements the main-lamp-mail-off-1 brief.
 

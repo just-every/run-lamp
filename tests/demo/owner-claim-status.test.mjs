@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { database, load } from '../operator-readiness/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
-import { deploymentConfig, pageHostBindingStatement, renderWranglerToml, resourceNames, setupPageSettingsStatement } from '../../scripts/ops-config.mjs';
+import { deploymentConfig, pageDeploymentBindingsStatement, renderWranglerToml, resourceNames, setupPageSettingsStatement } from '../../scripts/ops-config.mjs';
 
 const json64 = value => Buffer.from(JSON.stringify(value)).toString('base64url');
 test('ordinary host configuration carries public Business trust into a read-only native owner verification', async () => {
@@ -100,12 +100,13 @@ test('a deploy points the stored page hostname at LAMP_PAGE_HOST and changes no 
   const first = deploymentConfig({ ...routeInputs, LAMP_PAGE_HOST_ROUTE_ZONE: undefined, LAMP_PAGE_HOST_TARGET: undefined, LAMP_PAGE_HOST: 'status.lamp-provider.test' });
   const row = async () => storage.db.prepare("SELECT * FROM page_settings WHERE id = 'default'").first();
   await storage.db.prepare(setupPageSettingsStatement(first)).run();
-  await storage.db.prepare(pageHostBindingStatement(first)).run();
+  await storage.db.prepare(pageDeploymentBindingsStatement(first)).run();
   const before = await row();
   assert.equal(before.hostname, 'status.lamp-provider.test');
   await storage.db.prepare("UPDATE page_settings SET page_name = 'Edited by the owner' WHERE id = 'default'").run();
-  await storage.db.prepare(setupPageSettingsStatement(deploymentConfig(routeInputs))).run();
-  await storage.db.prepare(pageHostBindingStatement(deploymentConfig(routeInputs))).run();
+  const redeploy = deploymentConfig({ ...routeInputs, MAIL_FROM_ADDRESS: 'another@example.test' });
+  await storage.db.prepare(setupPageSettingsStatement(redeploy)).run();
+  await storage.db.prepare(pageDeploymentBindingsStatement(redeploy)).run();
   const after = await row();
   assert.equal(after.hostname, 'status.example.org');
   const { hostname: _h, updated_at: _u, ...others } = after;

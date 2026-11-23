@@ -544,7 +544,7 @@
       "executable": false
     },
     "DIVERGENCE.md": {
-      "sha256": "ad2111889ffc47ba81d687208596774951ad7e6957b419714ecdd7fab8caf1bd",
+      "sha256": "059d3db28dff113c2a554ebf5f3d776e6fdfb5e244a991ec89b52d14eff6284c",
       "executable": false
     },
     "docs/accessibility/vpat.md": {
@@ -4096,7 +4096,7 @@
       "executable": false
     },
     "scripts/ops-config.mjs": {
-      "sha256": "3a75de672e72b6d76ac62f86f90fb8a600c85a3758a1bd82e95c3d272edd7bb2",
+      "sha256": "fa0a3b495d42ec084be459285b7abdc7f79212c520ac8981c5e62da2867b2184",
       "executable": false
     },
     "scripts/owner-claim-config.mjs": {
@@ -4140,7 +4140,7 @@
       "executable": false
     },
     "scripts/setup.mjs": {
-      "sha256": "930b5e5ad39224309d0a245c92af75afb41da9f6fed6e75fb9b33e13ff44ccd1",
+      "sha256": "015095daff34cec18626ebacab435458314366481fad7906310dcdd74762a654",
       "executable": false
     },
     "scripts/signin-link.mjs": {
@@ -5768,7 +5768,7 @@
       "executable": false
     },
     "src/core/features/page-export/ui/page-data-card.tsx": {
-      "sha256": "b73be144eb38bdda7ec81406eca2e873b5217397e562f3e6b4c0c7007312cc1c",
+      "sha256": "14d5bfb46f3724a3356431fda1324ab2cce47ec9e33424bf44ea8999ec2c15b5",
       "executable": false
     },
     "src/core/features/page-settings/index.ts": {
@@ -6088,7 +6088,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/protected-routes.ts": {
-      "sha256": "0317256ea3a0bcc2f8408e7a7bdad3d52601ada9a0e0d1b87c900ff2fad68a7e",
+      "sha256": "307757bbc942ce5ff21cec57144f2ca101968f2f235411d7013a67347d581839",
       "executable": false
     },
     "src/core/features/public-snapshot/public-api.ts": {
@@ -8236,7 +8236,7 @@
       "executable": false
     },
     "tests/demo/owner-claim-status.test.mjs": {
-      "sha256": "d2d1e405ecc6db7a914ed24ee9e646ad14f540fb74a001c396cf9e323d2536b2",
+      "sha256": "121482e729f92a914dad03d9f055a7f389ac0df765139eccf25367e37b2af744",
       "executable": false
     },
     "tests/demo/owner-claim.test.mjs": {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getRouteApi } from "@tanstack/react-router";
 
 import { appApi } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -34,6 +35,7 @@ function Consent({ consent }: { consent: SubscriberConsent }) {
 }
 
 function HeldSubscribers({ held, onChange }: { held: HeldConfirmations; onChange: (next: HeldConfirmations) => void }) {
+  const { emailOff } = getRouteApi("/app").useLoaderData();
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const formatOperatorTime = useOperatorTime();
@@ -58,7 +60,10 @@ function HeldSubscribers({ held, onChange }: { held: HeldConfirmations; onChange
   return <div className="page-data-check" role="status">
     {held.held > 0 && <p><strong>{plural(held.held, "restored email subscriber")}</strong> {held.held === 1 ? "is" : "are"} held for a confirmation email. Held subscribers receive nothing. Each one you send a confirmation stays subscribed only if they follow its link within 72 hours. Anyone you have not sent one is deleted{held.deleteAfter ? ` from ${formatOperatorTime(held.deleteAfter)}` : ""}.</p>}
     {message && <p className="save-message">{message}</p>}
-    {held.held > 0 && <div className="form-actions"><Button type="button" onClick={send} disabled={sending}>{sending ? "Sending…" : "Send confirmation emails"}</Button></div>}
+    {held.held > 0 && <>
+      {emailOff && <p id="restore-confirmations-mail-off">Email is off for this installation. Enable email to send confirmations.</p>}
+      <div className="form-actions"><Button type="button" onClick={send} disabled={emailOff || sending} aria-describedby={emailOff ? "restore-confirmations-mail-off" : undefined}>{sending ? "Sending…" : "Send confirmation emails"}</Button></div>
+    </>}
   </div>;
 }
 

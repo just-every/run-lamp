@@ -7,7 +7,7 @@ import { applyPublicIsolationHeaders } from "./headers";
 import { protectedSnapshotHeaders, registerPublicSnapshotRoutes } from "./routes";
 
 function signInRequired(request: Request, headers: Headers) {
-  const message = "Only signed-in operators of this Lamp can read this status page.";
+  const message = "Any active operator signed in to this Lamp, including Viewers, can open this status page.";
   if (!request.headers.get("Accept")?.includes("text/html")) {
     return new Response(request.method === "HEAD" ? null : message, { status: 401, headers });
   }
