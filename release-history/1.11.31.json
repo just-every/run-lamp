@@ -1,0 +1,22 @@
+{
+  "version": "1.11.31",
+  "previousVersion": "1.11.30",
+  "date": "2026-11-22",
+  "publicReleaseNotes": "- **Incident previews follow the mail setting.** With email off, the incident composer offers only the page preview. The Email tab is hidden when drafting or editing an incident update.\n- **Hosted terminal sign-in returns to the Staff page you opened.** Open the one-time owner link in the same browser that opened the protected page to return to its original address, including its query string.\n- **Cloudflare dry-run errors explain where to put credentials.** Set the account ID and API token together in the shell environment or together in the private deployment file. The deployment guide also explains what to do when a credential helper injects the token.\n- **Local first start uses rer 0.2.131.** Lamp can check the owner sign-in page on macOS with an isolated home directory. While Lamp starts, the proxy returns a retryable 503 and the launcher reports progress.\n\n### Upgrading from 1.11.30\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.31`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check incident previews with email off, hosted terminal sign-in from a protected Staff URL and a local first start.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "docs/deploy.md",
+      "section": "Step 2: Cloudflare account ID and API token",
+      "change": "changed",
+      "date": "2026-11-22",
+      "summary": "The Cloudflare deployment guide explains where to supply the account ID and API token.",
+      "was": "The guide listed the credential names without explaining how to combine the deployment file with an injected token.",
+      "now": "Place both credentials in the private deployment file or export both in the shell. If a helper injects the token, export the account ID alongside it and remove all CLOUDFLARE_* and CF_* entries from the file."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve mail settings and public and protected page addresses. Supply the Cloudflare account ID and API token together in the environment or together in the private deployment file. Verify the incident page preview with email off, hosted terminal sign-in from a protected Staff URL with a query, and local first start on rer 0.2.131."
+}

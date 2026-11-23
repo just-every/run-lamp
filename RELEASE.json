@@ -1,22 +1,22 @@
 {
-  "version": "1.11.31",
-  "previousVersion": "1.11.30",
-  "date": "2026-11-22",
-  "publicReleaseNotes": "- **Incident previews follow the mail setting.** With email off, the incident composer offers only the page preview. The Email tab is hidden when drafting or editing an incident update.\n- **Hosted terminal sign-in returns to the Staff page you opened.** Open the one-time owner link in the same browser that opened the protected page to return to its original address, including its query string.\n- **Cloudflare dry-run errors explain where to put credentials.** Set the account ID and API token together in the shell environment or together in the private deployment file. The deployment guide also explains what to do when a credential helper injects the token.\n- **Local first start uses rer 0.2.131.** Lamp can check the owner sign-in page on macOS with an isolated home directory. While Lamp starts, the proxy returns a retryable 503 and the launcher reports progress.\n\n### Upgrading from 1.11.30\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.31`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check incident previews with email off, hosted terminal sign-in from a protected Staff URL and a local first start.",
+  "version": "1.11.32",
+  "previousVersion": "1.11.31",
+  "date": "2026-11-23",
+  "publicReleaseNotes": "- **Open Lamp waits for your public page.** Setup stays on `/setup` with a disabled **Publishing…** button until the public snapshot includes all your components. If a component fails to publish, Lamp names it and lets you retry from the same draft. The retry publishes any saved components still missing from the public page before opening the workspace.\n- **Setup agents can confirm publication.** Poll `GET /setup/state` for `state: \"claimed\"`. Lamp records that state after the public snapshot includes the setup changes.\n- **Only one setup publication runs at a time.** Lamp keeps an in-flight publication running if the browser or agent disconnects and refuses overlapping setup requests.\n\n### Upgrading from 1.11.31\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.32`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. On a fresh installation, check that Open Lamp waits for all components to appear publicly before opening the workspace.",
   "contractChanges": {},
   "proseChanges": [
     {
-      "document": "docs/deploy.md",
-      "section": "Step 2: Cloudflare account ID and API token",
+      "document": "docs/first-run.md",
+      "section": "Nothing else to set up",
       "change": "changed",
-      "date": "2026-11-22",
-      "summary": "The Cloudflare deployment guide explains where to supply the account ID and API token.",
-      "was": "The guide listed the credential names without explaining how to combine the deployment file with an injected token.",
-      "now": "Place both credentials in the private deployment file or export both in the shell. If a helper injects the token, export the account ID alongside it and remove all CLOUDFLARE_* and CF_* entries from the file."
+      "date": "2026-11-23",
+      "summary": "The first-run guide explains publication, retry and how agents confirm setup is complete.",
+      "was": "The guide described automatic republication after changes and the checks that Overview shows.",
+      "now": "Open Lamp waits for the setup changes to appear in the public snapshot. Lamp names a failing component and lets the owner retry from the same draft. Setup agents can poll GET /setup/state for claimed after publication."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve mail settings and public and protected page addresses. Supply the Cloudflare account ID and API token together in the environment or together in the private deployment file. Verify the incident page preview with email off, hosted terminal sign-in from a protected Staff URL with a query, and local first start on rer 0.2.131."
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve existing public page addresses, components, and completed setup state. On a fresh installation, verify that Open Lamp waits for the complete public snapshot, that a component failure can be retried from the same draft, and that GET /setup/state reports claimed after the setup changes are public."
 }

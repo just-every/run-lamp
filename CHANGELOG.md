@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.32
+
+- **Open Lamp waits for your public page.** Setup stays on `/setup` with a disabled **Publishing…** button until the public snapshot includes all your components. If a component fails to publish, Lamp names it and lets you retry from the same draft. The retry publishes any saved components still missing from the public page before opening the workspace.
+- **Setup agents can confirm publication.** Poll `GET /setup/state` for `state: "claimed"`. Lamp records that state after the public snapshot includes the setup changes.
+- **Only one setup publication runs at a time.** Lamp keeps an in-flight publication running if the browser or agent disconnects and refuses overlapping setup requests.
+
+### Upgrading from 1.11.31
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.32`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. On a fresh installation, check that Open Lamp waits for all components to appear publicly before opening the workspace.
+
 ## 1.11.31
 
 - **Incident previews follow the mail setting.** With email off, the incident composer offers only the page preview. The Email tab is hidden when drafting or editing an incident update.
