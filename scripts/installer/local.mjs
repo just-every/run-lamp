@@ -72,7 +72,17 @@ export const adapter=localInstaller({
 // install (rer adds --remote --environment production --out FILE).
 // A RER Managed destination keeps Platform's ledger: core-<file> by hash, plus the
 // per-installation page initializer, which seeds data and has no schema file.
-const transfer={hostedExport:['node','scripts/export.mjs'],...localPortability({database:'DB',platformMigrations:{prefix:coreMigrationPrefix,dataOnly:[pageInitializer]},buckets:{SNAPSHOTS:'SNAPSHOTS'},policyModule:new URL('./archive-policy.mjs',import.meta.url),transient:['move-in import custody (resume and undo stay on the original installation)','operator sessions and one-use sign-in links','queued job deliveries in flight','public snapshot cache (rebuilt from D1 and R2)']})};
+const nativeTransfer=localPortability({database:'DB',platformMigrations:{prefix:coreMigrationPrefix,dataOnly:[pageInitializer]},buckets:{SNAPSHOTS:'SNAPSHOTS'},policyModule:new URL('./archive-policy.mjs',import.meta.url),transient:['move-in import custody (resume and undo stay on the original installation)','operator sessions and one-use sign-in links','queued job deliveries in flight','public snapshot cache (rebuilt from D1 and R2)']});
+const transfer={
+ ...nativeTransfer,
+ hostedExport:['node','scripts/export.mjs'],
+ async import(context) {
+  const restored=await nativeTransfer.import(context);
+  context.store.report('Any held subscriber confirmations stay on hold to protect subscriber consent. When email is enabled, use Restore page data → Send confirmation emails to re-confirm them. Subscribers must follow the links themselves.');
+  context.store.report('To use a localhost passkey again, run rer setup and then rer dev --host localhost. Open the new private owner link and re-enroll your passkey in Settings → Sign-in.');
+  return restored;
+ },
+};
 
 // Declare installed documents explicitly: the Lobby at / does not link to all
 // docs. Read the publishing manifest so new pages enter hydration checks too.

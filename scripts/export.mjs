@@ -8,6 +8,8 @@ import { isRerBookkeepingTable } from "./archive-validation.mjs";
 import { ownerMigrationFiles } from "./owner-migrations.mjs";
 import { assertPlatformLedger, platformLedger, platformLedgerRows } from "./platform-ledger.mjs";
 
+const PROGRESS_INTERVAL_MS = 15_000;
+
 function digest(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
@@ -27,7 +29,7 @@ async function listAll(bucket) {
   return objects;
 }
 
-async function exportObjects(bucket, output) {
+async function exportObjects(bucket, output, progress) {
   const objects = [];
   const skippedObjects = [];
   const copied = new Set();
@@ -38,11 +40,14 @@ async function exportObjects(bucket, output) {
     const file = `${objects.length.toString().padStart(6, "0")}-${encodeURIComponent(key)}`;
     await writeFile(join(output, "objects", file), bytes, { mode: 0o600 });
     objects.push({ key, file, size: bytes.byteLength, sha256: digest(bytes), contentType: source.httpMetadata?.contentType ?? null, httpMetadata: source.httpMetadata ?? {}, customMetadata: source.customMetadata ?? {} });
+    progress.copied = objects.length;
     copied.add(key);
     return true;
   };
   const missing = new Set();
-  for (const { key } of await listAll(bucket)) {
+  const listed = await listAll(bucket);
+  progress.total = new Set(listed.map(({ key }) => key)).size;
+  for (const { key } of listed) {
     if (copied.has(key)) continue;
     if (await copy(key)) missing.delete(key);
     else missing.add(key);
@@ -50,7 +55,9 @@ async function exportObjects(bucket, output) {
   if (missing.size) {
     // Snapshot rotation can prune an alias and publish its replacement during
     // the copy. Re-list once and copy every key we have not yet archived.
-    for (const { key } of await listAll(bucket)) {
+    const relisted = await listAll(bucket);
+    progress.total = new Set([...copied, ...missing, ...relisted.map(({ key }) => key)]).size;
+    for (const { key } of relisted) {
       if (copied.has(key)) continue;
       if (await copy(key)) missing.delete(key);
       else missing.add(key);
@@ -83,6 +90,14 @@ async function main() {
   await mkdir(join(output, "objects"), { mode: 0o700 });
   const archive = await openArchivePlatform(flags);
   const { platform } = archive;
+  let objectProgress;
+  const reportProgress = () => {
+    if (!objectProgress) console.log("Backing up D1 data…");
+    else if (objectProgress.total === null) console.log("Listing R2 objects to copy…");
+    else console.log(`Copying R2 objects: ${objectProgress.copied} of ${objectProgress.total} copied.`);
+  };
+  const progress = flags.get("remote") ? setInterval(reportProgress, PROGRESS_INTERVAL_MS) : undefined;
+  if (progress) reportProgress();
   let manifest;
   try {
     const ledger = await platformLedgerRows(platform.env.DB);
@@ -111,7 +126,9 @@ async function main() {
     const entitiesBytes = Buffer.from(`${JSON.stringify({ version: 1, tables: entities }, null, 2)}\n`);
     await writeFile(entitiesPath, entitiesBytes, { mode: 0o600 });
 
-    const { objects, skippedObjects } = await exportObjects(platform.env.SNAPSHOTS, output);
+    objectProgress = { copied: 0, total: null };
+    if (progress) reportProgress();
+    const { objects, skippedObjects } = await exportObjects(platform.env.SNAPSHOTS, output, objectProgress);
     const migrations = await Promise.all((await readdir("migrations/core")).filter((name) => name.endsWith(".sql")).sort().map(async (file) => ({ file, sha256: digest(await readFile(join("migrations/core", file))) })));
     const ownerMigrations = await Promise.all((await ownerMigrationFiles()).map(async (file) => ({ file, sha256: digest(await readFile(join("migrations/ext", file))) })));
     manifest = {
@@ -124,6 +141,7 @@ async function main() {
       skippedObjects,
     };
   } finally {
+    clearInterval(progress);
     await archive.dispose();
   }
   // Publish the complete manifest and clear the marker in a single rename.

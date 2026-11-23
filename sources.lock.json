@@ -3996,7 +3996,7 @@
       "executable": false
     },
     "scripts/export.mjs": {
-      "sha256": "0fd5d8ff7bdac9e13ad87c1a49352dbf77e39d0b273bb5a431de7083416a6673",
+      "sha256": "96886b8ffa9439cd0245c379faffe9d30a79db80cd32e0cc478c18e376783096",
       "executable": false
     },
     "scripts/generate-sorry-fixture.mjs": {
@@ -4048,7 +4048,7 @@
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "2a12b4844db86ecd2b27f061a23c6b929c30e3b807e6064b6e1eee515f491cff",
+      "sha256": "beea31ed9b63f3abc9dbf91a1f074c7e77e8b637763828773a4a10fabab1c544",
       "executable": false
     },
     "scripts/installer/README.md": {
