@@ -29,6 +29,10 @@
     {
       "id": "0088_snapshot_source_revision.sql",
       "buyerSteps": "Apply with the standard migrations before starting this Worker. It adds snapshot revision triggers and two indexes."
+    },
+    {
+      "id": "0089_import_snapshot_invalidation.sql",
+      "buyerSteps": "Apply with the standard migrations. It replaces import snapshot invalidation triggers and requests one public snapshot refresh."
     }
   ],
   "breaking": false,
