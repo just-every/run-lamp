@@ -30,8 +30,16 @@ export async function loadBuildSource(repository: SnapshotRepository, generatedA
 export async function readBuildSource(blobs: BlobStore, version: string, generatedAt: string, configuration?: string): Promise<BuildSource | null> {
   const object = await blobs.getText(`snapshots/${version}/build-source.json`);
   if (!object) return null;
-  const source = JSON.parse(object.text) as BuildSource;
-  return source.configuration === configuration && source.loadedAt <= generatedAt ? source : null;
+  let source: BuildSource | null;
+  try {
+    source = JSON.parse(object.text) as BuildSource;
+  } catch {
+    return null;
+  }
+  if (!source || source.configuration !== configuration || typeof source.loadedAt !== "string" ||
+    !Number.isFinite(Date.parse(source.loadedAt)) || source.loadedAt > generatedAt ||
+    !Array.isArray(source.source?.corrections) || !Array.isArray(source.archives)) return null;
+  return source;
 }
 
 export async function writeBuildSource(blobs: BlobStore, version: string, input: BuildSource) {

@@ -138,7 +138,7 @@ export function createApp(bindings: AppBindings, execution?: MailExecution) {
   registerWebsiteRoutes(app, services.website);
   registerPageExportRoutes(app, services.pageExport);
   registerStatuspageImportRoutes(app, services.statuspageImport);
-  registerImportDoor(app, bindings, services.statuspageImport,()=>services.publicSnapshots.rebuild(true), services.auth);
+  registerImportDoor(app, bindings, services.statuspageImport, () => services.publicSnapshots.rebuild(), services.auth);
   registerRerCutoverStatus(app, bindings);
   registerOwnerClaimStatus(app, bindings);
   registerRerSourceCapture(app, bindings);

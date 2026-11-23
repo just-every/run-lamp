@@ -120,6 +120,55 @@ async function assertNativeGenerationRevalidation(j, component, incident, initia
   console.info('PROBE PAGE-007 1: seven warmed public addresses after native publication -> superseded validators return 200 with current generation and expected content, current validators return empty 304');
 }
 
+test('Malformed retained build source hydrates public data during the same scheduled refresh', async () => {
+  const journey = await openStatusJourney({ workerEntry: 'tests/e2e/helpers/clocked-status-journey.worker.ts' });
+  try {
+    const component = await journey.component('Synthetic Lamp clock refresh service');
+    const incident = await journey.incident('Synthetic Lamp clock refresh publication', [component]);
+    const impact = 'A scheduled refresh restores the current public source.';
+    await journey.save(incident.id, { customerImpact: impact });
+    await journey.publish(incident.id);
+    await journey.visible('/', incident.title);
+
+    const bucket = await journey.runtime.getR2Bucket('SNAPSHOTS');
+    const currentPointer = async () => (await bucket.get('snapshots/current.json'))?.json();
+    const initial = await currentPointer();
+    assert.ok(initial?.version && initial.generatedAt, 'the publication has a current generation');
+    await eventually(
+      () => journey.db.prepare('SELECT requested_revision, completed_revision FROM public_snapshot_work').first(),
+      work => work?.requested_revision === initial.sourceRevision && work.completed_revision === initial.sourceRevision,
+      'the initial source has no pending rebuild',
+    );
+    const sourceKey = `snapshots/${initial.version}/build-source.json`;
+    assert.ok(await bucket.get(sourceKey), 'the generation retains its source for scheduled refreshes');
+    await bucket.put(sourceKey, '{unparseable retained source', { httpMetadata: { contentType: 'application/json' } });
+
+    const scheduledAt = Math.max(Date.now(), Date.parse(initial.generatedAt) + 5 * 60_000 + 1);
+    await journey.json('/test/clock', 'PUT', { now: scheduledAt }, 204);
+    await journey.tick(scheduledAt);
+
+    const refreshed = await eventually(
+      currentPointer,
+      pointer => pointer?.version && pointer.version !== initial.version,
+      'the same scheduled refresh hydrates a new generation from the repository',
+    );
+    assert.equal(refreshed.sourceRevision, initial.sourceRevision, 'the clock refresh hydrates without a new source edit');
+    const response = await journey.publicResponse('/');
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal(response.headers.get('x-lamp-snapshot-state'), null, 'a successful hydration does not expose stale state');
+    assert.equal(response.headers.get('x-lamp-snapshot-version'), refreshed.version);
+    assert.equal(response.headers.get('x-lamp-snapshot-generated-at'), refreshed.generatedAt);
+    const body = await response.text();
+    assert.ok(body.includes(incident.title));
+    assert.ok(body.includes(impact));
+    const hydratedSource = await bucket.get(`snapshots/${refreshed.version}/build-source.json`);
+    assert.ok(hydratedSource, 'the successful generation retains its hydrated source');
+    assert.ok(JSON.parse(await hydratedSource.text()).source.incidents.some(row => row.title === incident.title));
+  } finally {
+    await journey.close();
+  }
+});
+
 test('AUD-001 THEME-001 PAGE-005 PAGE-006 PAGE-007 PAGE-018 — a published status survives storage, database and queue failures, cold restart and an independent heartbeat silence alarm', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'lamp-resilience-'));
   let runtime, j, monitor, alarmTimer;
