@@ -6148,7 +6148,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "2f04f8cd73040061865b131a8d126127c0b6cdc2ac3adfbc684e7d4711b90ac6",
+      "sha256": "caebea592a0e4ba709e2d561a3fe5646bbce931f94c27d5e45379187e0bdddf5",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {

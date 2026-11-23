@@ -183,6 +183,12 @@ export function createPublicSnapshotService(
       // is not above their own, so the new one is reserved above whichever is higher.
       const stored = Math.max((await readPointer())?.generation ?? 0, (await retained?.generation()) ?? 0);
       const generation = await repository.reserveGeneration(timestamp, stored);
+      if (clockSource) {
+        // Check after reserving the generation. A concurrent source edit
+        // either appears here or publishes with a higher generation.
+        const work = await repository.currentWork();
+        if (work.requestedRevision !== revision || work.completedRevision !== revision) return;
+      }
       await repository.startBuild({
         id: buildId,
         status: "building",
