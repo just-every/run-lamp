@@ -15,7 +15,12 @@
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [],
+  "migrations": [
+    {
+      "id": "0088_snapshot_source_revision.sql",
+      "buyerSteps": "Apply with the standard migrations before starting this Worker. It adds snapshot revision triggers and two indexes."
+    }
+  ],
   "breaking": false,
   "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve page addresses, existing operator access and mail settings. Verify that signed-in Viewers can read protected pages, a corrected setup draft publishes on retry, and Overview omits subscriber reminders when email is off and there are no non-email recipients."
 }
