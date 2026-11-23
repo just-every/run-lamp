@@ -1,0 +1,22 @@
+{
+  "version": "1.11.32",
+  "previousVersion": "1.11.31",
+  "date": "2026-11-23",
+  "publicReleaseNotes": "- **Open Lamp waits for your public page.** Setup stays on `/setup` with a disabled **Publishing…** button until the public snapshot includes all your components. If a component fails to publish, Lamp names it and lets you retry from the same draft. The retry publishes any saved components still missing from the public page before opening the workspace.\n- **Setup agents can confirm publication.** Poll `GET /setup/state` for `state: \"claimed\"`. Lamp records that state after the public snapshot includes the setup changes.\n- **Only one setup publication runs at a time.** Lamp keeps an in-flight publication running if the browser or agent disconnects and refuses overlapping setup requests.\n\n### Upgrading from 1.11.31\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.32`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. On a fresh installation, check that Open Lamp waits for all components to appear publicly before opening the workspace.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "docs/first-run.md",
+      "section": "Nothing else to set up",
+      "change": "changed",
+      "date": "2026-11-23",
+      "summary": "The first-run guide explains publication, retry and how agents confirm setup is complete.",
+      "was": "The guide described automatic republication after changes and the checks that Overview shows.",
+      "now": "Open Lamp waits for the setup changes to appear in the public snapshot. Lamp names a failing component and lets the owner retry from the same draft. Setup agents can poll GET /setup/state for claimed after publication."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve existing public page addresses, components, and completed setup state. On a fresh installation, verify that Open Lamp waits for the complete public snapshot, that a component failure can be retried from the same draft, and that GET /setup/state reports claimed after the setup changes are public."
+}

@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.33
+
+- **Protected pages explain who can read them.** Settings labels the former Named audience option **Operators only**. Settings, the protected-page sign-in screen and the documentation explain that every active operator signed in to this Lamp, including a Viewer, can read both Staff and Operators only pages. Page-specific reader grants are planned separately.
+- **Setup identifies invalid component names.** Lamp points to the line for a name that is too long, blank or duplicated, including components inside a group. Correct the draft and select **Retry publishing** to continue from the same setup.
+- **Overview shows maintenance reminder follow-ups only where they apply.** With email off, public maintenance only shows subscriber reminders when a configured non-email channel has active subscribers. Protected-only maintenance stays out of subscriber reminder follow-ups.
+
+### Upgrading from 1.11.32
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.33`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check protected page access, correct an invalid component on a fresh setup and retry publishing, and check Overview with email off and no non-email recipients.
+
 ## 1.11.32
 
 - **Open Lamp waits for your public page.** Setup stays on `/setup` with a disabled **Publishing…** button until the public snapshot includes all your components. If a component fails to publish, Lamp names it and lets you retry from the same draft. The retry publishes any saved components still missing from the public page before opening the workspace.
