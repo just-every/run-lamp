@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.11.35
+
+- **Add subscriber follows the installation's mail settings.** On a hosted installation with email off, Email and Webhook are disabled before submission. SMS is available when configured. The restore preview explains that email must be enabled to send confirmations to held subscribers.
+- **Local sign-in explains how to set up a passkey after restore.** Local passkeys must be enrolled again after restoring an archive. Open the private owner link on localhost and choose **Settings → Sign-in → Set up a local passkey**.
+- **Recovery and maintenance guides clarify what to expect.** New webhook subscribers need a contact email and start receiving notifications after the contact confirms. With email off, a public maintenance reminder needs an active subscriber on an available non-email channel who follows a selected component. If removal reports `remove-incomplete`, run the printed retry with the same environment and input file until it says `read back: none remains`.
+- **Scheduled refreshes reuse unchanged snapshot inputs.** Lamp tracks changes with D1 triggers and reloads the snapshot inputs when they change. On quiet ticks it can refresh the public page and feeds from the saved inputs while advancing time-based views. The scheduler also skips idle reminder and metric work. In local testing, a five-minute refresh of the 18-incident fixture read 54 D1 rows, down from 1,230.
+- **Import invalidation follows public changes.** Subscriber-only import rows avoid repeated writes to the public snapshot marker. Imports still refresh affected public projections, including Sorry history redirects. An unreadable saved snapshot source is reloaded from D1.
+
+The Opus D1 review labeled 1.11.35 raised two non-blocking findings, both fixed here. The subscriber and passkey fixes passed the Opus review labeled 1.11.36.
+
+### Upgrading from 1.11.34
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.35` and run `pnpm install --frozen-lockfile`. Apply `0088_snapshot_source_revision.sql` and `0089_import_snapshot_invalidation.sql` through the standard migration path before starting the updated Worker. After upgrading, check the channels offered by **Add subscriber**, re-enroll a local passkey if you restored an archive, and verify scheduled maintenance on the public page and feed.
+
 ## 1.11.34
 
 - **Hosted webhook enrollment and subscriber confirmations use the validated deployment sender.** Redeploying with email enabled fills an empty sender in Settings from the validated deployment address and preserves any sender already saved.
