@@ -32,7 +32,7 @@
     },
     {
       "id": "0089_import_snapshot_invalidation.sql",
-      "buyerSteps": "Apply with the standard migrations. It replaces import snapshot invalidation triggers and requests one public snapshot refresh."
+      "buyerSteps": "Apply with the standard migrations. It replaces import snapshot invalidation triggers."
     }
   ],
   "breaking": false,
