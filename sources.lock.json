@@ -628,7 +628,7 @@
       "executable": false
     },
     "docs/deploy.md": {
-      "sha256": "af3d1c513df69758161907c810bd9cb72028f41a0a435aaf0c9adcea6281e94e",
+      "sha256": "09c2d3d35fc19a6b7faddec43e2beb7c23e6b0a3343bae4dee3956a49bca64f2",
       "executable": false
     },
     "docs/deployment-reference.md": {
@@ -4576,7 +4576,7 @@
       "executable": false
     },
     "src/core/app/server.ts": {
-      "sha256": "7fe4b56b7e0f41efd575cde0ffa2d5bd7eb22b089d02e949b588a6c0eb83eb6a",
+      "sha256": "4f5651ed9222a69f7aaf95d3f3e9305b49514d37c44bf1b0ebe561d4b95e23b0",
       "executable": false
     },
     "src/core/app/services.ts": {
@@ -6160,7 +6160,7 @@
       "executable": false
     },
     "src/core/features/public-snapshot/service.ts": {
-      "sha256": "caebea592a0e4ba709e2d561a3fe5646bbce931f94c27d5e45379187e0bdddf5",
+      "sha256": "06a18cd29fc19535728ff41c95dd4de8aaa9a784ac1f729936afafda37233726",
       "executable": false
     },
     "src/core/features/public-snapshot/state-colors.json": {
@@ -6640,7 +6640,7 @@
       "executable": false
     },
     "src/core/features/statuspage-import/routes.ts": {
-      "sha256": "08af04b21646fd70117ad37a8b99dd34a8ff624afad147766cfd140444d75e98",
+      "sha256": "f32cfcf996b81b2fc105180ef65140379a76853a7833ee9776968f6fa074b6eb",
       "executable": false
     },
     "src/core/features/statuspage-import/rows.ts": {
@@ -6720,11 +6720,15 @@
       "executable": false
     },
     "src/core/features/statuspage-import/ui/move-in-page.tsx": {
-      "sha256": "e235c5e2bb51b2622727a66908dc51dbd42083b61408dcde325b160f46355cda",
+      "sha256": "33633a0aa976ab5211edfc22fd55b5375166593f58a339795d36daadb34dbc20",
       "executable": false
     },
     "src/core/features/statuspage-import/ui/source-help.tsx": {
       "sha256": "b06df6ee8097f218b9f8c006d29192690794a3614703069fad67af7488c6e64e",
+      "executable": false
+    },
+    "src/core/features/statuspage-import/ui/use-publication.ts": {
+      "sha256": "1675bce69052d62e47f054dc1e2f3dde32953290fc259e2bb5a1d61c45681dae",
       "executable": false
     },
     "src/core/features/statuspage-import/verification.repository.ts": {
@@ -8292,7 +8296,7 @@
       "executable": false
     },
     "tests/e2e/cutover-browser.test.mjs": {
-      "sha256": "9145cc4b9f71d0ed927a31991725ee9c12a645783314fd2412912fc8f48382da",
+      "sha256": "bb96a75a3f6a2c557f529c8be10b0864b1ecbe192ac05f3066a6e5e56429dc05",
       "executable": false
     },
     "tests/e2e/delivery-contract.test.mjs": {
@@ -9044,7 +9048,7 @@
       "executable": false
     },
     "tests/e2e/sorry-import.test.mjs": {
-      "sha256": "2a42fc69480f9bb01159fdf413b6c5266944af65731f2455b7dcc1eebdccb256",
+      "sha256": "8371599e1fb93cc5833feeae53e4a2178d25d27ffdaf8ad4c49a6325f1594ba1",
       "executable": false
     },
     "tests/e2e/sorry-reconciliation.test.mjs": {

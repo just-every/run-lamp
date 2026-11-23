@@ -56,11 +56,12 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
       return { status: response.status, body: await response.json() };
     };
     const importWork = async () => ({ ...work });
+    const publication = '/api/app/statuspage-import/publication';
     const beforeRebuild = async (action, operation) => {
       await eventually(importWork, work => work.builds === work.finished, 'earlier import builds settle');
       const before = await importWork();
       rebuildHeld = new Promise(resolve => { releaseRebuild = resolve; });
-      let pending, answered;
+      let pending, answered, revision;
       await t.test(`${action} answers before rebuilding the public page`, async () => {
         try {
           pending = operation();
@@ -68,10 +69,17 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 — Sorry move-in, B
           assert.equal(answered, true, `${action} answers while its public snapshot rebuild is held`);
           const during = await eventually(importWork, work => work.builds > before.builds, `${action} schedules a rebuild`);
           assert.equal(during.finished, before.finished, `${action} answers before the rebuild finishes`);
+          const status = await owner(publication);
+          assert.equal(status.status, 200);
+          assert.equal(status.body.published, false, `${action} is still unpublished while the public build is held`);
+          revision = status.body.revision;
         } finally { failBuild = answered === true; releaseRebuild(); rebuildHeld = undefined; await pending; }
       });
       await eventually(importWork, work => work.builds === work.finished, 'failed background rebuild settles');
       await runtime.tick(Date.now());
+      if (revision !== undefined) {
+        assert.equal((await owner(`${publication}?revision=${revision}`)).body.published, true, `${action} is published after the scheduled recovery`);
+      }
       if (answered) t.diagnostic(`PROBE move-in deadline: ${action} answered with the rebuild held; injected background failure recovered through native scheduled retry`);
     };
     const snapshot = async () => {

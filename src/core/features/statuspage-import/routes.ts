@@ -7,6 +7,7 @@ import type { StatuspageImportService } from "./service";
 import { importLimits } from "./source";
 import { findSourcePages } from "./page-finder";
 import { importSources } from "./adapters";
+import type { PublicSnapshotService } from "../public-snapshot/service";
 
 const fetchSchema = z.object({ source: z.enum(importSources).optional(), pageId: z.string().max(40).optional(), apiKey: z.string().max(200).optional(), publicAccessAcknowledged: z.boolean().optional(), publicUrl: z.string().url().max(2048).optional() }).strict();
 const jobId = z.string().min(1).max(100);
@@ -18,7 +19,7 @@ export function refusal(cause: unknown) {
   return /^[A-Z_]+$/u.test(message) || !message || message.length > 350 ? "The import was refused. Run the dry run again from the same source." : message;
 }
 
-export function registerStatuspageImportRoutes(app: Hono<AppEnv>, service: StatuspageImportService) {
+export function registerStatuspageImportRoutes(app: Hono<AppEnv>, service: StatuspageImportService, snapshots: Pick<PublicSnapshotService, "requestedRevision" | "includesRevision">) {
   const refused = refusal;
   app.use("/api/app/statuspage-import/*", bodyLimit({ maxSize: importLimits.maxBytes * 2, onError: (context) => context.json({ error: "The saved responses exceed 8 MiB." }, 413) }));
   app.use("/api/app/statuspage-import/*", async (context, next) => { context.header("Cache-Control", "no-store"); await next(); });
@@ -38,6 +39,14 @@ export function registerStatuspageImportRoutes(app: Hono<AppEnv>, service: Statu
     catch (cause) { return context.json({ error: cause instanceof Error ? cause.message : "Your status pages could not be listed." }, 400); }
   });
   app.get("/api/app/statuspage-import/jobs", async (context) => context.json({ jobs: await service.list(context.get("operatorSession")) }));
+  // Move in first checks after observing a terminal job. Its later checks
+  // reuse that revision and read only the public selector.
+  app.get("/api/app/statuspage-import/publication", async (context) => {
+    const target = z.string().regex(/^\d+$/).pipe(z.coerce.number<string>().int().nonnegative()).optional().safeParse(context.req.query("revision"));
+    if (!target.success) return context.json({ error: "Invalid publication revision." }, 400);
+    const revision = target.data ?? await snapshots.requestedRevision();
+    return context.json({ revision, published: await snapshots.includesRevision(revision) });
+  });
   app.get("/api/app/statuspage-import/jobs/:id/verification", async (context) => {
     const id = jobId.safeParse(context.req.param("id"));
     if (!id.success) return context.json({ error: "Import not found." }, 404);

@@ -9,6 +9,7 @@ import { FormError } from "../../../app/client/ui/states";
 import type { MoveInReport } from "../planning";
 import { HELD_SORRY_DAYS } from "../held-sorry";
 import { moveInDoor } from "./door-client";
+import { usePublication } from "./use-publication";
 import type { WebsiteRecord } from "../../website/repository";
 
 type SavedFile = { name: string; text: string };
@@ -92,6 +93,7 @@ export function MoveInPage() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const publishing = usePublication(result?.job.state === "completed" || result?.job.state === "undone" ? result : null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
@@ -186,7 +188,10 @@ export function MoveInPage() {
       {preview.report.state !== "already imported" && <><label className="checkbox-label"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} /> I reviewed what changes, is skipped or is refused.</label>
         <Button type="button" disabled={busy || !acknowledged || preview.report.limits.length > 0} onClick={apply}>{busy ? "Importing…" : "Import"}</Button></>}
     </section>}
-    {result && <section className="data-card" aria-labelledby="move-in-result"><h2 id="move-in-result">{result.job.state === "completed" ? "Imported" : result.job.state === "undone" ? "Undone" : result.job.state === "undoing" ? "Undo in progress" : "Import in progress"}</h2>
+    {result && <section className="data-card" aria-labelledby="move-in-result"><div role="status">
+      <h2 id="move-in-result">{publishing ? "Publishing to the public page" : result.job.state === "completed" ? "Imported" : result.job.state === "undone" ? "Undone" : result.job.state === "undoing" ? "Undo in progress" : "Import in progress"}</h2>
+      {publishing && <p>This usually takes about a minute. This screen will update when the public page and feed are ready.</p>}
+    </div>
       <p><a className="text-link" href={`/app/cutover?job=${encodeURIComponent(result.job.id)}`}>Read Cutover and send invitations</a>{result.job.state === "completed" && <> · <a className="text-link" href="#import-history">Undo this import in Your imports</a></>}</p><ReportTable report={result.report} /><ReportItems report={result.report} /><FieldLedger report={result.report} />
       {result.job.state === "completed" && <p>{result.invites.remaining ? `${result.invites.remaining} subscriber invitations still to send.` : "No eligible invitations remain. Read Cutover for subscription and expiry details."}</p>}
       {result.undo && <p>{result.undo.dispositions.filter((item) => item.disposition === "retained").length} record(s) changed since the import stayed.</p>}
@@ -195,7 +200,7 @@ export function MoveInPage() {
       {result.job.state === "undoing" && <Button type="button" disabled={busy} onClick={() => act({ id: result.job.id, ...result.door }, "undo")}>Continue undo</Button>}
     </section>}
     <section className="data-card" id="import-history" aria-labelledby="move-in-history"><h2 id="move-in-history">Your imports</h2>
-      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
+      {jobs.data?.jobs.length ? <ul className="move-in-jobs">{jobs.data.jobs.map((job) => <li key={job.id}><a href={`/app/cutover?job=${encodeURIComponent(job.id)}`}>Cutover</a><span>{({ statuspage: "Statuspage", betterstack: "Better Stack", instatus: "Instatus", sorry: "Sorry" } as Record<string, string>)[job.namespace ?? "statuspage"]} · {job.id.slice(0, 12)} · {publishing && result?.job.id === job.id ? "publishing" : job.state} · {job.checkpoint}/{job.total}{job.approvalCaption && <small style={{display:"block",overflowWrap:"anywhere"}}>{job.approvalCaption}</small>}</span>{job.state === "completed" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Undo</Button>}{job.state === "applying" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "resume")}>Continue</Button>}{job.state === "undoing" && <Button type="button" variant="secondary" disabled={busy} onClick={() => act(job, "undo")}>Continue undo</Button>}</li>)}</ul> : <EmptyState>No imports yet.</EmptyState>}
     </section>
   </div>;
 }

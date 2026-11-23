@@ -58,6 +58,8 @@ export interface PublicSnapshotService {
   rebuild(force?: boolean): Promise<void>;
   /** Publish pending source changes and confirm the public selector covers them. */
   confirmPublication(): Promise<void>;
+  requestedRevision(): Promise<number>;
+  includesRevision(revision: number): Promise<boolean>;
   hasCurrentSnapshot(): Promise<boolean>;
   readArtifact(key: string): Promise<{ bytes: ArrayBuffer; contentType: string; version: string; generatedAt: string; stale: boolean; retainedReady?: boolean; prelaunch: boolean } | null>;
   /** Whether the page customers see now is a pre-launch page. Reads only the snapshot store, never D1. */
@@ -122,6 +124,11 @@ export function createPublicSnapshotService(
   async function readPointer(): Promise<SnapshotPointer | null> {
     const object = await blobs.getText(CURRENT_POINTER_KEY);
     return object ? parsePointer(object) : null;
+  }
+
+  async function includesRevision(revision: number) {
+    const pointer = await readPointer();
+    return pointer !== null && pointer.sourceRevision >= revision;
   }
 
   async function advancePointer(pointer: SnapshotPointer) {
@@ -333,11 +340,12 @@ export function createPublicSnapshotService(
 
   return {
     rebuild: enqueueRebuild,
+    async requestedRevision() { return (await repository.currentWork()).requestedRevision; },
+    includesRevision,
     async confirmPublication() {
       const { requestedRevision } = await repository.currentWork();
       await enqueueRebuild();
-      const pointer = await readPointer();
-      if (!pointer || pointer.sourceRevision < requestedRevision) {
+      if (!await includesRevision(requestedRevision)) {
         throw new Error("Your public page is still publishing. Try again to finish setup.");
       }
     },

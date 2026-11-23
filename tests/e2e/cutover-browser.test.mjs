@@ -157,6 +157,39 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       }
       await page.setViewportSize({ width: 1440, height: 1000 });
     };
+    const captureMoveInResult = async name => {
+      if (!evidence) return;
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.locator('#move-in-result').evaluate(heading => heading.scrollIntoView({ block: 'center' }));
+        await page.screenshot({ path: join(evidence, `${name}-${width}.png`) });
+      }
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    };
+    const seePublication = async (action, done) => {
+      const publication = origin + '/api/app/statuspage-import/publication';
+      // Hold the browser's first confirmation request so the pending state
+      // can be observed even when the local Worker has already published.
+      const { promise, resolve: release } = Promise.withResolvers();
+      await page.route(publication, async route => { await promise; await route.continue(); }, { times: 1 });
+      try {
+        await action();
+        await page.getByRole('heading', { name: 'Publishing to the public page' }).waitFor();
+        assert.equal(await page.getByRole('heading', { name: done, exact: true }).count(), 0);
+        await captureMoveInResult(`sorry-${done.toLowerCase()}-publishing`);
+      } finally { release(); }
+      await page.getByRole('heading', { name: done, exact: true }).waitFor();
+      await captureMoveInResult(`sorry-${done.toLowerCase()}-published`);
+    };
+    const assertSorryPublic = async visible => {
+      for (const [path, record] of [['/', /Billing API/], ['/feed.atom', /Delayed invoice processing/]]) {
+        const response = await fetch(publicOrigin + path);
+        assert.equal(response.status, 200);
+        const body = await response.text();
+        if (visible) assert.match(body, record);
+        else assert.doesNotMatch(body, record);
+      }
+    };
     const moveIn = moveInDoor(async (path, body, headers) => {
       const response = await nativeRequest(path, { cookie: entered.header, ...(body === undefined ? {} : { method: 'POST', json: body }), headers });
       return { status: response.status, body: await response.json() };
@@ -203,7 +236,13 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
         await context.unroute(pagesRoute);
       }
       const directory = resolve('tests/fixtures', source, source === 'sorry' ? 'public' : 'small');
+      const recentDay = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
       const files = await Promise.all((await readdir(directory)).map(async name => {
+        if (source === 'sorry') {
+          // Keep the fixture's resolved incident inside the current Atom window.
+          const text = await readFile(join(directory, name), 'utf8');
+          return { name, mimeType: 'application/json', buffer: Buffer.from(text.replaceAll('2025-04-02T', recentDay + 'T')) };
+        }
         if (source !== 'statuspage') return join(directory, name);
         const buffer = await readFile(join(directory, name));
         if (name !== 'incidents.json') return { name, mimeType: 'application/json', buffer };
@@ -249,10 +288,12 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       await page.getByLabel('I reviewed what changes, is skipped or is refused.').check();
       const approvedAfter = Date.now();
       const applying = page.waitForResponse(response => /\/api\/app\/statuspage-import\/jobs\/[^/]+$/.test(new URL(response.url()).pathname) && response.request().method() === 'GET');
-      await page.getByRole('button', { name: 'Import', exact: true }).click();
+      const importClick = () => page.getByRole('button', { name: 'Import', exact: true }).click();
+      if (source === 'sorry') await seePublication(importClick, 'Imported');
+      else await importClick();
       const result = await (await applying).json(); assert.equal(result.job.state, 'completed');
       if (source === 'sorry') {
-        await page.getByRole('heading', { name: 'Imported', exact: true }).waitFor();
+        await assertSorryPublic(true);
         const savedLedger = page.locator('.move-in-field-ledger');
         await savedLedger.locator('summary').click();
         await savedLedger.getByLabel('Find a field path').fill('/page/name');
@@ -357,9 +398,10 @@ test('MOVE-001 MOVE-002 MOVE-003 MOVE-004 MOVE-005 MOVE-006 MOVE-009 — owner r
       await assertNoNewNotifications(runtime, quiet, 'navigation, checks and history reads remain silent');
       if (source === 'sorry') {
         await openWizard();
-        await page.getByRole('listitem').filter({ hasText: result.job.id.slice(0, 12) }).getByRole('button', { name: 'Undo', exact: true }).click();
-        await page.getByRole('heading', { name: 'Undone', exact: true }).waitFor();
+        const undo = page.getByRole('listitem').filter({ hasText: result.job.id.slice(0, 12) }).getByRole('button', { name: 'Undo', exact: true });
+        await seePublication(() => undo.click(), 'Undone');
         assert.equal((await moveIn.read(result.job.id)).body.job.state, 'undone');
+        await assertSorryPublic(false);
         await capture('sorry-undone');
         continue;
       }
