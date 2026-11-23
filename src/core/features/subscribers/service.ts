@@ -383,9 +383,10 @@ export function createSubscribersService(
       return true;
     },
     async expirePending(scheduledAt = Date.now()) {
-      const now=new Date(scheduledAt).toISOString();
-      await repository.incidentLifecycle.expire(now);
-      for(const id of await repository.incidentLifecycle.expiredAddressIds(now))await repository.anonymizeAndDeactivate(id,null,now);
+      const now = new Date(scheduledAt).toISOString();
+      for (const id of await repository.incidentLifecycle.expireAndListAddresses(now)) {
+        await repository.anonymizeAndDeactivate(id, null, now);
+      }
       await repository.deleteExpiredPending(new Date(scheduledAt - PENDING_WINDOW_MS).toISOString(), CUSTODY_ERASURES_PER_RUN);
       await checkLimits();
     },

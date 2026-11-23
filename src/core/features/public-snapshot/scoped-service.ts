@@ -38,7 +38,7 @@ export function createScopedSnapshots(
   }
 
   async function forEach(build: (snapshot: ReturnType<typeof forPage>) => Promise<unknown>) {
-    const catalogue = await pages.list();
+    const catalogue = await pages.paths();
     // Bound simultaneous D1 queries and snapshot uploads across the catalogue.
     let changed = false;
     let failure: unknown;

@@ -12,6 +12,7 @@ export function createMetricsRepository(db: D1Database) {
       return Boolean(await db.prepare(`SELECT 1 FROM components c WHERE c.id=? AND c.internal=0 AND (? IS NULL OR EXISTS(SELECT 1 FROM alert_sources s WHERE s.id=? AND COALESCE(s.vendor_preset,s.preset,s.uptime_preset)=? AND (s.component_id=c.id OR (?='uptime' AND EXISTS(SELECT 1 FROM json_each(s.monitor_mappings_json) j WHERE json_extract(j.value,'$.componentId')=c.id AND json_extract(j.value,'$.monitorId')=?)))))`).bind(componentId,sourceId,sourceId,provider,provider,query).first());
     },
     async list() { return (await db.prepare(`SELECT ${columns} FROM public_metrics ORDER BY created_at,id`).all<StoredMetric>()).results; },
+    async hasMetrics() { return Boolean(await db.prepare("SELECT 1 FROM public_metrics LIMIT 1").first()); },
     async get(id: string) { return db.prepare(`SELECT ${columns} FROM public_metrics WHERE id=?`).bind(id).first<StoredMetric>(); },
     async create(row: StoredMetric, actor: string) {
       const now=nowIso();

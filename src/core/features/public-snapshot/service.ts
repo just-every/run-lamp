@@ -15,18 +15,20 @@ import { readPrelaunch } from "../prelaunch/store";
 import { defaultPublicSnapshotPolicies, type PublicSnapshotPolicies } from "./policies";
 import { defaultPublicSnapshotEvents, type PublicSnapshotEvents } from "./events";
 import { pruneSnapshotVersions } from "./retention";
+import { buildSources, loadBuildSource, readBuildSource, writeBuildSource } from "./build-source";
 
 const CURRENT_POINTER_KEY = "snapshots/current.json";
 const STALE_MARKER_KEY = "snapshots/stale.json";
 const STALE_BUILD_MS = 5 * 60_000;
 const RETRY_LEASE_MS = 2 * 60_000;
-// The minute scheduler periodically rereads source data even without a mutation.
+// A healthy minute scheduler publishes a fresh timestamp and rolling windows.
 const SNAPSHOT_REFRESH_MS = 5 * 60_000;
 const LOGO_CONTENT_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 export const PUBLIC_SNAPSHOT_RENDERER_VERSION = "lamp-public-snapshot-v25";
 
 interface SnapshotPointer {
   version: string;
+  buildId?: string;
   generatedAt: string;
   generation: number;
   sourceRevision: number;
@@ -78,6 +80,7 @@ function parsePointer(object: BlobObject): SnapshotPointer {
   if (typeof parsed.version !== "string" || typeof parsed.generatedAt !== "string" || !Number.isFinite(Date.parse(parsed.generatedAt)) || typeof parsed.generation !== "number" || !Number.isInteger(parsed.generation) || parsed.generation < 0 || typeof parsed.sourceRevision !== "number" || !Number.isInteger(parsed.sourceRevision) || parsed.sourceRevision < 0) throw new Error("Public snapshot pointer is invalid.");
   return {
     version: parsed.version,
+    buildId: typeof parsed.buildId === "string" ? parsed.buildId : undefined,
     generatedAt: new Date(parsed.generatedAt).toISOString(),
     generation: parsed.generation,
     sourceRevision: parsed.sourceRevision,
@@ -168,7 +171,7 @@ export function createPublicSnapshotService(
     return Boolean(marker && marker.marker.revision > pointer.sourceRevision);
   }
 
-  async function rebuildOne(revision: number) {
+  async function rebuildOne(revision: number, clockSource?: SnapshotPointer) {
     const timestamp = nowIso();
     const buildId = createUlid();
     let started = false;
@@ -193,8 +196,14 @@ export function createPublicSnapshotService(
       });
       started = true;
       async function prepare() {
-        const source = await repository.load();
-        if (!source) throw new Error("Cannot build a public snapshot before page settings exist.");
+        const generatedAt = nowIso();
+        // A backup/restore can reuse revision numbers under a retained bucket.
+        // Reuse inputs only when their publication also exists in this D1.
+        const previous = clockSource?.buildId && await repository.hasPublishedBuild?.(clockSource.buildId, clockSource.version)
+          ? await readBuildSource(blobs, clockSource.version, generatedAt, repository.sourceConfiguration)
+          : null;
+        const input = previous ?? await loadBuildSource(repository, generatedAt);
+        const { source, feed, incidents, maintenance } = buildSources(input, generatedAt, protectedSnapshot || await readPrelaunch(blobs));
         const iconAsset = (JSON.parse(source.settings.themeAssets ?? "{}") as ThemeAssets).icon;
         const [logo, icon] = await Promise.all([
           source.settings.logoKey ? blobs.getBytes(source.settings.logoKey) : null,
@@ -206,26 +215,23 @@ export function createPublicSnapshotService(
         const logoContentType = logo?.contentType ?? source.settings.logoContentType;
         if (logo && !logoContentType) throw new Error("Configured logo content type is missing.");
         const version = createUlid();
-        source.prelaunch = protectedSnapshot || await readPrelaunch(blobs);
         const logoUrl = logo && logoContentType ? logoDataUrl({ ...logo, contentType: logoContentType }) : null;
         const iconUrl = icon && iconAsset ? logoDataUrl({ ...icon, contentType: iconAsset.contentType }) : null;
-        const rendered = renderPublicSnapshot(source, new Date().toISOString(), policies, { logoDataUrl: logoUrl, iconDataUrl: iconUrl }, slots);
+        const rendered = renderPublicSnapshot(source, generatedAt, policies, { logoDataUrl: logoUrl, iconDataUrl: iconUrl }, slots);
         // The masthead reads the original logo, including from a retained snapshot.
         if (logoUrl && logoContentType) rendered.artifacts.push({ key: "assets/logo", body: logoUrl.slice(logoUrl.indexOf(",") + 1), contentType: logoContentType, encoding: "base64" });
         // Feed event order is independent of incident resolution order. Read
         // its first bounded page directly so later updates to older incidents
         // cannot disappear behind the recent incident window.
-        const feedSource = await repository.loadArchive?.(source, "feed.atom", rendered.generatedAt);
-        if (feedSource) for (const format of ["atom", "rss"]) {
-          const artifact = renderArchiveArtifact(feedSource, `feed.${format}`, rendered.generatedAt, policies, slots);
+        if (feed) for (const format of ["atom", "rss"]) {
+          const artifact = renderArchiveArtifact(feed, `feed.${format}`, rendered.generatedAt, policies, slots);
           if (artifact) for (const key of [`feed.${format}`, `history.${format}`]) {
             const index = rendered.artifacts.findIndex(item => item.key === key);
             if (index >= 0) rendered.artifacts[index] = { ...artifact, key };
           }
         }
-        for (const name of ["incidents", "maintenance"]) {
+        for (const [name, initial] of [["incidents", incidents], ["maintenance", maintenance]] as const) {
           const key = `api/public/v1/${name}.json`;
-          const initial = await repository.loadArchive?.(source, key, rendered.generatedAt);
           const artifact = initial ? renderArchiveArtifact(initial, key, rendered.generatedAt, policies, slots) : null;
           if (artifact) rendered.artifacts.push(artifact);
         }
@@ -235,7 +241,7 @@ export function createPublicSnapshotService(
           artifact.body = artifact.body.replaceAll('url("/assets/theme-font")', `url("data:font/woff2;base64,${uploadedFont.body}")`);
         }
         const bundle = encodeRetainedBundle({ version, generatedAt: rendered.generatedAt, generation, artifacts: rendered.artifacts });
-        return { version, rendered, bundle, source };
+        return { version, rendered, bundle, source, input };
       }
       // Source/renderer failures need a later revision or repair. Retrying
       // them immediately reloads the same history three times. Only delivery
@@ -245,9 +251,10 @@ export function createPublicSnapshotService(
         attempts += 1;
         try {
         // Retry storage/replica/pointer delivery with identical generation bytes.
-        const { version, rendered, bundle, source } = prepared;
+        const { version, rendered, bundle, source, input } = prepared;
         // Keep a small sequence fence even if delivery stops partway through.
         await blobs.putText(`snapshots/${version}/generation.json`, JSON.stringify({ version, generation }), "application/json");
+        await writeBuildSource(blobs, version, input);
         // Cold historical pages use this generation's public presentation data.
         // They are independently cached, never added to its retained bundle.
         await blobs.putText(`snapshots/${version}/archive-context.json`, JSON.stringify({ ...source, history: [], corrections: [], metrics: [] }), "application/json");
@@ -263,12 +270,12 @@ export function createPublicSnapshotService(
         if (retained) await retained.write(bundle);
         const replicaGeneration = retained ? await retained.generation() : generation;
         const { advanced, previous } = replicaGeneration === generation
-          ? await advancePointer({ version, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
+          ? await advancePointer({ version, buildId, generatedAt: rendered.generatedAt, generation, sourceRevision: revision, rendererVersion: PUBLIC_SNAPSHOT_RENDERER_VERSION, releaseIdentity, prelaunch: rendered.artifacts.some(artifact => artifact.key === PRELAUNCH_ROBOTS_KEY) })
           : { advanced: false, previous: null };
         const finishedAt = nowIso();
         await repository.finishBuild({ id: buildId, status: "published", version, error: advanced ? null : "Superseded by a newer public snapshot generation.", attempts, finishedAt, updatedAt: finishedAt });
         const selected = await readPointer();
-        if (selected?.version === version) await repository.completeWork(revision, finishedAt);
+        if (selected?.version === version && !clockSource) await repository.completeWork(revision, finishedAt);
         if (!advanced) return;
         await events.snapshotPublished({ version, generatedAt: rendered.generatedAt });
         if (selected?.version === version && previous) {
@@ -407,6 +414,7 @@ export function createPublicSnapshotService(
         const staleBefore = new Date(now.getTime() - STALE_BUILD_MS).toISOString();
         await repository.markInterruptedBuilds(nowText, staleBefore);
         let work = await repository.currentWork();
+        let clockSource: SnapshotPointer | undefined;
         if (work.completedRevision >= work.requestedRevision) {
           const pointer = await readPointer();
           const missingReplica = retained && pointer && (await retained.generation()) === null;
@@ -415,16 +423,20 @@ export function createPublicSnapshotService(
             if (archived) { await retained!.write(archived.text); return true; }
           }
           const refreshDue = pointer && now.getTime() - Date.parse(pointer.generatedAt) >= SNAPSHOT_REFRESH_MS;
-          if (!missingReplica && !refreshDue && !(await staleRevisionNeedsRebuild(pointer)) && !rendererNeedsRebuild(pointer) && !releaseNeedsRebuild(pointer)) return false;
-          await repository.requestWork(nowText);
-          work = await repository.currentWork();
+          const needsSource = missingReplica || await staleRevisionNeedsRebuild(pointer) || rendererNeedsRebuild(pointer) || releaseNeedsRebuild(pointer);
+          if (!refreshDue && !needsSource && (pointer || work.requestedRevision === 0)) return false;
+          if (pointer && !needsSource && pointer.sourceRevision === work.requestedRevision && work.requestedRevision === work.completedRevision) {
+            clockSource = pointer;
+          } else await repository.requestWork(nowText);
         }
         const leaseId = createUlid();
-        if (!(await repository.claimPendingWork({ leaseId, now: nowText, leaseUntil: new Date(now.getTime() + RETRY_LEASE_MS).toISOString(), staleBefore }))) return false;
-        work = await repository.currentWork();
-        if (work.completedRevision >= work.requestedRevision) return false;
+        if (!(await repository.claimPendingWork({ leaseId, now: nowText, leaseUntil: new Date(now.getTime() + RETRY_LEASE_MS).toISOString(), staleBefore, refreshRevision: clockSource?.sourceRevision }))) return false;
         try {
-          await rebuildOne(work.requestedRevision);
+          work = await repository.currentWork();
+          if (work.completedRevision < work.requestedRevision) await rebuildOne(work.requestedRevision);
+          else if (clockSource?.sourceRevision === work.requestedRevision && work.requestedRevision === work.completedRevision && (await readPointer())?.version === clockSource.version) {
+            await rebuildOne(work.requestedRevision, clockSource);
+          } else return false;
           return true;
         } finally {
           await repository.releaseWorkLease(leaseId, nowIso());

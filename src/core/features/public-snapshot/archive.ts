@@ -5,6 +5,8 @@ export interface ArchivePage {
   cursor?: string;
   month?: string;
   nextCursor: string | null;
+  /** Timestamp of the first unseen event, for aging a retained first feed page. */
+  nextAt?: string;
   pageSize: number;
   componentSlug?: string;
   previousMonth?: string;

@@ -27,6 +27,9 @@ export function createUpdateReminders(binding: D1Database, policy: UpdateDuePoli
   return {
     async remindDue(now) {
       await ensureScheduledWork(binding);
+      // A quiet desk has no current commitment to seek across the three
+      // reminder indexes. This probe reads at most one derived work row.
+      if (!await binding.prepare("SELECT 1 FROM incident_update_reminder_work LIMIT 1").first()) return [];
       const instant = Date.parse(now);
       const lead = policy.leadMinutes() * 60_000;
       const escalation = escalationPolicy.overdueMinutes() * 60_000;
