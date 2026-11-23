@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.34
+
+- **Hosted webhook enrollment and subscriber confirmations use the validated deployment sender.** Redeploying with email enabled fills an empty sender in Settings from the validated deployment address and preserves any sender already saved.
+- **Restored email subscribers stay held while email is off.** The Restore section disables **Send confirmation emails** and explains how to enable it. Held subscribers receive nothing while they wait for confirmation.
+- **Protected pages explicitly include Viewers.** The sign-in message explains that any active operator signed in to this Lamp, including a Viewer, can open the page.
+- **One-minute health monitoring uses far fewer D1 reads.** Each Worker isolate reuses its schema observation for up to five minutes. The response reports the observation time and age, and reports the observation as unavailable when a refresh fails. In local testing, one-minute polling used about 28,000 D1 rows per day, down from 1.55 million, within the Workers Free allowance. The public status page, Atom feed and widget script read no D1 rows in the same test. Snapshot rebuilds reuse the selected incidents when fetching their updates and reports.
+
+### Upgrading from 1.11.33
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.34` and run `pnpm install --frozen-lockfile`. This release adds no migrations. If your hosted installation had email off and saved an empty sender, run `rer deploy` with the same environment and your deployment input file configured to enable email and supply a valid sender. The redeploy fills the saved sender so webhook enrollment and subscriber confirmations can send. After upgrading, check subscriber confirmations for the mail setting you use, protected-page access with a Viewer account, and `/health` from your monitor.
+
 ## 1.11.33
 
 - **Protected pages explain who can read them.** Settings labels the former Named audience option **Operators only**. Settings, the protected-page sign-in screen and the documentation explain that every active operator signed in to this Lamp, including a Viewer, can read both Staff and Operators only pages. Page-specific reader grants are planned separately.

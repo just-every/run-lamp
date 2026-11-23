@@ -1,0 +1,21 @@
+{
+  "version": "1.11.33",
+  "previousVersion": "1.11.32",
+  "date": "2026-11-23",
+  "publicReleaseNotes": "- **Protected pages explain who can read them.** Settings labels the former Named audience option **Operators only**. Settings, the protected-page sign-in screen and the documentation explain that every active operator signed in to this Lamp, including a Viewer, can read both Staff and Operators only pages. Page-specific reader grants are planned separately.\n- **Setup identifies invalid component names.** Lamp points to the line for a name that is too long, blank or duplicated, including components inside a group. Correct the draft and select **Retry publishing** to continue from the same setup.\n- **Overview shows maintenance reminder follow-ups only where they apply.** With email off, public maintenance only shows subscriber reminders when a configured non-email channel has active subscribers. Protected-only maintenance stays out of subscriber reminder follow-ups.\n\n### Upgrading from 1.11.32\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.33`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. Check protected page access, correct an invalid component on a fresh setup and retry publishing, and check Overview with email off and no non-email recipients.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "docs/public-page.md",
+      "section": "Status pages for operators",
+      "change": "added",
+      "date": "2026-11-23",
+      "summary": "The public-page guide explains who can read protected status pages and where protected notices appear.",
+      "now": "Staff and Operators only pages are readable by every active operator signed in to this Lamp, including Viewers. Page-specific reader grants are planned. Notices published only to protected pages stay off public surfaces."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up owner source and data and exercise a restored copy before adopting. Install frozen dependencies and use the same environment and input file for an existing deployment. Preserve page addresses, existing operator access and mail settings. Verify that signed-in Viewers can read protected pages, a corrected setup draft publishes on retry, and Overview omits subscriber reminders when email is off and there are no non-email recipients."
+}
