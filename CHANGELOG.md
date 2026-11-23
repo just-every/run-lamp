@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.36
+
+- **Move in shows when the public page is still publishing.** After a hosted import or undo, Lamp shows publication progress and waits for the public page and feed before reporting **Imported** or **Undone**.
+- **Cloudflare deploys can recover a partially uploaded Worker.** Lamp pins rer 0.2.132 and marks each uploaded Worker version. If a later step such as queue setup fails, a retry can verify and adopt that upload before continuing. The removal command can also verify and remove the pending upload.
+- **Deployment removal can resume.** Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`.
+
+### Upgrading from 1.11.35
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.36`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After upgrading, check that Move in waits for the public page and feed to reflect an import or undo.
+
 ## 1.11.35
 
 - **Add subscriber follows the installation's mail settings.** On a hosted installation with email off, Email and Webhook are disabled before submission. SMS is available when configured. The restore preview explains that email must be enabled to send confirmations to held subscribers.

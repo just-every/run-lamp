@@ -13,6 +13,7 @@ import { ownerSigninDigest, OWNER_SIGNIN_SECONDS } from '@runeditrun/rer/interna
 import { authFixture, installationKey, otherInstallationKey, secret, setupToken } from './runtime.mjs';
 import { provider } from '../fixtures/base/oidc-idp.mjs';
 import { linkEdge } from '../fixtures/base/provider-edge.mjs';
+import { identityVars } from '../../scripts/deployment-identity.mjs';
 import { cloudflareEdge, edgeFetch } from '../helpers/cloudflare-edge.mjs';
 import { deploymentConfig, resourceNames } from '../../scripts/ops-config.mjs';
 import { deploymentOwnership } from '../../scripts/deployment-ownership.mjs';
@@ -379,7 +380,7 @@ test('ACCESS-002 mail-off rer signin follows native deployment custody and rer d
     const identity = { source: 'synthetic-source-commit', fingerprint: hex() };
     const vars = { LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: config.pageHost, AUTH_ORIGIN: `https://${appHost}`, SETUP_OPERATOR_EMAIL: config.setupOperatorEmail,
       MAIL_PROVIDER: config.mailProvider, RER_DEPLOY_SOURCE: identity.source, RER_DEPLOY_FINGERPRINT: identity.fingerprint };
-    await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
+    await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, message: identityVars(identity).at(-1), secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
     // What rer keeps for a deployed environment: its generated secrets in .rer/deploy/<environment>.secrets.env.
     await mkdir(records, { recursive: true, mode: 0o700 });
     await writeFile(custodyFile, Object.entries({ INSTALLATION_KEY: oldKey, SESSION_SECRET: config.sessionSecret, SUBSCRIBER_TOKEN_SECRET: config.subscriberTokenSecret, WEBHOOK_SIGNING_SECRET: config.webhookSigningSecret })
@@ -524,7 +525,7 @@ test('ACCESS-002 rer deploy --rotate-secret INSTALLATION_KEY on a custom LAMP_RE
     const identity = { source: 'synthetic-source-commit', fingerprint: hex() };
     const vars = { LAMP_APP_HOST: appHost, LAMP_PAGE_HOST: config.pageHost, AUTH_ORIGIN: `https://${appHost}`, SETUP_OPERATOR_EMAIL: config.setupOperatorEmail, MAIL_FROM_ADDRESS: config.mailFromAddress,
       MAIL_PROVIDER: config.mailProvider, RER_DEPLOY_SOURCE: identity.source, RER_DEPLOY_FINGERPRINT: identity.fingerprint };
-    await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
+    await withDeploymentSecrets(config, [], file => ownership.upload(false, identity, async () => edge.upload(names.worker, { vars, message: identityVars(identity).at(-1), secrets: JSON.parse(await readFile(file, 'utf8')), database: created.uuid })));
     await writeFile(custodyFile, Object.entries({ INSTALLATION_KEY: oldKey, SESSION_SECRET: config.sessionSecret, SUBSCRIBER_TOKEN_SECRET: config.subscriberTokenSecret, WEBHOOK_SIGNING_SECRET: config.webhookSigningSecret })
       .map(([name, value]) => `${name}=${value}\n`).join(''), { mode: 0o600 });
     const custody = await readFile(custodyFile, 'utf8'), record = await readFile(recordFile, 'utf8'), live = edge.live(names.worker);

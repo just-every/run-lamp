@@ -1,67 +1,31 @@
 {
-  "version": "1.11.35",
-  "previousVersion": "1.11.34",
+  "version": "1.11.36",
+  "previousVersion": "1.11.35",
   "date": "2026-11-23",
-  "publicReleaseNotes": "- **Add subscriber follows the installation's mail settings.** On a hosted installation with email off, Email and Webhook are disabled before submission. SMS is available when configured. The restore preview explains that email must be enabled to send confirmations to held subscribers.\n- **Local sign-in explains how to set up a passkey after restore.** Local passkeys must be enrolled again after restoring an archive. Open the private owner link on localhost and choose **Settings → Sign-in → Set up a local passkey**.\n- **Recovery and maintenance guides clarify what to expect.** New webhook subscribers need a contact email and start receiving notifications after the contact confirms. With email off, a public maintenance reminder needs an active subscriber on an available non-email channel who follows a selected component. If removal reports `remove-incomplete`, run the printed retry with the same environment and input file until it says `read back: none remains`.\n- **Scheduled refreshes reuse unchanged snapshot inputs.** Lamp tracks changes with D1 triggers and reloads the snapshot inputs when they change. On quiet ticks it can refresh the public page and feeds from the saved inputs while advancing time-based views. The scheduler also skips idle reminder and metric work. In local testing, a five-minute refresh of the 18-incident fixture read 54 D1 rows, down from 1,230.\n- **Import invalidation follows public changes.** Subscriber-only import rows avoid repeated writes to the public snapshot marker. Imports still refresh affected public projections, including Sorry history redirects. An unreadable saved snapshot source is reloaded from D1.\n\nThe Opus D1 review labeled 1.11.35 raised two non-blocking findings, both fixed here. The subscriber and passkey fixes passed the Opus review labeled 1.11.36.\n\n### Upgrading from 1.11.34\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.35` and run `pnpm install --frozen-lockfile`. Apply `0088_snapshot_source_revision.sql` and `0089_import_snapshot_invalidation.sql` through the standard migration path before starting the updated Worker. After upgrading, check the channels offered by **Add subscriber**, re-enroll a local passkey if you restored an archive, and verify scheduled maintenance on the public page and feed.",
+  "publicReleaseNotes": "- **Move in shows when the public page is still publishing.** After a hosted import or undo, Lamp shows publication progress and waits for the public page and feed before reporting **Imported** or **Undone**.\n- **Cloudflare deploys can recover a partially uploaded Worker.** Lamp pins rer 0.2.132 and marks each uploaded Worker version. If a later step such as queue setup fails, a retry can verify and adopt that upload before continuing. The removal command can also verify and remove the pending upload.\n- **Deployment removal can resume.** Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`.\n\n### Upgrading from 1.11.35\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.36`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After upgrading, check that Move in waits for the public page and feed to reflect an import or undo.",
   "contractChanges": {},
   "proseChanges": [
-    {
-      "document": "RUN-LOCALLY.md",
-      "section": "Back up and restore local data",
-      "change": "changed",
-      "date": "2026-11-23",
-      "summary": "Local passkeys must be enrolled again after restoring an archive.",
-      "was": "The restore steps did not explain local passkey re-enrollment.",
-      "now": "Local passkeys must be enrolled again after restoring an archive. Open the private owner link on localhost and choose Settings → Sign-in → Set up a local passkey."
-    },
-    {
-      "document": "docs/backups-and-recovery.md",
-      "section": "Subscribers and consent",
-      "change": "changed",
-      "date": "2026-11-23",
-      "summary": "New webhook subscribers need a contact email and start receiving notifications after the contact confirms.",
-      "was": "The guide described all webhooks as having no confirmation step and omitted the email requirement for held subscriber confirmations.",
-      "now": "Restored webhook subscribers keep their saved state. New webhook subscribers need a contact email and start receiving notifications after the contact confirms. The restore preview explains that email must be enabled to send confirmations to held subscribers."
-    },
-    {
-      "document": "docs/backups-and-recovery.md",
-      "section": "Back up and restore a local installation",
-      "change": "changed",
-      "date": "2026-11-23",
-      "summary": "Local passkeys must be enrolled again after restoring an archive.",
-      "was": "The restore steps did not explain local passkey re-enrollment.",
-      "now": "Local passkeys must be enrolled again after restoring an archive. Open the private owner link on localhost and choose Settings → Sign-in → Set up a local passkey."
-    },
     {
       "document": "docs/deploy.md",
       "section": "Remove an installation",
       "change": "changed",
       "date": "2026-11-23",
-      "summary": "The first removal can require a retry even with a small bucket.",
-      "was": "The guide highlighted large R2 buckets as a reason to run removal more than once.",
-      "now": "If removal reports `remove-incomplete`, run the printed retry with the same environment and input file until it says `read back: none remains`."
+      "summary": "If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`.",
+      "was": "The guide noted that the first removal could require a retry, even with a small bucket.",
+      "now": "Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`."
     },
     {
-      "document": "docs/maintenance.md",
-      "section": "Subscriber notices and delivery checks",
+      "document": "OPERATIONS.md",
+      "section": "Remove a deployment",
       "change": "changed",
       "date": "2026-11-23",
-      "summary": "With email off, a public maintenance reminder needs an active subscriber on an available non-email channel who follows a selected component.",
-      "was": "The guide described the standard cadence for matching subscribers.",
-      "now": "With email off, a public maintenance reminder needs an active subscriber on an available non-email channel who follows a selected component. A window published only to protected pages sends no reminder to public subscribers."
+      "summary": "Removal uses a resumable Cloudflare bulk purge for the R2 bucket.",
+      "was": "Removal purged the bucket in batches of individual objects.",
+      "now": "Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`."
     }
   ],
   "extensionPointChanges": [],
-  "migrations": [
-    {
-      "id": "0088_snapshot_source_revision.sql",
-      "buyerSteps": "Apply through the standard migration path before starting the updated Worker. It adds snapshot revision triggers and two indexes."
-    },
-    {
-      "id": "0089_import_snapshot_invalidation.sql",
-      "buyerSteps": "Apply through the standard migration path before starting the updated Worker. It replaces the import invalidation triggers with triggers that track changes to public projections and adds an index and two views."
-    }
-  ],
+  "migrations": [],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.35` and run `pnpm install --frozen-lockfile`. Apply `0088_snapshot_source_revision.sql` and `0089_import_snapshot_invalidation.sql` through the standard migration path before starting the updated Worker. After upgrading, check the channels offered by **Add subscriber**, re-enroll a local passkey if you restored an archive, and verify scheduled maintenance on the public page and feed."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.36`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After upgrading, check that Move in waits for the public page and feed to reflect an import or undo."
 }

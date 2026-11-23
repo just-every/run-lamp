@@ -145,13 +145,13 @@ export async function cloudflareEdge({ accountId, token, subdomain, d1, workerHo
   return {
     origin: `http://127.0.0.1:${server.address().port}`, live, workers,
     /** What a `wrangler deploy` of a build makes: a version with these vars, secrets and D1, deployed at 100%. */
-    upload(name, { vars, secrets, database }) {
+    upload(name, { vars, secrets, database, message }) {
       if (!workers.has(name)) workers.set(name, { versions: [], deployments: [] });
       const worker = workers.get(name);
       const bindings = [...Object.entries(vars).map(([key, text]) => ({ type: 'plain_text', name: key, text })), { type: 'd1', name: 'DB', id: database }, { type: 'version_metadata', name: 'RER_VERSION' },
         ...Object.entries(secrets).map(([key, text]) => ({ type: 'secret_text', name: key, text }))];
       const modules = new Map([['index.js', { type: 'application/javascript+module', bytes: new TextEncoder().encode('export default { fetch() { return new Response("Lamp"); } };\n') }]]);
-      deploy(worker, addVersion(worker, { bindings, modules, entry: 'index.js', annotations: { 'workers/triggered_by': 'upload' },
+      deploy(worker, addVersion(worker, { bindings, modules, entry: 'index.js', annotations: { 'workers/triggered_by': 'upload', ...(message && { 'workers/message': message }) },
         runtime: { compatibility_date: '2026-09-08', compatibility_flags: ['nodejs_compat', 'global_fetch_strictly_public'] } }).id);
     },
     close: () => new Promise(resolve => { server.closeAllConnections(); server.close(() => resolve()); }),

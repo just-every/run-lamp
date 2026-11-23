@@ -2,10 +2,11 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
+import { uploadMessage } from "@runeditrun/rer/modules/deploy-kit/owner";
 
 // What a Lamp deploy binds so its /health names the deployment that answered (Base deploymentHealth): the source
 // commit, a fingerprint of the built Worker and client files, and Cloudflare's version metadata (RER_VERSION, declared
-// in the generated wrangler.toml). The deploy passes the first two as plain-text vars and then reads them back.
+// in the generated wrangler.toml). The deploy sets plain-text vars for both, and marks the version for pending-upload recovery.
 
 async function files(directory) {
   const entries = await readdir(directory, { withFileTypes: true, recursive: true });
@@ -32,7 +33,10 @@ export async function deployFingerprint(distDirectory = "dist") {
 }
 
 /** The `wrangler deploy` arguments that bind the identity. */
-export const identityVars = ({ source, fingerprint }) => ["--var", `RER_DEPLOY_SOURCE:${source}`, "--var", `RER_DEPLOY_FINGERPRINT:${fingerprint}`];
+export const identityVars = ({ source, fingerprint }) => [
+  "--var", `RER_DEPLOY_SOURCE:${source}`, "--var", `RER_DEPLOY_FINGERPRINT:${fingerprint}`,
+  "--message", uploadMessage(fingerprint),
+];
 
 /** Whether a /health body names this deployment. */
 export const reportsIdentity = (health, { source, fingerprint }) => health?.deployment?.sourceSha === source

@@ -16,8 +16,8 @@ export async function removalEdge({accountId, token, names, lag = 2}) {
   const buckets = new Map([[bucket.name, bucket], [foreign.bucket.name, foreign.bucket]]);
   const queues = new Map([[queue.queue_name, queue], [foreign.queue.queue_name, foreign.queue]]);
   const namespaces = new Map([[names.worker, {id: randomUUID().replaceAll('-', ''), script: names.worker, class: 'SnapshotCache'}], [foreign.namespace.script, foreign.namespace]]);
-  const pending = new Map(), writes = [], objectPages = [];
-  let bucketDeletes = 0, denyBucket = false;
+  const pending = new Map(), writes = [], jobs = new Map();
+  let denyBucket = false;
   const ok = (result, extra = {}) => Response.json({success: true, errors: [], result, ...extra});
   const fail = (status, message) => Response.json({success: false, errors: [{code: 10000 + status, message}], result: null}, {status});
   const removeLater = (key, action) => { if (!pending.has(key)) pending.set(key, {left: lag, action}); };
@@ -55,22 +55,33 @@ export async function removalEdge({accountId, token, names, lag = 2}) {
           if (!buckets.has(bucket.name)) answer = fail(404, 'Bucket does not exist');
           else if (method === 'GET') answer = ok(buckets.get(bucket.name));
           else if (method === 'DELETE') {
-            bucketDeletes++;
             if (denyBucket) answer = fail(403, 'Deletion not permitted');
-            else {
-              // An empty object listing can precede the provider's delete view.
-              if (bucketDeletes === 1) objects.add('late-visible-object');
-              if (objects.size) answer = fail(409, 'The bucket is not empty');
-              else { removeLater('r2', () => buckets.delete(bucket.name)); answer = ok(null); }
-            }
+            else if (objects.size) answer = fail(409, 'The bucket is not empty');
+            else { removeLater('r2', () => buckets.delete(bucket.name)); answer = ok(null); }
           }
         } else if (!answer && path === `/r2/buckets/${bucket.name}/objects` && method === 'GET') {
           const rows = [...objects].slice(0, 3).map(key => ({key}));
-          objectPages.push(rows.map(row => row.key));
           answer = ok(rows, {result_info: {is_truncated: objects.size > rows.length, ...(objects.size > rows.length ? {cursor: 'next'} : {})}});
-        } else if (!answer && path.startsWith(`/r2/buckets/${bucket.name}/objects/`) && method === 'DELETE') {
-          const key = decodeURIComponent(request.url.split('/objects/')[1]);
-          answer = objects.delete(key) ? ok(null) : fail(404, 'Object does not exist');
+        } else if (!answer && path === `/r2/buckets/${bucket.name}/jobs`) {
+          if (method === 'GET') answer = ok({jobs: [...jobs.values()].filter(job => job.status === url.searchParams.get('status'))});
+          else if (method === 'POST') {
+            const chunks = [];
+            for await (const chunk of request) chunks.push(chunk);
+            const {jobType, prefix: objectPrefix} = JSON.parse(Buffer.concat(chunks));
+            if (jobType !== 'prefixDelete' || objectPrefix !== '') answer = fail(400, 'Expected a full bucket purge');
+            else {
+              const job = {id: randomUUID(), jobType, status: 'RUNNING', prefixDelete: {prefix: objectPrefix, isBucketClear: true}};
+              jobs.set(job.id, job);
+              answer = ok(job);
+            }
+          }
+        } else if (!answer && method === 'GET' && path.startsWith(`/r2/buckets/${bucket.name}/jobs/`)) {
+          const job = jobs.get(path.split('/').at(-1));
+          if (job) {
+            objects.clear();
+            job.status = 'COMPLETED';
+            answer = ok(job);
+          }
         }
         if (!answer) answer = await fetch(`${base.origin}${request.url}`, {method, headers: request.headers});
       }
@@ -79,8 +90,7 @@ export async function removalEdge({accountId, token, names, lag = 2}) {
     response.end(Buffer.from(await answer.arrayBuffer()));
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  return {origin: `http://127.0.0.1:${server.address().port}`, base, database, bucket, queue, foreign, databases, buckets, queues, namespaces, objects, writes, objectPages,
-    get bucketDeletes() { return bucketDeletes; },
+  return {origin: `http://127.0.0.1:${server.address().port}`, base, database, bucket, queue, foreign, databases, buckets, queues, namespaces, objects, writes, jobs,
     set denyBucket(value) { denyBucket = value; },
     async close() { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); await base.close(); },
   };

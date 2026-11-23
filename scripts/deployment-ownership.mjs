@@ -1,8 +1,16 @@
 import { resolve } from 'node:path';
 import { cloudflare } from '@runeditrun/rer/internal/modules/deploy-kit/provider.mjs';
-import { readOwnerState, writeOwnerState, sameDeployment, resourceId } from '@runeditrun/rer/modules/deploy-kit/owner';
-import { activeWorker, deployedFingerprint } from '@runeditrun/rer/internal/modules/deploy-kit/worker.mjs';
+import { readOwnerState, writeOwnerState, resourceId } from '@runeditrun/rer/modules/deploy-kit/owner';
+import { nativeUpload, nativeWorkerCheck } from '@runeditrun/rer/modules/deploy-kit/native-upload';
+import { activeWorker } from '@runeditrun/rer/internal/modules/deploy-kit/worker.mjs';
 import { resourceNames } from './ops-config.mjs';
+
+export function deploymentCommands(environment) {
+  return {
+    deploy: `rer deploy --environment ${environment} with the original deployment inputs`,
+    remove: `node scripts/remove-deployment.mjs --environment ${environment} --yes with the same --env-file (if used)`,
+  };
+}
 
 // Native Lamp keeps its established two-Worker topology and resource names.
 // Record actual creation identities in Base's format so signin and teardown
@@ -17,20 +25,14 @@ export function deploymentOwnership(config, env = process.env) {
     worker: page ? names.publicWorker : names.worker, origin: `https://${page ? config.pageHost : config.appHost}` });
   const path = (page = false) => resolve('.rer', 'deploy', `${config.environment}${page ? '.page' : ''}.json`);
   const read = (page = false) => readOwnerState(path(page), target(page));
-  const save = (state, page = false) => writeOwnerState(path(page), state);
-  const checkWorker = async (page = false) => {
-    const state = await read(page), selected = target(page);
-    const live = await activeWorker(api, selected.worker);
-    if (live && !sameDeployment(live, state.receipt?.provider)) throw new Error(`Refusing unrecorded or replaced Worker ${selected.worker}. Keep its original deployment record.`);
-    if (!live && state.owned.worker?.status === 'created') throw new Error(`Recorded Worker ${selected.worker} is missing. Finish removing this environment before deploying it again.`);
-    return { state, selected };
-  };
-  return { api, target, path, read,
+  const commands = deploymentCommands(config.environment);
+  const uploadTarget = page => ({ api, target: target(page), statePath: path(page), commands });
+  return { api, target, path,
     // Check both targets before setup can create or migrate any resources.
     // Reading Base's original records also refuses a renamed recorded Worker.
     async checkWorkers() {
-      await checkWorker(false);
-      if (config.hosting === 'workers-dev') await checkWorker(true);
+      await nativeWorkerCheck(uploadTarget(false));
+      if (config.hosting === 'workers-dev') await nativeWorkerCheck(uploadTarget(true));
       // Custom-domain hosting leaves the page Worker inactive, but must not
       // replace its recorded identity when setup writes the resource record.
       else await read(true);
@@ -49,27 +51,22 @@ export function deploymentOwnership(config, env = process.env) {
       }
       if (state.owned[kind][name]) throw new Error(`Recorded ${kind} resource ${name} is missing. Finish removing this environment before deploying it again.`);
       state.owned[kind][name] = { status: 'pending' };
-      await save(state);
+      await writeOwnerState(path(), state);
       const made = await create();
       const id = resourceId(kind, made);
       if (!id) throw new Error(`The provider did not identify the created ${kind} resource ${name}. Keep the deployment record and inspect it before continuing.`);
       state.owned[kind][name] = { status: 'created', id };
-      await save(state);
+      await writeOwnerState(path(), state);
       return made;
     },
     async upload(page, identity, action) {
-      const { state, selected } = await checkWorker(page);
-      state.owned.worker ??= { status: 'pending' };
-      state.pendingUpload = { fingerprint: identity.fingerprint, build: identity.fingerprint };
-      await save(state, page);
-      await action();
-      const uploaded = await activeWorker(api, selected.worker);
-      if (!uploaded || deployedFingerprint(uploaded.settings) !== identity.fingerprint) throw new Error(`Worker ${selected.worker} does not report the uploaded build. Keep the deployment record and inspect it before continuing.`);
-      const { versionId, deploymentId, etag } = uploaded;
-      state.owned.worker = { status: 'created' };
-      state.receipt = { origin: selected.origin, source: { sha: identity.source }, fingerprint: identity.fingerprint, provider: { versionId, deploymentId, etag } };
-      delete state.pendingUpload;
-      await save(state, page);
+      const selected = uploadTarget(page);
+      await nativeUpload({
+        ...selected,
+        fingerprint: identity.fingerprint,
+        receipt: { origin: selected.target.origin, source: { sha: identity.source } },
+        upload: action,
+      });
     },
   };
 }
