@@ -1,7 +1,7 @@
 {
   "id": "lamp",
   "name": "Lamp",
-  "version": "1.11.36",
+  "version": "1.11.37",
   "maturity": "ui-port-local-runtime",
   "category": "status",
   "spine": {

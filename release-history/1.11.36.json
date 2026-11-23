@@ -1,0 +1,31 @@
+{
+  "version": "1.11.36",
+  "previousVersion": "1.11.35",
+  "date": "2026-11-23",
+  "publicReleaseNotes": "- **Move in shows when the public page is still publishing.** After a hosted import or undo, Lamp shows publication progress and waits for the public page and feed before reporting **Imported** or **Undone**.\n- **Cloudflare deploys can recover a partially uploaded Worker.** Lamp pins rer 0.2.132 and marks each uploaded Worker version. If a later step such as queue setup fails, a retry can verify and adopt that upload before continuing. The removal command can also verify and remove the pending upload.\n- **Deployment removal can resume.** Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`.\n\n### Upgrading from 1.11.35\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.36`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After upgrading, check that Move in waits for the public page and feed to reflect an import or undo.",
+  "contractChanges": {},
+  "proseChanges": [
+    {
+      "document": "docs/deploy.md",
+      "section": "Remove an installation",
+      "change": "changed",
+      "date": "2026-11-23",
+      "summary": "If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`.",
+      "was": "The guide noted that the first removal could require a retry, even with a small bucket.",
+      "now": "Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`."
+    },
+    {
+      "document": "OPERATIONS.md",
+      "section": "Remove a deployment",
+      "change": "changed",
+      "date": "2026-11-23",
+      "summary": "Removal uses a resumable Cloudflare bulk purge for the R2 bucket.",
+      "was": "Removal purged the bucket in batches of individual objects.",
+      "now": "Removal uses a resumable Cloudflare bulk purge for the R2 bucket. If removal reports `remove-incomplete`, rerun the same command with the same environment and input file until it says `read back: none remains`."
+    }
+  ],
+  "extensionPointChanges": [],
+  "migrations": [],
+  "breaking": false,
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.36`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After upgrading, check that Move in waits for the public page and feed to reflect an import or undo."
+}

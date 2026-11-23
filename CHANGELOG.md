@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.11.37
+
+- **Local archive restore explains what to do next.** Held subscriber confirmations stay on hold. When email is enabled, use **Restore page data → Send confirmation emails** so subscribers can confirm by following their own links. To use a localhost passkey again, run `rer setup` and then `rer dev --host localhost`, open the new private owner link, and re-enroll it in **Settings → Sign-in**.
+- **Hosted backups report progress.** The terminal shows when Lamp is backing up D1 data, listing R2 objects, and copying them. While an export runs, Lamp updates progress every 15 seconds, including the copied and total object counts during the copy.
+- **Lamp pins rer 0.2.133.** Hosted `rer signin` prints the one-time owner link on a `RER_OPEN` line. Local D1 migration apply retries once on a Wrangler internal error, and a first local start can wait for machine load to ease while reporting progress. Deployment removal rechecks the recorded identity before deleting a Worker by name and before replaying named Worker or R2 writes.
+
+### Upgrading from 1.11.36
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.37`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. This release adds no migrations. After a local restore, run `rer setup` with the original owner before starting Lamp and follow the printed confirmation and passkey guidance.
+
 ## 1.11.36
 
 - **Move in shows when the public page is still publishing.** After a hosted import or undo, Lamp shows publication progress and waits for the public page and feed before reporting **Imported** or **Undone**.
