@@ -3,7 +3,7 @@
 VPAT® Version 2.5 Rev, Revised Section 508 Edition (April 2025).
 
 Product name: Lamp
-Product version: 1.11.38
+Product version: 1.11.39
 Evaluation date: 25 October 2026 (UTC; 2026-10-25)
 Report date: 25 October 2026
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.11.39
+
+- **Scheduled work no longer rereads history.** Lamp's minute Cron read rows in proportion to everything it had ever stored: about 1,100 rows a run after thirty days and over 7,000 with a month of provider callbacks, on a database whose Workers Free allowance every tool on the account shares. Each scheduled query now reads only work that is still due through a matching index: unfinished alert rule work, chat and social posts not yet queued for delivery, and provider callbacks not yet applied. A scheduled run reads under 100 rows at one day and at thirty days of history.
+- **Other senders' provider callbacks leave the minute sweep.** On a shared mail provider account, a callback no Lamp send claims within fifteen minutes is set aside instead of being reread every minute. If its send is recorded later, Lamp still applies it. A callback for a Lamp send looks up its delivery directly instead of reading every delivery ever recorded.
+- **Public metric charts read one stored series per metric.** A pushed or pulled minute point no longer rebuilds the whole public page, which read every incident and every minute of every metric on each push. A metric's first data, a reset to no data and a source going stale or resuming still republish at once; later points appear at the next five-minute refresh.
+- **Communication performance reads on view and on Refresh.** The Settings → Reports card read every delivery in the month every 15 seconds while visible. It now reads when it comes into view and when you choose **Refresh performance**, and its month query seeks only that month's incidents and deliveries. An incident's reach panel still refreshes every 15 seconds.
+- **Health reads the migration ledger once an hour.** `/health` keeps its schema observation for an hour per Worker instead of five minutes. A release applies its migrations before its Worker starts, so new instances observe them at once; `ageMs` reports the observation's age.
+
+### Upgrading from 1.11.38
+
+Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.39`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply the bounded scheduled reads migration before starting the updated Worker.
+
 ## 1.11.38
 
 - **Owners can update or hand over their account.** Save a name-only change in **Settings → Team → Operators → Owner account** or through `POST /auth/owner-profile`. Email changes stay pending until confirmed in the requesting session. A confirmed handover revokes the confirming session and every session, minted management credential, linked identity and passkey of the previous Owner. With mail on, Lamp notifies the previous address and sends a separate one-time sign-in link to the new address when email sign-in is available. If the installation requires a sign-in provider, the incoming Owner signs in with that provider. With mail off, Lamp shows the one-time sign-in link to the signed-in outgoing Owner as their session ends. The outgoing Owner hands it directly to the holder of the new address, who opens it to sign in. With mail off, Lamp cannot verify the new address. Copy the already-verified address verbatim and check it before confirming. The audit log records the addresses and the revocation choice. Turn off revocation for a rename that keeps access. Move in keeps its history.

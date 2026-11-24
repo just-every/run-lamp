@@ -1,45 +1,36 @@
 {
-  "version": "1.11.38",
-  "previousVersion": "1.11.37",
-  "date": "2026-11-24",
-  "publicReleaseNotes": "- **Owners can update or hand over their account.** Save a name-only change in **Settings → Team → Operators → Owner account** or through `POST /auth/owner-profile`. Email changes stay pending until confirmed in the requesting session. A confirmed handover revokes the confirming session and every session, minted management credential, linked identity and passkey of the previous Owner. With mail on, Lamp notifies the previous address and sends a separate one-time sign-in link to the new address when email sign-in is available. If the installation requires a sign-in provider, the incoming Owner signs in with that provider. With mail off, Lamp shows the one-time sign-in link to the signed-in outgoing Owner as their session ends. The outgoing Owner hands it directly to the holder of the new address, who opens it to sign in. With mail off, Lamp cannot verify the new address. Copy the already-verified address verbatim and check it before confirming. The audit log records the addresses and the revocation choice. Turn off revocation for a rename that keeps access. Move in keeps its history.\n- **Business grants follow the stored Owner email.** After a handover on a platform-installed Lamp, the RER grant signer must name the new stored Owner email. Business reads go from HTTP 200 to HTTP 403 `invalid_grant` until RER signs grants for that address. A Lamp deployed by an agent with `rer deploy` mints no RER grant and is unaffected.\n- **Owner email changes use Base’s recent-proof window.** In Base 0.2.133, step-up proof applies across actions. A recent email-link sign-in or step-up completed for another action can authorize an email change. Binding step-up proof to the action is pr’s follow-up.\n- **Hosted Staff publication waits for the reader view.** Lamp confirms that readers can see an incident update only after the Staff landing page and the other selected pages serve the generation that includes it. This change passed the Opus review labeled 1.11.38.\n- **Public incident follow respects the mail setting.** With mail off, public incident pages no longer offer email follow. The page shows the other follow options only when they are available.\n- **The first-run guide explains set-up order and the first check.** Set Lamp up after the tools whose components it shows. For the first check, open the public page signed out and verify that each visible component shows its state.\n- **The retained-snapshot test fixture declares its subscription channels.** The fixture defaults to no available channels unless the test supplies them.\n\n### Upgrading from 1.11.37\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.38`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply the owner email confirmation migration before starting the updated Worker. If you hand over the account, verify the new Owner can sign in, check that Move in still uses the same owner account and take a new backup. Restoring an earlier archive can revert the handover by restoring the previous Owner address and linked identities from that archive. On a platform-installed Lamp, the RER grant signer must then name the restored address.",
+  "version": "1.11.39",
+  "previousVersion": "1.11.38",
+  "date": "2026-11-25",
+  "publicReleaseNotes": "- **Scheduled work no longer rereads history.** Lamp's minute Cron read rows in proportion to everything it had ever stored: about 1,100 rows a run after thirty days and over 7,000 with a month of provider callbacks, on a database whose Workers Free allowance every tool on the account shares. Each scheduled query now reads only work that is still due through a matching index: unfinished alert rule work, chat and social posts not yet queued for delivery, and provider callbacks not yet applied. A scheduled run reads under 100 rows at one day and at thirty days of history.\n- **Other senders' provider callbacks leave the minute sweep.** On a shared mail provider account, a callback no Lamp send claims within fifteen minutes is set aside instead of being reread every minute. If its send is recorded later, Lamp still applies it. A callback for a Lamp send looks up its delivery directly instead of reading every delivery ever recorded.\n- **Public metric charts read one stored series per metric.** A pushed or pulled minute point no longer rebuilds the whole public page, which read every incident and every minute of every metric on each push. A metric's first data, a reset to no data and a source going stale or resuming still republish at once; later points appear at the next five-minute refresh.\n- **Communication performance reads on view and on Refresh.** The Settings → Reports card read every delivery in the month every 15 seconds while visible. It now reads when it comes into view and when you choose **Refresh performance**, and its month query seeks only that month's incidents and deliveries. An incident's reach panel still refreshes every 15 seconds.\n- **Health reads the migration ledger once an hour.** `/health` keeps its schema observation for an hour per Worker instead of five minutes. A release applies its migrations before its Worker starts, so new instances observe them at once; `ageMs` reports the observation's age.\n\n### Upgrading from 1.11.38\n\nBack up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.39`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply the bounded scheduled reads migration before starting the updated Worker.",
   "contractChanges": {},
   "proseChanges": [
     {
-      "document": "docs/operators-and-sign-in.md",
-      "section": "Change your owner account",
+      "document": "docs/alerts-from-monitoring-tools.md",
+      "section": "Public performance charts",
       "change": "changed",
-      "date": "2026-11-24",
-      "summary": "The operators guide explains how to save a name-only change, confirm an email change and hand over the Owner account.",
-      "was": "The operators guide covered inviting and removing operators and signing in.",
-      "now": "Save a name-only change immediately. Confirm an email change in the requesting session. A confirmed handover revokes the confirming session and every session, minted management credential, linked identity and passkey of the previous Owner. With mail on, Lamp notifies the previous address and sends a separate one-time sign-in link to the new address when email sign-in is available. If the installation requires a sign-in provider, the incoming Owner signs in with that provider. With mail off, Lamp shows the one-time sign-in link to the signed-in outgoing Owner as their session ends. The outgoing Owner hands it directly to the holder of the new address, who opens it to sign in. With mail off, Lamp cannot verify the new address. Copy the already-verified address verbatim and check it before confirming."
+      "date": "2026-11-25",
+      "summary": "Later metric points appear at the page's next five-minute refresh.",
+      "was": "Each pushed or pulled metric point republished the public page.",
+      "now": "A metric's first data, a reset to no data and a source going stale or resuming republish the page at once. Later points appear at the page's next five-minute refresh."
     },
     {
-      "document": "docs/moving-in.md",
-      "section": "Business import door (opt-in)",
+      "document": "docs/subscribers-and-notifications.md",
+      "section": "Review communication performance",
       "change": "changed",
-      "date": "2026-11-24",
-      "summary": "Move in uses the stored owner account and keeps its history after an email change.",
-      "was": "The Business import door used the configured owner email from owner-claim.",
-      "now": "Move in uses the stored owner account and keeps its history after an email change."
-    },
-    {
-      "document": "docs/first-run.md",
-      "section": "Set-up order and first check",
-      "change": "changed",
-      "date": "2026-11-24",
-      "summary": "Set Lamp up after the tools whose components it shows.",
-      "was": "The first-run guide described choosing and publishing components during Lamp setup.",
-      "now": "Set Lamp up after the tools whose components it shows. For the first check, open the public page signed out and verify that each visible component shows its state."
+      "date": "2026-11-25",
+      "summary": "The communication performance card reads on view and on Refresh.",
+      "was": "The card refreshed its month every 15 seconds while visible.",
+      "now": "The card reads its month when it comes into view and when you choose Refresh performance; it does not poll."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [
     {
-      "id": "0090_owner_email_change.sql",
-      "buyerSteps": "Apply before starting the updated Worker. The migration adds storage for pending Owner email confirmations. Existing Owner accounts and sessions keep their current access until a change is confirmed."
+      "id": "0091_bounded_scheduled_reads.sql",
+      "buyerSteps": "Apply before starting the updated Worker. The migration adds indexes for due scheduled work, queued markers on chat and social posts filled from their existing deliveries, a set-aside marker for unmatched provider callbacks, and a stored public series per metric filled from the current minute points. Minute metric points stop requesting a full page rebuild. Existing records keep their values."
     }
   ],
   "breaking": false,
-  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.38`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply the owner email confirmation migration before starting the updated Worker.\n\nWith mail off, Lamp cannot verify the new address. Copy the already-verified address verbatim and check it before confirming. Confirm the pending email change in the session that requested it. Leave revocation enabled for a handover. A confirmed handover revokes the confirming session and every session, minted management credential, linked identity and passkey of the previous Owner. With mail on, Lamp notifies the previous address and sends a separate one-time sign-in link to the new address when email sign-in is available. If the installation requires a sign-in provider, the incoming Owner signs in with that provider. With mail off, Lamp shows the one-time sign-in link to the signed-in outgoing Owner as their session ends. The outgoing Owner hands it directly to the holder of the new address, who opens it to sign in.\n\nAfter a handover on a platform-installed Lamp, the RER grant signer must name the new stored Owner email. Business reads go from HTTP 200 to HTTP 403 `invalid_grant` until RER signs grants for that address. A Lamp deployed by an agent with `rer deploy` mints no RER grant and is unaffected.\n\nIn Base 0.2.133, step-up proof applies across actions. A recent email-link sign-in or step-up completed for another action can authorize an email change. Binding step-up proof to the action is pr’s follow-up.\n\nIf you hand over the account, verify the new Owner can sign in, check that Move in still uses the same owner account and take a new backup. Restoring an earlier archive can revert the handover by restoring the previous Owner address and linked identities from that archive. On a platform-installed Lamp, the RER grant signer must then name the restored address."
+  "agentUpdateInstructions": "Back up your data and source changes and exercise a restored copy before adopting. Update to `v1.11.39`, run `pnpm install --frozen-lockfile` and use the same environment and input file for an existing deployment. Apply the bounded scheduled reads migration before starting the updated Worker.\n\nAfter the update, a scheduled run reads a flat number of D1 rows as history grows: `node --test tests/e2e/scheduled-read-budget.test.mjs` measures it on a local database with thirty days of history. Metric charts show new points at the next five-minute refresh rather than on each push."
 }
