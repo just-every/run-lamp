@@ -1,11 +1,19 @@
 import assert from 'node:assert/strict';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { readdirSync, readFileSync } from 'node:fs';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
+import { OWNER_SIGNIN_PATH, ownerSigninDigest } from '@runeditrun/rer/internal/modules/operator-auth/owner-signin-grant.mjs';
 import { moveInDoor } from '../helpers/import-notifications.mjs';
+import { database, load } from '../operator-readiness/runtime.mjs';
 import { openStatusJourney } from './helpers/status-journey.mjs';
+import { openSnapshotCacheRuntime } from './snapshot-cache-runtime.mjs';
 
 const profilePath = '/auth/owner-profile';
 const confirmPath = profilePath + '/confirm';
+const sessionPath = '/api/app/session';
 
 function mailToken(message, email) {
   assert.ok(message?.to.includes(email), 'the provider received an email for the requested address');
@@ -16,7 +24,7 @@ function mailToken(message, email) {
   return token;
 }
 
-test('The owner can correct sign-in details and keep access to the same Move in history', { timeout: 60_000 }, async t => {
+test('The owner can correct sign-in details and keep access to the same Move in history', { timeout: 60_000 }, async () => {
   const runtime = await openStatusJourney();
   try {
     const original = (await runtime.json('/api/app/session')).operator;
@@ -109,11 +117,12 @@ test('The owner can correct sign-in details and keep access to the same Move in 
     const oldToken = mailToken(runtime.messages.at(-1), original.email);
 
     const typo = 'synthetic-lamp-typo@exmaple.test';
-    const attempted = await requestAs(profilePath, freshCookie, { email: typo });
+    const attempted = await requestAs(profilePath, freshCookie, { email: typo, revokeAccess: false });
     assert.equal(attempted.status, 202);
     const first = await attempted.json();
     assert.equal(first.operator.email, original.email, 'fresh proof stages a change only');
     const typoToken = mailToken(runtime.messages.at(-1), typo);
+    assert.equal(first.pending.revokeAccess, false);
     const mailBeforeTypo = runtime.messages.length;
     assert.equal((await requestAs('/auth/magic-link', null, { email: typo })).status, 202);
     assert.equal(runtime.messages.length, mailBeforeTypo, 'P4 a typo cannot receive an Owner sign-in link');
@@ -124,6 +133,7 @@ test('The owner can correct sign-in details and keep access to the same Move in 
     }
     const native = await requestAs('/auth/confirm', null, { token: typoToken });
     assert.equal(native.headers.has('set-cookie'), false, 'a confirmation is never a sign-in credential');
+    assert.equal((await requestAs(profilePath + '/cancel', olderCookie, { id: first.pending.id })).status, 404);
     const cancelled = await requestAs(profilePath + '/cancel', freshCookie, { id: first.pending.id });
     assert.deepEqual(await cancelled.json(), { pending: null });
     assert.equal((await requestAs(confirmPath, freshCookie, { token: typoToken })).status, 400);
@@ -153,12 +163,17 @@ test('The owner can correct sign-in details and keep access to the same Move in 
     const changed = await confirmed.json();
     assertProfile(changed.operator);
     assert.equal(changed.notice, 'sent');
-    assert.deepEqual(runtime.messages.slice(noticeStart).map(message => message.to), [[original.email]], 'P3 the previous address gets the notice on confirmation');
-    assert.ok(runtime.messages.at(-1).text.includes(updated.email) && runtime.messages.at(-1).text.includes('rer signin'));
+    assert.equal(changed.signedOut, true);
+    assert.equal(changed.signInUrl, undefined, 'only the new inbox receives the mail-on sign-in link');
+    assert.match(confirmed.headers.get('set-cookie'), /Max-Age=0/);
+    assert.deepEqual(runtime.messages.slice(noticeStart).map(message => message.to), [[original.email], [updated.email]]);
+    const notice = runtime.messages[noticeStart];
+    assert.ok(notice.text.includes(updated.email) && notice.text.includes('rer signin'));
     assert.equal((await requestAs(confirmPath, freshCookie, { token })).status, 400, 'the link is single-use');
 
-    assertProfile(await sessionAs(freshCookie));
-    assert.equal((await requestAs('/api/app/session', olderCookie)).status, 401, 'P5 a handover signs out other sessions');
+    assert.equal((await requestAs(sessionPath, freshCookie)).status, 401, 'R1: the confirming stand-in session ends after handover');
+    assert.equal((await requestAs('/api/app/management-tokens', freshCookie, { name: 'Old dashboard', scopes: ['read'] })).status, 401);
+    assert.equal((await requestAs(sessionPath, olderCookie)).status, 401, 'P5 a handover signs out other sessions');
     assert.equal((await useCredential()).status, 401);
     const rejected = await requestAs('/auth/confirm', null, { token: oldToken });
     assert.deepEqual([rejected.status, (await rejected.json()).error], [400, 'invalid_or_expired']);
@@ -169,6 +184,9 @@ test('The owner can correct sign-in details and keep access to the same Move in 
     assert.deepEqual(await unrecognized.json(), accepted);
     assert.equal(runtime.messages.length, beforeOldRequest, 'a new request to the previous address dispatches no mail');
 
+    const newEntry = await requestAs('/auth/confirm', null, { token: mailToken(runtime.messages[noticeStart + 1], updated.email) });
+    assert.equal(newEntry.status, 303);
+    assertProfile(await sessionAs(newEntry.headers.get('set-cookie').split(';')[0]));
     await runtime.signIn(updated.email, { fresh: true });
     assertProfile((await runtime.json('/api/app/session')).operator);
     const applied = await moveIn.apply(review.body);
@@ -183,9 +201,76 @@ test('The owner can correct sign-in details and keep access to the same Move in 
       actorId === original.id && entityId === original.id && actorName === updated.displayName));
     const audit = await runtime.db.prepare(`SELECT payload_json FROM audit_entries WHERE action='owner-profile-changed'
       AND json_extract(payload_json, '$.newEmail')=?`).bind(updated.email).first();
-    assert.deepEqual(JSON.parse(audit.payload_json), { oldEmail: original.email, newEmail: updated.email, revokedOtherAccess: true }, 'P7 audit records both addresses');
+    assert.deepEqual(JSON.parse(audit.payload_json), { oldEmail: original.email, newEmail: updated.email,
+      revokedOtherAccess: true, revokedConfirmingSession: true }, 'the audit records both addresses and the end of the confirming session');
 
   } finally {
     await runtime.close();
+  }
+});
+
+test('With hosted mail off, the current Owner hands over a new one-time sign-in link', { timeout: 60_000 }, async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'lamp-owner-handover-'));
+  const [storage, cache] = await Promise.all([database(directory), openSnapshotCacheRuntime(directory)]);
+  try {
+    const { createApp } = await load('src/core/app/server.ts');
+    const origin = 'https://admin.example.test';
+    const env = { DB: storage.db, SNAPSHOT_CACHE: cache.namespace, SNAPSHOTS: storage.bucket,
+      LAMP_APP_HOST: new URL(origin).host, LAMP_PAGE_HOST: 'status.example.test',
+      SETUP_OPERATOR_EMAIL: 'outgoing-owner@example.test', MAIL_PROVIDER: 'none',
+      SESSION_SECRET: randomBytes(32).toString('hex'), SETUP_TOKEN: randomBytes(32).toString('hex') };
+    const { app } = createApp(env);
+    const request = (path, cookie, body) => app.fetch(new Request(new URL(path, origin), {
+      ...(body === undefined ? {} : { method: 'POST', body: body instanceof URLSearchParams ? body : JSON.stringify(body) }),
+      headers: { Host: env.LAMP_APP_HOST, Origin: origin, 'CF-Connecting-IP': '192.0.2.1',
+        ...(body instanceof URLSearchParams ? {} : { 'Content-Type': 'application/json' }), ...(cookie ? { Cookie: cookie } : {}) },
+    }), env);
+    const setup = await request('/auth/bootstrap', null, new URLSearchParams({ token: env.SETUP_TOKEN, displayName: 'Acme Interim Owner' }));
+    assert.equal(setup.status, 303);
+    const priorCookie = setup.headers.get('set-cookie').split(';')[0];
+    const { operator: original } = await (await request(sessionPath, priorCookie)).json();
+    // Match rer signin's deploy-credential write at the external D1 edge.
+    async function terminalGrant() {
+      const token = randomBytes(32).toString('base64url'), now = Date.now();
+      await storage.db.prepare(`INSERT INTO oa_owner_signins(id,token_hash,operator_id,operator_version,created_at,expires_at)
+        SELECT ?,?,id,version,?,? FROM lamp_sign_in_owner`)
+        .bind(randomUUID(), await ownerSigninDigest(token), now, now + 60_000).run();
+      return token;
+    }
+    const entry = await request(OWNER_SIGNIN_PATH, null, { token: await terminalGrant() });
+    assert.equal(entry.status, 303);
+    assert.equal(entry.headers.get('location'), '/app');
+    const outgoing = entry.headers.get('set-cookie').split(';')[0];
+    const email = 'new-owner@example.test';
+    const staged = await request(profilePath, outgoing, { email });
+    assert.equal(staged.status, 202);
+    assert.equal((await staged.json()).pending.method, 'terminal');
+
+    const token = await terminalGrant();
+    const confirm = new URLSearchParams({ token, confirmEmailChange: '1' });
+    assert.equal((await request(OWNER_SIGNIN_PATH, null, confirm)).status, 400);
+    const handover = await request(OWNER_SIGNIN_PATH, outgoing, confirm);
+    assert.equal(handover.status, 200);
+    assert.match(handover.headers.get('set-cookie'), /Max-Age=0/);
+    assert.equal(handover.headers.get('cache-control'), 'no-store');
+    const html = await handover.text();
+    const link = html.match(/id="owner-link"[^>]+value="([^"]+)"/)?.[1];
+    assert.ok(link, 'the handover page gives the signed-in current Owner a transferable sign-in link');
+    assert.equal((await request(sessionPath, outgoing)).status, 401);
+    assert.equal((await request(sessionPath, priorCookie)).status, 401);
+    assert.equal((await request(OWNER_SIGNIN_PATH, outgoing, confirm)).status, 400);
+    assert.equal((await request(OWNER_SIGNIN_PATH, null, { token })).headers.has('set-cookie'), false);
+
+    const signIn = { token: new URL(link).searchParams.get('token') };
+    const incoming = await request(OWNER_SIGNIN_PATH, null, signIn);
+    assert.equal(incoming.status, 303);
+    const newSession = await request(sessionPath, incoming.headers.get('set-cookie').split(';')[0]);
+    assert.equal(newSession.status, 200);
+    const { operator } = await newSession.json();
+    assert.deepEqual({ id: operator.id, email: operator.email, role: operator.role }, { id: original.id, email, role: 'owner' });
+    assert.equal((await request(OWNER_SIGNIN_PATH, null, signIn)).headers.has('set-cookie'), false, 'the new Owner link is single-use');
+  } finally {
+    await Promise.all([cache.dispose(), storage.runtime.dispose()]);
+    await rm(directory, { recursive: true, force: true });
   }
 });

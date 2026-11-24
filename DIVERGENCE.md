@@ -1898,8 +1898,16 @@ ChargeDesk set-up needs to replace a stand-in owner's name and email through
 Lamp itself. Under TEAM-002, the existing Owner can change their own name
 directly. Email changes require fresh identity proof and a second confirmation
 in the same session. The stored account ID keeps Move in tied to the
-installation. Revocation on confirmation is the default for a handover. Owners
-can keep existing access for a rename.
+installation. A handover revokes all previous sessions including the confirming
+session. With email sign-in available, the new address gets a separate sign-in
+link. With mail off, the current Owner receives a one-time sign-in link to hand
+over and Lamp cannot verify the address. Owners can keep existing access for a
+rename. The confirmation and audit entry record that choice.
+
+Business reads return HTTP 403 `invalid_grant` after a handover until the RER
+grant signer names the stored Owner email. Base 0.2.133 step-up proof applies
+across actions, so a recent email-link sign-in or proof for another action can
+authorize an email change. Action-bound proofs are a Base follow-up.
 
 Lamp limits Base's self-service `/auth/email` and `/auth/display-name` to the
 signed-in Owner's own account. Admins, communicators, editors and viewers

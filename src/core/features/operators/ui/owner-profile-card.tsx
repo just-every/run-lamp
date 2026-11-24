@@ -5,7 +5,7 @@ import { FormError } from "../../../app/client/ui/states";
 
 type Profile = { displayName: string; email: string };
 type ConfirmationMethod = "email" | "local" | "terminal";
-type Pending = { id: string; email: string; method: ConfirmationMethod; expiresAt: number };
+type Pending = { id: string; email: string; method: ConfirmationMethod; expiresAt: number; revokeAccess: boolean };
 type Saved = { operator: Profile; pending: Pending | null; confirmationUrl?: string };
 const path = "/auth/owner-profile";
 
@@ -19,6 +19,7 @@ const errors: Record<string, string> = {
   authority_changed: "Your account changed while you were saving. Reload and try again.",
   mail_unavailable: "Lamp could not send the confirmation email. Check your mail settings and try again.",
   owner_link_unavailable: "With email off, only the installation Owner can use a terminal link to confirm an address change.",
+  pending_change_unavailable: "This change expired or was replaced. Save again to start a new change.",
 };
 
 function message(cause: unknown, fallback: string) {
@@ -101,6 +102,7 @@ export function OwnerProfileCard({ owner, onSaved }: { owner: Profile; onSaved: 
       setStatus("Email change cancelled.");
       setRevokeAccess(true);
     } catch (cause) {
+      if (cause instanceof ApiError && cause.message === "pending_change_unavailable") setPendingWrite({ pending: null });
       setError(message(cause, "The email change could not be cancelled."));
     } finally { setBusy(false); }
   }
@@ -111,11 +113,14 @@ export function OwnerProfileCard({ owner, onSaved }: { owner: Profile; onSaved: 
       <p>Your current address stays active until you confirm a new one.</p>
     </div>
     {pending ? <div className="page-stack">
-      <p role="status">Change to <strong>{pending.email}</strong> is pending.</p>
+      <p className="setup-result save-message" role="status">Change to <strong>{pending.email}</strong> is pending.</p>
       <p>{pending.method === "email" ? "Open the link sent to the new address in this same browser session."
         : pending.method === "terminal" ? <>Run <code>rer signin</code> again and open the new one-time Owner link in this same browser session.</>
           : pendingWrite?.confirmationUrl ? "Open the one-time Owner link in this browser."
             : "If you no longer have the one-time Owner link, cancel this change and save again."}</p>
+      {!pending.revokeAccess && <p>Existing sessions, minted credentials and linked sign-ins will keep access.</p>}
+      {pending.method !== "email" && <p>Email is off, so Lamp cannot verify the new address.{pending.revokeAccess &&
+        " Lamp will show you a one-time sign-in link after confirmation. Give it to the holder of the new address."}</p>}
       <div className="form-actions">
         {pending.method === "local" && pendingWrite?.confirmationUrl &&
           <Button asChild><a href={pendingWrite.confirmationUrl}>Open Owner confirmation link</a></Button>}
@@ -127,7 +132,7 @@ export function OwnerProfileCard({ owner, onSaved }: { owner: Profile; onSaved: 
       {changedEmail && <div className="full-width">
         <label className="checkbox-label">
           <input type="checkbox" checked={revokeAccess} onChange={event => setRevokeAccess(event.target.checked)} />
-          Sign out every other session and revoke minted credentials and linked sign-ins
+          Sign out all sessions and revoke minted credentials and linked sign-ins
         </label>
         <p>Leave this checked for a handover. Turn it off for a rename that keeps existing access.</p>
       </div>}

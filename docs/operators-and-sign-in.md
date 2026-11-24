@@ -18,7 +18,9 @@ again. With hosted mail off, start from a fresh
 [`rer signin` session](#terminal-entry-for-the-hosted-owner).
 
 An email change stays pending for up to 10 minutes. Open the link sent to the
-new address in the same session that requested the change. Locally, use
+new address in the same session that requested the change. For a handover, the
+person receiving that email gives the confirmation link to the current Owner.
+Locally, use
 **Open Owner confirmation link**. With hosted mail off, the installation Owner
 runs `rer signin` again and opens the new one-time Owner link in the same
 session. On the confirmation page, choose **Confirm email change**. You can
@@ -26,12 +28,32 @@ cancel in Owner account while the change is pending. The current address stays
 active until you confirm. With mail enabled, Lamp then notifies the previous
 address and records both addresses in the audit log.
 
-For a handover, leave **Sign out every other session and revoke minted
-credentials and linked sign-ins** checked. Confirmation keeps the current
-session and removes the other sessions, management credentials, linked
-identity-provider sign-ins and local passkeys. Turn the option off for a rename
-that keeps existing access. The account ID, Move in history and outstanding
-invitations to other operators stay with the account.
+For a handover, leave **Sign out all sessions and revoke minted credentials and
+linked sign-ins** checked. Confirmation ends every previous session, including
+the one that confirms, and revokes management credentials, linked
+identity-provider sign-ins and local passkeys. When email sign-in is available,
+Lamp sends a separate sign-in link to the new address. If your installation
+requires a sign-in provider, the new Owner signs in with that provider.
+
+With mail off, Lamp cannot verify who holds the new address. Check it before
+confirming. After confirmation, Lamp shows the one-time Owner sign-in link to
+the signed-in current Owner as their session ends. They must hand that link
+directly to the holder of the new address, who opens it to sign in.
+
+Turn revocation off only for a rename that keeps existing access. Lamp shows
+the choice at confirmation and records it in the audit log. The account ID,
+Move in history and outstanding invitations to other operators stay with the
+account.
+
+Base 0.2.133 accepts recent step-up proof across actions, including proof
+completed for another action or a recent email-link sign-in. On a
+Business-provisioned installation, update the RER grant signer to name the
+new stored Owner email. Business reads return HTTP 403 `invalid_grant` until
+the signer uses that address.
+
+Take a new backup after a handover. Restoring an earlier archive restores
+the previous Owner address and linked identities from that archive. Business
+grants must then name that restored address.
 
 ## Terminal entry for the hosted owner
 

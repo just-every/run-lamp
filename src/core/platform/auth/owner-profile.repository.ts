@@ -9,7 +9,7 @@ export function readInstallationOwner(db: D1Database) {
 }
 
 export async function saveOwnerProfile(db: D1Database, session: Session, profile: { displayName: string },
-  confirmation?: { pending: PendingEmail; proof: EmailProof }) {
+  confirmation?: { pending: PendingEmail; proof: EmailProof; signInGrant?: { hash: string; expiresAt: number } }) {
   const { id, version, email, displayName } = session.operator;
   const nextEmail = confirmation?.pending.email ?? email;
   const nextVersion = version + Number(Boolean(confirmation));
@@ -18,7 +18,8 @@ export async function saveOwnerProfile(db: D1Database, session: Session, profile
   const authority = sessionAuthority(session);
   const proven = confirmation && emailChangeFence(session, confirmation.pending, confirmation.proof);
   const witness = 'EXISTS(SELECT 1 FROM audit_entries WHERE id=?)';
-  const payload = confirmation ? JSON.stringify({ oldEmail: email, newEmail: nextEmail, revokedOtherAccess: revoke }) : '{}';
+  const payload = confirmation ? JSON.stringify({ oldEmail: email, newEmail: nextEmail,
+    revokedOtherAccess: revoke, revokedConfirmingSession: revoke }) : '{}';
   // The audit row witnesses the live session and pending proof throughout the
   // batch. Losing either, or a duplicate email, leaves the change unapplied.
   try {
@@ -35,11 +36,9 @@ export async function saveOwnerProfile(db: D1Database, session: Session, profile
           db.prepare(`UPDATE oa_owner_signins SET consumed_at=? WHERE token_hash=? AND ${witness}`)
             .bind(now, confirmation.proof.hash, eventId),
         ] : []),
-        db.prepare(`UPDATE oa_sessions
-          SET operator_version=CASE WHEN ? AND id<>? THEN operator_version ELSE ? END,
-              revoked_at=CASE WHEN ? AND id<>? THEN ? ELSE revoked_at END
+        db.prepare(`UPDATE oa_sessions SET ${revoke ? 'revoked_at' : 'operator_version'}=?
           WHERE operator_id=? AND operator_version=? AND revoked_at IS NULL AND ${witness}`)
-          .bind(Number(revoke), session.id, nextVersion, Number(revoke), session.id, now, id, version, eventId),
+          .bind(revoke ? now : nextVersion, id, version, eventId),
         db.prepare(`UPDATE oa_tokens SET revoked_at=? WHERE operator_id=? AND consumed_at IS NULL AND revoked_at IS NULL AND ${witness}`)
           .bind(now, id, eventId),
         db.prepare(`UPDATE oa_tokens SET issuer_version=? WHERE issuer_id=? AND issuer_version=? AND kind='invite'
@@ -55,6 +54,13 @@ export async function saveOwnerProfile(db: D1Database, session: Session, profile
           db.prepare(`UPDATE oa_credentials SET operator_version=? WHERE operator_id=? AND operator_version=? AND revoked_at IS NULL AND ${witness}`)
             .bind(nextVersion, id, version, eventId),
         ]),
+        // A separate grant is handed to the incoming Owner after the old
+        // session and the grant used to confirm the change both stop working.
+        ...(confirmation.signInGrant ? [
+          db.prepare(`INSERT INTO oa_owner_signins(id,token_hash,operator_id,operator_version,created_at,expires_at)
+            SELECT ?,?,?,?,?,? WHERE ${witness}`)
+            .bind(crypto.randomUUID(), confirmation.signInGrant.hash, id, nextVersion, now, confirmation.signInGrant.expiresAt, eventId),
+        ] : []),
       ] : []),
       db.prepare(`DELETE FROM oa_owner_email_changes WHERE operator_id=? AND ${witness}`).bind(id, eventId),
     ]);

@@ -1,6 +1,6 @@
 import { AuthError, normalizeEmail, type OperatorAuth, type Session } from '@runeditrun/rer/modules/operator-auth';
 import { hashToken, opaqueToken, validToken } from '@runeditrun/rer/internal/modules/operator-auth/crypto.mjs';
-import { OWNER_SIGNIN_PATH, ownerSigninDigest } from '@runeditrun/rer/internal/modules/operator-auth/owner-signin-grant.mjs';
+import { OWNER_SIGNIN_PATH, OWNER_SIGNIN_SECONDS, ownerSigninDigest } from '@runeditrun/rer/internal/modules/operator-auth/owner-signin-grant.mjs';
 import { requirePost } from '@runeditrun/rer/internal/modules/operator-auth/http.mjs';
 import { z } from 'zod';
 import { isLocalMailExecution } from '../../app/mail';
@@ -15,6 +15,11 @@ import { readInstallationOwner, saveOwnerProfile } from './owner-profile.reposit
 
 export const ownerEmailConfirmPath = '/auth/owner-profile/confirm';
 export const ownerProfileSettings = '/app/settings#operators';
+export const retainedAccess = 'Existing sessions, minted credentials and linked sign-ins will keep access.';
+
+export function ownerProfileReturn(notice: string) {
+  return `/app/settings?ownerEmail=${notice === 'failed' ? 'notice_failed' : 'confirmed'}#operators`;
+}
 
 const profileInput = z.object({
   email: z.string().optional(),
@@ -43,8 +48,8 @@ export function ownerProfile(env: AppBindings, auth: OperatorAuth, mail?: MailSe
 
   function pendingView(pending: PendingEmail | null) {
     if (!pending) return null;
-    const { id, email, method, expiresAt } = pending;
-    return { id, email, method, expiresAt };
+    const { id, email, method, expiresAt, revokeAccess } = pending;
+    return { id, email, method, expiresAt, revokeAccess: revokeAccess === 1 };
   }
 
   async function confirmation(request: Request, type: EmailProof['type'], token: unknown) {
@@ -56,11 +61,11 @@ export function ownerProfile(env: AppBindings, auth: OperatorAuth, mail?: MailSe
     return pending && { session, proof, pending };
   }
 
-  async function notice({ operator }: Session, newEmail: string, eventId: string) {
+  async function notice({ operator }: Session, newEmail: string, eventId: string, revokeAccess: boolean) {
     if (!sender || mode !== 'email') return 'none';
     try {
       const result = await sender.mail.send({ from: sender.from, to: operator.email, subject: 'Your Lamp owner email changed',
-        text: `The sign-in email for your Lamp owner account was changed to ${newEmail}. If this was not you, run rer signin from the checkout that deployed Lamp.`,
+        text: `The sign-in email for your Lamp owner account was changed to ${newEmail}. If this was not you, run rer signin from the checkout that deployed Lamp.${revokeAccess ? '' : `\n\n${retainedAccess}`}`,
         headers: { 'Auto-Submitted': 'auto-generated' }, idempotencyKey: `owner-profile/${eventId}` });
       return result.disposition === 'suppressed' ? 'failed' : 'sent';
     } catch { return 'failed'; }
@@ -100,7 +105,7 @@ export function ownerProfile(env: AppBindings, auth: OperatorAuth, mail?: MailSe
       if (mode === 'email' && sender && link) {
         try {
           const result = await sender.mail.send({ from: sender.from, to: email, subject: 'Confirm your new Lamp sign-in email',
-            text: `To change your Lamp sign-in email to ${email}, open this one-time link in the same browser session that requested it:\n\n${link.href}\n\nThe link expires in 10 minutes.`,
+            text: `To change your Lamp sign-in email to ${email}, open this one-time link in the same browser session that requested it. If someone is handing you the account, give this confirmation link to the current Owner.\n\n${link.href}\n\nThe link expires in 10 minutes. ${pending.revokeAccess ? 'If email sign-in is available, Lamp will send a separate sign-in link to this address after confirmation.' : retainedAccess}`,
             headers: { 'Auto-Submitted': 'auto-generated' }, idempotencyKey: `owner-email-confirmation/${pending.id}` });
           if (result.disposition === 'suppressed') throw new Error('Confirmation mail was suppressed');
         } catch {
@@ -115,20 +120,38 @@ export function ownerProfile(env: AppBindings, auth: OperatorAuth, mail?: MailSe
       requirePost(request, config);
       const session = await owner(request);
       if (typeof id !== 'string' || !z.uuid().safeParse(id).success) throw new AuthError('invalid_input', 400);
-      await cancelOwnerEmail(db, session, id);
-      return { pending: pendingView(await pendingOwnerEmail(db, session)) };
+      if (!await cancelOwnerEmail(db, session, id)) throw new AuthError('pending_change_unavailable', 404);
+      return { pending: null };
     },
     confirmation,
     async ownsLocalGrant(token: unknown) {
       return typeof token === 'string' && validToken(token) && Boolean(await ownerEmailGrantOnly(db, await ownerSigninDigest(token)));
     },
-    async confirm(request: Request, type: EmailProof['type'], token: unknown) {
+    async confirm(request: Request, type: EmailProof['type'], token: unknown, emailSignInAllowed: () => Promise<boolean>) {
       requirePost(request, config);
       const candidate = await confirmation(request, type, token);
       if (!candidate) throw new AuthError('invalid_or_expired', 400);
       const { pending, session } = candidate;
-      const { eventId, operator } = await saveOwnerProfile(db, session, { displayName: pending.displayName }, candidate);
-      return { operator, notice: await notice(session, operator.email, eventId) };
+      const revokeAccess = pending.revokeAccess === 1;
+      const signInToken = revokeAccess && type === 'owner-link' ? opaqueToken() : null;
+      const signInGrant = signInToken ? { hash: await ownerSigninDigest(signInToken), expiresAt: Date.now() + OWNER_SIGNIN_SECONDS * 1000 } : undefined;
+      const { eventId, operator } = await saveOwnerProfile(db, session, { displayName: pending.displayName }, { ...candidate, signInGrant });
+      const delivery = await notice(session, operator.email, eventId, revokeAccess);
+      const result: { operator: Session['operator']; notice: string; signedOut: boolean; signInUrl?: string; signInEmailSent?: boolean }
+        = { operator, notice: delivery, signedOut: revokeAccess };
+      if (signInToken) {
+        const link = new URL(OWNER_SIGNIN_PATH, config.origin);
+        link.searchParams.set('token', signInToken);
+        return { ...result, signInUrl: link.href };
+      }
+      if (!revokeAccess) return result;
+      try {
+        if (await emailSignInAllowed()) {
+          await auth.requestMagicLink(request, { email: operator.email, returnTo: ownerProfileReturn(delivery) });
+          return { ...result, signInEmailSent: true };
+        }
+      } catch { /* The handover committed. The new owner can start at sign-in. */ }
+      return { ...result, signInEmailSent: false };
     },
   };
 }

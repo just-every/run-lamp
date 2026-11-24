@@ -51,8 +51,9 @@ export function pendingOwnerEmail(db: D1Database, session: Session) {
 
 export async function cancelOwnerEmail(db: D1Database, session: Session, id: string) {
   const authority = sessionAuthority(session);
-  await db.prepare(`DELETE FROM oa_owner_email_changes AS p WHERE ${live} AND p.id=? AND ${authority.sql}`)
+  const result = await db.prepare(`DELETE FROM oa_owner_email_changes AS p WHERE ${live} AND p.id=? AND ${authority.sql}`)
     .bind(...subject(session), id, ...authority.params).run();
+  return Boolean(result.meta.changes);
 }
 
 export type EmailProof = { type: 'email' | 'owner-link'; hash: string };

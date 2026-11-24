@@ -24,7 +24,7 @@ async function authResponseInternal(request:Request,env:AppBindings,services:App
   try {
     // Google and Okta set up in Settings are composed in before Base builds its providers.
     const stored=await services.signIn.composed(),auth=await services.signInAuth(request),config=authConfig(env,stored),url=new URL(request.url);
-    const profile = await ownerProfileResponse(request, url, auth.ownerProfile, config);
+    const profile = await ownerProfileResponse(request, url, auth.ownerProfile, config, async () => !await services.signIn.requiredProvider());
     if (profile) return profile;
     const signedIn = await signedInOwnerRedirect(request, auth);
     if (signedIn) return signedIn;

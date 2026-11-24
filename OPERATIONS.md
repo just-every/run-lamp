@@ -665,7 +665,8 @@ An email change needs a recent email-link sign-in or step-up proof. Request
 `POST /auth/step-up` with `{"action":"email:change"}` and complete that proof
 in the same session before saving. With hosted mail off, open a fresh Owner
 session using `rer signin`. Local Owner sessions use the existing local proof
-rules.
+rules. Base 0.2.133 accepts recent step-up proof across actions, including
+proof completed for another action or a recent email-link sign-in.
 
 A pending request returns HTTP 202 with the current `operator` and a `pending`
 record. An unavailable address returns HTTP 409 with `email_in_use`.
@@ -679,13 +680,24 @@ hosted mail off, run `rer signin` again for a fresh one-time Owner link. Open
 the Owner link in the requesting session and confirm, or POST its `token`
 and `"confirmEmailChange":"1"` to `/auth/owner-signin` with the same cookie
 and origin. Confirmation keeps the existing account ID and Move in history.
-The JSON confirmation response contains the updated `operator` and a `notice`
-of `sent`, `none` or `failed` for the previous address.
+The JSON confirmation response contains the updated `operator`, `signedOut`
+and a `notice` of `sent`, `none` or `failed` for the previous address.
 
-A handover defaults to `revokeAccess: true` in the staging request. Other
-sessions, minted credentials, linked identity-provider sign-ins and local
-passkeys lose access on confirmation. Set `revokeAccess: false` for a rename
-that retains them. Pending invitations to other operators stay valid.
+A handover defaults to `revokeAccess: true` in the staging request. All
+previous sessions, including the confirming session, lose access along with
+minted credentials, linked identity-provider sign-ins and local passkeys.
+When email sign-in is available, Lamp sends a fresh sign-in link to the new
+address and reports `signInEmailSent`. With mail off, the confirmation response
+includes a one-time `signInUrl` for the current Owner to hand to the holder of
+the new address. Lamp cannot verify the address on that path. Set
+`revokeAccess: false` for a rename that retains existing access. Pending
+invitations to other operators stay valid.
+
+After a Business handover, update the RER grant signer to name the stored Owner
+email. Business verification, imports, cutover status and source capture return
+HTTP 403 `invalid_grant` until the signer uses that address. Take a new backup
+after a handover. Restoring an earlier archive restores the previous Owner
+address and linked identities, and RER grants must name that restored address.
 
 ## AI provider configuration
 
