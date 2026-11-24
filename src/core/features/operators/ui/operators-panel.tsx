@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 
+import { useRouter } from "@tanstack/react-router";
+import { OwnerProfileCard } from "./owner-profile-card";
 import type { StoredFormerOperator, StoredOperator } from "../repository";
 import { ApiError, appApi, useAppData } from "../../../app/client/ui/api";
 import { Button } from "../../../app/client/ui/button";
@@ -11,7 +13,8 @@ type InvitationsResponse = { local: boolean; operators: (StoredOperator & { sign
 type FormerOperatorsResponse = { operators: StoredFormerOperator[] };
 
 /** Operator access and personal-data controls mounted through settings.sections.v1. */
-export function OperatorsPanel() {
+export function OperatorsPanel({ owner }: { owner?: StoredOperator }) {
+  const router = useRouter();
   const active = useAppData<OperatorsResponse>("/api/app/operators");
   const invited = useAppData<InvitationsResponse>("/api/app/operators/invited");
   const former = useAppData<FormerOperatorsResponse>("/api/app/operators/former");
@@ -97,7 +100,9 @@ export function OperatorsPanel() {
   const ownerCount = active.data.operators.filter((operator) => operator.role === "owner").length;
   const controlsDisabled = saving || active.loading || invited.loading;
 
-  return <section className="data-card operators-card" aria-labelledby="operators-title">
+  return <div className="page-stack">
+    {owner && <OwnerProfileCard key={owner.id} owner={owner} onSaved={() => { active.refresh(); void router.invalidate(); }} />}
+    <section className="data-card operators-card" aria-labelledby="operators-title">
     <div>
       <h2 id="operators-title">Operators</h2>
       <p>Roles control what each operator can do. Removing access signs them out. Erasing personal data removes their name and email for good.</p>
@@ -140,7 +145,8 @@ export function OperatorsPanel() {
       <p>These people no longer have access. Their personal data remains only until an operator erases it.</p>
       <div className="operators-list">{former.data.operators.map((operator) => <OperatorRow key={operator.id} operator={operator} saving={saving} onErase={() => erase(operator)} />)}</div>
     </section>}
-  </section>;
+    </section>
+  </div>;
 }
 
 function OperatorRow({ operator, signInUrl, saving, lastOwner = false, onRoleChange, onRevoke, onErase }: { operator: StoredOperator | StoredFormerOperator; signInUrl?: string; saving: boolean; lastOwner?: boolean; onRoleChange?: (role: StoredOperator["role"]) => Promise<boolean>; onRevoke?: () => void; onErase?: () => void }) {

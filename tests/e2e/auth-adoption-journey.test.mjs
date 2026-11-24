@@ -132,8 +132,6 @@ test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, in
    assert.equal((await devPage.getByLabel('Accent colour',{exact:true}).inputValue()).toLowerCase(),setupAccent);
    const terminalLink=/^RER_OPEN (\S+)/m.exec(output)?.[1];
    assert.ok(terminalLink,'rer provided the private terminal link');
-   await localPasskeyFlow({browser,ownerPage:devPage,origin,terminalLink});
-   await devContext.close();
    const width=1440;
    {
     const context=await journeyContext(browser,key);const page=await emailSignIn(context,origin,owner,width,key);
@@ -225,6 +223,9 @@ test('SETUP-002 ACCESS-001 TEAM-002 TEAM-006 native rer setup, owner sign-in, in
     assert.equal(colleague.operator.role,'communicator');
     await context.close();
    }
+   await localPasskeyFlow({browser,ownerPage:devPage,origin,terminalLink});
+   await devContext.close();
+   t.diagnostic("A fresh local install kept the same account and passkey after its sign-in email changed.");
    await stop();
    await operatorManagementFlow({browser,capture,proof:evidence?capture:undefined,diagnostic:message=>t.diagnostic(message)});
    await rm(join(root,'exports/probe.rer'));await rm(join(root,'probe.rer'));

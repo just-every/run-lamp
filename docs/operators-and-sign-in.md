@@ -6,6 +6,21 @@ Removing access revokes sessions and sign-in links. Erasing personal data is a
 separate, irreversible action; it removes the operator's personal values while
 keeping the opaque audit attribution.
 
+## Change your owner account
+
+As a signed-in Owner, open **Settings → Team → Operators → Owner account**.
+Edit your own name or sign-in email, then choose **Save owner details**.
+If Lamp asks for confirmation, choose **Confirm my identity** and open the link
+sent to your current email in the same browser, then return and save. If hosted
+email is off, sign in with [`rer signin`](#terminal-entry-for-the-hosted-owner)
+and save from that session.
+
+Choose an email that is available in this installation. After you save a new
+address, use it for email sign-in. Lamp revokes outstanding links for the old
+address. Your existing sessions, passkeys and pending invitations to other
+operators stay valid. With email enabled, Lamp sends a notice to the new address.
+If the notice fails, the new address is still saved.
+
 ## Terminal entry for the hosted owner
 
 With the checkout's pinned `@runeditrun/rer`, the hosted owner can enter without

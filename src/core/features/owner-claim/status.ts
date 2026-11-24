@@ -2,7 +2,7 @@ import type { Hono } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
 import { DoorError, verifyRerGrant } from '../../../../modules/import-kit/src/door';
-import { ownerClaimConfig } from '../../platform/auth/claim';
+import { businessOwnerTrust } from '../../platform/auth/claim';
 import type { AppBindings, AppEnv } from '../../app/types';
 import { deploymentHealth } from '../../../base/deployment-health';
 import { ownerClaimStatusRepository } from './repository';
@@ -15,8 +15,9 @@ export function registerOwnerClaimStatus(app: Hono<AppEnv>, bindings: AppBinding
   app.all('/api/rer/owner-claim-status', async c => {
     if (c.req.method !== 'POST') return c.json({ error: 'method_not_allowed' }, 405, { ...headers, Allow: 'POST' });
     try {
-      const config = ownerClaimConfig(bindings);
-      if (!config) return c.json({ error: 'not_found' }, 404, headers);
+      const trust = await businessOwnerTrust(bindings);
+      if (!trust) return c.json({ error: 'not_found' }, 404, headers);
+      const config = trust.claim;
       const { grant, kid } = await verifyRerGrant(c.req.raw, config, 'owner-claim-status');
       if (!input.safeParse(await c.req.json().catch(() => null)).success) return c.json({ error: 'invalid_input' }, 400, headers);
       const state = await ownerClaimStatusRepository(bindings).read(config.expectedEmail, kid);

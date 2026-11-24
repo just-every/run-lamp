@@ -651,6 +651,27 @@ and provider-link approvals do not travel; provider links require fresh approval
 and sign-in is disabled until the owner enables it. Subscriber capabilities and
 product attribution retain their authority.
 
+### Owner account changes
+
+`OWNER_EMAIL`, `SETUP_OPERATOR_EMAIL` and `OWNER_DISPLAY_NAME` seed the first Owner
+during setup. To update the stored owner account, use [Owner account](docs/operators-and-sign-in.md#change-your-owner-account).
+
+An agent uses `POST /auth/owner-profile` on the app origin with the signed-in
+Owner's session and an `Origin` header matching that origin. Send a JSON body
+with `displayName`, `email` or both. The request edits the signed-in Owner's own
+account. Lamp management scopes alone are insufficient.
+
+A recent native email sign-in provides the required proof. Otherwise, send
+`POST /auth/step-up` with `{"action":"email:change"}` and complete the emailed
+confirmation in the same session before saving. With hosted mail off, obtain a
+fresh Owner session using `rer signin`. Key-gated local Owner sessions use the
+existing local step-up rules.
+
+An email already in use returns HTTP 409 with `email_in_use`. A successful save
+returns the `operator` and a `notice` of `sent`, `none` or `failed`. A failed
+notice reports an email delivery error after the save. Once an email changes,
+the old address no longer signs in to that owner account.
+
 ## AI provider configuration
 
 The [AI assistance guide](docs/ai-assistance.md) covers account setup, private

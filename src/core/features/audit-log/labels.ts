@@ -5,6 +5,7 @@ const actionLabels: Record<string, string> = {
   invited: "Invited an operator",
   "access-revoked": "Revoked operator access",
   "access-denied": "Denied access",
+  "owner-profile-changed": "Changed owner details",
   "role-changed": "Changed an operator role",
   "state-changed": "Changed a component state",
   "components-changed": "Changed incident components",

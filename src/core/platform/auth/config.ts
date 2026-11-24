@@ -37,7 +37,7 @@ export function deployProviders(env: AppBindings): Array<{ id: string; clientId?
  * key Base refuses dependency discovery, linking and, once a provider is linked, sign-in with 503 installation_key_missing. */
 export type InstallationKeyBindings = { INSTALLATION_KEY?: string; INSTALLATION_KEY_PREVIOUS?: string };
 
-export function authConfig(env: AppBindings & InstallationKeyBindings, stored: AuthConfig['providers'] = []): AuthConfig {
+export function authConfig(env: AppBindings & InstallationKeyBindings, stored: AuthConfig['providers'] = []): AuthConfig & { local: boolean } {
   const origin = authOrigin(env);
   return {
     origin, local: env.AUTH_LOCAL === 'true' || Boolean(env.LAMP_LOCAL_ORIGIN && isLoopbackHostname(new URL(origin).hostname)),

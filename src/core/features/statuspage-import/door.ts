@@ -5,8 +5,9 @@ import { createImportDoorHandler, DoorError, type ImportDoorSource } from '../..
 import { createImportOperatorHandler } from '../../../../modules/import-kit/src/door/operator';
 import { canonicalJson, sha256, type D1Sql } from '../../../../modules/import-kit/src/d1/index';
 import type { Json } from '../../../../modules/import-kit/src/types';
-import { ownerClaimConfig } from '../../platform/auth/claim';
-import { authConfig, authOrigin } from '../../platform/auth/config';
+import { businessOwnerTrust } from '../../platform/auth/claim';
+import { authOrigin } from '../../platform/auth/config';
+import { readInstallationOwner } from '../../platform/auth/owner-profile.repository';
 import { sessionAuthority } from '../../platform/auth/authority';
 import type { AppBindings, AppEnv } from '../../app/types';
 import type { StatuspageImportService } from './service';
@@ -93,13 +94,13 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
   };
   /** What every successful apply or undo changes, whichever authority approved
    * it. The door's response is read once and answered with the same body. */
-  const settle = async (path: string, response: Response, fence: D1Sql, after: (work: Promise<unknown>) => void): Promise<Response> => {
+  const settle = async (path: string, response: Response, actor: string, fence: D1Sql, after: (work: Promise<unknown>) => void): Promise<Response> => {
     if (!response.ok || !['apply', 'undo'].includes(path.slice(path.lastIndexOf('/') + 1))) return response;
     const body = await response.text();
     const { job } = JSON.parse(body) as { job?: { id: string; state: string } };
     if (job) {
       if (path.endsWith('/undo')) await service.forgetUndoneInvites(job.id, fence);
-      else await repository.recordApproval(job.id, fence);
+      else await repository.recordApproval(job.id, actor, fence);
       // Native writes already record durable snapshot work. A failed build stays
       // pending for Cron; it cannot turn the committed import into a failed door.
       after(Promise.resolve().then(changed).catch(cause => console.error('Lamp could not rebuild after an import; Cron retries it.', cause)));
@@ -129,13 +130,13 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
 
   app.get('/api/app/import-door/settings',async c=> {
     c.header('Cache-Control','no-store');
-    return c.json(await repository.settings(await repository.key(bindings),ownerClaimConfig(bindings),c.get('operatorSession')));
+    return c.json(await repository.settings(await repository.key(bindings),(await businessOwnerTrust(bindings))?.claim ?? null,c.get('operatorSession')));
   });
   app.put('/api/app/import-door/settings',async c=> {
     c.header('Cache-Control','no-store');
     const input = z.object({enabled:z.boolean(),revokedKids:z.array(z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)).max(100).optional()}).strict().safeParse(await c.req.json().catch(()=>null));
     if (!input.success) return c.json({error:'Choose whether to allow Business imports and which grant keys to revoke.'},400);
-    const claim = ownerClaimConfig(bindings);
+    const claim = (await businessOwnerTrust(bindings))?.claim;
     if (!claim) return c.json({error:'The installation has no configured Business grant keys.'},409);
     const key = await repository.key(bindings);
     await repository.save(key,c.get('operatorSession'),input.data);
@@ -144,12 +145,11 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
 
   // Business grants: off until the owner opts in, and only with RER's key ring.
   app.all('/api/rer/import/*',async c=> {
-    const claim = ownerClaimConfig(bindings);
-    if (!claim) return c.json({error:'not_found'},404);
-    const owner = await repository.ownerId(claim.expectedEmail);
-    if (!owner) return c.json({error:'not_found'},404);
+    const trust = await businessOwnerTrust(bindings);
+    if (!trust?.owner) return c.json({error:'not_found'},404);
+    const { claim, owner: { id: owner, version } } = trust;
     const key = await repository.key(bindings);
-    const authority = { sql: "EXISTS(SELECT 1 FROM oa_operators WHERE id=? AND role='owner' AND status='active')", params: [owner] };
+    const authority = { sql: 'EXISTS(SELECT 1 FROM lamp_sign_in_owner WHERE id=? AND version=?)', params: [owner, version] };
     const action = c.req.method === 'POST' ? c.req.path.slice('/api/rer/import/'.length) : '';
     const read = ['plan', 'apply', 'archive', 'restore-check'].includes(action) ? await readFirst(c.req.raw) : undefined;
     if (read === null) return c.json({error:'request_too_large'},413);
@@ -177,7 +177,7 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
       },
     });
     const response = await handle(read?.request ?? c.req.raw);
-    return response ? settle(c.req.path, response, authority, work => c.executionCtx.waitUntil(work)) : c.notFound();
+    return response ? settle(c.req.path, response, owner, authority, work => c.executionCtx.waitUntil(work)) : c.notFound();
   });
 
   // The owner's own Move in: the current owner session, same-origin requests,
@@ -189,7 +189,7 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
     if (!await repository.allowed(authority)) return c.json({error:'owner_required'},401);
     const name = c.req.header('X-Import-Source') ?? '';
     if (!isImportSource(name)) return c.json({error:'unknown_import_source'},400);
-    const principal = await repository.principalId(authConfig(bindings).OWNER_EMAIL);
+    const principal = (await readInstallationOwner(bindings.DB))?.id;
     if (!principal) return c.json({error:'owner_required'},409);
     // On a Business-provisioned install the owner's claim opens the door; Move in
     // never records it closed first.
@@ -197,15 +197,14 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
     const key = await repository.key(bindings);
     await repository.ensureSettings(key, authority);
     const action = c.req.path.slice(operatorPrefix.length);
-    // An apply that can start an import (the namespace holds a dry run nobody
-    // started) is read first, to check that dry run; any other apply, a resume,
-    // reaches the door as it arrives.
-    const starting = c.req.method === 'POST' && action === 'apply' && Boolean(await repository.unstartedPending(key, name));
-    const read = c.req.method === 'POST' && (['plan', 'undo'].includes(action) || starting) ? await readFirst(c.req.raw) : undefined;
+    const read = c.req.method === 'POST' && ['plan', 'apply', 'undo'].includes(action) ? await readFirst(c.req.raw) : undefined;
     if (read === null) return c.json({error:'request_too_large'},413);
     const input = read?.input ?? null, request = read?.request ?? c.req.raw;
+    const approvalEmail = action === 'apply' && typeof input?.planId === 'string'
+      ? await repository.approvalEmail(key, name, input.planId, principal, session.operator)
+      : session.operator.email;
     const handler = async (prepared: Promise<Prepared> | null) => createImportOperatorHandler({database:bindings.DB,targets:attributedStatuspageTargets(session.operator.id),installationId:key,appOrigin:authOrigin(bindings),
-      ownerEmail:session.operator.email,ownerPrincipalId:principal,namespace:name,destination:'lamp',format:'json',limits:doorLimits,reversalPolicy:'preserve-conflicts',
+      ownerEmail:approvalEmail,ownerPrincipalId:principal,namespace:name,destination:'lamp',format:'json',limits:doorLimits,reversalPolicy:'preserve-conflicts',
       ...(await importSource(name,prepared))!,
       authorize:async()=>authority,
     });
@@ -280,7 +279,7 @@ export function registerImportDoor(app: Hono<AppEnv>, bindings: AppBindings, ser
       const { error } = await answered.clone().json().catch(() => ({})) as { error?: string };
       if (error === 'plan_not_found' || (starts && error === 'review_fingerprint_mismatch')) return c.json({ error: CHANGED }, 409, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     }
-    const response = await settle(c.req.path, answered, authority, work => c.executionCtx.waitUntil(work));
+    const response = await settle(c.req.path, answered, session.operator.id, authority, work => c.executionCtx.waitUntil(work));
     if (action !== 'plan' || !response.ok) return response;
     const plan = await response.json() as { planId: string };
     const saved = await repository.planSnapshot(key, plan.planId);

@@ -50,12 +50,17 @@ export async function localPasskeyFlow({ browser, ownerPage, origin, terminalLin
     await ownerPage.getByRole('button',{name:/enroll passkey/i}).click();
     await ownerPage.waitForFunction(() => !document.querySelector('[data-passkey]'));
     assert.equal((await cdp.send('WebAuthn.getCredentials',{authenticatorId})).credentials.length,1);
+    const session = async () => (await (await ownerPage.request.get(origin+'/api/app/session')).json()).operator;
+    const original = await session(), changedEmail = 'local-passkey-owner@example.test';
+    const changeEmail = email => ownerPage.request.post(origin+'/auth/owner-profile',{data:{email},headers:{Origin:origin}});
+    assert.equal((await changeEmail(changedEmail)).status(),200,'the local owner can change their email without mail');
     const signOut = await ownerPage.request.post(origin+'/api/app/session/signout',{data:{},headers:{Origin:origin}});
     assert.equal(signOut.status(),204);
     await ownerPage.context().clearCookies();
     await goToSignIn(ownerPage);
     await ownerPage.getByRole('button',{name:/sign in with a passkey/i}).click();
     await reachedPartners(ownerPage);
-    assert.equal((await ownerPage.request.get(origin+'/api/app/session')).status(),200);
+    const after = await session();
+    assert.deepEqual([after.id,after.email],[original.id,changedEmail],'the existing passkey still admits the same account');
   } finally { await cdp.detach(); }
 }

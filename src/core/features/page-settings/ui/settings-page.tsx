@@ -95,7 +95,7 @@ export function SettingsPage() {
       {tab === "tools" && <ConnectedToolsTab />}
       {tab === "dependencies" && <DependencySettings />}
       {tab === "embeds" && <PublicResources publicOrigin={publicOrigin} allowedOrigins={settings.widgetAllowedOrigins} onOriginsChange={value => update("widgetAllowedOrigins", value)} appearance={settings.widgetAppearance} onAppearanceChange={(value, immediate) => update("widgetAppearance", value, immediate)} needsConfirm={autosave.pending("widgetAllowedOrigins")} onConfirm={() => autosave.confirm("widgetAllowedOrigins")} />}
-      {tab === "operators" && <OperatorsPanel />}
+      {tab === "operators" && <OperatorsPanel owner={operator.role === "owner" ? operator : undefined} />}
       {tab === "sign-in" && <Suspense fallback={<LoadingState>Loading sign-in…</LoadingState>}><SignInPane /></Suspense>}
       {tab === "reports" && <ReportsSettingsTab />}
       {tab === "export" && <ExportSettingsTab />}

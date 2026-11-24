@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { ownerSigninDigest } from '@runeditrun/rer/internal/modules/operator-auth/owner-signin-grant.mjs';
 import { database, load } from '../operator-readiness/runtime.mjs';
 import { openSnapshotCacheRuntime } from '../e2e/snapshot-cache-runtime.mjs';
 import { deploymentConfig, pageDeploymentBindingsStatement, renderWranglerToml, resourceNames, setupPageSettingsStatement } from '../../scripts/ops-config.mjs';
@@ -32,7 +33,7 @@ test('ordinary host configuration carries public Business trust into a read-only
   assert.throws(()=>deploymentConfig({...inputs,RER_OWNER_CLAIM_PUBLIC_KEYS:JSON.stringify({[kid]:privateKey.export({format:'jwk'})})}));
   const standalone={...inputs};for(const key of Object.keys(standalone))if(key.startsWith('RER_'))delete standalone[key];
   assert.equal(deploymentConfig(standalone).importDoor,undefined);
-  const env = { ...vars, SESSION_SECRET:inputs.SESSION_SECRET, SETUP_TOKEN:inputs.SETUP_TOKEN,
+  const env = { ...vars, MAIL_PROVIDER:'none', SESSION_SECRET:inputs.SESSION_SECRET, SETUP_TOKEN:inputs.SETUP_TOKEN,
    DB:storage.db, SNAPSHOT_CACHE:cache.namespace, SNAPSHOTS:storage.bucket };
   let { app }=createApp(env);
   const call=(path,init={})=>app.fetch(new Request(origin+path,{...init,headers:{Host:new URL(origin).host,Origin:origin,'CF-Connecting-IP':'192.0.2.1',...init.headers}}),env);
@@ -59,10 +60,24 @@ test('ordinary host configuration carries public Business trust into a read-only
   assert.equal(settings.status,200);
   assert.equal((await (await read()).json()).importDoor.enabled,false,'a disabled import choice is retained');
   const otherEnv={...env,SETUP_OPERATOR_EMAIL:'other@example.com'};
-  assert.equal((await createApp(otherEnv).app.fetch(new Request(origin+'/api/rer/owner-claim-status',{method:'POST',headers:{Host:new URL(origin).host,Authorization:`Bearer ${grant({email:'other@example.com'}).token}`,'Content-Type':'application/json'},body:'{}'}),otherEnv)).status,409,'configuration cannot transfer ownership');
+  assert.equal((await createApp(otherEnv).app.fetch(new Request(origin+'/api/rer/owner-claim-status',{method:'POST',headers:{Host:new URL(origin).host,Authorization:`Bearer ${grant({email:'other@example.com'}).token}`,'Content-Type':'application/json'},body:'{}'}),otherEnv)).status,403,'a changed bootstrap email cannot authorize a Business grant');
+  const terminalToken=randomBytes(32).toString('base64url'), now=Date.now();
+  await storage.db.prepare(`INSERT INTO oa_owner_signins(id,token_hash,operator_id,operator_version,created_at,expires_at)
+    SELECT ?,?,id,version,?,? FROM lamp_sign_in_owner`)
+    .bind(randomUUID(),await ownerSigninDigest(terminalToken),now,now+60_000).run();
+  const terminal=await call('/auth/owner-signin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:terminalToken})});
+  assert.equal(terminal.status,303);
+  const ownerCookie=terminal.headers.get('set-cookie').split(';')[0], email='new-owner@example.com';
+  const edited=await call('/auth/owner-profile',{method:'POST',headers:{Cookie:ownerCookie,'Content-Type':'application/json'},body:JSON.stringify({email,displayName:'New Owner Name'})});
+  assert.equal(edited.status,200);
+  assert.equal((await read()).status,403,'the original email no longer authorizes a Business grant');
+  const updatedGrant=grant({email});
+  const updatedStatus=await read(updatedGrant);
+  assert.equal(updatedStatus.status,200);
+  assert.equal((await updatedStatus.json()).owner.id,body.owner.id,'the current grant names the same stored owner');
   const revoke=await call('/api/app/import-door/settings',{method:'PUT',headers:{Cookie:cookie,'Content-Type':'application/json'},body:JSON.stringify({enabled:false,revokedKids:[kid]})});
   assert.equal(revoke.status,200);
-  assert.equal((await read()).status,403,'permanent-key revocation applies to ownership reads');
+  assert.equal((await read(updatedGrant)).status,403,'permanent-key revocation applies to ownership reads');
   assert.equal((await call('/api/rer/owner-claim-status')).status,405);
  } finally { await cache.dispose();await storage.runtime.dispose();await rm(directory,{recursive:true,force:true}); }
 });

@@ -1891,3 +1891,10 @@ policy or claiming that a stale snapshot is current.
 ## Team sign-in policy
 
 The installation owner can require an enabled OpenID Connect provider after it completes a successful sign-in. This keeps an old email link from opening a session after the policy is enabled and leaves the recorded terminal Owner grant available during a provider outage. A restored installation starts with required sign-in off so its owner can qualify the provider again with the destination configuration.
+
+## Owner account details
+
+ChargeDesk set-up needs to replace a stand-in owner's name and email through
+Lamp itself. Under TEAM-002 the existing Owner updates their own account with
+fresh proof. The stored account ID keeps sign-in credentials and Move in tied
+to the installation through an address change.

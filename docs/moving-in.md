@@ -707,9 +707,10 @@ reopens a door the owner turned off. `rer deploy` never sets the variable, so a
 self-hosted Lamp's door stays off until its owner turns it on. The trusted grant key selector
 in that same settings row permanently revokes a key immediately. Re-enabling the
 door does not restore a revoked key; provisioning must rotate to a new key id.
-The door uses the same installation id, issuer, app origin, configured owner email
-and ES256 public keys as owner-claim. It never accepts an operator cookie as an
-import grant.
+The door uses the installation ID, issuer, app origin and ES256 public keys from
+owner-claim trust. After setup, Business import grants must name the stored
+Owner's current sign-in email. Move in keeps using the same stored owner ID after
+an email change. It never accepts an operator cookie as an import grant.
 
 Business uploads the same UTF-8 JSON envelope as Move in: `source`
 (`statuspage`, `betterstack`, `instatus` or `sorry`), `files` (the unchanged

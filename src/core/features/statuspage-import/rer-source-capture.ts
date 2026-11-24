@@ -2,7 +2,7 @@ import type { Hono } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
 import { DoorError, verifyRerGrant } from '../../../../modules/import-kit/src/door';
-import { ownerClaimConfig } from '../../platform/auth/claim';
+import { businessOwnerTrust } from '../../platform/auth/claim';
 import type { AppBindings, AppEnv } from '../../app/types';
 import { createImportDoorRepository } from './door.repository';
 import { readDoorExport } from './door-plan';
@@ -65,12 +65,12 @@ async function selection(request: Request) {
 export function registerRerSourceCapture(app: Hono<AppEnv>, bindings: AppBindings) {
   app.all('/api/rer/source-capture', async c => {
     if (c.req.method !== 'POST') return c.json({ error: 'method_not_allowed' }, 405, { ...headers, Allow: 'POST' });
-    const claim = ownerClaimConfig(bindings);
-    if (!claim) return c.json({ error: 'not_found' }, 404, headers);
     try {
-      const { kid } = await verifyRerGrant(c.req.raw, claim, 'source-capture');
+      const trust = await businessOwnerTrust(bindings);
+      if (!trust?.owner) return c.json({ error: 'not_found' }, 404, headers);
+      const { kid } = await verifyRerGrant(c.req.raw, trust.claim, 'source-capture');
       const repository = createImportDoorRepository(bindings.DB);
-      const door = await repository.rerReadState(await repository.key(bindings), kid);
+      const door = await repository.rerReadState(await repository.key(bindings), kid, trust.owner);
       if (door.revoked) return c.json({ error: 'invalid_grant' }, 403, headers);
       if (!door.enabled) return c.json({ error: 'import_door_off' }, 404, headers);
     } catch (error) {

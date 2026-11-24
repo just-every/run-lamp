@@ -1,7 +1,7 @@
 import type { Hono } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { DoorError, verifyRerGrant } from '../../../../modules/import-kit/src/door';
-import { ownerClaimConfig } from '../../platform/auth/claim';
+import { businessOwnerTrust } from '../../platform/auth/claim';
 import type { AppBindings, AppEnv } from '../../app/types';
 import { readImportedPublicRecords } from './alias-repository';
 import { createImportDoorRepository } from './door.repository';
@@ -75,12 +75,13 @@ function sinceOf(body: unknown) {
 export function registerRerCutoverStatus(app: Hono<AppEnv>, bindings: AppBindings) {
   app.all('/api/rer/cutover-status', async c => {
     if (c.req.method !== 'POST') return c.json({ error: 'method_not_allowed' }, 405, { ...headers, Allow: 'POST' });
-    const claim = ownerClaimConfig(bindings);
-    if (!claim) return c.json({ error: 'not_found' }, 404, headers);
     try {
-      const { kid } = await verifyRerGrant(c.req.raw, claim, 'cutover-status');
-      const key = await createImportDoorRepository(bindings.DB).key(bindings);
-      if (await bindings.DB.prepare('SELECT 1 FROM ik_door_revoked_keys WHERE installation_id=? AND kid=?').bind(key, kid).first()) return c.json({ error: 'invalid_grant' }, 403, headers);
+      const trust = await businessOwnerTrust(bindings);
+      if (!trust?.owner) return c.json({ error: 'not_found' }, 404, headers);
+      const { kid } = await verifyRerGrant(c.req.raw, trust.claim, 'cutover-status');
+      const repository = createImportDoorRepository(bindings.DB);
+      const state = await repository.rerReadState(await repository.key(bindings), kid, trust.owner);
+      if (state.revoked) return c.json({ error: 'invalid_grant' }, 403, headers);
     } catch (error) {
       if (error instanceof DoorError) return c.json({ error: error.code }, error.status as ContentfulStatusCode, headers);
       throw error;

@@ -59,6 +59,10 @@ Roles: an invitation gives the role chosen in Settings → Operators (default Co
 1.11.23 every invitee of an Owner became an Owner; lower the role in Settings → Operators after
 their first sign-in on an installation older than that.
 
+The signed-in Owner changes their own name and email in **Settings → Team → Operators → Owner account**.
+Managers use the same [session-authenticated owner API](OPERATIONS.md#owner-account-changes) with fresh identity proof.
+Setup inputs seed the first owner. The stored account keeps its ID and Move in history after a change.
+
 If anything is missing the tooling names it. Do not substitute services or invent config.
 
 ## Ownership
